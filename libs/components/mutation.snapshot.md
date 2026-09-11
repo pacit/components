@@ -93,10 +93,14 @@ libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/switch/src/switch.ts 96.30 52(0) 2 0 0 5
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 1 0 1
 libs/components/tabs/src/tabs.ts 93.50 115(0) 7 1 0 2
+libs/components/testing/src/dom.ts 100.00 26(0) 0 0 0 0
+libs/components/testing/src/harness.ts 90.70 39(0) 3 0 1 0
+libs/components/testing/src/harnesses.ts 100.00 52(0) 0 0 0 0
+libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 83.28 4203/5047
+TOTAL 83.77 4424/5281
 ```

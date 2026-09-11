@@ -69,6 +69,10 @@
     "libs/components/switch/src/switch.ts",
     "libs/components/tabs/src/tab.ts",
     "libs/components/tabs/src/tabs.ts",
+    "libs/components/testing/src/dom.ts",
+    "libs/components/testing/src/harness.ts",
+    "libs/components/testing/src/harnesses.ts",
+    "libs/components/testing/src/property.testkit.ts",
     "libs/components/theme/src/theme.ts",
     "libs/components/toast/src/toast-viewport.ts",
     "libs/components/toast/src/toast.ts",
@@ -111,12 +115,7 @@
     }
   ],
   "// coversNothing": "The register of specs that RUN in the mutation run and cover no mutant. Stryker's per-test report lists only the tests that cover one, so a spec whose whole subject stands outside `patterns` is absent from it — and point 3 cannot tell that apart from a spec the run never saw. An entry here does not say \"this spec matters less\"; it says \"this spec can kill nothing, and here is what it holds instead\". The register exists because the cheap way to keep point 3 green would be to widen the measurement until the spec covers something, which is the move this whole file refuses.",
-  "coversNothing": [
-    {
-      "spec": "libs/components/testing/src/property.spec.ts",
-      "reason": "Its only subject is `libs/components/testing/src/property.testkit.ts`, and `patterns` strikes the whole of `libs/components/testing/**` from the measurement — so the file covers no mutant and the report lists it nowhere. What it holds is the property sweep itself: the same seed drawing the same cases, the descent reaching the smallest case that still breaks a law, the generators' ranges and their negative zero. Four sweeps in this library rest on it, so an instrument that quietly drew one case and called it two hundred would take all four down in silence. Whether the PUBLISHED `testing` entrypoint ought to be measured at all is a wider question than this entry — it is recorded in the plan rather than answered here."
-    }
-  ],
+  "coversNothing": [],
   "// threshold": "The hard floor of the score for the whole, in percent. The same number stands in `thresholds.break` in `stryker.config.json` and the gate watches that the two agree — because that one fails the run and this one is its only justification. `break` is `null` by Stryker's own default, so BY DEFAULT the mutation run exits zero whatever the score and is a report to look at.",
   "threshold": 80,
   "// tolerance": "By how many percentage points a file's score may drift from the snapshot before it is a change requiring a decision. Checked BOTH WAYS: downwards, because that is what a removed assertion looks like; upwards, because a floor standing ten points below the measurement stops measuring anything — one could then delete every fifth assertion and stay green. The price is written down outright: improving the tests requires rewriting the snapshot (`--write`), that is a line in the diff visible in review.",
