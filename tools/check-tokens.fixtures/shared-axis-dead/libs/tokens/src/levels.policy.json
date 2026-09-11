@@ -1,5 +1,5 @@
 {
   "shared-axes": {
-    "axes": ["space", "motion"]
+    "axes": ["space", "target", "control", "motion"]
   }
 }

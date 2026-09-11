@@ -1,0 +1,14 @@
+{
+  "$comment": "The reference input's density axis — the repository's shape in miniature: the space scale one step tighter and the shared control axis six pixels apart instead of eight. It re-points primitives only, and the touch floor (`pct.target.min`) is not among them, which is the state point 11 calls correct.",
+  "pct": {
+    "space": {
+      "4": { "$type": "dimension", "$value": "8px" }
+    },
+    "control": {
+      "height": {
+        "sm": { "$type": "dimension", "$value": "26px" },
+        "md": { "$type": "dimension", "$value": "32px" }
+      }
+    }
+  }
+}

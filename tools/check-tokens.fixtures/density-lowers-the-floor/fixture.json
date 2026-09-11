@@ -1,0 +1,6 @@
+{
+  "point": 11,
+  "check": "density",
+  "rule": "density-floor-lowered",
+  "description": "The floor itself re-pointed by the compact scope: `pct.target.min` at 20px. It is the same defect one level down, and it is worse than the one above it, because lowering the floor makes every other rule about the floor pass BY CONSTRUCTION — the static one below it and the browser measurement alike. A control that still clears a floor somebody moved has not been measured; it has been excused."
+}

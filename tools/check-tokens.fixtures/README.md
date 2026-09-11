@@ -1,6 +1,6 @@
 # Negative control of the token gate
 
-Deliberately defective inputs. `tools/check-tokens.mjs` runs all ten of its checks on
+Deliberately defective inputs. `tools/check-tokens.mjs` runs all eleven of its checks on
 each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its `fixture.json` is a fault just the same, because it proves
@@ -63,8 +63,9 @@ else's point at once.
 The reference's dictionary (`_reference/libs/tokens/src/names.policy.json`) lists **only
 words used** by some token of the reference. That is not thrift: point 4 rejects a dead
 word, so a dictionary padded "just in case" would break the reference. The same rule holds
-for the policies: the reference's `levels.policy.json` lists one axis
-(`space`), because an unused axis fires point 6, and its `contrast.policy.json` has a pair
+for the policies: the reference's `levels.policy.json` lists three axes
+(`space`, `target`, `control`) and not a fourth, because an unused axis fires point 6, and
+its `contrast.policy.json` has a pair
 for **every** colour painted by `button.scss`, because otherwise the reference would fire
 point 7 on itself.
 
@@ -127,6 +128,10 @@ would be writing the same code a second time in markdown.
 | `overlay-number-unread`        |    10 | `layers`     | `layer-unread`              | the dependency's container rule carries no `z-index`        |
 | `z-index-outside-the-order`    |    10 | `layers`     | `z-index-outside-the-order` | a `--pct-button-z-index` no layer places                    |
 | `drawer-over-the-overlay`      |    10 | `layers`     | `order-broken`              | the drawer's token at 1200, above the overlay container     |
+| `density-axis-empty`           |    11 | `density`    | `density-denominator`       | both density scopes emitted, and neither re-points a name   |
+| `density-only-in-compact`      |    11 | `density`    | `density-unpaired`          | a name the compact scope moves and the comfortable one lost |
+| `density-lowers-the-floor`     |    11 | `density`    | `density-floor-lowered`     | `--pct-target-min` re-pointed downwards under compact       |
+| `density-under-the-floor`      |    11 | `density`    | `density-below-floor`       | a compact control height that lands under the 24px floor    |
 
 The two cases on point 3, one for the order and one for the dictionary, are kept apart on
 purpose: they are two different halves of the same promise and they break independently.
@@ -175,6 +180,26 @@ reading `--pct-motion-transition-duration`. The motion axis is referenced by no 
 no semantic tier and no component token above it — so without that read the reference would
 hold a dead primitive itself. It is the reference's smallest copy of the repository's shape,
 and of the reason point 9 counts two kinds of reader ([`lesson-74`](../../docs/lessons.md#lesson-74)).
+
+The four cases on point 11 are the density axis measured from its four sides, and they are
+four because the point is four sentences rather than one. `density-axis-empty` is the
+denominator — an axis emitted as a pair of empty braces, which every other rule of the point
+agrees with, having nothing left to disagree about. `density-only-in-compact` is the one case
+here that carries an ARTEFACT rather than a source: the two scopes drifting apart is a defect
+of the generator, invisible in the token files, so it rides in `libs/tokens/dist/pct.css`
+through the fourth layer of the assembly — the same construction `artifact-without-token` uses
+one point at a time. The last two are the floor from above and from below, and they are kept
+apart for the reason [`lesson-50`](../../docs/lessons.md#lesson-50) gives: measured, disarming
+`density-floor-lowered` moves `density-lowers-the-floor` onto `density-below-floor` — the same
+point, a different sentence — and without the `rule` field that run would be green. Disarming
+each of the other three turns its own case into "PASSED and was meant not to".
+
+The reference input carries the axis in miniature (`_reference/libs/tokens/src/density.compact.json`),
+and with it the two primitives point 11 needs a denominator from: `pct.target.min`, the touch
+floor, and `pct.control.height.{sm,md}`, the shared control axis. Their readers sit in
+`component.toast.json` rather than in `component.button.json`, and that is not taste: seven
+cases overlay the button's file, so a reader placed there would have to be copied into all
+seven, and a case directory is supposed to hold its defect and nothing else.
 
 **One rule of point 6 has no case here and that is deliberate.** `reference-to-nowhere` (a
 token pointing at a token that does not exist) is unreachable for this construction: a

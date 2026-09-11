@@ -15,13 +15,16 @@
  *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin,
  *  9. PALETTE: every primitive is read by a token or by a stylesheet,
  * 10. LAYERS: the stacking order is a list, every number in it is read from where it lives —
- *     a token, or the dependency's stylesheet — and it comes out strictly increasing.
+ *     a token, or the dependency's stylesheet — and it comes out strictly increasing,
+ * 11. DENSITY: the second axis declares the same names in both of its scopes, and neither
+ *     scope takes a control's box under the touch floor.
  *
  * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
  * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
  * Point 9 stands last because it reads what points 7 and 8 measure — with a broken list of
  * stylesheets their denominators fire first, and a primitive nobody reads is what a broken
- * list looks like.
+ * list looks like. Point 11 stands after all of them because it reads a name's TIER and a
+ * component name's PROPERTY, both of which points 3 and 6 have already had to accept.
  *
  * Usage: node tools/check-tokens.mjs [--write [<fixture>]]
  */
@@ -68,6 +71,41 @@ const WRITE_FIXTURE = (() => {
 
 const cssVar = (path) => '--' + path.replace(/\./g, '-');
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
+
+/**
+ * The two scopes the density axis is emitted under (`req-token-density`), and the third
+ * block point 11 measures them against. The selectors are spelt out here rather than derived
+ * from the source file names: what a consumer writes in their markup is the SELECTOR, and a
+ * gate that inferred it from `density.compact.json` would go on passing after the build
+ * started emitting something else.
+ */
+const DENSITY_SCOPES = {
+  comfortable: '[data-pct-density="comfortable"]',
+  compact: '[data-pct-density="compact"]',
+};
+
+/** A density override lives in a `density.<name>.json` source, the way a theme lives in `semantic.dark.json`. */
+const isDensityFile = (file) => /(^|\/)density\.[^/]+\.json$/.test(file);
+
+/**
+ * The skin's touch floor — WCAG 2.2 SC 2.5.8, 24 px ([`req-a11y-touch`]). Point 11 names the
+ * path here in the open, for the same reason point 10 names `-z-index$` there: it is one
+ * fact about this skin, and a reviewer has to be able to see which one the rule leans on.
+ */
+const FLOOR_TOKEN = 'pct.target.min';
+
+/**
+ * The property words that make a metric A CONTROL'S BOX rather than the air around it.
+ *
+ * They are read through the same dictionary points 3 and 4 police, so what puts a primitive
+ * on point 11's list is a component token NAMED `…-height` or `…-size` reading it — and what
+ * keeps a primitive off that list is being read only by a `…-padding-y` or a `…-gap`. That
+ * distinction is the whole reason the rule can let the space scale shrink and still hold the
+ * floor: nobody puts a finger on a margin. Measured on this repository, the list comes out
+ * as `pct.control.height.{sm,md,lg}` and `pct.target.min` — the shared control axis
+ * (`req-api-size`) and the floor itself, which three close buttons read as their size.
+ */
+const BOX_PROPERTIES = new Set(['height', 'size']);
 
 /** The first `countOf` entries plus how many are left — a message has to stay readable. */
 const shorten = (entries, countOf = 8) =>
@@ -970,6 +1008,187 @@ const checkTokens = (input) => {
       );
   }
 
+  // 11. DENSITY — the second axis (`req-token-density`). Two scopes, one set of names, and a
+  //     floor neither of them may cross.
+  //
+  //     The axis is built like the theme and not like the size input: `data-pct-density` on
+  //     a subtree re-points metric tokens the components ALREADY read, so switching density
+  //     costs no component a line (0074). That construction has two ways of going wrong
+  //     quietly, and this point is those two — behind a denominator rule, because an axis
+  //     that stopped being emitted agrees with both of them by having nothing left to
+  //     disagree about.
+  //
+  //     The first is asymmetry. `[data-pct-density="comfortable"]` exists for the same
+  //     reason `[data-theme="light"]` does — a roomy island inside a dense page needs
+  //     counter-overrides — so a name declared in one scope and not the other is a metric
+  //     that can be switched one way and not back. Nothing turns red: the token keeps the
+  //     value it inherited, the page merely stays dense where it was asked to stop being.
+  //
+  //     The second is the floor. Density crosses the touch threshold SOONER than the size
+  //     axis does — that is the requirement's own warning — and a compact scale is exactly
+  //     the kind of change somebody tunes by eye until it looks right. So: the floor itself
+  //     may not be re-pointed downwards, and no primitive the skin reads as a control's box
+  //     may come out under it. What the two rules cannot do is see a LAYOUT, which is why
+  //     the requirement's control is a browser measurement
+  //     (`apps/sandbox-e2e/src/density.spec.ts`) and this point is the shape of the mistake
+  //     rather than the whole of it.
+  const densityFiles = sources.map((s) => s.file).filter(isDensityFile);
+  const densityFileSet = new Set(densityFiles);
+
+  /** A token's value in one density: the override where there is one, the base otherwise. */
+  const valueIn = (token, dense) => {
+    let base;
+    let override;
+    for (const { file, value } of token.values)
+      if (densityFileSet.has(file)) override = value;
+      else base = value;
+    return dense ? (override ?? base) : base;
+  };
+
+  /**
+   * A token resolved down to a number of pixels in one density, or `null` when the chain
+   * ends anywhere else — a `rem`, a `clamp()`, a missing base. `null` is not "fine": the
+   * denominator rule below refuses to rule on a metric it cannot read.
+   */
+  const pixelsIn = (path, dense, seen = new Set()) => {
+    if (seen.has(path)) return null;
+    seen.add(path);
+    const token = byPath.get(path);
+    if (token === undefined) return null;
+    const value = valueIn(token, dense);
+    if (typeof value !== 'string') return null;
+    const pointsAt = referenceOf(value);
+    if (pointsAt !== null) return pixelsIn(pointsAt, dense, seen);
+    const px = /^(\d+(?:\.\d+)?)px$/.exec(value.trim());
+    return px === null ? null : Number(px[1]);
+  };
+
+  // Which primitives the skin reads as a control's box — derived from the name dictionary,
+  // not typed in. See `BOX_PROPERTIES`.
+  const boxes = new Map();
+  for (const n of names) {
+    if (n.layer !== 'component') continue;
+    const segments = n.path.split('.');
+    const parsed =
+      segments.length === 3 ? parseComponent(segments[2], policy) : null;
+    if (!parsed || !BOX_PROPERTIES.has(parsed.property)) continue;
+    for (const { value } of n.values) {
+      const pointsAt = referenceOf(value);
+      if (pointsAt === null) continue;
+      if (byPath.get(pointsAt)?.layer !== 'primitive') continue;
+      boxes.set(pointsAt, [...(boxes.get(pointsAt) ?? []), n.name]);
+    }
+  }
+
+  const comfortableNames = declarationsUnder(css, DENSITY_SCOPES.comfortable);
+  const compactNames = declarationsUnder(css, DENSITY_SCOPES.compact);
+  const rootNames = declarationsUnder(css, ':root');
+  const floorPx = pixelsIn(FLOOR_TOKEN, false);
+  const unreadable = [...boxes.keys()]
+    .filter(
+      (path) => pixelsIn(path, false) === null || pixelsIn(path, true) === null,
+    )
+    .sort();
+
+  if (
+    !densityFiles.length ||
+    comfortableNames === null ||
+    compactNames === null ||
+    rootNames === null ||
+    !compactNames.size ||
+    !boxes.size ||
+    floorPx === null ||
+    unreadable.length
+  )
+    throw new TokenError(
+      'density',
+      `an empty or unreadable denominator for point 11 (density sources: ` +
+        `${densityFiles.length}, names under \`${DENSITY_SCOPES.comfortable}\`: ` +
+        `${comfortableNames?.size ?? 'no such block'}, under ` +
+        `\`${DENSITY_SCOPES.compact}\`: ${compactNames?.size ?? 'no such block'}, ` +
+        `boxes the skin reads: ${boxes.size}, the floor \`${FLOOR_TOKEN}\`: ` +
+        `${floorPx === null ? 'not a pixel literal' : `${floorPx}px`}` +
+        (unreadable.length
+          ? `, unreadable boxes: ${unreadable.join(', ')}`
+          : '') +
+        `) — with any of these missing the point passes without pronouncing on anything.\n` +
+        `    The density axis is not optional furniture: it is a promise the skin makes to ` +
+        `a consumer's markup (\`req-token-density\`), and an axis that quietly stopped ` +
+        `being emitted looks exactly like one that was never asked for.`,
+      'density-denominator',
+    );
+
+  const onlyCompact = [...compactNames]
+    .filter((name) => !comfortableNames.has(name))
+    .sort();
+  const onlyComfortable = [...comfortableNames]
+    .filter((name) => !compactNames.has(name))
+    .sort();
+  const outsideRoot = [...compactNames]
+    .filter((name) => !rootNames.has(name))
+    .sort();
+  if (onlyCompact.length || onlyComfortable.length || outsideRoot.length)
+    throw new TokenError(
+      'density',
+      `the density scopes do not declare the same names:\n` +
+        (onlyCompact.length
+          ? `    only under \`${DENSITY_SCOPES.compact}\` (${onlyCompact.length}):\n` +
+            list(shorten(onlyCompact)) +
+            '\n'
+          : '') +
+        (onlyComfortable.length
+          ? `    only under \`${DENSITY_SCOPES.comfortable}\` (${onlyComfortable.length}):\n` +
+            list(shorten(onlyComfortable)) +
+            '\n'
+          : '') +
+        (outsideRoot.length
+          ? `    declared by a density scope and not by \`:root\` (${outsideRoot.length}):\n` +
+            list(shorten(outsideRoot)) +
+            '\n'
+          : '') +
+        `    A metric one scope re-points and the other does not can be switched one way ` +
+        `and not back: a roomy panel inside a dense page inherits the dense value with ` +
+        `nothing to undo it, and nothing anywhere turns red. That is the same construction ` +
+        `\`[data-theme="light"]\` exists for, one axis over.`,
+      'density-unpaired',
+    );
+
+  const floorDense = pixelsIn(FLOOR_TOKEN, true);
+  if (floorDense === null || floorDense < floorPx)
+    throw new TokenError(
+      'density',
+      `the touch floor \`${cssVar(FLOOR_TOKEN)}\` is ` +
+        `${floorDense === null ? 'no longer a pixel literal' : `${floorDense}px`} under ` +
+        `\`${DENSITY_SCOPES.compact}\` and ${floorPx}px under \`:root\`.\n` +
+        `    Density may shrink everything except the line it is shrinking towards. ` +
+        `Lowering the floor makes every OTHER rule about it pass by construction — ` +
+        `including the one below and including the browser measurement — which is why it ` +
+        `is a sentence of its own rather than a number in a table (\`req-a11y-touch\`).`,
+      'density-floor-lowered',
+    );
+
+  const underFloor = [...boxes.keys()]
+    .sort()
+    .filter((path) => pixelsIn(path, true) < floorPx)
+    .map(
+      (path) =>
+        `${cssVar(path)}: ${pixelsIn(path, true)}px under compact, ` +
+        `${pixelsIn(path, false)}px under :root (read as a box by ` +
+        `${shorten(boxes.get(path), 3).join(', ')})`,
+    );
+  if (underFloor.length)
+    throw new TokenError(
+      'density',
+      `${underFloor.length} metric(s) the skin reads as a control's box fall below the ` +
+        `${floorPx}px touch floor under \`${DENSITY_SCOPES.compact}\`:\n` +
+        list(underFloor) +
+        `\n    This is the corner \`req-token-density\` was written around: density crosses ` +
+        `the threshold SOONER than the size axis does, so \`compact\` at size \`sm\` is the ` +
+        `smallest anything here gets. A control that cannot hold 24px there is a control ` +
+        `the compact scope may not have, not a number to round up until the test goes green.`,
+      'density-below-floor',
+    );
+
   const publicCount = publicNames.size;
   return {
     description:
@@ -980,9 +1199,35 @@ const checkTokens = (input) => {
       `${painted.size} colours painted and ${touched.size} names touched across ` +
       `${sheets.length} stylesheets, ` +
       `${contrast.checks.length} pairs in the policy, ` +
-      `${placed.size} layers in order (${inOrder.join(' < ')})`,
+      `${placed.size} layers in order (${inOrder.join(' < ')}), ` +
+      `${compactNames.size} names on the density axis with ${boxes.size} boxes ` +
+      `above the ${floorPx}px floor`,
     snapshot: content,
   };
+};
+
+/**
+ * The custom properties a TOP-LEVEL block declares, or `null` when the stylesheet has no
+ * such block. Anchored to the start of a line, which is what keeps it out of the `@media`
+ * blocks: the generator indents those by two spaces, so `:root` here is the page's `:root`
+ * and never the one under `prefers-reduced-motion`.
+ *
+ * A textual read, like point 10's, and for the same reason — this is the generator's own
+ * output, one selector to one block, and a parser would be a second sentence about a format
+ * this file already knows.
+ */
+const declarationsUnder = (cssText, selector) => {
+  const head = `\n${selector} {\n`;
+  const start = cssText.indexOf(head);
+  if (start === -1) return null;
+  const from = start + head.length;
+  const end = cssText.indexOf('\n}', from);
+  if (end === -1) return null;
+  return new Set(
+    [...cssText.slice(from, end).matchAll(/^\s*(--pct-[a-z0-9-]+)\s*:/gm)].map(
+      (m) => m[1],
+    ),
+  );
 };
 
 /**
@@ -1274,8 +1519,9 @@ const referenceOf = (value) =>
 
 /**
  * A token's tier from the names of the files it stands in. `motion.reduced.json` overrides
- * the primitives of the motion axis and `semantic.dark.json` the semantics, so a token is
- * sometimes in two files; one tier has to come out of them.
+ * the primitives of the motion axis, `density.compact.json` those of the space and control
+ * axes and `semantic.dark.json` the semantics, so a token is sometimes in two files; one
+ * tier has to come out of them.
  */
 const layer = (files) => {
   const names = files.map((p) =>
@@ -1287,7 +1533,11 @@ const layer = (files) => {
   const found = new Set();
   let component = null;
   for (const name of names) {
-    if (name === 'primitive' || name.startsWith('motion.'))
+    if (
+      name === 'primitive' ||
+      name.startsWith('motion.') ||
+      name.startsWith('density.')
+    )
       found.add('primitive');
     else if (name.startsWith('semantic.')) found.add('semantic');
     else if (name.startsWith('component.')) {

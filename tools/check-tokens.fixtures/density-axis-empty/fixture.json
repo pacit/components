@@ -1,0 +1,6 @@
+{
+  "point": 11,
+  "check": "density",
+  "rule": "density-denominator",
+  "description": "A density source that re-points nothing: `{ \"pct\": {} }`. The build still emits both scope blocks, both empty, so `[data-pct-density=\"compact\"]` is a selector a consumer can write and nothing answers it. This is the shape of an axis quietly emptied in a refactor — the sources look like they carry it, the artefact carries a pair of empty braces, and every other rule of point 11 passes because there is nothing left to disagree about. The whole point of the case is that an axis which measures nothing must not read as an axis that is correct."
+}

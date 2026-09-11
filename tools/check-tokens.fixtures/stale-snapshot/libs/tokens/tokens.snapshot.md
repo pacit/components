@@ -17,21 +17,31 @@ the public `PctCssVar` union (see `private.prefixes` in
 
 ```
 --pct-blue-600 color primitive private
---pct-motion-transition-duration duration primitive public
---pct-on-primary color semantic public
---pct-primary color semantic public
+--pct-blue-700 color primitive private
 --pct-button-bg color component public
---pct-button-hover-bg color component public
 --pct-button-fg color component public
+--pct-button-hover-bg color component public
 --pct-button-label-fg color component public
 --pct-button-padding-x dimension component public
 --pct-button-padding-x-sm dimension component public
+--pct-control-height-md dimension primitive public
+--pct-control-height-sm dimension primitive public
+--pct-drawer-z-index number component public
+--pct-motion-transition-duration duration primitive public
+--pct-on-primary color semantic public
+--pct-primary color semantic public
+--pct-primary-hover color semantic public
 --pct-slate-0 color primitive private
 --pct-slate-500 color primitive private
 --pct-slate-900 color primitive private
 --pct-space-3 dimension primitive public
 --pct-space-4 dimension primitive public
 --pct-surface color semantic public
+--pct-target-min dimension primitive public
 --pct-text color semantic public
 --pct-text-muted color semantic public
+--pct-toast-close-size dimension component public
+--pct-toast-height dimension component public
+--pct-toast-height-sm dimension component public
+--pct-toast-z-index number component public
 ```

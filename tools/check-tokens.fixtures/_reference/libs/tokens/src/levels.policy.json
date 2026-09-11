@@ -1,6 +1,6 @@
 {
   "$comment": "The reference input's tier policy. It lists ONLY axes really used by a component token — point 6 rejects a dead axis, so a list padded in advance would break the reference.",
   "shared-axes": {
-    "axes": ["space"]
+    "axes": ["space", "target", "control"]
   }
 }

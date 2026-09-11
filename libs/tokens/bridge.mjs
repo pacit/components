@@ -351,12 +351,20 @@ export const setOrder = (names) => {
   return [...names].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 };
 
-/** The plugin's themes over the sets: a scheme axis and a motion axis, every set enabled somewhere. */
+/**
+ * The plugin's themes over the sets: a scheme axis, a motion axis and a density axis, every
+ * set enabled somewhere. An override set belongs to ITS OWN axis and never to the base —
+ * `density.compact` left in the base would show a designer the dense metrics as the library's
+ * defaults, which is the one thing the axis is not.
+ */
 export const themesOf = (order) => {
   const enabled = (...names) =>
     Object.fromEntries(names.map((n) => [n, 'enabled']));
   const base = order.filter(
-    (n) => n !== 'semantic.dark' && n !== 'motion.reduced',
+    (n) =>
+      n !== 'semantic.dark' &&
+      n !== 'motion.reduced' &&
+      n !== 'density.compact',
   );
   return [
     {
@@ -382,6 +390,18 @@ export const themesOf = (order) => {
       name: 'reduced',
       group: 'motion',
       selectedTokenSets: enabled('motion.reduced'),
+    },
+    {
+      id: 'pct.density.comfortable',
+      name: 'comfortable',
+      group: 'density',
+      selectedTokenSets: {},
+    },
+    {
+      id: 'pct.density.compact',
+      name: 'compact',
+      group: 'density',
+      selectedTokenSets: enabled('density.compact'),
     },
   ];
 };

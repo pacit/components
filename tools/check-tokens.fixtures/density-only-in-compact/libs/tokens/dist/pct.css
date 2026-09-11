@@ -1,0 +1,79 @@
+/* GENERATED from libs/tokens/src/*.json — do not edit by hand. */
+
+:root {
+  color-scheme: light;
+  --pct-blue-600: #2563eb;
+  --pct-blue-700: #1d4ed8;
+  --pct-slate-0: #ffffff;
+  --pct-slate-500: #64748b;
+  --pct-slate-900: #0f172a;
+  --pct-space-3: 8px;
+  --pct-space-4: 12px;
+  --pct-target-min: 24px;
+  --pct-control-height-sm: 28px;
+  --pct-control-height-md: 36px;
+  --pct-motion-transition-duration: 150ms;
+  --pct-primary: var(--pct-blue-600);
+  --pct-primary-hover: var(--pct-blue-700);
+  --pct-on-primary: var(--pct-slate-0);
+  --pct-surface: var(--pct-slate-0);
+  --pct-text: var(--pct-slate-900);
+  --pct-text-muted: var(--pct-slate-500);
+  --pct-button-bg: var(--pct-primary);
+  --pct-button-bg-hover: var(--pct-primary-hover);
+  --pct-button-fg: var(--pct-on-primary);
+  --pct-button-label-fg: var(--pct-text);
+  --pct-button-padding-x: var(--pct-space-4);
+  --pct-button-padding-x-sm: var(--pct-space-3);
+  --pct-drawer-z-index: 900;
+  --pct-toast-z-index: 1100;
+  --pct-toast-close-size: var(--pct-target-min);
+  --pct-toast-height: var(--pct-control-height-md);
+  --pct-toast-height-sm: var(--pct-control-height-sm);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --pct-surface: var(--pct-slate-0);
+  --pct-text: var(--pct-slate-900);
+  --pct-button-label-fg: var(--pct-text);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --pct-surface: var(--pct-slate-900);
+  --pct-text: var(--pct-slate-0);
+  --pct-button-label-fg: var(--pct-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --pct-surface: var(--pct-slate-900);
+    --pct-text: var(--pct-slate-0);
+    --pct-button-label-fg: var(--pct-text);
+  }
+}
+
+[data-pct-density="comfortable"] {
+  --pct-control-height-sm: 28px;
+  --pct-control-height-md: 36px;
+  --pct-button-padding-x: var(--pct-space-4);
+  --pct-toast-height: var(--pct-control-height-md);
+  --pct-toast-height-sm: var(--pct-control-height-sm);
+}
+
+[data-pct-density="compact"] {
+  --pct-space-4: 8px;
+  --pct-control-height-sm: 26px;
+  --pct-control-height-md: 32px;
+  --pct-button-padding-x: var(--pct-space-4);
+  --pct-toast-height: var(--pct-control-height-md);
+  --pct-toast-height-sm: var(--pct-control-height-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --pct-motion-transition-duration: 0.01ms;
+  }
+}

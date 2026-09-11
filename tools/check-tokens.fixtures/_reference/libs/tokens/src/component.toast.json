@@ -4,6 +4,18 @@
       "z-index": {
         "$type": "number",
         "$value": 1100
+      },
+      "close-size": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}"
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}"
+      },
+      "height-sm": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.sm}"
       }
     }
   }

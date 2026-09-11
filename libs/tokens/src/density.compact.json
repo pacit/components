@@ -1,0 +1,41 @@
+{
+  "$comment": "The compact half of the density axis (req-token-density). This file is to density what `semantic.dark.json` is to the theme and `motion.reduced.json` is to motion: a second set of values for names that ALREADY EXIST, which the build emits in a scope block of its own — `[data-pct-density=\"compact\"]`, with the base values emitted a second time under `[data-pct-density=\"comfortable\"]` so a roomy island inside a dense page has something to undo them with. Not one name here is new, and that is the whole design: every component already takes its height from `{pct.control.height.*}` and its spacing from the space scale, so switching density is the cascade's business and costs not one line in any component (0074).\n\nWhat the axis owns is METRIC, and only metric. Colour belongs to the theme and the two are orthogonal on purpose — a dense dark panel is two attributes on one element, not a fourth theme. Type size belongs to the SIZE axis (req-api-size): a density that shrank the type would be a second size scale wearing a different name, and it would move the one thing on the row a reader has no way of enlarging back.\n\nWhat the axis may NOT own is the touch floor. `{pct.target.min}` is absent from this file deliberately, and its absence is a gate rather than a habit: point 11 of `tools/check-tokens.mjs` rejects a compact value that takes a control's box under the floor, and rejects re-pointing the floor itself downwards, which is the same move one level lower (req-a11y-touch).",
+  "pct": {
+    "space": {
+      "$comment": "The spacing scale shifted down one step: compact `4` is comfortable `3`, compact `5` is comfortable `4`, compact `6` is comfortable `5`. A dense layout is therefore the same rhythm played one step tighter rather than a second scale with numbers of its own — and a component that already chose its step keeps the relationship it chose, because every step moved by the same amount of the scale.\n\nStep `2` is deliberately not here. At 4px it is already the smallest gap this skin draws; the step below it is where a gap stops reading as a gap and two controls start looking welded together. Step `3` has the same problem from the other side — shifting it one step down would land it on `2` and collapse two steps into one — so it takes the midpoint, 6px, and the scale keeps five distinct values in both densities.",
+      "3": {
+        "$type": "dimension",
+        "$value": "6px"
+      },
+      "4": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "5": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "6": {
+        "$type": "dimension",
+        "$value": "16px"
+      }
+    },
+    "control": {
+      "$comment": "The shared control axis (req-api-size), six pixels apart instead of eight: 26 / 32 / 38 against 28 / 36 / 44. The smallest step is the one number here that was measured rather than chosen. A field draws a 1px border and `box-sizing: border-box`, and the control column inside it carries `min-block-size: var(--pct-target-min)` — so at 26px outside the column lands on exactly 24px inside, the SC 2.5.8 floor to the pixel. One pixel less and the floor would push the row back out to 26 anyway: the token would stop being the height and start being a wish, which is precisely the failure 0004 exists to prevent.\n\nSo `sm` is where the axis ends, and it ends there under compact rather than under `sm` alone — this is the corner the requirement warned about (`compact` + `sm` together), and it is the corner `apps/sandbox-e2e/src/density.spec.ts` measures in a browser at every size.",
+      "height": {
+        "sm": {
+          "$type": "dimension",
+          "$value": "26px"
+        },
+        "md": {
+          "$type": "dimension",
+          "$value": "32px"
+        },
+        "lg": {
+          "$type": "dimension",
+          "$value": "38px"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$comment": "The reference's density axis with one number moved: `sm` at 20px. Nothing else differs, so the case holds its defect alone.",
+  "pct": {
+    "space": {
+      "4": { "$type": "dimension", "$value": "8px" }
+    },
+    "control": {
+      "height": {
+        "sm": { "$type": "dimension", "$value": "20px" },
+        "md": { "$type": "dimension", "$value": "32px" }
+      }
+    }
+  }
+}

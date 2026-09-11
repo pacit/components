@@ -1,0 +1,17 @@
+{
+  "$comment": "The reference's density axis plus one line it may not carry: the touch floor among the metrics compact re-points.",
+  "pct": {
+    "space": {
+      "4": { "$type": "dimension", "$value": "8px" }
+    },
+    "target": {
+      "min": { "$type": "dimension", "$value": "20px" }
+    },
+    "control": {
+      "height": {
+        "sm": { "$type": "dimension", "$value": "26px" },
+        "md": { "$type": "dimension", "$value": "32px" }
+      }
+    }
+  }
+}

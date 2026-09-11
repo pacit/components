@@ -4,15 +4,15 @@
     "prefixes": ["pct.blue.", "pct.slate."]
   },
   "primitive": {
-    "axes": ["blue", "slate", "space", "motion"]
+    "axes": ["blue", "slate", "space", "target", "control", "motion"]
   },
   "semantic": {
     "roles": ["primary", "surface", "text"],
     "variants": ["hover", "muted"]
   },
   "component": {
-    "parts": ["label"],
-    "properties": ["bg", "fg", "padding-x"],
+    "parts": ["close", "label"],
+    "properties": ["bg", "fg", "height", "padding-x", "size"],
     "states": ["hover", "disabled"],
     "sizes": {
       "list": ["sm"]

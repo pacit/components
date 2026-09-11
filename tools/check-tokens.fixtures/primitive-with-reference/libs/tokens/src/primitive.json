@@ -13,6 +13,15 @@
       "3": { "$type": "dimension", "$value": "8px" },
       "4": { "$type": "dimension", "$value": "12px" }
     },
+    "target": {
+      "min": { "$type": "dimension", "$value": "24px" }
+    },
+    "control": {
+      "height": {
+        "sm": { "$type": "dimension", "$value": "28px" },
+        "md": { "$type": "dimension", "$value": "36px" }
+      }
+    },
     "motion": {
       "transition": {
         "duration": { "$type": "duration", "$value": "150ms" }

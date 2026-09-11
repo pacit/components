@@ -6,6 +6,8 @@
  *  - token -> token references are KEPT as var() in the CSS (req-token-references), so
  *    overriding one variable in a scope cascades by itself,
  *  - light -> :root, dark -> [data-theme="dark"] (semantic overrides),
+ *  - comfortable -> :root, compact -> [data-pct-density="compact"] (metric overrides):
+ *    the same construction on a second, orthogonal axis (req-token-density),
  *  - light is emitted A SECOND TIME as [data-theme="light"], so a theme can be switched
  *    both ways when nested (a light card inside a dark page); without it "light" is only
  *    the absence of an attribute (req-token-scoped),
@@ -212,6 +214,7 @@ function run() {
   const semanticLight = load('semantic.light.json');
   const semanticDark = load('semantic.dark.json');
   const motionReduced = load('motion.reduced.json');
+  const densityCompact = load('density.compact.json');
   // Component tokens: `component.*.json` is auto-discovered — a new component needs no
   // change in this file.
   const componentFiles = readdirSync(SRC)
@@ -257,6 +260,35 @@ function run() {
     motionReduced,
   );
   const reducedOverrides = withDependents(flatten(motionReduced), reducedTree);
+
+  // Density is the second axis, and it is built exactly like the theme rather than like
+  // reduced motion: an attribute, not a media query, because no system preference reports
+  // it — a dense layout is a product decision about a screen, and the only honest default
+  // is the roomy one (req-token-density, 0074).
+  //
+  // The two blocks are the theme's two blocks one to one. `compact` carries the overrides
+  // plus their transitive closure, for the reason spelt out above `darkOverrides`: a custom
+  // property is substituted AT THE POINT OF DECLARATION, so `--pct-button-height:
+  // var(--pct-control-height-md)` declared in `:root` has already resolved to 36px and
+  // re-pointing the primitive in a narrower scope would not move it. `comfortable` carries
+  // the SAME NAMES with the base values, so it is an active density rather than the absence
+  // of an attribute — otherwise a roomy panel inside a dense page inherits the dense values
+  // with nothing to undo them (req-token-scoped, lesson-17).
+  //
+  // Density does not collide with `[data-theme]`: it re-points dimensions and the theme
+  // re-points colours, and the two sets do not meet. That is what makes the promise
+  // "independent of the colour theme" a fact about the emitted CSS rather than a hope —
+  // the same element may carry both attributes, or either one may sit on an ancestor.
+  const compactTree = merge(
+    primitive,
+    semanticLight,
+    ...components,
+    densityCompact,
+  );
+  const compactOverrides = withDependents(flatten(densityCompact), compactTree);
+  const comfortableOverrides = Object.fromEntries(
+    Object.keys(compactOverrides).map((path) => [path, lightTree[path]]),
+  );
 
   // The a11y gate follows the skin policy (WCAG 2.2 thresholds), per theme.
   console.log('Skin contrast validation (policy, WCAG 2.2 thresholds):');
@@ -305,6 +337,19 @@ function run() {
           'dark',
         ),
       ),
+      // Density (req-token-density) — the second axis, on its own attribute. No
+      // `color-scheme` rides along: density moves metrics, and what the browser draws its
+      // own chrome in is the theme's business, not this one's.
+      emitCssBlock(
+        '[data-pct-density="comfortable"]',
+        comfortableOverrides,
+        lightTree,
+      ),
+      emitCssBlock(
+        '[data-pct-density="compact"]',
+        compactOverrides,
+        compactTree,
+      ),
       // Reduced motion (req-a11y-motion) — one rule for the whole library.
       emitMedia(
         '(prefers-reduced-motion: reduce)',
@@ -338,7 +383,8 @@ function run() {
   console.log(
     `\n✓ Built ${Object.keys(base).length} tokens ` +
       `(+${Object.keys(darkOverrides).length} dark, ` +
-      `+${Object.keys(reducedOverrides).length} reduced-motion) ` +
+      `+${Object.keys(reducedOverrides).length} reduced-motion, ` +
+      `+${Object.keys(compactOverrides).length} compact) ` +
       `-> dist/{pct.css,tokens.ts}`,
   );
 }

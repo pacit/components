@@ -1,0 +1,6 @@
+{
+  "point": 11,
+  "check": "density",
+  "rule": "density-below-floor",
+  "description": "The compact scale tuned one step too far: `pct.control.height.sm` at 20px. The floor is untouched at 24px, every name is declared in both scopes, and the skin builds — what has happened is that the smallest control in the library stopped clearing SC 2.5.8 in the one corner where density and size shrink together. This is the exact move `req-token-density` was written around, and the one a person makes with a ruler in hand rather than a browser open."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 11,
+  "check": "density",
+  "rule": "density-unpaired",
+  "description": "A `dist/pct.css` whose comfortable scope has lost `--pct-space-4`, the compact one keeping it. The sources are untouched, so this is what a generator that stopped mirroring the two scopes looks like — and it is invisible from the sources alone, which is why the case carries the artefact and not a token file. The consequence in a page: a roomy panel inside a dense one goes on being dense in that one metric, and there is nothing to turn red."
+}
