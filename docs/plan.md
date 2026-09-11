@@ -58,11 +58,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    94 |
-| ✅ enforced                                 |    74 |
+| ✅ enforced                                 |    75 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |     4 |
+| ⛔ gap                                      |     3 |
 
-All 4 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
+All 3 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
@@ -3893,14 +3893,53 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
 are deferred.
 
-- [ ] **5.1 — `req-api-number`**: property tests for the parser (`parse(format(n)) === n` for any
-      `n` and locale). Binds at the first locale outside `pl`/`en` — and **widened by the
-      direction review**: the parser is no longer the richest invariant surface here. The
-      pagination's fold, the overlay's placement and the date's day arithmetic are pure
-      algorithms with statable invariants (a strip strictly increasing with pinned ends, a
-      day that round-trips), enumerated today by hand-picked walks; a property sweep over
-      them is also a mutant-killer aimed at the snapshot's lowest rows, and those three bind
-      at their next surviving mutant rather than at a locale
+- [x] **5.1 — `req-api-number`**: property tests for the parser, and the three surfaces the
+      direction review added to it — **taken 2026-09-11, ahead of its trigger, on the
+      maintainer's word**
+  - the instrument first, hand-written rather than `fast-check`, for the reason every gate in
+    `tools/` is hand-written: `libs/components/testing/src/property.testkit.ts` — a seeded
+    generator, a shrink, and a message that names the seed. It has a spec of its own, because
+    a generator that drew one case and called it two hundred would take every sweep with it.
+    The seed is a **constant**: a sweep that draws differently each morning moves the mutation
+    score without a line changing, and `check-mutation` reads that as a deleted assertion
+    ([`lesson-185`](lessons.md#lesson-185))
+  - **the parser: three widenings past `pl`/`en`, none of them thought up.** A 56-locale probe
+    of `parse(format(n)) === n` broke on six, in three families — the bidi mark `Intl` writes
+    before a minus in `he-IL`, the Arabic-Indic and Devanagari digits of `ar-EG`, `fa-IR`,
+    `bn-IN` and `ne-NP` (the control refusing the `٠` it had just written itself), and the
+    Indian grouping of `hi-IN`: `1,23,456` read as **1.23456**, which is the worse half —
+    silently wrong rather than refused. Fixed, and the sweep that named them now ships over 22
+    locales; disabling one widening at a time turns 2, 3 and 3 of its six sweeps red
+  - **the day arithmetic: two defects at the two ends of the shape, and both sat where the
+    module's own prose was wider than its code** ([`lesson-186`](lessons.md#lesson-186)).
+    `pctCompareDays` compared strings under a comment saying the shape is fixed-width, while
+    the type's header says four digits **or more** — so `'2026-01-01'` read as later than the
+    `'10000-01-01'` that `pctAddDays('9999-12-31', 1)` produces, and `pctClampDay` pulled a
+    day past `max` down to `min`; `calendar.ts` held a third copy of the same `<`. At the
+    other end `pad(-1, 4)` is `'00-1'`, so a step back off year zero returned a string this
+    module's own reader crashes on. The compare reads fields now, the clamp and the calendar go
+    through it, and `pctDay` throws for a day the shape cannot write — ceiling measured by
+    bisection at `275760-09-13`
+  - **the fold and the placement held no defect, and the sweeps found something else instead.**
+    Nine green laws over `placement.ts` left **four mutants alive** — swapping the last two
+    entries of any `FALLBACKS` row, an order `core.spec.ts` pins for one row of four. An
+    adversarial pass over all four files named the properties that could not fail, in four
+    families, and the hardening that followed **deleted more than it added**: `placement` a
+    whole test and 21% of its calls, `pagination` 146 renders down to 117 while gaining the
+    laws that say what `siblingCount` and `boundaryCount` MEAN and when a stepper is spent
+    ([`lesson-187`](lessons.md#lesson-187))
+  - **the mutation run, which is the half a sweep cannot claim for itself.** 5047 mutants, 78
+    minutes 55 seconds: `placement.ts` **89.23 → 98.46** (7 survivors to 1),
+    `day.ts` **95.83 → 97.52**, `number.ts` **80.08 → 84.70**, `calendar.ts` 73.03 → 74.16,
+    TOTAL **82.77 → 83.28**. Four rows up, none down — and `pagination.ts` **unmoved** at
+    96.43 with its same four equivalent survivors. Seven laws went in there and killed nothing
+    Stryker throws: what they bought is what `siblingCount` and `boundaryCount` MEAN and when
+    a stepper is spent, which no mutant of that file asks about. The item's own premise —
+    "a mutant-killer aimed at the snapshot's lowest rows" — is therefore **half right**, and
+    the half that failed is the one worth keeping in view
+  - the bill: 1254 unit cases where there were 966 at the direction review, the four sweeps at
+    9 484 generated cases a run (2 560 + 840 + 5 800 + 284), `./date` +288 B and `./field`
+    +317 B in the size snapshot
 - [ ] **5.2 — `req-project-files`**: a check on the entrypoint directory layout. Binds at the first
       component added by somebody other than the author of the rule
 - [ ] **5.3 — `req-token-directive`**: a theme directive instead of a hand-written `data-theme`.

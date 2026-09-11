@@ -9,21 +9,20 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     74 |
+| ✅ enforced | gate and control exist and run in CI                          |     75 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      3 |
 | **total**   |                                                               | **94** |
 
 ## Gaps by urgency
 
 The order comes from the **Binds at** field, not from a requirement number.
 
-| requirement                                                          | what is missing                                                                    | binds at                                                     |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
-| [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom…             | the close of the compression pass — **not earlier**. A snap… |
-| [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
-| [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
+| requirement                                                          | what is missing                                                        | binds at                                                     |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom… | the close of the compression pass — **not earlier**. A snap… |
+| [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of… | the first component added by somebody other than the author… |
+| [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                     | once the size axis has settled. Note: density will drop bel… |
 
 ## axis
 
@@ -61,7 +60,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
 | [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
 | [`req-api-platform`](requirements/api.md#req-api-platform)         | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | the keyboard half has none — deliberately: a navigation test has no m… |
-| [`req-api-number`](requirements/api.md#req-api-number)             | ⛔ gap      | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | none — gap: property tests for the parser (`parse(format(n)) === n` f… |
+| [`req-api-number`](requirements/api.md#req-api-number)             | ✅ enforced | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | recorded rather than prepared, because each mechanism is one line and… |
 | [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts` — the generic contract, p… | the probe from `lesson-37` — five deliberately contradictory bindings… |
 | [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 25 inputs, each rejected on its own p… |
 | [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `tools/check-parts.mjs` point 6 — a component whose parts share a pre… | `tools/check-parts.fixtures/part-outside-namespace`, and a run agains… |
@@ -344,3 +343,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-182`](lessons.md#lesson-182) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-183`](lessons.md#lesson-183) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-184`](lessons.md#lesson-184) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-185`](lessons.md#lesson-185) | `req-api-number`                                                                                                                                                  |
+| [`lesson-186`](lessons.md#lesson-186) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-187`](lessons.md#lesson-187) | `req-api-number`                                                                                                                                                  |
+| [`lesson-188`](lessons.md#lesson-188) | — _(not cited)_                                                                                                                                                   |

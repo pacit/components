@@ -211,6 +211,15 @@ hidden: it runs under `fr-FR` and carries fields in three locales, and
 - **A two-digit year is a guess** — `[today − 80, today + 19]`, the convention every other
   date field a user has met uses. It is the one guess about intent this control makes and the
   number is written where it can be read.
+- **The shape has a domain, and since 2026-09-11 it says so out loud.** `YYYY-MM-DD` cannot
+  write a year below zero — `pad(-1, 4)` is `'00-1'` — and above `275760-09-13` the
+  platform's own `Date` has no more days, so `pctDay` throws a `RangeError` at either edge
+  rather than handing back a string the next function crashes on. The cost is real and
+  deliberate: a walk that leaves the calendar now raises, where before it returned quietly, and
+  the only reason the trade is right is the one that made the value a string in the first place
+  — a day this shape cannot write is not a day `<input type="date">`, JSON or SQL `DATE` can
+  carry either. A property sweep found both ends; neither had a symptom
+  ([`lesson-186`](../lessons.md#lesson-186)).
 - **The eighty regions are a copy of somebody else's data** and will drift the day CLDR
   moves. The gate is what makes that a red test instead of a wrong calendar in Cairo.
 

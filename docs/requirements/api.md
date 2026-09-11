@@ -157,10 +157,21 @@ to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` across the 23-hour day o
 day so that the defect the type refuses is in the run and not only in the prose; and
 `apps/sandbox-e2e/src/date.spec.ts`, every case of which runs with the browser's clock in
 Kiritimati (`test.use({ timezoneId })`) against values written on a server-side calendar,
-in three engines
+in three engines; and `libs/components/date/src/day.property.spec.ts`, which holds the
+arithmetic as laws instead of walks — a step invertible and composing, a weekday anchored on
+the platform's own epoch rather than on a table, a month's length read from `Date`'s
+normalisation, an order that agrees with the millisecond difference, a grid of six whole weeks
+containing its month, and the domain in both directions
 **Control:** the same cases build the day the old way beside the new — `new Date(2026, 2, 29)`
 serialises as `2026-03-28T23:00:00.000Z` in Warsaw and `…T10:00:00.000Z` in Kiritimati — so
-a `PctDay` that came out a day short would fail against a number the run itself produced
+a `PctDay` that came out a day short would fail against a number the run itself produced. The
+laws have a recorded one too, and it is the reason they exist: the sweep found **two defects
+no worked case had reached**, one at each end of the shape. `pctCompareDays` compared strings
+while the year is four digits **or more**, so `'2026-01-01'` read as later than
+`'10000-01-01'` — a day `pctAddDays('9999-12-31', 1)` produces — and the clamp pulled a day
+past `max` down to `min`; and `pad(-1, 4)` is `'00-1'`, so a step back off year zero
+returned a string this module's own reader crashes on
+([`lesson-186`](../lessons.md#lesson-186))
 **Decision:** [0043 — a day is not an instant](../decisions/0043-a-day-is-not-an-instant.md)
 
 ---
@@ -357,13 +368,24 @@ back to what was typed, is not repeated one floor up
 ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)).
 
 **Gate:** `libs/components/field/src/number.spec.ts`,
-`apps/sandbox-e2e/src/number.spec.ts`
-**Control:** none — gap: property tests for the parser (`parse(format(n)) === n` for any `n`
-and any locale). Parsing is **wider** than formatting, so there are more cases than can be
-thought up by hand
-**Binds at:** the first locale outside `pl`/`en` reported by a consumer
+`apps/sandbox-e2e/src/number.spec.ts`, and — since the parser accepts more widely than it
+formats, which is more cases than anybody thinks up —
+`libs/components/field/src/number.property.spec.ts`: `parse(format(n)) === n` asked of the
+real control over **22 locales** from a fixed seed, beside the five laws that hold the rest of
+the commit (grouping visible in the text and absent from the value, the rounding, junk kept
+and named, blank cleared and not named, the announced value)
+**Control:** recorded rather than prepared, because each mechanism is one line and disarming
+it is one edit. The parser's three widenings past `pl`/`en`, disabled one at a time, turn
+**2, 3 and 3** of the six sweeps red: the bidi marks `Intl` writes in `he-IL`, `ar-EG` and
+`fa-IR`; the Arabic-Indic and Devanagari digits of four locales, without which this control
+cannot read back the `٠` it wrote into its own input; and the Indian grouping of `hi-IN`,
+`bn-IN` and `ne-NP`. The instrument has a control of its own —
+`libs/components/testing/src/property.spec.ts` — because a generator that drew one case and
+called it two hundred, or a descent that reported the case which found a break rather than the
+smallest one, would take every sweep in this library down without a word
 **Decision:** [0009 — the number field on `type="text"`](../decisions/0009-number-field.md)
-**Lessons:** [`lesson-32`](../lessons.md#lesson-32)
+**Lessons:** [`lesson-32`](../lessons.md#lesson-32),
+[`lesson-187`](../lessons.md#lesson-187), [`lesson-185`](../lessons.md#lesson-185)
 
 ---
 

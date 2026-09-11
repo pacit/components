@@ -5119,3 +5119,117 @@ nothing, because the preset sets `retries` to 2 in CI and 0 everywhere else. A l
 never retried, so it was never traced, and the only evidence it left was the call log it was
 lucky to print. A trace setting that depends on a retry that never happens is not a trace
 setting. `retain-on-failure` costs a file and answers the next occurrence on its own.
+
+---
+
+### <a id="lesson-185"></a>`lesson-185` — A sweep's seed belongs to the mutation snapshot, and its shrink is a lead
+
+Two honesties a generated suite owes, and neither is obvious until it costs something.
+
+**The seed is a constant.** A mutation score is a measurement of the suite, and a suite that
+draws different cases every morning is a different suite: a mutant killed by the case a
+Tuesday seed reached survives on Wednesday, `check-mutation` compares against a tracked file,
+and the drift reads exactly like a deleted assertion. So the run is a function of
+`PCT_PROPERTY_SEED`, which nothing in CI sets, and hunting is what that variable is for.
+
+**The shrink assumes the body is a function of its case, and a body driving a fixture is
+not.** The descent replays candidates against whatever state the run has already left in that
+`TestBed`. Measured: disabling the number parser's bidi strip turns the rounding sweep red,
+and the descent walks to `en-US` — a locale that strip cannot reach, a case that does not fail
+on its own. Which sweeps went red is the part that holds; the counterexample says where to
+start looking, and for a stateful sweep it says no more than that.
+
+---
+
+### <a id="lesson-186"></a>`lesson-186` — A day's string is not fixed-width, and two functions had assumed it was
+
+The first property sweep over `day.ts` found two holes, and both sat exactly where the
+module's own documentation was **wider than its code**. The type's header says the shape is
+`YYYY-MM-DD` "with a four-or-more-digit year". Forty lines further down, `pctCompareDays`
+carried the sentence "The shape is fixed-width and zero-padded, so this is a string compare".
+Two claims in one file, contradicting each other, and each one true of a different day.
+
+The fifth digit is reachable from inside the module: `pctAddDays('9999-12-31', 1)` is
+`'10000-01-01'`. Ten characters sort after eleven, so `pctCompareDays('2026-01-01',
+'10000-01-01')` answered `1` — the earlier day reported as the later one — and `pctClampDay`
+pulled a day four thousand years past `max` down to **`min`**, the wrong bound entirely.
+`calendar.ts` held a third copy of the same `<` in the predicate that decides which cells a
+user may take.
+
+The other end is worse, because it is loud in the wrong place. `pad(-1, 4)` is `'00-1'`, so
+`pctAddDays('0000-01-01', -1)` returned `'00-1-12-31'` — a string `isPctDay` refuses and
+`pctDayParts` crashes on, from an unchecked `as RegExpExecArray` four calls away from the walk
+that caused it. Past the ECMAScript date range the fields are `NaN` and it read
+`'0NaN-NaN-NaN'`.
+
+The repairs are small: the compare reads the three fields, the clamp and the calendar's bound
+test go through it, and `pctDay` throws a `RangeError` for a day this shape cannot write —
+because a year below zero is not something `<input type="date">`, JSON or SQL `DATE` can
+carry, which is the only reason this type is a string at all. The ceiling was then measured
+rather than reasoned: bisecting `pctAddDays` puts the last writable day at **`275760-09-13`**,
+256 days past what the first draft of that error message claimed.
+
+What generalises is not the arithmetic. A hand-written case is written by somebody who knows
+the intended range, and the intended range is precisely where neither of these holes was.
+Both stood one step outside it, both were reachable by the module's own arithmetic, and
+neither had a single symptom before a generator walked there.
+
+---
+
+### <a id="lesson-187"></a>`lesson-187` — Nine green properties, four mutants alive
+
+Four property sweeps went in green — 2 880 generated cases over `placement.ts` alone, nine
+laws, no failures. An independent pass then generated mutants of that source and asked which
+of the nine killed them. **Four mutants survived every one, and the worked cases beside
+them**: swapping the last two entries of any row of `FALLBACKS`, the list that says where a
+panel goes when the window has no room. `core.spec.ts` pins that order for the `top` row
+alone, so three of the four rows were measured by nothing in the repository.
+
+A property that cannot fail is worse than a missing one, because it reads as coverage. Four
+families of it, all found here:
+
+- **the expectation read back out of the implementation's own output** — a gap of zero
+  compared against `gaps.x === undefined ? undefined : 0`, whose shape can never disagree;
+- **the law copied from the implementation, with the same oracle on both sides** —
+  `isPctDay`'s "accepts the last day of every month" reduced to `last <= last`, because
+  `last` was `pctDaysInMonth(year, month)` and so is the function's body;
+- **the assertion implied by its neighbour** — a strip's numbers in range, strictly
+  increasing and distinct, all three of which follow from the conservation law above them;
+- **the generator whose range never reaches the branch** — a rounding sweep drawing four
+  decimals into a field that allows four, where 22 of 60 cases rounded nothing.
+
+The remedy in every case is an oracle the implementation does not own: the platform's own
+epoch instead of a weekday table (`pctWeekday` was invariant under all seven rotations of the
+ring), `Date`'s normalisation instead of the month-length function, `toISOString().slice(0,
+10)` instead of the pad width, a second construction instead of the same expression twice.
+
+And the direction that follows is not "more properties". The hardening pass **deleted more
+than it added and came out stronger**: `placement` lost a whole test and 21% of its calls,
+`pagination` went from 146 renders to 117 while gaining the three laws that say what
+`siblingCount` and `boundaryCount` mean and when a stepper is spent, `number` shipped 284
+cases where it had 300. A sweep's worth is not its case count.
+
+---
+
+### <a id="lesson-188"></a>`lesson-188` — The battery is a habit, not a list, and what it omits goes red in silence
+
+On 2026-09-11 two gates were found red, both since 2026-09-09, and the only thing they have in
+common is that neither is in the handful anybody runs by hand before a commit.
+
+`check-index` had been failing on a fixture README's case table and on a lesson count in
+`docs/README.md` — both of them stale by one edit, both of them cheap to read. `check-bundle`
+had been failing since `b6013c0`, where a `regions` refactor shed 29 B of that entrypoint and
+the size snapshot was never reseated; **twenty-one commits stood on top of it**, and the
+number that finally surfaced it belonged to a different change entirely.
+
+The two gates are nothing alike. One reads tracked text in a second; the other costs a
+production build and three probes through the real builder, which is exactly why it is not in
+the quick pass. What they share is the shape of the failure: a set that lives in somebody's
+habit has no negative control. Nothing fires when it shrinks, and a gate that has quietly
+left it reports green by never being asked.
+
+[`lesson-143`](#lesson-143) is the same thing one floor up — the formatter is not in the
+battery either, so a scoped `format:write` on a clean tree formats nothing and CI is the first
+thing that says so. Three occurrences is a pattern, and the pattern is not a weak memory: it
+is an unwritten list. Written down where a reader can see what it leaves out, the omission
+becomes an argument somebody can lose.

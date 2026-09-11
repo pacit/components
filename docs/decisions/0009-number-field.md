@@ -59,9 +59,12 @@ The starting point is now **the signal**, and the text only when the user is act
 - **The whole parsing machinery is ours**, its flaws included. The native field was free.
 - **The mobile numeric keypad** does not appear from the type alone — it has to be requested
   separately (`inputmode`).
-- **Parsing being wider than formatting is a large input space.** It is the prime candidate for
-  property tests (`parse(format(n)) === n` for any `n` and locale) — there are none today and
-  that is a recorded gap in [`req-api-number`](../requirements/api.md#req-api-number).
+- **Parsing being wider than formatting is a large input space,** and hand-picked examples were
+  never going to cover it. Since 2026-09-11 it is swept as a property —
+  `parse(format(n)) === n` over 22 locales — and the sweep was right to exist: it broke on six
+  locales in three families, one of them silently wrong rather than refused
+  ([`req-api-number`](../requirements/api.md#req-api-number), plan 5.1). What the cost buys is
+  not a smaller input space but a measured one.
 
 ## Alternatives considered
 
