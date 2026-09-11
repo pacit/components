@@ -51,10 +51,10 @@ before an application ships them.
 ./chips 10767 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
 ./core 8265 - @angular/core
-./date 39444 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./date 39732 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 16427 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 15620 ./core,./icon @angular/common,@angular/core
-./field 27925 ./core @angular/core,@angular/forms,@angular/forms/signals
+./field 28242 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./hero 5845 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
@@ -63,7 +63,7 @@ before an application ships them.
 ./popover 14715 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./progress 11718 ./core,./icon @angular/common,@angular/core
 ./radio 15588 ./core @angular/core
-./regions 5515 ./core @angular/core
+./regions 5486 ./core @angular/core
 ./select 69892 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3690 - @angular/core
 ./slider 17542 ./core @angular/core
@@ -126,8 +126,8 @@ worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4221 11392
 ./breadcrumb PctBreadcrumb 3 4315 9102
 ./chips PctChip 2 10626 10628
-./date PctCalendar 2 22182 38960
-./field PctField 3 16130 25032
+./date PctCalendar 2 22511 39289
+./field PctField 3 16130 25349
 ./menu PctMenu 2 19193 19195
 ./radio PctRadio 2 15418 15420
 ./select PctMultiSelect 2 45270 69662
