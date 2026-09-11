@@ -1,0 +1,12 @@
+{
+  "pct": {
+    "$comment": "The primitive tier, cut down to the one scale point 10 asks about. The gate resolves a token by following `{…}` aliases, so the floor has to be declared SOMEWHERE for any of them to reach it — which is exactly what the `touch-floor-token-gone` case takes away.",
+    "target": {
+      "$comment": "Minimum touch area per WCAG 2.2 SC 2.5.8 (24x24 px).",
+      "min": {
+        "$type": "dimension",
+        "$value": "24px"
+      }
+    }
+  }
+}

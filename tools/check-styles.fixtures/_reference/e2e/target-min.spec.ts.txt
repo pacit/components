@@ -1,0 +1,28 @@
+import { expect, test } from '@playwright/test';
+
+/**
+ * The measuring side of point 10, cut down to one case.
+ *
+ * What the gate reads here is the `applies` field and nothing else: the address of the
+ * stylesheet declaration this case stands for. Whether the browser then reads 24 px is the
+ * spec's own business and fails there, loudly — what a gate over the sources contributes is
+ * the half a running test cannot know, which is how many floors there were to measure.
+ */
+const CONTROLS = [
+  {
+    name: 'button',
+    applies: 'button/src/button.scss :host',
+    route: '/button',
+    selector: 'fx-button',
+  },
+];
+
+test.describe('The touch-target floor', () => {
+  for (const control of CONTROLS) {
+    test(`${control.name} clears 24 px`, async ({ page }) => {
+      await page.goto(control.route);
+      const box = await page.locator(control.selector).boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(24);
+    });
+  }
+});

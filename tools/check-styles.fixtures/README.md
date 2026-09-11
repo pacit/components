@@ -1,6 +1,6 @@
 # Negative control of the styles gate
 
-Deliberately defective inputs. `tools/check-styles.mjs` runs all nine of its checks on each
+Deliberately defective inputs. `tools/check-styles.mjs` runs all ten of its checks on each
 of them and **requires every one to be rejected — and rejected by the point it declares**.
 An input that passes is a fault; an input that fires for a reason other than the one
 written in its `fixture.json` is a fault just the same, because it proves something other
@@ -18,7 +18,9 @@ loses on specificity looks faultless in the two browsers that substitute the col
 themselves — that is, in the two the screenshots are taken in
 ([`lesson-70`](../../docs/lessons.md#lesson-70)) — and a `150ms` written by hand looks
 faultless to everybody, including the gate that measures the motion axis, because the axis
-it measures is still right and this component simply no longer reads it.
+it measures is still right and this component simply no longer reads it. The touch floor of
+point 10 is the quietest of the family: a floor nobody measures holds its target at 24 px
+perfectly, right up until the day it is deleted, and then nothing anywhere says so.
 
 ## How a case is built
 
@@ -27,7 +29,9 @@ builds it from two layers:
 
 1. `_reference/` — the reference input: two components with their sheets, one of them
    carrying a justified exception and each of them a block of forced-colors mode written
-   the way point 7 asks for,
+   the way point 7 asks for; and, for point 10, the two other trees that promise runs
+   across — `tokens/`, where a `{pct.target.min}` is declared and a component token points
+   at it, and `e2e/`, one measurement naming the sheet declaration it stands for,
 2. the case directory's files, copied **onto a copy of the reference**, plus the removals
    from `drop` in `fixture.json`.
 
@@ -74,11 +78,22 @@ not be another's defect — the same class of problem as the fake `package.json`
 | [`paint-inside-an-icon`](paint-inside-an-icon)                       | `stroke` on the drawing a consumer may replace                  | 8     |
 | [`duration-literal`](duration-literal)                               | `transition: … 150ms` — a component keeping its own time        | 9     |
 | [`motion-query-in-a-sheet`](motion-query-in-a-sheet)                 | a sheet answering `prefers-reduced-motion` a second time        | 9     |
+| [`touch-floor-token-gone`](touch-floor-token-gone)                   | no token resolves to the floor — the scan has nothing to find   | 10    |
+| [`touch-floor-applied-nowhere`](touch-floor-applied-nowhere)         | the tokens carry the floor and no sheet applies it              | 10    |
+| [`touch-floor-unmeasured`](touch-floor-unmeasured)                   | a second element takes the floor and no measurement names it    | 10    |
+| [`touch-floor-measurement-adrift`](touch-floor-measurement-adrift)   | a measurement names a floor no sheet declares                   | 10    |
 
 Point 3 has four cases, because there are four different routes by which a component
 disappears from the measurement: it is not in the file list, the parser does not see it,
 it is styled outside a sheet, or it points at a sheet the gate does not read. Each ends
 the run green and each leaves a repository that looks sensible.
+
+Point 10 has four for the same reason, and its first two are its own denominator: the floor
+has to be findable in the tokens before it can be found in a sheet, and found in a sheet
+before "every one of them is measured" means anything. The other two are the two directions
+the comparison can fail in — a sheet declaring a floor nobody measures, and a measurement
+naming a floor no sheet declares — and both matter, because a case pointed at nothing runs
+green over whatever the element happens to be holding.
 
 ## Points 1–3 are the denominator, not a formality
 

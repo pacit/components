@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "touch-floor",
+  "rule": "denominator",
+  "description": "The tokens still carry the floor and not one stylesheet applies it — the declaration was deleted from the sheet, which is exactly the regression this point exists to report. With no application found, the comparison against the measurements holds over an empty set and passes: every floor is measured when there are none. This is the shape `lesson-48` describes, on the material of `req-a11y-touch` rather than of `@Component`."
+}

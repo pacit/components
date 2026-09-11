@@ -3,14 +3,16 @@
  * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
  * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`),
  * `req-a11y-forced-colors` (the mode's rules really paint), `req-api-icons` (a
- * component paints the box an icon sits in, never the drawing inside it) and
- * `req-a11y-motion` (a duration is a token, not a number in a sheet). Breaking any of them gives no
- * red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
+ * component paints the box an icon sits in, never the drawing inside it),
+ * `req-a11y-motion` (a duration is a token, not a number in a sheet) and `req-a11y-touch`
+ * (every touch floor the sheets declare is measured in a browser). Breaking any of them
+ * gives no red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
  * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), so does a
  * forced-colors rule that loses on specificity, because the browser substitutes the
- * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)), and so does a
+ * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)), so does a
  * `150ms` written by hand, which reads exactly like the token it replaced until somebody
- * asks for less motion.
+ * asks for less motion, and so does a floor nobody measures — it holds the target up
+ * perfectly until the day it stops, and then nothing says so.
  *
  *  1. the list of stylesheets is not empty (else points 5 and 6 pass over nothing),
  *  2. COMPILER: everything sass EMITS is visible to the source scanner as well,
@@ -21,10 +23,15 @@
  *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet,
  *  8. PAINT: no property that only an `<svg>` understands (`req-api-icons`),
  *  9. MOTION: a duration comes from the motion axis, and the preference is answered by
- *     the token build rather than by a sheet of its own (`req-a11y-motion`).
+ *     the token build rather than by a sheet of its own (`req-a11y-motion`),
+ * 10. TOUCH FLOOR: every application of the 24 px floor the sheets declare is named by a
+ *     browser measurement, and the list of applications is READ OUT OF THE SHEETS
+ *     (`req-a11y-touch`).
  *
  * Points 5–9 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
  * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
+ * Point 10 carries both halves at once: its first two rules are its own denominator, and
+ * they are there because the defect it exists for IS a denominator that was typed in.
  *
  * Usage: node tools/check-styles.mjs
  */
@@ -45,6 +52,20 @@ import * as sass from 'sass';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
+
+/**
+ * The two trees point 10 reads besides the library's own. The DTCG sources say which custom
+ * property carries the touch floor — a question the sheets cannot answer, because
+ * `--pct-dialog-close-size` is a floor and says so nowhere in its name — and the e2e specs
+ * say which of the floors found is actually measured in a browser.
+ *
+ * They belong to other projects, and that is on purpose rather than in spite of itself: the
+ * promise `req-a11y-touch` makes runs across all three, and a gate that could see only one
+ * of them is how the promise came to have two disagreeing lists (plan 4.53).
+ */
+const TOKENS = 'libs/tokens/src';
+const MEASURED = 'apps/sandbox-e2e/src';
+
 const FIXTURES = join(ROOT, 'tools/check-styles.fixtures');
 const REFERENCE = '_reference';
 
@@ -398,6 +419,19 @@ const cssRules = (css) => {
       i++;
       continue;
     }
+    // An at-rule with no block — a STATEMENT, ended by its semicolon. `@charset "UTF-8";`
+    // is the one this library really meets: sass writes it above any sheet whose output
+    // carries a non-ASCII character, which here means any sheet with an em dash in a
+    // comment. Left in the buffer it glues itself to the next selector, the prelude then
+    // begins with `@`, and the rule it belongs to is filed as a CONTEXT instead of being
+    // read — so the first rule of such a sheet was invisible to point 7 (and would have
+    // been to point 10): two of the nineteen touch floors, and every forced-colors
+    // comparison against `:host`, silently absent from the measurement.
+    if (c === ';') {
+      prelude = '';
+      i++;
+      continue;
+    }
     if (c !== '{') {
       prelude += c;
       i++;
@@ -619,6 +653,194 @@ const overlapping = (a, b) =>
   (RESETS.get(a) ?? []).includes(b) ||
   (RESETS.get(b) ?? []).includes(a);
 
+// ── the touch floor ───────────────────────────────────────────────────────────
+
+/**
+ * The one primitive every touch floor in this library ends at. `req-a11y-touch` promises
+ * SC 2.5.8 **outright** — 24×24 CSS pixels of hit area whatever the drawing measures — and
+ * `{pct.target.min}` is where that 24 is written down, once.
+ */
+const FLOOR = 'pct.target.min';
+
+/**
+ * The properties by which an element takes a size OF ITS OWN, on either axis. A declaration
+ * of one of these whose value names a floor-carrying custom property is what this point
+ * calls an APPLICATION of the floor, and an application is what has to be measured.
+ *
+ * Two exclusions, both deliberate. `max-*` is not here: a maximum built out of the floor
+ * CAPS the box at 24 px rather than holding it there, which is the opposite promise, and
+ * counting it would send somebody to measure a ceiling. Everything else — `padding`,
+ * `margin`, `inset-inline-end`, a `calc()` in a position — is not here either, and
+ * `select.scss` is why: the cross is placed by `calc(… - (var(--pct-target-min) - 16px) / 2)`,
+ * an offset DERIVED from the floor so that the drawing lands where the pair wants it. That
+ * arithmetic holds nothing up, and a rule that read it as a floor would demand a
+ * measurement of a margin.
+ */
+const SIZED = new Set([
+  'width',
+  'height',
+  'min-width',
+  'min-height',
+  'inline-size',
+  'block-size',
+  'min-inline-size',
+  'min-block-size',
+]);
+
+/** A DTCG alias: `{pct.target.min}` and nothing else in the value. */
+const ALIAS = /^\{([^}]+)\}$/;
+
+/** Every `var(--name` in a value, in order. The fallback after the comma is not a name. */
+const VARIABLES = /var\(\s*(--[-\w]+)/g;
+
+/**
+ * Every `$value` in the token sources, by its dotted path — as a LIST per name, not as one
+ * value. The axis files (`density.compact.json`, `semantic.dark.json`, `motion.reduced.json`)
+ * re-declare names that already exist, so a single map would let the last file read decide
+ * what a name is, and a name whose base declaration carries the floor would drop out of the
+ * scan because an axis re-points it. Reading every declaration errs the other way: a name
+ * that carries the floor ANYWHERE carries it here, and the scan stays the wider of the two.
+ */
+const tokenValues = (files) => {
+  const values = new Map();
+  const put = (name, value) =>
+    values.set(name, [...(values.get(name) ?? []), value]);
+  const walk = (node, path) => {
+    if (node === null || typeof node !== 'object' || Array.isArray(node))
+      return;
+    if (Object.hasOwn(node, '$value')) {
+      put(path.join('.'), node.$value);
+      return;
+    }
+    for (const [name, child] of Object.entries(node)) {
+      if (name.startsWith('$')) continue;
+      walk(child, [...path, name]);
+    }
+  };
+  for (const file of files) {
+    let parsed;
+    try {
+      parsed = JSON.parse(file.content);
+    } catch (error) {
+      throw new StyleError(
+        'touch-floor',
+        `${file.file}: this gate cannot read the token source (${error.message}) — and a ` +
+          `token file it cannot read is a set of floors it cannot find, which would leave ` +
+          `point 10 ruling on a smaller tree than the library really has`,
+        'tokens',
+      );
+    }
+    walk(parsed, []);
+  }
+  return values;
+};
+
+/**
+ * The custom properties that carry the floor: `--pct-target-min` itself and every token
+ * whose value chain of aliases ends at it.
+ *
+ * Derived rather than listed, and that is the whole point of this check. A name is not what
+ * makes a floor — `--pct-dialog-close-size` says nothing about touch targets and is one,
+ * because `component.dialog.json` points it at `{pct.target.min}`; `--pct-checkbox-size` is
+ * named like a size and is not one. A list of names in a spec was what this repository had,
+ * and it disagreed with the sheets by seven entries (plan 4.53).
+ */
+const floorVariables = (values) => {
+  const carries = (name, seen) => {
+    if (name === FLOOR) return values.has(FLOOR);
+    if (seen.has(name)) return false;
+    return (values.get(name) ?? []).some((value) => {
+      const alias = typeof value === 'string' ? ALIAS.exec(value.trim()) : null;
+      return (
+        alias !== null && carries(alias[1].trim(), new Set([...seen, name]))
+      );
+    });
+  };
+  const out = new Set();
+  for (const name of values.keys())
+    if (carries(name, new Set())) out.add(`--${name.split('.').join('-')}`);
+  return out;
+};
+
+/**
+ * Every application of the floor in the sheets: one entry per ELEMENT the floor is declared
+ * on, keyed as `<sheet> <selector>`.
+ *
+ * The element and not the token, because a token is applied in as many places as a sheet
+ * likes: `--pct-pagination-item-target-min` holds up the pager's buttons AND its ellipsis,
+ * and `--pct-target-min` bare holds up the field's control, the toast's action and the
+ * select's cross — three components, one name. A denominator counted by name reports six
+ * of those nine as one, which is how this defect stayed invisible.
+ *
+ * Selectors come from SASS'S OUTPUT, for point 7's reason: nesting and `&` are resolved
+ * there into the text a browser really parses. Line numbers come from the source, by
+ * matching the declaration back to it, because a line number is what navigates a person —
+ * and where the two cannot be matched the sheet is named alone rather than guessed at.
+ */
+const floorApplications = (sheets, variables) => {
+  const found = new Map();
+  for (const sheet of sheets) {
+    const source = scan(sheet.content).declarations;
+    const used = new Set();
+    const lineOf = (declaration) => {
+      const hit = source.find(
+        (candidate) =>
+          candidate.property === declaration.property &&
+          candidate.value.toLowerCase() === declaration.value.toLowerCase() &&
+          !used.has(candidate.line),
+      );
+      if (!hit) return null;
+      used.add(hit.line);
+      return hit.line;
+    };
+    for (const rule of cssRules(sheet.css))
+      for (const declaration of bodyDeclarations(rule.body)) {
+        if (!SIZED.has(declaration.property)) continue;
+        const names = [...declaration.value.matchAll(VARIABLES)]
+          .map((m) => m[1])
+          .filter((name) => variables.has(name));
+        if (!names.length) continue;
+        const line = lineOf(declaration);
+        for (const selector of rule.selectors) {
+          const key = `${sheet.file} ${selector}`;
+          const entry = found.get(key) ?? {
+            key,
+            file: sheet.file,
+            selector,
+            lines: [],
+            declarations: [],
+          };
+          if (line !== null && !entry.lines.includes(line))
+            entry.lines.push(line);
+          entry.declarations.push(
+            `${declaration.property}: ${declaration.value}`,
+          );
+          found.set(key, entry);
+        }
+      }
+  }
+  return [...found.values()];
+};
+
+/**
+ * What a measurement claims to measure: `applies: '<sheet> <selector>'`, written beside the
+ * case in the e2e spec.
+ *
+ * The claim is read out of the test's TEXT and not out of its result, because what this
+ * point rules on is coverage rather than correctness — whether the browser then reads 24 px
+ * is the spec's own business, and it fails there loudly. What the gate contributes is the
+ * half a spec cannot know: the list of things there are to measure.
+ */
+const APPLIES = /\bapplies\s*:\s*(['"])([^'"\n]+)\1/g;
+
+const measurementClaims = (files) =>
+  files.flatMap((file) =>
+    [...file.content.matchAll(APPLIES)].map((m) => ({
+      key: m[2].trim().replace(/\s+/g, ' '),
+      where: `${file.file}:${file.content.slice(0, m.index).split('\n').length}`,
+    })),
+  );
+
 // ── checks ──────────────────────────────────────────────────────────────────
 
 /**
@@ -647,11 +869,21 @@ const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
  *   `sheets`     — `[{ file, content, css }]`, where `css` is sass's output,
  *   `components`  — `[{ file, className, sheets, inline }]` from the decorators,
  *   `declarations`  — the number of `@Component(` occurrences in the sources (the parser's
- *                   denominator).
+ *                   denominator),
+ *   `tokens`     — `[{ file, content }]`, the DTCG sources, for point 10's question of
+ *                   which custom property carries the floor,
+ *   `measurements` — `[{ file, content }]`, the e2e specs, read for the applications they
+ *                   claim to measure.
  * Throws `StyleError` on the first violation: the checks run from the denominator to the
  * rules, so a rule after a collapsed denominator would have nothing to examine anyway.
  */
-const checkStyles = ({ sheets, components, declarations }) => {
+const checkStyles = ({
+  sheets,
+  components,
+  declarations,
+  tokens,
+  measurements,
+}) => {
   // 1. The list of stylesheets is not empty.
   if (!sheets.length)
     throw new StyleError(
@@ -982,11 +1214,89 @@ const checkStyles = ({ sheets, components, declarations }) => {
       'query',
     );
 
+  // 10. The touch floor (`req-a11y-touch`): every application of it is measured in a
+  //     browser, and the list of applications is read out of the sheets.
+  //
+  //     The promise is a NUMBER IN A LAYOUT — 24 CSS pixels of hit area, whatever the
+  //     drawing measures — so nothing but a browser can hold it. What a gate over the
+  //     sources can do is the half a browser cannot: say how many there are to measure.
+  //     Until this point existed that half was typed into the spec by hand, and the two
+  //     lists disagreed by seven of nineteen without a single test going red — found only
+  //     because a second sweep was written over the same promise and the two were compared
+  //     (plan 4.53). A floor nobody measures is not a floor that is wrong; it is a floor
+  //     whose deletion nothing would report, which is the whole of `req-axis`.
+  const floors = floorVariables(tokenValues(tokens));
+  if (!floors.size)
+    throw new StyleError(
+      'touch-floor',
+      `not one token resolves to \`{${FLOOR}}\` in ${tokens.length} token ` +
+        `${tokens.length === 1 ? 'source' : 'sources'} — so this point would find no floor ` +
+        `in any sheet and pass having measured nothing (req-a11y-touch).\n` +
+        `    Usual cause: the token sources stopped being read (a moved directory, a ` +
+        `narrowed pattern), or \`${FLOOR}\` was renamed and the sheets go on naming the ` +
+        `variables it used to feed.`,
+      'tokens',
+    );
+
+  const applications = floorApplications(sheets, floors);
+  if (!applications.length)
+    throw new StyleError(
+      'touch-floor',
+      `${floors.size} tokens carry the touch floor and not one stylesheet applies it ` +
+        `(req-a11y-touch) — the comparison below would then hold over an empty set, which ` +
+        `is the state this point exists to make impossible.\n` +
+        `    An application is a declaration of \`${[...SIZED].join('`, `')}\` whose value ` +
+        `names one of those tokens. Usual cause: the last one was deleted, or a sheet now ` +
+        `writes \`24px\` where it used to name the token — and then the promise is kept by ` +
+        `a literal nobody can re-point.`,
+      'denominator',
+    );
+
+  const claims = measurementClaims(measurements);
+  const named = new Set(claims.map((claim) => claim.key));
+  const unmeasured = applications.filter((a) => !named.has(a.key));
+  if (unmeasured.length)
+    throw new StyleError(
+      'touch-floor',
+      `${unmeasured.length} of ${applications.length} applications of the touch floor are ` +
+        `measured by nobody (req-a11y-touch):\n` +
+        list(
+          unmeasured.map(
+            (a) =>
+              `${a.file}${a.lines.length ? `:${a.lines.join(', ')}` : ''}: ` +
+              `\`${a.selector}\` — ${a.declarations.join('; ')}`,
+          ),
+        ) +
+        `\n    Each of these holds a hit area at 24 px and nothing reads the box it ` +
+        `produces, so deleting it turns no test red. Measure it in ` +
+        `\`apps/sandbox-e2e/src/target-min.spec.ts\` — a case that reads the rendered ` +
+        `rectangle with everything else disarmed — and write the address above beside it ` +
+        `as \`applies: '<sheet> <selector>'\`, exactly as it is printed here.`,
+      'unmeasured',
+    );
+
+  const applied = new Set(applications.map((a) => a.key));
+  const adrift = claims.filter((claim) => !applied.has(claim.key));
+  if (adrift.length)
+    throw new StyleError(
+      'touch-floor',
+      `${adrift.length} measurements name an application no stylesheet declares ` +
+        `(req-a11y-touch):\n` +
+        list(adrift.map((claim) => `${claim.where}: \`${claim.key}\``)) +
+        `\n    A case pointed at a floor that is not there measures whatever the element ` +
+        `happens to be holding — its padding, its type — and reports the promise kept by ` +
+        `something a consumer may re-tune ([\`lesson-174\`](../docs/lessons.md#lesson-174)). ` +
+        `Either the sheet's selector moved and the claim has to follow it, or the floor is ` +
+        `gone and the case with it.`,
+      'stale',
+    );
+
   const exceptions = justified.size;
   return (
     `${sheets.length} stylesheets, ${components.length} components, ` +
     `${exceptions} justified ${exceptions === 1 ? 'exception' : 'exceptions'}, ` +
-    `${forcedDeclarations} forced-colors declarations`
+    `${forcedDeclarations} forced-colors declarations, ` +
+    `${applications.length} touch floors all measured`
   );
 };
 
@@ -1039,8 +1349,21 @@ const readComponents = (root, files) => {
   return { components, declarations };
 };
 
+/** A file with its text, for the two inputs point 10 reads without compiling anything. */
+const withContent = (root, paths) =>
+  paths.map((file) => ({
+    file,
+    content: readFileSync(join(root, file), 'utf8'),
+  }));
+
 /** An input built from a file list — the same shape for the repo and for a fixture. */
-const collectInput = (root, sheetPaths, sourcePaths) => ({
+const collectInput = (
+  root,
+  sheetPaths,
+  sourcePaths,
+  tokenPaths,
+  specPaths,
+) => ({
   sheets: sheetPaths.map((file) => ({
     file,
     content: readFileSync(join(root, file), 'utf8'),
@@ -1048,6 +1371,8 @@ const collectInput = (root, sheetPaths, sourcePaths) => ({
     // `/* */` comments, so point 2's comparison looks at the same material on both sides.
     css: sass.compile(join(root, file), { style: 'expanded' }).css,
   })),
+  tokens: withContent(root, tokenPaths),
+  measurements: withContent(root, specPaths),
   ...readComponents(root, sourcePaths),
 });
 
@@ -1065,8 +1390,8 @@ const collectInput = (root, sheetPaths, sourcePaths) => ({
  * version of this gate passed green with such a pattern, measuring zero components
  * (`lesson-48`).
  */
-const projectFiles = () =>
-  execFileSync('git', ['ls-files', '-z', PROJECT], {
+const indexedFiles = (pathspec) =>
+  execFileSync('git', ['ls-files', '-z', pathspec], {
     cwd: ROOT,
     encoding: 'utf8',
   })
@@ -1118,11 +1443,19 @@ const files = (directory, pattern) =>
     .map((p) => p.split('\\').join('/'))
     .sort();
 
+/**
+ * A prepared input's four lists. The two point 10 reads have directories of their own —
+ * `tokens/` and `e2e/` — rather than a pattern over the whole tree: a case is built by
+ * copying files onto a copy of the reference, and a glob wide enough to pick up
+ * `fixture.json` would let a case's own declaration walk into the material it declares.
+ */
 const fixtureInput = (directory) =>
   collectInput(
     directory,
     files(directory, '**/*.scss'),
     files(directory, '**/*.ts').filter(isSource),
+    files(directory, 'tokens/**/*.json'),
+    files(directory, 'e2e/**/*.spec.ts'),
   );
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -1131,12 +1464,14 @@ const problems = [];
 let description = null;
 
 try {
-  const files = projectFiles();
+  const files = indexedFiles(PROJECT);
   description = checkStyles(
     collectInput(
       ROOT,
       files.filter((p) => p.endsWith('.scss')),
       files.filter(isSource),
+      indexedFiles(TOKENS).filter((p) => p.endsWith('.json')),
+      indexedFiles(MEASURED).filter((p) => p.endsWith('.spec.ts')),
     ),
   );
 } catch (error) {

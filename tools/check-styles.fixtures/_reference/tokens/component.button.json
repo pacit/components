@@ -1,0 +1,12 @@
+{
+  "pct": {
+    "button": {
+      "$comment": "One component token, pointed at the shared floor. Its NAME is what makes the case worth having: nothing about `target-min` would be hard to grep for, and the tokens this repository really has include `close-size`, which is a floor and says so nowhere — so the gate has to follow the value rather than read the name.",
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the button."
+      }
+    }
+  }
+}

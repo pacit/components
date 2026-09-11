@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "touch-floor",
+  "rule": "stale",
+  "description": "The measurement names a selector no stylesheet declares a floor on. The case still runs, still reads a rectangle and still goes green — on whatever that element happens to be holding, its padding or its type, neither of which is the promise (`lesson-174`). Left alone it is worse than no case at all: it reports `req-a11y-touch` kept by a mechanism a consumer may re-tune, and it occupies the slot a real measurement would have."
+}

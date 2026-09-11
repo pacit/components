@@ -1,0 +1,7 @@
+{
+  "point": 10,
+  "check": "touch-floor",
+  "rule": "tokens",
+  "description": "The tier that declares `pct.target.min` is gone, and every alias pointing at it now resolves to nothing. The sheets are untouched and still say `var(--pct-button-target-min)` — a browser would paint them at the initial value and the page would look almost right — but this gate no longer recognises a single custom property as carrying the floor, so its scan over the stylesheets finds nothing to measure and the rules below it rule on an empty set. The denominator of a denominator: without this rule the point would report `0 of 0 measured` and pass.",
+  "drop": ["tokens/primitive.json"]
+}

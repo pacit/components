@@ -12,6 +12,13 @@
   text-align: start;
 }
 
+/* A second element taking the same token. The name was already on the list — so a
+   denominator counted by NAME sees nothing new here, and the element's hit area is held up
+   by a declaration no measurement reads. */
+.button__badge {
+  min-block-size: var(--pct-button-target-min);
+}
+
 /* The motion axis, in the two shapes a component uses it in: a state transition and a
    continuous indicator. Both take their time from a token, which is the whole of point 9 —
    `prefers-reduced-motion` is answered once, by a second set of values for these tokens,

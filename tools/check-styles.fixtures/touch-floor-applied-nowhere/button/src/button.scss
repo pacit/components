@@ -1,11 +1,6 @@
 :host {
   display: inline-flex;
   align-items: center;
-  /* The touch floor, in the shape point 10 looks for: a property that gives the element a
-     size of its own, valued from a token that resolves to `{pct.target.min}`. The padding
-     below would very nearly hold 24 px on its own, and "very nearly" is the whole reason a
-     floor is declared separately — and the reason a floor nobody measures is invisible. */
-  min-block-size: var(--pct-button-target-min);
   padding-inline: var(--pct-space-3);
   margin-inline-start: var(--pct-space-2);
   border-inline-start: 1px solid var(--pct-button-border);
