@@ -277,6 +277,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/size/size-view').then((m) => m.SizeView),
   },
   {
+    path: 'density',
+    title: 'Density',
+    summary:
+      'The second axis: comfortable and compact, and where compact stops.',
+    group: 'cross',
+    load: () =>
+      import('./views/density/density-view').then((m) => m.DensityView),
+  },
+  {
     path: 'states',
     title: 'States',
     summary:

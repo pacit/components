@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+/* The density stage. It carries the attribute and nothing else — no padding of its own that
+   the compact scope could be mistaken for, because what the example has to show is the
+   tokens moving and not this stylesheet moving with them. */
+.density + .density {
+  margin-top: 24px;
+}
+
+.density__heading {
+  margin: 0 0 8px;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+/* Each row is a measurement of its own, not the continuation of the one above it — the same
+   separation the size view gives its rows, and for the same reason. */
+.row + .row {
+  margin-top: 20px;
+}

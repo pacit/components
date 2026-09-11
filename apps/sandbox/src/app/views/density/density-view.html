@@ -1,0 +1,106 @@
+<h2 class="view__title">Density</h2>
+<p class="muted view__intro">
+  The second axis, and it is an attribute:
+  <code>data-pct-density="compact"</code> on any element re-points the metric
+  tokens under it — the shared control axis and the space scale — so everything
+  below gets shorter and tighter. Not one component reads the attribute; the
+  cascade does the work, exactly as it does for <code>data-theme</code>. The two
+  axes are independent: the attribute below sits inside the card's own theme
+  scope and moves no colour.
+</p>
+
+<sbx-demo
+  heading="Comfortable and compact, side by side"
+  summary="The same three controls, the same size, twice: the roomy row takes 28 / 36 / 44 px from --pct-control-height-*, the dense one 26 / 32 / 38. A density that only looked tighter would be invisible here — the rows are aligned to the bottom edge, so the step between them is the measurement."
+  [reqs]="['req-token-density', 'req-api-size']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-axis"
+>
+  @for (density of densities; track density) {
+  <section
+    class="density"
+    [attr.data-pct-density]="density"
+    [attr.data-testid]="'stage-' + density"
+  >
+    <h4 class="density__heading">{{ density }}</h4>
+    @for (size of sizes; track size) {
+    <div class="row row--bottom">
+      <pct-field
+        [size]="size"
+        [label]="'Field ' + size"
+        [attr.data-testid]="density + '-field-' + size"
+      >
+        <input pctText [value]="'Text ' + size" />
+      </pct-field>
+
+      <button
+        pctButton
+        [size]="size"
+        [attr.data-testid]="density + '-button-' + size"
+      >
+        Button {{ size }}
+      </button>
+
+      <pct-field
+        [size]="size"
+        [label]="'List ' + size"
+        [attr.data-testid]="density + '-select-' + size"
+      >
+        <pct-select [options]="countries" [(value)]="country" />
+      </pct-field>
+    </div>
+    }
+  </section>
+  }
+</sbx-demo>
+
+<sbx-demo
+  heading="The corner: compact at size sm"
+  summary="Density crosses the touch threshold sooner than the size axis does, so this is where the two meet. Every control here declares a floor of its own against --pct-target-min, and the floor is the one metric the compact scope may not re-point — what an eye sees shrink, a finger still gets 24 px of."
+  [reqs]="['req-token-density', 'req-a11y-touch']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-corner"
+>
+  <section
+    class="density"
+    data-pct-density="compact"
+    data-testid="stage-corner"
+  >
+    <div class="row row--bottom">
+      <pct-chips
+        size="sm"
+        ariaLabel="Active filters"
+        data-testid="corner-chips"
+      >
+        <pct-chip removable>draft</pct-chip>
+        <pct-chip removable>archived</pct-chip>
+      </pct-chips>
+
+      <pct-pagination
+        size="sm"
+        [(page)]="page"
+        [count]="5"
+        data-testid="corner-pagination"
+      />
+    </div>
+
+    <div class="row row--bottom">
+      <pct-field size="sm" label="Consent" data-testid="corner-checkbox">
+        <pct-checkbox [(checked)]="consent" />
+      </pct-field>
+
+      <pct-field size="sm" label="Plan" data-testid="corner-radio">
+        <pct-radio-group orientation="horizontal" [(value)]="plan">
+          <pct-radio value="a">A</pct-radio>
+          <pct-radio value="b">B</pct-radio>
+        </pct-radio-group>
+      </pct-field>
+
+      <pct-switch
+        label="Notify me"
+        [(checked)]="notify"
+        data-testid="corner-switch"
+      />
+    </div>
+  </section>
+</sbx-demo>

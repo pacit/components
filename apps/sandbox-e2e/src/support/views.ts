@@ -39,6 +39,7 @@ export const SBX_ROUTES = [
   '/tree',
   '/layout',
   '/size',
+  '/density',
   '/states',
   '/announce',
   '/all',
