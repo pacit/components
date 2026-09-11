@@ -3974,6 +3974,29 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     denominator being read out of the stylesheets rather than typed into a spec
   - binds at: the next control that takes the floor, or the premiere's a11y review (2.1)
 
+- [ ] **4.54 — the suite has flakes, and nothing counts them**
+
+  - the full battery closing 5.2 and 5.4 ran `sandbox-e2e` twice and came back **1 red of
+    2062 both times, and a different one each time**: `skeleton.spec.ts`'s paused sheen in
+    webkit, then `tones.spec.ts`'s four toast colours in chromium. Both were real defects in
+    the test rather than in the product, both were invisible at one run each, and both are
+    fixed (2af78c7 and the commit below)
+  - **`--repeat-each` is the instrument and nobody here has pointed it at this suite.** Aimed
+    at the two suspects it answered in under a minute: the sheen failed **3 of 30** in webkit,
+    the toasts **2 of 30** in chromium. A 7-to-10% case is a coin-flip across a suite this
+    size, and a green full run says nothing about whether it is there
+  - the two are one family, and it is not "timing": each had a **number or an index standing
+    where a condition belonged** — a measured 150ms wait, and a `.last()` read in the instant
+    after a click rather than after the item it names had arrived. That is a shape a reader
+    can look for, and the sibling case five lines above the toast one had the wait already
+  - the fork: a nightly job that runs the suite with `--repeat-each` and reports the
+    distribution (cheap, and it is the only way the remaining ones get named), or a rule — a
+    `.last()`/`.first()` whose next statement reads style, with no auto-retrying assertion
+    between, is a race. The second is greppable and would have caught both
+  - what it costs to leave: a 30-minute run whose red has to be re-run to be believed, and a
+    green one that cannot be quoted. Both happened in one session
+  - binds at: the third one, or the first red on a runner once the branch is pushed
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they

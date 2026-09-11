@@ -64,6 +64,14 @@ test.describe('Tones — a colour and a drawing, and the drawing is the half tha
     for (const tone of TONES) {
       await page.getByTestId(`raise-${tone}`).click();
       const item = items(page).last();
+      // The wait is what makes `.last()` mean the toast this iteration raised. A style read
+      // resolves the locator once, at the instant it runs, and the new item is appended a
+      // frame after the click — so without this the reading is the PREVIOUS toast's paint and
+      // two tones come back the same colour. Measured at 2 failures in 30 chromium runs, and
+      // once in the full suite before that, where it reads as a tone that lost its colour
+      // rather than as a race ([`lesson-192`](../../../docs/lessons.md#lesson-192)). The
+      // `toHaveAttribute` retries, and each retry resolves `.last()` again.
+      await expect(item).toHaveAttribute('data-pct-tone', tone);
       marks.push(await styleOf(markOf(item), 'color'));
       edges.push(await styleOf(item, 'border-block-start-color'));
     }
