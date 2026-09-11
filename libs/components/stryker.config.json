@@ -12,7 +12,6 @@
     "!libs/components/**/index.ts",
     "!libs/components/**/*.types.ts",
     "!libs/components/**/*.spec.ts",
-    "!libs/components/testing/**",
     "!libs/components/field/src/affix.ts"
   ],
   "tempDirName": "tmp/stryker",

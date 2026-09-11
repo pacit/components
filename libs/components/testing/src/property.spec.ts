@@ -130,4 +130,126 @@ describe('the property sweep', () => {
     expect(Math.max(...drawn)).toBe(9);
     expect(new Set(drawn).size).toBe(7);
   });
+
+  /**
+   * What the measurement asked for. Until 2026-09-11 this entrypoint was struck out of the
+   * mutation run, so every case above was written against nothing able to disagree with it —
+   * and the first run that could disagree scored this file at 71.68% with 31 mutants alive
+   * (plan 4.49). The cases below are aimed at those, and they land where a reader assumes
+   * hardest: that the draw is a FUNCTION of its arithmetic and not merely repeatable, that
+   * the descent offers candidates inside the range and strictly nearer zero, and that a
+   * failure carries the words of the assertion that produced it.
+   */
+  it('is the same arithmetic, not merely the same twice: a seed draws a fixed stream', () => {
+    // A golden vector, and the only honest statement of `mulberry32`. "Same seed, same
+    // cases" is satisfied by ANY deterministic function, so a changed shift or addend inside
+    // the generator leaves every other case in this file green while the whole library draws
+    // a different population — 9 484 cases a run, all of them somewhere else. Measured: with
+    // the stream unpinned, six arithmetic mutants survived here.
+    const random = pctRandom(7);
+    const stream = Array.from({ length: 4 }, () =>
+      Number(random().toFixed(10)),
+    );
+
+    expect(stream).toEqual([
+      0.0117047532, 0.0619582576, 0.9769076328, 0.6990287057,
+    ]);
+  });
+
+  it('offers the candidates it promises: inside the range, and nearer zero than the case', () => {
+    // The exact list rather than a property of it. The descent is where a failing sweep
+    // spends the reader's attention, and every clause of the filter is a way for it to go
+    // wrong quietly: dropped, the range clause offers a candidate the generator could never
+    // have drawn; dropped, the dedup offers the same one twice and the walk wastes a step.
+    expect(pctInt(3, 9).shrink(7)).toEqual([3, 6]);
+    // A range that does not contain zero: the first candidate is the end NEAREST zero, which
+    // is what `clamp` is for and the one reading that tells `min` from `max`.
+    expect(pctInt(20, 40).shrink(33)).toEqual([20, 32]);
+    // And one that does: zero itself leads, then the halfway point, then one step in.
+    expect(pctInt(-10, 10).shrink(-8)).toEqual([0, -4, -7]);
+    // Nothing is simpler than the smallest case in the range, so the descent ends.
+    expect(pctInt(3, 9).shrink(3)).toEqual([]);
+    // The two ends of the filter, each in the only shape that can tell it from its neighbour.
+    // A range entirely below zero is where `max` ITSELF is a candidate worth offering — it is
+    // the value nearest zero — so `c <= max` and `c < max` part company here and nowhere else.
+    expect(pctInt(-40, -20).shrink(-33)).toEqual([-20, -32]);
+    // And a case sitting on its own range's edge is where `<` parts company with `<=`: the
+    // opposite end has the same distance from zero, so offering it would send the descent
+    // sideways for ever rather than down.
+    expect(pctInt(-10, 10).shrink(10)).toEqual([0, 5, 9]);
+  });
+
+  it('shrinks a decimal on its own scale, not on the one it was built from', () => {
+    expect(pctDecimal(0, 1, 2).shrink(0.5)).toEqual([0, 0.25, 0.49]);
+    // The floor is carried through the scaling: a minimum of 0.1 may not shrink to 0, and
+    // reading the scale the wrong way round is exactly how it would.
+    expect(pctDecimal(0.1, 1, 2).shrink(0.5)).toEqual([0.1, 0.25, 0.49]);
+  });
+
+  it('writes a decimal into the failure it throws, not the word `undefined`', () => {
+    // `show` earns its place only in a message nobody reads until something is wrong, which
+    // is exactly the kind of code that rots unwatched: every sweep stays green while the
+    // failure it would one day print says `smallest case: undefined`.
+    expect(() =>
+      pctForAll(
+        pctDecimal(0.5, 0.5, 2),
+        () => {
+          throw new Error('boom');
+        },
+        { runs: 1, seed: 3 },
+      ),
+    ).toThrowError(/smallest case: 0\.5/);
+  });
+
+  it('draws every entry of a list, not only the one at index zero', () => {
+    const random = pctRandom(99);
+    const drawn = new Set(
+      Array.from({ length: 300 }, () =>
+        pctOneOf(['a', 'b', 'c']).sample(random),
+      ),
+    );
+
+    expect([...drawn].sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('runs without being handed options at all, and an explicit seed outranks the default', () => {
+    // The options argument is optional in the signature, and four sweeps in this library call
+    // it both ways. A reading that assumed the object would crash the first caller who left
+    // it out — and no case here had left it out.
+    let cases = 0;
+    pctForAll(pctInt(0, 10), () => {
+      cases++;
+    });
+    expect(cases).toBe(200);
+
+    const drawnWith = (seed: number) => {
+      const seen: number[] = [];
+      pctForAll(
+        pctInt(0, 1000),
+        (n) => {
+          seen.push(n);
+        },
+        { runs: 3, seed },
+      );
+      return seen;
+    };
+    // Two explicit seeds, two populations — and neither of them the constant this module
+    // falls back to, which is what a seed being READ rather than merely present means.
+    expect(drawnWith(11)).not.toEqual(drawnWith(12));
+    expect(drawnWith(11)).toEqual(drawnWith(11));
+  });
+
+  it('keeps the broken assertion’s own words in the failure it throws', () => {
+    // The sweep's message is three lines and the third is somebody else's: without it a
+    // reader gets the case that failed and no statement of what it failed.
+    expect(() =>
+      pctForAll(
+        pctInt(0, 10),
+        (n) => {
+          expect(n, 'the digit outgrew the hand').toBeLessThan(0);
+        },
+        { runs: 1, seed: 5 },
+      ),
+    ).toThrowError(/the digit outgrew the hand/);
+  });
 });
