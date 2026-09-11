@@ -60,8 +60,9 @@ const MS_PER_DAY = 86_400_000;
 /**
  * The first and last days `pctDay` can write, both measured rather than read off the error
  * message: the floor is year zero, and the ceiling was found by walking `pctAddDays` up from
- * `275760-01-01` until it refused. `day.ts`'s own message says "year 0 to 275759", which is
- * 256 days short of where the ECMAScript range actually ends.
+ * `275760-01-01` until it refused. The first draft of that message said "year 0 to 275759" —
+ * 256 days short of where the ECMAScript range really ends, which is why the two constants
+ * below are a measurement and not a quotation.
  */
 const FIRST_DAY = '0000-01-01';
 const LAST_DAY = '275760-09-13';

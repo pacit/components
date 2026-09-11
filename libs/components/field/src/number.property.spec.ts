@@ -50,12 +50,15 @@ import { PctNumber } from './number';
  * The case counts are small on purpose. Every sweep here is executed once per mutant of
  * `number.ts` in the mutation run (`req-quality-unit`), and each case drives a TestBed
  * fixture — so one fixture serves a whole sweep and `locale` is written as a signal. Six
- * sweeps, 284 cases, and 180 of those type a text the control itself wrote: disabling in
- * `parse` each of the three widenings the 22-locale list was grown for turns 7 (the bidi marks
- * of `he-IL` / `ar-EG` / `fa-IR`), 30 (the Arabic-Indic and Devanagari digits of four locales)
- * and 24 (the Indian grouping of `hi-IN` / `bn-IN` / `ne-NP`) of them red — counted by
- * replaying this seed's stream through a replica of `parse`, since a sweep cannot mutate the
- * source it runs against.
+ * sweeps, 284 cases, and 180 of those type a text the control itself wrote.
+ *
+ * The negative control, reproducible in one run each: disable one of `parse`'s three widenings
+ * past `pl`/`en` and this file reports **2, 3 and 3** of its six sweeps red — the bidi marks
+ * of `he-IL` / `ar-EG` / `fa-IR`, the Arabic-Indic and Devanagari digits of four locales, the
+ * Indian grouping of `hi-IN` / `bn-IN` / `ne-NP`. Finer than that the suite cannot count for
+ * itself, because a sweep stops at its first broken case and cannot mutate the source it runs
+ * against: replaying this seed's stream through a replica of `parse` puts 7, 30 and 24 cases
+ * behind those three reds, which is a number to read rather than to trust.
  */
 
 // --- the fixture a sweep drives ---
