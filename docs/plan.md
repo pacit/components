@@ -3888,7 +3888,8 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     spy and not a screenful. TOTAL 82.69 → **82.77**, over 5010 mutants rather than 5014,
     because the deleted guard took four of them with it
 
-- [ ] **4.49 — the entrypoint a consumer tests with is measured by nothing**
+- [x] **4.49 — the entrypoint a consumer tests with is measured by nothing** — **closed
+      2026-09-11 on the first of the two roads: it is measured now**
 
   - `@pacit/components/testing` is PUBLISHED code: `dom.ts`, `harness.ts`, `harnesses.ts` ship
     to a consumer and their suite leans on them. `stryker.config.json` strikes the whole of
@@ -3905,9 +3906,25 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     `mutation.policy.json` why a consumer's instrument is held to a lower standard than the
     components it measures. The second is defensible and nobody has argued it
   - binds at: the first consumer-reported defect in a harness, or the premiere's own review of
-    what `@pacit/components/testing` promises (3.1) — whichever lands first
+    what `@pacit/components/testing` promises (3.1) — whichever lands first · _notes:_ **closed 2026-09-11, and the measurement did not say what this item expected.**
+    `dom.ts` was the worry at 73% of lines, and the untested half turned out to be the half the
+    file exists for — the throwing paths, where the message IS the product. A spec pinning every
+    clause of those sentences took it to 100% of lines, branches and functions, 26 mutants killed
+    and none alive. Then the scoped run named the real weak file: **`property.testkit.ts` at
+    71.68% with 31 mutants alive** — the instrument, whose own spec had been written the day
+    before against nothing able to disagree with it. Six of those survivors were the generator's
+    arithmetic, and the reason is [`lesson-195`](lessons.md#lesson-195). Nine targeted cases took
+    it to 88.50 scoped, 92.04 in the full run. Final rows: `dom.ts` 100.00, `harnesses.ts`
+    100.00, `property.testkit.ts` 92.04, `harness.ts` 90.70, `testing` as a directory **94.44** —
+    every one above the library's own total, which is the whole of what this item asked for.
+    TOTAL **83.28 → 83.77** over 5281 mutants where there were 5047, **not one existing row
+    moved**, and the item's own prediction that the total would fall first was wrong because the
+    tests were written before the scope was widened rather than after the score came back. The
+    `coversNothing` permit for `property.spec.ts` is retired; the register stays declared, because
+    it is the mechanism and not the entry
 
-- [ ] **4.50 — a third of the file promise is a plan, not a rule**
+- [x] **4.50 — a third of the file promise is a plan, not a rule** — **closed 2026-09-11 by
+      narrowing the promise and gating what was left**
 
   - `req-project-files` promises a `button.types.ts` per component. Measured by the gate 5.2
     just built: of the 30 entrypoints that declare a component, **18 have no `*.types.ts` at
@@ -3925,9 +3942,21 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - `select/src/select.types.ts` is a third answer already in the tree: it exports
     `pctFilterByLabel` and `pctKeepAll`, which are runtime values — so "a types file holds
     types" is not true today either, and no rule of the new gate says it should be
-  - binds at: whichever lands first — the next component added, or the premiere's API review (3.1)
+  - binds at: whichever lands first — the next component added, or the premiere's API review (3.1) · _notes:_ **closed 2026-09-11 by moving the axis rather than the files.**
+    The promise now says what this library does: the eponymous source, template, sheet and spec
+    plus the index and the manifest are the fixed shape, a `*.types.ts` is what a component
+    reaches for when its types outgrow it, and **what is promised of a type is the index** — a
+    type a source exports is exported by its entrypoint's `src/index.ts` or stands in a register
+    with a reason. Point 10 of `check-files` holds it over 78 exported types in 35 entrypoints,
+    building each index's surface by FOLLOWING its re-exports; its second rule is the honest one,
+    reporting an edge the walk cannot read instead of ruling over a set it knows is short. It
+    found five: four interfaces in `select.base.ts` typing `protected` members that nothing
+    outside that file names — the `export` keyword came off, which is smaller than an excuse — and
+    `PctArbitrary`, which the testkit deliberately does not publish and which is the register's
+    one entry
 
-- [ ] **4.51 — the plan and the registry disagreed for 149 commits and nothing asked**
+- [x] **4.51 — the plan and the registry disagreed for 149 commits and nothing asked** —
+      **closed 2026-09-11; the comparison is point 8 of `check-docs`**
 
   - 5.3 stood unticked while `req-token-directive` read ✅ enforced. Two documents here, one
     generated from the requirements and one hand-kept, saying opposite things about the same
@@ -3941,9 +3970,20 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     never being asked
   - what it costs is not a red build. It is a plan read as the list of what is left — 5.1 was
     taken ahead of its trigger on exactly that reading, and 5.3 would have been done twice
-  - binds at: the next session that opens this file to choose work, which is the next one
+  - binds at: the next session that opens this file to choose work, which is the next one · _notes:_ **closed 2026-09-11.** Point 8 of `check-docs`, six rules: two are the
+    comparison (an open task whose requirement has left `gap`, a ticked one whose requirement is
+    still a gap) and **four are the denominator**, because a comparison over nothing is this
+    gate's own failure mode — including a second count of the task lines taken differently from
+    the parser's, so an invented `[?]` cannot drop out in silence. The denominator was measured
+    before it was ruled: 89 tasks, **7 name a requirement on their title line**, 27 name one only
+    in the body — and reading bodies would have fired on 4.50, 4.51 and 4.53 at once, open
+    findings that cite a requirement they merely discuss. Reading only section 5's bold span would
+    have read 5 of 89 and missed 2.1.3, the item that actually shipped what 5.3 was still
+    offering. On the real plan today it flags nothing. `docs/README.md` described six checks of
+    this gate while it had seven; the list now says eight
 
-- [ ] **4.52 — a new set lands in the base, and the gate that guards the base asks the wrong question**
+- [x] **4.52 — a new set lands in the base, and the gate that guards the base asks the wrong
+      question** — **closed 2026-09-11; the base is derived, not listed**
 
   - building the density axis turned one up in `libs/tokens/bridge.mjs`: `themesOf` hardcodes
     the axes and builds the base by NAMING the two override sets to leave out
@@ -3957,9 +3997,23 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - the repair is a sentence, not a rewrite: a set whose file name carries an axis word
     belongs to that axis's group and to no base — which is a rule about the source's own
     naming and needs no list to drift
-  - binds at: the next set added to `libs/tokens/src/` — the third axis, whatever it is
+  - binds at: the next set added to `libs/tokens/src/` — the third axis, whatever it is · _notes:_ **closed 2026-09-11; the rule is about the sources' own shape.** A set file is
+    `stem` or `stem.qualifier`, and a qualified set that **re-points a name an earlier set already
+    declared** is one option of the axis its stem names; the base is the remainder. The evidence
+    is not close — every base set re-points 0 names, every axis option re-points all of them, so
+    `component.button` (nineteen names no other set has) and `semantic.dark` (twenty-eight, every
+    one already in `semantic.light`) are told apart though both carry a dot. `semantic.light`
+    stays in the base because it DECLARES rather than re-points: that axis's other option **is**
+    the base, which is exactly why the base could never be a list. Deliberately "re-points **a**
+    name" and not "every name", so an axis set that later grew a token of its own cannot fall
+    back into the base silently. Point 7 of `check-bridge` holds an axis of one option, an option
+    enabled across two groups, and a denominator that fails rather than passes with no axis found
+    — re-deriving the axes from the SETS, so the file under test does not define what it is
+    measured against. `$themes.json` comes out byte-identical, and a fourth axis added to a copy
+    of the sources fell out of the base with **not one line of `themesOf` changed**
 
-- [ ] **4.53 — the touch floor has sixteen declarations and its own spec measures nine**
+- [x] **4.53 — the touch floor has sixteen declarations and its own spec measures nine** —
+      **closed 2026-09-11, and the count in this title was wrong: it is 19 applications**
 
   - `req-a11y-touch` is measured by `apps/sandbox-e2e/src/target-min.spec.ts`. Sixteen names
     in `libs/components/*/src/*.scss` declare that floor; the spec names nine of them. Not
@@ -3972,9 +4026,21 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - found by building a second sweep over the same promise and noticing the two lists did not
     agree — which is the only reason it was found at all, and is the argument for the
     denominator being read out of the stylesheets rather than typed into a spec
-  - binds at: the next control that takes the floor, or the premiere's a11y review (2.1)
+  - binds at: the next control that takes the floor, or the premiere's a11y review (2.1) · _notes:_ **closed 2026-09-11, and the number in the title was wrong.** Counting by name
+    was the defect: three names are applied in more than one place, so the denominator is **19
+    applications, not 16 names** — and two of the extra sites, the pager's ellipsis and the
+    select's cross, were on nobody's list including the one written here
+    ([`lesson-194`](lessons.md#lesson-194)). **Eight** were measured by nothing, not seven; all
+    eight are measured now and all nineteen clear 24×24 in chromium with no token raised. Point 10
+    of `check-styles` derives which properties carry the floor through the DTCG alias chains, so
+    `--pct-dialog-close-size` counts and `--pct-checkbox-size` does not, and requires the spec's
+    `applies` set and the sheets' to be **equal in both directions**. The scan also turned up a
+    hole older than this item: `cssRules()` swallowed a top-level `@charset` into the next
+    selector's prelude, so the first rule of 40 of the 41 sheets was invisible — to point 7, the
+    forced-colours comparison, as much as to this one ([`lesson-193`](lessons.md#lesson-193))
 
-- [ ] **4.54 — the suite has flakes, and nothing counts them**
+- [x] **4.54 — the suite has flakes, and nothing counts them** — **closed 2026-09-11 on the
+      greppable rule; the nightly job was refused**
 
   - the full battery closing 5.2 and 5.4 ran `sandbox-e2e` twice and came back **1 red of
     2062 both times, and a different one each time**: `skeleton.spec.ts`'s paused sheen in
@@ -3995,7 +4061,22 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     between, is a race. The second is greppable and would have caught both
   - what it costs to leave: a 30-minute run whose red has to be re-run to be believed, and a
     green one that cannot be quoted. Both happened in one session
-  - binds at: the third one, or the first red on a runner once the branch is pushed
+  - binds at: the third one, or the first red on a runner once the branch is pushed · _notes:_ **closed 2026-09-11 on the rule, and the rule found thirteen.**
+    `tools/check-e2e.mjs`, four points: a positional locator read by a one-shot reader inside the
+    window an action opened, and a bare `waitForTimeout` whose next statement binds a baseline.
+    The vocabulary is Playwright's own names **closed over the corpus** — a helper that reaches a
+    base name is one — which is how it knows `centreOf` and `clipped`, spec-local helpers no typed
+    list would have held. The wait half is narrowed by measurement: of 22 in the suite **6 fire**,
+    and the other 16 have a role (the window in which nothing may change, the period of a sampled
+    series, the read inside its own assertion). **Three of the thirteen were failing green** —
+    `adaptation.spec.ts` twice, scanning for clipped text 200 ms after injecting 200% type, so
+    WCAG 1.4.4 and 1.4.12 passed when the page had not reflowed; and `shell.spec.ts`, reading
+    every colour it demands before the page went dark. `hero.spec.ts`'s 4800 ms was measured in
+    place: the sweep is **still running** there and ends ~4.1 s later, so the number rested on
+    some 700 ms of idle-machine margin that nothing in the file admitted. All thirteen are
+    answered, no assertion deleted and no tolerance widened. The nightly `--repeat-each` job was
+    **refused** on this item's own words — but the suite's flake rate is still unmeasured, and
+    that is the half this closure does not buy
 
 ## 5. Gaps with no deadline
 

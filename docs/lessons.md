@@ -5332,3 +5332,84 @@ The general shape, and the reason this is worth a number of its own: a measureme
 comment is evidence, and evidence is about the past. The moment it becomes a literal in the
 code beside it, it is a claim about the future, and nothing in the file marks where one
 turned into the other.
+
+---
+
+### <a id="lesson-193"></a>`lesson-193` — A gate's reader is shared, so its blind spot is every point's
+
+`tools/check-styles.mjs` turns each stylesheet into a list of rules and several of its points
+read that list. Its `cssRules()` accumulated the text before a `{` as the rule's prelude and
+never discarded it at a top-level `;` — so a sheet whose compiled output opens with
+`@charset "UTF-8";` filed its **first rule** as an at-rule context and dropped it. **40 of the
+library's 41 sheets open that way**, because sass emits the declaration for any non-ASCII
+character and an em dash in a comment is enough.
+
+The first rule of forty sheets was therefore invisible to **point 7**, the comparison that
+holds a forced-colours rule against the base rule it must not be outranked by — a WCAG-facing
+point, silent about a fortieth of what it was built to read, for as long as it has existed.
+
+Nothing found it and nothing could have. Every point using that reader had the same hole, so
+no point contradicted another; the fixtures passed because the reference sheet is written
+without an em dash; and the gate's summary line counted what it had read rather than what was
+there. What found it was **a new point over the same material**: the touch-floor scan came back
+with 17 applications where the stylesheets have 19, and the two it lost were both first rules.
+
+So the general shape. A shared reader is a single point of failure that reports as a chorus of
+agreement, and the only instrument that tests it is a second question asked of the same input
+with an independently known answer. Two consequences worth keeping: a gate's denominator should
+be checkable against something outside its own parse ([4.53](plan.md)), and a fixture
+`_reference` built to be _clean_ is a poor witness — this one was too tidy to carry the
+`@charset` that forty real sheets carry.
+
+---
+
+### <a id="lesson-194"></a>`lesson-194` — A denominator counted in the unit the code declares is not the unit the promise is about
+
+`req-a11y-touch` promises that a hit area is at least 24 × 24 px. The finding written down as
+[4.53](plan.md) said: sixteen names apply that floor and the spec measures nine. Both halves of
+that sentence were counted in the wrong unit, and the correction is the lesson.
+
+Sixteen is the number of **token names** that resolve to `pct.target.min`. Nineteen is the
+number of **places a stylesheet applies one** — three names are applied to more than one
+element, so the pager's ellipsis and the select's cross had never been on any list: not in the
+spec, not in the grep that produced the finding, not in the plan item written from it. Eight
+were unmeasured, not seven. The mistake survived being written down, reviewed and turned into a
+task, because every reading of it used the same unit.
+
+A promise is about a place in the rendered page. A token name is how the code happens to
+address several of them, and the number of names is a fact about the naming rather than about
+the promise. Counting the declaration instead of the application is the same error as counting
+files where the thing under test is components (`breadcrumb.ts` declares three), or specs where
+the thing under test is cases.
+
+The repair is not vigilance. It is to make the gate derive the denominator in the promise's own
+unit — here `⟨sheet, selector⟩`, the element — so the count cannot be a list somebody typed,
+and to require the spec's set and the sheets' set to be **equal in both directions**: a
+measurement naming a floor no sheet declares is as much a drift as a floor nobody measures.
+
+---
+
+### <a id="lesson-195"></a>`lesson-195` — Determinism is not a statement about a generator
+
+`property.testkit.ts` draws every case of every property sweep in this library from
+`mulberry32`, and its spec opened with the case anybody would write first: the same seed draws
+the same cases, another seed draws different ones. That case is true, it is worth having, and
+it says **nothing about the arithmetic**.
+
+The first mutation run over the file, on 2026-09-11, said so with six survivors: `state +
+0x6d2b79f5` for `state -`, `t ^ (t >>> 7)` for `t - Math.imul(…)`, and four more inside the
+mixing. Every one of them leaves a generator that is still a pure function of its seed, so
+"same seed, same cases" holds exactly as before — while the library draws a different
+population of 9 484 cases a run, and every sweep stays green over cases nobody chose.
+
+The property a reader actually relies on is not determinism, it is **this** determinism. The
+only honest statement of it is a golden vector: `pctRandom(7)` producing
+`0.0117047532, 0.0619582576, 0.9769076328, 0.6990287057` and no other numbers. That is a
+characterisation test, which is usually a smell — a test that pins output without arguing for
+it. For a pseudo-random generator it is the opposite: the output sequence IS the contract, and
+anything weaker is a test of a property the code cannot lose.
+
+The general form is worth carrying past pseudo-random generators. When a test asserts a property that a whole
+family of wrong implementations also has — idempotence, symmetry, determinism, "it returns an
+array of the right length" — it is measuring the family, not the member. The question to ask
+of such a case is which changes to the code it would survive.
