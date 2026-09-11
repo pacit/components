@@ -29,6 +29,7 @@ import {
   pctAddDays,
   pctAddMonths,
   pctClampDay,
+  pctCompareDays,
   pctDay,
   pctDayParts,
   pctDaysInMonth,
@@ -214,9 +215,11 @@ export class PctCalendar {
     const min = this.min();
     const max = this.max();
     const refused = this.dateDisabled();
+    // The bounds are read through `pctCompareDays` and not through `<`: a day's string is
+    // fixed-width only while its year is, and `day.ts` can hand out one that is not.
     return (day: PctDay): boolean =>
-      (min !== undefined && day < min) ||
-      (max !== undefined && day > max) ||
+      (min !== undefined && pctCompareDays(day, min) < 0) ||
+      (max !== undefined && pctCompareDays(day, max) > 0) ||
       (refused?.(day) ?? false);
   });
 

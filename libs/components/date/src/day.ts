@@ -87,6 +87,22 @@ function pad(value: number, width: number): string {
  */
 export function pctDay(year: number, month: number, day: number): PctDay {
   const date = utc(year, month, day);
+  const landed = date.getUTCFullYear();
+  // **A day this shape cannot write is refused here, loudly, rather than handed on.**
+  // `pad(-1, 4)` is `'00-1'`, so `pctAddDays('0000-01-01', -1)` used to return
+  // `'00-1-12-31'` — a string `isPctDay` refuses and `pctDayParts` crashes on, with a
+  // `TypeError` from a cast four calls away from the walk that caused it. Past the
+  // ECMAScript date range the fields are `NaN` and it read `'0NaN-NaN-NaN'`. Both were found
+  // by a property sweep (5.1), and neither had any symptom before it.
+  //
+  // The bound is the type's own reason for being a string: a year below zero is not something
+  // `<input type="date">`, `<time datetime>`, JSON or SQL `DATE` can carry, so a walk that
+  // leaves the calendar has left the value type too.
+  if (!Number.isFinite(landed) || landed < 0)
+    throw new RangeError(
+      `[PctDay] ${year}-${month}-${day} is outside the days this shape can write: ` +
+        `0000-01-01 to 275760-09-13, where the ECMAScript date range ends.`,
+    );
   return `${pad(date.getUTCFullYear(), 4)}-${pad(date.getUTCMonth() + 1, 2)}-${pad(
     date.getUTCDate(),
     2,
@@ -138,9 +154,24 @@ export function pctAddMonths(day: PctDay, n: number): PctDay {
   return pctDay(y, m, Math.min(d, pctDaysInMonth(y, m)));
 }
 
-/** `-1`, `0` or `1`. The shape is fixed-width and zero-padded, so this is a string compare. */
+/**
+ * `-1`, `0` or `1` — read from the three fields, though the shape invites a string compare
+ * and carried one for months.
+ *
+ * **The shape is not fixed-width.** The year is four digits OR MORE, and this module reaches
+ * the fifth from inside itself: `pctAddDays('9999-12-31', 1)` is `'10000-01-01'`. Ten
+ * characters stand after eleven lexicographically, so `'2026-01-01'` was reported as the
+ * LATER of the two — silently, in the direction nothing checks — and `pctClampDay` pulled a
+ * day four thousand years past `max` down to `min`, the wrong bound entirely. A property
+ * sweep of the ordering laws named it, which is what plan 5.1 was for
+ * ([`lesson-186`](../../../../docs/lessons.md#lesson-186)).
+ */
 export function pctCompareDays(a: PctDay, b: PctDay): number {
-  return a < b ? -1 : a > b ? 1 : 0;
+  const left = pctDayParts(a);
+  const right = pctDayParts(b);
+  const away =
+    left.year - right.year || left.month - right.month || left.day - right.day;
+  return away < 0 ? -1 : away > 0 ? 1 : 0;
 }
 
 /**
@@ -163,8 +194,10 @@ export function pctClampDay(
   min: PctDay | undefined,
   max: PctDay | undefined,
 ): PctDay {
-  if (min !== undefined && day < min) return min;
-  if (max !== undefined && day > max) return max;
+  // Through the compare rather than `<`: the two are the same answer only while every year
+  // has four digits, and this module can produce one that has five.
+  if (min !== undefined && pctCompareDays(day, min) < 0) return min;
+  if (max !== undefined && pctCompareDays(day, max) > 0) return max;
   return day;
 }
 
