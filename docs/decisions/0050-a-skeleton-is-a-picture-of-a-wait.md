@@ -180,8 +180,8 @@ left to ship.
 its own. Two fixtures are its control — `hidden-with-a-way-in` (a `<button>` grown inside the
 decoration) and `hidden-with-a-name` (an `ariaLabel` nobody will ever read). The tabs added
 composite roles, the accordion `<summary>`, the progress bar the tags whose implicit role is
-named, and this one the subtree that is not in the tree at all; [plan 4.20](../plan.md) is the
-item that keeps saying such widenings are found by building rather than by reading.
+named, and this one the subtree that is not in the tree at all — such widenings are found by
+building rather than by reading ([`lesson-196`](../lessons.md#lesson-196)).
 
 **One word joins the token dictionary**: `last`, as a variant, for
 `--pct-skeleton-track-width-last`. It is the `today` shelf — a state of position rather than of

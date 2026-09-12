@@ -5414,3 +5414,37 @@ The general form is worth carrying past pseudo-random generators. When a test as
 family of wrong implementations also has — idempotence, symmetry, determinism, "it returns an
 array of the right length" — it is measuring the family, not the member. The question to ask
 of such a case is which changes to the code it would survive.
+
+---
+
+### <a id="lesson-196"></a>`lesson-196` — A list that decides what a gate looks at is a denominator nobody measures
+
+`check-aria`'s widget test rested on `FOCUSABLE_TAGS`, a hand-written list of five tags. The
+sixth, `summary`, was found the way these are always found: by building a component whose only
+widget was one, and noticing that the gate said nothing. Not by reading the list — nobody reads
+a list for what is absent from it.
+
+Three components in a row widened the same limb, each by arriving rather than by review: the
+tabs added composite roles, the accordion added `<summary>`, the progress bar added the tags
+whose implicit role is named. The second of those was answered with a **second** hand-written
+list, `NAMED_TAGS`, and a third already stood beside them (`COMPOSITE_ROLES`, nine entries) —
+so the complaint was reproduced by its own fix, and the count went to eight curated tags across
+three lists.
+
+The stakes rose without the list moving. The skeleton added a point that a host hidden from the
+accessibility tree holds nothing focusable, and that point reads the very same list: a tag
+missing from it used to cost one thing, a widget nobody could name, and now cost a second, a
+control the gate declares safe inside a subtree it knows is hidden.
+
+What settled it on 2026-09-05 was **derivation, not more curation**: all three lists come from
+`axe-core`'s own tables, the same ones the audit reads on a rendered page, and each table holds
+an anchor (`summary`, `tablist`, `progress`) so a table that loses an entry in a version bump is
+a verdict rather than a silence. What the derivation does not reach — `iframe`, `audio` and
+`video` with `controls`, `embed`, `object`, an open `<dialog>`, an editing host — is **counted**
+in three engines rather than assumed away, which is what one source means.
+
+The general form: an entry a gate never looks at is indistinguishable from an entry it approved,
+so a hand-kept list inside a gate has a denominator nobody measures, and the only instrument
+that ever finds the gap is the next thing somebody builds. Adding the missing entry is not the
+repair — the list is. Derive it from a source that is itself checked, and anchor the derivation
+so the source going quiet is loud.

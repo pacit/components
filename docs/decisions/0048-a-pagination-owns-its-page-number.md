@@ -105,7 +105,8 @@ its own — two channels before the border is looked at, so a forced-colours mod
 fill still says "here" ([`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors)).
 The token is named `item-*-selected` for the name dictionary; the DOM attribute is
 `data-pct-current`, which — unlike `data-pct-selected` — cannot be read as another entrypoint's
-selector ([plan 4.13](../plan.md), the tabs' and calendar's workaround turned into a reason).
+selector ([`lesson-162`](../lessons.md#lesson-162), the tabs' and calendar's workaround turned
+into a reason).
 
 ## Consequences
 

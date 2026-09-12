@@ -149,8 +149,8 @@ would have passed green with the inputs deleted. The gate now has a third list, 
 IMPLICIT role is announced with a name (`progress`, `meter`), and
 `check-aria.fixtures/progress-without-inputs` is its control. That is the third component in a
 row to widen this gate — the tabs added composite roles, the accordion added `<summary>` — and
-[plan 4.20](../plan.md) is the item that says the widening is found by building rather than by
-reading.
+the widening is found by building rather than by reading
+([`lesson-196`](../lessons.md#lesson-196)).
 
 **The bar is not a control, and the card's keyboard map is empty because of it.** A
 `<progress>` takes focus in no engine (measured), nothing is pressed and nothing is dragged;

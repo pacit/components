@@ -331,7 +331,8 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
 };
 
 /**
- * The gallery's own scenes (plan 2.8). A card's stage is 272 × 144px of room and the
+ * The gallery's own scenes (`docs/site.md`, "Information architecture"). A card's stage is
+ * 272 × 144px of room and the
  * canonical demos are authored for the component page's 675px one, so seven of the
  * thirty-three overflowed it — measured in chromium at three columns: `button` by 227px,
  * `stepper` by 138px, `theme` by 96px and `chips` by 41px across, `container` by 316px,

@@ -53,7 +53,8 @@ const slugOf = (name: string): string =>
 
 /**
  * The gallery: every documented component under the bucket its card files it in, each one
- * carrying the component itself (plan 2.8, sketch variant A — "thirty-three stages", thirty-four of them today).
+ * carrying the component itself (sketch variant A — "thirty-three stages", thirty-four of
+ * them today; `docs/site.md`, "Information architecture").
  *
  * The tile shows the card's `**Summary:**` and its entry point, and NOT the `role` and the
  * `selector` it used to: `role` is sliced out of the card's H1 after the em dash, so nine

@@ -268,7 +268,7 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  * tags, nine composite roles, two named tags, each grown by one entry the day a component
  * showed it was missing (`summary`, then `progress`), and each with a denominator nobody
  * measured — a tag the list never looked at was indistinguishable from a tag it approved
- * (plan 4.20). They are derived now:
+ * (`lesson-196`). They are derived now:
  *
  *   `focusable` — the tags axe holds natively focusable in SOME variant (`a[href]`, an
  *                 `input` not hidden, `button`, `select`, `textarea`, `summary`, `area`):

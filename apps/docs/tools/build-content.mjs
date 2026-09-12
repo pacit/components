@@ -58,7 +58,7 @@ const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
 /** The lead's ceiling: the longest of the thirty-three written is 106 characters. */
 const SUMMARY_MAX = 200;
-/* Six buckets and not the first five (plan 2.8, chosen off a sketch of six card variants).
+/* Six buckets and not the first five, chosen off a sketch of six card variants.
    The old split changed its cutting rule mid-way — `menu` filed by purpose, `popover` by
    mechanism, though a menu IS a popover with a roving list in it — and kept a bucket named
    by exclusion: "Feedback & display" held an interactive disclosure, a decoration and a
