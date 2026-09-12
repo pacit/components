@@ -28,6 +28,12 @@ construction is a negative control in itself ([`lesson-41`](../lessons.md#lesson
 > run and no `dist-tag` of their own**. Binds at the first release that is not meant to go
 > to everyone at once.
 
+> **Open:** the **first** version does not follow from the history either. With a single root
+> commit `releaseVersion` sees an empty range and keeps the manifest's `0.0.1`, so the first
+> run needs an explicit `--specifier`; and at `0.0.1` every bump lands on a patch, because
+> `adjustSemverBumpsForZeroMajorVersion` is on. The number the library starts at is therefore
+> a decision somebody makes, not one the tool derives. Binds at the first release.
+
 ---
 
 ### <a id="req-release-ng-add"></a>`req-release-ng-add` — `ng add` and the migration collection

@@ -5252,7 +5252,7 @@ thing standing between that and doing it twice was a session that happened to ch
 The two documents were each right about themselves and neither could see the other: the
 registry is generated from the requirements, the plan is hand-kept, and the one thing joining
 them is a `req-` identifier written in both. That identifier is the comparison, and making it
-costs a loop ([4.51](plan.md)).
+costs a loop — `check-docs` point 8 is where it now runs.
 
 ---
 
@@ -5269,7 +5269,7 @@ asks is whether every set is enabled **somewhere**. A set enabled in the wrong p
 enabled somewhere. The gate was not weak about placement; it had no opinion about placement at
 all, and a reader of its green line has no way to tell the two apart.
 
-The shape is [`lesson-188`](#lesson-188)'s and [4.51](plan.md)'s a third time: a list kept by
+The shape is [`lesson-188`](#lesson-188)'s and [`lesson-189`](#lesson-189)'s a third time: a list kept by
 naming its exceptions grows silently wrong, and only the thing it forgot ever notices. What
 found this one was building a second thing over the same sources and watching where it
 landed — not the gate, and not a reading of the gate.
@@ -5292,9 +5292,10 @@ for the shell had been crashing for **three days and some thirty commits**.
 The interesting part is not the missing provider. It is that `vite:test` stands in the CI
 line in `.github/workflows/ci.yml`, which is where several documents here point when they say
 a thing is guarded. `git rev-list --count origin/main..HEAD` at that moment: **144**. Nothing
-in this window has reached CI, deliberately — the push waits for an explicit word
-([3.0](plan.md)) — so for the whole of it the CI line has been a description of what would
-happen, not a report of what did.
+in this window had reached CI — not because a rule was holding the push back
+([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md) lifted that one on
+2026-09-01) but because nobody had pushed since — so for the whole of it the CI line has been
+a description of what would happen, not a report of what did.
 
 That is why [`lesson-188`](#lesson-188)'s shape keeps recurring: a target named in a workflow
 file reads like it is running. The local battery is not a convenience next to CI here; while
@@ -5357,7 +5358,7 @@ with 17 applications where the stylesheets have 19, and the two it lost were bot
 So the general shape. A shared reader is a single point of failure that reports as a chorus of
 agreement, and the only instrument that tests it is a second question asked of the same input
 with an independently known answer. Two consequences worth keeping: a gate's denominator should
-be checkable against something outside its own parse ([4.53](plan.md)), and a fixture
+be checkable against something outside its own parse ([`lesson-194`](#lesson-194)), and a fixture
 `_reference` built to be _clean_ is a poor witness — this one was too tidy to carry the
 `@charset` that forty real sheets carry.
 
@@ -5365,9 +5366,9 @@ be checkable against something outside its own parse ([4.53](plan.md)), and a fi
 
 ### <a id="lesson-194"></a>`lesson-194` — A denominator counted in the unit the code declares is not the unit the promise is about
 
-`req-a11y-touch` promises that a hit area is at least 24 × 24 px. The finding written down as
-[4.53](plan.md) said: sixteen names apply that floor and the spec measures nine. Both halves of
-that sentence were counted in the wrong unit, and the correction is the lesson.
+`req-a11y-touch` promises that a hit area is at least 24 × 24 px. The finding this came out of
+said: sixteen names apply that floor and the spec measures nine. Both halves of that sentence
+were counted in the wrong unit, and the correction is the lesson.
 
 Sixteen is the number of **token names** that resolve to `pct.target.min`. Nineteen is the
 number of **places a stylesheet applies one** — three names are applied to more than one
