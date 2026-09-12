@@ -5562,3 +5562,22 @@ So the acceptance of a drawing is a claim about a picture, and only a picture ca
 order that works is: port the sketch line for line, look at the built page beside it, and ask
 the suite afterwards. A gate that measures parts cannot notice that the parts were arranged
 into a different design.
+
+---
+
+### <a id="lesson-204"></a>`lesson-204` — A property sweep's gain can be invisible to the mutation score
+
+`pagination.ts` was picked for property laws because it sat low in the mutation snapshot, and
+seven laws later the score had not moved: still 96.43, the same four survivors, all of them
+equivalent mutants. That is not a failed sweep. What the laws bought — what `siblingCount` and
+`boundaryCount` mean, when a stepper is spent — is something **no mutant of that file asks
+about**, so the instrument aimed at the file cannot register the gain.
+
+The premise the round started from was "aim the sweep at the snapshot's lowest rows", and it is
+half right: a low row is evidence of _something_, but if what is missing is a statement about
+meaning rather than a branch nobody exercises, the score stays where it was and the file is
+better tested than it was the day before.
+
+[`lesson-187`](#lesson-187) says a sweep's worth is not its case count. This is the other half:
+a sweep's worth is not its effect on the score either. Both numbers measure the instrument, and
+a file whose survivors are equivalent has no room left for either to move.

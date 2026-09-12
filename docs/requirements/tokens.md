@@ -536,7 +536,9 @@ scope, the dense stage reads the same `--pct-surface` as the roomy one beside it
 `Every touch target under compact` walks all thirteen controls that declare a
 `--pct-…-target-min` — on their own routes, with the whole page compact — and requires
 24 × 24 of each. The corner case `the corner: compact at size sm keeps every target at 24 px`
-is the one the gap note named
+is the one the gap note named. **That half is disarmed too**: re-pointing the floor to 16px
+turns 8 of the spec's 22 cases red, so the floors hold this and not the padding — six of the
+thirteen read 24 in both densities because they were already on it
 **Decision:** [0074 — density is a scope that re-points metrics, not an input](../decisions/0074-density-is-a-scope-that-re-points-metrics-not-an-input.md)
 
 > **The floor is what stops the shrinking, and it stops it exactly.** The smallest compact

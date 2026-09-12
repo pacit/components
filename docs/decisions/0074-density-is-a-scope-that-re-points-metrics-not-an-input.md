@@ -102,6 +102,10 @@ density a second size scale wearing another name, and it would move the one thin
 reader cannot enlarge back. Size scales the type ([`req-api-size`](../requirements/api.md#req-api-size));
 density scales the space around it.
 
+**The axis introduces no token NAME.** `libs/tokens/tokens.snapshot.md` does not move, which
+is this decision's central claim made checkable rather than argued: a scope re-points what a
+name resolves to, and a name that appeared would mean an input had been added after all.
+
 ## `[pctDensity]` is not part of this change
 
 [0059](0059-a-theme-is-an-attribute-the-skin-reads.md) gives the rule for when sugar like
