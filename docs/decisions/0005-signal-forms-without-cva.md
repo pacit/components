@@ -75,8 +75,9 @@ Two cases only emerged in use and are conditions in the code today:
 
 ## Alternatives considered
 
-| alternative                                   | why rejected                                                                        |
-| --------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `ControlValueAccessor` alongside the contract | verified by experiment to be **unnecessary** ([`lesson-9`](../lessons.md#lesson-9)) |
-| A separate adapter directive                  | the same redundancy, plus a second API surface to document and test                 |
-| Every member element as a control             | from the form's point of view a radio group is **one** value, not N booleans        |
+| alternative                                   | why rejected                                                                                                                                                                                                                                       |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ControlValueAccessor` alongside the contract | verified by experiment to be **unnecessary** ([`lesson-9`](../lessons.md#lesson-9))                                                                                                                                                                |
+| A separate adapter directive                  | the same redundancy, plus a second API surface to document and test                                                                                                                                                                                |
+| Every member element as a control             | from the form's point of view a radio group is **one** value, not N booleans                                                                                                                                                                       |
+| A host directive carrying the state block     | its inputs would still be named in every component that takes it, so the duplication moves into a list of strings while eight public classes change shape; `tools/check-forms.mjs` holds the transforms, the defaults and the member names instead |

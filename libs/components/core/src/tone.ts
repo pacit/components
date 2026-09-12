@@ -11,7 +11,8 @@
  * **Four names, decided once, for every component that will ever want them.** The toast asked
  * first and the progress bar asked second, both refusing to answer alone — a set of tones is a
  * shared property, and a shared property settled by whoever needed it first is an accident of
- * that one case ([0011](../../../../docs/decisions/0011-icons.md), plan 4.14). The field's
+ * that one case ([0011](../../../../docs/decisions/0011-icons.md),
+ * [0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)). The field's
  * error, the dialog's confirm and whatever the banner turns out to be inherit this list rather
  * than starting another.
  *

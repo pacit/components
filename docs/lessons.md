@@ -5448,3 +5448,117 @@ so a hand-kept list inside a gate has a denominator nobody measures, and the onl
 that ever finds the gap is the next thing somebody builds. Adding the missing entry is not the
 repair — the list is. Derive it from a source that is itself checked, and anchor the derivation
 so the source going quiet is loud.
+
+---
+
+### <a id="lesson-197"></a>`lesson-197` — A closed drawer is not an empty one
+
+The documentation site parked its component index inside the navigation drawer and let the
+drawer's own closed state hide it. Chromium agreed. **Firefox lays out the contents of a closed
+drawer**, so on every route the index stayed a scrollable region — present in the layout,
+reachable by wheel and by touch, and focusable by nothing, which is the worst of the two
+states rather than a compromise between them.
+
+The repair is not a stronger hiding rule. It is to **not render** what a closed container holds:
+the index is built only while the drawer is open. A container's visual state is a statement
+about paint, and paint is the one part of "hidden" that every engine agrees on.
+
+---
+
+### <a id="lesson-198"></a>`lesson-198` — A case that asserts on the grid the real clock draws is a bomb with a date on it
+
+The calendar's today-test read the month grid the system clock produces and asserted on the
+days in it. August's grid draws the first days of September, and the expectation forgot them,
+so on **1 September** the case went red everywhere at once — on a date nobody chose, in a run
+nobody could have made go red the day before. It took the `mutation` target down with it
+through the dry run, which is how a date bomb spreads: the dry run is a full suite, so one
+clock-shaped case reddens every gate standing behind it.
+
+A case may read the clock; it may not assert on what the clock happens to produce. Either the
+date is fixed by the test, or the assertion is about the grid's shape rather than its contents.
+The tell is that the case cannot be made to fail on the day it is written.
+
+---
+
+### <a id="lesson-199"></a>`lesson-199` — Proving a mutant equivalent by hand means compiling it, and a kill can still be reported as a survivor
+
+Two things get in the way of checking a surviving mutant by hand, and both were met in the same
+round.
+
+**The mutant is applied after the compiler, the hand edit is not.** Stryker rewrites the
+emitted code, so it is free to produce a form TypeScript would reject. Writing that form back
+into the source to see whether the suite notices simply fails to build —
+`false ? value : Number(value)` is a type error where `value` is `unknown` — and a check whose
+edit never ran is worth nothing. What has to be written is the **runtime-equivalent** edit the
+compiler accepts: `Number(value)` on its own.
+
+**A kill by hand is not always a kill in the report.** Stryker attributes a kill per test, so a
+runtime-equivalent edit that reddens the suite can still be listed as surviving — the stepper's
+forced-false state guard is that row. The honest record is that it is the runner's artefact and
+not a hole in the suite, and it belongs in the register with that reason rather than in a count
+of what the tests miss.
+
+---
+
+### <a id="lesson-200"></a>`lesson-200` — The mutation run's worker count is a fact about this machine, and it stands in no file
+
+`components:mutation` runs the bare `stryker run libs/components/stryker.config.json`, and the
+configuration sets no `concurrency`. Stryker then takes its default of one worker per core less
+one — seven on this machine's eight cores and 15 GB — and the run exhausts memory at about 14%.
+The kernel's out-of-memory killer does not take a worker: it takes the **parent**, so there is
+no red, no report and no session, and the failure looks like the tool vanishing. At four workers
+the same run finishes in roughly fifty minutes.
+
+The number is correct for this machine and wrong as a constant: a runner with four cores wants
+its own, and forcing four there would move the clock-kill distribution the nightly exists to
+measure. So it cannot simply be written into the shared configuration — which is exactly why it
+has stayed on a command line, remembered by whoever last lost a session to it. A fact that a
+reader can only acquire by paying for it is a fact with no home.
+
+---
+
+### <a id="lesson-201"></a>`lesson-201` — Which mutant the clock is holding says whether the wobble is a timing defect or a missing assertion
+
+A mutation score that moves over untouched code reads as a timing defect, and on `motion.ts`
+and `placement.ts` that is what it is: what times out there is real waiting. `core/src/texts.ts`
+swung 3.23 points past its tolerance and looked identical from the outside — and the mutant
+holding the swing was `toastDismiss: 'Dismiss'` blanked to `""`, the one default in
+`PCT_DEFAULT_TEXTS` that no case asserted, because the toast's own case provides
+`providePctTexts({ toastDismiss: … })` and a host that overrides a default never observes it.
+
+One `expect` over the name with nobody providing one took the file to 100.00 with no survivors,
+and its remaining clock-kills now decide nothing. So the first move on a wobbling file is not to
+widen the tolerance: it is to read **which** mutant the clock is holding. A string, a default or
+a branch a test could name is a missing assertion wearing a timing defect's clothes.
+
+---
+
+### <a id="lesson-202"></a>`lesson-202` — There is a family of cases that fails only under the suite, and it is a shape, not a component
+
+Five cases across four components fail in a full run and pass alone: the select's
+`End reaches the five thousandth row`, the dialog's scroll-lock case, the calendar's
+`an arrow follows the writing direction` with its right-to-left twin, and the switch's
+forced-colours thumb. What they share is not a component. It is a shape — a case whose answer
+depends on a keypress or a style landing before the next line reads it — and under a hundred
+browser pages at once that window closes.
+
+Two things follow. A red from a full run is **re-run before it is read**, because the first
+reading is as likely to be about the machine as about the code. And the repair is to wait for
+the condition rather than for a frame: the switch's case polls the thumb's position, because its
+promise is about where the thumb lands and not about where it is one frame in
+([`lesson-192`](#lesson-192) is the same correction made against a constant).
+
+---
+
+### <a id="lesson-203"></a>`lesson-203` — An accepted sketch is transferred, not interpreted, and the suite cannot tell the difference
+
+The component page was drawn and accepted before it was built, and the first build quietly
+re-decided three things the sketch had settled: the demo's JSDoc became a two-line caption over
+the stage, the Preview/Code switch became the plain tab strip instead of the segmented control,
+and the pattern's whole sentence was pulled up into the spec line. **The suite was green on all
+three** — every part was present, named and reachable, which is all a structural gate can ask.
+
+So the acceptance of a drawing is a claim about a picture, and only a picture can check it. The
+order that works is: port the sketch line for line, look at the built page beside it, and ask
+the suite afterwards. A gate that measures parts cannot notice that the parts were arranged
+into a different design.

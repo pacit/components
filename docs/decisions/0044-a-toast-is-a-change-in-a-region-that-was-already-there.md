@@ -169,7 +169,10 @@ interrupting a screen reader for is worth waiting to be read.
   of the roles, which is at least measured;
 - **no tone.** No colour for success, warning or failure, for the reason above — which is a
   real thing a consumer will ask for, and the honest answer is that the repair is an icon set
-  and the icon set is a decision of its own;
+  and the icon set is a decision of its own. **That condition fired**: the four names landed
+  together and the toast carries tones today —
+  [0076](0076-a-tone-is-two-channels-and-four-names.md). The clause stays as the record of a
+  refusal that was closed rather than abandoned;
 - **no leave transition.** A message fades in with `@starting-style` and goes at once. A leave would
   mean the card outliving its own removal while every card under it moves up — a layout animation,
   which is a different thing from a fade and one this library has no machinery for. The dialog

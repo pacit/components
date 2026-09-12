@@ -353,3 +353,10 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-194`](lessons.md#lesson-194) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-195`](lessons.md#lesson-195) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-196`](lessons.md#lesson-196) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-197`](lessons.md#lesson-197) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-198`](lessons.md#lesson-198) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-199`](lessons.md#lesson-199) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-200`](lessons.md#lesson-200) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-201`](lessons.md#lesson-201) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-202`](lessons.md#lesson-202) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-203`](lessons.md#lesson-203) | — _(not cited)_                                                                                                                                                   |

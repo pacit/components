@@ -52,8 +52,11 @@ sentence from the maintainer.**
 - **The copy off this machine exists**, and with it the first real measurement of CI. The two
   runs after the push are the whole argument for taking it: one died in four minutes on a gate
   that reads the system word lists, which a runner does not ship — the gate failing loudly in
-  the first environment that ever lacked its input; the second took 48 minutes and went red
-  four ways at once, of which two were the environment and not the code.
+  the first environment that ever lacked its input, and pinned since in
+  `tools/dictionaries.lock.json`; the second took 48 minutes and went red four ways at once,
+  of which two were the environment and not the code. Of those 48 minutes the browser suite
+  alone took 41.3, on **one** worker — Playwright's own default in CI, where this machine
+  runs 22. No local reading could have said that.
 - **`repository` becomes true before it becomes public.** Provenance still refuses a private
   repository, so the guard in `check-package --release` stays exactly where it stood.
 - **The push is no longer the announcement.** The second `README.md` of the premiere, the
