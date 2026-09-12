@@ -147,8 +147,11 @@ export async function visit(
  * moment the panel has any opacity at all. Measured in three engines: at that moment two
  * transitions are running at 0–35% of their way, so anything that reads COMPOSED colours
  * then — an axe contrast rule, a screenshot — reads a state no user rests in, and reads a
- * different one on every run (plan 4.35: `panel-apply`'s label at 4.09:1 in firefox and
- * webkit at once, a pair that is no resting state of the button).
+ * different one on every run — `panel-apply`'s label read 4.09:1 in firefox and webkit at
+ * once, a pair that is no resting state of the button.
+ *
+ * A reduced-motion context was the other road to a stable audit and is refused: it audits a
+ * state most users never see. Waiting for the page to settle measures the one they do.
  *
  * Every animation is asked, not a named one: the thing settled here is the PAGE, and a case
  * should not have to know which of the library's transitions its click set off. Infinite

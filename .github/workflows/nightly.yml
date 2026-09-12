@@ -17,6 +17,13 @@
 # It is NOT a second Playwright restore: the mutation job is vitest and needs no browser, so
 # it takes the shorter setup and the browsers stay in the job that uses them.
 #
+# A MATRIX JOB was the shape first drawn, and it is refused on a measurement rather than on
+# taste: with one templated `run` line the targets stand behind `${{ matrix.… }}`, and point 7
+# of `check-mutation` reads the WORDS on every `nx` line of both workflows — so the gate whose
+# job is to notice `mutation` leaving CI would stop being able to see it here. Two jobs with
+# literal lines stay readable to the gate and to a person by the same property, and the
+# duplication costs four steps.
+#
 # What the split does NOT buy is the four vCPUs themselves. Stryker still runs with the
 # workers a small runner allows, so whether the nightly starts LANDING the clock-kills the
 # snapshot was written from is a question the first night after this answers, not one this

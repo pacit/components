@@ -205,5 +205,10 @@ docs-bar {
   max-inline-size: 100%;
 }
 
+// The 34 gradient stages were argued against five ways — wallpaper, contrast, forced colours,
+// an invisible animation, and "replace it with a quiet surface" — and every objection was
+// refuted against the files: it is ONE rule for all 34, it is the component page's own stage
+// at a card's size, and the quiet-surface replacement measured worse than leaving it. The
+// debt was the hand copy's drift, not the paint.
 @include edge.hero-edge('.card', '.card__name');
 @include edge.hero-edge-keyframes;

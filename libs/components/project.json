@@ -214,6 +214,7 @@
         "{projectRoot}/stryker.config.json",
         "{projectRoot}/project.json",
         "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/.github/workflows/nightly.yml",
         "{workspaceRoot}/tools/check-mutation.mjs",
         "{workspaceRoot}/tools/check-mutation.fixtures/**/*"
       ],

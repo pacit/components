@@ -238,6 +238,11 @@ as satire:
   published on the page**.
 - SEO plumbing: titles, descriptions, Open Graph, `sitemap.xml`, `robots.txt`.
 
+**Mono does not become a second face.** It carries the strings — selectors, entry points,
+tokens, the landing's index — and a mono heading makes it decoration, spending the distinction
+the pages depend on to read. Decided 2026-09-08, and it reaches the gallery and the component
+card, not one page.
+
 ## Deploy — decided later, built for now
 
 The repository is private until the premiere, so there is nowhere public to deploy to and
@@ -247,7 +252,12 @@ front of it) is a 3.1-day decision and is listed there, not here.
 
 ## The steps
 
-The executable order lives in [`plan.md`](plan.md) as **2.1.1–2.1.8**, one checkbox per
-step, each one committable and gate-green on its own: layout entrypoint → button faces →
-theme directive → app scaffold → content pipeline → landing → pages → the measured bar.
-"Do the next step" means: open the plan, take the first unchecked box of 2.1.
+The executable order is a checkbox per step in the plan, each one committable and gate-green
+on its own: layout entrypoint → button faces → theme directive → app scaffold → content
+pipeline → landing → pages → the measured bar. All eight landed on 2026-09-02.
+
+**The method of a pass over what is already built**, stated as a rule because the first one
+found it by doing it: read the screen first, draw second, and transfer the accepted sketch
+literally — so a no costs a sketch and never a stylesheet. Two of the six screens read in the
+2026-09-08 pass were kept after being held beside their drawings, which is the process
+working rather than failing ([`lesson-203`](lessons.md#lesson-203)).

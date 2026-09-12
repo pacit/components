@@ -63,7 +63,14 @@ const slugOf = (name: string): string =>
  * sentence the content pass actually gates — present, under 200 characters, no link and no
  * requirement number in it — and the entry point is the string a reader types first.
  *
- * The finder above the grid is the one the site already ships (4.34, plate B): `docs-index`
+ * **A ragged last row is not `auto-fit`'s to repair, and it has been proposed twice.**
+ * `pct-grid` already declares it, and `auto-fit` collapses empty TRACKS, not empty cells —
+ * five items across three columns collapse nothing. Stretching the survivors needs flexbox,
+ * and a wider card renders its demo at a width no other card uses, on a page whose first
+ * sentence promises the demo the component page opens with.
+ *
+ * The finder above the grid is the one the site already ships (plate B of the design pass):
+ * `docs-index`
  * filters this same list by the same rule in the component page's rail and in the shell's
  * drawer, and `find.ts` is now where that rule lives so the two cannot answer one word
  * differently. It costs the page nothing when it is not used — the query starts empty, so
