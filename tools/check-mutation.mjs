@@ -5,13 +5,11 @@
  * run ends zero at 4% as at 94%.
  *
  *  1. DENOMINATOR: the measurement exists, is not empty and is CURRENT with the sources,
- *  2. the inventory of mutated files matches the policy — both ways — and every source
- *     file of the library is either in that inventory or excused in the register,
+ *  2. the inventory matches the policy both ways, every source file in it or excused,
  *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
- *  6. the result: a hard floor, a snapshot with a TWO-SIDED tolerance per file and total,
- *     and the snapshot's PROSE, which no tolerance touches,
+ *  6. the result: a hard floor, a TWO-SIDED tolerance per file and total, and the prose,
  *  7. both targets (`mutation`, `check-mutation`) run in CI.
  *
  * "What the run really did" comes from the report's `config` field, which carries the

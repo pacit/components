@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
  * Token gate: names, tiers, pairs — `req-token-names`, `req-token-tiers` and
- * `req-token-text-pairs` in one pass, because all three rest on THE SAME denominator: the
- * list of tokens. A token the gate does not see is unguessable, outside the tiers and
- * unmeasured at once, and each of the three rules alone would look green beside it.
+ * `req-token-text-pairs` in one pass, because all three rest on THE SAME denominator. A token
+ * the gate does not see is unguessable, outside the tiers and unmeasured at once.
  *
  *  1. SET: the names in `dist/pct.css` match an independent walk of the DTCG sources,
  *  2. SURFACE: `dist/tokens.ts` carries exactly the names it should,
@@ -14,17 +13,12 @@
  *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy,
  *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin,
  *  9. PALETTE: every primitive is read by a token or by a stylesheet,
- * 10. LAYERS: the stacking order is a list, every number in it is read from where it lives —
- *     a token, or the dependency's stylesheet — and it comes out strictly increasing,
- * 11. DENSITY: the second axis declares the same names in both of its scopes, and neither
- *     scope takes a control's box under the touch floor.
+ * 10. LAYERS: every number of the stacking order is read from where it lives, and increases,
+ * 11. DENSITY: the second axis declares the same names in both scopes, neither under the floor.
  *
- * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
- * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
- * Point 9 stands last because it reads what points 7 and 8 measure — with a broken list of
- * stylesheets their denominators fire first, and a primitive nobody reads is what a broken
- * list looks like. Point 11 stands after all of them because it reads a name's TIER and a
- * component name's PROPERTY, both of which points 3 and 6 have already had to accept.
+ * The order is load-bearing: 5 before 6 and 7 so a snapshot fires on every changed name, 9
+ * last because it reads what 7 and 8 measure, and 11 after all of them because it reads a
+ * name's tier and a component name's property, which 3 and 6 have already had to accept.
  *
  * Usage: node tools/check-tokens.mjs [--write [<fixture>]]
  */

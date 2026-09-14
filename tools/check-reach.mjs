@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 /**
- * Reach gate: is there a tracked file nothing in the repository reads? Such a file is
- * invisible to every other gate at once — it compiles nothing, ships nothing and fires
- * nothing, so its only symptom is that a reader finds it and cannot tell what it is for.
- * `.github/skills/` stood for months as a byte-identical copy of `.opencode/skills/`,
- * 17 files no tool here opened — `req-project-reach`.
+ * Reach gate: is there a tracked file nothing in the repository reads (`req-project-reach`)?
+ * Such a file is invisible to every other gate at once — it compiles nothing, ships nothing
+ * and fires nothing.
  *
  *  1. DENOMINATOR: the git index, the readable text in it and the declared roots,
  *  2. every root of the policy is one existing file,
@@ -12,10 +10,9 @@
  *  4. every `check-<x>.fixtures/` tree has the gate that walks it,
  *  5. REACH: every tracked file is reached from a root.
  *
- * Point 5 is a walk FROM THE ROOTS, not the question "does any other file mention this
- * one" — the second one calls a dead island alive, because the files of a copied tree
- * cite each other exactly as the original's do. Negative control:
- * `check-reach.fixtures/`.
+ * Point 5 is a walk FROM THE ROOTS and not "does any other file mention this one", which
+ * calls a dead island alive ([`lesson-61`](../docs/lessons.md#lesson-61),
+ * [`lesson-113`](../docs/lessons.md#lesson-113)). Negative control: `check-reach.fixtures/`.
  *
  * Usage: node tools/check-reach.mjs
  */

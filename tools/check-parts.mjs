@@ -2,11 +2,9 @@
 /**
  * Part inventory gate: `req-api-parts` — the `data-pct-part` attributes are RECORDED and
  * VERSIONED, so a consumer's selector survives an update. They are the one route into a
- * component this library leaves (decision 0013) and the one public API whose change gives
- * no red test: a rename moves the template and the sheet together.
+ * component this library leaves (0013) and the one public API whose change gives no red test.
  *
- *  1. DENOMINATOR: every decorator parsed, every base read, every template owned, every
- *     occurrence read,
+ *  1. DENOMINATOR: every decorator parsed, base read, template owned, occurrence read,
  *  2. SET: the parts read from the sources match those read from the BUILT package,
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
@@ -14,12 +12,9 @@
  *  6. NAMESPACE: a component whose parts share a prefix gives it to ALL of them,
  *  7. README: the package README's entrypoint table matches the packed manifest.
  *
- * Two independent reads are the point: the source read catches a part that never reached
- * the package, the package read (JIT over `dist/`) one our scanner cannot see. A part can
- * also come from a BASE CLASS: Angular merges a decorated base's host attributes into the
- * definition of every class that extends it (`ɵɵInheritDefinitionFeature`), so the package
- * read finds the part on the subclass — and the source read follows `extends` to put it
- * there too, the way `check-aria` and `check-texts` do (`lesson-100`, `req-quality-inheritance`).
+ * Two independent reads are the point: the source read catches a part that never reached the
+ * package, the package read (JIT over `dist/`) one our scanner cannot see. A part inherited
+ * from a base class is followed by both (`lesson-100`, `req-quality-inheritance`).
  *
  * Usage: node tools/check-parts.mjs [--write [<fixture>]]  (--write: rewrite the snapshot)
  */

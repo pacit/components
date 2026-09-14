@@ -1,24 +1,13 @@
 #!/usr/bin/env node
 /**
  * Restores the language gate's word lists from `tools/dictionaries.lock.json` into the
- * untracked cache the lock names — the same split as `package-lock.json` and
- * `node_modules` (decision 0040). The gate used to read `/usr/share/dict`, and that is an
- * ambient fact of the machine: absent on a fresh runner, and versioned by whatever the
- * distribution last shipped. The lock's hashes are the identity of the input; this module
- * is only the road from them to two files on disk.
- *
- * EVERY STEP IS VERIFIED AT BOTH ENDS, and that is why the unpackers may be the ~30 hand
- * lines they are with no fixture tree behind them: the fetched archive must match the
- * lock's deb hash BEFORE anything parses it — so the parsers only ever see bytes that were
- * inspected when the pin was made — and the extracted list must match the lock's file hash
- * AFTER, so any parsing fault whatsoever lands as a loud mismatch rather than a silently
- * wrong word list. The one thing this arrangement cannot catch is a wrong hash written
- * into the lock itself, which is exactly the line a review of a pin bump is for.
- *
- * A deb is `ar`, holding `data.tar.zst`; zstd is in node's own zlib and tar is 512-byte
- * headers — so the whole road is the standard library, and a network request on a cold
- * cache (`check-consumer` walks the same kind of road to the registry). Warm, it is two
- * hash checks and no network at all.
+ * untracked cache the lock names — the same split as `package-lock.json` and `node_modules`
+ * ([0040](../docs/decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)). The
+ * gate used to read `/usr/share/dict`, which is an ambient fact of the machine: absent on a
+ * fresh runner and versioned by whatever the distribution last shipped. The lock's hashes are
+ * the identity of the input; this module is only the road from them to two files on disk, and
+ * every step of it is verified at both ends — 0040 says why that is the whole control here.
+ * Warm, it is two hash checks and no network at all.
  *
  * Usage: node tools/restore-dictionaries.mjs — or through any gate that needs the lists.
  */

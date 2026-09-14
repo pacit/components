@@ -2,8 +2,7 @@
 /**
  * Support gate: is `docs/support.md` a policy a consumer can hold the library to, or four
  * good intentions? `req-release-support` promises three numbers and one obligation, and the
- * obligation was the one tied to nothing — the migration collection has shipped since the
- * first commit and no breaking change was ever required to add to it.
+ * obligation was the one tied to nothing.
  *
  *  1. the policy declares its rows, in the shape this gate reads,
  *  2. the declared Angular window equals the one the manifest's peer ranges admit,

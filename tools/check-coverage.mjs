@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
- * Coverage gate: does the report measure the WHOLE library, and is the threshold from
- * `req-quality-coverage` really enforced? A file with no test drops OUT of the report
- * rather than showing up with a zero, so a threshold over that number is a gate born dead
- * ([`lesson-45`](../docs/lessons.md#lesson-45)) — hence the check on the denominator.
+ * Coverage gate: does the report measure the WHOLE library, and is `req-quality-coverage`'s
+ * threshold really enforced? A file with no test drops OUT of the report rather than reading
+ * zero, so a threshold over it is a gate born dead ([`lesson-45`](../docs/lessons.md#lesson-45)).
  *
  *  1. the report exists at all and has a total for every enforced metric,
  *  2. the list of source files is not empty (else point 3 has nothing to examine),
@@ -12,11 +11,9 @@
  *  5. the report meets both declared thresholds,
  *  6. every template meets a floor of its own, on each of the four metrics.
  *
- * Point 3 catches the regression; 4 and 5 guard the number it produced. Point 6 is the only
- * one that sees a template at all: in the whole-report figure they are a rounding error —
- * `select.html` could go entirely unrendered and the line total would still read 93.37%,
- * thirteen points above the floor ([`lesson-71`](../docs/lessons.md#lesson-71)). A seventh
- * run examines the gate itself (`req-quality-negative-control`): `check-coverage.fixtures/`.
+ * Point 3 catches the regression, 4 and 5 guard the number it produced, and 6 is the only one
+ * that sees a template at all — in the whole report they are a rounding error
+ * ([`lesson-71`](../docs/lessons.md#lesson-71)). Control: `check-coverage.fixtures/`.
  *
  * Usage: node tools/check-coverage.mjs
  */

@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 /**
- * Index gate: is a list that describes a directory derived from that directory, or is it
- * somebody's memory of what it held (`req-quality-index`)? A hand-kept index drifts in
- * silence — nothing compiles it and nothing renders it — and the measurement that opened
- * this gate found the decisions index wrong in eleven of its twenty rows
- * ([`lesson-75`](../docs/lessons.md#lesson-75)).
+ * Index gate: is a list that describes a directory derived from that directory, or somebody's
+ * memory of what it held (`req-quality-index`)? A hand-kept index drifts in silence — nothing
+ * compiles it and nothing renders it ([`lesson-75`](../docs/lessons.md#lesson-75)).
  *
  *  1. CORPUS: the walk found decisions, fixture trees, a case table and a count to rule on,
  *  2. INDEX: `docs/decisions/README.md` is the rendering of `docs/decisions/`,
@@ -12,13 +10,11 @@
  *  4. COLUMNS: a `point`, `check` or `rule` column agrees with the case's own declaration,
  *  5. COUNTS: a number written in prose equals what it counts.
  *
- * Which of the two roads a list takes is settled in
- * [0021](../docs/decisions/0021-an-index-is-derived-or-measured.md): generated where every
- * column is derivable, measured where one of them is a sentence a human writes.
+ * Which road a list takes is
+ * [0021](../docs/decisions/0021-an-index-is-derived-or-measured.md)'s: generated where every
+ * column is derivable, measured where one is a sentence a human writes.
  *
- * Usage:
- *   node tools/check-index.mjs           verifies (CI)
- *   node tools/check-index.mjs --write   rewrites the decisions index
+ * Usage: node tools/check-index.mjs [--write]  (--write: rewrite the decisions index)
  */
 import {
   existsSync,

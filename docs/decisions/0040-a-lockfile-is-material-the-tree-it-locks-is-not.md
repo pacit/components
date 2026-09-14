@@ -78,6 +78,19 @@ now reads the **mode** git recorded and steps over everything that is not a regu
 symlink carries no text of its own — git stores the target path as the blob — so reading it
 gives either the same words a second time under a path nobody wrote them at, or `EISDIR`.
 
+## A restore is verified at both ends, which is why the unpacker needs no fixture tree
+
+`tools/restore-dictionaries.mjs` is about thirty hand-written lines of `ar`, `tar` and `zstd`
+— no library, no negative-control tree — and that is affordable because the bytes are checked
+on both sides of the parse. The fetched archive must match the lock's archive hash **before**
+anything reads it, so the parsers only ever see bytes somebody inspected when the pin was
+made; the extracted list must match the lock's file hash **after**, so any parsing fault at
+all lands as a loud mismatch instead of a quietly wrong word list.
+
+What the arrangement cannot catch is a wrong hash written into the lock itself. That is the
+one line a review of a pin bump is for, and it is the whole of what this construction asks of
+a person.
+
 ## Alternatives considered
 
 **Keep the trees and give each tool an entry.** A `roots` or `enumerated` line for `.agents`,
