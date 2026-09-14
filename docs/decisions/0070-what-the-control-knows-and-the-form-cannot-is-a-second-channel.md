@@ -20,7 +20,7 @@ required"** while three numbers stand in front of the user. The red border and t
 true; the sentence is wrong, and it is the form's. Not a wording decision: `errors` is an `input`
 the form owns, and `PctFieldControl.errors` is the signal the chrome reads, so a control could
 not add an error of its own without shadowing the member the `FormValueControl` contract
-requires — two members cannot share one name (plan 4.12). `[pctNumber]` had the same want and
+requires — two members cannot share one name. `[pctNumber]` had the same want and
 answered it worse: it **cleared** junk on blur, which is `<input type="number">`'s own failing
 committed one floor up ([`req-api-number`](../requirements/api.md#req-api-number)).
 

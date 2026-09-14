@@ -137,8 +137,8 @@ measured on 2026-09-05 in three engines, a `container-type: inline-size` ancesto
 panel at the window — [`lesson-163`](../lessons.md#lesson-163).) This is the platform's rule,
 and it is the price of being drawn where the consumer wrote it rather than in a container of
 ours. An overlay would not have it; an overlay would have `lesson-35` instead. What the drawer
-can do about it is say so: since plan 4.22 an open drawer whose `offsetParent` is not the
-window is reported in dev mode, with the ancestor and the property named.
+can do about it is say so: an open drawer whose `offsetParent` is not the window is
+reported in dev mode, with the ancestor and the property named.
 
 **What it costs in bytes.** `./drawer` is **14031 B** on `./core` and `./icon`, and the row to
 read it against is the dependency column: it brings **no CDK at all**, which no other panel in

@@ -17,7 +17,7 @@ ring and the two refusals read back in three engines; `libs/components/breadcrum
 answer here. The site is the consumer that noticed: its own hero CTAs are
 `<button routerLink>` — they navigate, and they are not links. No middle click, no
 open-in-new-tab, no status bar showing where the press goes, and nothing in the markup a
-crawler reads as a way through the site. The plan carried it as 4.33 and the trigger was
+crawler reads as a way through the site. It was carried as work of its own, and the trigger was
 supposed to be the premiere's link audit; the site's design pass arrived first, and a pass
 that rewrites the CTAs twice is a pass that pays for this twice.
 

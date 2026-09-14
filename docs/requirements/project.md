@@ -347,7 +347,7 @@ the noun it is made from and the abstract noun made from that one, and never got
 agent noun made from either ([`lesson-80`](../lessons.md#lesson-80)), and — the sixth limb — a
 **one-letter Polish word read by its company**: `w`, `z`, `o`, `u` and `i` are in both
 dictionaries, because `american-english` lists the whole alphabet, so every letter is
-subtracted as English before anything looks at it (plan 4.1); the limb reads the context
+subtracted as English before anything looks at it ([`lesson-77`](../lessons.md#lesson-77)); the limb reads the
 instead — the letter between two words in prose, a Markdown line, a comment or a string, and
 never in code or in an inline code span — and reports how many such letters it read, which
 is the denominator the item said nobody measured. Those two limbs name the

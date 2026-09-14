@@ -11,7 +11,7 @@
 
 ## The question
 
-The documentation site ([site.md](../site.md), plan 2.1) needs a skeleton: a capped reading
+The documentation site ([site.md](../site.md)) needs a skeleton: a capped reading
 column, vertical rhythm, and card grids that answer every width. So does every consumer
 building an application around these components — which is exactly the trap: "layout" is how
 a component library swells into a CSS framework, with utility classes, a twelve-column

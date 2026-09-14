@@ -9,7 +9,7 @@ pass reads); the wording guard in the same suite (`not.toContainText(/conformant
 
 ## The question
 
-Plan 2.1.6: what does the front page lead with, and in which words? The first sketch led
+What does the front page lead with, and in which words? The first sketch led
 with the builder's own numbers — mutation score, lesson count, promise registry — and the
 maintainer's review caught the mistake: those are the diary of how the library is made,
 not the buyer's question. Meanwhile the strongest claim the library holds — accessibility
@@ -30,7 +30,8 @@ teaser line on the landing. Nothing was deleted; it was re-addressed.
 
 The gates end where axe ends: DOM and CSS, three engines, every commit. That earns the
 sentence **"built and machine-audited to WCAG 2.2 AA"** and does not earn "conformant" —
-conformance language belongs to 2.2's ACR, whose inputs include a recorded
+conformance language belongs to the ACR
+([`req-a11y-acr`](../requirements/a11y.md#req-a11y-acr)), whose inputs include a recorded
 assistive-technology pass. A library whose pitch is "every promise is held by a gate"
 cannot open with a promise held by none, published to the exact audience that will check.
 The law is enforced the way this repository enforces words: the e2e suite asserts the

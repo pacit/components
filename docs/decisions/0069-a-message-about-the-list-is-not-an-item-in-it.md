@@ -6,7 +6,7 @@
 [`req-api-parts`](../requirements/api.md#req-api-parts),
 [`req-api-platform`](../requirements/api.md#req-api-platform)
 **Evidence:** `apps/sandbox-e2e/src/a11y.spec.ts › "an empty panel has no violations"` — the
-stage the audit had never opened (plan 4.8), in three engines;
+stage the audit had never opened ([`lesson-106`](../lessons.md#lesson-106)), in three engines;
 `apps/sandbox-e2e/src/select.spec.ts › "the sentence stands beside the list, not in it"` and
 the same case in `libs/components/select/src/select.spec.ts`, beside the window's cases moved
 to the list; `node_modules/axe-core` 4.12.1, `aria-required-children` and

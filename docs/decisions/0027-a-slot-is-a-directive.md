@@ -63,7 +63,7 @@ Three consequences follow from that one sentence:
 3. **A slot standing where nothing reads it says so**, under `isDevMode()`: the component's
    own content query is the claim — finding the template is the statement that it will be
    rendered — and a slot no query reaches reports itself after the first render.
-   _Revised 2026-09-07 (plan 4.43): this was the element injector, with the component
+   _Revised 2026-09-07 ([`lesson-176`](../lessons.md#lesson-176)): this was the element injector, with the component
    providing `PCT_TEMPLATE_HOST` and the slot resolving it. That cost 24458 B, because a
    `providers` array pins its component into any bundle that imports a sibling from the same
    file ([`lesson-173`](../lessons.md#lesson-173)), and the obvious repair — reading the host

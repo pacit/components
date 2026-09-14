@@ -84,7 +84,7 @@ None of its own — fully native
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                                         |
 | Size budget                     | none — gap (shares an entrypoint with `field`)                                                                                                                                                          |
 | Screen-reader log               | none — gap                                                                                                                                                                                              |
-| docs page                       | `/components/text` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                   |
+| docs page                       | `/components/text` on the published site — prerendered, the demo's own source is the code tab                                                                                                           |
 
 ## Decisions
 

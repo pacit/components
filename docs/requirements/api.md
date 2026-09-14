@@ -712,7 +712,7 @@ without a meaning or a default, a default with no key, a preview with no cost re
 throw; `apps/docs-e2e/src/landing.spec.ts › "the machine catalogue is the inventory the
 site renders…"` reads the cards on disk and the channel in its source and holds the served
 file to both, every documented address answering
-**Control:** the content pass's tripwires fired twice while 2.7.4 was writing the readings
+**Control:** the content pass's tripwires fired twice while the cards' owed readings were being written
 they owed (the registry's bold total and its three-column rows) and again on the first
 strict build (94 readings owed, then none); the e2e case is held by the same law as the
 landing's strip — a card renamed on disk or a key added to `PctTexts` fails it until the

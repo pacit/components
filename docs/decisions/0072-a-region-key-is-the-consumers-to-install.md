@@ -8,7 +8,7 @@
 **Evidence:** `libs/components/core/src/regions.ts`,
 `libs/components/toast/src/toast-viewport.ts`, `libs/components/core/src/core.spec.ts`
 (five cases, one of them the refusal), `apps/sandbox-e2e/src/regions.spec.ts` (four cases in
-three engines), [`lesson-181`](../lessons.md#lesson-181), plan 4.16
+three engines), [`lesson-181`](../lessons.md#lesson-181)
 
 ## The question
 

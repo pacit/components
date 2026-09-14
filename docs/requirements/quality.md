@@ -58,8 +58,8 @@ and is not on this list is the gap this requirement exists to name.
 `tools/check-texts.mjs` (target `check-texts`) — `host` attributes and the literals in their
 bindings, merged the same way, and point 4 reads signal factories per FILE rather than per
 class, so a base's default is read where it stands;
-`tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way since plan
-4.5, and the template through `templateUrl`, which a base cannot pass on;
+`tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, and
+the template through `templateUrl`, which a base cannot pass on;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
 where nothing is inherited;
@@ -316,7 +316,8 @@ pictures are of the whole viewport, each for a reason its case states (the dialo
 the surface a popover and a menu are drawn on, the window's edges a toast stack and a drawer
 land against), and for those the stage **blanks the sandbox's navigation** — `visibility:
 hidden`, the column kept — so a row added to that list, which is what every new view is,
-moves no pixel of them (plan 4.23; `opacity`, not `visibility`, because the layer has to stay — [`lesson-165`](../lessons.md#lesson-165)). The references live in
+moves no pixel of them (`opacity`, not `visibility`, because the layer has to stay —
+[`lesson-165`](../lessons.md#lesson-165)). The references live in
 `apps/sandbox-e2e/src/__screenshots__/{platform}/` and **are in the repository**.
 
 **Gate:** `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs; and over those

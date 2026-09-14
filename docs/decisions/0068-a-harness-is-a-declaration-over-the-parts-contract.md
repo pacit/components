@@ -15,7 +15,7 @@ A consumer who tests against this library writes `[data-pct-part="label"]` into 
 hand — correct today, silent the day the name moves, and the day after an upgrade is exactly
 when a suite is supposed to speak. The parts are already a snapshot-gated public surface
 ([0013](0013-no-headless-split.md), `check-parts`), so the library owes the instrument that
-holds them from the consumer's side: plan 2.6, `@pacit/components/testing`. What shape does
+holds them from the consumer's side: `@pacit/components/testing`. What shape does
 that instrument take, and what keeps it honest?
 
 ## The decision

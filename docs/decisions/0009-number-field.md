@@ -63,7 +63,7 @@ The starting point is now **the signal**, and the text only when the user is act
   never going to cover it. Since 2026-09-11 it is swept as a property —
   `parse(format(n)) === n` over 22 locales — and the sweep was right to exist: it broke on six
   locales in three families, one of them silently wrong rather than refused
-  ([`req-api-number`](../requirements/api.md#req-api-number), plan 5.1). What the cost buys is
+  ([`req-api-number`](../requirements/api.md#req-api-number)). What the cost buys is
   not a smaller input space but a measured one.
 
 ## Alternatives considered

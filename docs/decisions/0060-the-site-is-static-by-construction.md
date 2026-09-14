@@ -11,7 +11,7 @@ shell smoke in `apps/docs-e2e/src/shell.spec.ts`, three engines
 
 ## The question
 
-Plan 2.1.4: the documentation site needs an application to exist in — the last piece of
+The documentation site needs an application to exist in — the last piece of
 [`req-project-apps`](../requirements/project.md#req-project-apps)'s promised workspace.
 What shape does it take, and how much of the sandbox's proven scaffold does it inherit
 versus deliberately not?
@@ -21,9 +21,9 @@ versus deliberately not?
 `outputMode: "static"` with a catch-all `RenderMode.Prerender`: **every route is finished
 HTML at build time**, and there is no server to fall back on — a route that cannot
 prerender is a build error, which is exactly the loudness a documentation site wants. The
-choice buys three things at once: the deploy target stays a free static host decided at
-3.1 (site.md's deferral holds), the reader gets content before JavaScript, and the
-"performance read before written" bar of 2.1.8 starts from the fastest architecture there
+choice buys three things at once: the deploy target stays a free static host decided at the
+premiere (site.md "Deploy — decided later, built for now"), the reader gets content before JavaScript, and the
+"performance read before written" bar starts from the fastest architecture there
 is instead of optimising toward it. The scaffold's first build already proves the
 mechanism: the emitted `index.html` carries the headline, the library's elements and the
 hero CTA before any script runs.

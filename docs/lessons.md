@@ -3522,9 +3522,9 @@ space, a sentence. The rule fired, correctly by its own logic, at a file that ha
 Three things are worth keeping.
 
 **A scanner over source text has no denominator until it knows what a comment is.** This is
-[`lesson-77`](#lesson-77)'s shape once more and the same one open finding 4.1 describes for the
-language gate: the limb that decides _what to look at_ was never measured, so anything it
-reads wrongly is indistinguishable from something it approved. Here it erred loudly, which is
+[`lesson-77`](#lesson-77)'s shape once more, and the same one the language gate met: the limb
+that decides _what to look at_ was never measured, so anything it reads wrongly is
+indistinguishable from something it approved. Here it erred loudly, which is
 the good case — the reverse (a real prose default hidden inside a badly paired span) passes
 green.
 
@@ -3536,8 +3536,8 @@ whose comment count of `'` happens to be odd" — which nobody can review for.
 **The fix is a scanner, not a reworded comment.** `literalsIn()` walks the argument in four
 states — code, line comment, block comment, string — and is thirty lines. Rewording the comment
 would have been one line and would have left the trap for the next component, which is exactly
-what open finding 4.13 records happening twice with `data-pct-selected`. The control is in
-`_reference/`: the reference input now carries a comment with an apostrophe standing over a
+what [`lesson-162`](#lesson-162) records happening twice with `data-pct-selected`. The control
+is in `_reference/`: the reference input now carries a comment with an apostrophe standing over a
 `'sm'` in the code, and disarming `literalsIn` turns the reference red and moves **seven**
 prepared cases onto the wrong rule.
 
@@ -3691,7 +3691,7 @@ result — content cut off at the box's edge — is identical in both.
 
 The chips container was designed with its role conditional — `role="list"` while it holds
 chips, nothing when the row empties — because the nearest precedent said so: an empty listbox
-is a **critical** axe violation (plan 4.8, `aria-required-children`), and the ARIA grammar
+is a **critical** axe violation (`aria-required-children`), and the ARIA grammar
 gives `list` the same required owned elements (`listitem`). The hypothesis: same grammar, same
 violation, so the empty row needs the role taken off.
 
@@ -4302,7 +4302,8 @@ word.**
 
 ### <a id="lesson-161"></a>`lesson-161` — A signal written after the first render is a second render for everybody, and so is a view attached then
 
-The cost record (plan 2.3) read **2 renders** for the `menu`, `popover` and `toast` previews
+The cost record ([`req-quality-benchmark`](requirements/quality.md#req-quality-benchmark)) read
+**2 renders** for the `menu`, `popover` and `toast` previews
 and 1 for the other thirty, and the three had one shape in common: something flipped in
 `afterNextRender`. The menu and the popover kept a `rendered` signal — the gate that keeps the
 overlay a browser-only thing without asking which platform it is on — and an effect read it;
@@ -4384,7 +4385,7 @@ a silence.
 ### <a id="lesson-164"></a>`lesson-164` — A flake's record names the line the stack names, not the line the story ends on
 
 The dialog's scroll-lock case failed one run in three in WebKit on 2026-09-02, and the item
-that recorded it (plan 4.32) said WHERE: "at the `Escape` step — the panel is still in the
+that recorded it said WHERE: "at the `Escape` step — the panel is still in the
 DOM when `toHaveCount(0)` asks", with a suspicion to match, a wheel racing the keydown.
 Measured again on 2026-09-05 at that day's commit, four runs of twelve failed, every one at
 line 161 — `expect(await scrollY()).toBe(locked)`, the LOCK assertion three lines above the
@@ -4405,7 +4406,8 @@ the next day instead of surviving it.
 ### <a id="lesson-165"></a>`lesson-165` — A blanked element is still a layer, and taking the layer away moved four pictures in another column
 
 The stage of the visual tests was given a rule to blank the sandbox's navigation before the
-seven viewport pictures (plan 4.23), and its first version was `visibility: hidden`. The
+seven viewport pictures ([`req-quality-e2e`](requirements/quality.md#req-quality-e2e)), and its
+first version was `visibility: hidden`. The
 seven re-recorded as expected — and then four CARD pictures went red, `select-filter-trigger`,
 `select-clear-trigger` and their RTL twins at 743–924 pixels each, on cards that contain no
 navigation at all; the same four were green under the committed spec, run alone. The differing
@@ -4428,7 +4430,9 @@ regression moves shapes, antialiasing colours edges.
 
 ### <a id="lesson-166"></a>`lesson-166` — A host listener cannot get in front of the consumer's own, and a disabled link needs it to
 
-`PctButton` grew a second tag (`a[pctButton]`, plan 4.33) and with it the one state a link has
+`PctButton` grew a second tag (`a[pctButton]`,
+[0071](decisions/0071-a-link-in-button-s-clothes-is-a-link.md)) and with it the one state a
+link has
 no platform mechanism for: `disabled`. The first version wrote the refusal the obvious way — a
 `(click)` in the component's `host` block calling `preventDefault()` and
 `stopImmediatePropagation()`, which is what a disabled button gets from the browser for free.
@@ -4453,7 +4457,8 @@ what it projects.**
 
 ### <a id="lesson-167"></a>`lesson-167` — A drifting gradient's travel is its size written twice, and one frozen picture cannot see the difference
 
-The hero face was extracted from the site's own stylesheet into a component (plan 4.36) and
+The hero face was extracted from the site's own stylesheet into a component
+([0065](decisions/0065-a-treatment-that-paints-is-a-component.md)) and
 kept both of the numbers it found there — the button's `background-position: 300% 0` in the
 keyframe, the site's `background-size: 200% 100%` on the rim and the word — without noticing
 that they had never met. They are one number: a drift moves the image by
@@ -4584,7 +4589,7 @@ the control, one sentence for all of them is a worse document, not a tidier one.
 
 ### <a id="lesson-171"></a>`lesson-171` — A string equal to a selector is not a component, and a probe that skips the linker measures the wrong package
 
-The question was 4.4's: does a consumer importing `PctSelect` alone shed `PctMultiSelect`,
+The question: does a consumer importing `PctSelect` alone shed `PctMultiSelect`,
 its template and its styles? Everybody answers "of course, ESM". Two measurements were taken
 before one of them was true.
 
@@ -4624,7 +4629,7 @@ gate that already gets the pipeline right.
 
 ### <a id="lesson-172"></a>`lesson-172` — Half a cache is not half a speed-up: one half restores nothing, the other restores a green with no artifact
 
-The step was 4.41's, and it starts with the snippet everybody copies into a GitHub workflow:
+It starts with the snippet everybody copies into a GitHub workflow:
 `actions/cache` over `.nx/cache`, keyed on the lockfile. It was measured before it was
 written, one task at a time on nx 23.1, with `NX_CACHE_DIRECTORY` and
 `NX_WORKSPACE_DATA_DIRECTORY` pointed at a scratch pair so nothing in the repository moved.
@@ -4659,8 +4664,8 @@ bump still reruns everything, because `package-lock.json` is in `sharedGlobals`.
 
 ### <a id="lesson-173"></a>`lesson-173` — `providers` on a component pin it into its entrypoint, and a consumer who never named it pays for it whole
 
-4.4 measured that importing one tag of a multi-tag entrypoint sheds the others — sometimes.
-`./accordion` sheds 63% of itself, `./select` sheds three bytes of 69907. 4.42 asked why, and
+A measurement said that importing one tag of a multi-tag entrypoint sheds the others —
+sometimes. `./accordion` sheds 63% of itself, `./select` sheds three bytes of 69907. Why, and
 the answer is one line of a component's decorator, measured one doctored declaration at a
 time on the built package, with the gate's own probe doing the bundling.
 
@@ -4702,7 +4707,7 @@ in the wrong place.
 
 ### <a id="lesson-174"></a>`lesson-174` — Twelve mechanisms taken out one at a time: what a suite holds is not what its case names say
 
-4.19 asked what measures a component whose implementation is a browser. The accordion is 74
+What measures a component whose implementation is a browser? The accordion is 74
 lines of TypeScript and a template, a stylesheet and `<details>`; the mutation run reads the 74
 lines and nothing else, so its 95% is a true statement about a small thing that reads like a
 statement about a component. The answer the item decided on — a recorded disarming per claim —
@@ -4779,7 +4784,7 @@ conformance report exists to state.
 into the static `ɵcmp` initialiser pins its class into any bundle that imports a sibling from
 the same file. The only thing that array bought here was a dev-mode message about a slot
 standing where nothing reads it, so the plan chose the obvious repair — have the slot read its
-host's tag off the element it stands on, no DI at all (4.43).
+host's tag off the element it stands on, no DI at all.
 
 **The repair was measured before it was written, and it does not work.** A probe rendering the
 four shapes a slot can take reads:
@@ -4925,7 +4930,7 @@ Tones existed as a refusal in two cards for months: success and failure look ali
 because a tone painted in colour alone is a state carried by colour alone and the second channel
 would be an icon — four public names, a set no single component could judge. The toast refused it
 first, the progress bar refused it second for the same reason, and two components standing on one
-unmade decision is what the plan said would happen (4.14).
+unmade decision is what both cards said would happen.
 
 **What the decision bought, and what it cost.** Four names into `PctIconName` at once, two ramps
 the palette did not have (`green`, `amber`), three semantic colours beside `danger`, and a `tone`
@@ -5281,7 +5286,8 @@ whose file name carries an axis word belongs to that axis's group, and a base is
 
 ### <a id="lesson-191"></a>`lesson-191` — The backstop named in the rules has not run in 144 commits
 
-The full battery run at the end of 5.4 turned up a red that belonged to neither item:
+The full battery run at the end of the density pass turned up a red that belonged to it as
+little as to the sweep before it:
 `sandbox:vite:test`, three of seven cases, `TypeError: Cannot read properties of null
 (reading 'register')`. `954047f` (2026-09-08) put `pctRegionKey` and three `pctRegion`s into
 the sandbox shell's template and `providePctRegions()` into `app.config.ts`; `app.spec.ts`

@@ -11,7 +11,7 @@ snippet); `apps/docs-e2e/src/pages.spec.ts` — the gallery count, the live dial
 
 ## The question
 
-Plan 2.1.7: the component pages must render the cards, and the cards are markdown. The
+The component pages must render the cards, and the cards are markdown. The
 obvious move is a markdown engine plus a highlighter shipped to the client — and both
 halves of the obvious move are wrong here.
 
@@ -57,7 +57,7 @@ lessons log is.
 
 - The hero CTAs are `<button routerLink>`: `pctButton` dresses `button[pctButton]` only,
   and an anchor wearing the button's faces is **library work** at the full regime —
-  named in the plan (4.33), not smuggled into the site. _Paid off on 2026-09-07:
+  named as library work of its own, not smuggled into the site. _Paid off on 2026-09-07:
   [0071](0071-a-link-in-button-s-clothes-is-a-link.md) widened the selector and the two CTAs
   are anchors._
 - The shiki theme switch (`[data-theme='dark'] … !important`) mirrors the token system's

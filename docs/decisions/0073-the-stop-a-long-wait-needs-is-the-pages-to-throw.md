@@ -8,7 +8,7 @@
 `libs/components/skeleton/src/skeleton.scss`,
 `libs/components/skeleton/src/skeleton.spec.ts` (four cases),
 `apps/sandbox-e2e/src/skeleton.spec.ts` (two cases in three engines, one of them the
-negative control), `docs/acr/claims.json` (SC 2.2.2), plan 4.45
+negative control), `docs/acr/claims.json` (SC 2.2.2)
 
 ## The question
 

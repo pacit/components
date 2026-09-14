@@ -10,7 +10,7 @@
 a roving focus, `treeitem`s in `group`s, `aria-expanded` on branches and `aria-selected`
 on the chosen row. Named in the class JSDoc.
 
-**The first component of the 1.1 tail that could not refuse the keys.** Eleven components
+**The first component of the first phase that could not refuse the keys.** Eleven components
 in a row left the keyboard to the platform, because the platform had it; a tree is where
 that ends — no element walks a hierarchy — so the walk IS the component. Everything else
 is refused ownership: the markup is the hierarchy (items nested in items, no `data`
@@ -110,7 +110,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 | Strings through `PCT_TEXTS`                                | not applicable — the component draws no text of its own                                                                                                                                                       |
 | Entrypoint size budget                                     | `libs/components/size.snapshot.md` — `./tree` on `./core` and `./icon`                                                                                                                                        |
 | A screen-reader test log                                   | none — gap: the same one every component here has. The question for the log: that the tree announces item counts and levels from structure alone, and that a folded branch's children are not spoken          |
-| A docs page with live examples                             | `apps/sandbox/src/app/views/tree/` (the sandbox view). The published site: `/components/tree` — prerendered, the demo's own source is the code tab (2.1.7)                                                    |
+| A docs page with live examples                             | `apps/sandbox/src/app/views/tree/` (the sandbox view). The published site: `/components/tree` — prerendered, the demo's own source is the code tab                                                            |
 | Unit + mutation                                            | `libs/components/tree/src/tree.spec.ts` — 21 cases; `libs/components/mutation.snapshot.md` — `tree.ts` measured in the day's shared full run                                                                  |
 
 ## Decisions this component implements
@@ -134,4 +134,4 @@ until-found arrangement, carried whole),
   decision of its own the day a real application asks.
 - **No async loading.** `aria-busy` on a loading branch is 0037 at a hierarchy — its own
   future record.
-- **No drag, no virtualization.** Application machinery; the second is 1.2's problem.
+- **No drag, no virtualization.** Application machinery; the second belongs to the datagrid's headless core.

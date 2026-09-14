@@ -51,7 +51,7 @@ arrangement with the guessable half removed.
 
 **The role is static, and that is measured rather than assumed.** The hypothesis was that an
 empty `role="list"` would need the role taken off — the empty listbox is a critical audit
-violation (plan 4.8), and `list` declares the same required owned elements in the ARIA
+violation ([`lesson-106`](../lessons.md#lesson-106)), and `list` declares the same required owned elements in the ARIA
 grammar. Axe disagrees: a `role="list"` with zero items raises **nothing** in any of the
 three engines, and custom elements as its `listitem` children pass clean. So the empty state
 needs no machinery at all, and a computed role that existed to dodge a violation nobody can

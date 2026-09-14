@@ -11,7 +11,7 @@ forced-colours readings in `apps/sandbox-e2e/`
 
 ## The question
 
-The 1.1 tail refused key handlers eleven components in a row, because the platform always
+The eleven components before it refused key handlers in a row, because the platform always
 had the keys already — a link Tabs, a `<details>` toggles, a button presses. A tree is
 where that run ends, on the pattern's own terms: the ARIA APG Tree View is **one tab stop**
 with a roving focus inside it — Up and Down between visible nodes, inline-forward to open
@@ -86,8 +86,8 @@ cannot be found.
 - **async loading** — `aria-busy` on a loading branch, a state for "asked and empty" —
   the select's loading decision ([0037](0037-loading-is-a-fact-about-the-list.md)) at a
   hierarchy, and it returns as its own record.
-- **drag to reorder, virtualization** — application machinery; the second is 1.2's
-  problem and arrives with the datagrid or not at all.
+- **drag to reorder, virtualization** — application machinery; the second belongs to the
+  datagrid's headless core and arrives with it or not at all.
 - **selection following focus** — the APG allows it and file explorers do it, but it
   turns every arrow press into a write into the application's model; the quiet walk with
   an explicit `Enter` is the smaller promise, and the click keeps the one-gesture feel.

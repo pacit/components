@@ -265,7 +265,8 @@ through the two properties the reader was blind to), `dead-on-pair`, `on-without
 standing under prose the scanner read as a declaration) and `sheet-removed` for the denominator;
 plus runs against the repository: a new `background: var(--pct-surface-disabled)` declaration
 in `button.scss` fires, removing the `button/solid — label` pair from the policy fires,
-removing `UI: the ring around today` fires as of 4.39 and was silent before it, restoring the
+removing `UI: the ring around today` fires now and was silent before the reader learned both
+spellings of a value, restoring the
 dead `--pct-on-danger` fires once the snapshot is accepted
 
 > **The policy was once silent about 27 colours.** The contrast gate counted 38
@@ -286,13 +287,13 @@ dead `--pct-on-danger` fires once the snapshot is accepted
 > ring's colour was therefore in no denominator at all, and the gradient's stops counted only
 > because a second stylesheet spelled them as a `background`. Both had policy entries and
 > both entries were there because a person put them there:
-> deleting `UI: the ring around today` was a green run until 4.39 taught the reader the two
+> deleting `UI: the ring around today` was a green run until the reader was taught the two
 > shapes of a value — [`lesson-168`](../lessons.md#lesson-168).
 >
 > **And a third time, one floor further down, in the INPUT.** The rule was right and the
 > reader was right, and the text they were given was not: sass keeps a loud comment, so four
 > declarations of the library reached the scanner under the last word of the prose above them
-> rather than under their own property (4.40). All four carry dimensions, so nothing was red
+> rather than under their own property. All four carry dimensions, so nothing was red
 > and nothing was wrong — what the day cost was the guarantee, since a painting under such a
 > comment would have been a colour the point never counted, and green. Three silences, three
 > floors, one shape: the gate examined only what it was handed
