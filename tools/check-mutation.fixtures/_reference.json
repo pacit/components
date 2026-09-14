@@ -134,6 +134,7 @@
       "timeoutMS": 5000,
       "timeoutFactor": 1.5,
       "dryRunTimeoutMinutes": 20,
+      "concurrency": 4,
       "coverageAnalysis": "perTest"
     },
     "config": {
@@ -141,7 +142,8 @@
         "high": 90,
         "low": 80,
         "break": 80
-      }
+      },
+      "concurrency": 4
     },
     "targets": {
       "mutation": {

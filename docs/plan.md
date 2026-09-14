@@ -1208,22 +1208,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     ([`lesson-205`](lessons.md#lesson-205)); the run itself cost three attempts
     ([`lesson-206`](lessons.md#lesson-206))
 
-- [ ] **4.61 — two decisions about the mutation run stand in nobody's file**
-  - **the worker count.** `components:mutation` runs the bare `stryker run` and the
-    configuration sets no `concurrency`, so on this machine the default takes the parent
-    process with it and there is no red, no report and no session
-    ([`lesson-200`](lessons.md#lesson-200)). The number that works here is wrong for a
-    four-core runner, which is why it has stayed on a command line
-  - **the snapshot's provenance.** Which run a `--write` of `mutation.snapshot.md` may be taken
-    from is undecided: a clock-kill is not slow under load, it is absent, so a snapshot written
-    from a run that lands its kills reddens every run that does not — measured on `motion.ts`,
-    `placement.ts` and `texts.ts` over untouched code. The 2026-09-14 run is the case in hand
-    and the snapshot was deliberately NOT written from it: same total, same 4424 detected, and
-    **8 of them by the clock where the record has none**
-  - both are decisions rather than settings, which is why neither fits in a configuration file
-    as it stands. The home is a decision record, and the second one is what the nightly's
-    unmetered re-measurement exists to inform
-  - binds at: **the next full mutation run**
+- [x] **4.61 — two decisions about the mutation run stood in nobody's file** — **closed
+      2026-09-14 as [0077](decisions/0077-the-clock-is-evidence-and-the-workers-are-a-ceiling.md)**
+  - one thesis under both: a number about the RUN is not a number about the code. The worker
+    count barely varies — the binding resource is memory per worker, 15 GB here against 16 on
+    a runner — so it stands once in `stryker.config.json`, and point 1 refuses its absence and
+    a command line that overrides it alike
+  - the clock varies freely, so it is recorded and binds nothing: the per-file drift is
+    measured on the killed MINUS the clock, both sides, and a `--write` is allowed from any run
+  - the case that made the record undecidable was a run landing timeouts on `motion.ts`,
+    `placement.ts` and `texts.ts` over untouched code. The 2026-09-14 run was **not** that
+    case — its eight are the record's own eight in the same six files, and it moved no row.
+    Recorded here because this file claimed the opposite for a day
 
 ## 5. Gaps with no deadline
 

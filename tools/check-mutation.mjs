@@ -9,7 +9,7 @@
  *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
- *  6. the result: a hard floor, a TWO-SIDED tolerance per file and total, and the prose,
+ *  6. the result: a hard floor, a TWO-SIDED tolerance on what assertions caught, the prose,
  *  7. EQUIVALENT: a survivor excused as unkillable is named, still alive, and reasoned,
  *  8. both targets (`mutation`, `check-mutation`) run in CI.
  *
@@ -141,6 +141,17 @@ const scoreFrom = (mutants) => {
   return { detected: w, denominator: m, score: m === 0 ? 100 : (w / m) * 100 };
 };
 
+/**
+ * The same set read without the clock: the mutants an ASSERTION caught. The drift against
+ * the record is measured on this and not on the score above, because a timeout is a
+ * property of the machine the run happened on rather than of the tests (0077).
+ */
+const assertionFrom = (mutants) => {
+  const w = mutants.filter((m) => m.status === 'Killed').length;
+  const m = mutants.filter((x) => DENOMINATOR.includes(x.status)).length;
+  return m === 0 ? 100 : (w / m) * 100;
+};
+
 // ── snapshot ──────────────────────────────────────────────────────────────────
 
 const HEADER = `# Mutation run snapshot
@@ -180,9 +191,23 @@ the case that turned red written into the card, the way \`docs/components/accord
 is machinery this repository would then own, and the disarming is a measurement anybody can
 repeat with an editor.
 
+**The clock is recorded and does not bind.** A mutant killed by elapsed time counts towards
+the score exactly as one killed by an assertion, and whether it times out is decided by the
+machine: one full run produced timeouts on \`motion.ts\`, \`placement.ts\` and \`texts.ts\` over
+untouched code, where this record has never carried one on any of the three. Most runs agree
+with it exactly — the eight below are the same eight, in the same six files, as the run before
+them — and that is what makes the exception expensive rather than cheap: a record written from
+the run that lands its timeouts reddens every run that does not, and one written from the run
+that does not turns them into headroom excusing assertions nobody wrote. So the row keeps the
+clock column as EVIDENCE — it is how \`clock.clockShare\` is read, and how a score bought with
+run time shows — while the drift below is measured on the killed minus that column: the
+mutants an assertion caught
+([0077](../../docs/decisions/0077-the-clock-is-evidence-and-the-workers-are-a-ceiling.md)).
+
 Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
 ignored. The score follows from them — \`killed / (killed + surviving + errored + not
-covered)\` — and the gate checks that it does. Tolerance: ±%TOLERANCE% of a percentage point.
+covered)\` — and the gate checks that it does. Tolerance: ±%TOLERANCE% of a percentage point,
+two-sided, over the assertion reading of the same row.
 `;
 
 const renderSnapshot = (report, tolerance) => {
@@ -232,7 +257,7 @@ const TOTAL_ROW = /^TOTAL (\d+(?:\.\d+)?) (\d+)\/(\d+)$/;
 const rowArithmetic = (row) => {
   const file = FILE_ROW.exec(row);
   if (file) {
-    const [, name, score, killed, , surviving, errored, notCovered] = file;
+    const [, name, score, killed, clock, surviving, errored, notCovered] = file;
     const denominator =
       Number(killed) + Number(surviving) + Number(errored) + Number(notCovered);
     return {
@@ -240,6 +265,12 @@ const rowArithmetic = (row) => {
       name,
       score: Number(score),
       computed: denominator === 0 ? 100 : (Number(killed) / denominator) * 100,
+      // The same row read without the clock: what assertions alone caught. It is this
+      // number the drift is measured on, and the reason is 0077.
+      assertion:
+        denominator === 0
+          ? 100
+          : ((Number(killed) - Number(clock)) / denominator) * 100,
     };
   }
   const total = TOTAL_ROW.exec(row);
@@ -302,6 +333,33 @@ export const checkMutation = (input) => {
         `    Before the first mutant, Stryker runs the whole suite once with coverage ` +
         `instrumentation, and this suite measures within seconds of that ceiling. A run ` +
         `that dies there writes no report, so nothing downstream of here can say why.`,
+    );
+
+  // The worker count, and the same shape one step further: a run that dies for want of
+  // memory ALSO writes no report, so this too is a tripwire on the setting. What makes it a
+  // rule rather than a command line is that the binding resource is memory per worker rather
+  // than cores, and that is within a gigabyte on both machines this runs on — so one number
+  // is right in both places and has a file to live in (0077).
+  const declaredWorkers = input.config?.concurrency;
+  if (!Number.isInteger(declaredWorkers) || declaredWorkers < 1)
+    throw new MutationError(
+      'measurement',
+      'worker-count-undeclared',
+      `${CONFIG} declares \`concurrency\` as ${JSON.stringify(declaredWorkers)}.\n` +
+        `    Stryker's default is derived from the core count, and on a machine with more ` +
+        `cores than memory per worker it takes the parent process down with it — no red, ` +
+        `no report, and nothing left to read one in (\`lesson-200\`).`,
+    );
+  const effectiveWorkers = report.config?.concurrency;
+  if (effectiveWorkers !== declaredWorkers)
+    throw new MutationError(
+      'measurement',
+      'worker-count-overridden',
+      `the run used ${JSON.stringify(effectiveWorkers)} workers where ${CONFIG} declares ` +
+        `${declaredWorkers}.\n` +
+        `    A number on the command line is the same fact in a second place: it is right ` +
+        `on the machine somebody typed it on and absent on every other. If ${declaredWorkers} ` +
+        `is wrong, the file is where it is wrong.`,
     );
 
   // Every read below is defensive, even though the point above has already rejected an
@@ -803,7 +861,7 @@ export const checkMutation = (input) => {
     );
 
   const fromSnapshot = new Map(
-    rows.filter((r) => r.name !== 'TOTAL').map((r) => [r.name, r.score]),
+    rows.filter((r) => r.name !== 'TOTAL').map((r) => [r.name, r]),
   );
   const missing = files.filter((p) => !fromSnapshot.has(p));
   if (missing.length)
@@ -825,11 +883,14 @@ export const checkMutation = (input) => {
         `\n    A row with no file reads as proof that something is measured — and it is not.`,
     );
 
+  // Both sides without the clock (0077). The column stays in the record as evidence and
+  // point 5 still rules on its share; what it may not do is decide whether a file drifted,
+  // because then an untouched file reddens on the run that was merely busier.
   const drops = [];
   const rises = [];
   for (const [file, data] of Object.entries(report?.files ?? {})) {
-    const now = scoreFrom(data.mutants).score;
-    const then = fromSnapshot.get(file);
+    const now = assertionFrom(data.mutants ?? []);
+    const then = fromSnapshot.get(file)?.assertion;
     if (now < then - tolerance)
       drops.push(`${file}: ${percent(then)} → ${percent(now)}`);
     if (now > then + tolerance)

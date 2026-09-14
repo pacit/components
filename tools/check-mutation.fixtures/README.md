@@ -7,9 +7,9 @@ where its file says is a fault just the same, because it proves something other 
 what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
-[`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
-**twelve of the forty-five** rules moves their cases onto a neighbouring rule, and
-without that field all twelve runs would be green.
+[`lesson-50`](../../docs/lessons.md#lesson-50). Measured when this gate had forty-five rules:
+disarming **twelve** of them moves their cases onto a neighbouring rule, and without that
+field all twelve runs would be green.
 
 The reason it exists is the same as for every other gate
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are eight points and
-fifty-one rules, and that is where all the content sits. The readings are guarded by runs against
+fifty-three rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 

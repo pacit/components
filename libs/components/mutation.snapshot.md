@@ -35,9 +35,23 @@ the case that turned red written into the card, the way `docs/components/accordi
 is machinery this repository would then own, and the disarming is a measurement anybody can
 repeat with an editor.
 
+**The clock is recorded and does not bind.** A mutant killed by elapsed time counts towards
+the score exactly as one killed by an assertion, and whether it times out is decided by the
+machine: one full run produced timeouts on `motion.ts`, `placement.ts` and `texts.ts` over
+untouched code, where this record has never carried one on any of the three. Most runs agree
+with it exactly — the eight below are the same eight, in the same six files, as the run before
+them — and that is what makes the exception expensive rather than cheap: a record written from
+the run that lands its timeouts reddens every run that does not, and one written from the run
+that does not turns them into headroom excusing assertions nobody wrote. So the row keeps the
+clock column as EVIDENCE — it is how `clock.clockShare` is read, and how a score bought with
+run time shows — while the drift below is measured on the killed minus that column: the
+mutants an assertion caught
+([0077](../../docs/decisions/0077-the-clock-is-evidence-and-the-workers-are-a-ceiling.md)).
+
 Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
 ignored. The score follows from them — `killed / (killed + surviving + errored + not
-covered)` — and the gate checks that it does. Tolerance: ±2 of a percentage point.
+covered)` — and the gate checks that it does. Tolerance: ±2 of a percentage point,
+two-sided, over the assertion reading of the same row.
 
 ```
 libs/components/accordion/src/accordion-item.ts 100.00 16(0) 0 0 0 1

@@ -1,0 +1,6 @@
+{
+  "check": "measurement",
+  "rule": "worker-count-overridden",
+  "// defect": "The run used a different worker count than the file declares, which is what a `--concurrency` on the command line looks like from here. It is the same fact in a second place: right on the machine somebody typed it on and absent on every other — the state 0077 ended, and the reason the number moved into the file at all.",
+  "runConfig": { "concurrency": 8 }
+}

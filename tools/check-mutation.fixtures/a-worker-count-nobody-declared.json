@@ -1,0 +1,6 @@
+{
+  "check": "measurement",
+  "rule": "worker-count-undeclared",
+  "// defect": "`stryker.config.json` sets no `concurrency`, so the run takes Stryker's own default, derived from the core count. On a machine with more cores than memory per worker that default takes the PARENT process down with it — no red, no report, no session left to read one in (`lesson-200`). Like the dry-run ceiling beside it, this is a tripwire on the setting: the failure it guards against writes nothing for a later rule to find (0077).",
+  "config": { "concurrency": null }
+}

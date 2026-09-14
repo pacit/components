@@ -1,0 +1,29 @@
+{
+  "check": "score",
+  "rule": "score-dropped",
+  "// defect": "One of beta's assertions is gone and one mutant now dies on the CLOCK instead. The score does not move — seventeen of twenty either way — and under a comparison that counts timeouts the file reads flat while a test has left it. The drift is measured on the killed MINUS the clock (0077), so it is 85.00 against 80.00 and it fires. The clock's share stays under its own bound, so point 5 has nothing to say and this case reaches point 6.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Timeout",
+      "Survived",
+      "Survived",
+      "Survived"
+    ]
+  }
+}

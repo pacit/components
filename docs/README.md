@@ -7,7 +7,7 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
 requirements/   LEVEL 1   promises: what has to be true                (94 entries)
-decisions/      LEVEL 2   why this way, and what it costs us           (76 ADRs)
+decisions/      LEVEL 2   why this way, and what it costs us           (77 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
 lessons.md                the evidence base: what actually happened    (207 entries)
 support.md                what a consumer can count on: versions, notice, codemods
