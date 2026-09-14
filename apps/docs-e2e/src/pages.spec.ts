@@ -67,11 +67,11 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The gallery's claim after the 2.8 redesign: every card carries the component itself,
-   * and it FITS. Both halves are load-bearing and neither is visible to a green suite that
-   * only counts tiles — a scene authored for the component page's 675px stage overflows a
-   * card silently, cropped by the stage, and the reader sees four of the button's six
-   * faces without being told one was cut. Seven of the thirty-three did exactly that before
+   * The gallery's claim (site.md "The gallery, drawn in words"): every card carries the
+   * component itself, and it FITS. Both halves are load-bearing and neither is visible to a
+   * green suite that only counts tiles — a scene authored for the component page's 675px
+   * stage overflows a card silently, cropped by the stage, and the reader sees four of the
+   * button's six faces without being told one was cut. Seven cards did exactly that before
    * `CARD_DEMOS` was written; this is what keeps them from coming back.
    *
    * The stage is `inert` and `aria-hidden`, so the count of tab stops is the second claim:

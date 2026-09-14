@@ -1,13 +1,14 @@
 /* The hero edge and the hero name — the landing's hover idiom, in one place.
  *
  * The landing grew this for the three live cards of "Live, not screenshots" and the
- * gallery now wants the same gesture on all thirty-three (plan 2.8). It is NOT a
+ * gallery wants the same gesture on every card (site.md "The gallery, drawn in words").
+ * It is NOT a
  * decoration one re-types: three of its rules are measurements, each of which cost a
  * silent defect to find, and a second hand-written copy is where they drift apart —
  * the argument `AGENTS.md` makes about this file and `CLAUDE.md`.
  *
  * Both pages take it from here — the landing for the three cards of "Live, not
- * screenshots", the gallery for all thirty-three — and there is no second copy.
+ * screenshots", the gallery for every one of its cards — and there is no second copy.
  *
  * Both selectors are parameters because the two pages name their nodes differently, and
  * because a mixin that hard-codes `.card` cannot be read at the call site.

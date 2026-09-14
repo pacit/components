@@ -1,10 +1,11 @@
 # The site — `apps/docs`, designed before it is built
 
-> Written 2026-09-02, the day after the thirteenth component closed 1.1. This file is the
-> design that plan item **2.1** executes step by step: the plan holds the checkboxes
-> (2.1.1–2.1.8), this file holds the reasons and the shape. Each step still writes its own
-> decision record when it lands — the plan dies, an ADR does not, and this file is neither:
-> it is the drawing the steps build from, updated when a step teaches it something.
+> Written 2026-09-02, the day after the thirteenth component was built. This file is the
+> site's design: what each screen is for, what it shows, and why it is shaped that way. The
+> building itself went in eight steps, each committable and gate-green on its own, and the
+> checkboxes for them lived in a working file that is temporary by design. This one is not —
+> a step that lands writes its own decision record, and the drawing they are all built from
+> is here, updated whenever a step teaches it something.
 
 ## What the site is for
 
@@ -160,6 +161,35 @@ side). Top to bottom:
 5. **Three tiles of identity** linking `/trust`: probes before code · nothing breaks
    silently · tokens all the way down.
 
+## The gallery, drawn in words
+
+One card per component, and the claim each card makes is that **the component itself is on
+it** — not a screenshot of it, not an icon standing for it. Sketch variant A, transferred
+literally: **caption above, stage below**, so DOM order, visual order and focus order are one
+sequence and there is nothing to defend.
+
+The stage is `inert` and `aria-hidden`, which settles the arithmetic a keyboard reader meets:
+one tab stop per card, whatever the scenes inside them hold. A live component that took focus
+would make that count a function of whichever demos were on the page that day.
+
+Two things about a card are measured rather than chosen.
+
+- **It has to fit.** A scene authored for the component page's 675px stage overflows a card
+  silently: the stage crops it, and the reader sees four of the button's six faces without
+  being told that one was cut. Seven cards did exactly that before the scenes got a registry
+  of their own, and it is a defect a green suite that counts tiles cannot see.
+- **The hover gesture is the landing's**, worn by every card rather than by the three the
+  landing shows. It is not decoration anybody re-types — three of its rules are measurements
+  that each cost a silent defect to find — so both pages take it from
+  `apps/docs/src/app/hero-edge.scss` and there is no second copy.
+
+Above the cards stand the finder and the band bar, `docs-finder` and `docs-bar` — the same
+two `/theming` and `/trust` use, so three long pages answer typing and name their bands the
+same way; what this page keeps for itself is only how far each stands from the lead. The
+match rule and the scroll spy are `find.ts` and `spy.ts` rather than a third copy. The six
+`<h2>` bands exist so that a card can be **arrived at**: of twenty-four objections raised
+against the first gallery, two stood, and both were that the page could not be.
+
 ## The component page, drawn in words
 
 Redrawn on 2026-09-03 from two static sketches the maintainer chose between before a line
@@ -252,9 +282,9 @@ front of it) is a 3.1-day decision and is listed there, not here.
 
 ## The steps
 
-The executable order is a checkbox per step in the plan, each one committable and gate-green
-on its own: layout entrypoint → button faces → theme directive → app scaffold → content
-pipeline → landing → pages → the measured bar. All eight landed on 2026-09-02.
+The executable order was one step at a time, each committable and gate-green on its own:
+layout entrypoint → button faces → theme directive → app scaffold → content pipeline →
+landing → pages → the measured bar. All eight landed on 2026-09-02.
 
 **The method of a pass over what is already built**, stated as a rule because the first one
 found it by doing it: read the screen first, draw second, and transfer the accepted sketch

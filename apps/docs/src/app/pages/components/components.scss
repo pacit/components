@@ -1,7 +1,8 @@
 @use '../../hero-edge' as edge;
 
-/* The gallery (plan 2.8, sketch variant A). Caption above, stage below — DOM order,
-   visual order and focus order are one sequence, with nothing to defend. */
+/* The gallery (sketch variant A; site.md "The gallery, drawn in words"). Caption above,
+   stage below — DOM order, visual order and focus order are one sequence, with nothing
+   to defend. */
 
 .head {
   padding-block: var(--pct-space-6);
