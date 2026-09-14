@@ -1,0 +1,18 @@
+{
+  "check": "measured",
+  "rule": "empty-report",
+  "// defect": "A report with no project and no case in it. It parses, it has a stats block, and it agrees with every record ever written.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": { "projects": [] },
+      "suites": [],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 0,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

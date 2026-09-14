@@ -1,0 +1,463 @@
+{
+  "// why": "The reference input of the `check-flake` negative control. Every case beside it is built ON A COPY OF IT, so a case file holds nothing but its own defect. This input must pass — were it defective itself, every case would fire because of it and every \"it fired\" would be false.",
+  "// stored": "This is the one control here built on a STORED input rather than the live repository, and for a reason rather than for convenience: what this gate reads is a Playwright report produced by an hour-long repetition job on a machine that is not this one. There is nothing live to build on. The shape below was not written from the documentation — it was measured against the reporter itself, which is how it is known that `--repeat-each` puts each repetition in a SEPARATE spec entry under the same title and records no repeat index anywhere.",
+  "// numbers": "Two suites, five cases, fifteen runs, one wobble: `closes on escape | chromium` passes, fails, passes. That makes the rate 20.00%, which is absurd for a real suite and deliberate here — a case that knocks one number about is to fire on ITS OWN rule rather than on a rate nobody set a ceiling for.",
+  "input": {
+    "policy": {
+      "reports": {
+        "fake-e2e": "tmp/flake/fake-e2e.json",
+        "fake-docs-e2e": "tmp/flake/fake-docs-e2e.json"
+      },
+      "minimumRepetitions": 3
+    },
+    "reports": {
+      "fake-e2e": {
+        "config": {
+          "projects": [
+            {
+              "id": "chromium",
+              "name": "chromium",
+              "repeatEach": 3,
+              "retries": 0,
+              "testDir": "/fake"
+            },
+            {
+              "id": "firefox",
+              "name": "firefox",
+              "repeatEach": 3,
+              "retries": 0,
+              "testDir": "/fake"
+            }
+          ]
+        },
+        "suites": [
+          {
+            "title": "alpha.spec.ts",
+            "file": "alpha.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "opens on click",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": false,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "unexpected",
+                    "results": [
+                      {
+                        "status": "failed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "closes on escape",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "alpha.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "firefox",
+                    "projectName": "firefox",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-09-15T02:11:04.000Z",
+          "duration": 1000,
+          "expected": 11,
+          "unexpected": 1,
+          "flaky": 0,
+          "skipped": 0
+        }
+      },
+      "fake-docs-e2e": {
+        "config": {
+          "projects": [
+            {
+              "id": "chromium",
+              "name": "chromium",
+              "repeatEach": 3,
+              "retries": 0,
+              "testDir": "/fake"
+            }
+          ]
+        },
+        "suites": [
+          {
+            "title": "beta.spec.ts",
+            "file": "beta.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "the landing renders",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "beta.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "the landing renders",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "beta.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": "the landing renders",
+                "ok": true,
+                "tags": [],
+                "id": "fake",
+                "file": "beta.spec.ts",
+                "line": 3,
+                "column": 5,
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "status": "expected",
+                    "results": [
+                      {
+                        "status": "passed",
+                        "retry": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-09-15T03:02:41.000Z",
+          "duration": 1000,
+          "expected": 3,
+          "unexpected": 0,
+          "flaky": 0,
+          "skipped": 0
+        }
+      }
+    },
+    "snapshot": null
+  }
+}

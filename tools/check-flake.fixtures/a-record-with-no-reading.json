@@ -1,0 +1,10 @@
+{
+  "check": "record",
+  "rule": "reading-missing",
+  "// defect": "The record lists names and says nothing about what they were measured over. A list of names with no denominator is not a rate, and a reader cannot tell one wobble in five cases from one in five hundred.",
+  "snapshot": {
+    "replace": [
+      { "pattern": "^Taken .*$", "flags": "m", "with": "Taken recently." }
+    ]
+  }
+}

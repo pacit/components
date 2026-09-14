@@ -1,0 +1,7 @@
+{
+  "check": "denominator",
+  "rule": "case-run-unevenly",
+  "// defect": "One repetition of one case is missing and the tally was adjusted with it, so the two readings agree and a case still ran twice where every other ran three times. Repetitions are found by GROUPING on a path, so this is also what two tests sharing a title look like — they merge into one case and neither is measured.",
+  "dropRepetitions": ["fake-e2e::alpha.spec.ts › opens on click | chromium"],
+  "stats": { "fake-e2e": { "expected": 10 } }
+}

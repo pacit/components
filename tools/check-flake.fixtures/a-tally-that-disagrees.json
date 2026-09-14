@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "readings-disagree",
+  "// defect": "The report's own `stats` count more runs than the walk found. That is what a walk losing a nested `describe` looks like from the outside: every case inside it is unmeasured and nothing else changes.",
+  "stats": { "fake-e2e": { "expected": 40 } }
+}

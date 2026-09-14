@@ -1,0 +1,6 @@
+{
+  "check": "record",
+  "rule": "rows-contradict-reading",
+  "// defect": "The reading claims two wobbles and the record holds one row. A number written in prose has to equal what it counts — the same rule `check-index` holds the map of the documentation to.",
+  "snapshot": { "replace": [{ "pattern": "1 wobbled", "with": "2 wobbled" }] }
+}

@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "no-suite-declared",
+  "// defect": "The register names no suite to repeat. Every later point then rules on an empty set and the gate reports a repository with no flaky test in it — the shape that makes a measurement worse than no measurement, because it is green.",
+  "policy": { "reports": {} }
+}

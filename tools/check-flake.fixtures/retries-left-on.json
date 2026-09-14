@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "retries-on",
+  "// defect": "The repetition run kept retries. A retry is precisely the mechanism that makes a flake invisible — the case fails, runs again, passes, and is reported green — so with retries on this whole measurement reads zero and reads it convincingly.",
+  "projects": { "fake-e2e": { "retries": 2 } }
+}

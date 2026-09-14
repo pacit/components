@@ -331,7 +331,16 @@ suites, the first two the denominator (a corpus to read, and a scanner that read
 rather than losing the thread in the middle of a file) and the last two the rules: a
 positional locator (`.last()`, `.first()`, `.nth(n)`) read in the window an action opened
 with no auto-retrying assertion between, and a bare `waitForTimeout` whose next statement
-takes the baseline a later assertion is measured against
+takes the baseline a later assertion is measured against. How many races are LEFT is a
+separate measurement and a separate machine: `tools/check-flake.mjs` (target `check-flake`, in
+the nightly's repetition job) — five points over a run of both suites `--repeat-each` times
+with retries OFF, which writes the cases that did not agree with themselves into
+`docs/flake.snapshot.md`. That record is **not taken yet** and the gate says so rather than
+starting empty: the first reading belongs to the first nightly that runs the job, because the
+failure mode being measured IS contention and a reading off this desktop would be a fact about
+this desktop ([`lesson-200`](../lessons.md#lesson-200)). It is read ONE way: a name that
+appears and is not in the record turns the run red, a recorded name that behaved is not
+removed, because repetitions of a suite are a sample and absence is not proof
 **Control:** there are **two** thresholds and both come from measurement. The pixel count is
 absolute (`maxDiffPixels: 20`): a repeated run of the same code gives **0** differing pixels,
 while changing `border-radius` from 8 px to 1 px gives **74**; the first version, with
@@ -351,7 +360,13 @@ denominator, two for the scanner and three for the rules, each rejected **by the
 the rule it declares**, and a reference corpus that must pass. That reference carries the two
 real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
 by the reference refusing to pass rather than out in a spec somebody then rewrites to please
-a gate
+a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, seventeen
+prepared inputs and a reference that must pass — and it is the one control here built on a
+STORED input rather than on the repository, because what the gate reads is produced by an
+hour-long job on a machine that is not this one. The shape of that stored report was measured
+against Playwright's own reporter rather than read out of its documentation: under
+`--repeat-each` every repetition is a separate spec entry under the same title, with no repeat
+index recorded anywhere
 **Lessons:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
 [`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39),
 [`lesson-50`](../lessons.md#lesson-50), [`lesson-165`](../lessons.md#lesson-165),

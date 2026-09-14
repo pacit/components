@@ -1,0 +1,13 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "// defect": "Every number right, and the sentence saying the record is read ONE way reversed. That paragraph is the whole reason a name is never deleted by the gate; nothing but this rule ever compares it.",
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "is \\*\\*not\\*\\* a finding and is not removed",
+        "with": "is a finding and is removed"
+      }
+    ]
+  }
+}

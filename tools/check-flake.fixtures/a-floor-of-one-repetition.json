@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "no-repetition-floor",
+  "// defect": "A floor of one. One run of each case is the ordinary suite, and there is nothing for a case to disagree WITH — the gate would then measure the suite and call the result a flake rate of zero.",
+  "policy": { "minimumRepetitions": 1 }
+}

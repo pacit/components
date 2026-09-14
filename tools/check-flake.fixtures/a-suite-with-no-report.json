@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "no-report",
+  "// defect": "The register names two suites and only one report arrived — the shape of a repetition step that died, or one whose reporter wrote somewhere else. Half a measurement reads as half a suite with no flaky tests.",
+  "dropReports": ["fake-docs-e2e"]
+}

@@ -1,0 +1,9 @@
+{
+  "// reports": "Where the repetition job leaves its Playwright reports, one per suite, and the list of suites this gate rules on. Both live here rather than in the gate because the list is the DENOMINATOR: a suite quietly dropped from it stops being measured, and point 1 reads the same list twice — once to demand a report and once to refuse an empty one. The paths are under `tmp/` on purpose: a report is the output of an hour-long job and not a tracked file, and the gate runs in the job that produced it rather than beside the other gates.",
+  "reports": {
+    "sandbox-e2e": "tmp/flake/sandbox-e2e.json",
+    "docs-e2e": "tmp/flake/docs-e2e.json"
+  },
+  "// minimumRepetitions": "A floor on `--repeat-each`, not the number itself: the workflow decides how long the job may take and this decides what still counts as a measurement. Below two there is nothing for a case to disagree WITH — one run of each is the ordinary suite, and a gate over it would report every repository as free of flaky tests. Three is the smallest number that can show a case failing once and passing twice, which is the shape being looked for; it is a floor and raising `--repeat-each` in the workflow needs no change here.",
+  "minimumRepetitions": 3
+}

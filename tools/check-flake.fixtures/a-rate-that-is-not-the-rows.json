@@ -1,0 +1,8 @@
+{
+  "check": "record",
+  "rule": "rate-contradicts-reading",
+  "// defect": "The rate printed is not what the record's own counts give. It is the number a reader quotes and the only one most readers read, so it is the one most worth being unable to edit by hand.",
+  "snapshot": {
+    "replace": [{ "pattern": "\\(20\\.00%\\)", "with": "(5.00%)" }]
+  }
+}

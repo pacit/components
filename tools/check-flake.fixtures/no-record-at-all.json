@@ -1,0 +1,6 @@
+{
+  "check": "names",
+  "rule": "no-record",
+  "// defect": "No record on disk. A gate that shrugged here would be green on the first run of a suite nobody has ever repeated, which is exactly the state this gate was written in.",
+  "snapshot": null
+}

@@ -1,0 +1,12 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "A case that passes, fails and passes again, standing in no record. This is the finding the gate exists for — and the only direction it fires in, because the other direction is a sample being read as proof.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "unexpected",
+      "expected"
+    ]
+  }
+}

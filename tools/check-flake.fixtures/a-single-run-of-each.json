@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "too-few-repetitions",
+  "// defect": "The job ran each case once. The report is well-formed, every case agrees with itself trivially, and the rate is zero — a green measurement over a sample that cannot contain a disagreement.",
+  "projects": { "fake-e2e": { "repeatEach": 1 } }
+}

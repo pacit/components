@@ -1,0 +1,12 @@
+{
+  "check": "outcomes",
+  "rule": "status-contradicts-retries",
+  "// defect": "A case carries the `flaky` status, which Playwright gives a test that failed and then passed ON A RETRY. Point 1 read the configuration and found retries off, so one of the two is not describing this run — and the one that is wrong decides whether the measurement means anything.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "flaky",
+      "expected"
+    ]
+  }
+}

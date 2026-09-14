@@ -1,0 +1,12 @@
+{
+  "check": "outcomes",
+  "rule": "case-always-failed",
+  "// defect": "A case failed every repetition. That is a red suite and not a flaky one, and it is separated because the repetition job has to tolerate a non-zero exit to reach this gate at all: a gate counting DISAGREEMENTS finds none in a test that fails consistently, and would pass the job green over a broken suite.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  }
+}

@@ -38,6 +38,7 @@ check-distance.mjs 5 17 190
 check-docs.mjs 8 20 212
 check-e2e.mjs 4 15 142
 check-files.mjs 10 22 233
+check-flake.mjs 5 17 200
 check-forms.mjs 4 16 139
 check-harness.mjs 6 18 168
 check-icons.mjs 6 18 167
@@ -160,7 +161,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.55 closed 11 152
 4.56 closed 12 166
 4.57 closed 12 171
-4.58 open 8 118
+4.58 open 19 266
 4.59 closed 12 163
 4.60 closed 12 143
 4.61 closed 12 168

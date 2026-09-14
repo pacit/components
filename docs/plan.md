@@ -1173,14 +1173,25 @@ and every one is held by a **binds at** rather than by anybody's mood.
     policy entry says six, and a jsdoc in `check-files` sent a reader to a header paragraph
     that was the requirement's all along
 
-- [ ] **4.58 — the suite has a flake rate and nothing has ever measured it**
-  - 4.54 bought the _shape_ of a race as a greppable rule, and refused the nightly
-    `--repeat-each` job on its own wording. So the two flakes that were found are fixed and the
-    rate is still a guess ([`lesson-202`](lessons.md#lesson-202) names five cases that fail
-    only under the suite's parallelism, which is the population a rate would be over)
-  - what would close it: a repetition job in `nightly.yml` with its result written down, in the
-    idiom of the snapshots rather than as a line somebody reads
-  - binds at: **a nightly that runs on the day's code** — which is 4.55
+- [~] **4.58 — the suite has a flake rate and nothing has ever measured it** — **the machine
+  landed 2026-09-14; the reading belongs to the first nightly that runs it**
+  - 4.54 bought the _shape_ of a race as a greppable rule and refused the repetition job on
+    its own wording. The two flakes it found were fixed and the rate stayed a guess
+    ([`lesson-202`](lessons.md#lesson-202) names five cases that fail only under the suite's
+    parallelism, which is the population a rate would be over)
+  - what landed: a third runner in `nightly.yml` — both suites `--repeat-each=3 --retries=0`,
+    one at a time, reports kept as an artifact — and `check-flake`, five points over them,
+    with `flake.policy.json` and seventeen prepared inputs. Read ONE way: a name that appears
+    is red, a recorded name that behaved is not removed, a sample being no proof of absence.
+    Falsified in both directions against a substituted report before it was committed
+  - the shape of that report was MEASURED against Playwright and not read out of it:
+    `--repeat-each` puts every repetition in a separate spec entry under the same title and
+    records no repeat index, so repetitions are found by grouping on `<path> | <project>`
+  - what remains: **the first reading**, deliberately not taken here. The failure mode is
+    "fails only under the suite's own parallelism", so a rate off this idle eight-core desktop
+    would be a fact about this desktop written down as a fact about the suite
+    ([`lesson-200`](lessons.md#lesson-200)). The gate reports `no-record` until then
+  - binds at: **the first nightly on the day's code** — unblocked by 4.55's push
 
 - [x] **4.59 — the plan forbids citing a task by its number, and 126 citations did** —
       **closed 2026-09-14**, 204 files: zero left outside this one

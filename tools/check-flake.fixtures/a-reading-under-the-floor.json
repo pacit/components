@@ -1,0 +1,8 @@
+{
+  "check": "record",
+  "rule": "reading-below-floor",
+  "// defect": "The record was taken over fewer repetitions than the floor allows. It is a record of a run that could not have found anything, and it would silence every later run by supplying names that were never at risk.",
+  "snapshot": {
+    "replace": [{ "pattern": "· 3 repetitions ·", "with": "· 2 repetitions ·" }]
+  }
+}
