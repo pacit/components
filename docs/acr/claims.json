@@ -5,7 +5,8 @@
     "recorded": false,
     "readers": [
       "NVDA with Firefox on Windows",
-      "VoiceOver with Safari on macOS"
+      "VoiceOver with Safari on macOS",
+      "Orca with Firefox on Linux"
     ],
     "views": "the sandbox views the axe sweep audits (`SBX_ROUTES` in `apps/sandbox-e2e/src/a11y.spec.ts`)",
     "logs": "docs/acr/at/"

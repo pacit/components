@@ -267,19 +267,19 @@ precondition of the quiet push (3.0), which no visitor can see.
     rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — one row per
     criterion of WCAG 2.2 at A and AA, in the ITI template's tables, each resting on what
     already runs: a gate's numbered point, a case's title in a spec, a sentence in a source, a
-    scan over the library's templates and stylesheets, or the cards' own Checks rows summed.
-    The gate holds every citation — a renamed case, a closed finding, a gate that left CI, a
-    `<video>` in a template all fire — and compares the rendering byte for byte. `req-a11y-acr`
-    puts it in the registry; the site renders it at `/acr`, linked from /trust, with
-    [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched — the
-    landing still says "machine-audited". The counts, the limits and the one deviation from the
-    template (a _Not Evaluated_ row at AA says so) are `docs/acr.md`'s own text
-  - **what remains is the assistive-technology pass**: NVDA with Firefox on Windows and
-    VoiceOver with Safari on macOS over the sandbox views, logs under `docs/acr/at/`, a reading
-    in every card's `Screen-reader log` row — the standing gaps are counted in `docs/acr.md`.
-    None of it can run on this machine; point 7 of the gate is armed for the day `recorded`
-    flips to `true`, and Orca on this Linux box is a third reader worth a log of its own.
-    Deciding run: docs-e2e **355 of 355** in three engines, `/acr` in the axe sweep both schemes
+    scan over templates and stylesheets, or the cards' own Checks rows summed. The gate holds
+    every citation — a renamed case, a closed finding, a gate that left CI, a `<video>` in a
+    template all fire — and compares the rendering byte for byte. The site renders it at
+    `/acr`, and [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law is
+    untouched: the landing still says "machine-audited". Deciding run: docs-e2e **355 of 355**
+  - **one of the three readers is on record, 2026-09-14.** `at-pass.sh` puts Orca on a display
+    of its own, `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`, and
+    **18 of the 36 came out unread** — named in the record rather than averaged away, the
+    instrument's own behaviour being part of the measurement ([`lesson-208`](lessons.md#lesson-208))
+  - **what remains**: NVDA and VoiceOver, which no Linux box runs and Actions does (Guidepup);
+    the reading in all 34 cards, which the gate then turns into a **`Supports` for 4.1.2** and
+    so is the maintainer's to authorise; and a person's read of the logs, which is the whole of
+    what `recorded` claims
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,

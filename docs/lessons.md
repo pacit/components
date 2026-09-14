@@ -5694,3 +5694,45 @@ So the rule has two halves, and the second is the one with teeth: **a case about
 a reading BY a number, never TO one.** `boxesDelta`, and `{ "delta": 1 }` on a unit's reading,
 exist for that. Falsified the way such a thing has to be — with `delta: 0` the case passes and
 the control says so, which is what proves the arithmetic is running at all.
+
+---
+
+### <a id="lesson-208"></a>`lesson-208` — A screen reader driven headlessly stands between you and the keyboard
+
+Orca reads a page in a virtual display the way it reads one on a desktop, and the whole
+arrangement needs nothing installed on Ubuntu 26.04: Orca 50.2, AT-SPI2, speech-dispatcher,
+Xvfb and `dbus-run-session` are already there, `orca --debug-file` writes every decision it
+makes, and the lines that begin `SPEECH OUTPUT:` are what a person would have heard. The first
+probe read a GTK dialog and then a Firefox page — `'Save changes' 'button.'` — in about ten
+minutes of setup.
+
+Getting a WHOLE SUITE read took five passes, and every one of them failed in a way that looked
+like a defect in the product until it was measured:
+
+1. **Tab from the top of the page reads the shell, not the library.** Thirty-three stops —
+   theme, size, direction, thirty navigation links — come before the first component, so a cap
+   of ten never reached one. The log was a reading of the sandbox's own chrome.
+2. **Walking those stops quickly floods the reader.** Orca queues speech and then interrupts
+   itself, so the stops that follow the flood come out silent. A fast seek is not a cheap seek.
+3. **The reader fights for the keyboard.** With caret and structural navigation on, Orca grabs
+   keys for its own walk, swallows the Tab that switches it between browse and focus mode, and
+   overrides a focus the page has just set. On three views the first Tab after a load moved
+   nothing at all and the walk declared the view read.
+4. **`document.hasFocus()` is not a reliable answer to "is the page still focused".** It stayed
+   true while Firefox's own toolbar had focus and the reader was reading it out loud — the walk
+   recorded _Firefox View · toggle button not pressed_ as if it were a component.
+5. **"Did Tab move?" must be asked by POSITION, not by description.** Two radios of one group
+   describe themselves identically, so comparing the announcement with the last one ends the
+   walk on the second radio of every group.
+
+What the pass finally produced is real and quotable — `Shipping · expanded button.` for an
+accordion summary, `Country · combo box. · opens listbox` for a select — and **18 of 36 views
+still came out unread**, with `WEB: Could not get document for event source` in the reader's
+own log and no window manager on the display to hold focus. That number is written into the
+record beside the readings rather than divided into them: a view nobody read is not a view read
+and found silent, and a log that blurs the two is worse than no log
+([`req-a11y-acr`](requirements/a11y.md#req-a11y-acr)).
+
+The general shape, and it is not about screen readers: **when an instrument sits between you
+and the thing measured, its own behaviour is part of the measurement.** Five passes were spent
+before that was the hypothesis rather than "the sandbox has a focus bug".
