@@ -5680,3 +5680,17 @@ The repair is one line per case: pin **both** readings, `commits` and `carried` 
 the case states the whole comparison rather than half of it. The general shape — a control
 built on a live input must fix every reading its point actually reads, not the one it is
 named after.
+
+**It came back the same afternoon, wearing the other face.** `check-prose`'s control reported
+`a-position-the-parser-lost` as passing, and the reason was that the case said `"boxes": 97`
+while the plan had just been given its ninety-seventh box. A case that sets a live reading TO
+a number is armed only until the repository reaches that number, and then it is silent — not
+red, not removed, just agreeing. Four more cases in the same tree had it: the two that prove a
+header drifted by a line, the one that drops a numbered point, and the one that adds words to
+an unchanged line, all pinned to what `check-e2e.mjs`'s header measured on the day they were
+written. None had gone off yet; all four would have, on the next rewrap of that header.
+
+So the rule has two halves, and the second is the one with teeth: **a case about a drift moves
+a reading BY a number, never TO one.** `boxesDelta`, and `{ "delta": 1 }` on a unit's reading,
+exist for that. Falsified the way such a thing has to be — with `delta: 0` the case passes and
+the control says so, which is what proves the arithmetic is running at all.

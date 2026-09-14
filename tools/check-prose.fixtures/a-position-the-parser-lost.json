@@ -1,6 +1,6 @@
 {
   "point": 2,
   "check": "denominator",
-  "why": "the plan puts a checkbox in front of one more item than the parser read — the numbering moved under the instrument",
-  "boxes": 97
+  "why": "the plan puts a checkbox in front of one more item than the parser read — the numbering moved under the instrument. The reading is moved BY one rather than TO a number: pinned to 97, this case stopped breaking anything the afternoon the plan reached its ninety-seventh box (`lesson-207`)",
+  "boxesDelta": 1
 }

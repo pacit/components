@@ -1,6 +1,12 @@
 {
   "point": 5,
   "check": "exact",
-  "why": "check-e2e.mjs takes one line more than the record says, and stays inside its budget",
-  "headers": { "check-e2e.mjs": { "lines": 16 } }
+  "why": "check-e2e.mjs takes one line more than the record says, and stays inside its budget. Moved BY a number and not TO one: pinned to a count, this case would stop breaking anything the day `check-e2e.mjs` legitimately reached it (`lesson-207`)",
+  "headers": {
+    "check-e2e.mjs": {
+      "lines": {
+        "delta": 1
+      }
+    }
+  }
 }

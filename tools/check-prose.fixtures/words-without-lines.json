@@ -1,6 +1,12 @@
 {
   "point": 5,
   "check": "exact",
-  "why": "check-e2e.mjs carries eighteen more words on the same fifteen lines — the elastic line, which the line column cannot see",
-  "headers": { "check-e2e.mjs": { "words": 160 } }
+  "why": "check-e2e.mjs carries eighteen more words on the same fifteen lines — the elastic line, which the line column cannot see. Moved BY a number and not TO one: pinned to a count, this case would stop breaking anything the day `check-e2e.mjs` legitimately reached it (`lesson-207`)",
+  "headers": {
+    "check-e2e.mjs": {
+      "words": {
+        "delta": 18
+      }
+    }
+  }
 }

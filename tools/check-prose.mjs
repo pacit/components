@@ -431,8 +431,9 @@ try {
 /**
  * Builds a case's input ON A COPY of the live one, so the case file holds nothing but its
  * own defect: `headers` and `positions` patch a unit (`null` drops it, an unknown id adds
- * one) and `clear` empties a whole layer, `tracked` and `boxes` rewrite the two independent
- * readings, `policy` adds or drops a register entry, `snapshot: null` loses the record and
+ * one) and `clear` empties a whole layer, `tracked` rewrites one independent reading and
+ * `boxesDelta` moves the other BY a number rather than TO one,
+ * `policy` adds or drops a register entry, `snapshot: null` loses the record and
  * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds
  * nothing is a case that broke nothing.
  */
@@ -463,13 +464,31 @@ const buildFixture = (fixtureLive, fx) => {
           body: [],
           ...patch,
         });
-      else w[layer][at] = { ...w[layer][at], ...patch };
+      else
+        w[layer][at] = {
+          ...w[layer][at],
+          // A reading may be moved BY a number as well as set TO one, and for a case about
+          // a DRIFT it has to be: pinned to a count, such a case stops breaking anything the
+          // day the repository legitimately reaches it, and says nothing when it does
+          // (`lesson-207`).
+          ...Object.fromEntries(
+            Object.entries(patch).map(([key, value]) => [
+              key,
+              value?.delta === undefined
+                ? value
+                : (w[layer][at][key] ?? 0) + value.delta,
+            ]),
+          ),
+        };
     }
   if (fx.tracked) {
     w.tracked = w.tracked.filter((f) => !(fx.tracked.drop ?? []).includes(f));
     w.tracked.push(...(fx.tracked.add ?? []));
   }
-  if (fx.boxes !== undefined) w.boxes = fx.boxes;
+  // Relative, never absolute: a case that pins one side of a comparison to a NUMBER stops
+  // breaking anything the day the repository reaches it — which this one did, the afternoon
+  // the plan's ninety-seventh box was written (`lesson-207`).
+  if (fx.boxesDelta !== undefined) w.boxes += fx.boxesDelta;
   if (fx.policy) {
     w.policy.oversize = (w.policy.oversize ?? []).filter(
       (e) => !(fx.policy.drop ?? []).includes(`${e.kind}:${e.unit}`),

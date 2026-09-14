@@ -28,13 +28,17 @@ it from two layers:
    because a stored copy would measure the repository as it was the day somebody stored it),
 2. the operations from the case file, applied to a copy of it (`headers` and `positions` —
    a unit's reading rewritten, dropped with `null`, or added under a name nothing carries;
-   `clear` — a whole layer emptied; `tracked` and `boxes` — the two independent readings
-   rewritten; `policy` — a register entry added or dropped; `snapshot: null` — the record
+   `clear` — a whole layer emptied; `tracked` and `boxesDelta` — the two independent readings
+   rewritten, the second BY a number rather than TO one; `policy` — a register entry added or dropped; `snapshot: null` — the record
    gone; `snapshot.replace` — the record rewritten by a pattern that has to match, because a
    needle that finds nothing is a case that broke nothing).
 
 That way the case file holds **nothing but the defect** — visible without comparing files —
-and does not drift from the reference when the repository moves.
+and does not drift from the reference when the repository moves. What it must not do is pin a
+reading TO a number: a case set to the count the repository had the day it was written is
+armed only until the repository reaches that count, and then it agrees instead of firing. Five
+cases here had that shape and one had already gone quiet, which is why a reading is moved by
+`{ "delta": n }` ([`lesson-207`](../../docs/lessons.md#lesson-207)).
 
 **The live input must pass.** It is checked first, on the real repository; were it defective,
 every case would fire because of it rather than because of its own defect, and every
