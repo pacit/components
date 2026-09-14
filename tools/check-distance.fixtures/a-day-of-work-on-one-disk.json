@@ -2,7 +2,7 @@
   "point": 4,
   "check": "commits",
   "rule": "too-many-commits",
-  "why": "twenty-one commits that exist on this disk and no remote, all of them made today — the count alone, with nothing old enough for point 5",
+  "why": "twenty-one commits that exist on this disk and no remote, all of them made today — the count alone, with nothing old enough for point 5. The live distance is cleared first, so the case is twenty-one and not twenty-one plus whatever the day has added",
   "carried": { "clear": true },
-  "commits": { "pad": 21 }
+  "commits": { "clear": true, "pad": 21 }
 }

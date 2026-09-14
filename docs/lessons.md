@@ -5652,3 +5652,31 @@ the default without a red.
 The ceiling itself is not a budget for the suite. What it guards against is a runner that has
 hung, and that does not care whether it is twelve minutes or twenty, while a runner with half
 the cores of this one very much cares that it is not five.
+
+---
+
+### <a id="lesson-207"></a>`lesson-207` — A case built on the live input has to pin both sides of what it compares
+
+The negative controls here are not stored copies of a correct input; each case is built on the
+**live** repository with one thing broken, so it cannot drift from a reference nobody
+maintains ([`lesson-49`](#lesson-49)). The price is a dependency nobody writes down: whatever a
+case does **not** pin, it inherits — and a point that compares two readings inherits one of
+them.
+
+`check-distance` compares the commits no remote carries against whether any remote ref carries
+`HEAD`. Its two cases for that point were written minutes after a push, when the live reading
+was "zero commits, two refs carry `HEAD`". One case added a commit and expected the readings to
+disagree; the other emptied the refs and expected the same. Both fired. Then the gate's own
+commit landed — one commit, no ref carrying it — and **both cases passed**, because each had
+pinned only the side it was about and inherited a mirror image of the other.
+
+The gate caught it on the very next run: the control loop reports a prepared input that passed
+as loudly as it reports a live failure, and it named both. Nothing else would have. The cases
+still fired on the point they declared for exactly as long as the repository happened to be in
+the state they were written in, and a case that is right about its own defect while silently
+depending on the weather is a case that will be green on the day it matters.
+
+The repair is one line per case: pin **both** readings, `commits` and `carried` together, so
+the case states the whole comparison rather than half of it. The general shape — a control
+built on a live input must fix every reading its point actually reads, not the one it is
+named after.

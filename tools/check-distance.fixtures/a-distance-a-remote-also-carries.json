@@ -2,6 +2,7 @@
   "point": 2,
   "check": "denominator",
   "rule": "readings-disagree",
-  "why": "a commit counted as existing only here while a remote ref still carries HEAD — HEAD is in its own reachable set, so the two cannot both be true",
-  "commits": { "add": [{}] }
+  "why": "a commit counted as existing only here while a remote ref still carries HEAD — HEAD is in its own reachable set, so the two cannot both be true. Both sides are pinned rather than inherited: whether the live HEAD happens to be pushed is not this case's subject",
+  "commits": { "add": [{}] },
+  "carried": { "add": ["refs/remotes/origin/main"] }
 }

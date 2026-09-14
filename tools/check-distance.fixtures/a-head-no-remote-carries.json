@@ -2,6 +2,7 @@
   "point": 2,
   "check": "denominator",
   "rule": "readings-disagree",
-  "why": "the other direction: a distance of zero while no remote ref carries HEAD. This is the quiet one — the count agrees with a push that never happened",
+  "why": "the other direction: a distance of zero while no remote ref carries HEAD. This is the quiet one — the count agrees with a push that never happened. Both sides pinned, for the reason the case above gives",
+  "commits": { "clear": true },
   "carried": { "clear": true }
 }

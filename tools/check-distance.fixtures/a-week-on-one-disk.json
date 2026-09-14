@@ -2,7 +2,7 @@
   "point": 5,
   "check": "days",
   "rule": "too-old",
-  "why": "one commit, seven days old — well inside the count ceiling and exactly the shape the count misses, because a small amount of work can sit on one disk indefinitely",
+  "why": "one commit, seven days old — well inside the count ceiling and exactly the shape the count misses, because a small amount of work can sit on one disk indefinitely. The live distance is cleared first, or a busy day would fire point 4 before this one",
   "carried": { "clear": true },
-  "commits": { "add": [{ "daysAgo": 7 }] }
+  "commits": { "clear": true, "add": [{ "daysAgo": 7 }] }
 }

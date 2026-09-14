@@ -36,7 +36,11 @@ from two layers:
    `forwardDays`; `policy` — register keys dropped with `drop` or rewritten with `set`).
 
 That way the case file holds **nothing but the defect** — visible without comparing files —
-and does not drift from the reference when the repository moves.
+and does not drift from the reference when the repository moves. The price is that whatever a
+case does not pin, it **inherits**, and a point comparing two readings inherits one of them:
+both cases for point 2 passed the day the repository stopped matching the state they were
+written in, each having pinned only the side it was named after
+([`lesson-207`](../../docs/lessons.md#lesson-207)). They pin both now.
 
 **The live input must pass.** It is checked first, on the real repository; were it defective,
 every case would fire because of it rather than because of its own defect, and every
