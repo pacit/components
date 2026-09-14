@@ -97,7 +97,7 @@ Everything it found is closed in section 4; what it changed is section 0 and 2.1
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 2 owes the
 screen-reader pass (**2.2**). Section 3 is the premiere and the three items standing behind
 it. Section 4 holds what this file's own compression pass found. Section 5 holds one gap,
-**5.5**, whose trigger that pass is.
+**5.5**, whose trigger that pass was — and it fired on 2026-09-14.
 
 ## 0. The copy that must exist
 
@@ -1167,16 +1167,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     gate reads both workflows; 0044's "no tone" stood against shipped behaviour; and `plan 2.8`
     was cited three times by source files for an item that does not exist
 
-- [ ] **4.57 — the other half of the pass is the gate headers, and it is the larger half**
+- [x] **4.57 — the other half of the pass is the gate headers, and it is the larger half** —
+      **closed 2026-09-14; the pass is closed with it**
   - [0017](decisions/0017-one-home-per-fact.md) budgets a header at 12 lines plus one per
-    numbered point. Measured today: **29 scripts, 825 lines against 528, 21 over, 309 lines to
-    cut** — `node tools/measure-prose.mjs --over`
-  - it is arithmetic rather than a rewrite: each header has a target, and what does not fit is
-    a fact standing in the wrong home, so the cut is a move to a requirement, a decision or a
-    lesson and not a deletion
-  - **5.5 is held by this and by nothing else now.** A snapshot laid on today's headers would
-    freeze the bloat as the accepted state ([`lesson-49`](lessons.md#lesson-49))
-  - binds at: **now**
+    numbered point: **29 scripts, 825 lines to 515 against 528, nothing over**. The largest
+    were `check-aria` 72 to 21, `check-language` 57 to 19, `check-files` 56 to 22
+  - every numbered point survived, numbered and in place — the budget counts them, so dropping
+    one buys a line by hiding what the gate measures. What left was the retelling around them
+  - one rescue was real: 0040 gains why thirty hand lines of `ar`, `tar` and `zstd` need no
+    fixture tree — the bytes are hashed against the lock before the parse and the list after
+  - two stale pointers found: `check-language`'s header said five false positives where its own
+    policy entry says six, and a jsdoc in `check-files` sent a reader to a header paragraph
+    that was the requirement's all along
 
 - [ ] **4.58 — the suite has a flake rate and nothing has ever measured it**
   - 4.54 bought the _shape_ of a race as a greppable rule, and refused the nightly
@@ -1275,13 +1277,17 @@ are deferred.
   - `[pctDensity]` is deliberately not here, its trigger written into 0074
     ([0059](decisions/0059-a-theme-is-an-attribute-the-skin-reads.md)); findings 4.52 and 4.53
 - [ ] **5.5 — `req-project-concise`**: the prose volume budget per file, in the idiom of the
-      size snapshot. Binds at the close of the compression pass — **not earlier**
-      ([`lesson-49`](lessons.md#lesson-49)). The shape and the values are
-      [`req-project-concise`](requirements/project.md#req-project-concise)'s and
-      [0017](decisions/0017-one-home-per-fact.md)'s
-  - the pass has two halves and only one is done. Positions: **4.56**. Gate headers: still 825
-    lines against 528, 21 scripts over, 309 lines to cut — **4.57**
-  - `node tools/measure-prose.mjs` is the instrument and reads both halves
+      size snapshot. **Its trigger has fired**: both halves of the compression pass closed on
+      2026-09-12 and 2026-09-14 (**4.56**, **4.57**), so a snapshot laid now records the state
+      the pass left rather than the bloat it removed ([`lesson-49`](lessons.md#lesson-49))
+  - the shape and the values are
+    [`req-project-concise`](requirements/project.md#req-project-concise)'s and
+    [0017](decisions/0017-one-home-per-fact.md)'s: lines AND words, two-sided, because a line
+    is elastic and halving the count by doubling the width has to show up somewhere
+  - `node tools/measure-prose.mjs` is what it grows from — it reads both layers and today
+    reports 515 header lines against 528 and 1084 position lines against 1256
+  - what it still needs to be a gate rather than a measurement: a snapshot file, a tolerance, a
+    negative control that can fail, and a line in `ci.yml`
 
 **This file lied twice, and now something asks.** The rewrite that shrank it to a working
 set also cut it mid-sentence and left `req-project-concise` owned by nobody while
