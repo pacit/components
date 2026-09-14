@@ -1,0 +1,16 @@
+{
+  "check": "inventory",
+  "rule": "equivalent-without-mutant",
+  "// defect": "An excuse for a mutant the run never threw. Keyed on a span, an entry stops resolving the moment the line moves — and an entry that resolves to nothing is the shape an excuse takes when the code it was written about is gone.",
+  "policy": {
+    "equivalent": [
+      {
+        "file": "libs/fake/alpha.ts",
+        "mutator": "ConditionalExpression",
+        "at": "9:3-9:12",
+        "to": "false",
+        "reason": "A sentence as long as any other entry's, standing for a proof that was carried out by hand against the code as it is today."
+      }
+    ]
+  }
+}

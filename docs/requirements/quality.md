@@ -199,7 +199,7 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: seven points and 43 rules for the measurement being current, covering the
+denominator: eight points and 51 rules for the measurement being current, covering the
 declared file inventory **and every source file of the library** — the candidate set is read
 off the git index and not off `mutate`, so a file nobody decided about is a violation
 (`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`
@@ -209,7 +209,7 @@ comments, a shortened `timeoutMS`), and fitting inside the `libs/components/muta
 snapshot with a **two-sided** per-file tolerance. A row of that snapshot also has to **add
 up** (`score/columns-adrift`): it states a score and the counts behind it, so
 `killed / (killed + surviving + errored + not covered)` has to give the score printed beside
-them — which is why the errored mutants have a column of their own since 4.6. Before that,
+them — which is why the errored mutants have a column of their own. Before they did,
 nine rows carried a score their columns could not produce, and a reader checking the
 arithmetic found a mistake that was not one. The snapshot's PROSE is held exactly
 (`score/stale-prose`): the tolerance is the width of a wobbling number, not of the paragraph
@@ -217,8 +217,13 @@ that says what the number means, nor of the tolerance quoted in it
 ([`lesson-79`](../lessons.md#lesson-79)). Stryker mutates `.ts` and nothing else, so
 what a **template** promises stands outside this measurement altogether — that half is held by
 `check-coverage` point 6, a floor per template on all four metrics
-([`lesson-71`](../lessons.md#lesson-71))
-**Control:** `tools/check-mutation.fixtures/` — 44 doctored inputs on a fake library, each
+([`lesson-71`](../lessons.md#lesson-71)). Point 7 is the fourth register and the only one
+about a MUTANT rather than a file: a survivor no test can tell from the original is named in
+`equivalent` in `libs/components/mutation.policy.json` by its operator, its span and its
+replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
+an excuse dies with the line it excuses rather than drifting onto the next mutant to take
+that place. It excuses no score: a registered mutant is still counted as surviving
+**Control:** `tools/check-mutation.fixtures/` — 52 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires

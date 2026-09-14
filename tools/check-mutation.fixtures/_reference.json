@@ -133,6 +133,7 @@
       },
       "timeoutMS": 5000,
       "timeoutFactor": 1.5,
+      "dryRunTimeoutMinutes": 20,
       "coverageAnalysis": "perTest"
     },
     "config": {

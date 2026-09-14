@@ -1,6 +1,6 @@
 # Negative control of the mutation run gate
 
-Deliberately defective inputs. `tools/check-mutation.mjs` runs all seven of its points on
+Deliberately defective inputs. `tools/check-mutation.mjs` runs all eight of its points on
 each of them and **requires every one to be rejected — and rejected by the rule it
 declares**. An input that passes is a fault; an input that fires somewhere other than
 where its file says is a fault just the same, because it proves something other than
@@ -56,8 +56,8 @@ Four readings arrive here as data rather than from a real run:
 - `ci` — instead of the workflow text.
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
-from the graph are four functions of a dozen lines each, while the checks are seven points and
-forty-six rules, and that is where all the content sits. The readings are guarded by runs against
+from the graph are four functions of a dozen lines each, while the checks are eight points and
+fifty-one rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -101,6 +101,34 @@ sweep four of this library's specs rest on and mutates nothing, because
 happen** today: the repository has zero timeouts. The case proves the rule works, but its
 real test will be the day the first mutant loops the code — and then it is to be loud
 that the score has started buying the clock rather than the assertion.
+
+## The ceiling the run has to clear before it is a run
+
+`a-dry-run-on-the-default-ceiling.json` is the one case here that cannot catch the failure it
+is about. Before the first mutant, Stryker runs the whole suite once with coverage
+instrumentation, and its own ceiling for that is five minutes; this suite measures 4:57 on a
+machine twice the size of a CI runner. A run that dies there writes **no report**, so every
+rule downstream — every rule in this directory — has nothing to read and the gate says only
+that the measurement is unreadable. The rule therefore stands on the SETTING: it fires one run
+late, on the next run that succeeds, and what it buys is that the value cannot quietly go back
+to the default that cost two red nights ([`lesson-206`](../../docs/lessons.md#lesson-206)).
+
+## The mutant the suite cannot tell apart
+
+Four cases stand behind point 7, and what makes them different from every other register
+here is the key: `unmeasured`, `noMutants` and `coversNothing` all excuse a FILE, and a file
+is something the git index and the report can both confirm. An equivalent mutant is not a
+file — it is an operator, a span of characters and what the operator puts there — so the
+entry is keyed on exactly that, and the four cases break the four things such a key can lose:
+the mutant is not in the run (`equivalent-without-mutant`), it is in the run and killed
+(`equivalent-that-dies`), it is excused with no sentence behind it (`equivalent-without-reason`),
+and its file is already excused whole (`equivalent-outside-inventory`).
+
+`equivalent-that-dies` and `equivalent-without-reason` need a mutant with coordinates, which
+the reference's compact `statuses` list does not carry, so both write one of the reference's
+own statuses out in full — the SAME status, so no score moves and point 6 has nothing to say.
+That is deliberate: a case that changes the score fires on the snapshot before it ever
+reaches the rule it declares.
 
 ## The file the measurement cannot hold
 

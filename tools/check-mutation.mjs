@@ -10,11 +10,12 @@
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
  *  6. the result: a hard floor, a TWO-SIDED tolerance per file and total, and the prose,
- *  7. both targets (`mutation`, `check-mutation`) run in CI.
+ *  7. EQUIVALENT: a survivor excused as unkillable is named, still alive, and reasoned,
+ *  8. both targets (`mutation`, `check-mutation`) run in CI.
  *
- * "What the run really did" comes from the report's `config` field, which carries the
- * EFFECTIVE configuration: the file plus whatever the command line added. Point 3 stands
- * apart because the run has a Vitest configuration of its own.
+ * "What the run really did" comes from the report's `config`, which carries the EFFECTIVE
+ * configuration: the file plus whatever the command line added. Point 3 has a Vitest
+ * configuration of its own; point 7 keys on the mutant, so an excuse dies with its line.
  *
  * Usage: node tools/check-mutation.mjs [--write]  (--write: rewrite the result snapshot)
  */
@@ -35,6 +36,9 @@ const SNAPSHOT = `${PROJECT}/mutation.snapshot.md`;
 const WORKFLOWS = ['.github/workflows/ci.yml', '.github/workflows/nightly.yml'];
 
 const WRITE = process.argv.includes('--write');
+
+/** Stryker's own ceiling on the initial, instrumented run of the whole suite. */
+const DRY_RUN_DEFAULT_MINUTES = 5;
 
 /** Spec file pattern — the denominator of point 3. */
 const SPEC = /\.spec\.ts$/;
@@ -282,6 +286,22 @@ export const checkMutation = (input) => {
       'unreadable-measurement',
       `no readable \`${REPORT}\` — the mutation run either did not happen or wrote no ` +
         `report. The gate then has nothing to measure and stays silent about everything.`,
+    );
+
+  // A run that cannot START leaves no report at all, so this rule fires one run late by
+  // construction: it is a tripwire on the setting, not on the failure. The default ceiling
+  // is five minutes and the instrumented suite measures 4:57 on a machine twice the size of
+  // a CI runner — the difference between a gate and two red nights (`lesson-206`).
+  const dryRunCeiling = report.config?.dryRunTimeoutMinutes;
+  if (!(dryRunCeiling > DRY_RUN_DEFAULT_MINUTES))
+    throw new MutationError(
+      'measurement',
+      'dry-run-ceiling-default',
+      `the run declares \`dryRunTimeoutMinutes\` as ${JSON.stringify(dryRunCeiling)}, which ` +
+        `is Stryker's own default of ${DRY_RUN_DEFAULT_MINUTES} or below it.\n` +
+        `    Before the first mutant, Stryker runs the whole suite once with coverage ` +
+        `instrumentation, and this suite measures within seconds of that ceiling. A run ` +
+        `that dies there writes no report, so nothing downstream of here can say why.`,
     );
 
   // Every read below is defensive, even though the point above has already rejected an
@@ -653,10 +673,9 @@ export const checkMutation = (input) => {
       'disable-in-source',
       `${inSource.length} measured files carry a comment that switches Stryker off:\n` +
         list(inSource) +
-        `\n    The library has not one candidate for such an exception today, so the ` +
-        `mechanism does not exist — a door with no user is a dead artifact. An ` +
-        `unkillable mutant is a sentence to write in ${POLICY}, not a comment in code ` +
-        `that nobody else reads.`,
+        `\n    An unkillable mutant is an entry in \`equivalent\` in ${POLICY} — keyed on ` +
+        `the mutant, held to being alive, and read by point 7 — not a comment in code ` +
+        `that nobody else reads and no gate ever looks at.`,
     );
 
   if (reportConfig.ignoreStatic)
@@ -871,7 +890,57 @@ export const checkMutation = (input) => {
     );
   }
 
-  // 7. CI. The gate and the run itself are two targets, each removable on its own.
+  // 7. EQUIVALENT. The fourth register: a survivor no test can tell apart. It is the one
+  // excuse that is about a MUTANT rather than a file, so it is keyed on one — the operator,
+  // the span it covers and what it puts there — and the day the line moves, the entry stops
+  // resolving and says so. An entry is not a permit to stop looking: it has to name a mutant
+  // the run really threw, that mutant has to be alive, and the sentence has to be a sentence.
+  for (const entry of policy.equivalent ?? []) {
+    const at = (m) =>
+      `${m.location?.start?.line}:${m.location?.start?.column}-` +
+      `${m.location?.end?.line}:${m.location?.end?.column}`;
+    const named = `\`${entry?.file}\` ${entry?.mutator} ${entry?.at} → ${entry?.to}`;
+    if (excused.has(entry?.file))
+      throw new MutationError(
+        'inventory',
+        'equivalent-outside-inventory',
+        `${named} is excused as unkillable and its file is excused from the run.\n` +
+          `    An entry about a mutant nobody threw reads like a measurement and is a wish.`,
+      );
+    const matches = (report.files?.[entry?.file]?.mutants ?? []).filter(
+      (m) =>
+        m.mutatorName === entry?.mutator &&
+        at(m) === entry?.at &&
+        m.replacement === entry?.to,
+    );
+    if (matches.length !== 1)
+      throw new MutationError(
+        'inventory',
+        'equivalent-without-mutant',
+        `${named} names ${matches.length} mutants of the run, and an excuse answers for ` +
+          `exactly one.\n    Either the line moved and the entry is about code that is ` +
+          `gone, or it was never this mutant. Re-derive it from the report rather than ` +
+          `adjusting the span until it matches.`,
+      );
+    if (matches[0].status !== 'Survived')
+      throw new MutationError(
+        'inventory',
+        'equivalent-that-dies',
+        `${named} is excused as unkillable and the run reports it \`${matches[0].status}\`.\n` +
+          `    The suite can tell it apart after all, so the entry is spent — and while it ` +
+          `stands it would excuse the next mutant that takes this line too.`,
+      );
+    if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40)
+      throw new MutationError(
+        'inventory',
+        'equivalent-without-reason',
+        `${named} is excused as unkillable with no reason behind it.\n` +
+          `    Proving one by hand has two traps and both have been met here ` +
+          `(\`lesson-199\`), so the entry carries the proof or it is a list.`,
+      );
+  }
+
+  // 8. CI. The gate and the run itself are two targets, each removable on its own.
   for (const target of ['mutation', 'check-mutation'])
     if (!(input.ci?.targets ?? []).includes(target))
       throw new MutationError(
@@ -1002,6 +1071,8 @@ const expandFiles = (digest) =>
           mutatorName: 'ConditionalExpression',
           status: typeof s === 'string' ? s : s.status,
           statusReason: typeof s === 'string' ? undefined : s.reason,
+          // A case about point 7 needs a mutant with coordinates, not just a status.
+          ...(typeof s === 'string' ? {} : (s.mutant ?? {})),
         })),
       },
     ]),

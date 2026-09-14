@@ -1,0 +1,50 @@
+{
+  "check": "inventory",
+  "rule": "equivalent-without-reason",
+  "// defect": "A real survivor, named correctly, excused by the word `because`. Proving a mutant equivalent by hand has two traps (`lesson-199`), so an entry with no sentence is a list of mutants somebody decided to stop looking at.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      {
+        "status": "Survived",
+        "mutant": {
+          "mutatorName": "ConditionalExpression",
+          "replacement": "false",
+          "location": {
+            "start": {
+              "line": 1,
+              "column": 30
+            },
+            "end": {
+              "line": 1,
+              "column": 35
+            }
+          }
+        }
+      },
+      {
+        "status": "Ignored",
+        "reason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+      }
+    ]
+  },
+  "policy": {
+    "equivalent": [
+      {
+        "file": "libs/fake/alpha.ts",
+        "mutator": "ConditionalExpression",
+        "at": "1:30-1:35",
+        "to": "false",
+        "reason": "because"
+      }
+    ]
+  }
+}

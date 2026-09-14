@@ -1,0 +1,50 @@
+{
+  "check": "inventory",
+  "rule": "equivalent-that-dies",
+  "// defect": "An excuse the run disagrees with: the mutant is named exactly and the suite kills it. The entry is spent, and while it stands it excuses the next mutant to take that line too. The statuses are the reference's own, one of them written out in full so the case has coordinates to name.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [
+      {
+        "status": "Killed",
+        "mutant": {
+          "mutatorName": "ConditionalExpression",
+          "replacement": "false",
+          "location": {
+            "start": {
+              "line": 1,
+              "column": 30
+            },
+            "end": {
+              "line": 1,
+              "column": 35
+            }
+          }
+        }
+      },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      {
+        "status": "Ignored",
+        "reason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+      }
+    ]
+  },
+  "policy": {
+    "equivalent": [
+      {
+        "file": "libs/fake/alpha.ts",
+        "mutator": "ConditionalExpression",
+        "at": "1:30-1:35",
+        "to": "false",
+        "reason": "A sentence as long as any other entry's, standing for a proof that was carried out by hand against the code as it is today."
+      }
+    ]
+  }
+}

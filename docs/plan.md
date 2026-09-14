@@ -1202,17 +1202,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     actor survives the file, and `check-acr`'s `finding` field is machinery rather than
     prose, so it goes when **2.2** does
 
-- [ ] **4.60 — a survivor proved equivalent by hand has nowhere to be recorded**
-  - `mutation.policy.json` registers what is not measured (`unmeasured`), what yields no mutant
-    (`noMutants`) and what covers nothing (`coversNothing`), each with a reason. It has no
-    register for the fourth kind: a mutant that survives because **no test can tell it apart**
-  - five are named only in closed positions — three in `toast-viewport.ts`, two in
-    `regions.ts` — and one more is owed a cast case in the select at the next full run. A fact
-    that lives in a closed box is a fact the next reader re-derives
-  - the entry has to carry the proof, not the claim, and proving one is its own trap:
-    [`lesson-199`](lessons.md#lesson-199) — the edit has to compile, and a kill by hand can
-    still be reported as a survivor
-  - binds at: **the next full mutation run**
+- [x] **4.60 — a survivor proved equivalent by hand had nowhere to be recorded** — **closed
+      2026-09-14 on the run its trigger named**
+  - `equivalent` in `mutation.policy.json` is the fourth register and the only one about a
+    MUTANT: the operator, the **span** and the replacement, so an entry stops resolving the
+    day the line moves rather than excusing whatever takes that place. Point 7 holds it to
+    resolving, to being alive and to carrying a sentence — and excuses no score
+  - the five were four: `regions.ts`'s `label` default is reachable through `hostDirectives`
+    on an exported directive, so it stays an unexplained survivor rather than an excuse
+  - reading a survivor by its LINE nearly filed a hole as equivalent — three mutants share
+    the start column and only the end column separates them
+    ([`lesson-205`](lessons.md#lesson-205)); the run itself cost three attempts
+    ([`lesson-206`](lessons.md#lesson-206))
 
 - [ ] **4.61 — two decisions about the mutation run stand in nobody's file**
   - **the worker count.** `components:mutation` runs the bare `stryker run` and the
@@ -1223,7 +1224,9 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - **the snapshot's provenance.** Which run a `--write` of `mutation.snapshot.md` may be taken
     from is undecided: a clock-kill is not slow under load, it is absent, so a snapshot written
     from a run that lands its kills reddens every run that does not — measured on `motion.ts`,
-    `placement.ts` and `texts.ts` over untouched code
+    `placement.ts` and `texts.ts` over untouched code. The 2026-09-14 run is the case in hand
+    and the snapshot was deliberately NOT written from it: same total, same 4424 detected, and
+    **8 of them by the clock where the record has none**
   - both are decisions rather than settings, which is why neither fits in a configuration file
     as it stands. The home is a decision record, and the second one is what the nightly's
     unmetered re-measurement exists to inform

@@ -1,0 +1,16 @@
+{
+  "check": "inventory",
+  "rule": "equivalent-outside-inventory",
+  "// defect": "An excuse about a file the run never measured — `delta.ts` is already excused whole under `unmeasured`. Two registers claiming the same file is a claim about a mutant nobody threw, which reads like a measurement and is a wish.",
+  "policy": {
+    "equivalent": [
+      {
+        "file": "libs/fake/delta.ts",
+        "mutator": "ConditionalExpression",
+        "at": "1:30-1:35",
+        "to": "false",
+        "reason": "A sentence as long as any other entry's, standing for a proof that was carried out by hand against the code as it is today."
+      }
+    ]
+  }
+}

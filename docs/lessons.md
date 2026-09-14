@@ -5587,3 +5587,68 @@ better tested than it was the day before.
 [`lesson-187`](#lesson-187) says a sweep's worth is not its case count. This is the other half:
 a sweep's worth is not its effect on the score either. Both numbers measure the instrument, and
 a file whose survivors are equivalent has no room left for either to move.
+
+---
+
+### <a id="lesson-205"></a>`lesson-205` — A survivor is a span, not a line: three mutants shared a start column and only one of them lived
+
+Five survivors had an equivalence argument written for them, and checking those arguments meant
+finding the mutants they were about. Printed by file, operator, line and START column, two of
+the three mutants on one line of `toast-viewport.ts` read as the same mutant — and a reading
+that says "`ConditionalExpression` at 109:9 → `false`, killed" beside "`ConditionalExpression`
+at 109:9 → `false`, survived" looks like the runner contradicting itself. It is not. The END
+column is what separates them:
+
+```
+109:9-109:42  the whole condition  key === null || event.key !== key  →  false   killed
+109:9-109:21  the left operand     key === null                       →  false   SURVIVED
+109:25-109:42 the right operand    event.key !== key                  →  false   killed
+```
+
+**What it cost to believe the wrong reading.** Taken as the whole condition, the surviving
+mutant is a hole: `if (false) return` lets every key through and a case pressing a key that is
+not the region key would kill it. Taken as the left operand — which is what it is — it is
+equivalent, because `event.key` is a `DOMString` and `key` is `string | null`, so the right
+operand answers wherever the left one would have. Two opposite conclusions about the same suite,
+and the only thing between them is four characters of the report.
+
+The report has no duplicate mutants, and that is measured rather than assumed: over all 5281,
+no two share file, operator, both ends of the span and replacement. So a pair that looks
+identical is always a pair that is not, and the reading to widen is the span.
+
+The same rule made the register possible at all: an entry in `equivalent` is keyed on the span,
+which is why it stops resolving the day the line moves instead of quietly excusing whatever
+mutant takes that place ([`lesson-199`](#lesson-199) is the other half — what it takes to prove
+one of these by hand).
+
+---
+
+### <a id="lesson-206"></a>`lesson-206` — A dry run three seconds under its ceiling is a gate whose verdict the machine decides
+
+Before it throws a single mutant, Stryker runs the whole suite once with coverage
+instrumentation, and its own ceiling for that pass is **five minutes**. Measured 2026-09-14 on
+an idle eight-core machine: **1266 tests in 4 minutes and 57 seconds**. Nothing had been done
+to make it slow; the suite simply grew — 966 cases at the direction review, 1254 after the
+property sweeps, 1266 now — and crossed a limit nobody was watching, because the limit was a
+default and defaults are not in any file.
+
+**Two runs died here before the number was measured, and the nightly had been red for two
+days.** The failure is worse than a red: the run writes **no report at all**, so every rule of
+`check-mutation` — the inventory, the threshold, the registers, the snapshot — has nothing to
+read, and the gate can say only that the measurement is unreadable. The one loud thing about it
+is a line in the runner's log, which is exactly what nobody is looking at when a nightly fails.
+
+The first two attempts also looked like something else entirely. The first died while a
+battery of gates ran beside it, so the obvious diagnosis was load, and the obvious answer was
+to wait and re-run — which is the answer that costs a day. The second died on an idle machine,
+which is what turned a guess into a measurement.
+
+**A rule on the failure is impossible, so the rule stands on the setting.** Point 1 of
+`check-mutation` refuses the default ceiling, and it can only ever fire on the next run that
+SUCCEEDS — a tripwire, one run late by construction. That is the whole of what a gate can do
+about a failure that eats its own evidence, and it is worth having: the value cannot go back to
+the default without a red.
+
+The ceiling itself is not a budget for the suite. What it guards against is a runner that has
+hung, and that does not care whether it is twelve minutes or twenty, while a runner with half
+the cores of this one very much cares that it is not five.

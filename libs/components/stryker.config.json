@@ -5,6 +5,8 @@
   "vitest": {
     "configFile": "libs/components/mutation.vitest.config.mts"
   },
+  "// dryRunTimeoutMinutes": "Stryker runs the whole suite once, instrumented, before it throws a single mutant, and its default ceiling for that is FIVE MINUTES. Measured 2026-09-14 on an idle 8-core machine: 1266 tests in 4 minutes and 57 seconds. Three seconds of margin is not a margin — the run had already failed twice here and the nightly had been red for two days, each time with `Initial test run timed out` and no report to read. This number is a CEILING and not a budget: what it guards against is a runner that has hung, and that does not care whether the value is 12 or 20, while a runner with half these cores does. It is declared rather than defaulted so that the reason stands beside it, and point 1 of `check-mutation` refuses the default.",
+  "dryRunTimeoutMinutes": 20,
   "coverageAnalysis": "perTest",
   "ignorers": ["angular"],
   "mutate": [

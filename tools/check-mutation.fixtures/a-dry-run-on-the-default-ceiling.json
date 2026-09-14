@@ -1,0 +1,6 @@
+{
+  "check": "measurement",
+  "rule": "dry-run-ceiling-default",
+  "// defect": "The run takes Stryker's own five-minute ceiling for the initial, instrumented pass over the whole suite. This rule is a tripwire rather than a catch: a run that dies at that ceiling writes no report, so the gate that would complain has nothing to read. It fires one run late by construction, on the setting rather than on the failure — which is the only place it can stand.",
+  "runConfig": { "dryRunTimeoutMinutes": null }
+}
