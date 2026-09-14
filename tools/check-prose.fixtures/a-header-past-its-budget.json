@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "check-acr.mjs stands at thirty lines against twenty, with no entry in the register",
+  "headers": { "check-acr.mjs": { "lines": 30 } }
+}

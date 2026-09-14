@@ -296,6 +296,20 @@
         "command": "node tools/check-index.mjs"
       }
     },
+    "check-prose": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/*.mjs",
+        "{workspaceRoot}/tools/prose.policy.json",
+        "{workspaceRoot}/tools/check-prose.fixtures/**/*",
+        "{workspaceRoot}/docs/plan.md",
+        "{workspaceRoot}/docs/prose.snapshot.md"
+      ],
+      "options": {
+        "command": "node tools/check-prose.mjs"
+      }
+    },
     "check-docs": {
       "executor": "nx:run-commands",
       "cache": true,

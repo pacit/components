@@ -9,18 +9,17 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     77 |
+| ✅ enforced | gate and control exist and run in CI                          |     78 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      1 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
 | **total**   |                                                               | **94** |
 
 ## Gaps by urgency
 
 The order comes from the **Binds at** field, not from a requirement number.
 
-| requirement                                                          | what is missing                                                        | binds at                                                     |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom… | the close of the compression pass — **not earlier**. A snap… |
+| requirement | what is missing | binds at |
+| ----------- | --------------- | -------- |
 
 ## axis
 
@@ -88,7 +87,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-files`](requirements/project.md#req-project-files)               | ✅ enforced | `tools/check-files.mjs` (target `check-files`, in CI) — ten points ov… | `tools/check-files.fixtures/` — 27 prepared trees, each rejected on i… |
 | [`req-project-prefix`](requirements/project.md#req-project-prefix)             | 🟡 partial  | `libs/components/eslint.config.mjs` — the `@angular-eslint/component-… | none — deliberately: an ESLint rule fires on the first violation and … |
 | [`req-project-language`](requirements/project.md#req-project-language)         | ✅ enforced | `tools/check-language.mjs` (target `check-language` in the root proje… | `tools/check-language.fixtures/` — 35 doctored inputs, each rejected … |
-| [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a **two-sided** snapshot … | none — gap: a file with a paragraph added beyond the tolerance has to… |
+| [`req-project-concise`](requirements/project.md#req-project-concise)           | ✅ enforced | `tools/check-prose.mjs` (target `check-prose` in the root project, in… | `tools/check-prose.fixtures/` — twenty-five prepared inputs, each rej… |
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
 | [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | 🟡 partial  | `apps/docs/project.json`, `apps/sandbox/project.json`, `apps/sandbox-… | none — deliberately: the violation is immediate and total — a project… |

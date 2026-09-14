@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "the walk measured tools/scratch.mjs, which git does not carry",
+  "headers": { "scratch.mjs": { "lines": 3, "words": 9 } }
+}

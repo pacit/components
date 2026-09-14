@@ -1,0 +1,18 @@
+{
+  "$description": "Where prose stands past the budget of decision 0017 with a reason (req-project-concise). tools/check-prose.mjs requires every unit to fit — a gate header in 12 lines plus one per numbered point, a task position in 12 lines closed and 20 open — and this file is the whole of what is excused from that. An entry holds the exact line count, so an excuse cannot stretch with the text; it is red when the unit fits again, red when the unit is gone, and red when it carries no reason.",
+  "$oversize": "Both entries are the same shape of accident and neither is a paragraph to cut: a position that is really several positions, written as one because the work closed on one day. The way to remove an entry is to split the position, not to shorten it — which is why the reason says what the split would be.",
+  "oversize": [
+    {
+      "kind": "position",
+      "unit": "1.1",
+      "lines": 22,
+      "reason": "Thirteen components in one box. The body is a table with a row each — the decision it rests on, the gate that proves it, what it turns on — and a table is the shortest form those thirteen facts have; the prose around it is already three lines. Splitting it into thirteen positions would meet the budget and buy twelve checkboxes for work that closed on the same day."
+    },
+    {
+      "kind": "position",
+      "unit": "4.34",
+      "lines": 23,
+      "reason": "Six screens of one design pass in one box, each read before it was drawn and each kept or rebuilt on its own. What a closed position owes is the record, and here the record is per screen: which of the six kept its design and what the other four cost. The method the pass left behind is not here — it is in site.md — and the three findings that were defects are in their own positions."
+    }
+  ]
+}

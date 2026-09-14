@@ -1,0 +1,15 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "the register excuses position 9.9, which is not a position",
+  "policy": {
+    "add": [
+      {
+        "kind": "position",
+        "unit": "9.9",
+        "lines": 30,
+        "reason": "A reason as long as any other, for a unit that does not exist anywhere in the repository."
+      }
+    ]
+  }
+}

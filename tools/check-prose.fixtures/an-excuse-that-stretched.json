@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "position 1.1 grew two lines past the count its register entry holds",
+  "positions": { "1.1": { "lines": 24 } }
+}

@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "exact",
+  "why": "check-e2e.mjs carries eighteen more words on the same fifteen lines — the elastic line, which the line column cannot see",
+  "headers": { "check-e2e.mjs": { "words": 160 } }
+}

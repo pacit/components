@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "position 1.1 fits its budget again and the register still excuses it",
+  "positions": { "1.1": { "lines": 10 } }
+}

@@ -2,8 +2,9 @@
 
 **Status:** accepted
 **Implements:** [`req-project-concise`](../requirements/project.md#req-project-concise)
-**Evidence:** `node tools/measure-prose.mjs` — every number below is its
-output. That script measures and never fails a build; the gate comes later, see "Decision"
+**Evidence:** `node tools/check-prose.mjs --report` — every number below is its output, read
+before the pass. **The gate arrived 2026-09-14** and it is the same script: it holds the budget
+below and the record beside it ([`req-project-concise`](../requirements/project.md#req-project-concise))
 
 ## Context
 
@@ -48,6 +49,11 @@ Budgets — **targets for the compression pass, not a gate**:
 - **JSDoc: no budget, and `@example` is outside it entirely** — in a public API the example is
   the most valuable text there is. JSDoc obeys the criterion, not a number.
 
+**"Not a gate" was a date, and it passed.** The pass closed on 2026-09-12 and 2026-09-14, and
+the three numbers above are now point 3 of `tools/check-prose.mjs` — the only copy of them that
+runs. What stands past them stands in `tools/prose.policy.json`, one entry with a reason and an
+exact line count, and the line stays here as the record of a target that became a rule.
+
 Two rules keep the links honest:
 
 1. **A link is an identifier** — `req-*`, `lesson-*` — because `check-docs` (point 4) resolves
@@ -63,6 +69,11 @@ record the bloat as the accepted state — the mistake a snapshot made once in t
 pass is done, with two-sided tolerance, and it measures **lines and words**: a line is elastic,
 so halving the count by doubling the width has to show up somewhere.
 
+Laid 2026-09-14 as `docs/prose.snapshot.md`. Two-sided it is, and with **no** tolerance: the
+requirement settled that half against
+[0023](0023-a-tolerance-is-for-a-wobbling-measurement.md) — a tolerance is for a measurement
+that wobbles, and a line count does not.
+
 ## Consequences
 
 - **The gate headers turn from a rewrite into arithmetic.** Thirteen headers, 359 lines to cut,
@@ -70,9 +81,12 @@ so halving the count by doubling the width has to show up somewhere.
   holds it.
 - **The two layers that repeat each other get a rule.** A closed position drops to the record;
   whatever is not a record becomes a lesson or goes.
-- **The measurement is in the repository, not in a scratch file.** `tools/measure-prose.mjs`
+- **The measurement is in the repository, not in a scratch file.** `tools/check-prose.mjs`
   has no target and no CI wiring on purpose: a gate laid before the pass would fail on every
-  file for a week and be switched off. It is what the future gate grows from.
+  file for a week and be switched off. It is what the future gate grows from — and it did,
+  in place, the day the pass closed. Before that it grew a defect nobody could see: it had
+  been reporting on a layer it never read, which is why points 1 and 2 of the gate are the
+  denominator's own guards.
 - **New prose is written to the budget from today**, this file included.
 
 ## What this costs us

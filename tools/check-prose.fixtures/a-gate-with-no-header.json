@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "check-acr.mjs opens with no comment block, so the walk measures nothing in it",
+  "headers": { "check-acr.mjs": { "lines": 0, "words": 0, "points": 0 } }
+}

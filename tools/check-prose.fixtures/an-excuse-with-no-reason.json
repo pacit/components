@@ -1,0 +1,11 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "position 1.1 is excused by the word because — a register entry with no reason is a list",
+  "policy": {
+    "drop": ["position:1.1"],
+    "add": [
+      { "kind": "position", "unit": "1.1", "lines": 22, "reason": "because" }
+    ]
+  }
+}

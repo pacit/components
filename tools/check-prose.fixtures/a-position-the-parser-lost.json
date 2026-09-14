@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "the plan puts a checkbox in front of one more item than the parser read — the numbering moved under the instrument",
+  "boxes": 97
+}

@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "exact",
+  "why": "one line fewer — prose leaving fails exactly as prose arriving does",
+  "headers": { "check-e2e.mjs": { "lines": 14 } }
+}

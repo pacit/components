@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "the record is not on disk",
+  "snapshot": null
+}

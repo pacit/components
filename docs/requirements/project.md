@@ -447,22 +447,31 @@ because in a public API they are the most valuable text there is. The volume pro
 `tools/` (~590 lines of gate headers alone), not in JSDoc.
 
 **Decision:** [0017 — one home per fact: the criterion and its budget](../decisions/0017-one-home-per-fact.md)
-**Gate:** none — gap: a prose volume budget per file, a **two-sided** snapshot in the idiom of
-`libs/components/size.snapshot.md` — which since
-[0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) records every byte and
-holds no tolerance; a line count does not wobble either. The values are settled in
-[0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, task
-position 12 closed / 20 open), and the denominator is already counted by
-`tools/measure-prose.mjs` — a measurement with no target, which this gate will grow out of.
-The limit is written down rather than passed over: the machine measures **volume, not
-weight** — growth becomes a line in the diff, while the judgment of whether a paragraph
-carries anything stays with review
-**Control:** none — gap: a file with a paragraph added beyond the tolerance has to fire; so
-does a file shortened without rewriting the snapshot
-**Binds at:** the close of the compression pass
-— **not earlier**. A snapshot laid on today's 74-line headers would freeze them as the
-accepted state, exactly like the token-name snapshot laid before normalisation
-([`lesson-49`](../lessons.md#lesson-49))
+**Gate:** `tools/check-prose.mjs` (target `check-prose` in the root project, in CI) — six
+points over two layers: the leading comment of every `tools/*.mjs`, and every task position in
+`docs/plan.md`. Point 3 is [0017](../decisions/0017-one-home-per-fact.md)'s budget — 12 lines
+plus one per numbered point for a header, 12 closed and 20 open for a position — and
+`tools/prose.policy.json` is the whole of what stands past it with a reason, at an exact line
+count, so an excuse cannot stretch with the text it excuses. Points 4 to 6 hold
+[`docs/prose.snapshot.md`](../prose.snapshot.md): **lines and words**, both layers, in both
+directions and with no band, the way the size record has held bytes since
+[0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md). Words are there
+because a line is elastic — a header that meets its budget by running three sentences onto one
+has moved nothing a reader can feel. Points 1 and 2 are what make the rest a measurement
+rather than an agreement with itself, and they are the lesson of the instrument this gate grew
+out of, which reported for weeks on a layer it never read: a `check-*` script with no header
+or no numbered point, a mark no budget belongs to, a layer that went empty, a script git
+carries and the walk skipped, and the plan's own checkboxes counted a second time against what
+the parser found. The limit is written down rather than passed over: the machine measures
+**volume, not weight** — growth becomes a line in the diff, while the judgment of whether a
+paragraph carries anything stays with review
+**Control:** `tools/check-prose.fixtures/` — twenty-five prepared inputs, each rejected on its
+own point, built on the live repository rather than on a stored copy. Both halves of what this
+field asked for are there: `a-header-past-its-budget` for a paragraph that arrived, and
+`a-header-that-shrank` for a file shortened without rewriting the record. Beside them
+`words-without-lines` for the elastic line, `no-script-at-all` and `no-position-at-all` for a
+denominator that empties quietly, and `a-position-the-parser-lost` for the defect that
+actually happened — a numbering that moved under the instrument measuring it
 
 ---
 

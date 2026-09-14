@@ -1,0 +1,3 @@
+{
+  "$comment": "The reference input is the repository itself: the headers of tools/*.mjs, the positions of docs/plan.md, the two independent readings beside them (the git index and the plan's own checkboxes), the register and the record on disk, as they stand at the commit under test. Nothing is stored here on purpose — a stored copy would measure the repository as it was the day somebody stored it. Every case is built on a copy of that live input with one thing broken (see README.md)."
+}

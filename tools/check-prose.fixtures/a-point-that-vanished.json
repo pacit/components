@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "exact",
+  "why": "check-e2e.mjs lost a numbered point, which buys a line of budget by hiding what the gate measures",
+  "headers": { "check-e2e.mjs": { "points": 3 } }
+}

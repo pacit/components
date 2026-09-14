@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "check-acr.mjs has a header and no numbered point, so its budget falls to the smallest one",
+  "headers": { "check-acr.mjs": { "points": 0 } }
+}

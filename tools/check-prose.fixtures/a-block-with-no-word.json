@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "release.mjs reports seventeen lines carrying no word — a block the walk found and did not read",
+  "headers": { "release.mjs": { "words": 0 } }
+}

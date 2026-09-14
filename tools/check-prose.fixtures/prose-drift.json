@@ -1,0 +1,10 @@
+{
+  "point": 6,
+  "check": "verbatim",
+  "why": "every row right, and the sentence saying the record holds no tolerance reversed",
+  "snapshot": {
+    "replace": [
+      { "pattern": "There is no tolerance", "with": "There is a tolerance" }
+    ]
+  }
+}

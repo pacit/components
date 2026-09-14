@@ -24,7 +24,8 @@ It prints the current counts (`enforced / partial / gap`). If they disagree with
 
 **At the end of a session** — tick the tasks off, and hold the position to the budget
 [0017](decisions/0017-one-home-per-fact.md) sets: **12 lines closed, 20 open**, measured by
-`node tools/measure-prose.mjs`. What does not fit is not prose to shorten — it is a fact
+`node tools/check-prose.mjs`, whose record is [`prose.snapshot.md`](prose.snapshot.md). What
+does not fit is not prose to shorten — it is a fact
 standing in the wrong home, and it belongs in a requirement, a decision or
 [`lessons.md`](lessons.md).
 
@@ -1155,14 +1156,13 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [x] **4.56 — the plan was the only copy of thirty-five facts** — **closed 2026-09-12; the
       positions half of [0017](decisions/0017-one-home-per-fact.md)'s pass**
-  - the instrument first: `measure-prose.mjs` had matched the lettered numbering the plan
+  - the instrument first: `check-prose.mjs` had matched the lettered numbering the plan
     carried before the sections, and its position loop was bounded by a `## Journal` heading
     that does not exist — two dead ends over the same layer, in a script that exits 0 by design
   - then the pass: **89 positions, 3985 lines to 995** against a budget of 1124. What came out
     of them and had no other home is `lesson-196`–`lesson-204`, 0075 and 0076, rows in 0005 and
     0044, paragraphs in `site.md`, and four refusals moved to the file the next person to
-    propose them will be standing in. 1.1 and 4.34 stay over budget as tables — thirteen
-    components and a six-screen pass, each one position by accident of how it was written
+    propose them will be standing in
   - three defects found on the way: `check-mutation`'s `inputs` named `ci.yml` alone while the
     gate reads both workflows; 0044's "no tone" stood against shipped behaviour; and `plan 2.8`
     was cited three times by source files for an item that does not exist
@@ -1276,18 +1276,18 @@ are deferred.
     `apps/sandbox-e2e/src/density.spec.ts`, whose own disarming is `req-token-density`'s
   - `[pctDensity]` is deliberately not here, its trigger written into 0074
     ([0059](decisions/0059-a-theme-is-an-attribute-the-skin-reads.md)); findings 4.52 and 4.53
-- [ ] **5.5 — `req-project-concise`**: the prose volume budget per file, in the idiom of the
-      size snapshot. **Its trigger has fired**: both halves of the compression pass closed on
-      2026-09-12 and 2026-09-14 (**4.56**, **4.57**), so a snapshot laid now records the state
-      the pass left rather than the bloat it removed ([`lesson-49`](lessons.md#lesson-49))
-  - the shape and the values are
+- [x] **5.5 — `req-project-concise`**: the prose volume budget per file — **taken 2026-09-14,
+      the day its trigger fired**, so the record is the state the compression pass left and
+      not the bloat it removed ([`lesson-49`](lessons.md#lesson-49))
+  - `tools/check-prose.mjs` over two layers, holding [`prose.snapshot.md`](prose.snapshot.md)
+    to lines AND words in both directions with no band; the shape and the values are
     [`req-project-concise`](requirements/project.md#req-project-concise)'s and
-    [0017](decisions/0017-one-home-per-fact.md)'s: lines AND words, two-sided, because a line
-    is elastic and halving the count by doubling the width has to show up somewhere
-  - `node tools/measure-prose.mjs` is what it grows from — it reads both layers and today
-    reports 515 header lines against 528 and 1084 position lines against 1256
-  - what it still needs to be a gate rather than a measurement: a snapshot file, a tolerance, a
-    negative control that can fail, and a line in `ci.yml`
+    [0017](decisions/0017-one-home-per-fact.md)'s
+  - the instrument it grew out of reported for weeks on a layer it never read, so points 1 and
+    2 are the denominator's own guards: two readings independent of the walk, and a red rather
+    than a pass on an empty set
+  - `tools/prose.policy.json` is a fourth register — 1.1 and 4.34 stand past the budget at an
+    exact line count, and the reason names the split that removes the entry
 
 **This file lied twice, and now something asks.** The rewrite that shrank it to a working
 set also cut it mid-sentence and left `req-project-concise` owned by nobody while

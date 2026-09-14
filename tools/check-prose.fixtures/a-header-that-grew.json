@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "exact",
+  "why": "check-e2e.mjs takes one line more than the record says, and stays inside its budget",
+  "headers": { "check-e2e.mjs": { "lines": 16 } }
+}

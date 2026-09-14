@@ -1,0 +1,14 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "the record has a row for check-ghost.mjs, which the walk did not measure",
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "^check-acr\\.mjs 8 20 211$",
+        "flags": "m",
+        "with": "check-acr.mjs 8 20 211\ncheck-ghost.mjs 1 13 40"
+      }
+    ]
+  }
+}
