@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The landing (2.1.6). Two claims are on trial. The page's numbers are the repository's —
+ * The landing (0061). Two claims are on trial. The page's numbers are the repository's —
  * so the first tests read the same tracked files the content pass reads and expect the
  * rendered strip to agree, which is the site's whole pitch folded into an assertion. And
  * the "live" cards are really the shipped components — so the rest drives them and watches
@@ -61,7 +61,8 @@ test.describe('The landing', () => {
     // as unreadable — measured, webkit, 1.01:1 (2026-09-04).
     for (let at = 0; at < 5; at++)
       await expect(facts.nth(at)).toHaveCSS('opacity', '1');
-    // The certification sentence waits for 2.2's ACR — the page must not jump the gun.
+    // The certification sentence waits for the ACR (`req-a11y-acr`) — the page must not
+    // jump the gun.
     await expect(strip).not.toContainText(/conformant/i);
     // The AI tile points at files this same build really serves.
     for (const address of ['/llms.txt', '/components.json']) {
@@ -112,9 +113,9 @@ test.describe('The landing', () => {
   test('the machine catalogue is the inventory the site renders, read from the same sources', async ({
     page,
   }) => {
-    // The tripwire of plan 2.5: the catalogue cannot drift from the pages because both are
-    // one pass over the tracked sources — so this reads those sources itself and holds the
-    // served file to them: the cards on disk, the texts channel in its source.
+    // The tripwire of `req-api-catalogue`: the catalogue cannot drift from the pages because
+    // both are one pass over the tracked sources — so this reads those sources itself and holds
+    // the served file to them: the cards on disk, the texts channel in its source.
     const cards = readdirSync(join(ROOT, 'docs/components'))
       .filter(
         (f) => f.endsWith('.md') && f !== 'README.md' && f !== '_template.md',
@@ -315,7 +316,7 @@ test.describe('The landing', () => {
     page,
   }) => {
     // The headline is `[pctHero]`'s `text` face since the gradient's hand copies went to the
-    // component (4.34/4.36) — so this reads the face's own sweep, which is what the page
+    // component (0065) — so this reads the face's own sweep, which is what the page
     // used to write out for itself.
     const drift = () =>
       page
@@ -339,7 +340,7 @@ test.describe('The landing', () => {
     expect(await rim()).toBe('4s');
 
     // And it ENDS. An endless drift is what this copy had drifted into while the component
-    // settled after one pass (4.37) — the reason a consumer owes SC 2.2.2 no control.
+    // settled after one pass (`lesson-178`) — the reason a consumer owes SC 2.2.2 no control.
     expect(
       await page
         .locator('[data-pct-hero="text"]')

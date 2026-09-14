@@ -1,7 +1,8 @@
 /* The site pins the same face the sandbox pins, for the same reason it will matter here:
-   the day this application grows visual baselines and Lighthouse numbers (2.1.8), a
-   metric about system-ui would be a fact about the machine. Vendored beside the app —
-   public/InterVariable.woff2 under the SIL OFL, the licence next to it. */
+   the day this application grows visual baselines and Lighthouse numbers (site.md "The bar
+   the site itself meets"), a metric about system-ui would be a fact about the machine.
+   Vendored beside the app — public/InterVariable.woff2 under the SIL OFL, the licence next
+   to it. */
 @font-face {
   font-family: 'Inter var';
   src: url('/InterVariable.woff2') format('woff2');
@@ -10,7 +11,7 @@
   font-display: block;
 }
 
-/* The code face is vendored the same way (2.7.5): JetBrains Mono, variable in weight, in
+/* The code face is vendored the same way: JetBrains Mono, variable in weight, in
    the one cut a site that is English by law reaches (req-project-language) —
    public/JetBrainsMono-latin.woff2 under the SIL OFL, the licence next to it as
    public/JetBrainsMono-LICENSE.txt. No `unicode-range`: a glyph the cut does not hold

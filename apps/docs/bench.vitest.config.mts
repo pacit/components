@@ -5,10 +5,10 @@ import { join } from 'node:path';
 import { defineConfig } from 'vite';
 
 /**
- * Vitest configuration USED BY THE COST RUN ALONE (`nx run docs:bench`, plan 2.3): the
- * scenes under `bench/` render every component page's preview in jsdom and write what it
- * cost to `tmp/bench/report.json`, which `tools/check-bench.mjs` holds against
- * `bench.snapshot.md`.
+ * Vitest configuration USED BY THE COST RUN ALONE (`nx run docs:bench`,
+ * `req-quality-benchmark`): the scenes under `bench/` render every component page's preview
+ * in jsdom and write what it cost to `tmp/bench/report.json`, which `tools/check-bench.mjs`
+ * holds against `bench.snapshot.md`.
  *
  * A file of its own, under a name of its own, for the reason the library's mutation config
  * gives: `@nx/vite/plugin` infers targets from EXACTLY `vite.config.*` and `vitest.config.*`,

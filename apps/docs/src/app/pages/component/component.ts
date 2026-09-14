@@ -43,7 +43,7 @@ const STATE_LABEL = {
 } as const;
 
 /**
- * One component's page (plan 2.7.3; site.md "The component page, drawn in words").
+ * One component's page (site.md "The component page, drawn in words").
  * Everything rendered here left the content pass as data: the API read from the library's
  * own source, the tokens with their meaning and both themes' defaults, the card's sections
  * as a form, the examples with their own code. The `[innerHTML]` payloads are this

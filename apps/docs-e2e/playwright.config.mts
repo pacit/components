@@ -9,7 +9,8 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
  * purpose: the sandbox is the library's rig, this one watches the shop window. Same three
  * engines from day one (`req-quality-browsers` is the library's law, and the site claims
  * the library's standards on its own pages); the visual-comparison budgets arrive with
- * the first baseline (2.1.8), not before there is a picture to hold.
+ * the first baseline (site.md "The bar the site itself meets"), not before there is a
+ * picture to hold.
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),

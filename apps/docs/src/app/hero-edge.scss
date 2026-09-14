@@ -97,7 +97,7 @@
      card's hover and its `:focus-within`, which is the gesture this file hand-wrote. The
      masked pseudo-element, `inset: -1px`, the `@supports` guard and firefox's composite
      order (`lesson-156`) are the component's now — measured once instead of twice
-     (0065, plan 4.34 and 4.36). What is left here is the half the component cannot do.
+     (0065). What is left here is the half the component cannot do.
 
      Why the NAME stays hand-written. `show="interact"` reads the attention on the element
      WEARING the face, and this gradient is the CARD's hover painting the card's NAME — a
@@ -123,9 +123,9 @@
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
-      /* ONE pass and then it stands still — the library's own answer since 4.37, and the
-         line this copy had drifted from: it ran `infinite` on every card of two pages while
-         the component it was copied from settled after four seconds. */
+      /* ONE pass and then it stands still — the library's own answer (`lesson-178`), and
+         the line this copy had drifted from: it ran `infinite` on every card of two pages
+         while the component it was copied from settled after four seconds. */
       animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2)
         linear 1;
     }

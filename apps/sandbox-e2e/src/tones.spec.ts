@@ -11,7 +11,7 @@ import { visit } from './support/dom';
  * ([`req-a11y-forced-colors`](../../../docs/requirements/a11y.md#req-a11y-forced-colors)). So
  * every tone in this library draws a MARK as well, one public icon name per tone, and these
  * cases hold both halves: the colour differs per tone in ordinary mode, and the mark is still
- * there when the colour is gone (plan 4.14).
+ * there when the colour is gone (0076).
  *
  * The four names arrived together on purpose, so the file walks all four rather than sampling:
  * a set decided once is a set measured once.
@@ -130,7 +130,7 @@ test.describe('Tones — a colour and a drawing, and the drawing is the half tha
 
     // The whole promise of "the absence is the neutral": no attribute, no mark, and the host
     // exactly as tall as the groove — which is what it was before the pipe moved down one
-    // element to make room for a mark (plan 4.14).
+    // element to make room for a mark (0076).
     const bar = page.getByTestId('progress-md');
     const host = await bar.boundingBox();
     const groove = await bar.locator('[data-pct-part="bar"]').boundingBox();

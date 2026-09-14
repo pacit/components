@@ -54,7 +54,7 @@ const COMPONENT_TIER = PUBLIC.filter((row) => row.tier === 'component');
  *
  * **The page taught two moves in 324 px and then printed 486 variables in 18 251** — 86% of
  * itself, alphabetically, every one of them already documented on its own component's page
- * under *Parts to select, tokens to override* (4.34). Nothing is deleted, because the public
+ * under *Parts to select, tokens to override*. Nothing is deleted, because the public
  * tier IS the contract and a contract you have to visit 34 pages to read is a worse page and
  * not a shorter one. What changed is that it can be reached: the two moves come first and
  * side by side, the three tiers have addresses and a bar that says which one the reader is

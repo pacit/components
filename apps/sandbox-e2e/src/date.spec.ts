@@ -7,7 +7,7 @@ import { attrOf, boxOf, setRtl, visit } from './support/dom';
  * A day here is a calendar day and never an instant (0043), so nothing below may move when
  * the browser stands fourteen hours east of the server that stored the value; a case that
  * did move would be the defect the type exists to refuse, measured where the machine's own
- * timezone would have hidden it (plan 4.29).
+ * timezone would have hidden it (`req-api-day`).
  */
 test.use({ timezoneId: 'Pacific/Kiritimati' });
 
@@ -296,7 +296,7 @@ test.describe('Date — the walk', () => {
     await page.keyboard.press('ArrowRight');
     // The cell is focused by the pass that moved the cursor, not by the keypress itself, so
     // the reading waits for it (lesson-130): read one frame early under load, this case went
-    // red twice on a step that never touched the calendar (plan 4.23).
+    // red twice on a step that never touched the calendar.
     await expect.poll(() => focusedIndex(page)).toBe(before + 1);
   });
 

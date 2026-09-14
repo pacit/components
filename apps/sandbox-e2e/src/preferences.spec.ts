@@ -52,7 +52,7 @@ test.describe('prefers-reduced-motion', () => {
     ).toBe(150);
     // Half the axis, and ONE pass of it: the token stands at 8s and every sweep in the
     // library takes four, then settles — which is what keeps SC 2.2.2 off the table for a
-    // consumer who does nothing (plan 4.37). The count is read here too, because a face that
+    // consumer who does nothing (`lesson-178`). The count is read here too, because a face that
     // went back to `infinite` would still pass on the duration alone.
     expect(
       await firstDurationMs(page.getByTestId('btn-hero'), 'animation-duration'),

@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     providePctConfig({ defaultSize: 'md' }),
     // The region cycle, installed the way an application installs it: a provider here and a
     // key in the shell's template. Nothing in the library provides it, so an application that
-    // says nothing carries a token and no mechanism (0072, plan 4.16).
+    // says nothing carries a token and no mechanism (0072).
     providePctRegions(),
     // The library texts are English (req-api-texts). The sandbox runs under a locale
     // that is not — see LOCALE_ID below — so it translates them here. This is the one

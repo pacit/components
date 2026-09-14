@@ -77,7 +77,7 @@ h2 {
 
 /* The promise the row makes, above the two cells that summarise how it is held. Those two
    are the registry table's own words and end where its column ran out; this line is the
-   requirement's own title and does not (4.34). */
+   requirement's own title and does not. */
 .promise {
   display: block;
   margin-block-start: var(--pct-space-2);

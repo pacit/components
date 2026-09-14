@@ -8,9 +8,9 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { DEMOS } from '../src/app/demos';
 
 /**
- * The cost run (plan 2.3): what every component page's preview costs to render, measured
- * on the very demo the page shows, and written to `tmp/bench/report.json` for
- * `tools/check-bench.mjs` to hold against `apps/docs/bench.snapshot.md`.
+ * The cost run (`req-quality-benchmark`): what every component page's preview costs to
+ * render, measured on the very demo the page shows, and written to `tmp/bench/report.json`
+ * for `tools/check-bench.mjs` to hold against `apps/docs/bench.snapshot.md`.
  *
  * Four of the readings are COUNTS and one is a CLOCK, and that split is the whole design
  * ([0023](../../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)): the

@@ -9,13 +9,13 @@ export interface TocItem {
 }
 
 /**
- * The pinned table of contents (2.7.3, the reviewer's item 6): two levels, each entry a
- * fragment link the router scrolls to under the sticky bar, the active one lit by the
- * page's own scroll spy — the list is data, the page decides what is active.
+ * The pinned table of contents (site.md "The component page, drawn in words"): two levels,
+ * each entry a fragment link the router scrolls to under the sticky bar, the active one lit
+ * by the page's own scroll spy — the list is data, the page decides what is active.
  *
  * It lived under `pages/component/` while a component card was the only page long enough to
  * need it. The conformance report is 8 971 px with six sections and the support policy 2 929
- * with seven, and neither had a way in (4.34) — so the rail moved up here rather than being
+ * with seven, and neither had a way in — so the rail moved up here rather than being
  * written a second time, which is the same refusal `find.ts` and `spy.ts` already are.
  */
 @Component({

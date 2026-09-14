@@ -50,9 +50,10 @@ export interface DocsExample {
 }
 
 /**
- * The examples registry (plan 2.7.2): several running instances per card, under the Preview.
- * Hand-written like `DEMOS` so every import path is a literal the bundler can split — and
- * the content pass fails the build when a `<id>.<key>.demo.ts` on disk is missing here.
+ * The examples registry (site.md "The component page, drawn in words"): several running
+ * instances per card, under the Preview. Hand-written like `DEMOS` so every import path is
+ * a literal the bundler can split — and the content pass fails the build when a
+ * `<id>.<key>.demo.ts` on disk is missing here.
  */
 export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
   button: [

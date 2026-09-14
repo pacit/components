@@ -3,9 +3,9 @@ import type { DocsCard } from '../generated/content';
 /**
  * The one rule this catalogue is filtered by, written once because it is now read twice:
  * `docs-index` in the component page's left rail and in the shell's drawer, and the gallery
- * at `/components` (4.34). Two copies of a match rule are two lists that answer the same
- * typing differently — and the whole argument for putting a finder on the gallery was that
- * it is the finder the site already ships.
+ * at `/components` (site.md "The gallery, drawn in words"). Two copies of a match rule are
+ * two lists that answer the same typing differently — and the whole argument for putting a
+ * finder on the gallery was that it is the finder the site already ships.
  *
  * What it matches is what a reader has to type anyway: the id that is in the URL (`date`,
  * `toast`) and the class name that is in their own template (`PctDate`). Not the summary —

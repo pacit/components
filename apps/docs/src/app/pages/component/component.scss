@@ -1,8 +1,8 @@
-/* The component page (2.7.3). The geometry is the library's container, widened through
-   its own token — `--pct-container-max-width` is the API, not a stylesheet override — and
-   the three columns inside it answer the CONTAINER's width, never the viewport's: the
-   reviewer caught the sketch's columns arriving too early, and a viewport query cannot
-   know whether the rails are there. */
+/* The component page (site.md "The component page, drawn in words"). The geometry is the
+   library's container, widened through its own token — `--pct-container-max-width` is the
+   API, not a stylesheet override — and the three columns inside it answer the CONTAINER's
+   width, never the viewport's: the reviewer caught the sketch's columns arriving too early,
+   and a viewport query cannot know whether the rails are there. */
 /* The container element is the library's column itself: a query answers the size of an
    ANCESTOR's containment, so the grid below asks the column it stands in — asking `.shell`
    about `.shell` is a question no element can answer, and the first baseline showed the

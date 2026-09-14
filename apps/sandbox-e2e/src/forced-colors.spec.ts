@@ -605,7 +605,7 @@ test.describe('forced-colors: active', () => {
     // outline is erased by an ancestor's clip, so it is written on the clipping box itself.
     // This assertion used to stand on the `track`, where `outline-color` with no outline
     // computes to `currentColor` — `CanvasText` here — so it passed on the fallback and asked
-    // nothing. The width is read beside the colour for exactly that reason (plan 4.14).
+    // nothing. The width is read beside the colour for exactly that reason.
     const clip = page
       .getByTestId('progress-value')
       .locator('[data-pct-part="bar"]');

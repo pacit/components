@@ -115,8 +115,8 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
    * exposes a `panel` part in `libs/components/parts.snapshot.md` has to have a stage here,
    * both ways (the two cases after the table). A new component with a panel joins the audit
    * by default — as a red case asking for its stage rather than as a silence, which is the
-   * inversion 4.11 gave the mutation inventory. What the derivation does not reach is written
-   * beside it: the toast's stack is an `item` and not a `panel`, and stays a case by hand.
+   * inversion `lesson-196` names. What the derivation does not reach is written beside it:
+   * the toast's stack is an `item` and not a `panel`, and stays a case by hand.
    */
   interface Stage {
     /** The case's name — `… has no violations`. */
@@ -188,7 +188,7 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
        * is not written, and the sentence saying so is the panel's, standing beside the list
        * ([0069](../../../docs/decisions/0069-a-message-about-the-list-is-not-an-item-in-it.md)).
        * The same tree with the sentence inside the listbox was a critical
-       * `aria-required-children` this suite had never opened a panel to find (plan 4.8):
+       * `aria-required-children` this suite had never opened a panel to find:
        * axe marks an empty listbox for review and fails one holding content it cannot own.
        */
       {

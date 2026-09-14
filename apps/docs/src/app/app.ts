@@ -44,7 +44,7 @@ const storedTheme = (): PctThemeName | null => {
  * where to remember it (`localStorage`), the directive only spells the attribute. The one
  * hand-written mirror onto `<html>` is 0059's recorded root writer — the body's ground
  * sits outside any template scope. The drawer 0060 deferred arrives with the nav that
- * fills it (2.1.7): the same links as the bar, for the widths where the bar has no room.
+ * fills it (0062): the same links as the bar, for the widths where the bar has no room.
  */
 @Component({
   selector: 'app-root',
@@ -95,7 +95,7 @@ export class App {
     // (its lesson-30): until hydration the server's DOM can be clicked but nothing
     // listens, and with the demos arriving as lazy chunks the window between "visible"
     // and "wired up" is long enough for a loaded test runner to fall into. Measured
-    // here the night 2.1.8's full suite first ran: a switch click swallowed and three
+    // here the night the site's full suite first ran: a switch click swallowed and three
     // screenshots "never stable", all under 300-test contention.
     const appRef = inject(ApplicationRef);
     afterNextRender(async () => {

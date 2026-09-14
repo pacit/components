@@ -1,12 +1,12 @@
 /**
- * The docs site's content pass (plan 2.1.5, grown by 2.1.7 and 2.7.2; site.md "The pipeline").
+ * The docs site's content pass (site.md "The pipeline").
  *
  * The site renders what the repository already generates and gates — the component cards,
  * the parts snapshot, the token snapshot, the registry, the mutation snapshot, the cost
- * record (2.3), and since 2.7.2 the library's own SOURCE — and this script is the whole of how that content
- * reaches the app: one deterministic pass from tracked sources to typed data. Nothing is
- * written twice; the site cannot disagree with the repository because it holds no
- * hand-typed copy of anything the repository measures.
+ * record (`req-quality-benchmark`) and the library's own SOURCE — and this script is the
+ * whole of how that content reaches the app: one deterministic pass from tracked sources to
+ * typed data. Nothing is written twice; the site cannot disagree with the repository because
+ * it holds no hand-typed copy of anything the repository measures.
  *
  * Outputs (all under apps/docs/src/generated/, gitignored — build artefacts, not sources):
  *   1. content.ts          — lean card data + the evidence numbers; the landing's diet.
@@ -18,7 +18,7 @@
  *                            the conformance report for /acr.
  *   4. demo-code.ts        — the start page's snippets, highlighted by shiki AT BUILD
  *                            TIME: one HTML for both themes, zero highlighter shipped.
- *   5. public/llms.txt + public/components.json — the agent surface (plan 2.5).
+ *   5. public/llms.txt + public/components.json — the agent surface (req-api-catalogue).
  *
  * Rendering is the form renderer of `markdown.mjs` — the cards are a FORM, not prose
  * (docs/components/README.md says so and check-docs holds them to it). Links inside the
@@ -31,7 +31,7 @@
  * `host` object and the entry point's `export` lines. What it cannot read FAILS THE BUILD:
  * every card has to read whole — a member without its JSDoc line, a token without its
  * `$description`, a card without its sections or its example. The readers were tolerant
- * while the sweep (2.7.4) wrote the readings they owed; the sweep closed on 2026-09-05 and
+ * while the sweep wrote the readings they owed; the sweep closed on 2026-09-05 and
  * the tripwires flipped the same day, so a new card starts strict.
  */
 import {
@@ -405,9 +405,9 @@ const cards = await Promise.all(
     const usage = fenceOf(sectionOf(text, 'Usage'));
     const theming = fenceOf(sectionOf(text, 'Theming'));
     const partsTable = tableOf(sectionOf(text, 'Parts'));
-    // The harness a consumer's test holds the parts with (plan 2.6): the **Harness** row of
-    // the Contract table, read as the names in backticks. A card without the row is a page
-    // that names no instrument, and `check-harness` holds the names to the package.
+    // The harness a consumer's test holds the parts with (req-api-harness): the **Harness**
+    // row of the Contract table, read as the names in backticks. A card without the row is a
+    // page that names no instrument, and `check-harness` holds the names to the package.
     const harnessRow = (tableOf(sectionOf(text, 'Contract'))?.rows ?? []).find(
       (r) => r[0] === '**Harness**',
     );
@@ -446,7 +446,7 @@ const cards = await Promise.all(
       // were not enough to say the truth. Seven cards read `none — gap` for RTL while a
       // `dir="rtl"` baseline of each one was on disk; two of the seven — radio and number —
       // really do have something unmeasured left (an arrow swap, a bidi digit), so neither
-      // `none` nor a plain citation was honest about them (4.34).
+      // `none` nor a plain citation was honest about them.
       const state = /^not applicable/i.test(evidence)
         ? 'na'
         : /^none\s*[—-]\s*deliberately/i.test(evidence)
@@ -476,7 +476,7 @@ const cards = await Promise.all(
       summary: inline(summary),
       notesHtml: notes ? paragraphs(notes) : null,
       usage: usage ? { code: await highlight(usage.code, usage.lang) } : null,
-      // The catalogue (2.5) wants the fence as text, not as highlighted HTML.
+      // The catalogue (req-api-catalogue) wants the fence as text, not as highlighted HTML.
       usageRaw: usage ? { code: usage.code, lang: usage.lang } : null,
       theming: theming
         ? {
@@ -505,7 +505,7 @@ const cards = await Promise.all(
   }),
 );
 
-// ── 1b. the source: the API read from the code itself (2.7.2) ────────────────
+// ── 1b. the source: the API read from the code itself ────────────────────────
 
 const sourcesOf = (() => {
   const cache = new Map();
@@ -852,7 +852,7 @@ for (const line of fenced(read('libs/tokens/tokens.snapshot.md')).split('\n')) {
       // Which component's dial this is, by the one rule the prefix already states — the
       // same attribution `tokensByComponent` below makes for the component pages. The
       // theming page groups 486 dials by it rather than running them alphabetically past
-      // a reader for 18 251 px (4.34); `null` for the two tiers that belong to nobody.
+      // a reader for 18 251 px; `null` for the two tiers that belong to nobody.
       owner:
         inventory[3] === 'component'
           ? (inventory[1].match(/^--pct-([a-z0-9]+)-/)?.[1] ?? null)
@@ -865,7 +865,7 @@ for (const line of fenced(read('libs/tokens/tokens.snapshot.md')).split('\n')) {
   tokensByComponent.set(m[2], list);
 }
 
-// ── 2b. the tokens' meaning and defaults, from the DTCG sources (2.7.2) ─────
+// ── 2b. the tokens' meaning and defaults, from the DTCG sources ─────────────
 
 const dtcg = (file) => JSON.parse(readFileSync(join(TOKENS_DIR, file), 'utf8'));
 const flatten = (tree, prefix = [], out = {}) => {
@@ -1109,7 +1109,7 @@ for (const [where, value] of [
     );
 }
 
-// ── 3b. the evidence per component (2.7.2) ───────────────────────────────────
+// ── 3b. the evidence per component ───────────────────────────────────────────
 
 const baselineFiles = existsSync(join(E2E_DIR, '__screenshots__/linux'))
   ? readdirSync(join(E2E_DIR, '__screenshots__/linux'))
@@ -1124,9 +1124,10 @@ const SPEC_ALIAS = {
 };
 
 /**
- * The cost record (plan 2.3): `bench.snapshot.md`, held by `check-bench` to what the cost
- * run measured. Read here the way the mutation snapshot is — a reading the parser cannot
- * make throws, because the tile would otherwise show a number nothing measured.
+ * The cost record (req-quality-benchmark): `bench.snapshot.md`, held by `check-bench` to
+ * what the cost run measured. Read here the way the mutation snapshot is — a reading the
+ * parser cannot make throws, because the tile would otherwise show a number nothing
+ * measured.
  */
 const costRecord = (() => {
   const text = read('apps/docs/bench.snapshot.md');
@@ -1250,7 +1251,7 @@ const registryRows = [];
 //
 // docs/registry.md clips its cells with an ellipsis — 96 of them — to stay a markdown table
 // narrow enough to read, and the page rendered the clip verbatim: 94 rows ended mid-sentence
-// on the page an auditor reads as the product (4.34). The full line was tracked all along.
+// on the page an auditor reads as the product. The full line was tracked all along.
 // Every requirement opens its own section with `<id>` — Title, in docs/requirements/ and, for
 // the one that stands apart, docs/00-axis.md (named in full — a generated lookup reaches no
 // file by itself, req-project-reach). A row without one throws, the way a row count that
@@ -1303,12 +1304,12 @@ const lessonTitle = new Map(lessons.map((l) => [l.id, l.title]));
 const supportHtml = await render(
   read('docs/support.md').replace(/^# .*\n/, ''),
 );
-// The conformance report is GENERATED by check-acr from its claims (plan 2.2); the page
+// The conformance report is GENERATED by check-acr from its claims (req-a11y-acr); the page
 // renders the tracked rendering, with the generator's banner comment stripped.
 // The report's identifying fields, lifted out of the prose into the header block a VPAT
 // reader looks for first — product, standard, report date, evaluation methods. The words are
 // the document's own: this frames them and does not rewrite them, because check-acr holds
-// that file to its claims and a page may not edit what a gate reads (4.34). Only the leading
+// that file to its claims and a page may not edit what a gate reads. Only the leading
 // run of `**Label:** value` paragraphs moves; the first paragraph that is not one ends it,
 // which is what keeps `**Status: machine-audited.**` where the report puts it.
 const acrFacts = [];
@@ -1443,7 +1444,7 @@ for (const file of readdirSync(SNIPPETS_DIR).sort()) {
 
 // The first form is not a snippet file: it is the component the start page RENDERS, read
 // here so that the code on the page and the thing under it are one file and cannot drift
-// (4.34 — the page taught a form it never showed). Named in full, because a generated
+// (the page taught a form it never showed). Named in full, because a generated
 // lookup reaches no file by itself (req-project-reach).
 await addSnippet(
   'form',
@@ -1454,7 +1455,7 @@ await addSnippet(
   'angular-ts',
 );
 
-// ── 5b. the texts channel, for the catalogue (plan 2.5) ─────────────────────
+// ── 5b. the texts channel, for the catalogue ────────────────────────────────
 
 /** Rendered HTML → the text a machine reads: tags gone, the few entities back. */
 const plain = (html) =>
@@ -1809,7 +1810,7 @@ export interface ComponentPage {
   readonly status: string | null;
   readonly entrypoint: string | null;
   readonly selectors: readonly string[];
-  /** The harnesses of @pacit/components/testing the card names (plan 2.6). */
+  /** The harnesses of @pacit/components/testing the card names (req-api-harness). */
   readonly harnesses: readonly string[];
   readonly pattern: string | null;
   readonly patternClaim: PatternClaim | null;
@@ -1841,7 +1842,10 @@ export interface ComponentPage {
     readonly e2e: { readonly cases: number; readonly spec: string } | null;
     readonly pairs: number;
     readonly baselines: number;
-    /** The cost record (plan 2.3): four counts the gate holds exactly, and a dated clock it does not. */
+    /**
+     * The cost record (req-quality-benchmark): four counts the gate holds exactly, and a
+     * dated clock it does not.
+     */
     readonly cost: {
       readonly elements: number;
       readonly depth: number;
@@ -1926,11 +1930,12 @@ export const SNIPPET_TEXT: Readonly<Record<string, string>> = ${JSON.stringify(s
 );
 
 /**
- * The machine catalogue (plan 2.5): the same inventory the pages render, as one JSON object
- * an agent can read whole — every component with its canonical usage and examples as text,
- * its API, parts, tokens, keyboard map, the texts it prints, and the evidence behind it,
- * plus the texts channel with the meaning of every key and a template typed against it.
- * Nothing here is typed by hand: a field is a reading of a tracked source, or it is absent.
+ * The machine catalogue (req-api-catalogue): the same inventory the pages render, as one
+ * JSON object an agent can read whole — every component with its canonical usage and
+ * examples as text, its API, parts, tokens, keyboard map, the texts it prints, and the
+ * evidence behind it, plus the texts channel with the meaning of every key and a template
+ * typed against it. Nothing here is typed by hand: a field is a reading of a tracked
+ * source, or it is absent.
  */
 const catalogue = {
   library: manifest.name,

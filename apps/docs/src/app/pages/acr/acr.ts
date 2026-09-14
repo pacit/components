@@ -23,7 +23,7 @@ import { spyOnSections } from '../../spy';
  * The conformance report, rendered from the tracked file `check-acr` holds to its claims.
  *
  * **It is the page a procurement office prints, and it was 8 971 px of one prose column with
- * no furniture at all** (4.34): six sections, four tables, 65 criterion rows, and its
+ * no furniture at all**: six sections, four tables, 65 criterion rows, and its
  * identifying fields — product, standard, report date, evaluation methods — arriving as
  * ordinary paragraphs among the prose. The six headings have carried stable addresses since
  * the day the report was first rendered, slugged the way GitHub slugs them, and nothing on

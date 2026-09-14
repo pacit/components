@@ -183,9 +183,9 @@ test.describe('PctDialog — a modal', () => {
     test('the page stops scrolling, and starts again', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 500 });
       await visit(page, '/dialog');
-      // The room below is this case's own, not the sandbox's (plan 4.23): a row added to
-      // the navigation once moved where this page stood, and where the sandbox happens to
-      // stand that week is not the subject here.
+      // The room below is this case's own, not the sandbox's (`req-quality-e2e`): a row
+      // added to the navigation once moved where this page stood, and where the sandbox
+      // happens to stand that week is not the subject here.
       await page.addStyleTag({
         content: '.shell__view { min-height: 300vh; }',
       });

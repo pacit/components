@@ -66,9 +66,9 @@ test.describe('PctProgress — a <progress> under our own paint', () => {
    * The loop is 600 ms, and a worker sharing eight cores with twenty others can be
    * descheduled for longer than that: two samples a whole cycle apart look like no movement
    * and three look like movement the other way, so the case would go red on a machine rather
-   * than on a defect — plan 4.2's shape in a suite with a deadline in every wait. Slowing the
-   * SAME keyframes to six seconds makes a one-second window monotone. What the duration
-   * really is stays asserted, from the computed style, before this runs.
+   * than on a defect — `lesson-202`'s shape in a suite with a deadline in every wait.
+   * Slowing the SAME keyframes to six seconds makes a one-second window monotone. What the
+   * duration really is stays asserted, from the computed style, before this runs.
    */
   const slowTheBand = (page: Page, id: string) =>
     fill(page, id).evaluate((el) => {

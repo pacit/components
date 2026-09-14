@@ -160,9 +160,9 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
     const sheen = fill(page, 'skeleton-text');
     // Waited for rather than read once: a style read before the first resolution answers with
     // an empty string, which is indistinguishable from a wrong value (the progress bar's own
-    // red, `plan 4.2`). Three and a half loops and not one: the loop is a band's tempo and a shadow at
-    // that tempo flickers — and the factor is read against the token, so the claim stays
-    // "derived from the axis" rather than "is 2.1s".
+    // red, `lesson-202`). Three and a half loops and not one: the loop is a band's tempo and
+    // a shadow at that tempo flickers — and the factor is read against the token, so the
+    // claim stays "derived from the axis" rather than "is 2.1s".
     // The token is written in milliseconds and the browser serialises a duration in
     // seconds, so the reading is kept in whole milliseconds and converted once — `0.6 * 3`
     // was `1.7999999999999998` in JavaScript, and a string built from it matched nothing.
@@ -305,7 +305,7 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
 
 /**
  * The stop the page throws, and the reason the component will not throw it itself
- * (plan 4.45, [0073](../../../docs/decisions/0073-the-stop-a-long-wait-needs-is-the-pages-to-throw.md)).
+ * ([0073](../../../docs/decisions/0073-the-stop-a-long-wait-needs-is-the-pages-to-throw.md)).
  *
  * SC 2.2.2 asks for a mechanism once motion runs past five seconds beside other content, and a
  * skeleton's sheen runs for as long as the wait does — by design, since a placeholder that

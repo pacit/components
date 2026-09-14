@@ -188,7 +188,7 @@ test.describe('PctHero — the brand gradient as equipment', () => {
    * The criterion is about motion that starts on its own and runs for more than five seconds
    * beside other content. The sweep now runs ONE pass — four seconds, half the motion axis —
    * and then stands still, which takes the criterion off the table for a consumer who does
-   * nothing (plan 4.37). This case reads that as movement rather than as a declaration: the
+   * nothing (`lesson-178`). This case reads that as movement rather than as a declaration: the
    * computed `background-position` moves early and is the same value at 5.2 s and at 6 s.
    *
    * The first reading is the negative control and it is not decoration: without it the case

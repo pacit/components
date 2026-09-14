@@ -9,7 +9,7 @@ import { settled, visit } from './support/dom';
  * or a `max()` against the size the component was given — and each of those floors already has
  * a case beside it reading the rendered box at 24 px. Those cases pass with the floor deleted.
  * Measured, on the accordion: remove `min-block-size` and the heading row still clears 24 px,
- * because its padding does ([`lesson-174`](../../../docs/lessons.md#lesson-174), plan 4.44).
+ * because its padding does ([`lesson-174`](../../../docs/lessons.md#lesson-174)).
  * A promise held by something other than the mechanism named beside it is a promise nobody is
  * really watching — the padding is a design decision and can be re-tuned by a consumer; the
  * floor is the line that survives that.
@@ -26,8 +26,8 @@ import { settled, visit } from './support/dom';
  * that are literals in the stylesheet rather than tokens.
  *
  * **The list below is answerable to the stylesheets, and no longer the other way round.**
- * Until plan 4.53 the set of controls here was typed in by hand, and it disagreed with what the
- * library's stylesheets really declare by seven of nineteen — the two close buttons of
+ * The set of controls here was typed in by hand, and it disagreed with what the library's
+ * stylesheets really declare by seven of nineteen (`lesson-194`) — the two close buttons of
  * the dialog and the drawer, the toast's cross and its action, the slider row, the tree label,
  * the pager's ellipsis and the select's cross, all held up by a declaration nothing in the
  * suite read. Nothing was red; the gap was found only because a second sweep was written over
@@ -350,7 +350,7 @@ test.describe('The touch-target floor, with everything else taken away', () => {
         await page.getByTestId(c.opens).click();
         // A panel that fades in, a drawer that slides, a card that arrives: the box is the
         // same throughout, but waiting on the page's own animations rather than on a number
-        // is what keeps the case out of the family plan 4.54 names.
+        // is what keeps the case out of the family `lesson-192` names.
         await settled(page);
       }
 
@@ -361,8 +361,8 @@ test.describe('The touch-target floor, with everything else taken away', () => {
       // it probably did: the text is zeroed on the target itself by the rule above, so its
       // own `font-size` is the declaration's arrival, said by the page. A box read before
       // that is the box from before the disarm — every token still holding it up — which
-      // reads exactly like a floor doing its work and is the family plan 4.54 names
-      // ([`lesson-192`](../../../docs/lessons.md#lesson-192)).
+      // reads exactly like a floor doing its work and is the family
+      // [`lesson-192`](../../../docs/lessons.md#lesson-192) names.
       await expect(target).toHaveCSS('font-size', '0px');
 
       const box = await target.boundingBox();
@@ -395,7 +395,7 @@ test.describe('The touch-target floor, with everything else taken away', () => {
       // The negative control, in the case itself: take the floor's own token away too and
       // the box has to fall through 24 px. Without it the reading above would still pass on
       // a component that had stopped reading its token and written `24px` into the sheet —
-      // which is the same defect one floor down, and the reason this file exists (plan 4.44).
+      // which is the same defect one floor down, and the reason this file exists (`lesson-177`).
       await page.addStyleTag({
         content: `html { ${c.floor}: 0px !important; }`,
       });

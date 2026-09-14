@@ -38,7 +38,7 @@ const VIEWPORT = { width: 1280, height: 900 };
  * on, the window's edges a toast stack and a drawer land against — and the navigation
  * stands inside every one of them. Three consecutive views each re-recorded all seven for
  * one more row in that list: 1594 pixels of `menu-open`, every one of them in the sidebar,
- * the menu byte for byte the same (plan 4.23). `opacity: 0` keeps the column's width, so
+ * the menu byte for byte the same. `opacity: 0` keeps the column's width, so
  * the content stands where a user sees it, and paints nothing in it, so a row more or fewer
  * is not a pixel. NOT `visibility: hidden`, which was the first version and which moved
  * four pictures of the select's triggers by their antialiasing: a sticky column that stops
@@ -387,7 +387,7 @@ test.describe('Appearance — compared with the baseline', () => {
 
   /**
    * The stage's blanking of the navigation, measured — a control over the seven pictures
-   * of the viewport (plan 4.23). A row is added to the sandbox's navigation list, which is
+   * of the viewport (`lesson-165`). A row is added to the sandbox's navigation list, which is
    * exactly what a new view does, and the viewport is compared byte for byte with itself
    * from before the row: nothing may move. Then the navigation is shown again and the row
    * taken out, and NOW the pixels move — the same comparison with the blanking off, so

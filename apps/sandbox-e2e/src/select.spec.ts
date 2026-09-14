@@ -360,7 +360,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
      * The sentence is the panel's, not the list's (0069). A `listbox` may own options and
      * groups and nothing else — a message row inside it was a critical
      * `aria-required-children` on this very demo, from the day the select was built to the
-     * day `a11y.spec.ts` first opened an empty panel (plan 4.8) — and an empty listbox is a
+     * day `a11y.spec.ts` first opened an empty panel — and an empty listbox is a
      * state, which axe marks for review and does not fail. The audit is the gate; this case
      * is the shape it passes on.
      */

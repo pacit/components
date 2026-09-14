@@ -52,10 +52,10 @@ interface AxisGroup {
  *
  * **Which is why one thing on it was a defect and not a matter of taste.** docs/registry.md
  * clips its cells with an ellipsis to stay a markdown table narrow enough to read, and this
- * page rendered the clip: 94 rows ended mid-sentence, on the page an audit reads first
- * (4.34). Every row now carries the requirement's own title above the clipped cells — the
- * promise it makes, whole, from the file that makes it, and the content pass throws when a
- * row has no titled section of its own.
+ * page rendered the clip: 94 rows ended mid-sentence, on the page an audit reads first.
+ * Every row now carries the requirement's own title above the clipped cells — the promise
+ * it makes, whole, from the file that makes it, and the content pass throws when a row has
+ * no titled section of its own.
  *
  * The rest is the way in. 94% of the page was three flat lists — 94 requirements, 73
  * decisions, 183 lessons — with no filter and no addresses: a bar of the seven axes and the

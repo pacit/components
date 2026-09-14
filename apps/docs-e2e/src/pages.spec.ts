@@ -43,12 +43,13 @@ const LESSONS = (
 ).length;
 
 /**
- * The pages (2.1.7). The claims on trial: the gallery lists every card and each page
+ * The pages (0062). The claims on trial: the gallery lists every card and each page
  * really renders — a LIVE demo (driven, not screenshotted), the demo's own source as the
  * code tab, the card's sections with their links rewritten onto /trust's anchors — and
  * the /trust, /theming, /support registers carry the repository's content under stable
  * addresses. The axe scans here cover the two new page SHAPES (a component page, the
- * trust register); the full route sweep is 2.1.8's bar.
+ * trust register); the full route sweep belongs to the site's own bar (site.md "The bar
+ * the site itself meets").
  */
 test.describe('The pages', () => {
   test('the gallery lists every card and leads into a page', async ({
@@ -128,12 +129,12 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The finder (4.34, plate B): the gallery filters by the rule `docs-index` already
-   * filters by, and `apps/docs/src/app/find.ts` is the one copy of it, so the rail, the
-   * drawer and this page cannot answer the same typing three ways. Both halves are on
-   * trial, and the second is the one that can break in silence — narrowing DESTROYS the
-   * outlet under every card it drops, and a filter that cannot rebuild them leaves a page
-   * of empty cards that still counts thirty-four names.
+   * The finder (site.md "The gallery, drawn in words"): the gallery filters by the rule
+   * `docs-index` already filters by, and `apps/docs/src/app/find.ts` is the one copy of it,
+   * so the rail, the drawer and this page cannot answer the same typing three ways. Both
+   * halves are on trial, and the second is the one that can break in silence — narrowing
+   * DESTROYS the outlet under every card it drops, and a filter that cannot rebuild them
+   * leaves a page of empty cards that still counts thirty-four names.
    */
   test('the cards wear the library face, and the rim answers attention', async ({
     page,
@@ -142,7 +143,7 @@ test.describe('The pages', () => {
 
     // The rim was a hand copy of `[pctHero]`'s `edge` face — the masked pseudo-element,
     // `inset: -1px`, the @supports guard and firefox's composite order, all written twice
-    // (4.34, 4.36). It is the component's now, on all thirty-four cards.
+    // (0065). It is the component's now, on all thirty-four cards.
     const card = page.locator('.card').first();
     await expect(card).toHaveAttribute('data-pct-hero', 'edge');
     await expect(card).toHaveAttribute('data-pct-show', 'interact');
@@ -154,7 +155,7 @@ test.describe('The pages', () => {
     await expect.poll(rim).toBe('1');
 
     // And the sweep ENDS, which is the line the copy had drifted from: the library settled
-    // after one pass in 4.37 while this page ran `infinite` on every card of two pages.
+    // after one pass (`lesson-178`) while this page ran `infinite` on every card of two pages.
     const iterations = await card.evaluate(
       (el) => getComputedStyle(el, '::after').animationIterationCount,
     );
@@ -192,11 +193,11 @@ test.describe('The pages', () => {
   });
 
   /**
-   * Six bands, six addresses (4.34). The `<h2>` carried no `id` at all, so
-   * `/components#choices` did not exist and nothing on the site — not the landing, not a
-   * card, not a sentence of prose — could point past 1758 px of page at the bucket a reader
-   * already knew the name of. The six are typed out here because they are published
-   * addresses: one that changes quietly breaks every link ever made to it.
+   * Six bands, six addresses (site.md "The gallery, drawn in words"). The `<h2>` carried no
+   * `id` at all, so `/components#choices` did not exist and nothing on the site — not the
+   * landing, not a card, not a sentence of prose — could point past 1758 px of page at the
+   * bucket a reader already knew the name of. The six are typed out here because they are
+   * published addresses: one that changes quietly breaks every link ever made to it.
    */
   test('every band of the gallery has an address, and it clears the header', async ({
     page,
@@ -239,11 +240,12 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The bar is those six addresses made visible (4.34, plate A inside plate B). What it costs
-   * is checked here rather than argued: every chip is a LINK, so every chip owes SC 2.5.8's
-   * floor outright — the reason this bar wraps to three or four rows on a narrow page instead
-   * of shrinking. And it says where the reader IS, through the same scroll spy the component
-   * page's table of contents runs, which is the one copy of that reading (`apps/docs/src/app/spy.ts`).
+   * The bar is those six addresses made visible (site.md "The gallery, drawn in words").
+   * What it costs is checked here rather than argued: every chip is a LINK, so every chip
+   * owes SC 2.5.8's floor outright — the reason this bar wraps to three or four rows on a
+   * narrow page instead of shrinking. And it says where the reader IS, through the same
+   * scroll spy the component page's table of contents runs, which is the one copy of that
+   * reading (`apps/docs/src/app/spy.ts`).
    */
   test('the band bar carries the addresses, and says which band the reader is in', async ({
     page,
@@ -278,8 +280,8 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The nine defects the five readings found on this page (4.34), as the cases that keep them
-   * from coming back. Two of them had been wrong for weeks in the one place on the site whose
+   * The nine defects the five readings found on this page, as the cases that keep them from
+   * coming back. Two of them had been wrong for weeks in the one place on the site whose
    * whole job is to prove that nothing here is wrong quietly — which is what a gate is for.
    */
   test('the evidence tiles carry numbers, not the empty case', async ({
@@ -472,8 +474,9 @@ test.describe('The pages', () => {
   test('the evidence tiles show the cost record, not a number typed in', async ({
     page,
   }) => {
-    // The same tracked file the content pass reads (plan 2.3): the tile's number is the
-    // button row of the record, and the record is what `check-bench` holds the run to.
+    // The same tracked file the content pass reads (`req-quality-benchmark`): the tile's
+    // number is the button row of the record, and the record is what `check-bench` holds
+    // the run to.
     const record = readFileSync(
       join(__dirname, '../../docs/bench.snapshot.md'),
       'utf8',
@@ -534,9 +537,10 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The redesigned page (plan 2.7.3): what it shows is READ, not typed — the API from the
-   * source, the tokens from the DTCG files, the checks from the card — so the assertions
-   * hold the page to the same files the content pass reads.
+   * The redesigned page (site.md "The component page, drawn in words"): what it shows is
+   * READ, not typed — the API from the source, the tokens from the DTCG files, the checks
+   * from the card — so the assertions hold the page to the same files the content pass
+   * reads.
    */
   test('the API table is the source: variant defaults to solid and carries its JSDoc line', async ({
     page,
@@ -553,9 +557,9 @@ test.describe('The pages', () => {
   });
 
   /**
-   * The harness line (plan 2.6) is read off the card's **Harness** row, and the row is held
-   * to the built package by `check-harness` — so the name on the page is a class a test can
-   * import, not a name somebody typed.
+   * The harness line (`req-api-harness`) is read off the card's **Harness** row, and the
+   * row is held to the built package by `check-harness` — so the name on the page is a
+   * class a test can import, not a name somebody typed.
    */
   test('the parts section names the harness a test holds them with', async ({
     page,
@@ -611,7 +615,7 @@ test.describe('The pages', () => {
 
     await visit(page, '/components/button');
     // The card said `req-token-logical` has no gate while check-styles point 5 had held it
-    // all along, and the page printed the sentence to everyone who read it (4.34).
+    // all along, and the page printed the sentence to everyone who read it.
     await expect(rtlRow(page)).toHaveAttribute('data-state', 'measured');
     await expect(rtlRow(page)).toContainText('check-styles.mjs');
     await expect(page.locator('body')).not.toContainText('has no gate');
@@ -778,7 +782,7 @@ test.describe('The pages', () => {
 
     // The registry file clips its cells with an ellipsis to stay a readable markdown table,
     // and this page printed the clip: 94 rows ended mid-sentence on the page an auditor
-    // reads as the product (4.34). Every row carries the requirement's own title now.
+    // reads as the product. Every row carries the requirement's own title now.
     const promises = page.getByTestId('registry').locator('.promise');
     await expect(promises).toHaveCount(REQUIREMENTS);
     for (const promise of await promises.all())
@@ -839,7 +843,7 @@ test.describe('The pages', () => {
   }) => {
     await visit(page, '/theming');
 
-    // The two moves, first and side by side — 324 px under 18 251 before (4.34).
+    // The two moves, first and side by side — 324 px under 18 251 before.
     await expect(page.locator('.move')).toHaveCount(2);
     await expect(page.locator('.move').first()).toContainText(
       'data-theme="dark"',
@@ -922,7 +926,7 @@ test.describe('The pages', () => {
   }) => {
     await visit(page, '/acr');
 
-    // Six addresses since the day it was first rendered, and nothing pointed at one (4.34).
+    // Six addresses since the day it was first rendered, and nothing pointed at one.
     const rail = page.getByTestId('toc');
     const entries = rail.locator('.toc__list a');
     await expect(entries).toHaveCount(6);
@@ -976,7 +980,7 @@ test.describe('The pages', () => {
 
     await visit(page, '/start');
     // Four now: install, provide, the first form, and the one line that renders on a server
-    // (4.34 — the page named `provideClientHydration()` and never showed it).
+    // (the page named `provideClientHydration()` and never showed it).
     await expect(page.locator('.shiki')).toHaveCount(4);
     await expect(page.locator('.shiki').first()).toContainText(
       'npm install @pacit/components',
@@ -992,8 +996,8 @@ test.describe('The pages', () => {
     await visit(page, '/start');
 
     // The claim the page could not make before: a getting-started page that renders nothing
-    // on a site whose whole argument is that components prove themselves (4.34). The snippet
-    // is read from this component's own file by the content pass, so the class the code
+    // on a site whose whole argument is that components prove themselves. The snippet is
+    // read from this component's own file by the content pass, so the class the code
     // declares and the thing under it are one file — and the test says so from both ends.
     await expect(page.locator('.shiki').nth(2)).toContainText(
       'class FirstForm',

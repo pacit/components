@@ -2,9 +2,10 @@ import { expect, test } from '@playwright/test';
 import { visit } from './support/dom';
 
 /**
- * The visual baselines (2.1.8): the landing and one component page, light and dark —
- * four pictures. Chromium only, the sandbox's own law: a baseline belongs to one
- * rasteriser, and the other engines are excluded in the config, not skipped here.
+ * The visual baselines (site.md "The bar the site itself meets"): the landing and one
+ * component page, light and dark — four pictures. Chromium only, the sandbox's own law: a
+ * baseline belongs to one rasteriser, and the other engines are excluded in the config, not
+ * skipped here.
  * The infinite drift is no threat to determinism — `toHaveScreenshot` cancels
  * animations to frame zero, the same assertion the button's baselines stand on.
  *
@@ -44,10 +45,10 @@ const SHOTS = [
     masked: ['[data-testid="evidence"]'],
   },
   {
-    // The two screens of the 4.34 pass whose point is how they LOOK: a getting-started page
-    // that finally renders something, and a theming page that reads as two moves before it
-    // reads as an inventory. Their frames are watched here so a later edit cannot quietly
-    // undo the drawing they were built from.
+    // The two screens of the sketch pass whose point is how they LOOK (lesson-203): a
+    // getting-started page that finally renders something, and a theming page that reads as
+    // two moves before it reads as an inventory. Their frames are watched here so a later
+    // edit cannot quietly undo the drawing they were built from.
     route: '/start',
     name: 'start',
     settled: '.snippet .shiki',

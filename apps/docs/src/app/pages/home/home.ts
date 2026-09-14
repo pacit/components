@@ -28,7 +28,7 @@ const INSTALL = 'npm install @pacit/components';
 const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
 
 /**
- * The landing (site.md "The landing, drawn in words", step 2.1.6). Everything measured on
+ * The landing (site.md "The landing, drawn in words"). Everything measured on
  * it comes from `DOCS_EVIDENCE` — the content pass reads the tracked snapshots and throws
  * on a number it cannot parse, so a figure nothing measured cannot reach this template.
  * The "live" cards are real instances of the shipped package driven by the signals below;

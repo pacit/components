@@ -17,7 +17,7 @@ import { spyOnSections } from '../../spy';
  * The support policy, rendered from the same tracked file `check-support` reads.
  *
  * It takes the conformance report's rail and nothing else: seven sections, 2 929 px, and
- * seven addresses nothing on the site pointed at (4.34). No header block, because it is a
+ * seven addresses nothing on the site pointed at. No header block, because it is a
  * policy and not a report — there are no identifying fields for a reader to check it by.
  */
 @Component({

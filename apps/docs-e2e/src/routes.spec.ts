@@ -7,10 +7,11 @@ import { join } from 'node:path';
 const WCAG_22_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 /**
- * The bar, measured over EVERY route (2.1.8): the site advertises "axe across every
- * component in three engines, every commit" — its own pages hold the same line. The route
- * list is not typed here: the component routes come from the same card directory the
- * content pass reads, so a new card automatically joins the sweep or the sweep is lying.
+ * The bar, measured over EVERY route (site.md "The bar the site itself meets"): the site
+ * advertises "axe across every component in three engines, every commit" — its own pages
+ * hold the same line. The route list is not typed here: the component routes come from the
+ * same card directory the content pass reads, so a new card automatically joins the sweep
+ * or the sweep is lying.
  * Each visit also demands a silent console — a hydration mismatch (NG0500) is exactly the
  * kind of error that only speaks there.
  */

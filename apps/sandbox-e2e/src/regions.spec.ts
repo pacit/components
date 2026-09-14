@@ -3,7 +3,7 @@ import { visit } from './support/dom';
 
 /**
  * How a keyboard reaches a place that is not where the reading order says it is
- * (plan 4.16, [0072](../../../docs/decisions/0072-a-region-key-is-the-consumer-s-to-install.md)).
+ * ([0072](../../../docs/decisions/0072-a-region-key-is-the-consumers-to-install.md)).
  *
  * The measurement behind the mechanism: a toast's `Undo` is a real control on a card that is a
  * child of `body`, so it stands after every control on the page. "Reachable in principle" is

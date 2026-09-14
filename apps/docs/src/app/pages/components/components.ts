@@ -41,9 +41,10 @@ interface Bucket {
  * `Text & numbers` → `text-numbers`. The six headers carried no `id` at all, so
  * `/components#choices` did not exist and nothing on the site — not the landing, not a
  * card, not a sentence of prose — could point at a band of a 5430 px page, 1758 px of it
- * above `select` (4.34). The jump itself was already paid for twice and neither payment had
- * anything to land on: `--docs-anchor-offset` clears the sticky header for the native jump,
- * and `ViewportScroller.setOffset` reads that same custom property for the router's.
+ * above `select` (site.md "The gallery, drawn in words"). The jump itself was already paid
+ * for twice and neither payment had anything to land on: `--docs-anchor-offset` clears the
+ * sticky header for the native jump, and `ViewportScroller.setOffset` reads that same custom
+ * property for the router's.
  */
 const slugOf = (name: string): string =>
   name

@@ -5,10 +5,10 @@ import { DOCS_CARDS, DOCS_CATEGORIES } from '../../../generated/content';
 import { answersTo, asNeedle } from '../../find';
 
 /**
- * The component index (2.7.3, layout B): every card under the category its own header
- * files it in, a filter on top, the current one lit. It sits on the page's left rail where
- * the rail fits and inside the shell's drawer where it does not — one component, two
- * seats, so the two lists cannot disagree.
+ * The component index (site.md "The component page, drawn in words"): every card under the
+ * category its own header files it in, a filter on top, the current one lit. It sits on the
+ * page's left rail where the rail fits and inside the shell's drawer where it does not —
+ * one component, two seats, so the two lists cannot disagree.
  */
 @Component({
   selector: 'docs-index',

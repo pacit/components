@@ -19,7 +19,7 @@ import { FirstForm } from './first-form';
  * The fourth is not a snippet file at all: `form` is read from
  * apps/docs/src/app/pages/start/first-form.ts, the component this page RENDERS under it. The
  * page was 1 548 px of code with not one component on it, on a site whose whole claim is
- * that components prove themselves (4.34) — and a snippet beside a screenshot of a snippet
+ * that components prove themselves — and a snippet beside a screenshot of a snippet
  * would have been the same page with more pixels. One file, so the code and the thing cannot
  * disagree.
  */

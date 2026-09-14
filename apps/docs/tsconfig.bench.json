@@ -1,5 +1,5 @@
 {
-  "// why": "The site's second program: the cost run (plan 2.3) — its Vitest configuration, its setup file and the scenes it measures. Not glued onto tsconfig.app.json, so that Node's types (`fs`, `os`) do not enter the application's program: the pages are built for a browser and are meant to break on reaching for a server API. Without a program of its own no compiler would look at these files, which check-typecheck (point 4) reports at once — the sandbox's tsconfig.spec.json exists for the same reason.",
+  "// why": "The site's second program: the cost run (req-quality-benchmark) — its Vitest configuration, its setup file and the scenes it measures. Not glued onto tsconfig.app.json, so that Node's types (`fs`, `os`) do not enter the application's program: the pages are built for a browser and are meant to break on reaching for a server API. Without a program of its own no compiler would look at these files, which check-typecheck (point 4) reports at once — the sandbox's tsconfig.spec.json exists for the same reason.",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
