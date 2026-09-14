@@ -1,0 +1,5 @@
+# A push workflow that runs no nx target at all.
+jobs:
+  main:
+    steps:
+      - run: npm ci

@@ -1232,22 +1232,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     case — its eight are the record's own eight in the same six files, and it moved no row.
     Recorded here because this file claimed the opposite for a day
 
-- [ ] **4.62 — the nightly claims to run everything, and nothing compares the two lists**
-  - `check-prose` landed on `ci.yml`'s `nx affected -t` line and nowhere else, so the gate
-    holding the prose budget never ran on a night's full sweep — against the sentence
-    `nightly.yml` opens with. Found by hand on 2026-09-14 and fixed in one line; the hole it
-    came through is still open, and `check-distance` went in through it the same afternoon
-  - nothing caught it because `check-docs` point 3 reads the two workflows **concatenated**: a
-    target named in either satisfies the citation. That is the right reading for "is this gate
-    in CI at all" — 0075 moved the two heaviest targets to the night on purpose — and it is
-    blind to "does the nightly run everything the push line runs"
-  - what would close it: a rule holding the nightly's `run-many` line to be a superset of the
-    affected line. Its home is point 3, which already owns the wiring — but that point reads
-    both workflows off disk at module scope, so the control tree cannot express a workflow and
-    the rule would land untested ([`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control)).
-    Making that input injectable is the work, and it is the whole of it
-  - binds at: **now** — the shape of this one is a gate that quietly stopped running, which is
-    the only kind that costs weeks before anybody looks
+- [x] **4.62 — the nightly claimed to run everything, and nothing compared the two lists** —
+      **closed 2026-09-14**
+  - `check-prose` reached `ci.yml`'s affected line and nowhere else, so the gate holding the
+    prose budget went a day without running on a full sweep. Nothing caught it because point 3
+    of `check-docs` read the two workflows **concatenated** — the right reading for "is this
+    gate in CI at all" and blind to "does the night run everything the push line runs"
+  - the rule is one-sided: the night may hold more than the push line and never less, because
+    [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md) put the two heaviest
+    targets there deliberately. Its reference is a PAIR — neither workflow says anything alone
+  - a second defect fell out of writing it: the class reading a target list held `\s`, so the
+    match ran past the newline and took `npx`, `nx`, `run:` and `-t` from the next step. Six
+    words that are not targets, in the set this point answers from
 
 ## 5. Gaps with no deadline
 

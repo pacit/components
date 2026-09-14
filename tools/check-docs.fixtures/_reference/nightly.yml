@@ -1,0 +1,16 @@
+# The night half. TWO `-t` lines one after another, and that is the point of the shape: the
+# class reading a target list once held `\s`, so the match ran past the newline and swallowed
+# `- run: npx nx run-many -t` of the next step as if those were targets. A reference pair
+# with one line each would have agreed with the broken reading and with the fixed one alike.
+jobs:
+  full:
+    steps:
+      - run: npx nx run-many -t lint test check-alpha check-beta
+
+      - run: npx nx run-many -t e2e
+
+  # The two heaviest targets are deliberately not on a push line (0075), which is why the
+  # rule is one-sided: the night may hold more than the push line and never less.
+  heavy:
+    steps:
+      - run: npx nx run-many -t mutation check-mutation

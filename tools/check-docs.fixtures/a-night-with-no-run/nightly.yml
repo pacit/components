@@ -1,0 +1,5 @@
+# A nightly that installs and runs nothing, under a header promising everything.
+jobs:
+  full:
+    steps:
+      - run: npm ci

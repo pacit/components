@@ -1,0 +1,10 @@
+# `check-beta` is gone from the night and still stands on the push line.
+jobs:
+  full:
+    steps:
+      - run: npx nx run-many -t lint test check-alpha
+
+      - run: npx nx run-many -t e2e
+  heavy:
+    steps:
+      - run: npx nx run-many -t mutation check-mutation

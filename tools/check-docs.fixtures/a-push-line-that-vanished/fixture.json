@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "rule": "push-line-empty",
+  "why": "The push workflow names no target at all. Every target is then trivially run at night too and the comparison is silent — and it is the same empty set the rest of point 3 answers 'is this gate in CI' from, so the whole point would go green over a workflow that runs nothing."
+}

@@ -5,7 +5,7 @@
  *
  *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
  *  2. existence — every path cited in `Gate`/`Control` exists on disk,
- *  3. wired into CI — the target a cited path implies runs in `nx affected -t …`, re-probed,
+ *  3. wired into CI — a cited target runs on the push line, and the night runs it too,
  *  4. no dangling citations — every `req-*` / `lesson-*` in the repo resolves,
  *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
  *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected,
@@ -254,13 +254,75 @@ for (const req of requirements) {
 // `run-many` on the schedule; a gate that runs only at night is still a gate, and the
 // alternative reading would force the mutation pair back onto every push for the
 // wiring check's sake alone.
-const ci =
-  read('.github/workflows/ci.yml') + read('.github/workflows/nightly.yml');
-const ciTargets = new Set(
-  [...ci.matchAll(/nx (?:affected|run-many) -t ([a-z0-9:\-\s]+)/g)]
-    .flatMap((m) => m[1].trim().split(/\s+/))
-    .filter(Boolean),
+const PUSH_WORKFLOW = '.github/workflows/ci.yml';
+const NIGHT_WORKFLOW = '.github/workflows/nightly.yml';
+
+/**
+ * Every target a workflow's `-t` lines name. The class stops at the end of the line and
+ * that is not tidiness: with `\s` in it the match ran ON past the newline and swallowed the
+ * `- run: npx nx run-many -t` of the next step, so the set held `npx`, `nx`, `run:` and
+ * `-t` as targets — six words that are not targets, in the set this point answers from.
+ */
+const targetsIn = (text) =>
+  new Set(
+    [
+      ...String(text ?? '').matchAll(
+        /nx (?:affected|run-many) -t ([a-z0-9:\- \t]+)/g,
+      ),
+    ]
+      .flatMap((m) => m[1].trim().split(/\s+/))
+      .filter(Boolean),
+  );
+
+/**
+ * The night runs everything the push line runs. `nightly.yml` opens by saying so in the
+ * present tense, and nothing compared the two lists: `check-prose` reached the push line
+ * and not the night, and the gate holding the prose budget went a day without ever running
+ * on a full sweep. The rule is ONE-sided — the night carries the two heaviest targets that
+ * are deliberately not on a push (0075), so extra is right and missing is not.
+ */
+const checkWorkflows = (push, night, fire) => {
+  const onPush = targetsIn(push);
+  const atNight = targetsIn(night);
+  // Each of the two returns, so an empty list is reported as an empty list and not as
+  // thirty-four missing targets — a case would otherwise fire two rules and prove neither.
+  if (!onPush.size)
+    return fire(
+      'push-line-empty',
+      PUSH_WORKFLOW,
+      `no \`nx affected -t\` line at all — with an empty push line every target is ` +
+        `trivially run at night too, and this whole point answers from that empty set`,
+    );
+  if (!atNight.size)
+    return fire(
+      'night-line-empty',
+      NIGHT_WORKFLOW,
+      `no \`nx run-many -t\` line at all — the nightly's own header says it runs ` +
+        `everything, every night, and it would then run nothing`,
+    );
+  const missing = [...onPush].filter((t) => !atNight.has(t));
+  if (missing.length)
+    fire(
+      'night-skips-a-target',
+      NIGHT_WORKFLOW,
+      `the push line runs \`${missing.join('`, `')}\` and the night does not. A target ` +
+        `added to one workflow and not the other is a gate that runs on a diff and never ` +
+        `on the whole — which is the half nobody notices, because the diff is usually green`,
+    );
+};
+
+checkWorkflows(
+  read(PUSH_WORKFLOW),
+  read(NIGHT_WORKFLOW),
+  (rule, where, message) => fail(where, `${rule}: ${message}`),
 );
+
+// A target is wired if EITHER workflow runs it, and the rule above is what keeps that
+// reading honest: without it "either" is also how a target disappears from one of them.
+const ciTargets = new Set([
+  ...targetsIn(read(PUSH_WORKFLOW)),
+  ...targetsIn(read(NIGHT_WORKFLOW)),
+]);
 
 /**
  * The fact the matching above stands on, re-probed rather than remembered. Presence in
@@ -863,6 +925,77 @@ if (!WRITE) {
       fail(
         fx,
         'the negative control PASSED and was meant not to — the gate stopped examining anything',
+      );
+  }
+
+  // Point 3's control is a PAIR OF WORKFLOWS, because "the night runs everything the push
+  // line runs" is a statement about two files and neither of them says anything alone. The
+  // pair lives in `_reference/` beside point 8's material, and a case overrides only the file
+  // it breaks — so a case directory holds nothing but its own defect. The reference is run
+  // first and must PASS, for the reason point 8 gives below.
+  const refPush = `${FIXTURES}/_reference/ci.yml`;
+  const refNight = `${FIXTURES}/_reference/nightly.yml`;
+  if (!existsSync(join(ROOT, refPush)) || !existsSync(join(ROOT, refNight))) {
+    fail(
+      `${FIXTURES}/_reference`,
+      `point 3 has no reference workflows — \`ci.yml\` and \`nightly.yml\` are the ` +
+        `material every case of that rule is measured against`,
+    );
+  } else {
+    const refFired = [];
+    checkWorkflows(read(refPush), read(refNight), (rule) =>
+      refFired.push(rule),
+    );
+    if (refFired.length)
+      fail(
+        refPush,
+        `point 3's reference pair agrees with itself by construction and was rejected ` +
+          `anyway (\`${[...new Set(refFired)].join('`, `')}\`) — every case beside it is ` +
+          `then rejected for the reference's defect and not for its own`,
+      );
+
+    let workflowCases = 0;
+    for (const decl of globSync(`${FIXTURES}/*/fixture.json`, {
+      cwd: ROOT,
+    }).sort()) {
+      let declared;
+      try {
+        declared = JSON.parse(read(decl));
+      } catch {
+        continue; // point 8's loop below reports an unreadable declaration
+      }
+      if (declared?.point !== 3) continue;
+      workflowCases++;
+
+      const dir = dirname(decl);
+      const fired = [];
+      checkWorkflows(
+        readOrNull(`${dir}/ci.yml`) ?? read(refPush),
+        readOrNull(`${dir}/nightly.yml`) ?? read(refNight),
+        (rule) => fired.push(rule),
+      );
+      const unique = [...new Set(fired)];
+      if (!unique.length)
+        fail(
+          dir,
+          `the negative control PASSED and was meant not to — point 3 rule ` +
+            `\`${declared.rule}\` stopped examining anything`,
+        );
+      else if (unique.length > 1 || unique[0] !== declared.rule)
+        fail(
+          dir,
+          `the case fired point 3 rule \`${unique.join('`, `')}\` and declares ` +
+            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
+            `rule unproven, which is the fault of the case and not of the gate`,
+        );
+    }
+
+    if (workflowCases === 0)
+      fail(
+        FIXTURES,
+        `no negative control for point 3's workflow rules — not one case declares ` +
+          `\`"point": 3\`, so "the night runs everything" has no proof that it can fire ` +
+          `(req-quality-negative-control)`,
       );
   }
 

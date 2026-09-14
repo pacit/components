@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "rule": "night-skips-a-target",
+  "why": "A gate reached the push line and not the night. This is the defect measured rather than imagined: `check-prose` landed on `ci.yml`'s affected line alone and the gate holding the prose budget went a day without ever running on a full sweep, while `check-docs` read the two workflows concatenated and reported it wired (plan position 4.62)."
+}

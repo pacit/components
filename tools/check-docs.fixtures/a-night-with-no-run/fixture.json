@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "rule": "night-line-empty",
+  "why": "The nightly names no target at all. It is reported as an empty list rather than as every target missing, because a case that fires two rules proves neither — the rule returns after saying so."
+}

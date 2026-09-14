@@ -35,7 +35,7 @@ check-bundle.mjs 13 25 269
 check-consumer.mjs 7 19 197
 check-coverage.mjs 6 18 182
 check-distance.mjs 5 17 190
-check-docs.mjs 8 20 212
+check-docs.mjs 8 20 213
 check-e2e.mjs 4 15 142
 check-files.mjs 10 22 233
 check-flake.mjs 5 17 200
@@ -165,7 +165,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.59 closed 12 163
 4.60 closed 12 143
 4.61 closed 12 168
-4.62 open 16 237
+4.62 closed 12 166
 5.1 closed 12 131
 5.2 closed 10 109
 5.3 closed 9 75

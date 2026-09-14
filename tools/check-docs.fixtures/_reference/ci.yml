@@ -1,0 +1,6 @@
+# The push half of point 3's reference pair. Tiny on purpose: what the rule reads is the
+# target list of an `nx affected -t` line and nothing else a workflow contains.
+jobs:
+  main:
+    steps:
+      - run: npx nx affected -t lint test check-alpha check-beta e2e
