@@ -264,22 +264,22 @@ precondition of the quiet push (3.0), which no visitor can see.
   document, which is the reverse of the industry norm (the EAA enforceable since June 2025,
   EN 301 549 in tenders)
   - _ended 2026-09-05 with the machine half landed and the pass still owed._ `docs/acr.md` is
-    rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — one row per
-    criterion of WCAG 2.2 at A and AA, in the ITI template's tables, each resting on what
-    already runs — and the gate holds every citation and compares the rendering byte for byte.
-    The site shows it at `/acr` with [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s
-    wording law untouched. Deciding run: docs-e2e **355 of 355**
+    rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — a row per criterion
+    of WCAG 2.2 at A and AA, each resting on what already runs, every citation held and the
+    rendering compared byte for byte. The site shows it at `/acr` with
+    [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
   - **one of the three readers is on record, 2026-09-14.** `at-pass.sh` puts Orca on a display
-    of its own, `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`, and
-    **19 of the 36 came out unread** — named in the record rather than averaged away, the
-    instrument's own behaviour being part of the measurement ([`lesson-208`](lessons.md#lesson-208))
+    of its own and `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`, of
+    which **19 of 36 came out unread** — named there rather than averaged away. Three
+    hypotheses about that number were tested and all three were wrong, and the third took the
+    reader's working profile with it ([`lesson-209`](lessons.md#lesson-209))
   - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
     through Guidepup onto their own runners, into the same record shape. It has never run —
     nothing here drives either reader — so the first dispatch is its first test, and `routes`
     defaults to one view to make that cost minutes instead of hours
-  - **what remains**: a window manager on the Linux display, the first dispatch of the two
-    others, then the reading in all 34 cards — which the gate turns into a **`Supports` for
-    4.1.2**, the maintainer's to authorise — and a person's read of the logs
+  - **what remains**: a reader that attaches again, the first dispatch of the two others, the
+    reading in all 34 cards — which the gate turns into a **`Supports` for 4.1.2**, the
+    maintainer's to authorise — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,

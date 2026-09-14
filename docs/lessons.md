@@ -5736,3 +5736,45 @@ and found silent, and a log that blurs the two is worse than no log
 The general shape, and it is not about screen readers: **when an instrument sits between you
 and the thing measured, its own behaviour is part of the measurement.** Five passes were spent
 before that was the hypothesis rather than "the sandbox has a focus bug".
+
+---
+
+### <a id="lesson-209"></a>`lesson-209` — Three hypotheses about a flaky instrument, and all three were wrong
+
+[`lesson-208`](#lesson-208) ends with a reading in which 19 of 36 views came out unread and
+names the likely cause: no window manager on the virtual display, so nothing sets
+`_NET_ACTIVE_WINDOW` and Firefox never believes it is the active window. A window manager was
+installed. The pass was run again with one variable changed.
+
+**The same nineteen views, by name, to the letter.** Openbox changed nothing at all.
+
+The numbers then said something the first pass had hidden. The unread views, by their index in
+the route list: 13, 15, 17, 19, 21, 23, 25, 27, 29 — **every other one**, in an unbroken run.
+That is not an instrument degrading over a long session, it is a two-state cycle: the reader
+needs one navigation to re-acquire the accessible document, and a fixed interval lands on the
+wrong side of it half the time. So the second hypothesis: stop guessing an interval and wait
+for the READER — hold each stop until its log stops growing.
+
+**Worse. Twenty-four views unread against nineteen, and half the speech.** Orca writes
+`SPEECH OUTPUT` when it DECIDES to speak, not when it has spoken, so a log that has gone quiet
+means the queue is full rather than empty. The instrument cannot be asked when it is finished.
+
+The third was the expensive one. A run died with `RecursionError` inside Orca's own
+`ax_object.py`, so its profile directory was cleared to rule out half-written state. Every run
+since has produced **three** utterances — the reader starts, attaches to nothing, and says
+"Screen reader on" and "Screen reader off". The profile that worked was built up by accident
+over a dozen runs and cannot be reconstructed, and what in it mattered is not known. Clearing
+it was the one change that could not be undone.
+
+Two repairs came out of the wreckage and both are worth more than the tuning ever was. The
+script **rendered a record from a pass in which the reader never spoke** — its `exit 1` sat
+inside a `dbus-run-session` subshell and ended only that — producing a plausible file that
+reported all thirty-six views unread, which blames the views for the instrument. And the walk
+now **stops after the first view** when nothing it said lands on a step: whether the reader
+attached is decided in the first seconds, and finding out in the thirty-sixth view costs a
+quarter of an hour per attempt.
+
+The shape: **when the instrument is flaky, every hypothesis about the subject is unfalsifiable
+until the instrument reports on itself.** Ten passes were spent before the harness could say
+"the reader did not attach" — and that sentence, not any of the three hypotheses, is what
+makes the next attempt cheap.

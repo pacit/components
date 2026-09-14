@@ -25,9 +25,21 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VIEWS = 'apps/sandbox-e2e/src/support/views.ts';
 const LOGS = 'docs/acr/at';
 
-/** How long a stop is held open for the reader to finish speaking. Measured, not guessed. */
-const DWELL_LOAD = 4500;
-const DWELL_TAB = 1800;
+/**
+ * How long a stop is held open for the reader to finish speaking. Two ways of deciding this
+ * were measured and both are recorded here, because the second looked obviously right:
+ *
+ * A fixed 4.5 s after a load left views 13 to 30 reading every OTHER one — 13, 15, 17, 19,
+ * 21, 23, 25, 27, 29 silent, the ones between them fine. A two-state cycle, not a slow
+ * machine. So the walk was made to wait for the READER instead: hold until its log stops
+ * growing. That was worse — 24 views unread against 19, and half the speech — because Orca
+ * writes `SPEECH OUTPUT` when it DECIDES to speak, not when it has spoken, so a quiet log
+ * means the queue is full, not empty. The instrument cannot be asked when it is done.
+ *
+ * What is left is a wider fixed window, which is an admission rather than a solution.
+ */
+const DWELL_LOAD = 9000;
+const DWELL_TAB = 2000;
 /** The cap on tab stops per view. It is written into the record wherever it bit (no silent caps). */
 const CAP = 12;
 /** What counts as a stop of the Tab key, and so as a position inside the view's content. */
@@ -132,8 +144,11 @@ const drive = async (baseURL, out) => {
 
     let previous = entered?.at ?? -1;
     for (let stop = 1; entered?.inMain && stop <= CAP; stop += 1) {
-      const at = await step(route, `tab ${stop}`, DWELL_TAB, () =>
-        page.keyboard.press('Tab'),
+      const at = await step(
+        route,
+        `tab ${stop}`,
+        [FLOOR_TAB, CEILING_TAB],
+        () => page.keyboard.press('Tab'),
       );
       // Two ways out, and the second is the one that caught a walk reading Firefox's own
       // toolbar aloud: focus left the content, or Tab moved nothing at all, which is what a
@@ -145,6 +160,24 @@ const drive = async (baseURL, out) => {
       }
       previous = at.at;
     }
+
+    // The smoke check, and it is about the INSTRUMENT rather than the view. Whether the
+    // reader attached to the browser at all is decided in the first seconds, and a walk that
+    // discovers it in the thirty-sixth view has spent a quarter of an hour finding out. It
+    // is not a threshold: one utterance falling inside one step of the first view is enough,
+    // and a reader that never attached produces none anywhere.
+    if (index === 0 && process.env.AT_PASS_DEBUG) {
+      const heard = utterances(
+        readFileSync(process.env.AT_PASS_DEBUG, 'utf8'),
+      ).filter((u) =>
+        steps.some((step) => u.at >= step.from && u.at <= step.to),
+      );
+      if (!heard.length)
+        throw new Error(
+          `the reader said nothing on \`${route}\` — it started and did not attach to the ` +
+            `browser, which happens and is not about this repository. Run the pass again.`,
+        );
+    }
   }
   const firefox_ = browser.version();
   await browser.close();
@@ -152,6 +185,10 @@ const drive = async (baseURL, out) => {
     out,
     `${JSON.stringify({ baseURL, cap: CAP, firefox: firefox_, steps }, null, 2)}\n`,
   );
+  // The walk is on disk. Closing a browser with a reader attached to it rejects late and
+  // asynchronously, which took a completed fifteen-minute pass down with it once; whether
+  // that pass was any good is decided by the record's own guard and not by this exit code.
+  process.exit(0);
 };
 
 // ── 4 and 5: transcribe, and write the record ─────────────────────────────────
@@ -184,6 +221,14 @@ const version = (command, args) => {
   }
 };
 
+/** A step's speech: its own if it carries it, otherwise whatever fell inside its window. */
+const spokenOf = (step, said) =>
+  step.said ??
+  said
+    .filter((u) => u.at >= step.from && u.at <= step.to)
+    .map((u) => u.said.trim())
+    .filter(Boolean);
+
 const render = (stepsFile, debugFile, slug, reader) => {
   const { cap, steps, firefox, stack } = JSON.parse(
     readFileSync(stepsFile, 'utf8'),
@@ -193,12 +238,19 @@ const render = (stepsFile, debugFile, slug, reader) => {
   // back what it said when asked, so its steps arrive already carrying it.
   const said =
     debugFile === 'none' ? [] : utterances(readFileSync(debugFile, 'utf8'));
-  const spoken = (step) =>
-    step.said ??
-    said
-      .filter((u) => u.at >= step.from && u.at <= step.to)
-      .map((u) => u.said.trim())
-      .filter(Boolean);
+  // A reader that said NOTHING did not read quietly — it did not read. Rendering that gives
+  // a file in which every view is honestly reported unread, and which is a lie all the same,
+  // because the sentence that says so blames the views.
+  const nothingSpoken =
+    debugFile !== 'none' &&
+    steps.every((step) => (spokenOf(step, said) ?? []).length === 0);
+  if (nothingSpoken)
+    throw new Error(
+      `${debugFile} holds ${said.length} utterance(s) and not one of them lands on a step ` +
+        `— the reader started and never attached to the browser. A pass in which every ` +
+        `view is unread is not a pass, and rendering it would blame the views.`,
+    );
+  const spoken = (step) => spokenOf(step, said);
 
   const byRoute = new Map();
   for (const step of steps) {
