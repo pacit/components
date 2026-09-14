@@ -143,7 +143,7 @@ disappears from under a painting, and those are two different human moves.
 
 `colour-in-a-gradient` and `colour-in-a-shadow` fire on the same rule as `unmeasured-colour`
 and are not a third copy of it: they measure the READER rather than the rule. Point 7 keyed
-its denominator on the property NAME until 4.39, so neither declaration was one it read: a
+its denominator on the property NAME until `lesson-168`, so neither declaration was one it
 colour reaching the policy from under one of them was not a colour the gate had approved, it
 was a colour nothing had asked about. Each
 case is a control for its own half and for nothing else, measured: dropping `-image` from the

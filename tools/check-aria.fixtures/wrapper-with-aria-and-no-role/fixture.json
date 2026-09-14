@@ -1,5 +1,5 @@
 {
   "point": 9,
   "check": "context",
-  "$reason": "The measured case of plan 4.3: `role=\"group\"` taken off the wrapper that keeps its `aria-labelledby`. A role-less element carrying ARIA is not looked through — axe names it, `div[aria-labelledby]`, as a child the listbox may not own, at critical — so the options under it have an owner that is not a listbox and not a group. The reference's group wrapper is the same element with the role on."
+  "$reason": "The measured case of `lesson-65`: `role=\"group\"` taken off the wrapper that keeps its `aria-labelledby`. A role-less element carrying ARIA is not looked through — axe names it, `div[aria-labelledby]`, as a child the listbox may not own, at critical — so the options under it have an owner that is not a listbox and not a group. The reference's group wrapper is the same element with the role on."
 }

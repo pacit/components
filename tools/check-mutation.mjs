@@ -172,8 +172,9 @@ and the searchability of a closed section are all outside the two files this run
 95% there is true about a small thing and reads like a statement about a component. What
 answers for the other half is a **recorded disarming** — every mechanism taken out by hand and
 the case that turned red written into the card, the way \`docs/components/accordion.md\` does it
-(plan 4.19). A mutator over templates was refused: it is machinery this repository would then
-own, and the disarming is a measurement anybody can repeat with an editor.
+([\`lesson-174\`](../../docs/lessons.md#lesson-174)). A mutator over templates was refused: it
+is machinery this repository would then own, and the disarming is a measurement anybody can
+repeat with an editor.
 
 Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
 ignored. The score follows from them — \`killed / (killed + surviving + errored + not

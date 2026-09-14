@@ -607,7 +607,7 @@ if (WRITE) {
  * say something about that requirement which is simply false. `docs/components/button.md`
  * carried "`req-token-logical` has no gate" while the gate had existed all along — point 5 of
  * `tools/check-styles.mjs`, with a negative control of its own — and every reader of
- * `/components/button` was shown the sentence (4.34).
+ * `/components/button` was shown the sentence.
  *
  * The rule is narrow on purpose. It polices ONE assertion — "this requirement has no gate" —
  * against the one place that knows, which is the requirement's own **Gate** field. A card may

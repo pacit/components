@@ -908,7 +908,7 @@ const checkTokens = (input) => {
   //     with no rule between them: a toast at 1100 "above the CDK overlay container", a
   //     drawer at 900 "below" it, and the container's own number — the dependency's — in
   //     neither file, no policy and no gate, so the fourth component to need a layer would
-  //     pick its number by opening two token files and inferring the middle (plan 4.21).
+  //     pick its number by opening two token files and inferring the middle.
   //     The order is a LIST in `layers.policy.json`; every number in it is read from where
   //     it lives — a token from the sources, the dependency's from the stylesheet the
   //     applications load, on every run, because a fact about a dependency stops holding at
@@ -1272,7 +1272,7 @@ const withoutComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, ' ');
  * name, so a ring under `box-shadow` painted a colour the denominator never held, and a
  * gradient under `background-image` counted only where a second stylesheet happened to
  * spell the shorthand. The policy entries covering both were there because a person put
- * them there (plan 4.39, [`lesson-168`](../docs/lessons.md)).
+ * them there ([`lesson-168`](../docs/lessons.md#lesson-168)).
  *
  * Assignments to another custom property (`--pct-button-height: var(--pct-button-height-sm)`
  * — the size axis pattern) are EXPANDED to a fixed point: the token on the right inherits

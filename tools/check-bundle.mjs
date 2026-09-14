@@ -52,7 +52,7 @@ const SNAPSHOT = `${PROJECT}/size.snapshot.md`;
  * that promise is only ever true of ONE toolchain: the compiler that emits the code, the
  * linker the probe runs over the package, and the bundler that weighs it. Recording them
  * beside the rows is what turns "35 bytes moved and nothing in the diff explains it" into a
- * line of the same diff (plan 4.17).
+ * line of the same diff (`lesson-179`).
  */
 const TOOLCHAIN = [
   '@angular/core',
@@ -382,7 +382,7 @@ const checkBundle = (input) => {
   //       here too, and is not a case any more: the read takes the literal, quotes
   //       included (`holds`), so `pct-select` stands apart from `pct-select-option` the way
   //       it stands apart from `data-pct-selected`. A guard on the names would have been a
-  //       workaround for the read (plan 4.13).
+  //       workaround for the read (`lesson-162`).
   const allMarkers = Object.entries(markers).flatMap(([e, m]) =>
     m.map((marker) => ({ e, marker })),
   );
@@ -780,7 +780,8 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     'a promise that the same sources give the same bytes is only ever true of ONE toolchain,',
     'and the day one of these moves, the bytes move in the same diff as the reason. It is',
     'the answer to a drift of 35 bytes that cost an evening and was never explained, because',
-    'nothing here recorded what the numbers had been produced BY (plan 4.17).',
+    'nothing here recorded what the numbers had been produced BY',
+    '([`lesson-179`](../../docs/lessons.md#lesson-179)).',
     '',
     ...(toolchain.length ? toolchain : ['(not recorded)']).map((t) => `- ${t}`),
     '',
@@ -825,7 +826,8 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     'selector without being a component.',
     '',
     'WHY a row sheds or does not, measured one doctored declaration at a time and true of',
-    'every row below (plan 4.42). Two things keep a tag nobody imported:',
+    'every row below ([`lesson-173`](../../docs/lessons.md#lesson-173)). Two things keep a',
+    'tag nobody imported:',
     '',
     '1. **It declares `providers`.** Angular compiles them into',
     '   `features: [ɵɵProvidersFeature([…])]` — a call to an EXTERNAL function, standing in',
@@ -848,9 +850,9 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     'imported one carried the other, 24458 B for a `console.warn` their production build',
     'cannot print. The report now reads the content query that finds it instead of an',
     'injector — the query IS the claim — and no component in this package declares',
-    '`providers` for a message any more (plan 4.43,',
-    '[`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair is',
-    'worth, and it is the largest single number this file has ever moved.',
+    '`providers` for a message any more',
+    '([`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair',
+    'is worth, and it is the largest single number this file has ever moved.',
     '',
     '```',
     ...Object.keys(named)
@@ -960,8 +962,8 @@ const entrypointFiles = (manifest) => {
  * And a marker is read the way it stands: as a STRING LITERAL, quotes included (`holds`).
  * A plain substring read found `pct-select` inside `"data-pct-selected"`, a state attribute
  * of the calendar, and reported the select in every bundle holding a calendar — the name
- * was changed by hand, twice, and the second time the token beside it kept the word (plan
- * 4.13). The ambiguity was the read's, not the name's.
+ * was changed by hand, twice, and the second time the token beside it kept the word
+ * (`lesson-162`). The ambiguity was the read's, not the name's.
  */
 const collectMarkers = async (dist, files) => {
   await import('@angular/compiler');

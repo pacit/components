@@ -2,5 +2,5 @@
   "point": 10,
   "check": "touch-floor",
   "rule": "unmeasured",
-  "description": "A second element takes the floor and no measurement names it. This is the real defect of plan 4.53, in miniature: the token was already on the list, so a denominator counted by NAME reports the library fully covered, while the new element's hit area is held up by a declaration nothing in the suite reads. Delete it and no test goes red — which is the definition of a floor nobody is watching."
+  "description": "A second element takes the floor and no measurement names it. This is the real defect of `lesson-194`, in miniature: the token was already on the list, so a denominator counted by NAME reports the library fully covered, while the new element's hit area is held up by a declaration nothing in the suite reads. Delete it and no test goes red — which is the definition of a floor nobody is watching."
 }

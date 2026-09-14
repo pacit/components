@@ -297,8 +297,8 @@ const PROBE_DERIVED = 'specyfikator';
  * source writes constantly — an index, a width, a loop variable — so a list cannot judge
  * them; and the dictionaries cannot either, because `american-english` lists the whole
  * alphabet, so every letter is subtracted as English before anything looks at it. That is
- * how `has no card at all w \`docs/components/\`` walked through the gate (plan 4.1): not a
- * floor on word length, which this gate never had, but a dictionary that holds `w` as a word.
+ * how `has no card at all w \`docs/components/\`` walked through the gate (`lesson-77`): not
+ * a floor on word length, which this gate never had, but a dictionary holding `w` as a word.
  *
  * What decides is CONTEXT. The letter counts when it stands in prose — between two words,
  * a single space either side, the word before it at least two letters long and the thing

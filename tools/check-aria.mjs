@@ -417,7 +417,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // `groups` and not only `cases`: an `@switch` carries its branches under that name in
     // Angular 22, and a walk that knew the other two names alone stepped over every switch
     // block in the library. Found by point 1's own denominator, which counted five icons in
-    // the text of the toast's template and one in the tree (plan 4.14, `lesson-180`).
+    // the text of the toast's template and one in the tree (`lesson-180`).
     const branches = node.branches ?? node.cases ?? node.groups ?? null;
     if (branches) {
       const block = state.blocks++;
@@ -770,7 +770,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // it opens carry one name between them, deliberately. "Container" is asked of the element
     // and not of a list of roles: the thing the user lands on is the one that counts, and a
     // `role="combobox"` on a `<button>` is that thing although ARIA files the role under
-    // `composite` (plan 4.20).
+    // `composite` (`lesson-196`).
     const landable = carriers.filter((widget) =>
       isFocusable(widget.tag, widget.attrs),
     );
@@ -932,8 +932,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         if (role === null) {
           // Looked through — unless it carries ARIA or takes focus, which is the line axe
           // draws: such an element is in the tree, and a listbox may not own it. The select's
-          // own measured case (plan 4.3) is this one: `role="group"` taken off a wrapper that
-          // keeps its `aria-labelledby`.
+          // own measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper
+          // that keeps its `aria-labelledby`.
           const held = ancestor.aria
             ? 'an ARIA attribute'
             : ancestor.tabindex || tables.focusable.has(ancestor.tag)

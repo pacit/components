@@ -47,7 +47,7 @@ const PROJECT = 'libs/components';
  *
  * They belong to other projects, and that is on purpose rather than in spite of itself: the
  * promise `req-a11y-touch` makes runs across all three, and a gate that could see only one
- * of them is how the promise came to have two disagreeing lists (plan 4.53).
+ * of them is how the promise came to have two disagreeing lists (`lesson-194`).
  */
 const TOKENS = 'libs/tokens/src';
 const MEASURED = 'apps/sandbox-e2e/src';
@@ -729,7 +729,7 @@ const tokenValues = (files) => {
  * makes a floor — `--pct-dialog-close-size` says nothing about touch targets and is one,
  * because `component.dialog.json` points it at `{pct.target.min}`; `--pct-checkbox-size` is
  * named like a size and is not one. A list of names in a spec was what this repository had,
- * and it disagreed with the sheets by seven entries (plan 4.53).
+ * and it disagreed with the sheets by seven entries (`lesson-194`).
  */
 const floorVariables = (values) => {
   const carries = (name, seen) => {
@@ -1209,7 +1209,7 @@ const checkStyles = ({
   //     Until this point existed that half was typed into the spec by hand, and the two
   //     lists disagreed by seven of nineteen without a single test going red — found only
   //     because a second sweep was written over the same promise and the two were compared
-  //     (plan 4.53). A floor nobody measures is not a floor that is wrong; it is a floor
+  //     (`lesson-194`). A floor nobody measures is not a floor that is wrong; it is a floor
   //     whose deletion nothing would report, which is the whole of `req-axis`.
   const floors = floorVariables(tokenValues(tokens));
   if (!floors.size)

@@ -22,7 +22,8 @@ is written ([0023](../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measu
 a promise that the same sources give the same bytes is only ever true of ONE toolchain,
 and the day one of these moves, the bytes move in the same diff as the reason. It is
 the answer to a drift of 35 bytes that cost an evening and was never explained, because
-nothing here recorded what the numbers had been produced BY (plan 4.17).
+nothing here recorded what the numbers had been produced BY
+([`lesson-179`](../../docs/lessons.md#lesson-179)).
 
 - @angular/core 22.0.6
 - @angular/compiler-cli 22.0.6
@@ -95,7 +96,8 @@ selector. Two false positives in seven rows, both of them a string that equals a
 selector without being a component.
 
 WHY a row sheds or does not, measured one doctored declaration at a time and true of
-every row below (plan 4.42). Two things keep a tag nobody imported:
+every row below ([`lesson-173`](../../docs/lessons.md#lesson-173)). Two things keep a
+tag nobody imported:
 
 1. **It declares `providers`.** Angular compiles them into
    `features: [ɵɵProvidersFeature([…])]` — a call to an EXTERNAL function, standing in
@@ -118,9 +120,9 @@ after all: the orphan-slot report stood in each tag's `providers`, so a consumer
 imported one carried the other, 24458 B for a `console.warn` their production build
 cannot print. The report now reads the content query that finds it instead of an
 injector — the query IS the claim — and no component in this package declares
-`providers` for a message any more (plan 4.43,
-[`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair is
-worth, and it is the largest single number this file has ever moved.
+`providers` for a message any more
+([`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair
+is worth, and it is the largest single number this file has ever moved.
 
 ```
 ./accordion PctAccordion 2 4221 11392
