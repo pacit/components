@@ -31,7 +31,7 @@
     ]
   },
   "semantic": {
-    "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. `success`, `warning` and `info` joined `danger` as roles the day tones landed (plan 4.14), and they are three words rather than one `tone-*` family for the reason the dictionary exists: a name is guessable when it says what it means, and `--pct-tone-2` says nothing. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
+    "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. `success`, `warning` and `info` joined `danger` as roles the day tones landed (0076), and they are three words rather than one `tone-*` family for the reason the dictionary exists: a name is guessable when it says what it means, and `--pct-tone-2` says nothing. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
     "roles": [
       "primary",
       "surface",

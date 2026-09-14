@@ -20,7 +20,7 @@
     {
       "file": "libs/components/testing/src/property.testkit.ts",
       "type": "PctArbitrary",
-      "reason": "What a property sweep draws from. `testing/src/index.ts` publishes none of the testkit on purpose: what `@pacit/components/testing` offers a consumer is the harnesses and the DOM helpers, while `property.testkit.ts` is this repository's own instrument, imported by four specs over a relative path and never through the package. Publishing the interface publishes the sweep around it — `pctForAll`, the shrink, the seed — and turns a thing we change whenever a law needs a new generator into somebody else's contract. The entry retires if the testkit is ever published, which is a question the plan holds open."
+      "reason": "What a property sweep draws from. `testing/src/index.ts` publishes none of the testkit on purpose: what `@pacit/components/testing` offers a consumer is the harnesses and the DOM helpers, while `property.testkit.ts` is this repository's own instrument, imported by four specs over a relative path and never through the package. Publishing the interface publishes the sweep around it — `pctForAll`, the shrink, the seed — and turns a thing we change whenever a law needs a new generator into somebody else's contract. The entry retires if the testkit is ever published, and nothing has decided that it will be."
     }
   ]
 }

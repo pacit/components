@@ -90,7 +90,7 @@
 /* The tone: a drawing and an edge, and the drawing is the half that survives. What a colour
    cannot do is be seen by a reader who does not separate red from green, or survive a forced
    palette where the author's greens are not invited — so the icon carries the meaning and the
-   border carries the volume (`req-a11y-forced-colors`, plan 4.14). The base `icon-fg` is the
+   border carries the volume (`req-a11y-forced-colors`). The base `icon-fg` is the
    message's own colour, which is what an untoned message would draw if it ever drew one. */
 .pct-toast__icon {
   flex: none;

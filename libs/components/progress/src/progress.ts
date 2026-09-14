@@ -115,7 +115,7 @@ export class PctProgress {
    * `null` — the default — draws no mark at all and leaves the geometry exactly as it was
    * before tones existed. The mark is the half that survives a forced palette and a reader who
    * does not separate red from green, which is why a tone here is never only a colour
-   * ({@link PctTone}, plan 4.14).
+   * ({@link PctTone}, 0076).
    */
   readonly tone = input<PctTone | null>(null);
 

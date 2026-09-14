@@ -20,7 +20,7 @@
  * has the sweep that fits it.
  *
  * **The two boundaries this file used to narrow around are laws in it now.** Both were defects
- * the earlier version of this sweep found and both are repaired in `day.ts` (5.1): the year
+ * the earlier version of this sweep found and both are repaired in `day.ts`: the year
  * below zero, where `pctDay` wrote `'00-1-12-31'` into the shape and handed it on, and the
  * year above `9999`, where `pctCompareDays` compared the string and sorted eleven characters
  * among ten. So the ranges reach them instead of stopping short — the order is swept across
@@ -91,7 +91,7 @@ const MONTH_YEARS = pctInt(900, 9_000);
 
 /**
  * Four digits AND five, on both sides of the boundary the order used to break at.
- * `pctCompareDays` compared the string until 5.1, and ten characters stand after eleven
+ * `pctCompareDays` compared the string until the repair, and ten characters stand after eleven
  * lexicographically, so `pctCompareDays('2026-01-01', '10000-01-01')` answered `1` — the later
  * day reported as the earlier one, and `pctClampDay` pulling a day four thousand years past
  * `max` down to `min`. It reads the three fields now, and this range is what holds it there:

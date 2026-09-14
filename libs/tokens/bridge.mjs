@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * The bridge between the DTCG sources and Tokens Studio for Figma (plan 2.4,
- * `req-token-bridge`). Two directions, one law: **the sources are the truth, and a name is
- * a decision made here** — the bridge carries values across, never names.
+ * The bridge between the DTCG sources and Tokens Studio for Figma (`req-token-bridge`). Two
+ * directions, one law: **the sources are the truth, and a name is a decision made here** — the
+ * bridge carries values across, never names.
  *
  *   export  src/*.json ─→ dist/tokens-studio/   one file per set in the plugin's DTCG
  *                                                dialect, plus `$themes.json` (a base, and

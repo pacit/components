@@ -67,7 +67,7 @@
         "$value": "{pct.space.3}",
         "$description": "Gap between a toast's message and its action."
       },
-      "$comment-icon": "The tone's drawing and the colour it takes. The ICON is the tone — a message painted in colour alone is a state carried by colour alone (`req-a11y-forced-colors`), and a reader who cannot tell red from green, or a forced palette that throws both away, still has the shape (plan 4.14). The base `icon-fg` is the message's own text colour, which is what a toast with no tone would draw if it ever drew one: the four variants below are the only reason this token exists.",
+      "$comment-icon": "The tone's drawing and the colour it takes. The ICON is the tone — a message painted in colour alone is a state carried by colour alone (`req-a11y-forced-colors`), and a reader who cannot tell red from green, or a forced palette that throws both away, still has the shape (0076). The base `icon-fg` is the message's own text colour, which is what a toast with no tone would draw if it ever drew one: the four variants below are the only reason this token exists.",
       "icon-fg": {
         "$type": "color",
         "$value": "{pct.text}",

@@ -135,7 +135,7 @@ describe('the property sweep', () => {
    * What the measurement asked for. Until 2026-09-11 this entrypoint was struck out of the
    * mutation run, so every case above was written against nothing able to disagree with it —
    * and the first run that could disagree scored this file at 71.68% with 31 mutants alive
-   * (plan 4.49). The cases below are aimed at those, and they land where a reader assumes
+   * (`lesson-195`). The cases below are aimed at those, and they land where a reader assumes
    * hardest: that the draw is a FUNCTION of its arithmetic and not merely repeatable, that
    * the descent offers candidates inside the range and strictly nearer zero, and that a
    * failure carries the words of the assertion that produced it.

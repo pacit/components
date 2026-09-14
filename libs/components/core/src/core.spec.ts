@@ -1191,7 +1191,7 @@ describe('@pacit/components/core', () => {
     });
 
     /**
-     * The deduplication of the plan's D4, measured where it happens: `textContent = x` on a
+     * The deduplication, measured where it happens: `textContent = x` on a
      * region already holding `x` replaces the text node all the same, and a replaced text node
      * is a change the assistive technology is entitled to read out again.
      */
@@ -1620,7 +1620,7 @@ describe('@pacit/components/core', () => {
     it('fires when the component above it reads other slots and not this one', async () => {
       // The host is there, it queries slots, and none of them is this one — so nothing
       // calls the claim and the report stands. The message no longer names that host:
-      // an unclaimed slot has no way to ask who it stood under (plan 4.43).
+      // an unclaimed slot has no way to ask who it stood under (`lesson-176`).
       const warn = silenced();
       try {
         await render(WrongHost);

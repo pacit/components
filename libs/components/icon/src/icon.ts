@@ -34,7 +34,8 @@ import {
  * — and the set is one nobody's single component could judge: the toast wanted it, the progress
  * bar wanted the same four, and the field's error, the dialog's confirm and whatever the banner
  * turns out to be will want them too. Four names added once, by a decision, rather than one at a
- * time by whoever needed the first (plan 4.14).
+ * time by whoever needed the first
+ * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
  */
 export type PctIconName =
   | 'calendar'

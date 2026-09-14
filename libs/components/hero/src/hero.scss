@@ -7,11 +7,11 @@
    Every gradient here is written as `background:` and not `background-image:`, and it no
    longer has to be: the shorthand was chosen when point 7 of `check-tokens` read the colours
    a stylesheet paints by PROPERTY NAME, so `background-image` matched none of its roles and
-   a gradient's stops stood in the policy only because a person had put them there. Plan 4.39
-   taught the reader both spellings ([`lesson-168`](../../../../docs/lessons.md#lesson-168)),
-   so the two are now the same to every gate the repository owns and the sheet keeps what it
-   was written with. `button.scss` still spells the longhand: the library has two spellings
-   for one paint, and after 4.39 that is a matter of taste rather than of measurement.
+   a gradient's stops stood in the policy only because a person had put them there. The reader
+   was taught both spellings ([`lesson-168`](../../../../docs/lessons.md#lesson-168)), so the
+   two are now the same to every gate the repository owns and the sheet keeps what it was
+   written with. `button.scss` still spells the longhand: the library has two spellings for one
+   paint, and that is now a matter of taste rather than of measurement.
 
    **The size and the travel are one number written twice.** A drift moves the image by
    `position × (box − image)`, so at `background-size: 200%` a travel of `200%` is exactly one
@@ -51,7 +51,7 @@
      a headline reads it as a still picture. A DIVISION of the token rather than a number of
      its own, so reduced motion still freezes it — `calc(0s / 2)` is `0s`.
 
-     ONE pass and then it stands still (plan 4.37). Four seconds is inside the five that
+     ONE pass and then it stands still (`lesson-178`). Four seconds is inside the five that
      [SC 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) allows
      motion to run unattended, so a consumer who ships this face owes no pause control of
      their own — and the travel is a whole gradient, so where it settles is where it began

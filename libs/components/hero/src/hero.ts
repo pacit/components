@@ -52,9 +52,10 @@ export class PctHero {
    *
    * The sweep already ends by itself — one pass and it settles, which is what keeps
    * [SC 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) off the
-   * table for a consumer who does nothing (plan 4.37). This is the OTHER half: a page that
-   * puts the face beside text somebody is reading can stop the pass without waiting it out,
-   * and stop it again on every hover of an `interact` face.
+   * table for a consumer who does nothing
+   * ([`lesson-178`](../../../../docs/lessons.md#lesson-178)). This is the OTHER half: a page
+   * that puts the face beside text somebody is reading can stop the pass without waiting it
+   * out, and stop it again on every hover of an `interact` face.
    *
    * It does not override the reader. `prefers-reduced-motion` freezes the sweep through the
    * motion axis whatever this says — the user agent's answer wins over the page's, which is

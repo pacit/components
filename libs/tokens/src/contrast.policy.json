@@ -1079,7 +1079,7 @@
       "severity": "error"
     },
     {
-      "$comment": "The tone's two paints, measured one by one. The ICON is what a tone really is here, so it is held to SC 1.4.11 like any other meaningful non-text mark; the edge is measured against the page exactly as the untoned edge above it. Both readings are per tone, because a policy that measured \"the tone\" once would be measuring whichever tone somebody wrote first (plan 4.14).",
+      "$comment": "The tone's two paints, measured one by one. The ICON is what a tone really is here, so it is held to SC 1.4.11 like any other meaningful non-text mark; the edge is measured against the page exactly as the untoned edge above it. Both readings are per tone, because a policy that measured \"the tone\" once would be measuring whichever tone somebody wrote first (0076).",
       "name": "UI: toast tone icon (success)",
       "fg": "pct.toast.icon-fg-success",
       "bg": "pct.toast.item-bg",

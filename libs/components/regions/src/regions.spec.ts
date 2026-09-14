@@ -11,7 +11,7 @@ import { PctRegionDirective, PctRegionKey, providePctRegions } from './regions';
 describe('@pacit/components/regions', () => {
   /**
    * The region cycle: the mechanism a keyboard reaches a place by when the reading order puts
-   * that place somewhere else (plan 4.16, 0072).
+   * that place somewhere else (0072).
    *
    * What these cases hold is the half the library ships. The other half — WHICH key — is the
    * consumer's, and the one case that says so is the one that presses F6 with nothing mounted

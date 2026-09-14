@@ -149,8 +149,7 @@ export class PctNumber
    * Purpose** asks that a field collecting information ABOUT THE USER declares which one,
    * and three of the list's entries are numbers a person types here: `bday-day`,
    * `bday-month`, `bday-year`. With `autocomplete` nailed shut those three could not be
-   * declared on this control at all, which is what the conformance report said out loud
-   * (plan 4.37).
+   * declared on this control at all, which is what the conformance report said out loud.
    *
    * The type is the platform's own `AutoFill`, so a misspelt purpose is a compile error
    * rather than an attribute a browser ignores.
@@ -343,7 +342,7 @@ export class PctNumber
    * one of them alone turns 2, 3 and 3 of its six sweeps red — the bidi marks `Intl` writes in
    * `he-IL`, `ar-EG` and `fa-IR`; the Arabic-Indic and Devanagari digits of four locales,
    * without which this control cannot read back the `٠` it wrote itself; and the Indian
-   * grouping of `hi-IN`, `bn-IN` and `ne-NP` (`req-api-number`, plan 5.1).
+   * grouping of `hi-IN`, `bn-IN` and `ne-NP` (`req-api-number`).
    */
   private parse(text: string): number | null {
     const raw = text.trim();

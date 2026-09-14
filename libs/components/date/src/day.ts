@@ -93,7 +93,7 @@ export function pctDay(year: number, month: number, day: number): PctDay {
   // `'00-1-12-31'` — a string `isPctDay` refuses and `pctDayParts` crashes on, with a
   // `TypeError` from a cast four calls away from the walk that caused it. Past the
   // ECMAScript date range the fields are `NaN` and it read `'0NaN-NaN-NaN'`. Both were found
-  // by a property sweep (5.1), and neither had any symptom before it.
+  // by a property sweep (`lesson-185`), and neither had any symptom before it.
   //
   // The bound is the type's own reason for being a string: a year below zero is not something
   // `<input type="date">`, `<time datetime>`, JSON or SQL `DATE` can carry, so a walk that
@@ -163,7 +163,7 @@ export function pctAddMonths(day: PctDay, n: number): PctDay {
  * characters stand after eleven lexicographically, so `'2026-01-01'` was reported as the
  * LATER of the two — silently, in the direction nothing checks — and `pctClampDay` pulled a
  * day four thousand years past `max` down to `min`, the wrong bound entirely. A property
- * sweep of the ordering laws named it, which is what plan 5.1 was for
+ * sweep of the ordering laws named it
  * ([`lesson-185`](../../../../docs/lessons.md#lesson-185)).
  */
 export function pctCompareDays(a: PctDay, b: PctDay): number {

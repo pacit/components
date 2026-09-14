@@ -455,7 +455,7 @@ describe('PctProgress — the parts a consumer may style', () => {
     expect(bound().querySelectorAll('[data-pct-part]')).toHaveLength(3);
 
     // The mark is the fourth, and it exists only when there is something for it to mean: a
-    // bar with no tone is the bar this component drew before tones existed (plan 4.14).
+    // bar with no tone is the bar this component drew before tones existed (0076).
     fixture.componentInstance.tone.set('danger');
     fixture.detectChanges();
     await fixture.whenStable();

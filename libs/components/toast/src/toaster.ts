@@ -85,8 +85,8 @@ export class PctToaster implements PctToastHost {
    * nothing has registered. A queue, and not a `mounted` signal gating a computed the
    * viewport reads: a signal written after the first render is a second pass for every
    * consumer of the page, and the gate wrote one on every page whether or not anything was
-   * waiting (plan 4.38). With a queue the only write after the first render is the one that
-   * shows a message.
+   * waiting ([`lesson-161`](../../../../docs/lessons.md#lesson-161)). With a queue the only
+   * write after the first render is the one that shows a message.
    */
   private pending: PctToastState[] = [];
 
@@ -257,7 +257,7 @@ export class PctToaster implements PctToastHost {
    * Puts the viewport into the application's change detection — once, with the first message.
    * Attaching a view tells the scheduler to run the application again whatever the view's
    * state, so an empty region attached on the first render was a second pass on every page
-   * holding a toaster (plan 4.38); a message is a pass anyway, and the viewport joins on it.
+   * holding a toaster (`lesson-161`); a message is a pass anyway, and the viewport joins on it.
    */
   private attach(): void {
     if (this.attached || this.viewport === null) return;
@@ -279,7 +279,7 @@ export class PctToaster implements PctToastHost {
     // registered before it holds a sentence. Rendered by hand, not yet attached to the
     // application and not yet told what it inherits: attaching a view and setting an input
     // both tell the scheduler to run the whole application again, unconditionally, and an
-    // empty region has nothing to show for that pass (plan 4.38). It joins change detection
+    // empty region has nothing to show for that pass (`lesson-161`). It joins change detection
     // with its first message (`attach`), which is a pass anyway, and takes what it inherits
     // on every message, as it always did.
     ref.changeDetectorRef.detectChanges();

@@ -16,9 +16,9 @@ import { PctNumber } from './number';
 /**
  * The one promise `[pctNumber]` makes that no list of examples can keep: a number this
  * control formatted is a number it reads back — in ANY locale, not in the two whose notation
- * the author happens to write in. That is the open control of `req-api-number` and plan item
- * 5.1, and the reason it stayed open is that parsing is wider than formatting: there are more
- * cases here than anybody thinks up.
+ * the author happens to write in. That is the open control of `req-api-number`, and the reason
+ * it stayed open is that parsing is wider than formatting: there are more cases here than
+ * anybody thinks up.
  *
  * **The sweep goes through the control, never through `parse`.** The method is private, and
  * more to the point only half of what can break lives in it: the formatter that wrote the

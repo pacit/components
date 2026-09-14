@@ -16,9 +16,9 @@ import { allParts, part, query } from './dom';
  * product rather than a decoration on it: a test asserting only that "it throws" would leave
  * every word of it free to rot ([`req-quality-unit`](../../../../docs/requirements/quality.md#req-quality-unit)).
  *
- * They are also published code (`@pacit/components/testing`), which is the argument plan item
- * 4.49 settled: an instrument a consumer's suite leans on cannot be held to a lower standard
- * than the components it measures, because a defect here makes somebody else's tests lie.
+ * They are also published code (`@pacit/components/testing`), and that is the argument: an
+ * instrument a consumer's suite leans on cannot be held to a lower standard than the
+ * components it measures, because a defect here makes somebody else's tests lie.
  */
 @Component({
   template: `<div data-pct-part="root">

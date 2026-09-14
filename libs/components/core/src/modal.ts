@@ -27,7 +27,7 @@ function isLive(element: Element): boolean {
  * [0024](../../../../docs/decisions/0024-the-closing-stack-is-the-dependency-s.md) deferred
  * both to the first modal, because a panel that locked the page's scroll would be a defect —
  * a listbox is not a modal and must not behave like one. E1 is that first consumer, and it
- * brings only **one** of the two things the plan expected: `inert` on the background is ours
+ * brings only **one** of the two things 0024 deferred: `inert` on the background is ours
  * to write, the scroll lock is ours to write, and the third item on that list — the closing
  * stack — stays the dependency's.
  *

@@ -1,6 +1,7 @@
 /* The host is a row: a mark, when the bar has a tone, and the bar itself. It paints nothing
    and it clips nothing — both of those moved to `.pct-progress__bar` below the day a tone
-   needed something to stand beside the groove (plan 4.14).
+   needed something to stand beside the groove
+   ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
 
    THE BAR is the containing block the fill is positioned against, which is the whole reason it
    is `relative`. And it is the PIPE the indeterminate band travels inside, which is what
@@ -27,7 +28,7 @@
   gap: var(--pct-progress-icon-gap);
 }
 
-/* The pipe, moved off the host the day a tone needed a mark beside the bar (plan 4.14). It
+/* The pipe, moved off the host the day a tone needed a mark beside the bar (0076). It
    carries everything the host used to: the containing block, the clip, the groove's radius —
    and `flex: 1` so the bar is still the whole width when nothing stands next to it. An untoned
    bar therefore measures what it always measured; a toned one is as tall as its mark. */

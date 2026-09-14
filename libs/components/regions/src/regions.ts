@@ -21,7 +21,7 @@ import { PCT_REGIONS, PctRegion, PctRegionsApi } from '@pacit/components/core';
  * a keyboard user who wants it walks the whole document first. A navigation drawer written at
  * the end of a template has the mirror-image problem — it is somewhere, and it is the wrong
  * somewhere. Both are "reachable in principle", which is not the promise "reachable" makes
- * (plan 4.16).
+ * ([`lesson-181`](../../../../docs/lessons.md#lesson-181)).
  *
  * **The keystroke is the consumer's to install, and that is the decision.** Several
  * implementations answer this with F6, others with F8, and this repository has measured nothing
@@ -86,7 +86,7 @@ export class PctRegions implements PctRegionsApi {
     // shadowed the one below it — with no regions, `(-1 + 1) % 0` is `NaN`, `regions[NaN]`
     // is `undefined`, and this returns the same `false` by the same road. Two guards where
     // one answers means neither can be measured: each is equivalent while the other stands,
-    // and the mutation run said so in the only way it can (4.48).
+    // and the mutation run said so in the only way it can.
     const target = regions[(here + 1) % regions.length];
     if (target === undefined) return false;
 

@@ -254,9 +254,9 @@ describe('PctToaster', () => {
      * It is here because of what its absence cost. `toastDismiss`'s own default was the one
      * mutant in `core/src/texts.ts` that no assertion in the library reached, so it was killed
      * by a TIMEOUT or not at all — and the file's score read `100.00` or `96.77` for the same
-     * sources depending on what else the machine was doing (plan §4.2, third reading). One
-     * assertion is the third option that item says does not exist, and for this mutant it does:
-     * a string default is trivially assertable, so the clock stops counting towards the score.
+     * sources depending on what else the machine was doing
+     * ([`lesson-201`](../../../../docs/lessons.md#lesson-201)). One assertion closes it: a
+     * string default is trivially assertable, so the clock stops counting towards the score.
      */
     it('and the cross keeps its English name when nobody provides one', async () => {
       const { toaster } = await boot();
@@ -513,7 +513,7 @@ describe('PctToaster', () => {
   });
 
   /**
-   * The stack as a region of the page (plan 4.16, 0072).
+   * The stack as a region of the page (0072).
    *
    * The cycle is FAKED here rather than installed: the real one has its own cases in
    * `@pacit/components/regions`, and what is on trial in this file is the three lines the

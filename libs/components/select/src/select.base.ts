@@ -1114,8 +1114,9 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
 
     // The slot cannot tell where it stands: an `<ng-template>` in a component's content is
     // never inserted into the document, so it has no parent to read and no provider to
-    // resolve that a bundler would let go of (plan 4.43). What knows is this query — finding
-    // the template IS the statement that it will be rendered.
+    // resolve that a bundler would let go of
+    // ([`lesson-176`](../../../../docs/lessons.md#lesson-176)). What knows is this query —
+    // finding the template IS the statement that it will be rendered.
     if (isDevMode()) effect(() => this.optionTemplate()?.read());
 
     // An effect and not a one-off: `options` is an input, so the list that duplicates a value

@@ -260,8 +260,9 @@ export class PctPopover {
    *
    * A field and not a signal, and the difference is a whole pass of the application: a signal
    * written after the first render is a second render for every consumer of the page, which
-   * is what the cost record read on every preview holding one of these (plan 4.38). What the
-   * effect below would have done on that write is done once, in the callback that flips it.
+   * is what the cost record read on every preview holding one of these
+   * ([`lesson-161`](../../../../docs/lessons.md#lesson-161)). What the effect below would have
+   * done on that write is done once, in the callback that flips it.
    */
   private rendered = false;
 

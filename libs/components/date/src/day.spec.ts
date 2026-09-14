@@ -198,7 +198,7 @@ describe('pctMonthGrid', () => {
 
 /**
  * The suite's machine is the timezone it happens to be, and "every day in this file is
- * midnight UTC" was a sentence with no run standing anywhere hostile behind it (plan 4.29).
+ * midnight UTC" was a sentence with no run standing anywhere hostile behind it (`req-api-day`).
  * These cases pin the clock: Node reads `TZ` on every local-time call, so a case can stand in
  * Kiritimati — UTC+14, the farthest a clock gets from the meridian — and on both sides of
  * Warsaw's daylight-saving switch, whatever the machine is set to.

@@ -95,7 +95,7 @@
         "$value": "{pct.text-disabled}",
         "$description": "Text colour of an item while disabled."
       },
-      "$comment-item-selected": "The page you are on: filled with the accent, because `aria-current` is the only channel left once a forced-colours mode removes the fill, and a quiet outline would not read as 'here' next to eight other buttons. Named `selected` for the token dictionary; the DOM attribute is `data-pct-current`, which cannot be mistaken for another entrypoint's selector (4.13, the tabs' and calendar's workaround made a rule).",
+      "$comment-item-selected": "The page you are on: filled with the accent, because `aria-current` is the only channel left once a forced-colours mode removes the fill, and a quiet outline would not read as 'here' next to eight other buttons. Named `selected` for the token dictionary; the DOM attribute is `data-pct-current`, which cannot be mistaken for another entrypoint's selector (`lesson-162`, the tabs' and calendar's workaround made a rule).",
       "item-bg-selected": {
         "$type": "color",
         "$value": "{pct.primary}",

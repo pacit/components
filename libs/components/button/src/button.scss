@@ -119,7 +119,7 @@
   );
   background-size: 300% 100%;
   color: var(--pct-on-hero);
-  /* One pass of half the axis, and then the gradient stands still (plan 4.37). Four seconds
+  /* One pass of half the axis, and then the gradient stands still (lesson-178). Four seconds
      is inside the five that SC 2.2.2 allows motion to run with no control beside it, and the
      travel is a whole gradient, so the frame it settles on is the frame it started from. The
      face was 8s and endless: what changed is that it now ENDS, and the cost is that it reads

@@ -68,7 +68,7 @@ import { PCT_TOAST_HOST, PctToastState } from './toast';
     '(focusout)': 'onFocusOut($event)',
     // The stack is a child of `body`, so a press inside it never reaches the element a
     // consumer mounted the region key on. It answers the same key here, and only when a
-    // consumer has chosen one — the library still mounts nothing on the document (plan 4.16).
+    // consumer has chosen one — the library still mounts nothing on the document (0072).
     '(keydown)': 'onRegionKey($event)',
   },
 })

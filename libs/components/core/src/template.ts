@@ -26,7 +26,7 @@ const UNREPORTED: PctSlotRead = () => undefined;
  * inside the static initialiser of the class, which no bundler may treat as pure. So a
  * consumer who imported `pct-select` alone carried `pct-multi-select` with it, for a
  * `console.warn` their production build cannot print ([`lesson-173`](../../../../docs/lessons.md#lesson-173),
- * plan 4.42/4.43).
+ * [`lesson-176`](../../../../docs/lessons.md#lesson-176)).
  *
  * **And why the DOM does not answer it either**, which is the road that was chosen and then
  * measured shut: an `<ng-template>` written inside `<pct-select>` is unprojected content, so

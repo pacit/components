@@ -24,10 +24,10 @@ const PCT_TREE_ITEM = new InjectionToken<PctTreeItem>('PCT_TREE_ITEM');
 /**
  * A tree: a hierarchy the user walks — a file explorer, a nested outline.
  *
- * **The ARIA APG Tree View pattern, and the first component of the 1.1 tail that could
- * not refuse the keys**: a tree is ONE tab stop with a roving focus inside it, and the
- * platform has no element that does any of that walk. What this component adds is the
- * walk ([0056](../../../../docs/decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md));
+ * **The ARIA APG Tree View pattern, and a component that could not refuse the keys**: a tree
+ * is ONE tab stop with a roving focus inside it, and the platform has no element that does
+ * any of that walk. What this component adds is the walk
+ * ([0056](../../../../docs/decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md));
  * everything else is refused ownership, the family line — the nodes are projected (the
  * markup IS the hierarchy, no `data` input), each branch owns its `expanded`, and the
  * tree owns exactly one thing: `selected`, the chosen item's `value`.

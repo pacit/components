@@ -71,7 +71,7 @@
       }
     },
     "green": {
-      "$comment": "The palette's first green, and the two steps are the red ramp's shape for the red ramp's reason: `700` is the step that clears 4.5:1 as text on the light surface (5.02:1 measured) and `400` the one that clears it on the dark (10.25:1). Both are steps of the same scale every other hue here comes from, so a tone is a colour the skin already knew how to make rather than a hue somebody picked. It exists because a message with no second channel is a state carried by colour alone (plan 4.14) — the icon is that channel, and this is what paints it.",
+      "$comment": "The palette's first green, and the two steps are the red ramp's shape for the red ramp's reason: `700` is the step that clears 4.5:1 as text on the light surface (5.02:1 measured) and `400` the one that clears it on the dark (10.25:1). Both are steps of the same scale every other hue here comes from, so a tone is a colour the skin already knew how to make rather than a hue somebody picked. It exists because a message with no second channel is a state carried by colour alone (0076) — the icon is that channel, and this is what paints it.",
       "400": {
         "$type": "color",
         "$value": "#4ade80"
