@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "ceiling",
+  "rule": "ceiling-not-whole",
+  "why": "two and a half days — a ceiling counted in commits or in days does not wobble, so it has no fractional part to argue about (0023)",
+  "policy": { "set": { "days": 2.5 } }
+}

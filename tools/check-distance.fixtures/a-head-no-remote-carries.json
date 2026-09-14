@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "rule": "readings-disagree",
+  "why": "the other direction: a distance of zero while no remote ref carries HEAD. This is the quiet one — the count agrees with a push that never happened",
+  "carried": { "clear": true }
+}

@@ -1135,24 +1135,17 @@ and every one is held by a **binds at** rather than by anybody's mood.
     failing green** in `adaptation.spec.ts` and `shell.spec.ts`; all are answered by a condition
   - what this does not buy: the suite's own flake rate is still unmeasured — **4.58**
 
-- [ ] **4.55 — the copy off this machine is ten days old, and nothing measures the distance**
-  - **3.0 bought a continuous property and ticked it as an event.** What it paid for is a copy
-    that exists and a CI line that reports rather than describes, and both decay with every
-    commit that stays here. On 2026-09-12 `origin/main` is `00040dc` (2026-09-02) and
-    `git rev-list --count origin/main..HEAD` reads **160**
-  - **the remote's nightly has been red seven of the last ten nights**, on that same commit,
-    and nobody was reading it: every run since 2026-09-03 carries the same head, the last
-    failed after 1 h 50 m on the step running `mutation check-mutation e2e`, and the logs of
-    the older ones are already gone, so those reds are now unattributable. The two-job split
-    that stops those targets from sharing a runner — the arrangement `nightly.yml`'s own header
-    describes in the present tense — is inside the unpushed window
-  - **nothing reads the distance**: no gate in `tools/`, no step in either workflow. The shape
-    is [`lesson-191`](lessons.md#lesson-191)'s one floor up, and that lesson counted the
-    commits by hand, once
-  - what would close it: the distance as a measurement with a ceiling, in the idiom of the
-    snapshots. The ceiling is the maintainer's number, because a push is the maintainer's act
-    ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md))
-  - binds at: **now** — it is the only open finding whose cost grows every day
+- [x] **4.55 — the copy off this machine was twelve days old, and nothing measured the
+      distance** — **closed 2026-09-14: 173 commits pushed, and a gate that holds the number**
+  - 3.0 bought a _continuous_ property and ticked it as an event. What decayed under the tick:
+    `origin/main` stood on `00040dc` (2026-09-02) while the remote's nightly ran nightly on
+    that head, went red seven nights of ten, and the older logs expired unattributable
+  - `check-distance` counts the commits reachable from `HEAD` that no remote ref carries and
+    the age of the oldest — two readings of one fact, because a count taken against no remote
+    at all reads zero, which is the shape of the failure rather than its absence
+  - the ceilings are the maintainer's and stand in `distance.policy.json` with a reason each
+    ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)). Uncached, like
+    `check-support`: the reading moves with every hour, and no `inputs` list can say so
 
 - [x] **4.56 — the plan was the only copy of thirty-five facts** — **closed 2026-09-12; the
       positions half of [0017](decisions/0017-one-home-per-fact.md)'s pass**

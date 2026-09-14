@@ -65,7 +65,12 @@ sentence from the maintainer.**
 - **A pushed branch is not a pushed repository.** What this decision buys is a _continuous_
   property, and a repository whose remote head is weeks behind has none of it: no copy, and a
   CI line that describes what would happen rather than what did
-  ([`lesson-191`](../lessons.md#lesson-191)).
+  ([`lesson-191`](../lessons.md#lesson-191)). It ran twelve days and 173 commits before
+  anything said so, which is what `tools/check-distance.mjs` now counts: the commits that
+  exist on this disk and on no remote, and the age of the oldest of them. Both ceilings are
+  the **maintainer's** numbers and stand in `tools/distance.policy.json` with the reason for
+  each beside it — the gate holds the distance and does not push, because the push is the act
+  this decision put in one pair of hands.
 
 ## What this costs us
 

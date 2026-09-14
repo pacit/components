@@ -1,0 +1,8 @@
+{
+  "point": 5,
+  "check": "days",
+  "rule": "too-old",
+  "why": "one commit, seven days old — well inside the count ceiling and exactly the shape the count misses, because a small amount of work can sit on one disk indefinitely",
+  "carried": { "clear": true },
+  "commits": { "add": [{ "daysAgo": 7 }] }
+}

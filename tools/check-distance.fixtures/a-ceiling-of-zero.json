@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "ceiling",
+  "rule": "ceiling-not-positive",
+  "why": "a ceiling of zero forbids the commit that has not been pushed yet — a rule against working rather than against holding work back, and it would be red between every commit and its push",
+  "policy": { "set": { "commits": 0 } }
+}

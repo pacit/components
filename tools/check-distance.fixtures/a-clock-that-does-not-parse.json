@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "clock-not-whole",
+  "why": "the other half of the subtraction: a clock read as text makes every age NaN, and NaN is greater than no ceiling",
+  "now": { "set": "1757800000" }
+}

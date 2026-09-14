@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "no-remote-ref",
+  "why": "a checkout that fetched no remote-tracking ref — every commit then reads as unpushed, and it is also the shape `nx affected` has no base to compare against",
+  "remotes": { "clear": true }
+}

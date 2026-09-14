@@ -1,0 +1,3 @@
+{
+  "$comment": "The reference input is the repository itself: the remote-tracking refs git carries, the commits reachable from HEAD that none of them carries, the second reading beside them (which refs carry HEAD itself), the clock and the register on disk, as they stand at the commit under test. Nothing is stored here on purpose — a stored copy would measure the repository as it was the day somebody stored it, and this gate's whole subject is a distance that grows while nobody looks. Every case is built on a copy of that live input with one thing broken (see README.md)."
+}

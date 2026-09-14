@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "ceiling",
+  "rule": "ceiling-without-reason",
+  "why": "a number whose whole justification is the word \"because\" — the next person to find this gate red raises it rather than pushing",
+  "policy": { "set": { "// days": "because." } }
+}

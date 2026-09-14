@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "date-not-whole",
+  "why": "a commit whose date arrived as text — an unparsed date silently ages to 1970 or to NaN, and passes or fails the day ceiling for a reason that has nothing to do with the work",
+  "commits": { "add": [{ "sha": "deadbeef", "at": "1757800000" }] }
+}

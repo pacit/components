@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "ceiling",
+  "rule": "ceiling-missing",
+  "why": "the register carries no commit ceiling, so the gate would be holding the work to a number of its own instead of the maintainer's (0075)",
+  "policy": { "drop": ["commits", "// commits"] }
+}

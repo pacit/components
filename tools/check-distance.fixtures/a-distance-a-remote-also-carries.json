@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "rule": "readings-disagree",
+  "why": "a commit counted as existing only here while a remote ref still carries HEAD — HEAD is in its own reachable set, so the two cannot both be true",
+  "commits": { "add": [{}] }
+}

@@ -1,0 +1,6 @@
+{
+  "// commits": "Twenty is the maintainer's number rather than a reading, because a push is the maintainer's act and the ceiling on deferring one is theirs too (0075). What it is calibrated against is the distance that actually happened: 173 commits over twelve days, during which the remote's nightly ran every night on a two-week-old head, went red seven nights of ten, and nobody could attribute any of it because the older logs had expired. Twenty is about a day of work here, so the gate fires while the push is still one command rather than a review.",
+  "commits": 20,
+  "// days": "The count says how much is at stake; this says how long a disk failure has had to take it. Three days rather than one because a weekend is not a defect and a gate that fires on a Saturday is a gate somebody silences. It is a CEILING and not a cadence: pushing daily is better and nothing here rewards it, the same way `dryRunTimeoutMinutes` guards against a hung runner instead of budgeting a healthy one.",
+  "days": 3
+}
