@@ -1189,17 +1189,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     idiom of the snapshots rather than as a line somebody reads
   - binds at: **a nightly that runs on the day's code** — which is 4.55
 
-- [ ] **4.59 — the plan forbids citing a task by its number, and 126 citations do**
-  - this file's own header says nothing outside it cites a task by its number, because every
-    such citation becomes a dangling reference the day the file goes. Measured over the tree:
-    **126** in the `plan N.N` shape, in gate headers, component sources, the site's build and
-    the e2e suite
-  - it is not hypothetical. `plan 2.8` was cited three times for an item that does not exist —
-    the gallery work was renumbered into 4.34 and the citations stayed behind, dangling while
-    the file is still here
-  - each one is a judgement, not a substitution: the durable target is a lesson, a decision, a
-    requirement or `site.md`, and sometimes the sentence is better without the reference at all
-  - binds at: **before this file goes**, and the file goes when section 5 empties
+- [x] **4.59 — the plan forbids citing a task by its number, and 126 citations did** —
+      **closed 2026-09-14**, 204 files: zero left outside this one
+  - the count was wrong, and how is the finding: 126 is what `plan N.N` greps for, while the
+    shape with no prefix — `(4.34)`, `since 4.16`, `(2.1.7)` on thirty-four cards — is
+    invisible to it and dangles the same. Removed: **165 of one, 96 of the other**
+  - `plan 2.8` was cited four times for an item that does not exist, and one was not a
+    comment: the component page **printed the number to the reader**, promising work that had
+    landed nine days earlier
+  - one home had to be built first: the gallery, the only route in `site.md`'s architecture
+    table with no section beside it. Left deliberately — a sentence naming the plan as an
+    actor survives the file, and `check-acr`'s `finding` field is machinery rather than
+    prose, so it goes when **2.2** does
 
 - [ ] **4.60 — a survivor proved equivalent by hand has nowhere to be recorded**
   - `mutation.policy.json` registers what is not measured (`unmeasured`), what yields no mutant

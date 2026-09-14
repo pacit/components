@@ -160,7 +160,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.56 closed 12 166
 4.57 closed 12 171
 4.58 open 8 118
-4.59 open 11 153
+4.59 closed 12 163
 4.60 open 11 149
 4.61 open 14 174
 5.1 closed 12 131
