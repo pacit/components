@@ -26,7 +26,7 @@ Columns: script · numbered points · lines · words. The budget is not a column
 the points, and a number copied here would be a second home for a number 0017 already holds.
 
 ```
-at-pass.mjs 5 17 191
+at-pass.mjs 5 17 190
 check-acr.mjs 8 20 211
 check-aria.mjs 9 21 245
 check-bench.mjs 6 18 191
@@ -87,7 +87,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 2.1.6 closed 12 131
 2.1.7 closed 11 135
 2.1.8 closed 12 154
-2.2 open 20 273
+2.2 open 20 271
 2.3 closed 11 119
 2.4 closed 12 140
 2.5 closed 12 154

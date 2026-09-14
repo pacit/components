@@ -30,6 +30,8 @@
     "@axe-core/playwright": "^4.12.1",
     "@babel/core": "^7.29.0",
     "@eslint/js": "^9.8.0",
+    "@guidepup/guidepup": "0.34.0",
+    "@guidepup/playwright": "0.19.1",
     "@nx/angular": "23.1.0",
     "@nx/devkit": "23.1.0",
     "@nx/docker": "23.1.0",

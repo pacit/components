@@ -266,20 +266,20 @@ precondition of the quiet push (3.0), which no visitor can see.
   - _ended 2026-09-05 with the machine half landed and the pass still owed._ `docs/acr.md` is
     rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — one row per
     criterion of WCAG 2.2 at A and AA, in the ITI template's tables, each resting on what
-    already runs: a gate's numbered point, a case's title in a spec, a sentence in a source, a
-    scan over templates and stylesheets, or the cards' own Checks rows summed. The gate holds
-    every citation — a renamed case, a closed finding, a gate that left CI, a `<video>` in a
-    template all fire — and compares the rendering byte for byte. The site renders it at
-    `/acr`, and [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law is
-    untouched: the landing still says "machine-audited". Deciding run: docs-e2e **355 of 355**
+    already runs — and the gate holds every citation and compares the rendering byte for byte.
+    The site shows it at `/acr` with [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s
+    wording law untouched. Deciding run: docs-e2e **355 of 355**
   - **one of the three readers is on record, 2026-09-14.** `at-pass.sh` puts Orca on a display
     of its own, `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`, and
-    **18 of the 36 came out unread** — named in the record rather than averaged away, the
+    **19 of the 36 came out unread** — named in the record rather than averaged away, the
     instrument's own behaviour being part of the measurement ([`lesson-208`](lessons.md#lesson-208))
-  - **what remains**: NVDA and VoiceOver, which no Linux box runs and Actions does (Guidepup);
-    the reading in all 34 cards, which the gate then turns into a **`Supports` for 4.1.2** and
-    so is the maintainer's to authorise; and a person's read of the logs, which is the whole of
-    what `recorded` claims
+  - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
+    through Guidepup onto their own runners, into the same record shape. It has never run —
+    nothing here drives either reader — so the first dispatch is its first test, and `routes`
+    defaults to one view to make that cost minutes instead of hours
+  - **what remains**: a window manager on the Linux display, the first dispatch of the two
+    others, then the reading in all 34 cards — which the gate turns into a **`Supports` for
+    4.1.2**, the maintainer's to authorise — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,

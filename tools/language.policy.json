@@ -227,6 +227,7 @@
         "deja",
         "git",
         "glab",
+        "macos",
         "marek",
         "moz",
         "mui",
@@ -241,6 +242,7 @@
         "testem",
         "turbo",
         "verdaccio",
+        "voiceover",
         "vue"
       ]
     },

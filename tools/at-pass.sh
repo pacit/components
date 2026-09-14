@@ -57,8 +57,27 @@ fi
 
 Xvfb "$SCREEN" -screen 0 1280x1024x24 -nolisten tcp >"$WORK/xvfb.log" 2>&1 &
 XVFB=$!
-trap 'kill $XVFB 2>/dev/null || true' EXIT
+trap 'kill $XVFB 2>/dev/null || true; kill ${WM:-0} 2>/dev/null || true' EXIT
 sleep 2
+
+# A window manager, if there is one. Without it nothing ever sets `_NET_ACTIVE_WINDOW`, so
+# Firefox does not believe it is the active window: keyboard focus wanders to its own chrome,
+# and on some navigations the accessible document is lost outright — nineteen of thirty-six
+# views read as silence in the pass of 2026-09-14. It is optional on purpose: the reading is
+# worth taking without one, and the record says which it was taken with.
+WM=0
+WM_NAME="none"
+for candidate in openbox matchbox-window-manager fluxbox icewm twm; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    "$candidate" >"$WORK/wm.log" 2>&1 &
+    WM=$!
+    WM_NAME="$candidate"
+    sleep 2
+    break
+  fi
+done
+export AT_PASS_WM="$WM_NAME"
+echo "  window manager: $WM_NAME"
 
 dbus-run-session -- bash -c '
   set -u

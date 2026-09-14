@@ -14,7 +14,7 @@
  * Clicking a heading inside `main` moves Firefox's focus start — measured, not assumed.
  *
  * Usage: node tools/at-pass.mjs --drive <baseURL> <steps.json>
- *        node tools/at-pass.mjs --render <steps.json> <debug> <slug> <reader name>
+ *        node tools/at-pass.mjs --render <steps.json> <debug|none> <slug> <reader>
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -185,9 +185,16 @@ const version = (command, args) => {
 };
 
 const render = (stepsFile, debugFile, slug, reader) => {
-  const { cap, steps, firefox } = JSON.parse(readFileSync(stepsFile, 'utf8'));
-  const said = utterances(readFileSync(debugFile, 'utf8'));
+  const { cap, steps, firefox, stack } = JSON.parse(
+    readFileSync(stepsFile, 'utf8'),
+  );
+  // Two kinds of reader, one record. Orca is read out of its own debug file and each
+  // utterance attributed to a step by the clock; a reader driven through Guidepup hands
+  // back what it said when asked, so its steps arrive already carrying it.
+  const said =
+    debugFile === 'none' ? [] : utterances(readFileSync(debugFile, 'utf8'));
   const spoken = (step) =>
+    step.said ??
     said
       .filter((u) => u.at >= step.from && u.at <= step.to)
       .map((u) => u.said.trim())
@@ -255,7 +262,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - ${version('orca', ['--version'])}
-- Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, no window manager
+- ${stack ?? `Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`}
 - ${steps.length} steps over ${byRoute.size} views, at most ${cap} tab stops each
 
 A stop reads: the label, what the browser had focused, and what the reader said. \`arrive\` is
@@ -267,7 +274,8 @@ at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, 
 produced no speech at all: ${mute.map((r) => `\`${r}\``).join(', ') || 'none'}. The cause is
 in the harness and not in the library — the reader loses the accessible document on some
 navigations (\`WEB: Could not get document for event source\` in its own log) and the page's
-focus does not hold on a virtual display with no window manager running. Those views are
+focus does not hold unless a window manager is running on the display (this reading was taken
+with: ${process.env.AT_PASS_WM || 'none'}). Those views are
 **unread**, which is a different thing from read and found silent, and nothing below should
 be quoted as evidence about them.
 `;
@@ -287,7 +295,7 @@ else if (mode === '--render')
   render(rest[0], rest[1], rest[2], rest.slice(3).join(' '));
 else {
   process.stderr.write(
-    'usage: --drive <baseURL> <steps.json> | --render <steps.json> <debug> <slug> <reader>\n',
+    'usage: --drive <baseURL> <steps.json> | --render <steps.json> <debug|none> <slug> <reader>\n',
   );
   process.exit(2);
 }

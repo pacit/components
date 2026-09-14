@@ -1,0 +1,123 @@
+# The assistive-technology pass on the two readers no Linux box can run: NVDA with Firefox on
+# Windows, VoiceOver with Safari on macOS. The third reader, Orca, is taken locally by
+# `tools/at-pass.sh` and needs no runner at all.
+#
+# `workflow_dispatch` ONLY, and that is a cost decision rather than caution. The repository is
+# a private stage, so Actions minutes are metered (decision 0075) — macOS minutes at a
+# multiple of the rest. A schedule here would spend that every night for a reading that moves
+# when the components move and not when the clock does.
+#
+# It has NEVER RUN. Nothing on this machine can drive either reader, so the first dispatch is
+# this workflow's first test as much as its first reading. `routes` defaults to a single view
+# for exactly that reason: find out whether the arrangement speaks at all before paying for
+# thirty-six views of it. Pass an empty string to walk them all.
+name: Assistive-technology pass
+
+on:
+  workflow_dispatch:
+    inputs:
+      routes:
+        description: 'Comma-separated routes, or empty for every view'
+        required: false
+        default: '/accordion'
+      readers:
+        description: 'Which readers to run'
+        required: false
+        default: 'both'
+        type: choice
+        options: [both, nvda, voiceover]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: at-pass
+  cancel-in-progress: false
+
+jobs:
+  nvda:
+    if: inputs.readers == 'both' || inputs.readers == 'nvda'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Installs the reader and puts the environment in the state it needs. This is the step
+      # that makes screen-reader automation possible on a hosted runner at all.
+      - uses: guidepup/setup-action@v2
+
+      - run: npx playwright install --with-deps firefox
+
+      - name: Read the views with NVDA
+        env:
+          AT_PASS_ROUTES: ${{ inputs.routes }}
+        run: npx playwright test --config apps/sandbox-e2e/at.config.mts --project nvda-firefox
+
+      # The record is rendered by the same script the Orca pass uses, so all three readers
+      # land in one shape. `none` is where a debug file would go: this reader was asked what
+      # it said rather than read out of a log afterwards.
+      - if: always()
+        run: >
+          node tools/at-pass.mjs --render tmp/at/nvda-firefox-windows.steps.json none
+          nvda-firefox-windows "NVDA with Firefox on Windows"
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: at-pass-nvda
+          path: |
+            docs/acr/at/nvda-firefox-windows.md
+            tmp/at/nvda-firefox-windows.steps.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  voiceover:
+    if: inputs.readers == 'both' || inputs.readers == 'voiceover'
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      - uses: guidepup/setup-action@v2
+
+      - run: npx playwright install --with-deps webkit
+
+      - name: Read the views with VoiceOver
+        env:
+          AT_PASS_ROUTES: ${{ inputs.routes }}
+        run: npx playwright test --config apps/sandbox-e2e/at.config.mts --project voiceover-safari
+
+      - if: always()
+        run: >
+          node tools/at-pass.mjs --render tmp/at/voiceover-safari-macos.steps.json none
+          voiceover-safari-macos "VoiceOver with Safari on macOS"
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: at-pass-voiceover
+          path: |
+            docs/acr/at/voiceover-safari-macos.md
+            tmp/at/voiceover-safari-macos.steps.json
+          retention-days: 30
+          if-no-files-found: warn
