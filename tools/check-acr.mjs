@@ -1,33 +1,23 @@
 #!/usr/bin/env node
 /**
- * Conformance gate: is `docs/acr.md` — the Accessibility Conformance Report, the document a
- * buyer asks for since the EAA — a rendering of what the gates measure, or prose somebody
- * wrote (`req-a11y-acr`)? The industry writes the report first and looks for evidence after;
- * here the evidence runs on every commit and the report is derived from it, so a row cannot
- * say more than a gate proves, and the rows nothing measures say so in their own words.
+ * Conformance gate: is `docs/acr.md` — the Accessibility Conformance Report a buyer asks for
+ * since the EAA — a rendering of what the gates measure, or prose somebody wrote
+ * (`req-a11y-acr`)? Here the evidence runs on every commit and the report is derived from it.
  *
- *  1. CATALOGUE: the claims name every success criterion of WCAG 2.2 at A and AA, once, and
- *     no other,
- *  2. LEVEL: a conformance level is one of the five words, and each word demands its input —
- *     Supports a measurement and no limit, Partially Supports a measurement and a named
- *     limit, Does Not Support and Not Evaluated an open finding, every row a remark,
- *  3. EVIDENCE: every citation resolves — a gate's point stands in its header, a case's title
- *     in its spec, a sentence in its source, an identifier in the registry, a decision on
- *     disk, and a scan over the library's sources holds,
+ *  1. CATALOGUE: the claims name every WCAG 2.2 success criterion at A and AA, once,
+ *  2. LEVEL: a level is one of the five words, and each word demands its own input,
+ *  3. EVIDENCE: every citation resolves — a point, a case title, a sentence, a decision,
  *  4. WIRED: a cited gate or suite runs in CI (`nx affected -t …`),
- *  5. CARDS: a claim over the component cards is the cards' own Checks rows — a gap in one
- *     card is a gap in the claim, and a limit that has closed is a claim to raise,
- *  6. FINDINGS: a finding a row leans on is still open in the plan — closed or dropped, it
- *     is a claim to revisit, not a limit to keep citing,
- *  7. THE PASS: an assistive-technology pass claimed as recorded has its logs on disk and a
- *     reading in every card,
- *  8. RENDERING: `docs/acr.md` is the rendering of the claims (`--write` regenerates it).
+ *  5. CARDS: a claim over the component cards is the cards' own Checks rows,
+ *  6. FINDINGS: a finding a row leans on is still open in the plan,
+ *  7. THE PASS: an assistive-technology pass claimed as recorded has its logs and readings,
+ *  8. RENDERING: `docs/acr.md` is the rendering of the claims.
  *
- * A ninth run examines the gate itself (`req-quality-negative-control`): `check-acr.fixtures/`.
+ * A row cannot say more than a gate proves, and the rows nothing measures say so in their own
+ * words. A ninth run examines the gate itself (`req-quality-negative-control`):
+ * `check-acr.fixtures/`.
  *
- * Usage:
- *   node tools/check-acr.mjs           verifies (CI)
- *   node tools/check-acr.mjs --write   regenerates docs/acr.md
+ * Usage: node tools/check-acr.mjs [--write]  (--write: regenerate docs/acr.md)
  */
 import { execSync } from 'node:child_process';
 import {

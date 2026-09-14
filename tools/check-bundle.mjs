@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Tree-shaking and size gate: what does a consumer really pay for importing one
- * entrypoint? "Secondary entrypoints force tree-shaking" is the SALES promise
- * (`req-project-tree-shaking`), and breaking it gives no red test.
+ * Tree-shaking and size gate: what does a consumer really pay for importing one entrypoint?
+ * "Secondary entrypoints force tree-shaking" is the SALES promise (`req-project-tree-shaking`),
+ * and breaking it gives no red test.
  *
  *   1. `entrypoints`  — TWO reads of the entrypoint list agree and are not empty,
  *   2. `side-effects` — the packed manifest declares `sideEffects: false`,
@@ -18,16 +18,9 @@
  *  12. `shaken`       — DENOMINATOR: what ONE TAG of a multi-tag entrypoint really costs,
  *  13. `verbatim`     — the snapshot file is EXACTLY what the renderer writes.
  *
- * Points 6 and 8 are the promise itself (8 is where "no CDK Overlay with `button`" lives);
- * 4, 5, 7, 10, 11 and 12 watch the DENOMINATOR — without them "the `button` bundle holds
- * no `PctField`" is vacuously true exactly when the measurement stopped measuring. Point 13
- * watches the FILE: everything before it reads the snapshot through a map of its rows, so
- * the prose the same renderer writes around them was compared by nobody.
- *
- * The numbers are the ORDER, and point 5 earned its place by firing in the wrong one: with
- * `linked` last, a probe built the package's way failed the SIZE point first, and that
- * point's advice is `--write` — which would have written the wrong number down and called
- * it accepted. Everything that compares against the snapshot stands behind it now.
+ * Points 6 and 8 are the promise; 4, 5, 7, 10, 11 and 12 watch the DENOMINATOR, without which
+ * the isolation claim is vacuously true exactly when the measurement stopped measuring, and 13
+ * watches the FILE. The numbers are the ORDER: `linked` last meant SIZE failed first.
  *
  * Usage: node tools/check-bundle.mjs [--write]  (--write: rewrite the size snapshot)
  */

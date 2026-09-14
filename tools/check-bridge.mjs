@@ -1,41 +1,20 @@
 #!/usr/bin/env node
 /**
  * Bridge gate: does what `libs/tokens/bridge.mjs` sends to Tokens Studio say what the sources
- * say, and does what comes back land where it belongs (`req-token-bridge`)? A design tool's
- * export is the one file a designer trusts without opening the repository, and every way it
- * can lie is quiet: a set left out reads as "no tokens there", a shadow written as one string
- * reads as a shadow the plugin shows blank, a reference into a set the theme does not enable
- * reads as a token with no value in Figma and a perfectly good one in CSS.
+ * say, and does what comes back land where it belongs (`req-token-bridge`)?
  *
- *  1. SETS: the export has one file per source set and no other, `$metadata.json` orders every
- *     set once, `$themes.json` is there,
- *  2. DIALECT: every token's `$type` is one the plugin reads in its DTCG mode, and its `$value`
- *     has the shape that type takes there — a shadow an object, a bezier four numbers, a
- *     length with its unit,
- *  3. REFERENCES: for every theme, every reference in an enabled set resolves in a set that
- *     theme enables — a value CSS resolves and Figma cannot is a token that lies in one place,
- *  4. THEMES: every set is enabled by some theme, a theme's name is unique in its group, and a
- *     theme names only sets that exist, in states the plugin knows,
- *  5. ROUND TRIP: importing the export onto the sources changes nothing, byte for byte — the
- *     bridge translates both ways without loss, and a comment stays where it stood,
- *  6. REFUSAL: a token added, dropped or retyped in the tool, and a modifier, are refused by
- *     the import — measured live by doctoring the export three ways and requiring three
- *     refusals, and on the prepared inputs below by what comes back,
- *  7. AXES: every set that is an axis OPTION is switchable — the themes that enable it are
- *     some, and not all, of one group's. Three rules: `axis-of-one` (a group with one option
- *     is a switch that cannot be switched back), `axis-in-the-base` (an option no group turns
- *     off is a default, whatever it is called) and `axis-denominator` (a parse that finds no
- *     axis has pronounced on nothing).
+ *  1. SETS: a file per source set and no other, ordered in `$metadata.json`, with `$themes.json`,
+ *  2. DIALECT: every `$type` is one the plugin reads in DTCG mode, its `$value` that type's shape,
+ *  3. REFERENCES: every reference in an enabled set resolves in a set the same theme enables,
+ *  4. THEMES: every set enabled by some theme, names unique per group, sets and states real,
+ *  5. ROUND TRIP: importing the export onto the sources changes nothing, byte for byte,
+ *  6. REFUSAL: a token added, dropped or retyped, and a modifier — refused, measured live,
+ *  7. AXES: an axis OPTION is switchable — `axis-of-one`, `axis-in-the-base`, `axis-denominator`.
  *
- * Point 4 asks whether every set is enabled SOMEWHERE, and a set enabled in the wrong place is
- * enabled somewhere: that is how `density.compact` spent its first hours enabled in the light
- * theme and the dark one at once, with sixteen negative-control cases green beside it
- * ([`lesson-190`](../docs/lessons.md#lesson-190)). Point 7 is the question point 4 does not
- * ask — placement — and it reads the axes out of the sets themselves (`axesOf`) rather than
- * out of `$themes.json`, so the file under test does not get to define what it is measured
- * against.
- *
- * An eighth run examines the gate itself (`req-quality-negative-control`): `check-bridge.fixtures/`.
+ * Point 4 asks whether every set is enabled SOMEWHERE; point 7 asks WHERE (`lesson-190`), and
+ * it derives the axes from the sets themselves (`axesOf`) rather than from `$themes.json`, so
+ * the file under test does not define what it is measured against. An eighth run examines the
+ * gate itself (`req-quality-negative-control`): `check-bridge.fixtures/`.
  *
  * Usage: node tools/check-bridge.mjs
  */

@@ -1,47 +1,19 @@
 #!/usr/bin/env node
 /**
- * Documentation gate: does every promise in `docs/` name a machine that can fail on it,
- * and does that machine exist (`req-quality-registry`)? Documentation drifts from reality
- * silently, and a hand-maintained "not implemented" annotation is worth exactly as much as
- * somebody's memory of adding it.
+ * Documentation gate: does every promise in `docs/` name a machine that can fail on it, and
+ * does that machine exist (`req-quality-registry`)? The same eight in prose: `docs/README.md`.
  *
  *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
  *  2. existence — every path cited in `Gate`/`Control` exists on disk,
- *  3. wired into CI — the target implied by a cited path runs in `nx affected -t …`,
- *     and the graph fact that line stands on is re-probed, never remembered,
+ *  3. wired into CI — the target a cited path implies runs in `nx affected -t …`, re-probed,
  *  4. no dangling citations — every `req-*` / `lesson-*` in the repo resolves,
  *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
  *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected,
- *  7. no card denies a gate — a component card that says a requirement has no gate must
- *     agree with that requirement's own **Gate** field,
- *  8. the plan and the registry agree — a task of `docs/plan.md` that names a requirement
- *     on its own title line is held to that requirement's state.
+ *  7. no card denies a gate — a component card agrees with that requirement's own **Gate**,
+ *  8. plan vs registry — a task naming a requirement on its title line is held to its state.
  *
- * WHAT POINT 8 READS, AND HOW LITTLE THAT IS. `docs/plan.md` is written by hand and
- * `docs/registry.md` is generated, both speak about the same identifiers, and until this
- * point nothing compared them: a task offering a requirement's gate stood unticked for 149
- * commits while that requirement's own state had read enforced the whole time. The cost of
- * that is not a red build. It is a plan read as the list of what is left, and work that is
- * therefore taken twice.
- *
- * The identifier is read from the item's FIRST LINE — the line carrying its mark — and from
- * nowhere else. That line is where the plan writes its titles, in the two shapes the file
- * really uses: the title that IS an identifier (`**5.5 — `req-project-concise`**`) and the
- * claim written just after it (`→ closes `req-project-apps``). Both assert something about
- * that requirement. A citation below the first line is context, not a claim, and reading it
- * would be a false fire rather than a wider net: when this point was written the plan held
- * 89 tasks, 7 of which named a requirement on their title line and a further 27 of which
- * named one only in their body — among them three open findings whose whole subject is a
- * defect one floor up from an enforced requirement. The live figure is printed on the
- * summary line, because a point that reads 7 of 89 items owes the reader that number.
- *
- * The marks come from the plan's own Notation table. `[ ]` must name a gap and `[x]` must
- * not — the fourth clause of the file's definition of done is that the entry has gone from
- * the gap list. `[-]`, deliberately dropped, is read like `[x]`: the notation says the
- * requirement then gets `none — deliberately: <reason>`, which is any state but a gap.
- * `[~]` is excluded, and that is the whole reason the mark exists — work in flight is
- * exactly the state where the gate has landed and the control has not, so a rule firing on
- * it would fire on every task the moment somebody started it.
+ * Point 8 (`lesson-189`) skips `[~]` and reads `[-]` like `[x]`: work in flight is exactly the
+ * state where the gate has landed and the control has not, so a rule on it fires at every start.
  *
  * Usage:
  *   node tools/check-docs.mjs           verifies (CI)

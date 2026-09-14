@@ -4,8 +4,7 @@
  * a measurement behind it, or a sentence in the documentation that both sides broke while
  * it stood? A second language leaves NO RED TEST: it compiles, it renders, it ships.
  *
- *  1. DENOMINATOR: the scan can see, split and look up — proved on a built-in probe, and
- *     the sixth limb (a one-letter Polish word, read by its company) on a probe of its own,
+ *  1. DENOMINATOR: the scan can see, split and look up — proved on probes and canaries,
  *  2. REPOSITORY: no Polish in the git index outside the register,
  *  3. ARTIFACT: no Polish in the built package — with no register at all,
  *  4. the register of exceptions is alive and justified,
@@ -13,46 +12,9 @@
  *  6. the list of machine-written files is alive,
  *  7. the specimens — this gate's own samples — stay inside this gate's own tree.
  *
- * TWO MEASUREMENTS OF DIFFERENT REACH. The public surface is measured on the ARTIFACT —
- * what `dist/libs/components` really carries, not what stands in the source — because that
- * is what a consumer opens. The rest of the repository is measured on the GIT INDEX: an
- * uncommitted file binds nobody yet.
- *
- * DETECTION HAS FIVE LIMBS, because each is blind where the next one sees. Diacritics
- * carry prose and nothing else — a name spelled `wartosc` has none. So the second limb is
- * the pinned Polish word list (`tools/dictionaries.lock.json`), folded of its diacritics
- * and minus the English one, read over identifiers split at camelCase and at `_`. The
- * third is the opening quote `U+201E`,
- * a typographic convention with no English use.
- *
- * THE FOURTH IS THE WORD THAT IS IN NEITHER DICTIONARY: a foreign stem with a Polish
- * ending glued to it. A borrowed noun is declined here like any other, and the result
- * belongs to no word list at all — the Polish one has no such stem, the English one has no
- * such tail — so the three limbs above are all quiet on it and it rides through every pass
- * ([`lesson-77`](../docs/lessons.md#lesson-77)). The limb names the ENDINGS it looks for,
- * which is the exact inverse of point 5: a register that names a shape excuses a whole
- * grammatical class, a detector that names one sees a whole grammatical class.
- *
- * THE FIFTH IS THE MIRROR OF THE FOURTH: a Polish stem with a Polish DERIVATIONAL suffix,
- * and it is in neither list for the opposite reason — the word list holds the noun the word
- * is made from and the abstract noun made from that one, and never got round to the agent
- * noun made from either. Polish forms those productively, the pinned word list is
- * somebody's four million lines rather than a language, and the gap is where a name like
- * the one this limb's probe is made of stood in this repository through every pass of the
- * four above ([`lesson-80`](../docs/lessons.md#lesson-80)). Its claim is narrower than the
- * fourth's by one dictionary fact: not an ending on any stem at all, but a suffix on a stem
- * the POLISH list confirms.
- *
- * THE FALSE POSITIVES OF THE DICTIONARY LIMBS ARE THE DESIGN WORK, and they live in
- * `language.policy.json` as WORDS. Never as shapes: an exclusion of `SCREAMING_CASE` or of
- * "abbreviations under four letters" excuses everything of that shape, and a whole layer of
- * constants once survived two passes in exactly that blind spot
- * ([`lesson-60`](../docs/lessons.md#lesson-60)). Point 5 enforces the format that makes the
- * blind spot unwritable — and the rule holds wherever a shape is written, the policy or the
- * instrument: the fifth limb's five false positives are all English agent nouns whose
- * English verb the word list holds (`locate`, `activate`, …), so three lines in the detector
- * would have silenced every one of them and excused the class with it. A shape may be named
- * to SEE a class and never to stop seeing one ([`lesson-80`](../docs/lessons.md#lesson-80)).
+ * TWO MEASUREMENTS OF DIFFERENT REACH: the public surface on the ARTIFACT a consumer opens,
+ * the rest of the repository on the GIT INDEX. Six limbs, each blind where the next sees —
+ * each constant below says what its limb holds and cannot (`lesson-60`, `lesson-77`, `lesson-80`).
  *
  * Usage: node tools/check-language.mjs
  */

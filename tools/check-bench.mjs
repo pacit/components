@@ -1,32 +1,21 @@
 #!/usr/bin/env node
 /**
  * Cost gate: what does a component page's preview cost to render, and did it move
- * (`req-quality-benchmark`)? The cost run (`nx run docs:bench`) renders every card's preview
- * in jsdom and writes `tmp/bench/report.json`; this gate holds that report against the
- * record in `apps/docs/bench.snapshot.md` — the way `check-bundle` holds the bytes.
+ * (`req-quality-benchmark`)? `nx run docs:bench` renders every card's preview in jsdom; this
+ * gate holds its report against `apps/docs/bench.snapshot.md`, the way `check-bundle` holds bytes.
  *
- *  1. REPORT: the run produced a report, dated, with the machine named and at least one
- *     scene, and every scene carries the five readings as whole numbers in range,
- *  2. DENOMINATOR: the scenes are exactly the previews of the demo registry — a preview the
- *     run skipped and a scene the site does not show both fire,
- *  3. SNAPSHOT: the record exists and has a row for every scene, and no other,
- *  4. EXACT: elements, depth, listeners and renders equal the record, in both directions —
- *     a count does not wobble, so a band on it would only let the record age (0023),
- *  5. CLOCK: the record carries a dated, attributed reading of the clock for every scene —
- *     required to be there and to parse, and compared by nobody,
- *  6. VERBATIM: the file is exactly what the renderer writes around the recorded readings,
- *     prose included — a paragraph rewritten in the renderer used to reach the file only
- *     when some number happened to move with it (lesson-79).
+ *  1. REPORT: a dated report, the machine named, every scene carrying five whole readings,
+ *  2. DENOMINATOR: the scenes are exactly the previews of the demo registry, both ways,
+ *  3. SNAPSHOT: the record has a row for every scene, and no other,
+ *  4. EXACT: the four counts equal the record, with no band — a count does not wobble (0023),
+ *  5. CLOCK: a scene's clock reading is dated, attributed, parsed, and compared by nobody,
+ *  6. VERBATIM: the file is exactly what the renderer writes, prose included (`lesson-79`).
  *
- * The order matters the way it does in `check-bundle`: everything that compares against the
- * record stands behind the two points that prove the measurement measured, because point
- * 4's advice is `--write`, and a wrong number written down is worse than a red run.
+ * The order is `check-bundle`'s: what compares against the record stands behind the points
+ * that prove the measurement measured, because point 4's advice is `--write` and a wrong
+ * number written down is worse than a red run. Control: `check-bench.fixtures/`.
  *
- * A seventh run examines the gate itself (`req-quality-negative-control`): `check-bench.fixtures/`.
- *
- * Usage:
- *   node tools/check-bench.mjs           verifies (CI)
- *   node tools/check-bench.mjs --write   re-runs the cost run and rewrites the record
+ * Usage: node tools/check-bench.mjs [--write]  (--write: re-run the cost run, rewrite the record)
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

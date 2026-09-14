@@ -1,57 +1,23 @@
 #!/usr/bin/env node
 /**
  * File-structure gate: `req-project-files` — the layout of an entrypoint is FIXED, and the
- * template and the stylesheet of a component always stand in files of their own
- * ([0001](../docs/decisions/0001-separate-files.md)). The rule is a deliberate departure
- * from Angular's own guidance ("prefer inline templates for smaller components"), taken
- * because in a library of dozens of components the cost of inconsistency grows faster than
- * the cost of one more file — and a departure nothing measures is a convention, which is to
- * say a thing that holds until somebody is in a hurry.
+ * template and the stylesheet of a component always stand in files of their own. A departure
+ * nothing measures is only a convention ([0001](../docs/decisions/0001-separate-files.md)).
  *
- *  1. DENOMINATOR: entrypoints, sources, declarations, exported types and the register are
- *     all there to be ruled on, and every `@Component(` in the sources reached the parser,
+ *  1. DENOMINATOR: entrypoints, sources, declarations, types, register, every decorator parsed,
  *  2. ENTRYPOINT: a directory of sources is an entrypoint, and an entrypoint has an index,
- *  3. COMPONENT ENTRYPOINT: one that declares a component carries the two files named after
- *     it — `button/src/button.ts` and `button/src/button.spec.ts`,
+ *  3. COMPONENT ENTRYPOINT: one declaring a component carries `button.ts` and `button.spec.ts`,
  *  4. TEMPLATE: no component keeps its template in the decorator,
  *  5. STYLES: no component keeps its styles in the decorator,
- *  6. SIBLING: the file it names stands next to it, under the extension it promises, and the
- *     repository really carries it,
+ *  6. SIBLING: the file a declaration names stands beside it, under the extension it promises,
  *  7. ORPHAN: every template and stylesheet is named by a declaration,
  *  8. TYPES: a `*.types.ts` is exported by the index of its entrypoint,
- *  9. REGISTER: every excuse in `libs/components/files.policy.json`, in either of its two
- *     lists, names what it excuses, carries a reason, and is still needed,
+ *  9. REGISTER: an excuse in `libs/components/files.policy.json` says what and why, and is used,
  * 10. INDEX: a type a source of an entrypoint exports is named by that entrypoint's index.
  *
- * WHAT THE DENOMINATOR IS, and why it is two denominators. The layout points (2, 3, 8, 10) run
- * over ENTRYPOINTS, because `index.ts` and `ng-package.json` are an entrypoint's files and
- * there is exactly one of each per directory. The template and stylesheet points (4 to 7)
- * run over `@Component` DECLARATIONS, because an entrypoint is not a component: `breadcrumb/`
- * declares three of them in one source file and `core/` declares none at all. A rule written
- * per entrypoint would have to demand a `.html` of `core/`, and would be excused on the day
- * it was written; a rule written per declaration asks each component the same question.
- *
- * WHY THE AXIS IS THE INDEX AND NOT THE FILENAME. The promise used to name `button.types.ts`
- * among a component's files, and this library never kept that half of it: of the 30
- * entrypoints that declare a component, 18 have no `*.types.ts` at all and 13 export a public
- * type from the component's own source instead. A point demanding the file would have been red
- * on the day it was written, which is a plan and not a gate — and `select.types.ts` shows that
- * the demand would have been for the wrong thing anyway: it exports `pctFilterByLabel` and
- * `pctKeepAll`, which are functions, so the name on the file says nothing certain about what
- * stands inside it even where the file exists.
- *
- * What a consumer is actually hurt by is not which file a type lives in but whether they can
- * NAME it. An `input()` typed `PctBadgeTone` that the entrypoint's index never exports is an
- * input nobody can write a variable for, nobody can wrap and nobody can test against — and the
- * library compiles over it, ships it and reports nothing, because internally the name resolves
- * perfectly (`req-axis`). So the promise was narrowed to what this library does — the
- * eponymous four files, the index and the manifest are the fixed shape, a `*.types.ts` is what
- * a component reaches for when its types outgrow it — and point 10 gates the narrowed promise
- * on the axis that pays: the index.
- *
- * Point 8 stays beside it rather than folding into it. It rules over a different set, and it
- * can see a thing point 10 cannot: a types file holding runtime values (again `select.types.ts`)
- * is a file the index must name even on a day when it declares no type at all.
+ * Two denominators, not one: the layout points (2, 3, 8, 10) rule over ENTRYPOINTS, the template
+ * and stylesheet points (4 to 7) over `@Component` DECLARATIONS — a per-entrypoint rule would
+ * demand a `.html` of `core/`. Point 8 stays beside 10: it also sees a types file with no type.
  *
  * Usage: node tools/check-files.mjs
  */
@@ -716,7 +682,7 @@ const orphan = ({ assets }, referenced) => {
  * who can only see what the index re-exports, cannot name a single one of them.
  *
  * That every component HAS such a file is the half of the promise this gate does not measure;
- * the reason is in the header, and the count is in the requirement.
+ * the reason and the count are both in `req-project-files`.
  */
 const types = ({ has, sources, read }) => {
   const typeFiles = sources.filter((f) => f.endsWith('.types.ts'));

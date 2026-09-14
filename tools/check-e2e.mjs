@@ -1,43 +1,18 @@
 #!/usr/bin/env node
 /**
  * E2E race gate: a number or an index standing where a condition belonged
- * (`req-quality-e2e`).
- *
- * Two full runs of `sandbox-e2e` came back 1 red of 2062 and a different one each time —
- * the paused sheen of `skeleton.spec.ts` in webkit, then the four toast colours of
- * `tones.spec.ts` in chromium. Both were defects of the test rather than of the product,
- * both were invisible at one run each, and aimed at with `--repeat-each=30` they answered
- * in under a minute: 3 of 30 and 2 of 30. The family is not "timing". Each had a **number
- * or an index standing where a condition belonged** — a measured 150 ms wait taken as the
- * moment an animation's clock has stopped, and an `items(page).last()` read in the instant
- * after a click, when the item it names is appended a frame later
- * ([`lesson-192`](../docs/lessons.md#lesson-192)). That is a shape a reader can look for,
- * which is what this gate does.
+ * (`req-quality-e2e`) — a shape a reader can look for, where a green full run of the suite
+ * says nothing at all (`lesson-192`).
  *
  *  1. CORPUS: the walk found specs, and a vocabulary derived from their own helpers,
  *  2. PARSER: every spec file read into balanced statements, none of them silently skipped,
- *  3. RACE: a positional locator read after an action, with no auto-retrying assertion
- *     between — the read then answers for whatever stood there at that instant,
- *  4. BASELINE: a bare `waitForTimeout` whose next statement takes the reading a later
- *     assertion is measured against — the baseline is then a function of the clock.
+ *  3. RACE: a positional locator read after an action with no auto-retrying assertion between,
+ *  4. BASELINE: a bare `waitForTimeout` whose next statement takes a later assertion's baseline.
  *
- * What the gate does NOT rule on, deliberately. A `waitForTimeout` that opens a window in
- * which nothing may change is the opposite of a guess: the assertion after it is `toBe(held)`
- * against a reading taken BEFORE the wait, so a longer wait makes the claim stronger, not
- * weaker — that is the 700 ms the fixed skeleton case still carries. A wait inside a loop
- * that leaves on a condition is a poll, which is the very cure point 4 asks for. A wait that
- * is the sampling period of a deliberate series of readings is the series' own definition.
- * Sixteen of the suite's twenty-two waits are one of those three, and a rule firing on all
- * twenty-two is a rule somebody switches off.
+ * The answer to a finding is a CONDITION, never a bigger number; an exemption, if one is ever
+ * needed, arrives as a register with a reason per entry and not as a deleted rule.
  *
- * The answer to a finding is a CONDITION, never a bigger number: an `await expect(locator)`
- * naming what the read expects (it retries, and each retry resolves the locator again), or
- * a poll that leaves when the page says so. If this repository ever needs an exemption, it
- * arrives as a register with a reason per entry — the shape `files.policy.json` and
- * `reach.policy.json` already have — and not as a deleted rule.
- *
- * Usage:
- *   node tools/check-e2e.mjs      verifies (CI)
+ * Usage: node tools/check-e2e.mjs
  */
 import {
   cpSync,

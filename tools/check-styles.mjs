@@ -1,39 +1,25 @@
 #!/usr/bin/env node
 /**
- * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
- * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`),
- * `req-a11y-forced-colors` (the mode's rules really paint), `req-api-icons` (a
- * component paints the box an icon sits in, never the drawing inside it),
- * `req-a11y-motion` (a duration is a token, not a number in a sheet) and `req-a11y-touch`
- * (every touch floor the sheets declare is measured in a browser). Breaking any of them
- * gives no red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
- * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), so does a
- * forced-colors rule that loses on specificity, because the browser substitutes the
- * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)), so does a
- * `150ms` written by hand, which reads exactly like the token it replaced until somebody
- * asks for less motion, and so does a floor nobody measures — it holds the target up
- * perfectly until the day it stops, and then nothing says so.
+ * Style gate, six promises over one denominator: `req-token-logical`, `req-token-no-opacity`,
+ * `req-a11y-forced-colors`, `req-api-icons`, `req-a11y-motion`, `req-a11y-touch`. Breaking any
+ * gives no red test — an LTR screenshot looks right ([`lesson-6`](../docs/lessons.md#lesson-6)).
  *
  *  1. the list of stylesheets is not empty (else points 5 and 6 pass over nothing),
  *  2. COMPILER: everything sass EMITS is visible to the source scanner as well,
  *  3. STYLE SOURCE: every `@Component` takes its styles from a sheet this gate reads,
  *  4. exceptions are named, justified and USED,
  *  5. no physical property of the inline axis,
- *  6. no compositing `opacity`,
+ *  6. no compositing `opacity`, which quietly undoes `req-token-contrast`,
  *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet,
  *  8. PAINT: no property that only an `<svg>` understands (`req-api-icons`),
- *  9. MOTION: a duration comes from the motion axis, and the preference is answered by
- *     the token build rather than by a sheet of its own (`req-a11y-motion`),
- * 10. TOUCH FLOOR: every application of the 24 px floor the sheets declare is named by a
- *     browser measurement, and the list of applications is READ OUT OF THE SHEETS
- *     (`req-a11y-touch`).
+ *  9. MOTION: a duration comes from the motion axis, the preference from the token build,
+ * 10. TOUCH FLOOR: an application of the floor is measured in a browser, and the list of them
+ *     is READ OUT OF THE SHEETS (`req-a11y-touch`).
  *
- * Points 5–9 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
- * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
- * Point 10 carries both halves at once: its first two rules are its own denominator, and
- * they are there because the defect it exists for IS a denominator that was typed in.
- *
- * Usage: node tools/check-styles.mjs
+ * Points 5-9 are the rules and 1-3 the DENOMINATOR they run over — an unread sheet is to them
+ * what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)). Point 7 is
+ * the one a screenshot cannot see ([`lesson-70`](../docs/lessons.md#lesson-70)); point 10
+ * carries both halves, its defect being a denominator somebody typed.
  */
 import { execFileSync } from 'node:child_process';
 import {

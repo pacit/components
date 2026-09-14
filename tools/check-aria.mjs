@@ -1,73 +1,22 @@
 #!/usr/bin/env node
 /**
  * Accessible name and description gate: `req-a11y-built-in` — what a screen reader says about
- * a widget has to be REACHABLE from the host. A consumer writes attributes on the tag they
- * type and on nothing else, so when the role sits on an element INSIDE the template, an
- * `aria-label` written on the tag lands on an element with no role, where ARIA prohibits it
- * and assistive technology ignores it. `<pct-select aria-label="Country">` was exactly that:
- * an unnamed combobox with no way in.
+ * a widget has to be REACHABLE from the host. A name written on a roleless host is prohibited
+ * and read by nobody, and neither an audit nor a per-component spec can see it (`lesson-65`).
  *
- *  1. DENOMINATOR: every decorator parsed, every base found, every template owned, every
- *     tag read,
+ *  1. DENOMINATOR: every decorator parsed, every base found, every template owned and tag read,
  *  2. HOST: an ARIA name written into a `host` block needs a role on the host to carry it,
- *  3. INPUTS: a component whose widget sits inside its template declares `ariaLabel` and
- *     `ariaLabelledby`,
- *  4. FORWARDED: both are bound on that one element — an input nobody reads is the same
- *     defect one floor up. "One" is counted per DOM state and not per file: two triggers on
- *     two branches of one `@if` are one control in two elements, and only elements that can
- *     stand there TOGETHER are two names for it,
+ *  3. INPUTS: a widget inside the template means `ariaLabel` and `ariaLabelledby` are declared,
+ *  4. FORWARDED: both are bound on ONE element, counted per DOM state and not per file,
  *  5. SURFACE: the card that names the selector names both inputs,
- *  6. DESCRIPTION: a hint part and an error part are ALTERNATIVES of one conditional and
- *     never neighbours (`req-api-message`),
- *  7. ANNOUNCEMENT: an error part IS the live region that speaks it (`role="alert"`),
- *  8. HIDDEN: a component taken out of the accessibility tree holds nothing to land on and
- *     no name of its own,
- *  9. CONTEXT: an element whose role requires a context (`option` in a `listbox` or a
- *     `group`, `tab` in a `tablist`, `treeitem` in a `tree`) has nothing but that context
- *     between it and the root of its template — read off the tree, so the relation the
- *     audit measures only on a page that opens the panel is held for every template from
- *     its first commit (plan 4.3).
+ *  6. DESCRIPTION: hint and error parts are ALTERNATIVES of one conditional (`req-api-message`),
+ *  7. ANNOUNCEMENT: an error part IS the live region ([0026](../docs/decisions/0026-one-channel-per-politeness.md)),
+ *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
+ *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
- * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
- * consumer sees in the type, binding them is what the screen reader sees. Points 4, 6 and 7
- * read the template's real syntax tree (`parseTemplate`): which block excludes which is exactly
- * the question a pattern over `@if` cannot answer. The two readings are joined by the **offset**
- * of the tag — the tag scanner's match index and the node's `sourceSpan`, over the same string
- * — so an element found by one and not by the other is a denominator failure and not a shrug.
- *
- * Point 8 is axe's `aria-hidden-focus` moved to build time. A component whose host carries
- * `aria-hidden` is drawn and not announced — `pct-icon` beside the text it belongs to,
- * `pct-skeleton` where content has not arrived — and the whole subtree is then invisible to a
- * reader while remaining perfectly reachable by the keyboard. A `<button>` grown inside one
- * later is a control a screen-reader user cannot see and a sighted keyboard user lands on;
- * axe reports it only on a page that renders it, which is `lesson-65`'s shape again. The
- * other half of the same point is a name declared by such a component: an `ariaLabel` on a
- * hidden host is read by nobody, so an input for it promises what it cannot deliver.
- *
- * Point 9 is the audit's `aria-required-children` and `aria-required-parent` moved to build
- * time, for the half of them a template can decide. The select draws a heading inside its
- * list as `role="group"`, and the options under it are owned by the listbox THROUGH the
- * group — take the role off the wrapper and axe answers with a critical violation, from a
- * page that renders the open panel and from nowhere else (`lesson-65`'s shape). The table of
- * which role requires which context is axe's own (`requiredContext`), anchored like the
- * others; the walk stops at the first ancestor with a role, explicit or implicit (a `<tr>`
- * is a `row`, a `<ul>` a `list`), passes through `presentation`/`none`, role-less elements
- * that carry no ARIA and take no focus (axe's own line — a wrapper with an `aria-labelledby`
- * and no role is an element the listbox owns, and may not) and the Angular containers that
- * never reach the DOM, and where it runs out of template it asks the host: a
- * host role that is the context settles it, a host role that is not is the same defect one
- * element up, and a host with no role leaves the answer to the consumer's template — counted
- * and reported, not guessed. A BOUND role anywhere on the path is a value the template does
- * not hold, and the walk says so instead of reading it.
- *
- * Point 7 is the half point 6 never had. A message that leaves and re-enters the DOM is a
- * change nobody is pointed at, and the library's answer to that is written down twice: the
- * shared channel carries what has no place on the screen, and what IS on the screen announces
- * from where it is drawn ([0026](../docs/decisions/0026-one-channel-per-politeness.md),
- * `req-a11y-built-in`). Four templates did it correctly and nothing measured them, so the
- * fifth component to draw a message would have announced nothing and the run would have
- * stayed green — the shape of `lesson-65`, where the one configuration that fails is the one
- * no page renders.
+ * Points 4, 6, 7 and 9 read the template's real syntax tree (`parseTemplate`): which block
+ * excludes which is a question no pattern over `@if` can answer. The two readings are joined
+ * by the tag's offset, so an element only one of them found fails point 1.
  *
  * Usage: node tools/check-aria.mjs
  */

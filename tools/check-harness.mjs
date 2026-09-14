@@ -1,27 +1,19 @@
 #!/usr/bin/env node
 /**
- * Harness gate: `req-api-harness` — `@pacit/components/testing` ships one harness per
- * component, and a harness is a DECLARATION over the `data-pct-part` contract: the host
- * selector, verbatim the component's own, and the parts it draws. Nothing in a harness
- * proves itself — a selector that matches nobody and a part nobody draws are both green in
- * the library's own suite, and red only in a consumer's, after the upgrade. So the
- * declarations are held to the built package, in both directions, the way the cards are:
+ * Harness gate: `req-api-harness` — one harness per component, a DECLARATION over the
+ * `data-pct-part` contract. Nothing in one proves itself, so every declaration is held to the
+ * BUILT package, both ways, the way the cards are:
  *
- *  1. SET: the packed manifest exports `./testing`, the module exports harnesses, and each
- *     one is a `PctHarness` with a host selector and a list of distinct part names,
- *  2. HOST: a harness's `hostSelector` is, verbatim, the selector list of exactly one class
- *     the package exports — and no class has two harnesses,
+ *  1. SET: `./testing` is exported and every harness is a `PctHarness` with distinct parts,
+ *  2. HOST: a `hostSelector` is verbatim one exported class's list, and no class has two,
  *  3. EVERY: every class that draws a part has a harness,
- *  4. PARTS: a harness names exactly the parts its class draws — nothing the component does
- *     not draw, nothing it draws left out,
- *  5. TYPES: the union the declaration file offers a consumer's editor after `part(` is
- *     that same list — the typed API and the runtime list are two reads of one inventory,
- *  6. CARDS: every card's **Harness** row names harnesses of its own entrypoint that exist,
- *     and every harness stands on some card.
+ *  4. PARTS: a harness names exactly the parts its class draws, neither more nor fewer,
+ *  5. TYPES: the union offered after `part(` is that same list, one inventory read twice,
+ *  6. CARDS: a card's **Harness** row names existing harnesses of its own entrypoint, and
+ *     every harness stands on some card.
  *
- * The package is read the way `check-parts` reads it — `@angular/compiler` first, then the
- * `ɵcmp`/`ɵdir` definitions after linking — so the selectors and the parts are what a
- * consumer's application really gets, not what a source scanner believes.
+ * The package is read the way `check-parts` reads it, after linking, so the selectors and
+ * parts are what a consumer really gets.
  *
  * Usage: node tools/check-harness.mjs
  */

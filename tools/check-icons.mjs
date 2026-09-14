@@ -1,26 +1,19 @@
 #!/usr/bin/env node
 /**
- * Icon gate: `req-api-icons` — every icon the library draws can be replaced by the
- * consumer's own. Breaking it gives no red test and no ugly page: an `<svg>` written
- * straight into a template renders perfectly, looks right in every screenshot and is simply
- * impossible to swap, which is what the promise is about
- * ([0011](../docs/decisions/0011-icons.md),
- * [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
+ * Icon gate: `req-api-icons` — every icon the library draws can be replaced by the consumer's
+ * own. Breaking it gives no red test and no ugly page: an `<svg>` written straight into a
+ * template renders perfectly and is simply impossible to swap
+ * ([0011](../docs/decisions/0011-icons.md), [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
  *
- *  1. DENOMINATOR: the name list was read, every template parsed, every `<svg>` and every
- *     `<pct-icon>` the text holds is one the walk saw,
+ *  1. DENOMINATOR: the name list read, every template parsed, every drawing the walk saw,
  *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>` — outside one it is nobody's icon,
- *  3. NAMED: a `<pct-icon>` of the library carries a name — a set is asked by name, and an
- *     icon without one can be replaced only by replacing the component,
- *  4. DEFAULT: a named icon carries its own drawing as content, so a consumer who provides
- *     no set sees an icon rather than a gap,
+ *  3. NAMED: a `<pct-icon>` of the library carries a name, because a set is asked by name,
+ *  4. DEFAULT: a named icon carries its own drawing, so a consumer with no set sees an icon,
  *  5. INVENTORY: the names drawn and `PctIconName` are the same set, both ways,
- *  6. PART: `data-pct-part` never sits below a `pct-icon` — the styling contract is the box,
- *     which survives the swap, and not the drawing, which does not.
+ *  6. PART: `data-pct-part` never sits below a `pct-icon` — the contract is the box, not
+ *     the drawing.
  *
- * Point 1 is the denominator of all the rest ([`lesson-48`](../docs/lessons.md#lesson-48)):
- * a template the walk never reached would make points 2–6 pass over nothing. Negative
- * control: `tools/check-icons.fixtures/`.
+ * Point 1 is the denominator of the rest ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-icons.mjs
  */

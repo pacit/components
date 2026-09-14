@@ -1,38 +1,17 @@
 #!/usr/bin/env node
 /**
- * Form-control contract gate: `req-api-signal-forms` — a control of this library carries the
- * WHOLE state block of the signal-forms contract, and carries it the same way in every one
- * of them.
+ * Form-control contract gate: does `req-api-signal-forms` — a control carries the WHOLE
+ * signal-forms state block, the same way in every one of them — have a measurement behind
+ * it? Every member of `FormUiControl` is optional, so `implements` proves only `value`.
  *
- * The reason it exists is a fact about the contract rather than a suspicion about the
- * authors: in `FormUiControl` **every member is optional**. `implements FormValueControl`
- * therefore proves one thing, that a `value` model exists, and says nothing at all about
- * `invalid`, `touched`, `errors` or the rest — a control omitting one compiles, and so does
- * a control declaring `invalid` with no `booleanAttribute`, which then reads `invalid=""`
- * from a template as the string `''` and is falsy for ever after. Eight controls carry the
- * block today, from seven declaration sites, and only a person comparing the files can see
- * that they agree.
- *
- *  1. DENOMINATOR: the sources parse, every member declaration is attributed to a class,
- *     the contract is read from the dependency, and controls are found,
+ *  1. DENOMINATOR: sources parse, members attributed to classes, contract read, controls found,
  *  2. CONTRACT: every name the block policy declares is really a member of `FormUiControl`,
  *  3. BLOCK: every control declares every member of the block,
- *  4. SHAPE: a block member is declared the SAME way in every control — the factory, the
- *     default and the transform, character for character.
+ *  4. SHAPE: factory, default and transform identical in every control, character for character.
  *
- * A fifth run examines the gate itself (`req-quality-negative-control`):
- * `check-forms.fixtures/`.
- *
- * What this gate deliberately does NOT hold is the PROSE. The JSDoc above these members
- * differs across the controls and it is right that it does — `readonly` has six different
- * true sentences here, because a native checkbox has no `readonly` and swallows the click
- * while a date field hands it to the input and disables the calendar button. A member with
- * no JSDoc at all is already red one gate over: the content pass
- * (`apps/docs/tools/build-content.mjs`) refuses a member without one.
- *
- * The contract's member list is read from `@angular/forms`'s own type declarations and not
- * copied here — a list typed into this file would be a promise about somebody else's package
- * that nothing re-measures, which is `lesson-122`'s shape.
+ * The contract's member list is read from `@angular/forms`'s own declarations, never copied
+ * here (`lesson-122`); the PROSE above those members is deliberately not held. A fifth run
+ * examines the gate itself (`req-quality-negative-control`): `check-forms.fixtures/`.
  *
  * Usage: node tools/check-forms.mjs
  */
