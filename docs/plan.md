@@ -270,16 +270,16 @@ precondition of the quiet push (3.0), which no visitor can see.
     [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
   - **one of the three readers is on record, and nothing in it is unread.** `at-pass.sh` puts
     Orca on a display of its own; `at-pass.mjs` reaches each view through the sandbox's own
-    navigation, into `docs/acr/at/orca-firefox-linux.md` — 426 steps over 36 views and 1847
-    utterances, **no silent stop**. A document load per view had read every other one, for a
+    navigation, into `docs/acr/at/orca-firefox-linux.md` — 482 steps over 36 views, 1982
+    utterances, 3 silent stops named. A document load per view had read every other one, for a
     reason that was never the clock ([`lesson-211`](lessons.md#lesson-211))
   - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
     through Guidepup onto their own runners, into the same record shape. It has never run —
     nothing here drives either reader — so the first dispatch is its first test, and `routes`
     defaults to one view to make that cost minutes instead of hours
-  - **what remains**: the cap, which bit on 23 of the 36 views, the first dispatch of the two
-    others, the reading in all 34 cards — which the gate turns into a **`Supports` for 4.1.2**,
-    the maintainer's to authorise — and a person's read of the logs
+  - **what remains**: the cap, still on 11 of the 36 views now that the shell no longer spends
+    it, the first dispatch of the two others, the reading in all 34 cards — which the gate
+    turns into a **`Supports` for 4.1.2**, the maintainer's — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,
@@ -1291,6 +1291,24 @@ and every one is held by a **binds at** rather than by anybody's mood.
     once by a pattern whose star crossed a slash. A register of the scripts that are meant to
     be hand-run, each with its reason, is the shape — `tools/distance.policy.json` is the model
   - binds at: **before 3.1** — a release nobody has run is not a release anybody can trust
+
+- [ ] **4.66 — the walk has two copies, and one learned every defect the other had**
+  - `tools/at-pass.mjs` drives Orca; `apps/sandbox-e2e/at/walk.ts` drives NVDA and VoiceOver
+    through Guidepup. They take the same walk on purpose — three logs comparable with each
+    other beat three taken each reader's own way — and they take it in two files, in two
+    languages, with nothing comparing them
+  - measured 2026-09-15: **all four** defects found in the Orca walk that day were in the copy
+    too, because the copy was made from it. A `<summary>` invisible to the stop list, a
+    sentinel compared as a value, a document load per view, and a cap spent on the shell. Each
+    was fixed twice by hand, and the second time is the one a person forgets
+  - `check-docs` holds two workflows to each other because a list of targets is a list. Two
+    walks are two programs: the honest instrument is one walk with one home, not a gate that
+    compares them
+  - what leaving it costs: the first NVDA or VoiceOver record would carry defects the Orca
+    record no longer has, and a person comparing the three would read the difference as a
+    property of the readers
+  - binds at: **the first dispatch of `at-pass.yml`** — a record taken from the copy is the
+    moment the drift stops being a risk and becomes evidence
 
 ## 5. Gaps with no deadline
 
