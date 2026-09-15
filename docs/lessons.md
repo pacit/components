@@ -5878,3 +5878,39 @@ what it must and points here for the list.
 The shape: **a gate can only be as portable as the machine it runs on.** Ask what the code
 touches that this machine is indifferent to — path names, case sensitivity, line endings, file
 system limits — and the answer is not a rule you can write down here; it is a runner.
+
+### <a id="lesson-213"></a>`lesson-213` — A keystroke the instrument did not make is one it cannot report
+
+The first NVDA record walked `/accordion` end to end and came out **silent at 23 of its 24
+stops**. Everything else about it was right: focus moved, every stop named the element it had
+landed on, the cap behaved, the file rendered. The one column the document exists for was
+empty.
+
+The step that spoke was `arrive` — and `arrive` is the only step that issues a reader command
+(`navigateToWebContent`). Every other movement was `page.keyboard.press('Tab')`, which asks
+the BROWSER to move focus and leaves the reader out of the transaction. Guidepup fills its
+spoken log from its own commands, so a key it did not press is a key whose consequences it
+never sees. `press(key)` is on the screen-reader interface for exactly this, and one line —
+`reader.press('Tab')` — took the silence from 23 stops to 1.
+
+The trap is that both readings look identical from the driver's side. Focus moves either way;
+`document.activeElement` is correct either way; the walk records 24 stops either way. Only the
+instrument's own output distinguishes them, and it distinguishes them by being empty — which
+is also what a genuinely silent component looks like. **The record would have been quoted as
+evidence that this library says nothing.**
+
+The Orca pass presses Tab through the keyboard and that is right there, which is why the
+defect survived the copy: Orca is read out of its own debug file and observes the whole
+desktop, so it hears a keystroke nobody routed through it. Guidepup asks the reader what it
+said. Two readers, two relationships to the same keystroke, one walk that assumed the first
+([`lesson-208`](#lesson-208) is the other half of this — a reader that takes the keyboard from
+you, where this is a reader that never gets it).
+
+How it was found is worth as much as what was found. Not by reasoning about the API and not
+from the documentation, but by reading the example Guidepup's own repository RUNS in CI —
+which also settled, an hour earlier, the order its setup steps must go in. Twice in one
+evening the answer was in somebody else's workflow file.
+
+The shape: **when an instrument is also an actor, driving the subject around it produces a
+complete-looking record of nothing.** Ask who has to perform the event for the instrument to
+be able to see it.
