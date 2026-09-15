@@ -267,6 +267,16 @@ const render = (stepsFile, debugFile, slug, reader) => {
         .every((r) => r.said.length === 0),
     )
     .map(([route]) => route);
+  // Where the unread views SIT, which is the one thing about them this pass measures. It is
+  // worth the arithmetic because the alternative is a list of component names, and a reader
+  // of that list takes it for a property of those components. Two passes of the same views
+  // named 19 and 18 of them and agreed on five: the set is a phase, and the giveaway is a
+  // run of positions two apart.
+  const order = [...byRoute.keys()];
+  const seats = mute.map((route) => order.indexOf(route) + 1);
+  const alternating =
+    seats.length > 2 &&
+    seats.every((n, i) => i === 0 || n - seats[i - 1] === 2);
   // `arrive` + `enter` + `cap` tab stops means the walk was still inside the content when
   // the cap bit. It is written into the view it happened on — a cap nobody can see is a
   // reading that claims to be complete.
@@ -320,13 +330,16 @@ stops from there until focus leaves \`main\`. \`(silence)\` is a stop the reader
 at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.
 
 **This reading is incomplete, and here is where.** ${mute.length} of the ${byRoute.size} views
-produced no speech at all: ${mute.map((r) => `\`${r}\``).join(', ') || 'none'}. The cause is
-in the harness and not in the library — the reader loses the accessible document on some
-navigations (\`WEB: Could not get document for event source\` in its own log) and the page's
-focus does not hold unless a window manager is running on the display (this reading was taken
-with: ${process.env.AT_PASS_WM || 'none'}). Those views are
+produced no speech at all: ${mute.map((r) => `\`${r}\``).join(', ') || 'none'}. Those views are
 **unread**, which is a different thing from read and found silent, and nothing below should
 be quoted as evidence about them.
+
+What this pass can say about that set is where it SITS, and it is not a statement about the
+components it names: they are views ${seats.join(', ')} of the walk${
+    alternating
+      ? ', every other one in an unbroken run — a phase of the pass, which the next pass can\nname the other half of'
+      : ''
+  }. No cause is written here, because none was measured; the stack it was taken on is above.
 `;
 
   mkdirSync(join(ROOT, LOGS), { recursive: true });

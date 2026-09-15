@@ -17,21 +17,22 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - Orca version 50.2, AT-SPI2 version: 2.60.4, Session: wayland ubuntu
-- Firefox 151.0 (the Playwright build), driven on Xvfb at 1280×900, no window manager
-- 250 steps over 36 views, at most 12 tab stops each
+- Firefox 151.0 (the Playwright build), driven on Xvfb at 1280×900, window manager: openbox
+- 277 steps over 36 views, at most 12 tab stops each
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the load, `enter` is the view's first stop, put under focus outright, and the rest are Tab
 stops from there until focus leaves `main`. `(silence)` is a stop the reader said nothing
-at — 92 of 250 here. 10 view(s) hit the cap, and each says so.
+at — 54 of 277 here. 11 view(s) hit the cap, and each says so.
 
-**This reading is incomplete, and here is where.** 19 of the 36 views
-produced no speech at all: `/button`, `/textarea`, `/date`, `/radio`, `/slider`, `/dialog`, `/popover`, `/drawer`, `/tabs`, `/pagination`, `/skeleton`, `/avatar`, `/breadcrumb`, `/stepper`, `/layout`, `/size`, `/density`, `/states`, `/all`. The cause is
-in the harness and not in the library — the reader loses the accessible document on some
-navigations (`WEB: Could not get document for event source` in its own log) and the page's
-focus does not hold on a virtual display with no window manager running. Those views are
+**This reading is incomplete, and here is where.** 18 of the 36 views
+produced no speech at all: `/button`, `/text`, `/number`, `/checkbox`, `/slider`, `/select`, `/tooltip`, `/menu`, `/accordion`, `/toast`, `/progress`, `/chips`, `/badge`, `/hero`, `/tree`, `/size`, `/states`, `/all`. Those views are
 **unread**, which is a different thing from read and found silent, and nothing below should
 be quoted as evidence about them.
+
+What this pass can say about that set is where it SITS, and it is not a statement about the
+components it names: they are views 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36 of the walk, every other one in an unbroken run — a phase of the pass, which the next pass can
+name the other half of. No cause is written here, because none was measured; the stack it was taken on is above.
 
 ### `/`
 
@@ -58,330 +59,391 @@ The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ```
 arrive  —                                                    Loading.  Please wait. · leaving list. · Button · @pacit/components · document web · Finished loading Button · @pacit/components. · Page has 3 landmarks, 11 headings, 2 visited links, 37 unvisited links.
-enter   —                                                    (silence)
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-no stop of its own inside `main` — nothing to walk here.
 
 ### `/field`
 
 ```
 arrive  —                                                    Loading.  Please wait. · Finished loading Field · @pacit/components. · Page has 3 landmarks, 9 headings, 3 visited links, 33 unvisited links.
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       (silence)
-tab 3   input                                                (silence)
-tab 4   —                                                    main content · alert. · The e-mail address is required
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   input                                                leaving panel. · E-mail · entry · john@example.com · required. · invalid entry. · A work address. · Focus mode
+tab 4   —                                                    Theme · panel · light · selected radio button. · Browse mode · alert. · The e-mail address is required
 ```
 
 ### `/text`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Text · @pacit/components. · Page has 3 landmarks, 7 headings, 4 visited links, 32 unvisited links.
-enter   input[control]                                       main content · Theme · panel · light · selected radio button.
-tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 3   input                                                leaving panel. · First name · entry · John. · Focus mode
-tab 4   input                                                E-mail · entry · john@example.com.
-tab 5   input                                                Password · password text.
-tab 6   input                                                Search · entry · Search…
-tab 7   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 10  input                                                leaving panel. · Read-only · entry · preview only · selected. · Focus mode
-tab 11  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+arrive  —                                                    Loading.  Please wait. · Text · @pacit/components · document web · Finished loading Text · @pacit/components. · Page has 3 landmarks, 7 headings, 4 visited links, 32 unvisited links.
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/textarea`
 
 ```
-arrive  —                                                    Loading.  Please wait. · leaving panel. · Textarea · @pacit/components · document web · Finished loading Textarea · @pacit/components. · Page has 3 landmarks, 8 headings, 5 visited links, 31 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Textarea · @pacit/components. · Page has 3 landmarks, 8 headings, 5 visited links, 31 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   textarea                                             leaving panel. · About you · entry · A few words… · Type — the box follows. · Focus mode
+tab 4   textarea                                             A plain textarea, for comparison · entry · This one keeps its two lines and scrolls.
+tab 5   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 8   textarea                                             leaving panel. · Note · entry · Focus mode
+tab 9   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 12  textarea                                             leaving panel. · Comment · entry. · Grows to four lines, then scrolls. · Focus mode
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/number`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Number · @pacit/components. · Page has 3 landmarks, 6 headings, 6 visited links, 30 unvisited links.
+arrive  —                                                    Loading.  Please wait. · Number · @pacit/components · document web · Browse mode · Finished loading Number · @pacit/components. · Page has 3 landmarks, 6 headings, 6 visited links, 30 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
 tab 2   input[control]                                       (silence)
-tab 3   input                                                (silence)
-tab 4   button[field-suffix-item] "Clear the price"          (silence)
-tab 5   input[control]                                       (silence)
-tab 6   input[control]                                       (silence)
-tab 7   input[control]                                       (silence)
-tab 8   input                                                (silence)
-tab 9   input                                                Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/date`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Date · @pacit/components · document web · Browse mode · Finished loading Date · @pacit/components. · Page has 3 landmarks, 9 headings, 1 table, 7 visited links, 29 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Date · @pacit/components. · Page has 3 landmarks, 9 headings, 1 table, 7 visited links, 29 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   input[control]                                       leaving panel. · Start date · entry · 27/08/2026 · selected required. · Type it, or pick it from the calendar. · Focus mode
+tab 4   button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog
+tab 5   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 8   input[control]                                       leaving panel. · Day · entry · 27/08/2026 · selected. · The sandbox runs under fr-FR, so the format hint reads jj/mm/aaaa. · Focus mode
+tab 9   button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog
+tab 10  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 12  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/checkbox`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Checkbox · @pacit/components. · Page has 3 landmarks, 6 headings, 8 visited links, 28 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Checkbox · @pacit/components · document web · Finished loading Checkbox · @pacit/components. · Page has 3 landmarks, 6 headings, 8 visited links, 28 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       main content · Direction · panel · ltr · selected radio button.
-tab 3   input[control]                                       leaving panel. · Consents · check box not checked required. · invalid entry. · Required to open an account.
-tab 4   —                                                    Theme · panel · light · selected radio button. · alert. · You have to accept the terms
+tab 2   input[control]                                       (silence)
 ```
 
 ### `/radio`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Radio · @pacit/components · document web · Finished loading Radio · @pacit/components. · Page has 3 landmarks, 6 headings, 9 visited links, 27 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Radio · @pacit/components. · Page has 3 landmarks, 6 headings, 9 visited links, 27 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   input[control]                                       leaving panel. · Plan · panel · Free · not selected radio button.
+tab 4   —                                                    leaving panel. · Theme · panel · light · selected radio button. · alert. · Pick a plan
 ```
-
-no stop of its own inside `main` — nothing to walk here.
 
 ### `/slider`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Slider · @pacit/components. · Page has 3 landmarks, 7 headings, 10 visited links, 26 unvisited links.
+arrive  —                                                    Loading.  Please wait. · Slider · @pacit/components · document web · Finished loading Slider · @pacit/components. · Page has 3 landmarks, 7 headings, 10 visited links, 26 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
 tab 2   input[control]                                       (silence)
-tab 3   input[control]                                       (silence)
-tab 4   input[control]                                       (silence)
-tab 5   input[control]                                       (silence)
-tab 6   input[control]                                       (silence)
-tab 7   input[control]                                       (silence)
-tab 8   input[control]                                       (silence)
-tab 9   input[control]                                       (silence)
-tab 10  input[control]                                       (silence)
-tab 11  input[control]                                       (silence)
-tab 12  input[control]                                       (silence)
 ```
-
-The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/switch`
 
 ```
 arrive  —                                                    Loading.  Please wait. · Finished loading Switch · @pacit/components. · Page has 3 landmarks, 6 headings, 11 visited links, 25 unvisited links.
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       (silence)
-tab 3   input[control]                                       (silence)
-tab 4   —                                                    alert. · Backups have to stay on
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   input[control]                                       leaving panel. · Backups · switch not pressed. · Runs every night at 03:00.
+tab 4   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
 
 ### `/select`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Select · @pacit/components. · Page has 3 landmarks, 17 headings, 12 visited links, 24 unvisited links.
-enter   input[control]                                       main content · Theme · panel · light · selected radio button.
-tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 3   button[trigger] "Sélectionner…"                      leaving panel. · Country · combo box. · A list with a panel of its own (CDK Overlay) · opens listbox · Focus mode
-tab 4   button[trigger] "Polish"                             field (the default) · combo box. · opens listbox
-tab 5   button[trigger] "Polish"                             auto — out to the longest option · combo box. · opens listbox
-tab 6   button[trigger] "Polish"                             320px, aligned to the end · combo box. · opens listbox
-tab 7   button[trigger] "Sélectionner…"                      Country (in the dark theme) · combo box. · opens listbox
-tab 8   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 9   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 11  button[trigger] "Poland"                             leaving panel. · Country · combo box. · opens listbox · Focus mode
-tab 12  button[trigger] "Sélectionner…"                      Country (nothing to pick) · combo box. · opens listbox
+arrive  —                                                    Loading.  Please wait. · Select · @pacit/components · document web · Finished loading Select · @pacit/components. · Page has 3 landmarks, 17 headings, 12 visited links, 24 unvisited links.
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/dialog`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Dialog · @pacit/components · document web · Browse mode · Finished loading Dialog · @pacit/components. · Page has 3 landmarks, 9 headings, 13 visited links, 23 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Dialog · @pacit/components. · Page has 3 landmarks, 9 headings, 13 visited links, 23 unvisited links.
+enter   button "Open the dialog"                             leaving panel. · main content · last close: · Open the dialog · button.
+tab 1   button "Delete the project"                          Delete the project · button.
+tab 2   button "Open the insistent one"                      Open the insistent one · button.
+tab 3   button "Open a form dialog"                          Open a form dialog · button.
+tab 4   button "Open a long one"                             Open a long one · button.
+tab 5   button "Open a long one"                             Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+Tab moved nothing — focus had left the page.
 
 ### `/tooltip`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Tooltip · @pacit/components. · Page has 3 landmarks, 9 headings, 14 visited links, 22 unvisited links.
+arrive  —                                                    Loading.  Please wait. · Tooltip · @pacit/components · document web · Browse mode · Finished loading Tooltip · @pacit/components. · Page has 3 landmarks, 9 headings, 14 visited links, 22 unvisited links.
 enter   button "Delete the project"                          (silence)
-tab 1   button "Publish"                                     main content · A name · heading 3 · Publish · button. · Runs every check before publishing.
-tab 2   button "Approve the release"                         Approve the release · button.
-tab 3   button "Close the panel"                             Close the panel · button.
-tab 4   button "start"                                       start · button. · On the starting side.
-tab 5   button "top"                                         top · button. · Above the control.
-tab 6   button "bottom"                                      bottom · button. · Below the control.
-tab 7   button "end"                                         end · button. · On the ending side.
-tab 8   input                                                Release note · entry. · Shown in the changelog Markdown is allowed here. · Focus mode
-tab 9   button "Hover me"                                    Hover me · button. · This one can be taken away. · Browse mode
-tab 10  button "Take it away"                                Take it away · button.
-tab 11  button "Take it away"                                Browser tabs · tool bar.
+tab 1   button "Publish"                                     (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/popover`
 
 ```
-arrive  —                                                    Popover · @pacit/components · document web · Browse mode · Finished loading Popover · @pacit/components. · Page has 3 landmarks, 7 headings, 15 visited links, 21 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Popover · @pacit/components. · Page has 3 landmarks, 7 headings, 15 visited links, 21 unvisited links.
+enter   button "Filters"                                     leaving panel. · main content · Owner: — · Filters · collapsed button. · opens dialog · Focus mode
+tab 1   button "start"                                       start · collapsed button. · opens dialog
+tab 2   button "top"                                         top · collapsed button. · opens dialog
+tab 3   button "bottom"                                      bottom · collapsed button. · opens dialog
+tab 4   button "end"                                         end · collapsed button. · opens dialog
+tab 5   button "Open the panel"                              Open the panel · collapsed button. · opens dialog
+tab 6   button "Count up"                                    Count up · button. · Browse mode
+tab 7   button "Count up"                                    Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+Tab moved nothing — focus had left the page.
 
 ### `/menu`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Menu · @pacit/components. · Page has 3 landmarks, 7 headings, 16 visited links, 20 unvisited links.
+arrive  —                                                    Loading.  Please wait. · Menu · @pacit/components · document web · Browse mode · Finished loading Menu · @pacit/components. · Page has 3 landmarks, 7 headings, 16 visited links, 20 unvisited links.
 enter   button "Actions"                                     (silence)
-tab 1   button "Count up"                                    main content · Count: 0. · Count up · button.
-tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
-tab 3   button "Language"                                    Language · collapsed button. · opens menu
-tab 4   button "Language"                                    (silence)
+tab 1   button "Count up"                                    (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/drawer`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Drawer · @pacit/components · document web · Browse mode · Finished loading Drawer · @pacit/components. · Page has 7 landmarks, 7 headings, 17 visited links, 19 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Drawer · @pacit/components. · Page has 7 landmarks, 7 headings, 17 visited links, 19 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   button "Sections"                                    leaving panel. · Sections · collapsed button. · Focus mode
+tab 4   button "Sections, from further down"                 Sections, from further down · collapsed button.
+tab 5   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 8   button "From the end edge"                           leaving panel. · From the end edge · collapsed button. · Focus mode
+tab 9   button "From the bottom"                             From the bottom · collapsed button.
+tab 10  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 12  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/accordion`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Accordion · @pacit/components. · Page has 3 landmarks, 19 headings, 18 visited links, 18 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Accordion · @pacit/components · document web · Finished loading Accordion · @pacit/components. · Page has 3 landmarks, 19 headings, 18 visited links, 18 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       main content · Direction · panel · ltr · selected radio button.
-tab 3   summary[heading] "Shipping"                          leaving panel. · Shipping · expanded button. · Focus mode
-tab 4   summary[heading] "Payment"                           Payment · collapsed button.
+tab 2   input[control]                                       (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/tabs`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Tabs · @pacit/components · document web · Browse mode · Finished loading Tabs · @pacit/components. · Page has 3 landmarks, 10 headings, 19 visited links, 17 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Tabs · @pacit/components. · Page has 3 landmarks, 10 headings, 19 visited links, 17 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   button[tab] "General"                                General · page tab. · Focus mode
+tab 4   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
+tab 5   pct-tab[panel]                                       Network · scroll pane clickable.
+tab 6   input[control]                                       Theme · panel · light · selected radio button.
+tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 9   button[tab] "Overview"                               Overview · page tab. · Focus mode
+tab 10  pct-tab[panel] "A summary nobody had to fetch."      Overview · scroll pane clickable. · Browse mode
+tab 11  pct-tab[panel]                                       Details · scroll pane clickable.
+tab 12  input[control]                                       Theme · panel · light · selected radio button.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/toast`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Toast · @pacit/components. · Page has 3 landmarks, 9 headings, 20 visited links, 16 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Toast · @pacit/components · document web · Finished loading Toast · @pacit/components. · Page has 3 landmarks, 9 headings, 20 visited links, 16 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       main content · Direction · panel · ltr · selected radio button.
-tab 3   button "Save the draft"                              leaving panel. · Save the draft · button.
-tab 4   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
-tab 5   button "Report something that waits"                 Report something that waits · button.
-tab 6   button "Clear the stack"                             Clear the stack · button.
-tab 7   input[control]                                       Theme · panel · light · selected radio button.
-tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 10  button "Fail to save"                                leaving panel. · Fail to save · button.
-tab 11  input[control]                                       Theme · panel · light · selected radio button.
-tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       (silence)
 ```
-
-The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/pagination`
 
 ```
-arrive  —                                                    Loading.  Please wait. · leaving panel. · Pagination · @pacit/components · document web · Finished loading Pagination · @pacit/components. · Page has 12 landmarks, 10 headings, 21 visited links, 15 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Pagination · @pacit/components. · Page has 12 landmarks, 10 headings, 21 visited links, 15 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   button[page] "1"                                     leaving panel. · navigation · Pagination · List with 5 items · 1 · button. · (Current page)
+tab 4   button[page] "2"                                     2 · button.
+tab 5   button[page] "3"                                     3 · button.
+tab 6   button[next] "Next page"                             Next page · button.
+tab 7   input[control]                                       leaving list. · leaving navigation. · Theme · panel · light · selected radio button.
+tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 10  button[previous] "Previous page"                     leaving panel. · navigation · Pagination · List with 9 items · Previous page · button.
+tab 11  button[page] "1"                                     1 · button.
+tab 12  button[page] "6"                                     6 · button.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/progress`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Progress · @pacit/components. · Page has 3 landmarks, 11 headings, 22 visited links, 14 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving list. · Progress · @pacit/components · document web · Finished loading Progress · @pacit/components. · Page has 3 landmarks, 11 headings, 22 visited links, 14 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       main content · Direction · panel · ltr · selected radio button.
-tab 3   button "−10"                                         leaving panel. · −10 · button.
-tab 4   button "+10"                                         +10 · button.
-tab 5   input[control]                                       Theme · panel · light · selected radio button.
-tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 8   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 9   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 11  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 2   input[control]                                       (silence)
+```
+
+### `/skeleton`
+
+```
+arrive  —                                                    Loading.  Please wait. · Finished loading Skeleton · @pacit/components. · Page has 3 landmarks, 9 headings, 23 visited links, 13 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   button "The content arrives"                         leaving panel. · The content arrives · button.
+tab 4   input[control]                                       Theme · panel · light · selected radio button.
+tab 5   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 6   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 7   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 10  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 12  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+```
+
+The cap bit here: 12 stops read inside `main`, and the view has more.
+
+### `/chips`
+
+```
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Chips · @pacit/components · document web · Finished loading Chips · @pacit/components. · Page has 3 landmarks, 8 headings, 24 visited links, 12 unvisited links.
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
+```
+
+### `/avatar`
+
+```
+arrive  —                                                    Loading.  Please wait. · Finished loading Avatar · @pacit/components. · Page has 3 landmarks, 9 headings, 25 visited links, 11 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 4   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 5   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 6   button "Swap the source"                             leaving panel. · Swap the source · button.
+tab 7   input[control]                                       Theme · panel · light · selected radio button.
+tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 10  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 12  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+```
+
+The cap bit here: 12 stops read inside `main`, and the view has more.
+
+### `/badge`
+
+```
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Badge · @pacit/components · document web · Finished loading Badge · @pacit/components. · Page has 3 landmarks, 9 headings, 26 visited links, 10 unvisited links.
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
+```
+
+### `/breadcrumb`
+
+```
+arrive  —                                                    Loading.  Please wait. · Finished loading Breadcrumb · @pacit/components. · Page has 6 landmarks, 7 headings, 27 visited links, 19 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   a "Home"                                             leaving panel. · navigation · Breadcrumb · List with 3 items · Home · link.
+tab 4   a "Library"                                          Library · link.
+tab 5   a "Data"                                             Data · link. · (Current page)
+tab 6   input[control]                                       leaving list. · leaving navigation. · Theme · panel · light · selected radio button.
+tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 9   a "Reports"                                          leaving panel. · navigation · Reports trail · List with 3 items · Reports · link.
+tab 10  a "Finance"                                          Finance · link.
+tab 11  input[control]                                       leaving list. · leaving navigation. · Theme · panel · light · selected radio button.
 tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 ```
 
 The cap bit here: 12 stops read inside `main`, and the view has more.
 
-### `/skeleton`
+### `/hero`
 
 ```
-arrive  —                                                    Loading.  Please wait. · leaving panel. · Skeleton · @pacit/components · document web · Finished loading Skeleton · @pacit/components. · Page has 3 landmarks, 9 headings, 23 visited links, 13 unvisited links.
-enter   —                                                    (silence)
-```
-
-no stop of its own inside `main` — nothing to walk here.
-
-### `/chips`
-
-```
-arrive  —                                                    Loading.  Please wait. · Finished loading Chips · @pacit/components. · Page has 3 landmarks, 8 headings, 24 visited links, 12 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Hero · @pacit/components · document web · Finished loading Hero · @pacit/components. · Page has 3 landmarks, 15 headings, 30 visited links, 8 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       main content · Direction · panel · ltr · selected radio button.
-tab 3   button[remove] "Remove"                              leaving panel. · Active filters · List with 5 items · Remove · button.
-tab 4   button[remove] "Remove"                              Remove · button.
-tab 5   button[remove] "Remove"                              Remove · button.
-tab 6   button[remove] "Remove"                              Remove · button.
-tab 7   button[remove] "Remove"                              Remove · button.
-tab 8   button "Restore everything"                          leaving list. · Restore everything · button.
-tab 9   input[control]                                       Theme · panel · light · selected radio button.
-tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 12  button[remove] "Remove"                              leaving panel. · Statuses · List with 3 items · Remove · button.
+tab 2   input[control]                                       (silence)
 ```
 
-The cap bit here: 12 stops read inside `main`, and the view has more.
-
-### `/avatar`
+### `/stepper`
 
 ```
-arrive  —                                                    Loading.  Please wait. · leaving list. · Avatar · @pacit/components · document web · Finished loading Avatar · @pacit/components. · Page has 3 landmarks, 9 headings, 25 visited links, 11 unvisited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Finished loading Stepper · @pacit/components. · Page has 3 landmarks, 6 headings, 29 visited links, 7 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 3   button "Back"                                        leaving panel. · Back · button.
+tab 4   button "Next"                                        Next · button.
+tab 5   input[control]                                       Theme · panel · light · selected radio button.
+tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 8   input[control]                                       Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
 
-no stop of its own inside `main` — nothing to walk here.
+Tab moved nothing — focus had left the page.
 
-### `/badge`
+### `/tree`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Badge · @pacit/components. · Page has 3 landmarks, 9 headings, 26 visited links, 10 unvisited links.
+arrive  —                                                    Loading.  Please wait. · Tree · @pacit/components · document web · Browse mode · Finished loading Tree · @pacit/components. · Page has 3 landmarks, 5 headings, 30 visited links, 6 unvisited links.
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       main content · Size · panel · md · selected radio button.
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
+```
+
+### `/layout`
+
+```
+arrive  —                                                    Loading.  Please wait. · Finished loading Layout · @pacit/components. · Page has 3 landmarks, 9 headings, 31 visited links, 5 unvisited links.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 3   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 4   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -389,110 +451,40 @@ tab 5   input[control]                                       leaving panel. · D
 tab 6   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 9   input[control]                                       (silence)
-```
-
-Tab moved nothing — focus had left the page.
-
-### `/breadcrumb`
-
-```
-arrive  —                                                    Loading.  Please wait. · leaving panel. · Breadcrumb · @pacit/components · document web · Finished loading Breadcrumb · @pacit/components. · Page has 6 landmarks, 7 headings, 27 visited links, 19 unvisited links.
-enter   —                                                    (silence)
-```
-
-no stop of its own inside `main` — nothing to walk here.
-
-### `/hero`
-
-```
-arrive  —                                                    Loading.  Please wait. · Finished loading Hero · @pacit/components. · Page has 3 landmarks, 15 headings, 30 visited links, 8 unvisited links.
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       main content · Size · panel · md · selected radio button.
-tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 3   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 4   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 5   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 6   a "Under attention"                                  leaving panel. · Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
-tab 7   a "Read the case"                                    Read the case · visited link.
-tab 8   input[control]                                       Theme · panel · light · selected radio button.
-tab 9   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 11  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 9   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
+tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 12  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 ```
 
 The cap bit here: 12 stops read inside `main`, and the view has more.
-
-### `/stepper`
-
-```
-arrive  —                                                    Loading.  Please wait. · leaving panel. · Stepper · @pacit/components · document web · Finished loading Stepper · @pacit/components. · Page has 3 landmarks, 6 headings, 29 visited links, 7 unvisited links.
-enter   —                                                    (silence)
-```
-
-no stop of its own inside `main` — nothing to walk here.
-
-### `/tree`
-
-```
-arrive  —                                                    Loading.  Please wait. · Finished loading Tree · @pacit/components. · Page has 3 landmarks, 5 headings, 30 visited links, 6 unvisited links.
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       main content · Size · panel · md · selected radio button.
-tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 3   pct-tree-item "README.md"                            leaving panel. · README.md. · tree level 1 · Focus mode
-tab 4   pct-tree-item "README.md"                            (silence)
-```
-
-Tab moved nothing — focus had left the page.
-
-### `/layout`
-
-```
-arrive  —                                                    Loading.  Please wait. · Layout · @pacit/components · document web · Browse mode · Finished loading Layout · @pacit/components. · Page has 3 landmarks, 9 headings, 31 visited links, 5 unvisited links.
-enter   —                                                    (silence)
-```
-
-no stop of its own inside `main` — nothing to walk here.
 
 ### `/size`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading Size · @pacit/components. · Page has 3 landmarks, 7 headings, 32 visited links, 4 unvisited links.
+arrive  —                                                    Loading.  Please wait. · leaving panel. · Size · @pacit/components · document web · Finished loading Size · @pacit/components. · Page has 3 landmarks, 7 headings, 32 visited links, 4 unvisited links.
 enter   input[control]                                       (silence)
 tab 1   input                                                (silence)
-tab 2   button "Button sm"                                   (silence)
-tab 3   button[trigger] "Poland"                             (silence)
-tab 4   input                                                (silence)
-tab 5   button "Button md"                                   (silence)
-tab 6   button[trigger] "Poland"                             (silence)
-tab 7   input                                                (silence)
-tab 8   button "Button lg"                                   (silence)
-tab 9   button[trigger] "Poland"                             (silence)
-tab 10  input[control]                                       (silence)
-tab 11  input                                                (silence)
-tab 12  input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-The cap bit here: 12 stops read inside `main`, and the view has more.
 
 ### `/density`
 
 ```
 arrive  —                                                    Loading.  Please wait. · Finished loading Density · @pacit/components. · Page has 4 landmarks, 8 headings, 33 visited links, 3 unvisited links.
-enter   input[control]                                       (silence)
-tab 1   input                                                (silence)
-tab 2   button "Button sm"                                   (silence)
-tab 3   button[trigger] "Poland"                             (silence)
-tab 4   input                                                (silence)
-tab 5   button "Button md"                                   (silence)
-tab 6   button[trigger] "Poland"                             (silence)
-tab 7   input                                                (silence)
-tab 8   button "Button lg"                                   (silence)
-tab 9   button[trigger] "Poland"                             (silence)
-tab 10  input                                                (silence)
-tab 11  button "Button sm"                                   (silence)
-tab 12  button[trigger] "Poland"                             (silence)
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input                                                leaving panel. · Field sm · entry · Text sm · selected. · Focus mode
+tab 2   button "Button sm"                                   Button sm · button. · Browse mode
+tab 3   button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode
+tab 4   input                                                Field md · entry · Text md · selected.
+tab 5   button "Button md"                                   Button md · button. · Browse mode
+tab 6   button[trigger] "Poland"                             List md · combo box. · opens listbox · Focus mode
+tab 7   input                                                Field lg · entry · Text lg · selected.
+tab 8   button "Button lg"                                   Button lg · button. · Browse mode
+tab 9   button[trigger] "Poland"                             List lg · combo box. · opens listbox · Focus mode
+tab 10  input                                                Field sm · entry · Text sm · selected.
+tab 11  button "Button sm"                                   Button sm · button. · Browse mode
+tab 12  button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode
 ```
 
 The cap bit here: 12 stops read inside `main`, and the view has more.
@@ -500,22 +492,22 @@ The cap bit here: 12 stops read inside `main`, and the view has more.
 ### `/states`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Finished loading States · @pacit/components. · Page has 3 landmarks, 10 headings, 34 visited links, 2 unvisited links. · Browse mode
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · States · @pacit/components · document web · Browse mode · Finished loading States · @pacit/components. · Page has 3 landmarks, 10 headings, 34 visited links, 2 unvisited links.
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-no stop of its own inside `main` — nothing to walk here.
 
 ### `/announce`
 
 ```
-arrive  —                                                    Finished loading Live regions · @pacit/components. · Page has 3 landmarks, 5 headings, 35 visited links, 1 unvisited link.
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       main content · Size · panel · md · selected radio button.
+arrive  —                                                    Loading.  Please wait. · Finished loading Live regions · @pacit/components. · Page has 3 landmarks, 5 headings, 35 visited links, 1 unvisited link.
+enter   input[control]                                       leaving panel. · main content · Theme · panel · light · selected radio button.
+tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 3   button "Announce politely"                           leaving panel. · Announce politely · button.
 tab 4   button "Interrupt"                                   Interrupt · button.
-tab 5   button "Interrupt"                                   (silence)
+tab 5   button "Interrupt"                                   Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -523,8 +515,8 @@ Tab moved nothing — focus had left the page.
 ### `/all`
 
 ```
-arrive  —                                                    Loading.  Please wait. · Everything at once · @pacit/components · document web · Finished loading Everything at once · @pacit/components. · Page has 3 landmarks, 9 headings, 36 visited links.
-enter   —                                                    (silence)
+arrive  —                                                    Loading.  Please wait. · Everything at once · @pacit/components · document web · Browse mode · Finished loading Everything at once · @pacit/components. · Page has 3 landmarks, 9 headings, 36 visited links.
+enter   button "Solid"                                       (silence)
+tab 1   button "Outline"                                     (silence)
+tab 2   input[control]                                       (silence)
 ```
-
-no stop of its own inside `main` — nothing to walk here.
