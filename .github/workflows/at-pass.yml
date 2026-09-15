@@ -57,18 +57,20 @@ jobs:
           node-version: 24
           cache: 'npm'
 
-      - run: npm ci
-
       # Installs the reader and puts the environment in the state it needs — the step that
       # makes screen-reader automation possible on a hosted runner at all. It is the CLI and
-      # NOT `guidepup/setup-action`, which was tried first and is a version behind: on
-      # 2026-09-15 the action failed VoiceOver with "Failed to mount Guidepup preferences" on
-      # `macos-26`. Guidepup's own workflows do not use the action either — they call this,
-      # at this version, which is the closest thing to an authority there is here.
+      # NOT `guidepup/setup-action`, which was tried first: at 0.21.0 it failed VoiceOver with
+      # "Failed to mount Guidepup preferences" on `macos-26`. Guidepup's own workflows do not
+      # use the action either — they call this, at this version, in THIS ORDER, with `setup`
+      # before the install of anything else and `install` after it. The order is copied rather
+      # than reasoned about, because upstream's CI is the only evidence available from here.
       - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 setup --ci
-      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 install
+
+      - run: npm ci
 
       - run: npx playwright install --with-deps firefox
+
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 install
 
       - name: Read the views with NVDA
         env:
@@ -108,12 +110,17 @@ jobs:
           node-version: 24
           cache: 'npm'
 
+      # The CLI and the order, for the reason recorded in the Windows job above.
+      # `--macos-record` is upstream's, and it is kept rather than trimmed: the flag that looks
+      # like it only turns on a recording sits next to the mount that was failing, and this
+      # workflow is in no position to tell which of the two it belongs to.
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 setup --ci --macos-record
+
       - run: npm ci
 
-      # The CLI, for the reason recorded in the Windows job above.
-      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 setup --ci
-
       - run: npx playwright install --with-deps webkit
+
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 install
 
       - name: Read the views with VoiceOver
         env:
