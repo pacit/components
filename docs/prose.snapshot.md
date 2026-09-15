@@ -53,7 +53,7 @@ check-styles.mjs 10 22 231
 check-support.mjs 5 17 150
 check-texts.mjs 6 18 172
 check-tokens.mjs 11 23 258
-check-tools.mjs 3 15 150
+check-tools.mjs 4 16 168
 check-typecheck.mjs 4 16 134
 check-zoneless.mjs 6 18 153
 fresh-inputs.mjs 0 0 0
@@ -88,7 +88,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 2.1.6 closed 12 131
 2.1.7 closed 11 135
 2.1.8 closed 12 154
-2.2 open 20 277
+2.2 open 20 273
 2.3 closed 11 119
 2.4 closed 12 140
 2.5 closed 12 154
@@ -169,8 +169,8 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.61 closed 12 168
 4.62 closed 12 166
 4.63 closed 12 166
-4.64 closed 12 154
-4.65 open 15 214
+4.64 closed 12 160
+4.65 closed 11 156
 4.66 open 17 230
 4.67 open 20 292
 4.68 closed 12 156

@@ -273,13 +273,13 @@ precondition of the quiet push (3.0), which no visitor can see.
     navigation, into `docs/acr/at/orca-firefox-linux.md` — 482 steps over 36 views, 1982
     utterances, 3 silent stops named. A document load per view had read every other one, for a
     reason that was never the clock ([`lesson-211`](lessons.md#lesson-211))
-  - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
-    through Guidepup onto their own runners, into the same record shape. It has never run —
-    nothing here drives either reader — so the first dispatch is its first test, and `routes`
-    defaults to one view to make that cost minutes instead of hours
-  - **what remains**: the cap, still on 11 of the 36 views now that the shell no longer spends
-    it, the first dispatch of the two others, the reading in all 34 cards — which the gate
-    turns into a **`Supports` for 4.1.2**, the maintainer's — and a person's read of the logs
+  - **NVDA has run; VoiceOver has not.** Three dispatches of `at-pass.yml` on 2026-09-15, each
+    finding something else: an action version that never existed (4.67), a file Windows
+    refuses to check out (4.68), and then `/accordion` walked end to end — **silent at 23 of
+    its 24 stops**. VoiceOver still cannot mount Guidepup's preferences on `macos-26`
+  - **what remains**: why NVDA says nothing at a stop it has focus on, VoiceOver's mount, the
+    cap on 11 of the 36 Orca views, the reading in all 34 cards — which the gate turns into a
+    **`Supports` for 4.1.2**, the maintainer's — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,
@@ -1267,24 +1267,20 @@ and every one is held by a **binds at** rather than by anybody's mood.
     must be reported, one carries only what a browser hands a `page.evaluate` callback and
     must not — a reader that reports everything passes a one-sided control too, and is the
     kind that gets switched off rather than fixed
-  - **the title is wrong, and stands.** `fresh-inputs.mjs` is exercised, and three of the four
-    ARE named — by `at-pass.yml`, `release.yml` and `libs/components/project.json`, none of
-    which the first measurement read. The narrower true statement is 4.65
-- [ ] **4.65 — three scripts that no automated pass executes, and one of them is the release**
-  - measured 2026-09-15 against the targets `ci.yml` and `nightly.yml` actually invoke: of 32
-    scripts under `tools/`, 29 run on every push or every week. Three do not — `at-pass.mjs`,
-    `release.mjs` and `restore-dictionaries.mjs`
-  - `at-pass.mjs` is deliberate: it drives a live screen reader and no runner here has one
-    (2.2). The other two are not deliberate, they are unexamined. **`release.mjs` is what
-    publishes the package**, and it has today the standing `at-pass.mjs` had on 2026-09-13 —
-    parses, reads plausibly, has never been executed by anything but a person
-  - 4.64 holds the names inside these files. Nothing holds whether the files run, and the
-    first time that matters is the tag 3.1 cuts
-  - what it needs is a denominator that survives contact: this position's own count was wrong
-    twice on the day it was written, once by reading two workflows out of sixty-one homes and
-    once by a pattern whose star crossed a slash. A register of the scripts that are meant to
-    be hand-run, each with its reason, is the shape — `tools/distance.policy.json` is the model
-  - binds at: **before 3.1** — a release nobody has run is not a release anybody can trust
+  - **the title is nearly right, and stands.** Three of the four ARE named — by `at-pass.yml`,
+    `release.yml` and `libs/components/project.json` — but naming is not running, and the
+    number a pass actually reaches took four attempts to get right. It is 4.65
+- [x] **4.65 — the scripts no automated pass reaches, and one of them is the release** —
+      **closed 2026-09-16 by `check-tools` point 4** over `tools/tools.policy.json`: a script
+      under `tools/` is reached by a pass or the register says why, and an excuse for one that
+      IS reached is refused as hard
+  - **31 of 33 are reached; two are not** — `at-pass.mjs`, which drives a reader no runner here
+    has, and **`release.mjs`**, which `release.yml` runs on a tag nobody has cut. The
+    instrument of the premiere is the one thing nothing exercises, which is the finding
+  - the number took four readings in a day, 4 → 3 → 4 → 2. Naming is not running
+    (`{workspaceRoot}/tools/fresh-inputs.mjs` is a cache input), a `/` before `tools/` reaches
+    `apps/docs/tools/` too, and a module a running gate imports is as exercised as the gate —
+    which is `restore-dictionaries.mjs`, in the register until the closure threw its entry out
 
 - [ ] **4.66 — the walk has two copies, and one learned every defect the other had**
   - `tools/at-pass.mjs` drives Orca; `apps/sandbox-e2e/at/walk.ts` drives NVDA and VoiceOver
