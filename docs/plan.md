@@ -268,18 +268,18 @@ precondition of the quiet push (3.0), which no visitor can see.
     of WCAG 2.2 at A and AA, each resting on what already runs, every citation held and the
     rendering compared byte for byte. The site shows it at `/acr` with
     [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
-  - **one of the three readers is on record, 2026-09-14.** `at-pass.sh` puts Orca on a display
-    of its own and `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`, of
-    which **19 of 36 came out unread** — named there rather than averaged away. Three
-    hypotheses about that number were tested and all three were wrong, and the third took the
-    reader's working profile with it ([`lesson-209`](lessons.md#lesson-209))
+  - **one of the three readers is on record, 2026-09-15.** `at-pass.sh` puts Orca on a display
+    of its own and `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`: 277
+    steps, 981 utterances, **18 of 36 views unread** — and those are views 2, 4, 6 … 36, the
+    even half exactly, which makes the set a phase of the pass and not a fact about components.
+    The reader attaches; a day went on proving otherwise ([`lesson-210`](lessons.md#lesson-210))
   - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
     through Guidepup onto their own runners, into the same record shape. It has never run —
     nothing here drives either reader — so the first dispatch is its first test, and `routes`
     defaults to one view to make that cost minutes instead of hours
-  - **what remains**: a reader that attaches again, the first dispatch of the two others, the
-    reading in all 34 cards — which the gate turns into a **`Supports` for 4.1.2**, the
-    maintainer's to authorise — and a person's read of the logs
+  - **what remains**: why the walk reads every OTHER view, the first dispatch of the two
+    others, the reading in all 34 cards — which the gate turns into a **`Supports` for 4.1.2**,
+    the maintainer's to authorise — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,
@@ -1264,6 +1264,25 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - what remains: the quota to come back (it renews on the billing date), and then a reading
     of whether a push produced a RUN and not merely a commit
   - binds at: **the renewal** — until then every commit lands unbuilt, as they all did
+- [ ] **4.64 — four scripts nothing runs, and a linter that cannot see them**
+  - `at-pass.mjs` carried `[FLOOR_TAB, CEILING_TAB]` — two names declared nowhere in it — for a
+    day and a half. The file parses, so `node --check` is content; the pass threw on the first
+    view of every run, and three hypotheses were tested against a program that never executed
+    ([`lesson-210`](lessons.md#lesson-210))
+  - the `check-*.mjs` battery is exercised by being run. **Four files are not**: `at-pass.mjs`,
+    `fresh-inputs.mjs`, `restore-dictionaries.mjs` and `release.mjs` — no workflow, no target
+    and no `package.json` script names any of them. The last is the instrument 3.1 publishes
+    with, and it has the same standing today as the one that was dead
+  - nothing reads them either. `eslint.config.mjs` matches `['**/*.ts', '**/*.tsx', '**/*.js',
+'**/*.jsx']` — **`.mjs` is not in that list** — and lint targets are per Nx project, while
+    `tools/` is no project. Thirty-two files, no reader
+  - measured 2026-09-15, `no-undef` alone over `tools/**/*.mjs`: twenty errors. Nineteen are
+    `document` and `getComputedStyle` inside `page.evaluate` callbacks, which run in the
+    browser and are not defects; the twentieth was this one. The instrument is that narrow on
+    purpose — the class is a name that resolves to nothing at runtime, not eslint's opinion of
+    the directory
+  - binds at: **a word on where the rule lives** — its own lint target over `tools/`, or a
+    point inside a gate that already runs
 
 ## 5. Gaps with no deadline
 
