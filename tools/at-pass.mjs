@@ -41,8 +41,25 @@ const LOGS = 'docs/acr/at';
  */
 const DWELL_LOAD = 9000;
 const DWELL_TAB = 2000;
-/** The cap on tab stops per view. It is written into the record wherever it bit (no silent caps). */
+/** The cap on the view's OWN tab stops. Written into the record wherever it bit (no silent caps). */
 const CAP = 12;
+/**
+ * The sandbox's scaffold, which sits INSIDE `main` and repeats at every demo block: a theme,
+ * a size and a direction switch, three stops each time. It was 218 of 390 walked stops — more
+ * than half a reading of this library spent re-reading one radio group — and it is what the
+ * cap was biting on, over 23 of the 36 views. Its stops are still pressed and still written
+ * down, because a stop nobody can see is the defect `CAP` exists to avoid; they do not spend
+ * the budget. `pct-radio` has a view of its own where it is read once, properly.
+ */
+const SCAFFOLD = 'sbx-controls';
+/**
+ * A ceiling on presses, so a view that is all scaffold ends rather than walks forever, and a
+ * budget: every press costs `DWELL_TAB`, so this number sets the length of the pass. Twice
+ * the cap is the arithmetic of the scaffold — three of its stops per demo block, so twelve of
+ * a view's own are reached in about four blocks and twenty-four presses. Three times the cap
+ * was tried on paper first and buys nothing but eighteen minutes.
+ */
+const PRESSES = CAP * 2;
 /**
  * What counts as a stop of the Tab key. `summary` and `[contenteditable]` are focusable with
  * no attribute saying so, and leaving them out did not hide them from the reader — it hid
@@ -95,7 +112,7 @@ const drive = async (baseURL, out) => {
    * A sentinel compared as a value is not a measurement.
    */
   const focus = () =>
-    page.evaluate((selector) => {
+    page.evaluate((scaffold) => {
       const el = document.activeElement;
       if (!el || el === document.body || el === document.documentElement)
         return null;
@@ -114,9 +131,10 @@ const drive = async (baseURL, out) => {
       return {
         what: `${tag}${part ? `[${part}]` : ''}${name ? ` "${name}"` : ''}`,
         inMain: !!el.closest('main'),
+        scaffold: !!el.closest(scaffold),
         moved,
       };
-    }, FOCUSABLE);
+    }, SCAFFOLD);
 
   const steps = [];
   const step = async (route, label, dwell, act) => {
@@ -153,19 +171,31 @@ const drive = async (baseURL, out) => {
     // moves Firefox's focus start and was tried too; with a reader attached it silently
     // does not take on some views. This takes.
     const entered = await step(route, 'enter', DWELL_TAB, () =>
-      page.evaluate((selector) => {
-        // The walk of a view starts with no previous stop, whoever held focus a moment ago.
-        window.__atPassPrevious = undefined;
-        const first = document.querySelector('main')?.querySelector(selector);
-        first?.focus();
-      }, FOCUSABLE),
+      page.evaluate(
+        ([selector, scaffold]) => {
+          // The walk of a view starts with no previous stop, whoever held focus a moment ago.
+          window.__atPassPrevious = undefined;
+          const stops = [
+            ...(document.querySelector('main')?.querySelectorAll(selector) ??
+              []),
+          ];
+          // The view's own first stop, not the shell's. Every view opens on the same three
+          // switches otherwise, and three of twelve is a quarter of the reading.
+          const first = stops.find((el) => !el.closest(scaffold)) ?? stops[0];
+          first?.focus();
+        },
+        [FOCUSABLE, SCAFFOLD],
+      ),
     );
     if (!entered?.inMain)
       steps.at(-1).note =
         'no stop of its own inside `main` — nothing to walk here';
 
-    for (let stop = 1; entered?.inMain && stop <= CAP; stop += 1) {
-      const at = await step(route, `tab ${stop}`, DWELL_TAB, () =>
+    let own = entered && !entered.scaffold ? 1 : 0;
+    let pressed = 0;
+    while (entered?.inMain && own < CAP && pressed < PRESSES) {
+      pressed += 1;
+      const at = await step(route, `tab ${pressed}`, DWELL_TAB, () =>
         page.keyboard.press('Tab'),
       );
       // Two ways out, and the second is the one that caught a walk reading Firefox's own
@@ -176,7 +206,16 @@ const drive = async (baseURL, out) => {
         steps.at(-1).note = 'Tab moved nothing — focus had left the page';
         break;
       }
+      if (!at.scaffold) own += 1;
     }
+    // Written where it bit, by the walk that bit. The renderer used to infer this from a row
+    // count, which only held while every stop spent a unit of the same budget.
+    if (own >= CAP)
+      steps.at(-1).note =
+        `the cap bit: ${CAP} stops of this view's own, and it has more`;
+    else if (pressed >= PRESSES)
+      steps.at(-1).note =
+        `${PRESSES} presses reached, ${own} of them this view's own`;
 
     // The smoke check, and it is about the INSTRUMENT rather than the view. Whether the
     // reader attached to the browser at all is decided in the first seconds, and a walk that
@@ -304,11 +343,11 @@ const render = (stepsFile, debugFile, slug, reader) => {
   const alternating =
     seats.length > 2 &&
     seats.every((n, i) => i === 0 || n - seats[i - 1] === 2);
-  // `arrive` + `enter` + `cap` tab stops means the walk was still inside the content when
-  // the cap bit. It is written into the view it happened on — a cap nobody can see is a
-  // reading that claims to be complete.
-  const capped = [...byRoute.entries()].filter(
-    ([, rows]) => rows.length === cap + 2,
+  // The walk writes the note where the cap bit, and this reads it. Inferring it from a row
+  // count held only while every stop spent a unit of the same budget — the shell's own
+  // switches no longer do, so the arithmetic that once matched would now quietly say `0`.
+  const capped = [...byRoute.entries()].filter(([, rows]) =>
+    rows.some((row) => String(row.note ?? '').startsWith('the cap bit')),
   );
 
   // Where the reading stops, and it is a different paragraph when it stops nowhere. A file
@@ -340,8 +379,8 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
       );
       const notes = [
         ...rows.filter((r) => r.note).map((r) => `\n${r.note}.`),
-        rows.length === cap + 2
-          ? `\nThe cap bit here: ${cap} stops read inside \`main\`, and the view has more.`
+        rows.some((row) => String(row.note ?? '').startsWith('the cap bit'))
+          ? `\nThe cap bit here: ${cap} stops of this view's own were read, and it has more.`
           : '',
       ].join('');
       return `### \`${route}\`\n\n\`\`\`\n${lines.join('\n')}\n\`\`\`${notes}`;
@@ -368,7 +407,7 @@ person has made it.
 
 - ${version('orca', ['--version'])}
 - ${stack ?? `Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`}
-- ${steps.length} steps over ${byRoute.size} views, at most ${cap} tab stops each
+- ${steps.length} steps over ${byRoute.size} views, at most ${cap} stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. \`arrive\` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
