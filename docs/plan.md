@@ -268,18 +268,18 @@ precondition of the quiet push (3.0), which no visitor can see.
     of WCAG 2.2 at A and AA, each resting on what already runs, every citation held and the
     rendering compared byte for byte. The site shows it at `/acr` with
     [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
-  - **one of the three readers is on record, and nothing in it is unread.** `at-pass.sh` puts
-    Orca on a display of its own; `at-pass.mjs` reaches each view through the sandbox's own
-    navigation, into `docs/acr/at/orca-firefox-linux.md` — 482 steps over 36 views, 1982
-    utterances, 3 silent stops named. A document load per view had read every other one, for a
+  - `at-pass.sh` puts Orca on a display of its own and `at-pass.mjs` reaches each view through
+    the sandbox's own navigation. A document load per view had read every OTHER one, for a
     reason that was never the clock ([`lesson-211`](lessons.md#lesson-211))
-  - **NVDA has run; VoiceOver has not.** Three dispatches of `at-pass.yml` on 2026-09-15, each
-    finding something else: an action version that never existed (4.67), a file Windows
-    refuses to check out (4.68), and then `/accordion` walked end to end — **silent at 23 of
-    its 24 stops**. VoiceOver still cannot mount Guidepup's preferences on `macos-26`
-  - **what remains**: why NVDA says nothing at a stop it has focus on, VoiceOver's mount, the
-    cap on 11 of the 36 Orca views, the reading in all 34 cards — which the gate turns into a
-    **`Supports` for 4.1.2**, the maintainer's — and a person's read of the logs
+  - **all three readers are on record over all 36 views** — Orca 482 steps, NVDA 523,
+    VoiceOver 272, each saying "every view spoke". Six dispatches got there, each finding
+    something else: 4.67, 4.68, a setup order, a Tab the reader never made
+    ([`lesson-213`](lessons.md#lesson-213)), an untypable `routes` input
+  - **what remains is a person.** Three machines have written down what they said and nobody
+    has read it: 34 cards owe the reading, and the gate turns that into a **`Supports` for
+    4.1.2** — the maintainer's to authorise, and not something one pass buys. Open on the
+    instrument: `enter` is silent for both Guidepup readers (it places focus rather than
+    pressing a key), and VoiceOver walks half the steps NVDA does over the same views
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,
