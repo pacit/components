@@ -5815,3 +5815,32 @@ else. All three were repaired by subtraction — the sentinel now names the driv
 first, the smoke check counts utterances against steps and stops, and the record prints where
 the unread views sit (2, 4, 6 … 36, every other one) instead of why. The last of those is a
 worse story and a much better lead than any of the guesses it replaced.
+
+### <a id="lesson-211"></a>`lesson-211` — When the symptom alternates, vary the count, not the magnitude
+
+The screen-reader pass read every other view. Three attempts were made on the dwell: 4.5 s,
+then 9 s, then a rule that held each stop until the reader's own log stopped growing. The
+first two produced **the same alternation**, and that was already the answer — two durations
+differing by a factor of two cannot both land on the wrong side of a boundary. It was read as
+"still too short" for a month.
+
+The measurement that ended it took two minutes. Four visits to **one** route, everything else
+held: read, missed, read, missed. Same view, same dwell, same reader. The only thing that
+differed between a stop that spoke and a stop that did not was how many document loads had
+happened before it. A period of exactly two is a statement about events, not about durations —
+and nothing in a clock has a period.
+
+What the reader loses is the document load. `page.goto` per view replaces the document 36
+times; the sandbox is a single-page application, so its own navigation swaps the view without
+one. Driven that way the same four views all read, 108 utterances against 63. That the fix is
+also how a person reaches those views is a coincidence worth having and not the argument.
+
+One loose end, so nobody spends the evening on it: on the missed loads Orca speaks _"Page has
+3 landmarks, 19 headings …"_ and then announces no focus change at all, while on the read ones
+it speaks no summary. Setting `pageSummaryOnLoad` false in `user-settings.conf` changes
+neither — the key moved to GSettings and the migration does not take on a bare session bus.
+The correlation is real and unexplained.
+
+The shape: **a symptom with a period is about counting, not about size.** When two settings an
+octave apart give the identical result, the next experiment is to change how many times
+something happens, not how long it takes.

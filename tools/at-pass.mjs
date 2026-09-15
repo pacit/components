@@ -4,14 +4,14 @@
  * (`req-a11y-acr`) — the question no gate here can answer, since they end where axe ends.
  * It runs under `tools/at-pass.sh`, which puts a reader on a display of its own; alone:
  *   1. VIEWS — the routes come from the e2e suite's own list, parsed, never copied,
- *   2. DRIVE — each view loaded, the walk taken INTO its main region, then Tab until it leaves,
+ *   2. DRIVE — each view ROUTED to, the walk taken INTO its main region, Tab until it leaves,
  *   3. WINDOW — every step carries the clock it began and ended on,
  *   4. TRANSCRIBE — the reader's log read back, each utterance attributed by that clock,
  *   5. RECORD — one file per reader under `docs/acr/at/`, per view and per stop.
  *
  * Step 2 separates a reading of this library from one of the sandbox's chrome: Tab from the
  * top spends thirty-three stops on theme switches and navigation before reaching a component.
- * Clicking a heading inside `main` moves Firefox's focus start — measured, not assumed.
+ * It reaches a view through that navigation: a document load per view read every other one.
  *
  * Usage: node tools/at-pass.mjs --drive <baseURL> <steps.json>
  *        node tools/at-pass.mjs --render <steps.json> <debug|none> <slug> <reader>
@@ -26,17 +26,18 @@ const VIEWS = 'apps/sandbox-e2e/src/support/views.ts';
 const LOGS = 'docs/acr/at';
 
 /**
- * How long a stop is held open for the reader to finish speaking. Two ways of deciding this
- * were measured and both are recorded here, because the second looked obviously right:
+ * How long a stop is held open for the reader to finish speaking. Three ways of deciding it
+ * were measured, and the first two are kept here because both looked obviously right.
  *
- * A fixed 4.5 s after a load left views 13 to 30 reading every OTHER one — 13, 15, 17, 19,
- * 21, 23, 25, 27, 29 silent, the ones between them fine. A two-state cycle, not a slow
- * machine. So the walk was made to wait for the READER instead: hold until its log stops
- * growing. That was worse — 24 views unread against 19, and half the speech — because Orca
- * writes `SPEECH OUTPUT` when it DECIDES to speak, not when it has spoken, so a quiet log
- * means the queue is full, not empty. The instrument cannot be asked when it is done.
+ * A fixed window read every OTHER view — at 4.5 s and again at 9 s, which already said the
+ * length was not the variable. So the walk was made to wait for the READER instead: hold
+ * until its log stops growing. Worse, 24 views unread against 19, because Orca writes
+ * `SPEECH OUTPUT` when it DECIDES to speak rather than when it has spoken, so a quiet log
+ * means a full queue. The instrument cannot be asked when it is done.
  *
- * What is left is a wider fixed window, which is an admission rather than a solution.
+ * The alternation was never about time. It followed the NAVIGATION: four visits to one route
+ * read, missed, read, missed (`lesson-211`). A fixed window is enough once the view is
+ * reached through the sandbox's own router instead of a document load.
  */
 const DWELL_LOAD = 9000;
 const DWELL_TAB = 2000;
@@ -128,13 +129,23 @@ const drive = async (baseURL, out) => {
   };
 
   const all = routes();
+  // The document is loaded ONCE. Every view after this is reached the way the sandbox's own
+  // visitors reach it, through the navigation in the shell, and the reason is measured: with
+  // a `goto` per view the reader read views 2, 4, 6 ... 36 and nothing else, and four visits
+  // to a single route read, missed, read, missed. It is the document load the reader loses,
+  // not the view (`lesson-211`).
+  await page.goto(`${baseURL}/`, { waitUntil: 'load' });
+  await page.waitForTimeout(DWELL_LOAD);
   for (const [index, route] of all.entries()) {
     process.stderr.write(
       `  [${String(index + 1).padStart(2)}/${all.length}] ${route}\n`,
     );
-    await step(route, 'arrive', DWELL_LOAD, () =>
-      page.goto(`${baseURL}${route}`, { waitUntil: 'load' }),
-    );
+    await step(route, 'arrive', DWELL_LOAD, async () => {
+      await page.click(`nav a[href="${route}"]`);
+      await page.waitForFunction((r) => location.pathname === r, route, {
+        timeout: 15_000,
+      });
+    });
     // The walk is put on the view's first stop outright. Tabbing to it from the top of the
     // page was tried twice and is the wrong instrument: thirty-three stops of the sandbox's
     // own chrome come first, and walking them at speed floods the reader — it queues, then
@@ -274,8 +285,8 @@ const render = (stepsFile, debugFile, slug, reader) => {
   const silent = steps.filter((s) => spoken(s).length === 0).length;
   // A view the reader said nothing on is a hole in the reading, and a record that reports
   // only its totals lets a reader take it for a complete one. They are named.
-  // `arrive` always speaks — the browser announces the page it loaded. A view is UNREAD when
-  // nothing after that did: no stop of the Tab key produced a word.
+  // `arrive` speaks of the navigation, not of the view: the reader names the link that was
+  // followed. A view is UNREAD when nothing after that did — no stop of the Tab key spoke.
   const mute = [...byRoute.entries()]
     .filter(([, rows]) =>
       rows
@@ -299,6 +310,25 @@ const render = (stepsFile, debugFile, slug, reader) => {
   const capped = [...byRoute.entries()].filter(
     ([, rows]) => rows.length === cap + 2,
   );
+
+  // Where the reading stops, and it is a different paragraph when it stops nowhere. A file
+  // that says "0 views produced no speech: none — those views are unread" is a template
+  // talking to itself, and a reader who meets one stops believing the sentences around it.
+  const incomplete = mute.length
+    ? `**This reading is incomplete, and here is where.** ${mute.length} of the ${byRoute.size} views
+produced no speech at all: ${mute.map((r) => `\`${r}\``).join(', ')}. Those views are
+**unread**, which is a different thing from read and found silent, and nothing below should
+be quoted as evidence about them.
+
+What this pass can say about that set is where it SITS, and it is not a statement about the
+components it names: they are views ${seats.join(', ')} of the walk${
+        alternating
+          ? ', every other one in an unbroken run — a phase of the pass, which the next pass\ncan name the other half of'
+          : ''
+      }. No cause is written here, because none was measured; the stack it was taken on is above.`
+    : `**Every view spoke.** No view of the ${byRoute.size} went unread, so nothing below is
+missing because the reader was not listening. Where this reading ends instead is the cap:
+${capped.length} view(s) have more stops than the ${cap} taken, and each says so where it bit.`;
 
   const body = [...byRoute.entries()]
     .map(([route, rows]) => {
@@ -341,21 +371,12 @@ person has made it.
 - ${steps.length} steps over ${byRoute.size} views, at most ${cap} tab stops each
 
 A stop reads: the label, what the browser had focused, and what the reader said. \`arrive\` is
-the load, \`enter\` is the view's first stop, put under focus outright, and the rest are Tab
+the sandbox's own navigation to the view — the document is loaded once, before the first —
+\`enter\` is the view's first stop, put under focus outright, and the rest are Tab
 stops from there until focus leaves \`main\`. \`(silence)\` is a stop the reader said nothing
 at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.
 
-**This reading is incomplete, and here is where.** ${mute.length} of the ${byRoute.size} views
-produced no speech at all: ${mute.map((r) => `\`${r}\``).join(', ') || 'none'}. Those views are
-**unread**, which is a different thing from read and found silent, and nothing below should
-be quoted as evidence about them.
-
-What this pass can say about that set is where it SITS, and it is not a statement about the
-components it names: they are views ${seats.join(', ')} of the walk${
-    alternating
-      ? ', every other one in an unbroken run — a phase of the pass, which the next pass can\nname the other half of'
-      : ''
-  }. No cause is written here, because none was measured; the stack it was taken on is above.
+${incomplete}
 `;
 
   mkdirSync(join(ROOT, LOGS), { recursive: true });
