@@ -59,9 +59,14 @@ jobs:
 
       - run: npm ci
 
-      # Installs the reader and puts the environment in the state it needs. This is the step
-      # that makes screen-reader automation possible on a hosted runner at all.
-      - uses: guidepup/setup-action@0.21.0
+      # Installs the reader and puts the environment in the state it needs — the step that
+      # makes screen-reader automation possible on a hosted runner at all. It is the CLI and
+      # NOT `guidepup/setup-action`, which was tried first and is a version behind: on
+      # 2026-09-15 the action failed VoiceOver with "Failed to mount Guidepup preferences" on
+      # `macos-26`. Guidepup's own workflows do not use the action either — they call this,
+      # at this version, which is the closest thing to an authority there is here.
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 setup --ci
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 install
 
       - run: npx playwright install --with-deps firefox
 
@@ -105,7 +110,8 @@ jobs:
 
       - run: npm ci
 
-      - uses: guidepup/setup-action@0.21.0
+      # The CLI, for the reason recorded in the Windows job above.
+      - run: npx -y --min-release-age=0 @guidepup/setup@0.24.6 setup --ci
 
       - run: npx playwright install --with-deps webkit
 
