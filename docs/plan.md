@@ -1304,6 +1304,27 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the first dispatch of `at-pass.yml`** — a record taken from the copy is the
     moment the drift stops being a risk and becomes evidence
 
+- [ ] **4.67 — a workflow pinned an action version that never existed, and no gate reads a remote**
+  - the first dispatch of `at-pass.yml`, 2026-09-15, died inside `Set up job` on both runners:
+    `Unable to resolve action guidepup/setup-action@v2`. That action carries no major-version
+    refs at all — its tags run `0.21.0` downwards — and `@v2` was written from the shape
+    `actions/checkout@v5` uses, in a file nothing had ever executed. It is 4.64's class exactly:
+    a name that resolves to nothing
+  - checked by hand after: six `uses:` across the workflows, one bad, now pinned to `0.21.0`.
+    Two instruments here were found dead on their first execution the same day
+  - **`check-tools` cannot take this one.** Every gate here reads the repository; this reads a
+    REMOTE. Offline it would be red for a reason that has nothing to do with the code, and in
+    CI it answers to somebody else's rate limit. That is a new kind in this battery
+  - three shapes, and the third is the one worth arguing for:
+    1. resolve every `uses:` against the API — truthful, and red on a desk with no network
+    2. pin every action by commit SHA, which GitHub recommends for provenance — a wrong SHA
+       still fails only at run time, so it buys something else and not this
+    3. **give the dispatch-only workflows a schedule and a no-op input.** The defect is that
+       nothing ever executed the file, and execution is the only thing that finds it. It costs
+       minutes, and minutes stopped costing anything at the flip
+  - binds at: **a word on which shape** — or on leaving it to the next dispatch, which is an
+    answer too, and the one that has been in force so far
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
