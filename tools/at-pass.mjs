@@ -144,11 +144,8 @@ const drive = async (baseURL, out) => {
 
     let previous = entered?.at ?? -1;
     for (let stop = 1; entered?.inMain && stop <= CAP; stop += 1) {
-      const at = await step(
-        route,
-        `tab ${stop}`,
-        [FLOOR_TAB, CEILING_TAB],
-        () => page.keyboard.press('Tab'),
+      const at = await step(route, `tab ${stop}`, DWELL_TAB, () =>
+        page.keyboard.press('Tab'),
       );
       // Two ways out, and the second is the one that caught a walk reading Firefox's own
       // toolbar aloud: focus left the content, or Tab moved nothing at all, which is what a
