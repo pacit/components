@@ -326,6 +326,18 @@
         "command": "node tools/check-flake.mjs"
       }
     },
+    "check-tools": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/**/*.mjs",
+        "{workspaceRoot}/tools/check-tools.mjs",
+        "{workspaceRoot}/tools/check-tools.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-tools.mjs"
+      }
+    },
     "check-docs": {
       "executor": "nx:run-commands",
       "cache": true,

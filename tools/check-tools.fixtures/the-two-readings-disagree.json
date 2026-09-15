@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "readings-disagree",
+  "what": "git sees one file the filesystem does not, which is what a pathspec whose star crosses a slash looks like from here",
+  "tracked": { "pad": 1 }
+}

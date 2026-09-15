@@ -1,0 +1,8 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "nothing-to-read",
+  "what": "the set of scripts is empty, so every name in it resolves and the gate passes a repository that has lost its own battery",
+  "scripts": { "clear": true },
+  "tracked": { "clear": true }
+}

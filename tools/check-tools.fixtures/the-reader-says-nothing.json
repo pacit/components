@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "control-passed",
+  "what": "the prepared defect went unreported, so the clean reading above measures a reader that is asleep",
+  "reported": 0
+}

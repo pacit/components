@@ -1,0 +1,15 @@
+{
+  "point": 2,
+  "check": "names",
+  "rule": "name-undeclared",
+  "what": "one script names something nothing declares — the defect itself",
+  "findings": {
+    "add": [
+      {
+        "file": "tools/at-pass.mjs",
+        "line": 150,
+        "message": "'CEILING_TAB' is not defined."
+      }
+    ]
+  }
+}

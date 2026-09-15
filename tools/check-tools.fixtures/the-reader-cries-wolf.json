@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "control-cries-wolf",
+  "what": "the prepared browser names were reported, which is the failure that gets a gate switched off rather than fixed",
+  "passed": 2
+}

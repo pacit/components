@@ -1264,25 +1264,33 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - what remains: the quota to come back (it renews on the billing date), and then a reading
     of whether a push produced a RUN and not merely a commit
   - binds at: **the renewal** — until then every commit lands unbuilt, as they all did
-- [ ] **4.64 — four scripts nothing runs, and a linter that cannot see them**
-  - `at-pass.mjs` carried `[FLOOR_TAB, CEILING_TAB]` — two names declared nowhere in it — for a
-    day and a half. The file parses, so `node --check` is content; the pass threw on the first
-    view of every run, and three hypotheses were tested against a program that never executed
-    ([`lesson-210`](lessons.md#lesson-210))
-  - the `check-*.mjs` battery is exercised by being run. **Four files are not**: `at-pass.mjs`,
-    `fresh-inputs.mjs`, `restore-dictionaries.mjs` and `release.mjs` — no workflow, no target
-    and no `package.json` script names any of them. The last is the instrument 3.1 publishes
-    with, and it has the same standing today as the one that was dead
-  - nothing reads them either. `eslint.config.mjs` matches `['**/*.ts', '**/*.tsx', '**/*.js',
-'**/*.jsx']` — **`.mjs` is not in that list** — and lint targets are per Nx project, while
-    `tools/` is no project. Thirty-two files, no reader
-  - measured 2026-09-15, `no-undef` alone over `tools/**/*.mjs`: twenty errors. Nineteen are
-    `document` and `getComputedStyle` inside `page.evaluate` callbacks, which run in the
-    browser and are not defects; the twentieth was this one. The instrument is that narrow on
-    purpose — the class is a name that resolves to nothing at runtime, not eslint's opinion of
-    the directory
-  - binds at: **a word on where the rule lives** — its own lint target over `tools/`, or a
-    point inside a gate that already runs
+- [x] **4.64 — four scripts nothing runs, and a linter that cannot see them** — **closed
+      2026-09-15 by `check-tools`**: every tracked `.mjs` outside a fixtures tree, 46 of them
+      read two ways, against one rule — no name resolves to nothing. `eslint.config.mjs`
+      matches four extensions and `.mjs` is not one, and a lint target belongs to an Nx
+      project while `tools/` is none ([`lesson-210`](lessons.md#lesson-210))
+  - the control has two halves: one prepared script carries exactly one undeclared name and
+    must be reported, one carries only what a browser hands a `page.evaluate` callback and
+    must not — a reader that reports everything passes a one-sided control too, and is the
+    kind that gets switched off rather than fixed
+  - **the title is wrong, and stands.** `fresh-inputs.mjs` is exercised, and three of the four
+    ARE named — by `at-pass.yml`, `release.yml` and `libs/components/project.json`, none of
+    which the first measurement read. The narrower true statement is 4.65
+- [ ] **4.65 — three scripts that no automated pass executes, and one of them is the release**
+  - measured 2026-09-15 against the targets `ci.yml` and `nightly.yml` actually invoke: of 32
+    scripts under `tools/`, 29 run on every push or every week. Three do not — `at-pass.mjs`,
+    `release.mjs` and `restore-dictionaries.mjs`
+  - `at-pass.mjs` is deliberate: it drives a live screen reader and no runner here has one
+    (2.2). The other two are not deliberate, they are unexamined. **`release.mjs` is what
+    publishes the package**, and it has today the standing `at-pass.mjs` had on 2026-09-13 —
+    parses, reads plausibly, has never been executed by anything but a person
+  - 4.64 holds the names inside these files. Nothing holds whether the files run, and the
+    first time that matters is the tag 3.1 cuts
+  - what it needs is a denominator that survives contact: this position's own count was wrong
+    twice on the day it was written, once by reading two workflows out of sixty-one homes and
+    once by a pattern whose star crossed a slash. A register of the scripts that are meant to
+    be hand-run, each with its reason, is the shape — `tools/distance.policy.json` is the model
+  - binds at: **before 3.1** — a release nobody has run is not a release anybody can trust
 
 ## 5. Gaps with no deadline
 
