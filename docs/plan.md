@@ -1325,6 +1325,19 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **a word on which shape** — or on leaving it to the next dispatch, which is an
     answer too, and the one that has been in force so far
 
+- [x] **4.68 — a file named after a Windows device, and the repository would not clone there**
+      — **closed 2026-09-15.** `libs/components/field/src/aux.ts`: `aux` is one of the names
+      Windows reserves for devices, so git ends the checkout with `invalid path` and exit 128.
+      Not a warning and not a skipped file
+  - for months nobody on Windows could clone this repository, and it went public that way the
+    same evening. Renamed to `auxiliary.ts` — `PctLabelAux`, `PctMessageAux` and their
+    selectors untouched, the bundle byte-identical at 452907 B, 1268 tests green
+  - no gate could have said so and none was at fault: they read this repository on a machine
+    where the name is legal. The instrument for a portability defect is a machine somebody
+    else owns ([`lesson-212`](lessons.md#lesson-212))
+  - found three layers down — the first Windows job this project has run, which needed 4.67's
+    pin fixed, which needed the flip to end two weeks of refused Actions
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
