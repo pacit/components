@@ -369,6 +369,17 @@ components it names: they are views ${seats.join(', ')} of the walk${
 missing because the reader was not listening. Where this reading ends instead is the cap:
 ${capped.length} view(s) have more stops than the ${cap} taken, and each says so where it bit.`;
 
+  // What the reading was taken on, and ONLY what this run can see. The Orca version used to
+  // be printed unconditionally: the first record from a Windows runner carried a bullet
+  // reading `unknown` for a reader it had never invoked, which is a fabricated line in a
+  // document whose whole purpose is to be quotable.
+  const taken = stack
+    ? [stack]
+    : [
+        version('orca', ['--version']),
+        `Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`,
+      ];
+
   const body = [...byRoute.entries()]
     .map(([route, rows]) => {
       const lines = rows.map(
@@ -405,8 +416,7 @@ person has made it.
 
 **Taken with**, because a reading is only ever true of one stack:
 
-- ${version('orca', ['--version'])}
-- ${stack ?? `Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`}
+${taken.map((line) => `- ${line}`).join('\n')}
 - ${steps.length} steps over ${byRoute.size} views, at most ${cap} stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. \`arrive\` is
