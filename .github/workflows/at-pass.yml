@@ -7,10 +7,17 @@
 # multiple of the rest. A schedule here would spend that every night for a reading that moves
 # when the components move and not when the clock does.
 #
-# It has NEVER RUN. Nothing on this machine can drive either reader, so the first dispatch is
-# this workflow's first test as much as its first reading. `routes` defaults to a single view
+# NOTHING HERE CAN DRIVE EITHER READER — no desk in this project has Windows or macOS — so a
+# dispatch of this file is its own test as much as its reading. `routes` defaults to a single view
 # for exactly that reason: find out whether the arrangement speaks at all before paying for
 # thirty-six views of it. Pass an empty string to walk them all.
+#
+# The first dispatch, 2026-09-15, was the test and not the reading: both jobs died inside
+# `Set up job` on `guidepup/setup-action@v2` — a version that has never existed, since the
+# action is tagged `0.21.0` and carries no major-version refs at all. It is the same class as
+# the dead constant found in `at-pass.mjs` the same day (`lesson-210`): a name that resolves
+# to nothing, sitting in a file nothing had ever executed. Every `uses:` in every workflow
+# here was then checked against the remote, and this was the only one.
 name: Assistive-technology pass
 
 on:
@@ -54,7 +61,7 @@ jobs:
 
       # Installs the reader and puts the environment in the state it needs. This is the step
       # that makes screen-reader automation possible on a hosted runner at all.
-      - uses: guidepup/setup-action@v2
+      - uses: guidepup/setup-action@0.21.0
 
       - run: npx playwright install --with-deps firefox
 
@@ -98,7 +105,7 @@ jobs:
 
       - run: npm ci
 
-      - uses: guidepup/setup-action@v2
+      - uses: guidepup/setup-action@0.21.0
 
       - run: npx playwright install --with-deps webkit
 
