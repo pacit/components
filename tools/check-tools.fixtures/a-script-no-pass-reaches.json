@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "run",
+  "rule": "unexplained",
+  "what": "a script under tools/ that nothing invokes and nothing imports, with no reason in the register — the shape at-pass.mjs had when its dead constant went a day and a half unread",
+  "underTools": { "add": ["a-script-nobody-calls.mjs"] }
+}

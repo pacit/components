@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "run",
+  "rule": "stale-excuse",
+  "what": "the register excuses a script a pass does reach; this fired for real on restore-dictionaries.mjs the moment the import closure was written",
+  "policy": { "set": { "check-language.mjs": "by hand" } }
+}

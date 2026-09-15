@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "nothing-to-read",
+  "what": "no workflow target was found to run anything under tools/, which reads every script as cold and is a fact about the pattern",
+  "exercised": { "clear": true }
+}

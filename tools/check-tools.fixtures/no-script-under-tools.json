@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "nothing-to-read",
+  "what": "tools/ reads empty, so point 4 has nothing that can be cold and passes on an empty set",
+  "underTools": { "clear": true }
+}

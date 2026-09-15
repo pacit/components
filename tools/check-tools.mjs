@@ -6,7 +6,8 @@
  *
  *  1. MEASURED: the scripts are found at all, and the set is read two different ways,
  *  2. NAMES: no identifier in any of them resolves to nothing,
- *  3. CONTROL: the prepared scripts are read, one reported and one not.
+ *  3. CONTROL: the prepared scripts are read, one reported and one not,
+ *  4. RUN: every script under `tools/` is executed by a pass, or the register says why not.
  *
  * `at-pass.mjs` carried `CEILING_TAB`, declared nowhere, and threw on the first view of every
  * run for a day and a half (`lesson-210`). `no-undef` is the whole instrument on purpose: a
@@ -23,6 +24,8 @@ import { ESLint } from 'eslint';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = process.argv.includes('--report');
 const FIXTURES = 'tools/check-tools.fixtures';
+const POLICY = 'tools/tools.policy.json';
+const WORKFLOWS = ['ci.yml', 'nightly.yml'];
 const REPORTED = 'a-name-nothing-declares.mjs';
 const PASSED = 'a-name-the-browser-declares.mjs';
 
@@ -103,6 +106,24 @@ const checkTools = (input) => {
         'and neither number can be trusted until they agree',
     );
 
+  // Point 4 answers from `underTools`, and an empty one would answer "no script is cold"
+  // perfectly. It cannot be derived from the set above being non-empty: `tracked` reaches the
+  // whole repository and this is one directory of it.
+  if (!input.underTools.length)
+    fire(
+      'measured',
+      'nothing-to-read',
+      'no script was found directly under `tools/`, which is where this repository keeps the ' +
+        'instruments it runs itself with. Point 4 would then have nothing to be cold',
+    );
+  if (!input.exercised.length)
+    fire(
+      'measured',
+      'nothing-to-read',
+      'no target of any workflow was found to run a script under `tools/`. Every script ' +
+        'would then be cold, which is a reading of the pattern and not of the repository',
+    );
+
   // 2. NAMES — the finding itself.
   if (input.findings.length) {
     const where = input.findings
@@ -139,6 +160,32 @@ const checkTools = (input) => {
       `\`${PASSED}\` carries only names a browser hands to a \`page.evaluate\` callback, ` +
         `and the reader made ${input.passed} finding(s) on it. A reader that reports ` +
         'everything is as useless as one that reports nothing, and louder',
+    );
+
+  // 4. RUN — point 2 asks whether the names inside a script resolve. This asks whether
+  // anything ever reaches the script. `at-pass.mjs` answered yes to the first for a day and
+  // a half while answering no to the second, and the defect lived in the gap.
+  const cold = input.underTools.filter(
+    (name) => !input.exercised.includes(name),
+  );
+  const unexplained = cold.filter((name) => !input.policy[name]);
+  if (unexplained.length)
+    fire(
+      'run',
+      'unexplained',
+      `no pass executes \`${unexplained.join('`, `')}\`, and \`${POLICY}\` does not say ` +
+        'why. A script nothing runs is a script nothing reads either, and the first time it ' +
+        'is wrong is the first time somebody needs it',
+    );
+  const stale = Object.keys(input.policy)
+    .filter((key) => !key.startsWith('// '))
+    .filter((name) => input.exercised.includes(name));
+  if (stale.length)
+    fire(
+      'run',
+      'stale-excuse',
+      `\`${POLICY}\` excuses \`${stale.join('`, `')}\` from running, and a pass runs ` +
+        'them. An excuse nobody removed reads like a fact and is one more thing to disbelieve',
     );
 };
 
@@ -190,9 +237,79 @@ const tracked = lines(git('ls-files', ':(glob)*.mjs', ':(glob)**/*.mjs'))
   .filter(own)
   .sort();
 
+/**
+ * Which scripts a pass actually reaches, and the arithmetic is the whole difficulty. This
+ * number was answered four different ways in one day — 4, 3, 4, 2 — and only the last is
+ * right, so the method is written out rather than left in a regex:
+ *
+ *   1. the targets the two scheduled-or-pushed workflows invoke (a dispatch is a person),
+ *   2. the scripts in the COMMAND of such a target — not anywhere in its definition, since
+ *      `{workspaceRoot}/tools/fresh-inputs.mjs` appears as a cache INPUT and is not run by it,
+ *   3. then the closure over `./*.mjs` imports, because a module a reached gate imports is
+ *      exercised every time that gate is, and `restore-dictionaries.mjs` is exactly that.
+ *
+ * `tools/` must also not be matched with a `/` in front of it: that reaches `apps/docs/tools/`
+ * as well, and the count came out one high until this line said so.
+ */
+const targetsIn = (text) =>
+  [...String(text).matchAll(/nx (?:affected|run-many) -t ([a-z0-9:\- \t]+)/g)]
+    .flatMap((m) => m[1].trim().split(/\s+/))
+    .filter(Boolean);
+const invoked = new Set(
+  WORKFLOWS.flatMap((file) =>
+    targetsIn(readFileSync(join(ROOT, '.github/workflows', file), 'utf8')),
+  ),
+);
+const NAMED = /(?:^|["'\s])tools\/([a-z0-9-]+\.mjs)/g;
+const reached = new Set(
+  lines(git('ls-files'))
+    .filter((path) => path.endsWith('project.json'))
+    .flatMap((path) => {
+      const targets =
+        JSON.parse(readFileSync(join(ROOT, path), 'utf8')).targets ?? {};
+      return Object.entries(targets)
+        .filter(([name]) => invoked.has(name))
+        .flatMap(([, def]) => {
+          const options = def.options ?? {};
+          const ran = [options.command, ...(options.commands ?? [])]
+            .map((one) =>
+              typeof one === 'string' ? one : (one?.command ?? ''),
+            )
+            .join('\n');
+          return [...ran.matchAll(NAMED)].map((m) => m[1]);
+        });
+    }),
+);
+// The closure. A gate that runs pulls in what it imports, and that module is as exercised as
+// the gate is — measured, not assumed: `check-language` imports `restore-dictionaries.mjs`.
+for (let grew = true; grew;) {
+  grew = false;
+  for (const name of [...reached]) {
+    const path = join(ROOT, 'tools', name);
+    let source = '';
+    try {
+      source = readFileSync(path, 'utf8');
+    } catch {
+      continue;
+    }
+    for (const m of source.matchAll(/from '\.\/([a-z0-9-]+\.mjs)'/g))
+      if (!reached.has(m[1])) {
+        reached.add(m[1]);
+        grew = true;
+      }
+  }
+}
+const exercised = [...reached];
+const underTools = tracked
+  .filter((path) => path.startsWith('tools/') && !path.slice(6).includes('/'))
+  .map((path) => path.slice(6));
+
 const live = {
   scripts,
   tracked,
+  exercised,
+  underTools,
+  policy: JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8')),
   findings: await readNames(tracked),
   reported: (await readNames([`${FIXTURES}/${REPORTED}`])).length,
   passed: (await readNames([`${FIXTURES}/${PASSED}`])).length,
@@ -225,6 +342,12 @@ const buildFixture = (base, fx) => {
   w.findings.push(...(fx.findings?.add ?? []));
   if (fx.reported !== undefined) w.reported = fx.reported;
   if (fx.passed !== undefined) w.passed = fx.passed;
+  if (fx.underTools?.clear) w.underTools = [];
+  w.underTools.push(...(fx.underTools?.add ?? []));
+  if (fx.exercised?.clear) w.exercised = [];
+  w.exercised.push(...(fx.exercised?.add ?? []));
+  for (const key of fx.policy?.drop ?? []) delete w.policy[key];
+  Object.assign(w.policy, fx.policy?.set ?? {});
   return w;
 };
 
@@ -265,7 +388,10 @@ if (problems.length) {
   process.exit(1);
 }
 process.stdout.write(
-  `✓ Scripts gate: ${scripts.length} script(s) read two ways, every name resolves. ` +
+  `✓ Scripts gate: ${scripts.length} script(s) read two ways, every name resolves; ` +
+    `${live.underTools.filter((n) => live.exercised.includes(n)).length} of the ` +
+    `${live.underTools.length} under \`tools/\` run in a pass ` +
+    `and the rest carry a reason. ` +
     `Negative control: the prepared defect is reported and the prepared browser names are ` +
     `not, ${cases.length} prepared input(s) rejected on their own points.\n`,
 );

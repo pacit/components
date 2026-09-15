@@ -1,0 +1,8 @@
+{
+  "// what this is": "Scripts under `tools/` that no automated pass reaches, each with the reason. `check-tools` point 4 refuses a cold script that is not named here, and refuses an entry here for a script a pass does reach — an excuse nobody removed reads like a fact.",
+  "// how reached is decided": "The command of a target the push line or the schedule invokes, then the closure over `./*.mjs` imports. A module a running gate imports is as exercised as the gate: `restore-dictionaries.mjs` was listed here until the closure was written and the gate refused the entry.",
+  "// at-pass.mjs": "Drives a live screen reader on a display of its own. No runner in this workspace has one, and the reading is a person's to take (plan 2.2). `at-pass.yml` dispatches the other two readers by hand.",
+  "at-pass.mjs": "by hand, and by dispatch",
+  "// release.mjs": "Publishes the package. `release.yml` runs it on a tag, and no tag has been cut, so nothing on a push or a schedule reaches it. Deliberate, and also the risk 4.65 names: the instrument of the premiere is the one nothing exercises.",
+  "release.mjs": "on a tag nobody has cut"
+}
