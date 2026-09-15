@@ -4,4 +4,4 @@ export * from './text';
 export * from './autosize';
 export * from './number';
 export * from './affix';
-export * from './aux';
+export * from './auxiliary';

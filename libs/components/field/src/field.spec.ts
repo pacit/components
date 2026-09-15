@@ -11,7 +11,7 @@ import { email, form, FormField, required } from '@angular/forms/signals';
 import { providePctConfig } from '@pacit/components/core';
 import { allParts, part, query } from '../../testing/src/dom';
 import { PctPrefix, PctSuffix } from './affix';
-import { PctLabelAux, PctMessageAux } from './aux';
+import { PctLabelAux, PctMessageAux } from './auxiliary';
 import { PctField } from './field';
 import { PctFieldSize } from './field.types';
 import { PctText } from './text';

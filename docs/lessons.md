@@ -5844,3 +5844,37 @@ The correlation is real and unexplained.
 The shape: **a symptom with a period is about counting, not about size.** When two settings an
 octave apart give the identical result, the next experiment is to change how many times
 something happens, not how long it takes.
+
+### <a id="lesson-212"></a>`lesson-212` — A file name can make a repository un-clonable, and only a machine you do not own will say so
+
+`libs/components/field/src/aux.ts` held two directives and a good name. `aux` is one of the
+device names Windows reserves, and git does not work around it:
+
+```
+error: invalid path 'libs/components/field/src/aux.ts'
+```
+
+Not a warning, not a skipped file — `exit code 128`, the checkout over. **For months, nobody
+using Windows could clone this repository**, and the repository went public that way.
+
+How it was found is the whole lesson. The first job this project ever ran on a Windows runner
+died on it — and that job only ran because an action pin that had never resolved was fixed
+([`lesson-210`](#lesson-210)'s class again), and that dispatch only happened because the flip
+to public ended two weeks of Actions refusing to start anything at all. Three layers of "this
+has never been executed", stacked, each hiding the one beneath it.
+
+Twenty-odd gates read this repository and not one could have said so. They all read it **here**,
+and here the file is legal: ext4 does not care, and neither does macOS. A portability defect is
+invisible to a machine that is already portable enough, so the instrument is not a better gate
+— it is a machine somebody else owns.
+
+There is a second beat, and it cost the next run. The comment written to stop anybody renaming
+the file back listed the reserved names, and `check-language` went red: that comment is
+compiled into `fesm2022` and embedded whole in the sourcemap, and the **public surface has no
+register of exceptions** by design — a note the consumer cannot read, in a package they cannot
+edit. An explanation of a defect belongs where explanations are published. The file now says
+what it must and points here for the list.
+
+The shape: **a gate can only be as portable as the machine it runs on.** Ask what the code
+touches that this machine is indifferent to — path names, case sensitivity, line endings, file
+system limits — and the answer is not a rule you can write down here; it is a runner.

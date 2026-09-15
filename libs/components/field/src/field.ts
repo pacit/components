@@ -20,7 +20,7 @@ import {
   PctFieldApi,
   PctFieldControl,
 } from '@pacit/components/core';
-import { PctLabelAux, PctMessageAux } from './aux';
+import { PctLabelAux, PctMessageAux } from './auxiliary';
 import { PctFieldSize } from './field.types';
 
 /**

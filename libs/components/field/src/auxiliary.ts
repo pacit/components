@@ -1,5 +1,14 @@
 import { Directive } from '@angular/core';
 
+/*
+ * The file is `auxiliary.ts` and NOT `aux.ts`, which is what it was called until 2026-09-15.
+ * That name is one of the device names Windows reserves, so git refuses to create the file
+ * and the checkout fails outright — no contributor on Windows can clone this repository at
+ * all. It went unseen for months and was found by the first job ever run on a Windows runner
+ * (`lesson-212`). The exported names and the selectors are unchanged: they are the public
+ * API, and the file name never was.
+ */
+
 /**
  * A label add-on — content in the label row, aligned to the end (an "i" icon with a hint about
  * the field, a help link). It lies **outside** the field border, so it does not interfere with
