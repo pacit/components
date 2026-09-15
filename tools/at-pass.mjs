@@ -42,10 +42,16 @@ const DWELL_LOAD = 9000;
 const DWELL_TAB = 2000;
 /** The cap on tab stops per view. It is written into the record wherever it bit (no silent caps). */
 const CAP = 12;
-/** What counts as a stop of the Tab key, and so as a position inside the view's content. */
+/**
+ * What counts as a stop of the Tab key. `summary` and `[contenteditable]` are focusable with
+ * no attribute saying so, and leaving them out did not hide them from the reader — it hid
+ * them from the WALK, which then read two `<summary>` elements of an accordion as one
+ * unmoved position and stopped the view on a note that said focus had left the page.
+ */
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
-  'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  'textarea:not([disabled]),summary,[contenteditable],audio[controls],video[controls],' +
+  '[tabindex]:not([tabindex="-1"])';
 
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 
@@ -80,10 +86,12 @@ const drive = async (baseURL, out) => {
   });
 
   /**
-   * What the browser gave focus to, where it sits among the view's own stops, and whether it
-   * is still inside them. The POSITION is what says whether Tab moved: two radios of one
-   * group describe themselves identically, so a description compared with the last one ends
-   * the walk on the second of them.
+   * What the browser gave focus to, whether it is still inside the view's own stops, and
+   * whether Tab moved at all. That last is asked of the ELEMENT. A description cannot answer
+   * it — two radios of one group describe themselves identically — and neither can a position
+   * in a selector's list, which was the previous instrument: everything the selector did not
+   * match shared the index -1, so two such stops in a row read as one stop that never moved.
+   * A sentinel compared as a value is not a measurement.
    */
   const focus = () =>
     page.evaluate((selector) => {
@@ -100,11 +108,12 @@ const drive = async (baseURL, out) => {
         one.length <= 40 ? one : `${one.slice(0, 40).replace(/\s+\S*$/, '')}…`;
       const tag = el.tagName.toLowerCase();
       const part = el.getAttribute('data-pct-part');
-      const main = document.querySelector('main');
+      const moved = el !== window.__atPassPrevious;
+      window.__atPassPrevious = el;
       return {
         what: `${tag}${part ? `[${part}]` : ''}${name ? ` "${name}"` : ''}`,
         inMain: !!el.closest('main'),
-        at: main ? [...main.querySelectorAll(selector)].indexOf(el) : -1,
+        moved,
       };
     }, FOCUSABLE);
 
@@ -134,6 +143,8 @@ const drive = async (baseURL, out) => {
     // does not take on some views. This takes.
     const entered = await step(route, 'enter', DWELL_TAB, () =>
       page.evaluate((selector) => {
+        // The walk of a view starts with no previous stop, whoever held focus a moment ago.
+        window.__atPassPrevious = undefined;
         const first = document.querySelector('main')?.querySelector(selector);
         first?.focus();
       }, FOCUSABLE),
@@ -142,7 +153,6 @@ const drive = async (baseURL, out) => {
       steps.at(-1).note =
         'no stop of its own inside `main` — nothing to walk here';
 
-    let previous = entered?.at ?? -1;
     for (let stop = 1; entered?.inMain && stop <= CAP; stop += 1) {
       const at = await step(route, `tab ${stop}`, DWELL_TAB, () =>
         page.keyboard.press('Tab'),
@@ -151,11 +161,10 @@ const drive = async (baseURL, out) => {
       // toolbar aloud: focus left the content, or Tab moved nothing at all, which is what a
       // page whose keyboard focus has gone to the browser looks like from inside it.
       if (!at?.inMain) break;
-      if (at.at === previous) {
+      if (!at.moved) {
         steps.at(-1).note = 'Tab moved nothing — focus had left the page';
         break;
       }
-      previous = at.at;
     }
 
     // The smoke check, and it is about the INSTRUMENT rather than the view. Whether the
