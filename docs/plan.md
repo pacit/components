@@ -427,26 +427,26 @@ and everything a stranger can see still waits for 2.1 and a sentence.
   - cost: minutes · no flip, no npm, no announcement — provenance refuses a private repository,
     `check-package.mjs --release` still blocks · _notes:_ the split's reasoning is owed an ADR
 
-- [ ] **3.1 — the premiere: the flip to public, `repository` promises that resolve, npm** —
-      **held on a state and on a sentence, and it needs both**
-  - **the precondition is 2.1**: a package whose first visitor has nowhere to read what it does is
-    published too early, and that half is a state, which can be checked
-  - **the trigger is still a sentence.** no green run starts the flip, and standing last in the
-    order is not a start either — a session that reaches 3.1 passes over it and takes the next item
-  - concerns: `req-release-metadata` — the gate, its control and the manifest field are done
-    (`libs/components/package.json` points at `github.com/pacit/components`); what is left is the
-    flip and the npm publish, and day to day the gate only warns
-  - the `pacit` organisation exists on GitHub and on npm (scope `@pacit`, owner `markovy`); the
-    repository arrives with **3.0** and stays private until here
-  - the flip is binary — the second `README.md`, `docs/` and the step names in Actions become the
-    product — so everything a first visitor sees is finished before it, and what waits for this
-    item is provenance, the resolving addresses, and every promise a stranger can read
-  - the condition is wider than the public surface: **nothing leaves in a second language at all**,
-    and the language gate proves it over the index and the package, with no entry in the register
-  - _from the direction review:_ the README's external links resolve before publish (no gate reads
-    a link; `check-package --release` can ask); npm **trusted publishing** replaces the standing
-    `NPM_TOKEN` secret; and the README entrypoints gate of **4.10** is a precondition here
-  - cost: minutes for the task itself · _notes:_ —
+- [~] **3.1 — the premiere: the flip to public, `repository` promises that resolve, npm** —
+  **the flip is done, 2026-09-15; the publish is not, and was refused on the day**
+  - **the flip.** `pacit/components` is public. Checked before it, because it does not come
+    back: `docs/private/` never tracked and in `.gitignore`, no secret across 404 commits, the
+    six README links present on `origin/main`, the release rehearsed end to end. Checked after:
+    all seven links answer **200 to an anonymous fetch** — the condition this position wrote as
+    prose, finally measured rather than asserted
+  - **what it bought the same minute**: Actions is unbilled on a public repository, so 4.63's
+    wall is gone, the schedule is nightly again, and the two other readers have a runner (2.2)
+  - it also puts 404 commits under a public author address, which no later change undoes
+  - **the publish is deliberately not taken**, on the maintainer's word the same day. The
+    rehearsal passes end to end and would ship 690.6 kB over 114 files; conventional commits
+    resolve 0.0.1 to 0.0.2. A prerelease label would change nothing that matters —
+    [0016](decisions/0016-mit-irreversibility.md) is about the set that has gone out, not about
+    what it was called
+  - what a real publish still needs: npm **trusted publishing** in place of the standing
+    `NPM_TOKEN`, and the one thing a dry run cannot reach — it writes no manifest, so
+    `stamp-version` reads the OLD version and the ordering this script exists for
+    ([`lesson-41`](lessons.md#lesson-41)) stays untested until a release that is real
+  - the trigger stays a sentence. Standing last in the order is not a start
 
 - [ ] **3.2 — citations in the public API as links**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language)
@@ -1245,25 +1245,19 @@ and every one is held by a **binds at** rather than by anybody's mood.
     match ran past the newline and took `npx`, `nx`, `run:` and `-t` from the next step. Six
     words that are not targets, in the set this point answers from
 
-- [~] **4.63 — the copy is current, the runner is not: every push that day got no CI at all**
-  - 4.55 closed on the push and the gate that holds the distance. Both true, both beside the
-    point: of the seven pushes that followed, **not one started a job**. GitHub answered each
-    with _"your spending limit needs to be increased"_ — 3 to 4 seconds, no runner, no red test
-  - it is not a failed payment, it is **arithmetic nobody did**. A private repository on a free
-    account has 2000 Actions minutes a month; the scheduled run of 2026-09-11 spent **123** of
-    them on `mutation check-mutation e2e` alone against **2** on the whole static battery, and
-    fourteen such nights plus the pushes came to **2080**. [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)
-    moved the two heaviest targets off the push line to save minutes and computed no total
-  - the stopgap, 2026-09-15: the scheduled run goes **weekly** and its name stops saying
-    nightly. It reverses at the flip — Actions is unbilled on a public repository, so the
-    cadence is a property of the private stage and not of the work
-  - **what the repository could not say.** `check-distance` reports zero and is right: the
-    commits are on the remote. What 0075 actually bought is a CI line that _reports_ rather
-    than describes, and that is as absent as it was at 173 commits — for a reason no gate here
-    reads, because every gate reads the repository and this one is an account
-  - what remains: the quota to come back (it renews on the billing date), and then a reading
-    of whether a push produced a RUN and not merely a commit
-  - binds at: **the renewal** — until then every commit lands unbuilt, as they all did
+- [x] **4.63 — the copy is current, the runner is not: every push that day got no CI at all**
+      — **closed 2026-09-15 by the flip.** Of the seven pushes after 4.55 not one started a job:
+      three to four seconds each, "your spending limit needs to be increased", zero steps
+  - never a failed payment, **arithmetic nobody did**: 2000 minutes a month on a free private
+    account, and 2026-09-11 spent 123 on `mutation check-mutation e2e` alone against 2 on the
+    whole static battery — fourteen such nights plus the pushes came to 2080.
+    [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md) moved those two off the
+    push line to save minutes and computed no total
+  - the weekly stopgap reversed where its own header said it would: public repository from
+    2026-09-15, Actions unbilled there, cron nightly again, nothing else touched
+  - the reading it was held for: a push produces a **RUN**, not merely a commit — the first CI
+    to execute since 2026-09-02, and the first runner `check-tools` has met
+
 - [x] **4.64 — four scripts nothing runs, and a linter that cannot see them** — **closed
       2026-09-15 by `check-tools`**: every tracked `.mjs` outside a fixtures tree, 46 of them
       read two ways, against one rule — no name resolves to nothing. `eslint.config.mjs`
