@@ -268,16 +268,16 @@ precondition of the quiet push (3.0), which no visitor can see.
     of WCAG 2.2 at A and AA, each resting on what already runs, every citation held and the
     rendering compared byte for byte. The site shows it at `/acr` with
     [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
-  - **one of the three readers is on record, 2026-09-15.** `at-pass.sh` puts Orca on a display
-    of its own and `at-pass.mjs` walks the views into `docs/acr/at/orca-firefox-linux.md`: 277
-    steps, 981 utterances, **18 of 36 views unread** — and those are views 2, 4, 6 … 36, the
-    even half exactly, which makes the set a phase of the pass and not a fact about components.
-    The reader attaches; a day went on proving otherwise ([`lesson-210`](lessons.md#lesson-210))
+  - **one of the three readers is on record, and nothing in it is unread.** `at-pass.sh` puts
+    Orca on a display of its own; `at-pass.mjs` reaches each view through the sandbox's own
+    navigation, into `docs/acr/at/orca-firefox-linux.md` — 426 steps over 36 views and 1847
+    utterances, **no silent stop**. A document load per view had read every other one, for a
+    reason that was never the clock ([`lesson-211`](lessons.md#lesson-211))
   - **the other two are reachable and untested.** `at-pass.yml` dispatches NVDA and VoiceOver
     through Guidepup onto their own runners, into the same record shape. It has never run —
     nothing here drives either reader — so the first dispatch is its first test, and `routes`
     defaults to one view to make that cost minutes instead of hours
-  - **what remains**: why the walk reads every OTHER view, the first dispatch of the two
+  - **what remains**: the cap, which bit on 23 of the 36 views, the first dispatch of the two
     others, the reading in all 34 cards — which the gate turns into a **`Supports` for 4.1.2**,
     the maintainer's to authorise — and a person's read of the logs
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
