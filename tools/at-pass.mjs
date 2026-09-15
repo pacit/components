@@ -163,6 +163,12 @@ const drive = async (baseURL, out) => {
     // discovers it in the thirty-sixth view has spent a quarter of an hour finding out. It
     // is not a threshold: one utterance falling inside one step of the first view is enough,
     // and a reader that never attached produces none anywhere.
+    //
+    // What it may NOT do is say why. An earlier wording answered its own question — "it
+    // started and did not attach to the browser, which happens ... run the pass again" — and
+    // that sentence was quoted as a finding into a lesson, the plan and the record, against a
+    // run whose driver had thrown before this line was ever reached (`lesson-210`). A check
+    // reports what it counted and where to look; the reading is the reader's.
     if (index === 0 && process.env.AT_PASS_DEBUG) {
       const heard = utterances(
         readFileSync(process.env.AT_PASS_DEBUG, 'utf8'),
@@ -171,8 +177,9 @@ const drive = async (baseURL, out) => {
       );
       if (!heard.length)
         throw new Error(
-          `the reader said nothing on \`${route}\` — it started and did not attach to the ` +
-            `browser, which happens and is not about this repository. Run the pass again.`,
+          `no utterance of the reader's falls inside any of the ${steps.length} step(s) of ` +
+            `\`${route}\`, the first view. Its log is ${process.env.AT_PASS_DEBUG}; this ` +
+            `pass stops here rather than spend a quarter of an hour on the other views.`,
         );
     }
   }

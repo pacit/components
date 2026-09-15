@@ -95,7 +95,9 @@ dbus-run-session -- bash -c '
   sleep 6
   kill -0 $ORCA 2>/dev/null || { echo "X the reader did not start — see $WORK/orca.out" >&2; exit 1; }
   cd "$ROOT"
-  scripts/with-node node tools/at-pass.mjs --drive "$BASE" "$WORK/steps.json" || exit 1
+  scripts/with-node node tools/at-pass.mjs --drive "$BASE" "$WORK/steps.json" \
+    2>&1 | tee "$WORK/drive.log"
+  [ "${PIPESTATUS[0]}" = 0 ] || exit 1
   touch "$WORK/drove.ok"
   sleep 2
   kill $ORCA 2>/dev/null || true
@@ -106,8 +108,13 @@ dbus-run-session -- bash -c '
 # `exit 1` in there ends the subshell and nothing else. Without this the script went on to
 # RENDER a pass in which the reader never spoke — a record of thirty-six unread views, which
 # is a plausible-looking file and a lie about a measurement that never happened.
+# The driver's OWN output is the first place to look, and for a day and a half this line did
+# not mention it: it named the reader's log and the display's, both of which were empty, while
+# the driver was throwing `ReferenceError` into a pipe (`lesson-210`). The remedy a guard
+# prints is part of the guard.
 if [ ! -f "$WORK/drove.ok" ]; then
-  echo "X the walk did not complete — see $WORK/orca.out and $WORK/xvfb.log" >&2
+  echo "X the walk did not complete. The driver's own output is $WORK/drive.log; the" >&2
+  echo "  reader's is $WORK/orca.out and the display's is $WORK/xvfb.log." >&2
   exit 1
 fi
 

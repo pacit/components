@@ -5761,10 +5761,15 @@ means the queue is full rather than empty. The instrument cannot be asked when i
 
 The third was the expensive one. A run died with `RecursionError` inside Orca's own
 `ax_object.py`, so its profile directory was cleared to rule out half-written state. Every run
-since has produced **three** utterances — the reader starts, attaches to nothing, and says
-"Screen reader on" and "Screen reader off". The profile that worked was built up by accident
-over a dozen runs and cannot be reconstructed, and what in it mattered is not known. Clearing
-it was the one change that could not be undone.
+since produced **three** utterances, and the profile that worked was written off as an accident
+of a dozen runs that could not be reconstructed.
+
+**None of that held.** The three utterances were a `ReferenceError`: the walk passed
+`[FLOOR_TAB, CEILING_TAB]` as the dwell of every Tab stop and neither name is declared in the
+file, so the driver threw on the first view of every run — including the two runs that tested
+the hypotheses above. An A/B of the cleared profile against an empty one, 2026-09-15, gives 22
+utterances either way, to the word: it was never the variable, in either direction, and nothing
+in it was lost. With the dwell corrected the same pass walks 277 steps and 981 utterances.
 
 Two repairs came out of the wreckage and both are worth more than the tuning ever was. The
 script **rendered a record from a pass in which the reader never spoke** — its `exit 1` sat
@@ -5776,5 +5781,37 @@ quarter of an hour per attempt.
 
 The shape: **when the instrument is flaky, every hypothesis about the subject is unfalsifiable
 until the instrument reports on itself.** Ten passes were spent before the harness could say
-"the reader did not attach" — and that sentence, not any of the three hypotheses, is what
-makes the next attempt cheap.
+"the reader did not attach" — and that sentence was itself a guess, dressed as a reading, which
+is [`lesson-210`](#lesson-210).
+
+### <a id="lesson-210"></a>`lesson-210` — The guard fired correctly and handed over a false cause
+
+`tools/at-pass.sh` ends on a sentinel: no `drove.ok` file, no rendered record. It worked. What
+it printed was
+
+```
+X the walk did not complete — see tmp/at/orca.out and tmp/at/xvfb.log
+```
+
+Both files were empty. That is what a reader which never spoke looks like, and equally what a
+reader which was never asked to looks like — the driver's own stack trace was a few lines
+higher in the same output, and the remedy named two other files. The fault was
+`ReferenceError: FLOOR_TAB is not defined`; the search went to the reader and cost three
+hypotheses, ten passes and a day ([`lesson-209`](#lesson-209)).
+
+The smoke check inside the walk said it in stronger words — _"the reader said nothing … it
+started and did not attach to the browser, which happens and is not about this repository. Run
+the pass again."_ That line never executed, because the crash came first. It did not have to:
+its sentence had already been copied into a lesson, a plan position and a memory as the
+finding. A message that names a cause AND prescribes a retry closes the loop against looking
+for any other one.
+
+The generated record carried the same defect in the other direction: it explained its unread
+views by a missing window manager, in a pass that was running under openbox.
+
+The shape: **a report may say what it observed; the moment it says why, it is a hypothesis
+with the authority of a measurement.** An empty log is evidence of silence and of nothing
+else. All three were repaired by subtraction — the sentinel now names the driver's own output
+first, the smoke check counts utterances against steps and stops, and the record prints where
+the unread views sit (2, 4, 6 … 36, every other one) instead of why. The last of those is a
+worse story and a much better lead than any of the guesses it replaced.
