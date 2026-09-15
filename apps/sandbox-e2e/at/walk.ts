@@ -37,6 +37,15 @@ const FOCUSABLE =
 
 interface Reader {
   spokenPhraseLog(): Promise<string[]>;
+  /**
+   * The Tab press goes through the READER and not through `page.keyboard`, and the difference
+   * is the whole reading. Driven from Playwright, the browser moves focus and the reader's
+   * spoken log does not grow at all: the first NVDA record taken this way was silent at 23 of
+   * its 24 stops, with only `arrive` speaking — and `arrive` is the one step that issues a
+   * reader command (`navigateToWebContent`). Guidepup's own examples drive every movement
+   * with the reader. A keystroke the reader did not make is a keystroke it cannot report.
+   */
+  press(key: string): Promise<void>;
   navigateToWebContent?: () => Promise<void>;
 }
 
@@ -155,7 +164,7 @@ export async function walk(
     while (entered?.inMain && own < CAP && pressed < PRESSES) {
       pressed += 1;
       const at = await step(route, `tab ${pressed}`, DWELL_TAB, () =>
-        page.keyboard.press('Tab'),
+        reader.press('Tab'),
       );
       if (!at?.inMain) break;
       if (!at.moved) {
