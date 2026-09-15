@@ -1,5 +1,5 @@
 import { nvdaTest as test } from '@guidepup/playwright';
-import { walk } from './walk';
+import { routesAsked, walk } from './walk';
 
 /**
  * NVDA with Firefox on Windows — one of the two readers `docs/acr/claims.json` declares and
@@ -7,12 +7,11 @@ import { walk } from './walk';
  * `at-pass.yml` is its first test as much as its first reading.
  */
 test('NVDA reads the sandbox views', async ({ page, nvda }) => {
-  const only = process.env['AT_PASS_ROUTES']?.split(',').filter(Boolean);
   await walk(
     page,
     nvda,
     'tmp/at/nvda-firefox-windows.steps.json',
     'NVDA with Firefox on Windows',
-    only,
+    routesAsked(),
   );
 });

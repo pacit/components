@@ -88,6 +88,21 @@ const focusOf = (page: Page) =>
     };
   }, SCAFFOLD);
 
+/**
+ * The routes a dispatch asked for. `workflow_dispatch` substitutes an input's DEFAULT when it
+ * is handed an empty value, so "every view" cannot be said by saying nothing — a dispatch with
+ * `routes=` walked one view and reported it as a full pass. It is said with `all`, and the
+ * cheap single-view default stays what a careless dispatch gets.
+ */
+export const routesAsked = (): readonly string[] | undefined => {
+  const raw = process.env['AT_PASS_ROUTES']?.trim();
+  if (!raw || raw === 'all') return undefined;
+  return raw
+    .split(',')
+    .map((route) => route.trim())
+    .filter(Boolean);
+};
+
 export async function walk(
   page: Page,
   reader: Reader,

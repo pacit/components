@@ -10,7 +10,8 @@
 # NOTHING HERE CAN DRIVE EITHER READER — no desk in this project has Windows or macOS — so a
 # dispatch of this file is its own test as much as its reading. `routes` defaults to a single view
 # for exactly that reason: find out whether the arrangement speaks at all before paying for
-# thirty-six views of it. Pass an empty string to walk them all.
+# thirty-six views of it. Pass `all` to walk them — NOT an empty value, which `workflow_dispatch`
+# replaces with the default, so a dispatch asking for everything quietly walked one view.
 #
 # The first dispatch, 2026-09-15, was the test and not the reading: both jobs died inside
 # `Set up job` on `guidepup/setup-action@v2` — a version that has never existed, since the
@@ -24,7 +25,7 @@ on:
   workflow_dispatch:
     inputs:
       routes:
-        description: 'Comma-separated routes, or empty for every view'
+        description: 'Comma-separated routes, or `all` for every view'
         required: false
         default: '/accordion'
       readers:
