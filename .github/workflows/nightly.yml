@@ -37,12 +37,24 @@
 # here would answer the one question this file exists to ask. The wobble on an untouched file
 # is answered by the runner split above and by the snapshot it is measured against — not by
 # freezing the reading that measures it.
-name: Nightly
+# WEEKLY, not nightly, and the file keeps its name because the lessons and decisions that
+# cite it are a record of when it was one. The cadence is arithmetic, measured 2026-09-14:
+# a private repository on a free account has 2000 Actions minutes a month, the run of
+# 2026-09-11 spent 123 of them on `mutation check-mutation e2e` alone against 2 on the whole
+# static battery, and fourteen such nights plus the pushes came to 2080. Every job of every
+# push from 13:02 that day was refused with "the job was not started because ... your
+# spending limit needs to be increased" — the wall, reached by design and by nobody's
+# arithmetic (position 4.63).
+#
+# It reverses at the flip. Actions is unbilled on a PUBLIC repository, so this cadence is a
+# property of the private stage (0075) and not of the work: at 3.1 the cron goes back to
+# daily and nothing else here changes.
+name: Scheduled full run
 
 on:
   schedule:
-    # 02:30 UTC — after midnight in Europe, before anybody's morning push.
-    - cron: '30 2 * * *'
+    # Monday 02:30 UTC — a red result then has the week in front of it rather than behind.
+    - cron: '30 2 * * 1'
   workflow_dispatch:
 
 permissions:

@@ -1245,21 +1245,25 @@ and every one is held by a **binds at** rather than by anybody's mood.
     match ran past the newline and took `npx`, `nx`, `run:` and `-t` from the next step. Six
     words that are not targets, in the set this point answers from
 
-- [ ] **4.63 — the copy is current, the runner is not: every push today got no CI at all**
-  - 4.55 closed on the push and the gate that holds the distance. Both are true and both were
-    beside the point: of the seven pushes that followed, **not one started a job**. GitHub
-    answers each with _"the job was not started because recent account payments have failed or
-    your spending limit needs to be increased"_ — 3 to 4 seconds, no runner, no red test
-  - it began today. The nightly of 2026-09-14 08:00 ran its full hour and forty-two minutes;
-    the push at 13:02 was the first refused, and the dispatch of `at-pass.yml` at 19:36 went
-    the same way — which is why that workflow is still untested rather than broken
+- [~] **4.63 — the copy is current, the runner is not: every push that day got no CI at all**
+  - 4.55 closed on the push and the gate that holds the distance. Both true, both beside the
+    point: of the seven pushes that followed, **not one started a job**. GitHub answered each
+    with _"your spending limit needs to be increased"_ — 3 to 4 seconds, no runner, no red test
+  - it is not a failed payment, it is **arithmetic nobody did**. A private repository on a free
+    account has 2000 Actions minutes a month; the scheduled run of 2026-09-11 spent **123** of
+    them on `mutation check-mutation e2e` alone against **2** on the whole static battery, and
+    fourteen such nights plus the pushes came to **2080**. [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)
+    moved the two heaviest targets off the push line to save minutes and computed no total
+  - the stopgap, 2026-09-15: the scheduled run goes **weekly** and its name stops saying
+    nightly. It reverses at the flip — Actions is unbilled on a public repository, so the
+    cadence is a property of the private stage and not of the work
   - **what the repository could not say.** `check-distance` reports zero and is right: the
-    commits are on the remote. The property 0075 bought is a CI line that _reports_ rather than
-    describes, and it is as absent tonight as it was at 173 commits — for a reason no gate here
+    commits are on the remote. What 0075 actually bought is a CI line that _reports_ rather
+    than describes, and that is as absent as it was at 173 commits — for a reason no gate here
     reads, because every gate reads the repository and this one is an account
-  - what would close it: the billing fixed (the maintainer's, and only theirs), and then a
-    reading of whether a push produced a RUN, not merely a commit
-  - binds at: **now** — every commit from here lands unbuilt, exactly as it did all fortnight
+  - what remains: the quota to come back (it renews on the billing date), and then a reading
+    of whether a push produced a RUN and not merely a commit
+  - binds at: **the renewal** — until then every commit lands unbuilt, as they all did
 
 ## 5. Gaps with no deadline
 
