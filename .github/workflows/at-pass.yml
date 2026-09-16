@@ -2,10 +2,21 @@
 # Windows, VoiceOver with Safari on macOS. The third reader, Orca, is taken locally by
 # `tools/at-pass.sh` and needs no runner at all.
 #
-# `workflow_dispatch` ONLY, and that is a cost decision rather than caution. The repository is
-# a private stage, so Actions minutes are metered (decision 0075) — macOS minutes at a
-# multiple of the rest. A schedule here would spend that every night for a reading that moves
-# when the components move and not when the clock does.
+# DISPATCHED FOR A READING, SCHEDULED FOR A SMOKE TEST, and the two are different errands.
+# The reading moves when the components move and not when the clock does, so nothing here runs
+# thirty-six views on a timer. The weekly run walks the default single view: its subject is
+# this FILE — whether the runners still come up, the setup still resolves, the readers still
+# speak — and that subject does rot on a clock, in somebody else's repository. It is 4.67's
+# third shape, decided: `workflow_dispatch` alone is a promise that a file works, and the
+# first dispatch of this one found the promise false in `Set up job`. Free since the flip
+# (0075 wrote the metered stage, and the flip ended it).
+#
+# ON A SCHEDULE THE `inputs` CONTEXT IS EMPTY — not filled with the defaults declared below,
+# which is the opposite of what `workflow_dispatch` does with a blank value. Read directly,
+# `inputs.readers` would match neither job's condition and a weekly run would skip both jobs
+# and report green; `inputs.routes` would arrive empty, which `routesAsked()` reads as EVERY
+# view. Both are handled at their use: the conditions say which reader is EXCLUDED, so an
+# empty value runs both, and the route falls back in the expression that reads it.
 #
 # NOTHING HERE CAN DRIVE EITHER READER — no desk in this project has Windows or macOS — so a
 # dispatch of this file is its own test as much as its reading. `routes` defaults to a single view
@@ -34,6 +45,11 @@ on:
         default: 'both'
         type: choice
         options: [both, nvda, voiceover]
+  schedule:
+    # 06:30 UTC on Mondays, behind the end-to-end probe's 05:00 so two heavy dispatch-only
+    # files do not ask for runners in the same minute. The hour is a preference: GitHub
+    # queues scheduled work behind the load of the hour.
+    - cron: '30 6 * * 1'
 
 permissions:
   contents: read
@@ -44,7 +60,9 @@ concurrency:
 
 jobs:
   nvda:
-    if: inputs.readers == 'both' || inputs.readers == 'nvda'
+    # Which reader is EXCLUDED, not which is asked for: on a schedule `inputs` is empty,
+    # and an empty value has to mean the declared default rather than no job at all.
+    if: inputs.readers != 'voiceover'
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
@@ -75,7 +93,7 @@ jobs:
 
       - name: Read the views with NVDA
         env:
-          AT_PASS_ROUTES: ${{ inputs.routes }}
+          AT_PASS_ROUTES: ${{ inputs.routes || '/accordion' }}
         run: npx playwright test --config apps/sandbox-e2e/at.config.mts --project nvda-firefox
 
       # The record is rendered by the same script the Orca pass uses, so all three readers
@@ -97,7 +115,8 @@ jobs:
           if-no-files-found: warn
 
   voiceover:
-    if: inputs.readers == 'both' || inputs.readers == 'voiceover'
+    # The mirror of the condition on the job above, and empty runs it for the same reason.
+    if: inputs.readers != 'nvda'
     runs-on: macos-latest
     timeout-minutes: 90
     steps:
@@ -125,7 +144,7 @@ jobs:
 
       - name: Read the views with VoiceOver
         env:
-          AT_PASS_ROUTES: ${{ inputs.routes }}
+          AT_PASS_ROUTES: ${{ inputs.routes || '/accordion' }}
         run: npx playwright test --config apps/sandbox-e2e/at.config.mts --project voiceover-safari
 
       - if: always()
