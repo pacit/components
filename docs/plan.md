@@ -1307,27 +1307,26 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the schedule carried its own trap: on `schedule` the `inputs` context is EMPTY, not
     defaulted, so the conditions would have skipped both jobs green and an empty `routes`
     walks all 36 views. Conditions now name the reader EXCLUDED; the route falls back at use
-- [ ] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
+- [~] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
+  — **three fixed and verified on a runner 2026-09-16; the fourth has an exact trigger**
   - found only because two jobs of one nightly read the same commit: `full` finished **2082
-    passed, 4 flaky** and went green, `flake` read the same four at **0/3**. That first line
-    is what every CI run of this suite has said
-  - the four: a Tab (drawer), an `End` (select), a theme switch (shell), a Shift+Tab (tree)
-  - **deterministic and not flaky at all.** Three passes, nine minutes apart, put the same four
-    failures at the same offsets to the second: drawer 3m43s in, select 2m51s after it, shell
-    11s later, tree 1m21s after that. Three spend the whole 5 s `expect` ceiling with the
-    value never moving once; the fourth reads a theme 0.4 s after the switch that sets it
-  - firefox and webkit pass all three copies of all four, in 0.6-0.9 s. One engine, every time
-  - **nothing reproduces it off CI**, and the strongest of the five attempts is the shape of
-    the CI run itself: the whole chromium suite at `--workers=1 --retries=0` on this desk is
-    **757 of 757 green**, the four among them at 0.6-2.5 s. Nor does a 20x CPU throttle on the
-    renderer, nor another page holding the window's focus — which falsifies the one theory
-    that fitted three of the four ([`lesson-200`](lessons.md#lesson-200))
-  - the variable is the retry, and TWO things change with it at once — Playwright restarts the
-    worker after a failure, so attempt 2 is a browser just started, and `trace: 'on-first-retry'`
-    puts work between every action. No report from these jobs separates them; `--trace=on
---retries=0` on a runner does
-  - binds at: **that run**, which costs a runner and no money ([`lesson-214`](lessons.md#lesson-214))
-
+    passed, 4 flaky** and went green, `flake` read the same four at **0/3** — and that first
+    line is what every CI run of this suite has said
+  - the instrument is `e2e-probe.yml`, built for this and dispatched nine times. It separated
+    the two variables at once: `--retries=2 --trace=off` went green with 4 flaky, so tracing
+    is not what a retry gives, and `--retries=0 --trace=on` left one failure, so a delay is
+    enough for three of the four. None of it reproduces on this desk
+  - **three were one defect wearing three shapes** — a key or a read issued before the state
+    it depends on. `shell` read a composed token in the same turn as the click that changes
+    it, and this application schedules its change detection rather than running it; `drawer`
+    tabbed into a panel that is in the document while SHUT, without waiting for it to open;
+    `select` pressed `End` into a virtual window whose arithmetic is over a layout that had
+    not happened — alone and repeated on a runner, that one failed two runs in three
+  - **`tree` is the one left, and its trigger is exact**: the whole spec alone is 7 of 7 green;
+    run after the select describe that draws five thousand rows, `Shift+Tab` moves nothing.
+    The component neither handles `Tab` nor takes focus back on blur, and the test clicks
+    before it types. What a browser does after that view is the open question
+  - binds at: **a reading of the browser, not of the test** ([`lesson-214`](lessons.md#lesson-214))
 - [x] **4.68 — a file named after a Windows device, and the repository would not clone there**
       — **closed 2026-09-15.** `libs/components/field/src/aux.ts`: `aux` is one of the names
       Windows reserves for devices, so git ends the checkout with `invalid path` and exit 128.
