@@ -54,6 +54,23 @@ const version = (command, args) => {
  * record's own guard refused to write it, which is the second time that guard has earned its
  * place. A reader read from a LOG is read from the log; a reader that was ASKED carries it.
  */
+/**
+ * One stop's phrases with the POLLER's repetition taken out — the first occurrence of each
+ * keeps its place, and a later copy of it goes.
+ *
+ * A reader driven through Guidepup hands back a log, and NVDA's repeats. The `/breadcrumb`
+ * arrival of 2026-09-16 carried **80530 phrases of which 84 were distinct** — the same
+ * ~91-phrase sequence over and over, no two neighbours alike, which is a buffer read again
+ * and not a reader saying anything twice. Rendered whole it made one line of 3059019
+ * characters and a record of 10.9 MB: evidence nobody can read, in a file whose whole purpose
+ * is to be quotable, and a repository nobody wants to clone.
+ *
+ * The cost is real and the header names it: a reader that truly says one thing twice at one
+ * stop is recorded saying it once. That is the cheaper of the two errors here — the other one
+ * buried the reading under a thousand copies of itself.
+ */
+const distinct = (phrases) => [...new Set(phrases)];
+
 const spokenOf = (step, said, fromLog) =>
   fromLog
     ? said
@@ -88,8 +105,13 @@ const render = (stepsFile, debugFile, slug, reader) => {
   const byRoute = new Map();
   for (const step of steps) {
     if (!byRoute.has(step.route)) byRoute.set(step.route, []);
-    byRoute.get(step.route).push({ ...step, said: spoken(step) });
+    byRoute.get(step.route).push({ ...step, said: distinct(spoken(step)) });
   }
+
+  const logged = steps.reduce((n, step) => n + spoken(step).length, 0);
+  const kept = [...byRoute.values()]
+    .flat()
+    .reduce((n, row) => n + row.said.length, 0);
 
   const silent = steps.filter((s) => spoken(s).length === 0).length;
   // A view the reader said nothing on is a hole in the reading, and a record that reports
@@ -200,7 +222,17 @@ A stop reads: the label, what the browser had focused, and what the reader said.
 the sandbox's own navigation to the view — the document is loaded once, before the first —
 \`enter\` is the view's first stop, put under focus outright, and the rest are Tab
 stops from there until focus leaves \`main\`. \`(silence)\` is a stop the reader said nothing
-at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.
+at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.${
+    logged > kept
+      ? `
+
+**A phrase repeated at one stop is written once.** This reader's log handed back ${logged}
+phrases, and ${kept} of them are distinct within their own stop; the rest are the same
+sequence read again, cycled rather than repeated, which is the poller and not the reader. The
+cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
+stop is recorded here saying it once.`
+      : ''
+  }
 
 ${incomplete}
 `;
@@ -211,7 +243,7 @@ ${incomplete}
     `v ${reader}: ${steps.length} steps over ${byRoute.size} views, ` +
       // Counted off the STEPS and not off the log, because only one of the three readers has
       // a log: read the other way, a complete NVDA pass reported `0 utterances`.
-      `${steps.reduce((n, step) => n + spoken(step).length, 0)} utterances, ` +
+      `${kept} utterances${logged > kept ? ` of ${logged} logged` : ''}, ` +
       `${silent} silent stops, ${capped.length} capped ` +
       `→ ${LOGS}/${slug}.md\n`,
   );

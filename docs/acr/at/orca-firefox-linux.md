@@ -26,6 +26,12 @@ the sandbox's own navigation to the view — the document is loaded once, before
 stops from there until focus leaves `main`. `(silence)` is a stop the reader said nothing
 at — 0 of 482 here. 11 view(s) hit the cap, and each says so.
 
+**A phrase repeated at one stop is written once.** This reader's log handed back 1969
+phrases, and 1966 of them are distinct within their own stop; the rest are the same
+sequence read again, cycled rather than repeated, which is the poller and not the reader. The
+cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
+stop is recorded here saying it once.
+
 **Every view spoke.** No view of the 36 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
 11 view(s) have more stops than the 12 taken, and each says so where it bit.
@@ -141,7 +147,7 @@ tab 1   button[field-suffix-item] "Clear the price"          Clear the price · 
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 4   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 5   input                                                leaving panel. · leaving panel. · Number of seats · spin button · 1 · required. · The range is 1–500; a fraction is rounded on commit. · Focus mode
+tab 5   input                                                leaving panel. · Number of seats · spin button · 1 · required. · The range is 1–500; a fraction is rounded on commit. · Focus mode
 tab 6   input                                                Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 ```
 
@@ -674,7 +680,7 @@ tab 6   input                                                Field lg · entry �
 tab 7   button "Button lg"                                   Button lg · button. · Browse mode
 tab 8   button[trigger] "Poland"                             List lg · combo box. · opens listbox · Focus mode
 tab 9   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 10  input                                                leaving panel. · leaving panel. · Number sm · spin button · 1 499,9. · Focus mode
+tab 10  input                                                leaving panel. · Number sm · spin button · 1 499,9. · Focus mode
 tab 11  input[control]                                       Date sm · entry · 27/08/2026 · selected.
 tab 12  button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog
 ```
@@ -719,7 +725,7 @@ tab 10  input[control]                                       Theme · panel · l
 tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 12  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 13  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 14  input                                                leaving panel. · Text · entry · Text · selected. · Focus mode
+tab 14  input                                                leaving panel. · Text · entry · selected. · Focus mode
 tab 15  input                                                Number · spin button · 1 499,9.
 ```
 

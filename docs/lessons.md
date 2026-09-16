@@ -6117,3 +6117,36 @@ where they survive, because no gate reads for confidence. And the instrument tha
 is the program itself: the reader pass exists precisely to turn this class of sentence into a
 reading, and the first thing it did on being pointed at all thirty-four cards was to falsify
 one that had stood since the component was written.
+
+### <a id="lesson-219"></a>`lesson-219` — The reader was asked what it had said, and answered with its buffer
+
+`docs/acr/at/nvda-firefox-windows.md` was **10.9 MB**. One line of it was 3,059,019 characters
+long. It had been in the repository since the day the pass first ran, it is cited by the
+criterion the whole pass exists for, and nobody had noticed — because nobody reads a generated
+file, they grep it.
+
+The walk asks each reader, at every stop, for its spoken log and keeps what is new:
+`log.slice(heard)`, then `heard = log.length`. That is correct arithmetic over a sequence. It
+is not correct over a buffer. At the `/breadcrumb` arrival NVDA handed back **80,530 phrases
+of which 84 were distinct** — and the giveaway is the shape: no two neighbours were alike, the
+same ~91-phrase sequence cycling about 880 times. A reader repeating itself produces runs. A
+poller re-reading its buffer produces cycles.
+
+So the record credited one stop with eighty thousand utterances it never made, and the file
+that exists to be quoted became a file that cannot be opened.
+
+The fix is in the renderer and not in the walk, which matters: the walk's steps were already on
+disk, so all three records were rebuilt from the readings already taken, with nothing
+re-measured. A phrase already written AT THAT STOP is dropped, first occurrence keeping its
+place. NVDA went from 10.9 MB to 108 KB; the reading went from 311,906 logged to 1,864
+written.
+
+Two things make it worth a number. The first is the **control that came free**: the same rule
+over Orca's log dropped 3 utterances of 1,969, and over VoiceOver's, none. A transformation
+that is nearly a no-op on two instruments and removes 99.4% of a third is describing the third
+instrument, not the subject — which is the whole argument for having three.
+
+The second is the cost, which is real and is written into the header of every record rather
+than kept quiet: a reader that truly says one thing twice at one stop is now recorded saying it
+once. That is the cheaper of the two errors. The other one buried the reading under a thousand
+copies of itself.

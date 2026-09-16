@@ -17,13 +17,13 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 272 steps over 36 views, at most 12 stops of a view's own
+- 265 steps over 36 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
 `enter` is the view's first stop, put under focus outright, and the rest are Tab
 stops from there until focus leaves `main`. `(silence)` is a stop the reader said nothing
-at — 51 of 272 here. 3 view(s) hit the cap, and each says so.
+at — 48 of 265 here. 3 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 36 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
@@ -59,10 +59,9 @@ tab 14  input[control]                                       ltr selected radio 
 tab 15  button "Get started"                                 Get started button main
 tab 16  button "Solid"                                       Solid button
 tab 17  button "Outline"                                     Outline button
-tab 18  button "Solid"                                       You are currently on a button. To click this button, press Control-Option-Space.
+tab 18  button "Solid"                                       Solid button
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/field`
@@ -184,7 +183,6 @@ tab 22  button[nav] "Mois précédent"                         Mois précédent 
 tab 23  button[nav] "Mois suivant"                           Mois suivant button
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/checkbox`
@@ -215,102 +213,62 @@ tab 5   —                                                    (silence)
 ### `/slider`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Slider
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 4   input[control]                                       30 Volume Nothing is formatted, so nothing is written slider main
-tab 5   input[control]                                       15 % Discount slider
-tab 6   input[control]                                       Medium Size slider
-tab 7   input[control]                                       70 Read-only — focusable, but not movable slider
-tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 11  input[control]                                       60 Gain slider main
-tab 12  —                                                    (silence)
+tab 1   input[control]                                       40 Budget Between 20 and 80 slider
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/switch`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Switch
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Backups have to stay on
-tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 4   input[control]                                       Wi-Fi Turns off when you leave the house on switch main
-tab 5   input[control]                                       Read-only — focusable, but not changeable on switch
-tab 6   —                                                    (silence)
+tab 1   input[control]                                       Backups Runs every night at 03:00 required invalid data off switch
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/select`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Select
 enter   button[trigger] "Sélectionner…"                      (silence)
-tab 1   button[trigger] "Polish"                             , Pol field (the default) list box pop up collapsed combo box
-tab 2   button[trigger] "Polish"                             , Pol auto — out to the longest option list box pop up collapsed combo box
-tab 3   button[trigger] "Polish"                             , Pol 320px, aligned to the end list box pop up collapsed combo box
-tab 4   button[trigger] "Sélectionner…"                      , Sélectionn Country (in the dark theme) list box pop up collapsed combo box
-tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 8   button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box main
-tab 9   button[trigger] "Sélectionner…"                      , Sélectionn Country (nothing to pick) list box pop up collapsed combo box
-tab 10  button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box
-tab 11  button[trigger] "Poland, Slovakia"                   , Poland, Slova Countries list box pop up collapsed combo box
-tab 12  input[trigger]                                       Lithuania Country list box pop up collapsed combo box
-tab 13  input[trigger]                                       Poland, Slovakia Countries list box pop up collapsed combo box
-tab 14  button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box
+tab 1   button[trigger] "Sélectionner…"                      , Sélectionn Country A list with a panel of its own (CDK Overlay) list box pop up collapsed combo box
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
-The cap bit here: 12 stops of this view's own were read, and it has more.
+Tab moved nothing — focus had left the page.
 
 ### `/dialog`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Dialog
 enter   button "Open the dialog"                             (silence)
-tab 1   button "Delete the project"                          Delete the project button
-tab 2   button "Open the insistent one"                      Open the insistent one button
-tab 3   button "Open a form dialog"                          Open a form dialog button
-tab 4   button "Open a long one"                             Open a long one button
-tab 5   —                                                    (silence)
+tab 1   button "Open the dialog"                             You are currently on a button. To click this button, press Control-Option-Space.
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/tooltip`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Tooltip
 enter   button "Delete the project"                          (silence)
-tab 1   button "Publish"                                     Publish Runs every check before publishing button
-tab 2   button "Approve the release"                         Approve the release button
-tab 3   button "Close the panel"                             Close the panel button
-tab 4   button "start"                                       start On the starting side button
-tab 5   button "top"                                         top Above the control button
-tab 6   button "bottom"                                      bottom Below the control button
-tab 7   button "end"                                         end On the ending side button
-tab 8   input                                                Release note Shown in the changelog Markdown is allowed here edit text
-tab 9   button "Hover me"                                    Hover me This one can be taken away button
-tab 10  button "Take it away"                                Take it away button
-tab 11  —                                                    (silence)
+tab 1   button "Delete the project"                          Delete the project Removes the project and everything in it button
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/popover`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Popover
 enter   button "Filters"                                     (silence)
-tab 1   button "start"                                       start dialog pop up button
-tab 2   button "top"                                         top dialog pop up button
-tab 3   button "bottom"                                      bottom dialog pop up button
-tab 4   button "end"                                         end dialog pop up button
-tab 5   button "Open the panel"                              Open the panel dialog pop up button
-tab 6   button "Count up"                                    Count up button
-tab 7   —                                                    You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "Filters"                                     Filters dialog pop up button
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/menu`
 
@@ -385,90 +343,124 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  —                                                    1 item Skeleton · @pacit/components web content
+arrive  —                                                    (silence)
 enter   button "The content arrives"                         (silence)
-tab 1   input[control]                                       You are currently on web content. To enter the web area, press Control-Option-Shift-Down Arrow.
-tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 4   input[control]                                       (silence)
-tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 6   input[control]                                       Playwright is not responding
-tab 7   input[control]                                       (silence)
-tab 8   input[control]                                       Playwright is not responding
-tab 9   input[control]                                       (silence)
-tab 10  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 11  input[control]                                       Playwright is not responding
-tab 12  input[control]                                       (silence)
-tab 13  button "Stop the sheen"                              Playwright is not responding
-tab 14  —                                                    (silence)
+tab 1   button "The content arrives"                         Skeleton · @pacit/components web content
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/chips`
 
 ```
-arrive  —                                                    heading level 2 Chips
+arrive  —                                                    banner
 enter   button[remove] "Remove"                              (silence)
-tab 1   button[remove] "Remove"                              Remove button list Active filters 5 items
+tab 1   button[remove] "Remove"                              Remove Under 50 button
+tab 2   button[remove] "Remove"                              Remove Free shipping button
+tab 3   button[remove] "Remove"                              Remove New button
+tab 4   button[remove] "Remove"                              Remove Local button
+tab 5   button "Restore everything"                          Restore everything button main
+tab 6   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 7   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 8   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 9   button[remove] "Remove"                              Remove draft button list Statuses 3 items
+tab 10  button[remove] "Remove"                              Remove archived button
+tab 11  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 12  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 13  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 14  button[remove] "Remove"                              Remove Ada button list People 3 items
+tab 15  button[remove] "Remove"                              Remove Grace button
+tab 16  button[remove] "Remove"                              Remove Edsger button
+tab 17  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 18  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 19  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 20  button[remove] "Remove"                              Remove removable button list Small 2 items
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/avatar`
 
 ```
-arrive  —                                                    heading level 2 Avatar
+arrive  —                                                    banner
 enter   button "Swap the source"                             (silence)
-tab 1   button "Swap the source"                             Swap the source button
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   button "A control of the same size"                  A control of the same size button main
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  button "Account: Ada Lovelace"                       Account: Ada Lovelace button main
+tab 12  —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/badge`
 
 ```
-arrive  —                                                    heading level 2 Badge
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 1   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 2   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 3   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 4   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 5   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 6   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 7   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 8   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 9   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 2 Breadcrumb
+arrive  —                                                    banner
 enter   a "Home"                                             (silence)
-tab 1   a "Home"                                             link Home list 3 items
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/hero`
 
 ```
-arrive  —                                                    heading level 2 Hero
+arrive  —                                                    banner
 enter   a "Under attention"                                  (silence)
-tab 1   a "Under attention"                                  link heading level 3 Under attention The rim is drawn and hidden, so the reveal is an opacity.
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   button "Stop the sweep"                              Stop the sweep button main
+tab 8   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/stepper`
 
 ```
-arrive  —                                                    heading level 2 Stepper
+arrive  —                                                    banner
 enter   button "Back"                                        (silence)
-tab 1   button "Back"                                        You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "Next"                                        Next button
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 5   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/tree`
 
 ```
-arrive  —                                                    heading level 2 Tree
+arrive  —                                                    banner
 enter   pct-tree-item "README.md"                            (silence)
-tab 1   —                                                    README.md outline row (1 of 5)
+tab 1   —                                                    README.md outline row (1 of 5) main
 ```
 
 ### `/layout`
@@ -526,7 +518,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    Form controls built as a pct-field wrapper with a control inside.
 enter   button "Solid"                                       (silence)
-tab 1   button "Solid"                                       Solid button
+tab 1   button "Solid"                                       You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
