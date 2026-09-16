@@ -177,20 +177,22 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     that one maintainer does not need
   - binds at: **the first dispatch**, which is the reading nothing on this desk can take
 
-- [ ] **3.4 — the premiere is a task, not an event**
+- [~] **3.4 — the premiere is a task, not an event** — **the files landed 2026-09-17; two
+  switches and the venue are the maintainer's**
   - [0016](decisions/0016-mit-irreversibility.md) defers its biggest decision to "data that
-    does not exist today", and no task acquires the users who would produce it: `.github/`
-    holds workflows and nothing else, `CONTRIBUTING.md` has two sections and no way to run
-    the gates, and nowhere says where a question goes
-  - **the scope, settled 2026-09-16**: issue forms (`bug`, `proposal`, a `config.yml` sending
-    questions to Discussions), a PR template asking which gates ran, `SECURITY.md` pointing at
-    GitHub's private reporting, `CONTRIBUTING.md` with `scripts/with-node`, the battery and
-    what it omits ([`lesson-188`](lessons.md#lesson-188)) and `apps/docs` on 4300; Discussions
-    on. No `CODE_OF_CONDUCT.md` — a promise of moderation with nobody to keep it
-  - each file is read by GitHub by its name and by nobody inside, which is the shape of a
-    root in `tools/reach.policy.json` — the entry `CONTRIBUTING.md` already has
-  - **open: the venue.** Where the release is announced is the one thing here without an
-    answer, and it is the maintainer's
+    does not exist today", and no task acquired the users who would produce it: `.github/`
+    held workflows and nothing else, `CONTRIBUTING.md` had two sections and no way to run
+    the gates, and nowhere said where a question goes
+  - **what landed**: issue forms (`bug`, `proposal`) that ask for the promise broken or the
+    promise to keep, a `config.yml` refusing blank issues and sending questions to Discussions
+    and vulnerabilities to the private channel, a PR template asking which gates ran,
+    `SECURITY.md`, `CONTRIBUTING.md` with `scripts/with-node`, the line CI runs, the two gates
+    the habit omits ([`lesson-188`](lessons.md#lesson-188)) and `apps/docs` on 4300; the README
+    names the channels. Each file is read by GitHub by its name and by nobody inside — a root
+    in `tools/reach.policy.json`, the shape `CONTRIBUTING.md` already had
+  - not taken: `CODE_OF_CONDUCT.md` — a promise of moderation with nobody to keep it
+  - **the maintainer's**: Discussions on, private vulnerability reporting on — both are
+    repository settings — and **the venue**: where the release is announced has no answer yet
   - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
 
 - [~] **3.5 — the site at its own address, deployed behind a green CI** — **the code landed

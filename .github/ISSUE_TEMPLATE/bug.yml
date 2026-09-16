@@ -1,0 +1,60 @@
+name: Defect
+description: A component breaks a promise its page, its card or its JSDoc makes.
+labels: [defect]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A defect is a promise broken. The promise is on the component's page —
+        https://components.pacit.pl/components/ — its API, keyboard map, parts and the
+        limits it names. A question about using the library goes to Discussions instead.
+  - type: input
+    id: version
+    attributes:
+      label: '@pacit/components version'
+      description: 'From `npm ls @pacit/components`.'
+    validations:
+      required: true
+  - type: input
+    id: angular
+    attributes:
+      label: Angular version
+      description: 'The `@angular/core` line of `npx ng version`.'
+    validations:
+      required: true
+  - type: input
+    id: component
+    attributes:
+      label: Component or entry point
+      description: 'For example `@pacit/components/select`, or `theme` for the stylesheet.'
+    validations:
+      required: true
+  - type: textarea
+    id: promise
+    attributes:
+      label: The promise that is broken
+      description: Which page, card row or JSDoc line says it should behave otherwise. A link is best.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps that reproduce it
+      description: A repository or a playground link is ideal; a minimal template and the actions taken are enough.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened, and what the promise says should have
+    validations:
+      required: true
+  - type: checkboxes
+    id: where
+    attributes:
+      label: Where it happens
+      options:
+        - label: In the browser
+        - label: During server rendering or hydration
+        - label: With a screen reader (name it in the steps)
+        - label: Under forced colors or reduced motion

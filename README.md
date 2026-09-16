@@ -65,7 +65,7 @@ npx nx e2e sandbox-e2e           # e2e on three engines + axe-core audit
 npx nx check-package components  # one gate; the registry lists the rest
 ```
 
-Thirteen `check-*` gates run in CI next to lint, unit tests, build, typecheck and a mutation run.
+Thirty `check-*` gates run in CI next to lint, unit tests, build, typecheck and a mutation run.
 Each answers for one named promise and each has a **reference control** — prepared inputs it must
 reject — because a gate that quietly stopped measuring anything is the failure this repository
 keeps meeting ([`docs/lessons.md`](docs/lessons.md)).
@@ -294,6 +294,14 @@ old line lives, how much notice a deprecation gets and why a breaking change arr
 `ng update` migration — is in [docs/support.md](docs/support.md). The three numbers there are
 not prose: `check-support.mjs` reads them out of the table and requires the Angular window to
 equal the one the peer ranges admit, so the document and the manifest cannot drift apart.
+
+## Questions, defects, proposals
+
+A question about using the library goes to
+[Discussions](https://github.com/pacit/components/discussions). A defect — a promise broken —
+and a proposal — a promise to add — are [issues](https://github.com/pacit/components/issues/new/choose),
+each with a form that asks for the promise. A vulnerability is reported privately, as
+[`SECURITY.md`](SECURITY.md) says.
 
 ## License
 

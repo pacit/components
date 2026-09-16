@@ -1,0 +1,41 @@
+name: Proposal
+description: A component, an API or a gate the library does not have, and the promise it would keep.
+labels: [proposal]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every component here keeps a promise a machine checks. A proposal is strongest when it
+        names the promise — an existing requirement on https://components.pacit.pl/trust/, or
+        one the library should add — and says what the platform cannot already do for it.
+  - type: textarea
+    id: what
+    attributes:
+      label: What it is
+      description: The component, the input, the gate — in a sentence, and then in as much detail as it needs.
+    validations:
+      required: true
+  - type: textarea
+    id: promise
+    attributes:
+      label: The promise it keeps
+      description: 'Which requirement it serves, or the new one it would need. The trust page lists them by identifier (`req-…`).'
+    validations:
+      required: true
+  - type: textarea
+    id: platform
+    attributes:
+      label: Why the platform is not enough
+      description: 'The library leans on native elements first. What does `<select>`, `<dialog>`, `<details>` or CSS fail to do here?'
+    validations:
+      required: true
+  - type: dropdown
+    id: hands
+    attributes:
+      label: Would you build it?
+      options:
+        - I would open the pull request, with the card and the gate
+        - I would help with a review or with testing
+        - I am proposing it for somebody else to build
+    validations:
+      required: true

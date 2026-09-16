@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A question about using the library
+    url: https://github.com/pacit/components/discussions
+    about: Discussions hold the questions, so that issues stay the list of promises broken and promises proposed.
+  - name: A security vulnerability
+    url: https://github.com/pacit/components/security/advisories/new
+    about: Reported privately, as SECURITY.md describes — never as a public issue.

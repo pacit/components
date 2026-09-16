@@ -43,6 +43,26 @@
       "reason": "GitHub links it from the issue and pull request forms without anything pointing at it from inside."
     },
     {
+      "path": "SECURITY.md",
+      "reason": "GitHub links it from the repository's Security tab and from the issue chooser; nothing inside has to point at it, and `CONTRIBUTING.md` and `README.md` do anyway."
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug.yml",
+      "reason": "GitHub reads the issue forms by their directory and name. The form is the channel a defect arrives through — the half of the premiere that is not a flip."
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/proposal.yml",
+      "reason": "The same directory, read the same way: the form a proposal arrives through."
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "reason": "GitHub reads it to disable blank issues and to show the contact links — Discussions for a question, the private channel for a vulnerability."
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "reason": "GitHub reads it by name when a pull request is opened; it asks for the promise and the gates that ran."
+    },
+    {
       "path": "AGENTS.md",
       "reason": "The convention most agent tools read by name. It is the source of truth for the rules of this repository — `CLAUDE.md` imports it rather than the other way round."
     },
