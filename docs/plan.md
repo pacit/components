@@ -1327,26 +1327,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **a word on whether the second instrument is worth building**, which is a
     question about who the ACR is for rather than about what is cheap
 
-- [~] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
-  — **three fixed and verified on a runner 2026-09-16; the fourth has an exact trigger**
+- [x] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
+      — **closed 2026-09-16: `--retries=0` on a runner, 757 passed, nothing flaky**
   - found only because two jobs of one nightly read the same commit: `full` finished **2082
-    passed, 4 flaky** and went green, `flake` read the same four at **0/3** — and that first
-    line is what every CI run of this suite has said
-  - the instrument is `e2e-probe.yml`, built for this and dispatched nine times. It separated
-    the two variables at once: `--retries=2 --trace=off` went green with 4 flaky, so tracing
-    is not what a retry gives, and `--retries=0 --trace=on` left one failure, so a delay is
-    enough for three of the four. None of it reproduces on this desk
-  - **three were one defect wearing three shapes** — a key or a read issued before the state
-    it depends on. `shell` read a composed token in the same turn as the click that changes
-    it, and this application schedules its change detection rather than running it; `drawer`
-    tabbed into a panel that is in the document while SHUT, without waiting for it to open;
-    `select` pressed `End` into a virtual window whose arithmetic is over a layout that had
-    not happened — alone and repeated on a runner, that one failed two runs in three
-  - **`tree` is the one left, and its trigger is exact**: the whole spec alone is 7 of 7 green;
-    run after the select describe that draws five thousand rows, `Shift+Tab` moves nothing.
-    The component neither handles `Tab` nor takes focus back on blur, and the test clicks
-    before it types. What a browser does after that view is the open question
-  - binds at: **a reading of the browser, not of the test** ([`lesson-214`](lessons.md#lesson-214))
+    passed, 4 flaky** and went green while `flake` read the same four at **0/3**
+  - the instrument is `e2e-probe.yml`, dispatched ten times: `--retries=2 --trace=off` went
+    green with 4 flaky and `--retries=0 --trace=on` left one failure, which separated the two
+    variables that always move together. None of the four reproduces on this desk
+  - **one defect wearing four shapes** — a key or a read issued before the state it depends
+    on: a composed token read in the turn of the click; a Tab into a panel still shut; `End`
+    into a window whose layout had not happened; `Shift+Tab` while the roving `tabindex` stood
+    one render behind the focus, so the browser walked backwards into the item still holding
+    the `0` ([`lesson-217`](lessons.md#lesson-217))
 - [x] **4.68 — a file named after a Windows device, and the repository would not clone there**
       — **closed 2026-09-15.** `libs/components/field/src/aux.ts`: `aux` is one of the names
       Windows reserves for devices, so git ends the checkout with `invalid path` and exit 128.
