@@ -4,9 +4,9 @@ import { SBX_ROUTES } from '../src/support/views';
  * The one gesture per view that OPENS something, for the half of the reading a Tab walk
  * cannot reach (position 4.71).
  *
- * Seven component cards ask what a reader announces when a modal, a menu, a popover, a toast,
- * a month grid, a tab panel or a listbox appears, and until this table the answer for all
- * seven was the same: the walk pressed Tab and nothing else, so nothing in any of the three
+ * Nine component cards end their reading with the same question — what a reader announces
+ * when a section, a drawer, a modal, a menu, a popover, a toast, a month grid, a tab panel or
+ * a listbox appears — and until this table the answer for all nine was the same: the walk pressed Tab and nothing else, so nothing in any of the three
  * logs had ever been opened. For a tree, arrival is most of the story. For a dialog it is
  * none of it — opening IS the component.
  *
@@ -38,10 +38,23 @@ export interface Act {
 }
 
 /**
- * Seven views, seven acts. A view absent from here is walked and not acted on, which is the
- * ordinary case: most components have nothing to open.
+ * Nine views, nine acts — every card that ends its reading with an opening question, counted
+ * by grepping them rather than by remembering. A view absent from here is walked and not acted
+ * on, which is the ordinary case: most components have nothing to open.
  */
 export const ACTS: Readonly<Record<string, Act>> = {
+  '/accordion': {
+    what: 'a revealed section',
+    on: '[data-testid="item-payment"] [data-pct-part="heading"]',
+    key: 'Enter',
+    owner: 'apps/sandbox-e2e/src/accordion.spec.ts',
+  },
+  '/drawer': {
+    what: 'a named region beside the page',
+    on: '[data-testid="trigger-nav"]',
+    key: 'Enter',
+    owner: 'apps/sandbox-e2e/src/drawer.spec.ts',
+  },
   '/dialog': {
     what: 'a modal dialog',
     on: '[data-testid="open-basic"]',
