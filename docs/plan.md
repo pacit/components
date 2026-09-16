@@ -1322,24 +1322,24 @@ and every one is held by a **binds at** rather than by anybody's mood.
     answer too, and the one that has been in force so far
 
 - [ ] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
-  - found by the first nightly after the flip and only because two jobs of it read the same
-    commit: `full` finished **2082 passed, 4 flaky** and went green, `flake` read the same
-    four at **0/3** each. `2082 passed, 4 flaky` is what every CI run of this suite has said
-  - the four: `drawer.spec.ts` "nobody splices anything", `select.spec.ts` "End reaches the
-    five thousandth row", `shell.spec.ts` "the global theme switch re-themes the shell",
-    `tree.spec.ts` "lands on the roving item"
-  - **deterministic and not flaky at all.** Three passes of the suite, nine minutes apart, put
-    the same four failures at the same offsets to the second: drawer 3m43s into the pass,
-    select 2m51s after it, shell 11s after that, tree 1m21s later. Three spend the whole 5 s
-    `expect` ceiling with the value never moving across fourteen readings; the fourth reads a
-    theme 0.4 s after the switch that sets it
+  - found only because two jobs of one nightly read the same commit: `full` finished **2082
+    passed, 4 flaky** and went green, `flake` read the same four at **0/3**. That first line
+    is what every CI run of this suite has said
+  - the four: a Tab (drawer), an `End` (select), a theme switch (shell), a Shift+Tab (tree)
+  - **deterministic and not flaky at all.** Three passes, nine minutes apart, put the same four
+    failures at the same offsets to the second: drawer 3m43s in, select 2m51s after it, shell
+    11s later, tree 1m21s after that. Three spend the whole 5 s `expect` ceiling with the
+    value never moving once; the fourth reads a theme 0.4 s after the switch that sets it
   - firefox and webkit pass all three copies of all four, in 0.6-0.9 s. One engine, every time
-  - **nothing has reproduced it off CI**: standalone, at three workers, and under a 20x CPU
-    throttle on the renderer, all four pass on this desk ([`lesson-200`](lessons.md#lesson-200))
-  - the variable is the retry, and TWO things change with it in the same instant — Playwright
-    restarts the worker after a failure, so attempt 2 runs in a browser just started; and
-    `trace: 'on-first-retry'` turns tracing on, which puts work between every action. No
-    report from these two jobs can separate them; one run at `--trace=on --retries=0` can
+  - **nothing reproduces it off CI**, and the strongest of the five attempts is the shape of
+    the CI run itself: the whole chromium suite at `--workers=1 --retries=0` on this desk is
+    **757 of 757 green**, the four among them at 0.6-2.5 s. Nor does a 20x CPU throttle on the
+    renderer, nor another page holding the window's focus — which falsifies the one theory
+    that fitted three of the four ([`lesson-200`](lessons.md#lesson-200))
+  - the variable is the retry, and TWO things change with it at once — Playwright restarts the
+    worker after a failure, so attempt 2 is a browser just started, and `trace: 'on-first-retry'`
+    puts work between every action. No report from these jobs separates them; `--trace=on
+--retries=0` on a runner does
   - binds at: **that run**, which costs a runner and no money ([`lesson-214`](lessons.md#lesson-214))
 
 - [x] **4.68 — a file named after a Windows device, and the repository would not clone there**
