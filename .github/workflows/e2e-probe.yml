@@ -1,0 +1,177 @@
+# One end-to-end run, with the knobs that are fixed everywhere else exposed. It exists for the
+# class of defect a desk cannot show: on 2026-09-16 four cases failed EVERY first attempt on
+# CI chromium and passed on every retry, and five attempts to reproduce them here — the whole
+# chromium suite in the shape CI runs it, a 20x CPU throttle, another page holding the window
+# focus — came back green (position 4.69). A question about a runner has to be asked on one.
+#
+# What it is for, concretely: `retries` and `trace` move together on an ordinary run, because
+# `trace: 'on-first-retry'` turns tracing on at the same instant Playwright restarts the worker
+# after a failure. Two explanations, one moment, and no report from `ci.yml` or `nightly.yml`
+# can separate them. Here they come apart — `--retries=2 --trace=off` asks whether a retry
+# still passes without tracing, and `--retries=0 --trace=on` asks whether tracing alone is
+# enough. Neither run is a gate and neither writes a record; what they produce is a verdict a
+# person reads.
+#
+# IT IS ALSO SCHEDULED, and that is the answer to 4.67 rather than a second thought. Every
+# dead name this repository has found sat in a file nothing had ever executed — an action
+# version that never existed, a constant renamed out from under its only reader, a reserved
+# file name. `workflow_dispatch` alone is a promise that the file works, and a promise is not
+# an execution. The weekly run costs a runner and, since the flip, no money.
+#
+# THE DEFAULTS LIVE IN THE SHELL AND NOT IN THE EXPRESSIONS, which is not a style choice. On a
+# `schedule` event the `inputs` context is EMPTY — not filled with the declared defaults — so
+# `${{ inputs.retries }}` is the empty string every Monday, and a workflow that reads it
+# directly would run something nobody declared. `workflow_dispatch` has the opposite habit and
+# substitutes the default for a value left blank, which is how a dispatch asking for every
+# route once walked a single view. Between the two, the only honest place to decide what a
+# missing value means is a line of bash that says so.
+name: End-to-end probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Which suite to run'
+        required: false
+        default: 'sandbox-e2e'
+        type: choice
+        options: [sandbox-e2e, docs-e2e]
+      project:
+        description: 'Which engine'
+        required: false
+        default: 'chromium'
+        type: choice
+        options: [chromium, firefox, webkit]
+      retries:
+        description: 'Retries per case (0 makes every attempt a first attempt)'
+        required: false
+        default: '0'
+      trace:
+        description: 'Playwright trace mode'
+        required: false
+        default: 'off'
+        type: choice
+        options: ['off', 'on', 'on-first-retry', 'retain-on-failure']
+      repeat_each:
+        description: 'How many copies of every case'
+        required: false
+        default: '1'
+      grep:
+        description: 'Title filter, or `all` for the whole suite'
+        required: false
+        default: 'all'
+  schedule:
+    # 05:00 UTC on Mondays — off the nightly's hour, and late enough in the week's first
+    # morning that a red result is somebody's Monday rather than nobody's weekend. The hour is
+    # a preference: GitHub queues scheduled work behind the load of the hour, and the first
+    # nightly under its own cron was created 5h19m late.
+    - cron: '0 5 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keyed by what the run measures, not by the workflow: two probes of the same suite and
+  # engine queue rather than share a minute, and two probes of different ones do not wait on
+  # each other. Nothing is cancelled — a probe that got as far as starting has a reading in it.
+  group: e2e-probe-${{ github.event.inputs.suite }}-${{ github.event.inputs.project }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      # The same two-step Playwright arrangement as ci.yml and nightly.yml, and every engine
+      # named in BOTH branches for the same reason: the cache never covers the system
+      # libraries, and an engine missing from one branch disappears on the first cache hit.
+      - name: Resolve the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      # Playwright is called directly and not through `nx`, because `nx run` reads `--project`
+      # as its own project selector and answers `Cannot find project 'chromium'`. The suite's
+      # real configuration is passed by path, so nothing about the run is invented here except
+      # the four knobs above. Every value arrives through the environment rather than through
+      # string interpolation: an input is somebody's typing, and typing does not belong in the
+      # text of a command.
+      - name: Run the probe
+        id: run
+        env:
+          SUITE: ${{ github.event.inputs.suite }}
+          PROJECT: ${{ github.event.inputs.project }}
+          RETRIES: ${{ github.event.inputs.retries }}
+          TRACE: ${{ github.event.inputs.trace }}
+          REPEAT: ${{ github.event.inputs.repeat_each }}
+          GREP: ${{ github.event.inputs.grep }}
+        run: |
+          set -u
+          SUITE="${SUITE:-sandbox-e2e}"
+          PROJECT="${PROJECT:-chromium}"
+          RETRIES="${RETRIES:-0}"
+          TRACE="${TRACE:-off}"
+          REPEAT="${REPEAT:-1}"
+          GREP="${GREP:-all}"
+
+          case "$SUITE" in sandbox-e2e|docs-e2e) ;; *) echo "unknown suite: $SUITE"; exit 2 ;; esac
+          case "$PROJECT" in chromium|firefox|webkit) ;; *) echo "unknown engine: $PROJECT"; exit 2 ;; esac
+          case "$RETRIES" in ''|*[!0-9]*) echo "retries is not a number: $RETRIES"; exit 2 ;; esac
+          case "$REPEAT" in ''|*[!0-9]*) echo "repeat_each is not a number: $REPEAT"; exit 2 ;; esac
+
+          echo "suite=$SUITE engine=$PROJECT retries=$RETRIES trace=$TRACE repeat-each=$REPEAT grep=$GREP"
+          {
+            echo "### End-to-end probe"
+            echo ""
+            echo "| knob | value |"
+            echo "| --- | --- |"
+            echo "| suite | \`$SUITE\` |"
+            echo "| engine | \`$PROJECT\` |"
+            echo "| retries | \`$RETRIES\` |"
+            echo "| trace | \`$TRACE\` |"
+            echo "| repeat-each | \`$REPEAT\` |"
+            echo "| grep | \`$GREP\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          set -- --config "apps/$SUITE/playwright.config.mts" \
+                 --project="$PROJECT" \
+                 --retries="$RETRIES" \
+                 --trace="$TRACE" \
+                 --repeat-each="$REPEAT" \
+                 --reporter=list
+          if [ "$GREP" != "all" ]; then set -- "$@" --grep "$GREP"; fi
+
+          npx playwright test "$@"
+
+      # Only on a red run: with `--trace=on` a green suite leaves a trace for every case, and
+      # seven hundred of them answer nothing anybody asked.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-output
+          path: dist/.playwright/**/test-output/
+          retention-days: 7
+          if-no-files-found: ignore
