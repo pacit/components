@@ -5914,3 +5914,41 @@ evening the answer was in somebody else's workflow file.
 The shape: **when an instrument is also an actor, driving the subject around it produces a
 complete-looking record of nothing.** Ask who has to perform the event for the instrument to
 be able to see it.
+
+### <a id="lesson-214"></a>`lesson-214` — Two jobs of one run gave two verdicts on the same four cases
+
+The first scheduled run after the repository went public produced both readings at once, and
+they disagree. The `full` job ran the ordinary suite and finished **2082 passed, 4 flaky** —
+a green job. The `flake` job ran the same suite three times over with retries off and found
+**the same four cases, in the same order, at 0/3 each**; `check-flake` stopped the run and
+said, in its own words at the time, "That is a red suite and not a flaky one."
+
+Same commit, same workflow run, same class of runner. One of the two sentences is wrong, and
+it is the gate's: those four cases are not broken. They pass — on the second attempt, after
+the suite has drained, on a machine with nothing left to do.
+
+What separates the jobs is not the code but the load. `--repeat-each=3` puts three copies of
+every case into the queue at once, and `--retries=0` removes the one quiet attempt the
+ordinary suite gives. So a case that needs a calm machine fails all three of its copies and
+comes out indistinguishable, from inside that report, from a case that is simply broken.
+
+The four say what is wrong with them plainly enough. Three of them poll for five seconds —
+`toBeFocused`, `toHaveText`, `toHaveCount` — and the log records **fourteen readings in which
+the value never moved once**. That is not an assertion that ran early: a Tab that does not
+focus, an `End` that leaves the list on row 44 of 5000, a blur that leaves `:focus` behind.
+The keystroke was dispatched and nothing was listening for it yet.
+
+The gate's rule was right and its conclusion was not, which is [`lesson-210`](#lesson-210)
+again one floor up: a guard may report what it saw. What it saw is a unanimous column. What a
+unanimous column MEANS needs evidence the repetition job does not hold, because that job is
+the thing that changed the conditions — and the evidence was one job away, in the same run.
+
+The finding for the project is the other half. Those four have been failing their first
+attempt on every CI run there has been, and `2082 passed, 4 flaky` reads as success to
+everyone who sees it. `retries-left-on.json` has sat in this gate's negative control since the
+day it was written, describing retries as "the mechanism that makes a flake report itself
+green". This is the first time the repository watched it happen to itself.
+
+The shape: **an experiment that alters the conditions cannot also rule on what the conditions
+did.** When a run has to change something to take its measurement, the control is a run that
+did not change it — and if both are jobs of the same nightly, the comparison costs nothing.

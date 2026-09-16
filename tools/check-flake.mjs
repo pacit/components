@@ -299,9 +299,16 @@ const checkOutcomes = (input) => {
         'case-always-failed',
         `\`${suite}\`: ${broken.length} case(s) failed every repetition:\n` +
           list(broken.map((c) => `${c.key} — 0/${c.runs.length}`)) +
-          `\n    That is a red suite and not a flaky one. It is separated here because a ` +
-          `repetition job swallows an ordinary failure otherwise: the run exits non-zero, ` +
-          `the step is allowed to, and a gate counting DISAGREEMENTS finds none.`,
+          `\n    They are separated from the wobbles because a repetition job swallows ` +
+          `an ordinary failure otherwise: the run exits non-zero, the step is allowed to, ` +
+          `and a gate counting DISAGREEMENTS finds none. What a unanimous column MEANS is ` +
+          `not decided here. A case broken outright and a case that fails whenever the ` +
+          `machine is busy look identical from inside a run that loaded it: \`--repeat-each\` ` +
+          `multiplies the work and \`--retries=0\` removes the quiet second attempt, so a ` +
+          `contention-sensitive case fails all of its copies. The evidence that tells them ` +
+          `apart is OUTSIDE this report — the same commit's ordinary suite, where a retry ` +
+          `runs on a calm machine. On 2026-09-16 that suite called these same four "flaky" ` +
+          `while this one read 0/3 (\`lesson-214\`).`,
       );
   }
 };

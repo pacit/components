@@ -1,7 +1,7 @@
 {
   "check": "outcomes",
   "rule": "case-always-failed",
-  "// defect": "A case failed every repetition. That is a red suite and not a flaky one, and it is separated because the repetition job has to tolerate a non-zero exit to reach this gate at all: a gate counting DISAGREEMENTS finds none in a test that fails consistently, and would pass the job green over a broken suite.",
+  "// defect": "A case failed every repetition, so a gate counting DISAGREEMENTS finds none and would pass the job green over it. It has to be separated for that reason alone: the repetition job tolerates a non-zero exit to reach this gate at all. What the unanimous column MEANS is left to the reader and deliberately so — on 2026-09-16 the same four cases read 0/3 here and `flaky` in the ordinary suite of the same run, because this job multiplies the load and removes the quiet retry (`lesson-214`). The gate reports the column; the cause is decided elsewhere.",
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "unexpected",

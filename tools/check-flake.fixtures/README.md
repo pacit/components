@@ -31,25 +31,25 @@ here by that same string, and why point 2 checks that every case ran the same nu
 
 ## The cases
 
-| file                                                                             | what it breaks                                                                   | check         | rule                         |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------- | ---------------------------- |
-| [`no-suite-declared.json`](no-suite-declared.json)                               | the register names no suite, so every point rules on an empty set                | `measured`    | `no-suite-declared`          |
-| [`a-floor-of-one-repetition.json`](a-floor-of-one-repetition.json)               | a floor of one run of each — nothing for a case to disagree with                 | `measured`    | `no-repetition-floor`        |
-| [`a-suite-with-no-report.json`](a-suite-with-no-report.json)                     | one of the two reports never arrived, and half a suite reads as clean            | `measured`    | `no-report`                  |
-| [`an-empty-report.json`](an-empty-report.json)                                   | a report with no project and no case, which agrees with every record             | `measured`    | `empty-report`               |
-| [`retries-left-on.json`](retries-left-on.json)                                   | retries on — the mechanism that makes a flake report itself green                | `measured`    | `retries-on`                 |
-| [`a-single-run-of-each.json`](a-single-run-of-each.json)                         | each case run once: a green rate over a sample that cannot hold a disagreement   | `measured`    | `too-few-repetitions`        |
-| [`a-tally-that-disagrees.json`](a-tally-that-disagrees.json)                     | the report's own `stats` count more runs than the walk found                     | `denominator` | `readings-disagree`          |
-| [`a-case-that-ran-fewer-times.json`](a-case-that-ran-fewer-times.json)           | one case ran twice where every other ran three times, the tally agreeing         | `denominator` | `case-run-unevenly`          |
-| [`a-status-only-a-retry-gives.json`](a-status-only-a-retry-gives.json)           | a `flaky` status in a run whose configuration says retries are off               | `outcomes`    | `status-contradicts-retries` |
-| [`a-case-that-always-failed.json`](a-case-that-always-failed.json)               | a case failing every repetition — a red suite, which a wobble counter cannot see | `outcomes`    | `case-always-failed`         |
-| [`a-name-the-record-does-not-carry.json`](a-name-the-record-does-not-carry.json) | a case that passed, failed and passed again, standing in no record               | `names`       | `wobble-unrecorded`          |
-| [`no-record-at-all.json`](no-record-at-all.json)                                 | no record on disk, which is the state this gate was written in                   | `names`       | `no-record`                  |
-| [`a-record-with-no-reading.json`](a-record-with-no-reading.json)                 | names with no denominator beside them — a list, and not a rate                   | `record`      | `reading-missing`            |
-| [`a-reading-under-the-floor.json`](a-reading-under-the-floor.json)               | a record taken over fewer repetitions than could have found anything             | `record`      | `reading-below-floor`        |
-| [`a-row-the-reading-does-not-count.json`](a-row-the-reading-does-not-count.json) | the reading claims two wobbles over one row                                      | `record`      | `rows-contradict-reading`    |
-| [`a-rate-that-is-not-the-rows.json`](a-rate-that-is-not-the-rows.json)           | the printed rate is not what the record's own counts give                        | `record`      | `rate-contradicts-reading`   |
-| [`prose-drift.json`](prose-drift.json)                                           | every number right, and the sentence saying a name is never deleted reversed     | `record`      | `stale-prose`                |
+| file                                                                             | what it breaks                                                                 | check         | rule                         |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------- | ---------------------------- |
+| [`no-suite-declared.json`](no-suite-declared.json)                               | the register names no suite, so every point rules on an empty set              | `measured`    | `no-suite-declared`          |
+| [`a-floor-of-one-repetition.json`](a-floor-of-one-repetition.json)               | a floor of one run of each — nothing for a case to disagree with               | `measured`    | `no-repetition-floor`        |
+| [`a-suite-with-no-report.json`](a-suite-with-no-report.json)                     | one of the two reports never arrived, and half a suite reads as clean          | `measured`    | `no-report`                  |
+| [`an-empty-report.json`](an-empty-report.json)                                   | a report with no project and no case, which agrees with every record           | `measured`    | `empty-report`               |
+| [`retries-left-on.json`](retries-left-on.json)                                   | retries on — the mechanism that makes a flake report itself green              | `measured`    | `retries-on`                 |
+| [`a-single-run-of-each.json`](a-single-run-of-each.json)                         | each case run once: a green rate over a sample that cannot hold a disagreement | `measured`    | `too-few-repetitions`        |
+| [`a-tally-that-disagrees.json`](a-tally-that-disagrees.json)                     | the report's own `stats` count more runs than the walk found                   | `denominator` | `readings-disagree`          |
+| [`a-case-that-ran-fewer-times.json`](a-case-that-ran-fewer-times.json)           | one case ran twice where every other ran three times, the tally agreeing       | `denominator` | `case-run-unevenly`          |
+| [`a-status-only-a-retry-gives.json`](a-status-only-a-retry-gives.json)           | a `flaky` status in a run whose configuration says retries are off             | `outcomes`    | `status-contradicts-retries` |
+| [`a-case-that-always-failed.json`](a-case-that-always-failed.json)               | a case failing every repetition, which a wobble counter cannot see at all      | `outcomes`    | `case-always-failed`         |
+| [`a-name-the-record-does-not-carry.json`](a-name-the-record-does-not-carry.json) | a case that passed, failed and passed again, standing in no record             | `names`       | `wobble-unrecorded`          |
+| [`no-record-at-all.json`](no-record-at-all.json)                                 | no record on disk, which is the state this gate was written in                 | `names`       | `no-record`                  |
+| [`a-record-with-no-reading.json`](a-record-with-no-reading.json)                 | names with no denominator beside them — a list, and not a rate                 | `record`      | `reading-missing`            |
+| [`a-reading-under-the-floor.json`](a-reading-under-the-floor.json)               | a record taken over fewer repetitions than could have found anything           | `record`      | `reading-below-floor`        |
+| [`a-row-the-reading-does-not-count.json`](a-row-the-reading-does-not-count.json) | the reading claims two wobbles over one row                                    | `record`      | `rows-contradict-reading`    |
+| [`a-rate-that-is-not-the-rows.json`](a-rate-that-is-not-the-rows.json)           | the printed rate is not what the record's own counts give                      | `record`      | `rate-contradicts-reading`   |
+| [`prose-drift.json`](prose-drift.json)                                           | every number right, and the sentence saying a name is never deleted reversed   | `record`      | `stale-prose`                |
 
 Point 1 has six cases because a measurement can be hollow in six ways that all parse, and
 five of them leave a report that looks entirely normal. Point 5 has five because a record is
