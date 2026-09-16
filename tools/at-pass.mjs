@@ -194,7 +194,10 @@ ${incomplete}
   writeFileSync(join(ROOT, LOGS, `${slug}.md`), `${header}\n${body}\n`);
   process.stdout.write(
     `v ${reader}: ${steps.length} steps over ${byRoute.size} views, ` +
-      `${said.length} utterances, ${silent} silent stops, ${capped.length} capped ` +
+      // Counted off the STEPS and not off the log, because only one of the three readers has
+      // a log: read the other way, a complete NVDA pass reported `0 utterances`.
+      `${steps.reduce((n, step) => n + spoken(step).length, 0)} utterances, ` +
+      `${silent} silent stops, ${capped.length} capped ` +
       `→ ${LOGS}/${slug}.md\n`,
   );
 };
