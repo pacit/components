@@ -54,6 +54,15 @@ export interface Reader {
    * with the reader. A keystroke the reader did not make is a keystroke it cannot report.
    */
   press(key: string): Promise<void>;
+  /**
+   * Perform the focused control's DEFAULT ACTION — pressing the button, opening the panel.
+   * A seam and not a key, because on two of the three readers it is not a key at all: handed
+   * `Enter`, VoiceOver replies "You are currently on a button. To click this button, press
+   * Control-Option-Space" and NVDA replies `pressed`, and in both records nothing had opened.
+   * Orca has no such seam and needs none — it lets the key through to the browser, which is
+   * why the defect was invisible until the other two ran (`acts` in `at/acts.ts`).
+   */
+  activate?: () => Promise<void>;
   navigateToWebContent?: () => Promise<void>;
   /**
    * How long to stand still after a load and after a Tab. Orca overrides both: it is a
@@ -256,7 +265,11 @@ export async function walk(
         steps[steps.length - 1].note =
           `the act found no \`${act.on}\` to press, so ${act.what} is unread here`;
       else {
-        await step(route, 'open', tab, () => reader.press(act.key));
+        await step(route, 'open', tab, () =>
+          act.acts && reader.activate
+            ? reader.activate()
+            : reader.press(act.key),
+        );
         steps[steps.length - 1].note =
           `the act: \`${act.key}\` on \`${act.on}\`, to open ${act.what} ` +
           `(the gesture belongs to \`${act.owner}\`)`;

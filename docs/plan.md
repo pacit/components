@@ -1332,6 +1332,27 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
     take a second home here, so the table cites the spec that owns it rather than restating it
 
+- [ ] **4.73 — the reader pass was never isolated, and the record said it was**
+  - `tools/at-pass.sh` starts an Xvfb on `:99`, a session bus and a throwaway configuration
+    directory, and its own header says the point is that the pass never touches the reader,
+    the preferences or the desktop of whoever runs it. For the BROWSER that was false from the
+    first run: GTK reads `GDK_BACKEND` and `WAYLAND_DISPLAY` before `DISPLAY`, so Firefox took
+    the session compositor and opened a real window on the maintainer's desktop
+  - found by the maintainer saying so — a `firefox` on his taskbar with Tab walking the
+    application inside it — and proved by him switching its theme, twice, in the middle of a
+    reading. Xvfb had been running the whole time with nothing ever drawing on it
+  - **the obvious repair is measured and refused**: `unset WAYLAND_DISPLAY` with
+    `GDK_BACKEND=x11` does move the browser to `:99`, and Orca then reads almost nothing —
+    **7 utterances against 1969** for the same walk, the first view failing its own guard.
+    This pass works BECAUSE it is not isolated
+  - what it costs: every Orca reading in `docs/acr/at/` was taken on a desktop somebody was
+    using, so a stray click is indistinguishable from a component's behaviour. That is the
+    error the three-reader comparison exists to catch, arriving through the instrument itself
+  - what landed meanwhile: the surface is SAMPLED and written into the record, in place of the
+    constant "driven on Xvfb" it used to claim, and the script warns before it opens anything
+  - binds at: **a headless Wayland compositor** — `cage`, or `weston --backend=headless`, and
+    neither is installed here
+
 - [ ] **4.72 — a gate went red inside a run GitHub reported green**
   - CI run `35104356828` on `6491aef` concluded **success**. Inside it, in the one step that
     runs every gate: `❌ nx run @org/source:check-typecheck`, the gate's own verdict of one

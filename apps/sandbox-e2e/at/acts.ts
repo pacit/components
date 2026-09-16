@@ -31,8 +31,17 @@ export interface Act {
   readonly what: string;
   /** The control that opens it, in the sandbox's own markup. */
   readonly on: string;
-  /** The key the reader presses on that control. */
+  /** The key a PERSON presses on that control. It is what the record quotes. */
   readonly key: string;
+  /**
+   * Whether that key is the control's DEFAULT ACTION, which is not a keystroke on every
+   * reader. Asked with a literal `Enter`, VoiceOver answered eight of these nine with
+   * "You are currently on a button. To click this button, press Control-Option-Space" and
+   * opened nothing; NVDA answered `pressed` and opened nothing either. Where this is true the
+   * reader is ASKED to act (`Reader.activate`) instead of being handed a key, and the reading
+   * is of the component rather than of Guidepup's key handling.
+   */
+  readonly acts: boolean;
   /** The end-to-end case that owns this gesture — cited, never restated. */
   readonly owner: string;
 }
@@ -47,42 +56,49 @@ export const ACTS: Readonly<Record<string, Act>> = {
     what: 'a revealed section',
     on: '[data-testid="item-payment"] [data-pct-part="heading"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/accordion.spec.ts',
   },
   '/drawer': {
     what: 'a named region beside the page',
     on: '[data-testid="trigger-nav"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/drawer.spec.ts',
   },
   '/dialog': {
     what: 'a modal dialog',
     on: '[data-testid="open-basic"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/dialog.spec.ts',
   },
   '/menu': {
     what: 'a menu',
     on: '[data-testid="actions-trigger"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/menu.spec.ts',
   },
   '/popover': {
     what: 'a non-modal dialog',
     on: '[data-testid="panel-trigger"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/popover.spec.ts',
   },
   '/toast': {
     what: 'a message in a live region',
     on: '[data-testid="raise-notice"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/toast.spec.ts',
   },
   '/date': {
     what: 'a month grid',
     on: '[data-testid="date-starts-on"] [data-pct-part="toggle"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/date.spec.ts',
   },
   '/tabs': {
@@ -92,12 +108,16 @@ export const ACTS: Readonly<Record<string, Act>> = {
     what: 'the panel behind the next tab',
     on: '[data-testid="tabs-basic"] [data-pct-part="tab"][aria-selected="true"]',
     key: 'ArrowRight',
+    // The exception, and the reason the field exists: an arrow is a KEY on all three readers,
+    // not a default action, and asking a reader to "act" on a tab would press it instead.
+    acts: false,
     owner: 'apps/sandbox-e2e/src/tabs.spec.ts',
   },
   '/select': {
     what: 'a listbox',
     on: '[data-testid="select-country"] [data-pct-part="trigger"]',
     key: 'Enter',
+    acts: true,
     owner: 'apps/sandbox-e2e/src/select.spec.ts',
   },
 };

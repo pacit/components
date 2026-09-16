@@ -169,7 +169,13 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
     ? [stack]
     : [
         version('orca', ['--version']),
-        `Firefox ${browser ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'not recorded'}`,
+        // What the browser drew on is SAMPLED by the driver and passed in, never assumed:
+        // this bullet used to read "driven on Xvfb" as a constant, and on every Linux desktop
+        // it has ever run on that was false — Firefox takes the session compositor and ignores
+        // `DISPLAY` (position 4.73).
+        `Firefox ${browser ?? 'unknown'} (the Playwright build), drawn on ${
+          process.env.AT_PASS_SURFACE || 'a surface this run did not sample'
+        }`,
       ];
 
   const body = [...byRoute.entries()]

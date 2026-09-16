@@ -26,7 +26,7 @@ SCREEN=":99"
 # the state it has written for itself.
 # A stale record from a previous pass would make a walk that never finished look
 # like one that did: the success of this run is decided by the file it leaves.
-rm -f "$WORK/drove.ok" "$WORK/steps.json"
+rm -f "$WORK/drove.ok" "$WORK/steps.json" "$WORK/browser.display"
 mkdir -p "$WORK/config/orca" "$WORK/data"
 
 # The reader's own settings, and the one that decides whether this works at all. Orca's caret
@@ -51,13 +51,63 @@ cat > "$WORK/config/orca/user-settings.conf" <<'JSON'
   "activeProfile": ["Default", "default"]
 }
 JSON
+echo
+echo "  !! THE BROWSER OPENS A REAL WINDOW ON YOUR DESKTOP for the next few minutes."
+echo "     Clicking in it, or typing into it, goes into the measurement — a theme switched"
+echo "     and switched back is two announcements the reader attributes to a Tab press."
+echo "     Everything else on this machine is safe: editing a file in this repository is"
+echo "     the one thing that reloads the page under the walk. (position 4.73)"
+echo
 export DISPLAY="$SCREEN"
+# THE LINE ABOVE DOES NOT MOVE THE BROWSER, and everything this file said about isolating it
+# was false until 2026-09-16. GTK reads `GDK_BACKEND` and `WAYLAND_DISPLAY` first and Firefox
+# follows: in a Wayland session it ignores `DISPLAY`, connects to the compositor of whoever
+# started the pass, and opens a REAL WINDOW on their desktop. The maintainer found it by
+# saying so — a `firefox` on his taskbar, Tab walking the application inside it — and then
+# proved it by clicking the theme switch in the middle of a reading. Xvfb has been running
+# this whole time with nothing ever drawing on it.
+#
+# The obvious repair is measured and REFUSED. `unset WAYLAND_DISPLAY` with `GDK_BACKEND=x11`
+# does put the browser on `:99` — and Orca then reads almost nothing: **7 utterances against
+# 1969** for the same walk, and the first view fails the guard the record carries. This pass works
+# BECAUSE it is not isolated. Isolating it properly wants a headless Wayland compositor and
+# none is installed here (position 4.73).
+#
+# So the window is real, the operator is told so above, and the record says which surface the
+# reading was taken on instead of claiming this one.
 export XDG_CONFIG_HOME="$WORK/config"
 export XDG_DATA_HOME="$WORK/data"
 export GTK_MODULES=gail:atk-bridge
 export GNOME_ACCESSIBILITY=1
 export NO_AT_BRIDGE=0
 export LANG=C.UTF-8 LANGUAGE=en_US:en LC_ALL=C.UTF-8
+
+# Which surface the browser REALLY took, sampled rather than assumed — the whole defect was
+# that exporting a variable and having the browser honour it are two different facts. Matched
+# by process NAME and then by the executable behind it: `pgrep -f` on a path also matches any
+# shell whose command line happens to contain that path, and the first version of this sampler
+# reported the wrong answer because it had found the very command asking it the question.
+(
+  tries=0
+  while [ "$tries" -lt 180 ]; do
+    tries=$((tries + 1))
+    for pid in $(pgrep -x firefox 2>/dev/null); do
+      case "$(readlink -f "/proc/$pid/exe" 2>/dev/null)" in
+      */ms-playwright/*) ;;
+      *) continue ;;
+      esac
+      if tr "\0" "\n" < "/proc/$pid/environ" 2>/dev/null | grep -q "^WAYLAND_DISPLAY="; then
+        echo "the desktop session of whoever ran the pass, NOT an isolated display (4.73)" \
+          > "$WORK/browser.display"
+      else
+        echo "Xvfb at 1280x900, window manager: ${AT_PASS_WM:-none}" > "$WORK/browser.display"
+      fi
+      exit 0
+    done
+    sleep 1
+  done
+  echo "not sampled" > "$WORK/browser.display"
+) &
 
 if ! curl -sf -o /dev/null "$BASE"; then
   echo "X nothing is serving at $BASE — start the sandbox first" >&2
@@ -124,6 +174,14 @@ dbus-run-session -- bash -c '
 # not mention it: it named the reader's log and the display's, both of which were empty, while
 # the driver was throwing `ReferenceError` into a pipe (`lesson-210`). The remedy a guard
 # prints is part of the guard.
+
+# What the browser really drew on, carried into the record. The line it replaces was a
+# CONSTANT saying "driven on Xvfb", which was false on every Linux desktop this has ever run
+# on — a fabricated bullet in the one file whose whole purpose is to be quotable, and the same
+# defect as the version bullet before it.
+AT_PASS_SURFACE="$(cat "$WORK/browser.display" 2>/dev/null || echo "not sampled")"
+export AT_PASS_SURFACE
+
 if [ ! -f "$WORK/drove.ok" ]; then
   echo "X the walk did not complete. The driver's own output is $WORK/drive.log; the" >&2
   echo "  reader's is $WORK/orca.out and the display's is $WORK/xvfb.log." >&2
