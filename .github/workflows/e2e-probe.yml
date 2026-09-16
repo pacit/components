@@ -174,10 +174,17 @@ jobs:
       # uploaded nothing at all and said `success` while doing it — `if-no-files-found: ignore`
       # is right for a probe that may legitimately leave no trace, and it is also what made the
       # emptiness silent. Found by dispatching the file rather than by reading it.
+      # What the runner actually left, printed before anything tries to collect it. Two
+      # patterns in a row matched nothing and the upload reported `success` over both, which
+      # is `if-no-files-found: ignore` working as asked and telling nobody. A listing is
+      # cheap; guessing a third glob is not.
+      - if: failure()
+        run: find dist -maxdepth 5 -type d -print 2>/dev/null | head -40 || echo 'no dist/'
+
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: probe-output
-          path: dist/.playwright/**/test-output/**
+          path: dist/.playwright/**
           retention-days: 7
           if-no-files-found: ignore
