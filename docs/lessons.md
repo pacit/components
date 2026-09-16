@@ -5924,19 +5924,32 @@ a green job. The `flake` job ran the same suite three times over with retries of
 said, in its own words at the time, "That is a red suite and not a flaky one."
 
 Same commit, same workflow run, same class of runner. One of the two sentences is wrong, and
-it is the gate's: those four cases are not broken. They pass — on the second attempt, after
-the suite has drained, on a machine with nothing left to do.
+it is the gate's: those four cases are not broken outright. They pass — on the second attempt.
 
-What separates the jobs is not the code but the load. `--repeat-each=3` puts three copies of
-every case into the queue at once, and `--retries=0` removes the one quiet attempt the
-ordinary suite gives. So a case that needs a calm machine fails all three of its copies and
-comes out indistinguishable, from inside that report, from a case that is simply broken.
+The first explanation written here was load, and it was wrong — written into the lesson about
+not naming causes, and falsified an hour later by one line of the job's own output: **`Running
+6258 tests using 1 worker`**. Nx's preset sets `workers: process.env.CI ? 1 : undefined`, so
+there is no parallelism on this CI at all and `--repeat-each` queues nothing beside anything.
+The three copies run nine minutes apart, one after another.
 
-The four say what is wrong with them plainly enough. Three of them poll for five seconds —
-`toBeFocused`, `toHaveText`, `toHaveCount` — and the log records **fourteen readings in which
-the value never moved once**. That is not an assertion that ran early: a Tab that does not
-focus, an `End` that leaves the list on row 44 of 5000, a blur that leaves `:focus` behind.
-The keystroke was dispatched and nothing was listening for it yet.
+What `--retries=0` takes away is not a calmer moment. A retry is not a second attempt in the
+same process: Playwright restarts the worker after a failure — its own types say so, "when a
+worker is restarted, for example after a failure, the new worker process gets a new unique
+`workerIndex`" — so a retry is a second attempt **in a browser that has just been started**.
+The repetition job grants no retries, so every copy is a first attempt in a browser that has
+been running for minutes. That is the difference between the two jobs, and it is a difference
+in what a retry IS rather than in what the machine was doing.
+
+The reading is sharper than "flaky" in one more way. On chromium all three copies failed and
+each took 5.4 s — the full `expect` timeout. On firefox and webkit the same case passed all
+three, in 0.6 s and 0.7 s. One engine, every time, at the ceiling.
+
+What the four have in common is narrow enough to be worth writing down and too narrow to be
+a cause yet. Three of them poll for five seconds — `toBeFocused`, `toHaveText`, `toHaveCount`
+— and the log records **fourteen readings in which the value never moved once**, so nothing
+was slow: a Tab that does not focus, an `End` that leaves the list on row 44 of 5000, a blur
+that leaves `:focus` behind. Every one of the three is a key press with no effect, and the
+fourth reads a theme that was switched a moment earlier. Which is a shape, not yet a reason.
 
 The gate's rule was right and its conclusion was not, which is [`lesson-210`](#lesson-210)
 again one floor up: a guard may report what it saw. What it saw is a unanimous column. What a
