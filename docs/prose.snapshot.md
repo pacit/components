@@ -88,7 +88,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 2.1.6 closed 12 131
 2.1.7 closed 11 135
 2.1.8 closed 12 154
-2.2 open 20 264
+2.2 closed 12 182
 2.3 closed 11 119
 2.4 closed 12 140
 2.5 closed 12 154
@@ -173,6 +173,8 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.65 closed 11 156
 4.66 closed 12 170
 4.67 closed 12 175
+4.70 open 13 190
+4.71 open 13 217
 4.69 open 20 305
 4.68 closed 12 156
 5.1 closed 12 131

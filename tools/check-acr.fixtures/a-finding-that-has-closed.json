@@ -1,8 +1,27 @@
 {
   "point": 6,
   "check": "finding",
-  "description": "The plan marks 2.2 closed while 4.1.2 keeps citing it as the owner of its one remaining limit — the assistive-technology pass this report still owes. A limit that has gone is a level to raise, not a citation to keep; the report would otherwise understate the library on the day it improved. The case is written over whichever finding a row is leaning on TODAY, and it has moved three times for that reason: from 4.8, then from 4.37 on the night 4.37 closed, and then from 4.45 on the day the skeleton took a `paused` input and 2.2.2 rose to Supports with no finding left to name.",
+  "description": "A criterion keeps citing a finding the plan marks closed. A limit that has gone is a level to raise, not a citation to keep; the report would otherwise understate the library on the day it improved. The case carries BOTH halves of its own defect — the citation and the closing — and the evidence beside the finding is copied here rather than borrowed, because point 5 rules on the level before point 6 sees the finding and a criterion left with nothing but a citation fires the wrong check. Until 2026-09-16 the case named whichever finding a row leaned on today, and it had moved three times for that reason (4.8, then 4.37 on the night 4.37 closed, then 4.45). The fourth time it did not move: 2.2 closed, nothing cited it, and the control passed while proving nothing (`lesson-216`).",
+  "criteria": {
+    "4.1.2": {
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [1, 2, 3, 4, 8]
+        },
+        {
+          "req": "req-a11y-built-in"
+        },
+        {
+          "cards": "Screen-reader log"
+        },
+        {
+          "finding": "4.71"
+        }
+      ]
+    }
+  },
   "plan": {
-    "2.2": "closed"
+    "4.71": "closed"
   }
 }

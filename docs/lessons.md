@@ -6004,3 +6004,35 @@ without rendering anything. A comment inside a quoted block is not a comment; it
 The shape: **a guard should name what would be WRONG with the output, not what it expects to
 go wrong on the way there.** The first kind keeps working when the cause changes; the second
 kind is a description of yesterday.
+
+### <a id="lesson-216"></a>`lesson-216` — The register counted one spelling of a row, and the criterion counted a fourth
+
+Thirty-four component cards each carry a table row for what a screen reader says. The gate
+reported **nineteen with the row and fifteen without**, and that was the state for as long as
+anyone had looked. It was false. All thirty-four had the row; they spelled it three ways —
+`Screen-reader log`, `A screen-reader test log`, `Screen-reader test log` — and
+`tools/check-acr.mjs` matched the first exactly.
+
+The second half is worse, and it is the half that mattered. The criterion the whole pass
+exists for, 4.1.2, cites the cards through `claims.json`, and it cited a spelling of its own:
+`Screen-reader test log`, which nineteen of the cards did not use. So the evidence line under
+"Name, Role, Value" read **`0 of 34`** and would have gone on reading it no matter how many
+readings were written, because the two halves of one gate were counting two different rows.
+Both were fixed by normalising the label; nothing about the machinery changed.
+
+What makes this worth a number rather than a commit message is that neither defect is visible
+from either side alone. The gate is not wrong about the row it counts: fifteen cards really do
+not have `Screen-reader log`. The claim is not wrong either: no card has what it cites, so
+zero is the honest count of it. The defect only exists in the sentence that says the criterion
+is evidenced BY the cards — and that sentence is prose in a JSON file, checked by nobody.
+
+The negative control failed in the same hour, and in the most instructive way. The case that
+proves point 7 can fire — "the pass is claimed as recorded while a card still owes its
+reading" — set the flag and then leaned on the LIVE cards to supply the owing card. Every card
+owed one, so the case had always passed for the right reason and by accident. The day the
+readings landed, the case went green and the gate said so: **a prepared input that passed and
+was meant not to.** It now builds the defect it needs.
+
+The shape: **a control that borrows its defect from the state of the repository retires itself
+the day that state is repaired** — silently, and precisely when the thing it guards starts
+mattering. A case must construct what it proves.

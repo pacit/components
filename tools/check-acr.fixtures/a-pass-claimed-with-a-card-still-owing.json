@@ -1,9 +1,14 @@
 {
   "point": 7,
   "check": "pass",
-  "description": "The pass is claimed as recorded and a log stands on disk, while the cards' `Screen-reader log` rows still read `none — gap`. A pass that no card points at is a transcript nobody wired to the component it measured.",
+  "description": "The pass is claimed as recorded and a log stands on disk, while one card's `Screen-reader log` row still reads `none — gap`. A pass that a card does not point at is a transcript nobody wired to the component it measured. The defect is BUILT here rather than borrowed: until 2026-09-16 this case set `recorded` and leaned on the live cards, every one of which read `none — gap` — and the day the readings landed the case passed, because the repository had stopped supplying the fault the case was meant to prove. A control that depends on the live input being broken is a control that retires itself the moment the work is done.",
   "assistiveTechnology": {
     "recorded": true
   },
-  "atLogs": ["nvda-2026-09-05.md"]
+  "atLogs": ["nvda-2026-09-05.md"],
+  "cards": {
+    "button": {
+      "Screen-reader log": "none — gap"
+    }
+  }
 }

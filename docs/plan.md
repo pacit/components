@@ -260,26 +260,18 @@ precondition of the quiet push (3.0), which no visitor can see.
         10rem floor under the lazy demo. Left open: ~121 kB of estimated-unused initial JS and
         a throttled LCP of 5.6 s (2.3's idiom), and `sitemap.xml`, `og:url`/`og:image` and
         canonicals, which wait on the domain 3.1 decides · cost: ~0.5 day, spent as estimated
-- [~] **2.2 — ACR / VPAT** out of the existing gates — you get the machine proof earlier than the
-  document, which is the reverse of the industry norm (the EAA enforceable since June 2025,
-  EN 301 549 in tenders)
-  - _ended 2026-09-05 with the machine half landed and the pass still owed._ `docs/acr.md` is
-    rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — a row per criterion
-    of WCAG 2.2 at A and AA, each resting on what already runs, every citation held and the
-    rendering compared byte for byte. The site shows it at `/acr` with
-    [0061](decisions/0061-the-landing-speaks-in-measurements.md)'s wording law untouched
-  - `at-pass.sh` puts Orca on a display of its own and `at-pass.mjs` reaches each view through
-    the sandbox's own navigation. A document load per view had read every OTHER one, for a
-    reason that was never the clock ([`lesson-211`](lessons.md#lesson-211))
-  - **all three readers are on record over all 36 views** — Orca 482 steps, NVDA 523,
-    VoiceOver 272, each saying "every view spoke". Six dispatches got there, each finding
-    something else: 4.67, 4.68, a setup order, a Tab the reader never made
-    ([`lesson-213`](lessons.md#lesson-213)), an untypable `routes` input
-  - **what remains is a person.** Three machines have written down what they said and nobody
-    has read it: 34 cards owe the reading, and the gate turns that into a **`Supports` for
-    4.1.2** — the maintainer's to authorise, and not something one pass buys. Open on the
-    instrument: `enter` is silent for both Guidepup readers (it places focus rather than
-    pressing a key), and VoiceOver walks half the steps NVDA does over the same views
+- [x] **2.2 — ACR / VPAT** out of the existing gates — **closed 2026-09-16: the pass is
+      recorded, and every card carries what was heard**
+  - `docs/acr.md` is rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` — a
+    row per criterion at A and AA, every citation held, the rendering compared byte for byte
+  - **all three readers over all 36 views** — Orca 482 steps, NVDA 523, VoiceOver 272, each
+    saying "every view spoke", through one walk with one home (4.66)
+  - **the reading is the close**, and it found four things nobody was looking for; the sharpest
+    is 4.70. Two register defects came with it: the row had three spellings and the gate saw
+    one, so 15 cards read as having none — and 4.1.2 counted a fourth, which is why its
+    evidence line said `0 of 34` however much had been written ([`lesson-216`](lessons.md#lesson-216))
+  - **4.1.2 is not raised, and the reading is the reason**: a Tab walk never OPENS anything, so
+    a modal, a menu, a popover, a toast, a month grid and a revealed panel are unread — 4.71
 - [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
   - _closed 2026-09-05:_ `nx run docs:bench` (`apps/docs/bench/previews.bench.ts`) renders every
     card's preview in jsdom and reads five things per scene; `tools/check-bench.mjs` (`check-bench`,
@@ -1307,6 +1299,34 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the schedule carried its own trap: on `schedule` the `inputs` context is EMPTY, not
     defaulted, so the conditions would have skipped both jobs green and an empty `routes`
     walks all 36 views. Conditions now name the reader EXCLUDED; the route falls back at use
+- [ ] **4.70 — no reader spoke the chip label the template argues is heard beside the cross**
+  - `chip.html` says the remove button carries `texts().chipRemove` as its only name, "WHAT it
+    removes being said by the label beside it in the same listitem". That is an argument about
+    what a reader does, written where no gate can check it
+  - the three logs of 2026-09-16 disagree. At every one of five chips: `Remove · button.`
+    (Orca), `Remove, button` (NVDA), `Remove button list Active filters 5 items` (VoiceOver).
+    The named LIST arrives and the item count arrives; **the chip does not**
+  - a keyboard user clearing five filters hears `Remove` five times and cannot tell which is
+    which. It is a product question and not an instrument one — the reading is unambiguous
+  - what it is NOT: a claim about what the accessibility tree contains. axe is green here,
+    which is the point of having a reader at all
+  - binds at: **a decision about the name.** `aria-label` per chip costs a string the consumer
+    already wrote; leaving it costs the argument in `chip.html`, which the measurement refuses
+
+- [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
+  - seven cards ask what a reader announces when something opens — a modal, a menu, a popover,
+    a toast, a month grid, a revealed tab panel, a select list — and the answer for all seven
+    is the same: the walk presses Tab and nothing else, so no panel in the three logs was ever
+    opened. 2.2 closed with that stated rather than blurred
+  - it is also why **4.1.2 stays `Partially Supports`** with the pass recorded: what the walk
+    answers it answers well, and the half it cannot reach is the half a modal lives in
+  - two more components are out of reach for a nearer reason: a `progressbar`, a badge and a
+    skeleton take no focus at all, so a Tab walk cannot tell their silence from their absence
+  - the shape it needs is not a longer walk. It is a pass that ACTS — open, then read; and
+    then a reader asked to read the page rather than walk it, for everything unfocusable
+  - binds at: **a word on whether the second instrument is worth building**, which is a
+    question about who the ACR is for rather than about what is cheap
+
 - [~] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
   — **three fixed and verified on a runner 2026-09-16; the fourth has an exact trigger**
   - found only because two jobs of one nightly read the same commit: `full` finished **2082

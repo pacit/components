@@ -121,7 +121,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 | Tokens registered + an entry in `contrast.policy.json`             | [`req-token-contrast`](../requirements/tokens.md#req-token-contrast)              |          |
 | Strings through `PCT_TEXTS`                                        | [`req-api-texts`](../requirements/api.md#req-api-texts)                           |          |
 | Entrypoint size budget                                             | [`req-project-tree-shaking`](../requirements/project.md#req-project-tree-shaking) |          |
-| A screen-reader test log                                           | [`req-a11y-wcag`](../requirements/a11y.md#req-a11y-wcag)                          |          |
+| Screen-reader log                                                  | [`req-a11y-wcag`](../requirements/a11y.md#req-a11y-wcag)                          |          |
 | A docs page with live examples                                     | [`req-project-apps`](../requirements/project.md#req-project-apps)                 |          |
 
 ## Decisions this component implements
