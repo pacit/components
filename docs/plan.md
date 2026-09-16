@@ -1333,6 +1333,26 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
     take a second home here, so the table cites the spec that owns it rather than restating it
 
+- [ ] **4.72 — a gate went red inside a run GitHub reported green**
+  - CI run `35104356828` on `6491aef` concluded **success**. Inside it, in the one step that
+    runs every gate: `❌ nx run @org/source:check-typecheck`, `X Typecheck gate — 1
+violations`, and the end-to-end suite reporting `1 flaky`. The step's own conclusion is
+    `success`, and the log carries no `NX ... failed` line and no `Failed tasks:` list
+  - the gate was RIGHT. `apps/sandbox-e2e/at-orca.config.mts` had entered no compiler's
+    program since the day it was written, and the nightly said so on the next tree it read.
+    Fixed separately; this position is about the run that swallowed it
+  - what it is not: `affected` skipping the project — `nx show projects --affected` for that
+    range lists `@org/source`; and not a chronic condition — the three green runs before it
+    carry no failed task at all
+  - **the one thing already measured**: on this desk, the same gate failing under
+    `nx affected -t check-typecheck` exits **1** and prints both missing lines. So the
+    difference is not the executor and not the gate, and the next reading is of a run with
+    the whole target list in it — thirty-four gates and a forty-three-minute `e2e`
+  - what it costs while it stands: every green tick on this repository is a claim that the
+    gates ran and passed, and for one run it was a claim that they had merely been started
+  - binds at: **a reading of nx's exit code under the full line**, which is a dispatch and not
+    a guess ([`lesson-214`](lessons.md#lesson-214))
+
 - [x] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
       — **closed 2026-09-16: `--retries=0` on a runner, 757 passed, nothing flaky**
   - found only because two jobs of one nightly read the same commit: `full` finished **2082
