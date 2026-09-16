@@ -1165,26 +1165,26 @@ and every one is held by a **binds at** rather than by anybody's mood.
     policy entry says six, and a jsdoc in `check-files` sent a reader to a header paragraph
     that was the requirement's all along
 
-- [~] **4.58 — the suite has a flake rate and nothing has ever measured it** — **the first
-  reading landed 2026-09-16; the record waits on 4.69**
+- [~] **4.58 — the suite has a flake rate and nothing has ever measured it** — **the unanimous
+  column cleared 2026-09-16; the record waits on one whole run**
   - 4.54 bought the _shape_ of a race as a greppable rule and refused the repetition job on
     its own wording. The two flakes it found were fixed and the rate stayed a guess
-  - what landed: a third runner in `nightly.yml` — both suites `--repeat-each=3 --retries=0`,
-    one at a time, reports kept as an artifact — and `check-flake`, five points over them,
-    with `flake.policy.json` and seventeen prepared inputs
-  - the shape of that report was MEASURED against Playwright, not read out of it: repetitions
-    carry no index, so a case is addressed by `<path> | <project>` and by nothing else
-  - **the reading, off run 35070461427 and read a second way by hand**: `sandbox-e2e` 2086
-    cases over 6258 runs — 2078 clean, **4 wobbled**, 4 unanimous; `docs-e2e` 431 cases over
-    1293 runs and **not one wobble**. All eight unstable cases are chromium; the wobbles are
-    two in `forced-colors.spec.ts` and two in `slider.spec.ts`
-  - [`lesson-202`](lessons.md#lesson-202) named the wrong population. It expected cases that
-    fail under the suite's parallelism, and this CI has none: Nx's preset sets `workers: 1`
-    there, which 153 minutes of repetition were spent establishing
-  - what remains: **the record**. `check-flake` stops at point 3 over the four unanimous
-    columns and refuses to compute a rate over a report holding them, which is right — and
-    makes 4.69 this item's last blocker rather than a separate errand
-  - binds at: **the first nightly after 4.69 closes**
+  - what landed: a runner in `nightly.yml` per suite, `--repeat-each=3 --retries=0`, reports
+    kept as an artifact — and `check-flake`, five points over them, with `flake.policy.json`
+    and seventeen prepared inputs. The report's shape was MEASURED against Playwright:
+    repetitions carry no index, so a case is addressed by `<path> | <project>` and nothing else
+  - **first reading** (run 35070461427): `sandbox-e2e` 2086 cases over 6258 runs — 2078 clean,
+    4 wobbled, **4 unanimous**; `docs-e2e` 431 cases over 1293 runs, not one wobble
+  - **second** (run 35114204663, the first after 4.69 closed): the same 2086 cases over the
+    same 6258 runs — **2084 clean, 2 wobbled, zero unanimous**, one case in
+    `forced-colors.spec.ts` and one in `slider.spec.ts`. The four columns are gone, which is
+    four fixes holding under repetition rather than under a retry
+  - [`lesson-202`](lessons.md#lesson-202) named the wrong population: it expected cases that
+    fail under the suite's parallelism, and this CI has none — Nx's preset sets `workers: 1`
+  - what remains: **one run with both halves in it.** That reading spent 2.2 hours on the
+    sandbox suite and was cut off inside the docs one at the three-hour cap, so the gate
+    stopped at point 1 with a suite missing. The job is one runner per suite now
+  - binds at: **the first nightly of the split job**
 - [x] **4.59 — the plan forbids citing a task by its number, and 126 citations did** —
       **closed 2026-09-14**, 204 files: zero left outside this one
   - the count was wrong, and how is the finding: 126 is what `plan N.N` greps for, while the
