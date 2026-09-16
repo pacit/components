@@ -12,7 +12,12 @@ import {
   isDevMode,
   output,
 } from '@angular/core';
-import { PCT_CONFIG, PCT_TEXTS, PctSize } from '@pacit/components/core';
+import {
+  nextPctId,
+  PCT_CONFIG,
+  PCT_TEXTS,
+  PctSize,
+} from '@pacit/components/core';
 import { PctIcon } from '@pacit/components/icon';
 
 /**
@@ -180,6 +185,17 @@ export class PctChip {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly parent = inject(PCT_CHIPS, { optional: true });
   protected readonly texts = inject(PCT_TEXTS);
+
+  /**
+   * The two halves of the cross's accessible name. They exist as ids because the name has
+   * to be COMPOSED: the verb is the library's string, what it acts on is the consumer's
+   * projected label, and no attribute carries both — `aria-label` would overwrite the one
+   * with the other, and reading the projected text into a string would be a DOM read of
+   * content the application may change under us.
+   */
+  private readonly uid = nextPctId('pct-chip');
+  protected readonly labelId = `${this.uid}-label`;
+  protected readonly removeId = `${this.uid}-remove`;
 
   /**
    * Whether the chip draws the control that takes it back — off by default. A mixed row is

@@ -222,7 +222,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 30 items · Switch · visited link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 30 items · Switch · link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -254,7 +254,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/dialog`
 
 ```
-arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 30 items · Dialog · visited link. · Browse mode
+arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 30 items · Dialog · link. · Browse mode
 enter   button "Open the dialog"                             Open the dialog · button.
 tab 1   button "Delete the project"                          Delete the project · button.
 tab 2   button "Open the insistent one"                      Open the insistent one · button.
@@ -511,27 +511,27 @@ Tab moved nothing — focus had left the page.
 
 ```
 arrive  a "Chips"                                            navigation · Sandbox views · List with 30 items · Chips · link. · Browse mode
-enter   button[remove] "Remove"                              Active filters · List with 5 items · Remove · button.
-tab 1   button[remove] "Remove"                              Remove · button.
-tab 2   button[remove] "Remove"                              Remove · button.
-tab 3   button[remove] "Remove"                              Remove · button.
-tab 4   button[remove] "Remove"                              Remove · button.
+enter   button[remove] "Remove"                              Active filters · List with 5 items · Remove In stock · button.
+tab 1   button[remove] "Remove"                              Remove Under 50 · button.
+tab 2   button[remove] "Remove"                              Remove Free shipping · button.
+tab 3   button[remove] "Remove"                              Remove New · button.
+tab 4   button[remove] "Remove"                              Remove Local · button.
 tab 5   button "Restore everything"                          leaving list. · Restore everything · button.
 tab 6   input[control]                                       Theme · panel · light · selected radio button.
 tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 9   button[remove] "Remove"                              leaving panel. · Statuses · List with 3 items · Remove · button.
-tab 10  button[remove] "Remove"                              Remove · button.
+tab 9   button[remove] "Remove"                              leaving panel. · Statuses · List with 3 items · Remove draft · button.
+tab 10  button[remove] "Remove"                              Remove archived · button.
 tab 11  input[control]                                       leaving list. · Theme · panel · light · selected radio button.
 tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 13  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 14  button[remove] "Remove"                              leaving panel. · People · List with 3 items · Remove · button.
-tab 15  button[remove] "Remove"                              Remove · button.
-tab 16  button[remove] "Remove"                              Remove · button.
+tab 14  button[remove] "Remove"                              leaving panel. · People · List with 3 items · Remove Ada · button.
+tab 15  button[remove] "Remove"                              Remove Grace · button.
+tab 16  button[remove] "Remove"                              Remove Edsger · button.
 tab 17  input[control]                                       leaving list. · Theme · panel · light · selected radio button.
 tab 18  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 19  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 20  button[remove] "Remove"                              leaving panel. · Small · List with 2 items · Remove · button.
+tab 20  button[remove] "Remove"                              leaving panel. · Small · List with 2 items · Remove removable · button.
 ```
 
 the cap bit: 12 stops of this view's own, and it has more.
@@ -604,7 +604,7 @@ Tab moved nothing — focus had left the page.
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · link. · Browse mode
+arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · visited link. · Browse mode
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.

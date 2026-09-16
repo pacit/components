@@ -126,10 +126,19 @@ stands next to the list.
 ## Consequences
 
 - `pct-chips` is `role="list"` with an optional consumer-given name; `pct-chip` is
-  `role="listitem"`, its content projected, its removal control a real `<button>` named by
-  `texts().chipRemove` — one text key, the toast's `Dismiss` argument at the next component:
-  "remove" is what happens to a chosen value, and a language that spells it apart from
-  "dismiss a message" has nowhere else to say so.
+  `role="listitem"`, its content projected, its removal control a real `<button>` whose name
+  is COMPOSED — `texts().chipRemove` and then the chip's own label, joined by
+  `aria-labelledby`. One text key still, the toast's `Dismiss` argument at the next
+  component: "remove" is what happens to a chosen value, and a language that spells it apart
+  from "dismiss a message" has nowhere else to say so.
+- **The composition is an amendment, dated 2026-09-16.** This record first said the verb was
+  the only name the button needed, because the label stands beside it inside the same
+  `listitem`. That was an argument about what a reader does, and the readers disagreed: Orca
+  `Remove · button.`, NVDA `Remove, button`, VoiceOver `Remove button list Active filters 5
+items` — at every one of five chips, the list named and counted, the chip never said
+  ([`lesson-218`](../lessons.md#lesson-218)). The cost of the fix is two ids per chip and a
+  clipped span; the cost of the argument was a user clearing five filters hearing `Remove`
+  five times.
 - A chip standing outside `pct-chips` is a `listitem` outside a `list` — a dev-mode warning
   says so once, at first render.
 - The removal button's target is `--pct-target-min` outright

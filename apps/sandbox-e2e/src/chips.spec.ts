@@ -38,13 +38,19 @@ test.describe('PctChips — a list the user shortens', () => {
       await expect(chip).toHaveAttribute('role', 'listitem');
   });
 
-  test('the remove control is a real button, named by the library alone', async ({
+  test('the remove control is a real button, named by the verb and by what it removes', async ({
     page,
   }) => {
     const cross = crosses(page).first();
     await expect(cross).toHaveRole('button');
     await expect(cross).toHaveAttribute('type', 'button');
-    await expect(cross).toHaveAccessibleName('Remove');
+    // The composed name, computed by the ENGINE and not by us — which is the only place
+    // this can be asked. Until 2026-09-16 the button carried `Remove` alone and the
+    // template argued the label beside it was heard too; three readers said otherwise at
+    // all five chips ([`lesson-218`](../../../docs/lessons.md#lesson-218)). The second
+    // cross is here so a name that composed the WRONG label would still be caught.
+    await expect(cross).toHaveAccessibleName('Remove In stock');
+    await expect(crosses(page).nth(1)).toHaveAccessibleName('Remove Under 50');
   });
 
   test('a press removes the value and lands focus on the next cross', async ({

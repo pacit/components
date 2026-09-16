@@ -219,20 +219,47 @@ describe('PctChip — the remove control', () => {
     expect(removeButtons()).toHaveLength(0);
   });
 
-  it('is named by texts().chipRemove and nothing else', async () => {
+  /**
+   * The name a reader really hears is the browser's to compute, and jsdom does not — so
+   * what is asked here is the two halves and their order; the composed string itself is
+   * read off three real engines in `apps/sandbox-e2e/src/chips.spec.ts`.
+   */
+  const nameParts = (button: Element) =>
+    (button.getAttribute('aria-labelledby') ?? '')
+      .split(' ')
+      .map((id) => document.getElementById(id)?.textContent?.trim());
+
+  it('is named by texts().chipRemove AND by what it removes', async () => {
     await render(Host);
 
+    // `aria-label` is gone from this button: it cannot hold both halves, and holding one
+    // was the defect — three readers said `Remove` at all five chips and named none of
+    // them (`lesson-218`).
     for (const button of removeButtons())
-      expect(button.getAttribute('aria-label')).toBe('Remove');
+      expect(button.getAttribute('aria-label')).toBeNull();
+    expect(removeButtons().map(nameParts)).toEqual([
+      ['Remove', 'one'],
+      ['Remove', 'two'],
+      ['Remove', 'three'],
+    ]);
   });
 
-  it('providePctTexts swaps the name', async () => {
+  it('providePctTexts swaps the verb, and the label stays the consumer’s', async () => {
     TestBed.configureTestingModule({
       providers: [providePctTexts({ chipRemove: 'Take back' })],
     });
     await render(Host);
 
-    expect(removeButtons()[0].getAttribute('aria-label')).toBe('Take back');
+    expect(nameParts(removeButtons()[0])).toEqual(['Take back', 'one']);
+  });
+
+  it('every chip mints its own pair of ids — five crosses, five names', async () => {
+    await render(Host);
+
+    const ids = removeButtons().flatMap((button) =>
+      (button.getAttribute('aria-labelledby') ?? '').split(' '),
+    );
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('carries the label as a part beside it', async () => {

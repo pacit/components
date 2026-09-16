@@ -24,6 +24,19 @@
   white-space: nowrap;
 }
 
+/* The verb half of the cross's name: kept in the accessibility tree by a clipped 1px box —
+   the stepper's declarations, which `display: none` would take out of the tree. It stands
+   INSIDE the button on purpose, so the control is never nameless if the reference beside it
+   fails. */
+.pct-chip__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .pct-chip__remove {
   display: inline-flex;
   align-items: center;

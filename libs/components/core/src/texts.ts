@@ -139,10 +139,14 @@ export interface PctTexts {
   /** Pagination: the accessible name of the stepper that goes forward one page. */
   readonly paginationNext: string;
   /**
-   * Chips: the accessible name of the control that takes a chosen value back. The button
-   * draws a cross and nothing else, so this string is the only name it has; WHAT it removes
-   * is said by the chip's own text, standing beside the button in the same list item. A key
-   * of its own rather than the toast's `toastDismiss` or the dialog's `dialogClose`:
+   * Chips: the VERB half of the name of the control that takes a chosen value back. The
+   * button draws a cross and nothing else, and what it acts on is the chip's own projected
+   * text — so the two are joined by `aria-labelledby` and a reader hears "Remove, In
+   * stock". Until 2026-09-16 this string stood alone here, on the argument that the label
+   * beside the button was heard anyway; three readers were asked and none of them said it
+   * ([`lesson-218`](../../../../docs/lessons.md#lesson-218)). Word order is the price: a
+   * language that puts the object first has the verb second, and this key cannot say so.
+   * A key of its own rather than the toast's `toastDismiss` or the dialog's `dialogClose`:
    * "remove" is what happens to a chosen value, and a language that spells it apart from
    * "dismiss a message" and "close a window" has nowhere else to say so
    * ([0051](../../../../docs/decisions/0051-chips-are-a-list-the-user-shortens.md)).

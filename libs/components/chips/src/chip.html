@@ -3,19 +3,32 @@
   (0051). The remove control is a real <button>, so the press, the keyboard and the focus
   ring are the platform's (`req-api-platform`); it is drawn only where `removable` says so,
   because a control that cannot be used is not disabled here, it is absent. The cross is the
-  library's one closing drawing (0011, 0028), named by `texts().chipRemove` — the only name
-  the button has, WHAT it removes being said by the label beside it in the same listitem.
+  library's one closing drawing (0011, 0028).
+
+  Its name is COMPOSED and not assumed. Until 2026-09-16 this file argued that the button
+  needed `texts().chipRemove` alone, "WHAT it removes being said by the label beside it in
+  the same listitem" — an argument about what a reader does, written where no gate could
+  check it. Three readers were asked and all three refused it: Orca `Remove · button.`, NVDA
+  `Remove, button`, VoiceOver `Remove button list Active filters 5 items`. The list arrives,
+  the count arrives, the chip does not, and a user clearing five filters hears `Remove` five
+  times ([`lesson-218`](../../../../docs/lessons.md#lesson-218)). So the name names both
+  halves through `aria-labelledby`: the library's verb, then the application's label. The
+  verb stands INSIDE the button as clipped text, so a button whose reference ever broke
+  still has `Remove` of its own rather than nothing at all.
 -->
-<span class="pct-chip__label" data-pct-part="label"><ng-content /></span>
+<span class="pct-chip__label" data-pct-part="label" [id]="labelId"
+  ><ng-content
+/></span>
 
 @if (removable()) {
 <button
   type="button"
   class="pct-chip__remove"
   data-pct-part="remove"
-  [attr.aria-label]="texts().chipRemove"
+  [attr.aria-labelledby]="removeId + ' ' + labelId"
   (click)="remove()"
 >
+  <span class="pct-chip__sr" [id]="removeId">{{ texts().chipRemove }}</span>
   <pct-icon name="close">
     <svg
       viewBox="0 0 16 16"

@@ -6077,3 +6077,43 @@ dressed as a test defect: the window is one render, a second keystroke from a hu
 times longer than that, and closing it in the component would mean flushing change detection
 from inside a key handler. The gap is real, it is bounded, and the instrument had to stop
 asking across it.
+
+### <a id="lesson-218"></a>`lesson-218` — The template argued what a reader hears, and no reader agreed
+
+`chip.html` carried a sentence about somebody else's software. The cross that removes a chip
+was named `texts().chipRemove` and nothing more, and the comment beside it said why: WHAT it
+removes is "said by the label beside it in the same listitem". The same sentence stood in
+`texts.ts` and in ADR 0051 — three homes for one fact, which the budget of
+[0017](decisions/0017-one-home-per-fact.md) would already have flagged, and all three were
+wrong together.
+
+Nothing in the repository could have said so. The accessibility tree is correct: a `list` of
+`listitem`s, each holding a text node and a named `button`. axe is green. Every gate here
+reads the tree or the markup, and the claim was not about either — it was about what a reader
+DOES with them, which is a behaviour of Orca, of NVDA, and of VoiceOver.
+
+Asked, all three refused it, at every one of five chips:
+
+| reader             | at the cross beside "In stock"              |
+| ------------------ | ------------------------------------------- |
+| Orca / Firefox     | `Remove · button.`                          |
+| NVDA / Chrome      | `Remove, button`                            |
+| VoiceOver / Safari | `Remove button list Active filters 5 items` |
+
+The list's name arrives. The item count arrives. The chip does not. A keyboard user clearing
+five filters hears `Remove` five times and has nothing to tell them apart — and the repair
+this component is proudest of, moving focus to the next cross after a removal, walks them
+through all five in silence.
+
+The fix was cheap and was never blocked by anything but the argument: the button's name is
+composed with `aria-labelledby` from two ids — a clipped span carrying the verb, inside the
+button so it is never nameless, and the projected label beside it. `aria-label` had to go,
+because it cannot hold both halves and holding one was the defect. Measured afterwards in all
+three engines, by the engines: `Remove In stock`, `Remove Under 50`.
+
+Two things are worth keeping from it. **An argument about another program's behaviour is not
+a design decision, it is an untested assumption with good prose around it** — and prose is
+where they survive, because no gate reads for confidence. And the instrument that settles one
+is the program itself: the reader pass exists precisely to turn this class of sentence into a
+reading, and the first thing it did on being pointed at all thirty-four cards was to falsify
+one that had stood since the component was written.
