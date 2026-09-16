@@ -168,10 +168,16 @@ jobs:
 
       # Only on a red run: with `--trace=on` a green suite leaves a trace for every case, and
       # seven hundred of them answer nothing anybody asked.
+      #
+      # The pattern ends in `/**` and the first version of it did not. A directory path with a
+      # trailing slash matches the DIRECTORY and not what is in it, so the first red probe
+      # uploaded nothing at all and said `success` while doing it — `if-no-files-found: ignore`
+      # is right for a probe that may legitimately leave no trace, and it is also what made the
+      # emptiness silent. Found by dispatching the file rather than by reading it.
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: probe-output
-          path: dist/.playwright/**/test-output/
+          path: dist/.playwright/**/test-output/**
           retention-days: 7
           if-no-files-found: ignore
