@@ -221,7 +221,10 @@ ${taken.map((line) => `- ${line}`).join('\n')}
 A stop reads: the label, what the browser had focused, and what the reader said. \`arrive\` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
 \`enter\` is the view's first stop, put under focus outright, and the rest are Tab
-stops from there until focus leaves \`main\`. \`(silence)\` is a stop the reader said nothing
+stops from there until focus leaves \`main\`. A view with something to OPEN ends on three more:
+\`reach\` puts focus on the control that opens it, \`open\` presses the key, and \`close\` presses
+Escape — the row every card asking "what does a reader announce when this appears" was waiting
+for, and the row beneath it is what leaving sounds like. \`(silence)\` is a stop the reader said nothing
 at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.${
     logged > kept
       ? `

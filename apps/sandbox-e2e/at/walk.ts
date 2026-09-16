@@ -2,11 +2,13 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { Page } from '@playwright/test';
 import { SBX_ROUTES } from '../src/support/views';
+import { ACTS } from './acts';
 
 /**
  * THE walk — one file, all three readers. Load a view, put focus on its first stop, then Tab
- * until focus leaves the content. Three logs comparable with each other are worth more than
- * three logs each taken the way its own reader likes best.
+ * until focus leaves the content, and on the seven views that have something to open, open it
+ * (`at/acts.ts`). Three logs comparable with each other are worth more than three logs each
+ * taken the way its own reader likes best.
  *
  * It was two files until 2026-09-16, and the second was made by copying the first: every one
  * of the four defects found in the Orca walk that day was in the copy as well, and each had
@@ -232,6 +234,35 @@ export async function walk(
     else if (pressed >= PRESSES)
       steps[steps.length - 1].note =
         `${PRESSES} presses reached, ${own} of them this view's own`;
+
+    // The half a Tab walk cannot reach (4.71). `reach` focuses the control that opens the
+    // thing and shows what merely arriving at it sounds like; `open` is the answer all seven
+    // of those cards ask for; `close` is not tidying — a modal left standing takes the
+    // navigation to the next view down with it, and what a reader says on Escape is worth a
+    // row of its own. Views with nothing to open have no act and get none of the three.
+    const act = ACTS[route];
+    if (act) {
+      let reached = true;
+      await step(route, 'reach', tab, () =>
+        page
+          .locator(act.on)
+          .first()
+          .focus({ timeout: 5_000 })
+          .catch(() => {
+            reached = false;
+          }),
+      );
+      if (!reached)
+        steps[steps.length - 1].note =
+          `the act found no \`${act.on}\` to press, so ${act.what} is unread here`;
+      else {
+        await step(route, 'open', tab, () => reader.press(act.key));
+        steps[steps.length - 1].note =
+          `the act: \`${act.key}\` on \`${act.on}\`, to open ${act.what} ` +
+          `(the gesture belongs to \`${act.owner}\`)`;
+        await step(route, 'close', tab, () => reader.press('Escape'));
+      }
+    }
 
     if (index === 0) await reader.afterFirstView?.(steps);
   }
