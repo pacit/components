@@ -132,9 +132,22 @@ jobs:
   # single wobble fails the run, and the gate has to see the report to say which case it was.
   # What stops an ordinary red suite from being swallowed here is point 3 of `check-flake` —
   # a case that failed EVERY repetition is reported as a failure and not as a wobble.
+  # ONE SUITE PER RUNNER, and that is a change of 2026-09-16 rather than the original shape.
+  # The two ran on one runner because a docs suite beside a sandbox dev server reads the load
+  # and not the page — true of one MACHINE and of nothing else. Serialised, the pair outgrew
+  # the job: the repetition of 2026-09-16 spent 2.2 hours on the sandbox suite and was cut off
+  # inside the docs one at the three-hour cap, which the gate then reported, correctly, as a
+  # suite with no report at all. Two jobs are two machines, so the reason to serialise them
+  # goes away and each gets the whole timeout to itself.
   flake:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    strategy:
+      # Neither suite's verdict is a reason to stop reading the other: the whole point of the
+      # job is the report, and half a report is what this run already proved is worthless.
+      fail-fast: false
+      matrix:
+        suite: [sandbox-e2e, docs-e2e]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -166,30 +179,56 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
-      # One suite at a time, and not `run-many`: the two applications serve on their own ports
-      # and a docs suite running beside a sandbox dev server reads the load rather than the
-      # page. `--repeat-each` is the operational number and lives here; the FLOOR under it is
+      # `--repeat-each` is the operational number and lives here; the FLOOR under it is
       # `minimumRepetitions` in `tools/flake.policy.json`, which is what refuses a run that
-      # could not have found anything.
-      - name: Repeat the sandbox suite
+      # could not have found anything. `continue-on-error`, because a red suite is a reading
+      # and not an accident here — the gate below is what rules on it.
+      - name: Repeat the suite
         continue-on-error: true
         env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/tmp/flake/sandbox-e2e.json
-        run: npx nx run sandbox-e2e:e2e --repeat-each=3 --retries=0 --reporter=json
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/tmp/flake/${{ matrix.suite }}.json
+        run: npx nx run ${{ matrix.suite }}:e2e --repeat-each=3 --retries=0 --reporter=json
 
-      - name: Repeat the docs suite
-        continue-on-error: true
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/tmp/flake/docs-e2e.json
-        run: npx nx run docs-e2e:e2e --repeat-each=3 --retries=0 --reporter=json
-
-      # `always()`, because a step above may have been the one that found something.
       - if: always()
-        run: npx nx run-many -t check-flake
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake-report-${{ matrix.suite }}
+          path: tmp/flake/
+          retention-days: 30
+          if-no-files-found: error
 
-      # The reports are what a `--write` of the record is taken from, and they live on this
-      # runner's disk. Without this the first reading would have to be taken again by hand on
-      # a machine that measures something else (`lesson-200`).
+  # The gate reads BOTH suites or it rules on neither — `flake.policy.json` names them as the
+  # denominator, and point 1 refuses a missing report precisely so half a reading cannot pass
+  # for a whole one. So it runs once, after both, on a runner that needs no browsers at all.
+  flake-gate:
+    runs-on: ubuntu-latest
+    needs: flake
+    # `always()`, because a suite above may have been the one that found something.
+    if: always()
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: flake-report-*
+          path: tmp/flake
+          merge-multiple: true
+
+      - run: npx nx run-many -t check-flake
+
+      # The reports are what a `--write` of the record is taken from, and one artifact holding
+      # both is what a person needs to take it — two halves on two runners are not a reading
+      # anybody can write down (`lesson-200`).
       - if: always()
         uses: actions/upload-artifact@v4
         with:
