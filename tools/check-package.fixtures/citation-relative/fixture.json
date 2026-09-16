@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "citations",
+  "rule": "relative",
+  "description": "A markdown link whose target is a repository path, `../../../../docs/requirements/api.md#req-api-platform`. It reads in this tree and nowhere else: in a consumer's node_modules the path is nobody's file, and the editor shows a link that opens nothing. The rewrite step exists to turn it into the site's address; this is the shape that escaped it."
+}

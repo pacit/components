@@ -168,17 +168,21 @@ const highlight = (source, lang) =>
  * inside the library reaches the same files through `../../../../docs/…`, so the `docs/`
  * prefix is shed with the climbs.
  */
+/* A rewritten link carries the trailing slash the host serves (decision 0078): `/trust#x`
+   is a 301 on GitHub Pages and `/trust/#x` is the page, and a link inside rendered markdown
+   is a plain anchor the browser follows to the server — every hop is a round trip the reader
+   waits for. A `routerLink` in a template stays slashless: it never leaves the app. */
 const rewriteLink = (href) => {
   if (/^https?:/.test(href) || href.startsWith('#')) return href;
   const path = href.replace(/^(\.\.\/)+/, '').replace(/^docs\//, '');
   const adr = path.match(/^decisions\/(\d{4})-[^#]*\.md$/);
-  if (adr) return `/trust#adr-${adr[1]}`;
+  if (adr) return `/trust/#adr-${adr[1]}`;
   const requirement = path.match(/^requirements\/[a-z]+\.md#(req-[a-z0-9-]+)$/);
-  if (requirement) return `/trust#${requirement[1]}`;
+  if (requirement) return `/trust/#${requirement[1]}`;
   const lesson = path.match(/^lessons\.md#(lesson-\d+)$/);
-  if (lesson) return `/trust#${lesson[1]}`;
+  if (lesson) return `/trust/#${lesson[1]}`;
   const card = path.match(/^([a-z-]+)\.md$/);
-  if (card && cardIds.has(card[1])) return `/components/${card[1]}`;
+  if (card && cardIds.has(card[1])) return `/components/${card[1]}/`;
   return null;
 };
 

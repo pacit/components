@@ -71,7 +71,9 @@ CommonJS boundary removed
 **Promise.** The manifest carries `repository`, and the repository carries a `LICENSE` file.
 `"license": "MIT"` without a LICENSE file is formally an **incomplete licence**, and that is
 the first thing a corporate consumer's legal department checks. Without `repository`, npm
-refuses provenance.
+refuses provenance. And every citation the shipped JSDoc carries — a requirement, a lesson,
+a decision — is an address on the documentation site that answers, not a path into a tree
+the consumer does not have.
 
 **Gate:** `libs/components/check-package.mjs` (point 6) — two different severities, because
 these are two different conditions. Manifest fields: a warning in an ordinary run, an
@@ -79,7 +81,12 @@ these are two different conditions. Manifest fields: a warning in an ordinary ru
 `licence` check: **always an error** — a LICENSE file in the artifact, non-empty, naming
 a licence that matches the `license` field, with a `Copyright (c) <year> <entity>` line.
 Plus `tools/check-consumer.mjs` (point 1, rule `licence-missing`) — a file present in `dist`
-can still fall out of `npm pack`, and `check-package` cannot see that by construction
+can still fall out of `npm pack`, and `check-package` cannot see that by construction.
+The citations: `libs/components/check-package.mjs` (point 9) reads the shipped `.d.ts` and
+bundles for a repository path, a bare `req-*` / `lesson-*`, a host other than the site's
+(`apps/docs/public/CNAME`, decision 0078) — and for a reading of zero, which must not pass.
+The step that makes it true is `libs/components/link-citations.mjs`, run by the `citations`
+target after `build` and before anything reads the artefact
 **Control:** `tools/check-package.fixtures/repository-missing/` — a manifest without
 `repository` must fire under `--release` and **only warn** in an ordinary run. Both
 directions are tested: asserting only on "blocks" would let through a regression after which
@@ -89,12 +96,14 @@ point 6 blocks always, and then a repository without a remote would not build at
 manifest. The second one also tests **how the match is made**: the licence text contains the
 word `LIMITED`, which has `MIT` inside it as a substring, so a comparison by `includes` would
 call it a match. The archive is guarded by
-`tools/check-consumer.fixtures/tarball-without-licence.json`
+`tools/check-consumer.fixtures/tarball-without-licence.json`. The citations:
+`tools/check-package.fixtures/citation-relative/`, `citation-bare/` and `citation-none/` —
+a path, a word, and a package whose types cite nothing, each rejected on its own rule
 **Decision:** [0015 — MIT everywhere, rights to the entity, no CLA](../decisions/0015-license-and-model.md)
 **Binds at:** the first publish — the LICENSE file, its gate and the `repository` field are
-all in place. It points at
-`github.com/pacit/components`, which does not exist yet; provenance demands agreement with
-the repository the publish runs from, so the condition only closes when the remote is created
+all in place, and `github.com/pacit/components` has been public since 2026-09-15, so
+provenance has a repository to agree with. The citations resolve once the site answers at
+its address, which is the deploy's condition and not this gate's
 
 > The promise is **double and has to be measured twice**: the manifest fields on one side of
 > `npm pack` and the LICENSE file on the other, because those are two different filters. A gate

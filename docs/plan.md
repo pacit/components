@@ -150,19 +150,18 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
   - the tag supersedes `req-project-latest` with the compatibility matrix and its gate, as its
     **Binds at** says; that is the last edit of this position. The trigger stays a sentence
 
-- [ ] **3.2 — citations in the public API as links**
+- [x] **3.2 — citations in the public API as links** — **closed 2026-09-16**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language)
-  - **the language half is done** — the 24 files of the built package that carried Polish
-    measure zero today; the JSDoc travelled with its sources rather than being opened twice
-  - what is left: the public `.d.ts` cite `req-*` and `lesson-*` **31 times** as bare
-    identifiers that lead nowhere for a consumer. The answer is a link, and a link needs the
-    address 3.5 gives — `@see https://components.pacit.pl/…` has to answer before it is
-    worth more than the paragraph it replaces
-  - where it points is decided before the first edit, not during: the page the site renders
-    (`/trust/`, `/components/<id>/`, with the slash the host serves) or the file on GitHub —
-    one of the two, never a mix
-  - the last moment: a `.d.ts` on npm is there for good, and a fix costs a release
-  - cost: ~0.5 day · _notes:_ —
+  - the language half closed first: the 24 files of the built package that carried Polish
+    measure zero. The link half was larger than the count said — 187 links by repository path
+    and 23 bare identifiers in the `.d.ts`, nobody's file and a word in a consumer's tree
+  - `libs/components/link-citations.mjs` rewrites them onto the site after the build, the
+    origin from `public/CNAME` (0078); `check-package` point 9 reads the artefact for what
+    escaped — a path, a word, a foreign host, or nothing at all — and three prepared packages
+    prove it fires. The sources keep the paths an editor can follow;
+    `req-release-metadata` carries the promise, and the site's own evidence links gained the
+    host's slash on the way
+  - cost: 0.5 day · _notes:_ —
 
 - [ ] **3.3 — the release reads CI's colour before it trusts it**
   - `release.yml`'s only guard is the ref check: no `needs:`, no check-run query, nothing that

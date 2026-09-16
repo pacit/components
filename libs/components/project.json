@@ -29,12 +29,17 @@
   "// check-mutation": "The gate over the mutation run. Stryker can fire by itself and by default does NOT — `thresholds.break` is `null` by definition, so the run ends with zero whatever the score. And once a threshold does stand, it is raised by five moves, none of which adds a test: a file struck out of `mutate`, widened `ignorers` or a `// Stryker disable` in the source, an excluded mutator family, `ignoreStatic: true`, a shortened `timeoutMS` (a mutant killed by the CLOCK counts as killed by an assertion). The gate reads the EFFECTIVE configuration from the report, not from the file — `--ignoreStatic` in the target's command leaves no trace in it. `inputs` take the output of `mutation`, the policy, the snapshot, the Stryker configuration, `project.json` (the target's command) and the workflow (point 7).",
   "// typecheck": "Four runs, because the library has four disjoint programs: the package (`tsconfig.lib.json`), the specs together with `testing/` (`tsconfig.spec.json`), the mutation run's configuration (`tsconfig.mutation.json`) and the schematics compiled to CommonJS (`schematics/tsconfig.json`). None of them sees the files of the others, so one invocation would check part of the library and look like the whole — it is `check-typecheck` that compares this sum against the file list from the git index. `inputs` take `default` and NOT `production`: `production` subtracts `**/*.spec.ts`. Measured, not assumed — adding a line to `src/public-api.spec.ts` gives `Cache: 0/1 hit` with `default` and `1/1 hit` with `production`, that is the second run does NOT move exactly when it is needed (`lesson-44` in another disguise). `build` checks types along the way, but for `tsconfig.lib.prod.json` alone — the rest have no compiler other than this target.",
   "// stamp-version": "Copies `version` from the manifest into the PCT_VERSION constant. Deliberately NOT a dependency of `build`: were the build to stamp itself, the artefact would always agree and the `check-package` gate would stop examining anything. It is run by the release (after the version bump) and by a person — and the gate watches that nobody forgot.",
+  "// citations": "Rewrites the citations the JSDoc carries — repository paths and bare `req-*` / `lesson-*` identifiers — onto the documentation site, the origin read from `apps/docs/public/CNAME` (decision 0078). A step after `build` and not part of it, with its own outputs inside the package: `check-package` point 9 then reads the artefact for what it missed, which is the same relationship `stamp-version` has with point 4.",
   "targets": {
     "themes": {
       "executor": "nx:run-commands",
       "cache": true,
       "dependsOn": ["tokens:build"],
-      "inputs": [{ "dependentTasksOutputFiles": "**/*" }],
+      "inputs": [
+        {
+          "dependentTasksOutputFiles": "**/*"
+        }
+      ],
       "outputs": ["{projectRoot}/themes"],
       "options": {
         "command": "mkdir -p themes && cp ../tokens/dist/pct.css themes/",
@@ -69,6 +74,26 @@
         "command": "node libs/components/stamp-version.mjs"
       }
     },
+    "citations": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": [
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
+        "{projectRoot}/link-citations.mjs",
+        "{workspaceRoot}/apps/docs/public/CNAME"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/{projectRoot}/types",
+        "{workspaceRoot}/dist/{projectRoot}/fesm2022"
+      ],
+      "options": {
+        "command": "node libs/components/link-citations.mjs"
+      }
+    },
     "schematics": {
       "executor": "nx:run-commands",
       "cache": true,
@@ -89,9 +114,12 @@
     "check-package": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": ["build", "schematics"],
+      "dependsOn": ["build", "schematics", "citations"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/check-package.mjs",
         "{projectRoot}/dependencies.policy.json",
         "{workspaceRoot}/tools/check-package.fixtures/**/*"
@@ -105,7 +133,10 @@
       "cache": true,
       "dependsOn": ["build"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/**/ng-package.json",
         "{projectRoot}/size.snapshot.md",
         "{workspaceRoot}/tools/check-bundle.mjs",
@@ -128,9 +159,12 @@
     "check-consumer": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": ["build", "schematics"],
+      "dependsOn": ["build", "schematics", "citations"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{workspaceRoot}/.verdaccio/config.yml",
         "{workspaceRoot}/tools/check-consumer.mjs",
         "{workspaceRoot}/tools/check-consumer.fixtures/**/*",
@@ -175,7 +209,10 @@
           "libs/components/src/version.ts"
         ],
         "coverageReporters": ["text", "json-summary"],
-        "coverageThresholds": { "lines": 80, "branches": 80 }
+        "coverageThresholds": {
+          "lines": 80,
+          "branches": 80
+        }
       }
     },
     "mutation": {
@@ -207,7 +244,10 @@
       "cache": true,
       "dependsOn": ["mutation"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/**/*.ts",
         "{projectRoot}/mutation.policy.json",
         "{projectRoot}/mutation.snapshot.md",
@@ -227,7 +267,10 @@
       "cache": true,
       "dependsOn": ["test"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.html",
         "{projectRoot}/project.json",
@@ -244,7 +287,9 @@
       "inputs": [
         "default",
         "^production",
-        { "externalDependencies": ["typescript"] }
+        {
+          "externalDependencies": ["typescript"]
+        }
       ],
       "options": {
         "parallel": false,
@@ -261,7 +306,10 @@
       "cache": true,
       "dependsOn": ["build", "schematics"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/*/src/**/*.ts",
         "{workspaceRoot}/**/package.json",
         "{workspaceRoot}/package-lock.json",
@@ -277,12 +325,17 @@
       "cache": true,
       "dependsOn": ["build"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.html",
         "{workspaceRoot}/tools/check-texts.mjs",
         "{workspaceRoot}/tools/check-texts.fixtures/**/*",
-        { "externalDependencies": ["@angular/compiler"] }
+        {
+          "externalDependencies": ["@angular/compiler"]
+        }
       ],
       "options": {
         "command": "node tools/check-texts.mjs"
@@ -293,11 +346,16 @@
       "cache": true,
       "dependsOn": ["build"],
       "inputs": [
-        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/tools/check-harness.mjs",
         "{workspaceRoot}/tools/check-harness.fixtures/**/*",
-        { "externalDependencies": ["@angular/compiler", "@angular/cdk"] }
+        {
+          "externalDependencies": ["@angular/compiler", "@angular/cdk"]
+        }
       ],
       "options": {
         "command": "node tools/check-harness.mjs"
@@ -329,7 +387,9 @@
         "{workspaceRoot}/apps/sandbox-e2e/src/**/*.spec.ts",
         "{workspaceRoot}/tools/check-styles.mjs",
         "{workspaceRoot}/tools/check-styles.fixtures/**/*",
-        { "externalDependencies": ["sass"] }
+        {
+          "externalDependencies": ["sass"]
+        }
       ],
       "options": {
         "command": "node tools/check-styles.mjs"

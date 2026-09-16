@@ -1,6 +1,6 @@
 # Negative control of the package gate
 
-Deliberately defective packages. `libs/components/check-package.mjs` runs all eight of its
+Deliberately defective packages. `libs/components/check-package.mjs` runs all nine of its
 checks on each of them and **requires every one to be rejected — and rejected by the point
 it declares**. A package that passes is a fault; a package that fires for a reason other
 than the one written in its `fixture.json` is a fault just the same, because it proves
@@ -71,6 +71,9 @@ this whole negative control would become exactly what it stands against.
 | [`animation-binding`](animation-binding/)                       | `[@panel]` and `(@panel.done)` in a component's template     | 8     | binding        |
 | [`animation-host-binding`](animation-host-binding/)             | the same pair in the declaration's `host`                    | 8     | binding        |
 | [`no-component-declaration`](no-component-declaration/)         | a package point 8 finds no template in                       | 8     | declarations   |
+| [`citation-relative`](citation-relative/)                       | a citation in the types by repository path                   | 9     | relative       |
+| [`citation-bare`](citation-bare/)                               | a bare `req-*` identifier in the shipped JSDoc               | 9     | bare           |
+| [`citation-none`](citation-none/)                               | a package whose types cite nothing, so point 9 reads nothing | 9     | none           |
 
 Point 4 has two cases, because there are two different failures: a wrong value and a
 missing constant. The second means the shape of the output changed and the version check

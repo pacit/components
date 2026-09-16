@@ -18,7 +18,10 @@
  *     declared name is deliberate, everything the code imports is declared, and the
  *     `@angular/*` ranges admit the compiler that built the package,
  *  8. no animation binding in the packed templates — the road to a runtime that leaves no
- *     dependency behind to find (`req-api-animations`).
+ *     dependency behind to find (`req-api-animations`),
+ *  9. every citation in the shipped types and bundles is an address on the site: no
+ *     repository path, no bare `req-*` / `lesson-*`, no foreign host, and not zero of them
+ *     (`req-release-metadata`; the rewrite is `link-citations.mjs`, decision 0078).
  *
  * Point 3 is the one that catches the regression — an empty file passes 1 and 2 as well.
  * Negative control: `tools/check-package.fixtures/` (`req-quality-negative-control`).
@@ -35,12 +38,13 @@ import {
   rmSync,
   statSync,
 } from 'node:fs';
-import { basename, dirname, extname, join, relative } from 'node:path';
+import { basename, dirname, extname, join, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIST = join(HERE, '../../dist/libs/components');
+const CNAME = join(HERE, '../../apps/docs/public/CNAME');
 const FIXTURES = join(HERE, '../../tools/check-package.fixtures');
 const REFERENCE = '_reference';
 const THEME = 'themes/pct.css';
@@ -187,7 +191,7 @@ const walk = (dir, out = []) => {
 };
 
 /**
- * A violation of one of the eight checks. It carries the check's identifier and not just
+ * A violation of one of the nine checks. It carries the check's identifier and not just
  * the message, because the negative control has to verify that a prepared package fired
  * ON ITS OWN point: a fixture failing for a reason other than the one in `fixture.json`
  * proves something other than what it declares — the same silent defect this whole gate
@@ -777,12 +781,90 @@ const checks = (ROOT, { release }, warnings) => {
       'binding',
     );
 
+  // 9. Every citation in the shipped JSDoc is an address that answers. The sources cite a
+  // requirement, a lesson or a decision by repository path, which reads in this tree and
+  // nowhere else — in a consumer's node_modules `../../../../docs/…` is nobody's file, and a
+  // bare `(req-a11y-built-in)` is a word. `link-citations.mjs` rewrites them onto the site
+  // after the build (decision 0078: the origin has one home, `apps/docs/public/CNAME`);
+  // this point reads the artefact for what escaped it, and refuses a reading of nothing
+  // the way point 8 does — the types stopping to ship, or the shape moving under the
+  // patterns, must not come back green.
+  const origin = `https://${readFileSync(CNAME, 'utf8').trim()}/`;
+  const cited = files.filter(
+    (p) =>
+      (p.includes(`${sep}types${sep}`) && p.endsWith('.d.ts')) ||
+      (p.includes(`${sep}fesm2022${sep}`) && p.endsWith('.mjs')),
+  );
+  const CITATION = {
+    relative: /\]\((?:\.\.\/)+docs\/[^)\s]*\)/g,
+    bare: /(?<![[`#/\w-])(?:req|lesson)-[a-z0-9-]+(?![\w-])|(?<!\[)`(?:req|lesson)-[a-z0-9-]+`(?!\]\()/g,
+    link: /\]\((https?:\/\/[^)\s]+)\)/g,
+  };
+  const escaped = { relative: [], bare: [], host: [] };
+  let citations = 0;
+  for (const path of cited) {
+    const text = readFileSync(path, 'utf8');
+    const where = relative(ROOT, path);
+    for (const [m] of text.matchAll(CITATION.relative))
+      escaped.relative.push(`${where}: \`${m}\``);
+    for (const [m] of text.matchAll(CITATION.bare))
+      escaped.bare.push(`${where}: \`${m}\``);
+    for (const [, href] of text.matchAll(CITATION.link)) {
+      if (!/\/trust\/#|\/components\//.test(href)) continue;
+      citations += 1;
+      if (!href.startsWith(origin)) escaped.host.push(`${where}: \`${href}\``);
+    }
+  }
+  const list = (items) =>
+    items
+      .slice(0, 12)
+      .map((line) => `  - ${line}`)
+      .join('\n');
+  if (escaped.relative.length)
+    fail(
+      'citations',
+      `${escaped.relative.length} citation(s) by repository path in the shipped JSDoc:\n` +
+        list(escaped.relative) +
+        `\n  A path into this tree is nobody's file in a consumer's node_modules. ` +
+        `\`nx citations components\` rewrites it onto the site; a shape it does not know ` +
+        `is taught there, not shipped.`,
+      'relative',
+    );
+  if (escaped.bare.length)
+    fail(
+      'citations',
+      `${escaped.bare.length} bare identifier(s) in the shipped JSDoc:\n` +
+        list(escaped.bare) +
+        `\n  To the maintainer a citation, to the consumer a word. The site renders an ` +
+        `anchor for every requirement and lesson; \`nx citations components\` links them.`,
+      'bare',
+    );
+  if (escaped.host.length)
+    fail(
+      'citations',
+      `${escaped.host.length} citation(s) pointing off the site:\n` +
+        list(escaped.host) +
+        `\n  The origin has one home, apps/docs/public/CNAME (${origin}); a citation ` +
+        `carrying another host was written by hand somewhere the rewrite does not reach.`,
+      'host',
+    );
+  if (citations === 0)
+    fail(
+      'citations',
+      `no citation of the site anywhere in the shipped types or bundles — the real package ` +
+        `carries some two hundred. Either the types stopped shipping, or the shape of the ` +
+        `output moved under the patterns above, and a point that examines nothing must not ` +
+        `report green.`,
+      'none',
+    );
+
   return (
     `${THEME} present and exported, ` +
     `${used.size} used tokens covered by ${defined.size} declarations, ` +
     `PCT_VERSION = ${pkg.version}, ` +
     `${declared.size} dependencies allowed by policy against Angular ${[...stamps].join('/')}, ` +
-    `${declarations} component declarations with no animation binding`
+    `${declarations} component declarations with no animation binding, ` +
+    `${citations} citations resolving on the site`
   );
 };
 

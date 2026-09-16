@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "citations",
+  "rule": "bare",
+  "description": "A bare identifier in the shipped JSDoc, `(req-api-config)` — to the maintainer a citation, to the consumer a word. The site renders an anchor for every requirement and lesson, so an identifier with no link is a link that was not written."
+}

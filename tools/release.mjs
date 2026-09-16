@@ -64,6 +64,10 @@ run(['nx', 'stamp-version', 'components']);
 //    `repository`, without which there is no provenance). Day to day that condition only
 //    warns: a missing remote repository is not a defect in the code.
 run(['nx', 'schematics', 'components']);
+//    The citations in the JSDoc become the site's addresses here, after the build and
+//    before the gate reads the artefact (decision 0078) — the step `check-package` point 9
+//    measures.
+run(['nx', 'citations', 'components']);
 console.log('\n> node libs/components/check-package.mjs --release');
 execFileSync('node', ['libs/components/check-package.mjs', '--release'], {
   stdio: 'inherit',

@@ -1,0 +1,7 @@
+{
+  "point": 9,
+  "check": "citations",
+  "rule": "none",
+  "description": "A package whose types cite nothing at all. The real package carries some two hundred citations; a reading of zero means the shape of the output changed under the patterns — or the types stopped shipping — and a point that examines nothing must not report green.",
+  "drop": ["types"]
+}
