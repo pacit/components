@@ -16,8 +16,7 @@
   "include": [
     "**/*.ts",
     "**/*.js",
-    "playwright.config.mts",
-    "at.config.mts",
+    "**/*.mts",
     "src/**/*.spec.ts",
     "src/**/*.spec.js",
     "src/**/*.test.ts",
