@@ -1335,8 +1335,8 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [ ] **4.72 — a gate went red inside a run GitHub reported green**
   - CI run `35104356828` on `6491aef` concluded **success**. Inside it, in the one step that
-    runs every gate: `❌ nx run @org/source:check-typecheck`, `X Typecheck gate — 1
-violations`, and the end-to-end suite reporting `1 flaky`. The step's own conclusion is
+    runs every gate: `❌ nx run @org/source:check-typecheck`, the gate's own verdict of one
+    violation, and the end-to-end suite reporting `1 flaky`. The step's own conclusion is
     `success`, and the log carries no `NX ... failed` line and no `Failed tasks:` list
   - the gate was RIGHT. `apps/sandbox-e2e/at-orca.config.mts` had entered no compiler's
     program since the day it was written, and the nightly said so on the next tree it read.
@@ -1344,10 +1344,10 @@ violations`, and the end-to-end suite reporting `1 flaky`. The step's own conclu
   - what it is not: `affected` skipping the project — `nx show projects --affected` for that
     range lists `@org/source`; and not a chronic condition — the three green runs before it
     carry no failed task at all
-  - **the one thing already measured**: on this desk, the same gate failing under
-    `nx affected -t check-typecheck` exits **1** and prints both missing lines. So the
-    difference is not the executor and not the gate, and the next reading is of a run with
-    the whole target list in it — thirty-four gates and a forty-three-minute `e2e`
+  - **what is already measured**: on this desk the same gate, failing under `nx affected`
+    alone and again among ten of the line's gates, exits **1** and prints both missing lines.
+    So the difference is not the executor, not the gate and not the target count, and the
+    next reading is of a run carrying the rest — including a forty-three-minute `e2e`
   - what it costs while it stands: every green tick on this repository is a claim that the
     gates ran and passed, and for one run it was a claim that they had merely been started
   - binds at: **a reading of nx's exit code under the full line**, which is a dispatch and not
