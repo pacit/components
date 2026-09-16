@@ -24,6 +24,7 @@
         "{workspaceRoot}/*.ts",
         "{workspaceRoot}/*.mts",
         "{workspaceRoot}/*.cts",
+        "{workspaceRoot}/tools/check-package.fixtures/*/types/*.d.ts",
         "{workspaceRoot}/tsconfig.root.json",
         "{workspaceRoot}/tsconfig.base.json",
         {
