@@ -61,6 +61,14 @@ test.describe('PctTree — a walk the platform does not have', () => {
     await item(page, 'README.md').click();
     await page.keyboard.press('ArrowDown');
     await expect(item(page, 'src')).toBeFocused();
+    // The focus and the tab ORDER are one render apart, and both assertions below read
+    // the order. `focusHost()` runs inside the keypress; `[tabindex]` is a host binding
+    // this zoneless application SCHEDULES. Ask the browser to leave before that render
+    // arrives and it walks backwards into the item still holding the `0` — measured in
+    // the browser with the pair forced stale: `Shift+Tab` lands on `README.md` instead
+    // of the page, and the `Tab` back lands on `body`
+    // ([`lesson-217`](../../../docs/lessons.md#lesson-217)).
+    await expect(item(page, 'src')).toHaveAttribute('tabindex', '0');
 
     await page.keyboard.press('Shift+Tab');
     await expect(page.locator('pct-tree-item:focus')).toHaveCount(0);

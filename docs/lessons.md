@@ -6036,3 +6036,44 @@ was meant not to.** It now builds the defect it needs.
 The shape: **a control that borrows its defect from the state of the repository retires itself
 the day that state is repaired** — silently, and precisely when the thing it guards starts
 mattering. A case must construct what it proves.
+
+### <a id="lesson-217"></a>`lesson-217` — Focus moved in the keypress; the tab ORDER moved one render later
+
+The tree is one tab stop with a roving `tabindex`, and its e2e case asks the plainest question
+about that: step into the tree, walk one row down, leave with `Shift+Tab`, come back with
+`Tab`, and land on the row the walk left. On this desk it is 7 of 7 green. On CI it failed its
+**first attempt on every run the suite has ever had**, and two years of retries paid for it.
+
+The two facts the case joins are not written by the same mechanism. `ArrowDown` calls
+`focusHost()` — imperative, synchronous, done before the key handler returns. The `0` that
+says which row the page's tab order enters at is `'[tabindex]': 'rovingIndex()'`, a host
+binding, and this application is zoneless: the attribute moves on a SCHEDULED render. Between
+the two there is a window in which focus stands on one item and the `tabindex="0"` still
+stands on another.
+
+`Shift+Tab` inside that window does not leave the tree. Sequential navigation starts from the
+focused element and looks backwards for the previous tabbable one — which is the item still
+holding the `0`. So focus goes from `src` to `README.md`: still a `pct-tree-item`, and the
+assertion that counts them reads `1` where it wants `0`. The symptom in the report is
+"`Shift+Tab` moved nothing", which is exactly what it is not.
+
+The reading came from the browser and could not have come from anywhere else. A probe drove
+Chromium to that view, forced the stale pair by hand — `README.md` back to `0`, `src` to `-1`,
+which is what a late render leaves — and pressed the key:
+
+| state             | `Shift+Tab` lands on   | the `Tab` back lands on |
+| ----------------- | ---------------------- | ----------------------- |
+| render arrived    | the page's own control | `src` — the case passes |
+| render still owed | `README.md`            | `body`                  |
+
+Both remaining assertions fail in the second row, and the first of them is the one that
+reports. No amount of reading the test says which row a runner is in; the browser says it in
+one command.
+
+The fix is the same sentence as the other three cases of this class (`lesson-214`): **wait for
+the state the question depends on.** The case now asserts `tabindex="0"` has arrived on `src`
+before it presses anything — the assertion is the wait. What it is NOT is a component defect
+dressed as a test defect: the window is one render, a second keystroke from a human is fifty
+times longer than that, and closing it in the component would mean flushing change detection
+from inside a key handler. The gap is real, it is bounded, and the instrument had to stop
+asking across it.
