@@ -48,7 +48,6 @@ tab 10  a "Select"                                           Select A combobox w
 tab 11  a "Dialog"                                           Dialog A modal: a focus trap, an inert background and a locked page. · link.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/button`
@@ -76,7 +75,6 @@ tab 17  a "Disabled link"                                    Disabled link · li
 tab 18  button "Get started"                                 Get started · button.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/field`
@@ -179,7 +177,6 @@ tab 22  button[nav] "Mois précédent"                         leaving panel. ·
 tab 23  button[nav] "Mois suivant"                           Mois suivant · button.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/checkbox`
@@ -248,7 +245,6 @@ tab 13  input[trigger]                                       Countries · editab
 tab 14  button[trigger] "Poland"                             Country · combo box. · opens listbox
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/dialog`
@@ -392,7 +388,6 @@ tab 19  pct-tab[panel]                                       Day · scroll pane 
 tab 20  pct-tab[panel] "Seven days side by side."            Week · scroll pane clickable.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/toast`
@@ -451,7 +446,6 @@ tab 16  input[control]                                       leaving panel. · D
 tab 17  button[page] "1"                                     leaving panel. · navigation · Rows · List with 7 items · 1 · button. · (Current page)
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/progress`
@@ -534,7 +528,6 @@ tab 19  input[control]                                       leaving panel. · D
 tab 20  button[remove] "Remove"                              leaving panel. · Small · List with 2 items · Remove removable · button.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/avatar`
@@ -686,7 +679,6 @@ tab 11  input[control]                                       Date sm · entry ·
 tab 12  button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/density`
@@ -707,7 +699,6 @@ tab 10  button "Button sm"                                   Button sm · button
 tab 11  button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/states`
@@ -732,7 +723,6 @@ tab 14  input                                                leaving panel. · T
 tab 15  input                                                Number · spin button · 1 499,9.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/announce`
@@ -764,5 +754,4 @@ tab 10  button[trigger] "Poland"                             List md · combo bo
 tab 11  input                                                Field lg · entry · Text lg · selected.
 ```
 
-the cap bit: 12 stops of this view's own, and it has more.
 The cap bit here: 12 stops of this view's own were read, and it has more.

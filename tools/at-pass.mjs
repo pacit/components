@@ -25,6 +25,14 @@ import { utterances } from '../apps/sandbox-e2e/at/orca-log.ts';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LOGS = 'docs/acr/at';
 
+/**
+ * The walk's marker for a view whose stops outran the budget. It is written by
+ * `apps/sandbox-e2e/at/walk.ts` and read here — in two places, which is why it is a constant:
+ * a second spelling of it would leave one reader counting capped views and the other printing
+ * the note, quietly disagreeing (`lesson-216`).
+ */
+const CAP_NOTE = /^the cap bit/;
+
 // ── 1 and 2: transcribe, and write the record ─────────────────────────────────
 
 const version = (command, args) => {
@@ -109,7 +117,7 @@ const render = (stepsFile, debugFile, slug, reader) => {
   // count held only while every stop spent a unit of the same budget — the shell's own
   // switches no longer do, so the arithmetic that once matched would now quietly say `0`.
   const capped = [...byRoute.entries()].filter(([, rows]) =>
-    rows.some((row) => String(row.note ?? '').startsWith('the cap bit')),
+    rows.some((row) => CAP_NOTE.test(String(row.note ?? ''))),
   );
 
   // Where the reading stops, and it is a different paragraph when it stops nowhere. A file
@@ -139,7 +147,7 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
     ? [stack]
     : [
         version('orca', ['--version']),
-        `Firefox ${browser ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`,
+        `Firefox ${browser ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'not recorded'}`,
       ];
 
   const body = [...byRoute.entries()]
@@ -150,9 +158,16 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
             row.said.join(' · ') || '(silence)'
           }`,
       );
+      // A cap note is a MARKER the renderer reads, not a line it prints: the sentence below
+      // says the same thing with the number in it, and printing both left every capped view
+      // carrying one fact in two spellings — the register defect of `lesson-216`, one floor
+      // down, in the file that exists to be quoted. Every other note is the walk's own
+      // sentence about that view and is printed as written.
       const notes = [
-        ...rows.filter((r) => r.note).map((r) => `\n${r.note}.`),
-        rows.some((row) => String(row.note ?? '').startsWith('the cap bit'))
+        ...rows
+          .filter((r) => r.note && !CAP_NOTE.test(String(r.note)))
+          .map((r) => `\n${r.note}.`),
+        rows.some((row) => CAP_NOTE.test(String(row.note ?? '')))
           ? `\nThe cap bit here: ${cap} stops of this view's own were read, and it has more.`
           : '',
       ].join('');
