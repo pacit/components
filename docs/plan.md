@@ -192,24 +192,26 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     answer, and it is the maintainer's
   - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
 
-- [ ] **3.5 — the site at its own address, deployed behind a green CI**
+- [~] **3.5 — the site at its own address, deployed behind a green CI** — **the code landed
+  2026-09-16; the address waits on the maintainer's hands and the first dispatch**
   - concerns: [`req-project-apps`](requirements/project.md#req-project-apps) · decided
     2026-09-16, [0078](decisions/0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md)
-  - `https://components.pacit.pl` from GitHub Pages; the apex `pacit.pl` answers 301 from the
-    maintainer's OVH hosting — one `.htaccess`, because OVH's own redirects speak HTTP only.
-    `pages.yml` runs on `workflow_run` after `CI` **succeeded** on `main`, checks out that
-    run's `head_sha`, never cancels a deploy in progress, and takes a dispatch for the first run
-  - the origin has one home, `apps/docs/public/CNAME`, read by `build-content.mjs` into a
-    generated `site.ts`: canonical, `og:url`, `og:title`, `og:image`, `sitemap.xml` and
-    `robots.txt` derive from it, with the trailing slash Pages serves (`/start` → `/start/`)
-  - the 404: a `not-found` page prerendered under `/404` through the catch-all's
-    `getPrerenderParams` (`{ '**': '404' }`, Angular's documented key), copied to `404.html`
-    in the workflow — the host's convention in the host's file. 0060's open cost closes
+  - **what landed**: `pages.yml` on `workflow_run` after a green `CI` on `main`, building that
+    run's `head_sha`; `public/CNAME` read by the content pass into a generated `site.ts`, from
+    which canonical, `og:url`, `og:title`, `og:image`, `sitemap.xml` and `robots.txt` derive
+    with the slash Pages serves; a `not-found` page prerendered under `/404` through the
+    catch-all's `getPrerenderParams` and copied to `404.html` in the workflow
+  - **measured**: the build writes 42 routes with `/404` and no `**` directory; `routes.spec`
+    holds every route to its canonical address and `og:url`, the sitemap to the sweep's own
+    list, and an unknown address to the not-found page with a silent console — 87 cases green
+    in chromium on 2026-09-16, the other two engines the same evening
   - not taken, and why: `.nojekyll` (an Actions deploy skips Jekyll), custom headers and
     `immutable` chunks (Pages answers `max-age=600` to everything), a hand-written sitemap
-  - outside the repository, the maintainer's hands: the `CNAME` record, Pages → Source:
-    Actions with the domain, the Multisite entry with SSL, Search Console with the sitemap
-  - binds at: **nothing** — it goes first, because 3.2's links need an address that answers
+  - **what is left is outside the repository**: the `CNAME` record at OVH, Pages → Source:
+    Actions with the domain, the apex's Multisite entry with SSL and its `.htaccess`, Search
+    Console with the sitemap — then the first dispatch, and `curl` on the four readings the
+    decision names. The position closes on the reading, not on the push
+  - binds at: **the maintainer's DNS and Pages settings** — 3.2's links wait on the address
 
 - [ ] **3.6 — the public surface says since when, per API and not per component**
   - concerns: [`req-release-semver`](requirements/release.md#req-release-semver)

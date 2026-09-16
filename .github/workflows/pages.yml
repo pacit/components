@@ -1,0 +1,88 @@
+name: Pages
+
+# The documentation site, deployed to GitHub Pages at https://components.pacit.pl — the
+# host, the trigger and what they cost are decision 0078.
+#
+# `workflow_run` and not `push`: the site follows `main` only through a commit whose CI run
+# concluded green, so what a visitor reads is a commit every gate passed and never the head
+# of the branch. Two consequences, both deliberate: `completed` covers `failure` and
+# `cancelled` too (and CI cancels superseded runs), so the job checks the conclusion itself;
+# and the commit built is the run's own `head_sha`, not `github.sha`, which under
+# `workflow_run` is merely the branch head at the time the event fired.
+#
+# The dispatch exists for the first deploy only: `workflow_run` cannot fire for a workflow
+# file that is not on the default branch yet.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write # the deployment
+  id-token: write # deploy-pages authenticates the artifact with OIDC
+
+# The opposite of ci.yml's `cancel-in-progress: true`, on purpose: a gate run superseded
+# mid-way is minutes wasted, a deploy cancelled mid-way is a site in an unknown state. One
+# site, one queue.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Restore only, never save: the entry for this commit is written by the CI run that
+      # just went green, and a second writer under the same key would race it for nothing.
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            .nx/cache
+            .nx/workspace-data
+            !.nx/workspace-data/d
+          key: nx-${{ runner.os }}-${{ github.event.workflow_run.head_sha || github.sha }}
+          restore-keys: nx-${{ runner.os }}-
+
+      - uses: actions/configure-pages@v5
+
+      # `build` pulls the token pipeline, the library build and the content pass through its
+      # own `dependsOn`; nothing else is needed and no browser is installed here.
+      - run: npx nx build docs
+
+      # The host serves the root `404.html` for any unknown path, with a real 404 status.
+      # The page is prerendered under `/404` (app.routes.server.ts); `cp` rather than `mv`
+      # keeps `/404` a visitable route, which is how the e2e sweep reaches it.
+      - run: cp dist/apps/docs/browser/404/index.html dist/apps/docs/browser/404.html
+
+      # `browser/` and nothing above it: the parent holds `prerendered-routes.json` and the
+      # third-party licence roll-up, neither of which is a page.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/apps/docs/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

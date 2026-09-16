@@ -51,4 +51,13 @@ export const appRoutes: Routes = [
     title: 'Accessibility conformance report — @pacit/components',
     loadComponent: () => import('./pages/acr/acr').then((m) => m.AcrPage),
   },
+  {
+    // Last, and reached two ways: by the client router for a link inside the site that
+    // leads nowhere, and by the host, which serves the prerendered `/404` for any unknown
+    // path (decision 0078). Without it the router throws NG04002 on every such address.
+    path: '**',
+    title: 'Not found — @pacit/components',
+    loadComponent: () =>
+      import('./pages/not-found/not-found').then((m) => m.NotFoundPage),
+  },
 ];

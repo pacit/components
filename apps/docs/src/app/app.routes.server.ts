@@ -17,7 +17,15 @@ export const serverRoutes: ServerRoute[] = [
     },
   },
   {
+    // The catch-all prerenders ONE page, under `/404`: Angular names a catch-all's
+    // parameter `'**'`, and the value is the path the page is written to. The workflow
+    // copies that file to the root `404.html` the host serves for every unknown address
+    // (decision 0078). The concrete routes above still match this entry and take their
+    // own paths; the parameters are read for the catch-all alone.
     path: '**',
     renderMode: RenderMode.Prerender,
+    async getPrerenderParams() {
+      return [{ '**': '404' }];
+    },
   },
 ];

@@ -71,8 +71,9 @@ hold.
 ## Costs
 
 - `index.csr.html` ships beside the prerendered pages — the builder's client-side
-  fallback for hosts that route unknown paths to it. Harmless weight today; the 404
-  story is 2.1.8's.
+  fallback for hosts that route unknown paths to it. Harmless weight; the 404 story closed
+  in [0078](0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md): a page
+  prerendered under `/404`, served by the host as its own `404.html`.
 - The theme toggle is a text button ("Theme: System") rather than an icon — honest at
   scaffold quality, replaced when the site grows its icon language.
 - Two `index.html` readings of the same title (the tag and the route title) — Angular's

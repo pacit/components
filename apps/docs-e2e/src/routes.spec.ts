@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { visit } from './support/dom';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const WCAG_22_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -28,8 +28,17 @@ const ROUTES = [
   '/trust',
   '/support',
   '/acr',
+  '/404',
   ...CARD_ROUTES,
 ];
+
+/* The address every page claims for itself, in the form the host serves: the origin from
+   the same `CNAME` the content pass reads, and the trailing slash GitHub Pages answers a
+   directory with (decision 0078). Typed here as a rule and not as a list, so a route
+   added above is held to it without a second edit. */
+const ORIGIN = `https://${readFileSync(join(ROOT, 'apps/docs/public/CNAME'), 'utf8').trim()}`;
+const canonicalOf = (route: string) =>
+  route === '/' ? `${ORIGIN}/` : `${ORIGIN}${route}/`;
 
 test.describe('Every route', () => {
   // Both schemes on purpose, and the dark half has already earned its seat: the first
@@ -59,6 +68,17 @@ test.describe('Every route', () => {
         );
 
         await visit(page, route, { colorScheme: scheme });
+
+        // The page's own address, as a scraper and a crawler read it: one canonical link,
+        // one `og:url`, both the host's form of THIS route — never the previous page's.
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+          'href',
+          canonicalOf(route),
+        );
+        await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+          'content',
+          canonicalOf(route),
+        );
         await expect(page.locator('h1')).toBeVisible();
 
         const results = await new AxeBuilder({ page })
@@ -69,4 +89,44 @@ test.describe('Every route', () => {
       });
     }
   }
+});
+
+test.describe('The addresses', () => {
+  test("sitemap.xml lists exactly the routes this sweep walks, in the host's form", async ({
+    request,
+  }) => {
+    const xml = await (await request.get('/sitemap.xml')).text();
+    const listed = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((m) => m[1])
+      .sort();
+    // Every route but the 404, which is a page and not an address to index.
+    const expected = ROUTES.filter((r) => r !== '/404')
+      .map(canonicalOf)
+      .sort();
+    expect(listed).toEqual(expected);
+  });
+
+  test('robots.txt points at the sitemap by its absolute address', async ({
+    request,
+  }) => {
+    const text = await (await request.get('/robots.txt')).text();
+    expect(text).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
+  });
+
+  test('an address the site does not have renders the not-found page, silently', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page.on('pageerror', (err) => errors.push(`${err.name}: ${err.message}`));
+    await visit(page, '/no/such/page');
+    await expect(page).toHaveTitle('Not found — @pacit/components');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      'content',
+      'noindex',
+    );
+    expect(errors).toEqual([]);
+  });
 });

@@ -75,6 +75,10 @@
       "reason": "The second workflow the same enumeration finds — the publication path, which runs on a tag rather than on a push."
     },
     {
+      "path": ".github/workflows/pages.yml",
+      "reason": "GitHub Actions enumerates `.github/workflows/`, and this one deploys the documentation site behind a green CI run (decision 0078). Nothing inside runs it — `workflow_run` is the trigger, and the deploy is the act."
+    },
+    {
       "path": ".mcp.json",
       "reason": "The MCP server list, read by name by every client that supports the protocol."
     },

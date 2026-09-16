@@ -19,6 +19,10 @@
  *   4. demo-code.ts        — the start page's snippets, highlighted by shiki AT BUILD
  *                            TIME: one HTML for both themes, zero highlighter shipped.
  *   5. public/llms.txt + public/components.json — the agent surface (req-api-catalogue).
+ *   6. site.ts            — the origin, read from public/CNAME (the one home of the
+ *                            hostname, decision 0078), and the canonical form of a route.
+ *   7. public/sitemap.xml + public/robots.txt — derived from the router's own table and
+ *                            the sorted cards, in the form the host serves.
  *
  * Rendering is the form renderer of `markdown.mjs` — the cards are a FORM, not prose
  * (docs/components/README.md says so and check-docs holds them to it). Links inside the
@@ -2102,6 +2106,69 @@ const llms = [
   '',
 ].join('\n');
 writeFileSync(join(OUT_DIR, 'public/llms.txt'), llms + '\n');
+
+/* 6. The origin, stated once. `public/CNAME` is the file GitHub Pages reads for the custom
+   domain, so the address the host serves and the address the pages claim cannot drift:
+   canonical links, `og:url`, the sitemap and `robots.txt` all derive from it (decision
+   0078). A wrong hostname fails the deploy, not a meta tag. */
+const cname = read('apps/docs/public/CNAME').trim();
+if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(cname))
+  throw new Error(
+    `content pass: apps/docs/public/CNAME holds "${cname}", which is not a hostname`,
+  );
+const siteOrigin = 'https://' + cname;
+/* Pages answers a directory asked for without its slash with a 301 to the slash (measured
+   2026-09-16), so the canonical form of every route but the root carries it — a canonical
+   that points at a redirect points away. */
+const canonical = (path) =>
+  path ? `${siteOrigin}/${path}/` : `${siteOrigin}/`;
+writeFileSync(
+  join(OUT_DIR, 'site.ts'),
+  `${banner}
+/** The site's origin, read from apps/docs/public/CNAME — the one home of the hostname. */
+export const SITE_ORIGIN = ${JSON.stringify(siteOrigin)};
+
+/** The canonical form of a route: origin, path, and the trailing slash the host serves. */
+export const canonicalUrl = (path: string): string =>
+  path ? \`\${SITE_ORIGIN}/\${path}/\` : \`\${SITE_ORIGIN}/\`;
+`,
+);
+
+/* 7. sitemap.xml and robots.txt. The addresses come from the router's own table, not a
+   list kept by hand (0021): every literal `path:` of app.routes.ts, the parameterised one
+   expanded from the same sorted cards the gallery renders, the catch-all dropped — the 404
+   is a page, not an address to index. A parameter this pass does not know fails the build
+   rather than leaving a route out of the map. */
+const routePaths = [
+  ...read('apps/docs/src/app/app.routes.ts').matchAll(/^\s*path: '([^']*)',/gm),
+].map((m) => m[1]);
+if (!routePaths.includes('components/:id'))
+  throw new Error(
+    'content pass: app.routes.ts no longer carries components/:id',
+  );
+const sitemapPaths = routePaths.flatMap((p) => {
+  if (p.includes('*')) return [];
+  if (p === 'components/:id') return full.map((c) => `components/${c.id}`);
+  if (p.includes(':'))
+    throw new Error(
+      `content pass: app.routes.ts has a parameter the sitemap cannot expand: ${p}`,
+    );
+  return [p];
+});
+writeFileSync(
+  join(OUT_DIR, 'public/sitemap.xml'),
+  [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...sitemapPaths.map((p) => `  <url><loc>${canonical(p)}</loc></url>`),
+    '</urlset>',
+    '',
+  ].join('\n'),
+);
+writeFileSync(
+  join(OUT_DIR, 'public/robots.txt'),
+  `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`,
+);
 
 const members = full.reduce(
   (n, c) => n + c.api.reduce((k, a) => k + a.members.length, 0),

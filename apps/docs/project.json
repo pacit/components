@@ -39,6 +39,8 @@
         "{workspaceRoot}/apps/sandbox-e2e/src/*.spec.ts",
         "{workspaceRoot}/apps/sandbox-e2e/src/__screenshots__/**",
         "{projectRoot}/src/app/demos/index.ts",
+        "{projectRoot}/public/CNAME",
+        "{projectRoot}/src/app/app.routes.ts",
         {
           "externalDependencies": ["shiki"]
         }
