@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "measured",
-  "why": "position 5.5 reports 12.5 lines",
-  "positions": { "5.5": { "lines": 12.5 } }
+  "why": "position 3.3 reports 12.5 lines",
+  "positions": { "3.3": { "lines": 12.5 } }
 }

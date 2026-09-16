@@ -268,19 +268,28 @@ as satire:
   no `@angular/animations` (the package gate's ban extends by construction — motion is
   CSS), and Lighthouse numbers **measured and recorded in the plan before any number is
   published on the page**.
-- SEO plumbing: titles, descriptions, Open Graph, `sitemap.xml`, `robots.txt`.
+- SEO plumbing: titles, descriptions, canonical links, Open Graph, `sitemap.xml`,
+  `robots.txt` — all derived from the one origin the deploy section names.
 
 **Mono does not become a second face.** It carries the strings — selectors, entry points,
 tokens, the landing's index — and a mono heading makes it decoration, spending the distinction
 the pages depend on to read. Decided 2026-09-08, and it reaches the gallery and the component
 card, not one page.
 
-## Deploy — decided later, built for now
+## Deploy — GitHub Pages, behind a green CI
 
-The repository is private until the premiere, so there is nowhere public to deploy to and
-no urgency to choose. The app builds to static files from day one, which keeps every host
-equally cheap; the actual target (GitHub Pages against a custom domain, or a static host in
-front of it) is a 3.1-day decision and is listed there, not here.
+The site lives at `https://components.pacit.pl` and is deployed by
+`.github/workflows/pages.yml`: it starts when `CI` completes on `main`, builds only if that
+run concluded `success`, and checks out that run's own commit — so what a visitor reads is a
+commit every gate passed, never the head of the branch. The artifact is
+`dist/apps/docs/browser` and nothing above it; the root `404.html` Pages serves for an unknown
+path is the prerendered `/404` page, copied there by the workflow because a root `404.html` is
+the host's convention and not the build's. The origin has one home, `apps/docs/public/CNAME`,
+and the content pass derives the canonical links, `og:url`, `sitemap.xml` and `robots.txt`
+from it — with the trailing slash Pages answers, since `/start` is a `301` to `/start/` there.
+Why this host, what it costs and what was refused is
+[0078](decisions/0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md). The apex
+`pacit.pl` is a `301` from the maintainer's own hosting and stands outside the repository.
 
 ## The steps
 

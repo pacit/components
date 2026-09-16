@@ -1,6 +1,0 @@
-{
-  "point": 5,
-  "check": "exact",
-  "why": "position 2.1 is open where the record has it closed, which moves its budget from twelve to twenty",
-  "positions": { "2.1": { "mark": " ", "closed": false } }
-}

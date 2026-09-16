@@ -56,7 +56,7 @@ the real run's alone, and the cases run with the rendering left out.
 | [`a-scan-that-finds-what-it-forbids.json`](a-scan-that-finds-what-it-forbids.json)           | a template grows a `<video>`, and 1.2.1 still says Not Applicable              | 3     | `evidence`  |
 | [`a-gate-that-left-ci.json`](a-gate-that-left-ci.json)                                       | `check-aria` is cited, and ci.yml no longer runs it                            | 4     | `wired`     |
 | [`a-card-that-owes-the-keyboard.json`](a-card-that-owes-the-keyboard.json)                   | the button card's keyboard row turns into a gap under a Supports               | 5     | `cards`     |
-| [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                           | finding 4.8 is ticked in the plan while 1.3.1 still leans on it                | 6     | `finding`   |
+| [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                           | finding 4.71 is ticked in the plan while 1.3.1 still leans on it               | 6     | `finding`   |
 | [`a-pass-claimed-without-its-logs.json`](a-pass-claimed-without-its-logs.json)               | `recorded: true` with nothing under `docs/acr/at/`                             | 7     | `pass`      |
 | [`a-pass-claimed-with-a-card-still-owing.json`](a-pass-claimed-with-a-card-still-owing.json) | `recorded: true` with a log on disk, and every card still reading `none — gap` | 7     | `pass`      |
 

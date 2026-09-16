@@ -1,6 +1,16 @@
 {
   "point": 3,
   "check": "budget",
-  "why": "position 1.1 grew two lines past the count its register entry holds",
-  "positions": { "1.1": { "lines": 24 } }
+  "why": "position 3.1 grew two lines past the count its register entry holds",
+  "policy": {
+    "add": [
+      {
+        "kind": "position",
+        "unit": "3.1",
+        "lines": 22,
+        "reason": "A reason as long as any other, holding the count the position had the day it was excused."
+      }
+    ]
+  },
+  "positions": { "3.1": { "lines": 24 } }
 }

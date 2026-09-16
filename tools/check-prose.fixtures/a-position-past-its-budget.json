@@ -1,6 +1,6 @@
 {
   "point": 3,
   "check": "budget",
-  "why": "open position 5.5 stands at twenty-five lines against twenty, with no entry in the register",
-  "positions": { "5.5": { "lines": 25 } }
+  "why": "open position 3.3 stands at twenty-five lines against twenty, with no entry in the register",
+  "positions": { "3.3": { "lines": 25 } }
 }

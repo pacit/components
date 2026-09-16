@@ -1,6 +1,15 @@
 {
   "point": 3,
   "check": "budget",
-  "why": "position 1.1 fits its budget again and the register still excuses it",
-  "positions": { "1.1": { "lines": 10 } }
+  "why": "position 3.3 fits its budget and the register excuses it all the same — an excuse that outlived its unit",
+  "policy": {
+    "add": [
+      {
+        "kind": "position",
+        "unit": "3.3",
+        "lines": 11,
+        "reason": "A reason as long as any other, for a position that stands inside its budget and needs no excuse."
+      }
+    ]
+  }
 }
