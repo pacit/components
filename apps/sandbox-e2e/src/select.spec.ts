@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { attrOf, boxOf, visit } from './support/dom';
+import { attrOf, boxOf, settled, visit } from './support/dom';
 
 test.describe('PctSelect — a combobox with a panel', () => {
   test.beforeEach(async ({ page }) => {
@@ -1203,6 +1203,15 @@ test.describe('PctSelect — a combobox with a panel', () => {
       page,
     }) => {
       await windowed(page).click();
+      // The panel has to be DRAWN before the key, and that is this component's own rule
+      // rather than a habit: every number the window is arithmetic over is read from a real
+      // layout, so `End` pressed into a panel that has not been laid out has nothing to
+      // scroll and leaves the list where it stood. Measured on a runner, alone and repeated:
+      // it read `Row 44` on two of every three runs, and anything that put work between the
+      // click and the key made it pass (position 4.69).
+      await expect(panel(page)).toBeVisible();
+      await expect(options(page).first()).toHaveText('Row 0');
+      await settled(page);
       await page.keyboard.press('End');
 
       await expect(options(page).last()).toHaveText('Row 4999');
