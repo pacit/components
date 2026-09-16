@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { setRtl, visit } from './support/dom';
+import { setRtl, settled, visit } from './support/dom';
 
 /**
  * The drawer's claims are almost all about what it is NOT — not an overlay, not modal, not
@@ -85,6 +85,15 @@ test.describe('PctDrawer — a region of the page, not a layer over it', () => {
     page,
   }) => {
     await trigger(page, 'trigger-nav').click();
+    // The click OPENS, and what the walk below depends on is that the opening finished: the
+    // panel is in the document while shut and its stops are not reachable until the drawer
+    // says it is open and the slide is over. Neither was waited for, and on CI this case then
+    // failed its first attempt on every run there has ever been (position 4.69).
+    await expect(drawer(page, 'drawer-nav')).toHaveAttribute(
+      'data-pct-open',
+      '',
+    );
+    await settled(page);
     await trigger(page, 'trigger-nav-second').focus();
 
     // The next stop after the last trigger is the drawer's own cross, because that is what

@@ -72,7 +72,13 @@ test.describe('The sandbox shell and the demo card', () => {
       .getByRole('radio', { name: 'dark' })
       .check();
 
-    expect(await shellSurface()).toBe('#0f172a');
+    // POLLED, and the read below is not. A theme switch is applied by a change-detection pass
+    // this zoneless application schedules rather than runs, so reading the composed value in
+    // the same turn as the click is a race with the framework by design — and on CI it is a
+    // race this lost EVERY time, in the suite and alone, cured only by anything that put work
+    // between the two (position 4.69). What must change is waited for; what must not change
+    // is read straight after, by which time any pending pass has run.
+    await expect.poll(shellSurface).toBe('#0f172a');
     // `:root` stays the point of reference — the page theme is a scoped theme.
     expect(await rootSurface()).toBe('#ffffff');
   });
