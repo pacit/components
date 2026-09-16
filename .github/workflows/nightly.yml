@@ -54,7 +54,11 @@ name: Scheduled full run
 
 on:
   schedule:
-    # 02:30 UTC — a red result has the working day in front of it rather than behind.
+    # 02:30 UTC — a red result has the working day in front of it rather than behind. That
+    # is the intent and not a promise anyone here can keep: the first run under this cron was
+    # created at 07:49 UTC, five hours and nineteen minutes late. GitHub queues scheduled
+    # workflows behind the load of the hour and says so, and nothing on a free plan moves
+    # that. The hour is therefore a preference, and no reading here may be dated by it.
     - cron: '30 2 * * *'
   workflow_dispatch:
 
