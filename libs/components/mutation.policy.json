@@ -42,7 +42,7 @@
     "libs/components/drawer/src/drawer-trigger.ts",
     "libs/components/drawer/src/drawer.ts",
     "libs/components/field/src/autosize.ts",
-    "libs/components/field/src/aux.ts",
+    "libs/components/field/src/auxiliary.ts",
     "libs/components/field/src/field.ts",
     "libs/components/field/src/number.ts",
     "libs/components/field/src/text.ts",
@@ -95,7 +95,7 @@
       "reason": "The file carries the type `PctCompareWith` and one assignment, `export const pctSameValue = Object.is`. The type vanishes at compilation, and assigning a reference to a built-in function has nothing to mutate: there is no condition here, no literal, no call with an argument. Zero mutants is the correct result of the measurement here, not the absence of one."
     },
     {
-      "file": "libs/components/field/src/aux.ts",
+      "file": "libs/components/field/src/auxiliary.ts",
       "reason": "Two directives with an EMPTY body: `PctLabelAux` and `PctMessageAux` are a selector and a `data-pct-part` each, and both of those live in the decorator, which Stryker leaves alone. There is no condition here, no call and no literal outside the metadata, so zero mutants is the correct result of the measurement rather than the absence of one — what the two really promise is a slot in `field.html`, and that is `check-parts`."
     },
     {
