@@ -813,7 +813,7 @@
     {
       "id": "4.1.2",
       "conformance": "Partially Supports",
-      "remarks": "Every widget is native where the platform has one and an APG pattern where it has not; the name written on the host reaches the element with the role, states are attributes, and axe's ARIA rules run over every view and every special state in three engines. The one value known wrong — the empty select's listbox — was repaired on 2026-09-06. The screen-reader pass is no longer owed: three readers walked all thirty-six views on 2026-09-15 and 2026-09-16 and every card now carries what was heard. It is not raised, and the reading is why. What the walk answers it answers well — `aria-valuetext` reaches all three readers, a described control speaks its description, a password value is spoken by none. What it does not: a Tab walk never OPENS anything, so a modal, a menu, a popover, a toast, a month grid and a revealed tab panel are unread; a read-only checkbox and a read-only switch are announced plainly checked and on, by both readers that reach them; NVDA announces a radio group and stops; and no reader spoke the chip label that `chip.html` argues is heard beside the remove button. Four findings and one missing pass, all specific: the chip name is 4.70 and the pass that acts is 4.71.",
+      "remarks": "Every widget is native where the platform has one and an APG pattern where it has not; the name written on the host reaches the element with the role, states are attributes, and axe's ARIA rules run over every view and every special state in three engines. The one value known wrong — the empty select's listbox — was repaired on 2026-09-06. The screen-reader pass is no longer owed: three readers walked all thirty-six views on 2026-09-15 and 2026-09-16 and every card now carries what was heard. It is not raised, and the reading is why. What the walk answers it answers well — `aria-valuetext` reaches all three readers, a described control speaks its description, a password value is spoken by none, and the chip's cross names what it removes on all three since the reading made it do so. What it does not: a Tab walk never OPENS anything, so a modal, a menu, a popover, a toast, a month grid and a revealed tab panel are unread; a read-only checkbox and a read-only switch are announced plainly checked and on, by both readers that reach them; NVDA names the theme group and neither the option nor its state; and Orca says nothing of a collapsed combobox's value, which the other two read. Three findings and one missing pass, and the pass that acts is 4.71.",
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
@@ -834,9 +834,6 @@
         },
         {
           "cards": "Screen-reader log"
-        },
-        {
-          "finding": "4.70"
         },
         {
           "finding": "4.71"

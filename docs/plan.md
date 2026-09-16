@@ -1299,19 +1299,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the schedule carried its own trap: on `schedule` the `inputs` context is EMPTY, not
     defaulted, so the conditions would have skipped both jobs green and an empty `routes`
     walks all 36 views. Conditions now name the reader EXCLUDED; the route falls back at use
-- [ ] **4.70 — no reader spoke the chip label the template argues is heard beside the cross**
-  - `chip.html` says the remove button carries `texts().chipRemove` as its only name, "WHAT it
-    removes being said by the label beside it in the same listitem". That is an argument about
-    what a reader does, written where no gate can check it
-  - the three logs of 2026-09-16 disagree. At every one of five chips: `Remove · button.`
-    (Orca), `Remove, button` (NVDA), `Remove button list Active filters 5 items` (VoiceOver).
-    The named LIST arrives and the item count arrives; **the chip does not**
-  - a keyboard user clearing five filters hears `Remove` five times and cannot tell which is
-    which. It is a product question and not an instrument one — the reading is unambiguous
-  - what it is NOT: a claim about what the accessibility tree contains. axe is green here,
-    which is the point of having a reader at all
-  - binds at: **a decision about the name.** `aria-label` per chip costs a string the consumer
-    already wrote; leaving it costs the argument in `chip.html`, which the measurement refuses
+- [x] **4.70 — no reader spoke the chip label the template argues is heard beside the cross**
+      — **closed 2026-09-16, and re-read on all three**
+  - the template said the cross carried `texts().chipRemove` alone, what it removes "being
+    said by the label beside it in the same listitem" — an argument about what a reader does,
+    living in three homes and checkable by no gate. All three refused it at every one of five
+    chips ([`lesson-218`](lessons.md#lesson-218))
+  - the decision: **compose the name** with `aria-labelledby` — a clipped span carrying the
+    verb INSIDE the button, so the control is never nameless if the reference fails, and the
+    projected label beside it. No new API, no string the consumer had not already written
+  - measured twice over: three engines compute `Remove In stock`, and a fresh pass of all
+    three readers says it aloud. Cost: 573 B, two ids per chip, and a breaking change to a
+    name a consumer's test may assert — axe was green before and after, which is the point
 
 - [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
       — **the word is given 2026-09-16: build it, and build it narrow**
