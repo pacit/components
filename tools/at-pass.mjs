@@ -2,277 +2,30 @@
 /**
  * The assistive-technology pass: what a screen reader actually SAYS on each sandbox view
  * (`req-a11y-acr`) — the question no gate here can answer, since they end where axe ends.
- * It runs under `tools/at-pass.sh`, which puts a reader on a display of its own; alone:
- *   1. VIEWS — the routes come from the e2e suite's own list, parsed, never copied,
- *   2. DRIVE — each view ROUTED to, the walk taken INTO its main region, Tab until it leaves,
- *   3. WINDOW — every step carries the clock it began and ended on,
- *   4. TRANSCRIBE — the reader's log read back, each utterance attributed by that clock,
- *   5. RECORD — one file per reader under `docs/acr/at/`, per view and per stop.
+ * This file is the RECORD half and no longer the walk. Until 2026-09-16 it drove Orca here
+ * while `apps/sandbox-e2e/at/walk.ts` drove the other two there, in two languages, and every
+ * defect found in one was in the other because the second was a copy (4.66). The walk now has
+ * one home and all three readers take it; what is left here is what only a record needs:
+ *   1. TRANSCRIBE — the reader's own log read back, each utterance attributed by the clock
+ *      stamps the walk wrote on every step (a reader ASKED for its speech carries it already),
+ *   2. RECORD — one file per reader under `docs/acr/at/`, per view and per stop, with what
+ *      was capped, what was silent and which stack it was taken on.
  *
- * Step 2 separates a reading of this library from one of the sandbox's chrome: Tab from the
- * top spends thirty-three stops on theme switches and navigation before reaching a component.
- * It reaches a view through that navigation: a document load per view read every other one.
- *
- * Usage: node tools/at-pass.mjs --drive <baseURL> <steps.json>
- *        node tools/at-pass.mjs --render <steps.json> <debug|none> <slug> <reader>
+ * Usage: node tools/at-pass.mjs --render <steps.json> <debug|none> <slug> <reader>
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// Imported across the boundary and by its `.ts` path on purpose: the parser belongs beside
+// the walk that needs it mid-pass, Node 24 strips the types on the way in, and nx's module
+// boundaries refuse the other direction — an app may not reach into `tools/`.
+import { utterances } from '../apps/sandbox-e2e/at/orca-log.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const VIEWS = 'apps/sandbox-e2e/src/support/views.ts';
 const LOGS = 'docs/acr/at';
 
-/**
- * How long a stop is held open for the reader to finish speaking. Three ways of deciding it
- * were measured, and the first two are kept here because both looked obviously right.
- *
- * A fixed window read every OTHER view — at 4.5 s and again at 9 s, which already said the
- * length was not the variable. So the walk was made to wait for the READER instead: hold
- * until its log stops growing. Worse, 24 views unread against 19, because Orca writes
- * `SPEECH OUTPUT` when it DECIDES to speak rather than when it has spoken, so a quiet log
- * means a full queue. The instrument cannot be asked when it is done.
- *
- * The alternation was never about time. It followed the NAVIGATION: four visits to one route
- * read, missed, read, missed (`lesson-211`). A fixed window is enough once the view is
- * reached through the sandbox's own router instead of a document load.
- */
-const DWELL_LOAD = 9000;
-const DWELL_TAB = 2000;
-/** The cap on the view's OWN tab stops. Written into the record wherever it bit (no silent caps). */
-const CAP = 12;
-/**
- * The sandbox's scaffold, which sits INSIDE `main` and repeats at every demo block: a theme,
- * a size and a direction switch, three stops each time. It was 218 of 390 walked stops — more
- * than half a reading of this library spent re-reading one radio group — and it is what the
- * cap was biting on, over 23 of the 36 views. Its stops are still pressed and still written
- * down, because a stop nobody can see is the defect `CAP` exists to avoid; they do not spend
- * the budget. `pct-radio` has a view of its own where it is read once, properly.
- */
-const SCAFFOLD = 'sbx-controls';
-/**
- * A ceiling on presses, so a view that is all scaffold ends rather than walks forever, and a
- * budget: every press costs `DWELL_TAB`, so this number sets the length of the pass. Twice
- * the cap is the arithmetic of the scaffold — three of its stops per demo block, so twelve of
- * a view's own are reached in about four blocks and twenty-four presses. Three times the cap
- * was tried on paper first and buys nothing but eighteen minutes.
- */
-const PRESSES = CAP * 2;
-/**
- * What counts as a stop of the Tab key. `summary` and `[contenteditable]` are focusable with
- * no attribute saying so, and leaving them out did not hide them from the reader — it hid
- * them from the WALK, which then read two `<summary>` elements of an accordion as one
- * unmoved position and stopped the view on a note that said focus had left the page.
- */
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
-  'textarea:not([disabled]),summary,[contenteditable],audio[controls],video[controls],' +
-  '[tabindex]:not([tabindex="-1"])';
-
-const read = (path) => readFileSync(join(ROOT, path), 'utf8');
-
-/** 1. VIEWS — the same list the axe sweep audits, read out of the file that declares it. */
-const routes = () => {
-  const block = /export const SBX_ROUTES = \[([\s\S]*?)\] as const;/.exec(
-    read(VIEWS),
-  );
-  if (!block) throw new Error(`${VIEWS}: no \`SBX_ROUTES\` array to read`);
-  const found = [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
-  if (!found.length) throw new Error(`${VIEWS}: \`SBX_ROUTES\` is empty`);
-  return found;
-};
-
-/** Seconds since midnight — the clock the reader's own log is stamped in. */
-const clock = (date = new Date()) =>
-  date.getHours() * 3600 +
-  date.getMinutes() * 60 +
-  date.getSeconds() +
-  date.getMilliseconds() / 1000;
-
-// ── 2 and 3: drive, and stamp every step ──────────────────────────────────────
-
-const drive = async (baseURL, out) => {
-  const { firefox } = await import('playwright');
-  const browser = await firefox.launch({
-    headless: false,
-    firefoxUserPrefs: { 'accessibility.force_disabled': 0 },
-  });
-  const page = await browser.newPage({
-    viewport: { width: 1280, height: 900 },
-  });
-
-  /**
-   * What the browser gave focus to, whether it is still inside the view's own stops, and
-   * whether Tab moved at all. That last is asked of the ELEMENT. A description cannot answer
-   * it — two radios of one group describe themselves identically — and neither can a position
-   * in a selector's list, which was the previous instrument: everything the selector did not
-   * match shared the index -1, so two such stops in a row read as one stop that never moved.
-   * A sentinel compared as a value is not a measurement.
-   */
-  const focus = () =>
-    page.evaluate((scaffold) => {
-      const el = document.activeElement;
-      if (!el || el === document.body || el === document.documentElement)
-        return null;
-      // `textContent` joins a label to the text under it with no space between them, and a
-      // blind cut at a character count leaves half a word behind — a record whose own words
-      // break mid-letter cannot be read. `innerText` renders, so its first line is the name.
-      const raw =
-        el.getAttribute('aria-label') ?? el.innerText ?? el.textContent ?? '';
-      const one = raw.trim().split('\n')[0].replace(/\s+/g, ' ').trim();
-      const name =
-        one.length <= 40 ? one : `${one.slice(0, 40).replace(/\s+\S*$/, '')}…`;
-      const tag = el.tagName.toLowerCase();
-      const part = el.getAttribute('data-pct-part');
-      const moved = el !== window.__atPassPrevious;
-      window.__atPassPrevious = el;
-      return {
-        what: `${tag}${part ? `[${part}]` : ''}${name ? ` "${name}"` : ''}`,
-        inMain: !!el.closest('main'),
-        scaffold: !!el.closest(scaffold),
-        moved,
-      };
-    }, SCAFFOLD);
-
-  const steps = [];
-  const step = async (route, label, dwell, act) => {
-    const from = clock();
-    await act();
-    await page.waitForTimeout(dwell);
-    const at = await focus().catch(() => null);
-    steps.push({ route, label, from, to: clock(), focus: at });
-    return at;
-  };
-
-  const all = routes();
-  // The document is loaded ONCE. Every view after this is reached the way the sandbox's own
-  // visitors reach it, through the navigation in the shell, and the reason is measured: with
-  // a `goto` per view the reader read views 2, 4, 6 ... 36 and nothing else, and four visits
-  // to a single route read, missed, read, missed. It is the document load the reader loses,
-  // not the view (`lesson-211`).
-  await page.goto(`${baseURL}/`, { waitUntil: 'load' });
-  await page.waitForTimeout(DWELL_LOAD);
-  for (const [index, route] of all.entries()) {
-    process.stderr.write(
-      `  [${String(index + 1).padStart(2)}/${all.length}] ${route}\n`,
-    );
-    await step(route, 'arrive', DWELL_LOAD, async () => {
-      await page.click(`nav a[href="${route}"]`);
-      await page.waitForFunction((r) => location.pathname === r, route, {
-        timeout: 15_000,
-      });
-    });
-    // The walk is put on the view's first stop outright. Tabbing to it from the top of the
-    // page was tried twice and is the wrong instrument: thirty-three stops of the sandbox's
-    // own chrome come first, and walking them at speed floods the reader — it queues, then
-    // interrupts itself, and the stops that follow come out silent. A click on the heading
-    // moves Firefox's focus start and was tried too; with a reader attached it silently
-    // does not take on some views. This takes.
-    const entered = await step(route, 'enter', DWELL_TAB, () =>
-      page.evaluate(
-        ([selector, scaffold]) => {
-          // The walk of a view starts with no previous stop, whoever held focus a moment ago.
-          window.__atPassPrevious = undefined;
-          const stops = [
-            ...(document.querySelector('main')?.querySelectorAll(selector) ??
-              []),
-          ];
-          // The view's own first stop, not the shell's. Every view opens on the same three
-          // switches otherwise, and three of twelve is a quarter of the reading.
-          const first = stops.find((el) => !el.closest(scaffold)) ?? stops[0];
-          first?.focus();
-        },
-        [FOCUSABLE, SCAFFOLD],
-      ),
-    );
-    if (!entered?.inMain)
-      steps.at(-1).note =
-        'no stop of its own inside `main` — nothing to walk here';
-
-    let own = entered && !entered.scaffold ? 1 : 0;
-    let pressed = 0;
-    while (entered?.inMain && own < CAP && pressed < PRESSES) {
-      pressed += 1;
-      const at = await step(route, `tab ${pressed}`, DWELL_TAB, () =>
-        page.keyboard.press('Tab'),
-      );
-      // Two ways out, and the second is the one that caught a walk reading Firefox's own
-      // toolbar aloud: focus left the content, or Tab moved nothing at all, which is what a
-      // page whose keyboard focus has gone to the browser looks like from inside it.
-      if (!at?.inMain) break;
-      if (!at.moved) {
-        steps.at(-1).note = 'Tab moved nothing — focus had left the page';
-        break;
-      }
-      if (!at.scaffold) own += 1;
-    }
-    // Written where it bit, by the walk that bit. The renderer used to infer this from a row
-    // count, which only held while every stop spent a unit of the same budget.
-    if (own >= CAP)
-      steps.at(-1).note =
-        `the cap bit: ${CAP} stops of this view's own, and it has more`;
-    else if (pressed >= PRESSES)
-      steps.at(-1).note =
-        `${PRESSES} presses reached, ${own} of them this view's own`;
-
-    // The smoke check, and it is about the INSTRUMENT rather than the view. Whether the
-    // reader attached to the browser at all is decided in the first seconds, and a walk that
-    // discovers it in the thirty-sixth view has spent a quarter of an hour finding out. It
-    // is not a threshold: one utterance falling inside one step of the first view is enough,
-    // and a reader that never attached produces none anywhere.
-    //
-    // What it may NOT do is say why. An earlier wording answered its own question — "it
-    // started and did not attach to the browser, which happens ... run the pass again" — and
-    // that sentence was quoted as a finding into a lesson, the plan and the record, against a
-    // run whose driver had thrown before this line was ever reached (`lesson-210`). A check
-    // reports what it counted and where to look; the reading is the reader's.
-    if (index === 0 && process.env.AT_PASS_DEBUG) {
-      const heard = utterances(
-        readFileSync(process.env.AT_PASS_DEBUG, 'utf8'),
-      ).filter((u) =>
-        steps.some((step) => u.at >= step.from && u.at <= step.to),
-      );
-      if (!heard.length)
-        throw new Error(
-          `no utterance of the reader's falls inside any of the ${steps.length} step(s) of ` +
-            `\`${route}\`, the first view. Its log is ${process.env.AT_PASS_DEBUG}; this ` +
-            `pass stops here rather than spend a quarter of an hour on the other views.`,
-        );
-    }
-  }
-  const firefox_ = browser.version();
-  await browser.close();
-  writeFileSync(
-    out,
-    `${JSON.stringify({ baseURL, cap: CAP, firefox: firefox_, steps }, null, 2)}\n`,
-  );
-  // The walk is on disk. Closing a browser with a reader attached to it rejects late and
-  // asynchronously, which took a completed fifteen-minute pass down with it once; whether
-  // that pass was any good is decided by the record's own guard and not by this exit code.
-  process.exit(0);
-};
-
-// ── 4 and 5: transcribe, and write the record ─────────────────────────────────
-
-/** Orca stamps every decision it makes; this is the one line kind that is speech. */
-const SPOKEN =
-  /^(\d\d):(\d\d):(\d\d)\.(\d+) - SPEECH OUTPUT: '(.*?)'(?:\s*\{.*)?$/;
-
-const utterances = (debug) =>
-  debug
-    .split('\n')
-    .map((line) => SPOKEN.exec(line.trim()))
-    .filter(Boolean)
-    .map((m) => ({
-      at:
-        Number(m[1]) * 3600 +
-        Number(m[2]) * 60 +
-        Number(m[3]) +
-        Number(`0.${m[4]}`),
-      said: m[5],
-    }));
+// ── 1 and 2: transcribe, and write the record ─────────────────────────────────
 
 const version = (command, args) => {
   try {
@@ -284,16 +37,25 @@ const version = (command, args) => {
   }
 };
 
-/** A step's speech: its own if it carries it, otherwise whatever fell inside its window. */
-const spokenOf = (step, said) =>
-  step.said ??
-  said
-    .filter((u) => u.at >= step.from && u.at <= step.to)
-    .map((u) => u.said.trim())
-    .filter(Boolean);
+/**
+ * A step's speech, and WHICH of the two ways to read it is decided by the caller rather than
+ * by the shape of the step. It used to be `step.said ?? <the clock>`, which was true only
+ * while one of the two walks did not write the field at all: the day all three readers came
+ * to share one walk, every Orca step arrived carrying `said: []`, `??` passed the empty array
+ * straight through, and a pass of 1968 utterances rendered as thirty-six unread views. The
+ * record's own guard refused to write it, which is the second time that guard has earned its
+ * place. A reader read from a LOG is read from the log; a reader that was ASKED carries it.
+ */
+const spokenOf = (step, said, fromLog) =>
+  fromLog
+    ? said
+        .filter((u) => u.at >= step.from && u.at <= step.to)
+        .map((u) => u.said.trim())
+        .filter(Boolean)
+    : (step.said ?? []);
 
 const render = (stepsFile, debugFile, slug, reader) => {
-  const { cap, steps, firefox, stack } = JSON.parse(
+  const { cap, steps, browser, stack } = JSON.parse(
     readFileSync(stepsFile, 'utf8'),
   );
   // Two kinds of reader, one record. Orca is read out of its own debug file and each
@@ -306,14 +68,14 @@ const render = (stepsFile, debugFile, slug, reader) => {
   // because the sentence that says so blames the views.
   const nothingSpoken =
     debugFile !== 'none' &&
-    steps.every((step) => (spokenOf(step, said) ?? []).length === 0);
+    steps.every((step) => spokenOf(step, said, true).length === 0);
   if (nothingSpoken)
     throw new Error(
       `${debugFile} holds ${said.length} utterance(s) and not one of them lands on a step ` +
         `— the reader started and never attached to the browser. A pass in which every ` +
         `view is unread is not a pass, and rendering it would blame the views.`,
     );
-  const spoken = (step) => spokenOf(step, said);
+  const spoken = (step) => spokenOf(step, said, debugFile !== 'none');
 
   const byRoute = new Map();
   for (const step of steps) {
@@ -377,7 +139,7 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
     ? [stack]
     : [
         version('orca', ['--version']),
-        `Firefox ${firefox ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`,
+        `Firefox ${browser ?? 'unknown'} (the Playwright build), driven on Xvfb at 1280×900, window manager: ${process.env.AT_PASS_WM || 'none'}`,
       ];
 
   const body = [...byRoute.entries()]
@@ -438,12 +200,11 @@ ${incomplete}
 };
 
 const [mode, ...rest] = process.argv.slice(2);
-if (mode === '--drive') await drive(rest[0], rest[1]);
-else if (mode === '--render')
+if (mode === '--render')
   render(rest[0], rest[1], rest[2], rest.slice(3).join(' '));
 else {
   process.stderr.write(
-    'usage: --drive <baseURL> <steps.json> | --render <steps.json> <debug|none> <slug> <reader>\n',
+    'usage: --render <steps.json> <debug|none> <slug> <reader>\n',
   );
   process.exit(2);
 }

@@ -24,7 +24,7 @@ A stop reads: the label, what the browser had focused, and what the reader said.
 the sandbox's own navigation to the view — the document is loaded once, before the first —
 `enter` is the view's first stop, put under focus outright, and the rest are Tab
 stops from there until focus leaves `main`. `(silence)` is a stop the reader said nothing
-at — 3 of 482 here. 11 view(s) hit the cap, and each says so.
+at — 0 of 482 here. 11 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 36 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
@@ -40,12 +40,12 @@ tab 2   a "Text"                                             Text A text field o
 tab 3   a "Textarea"                                         Textarea A textarea as tall as its text — and where that height comes from. · link.
 tab 4   a "Number"                                           Number A number field: locale, fractions, stepping, bounds from the schema. · link.
 tab 5   a "Date"                                             Date A calendar day — the text a locale writes, and the grid beside it. · link.
-tab 6   a "Checkbox"                                         The checked state, the indeterminate one · link. · Browse mode · Checkbox The checked state, the indeterminate one and the touch area. · link.
-tab 7   a "Radio"                                            Start · @pacit/components — Nightly · frame · A radio group: the form control is the · link. · Browse mode · Radio A radio group: the form control is the container. · link.
-tab 8   a "Slider"                                           (silence)
-tab 9   a "Switch"                                           (silence)
-tab 10  a "Select"                                           (silence)
-tab 11  a "Dialog"                                           Start · @pacit/components — Nightly · frame · main content · List with 30 items · A modal: a focus trap, an inert background · link. · Browse mode · Dialog A modal: a focus trap, an inert background and a locked page. · link.
+tab 6   a "Checkbox"                                         Checkbox The checked state, the indeterminate one and the touch area. · link.
+tab 7   a "Radio"                                            Radio A radio group: the form control is the container. · link.
+tab 8   a "Slider"                                           Slider A position on a numeric continuum, on the platform's own range. · link.
+tab 9   a "Switch"                                           Switch A setting that takes effect the moment it is moved. · link.
+tab 10  a "Select"                                           Select A combobox with a panel of its own in a CDK overlay. · link.
+tab 11  a "Dialog"                                           Dialog A modal: a focus trap, an inert background and a locked page. · link.
 ```
 
 the cap bit: 12 stops of this view's own, and it has more.
@@ -254,7 +254,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/dialog`
 
 ```
-arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 30 items · Dialog · link. · Browse mode
+arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 30 items · Dialog · visited link. · Browse mode
 enter   button "Open the dialog"                             Open the dialog · button.
 tab 1   button "Delete the project"                          Delete the project · button.
 tab 2   button "Open the insistent one"                      Open the insistent one · button.
@@ -579,7 +579,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · link. · Browse mode
+arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · visited link. · Browse mode
 enter   a "Home"                                             navigation · Breadcrumb · List with 3 items · Home · link.
 tab 1   a "Library"                                          Library · link.
 tab 2   a "Data"                                             Data · link. · (Current page)
@@ -604,7 +604,7 @@ Tab moved nothing — focus had left the page.
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · visited link. · Browse mode
+arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · link. · Browse mode
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.

@@ -1282,23 +1282,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     `apps/docs/tools/` too, and a module a running gate imports is as exercised as the gate —
     which is `restore-dictionaries.mjs`, in the register until the closure threw its entry out
 
-- [ ] **4.66 — the walk has two copies, and one learned every defect the other had**
-  - `tools/at-pass.mjs` drives Orca; `apps/sandbox-e2e/at/walk.ts` drives NVDA and VoiceOver
-    through Guidepup. They take the same walk on purpose — three logs comparable with each
-    other beat three taken each reader's own way — and they take it in two files, in two
-    languages, with nothing comparing them
-  - measured 2026-09-15: **all four** defects found in the Orca walk that day were in the copy
-    too, because the copy was made from it. A `<summary>` invisible to the stop list, a
-    sentinel compared as a value, a document load per view, and a cap spent on the shell. Each
-    was fixed twice by hand, and the second time is the one a person forgets
-  - `check-docs` holds two workflows to each other because a list of targets is a list. Two
-    walks are two programs: the honest instrument is one walk with one home, not a gate that
-    compares them
-  - what leaving it costs: the first NVDA or VoiceOver record would carry defects the Orca
-    record no longer has, and a person comparing the three would read the difference as a
-    property of the readers
-  - binds at: **the first dispatch of `at-pass.yml`** — a record taken from the copy is the
-    moment the drift stops being a risk and becomes evidence
+- [x] **4.66 — the walk has two copies, and one learned every defect the other had** —
+      **closed 2026-09-16: one walk, one home, all three readers**
+  - measured 2026-09-15: **all four** defects found in the Orca walk that day were in the copy,
+    because the copy was made from it — each fixed twice, by hand
+  - cheap once the differences were NAMED rather than duplicated: who presses the key, where
+    the speech comes from, how long to stand still. Three fields on one interface, 163 lines
+    gone, and Orca reads them from a config of its own
+  - it introduced one defect and surfaced another, both in [`lesson-215`](lessons.md#lesson-215):
+    `said: []` passes through `??`, so 1968 utterances rendered as 36 unread views — refused by
+    the record's own guard — and an apostrophe in a COMMENT ended a `bash -c` block early
+  - proven by running it: **482 steps over 36 views, 1973 utterances, 0 silent stops, 11
+    capped**, against the 3 silent stops of the record it replaces
 
 - [x] **4.67 — a workflow pinned an action version that never existed, and no gate reads a
       remote** — **closed 2026-09-16: execution is the reader, and both files now run**

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The environment half of the assistive-technology pass (plan 2.2). It puts a screen reader
-# on a display of its own and hands the driving to `tools/at-pass.mjs`.
+# on a display of its own and hands the driving to the ONE walk every reader takes,
+# `apps/sandbox-e2e/at/walk.ts`, through `apps/sandbox-e2e/at-orca.config.mts`.
 #
 # Everything here is deliberate isolation. A second X display, a second session bus and a
 # throwaway configuration directory, so the pass never touches the reader, the preferences
@@ -23,7 +24,9 @@ SCREEN=":99"
 # run before a single word — and the pass that followed the clearing started the reader,
 # attached it to nothing, and produced three utterances in fifteen minutes. The reader wants
 # the state it has written for itself.
-rm -f "$WORK/drove.ok"
+# A stale record from a previous pass would make a walk that never finished look
+# like one that did: the success of this run is decided by the file it leaves.
+rm -f "$WORK/drove.ok" "$WORK/steps.json"
 mkdir -p "$WORK/config/orca" "$WORK/data"
 
 # The reader's own settings, and the one that decides whether this works at all. Orca's caret
@@ -95,9 +98,18 @@ dbus-run-session -- bash -c '
   sleep 6
   kill -0 $ORCA 2>/dev/null || { echo "X the reader did not start — see $WORK/orca.out" >&2; exit 1; }
   cd "$ROOT"
-  scripts/with-node node tools/at-pass.mjs --drive "$BASE" "$WORK/steps.json" \
-    2>&1 | tee "$WORK/drive.log"
-  [ "${PIPESTATUS[0]}" = 0 ] || exit 1
+  BASE_URL="$BASE" scripts/with-node npx playwright test \
+    --config apps/sandbox-e2e/at-orca.config.mts 2>&1 | tee "$WORK/drive.log"
+  # NO APOSTROPHE MAY APPEAR BELOW, comments included: this whole block is one single-quoted
+  # argument to `bash -c`, so one closes it and hands the rest of the block to the OUTER
+  # shell. Measured, not feared — the word "record`s`" in this very comment did exactly that,
+  # and the walk it broke had already run for 21 minutes.
+  #
+  # The walk writes its record before the runner tears the browser down, and tearing down a
+  # browser with a reader attached to it rejects late and asynchronously — that took a
+  # completed fifteen-minute pass with it once. So what decides here is the file on disk and
+  # not the exit code; whether the pass is any GOOD is decided by the guard in the record.
+  [ -s "$WORK/steps.json" ] || exit 1
   touch "$WORK/drove.ok"
   sleep 2
   kill $ORCA 2>/dev/null || true
@@ -119,5 +131,10 @@ if [ ! -f "$WORK/drove.ok" ]; then
 fi
 
 cd "$ROOT"
-scripts/with-node node tools/at-pass.mjs --render \
+# `--disable-warning` by NAME, and only that name: the renderer imports the Orca log parser
+# from the e2e app by its `.ts` path, and Node warns once per run that the file has no
+# package.json saying which module system it is in. The warning is true, the answer would be
+# `"type": "module"` in the workspace root, and that is a change to every `.js` file here for
+# one line of output. A tool that prints noise teaches people to stop reading it.
+scripts/with-node node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/at-pass.mjs --render \
   "$WORK/steps.json" "$WORK/orca.debug" "orca-firefox-linux" "Orca with Firefox on Linux"

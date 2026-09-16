@@ -5965,3 +5965,42 @@ green". This is the first time the repository watched it happen to itself.
 The shape: **an experiment that alters the conditions cannot also rule on what the conditions
 did.** When a run has to change something to take its measurement, the control is a run that
 did not change it — and if both are jobs of the same nightly, the comparison costs nothing.
+
+### <a id="lesson-215"></a>`lesson-215` — Uniting two walks made an absent field present, and `??` reads absence
+
+Two programs took the same walk: `tools/at-pass.mjs` drove Orca in JavaScript, and
+`apps/sandbox-e2e/at/walk.ts` drove NVDA and VoiceOver in TypeScript. The second was made by
+copying the first, and on 2026-09-15 **all four defects found in the original were in the copy
+too** — a `<summary>` invisible to the stop list, a sentinel compared as a value, a document
+load per view, a cap spent on the shell. Each was fixed twice, by hand. The second time is the
+one a person forgets.
+
+Uniting them was cheaper than it looked, because only three things really differed, and naming
+them is the whole method: **who presses the key** (Orca listens to the desktop, so its Tab goes
+through `page.keyboard`; a Guidepup reader is asked what it said, so its Tab must go through
+the reader — [`lesson-213`](#lesson-213)), **where the speech comes from** (a log read
+afterwards, or the reader answering), and **how long to stand still**. Three fields on one
+interface, and 163 lines of the second walk went away.
+
+Then the unified walk wrote a field the old one had left out. Orca hands back nothing while
+walking, so every one of its steps now carried `said: []` — and the renderer read
+`step.said ?? <attribute by the clock>`. `??` asks whether a value is ABSENT. An empty array
+is present. A pass holding **1968 utterances rendered as thirty-six unread views**, and the
+sentence under it would have blamed the views.
+
+It never reached disk, and what stopped it was written for something else entirely: a guard
+that refuses to write a record in which nothing the reader said lands on any step, put there
+because a reader can start and never attach to the browser. It has now caught two different
+causes, and it was told neither. That is the dividend of phrasing a guard over an OUTCOME —
+"this record would say every view is unread" — instead of over the cause you had in mind.
+
+One more, and it is the cheapest kind of expensive. The walk is launched from inside a
+`bash -c '…'` block, and a comment was added to it containing the word "record" with a
+possessive apostrophe. An apostrophe closes the block. The rest of it — the guard, the
+success marker, the line that stops the reader — ran in the OUTER shell, where the reader's
+process id does not exist, and the pass that had just walked for twenty-one minutes ended
+without rendering anything. A comment inside a quoted block is not a comment; it is code.
+
+The shape: **a guard should name what would be WRONG with the output, not what it expects to
+go wrong on the way there.** The first kind keeps working when the cause changes; the second
+kind is a description of yesterday.
