@@ -21,10 +21,22 @@ test.describe('PctChips — a list the user shortens', () => {
   const chipsOf = (page: Page, rowId = 'row') =>
     page.getByTestId(rowId).locator('pct-chip');
 
-  /** The chip the focused element stands in — the whole repair is read through this. */
+  /**
+   * The chip the focused element stands in — the whole repair is read through this.
+   *
+   * The LABEL part and not the chip's `textContent`: since the cross was given a composed
+   * name it carries a clipped span with the verb in it, inside the chip, and the whole
+   * element then reads `Free shippingRemove`. Fifteen cases said so on a runner
+   * ([`lesson-218`](../../../docs/lessons.md#lesson-218)). Reading the part is also the more
+   * exact question — what is asked here is WHICH chip has the focus, and its label is the
+   * answer; anything else in the pill is chrome.
+   */
   const focusedChipText = (page: Page) =>
     page.evaluate(() =>
-      document.activeElement?.closest('pct-chip')?.textContent?.trim(),
+      document.activeElement
+        ?.closest('pct-chip')
+        ?.querySelector('[data-pct-part="label"]')
+        ?.textContent?.trim(),
     );
 
   test('is a named list and every chip a listitem — the count a reader hears first', async ({
