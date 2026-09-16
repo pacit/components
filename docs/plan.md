@@ -1314,18 +1314,24 @@ and every one is held by a **binds at** rather than by anybody's mood.
     already wrote; leaving it costs the argument in `chip.html`, which the measurement refuses
 
 - [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
+      — **the word is given 2026-09-16: build it, and build it narrow**
   - seven cards ask what a reader announces when something opens — a modal, a menu, a popover,
     a toast, a month grid, a revealed tab panel, a select list — and the answer for all seven
     is the same: the walk presses Tab and nothing else, so no panel in the three logs was ever
     opened. 2.2 closed with that stated rather than blurred
   - it is also why **4.1.2 stays `Partially Supports`** with the pass recorded: what the walk
     answers it answers well, and the half it cannot reach is the half a modal lives in
-  - two more components are out of reach for a nearer reason: a `progressbar`, a badge and a
-    skeleton take no focus at all, so a Tab walk cannot tell their silence from their absence
-  - the shape it needs is not a longer walk. It is a pass that ACTS — open, then read; and
-    then a reader asked to read the page rather than walk it, for everything unfocusable
-  - binds at: **a word on whether the second instrument is worth building**, which is a
-    question about who the ACR is for rather than about what is cheap
+  - **why it is worth paying for**: for a tree, arrival is most of the story; for a dialog it
+    is none of it. Opening IS the component in all seven, so the record as it stands answers a
+    question nobody asked of them, and no rewording of the remark repairs that
+  - **the scope**: one act per component, the gesture its own e2e spec already presses, read
+    by the same three readers into the same record shape. Not a longer walk, not a framework
+  - **refused — the say-all pass**: a `progressbar`, a badge and a skeleton take no focus, so
+    a Tab walk cannot tell their silence from their absence. But three readers' say-all
+    outputs answer three different questions, and this record's whole worth is that all three
+    answer one. Those cards owe a sentence about the component instead of a fourth instrument
+  - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
+    take a second home here, so the table cites the spec that owns it rather than restating it
 
 - [x] **4.69 — four cases fail every first attempt on CI chromium, and retries have hidden it**
       — **closed 2026-09-16: `--retries=0` on a runner, 757 passed, nothing flaky**
