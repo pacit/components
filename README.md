@@ -322,6 +322,10 @@ between the two.
 
 ## Documentation
 
+The site: [components.pacit.pl](https://components.pacit.pl/) — every component with its live
+demos, API, parts, tokens and keyboard map, and [the trust page](https://components.pacit.pl/trust/),
+which renders the registry below. Behind it, the sources:
+
 Requirements and architectural decisions (`req-*` identifiers): [docs/](docs/README.md) —
 the [project axis](docs/00-axis.md), [requirements](docs/requirements/),
 [decisions](docs/decisions/), [lessons](docs/lessons.md) and the generated

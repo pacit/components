@@ -8,6 +8,8 @@
     "type": "git",
     "url": "git+https://github.com/pacit/components.git"
   },
+  "homepage": "https://components.pacit.pl",
+  "bugs": "https://github.com/pacit/components/issues",
   "keywords": [
     "angular",
     "components",

@@ -23,6 +23,7 @@ on:
 permissions:
   contents: write # CHANGELOG commit, tag, GitHub Release entry
   id-token: write # OIDC for `npm publish --provenance`
+  actions: read # the CI run of the commit about to be published
 
 jobs:
   release:
@@ -48,6 +49,23 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
+
+      # The one guard a rehearsal cannot give the publish: the commit about to go out carries
+      # a CI run, and that run concluded green. A check-run query rather than `needs:`, because
+      # this workflow is dispatched by hand against whatever `main` is at the time — and of
+      # the gates CI runs, the release path re-runs only the build and the package gate. The
+      # publish is the one gate whose failure a consumer inherits forever.
+      - name: The commit went green in CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&branch=main&per_page=1" \
+            --jq '.workflow_runs[0] | select(. != null) | "\(.status) \(.conclusion)"')
+          echo "CI on ${GITHUB_SHA}: ${RUN:-no run}"
+          if [ "$RUN" != "completed success" ]; then
+            echo "::error::${GITHUB_SHA} has no green CI run on main (${RUN:-none}) — nothing is published from a commit the gates have not passed."
+            exit 1
+          fi
 
       - name: Git identity for the release commit
         run: |

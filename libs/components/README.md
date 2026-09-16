@@ -626,6 +626,10 @@ ng update @pacit/components
 
 ## Documentation
 
+- [components.pacit.pl](https://components.pacit.pl/) — every component with its live demos,
+  API, parts, tokens and keyboard map; [get started](https://components.pacit.pl/start/) and
+  [the trust page](https://components.pacit.pl/trust/), where every promise stands next to
+  the gate that proves it
 - [Support policy](https://github.com/pacit/components/blob/main/docs/support.md) — versions,
   deprecation notice, codemods
 - [Component contracts](https://github.com/pacit/components/blob/main/docs/components/README.md) —

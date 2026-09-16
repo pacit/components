@@ -74,7 +74,9 @@
       "pattern": "{projectName}@{version}"
     },
     "// conventionalCommits": "Section titles are English like the rest of the repository, and this file is read by consumers of the package. Hidden types do not disappear from history — only from the CHANGELOG.",
+    "// useCommitScope": "Nx 23 reads a commit's scope as a project name by default, and counts a scoped commit as a patch unless the scope IS the project — this repository's scopes name components and areas (`chips`, `core`, `a11y`), never `components`, so with the default every scoped commit was a patch and the sixteen breaking ones were nothing: the rehearsal resolved 0.0.1 to 0.0.2 with `--first-release` (measured 2026-09-17, decision 0079). Off, every commit whose files touch the project counts, breaking included.",
     "conventionalCommits": {
+      "useCommitScope": false,
       "types": {
         "feat": { "changelog": { "title": "Features" } },
         "fix": { "changelog": { "title": "Fixes" } },
@@ -99,8 +101,10 @@
       "automaticFromRef": true,
       "// workspaceChangelog": "There is exactly one publishable project, so a workspace changelog would be a second copy of the same content.",
       "workspaceChangelog": false,
+      "// renderer": "The first entry is a measurement, every later one the conventional list (decision 0079). The renderer reads `PCT_FIRST_RELEASE` from `tools/release.mjs`, which is the one caller.",
       "projectChangelogs": {
-        "createRelease": "github"
+        "createRelease": "github",
+        "renderer": "{workspaceRoot}/tools/changelog-renderer.mjs"
       }
     }
   },

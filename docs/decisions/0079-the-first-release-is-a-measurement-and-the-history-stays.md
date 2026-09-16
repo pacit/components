@@ -15,8 +15,8 @@ The repository went public on 2026-09-15 and the publish was refused the same da
 maintainer's word ([0075](0075-the-push-and-the-premiere-are-two-moments.md)). Four questions
 stood between that day and `npm publish`, and none of them was about code:
 
-- **the number.** The rehearsal read `0.0.1` → `0.0.2`, and a first public version that looks
-  like a typo is a first impression spent,
+- **the number.** The rehearsal read `0.0.1` → `0.0.2` against sixteen breaking commits, and a
+  first public version that looks like a typo is a first impression spent,
 - **the CHANGELOG.** `nx release` renders it from conventional commits, and for a first release
   the range is the whole history: some hundred and fifty titles written in this repository's
   voice, for a reader who asked what the package is,
@@ -42,9 +42,14 @@ publishing is configured a minute after the first publish, because it cannot be 
    the maintainer and for an audit, and for both a long one beats a folded one.
 2. **`0.1.0`, from the commits.** Sixteen commits carry `!`, and
    `adjustSemverBumpsForZeroMajorVersion` turns a breaking change on a zero major into a
-   minor. The whole range therefore resolves to `0.1.0` on its own; the rehearsal's `0.0.2`
-   fits a run without `--first-release`, where Nx had no range to read. The dry run with the
-   flag decides, and `specifier: 0.1.0` is the fallback, not the plan.
+   minor. The rehearsal's `0.0.2` had a different cause, measured on 2026-09-17: Nx 23 reads
+   a commit's scope as a project name (`useCommitScope`, on by default) and counts a scoped
+   commit as a patch unless the scope is the project — and this repository's scopes name
+   components and areas, never `components`. Every scoped commit was a patch and the
+   breaking ones were nothing. With `useCommitScope: false` in `nx.json` every commit whose
+   files touch the project counts, and the range resolves to `0.1.0`; `specifier: 0.1.0`
+   stays the fallback, not the plan. Without the switch every later release would have been
+   under-bumped the same way.
 3. **The first entry is a measurement.** `tools/changelog-renderer.mjs` extends Nx's default
    renderer; when `tools/release.mjs` says this is the first release it renders the version
    title and what the release _is_ — the number of cards, of features and fixes since the

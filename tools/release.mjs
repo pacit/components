@@ -63,17 +63,20 @@ run(['nx', 'stamp-version', 'components']);
 //    target, because `--release` sharpens it with the metadata npm requires (among them
 //    `repository`, without which there is no provenance). Day to day that condition only
 //    warns: a missing remote repository is not a defect in the code.
+//    `schematics` depends on `citations` too, so the one invocation also turns the JSDoc's
+//    citations into the site's addresses (decision 0078) before the gate reads them. ONE
+//    invocation on purpose: `build` owns the whole of dist, and a second `nx` run restoring
+//    it from the cache wipes what the first wrote inside (project.json, `// schematics`).
 run(['nx', 'schematics', 'components']);
-//    The citations in the JSDoc become the site's addresses here, after the build and
-//    before the gate reads the artefact (decision 0078) — the step `check-package` point 9
-//    measures.
-run(['nx', 'citations', 'components']);
 console.log('\n> node libs/components/check-package.mjs --release');
 execFileSync('node', ['libs/components/check-package.mjs', '--release'], {
   stdio: 'inherit',
 });
 
-// 4. CHANGELOG from conventional commits + commit + tag + GitHub Release.
+// 4. CHANGELOG from conventional commits + commit + tag + GitHub Release. The renderer
+//    (`tools/changelog-renderer.mjs`, decision 0079) renders the first release as a
+//    measurement and every later one as the list; this is how it learns which it is.
+process.env.PCT_FIRST_RELEASE = firstRelease ? '1' : '0';
 await releaseChangelog({
   versionData: projectsVersionData,
   version: workspaceVersion,

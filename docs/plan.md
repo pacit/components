@@ -132,21 +132,21 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
 - [~] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded**
   — **the flip is done, 2026-09-15; the publish waits on 3.5, 3.2, 3.3, 3.4 and a sentence**
   - **the flip.** `pacit/components` is public: no secret across 404 commits, every README
-    link answering 200 anonymously, and 404 commits under a public author address for good
+    link answering 200, and 404 commits under a public author address for good
   - **the publish was refused the same day**, the rehearsal green end to end (690.6 kB, 114
     files). What it waits for was settled 2026-09-16 in
     [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md): the
     version is **0.1.0**, the CHANGELOG entry is a measurement rendered by
     `tools/changelog-renderer.mjs` rather than ~150 commit titles, and the history stays
-  - the rehearsal's 0.0.2 fits a run without `--first-release`: sixteen `!` commits under
-    `adjustSemverBumpsForZeroMajorVersion` make a minor. The dry run with the flag decides
+  - the rehearsal's 0.0.2 was Nx reading a commit's scope as a project name and counting
+    `fix(chips)!` as a patch (`useCommitScope`, off since 2026-09-17); measured, and the dry
+    run now resolves 0.1.0 from the sixteen `!` commits on its own
   - **trusted publishing comes a minute after the first publish, not before** — npm keeps it
     in the package's settings, and the package exists once published. A granular token with
     2FA bypass, seven days, one run; then the publisher, and the token, the secret and
     `NODE_AUTH_TOKEN` in `release.yml` gone. Bypass tokens lose publish around 2027-01
   - a dry run writes no manifest, so `stamp-version` reads the OLD version
-    ([`lesson-41`](lessons.md#lesson-41)); the real run proves the order, and `PCT_VERSION`
-    in the published package equal to the tag is the reading
+    ([`lesson-41`](lessons.md#lesson-41)); `PCT_VERSION` in the published package is the reading
   - the tag supersedes `req-project-latest` with the compatibility matrix and its gate, as its
     **Binds at** says; that is the last edit of this position. The trigger stays a sentence
 
@@ -163,17 +163,19 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     host's slash on the way
   - cost: 0.5 day · _notes:_ —
 
-- [ ] **3.3 — the release reads CI's colour before it trusts it**
-  - `release.yml`'s only guard is the ref check: no `needs:`, no check-run query, nothing that
-    asks whether the commit it is about to publish ever went green. A dispatch against a red
-    or still-running `main` publishes anyway — and of the ~26 gate targets CI runs, the
-    release path re-runs only the build and `check-package --release`. The publish is the one
-    gate whose failure a consumer inherits forever
-  - one step before `tools/release.mjs` closes it: the `CI` check run of the HEAD commit read
-    off the API (`gh api …/commits/<sha>/check-runs`), and `exit 1` unless it concluded
-    `success`. Calling CI as a reusable workflow with `needs:` would be cleaner and would
-    rebuild `ci.yml`; one maintainer does not need that
-  - binds at: **the first non-dry release** · _notes:_ —
+- [~] **3.3 — the release reads CI's colour before it trusts it** — **the step is in,
+  2026-09-17; the first dispatch is what reads it**
+  - `release.yml`'s only guard was the ref check: no `needs:`, no check-run query, nothing
+    that asked whether the commit it was about to publish ever went green. A dispatch against
+    a red or still-running `main` published anyway — and of the ~26 gate targets CI runs, the
+    release path re-runs only the build and `check-package --release`
+  - what landed: a step before `tools/release.mjs` reads the `CI` run of `GITHUB_SHA` off the
+    API (`gh api …/workflows/ci.yml/runs?head_sha=`) and exits 1 unless it is
+    `completed success`; `actions: read` joined the workflow's permissions for it. A dry run
+    is held to it too — a rehearsal against a red tree rehearses nothing
+  - not taken: CI as a reusable workflow with `needs:` — cleaner, and a rebuild of `ci.yml`
+    that one maintainer does not need
+  - binds at: **the first dispatch**, which is the reading nothing on this desk can take
 
 - [ ] **3.4 — the premiere is a task, not an event**
   - [0016](decisions/0016-mit-irreversibility.md) defers its biggest decision to "data that

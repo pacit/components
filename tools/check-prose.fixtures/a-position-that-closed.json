@@ -1,6 +1,6 @@
 {
   "point": 5,
   "check": "exact",
-  "why": "position 3.3 is closed where the record has it open, which moves its budget from twenty to twelve",
-  "positions": { "3.3": { "mark": "x", "closed": true } }
+  "why": "position 1.2 is closed where the record has it open, which moves its budget from twenty to twelve",
+  "positions": { "1.2": { "mark": "x", "closed": true } }
 }
