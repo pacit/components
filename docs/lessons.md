@@ -6283,3 +6283,18 @@ its remote-desktop name is on the bus, and a seat helper started on the socket f
 service to ask; it waits for the name now. And a trap written as `kill $A $B` with the
 variables initialised to `0` is `kill 0` — the whole process group, the script and its
 caller included — which is why those variables start empty.
+
+### <a id="lesson-226"></a>`lesson-226` — The gate had not read the file, because git had not
+
+Three gates here walk the git index and not the working tree — `check-language`,
+`check-prose`, `check-tools` — and that is the right walk: the index is what the commit will
+carry, and a scratch file in the tree is nobody's business. The cost showed the same evening
+three times. `tools/at-seat.py` went green locally as an untracked file and red on the runner
+as a tracked one, on two words the gate had never been shown — a Python builtin and a
+GVariant signature;
+`tools/check-since.mjs` was measured by the prose gate only after `git add`, which then found
+its header two lines over budget; the scripts gate counted 49 scripts on one run and 50 on
+the next, with nothing but the add between them. A green gate on a tree with untracked files
+is a reading of the files it was allowed to see. The habit that follows: `git add` the new
+files BEFORE the battery, not before the commit — the index is the input, so the input goes
+in first — and a local verdict is then the one the runner will give.
