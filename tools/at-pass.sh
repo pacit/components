@@ -185,7 +185,7 @@ dbus-run-session -- bash -c '
     # `MUTTER_DEBUG=focus` makes the compositor say WHY it did or did not focus a window; the
     # first run on a runner mapped the browser and never activated it, and the shell log was
     # the one witness that could have said why.
-    MUTTER_DEBUG=focus,startup,window-state gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
+    MUTTER_DEBUG=focus,startup,window-state,wayland gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
     SHELL_PID=$!
     for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
     [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] || { echo "X the compositor did not come up — see $WORK/shell.log" >&2; exit 1; }
@@ -198,6 +198,11 @@ dbus-run-session -- bash -c '
     grep -q "keyboard" "$WORK/seat.out" || { echo "X the seat got no keyboard — see $WORK/seat.out" >&2; exit 1; }
     export WAYLAND_DISPLAY="$AT_WL" GDK_BACKEND=wayland
     unset DISPLAY
+    # What the seat advertises to a client, read by one: the keyboard capability is what turns
+    # the focus the compositor set into the wl_keyboard.enter the browser acts on.
+    if command -v wayland-info >/dev/null 2>&1; then
+      wayland-info > "$WORK/wayland-info.log" 2>&1 || true
+    fi
     echo "  compositor: gnome-shell headless on $AT_WL, with a keyboard"
   fi
   rm -f "$SPD_SOCK"
@@ -226,6 +231,9 @@ dbus-run-session -- bash -c '
   # browser with a reader attached to it rejects late and asynchronously — that took a
   # completed fifteen-minute pass with it once. So what decides here is the file on disk and
   # not the exit code; whether the pass is any GOOD is decided by the guard in the record.
+  if command -v wayland-info >/dev/null 2>&1; then
+    wayland-info > "$WORK/wayland-info-after.log" 2>&1 || true
+  fi
   [ -s "$WORK/steps.json" ] || exit 1
   touch "$WORK/drove.ok"
   sleep 2

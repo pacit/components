@@ -187,7 +187,7 @@ jobs:
       - name: The compositor, the reader and the speech server
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends gnome-shell orca speech-dispatcher espeak-ng python3-gi gir1.2-glib-2.0 dbus-daemon at-spi2-core iproute2
+          sudo apt-get install -y --no-install-recommends gnome-shell orca speech-dispatcher espeak-ng python3-gi gir1.2-glib-2.0 dbus-daemon at-spi2-core iproute2 wayland-utils
 
       - run: npm ci
 
@@ -218,6 +218,8 @@ jobs:
             tmp/at/drive.log
             tmp/at/shell.log
             tmp/at/gsettings.log
+            tmp/at/wayland-info.log
+            tmp/at/wayland-info-after.log
             tmp/at/seat.out
             tmp/at/spd.out
             tmp/sandbox-serve.log
