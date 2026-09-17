@@ -690,7 +690,9 @@ table.api {
   color: var(--pct-on-primary-100);
 }
 
-/* Not yet in the package: an outline, because the fact is a promise. */
+/* Not yet in the package: an outline, because the fact is a promise. The legend and the
+   deprecation notice reuse the head's paragraph and `api__sub` — the component's style
+   budget is 12 kB and this page sits 48 bytes under it. */
 .api__flag--next {
   background: transparent;
   border: 1px dashed var(--pct-primary);
@@ -699,16 +701,6 @@ table.api {
 
 .api__flag--gone {
   text-decoration: line-through;
-}
-
-.api__sub--gone {
-  color: var(--pct-text);
-}
-
-.api__legend {
-  margin: var(--pct-space-3) 0 0;
-  color: var(--pct-text-muted);
-  font-size: var(--pct-font-size-sm);
 }
 
 .api__value {

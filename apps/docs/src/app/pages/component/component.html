@@ -281,10 +281,7 @@
                     >since <code>{{ row.since }}</code></span
                   >
                   }@if (row.deprecated) {
-                  <span
-                    class="api__sub api__sub--gone"
-                    [innerHTML]="row.deprecated"
-                  ></span>
+                  <span class="api__sub" [innerHTML]="row.deprecated"></span>
                   } @if (row.selector) {
                   <span class="api__sub"><code>{{ row.selector }}</code></span>
                   } @else if (row.detail) {
@@ -374,7 +371,7 @@
             lines of documentation are the library's own.
           </p>
           @if (h.unreleased) {
-          <p class="api__legend" data-testid="api-unreleased">
+          <p data-testid="api-unreleased">
             <span class="api__flag api__flag--next">unreleased</span> marks {{
             h.unreleased }} of them: on <code>main</code>, and not in
             <code>&#64;pacit/components&#64;{{ h.version }}</code> — the next
@@ -443,10 +440,7 @@
                         >since <code>{{ m.since }}</code></span
                       >
                       }@if (m.deprecated) {
-                      <span
-                        class="api__sub api__sub--gone"
-                        [innerHTML]="m.deprecated"
-                      ></span>
+                      <span class="api__sub" [innerHTML]="m.deprecated"></span>
                       } @if (m.default !== null) {
                       <span class="api__sub"
                         >default
@@ -507,10 +501,7 @@
                         >since <code>{{ m.since }}</code></span
                       >
                       }@if (m.deprecated) {
-                      <span
-                        class="api__sub api__sub--gone"
-                        [innerHTML]="m.deprecated"
-                      ></span>
+                      <span class="api__sub" [innerHTML]="m.deprecated"></span>
                       }
                     </td>
                     <td><code class="api__type">{{ m.type }}</code></td>
