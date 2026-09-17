@@ -6237,3 +6237,49 @@ uplink for its scope, every other scope still proxied, because the peers are ins
 from the public registry on purpose. The rule generalises: a rehearsal registry that
 answers questions about the thing being rehearsed with the public registry's answers is
 not a rehearsal.
+
+### <a id="lesson-224"></a>`lesson-224` — The window had focus and did not know it
+
+The reader pass could not be isolated for want of a headless Wayland compositor (4.73), and
+one was installed all along: `gnome-shell --headless` — a virtual monitor, its own Wayland
+socket, no X server — comes with GNOME 47 and later, and on 2026-09-17 it stood up in two
+seconds on a throwaway session bus. The browser followed: which socket it connected to was
+read off `ss(8)` against the inodes in its own `/proc/<pid>/fd`, and it was the compositor's
+and not the desktop's. That reading is the sampler now; the environment variable it
+replaced was the whole defect.
+
+Then the reader said nothing. The compositor named the browser as its focus window; Orca
+kept its default script for the length of a view, never once switching to Firefox. A headless
+seat has no input device, and a seat without a keyboard never sends `wl_keyboard.enter` —
+so the browser was focused by the compositor's account and unfocused by its own, announced
+no `window:activate`, and a reader that follows the active window had nothing to follow. The
+keyboard came through mutter's remote-desktop interface: a session, started, and one
+press-and-release of a key that types nothing (`tools/at-seat.py`). The next run switched
+scripts on window activation and read the page.
+
+Two more things were measured on the way. A speech server is not optional to the log: Orca
+writes `SPEECH OUTPUT` when it hands a phrase to one, so the pass runs a private
+speech-dispatcher whose samples go to ALSA's null device — the same instrument, muted, and
+nobody's speakers for twenty-five minutes. And a Unix socket path has 108 bytes: a socket
+under `tmp/at` in a deep checkout is past it and fails with `Can't bind local socket`, which
+is why both sockets live under `XDG_RUNTIME_DIR`.
+
+### <a id="lesson-225"></a>`lesson-225` — The link was there, and the pointer could not reach it
+
+The first isolated pass (4.73) was also the first ACTED pass on any reader: the act table
+came in after every record on disk, and the two readers on CI had answered a literal Enter
+with "pressed" and opened nothing, so nothing in any log had ever stood open when the walk
+moved on. Orca's Enter opens things. On `/drawer` it opened the docked panel — `position:
+fixed`, z-index 900, wider than the shell's own navigation — and `close` pressed Escape on
+the trigger, which is not an Escape inside the panel (`drawer.ts`, by design): the panel
+stayed, the `close` row is a silence, and the pointer click that reaches the next view
+retried against "intercepts pointer events" for the hour the test had, then failed. The walk
+now allows a cover fifteen seconds, then writes what stood over the link on the next view's
+`arrive` row and reaches the link through its own click event — the same listener, the same
+navigation, and a record that says what was in the way instead of a run that says nothing.
+
+Two more things were measured on the way. The compositor's Wayland socket appears before
+its remote-desktop name is on the bus, and a seat helper started on the socket found no
+service to ask; it waits for the name now. And a trap written as `kill $A $B` with the
+variables initialised to `0` is `kill 0` — the whole process group, the script and its
+caller included — which is why those variables start empty.

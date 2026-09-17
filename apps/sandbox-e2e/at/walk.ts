@@ -1,6 +1,6 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { SBX_ROUTES } from '../src/support/views';
 import { ACTS } from './acts';
 
@@ -129,6 +129,26 @@ const focusOf = (page: Page) =>
   }, SCAFFOLD);
 
 /**
+ * What the pointer hits at the centre of `target`, named by the nearest test id or, failing
+ * one, by its tag: the thing a view left standing over the shell's nav, for the record.
+ */
+const standingOver = async (page: Page, target: Locator): Promise<string> => {
+  const box = await target.boundingBox();
+  if (!box) return 'nothing the pointer could reach';
+  return page.evaluate(
+    ([x, y]) => {
+      const hit = document.elementFromPoint(x, y);
+      if (!hit) return 'nothing';
+      const named = hit.closest('[data-testid]');
+      return named
+        ? `${named.tagName.toLowerCase()} (${named.getAttribute('data-testid')})`
+        : hit.tagName.toLowerCase();
+    },
+    [box.x + box.width / 2, box.y + box.height / 2] as const,
+  );
+};
+
+/**
  * The routes a dispatch asked for. `workflow_dispatch` substitutes an input's DEFAULT when it
  * is handed an empty value, so "every view" cannot be said by saying nothing — a dispatch with
  * `routes=` walked one view and reported it as a full pass. It is said with `all`, and the
@@ -187,8 +207,20 @@ export async function walk(
     process.stderr.write(
       `  [${String(index + 1).padStart(2)}/${routes.length}] ${route}\n`,
     );
+    // A pointer click, the way the sandbox is used; fifteen seconds is what a transient cover
+    // — a slide on its way out — is allowed. What still stands after that is written down and
+    // stepped around, because the first acted pass (Orca, 2026-09-17) hung on it for an hour:
+    // the docked drawer's `close` row is a silence — an Escape on the trigger is not an Escape
+    // inside the panel (`drawer.ts`) — and the panel, fixed at z-index 900, stood over the
+    // shell's nav. The link is then clicked through its own event: the same listener, the
+    // same navigation, and no pointer path to block.
+    let covered: string | undefined;
     await step(route, 'arrive', load, async () => {
-      await page.click(`nav a[href="${route}"]`);
+      const link = page.locator(`nav a[href="${route}"]`);
+      await link.click({ timeout: 15_000 }).catch(async () => {
+        covered = await standingOver(page, link);
+        await link.dispatchEvent('click');
+      });
       await page.waitForFunction((r) => location.pathname === r, route, {
         timeout: 15_000,
       });
@@ -196,6 +228,10 @@ export async function walk(
       // way in. It is optional because not every reader in the pair exposes it.
       await reader.navigateToWebContent?.().catch(() => undefined);
     });
+    if (covered)
+      steps[steps.length - 1].note =
+        `the pointer's way to the nav stood under \`${covered}\` when this view was asked ` +
+        'for, and the link was reached through its own click event';
 
     const entered = await step(route, 'enter', tab, () =>
       page.evaluate(
@@ -246,9 +282,9 @@ export async function walk(
 
     // The half a Tab walk cannot reach (4.71). `reach` focuses the control that opens the
     // thing and shows what merely arriving at it sounds like; `open` is the answer all seven
-    // of those cards ask for; `close` is not tidying — a modal left standing takes the
-    // navigation to the next view down with it, and what a reader says on Escape is worth a
-    // row of its own. Views with nothing to open have no act and get none of the three.
+    // of those cards ask for; `close` is not tidying — what a reader says on Escape is worth
+    // a row of its own, and what is still standing after it is written on the next view's
+    // `arrive`. Views with nothing to open have no act and get none of the three.
     const act = ACTS[route];
     if (act) {
       let reached = true;

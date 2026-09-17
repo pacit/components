@@ -77,7 +77,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 3.6 stands past the tag
-3  open findings          small, good filler between the bigger items
+2  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
@@ -100,7 +100,7 @@ holds only the order.
 
 **What is left.** Section 1 ends at the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds **3.6**.
-Section 4 holds three findings, each held by a **binds at** rather than by anybody's mood.
+Section 4 holds two findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
@@ -211,7 +211,7 @@ Small, good filler between the bigger items. Each is verified in the code and st
 and every one is held by a **binds at** rather than by anybody's mood.
 
 - [~] **4.58 — the suite has a flake rate and nothing has ever measured it** — **the unanimous
-  column cleared 2026-09-16; the record waits on one whole run**
+  column cleared 2026-09-16; the record waits on one clean night**
   - the race-shape rule bought the _shape_ of a race, greppable, and refused the repetition
     job on its own wording. The two flakes it found were fixed and the rate stayed a guess
   - what landed: a runner in `nightly.yml` per suite, `--repeat-each=3 --retries=0`, reports
@@ -220,16 +220,15 @@ and every one is held by a **binds at** rather than by anybody's mood.
     repetitions carry no index, so a case is addressed by `<path> | <project>` and nothing else
   - **first reading** (run 35070461427): `sandbox-e2e` 2086 cases over 6258 runs — 2078 clean,
     4 wobbled, **4 unanimous**; `docs-e2e` 431 cases over 1293 runs, not one wobble
-  - **second** (run 35114204663, the first after the four CI-chromium fixes): the same 2086
-    cases over the same 6258 runs — **2084 clean, 2 wobbled, zero unanimous**, one case in
-    `forced-colors.spec.ts` and one in `slider.spec.ts`. The four columns are gone, which is
-    four fixes holding under repetition rather than under a retry
-  - [`lesson-202`](lessons.md#lesson-202) named the wrong population: it expected cases that
-    fail under the suite's parallelism, and this CI has none — Nx's preset sets `workers: 1`
-  - what remains: **one run with both halves in it.** That reading spent 2.2 hours on the
-    sandbox suite and was cut off inside the docs one at the three-hour cap, so the gate
-    stopped at point 1 with a suite missing. The job is one runner per suite now
-  - binds at: **the first nightly of the split job**
+  - **second** (run 35114204663, after the four CI-chromium fixes): 2084 clean, 2 wobbled, zero
+    unanimous — the four columns gone, which is four fixes holding under repetition. That night
+    was cut off inside the docs suite at the cap; the job is one runner per suite since
+  - **third, the first of the split job** (run 35196788397, 2026-09-17): both halves in one
+    night, and the gate stopped at point 3 rather than 5 — six `docs-e2e` cases failed every
+    repetition, the two `/acr` tests in three engines, asserting a sentence the report lost on
+    2026-09-16 ([`lesson-221`](lessons.md#lesson-221)); a failure and not a wobble, as the
+    point is written to say, and fixed the same day in `3be54c2`
+  - binds at: **the first nightly after that fix** — a clean reading, then `--write` the record
 
 - [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
       — **the word is given 2026-09-16: build it, and build it narrow**
@@ -251,26 +250,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
     take a second home here, so the table cites the spec that owns it rather than restating it
 
-- [ ] **4.73 — the reader pass was never isolated, and the record said it was**
-  - `tools/at-pass.sh` starts an Xvfb on `:99`, a session bus and a throwaway configuration
-    directory, and its own header says the point is that the pass never touches the reader,
-    the preferences or the desktop of whoever runs it. For the BROWSER that was false from the
-    first run: GTK reads `GDK_BACKEND` and `WAYLAND_DISPLAY` before `DISPLAY`, so Firefox took
-    the session compositor and opened a real window on the maintainer's desktop
-  - found by the maintainer saying so — a `firefox` on his taskbar with Tab walking the
-    application inside it — and proved by him switching its theme, twice, in the middle of a
-    reading. Xvfb had been running the whole time with nothing ever drawing on it
-  - **the obvious repair is measured and refused**: `unset WAYLAND_DISPLAY` with
-    `GDK_BACKEND=x11` does move the browser to `:99`, and Orca then reads almost nothing —
-    **7 utterances against 1969** for the same walk, the first view failing its own guard.
-    This pass works BECAUSE it is not isolated
-  - what it costs: every Orca reading in `docs/acr/at/` was taken on a desktop somebody was
-    using, so a stray click is indistinguishable from a component's behaviour. That is the
-    error the three-reader comparison exists to catch, arriving through the instrument itself
-  - what landed meanwhile: the surface is SAMPLED and written into the record, in place of the
-    constant "driven on Xvfb" it used to claim, and the script warns before it opens anything
-  - binds at: **a headless Wayland compositor** — `cage`, or `weston --backend=headless`, and
-    neither is installed here
+- [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
+  - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`, so the browser opened on the maintainer's
+    desktop while Xvfb on `:99` drew nothing — found by him, proved by his theme switch in the
+    middle of a reading. The X11 repair measured **7 utterances against 1969** and was refused:
+    the pass worked BECAUSE it was not isolated
+  - closed by a headless GNOME Shell of the pass's own (installed all along, GNOME 47+), a
+    keyboard given to its seat through mutter's remote-desktop interface — a seat without one
+    tells no window it has focus, and Orca never leaves its default script — and a private,
+    muted speech server; the record's surface is SAMPLED off `ss(8)` ([`lesson-224`](lessons.md#lesson-224))
+  - the first isolated reading: **509 steps over 36 views, 6 silent, 11 capped** in 22 minutes,
+    against 482/0/11 on the desktop. The silences: four Escapes that closed nothing, the modal's
+    opening, and one arrival through a covered nav ([`lesson-225`](lessons.md#lesson-225))
 
 - [x] **4.72 — a gate went red inside a run GitHub reported green** — **closed 2026-09-17**
   - CI run `35104356828` on `6491aef` concluded **success** with `❌ check-typecheck` inside its

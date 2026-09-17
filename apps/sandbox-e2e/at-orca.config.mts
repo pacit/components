@@ -13,8 +13,9 @@ import { defineConfig, devices } from '@playwright/test';
  * a retried view would append a second reading of itself to the record.
  *
  * NO `webServer` HERE. `tools/at-pass.sh` checks that something is already serving and says
- * so if not: this run happens inside `dbus-run-session` on an Xvfb display, and a dev server
- * started from in there would inherit both and outlive neither cleanly.
+ * so if not: this run happens inside `dbus-run-session` on a headless GNOME Shell of its own
+ * (position 4.73), and a dev server started from in there would inherit both and outlive
+ * neither cleanly.
  */
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 

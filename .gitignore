@@ -115,3 +115,6 @@ vitest.config.*.timestamp*
 # git neither copies it nor restores it after `clean -xdf`.
 /docs/private/
 apps/docs/src/generated
+
+# Python: tools/at-seat.py is run, never imported, and its cache is nobody's
+__pycache__/

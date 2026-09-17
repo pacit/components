@@ -3,21 +3,34 @@
 # on a display of its own and hands the driving to the ONE walk every reader takes,
 # `apps/sandbox-e2e/at/walk.ts`, through `apps/sandbox-e2e/at-orca.config.mts`.
 #
-# Everything here is deliberate isolation. A second X display, a second session bus and a
-# throwaway configuration directory, so the pass never touches the reader, the preferences
-# or the desktop of whoever runs it — a screen reader that seizes the real session is a
-# machine somebody has to restart by hand. `--replace` is never passed for the same reason.
+# Everything here is deliberate isolation, and since 2026-09-17 it is isolation that was
+# MEASURED rather than declared (position 4.73, lesson-224): a headless GNOME Shell of its own
+# on a throwaway session bus, a keyboard for that compositor's seat through `tools/at-seat.py`,
+# a private speech server that synthesises into a null device, a throwaway configuration
+# directory — and which socket the browser really connected to is read off `ss(8)` and written
+# into the record, because exporting a variable and having the browser honour it are two
+# different facts. Until that day `DISPLAY` pointed at an Xvfb nothing ever drew on while the
+# browser took the session compositor and opened a real window on the desktop of whoever ran
+# the pass. `--replace` is never passed to the reader: one that seizes the real session is a
+# machine somebody has to restart by hand.
 #
 # The reader speaks English regardless of the machine's locale: this repository is written
 # in one language (`req-project-language`), and a log of Polish announcements would be both
 # untrue of the product and unreadable by the gate that holds the rule.
 #
 # Usage: tools/at-pass.sh [baseURL]     (default http://localhost:4200 — serve the sandbox first)
+#   AT_PASS_DESKTOP=1  takes the pass on the desktop session instead — NOT isolated, a real
+#                      window, and the record says which it was; for a machine whose GNOME
+#                      Shell has no `--headless` (47 and later have it).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BASE="${1:-http://localhost:4200}"
 WORK="$ROOT/tmp/at"
-SCREEN=":99"
+# The compositor's own Wayland socket, next to the session's `wayland-0` under XDG_RUNTIME_DIR
+# and never that one. A speech socket sits there too: a Unix socket path is limited to 108
+# bytes and `tmp/at` under a deep checkout is past it.
+AT_WL="wayland-at"
+SPD_SOCK="${XDG_RUNTIME_DIR:-/tmp}/at-speechd.sock"
 
 # The reader's state is KEPT between runs, and that is measured rather than tidy. Clearing it
 # was tried, to rule out a `RecursionError` inside Orca's own `ax_object.py` that killed one
@@ -26,8 +39,8 @@ SCREEN=":99"
 # the state it has written for itself.
 # A stale record from a previous pass would make a walk that never finished look
 # like one that did: the success of this run is decided by the file it leaves.
-rm -f "$WORK/drove.ok" "$WORK/steps.json" "$WORK/browser.display"
-mkdir -p "$WORK/config/orca" "$WORK/data"
+rm -f "$WORK/drove.ok" "$WORK/steps.json" "$WORK/browser.display" "$WORK/spd.pid"
+mkdir -p "$WORK/config/orca" "$WORK/data" "$WORK/spd-log" "$WORK/speechd"
 
 # The reader's own settings, and the one that decides whether this works at all. Orca's caret
 # and structural navigation put it BETWEEN the keyboard and the browser: it grabs keys for its
@@ -51,57 +64,90 @@ cat > "$WORK/config/orca/user-settings.conf" <<'JSON'
   "activeProfile": ["Default", "default"]
 }
 JSON
-echo
-echo "  !! THE BROWSER OPENS A REAL WINDOW ON YOUR DESKTOP for the next few minutes."
-echo "     Clicking in it, or typing into it, goes into the measurement — a theme switched"
-echo "     and switched back is two announcements the reader attributes to a Tab press."
-echo "     Everything else on this machine is safe: editing a file in this repository is"
-echo "     the one thing that reloads the page under the walk. (position 4.73)"
-echo
-export DISPLAY="$SCREEN"
-# THE LINE ABOVE DOES NOT MOVE THE BROWSER, and everything this file said about isolating it
-# was false until 2026-09-16. GTK reads `GDK_BACKEND` and `WAYLAND_DISPLAY` first and Firefox
-# follows: in a Wayland session it ignores `DISPLAY`, connects to the compositor of whoever
-# started the pass, and opens a REAL WINDOW on their desktop. The maintainer found it by
-# saying so — a `firefox` on his taskbar, Tab walking the application inside it — and then
-# proved it by clicking the theme switch in the middle of a reading. Xvfb has been running
-# this whole time with nothing ever drawing on it.
-#
-# The obvious repair is measured and REFUSED. `unset WAYLAND_DISPLAY` with `GDK_BACKEND=x11`
-# does put the browser on `:99` — and Orca then reads almost nothing: **7 utterances against
-# 1969** for the same walk, and the first view fails the guard the record carries. This pass works
-# BECAUSE it is not isolated. Isolating it properly wants a headless Wayland compositor and
-# none is installed here (position 4.73).
-#
-# So the window is real, the operator is told so above, and the record says which surface the
-# reading was taken on instead of claiming this one.
+
+# The speech server's configuration: the system's own, with the samples sent to ALSA's null
+# device. The synthesis still runs at its own pace — Orca writes `SPEECH OUTPUT` when it hands
+# a phrase to the server, and a server that is not there would change what the log measures —
+# so this is the same instrument, muted. Nobody's speakers say a word for twenty-five minutes.
+cp -r /etc/speech-dispatcher/. "$WORK/speechd/"
+cat >> "$WORK/speechd/speechd.conf" <<'CONF'
+
+# Appended by tools/at-pass.sh: the samples go to the null device (position 4.73).
+AudioOutputMethod "alsa"
+AudioALSADevice "null"
+DefaultModule espeak-ng
+LogLevel 3
+CONF
+
+ISOLATED=1
+if [ "${AT_PASS_DESKTOP:-0}" = "1" ]; then
+  ISOLATED=0
+  echo
+  echo "  !! AT_PASS_DESKTOP=1: THE BROWSER OPENS A REAL WINDOW ON YOUR DESKTOP for the next"
+  echo "     few minutes. Clicking in it, or typing into it, goes into the measurement — a theme"
+  echo "     switched and switched back is two announcements the reader attributes to a Tab"
+  echo "     press. The record says which surface the reading was taken on. (position 4.73)"
+  echo
+else
+  # What the isolated path needs, checked before anything starts, each with its remedy.
+  gnome-shell --help 2>/dev/null | grep -q -- '--headless' || {
+    echo "X this GNOME Shell has no --headless (47 and later have it); AT_PASS_DESKTOP=1 takes" >&2
+    echo "  the pass on your desktop instead, and the record says so" >&2
+    exit 1
+  }
+  python3 -c 'import gi' 2>/dev/null || {
+    echo "X python3-gi is missing — tools/at-seat.py gives the compositor its keyboard through it" >&2
+    exit 1
+  }
+  command -v speech-dispatcher >/dev/null 2>&1 || {
+    echo "X speech-dispatcher is missing — the reader logs what it hands to a speech server" >&2
+    exit 1
+  }
+fi
+
 export XDG_CONFIG_HOME="$WORK/config"
 export XDG_DATA_HOME="$WORK/data"
 export GTK_MODULES=gail:atk-bridge
 export GNOME_ACCESSIBILITY=1
 export NO_AT_BRIDGE=0
 export LANG=C.UTF-8 LANGUAGE=en_US:en LC_ALL=C.UTF-8
+export AT_WL SPD_SOCK ISOLATED
 
-# Which surface the browser REALLY took, sampled rather than assumed — the whole defect was
-# that exporting a variable and having the browser honour it are two different facts. Matched
-# by process NAME and then by the executable behind it: `pgrep -f` on a path also matches any
-# shell whose command line happens to contain that path, and the first version of this sampler
-# reported the wrong answer because it had found the very command asking it the question.
+# Which surface the browser REALLY took, sampled rather than assumed. Matched by process NAME
+# and then by the executable behind it: `pgrep -f` on a path also matches any shell whose
+# command line happens to contain that path, and the first version of this sampler reported
+# the wrong answer because it had found the very command asking it the question. Then the
+# browser's own socket inodes, from /proc, against the server rows of `ss -x`: a display socket
+# whose peer is one of them is the display the browser is drawing on, whatever its environment
+# says — the defect this replaced was exactly a variable exported and not honoured.
 (
   tries=0
-  while [ "$tries" -lt 180 ]; do
+  while [ "$tries" -lt 240 ]; do
     tries=$((tries + 1))
     for pid in $(pgrep -x firefox 2>/dev/null); do
       case "$(readlink -f "/proc/$pid/exe" 2>/dev/null)" in
       */ms-playwright/*) ;;
       *) continue ;;
       esac
-      if tr "\0" "\n" < "/proc/$pid/environ" 2>/dev/null | grep -q "^WAYLAND_DISPLAY="; then
-        echo "the desktop session of whoever ran the pass, NOT an isolated display (4.73)" \
+      inodes="$(ls -l "/proc/$pid/fd" 2>/dev/null | grep -o 'socket:\[[0-9]*\]' | tr -dc '0-9\n' | sort -u)"
+      [ -n "$inodes" ] || continue
+      paths="$(ss -x 2>/dev/null | grep -E 'wayland|X11' \
+        | awk -v want="$inodes" 'BEGIN { n = split(want, a, "\n"); for (i = 1; i <= n; i++) if (a[i] != "") w[a[i]] = 1 } ($8 in w) { print $5 }' \
+        | sort -u | tr '\n' ' ')"
+      [ -n "$paths" ] || continue
+      case "$paths" in
+      *"/$AT_WL "*)
+        echo "gnome-shell $(gnome-shell --version 2>/dev/null | awk '{ print $3 }') headless, virtual monitor 1280x900, its own Wayland socket ($AT_WL) — the browser's connection to it read off ss(8); speech synthesised into a null device" \
           > "$WORK/browser.display"
-      else
-        echo "Xvfb at 1280x900, window manager: ${AT_PASS_WM:-none}" > "$WORK/browser.display"
-      fi
+        ;;
+      *wayland*)
+        echo "the desktop session of whoever ran the pass ($paths), NOT an isolated display (4.73)" \
+          > "$WORK/browser.display"
+        ;;
+      *)
+        echo "an X11 display ($paths), not the compositor this pass starts (4.73)" > "$WORK/browser.display"
+        ;;
+      esac
       exit 0
     done
     sleep 1
@@ -114,33 +160,36 @@ if ! curl -sf -o /dev/null "$BASE"; then
   exit 1
 fi
 
-Xvfb "$SCREEN" -screen 0 1280x1024x24 -nolisten tcp >"$WORK/xvfb.log" 2>&1 &
-XVFB=$!
-trap 'kill $XVFB 2>/dev/null || true; kill ${WM:-0} 2>/dev/null || true' EXIT
-sleep 2
-
-# A window manager, if there is one. Without it nothing ever sets `_NET_ACTIVE_WINDOW`, so
-# Firefox does not believe it is the active window: keyboard focus wanders to its own chrome,
-# and on some navigations the accessible document is lost outright — nineteen of thirty-six
-# views read as silence in the pass of 2026-09-14. It is optional on purpose: the reading is
-# worth taking without one, and the record says which it was taken with.
-WM=0
-WM_NAME="none"
-for candidate in openbox matchbox-window-manager fluxbox icewm twm; do
-  if command -v "$candidate" >/dev/null 2>&1; then
-    "$candidate" >"$WORK/wm.log" 2>&1 &
-    WM=$!
-    WM_NAME="$candidate"
-    sleep 2
-    break
-  fi
-done
-export AT_PASS_WM="$WM_NAME"
-echo "  window manager: $WM_NAME"
-
 dbus-run-session -- bash -c '
   set -u
   WORK="'"$WORK"'"; ROOT="'"$ROOT"'"; BASE="'"$BASE"'"
+  trap "kill \$ORCA \$SPD \$SEAT \$SHELL_PID 2>/dev/null || true" EXIT
+  # Empty, not 0: `kill 0` is the whole process group, this script and its caller included
+  # (measured: a run that failed at the seat took the terminal it was echoing to down with it).
+  ORCA=; SPD=; SEAT=; SHELL_PID=
+  if [ "$ISOLATED" = "1" ]; then
+    # The compositor: a headless GNOME Shell with a virtual monitor and no X server at all, so
+    # a browser that could not find Wayland would fail to start rather than find the desktop.
+    gnome-shell --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
+    SHELL_PID=$!
+    for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
+    [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] || { echo "X the compositor did not come up — see $WORK/shell.log" >&2; exit 1; }
+    # Its keyboard, without which no window is ever told it has focus (tools/at-seat.py).
+    python3 "$ROOT/tools/at-seat.py" >"$WORK/seat.out" 2>&1 &
+    SEAT=$!
+    for ((i = 0; i < 40; i++)); do grep -q "keyboard" "$WORK/seat.out" && break; kill -0 "$SEAT" 2>/dev/null || break; sleep 1; done
+    grep -q "keyboard" "$WORK/seat.out" || { echo "X the seat got no keyboard — see $WORK/seat.out" >&2; exit 1; }
+    export WAYLAND_DISPLAY="$AT_WL" GDK_BACKEND=wayland
+    unset DISPLAY
+    echo "  compositor: gnome-shell headless on $AT_WL, with a keyboard"
+  fi
+  rm -f "$SPD_SOCK"
+  speech-dispatcher -s -S "$SPD_SOCK" -P "$WORK/spd.pid" -C "$WORK/speechd" -L "$WORK/spd-log" >"$WORK/spd.out" 2>&1 &
+  SPD=$!
+  for ((i = 0; i < 10; i++)); do [ -S "$SPD_SOCK" ] && break; sleep 1; done
+  [ -S "$SPD_SOCK" ] || { echo "X the speech server did not come up — see $WORK/spd.out" >&2; exit 1; }
+  export SPEECHD_ADDRESS="unix_socket:$SPD_SOCK"
+  echo "  speech: a private server, muted"
   gsettings set org.gnome.desktop.interface toolkit-accessibility true 2>/dev/null || true
   export AT_PASS_DEBUG="$WORK/orca.debug"
   orca --debug-file="$WORK/orca.debug" >"$WORK/orca.out" 2>&1 &
@@ -164,7 +213,7 @@ dbus-run-session -- bash -c '
   sleep 2
   kill $ORCA 2>/dev/null || true
   sleep 2
-' 2>&1 | grep -vE 'dbus-daemon|Activating service|Successfully activated|GNOME_KEYRING|xdg-desktop-portal|WARNING \*\*|^$' || true
+' 2>&1 | grep -vE 'dbus-daemon|Activating service|Successfully activated|Activated service|GNOME_KEYRING|xdg-desktop-portal|WARNING \*\*|Gtk-WARNING|Gdk-Message|goa-daemon|discover_other|libedbus|fusermount|SpiRegistry|calendar-server|connection to the bus|^$' || true
 
 # The reader is started inside a subshell, so its failure has to be carried out by hand: a
 # `exit 1` in there ends the subshell and nothing else. Without this the script went on to
@@ -181,10 +230,11 @@ dbus-run-session -- bash -c '
 # defect as the version bullet before it.
 AT_PASS_SURFACE="$(cat "$WORK/browser.display" 2>/dev/null || echo "not sampled")"
 export AT_PASS_SURFACE
+echo "  surface: $AT_PASS_SURFACE"
 
 if [ ! -f "$WORK/drove.ok" ]; then
   echo "X the walk did not complete. The driver's own output is $WORK/drive.log; the" >&2
-  echo "  reader's is $WORK/orca.out and the display's is $WORK/xvfb.log." >&2
+  echo "  reader's is $WORK/orca.out and the compositor's is $WORK/shell.log." >&2
   exit 1
 fi
 

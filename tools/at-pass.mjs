@@ -190,13 +190,14 @@ ${capped.length} view(s) have more stops than the ${cap} taken, and each says so
       // says the same thing with the number in it, and printing both left every capped view
       // carrying one fact in two spellings — the register defect of `lesson-216`, one floor
       // down, in the file that exists to be quoted. Every other note is the walk's own
-      // sentence about that view and is printed as written.
+      // sentence about that view and is printed as written — each a paragraph of its own, with
+      // the blank line prettier would otherwise add after the fence and between them.
       const notes = [
         ...rows
           .filter((r) => r.note && !CAP_NOTE.test(String(r.note)))
-          .map((r) => `\n${r.note}.`),
+          .map((r) => `\n\n${r.note}.`),
         rows.some((row) => CAP_NOTE.test(String(row.note ?? '')))
-          ? `\nThe cap bit here: ${cap} stops of this view's own were read, and it has more.`
+          ? `\n\nThe cap bit here: ${cap} stops of this view's own were read, and it has more.`
           : '',
       ].join('');
       return `### \`${route}\`\n\n\`\`\`\n${lines.join('\n')}\n\`\`\`${notes}`;
