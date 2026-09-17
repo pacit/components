@@ -217,7 +217,7 @@ jobs:
             tmp/at/orca.debug
             tmp/at/drive.log
             tmp/at/shell.log
-            tmp/at/windows.log
+            tmp/at/gsettings.log
             tmp/at/seat.out
             tmp/at/spd.out
             tmp/sandbox-serve.log
