@@ -185,7 +185,7 @@ dbus-run-session -- bash -c '
     # `MUTTER_DEBUG=focus` makes the compositor say WHY it did or did not focus a window; the
     # first run on a runner mapped the browser and never activated it, and the shell log was
     # the one witness that could have said why.
-    MUTTER_DEBUG=focus,startup gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
+    MUTTER_DEBUG=focus,startup,window-state gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
     SHELL_PID=$!
     for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
     [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] || { echo "X the compositor did not come up — see $WORK/shell.log" >&2; exit 1; }

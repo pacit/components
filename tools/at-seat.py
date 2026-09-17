@@ -85,7 +85,9 @@ def ask(code):
     return result if ok else None
 
 
-ACCOUNT = "JSON.stringify(global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()]))"
+# Eval returns its result as JSON of its own; an expression that stringifies first hands back
+# a string inside a string, and the first runner read iterated over its characters.
+ACCOUNT = "global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()])"
 ACTIVATE = "const w = global.display.list_all_windows()[0]; w.activate(global.get_current_time()); w.get_title()"
 nudged = 0
 for _ in range(90):
@@ -95,6 +97,9 @@ for _ in range(90):
         print("the shell refused Eval — not in unsafe mode; the windows go unwitnessed", flush=True)
         break
     windows = json.loads(raw) if raw else []
+    if not isinstance(windows, list) or any(not isinstance(w, list) or len(w) != 2 for w in windows):
+        print(f"the shell answered in a shape this helper does not read: {raw[:200]!r}", flush=True)
+        break
     focused = [title for title, has_focus in windows if has_focus]
     if windows and not focused and nudged < 3:
         nudged += 1
