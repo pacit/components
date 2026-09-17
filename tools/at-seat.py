@@ -87,8 +87,18 @@ def ask(code):
 
 # Eval returns its result as JSON of its own; an expression that stringifies first hands back
 # a string inside a string, and the first runner read iterated over its characters.
-ACCOUNT = "global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()])"
-ACTIVATE = "const w = global.display.list_all_windows()[0]; w.activate(global.get_current_time()); w.get_title()"
+# The windows, and the actor of the shell's own stage that holds the key focus, if one does:
+# in mutter 50 the seat's input focus is resolved through that key focus, so a shell actor
+# holding it is a browser window that never hears wl_keyboard.enter however focused the
+# compositor says it is.
+ACCOUNT = (
+    "({ windows: global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()]),"
+    " key: (() => { const a = global.stage.get_key_focus(); return a ? a.toString() : null; })() })"
+)
+ACTIVATE = (
+    "global.stage.set_key_focus(null);"
+    " const w = global.display.list_all_windows()[0]; w.activate(global.get_current_time()); w.get_title()"
+)
 nudged = 0
 for _ in range(90):
     time.sleep(2)
@@ -96,17 +106,19 @@ for _ in range(90):
     if raw is None:
         print("the shell refused Eval — not in unsafe mode; the windows go unwitnessed", flush=True)
         break
-    windows = json.loads(raw) if raw else []
+    account = json.loads(raw) if raw else {}
+    windows = account.get("windows") if isinstance(account, dict) else None
     if not isinstance(windows, list) or any(not isinstance(w, list) or len(w) != 2 for w in windows):
         print(f"the shell answered in a shape this helper does not read: {raw[:200]!r}", flush=True)
         break
+    key = account.get("key")
     focused = [title for title, has_focus in windows if has_focus]
     if windows and not focused and nudged < 3:
         nudged += 1
-        print(f"windows: {windows} — none focused; activating: {ask(ACTIVATE)!r}", flush=True)
+        print(f"windows: {windows}, stage key focus: {key!r} — none focused; activating: {ask(ACTIVATE)!r}", flush=True)
         continue
     if windows:
-        print(f"windows: {windows}", flush=True)
+        print(f"windows: {windows}, stage key focus: {key!r}", flush=True)
     if focused:
         print(f"the compositor focuses {focused[0]!r}", flush=True)
         break
