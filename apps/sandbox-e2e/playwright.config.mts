@@ -83,11 +83,22 @@ export default defineConfig({
       scale: 'css',
     },
   },
-  /* Run your local dev server before starting the tests */
+  /*
+   * The dev server is Playwright's to start and to stop. The Nx Playwright plugin reads this
+   * command and would make `sandbox:serve` a continuous dependency of the `e2e` target, so
+   * that nx starts it first and kills it last — and on the runners a run that ended on this
+   * suite ended without nx's summary and with exit code 0, red tasks included (plan 4.72,
+   * lesson-222). `project.json` sets that dependency to nothing; this block is the only
+   * thing that starts the server. The timeout is for a cold runner, where the first build
+   * of the sandbox is the slow part; a running server is reused, which is also what lets a
+   * developer's own `nx serve sandbox` carry a suite — and go stale under it, as
+   * `lesson-`s in the memory of this repository say.
+   */
   webServer: {
     command: 'npx nx run sandbox:serve',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
+    timeout: 240_000,
     cwd: workspaceRoot,
   },
   /*

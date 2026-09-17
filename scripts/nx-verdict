@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Reads an `nx` run off its stdin, prints it through unchanged, and refuses the run's silence.
+#
+# nx ends every run of tasks with one line of its own — `Successfully ran target(s) …`, or
+# `Ran target(s) …` above a `Failed tasks:` list — and exits 1 on the second. On the runners
+# it did neither, nine times between 2026-09-15 and 2026-09-17: the step ended right after
+# the last task's output, with exit code 0 and red tasks inside it (plan 4.72, lesson-222).
+# GitHub reads the exit code alone, so those runs were green. This reader stands behind the
+# pipe and turns the missing line into the failure it was: a verdict that never arrived is
+# not a pass. The step's shell has `pipefail`, so nx's own non-zero code still wins.
+#
+# Usage:  npx nx affected -t … |& scripts/nx-verdict
+verdict=0
+while IFS= read -r line; do
+  printf '%s\n' "$line"
+  case "$line" in *'Successfully ran target'*) verdict=1 ;; esac
+done
+if [ "$verdict" -ne 1 ]; then
+  echo "::error::nx ended without its summary line — the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
+  exit 1
+fi

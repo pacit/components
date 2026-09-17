@@ -277,17 +277,17 @@ and every one is held by a **binds at** rather than by anybody's mood.
     runs every gate: `❌ nx run @org/source:check-typecheck`, the gate's own verdict of one
     violation, and the end-to-end suite reporting `1 flaky`. The step's own conclusion is
     `success`, and the log carries no `NX ... failed` line and no `Failed tasks:` list
-  - the gate was RIGHT. `apps/sandbox-e2e/at-orca.config.mts` had entered no compiler's
-    program since the day it was written, and the nightly said so on the next tree it read.
-    Fixed separately; this position is about the run that swallowed it
-  - what it is not: `affected` skipping the project — `nx show projects --affected` for that
-    range lists `@org/source`; and not a chronic condition — the three green runs before it
-    carry no failed task at all
-  - **what is already measured**: on this desk the same gate, failing under `nx affected`
-    alone and again among ten of the line's gates, exits **1** and prints both missing lines.
-    So the difference is not the executor, not the gate and not the target count, and the
-    next reading is of a run carrying the rest — including a forty-three-minute `e2e`
-  - what it costs while it stands: every green tick on this repository is a claim that the
-    gates ran and passed, and for one run it was a claim that they had merely been started
-  - binds at: **a reading of nx's exit code under the full line**, which is a dispatch and not
-    a guess ([`lesson-214`](lessons.md#lesson-214))
+  - the gate was RIGHT, and fixed separately; this position is about the run that swallowed it
+  - **the reading, 2026-09-17, over every completed run since 2026-09-15**: the step is silent
+    exactly when `sandbox-e2e:e2e` is its last task — nine of nine, `0df0c29` to `db0c720`,
+    two with nothing red in them — and speaks in every run another task ends. What the nine
+    hid: `check-bench` red on `chips` in six, the sandbox suite red with fifteen cases in two,
+    one consumer flake, and the publish guard of 3.3 reading `1da5fb0` as green
+    ([`lesson-222`](lessons.md#lesson-222)). On this desk the same run prints and exits 1
+  - what landed: the suite no longer has the continuous `sandbox:serve` as a dependency — the
+    one task of that kind, started and killed by nx, and the one the silent runs share — and
+    every task-running `nx` line in both workflows ends in `|& scripts/nx-verdict`, which
+    refuses an exit code of 0 that comes without nx's summary. The second is the guarantee
+    whatever the mechanism; the first is the suspect removed
+  - binds at: **the first full run with the sandbox suite last that prints its summary** — the
+    push carrying this; then the position closes on that reading

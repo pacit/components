@@ -21,6 +21,7 @@
         "{workspaceRoot}/docs/registry.md",
         "{workspaceRoot}/docs/lessons.md",
         "{workspaceRoot}/docs/support.md",
+        "{workspaceRoot}/docs/acr.md",
         "{workspaceRoot}/docs/decisions/*.md",
         "{workspaceRoot}/libs/components/parts.snapshot.md",
         "{workspaceRoot}/libs/components/mutation.snapshot.md",

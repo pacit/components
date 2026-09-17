@@ -907,7 +907,10 @@ test.describe('The pages', () => {
     await expect(
       report.getByRole('heading', { name: 'Summary' }),
     ).toBeVisible();
-    await expect(report).toContainText('Not recorded');
+    // The assistive-technology pass is on record since 2026-09-16 (docs/acr.md); the
+    // sentence is the report's own, rendered from the gate's claims.
+    await expect(report).toContainText('The assistive-technology pass');
+    await expect(report).toContainText('Recorded.');
     await expect(report.getByRole('table').first()).toBeVisible();
     // The trust page points at it through the router, not through a reload.
     await visit(page, '/trust');

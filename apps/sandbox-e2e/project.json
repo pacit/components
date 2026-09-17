@@ -6,7 +6,11 @@
   "tags": ["type:e2e"],
   "implicitDependencies": ["sandbox"],
   "// targets": "to see all targets run: nx show project sandbox-e2e --web",
+  "// e2e": "The Playwright plugin infers `dependsOn: sandbox:serve` from the config's webServer command, a CONTINUOUS task nx starts before the suite and kills after it. On the runners every run that ended on this suite ended without nx's summary and with exit code 0, red tasks included — nine runs, 2026-09-15 to 2026-09-17 (plan 4.72, lesson-222). The empty list takes the serve out of nx's graph; Playwright starts and stops the server itself, as `webServer` says.",
   "targets": {
+    "e2e": {
+      "dependsOn": []
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,

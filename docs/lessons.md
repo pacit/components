@@ -6169,3 +6169,54 @@ not exist in it. The first real run is the only reading, and it has to be read b
 file: the tarball for what shipped, the commit for what stayed. The fix is `stageChanges:
 true` and a `git add` of the constant after the stamp; the repair, the bump and the stamp
 committed by hand under the tag.
+
+### <a id="lesson-221"></a>`lesson-221` — The report changed, and two cache keys did not notice
+
+`docs/acr.md` said **Not recorded** about the assistive-technology pass until `6491aef`
+(2026-09-16), and **Recorded** after it. The docs suite asserted the old sentence on `/acr`,
+and went red for it on 2026-09-17 — at `7aaf740`, a commit that touched a workflow, a
+decision record and the release script, and not one letter of the report. Nine runs in
+between had the suite in their task graph and did not run it: a cached pass, printed
+nowhere (the runs were the silent ones of `lesson-222`).
+
+Two keys, and neither named the report. The `content` target of `docs` reads the file — the
+`read('docs/acr.md')` is one of fourteen `read(` calls in `build-content.mjs` — and its
+`inputs` listed twenty-three files and not that one, so the report alone could change and
+the site keep the old page; the deployed site happened to be fresh because a neighbouring
+input, the manifest's version, moved in the same hour. The docs suite's inferred inputs
+hashed the suite and the app's sources, and the app's sources do not contain the content:
+`apps/docs/src/generated` is written from files outside both projects.
+
+The repair is what the keys should have said from the start: `docs/acr.md` in `content`'s
+inputs, and the suite depending on `content` with `dependentTasksOutputFiles`, so the
+rendered content is in its hash. The rule: a target's inputs are the list of what it reads,
+and that list is taken from the `read(` calls and the generated directory — not from what
+somebody remembered — and a suite that tests a rendered page hashes the render.
+
+### <a id="lesson-222"></a>`lesson-222` — Nine green ticks, and nx had said nothing
+
+Plan 4.72 opened on one run: a gate red inside a step GitHub called green, with no summary
+line from nx and no `Failed tasks:` list. Read on 2026-09-17 over every completed run since
+2026-09-15, off the job logs: the step is silent exactly when `sandbox-e2e:e2e` is its last
+task — nine of nine, `0df0c29` through `db0c720`, two of them with nothing red at all — and
+prints its summary and its exit code in every run that another task ends. What the nine
+hid: the cost gate red on `chips` in six of them (`19 → 22` elements, the preview grown by
+`32ad79d` and the record never rewritten), the sandbox suite red with fifteen `chips` cases
+in two, one typecheck gap, one consumer flake — and the publish guard of 3.3 reading
+`1da5fb0` as green with the cost gate red inside it.
+
+The mechanism is not proven. On this desk the same run — the suite failing behind the same
+continuous `sandbox:serve`, `CI=1`, no daemon, no TUI — prints its summary and exits 1. The
+correlation has one suspect: the sandbox suite is the only task in the line with a
+continuous dependency, inferred by the Playwright plugin from the config's `webServer`,
+started before the suite and killed after it by nx; the docs suite starts its own server and
+never went silent.
+
+Two repairs, independent of each other. The suite no longer depends on the serve —
+Playwright starts and stops it, as the config always said — which removes the suspect. And
+every task-running `nx` line in both workflows ends in `|& scripts/nx-verdict`, which passes
+the output through and fails a run that ends without nx's own summary: a verdict that never
+arrived is not a pass. Its controls: `npx nx --version |& scripts/nx-verdict` exits 1, a
+green `run-many` exits 0, a red one keeps nx's 1 through `pipefail`. The second repair is the
+guarantee whatever the mechanism; the first is the cure, and the next full run is its
+reading.

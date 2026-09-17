@@ -5,7 +5,18 @@
   "sourceRoot": "apps/docs-e2e/src",
   "tags": ["type:e2e"],
   "implicitDependencies": ["docs"],
+  "// e2e": "The plugin's inferred inputs hash the suite and the app's sources, not the site's content: `apps/docs/src/generated` is written by `docs:content` from files outside both projects (docs/acr.md, docs/lessons.md, the cards). So a report that changed on 2026-09-16 met a suite still passing from cache until 2026-09-17 (lesson-221). Depending on `content` and hashing its outputs puts the rendered content into the key.",
   "targets": {
+    "e2e": {
+      "dependsOn": [{ "projects": ["docs"], "target": "content" }],
+      "inputs": [
+        "default",
+        "^production",
+        "^{projectRoot}/tsconfig*.json",
+        { "externalDependencies": ["@playwright/test"] },
+        { "dependentTasksOutputFiles": "**/*", "transitive": false }
+      ]
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,
