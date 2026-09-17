@@ -76,8 +76,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 0  the copy off this machine  DONE — landed 2026-09-01
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
-3  publication            the premiere: 3.2, 3.3, 3.5 done; 3.4 waits on the maintainer's
-                          switches; 3.1 on a token and a sentence; 3.6 past the tag
+3  publication            the premiere: 3.2 to 3.5 done; 3.1 on a sentence; 3.6 past
+                          the tag
 4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
@@ -87,8 +87,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 **The push and the premiere are two moments**
 ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)). The quiet push landed
 on 2026-09-01, the flip to public on 2026-09-15, and the site went live at its address on
-2026-09-17, and the release rehearsed in CI the same morning; npm waits for the maintainer's
-two switches (**3.4**), a token, and an explicit sentence. No run turning green starts it, and standing next in this list is not a
+2026-09-17, and the release rehearsed in CI the same morning; the token is in place, and npm
+waits for an explicit sentence. No run turning green starts it, and standing next in this list is not a
 start either — a session that reaches **3.1** passes over it and takes the next item.
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
@@ -130,7 +130,7 @@ repository has no first look. So the quiet half moved to the front and landed on
 the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
 
 - [~] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded**
-  — **the flip is done, 2026-09-15; the publish waits on 3.4's switches, a token, and a sentence**
+  — **the flip is done, 2026-09-15; everything else is in place, and the publish waits on a sentence**
   - **the flip.** `pacit/components` is public: no secret across 404 commits, every README
     link answering 200, and 404 commits under a public author address for good
   - **the publish was refused the same day**, the rehearsal green end to end (690.6 kB, 114
@@ -174,24 +174,18 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     publish". A dry run is held to it too: a rehearsal against a red tree rehearses nothing
   - not taken: CI as a reusable workflow with `needs:` — a rebuild of `ci.yml` nobody needs
 
-- [~] **3.4 — the premiere is a task, not an event** — **the files landed 2026-09-17, the
-  switches are on; the venue is the maintainer's**
+- [x] **3.4 — the premiere is a task, not an event** — **closed 2026-09-17**
   - [0016](decisions/0016-mit-irreversibility.md) defers its biggest decision to "data that
     does not exist today", and no task acquired the users who would produce it: `.github/`
-    held workflows and nothing else, `CONTRIBUTING.md` had two sections and no way to run
-    the gates, and nowhere said where a question goes
-  - **what landed**: issue forms (`bug`, `proposal`) that ask for the promise broken or the
-    promise to keep, a `config.yml` refusing blank issues and sending questions to Discussions
-    and vulnerabilities to the private channel, a PR template asking which gates ran,
-    `SECURITY.md`, `CONTRIBUTING.md` with `scripts/with-node`, the line CI runs, the two gates
-    the habit omits ([`lesson-188`](lessons.md#lesson-188)) and `apps/docs` on 4300; the README
-    names the channels. Each file is read by GitHub by its name and by nobody inside — a root
-    in `tools/reach.policy.json`, the shape `CONTRIBUTING.md` already had
-  - not taken: `CODE_OF_CONDUCT.md` — a promise of moderation with nobody to keep it
-  - **done by the maintainer the same morning**: Discussions on, private vulnerability
-    reporting on, About with the site and five topics. **Open: the venue** — where the
-    release is announced has no answer yet
-  - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
+    held workflows and nothing else, and nowhere said where a question goes
+  - what landed: issue forms asking for the promise broken or the promise to keep, a
+    `config.yml` sending questions to Discussions and vulnerabilities to the private channel,
+    a PR template asking which gates ran, `SECURITY.md`, `CONTRIBUTING.md` with the way to
+    run the gates; Discussions, private reporting and About switched on by the maintainer
+  - **the venue, decided**: no announcement at `0.1.0`. The library is announced when it
+    stands closer to 1.0 — the table (1.2) in hand — and the order on record for that day is
+    a write-up (dev.to) → r/Angular → LinkedIn → X, Show HN last. Until then the site and
+    npm are findable, not advertised; the data 0016 waits for comes with that announcement
 
 - [x] **3.5 — the site at its own address, deployed behind a green CI** — **live 2026-09-17**
   - concerns: [`req-project-apps`](requirements/project.md#req-project-apps) · decided in

@@ -78,10 +78,10 @@ position, because a denominator that empties quietly is the defect it exists to 
 
 ```
 1.2 open 5 62
-3.1 open 20 253
+3.1 open 20 254
 3.2 closed 12 143
 3.3 closed 10 153
-3.4 open 18 227
+3.4 closed 12 169
 3.5 closed 12 134
 3.6 open 14 194
 4.58 open 20 279
