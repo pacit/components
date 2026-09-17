@@ -80,7 +80,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 1.2 open 5 62
 3.1 open 20 253
 3.2 closed 12 143
-3.3 open 13 173
+3.3 closed 10 153
 3.4 open 17 219
 3.5 closed 12 134
 3.6 open 14 194

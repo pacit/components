@@ -76,8 +76,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 0  the copy off this machine  DONE — landed 2026-09-01
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
-3  publication            the premiere: 3.5 and 3.2 done; 3.3 and 3.4 wait on the
-                          maintainer's switches; 3.1 on a sentence; 3.6 past the tag
+3  publication            the premiere: 3.2, 3.3, 3.5 done; 3.4 waits on the maintainer's
+                          switches; 3.1 on a token and a sentence; 3.6 past the tag
 4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
@@ -87,8 +87,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 **The push and the premiere are two moments**
 ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)). The quiet push landed
 on 2026-09-01, the flip to public on 2026-09-15, and the site went live at its address on
-2026-09-17; npm waits for the maintainer's two switches (**3.3**, **3.4**), a token, and an
-explicit sentence. No run turning green starts it, and standing next in this list is not a
+2026-09-17, and the release rehearsed in CI the same morning; npm waits for the maintainer's
+two switches (**3.4**), a token, and an explicit sentence. No run turning green starts it, and standing next in this list is not a
 start either — a session that reaches **3.1** passes over it and takes the next item.
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
@@ -163,19 +163,16 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     host's slash on the way
   - cost: 0.5 day · _notes:_ —
 
-- [~] **3.3 — the release reads CI's colour before it trusts it** — **the step is in,
-  2026-09-17; the first dispatch is what reads it**
-  - `release.yml`'s only guard was the ref check: no `needs:`, no check-run query, nothing
-    that asked whether the commit it was about to publish ever went green. A dispatch against
-    a red or still-running `main` published anyway — and of the ~26 gate targets CI runs, the
-    release path re-runs only the build and `check-package --release`
+- [x] **3.3 — the release reads CI's colour before it trusts it** — **closed 2026-09-17**
+  - `release.yml`'s only guard was the ref check: a dispatch against a red or still-running
+    `main` published anyway, and the release path re-runs only the build and the package gate
   - what landed: a step before `tools/release.mjs` reads the `CI` run of `GITHUB_SHA` off the
-    API (`gh api …/workflows/ci.yml/runs?head_sha=`) and exits 1 unless it is
-    `completed success`; `actions: read` joined the workflow's permissions for it. A dry run
-    is held to it too — a rehearsal against a red tree rehearses nothing
-  - not taken: CI as a reusable workflow with `needs:` — cleaner, and a rebuild of `ci.yml`
-    that one maintainer does not need
-  - binds at: **the first dispatch**, which is the reading nothing on this desk can take
+    API and exits 1 unless it is `completed success`; `actions: read` joined the permissions
+  - **both readings taken the same morning**: a dry run dispatched while CI still ran on
+    `20e8707` was refused (`in_progress null`, exit 1); the same dispatch after that run went
+    green passed — 0.1.0 resolved from the commits, the entry rendered, stopped at "would
+    publish". A dry run is held to it too: a rehearsal against a red tree rehearses nothing
+  - not taken: CI as a reusable workflow with `needs:` — a rebuild of `ci.yml` nobody needs
 
 - [~] **3.4 — the premiere is a task, not an event** — **the files landed 2026-09-17; two
   switches and the venue are the maintainer's**
