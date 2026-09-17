@@ -170,10 +170,10 @@ fi
 dbus-run-session -- bash -c '
   set -u
   WORK="'"$WORK"'"; ROOT="'"$ROOT"'"; BASE="'"$BASE"'"
-  trap "kill \$ORCA \$SPD \$SEAT \$SHELL_PID 2>/dev/null || true" EXIT
+  trap "kill \$ORCA \$SPD \$SEAT \$WIN \$SHELL_PID 2>/dev/null || true" EXIT
   # Empty, not 0: `kill 0` is the whole process group, this script and its caller included
   # (measured: a run that failed at the seat took the terminal it was echoing to down with it).
-  ORCA=; SPD=; SEAT=; SHELL_PID=
+  ORCA=; SPD=; SEAT=; WIN=; SHELL_PID=
   if [ "$ISOLATED" = "1" ]; then
     # The compositor: a headless GNOME Shell with a virtual monitor and no X server at all, so
     # a browser that could not find Wayland would fail to start rather than find the desktop.
@@ -182,7 +182,10 @@ dbus-run-session -- bash -c '
     if [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && ! ss -xl 2>/dev/null | grep -q "/$AT_WL "; then
       rm -f "$XDG_RUNTIME_DIR/$AT_WL" "$XDG_RUNTIME_DIR/$AT_WL.lock"
     fi
-    gnome-shell --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
+    # `MUTTER_DEBUG=focus` makes the compositor say WHY it did or did not focus a window; the
+    # first run on a runner mapped the browser and never activated it, and the shell log was
+    # the one witness that could have said why.
+    MUTTER_DEBUG=focus gnome-shell --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
     SHELL_PID=$!
     for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
     [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] || { echo "X the compositor did not come up — see $WORK/shell.log" >&2; exit 1; }
@@ -204,6 +207,19 @@ dbus-run-session -- bash -c '
   export SPEECHD_ADDRESS="unix_socket:$SPD_SOCK"
   echo "  speech: a private server, muted"
   gsettings set org.gnome.desktop.interface toolkit-accessibility true 2>/dev/null || true
+  # The compositor is asked for its own account of the windows — which exist, which has the
+  # focus — every three seconds for the first two minutes, into windows.log. It is the
+  # witness for "the browser had focus by the compositor and not by its own account"
+  # (lesson-224), and on a machine nobody can look at it is the only one.
+  if [ "$ISOLATED" = "1" ]; then
+    gsettings set org.gnome.shell introspect true 2>/dev/null || true
+    ( for ((i = 0; i < 40; i++)); do
+        echo "--- $(date +%T)"
+        gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell/Introspect --method org.gnome.Shell.Introspect.GetWindows 2>&1 | cut -c1-3000
+        sleep 3
+      done > "$WORK/windows.log" 2>&1 ) &
+    WIN=$!
+  fi
   export AT_PASS_DEBUG="$WORK/orca.debug"
   orca --debug-file="$WORK/orca.debug" >"$WORK/orca.out" 2>&1 &
   ORCA=$!
