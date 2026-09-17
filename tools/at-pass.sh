@@ -183,14 +183,14 @@ dbus-run-session -- bash -c '
     if [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && ! ss -xl 2>/dev/null | grep -q "/$AT_WL "; then
       rm -f "$XDG_RUNTIME_DIR/$AT_WL" "$XDG_RUNTIME_DIR/$AT_WL.lock"
     fi
-    # `MUTTER_DEBUG=focus` makes the compositor say WHY it did or did not focus a window; the
-    # first run on a runner mapped the browser and never activated it, and the shell log was
-    # the one witness that could have said why.
+    # `MUTTER_DEBUG=focus,startup` makes the compositor say whether it focused a window and
+    # why; the `window-state` and `wayland` topics were the witnesses of lesson-227 and are
+    # too loud to keep, and AT_PASS_TRACE=1 below is the browser-side one.
     # A fresh profile opens the welcome tour on the first start, and the tour is a modal: a
     # keyboard focus the browser never gets. The profile says it has seen a tour newer than
     # any, so none opens (tools/at-seat.py measures what holds the stage regardless).
     gsettings set org.gnome.shell welcome-dialog-last-shown-version 99.0 >>"$WORK/gsettings.log" 2>&1 || true
-    MUTTER_DEBUG=focus,startup,window-state,wayland gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
+    MUTTER_DEBUG=focus,startup gnome-shell --unsafe-mode --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
     SHELL_PID=$!
     for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
     [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] || { echo "X the compositor did not come up — see $WORK/shell.log" >&2; exit 1; }

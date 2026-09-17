@@ -168,6 +168,8 @@ jobs:
     # maintainer's desktop, and a runner has none. Since the pass stands up a headless GNOME
     # Shell of its own (position 4.73), a runner is exactly the machine it was written for —
     # on Ubuntu 26.04, the first image whose GNOME (50) has `--headless`; 24.04 ships 46.
+    # The first reading here matched the desktop's to the utterance, on the eighth dispatch:
+    # the seven before it were silent, and lesson-227 says why a fresh profile is different.
     if: inputs.readers != 'nvda' && inputs.readers != 'voiceover'
     runs-on: ubuntu-26.04
     timeout-minutes: 90
@@ -205,8 +207,6 @@ jobs:
       - name: Read the views with Orca
         env:
           AT_PASS_ROUTES: ${{ inputs.routes || '/accordion' }}
-          # The protocol as the browser sees it, while the runner's reading is still silent.
-          AT_PASS_TRACE: '1'
         run: tools/at-pass.sh http://localhost:4200
 
       - if: always()
