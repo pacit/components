@@ -44,7 +44,7 @@ for attempt in range(60):
         path = remote_desktop.call_sync("CreateSession", None, Gio.DBusCallFlags.NONE, -1, None).unpack()[0]
         break
     except GLib.GError as error:
-        if "ServiceUnknown" not in str(error) or attempt == 59:
+        if "ServiceUnknown" not in error.message or attempt == 59:
             raise
         time.sleep(0.5)
 session = Gio.DBusProxy.new_sync(
