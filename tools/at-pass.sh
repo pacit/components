@@ -20,6 +20,7 @@
 #
 # Usage: tools/at-pass.sh [baseURL]     (default http://localhost:4200 — serve the sandbox first)
 #   AT_PASS_ROUTES=/a,/b  walks those views only; the default, and `all`, is every view
+#   AT_PASS_TRACE=1     traces the Wayland protocol from the browser side into drive.log
 #   AT_PASS_DESKTOP=1  takes the pass on the desktop session instead — NOT isolated, a real
 #                      window, and the record says which it was; for a machine whose GNOME
 #                      Shell has no `--headless` (47 and later have it).
@@ -198,6 +199,12 @@ dbus-run-session -- bash -c '
     grep -q "keyboard" "$WORK/seat.out" || { echo "X the seat got no keyboard — see $WORK/seat.out" >&2; exit 1; }
     export WAYLAND_DISPLAY="$AT_WL" GDK_BACKEND=wayland
     unset DISPLAY
+    # AT_PASS_TRACE=1: the protocol as the browser sees it — every wl_seat capability, every
+    # wl_keyboard.enter or its absence — through the browser stderr Playwright otherwise
+    # keeps to itself. Loud, and only for a reading nobody can otherwise explain.
+    if [ "${AT_PASS_TRACE:-0}" = "1" ]; then
+      export WAYLAND_DEBUG=client DEBUG=pw:browser
+    fi
     # What the seat advertises to a client, read by one: the keyboard capability is what turns
     # the focus the compositor set into the wl_keyboard.enter the browser acts on.
     if command -v wayland-info >/dev/null 2>&1; then

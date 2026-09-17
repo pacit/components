@@ -205,6 +205,8 @@ jobs:
       - name: Read the views with Orca
         env:
           AT_PASS_ROUTES: ${{ inputs.routes || '/accordion' }}
+          # The protocol as the browser sees it, while the runner's reading is still silent.
+          AT_PASS_TRACE: '1'
         run: tools/at-pass.sh http://localhost:4200
 
       - if: always()
