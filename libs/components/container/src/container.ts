@@ -17,6 +17,8 @@ import { Component } from '@angular/core';
  *   <h1>…</h1>
  *   <p>…</p>
  * </pct-container>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-container',

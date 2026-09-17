@@ -5,6 +5,8 @@ import type { ConnectedPosition } from '@angular/cdk/overlay';
  * are the sides the writing direction decides, exactly as `padding-inline-start` is
  * (`req-token-logical`). A panel placed at `end` stands to the right of an English control
  * and to the left of an Arabic one, and nothing in a template has to say so twice.
+ *
+ * @since 0.1.0
  */
 export type PctPlacement = 'top' | 'bottom' | 'start' | 'end';
 
@@ -13,6 +15,8 @@ export type PctPlacement = 'top' | 'bottom' | 'start' | 'end';
  * opening (`PctOverlayInherited.direction`), never `document.dir`. A panel lives outside the
  * host tree, so the page's direction is the one thing it would inherit and the one thing that
  * is wrong for a control inside an `<div dir="rtl">` section of an otherwise English page.
+ *
+ * @since 0.1.0
  */
 export type PctDirection = 'ltr' | 'rtl';
 
@@ -91,6 +95,8 @@ function withOffset(
  *
  * @example
  * positionStrategy.withPositions(pctPlacementPositions('top', 8, 'rtl'))
+ *
+ * @since 0.1.0
  */
 export function pctPlacementPositions(
   placement: PctPlacement,

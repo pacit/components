@@ -51,7 +51,11 @@ function optionalDay(value: unknown): PctDay | undefined {
   return isPctDay(value) ? value : undefined;
 }
 
-/** Which edge of the field the panel lines its own up with. */
+/**
+ * Which edge of the field the panel lines its own up with.
+ *
+ * @since 0.1.0
+ */
 export type PctDatePanelAlign = 'start' | 'end';
 
 /**
@@ -84,6 +88,8 @@ export type PctDatePanelAlign = 'start' | 'end';
  * @example
  * // Standalone, with the bounds and a locale of its own.
  * <pct-date [(value)]="day" min="2026-01-01" max="2026-12-31" locale="pl-PL" label="Day" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-date',
@@ -109,30 +115,62 @@ export class PctDate
   protected readonly texts = inject(PCT_TEXTS);
   private readonly appLocale = inject(LOCALE_ID);
 
-  /** The chosen day, or `null` when the field is empty. */
+  /**
+   * The chosen day, or `null` when the field is empty.
+   *
+   * @since 0.1.0
+   */
   readonly value = model<PctDay | null>(null);
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Keeps the value: the input takes the native `readonly` and the calendar button is disabled with it, while the field stays focusable. */
+  /**
+   * Keeps the value: the input takes the native `readonly` and the calendar button is disabled with it, while the field stays focusable.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
+  /**
+   * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
+  /**
+   * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
   /**
@@ -143,51 +181,97 @@ export class PctDate
    * one place this control parts company with `[pctNumber]`: a bound clamps a MOVEMENT, and a
    * date somebody wrote out in full is not one. A value outside them is the form's to report,
    * where the user can see why.
+   *
+   * @since 0.1.0
    */
   readonly min = input(undefined, { transform: optionalDay });
 
-  /** The latest day — as `min`, a bound on the calendar's walk and not a rewrite of what was typed. */
+  /**
+   * The latest day — as `min`, a bound on the calendar's walk and not a rewrite of what was typed.
+   *
+   * @since 0.1.0
+   */
   readonly max = input(undefined, { transform: optionalDay });
 
-  /** Days inside the bounds that still cannot be picked — weekends, holidays, taken slots. */
+  /**
+   * Days inside the bounds that still cannot be picked — weekends, holidays, taken slots.
+   *
+   * @since 0.1.0
+   */
   readonly dateDisabled = input<PctDayPredicate | null>(null);
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- component API ---
 
-  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
+  /**
+   * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name.
+   *
+   * @since 0.1.0
+   */
   readonly label = input<string>('');
 
-  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
+  /**
+   * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly hint = input<string>('');
 
   /**
    * The accessible name of a field with no visible `label` — an INPUT rather than an
    * `aria-label` on the tag, because the textbox sits inside this template and an ARIA name
    * on the roleless host is ignored.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
-  /** Overrides the application's `LOCALE_ID` for this field, as on `[pctNumber]`. */
+  /**
+   * Overrides the application's `LOCALE_ID` for this field, as on `[pctNumber]`.
+   *
+   * @since 0.1.0
+   */
   readonly locale = input<string>('');
 
   /**
    * Which day the week starts on, `1` (Monday) … `7` (Sunday). Absent, the locale decides.
+   *
+   * @since 0.1.0
    */
   readonly firstDayOfWeek = input(0);
 
-  /** Whether the format hint stands in the field while it is empty (`dd.mm.yyyy`). */
+  /**
+   * Whether the format hint stands in the field while it is empty (`dd.mm.yyyy`).
+   *
+   * @since 0.1.0
+   */
   readonly showFormat = input(true, { transform: booleanAttribute });
 
-  /** Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config). */
+  /**
+   * Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
-  /** Which edge of the field the panel lines up with. */
+  /**
+   * Which edge of the field the panel lines up with.
+   *
+   * @since 0.1.0
+   */
   readonly panelAlign = input<PctDatePanelAlign>('start');
 
   private readonly control =

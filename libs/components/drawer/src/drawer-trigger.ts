@@ -26,6 +26,8 @@ import { PctDrawer } from './drawer';
  * @example
  * <button pctButton [pctDrawerTrigger]="nav">Menu</button>
  * <pct-drawer #nav heading="Sections">…</pct-drawer>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: 'button[pctDrawerTrigger]',
@@ -38,7 +40,11 @@ import { PctDrawer } from './drawer';
 export class PctDrawerTrigger {
   private readonly element = inject(ElementRef<HTMLElement>).nativeElement;
 
-  /** The panel this control opens — the `pct-drawer` from a template reference variable. */
+  /**
+   * The panel this control opens — the `pct-drawer` from a template reference variable.
+   *
+   * @since 0.1.0
+   */
   readonly drawer = input.required<PctDrawer>({ alias: 'pctDrawerTrigger' });
 
   /**

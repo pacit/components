@@ -39,6 +39,8 @@ import { PCT_MENU_ITEM, PctMenu, PctMenuItemApi } from './menu';
  * @example
  * <button pctMenuItem (click)="rename()">Rename</button>
  * <button pctMenuItem disabled>Delete</button>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'button[pctMenuItem]',
@@ -71,7 +73,11 @@ export class PctMenuItem implements PctMenuItemApi {
    */
   readonly menu = inject(PctMenu, { optional: true });
 
-  /** Skipped by every movement, and by the press it would otherwise answer. */
+  /**
+   * Skipped by every movement, and by the press it would otherwise answer.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly opened = signal<PctMenu | null>(null);

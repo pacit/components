@@ -30,6 +30,8 @@ import { PCT_TAB, PCT_TABS, PctTabApi } from './tabs';
  * <pct-tab value="general" label="General">
  *   <p>Anything at all.</p>
  * </pct-tab>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-tab',
@@ -67,6 +69,8 @@ export class PctTab implements PctTabApi {
    * exist, and a required input read there throws `NG0950`
    * ([`lesson-124`](../../../../docs/lessons.md#lesson-124)). A default answers it in the one
    * frame nobody sees, and a value left out for good is reported below rather than swallowed.
+   *
+   * @since 0.1.0
    */
   readonly value = input<string>('');
 
@@ -74,10 +78,16 @@ export class PctTab implements PctTabApi {
    * The text drawn on the tab. Required, and it can be: it is read from the STRIP's template,
    * which is refreshed after all of the content's inputs are set — the ordering `value` runs
    * into does not reach here, so the compiler may as well have the rule (`NG8008`).
+   *
+   * @since 0.1.0
    */
   readonly label = input.required<string>();
 
-  /** Skipped by the walk and by the press; the panel is then hidden outright. */
+  /**
+   * Skipped by the walk and by the press; the panel is then hidden outright.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly uid = nextPctId('pct-tab');

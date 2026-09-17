@@ -19,6 +19,8 @@ import { PCT_RADIO_OPTION, PctRadioGroup } from './radio-group';
  *
  * @example
  * <pct-radio value="pro">Pro plan</pct-radio>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-radio',
@@ -43,10 +45,18 @@ import { PCT_RADIO_OPTION, PctRadioGroup } from './radio-group';
 export class PctRadio<T = string> {
   protected readonly group = inject<PctRadioGroup<T>>(PctRadioGroup);
 
-  /** The value this option stands for. */
+  /**
+   * The value this option stands for.
+   *
+   * @since 0.1.0
+   */
   readonly value = input.required<T>();
 
-  /** Disables a single option; the group can disable them all. */
+  /**
+   * Disables a single option; the group can disable them all.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /**
@@ -57,10 +67,16 @@ export class PctRadio<T = string> {
    * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
    *
    * It wins over the projected label — the accessible-name algorithm, not a choice of ours.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands elsewhere on the page. It wins over both. */
+  /**
+   * As `ariaLabel`, for a name that already stands elsewhere on the page. It wins over both.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   private readonly control =

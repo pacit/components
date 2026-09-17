@@ -13,5 +13,7 @@
  *   (`req-a11y-axe`).
  *
  * The default is `description`, because it is the one that adds and the other one replaces.
+ *
+ * @since 0.1.0
  */
 export type PctTooltipAs = 'description' | 'name';

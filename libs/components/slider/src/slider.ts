@@ -36,7 +36,11 @@ function optionalNumber(value: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-/** Which way the slider runs. An input rather than a tag — the value type is a `number` in both (0042). */
+/**
+ * Which way the slider runs. An input rather than a tag — the value type is a `number` in both (0042).
+ *
+ * @since 0.1.0
+ */
 export type PctSliderOrientation = 'horizontal' | 'vertical';
 
 /**
@@ -82,6 +86,8 @@ const MARKS_LEGIBLE_MAX = 50;
  *   [step]="0.05"
  *   [format]="{ style: 'percent' }"
  * />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-slider',
@@ -102,30 +108,60 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
    * and a control with named steps is that same number with a `labels` list over it, so
    * [`req-api-generic`](../../../../docs/requirements/api.md#req-api-generic) is met by
    * NOT being generic.
+   *
+   * @since 0.1.0
    */
   readonly value = model(0);
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** A native range has no `readonly`, so a move is undone here instead; the thumb stays focusable, unlike under `disabled`, and `aria-readonly` says so. */
+  /**
+   * A native range has no `readonly`, so a move is undone here instead; the thumb stays focusable, unlike under `disabled`, and `aria-readonly` says so.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
+  /**
+   * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
+  /**
+   * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
   /**
@@ -136,10 +172,16 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
    *
    * Absent, they are the platform's own defaults rather than "no limit": a slider with no
    * bounds is not a slider, and 0–100 is what `<input type="range">` means by nothing.
+   *
+   * @since 0.1.0
    */
   readonly min = input(undefined, { transform: optionalNumber });
 
-  /** The upper bound — as `min`: the form's and the native `max` in one; `100` when absent. */
+  /**
+   * The upper bound — as `min`: the form's and the native `max` in one; `100` when absent.
+   *
+   * @since 0.1.0
+   */
   readonly max = input(undefined, { transform: optionalNumber });
 
   protected readonly lower = computed(() => this.min() ?? 0);
@@ -161,50 +203,88 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
     return typeof v === 'number' && Number.isFinite(v) ? v : this.lower();
   });
 
-  /** The granularity — and the only snapping there is (`<datalist>` snaps in no engine). */
+  /**
+   * The granularity — and the only snapping there is (`<datalist>` snaps in no engine).
+   *
+   * @since 0.1.0
+   */
   readonly step = input(1, { transform: numberAttribute });
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- component API ---
 
-  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
+  /**
+   * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name.
+   *
+   * @since 0.1.0
+   */
   readonly label = input<string>('');
 
-  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
+  /**
+   * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly hint = input<string>('');
 
   /**
    * The accessible name of a slider with no visible `label` — an INPUT rather than an
    * `aria-label` on the tag, for the same reason as on the switch: the role sits on the
    * `<input>` inside and an ARIA name on the roleless host is ignored.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * How the value is SAID — `Intl.NumberFormat` options. Given, it turns on the visible
    * bubble and `aria-valuetext`; absent, the platform's bare `aria-valuenow` is the whole
    * announcement, which is what a plain 0–100 slider wants.
+   *
+   * @since 0.1.0
    */
   readonly format = input<Intl.NumberFormatOptions | null>(null);
 
   /**
    * Named steps ("Small", "Medium", "Large"), indexed from `min` by `step`. It wins over
    * `format`: a name is what the reader gets and the number underneath is the value.
+   *
+   * @since 0.1.0
    */
   readonly labels = input<readonly string[]>([]);
 
-  /** Ticks at every `step`. Our own drawing — `<datalist>` renders none in firefox. */
+  /**
+   * Ticks at every `step`. Our own drawing — `<datalist>` renders none in firefox.
+   *
+   * @since 0.1.0
+   */
   readonly marks = input(false, { transform: booleanAttribute });
 
-  /** Which axis the slider runs along. Vertical is `writing-mode`, so no rule reads the direction. */
+  /**
+   * Which axis the slider runs along. Vertical is `writing-mode`, so no rule reads the direction.
+   *
+   * @since 0.1.0
+   */
   readonly orientation = input<PctSliderOrientation>('horizontal');
 
-  /** Overrides the application's `LOCALE_ID` for the formatted value, as on `[pctNumber]`. */
+  /**
+   * Overrides the application's `LOCALE_ID` for the formatted value, as on `[pctNumber]`.
+   *
+   * @since 0.1.0
+   */
   readonly locale = input<string>('');
 
   private readonly appLocale = inject(LOCALE_ID);

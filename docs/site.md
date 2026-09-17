@@ -225,7 +225,9 @@ of code moved: the second sketch's character with the first one's tables.
 - **Examples**: several running instances per card, each a demo file whose JSDoc carries
   the title and the prose beside the stage, the code under both.
 - **API**: inputs, models and outputs read from the source with the JSDoc line each
-  carries; what the directive writes on the element, from the decorator's own `host`.
+  carries, and dated by the `@since` in it — `unreleased` marks what `main` has and the
+  package does not ([0080](decisions/0080-an-api-is-dated-next-until-the-release-names-it.md));
+  what the directive writes on the element, from the decorator's own `host`.
 - **Styling**: parts as selectors with a line each, tokens with a `$description` and both
   themes' defaults resolved, a theming fence applied live to a second instance.
 - **Accessibility**: the keyboard map, and the card's Checks table read as a scorecard —

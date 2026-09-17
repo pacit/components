@@ -12,6 +12,8 @@ const PCT_TYPEAHEAD_DELAY = 500;
  * The list a keyboard walks over, described by the control that owns it. `core` never sees the
  * item type: it asks the two questions a walk needs — may this entry be reached, and what text
  * does typeahead match against — and the control answers them for its own option shape.
+ *
+ * @since 0.1.0
  */
 export interface PctListSource<T> {
   /** The list itself. Read as a signal, so an option list changing mid-walk is seen. */
@@ -60,6 +62,8 @@ export interface PctListSource<T> {
  * picks on `Enter`, a menu closes its submenu on `ArrowLeft`, and neither of those is a
  * property of the walk. What the walk owns is what the roles share: skipping what cannot be
  * reached, the edges, and the prefix.
+ *
+ * @since 0.1.0
  */
 export interface PctListNavigation {
   /**
@@ -138,6 +142,8 @@ export interface PctListNavigation {
  *   isDisabled: (o) => o.disabled === true,
  *   label: (o) => o.label,
  * });
+ *
+ * @since 0.1.0
  */
 export function pctListNavigation<T>(src: PctListSource<T>): PctListNavigation {
   const delay = src.typeaheadDelay ?? PCT_TYPEAHEAD_DELAY;

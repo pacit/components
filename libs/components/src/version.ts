@@ -3,5 +3,9 @@
 // lands here, so that the package can report its version at runtime without pulling the
 // manifest into the bundle. A mismatch is blocked by the `check-package` gate.
 
-/** The library version — the same one the package manifest carries. */
+/**
+ * The library version — the same one the package manifest carries.
+ *
+ * @since 0.1.0
+ */
 export const PCT_VERSION = '0.1.0';

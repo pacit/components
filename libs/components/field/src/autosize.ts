@@ -56,6 +56,8 @@ const roadHere = (): 'platform' | 'measured' | 'none' => {
  * <pct-field label="About">
  *   <textarea pctText pctAutosize rows="3" maxRows="8" [(value)]="bio"></textarea>
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: 'textarea[pctText][pctAutosize]',
@@ -81,6 +83,8 @@ export class PctAutosize {
    * ([`req-api-platform`](../../../../docs/requirements/api.md#req-api-platform)) and read
    * here only because `field-sizing: content` **discards** it: measured, an empty
    * `rows="2"` box under the property is 34 px, one line, against the 58 a plain one is.
+   *
+   * @since 0.1.0
    */
   readonly rows = input(2, { transform: numberAttribute });
 
@@ -88,6 +92,8 @@ export class PctAutosize {
    * The ceiling, in lines; `0` is no ceiling. This one has no native spelling, so it is an
    * input. Past it the box scrolls rather than clipping — measured in three engines, on both
    * roads.
+   *
+   * @since 0.1.0
    */
   readonly maxRows = input(0, { transform: numberAttribute });
 

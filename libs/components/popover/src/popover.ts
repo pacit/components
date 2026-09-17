@@ -96,6 +96,8 @@ const OFFSET = 8;
  *
  * <!-- the same panel, drawn where it stands -->
  * <pct-popover inline [open]="true" heading="Filters">…</pct-popover>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-popover',
@@ -122,6 +124,8 @@ export class PctPopover {
   /**
    * Whether the panel is up. A `model`, because both directions are ordinary: an application
    * opens it, and the popover closes itself on Escape, on a press outside and on the trigger.
+   *
+   * @since 0.1.0
    */
   readonly open = model(false);
 
@@ -129,6 +133,8 @@ export class PctPopover {
    * The visible title, rendered as the panel's heading and used as its accessible name. A
    * panel with no name is announced as "dialog" and nothing else, so an empty one is reported
    * in dev mode rather than passed over.
+   *
+   * @since 0.1.0
    */
   readonly heading = input<string>('');
 
@@ -136,10 +142,16 @@ export class PctPopover {
    * The accessible name of a popover with no visible heading — an INPUT and not an attribute
    * on the tag, for the dialog's reason: the role sits on the panel inside the overlay, and
    * the host carries none at all (`req-a11y-built-in`).
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere inside the content. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere inside the content.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   /**
@@ -147,6 +159,8 @@ export class PctPopover {
    * and the left in an Arabic one. The window has the last word: a side with no room for the
    * panel falls back to the one across the trigger (`pctPlacementPositions`). It says nothing
    * `inline`: a panel drawn in the page is placed by the page.
+   *
+   * @since 0.1.0
    */
   readonly placement = input<PctPlacement>('bottom');
 
@@ -180,10 +194,16 @@ export class PctPopover {
    * never turns over inline and `data-pct-leaving` is an overlay attribute. The attribute exists
    * to hold a node in the DOM until its fade has finished, and inline that node is holding a
    * hole open in the page's own layout while it waits. An overlay has no layout to hold.
+   *
+   * @since 0.1.0
    */
   readonly inline = input(false, { transform: booleanAttribute });
 
-  /** Why it closed. See `PctPopoverCloseReason`. */
+  /**
+   * Why it closed. See `PctPopoverCloseReason`.
+   *
+   * @since 0.1.0
+   */
   readonly closed = output<PctPopoverCloseReason>();
 
   private readonly uid = nextPctId('pct-popover');
@@ -668,6 +688,8 @@ export class PctPopover {
  * @example
  * <button pctButton [pctPopoverTrigger]="filters">Filters</button>
  * <pct-popover #filters heading="Filters">…</pct-popover>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctPopoverTrigger]',
@@ -681,7 +703,11 @@ export class PctPopover {
 export class PctPopoverTrigger {
   private readonly host = inject(ElementRef<HTMLElement>);
 
-  /** The panel this control opens — the `pct-popover` from a template reference variable. */
+  /**
+   * The panel this control opens — the `pct-popover` from a template reference variable.
+   *
+   * @since 0.1.0
+   */
   readonly popover = input.required<PctPopover>({ alias: 'pctPopoverTrigger' });
 
   constructor() {

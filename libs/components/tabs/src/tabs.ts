@@ -22,6 +22,8 @@ import {
  * the strip, so that the panel can provide it while importing the strip — the other direction
  * (`contentChildren(PctTab)`) would close the import cycle. It is `pct-menu`'s channel one
  * component over, and for the same reason.
+ *
+ * @since 0.1.0
  */
 export interface PctTabApi {
   /** What names this panel in `value`. */
@@ -43,13 +45,19 @@ export interface PctTabApi {
   readonly tabs: PctTabsApi | null;
 }
 
-/** The channel through which a panel announces itself to the strip it stands in. */
+/**
+ * The channel through which a panel announces itself to the strip it stands in.
+ *
+ * @since 0.1.0
+ */
 export const PCT_TAB = new InjectionToken<PctTabApi>('PCT_TAB');
 
 /**
  * What a panel needs to know about the strip it stands in: which value is showing, and how to
  * ask for its own. The second half exists for one caller — a panel the browser has just found
  * text in ([0045](../../../../docs/decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)).
+ *
+ * @since 0.1.0
  */
 export interface PctTabsApi {
   /** The value really showing, which is not always the `value` the consumer wrote. */
@@ -58,7 +66,11 @@ export interface PctTabsApi {
   select(value: string): void;
 }
 
-/** The channel through which a strip offers itself to the panels below it. */
+/**
+ * The channel through which a strip offers itself to the panels below it.
+ *
+ * @since 0.1.0
+ */
 export const PCT_TABS = new InjectionToken<PctTabsApi>('PCT_TABS');
 
 /**
@@ -85,6 +97,8 @@ export const PCT_TABS = new InjectionToken<PctTabsApi>('PCT_TABS');
  *   <pct-tab value="general" label="General">…</pct-tab>
  *   <pct-tab value="network" label="Network">…</pct-tab>
  * </pct-tabs>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-tabs',
@@ -110,18 +124,30 @@ export class PctTabs implements PctTabsApi {
    * left alone in that case rather than written back — a component that repaired the
    * consumer's state during rendering would be writing a signal it reads, which finishes in
    * one pass for one consumer and never for two ([`lesson-94`](../../../../docs/lessons.md#lesson-94)).
+   *
+   * @since 0.1.0
    */
   readonly value = model<string>('');
 
-  /** Which axis the strip runs along; the arrows follow it. */
+  /**
+   * Which axis the strip runs along; the arrows follow it.
+   *
+   * @since 0.1.0
+   */
   readonly orientation = input<PctTabsOrientation>('horizontal');
 
-  /** Whether a walk over the strip also chooses. See `PctTabsActivation`. */
+  /**
+   * Whether a walk over the strip also chooses. See `PctTabsActivation`.
+   *
+   * @since 0.1.0
+   */
   readonly activation = input<PctTabsActivation>('automatic');
 
   /**
    * Which face the strip wears; the keyboard and the semantics are the same either way.
    * See `PctTabsVariant`.
+   *
+   * @since 0.1.0
    */
   readonly variant = input<PctTabsVariant>('underline');
 
@@ -130,10 +156,16 @@ export class PctTabs implements PctTabsApi {
    * sits on a `<div>` inside this template, the host carries no role at all, and an ARIA name
    * on a roleless element is ignored
    * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');

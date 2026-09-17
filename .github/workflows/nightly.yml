@@ -119,7 +119,7 @@ jobs:
       # rather than joining the line below, so its wall-clock is readable per run straight
       # off the job's step timings — the number the plan's CI item exists to learn.
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
-        run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-distance check-acr check-docs check-prose check-index check-tools |& scripts/nx-verdict
+        run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools |& scripts/nx-verdict
 
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
         run: npx nx run-many -t e2e |& scripts/nx-verdict

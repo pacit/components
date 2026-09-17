@@ -17,6 +17,8 @@
  *   ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)),
  *   or, for a submenu, the parent's active item moving off the item it hangs on;
  * - `api` — the value written from the outside, which a menu cannot tell from any other write.
+ *
+ * @since 0.1.0
  */
 export type PctMenuCloseReason =
   'item' | 'trigger' | 'escape' | 'outside' | 'away' | 'api';
@@ -28,5 +30,7 @@ export type PctMenuCloseReason =
  * pointer resting on its parent item must **not** pull focus off that item, or the highlight
  * would jump a level ahead of the user every time they crossed a row on their way somewhere
  * else. Keyboard and press open with `first`, `ArrowUp` on a trigger with `last`.
+ *
+ * @since 0.1.0
  */
 export type PctMenuOpenIntent = 'first' | 'last' | 'none';

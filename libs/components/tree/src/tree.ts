@@ -47,6 +47,8 @@ const PCT_TREE_ITEM = new InjectionToken<PctTreeItem>('PCT_TREE_ITEM');
  *     <pct-tree-item value="src/main">main.ts</pct-tree-item>
  *   </pct-tree-item>
  * </pct-tree>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-tree',
@@ -66,6 +68,8 @@ export class PctTree {
    * The chosen item's `value` — the one thing the tree owns (the pagination's ownership
    * at a hierarchy). A model, because both directions are ordinary: the application
    * preselects, and Enter, Space or a click writes back. `null` is "nothing chosen".
+   *
+   * @since 0.1.0
    */
   readonly selected = model<string | null>(null);
 
@@ -73,6 +77,8 @@ export class PctTree {
    * The accessible name of the tree. Optional, the chips' reasoning: a library default
    * would have to guess what hierarchy this is, and two trees on one page are told
    * apart here.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -180,6 +186,8 @@ export class PctTree {
  * A collapsed group is `hidden="until-found"` — the tabs' answer carried whole (0045,
  * 0056): find-in-page still searches a folded branch, and `beforematch` expands it, so
  * the match is landed in rather than watched vanishing.
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-tree-item',
@@ -209,13 +217,19 @@ export class PctTreeItem {
     skipSelf: true,
   });
 
-  /** What `selected` holds when this item is chosen. */
+  /**
+   * What `selected` holds when this item is chosen.
+   *
+   * @since 0.1.0
+   */
   readonly value = input.required<string>();
 
   /**
    * Whether this branch is open — the item's own state, two-way, because folding is
    * local UI the application may still want to drive (expand-to-selection, "collapse
    * all"). Meaningless on a leaf, which draws no arrow and ignores the fold keys.
+   *
+   * @since 0.1.0
    */
   readonly expanded = model(false);
 

@@ -19,7 +19,11 @@ import { PctIcon } from '@pacit/components/icon';
  */
 const PCT_STEP = new InjectionToken<void>('PCT_STEP');
 
-/** What a step is at this moment of the journey — computed, never set. */
+/**
+ * What a step is at this moment of the journey — computed, never set.
+ *
+ * @since 0.1.0
+ */
 export type PctStepState = 'done' | 'current' | 'upcoming';
 
 /**
@@ -48,6 +52,8 @@ export type PctStepState = 'done' | 'current' | 'upcoming';
  *   <pct-step>Payment</pct-step>
  *   <pct-step>Review</pct-step>
  * </pct-stepper>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-stepper',
@@ -68,6 +74,8 @@ export class PctStepper {
    * its `page`). Below 1 every step is upcoming; past the count every step is done —
    * both are honest sentences about a journey not yet started or already finished, so
    * nothing is clamped and nothing written back.
+   *
+   * @since 0.1.0
    */
   readonly step = input.required<number, unknown>({
     transform: numberAttribute,
@@ -77,6 +85,8 @@ export class PctStepper {
    * The accessible name of the list. Optional, the chips' reasoning: a list is allowed
    * to be nameless, and a library default would have to guess what journey this is —
    * two maps on one page ("Checkout", "Onboarding") are told apart here.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -91,6 +101,8 @@ export class PctStepper {
  * A done step carries a visually-hidden `texts().stepDone` after the label, because the
  * check that marks it is a drawing the accessibility tree never sees: a reader hears
  * "Payment, Completed" where the eye sees the check (0055).
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-step',

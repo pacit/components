@@ -1,0 +1,72 @@
+{
+  "description": "The reference input: a released library at 0.1.0 whose public surface is dated — inputs, a model and an output at `0.1.0`, the entry point's class, type and function beside them, one input at `next` for the API the coming release names, and one export deprecated after it shipped. Every prepared case is built on a copy of it.",
+  "input": {
+    "version": "0.1.0",
+    "items": [
+      {
+        "path": "libs/components/button/src/button.ts",
+        "line": 62,
+        "name": "variant",
+        "kind": "input",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/button/src/button.ts",
+        "line": 71,
+        "name": "loading",
+        "kind": "input",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/field/src/text.ts",
+        "line": 40,
+        "name": "value",
+        "kind": "model",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/dialog/src/dialog.ts",
+        "line": 90,
+        "name": "closed",
+        "kind": "output",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/button/src/button.ts",
+        "line": 80,
+        "name": "hero",
+        "kind": "input",
+        "since": "next",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/button/src/button.ts",
+        "line": 30,
+        "name": "PctButton",
+        "kind": "class",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/button/src/button.types.ts",
+        "line": 3,
+        "name": "PctButtonVariant",
+        "kind": "type",
+        "since": "0.1.0",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/core/src/config.ts",
+        "line": 12,
+        "name": "providePctConfig",
+        "kind": "function",
+        "since": "0.1.0",
+        "deprecated": true
+      }
+    ]
+  }
+}

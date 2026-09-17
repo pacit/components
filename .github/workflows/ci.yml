@@ -140,7 +140,7 @@ jobs:
       # red tasks inside them (plan 4.72, lesson-222). The reader fails a run that carries no
       # verdict; `shell: bash` brings `pipefail`, so nx's own non-zero code still wins.
       - shell: bash
-        run: npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-distance check-acr check-docs check-prose check-index check-tools e2e |& scripts/nx-verdict
+        run: npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools e2e |& scripts/nx-verdict
 
       # A red e2e on a runner is unreadable without its evidence: the third run failed two
       # visual baselines and the diff images died with the machine, so the failure could

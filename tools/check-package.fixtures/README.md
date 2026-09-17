@@ -1,6 +1,6 @@
 # Negative control of the package gate
 
-Deliberately defective packages. `libs/components/check-package.mjs` runs all nine of its
+Deliberately defective packages. `libs/components/check-package.mjs` runs all ten of its
 checks on each of them and **requires every one to be rejected — and rejected by the point
 it declares**. A package that passes is a fault; a package that fires for a reason other
 than the one written in its `fixture.json` is a fault just the same, because it proves
@@ -46,42 +46,43 @@ this whole negative control would become exactly what it stands against.
 
 ## The cases
 
-| directory                                                       | what it breaks                                               | point | rule           |
-| --------------------------------------------------------------- | ------------------------------------------------------------ | ----- | -------------- |
-| [`theme-missing`](theme-missing/)                               | a package with no `themes/pct.css`                           | 1     | —              |
-| [`theme-outside-exports`](theme-outside-exports/)               | the theme is in the package but outside `exports`            | 2     | —              |
-| [`token-without-declaration`](token-without-declaration/)       | a used `var(--pct-*)` with no declaration in the package     | 3     | —              |
-| [`wrong-version`](wrong-version/)                               | `PCT_VERSION` other than `version` from the manifest         | 4     | —              |
-| [`no-version-constant`](no-version-constant/)                   | `PCT_VERSION` vanished from the package entirely             | 4     | —              |
-| [`schematic-missing`](schematic-missing/)                       | the `ng add` collection points at an uncompiled factory      | 5     | —              |
-| [`repository-missing`](repository-missing/)                     | a manifest with no `repository`                              | 6     | —              |
-| [`licence-missing`](licence-missing/)                           | `"license": "MIT"` in the manifest and no LICENSE file       | 6     | —              |
-| [`licence-mismatch`](licence-mismatch/)                         | the LICENSE file names a different licence than the manifest | 6     | —              |
-| [`policy-without-reason`](policy-without-reason/)               | a policy entry with a name and no reason                     | 7     | policy         |
-| [`dependency-field-unread`](dependency-field-unread/)           | the dependency arrives through `optionalDependencies`        | 7     | unread-field   |
-| [`import-not-declared`](import-not-declared/)                   | the code imports a package the manifest never declares       | 7     | undeclared     |
-| [`dependency-outside-list`](dependency-outside-list/)           | a declared dependency with no entry in the policy            | 7     | not-allowed    |
-| [`dependency-as-runtime`](dependency-as-runtime/)               | an allowed peer declared under `dependencies`                | 7     | wrong-kind     |
-| [`dependency-nothing-imports`](dependency-nothing-imports/)     | a declared dependency nothing in the package imports         | 7     | unused         |
-| [`allowance-without-dependency`](allowance-without-dependency/) | a policy entry outliving the dependency it allowed           | 7     | dead           |
-| [`peer-range-behind-compiler`](peer-range-behind-compiler/)     | a peer range that does not admit the compiler that built it  | 7     | compiler-drift |
-| [`compiler-stamp-missing`](compiler-stamp-missing/)             | the compiler's version is nowhere in the package             | 7     | compiler-stamp |
-| [`dependency-forbidden`](dependency-forbidden/)                 | `@angular/animations` declared as a peer AND permitted       | 7     | forbidden      |
-| [`import-forbidden`](import-forbidden/)                         | an import of `@angular/platform-browser/animations`          | 7     | forbidden      |
-| [`animation-binding`](animation-binding/)                       | `[@panel]` and `(@panel.done)` in a component's template     | 8     | binding        |
-| [`animation-host-binding`](animation-host-binding/)             | the same pair in the declaration's `host`                    | 8     | binding        |
-| [`no-component-declaration`](no-component-declaration/)         | a package point 8 finds no template in                       | 8     | declarations   |
-| [`citation-relative`](citation-relative/)                       | a citation in the types by repository path                   | 9     | relative       |
-| [`citation-bare`](citation-bare/)                               | a bare `req-*` identifier in the shipped JSDoc               | 9     | bare           |
-| [`citation-none`](citation-none/)                               | a package whose types cite nothing, so point 9 reads nothing | 9     | none           |
+| directory                                                       | what it breaks                                                | point | rule           |
+| --------------------------------------------------------------- | ------------------------------------------------------------- | ----- | -------------- |
+| [`theme-missing`](theme-missing/)                               | a package with no `themes/pct.css`                            | 1     | —              |
+| [`theme-outside-exports`](theme-outside-exports/)               | the theme is in the package but outside `exports`             | 2     | —              |
+| [`token-without-declaration`](token-without-declaration/)       | a used `var(--pct-*)` with no declaration in the package      | 3     | —              |
+| [`wrong-version`](wrong-version/)                               | `PCT_VERSION` other than `version` from the manifest          | 4     | —              |
+| [`no-version-constant`](no-version-constant/)                   | `PCT_VERSION` vanished from the package entirely              | 4     | —              |
+| [`schematic-missing`](schematic-missing/)                       | the `ng add` collection points at an uncompiled factory       | 5     | —              |
+| [`repository-missing`](repository-missing/)                     | a manifest with no `repository`                               | 6     | —              |
+| [`licence-missing`](licence-missing/)                           | `"license": "MIT"` in the manifest and no LICENSE file        | 6     | —              |
+| [`licence-mismatch`](licence-mismatch/)                         | the LICENSE file names a different licence than the manifest  | 6     | —              |
+| [`policy-without-reason`](policy-without-reason/)               | a policy entry with a name and no reason                      | 7     | policy         |
+| [`dependency-field-unread`](dependency-field-unread/)           | the dependency arrives through `optionalDependencies`         | 7     | unread-field   |
+| [`import-not-declared`](import-not-declared/)                   | the code imports a package the manifest never declares        | 7     | undeclared     |
+| [`dependency-outside-list`](dependency-outside-list/)           | a declared dependency with no entry in the policy             | 7     | not-allowed    |
+| [`dependency-as-runtime`](dependency-as-runtime/)               | an allowed peer declared under `dependencies`                 | 7     | wrong-kind     |
+| [`dependency-nothing-imports`](dependency-nothing-imports/)     | a declared dependency nothing in the package imports          | 7     | unused         |
+| [`allowance-without-dependency`](allowance-without-dependency/) | a policy entry outliving the dependency it allowed            | 7     | dead           |
+| [`peer-range-behind-compiler`](peer-range-behind-compiler/)     | a peer range that does not admit the compiler that built it   | 7     | compiler-drift |
+| [`compiler-stamp-missing`](compiler-stamp-missing/)             | the compiler's version is nowhere in the package              | 7     | compiler-stamp |
+| [`dependency-forbidden`](dependency-forbidden/)                 | `@angular/animations` declared as a peer AND permitted        | 7     | forbidden      |
+| [`import-forbidden`](import-forbidden/)                         | an import of `@angular/platform-browser/animations`           | 7     | forbidden      |
+| [`animation-binding`](animation-binding/)                       | `[@panel]` and `(@panel.done)` in a component's template      | 8     | binding        |
+| [`animation-host-binding`](animation-host-binding/)             | the same pair in the declaration's `host`                     | 8     | binding        |
+| [`no-component-declaration`](no-component-declaration/)         | a package point 8 finds no template in                        | 8     | declarations   |
+| [`citation-relative`](citation-relative/)                       | a citation in the types by repository path                    | 9     | relative       |
+| [`citation-bare`](citation-bare/)                               | a bare `req-*` identifier in the shipped JSDoc                | 9     | bare           |
+| [`citation-none`](citation-none/)                               | a package whose types cite nothing, so point 9 reads nothing  | 9     | none           |
+| [`since-next`](since-next/)                                     | a shipped type dated `@since next`, the release never stamped | 10    |
 
 Point 4 has two cases, because there are two different failures: a wrong value and a
 missing constant. The second means the shape of the output changed and the version check
 has nothing left to compare — while passing green. Point 7 carries the same pair for the
 same reason (`peer-range-behind-compiler` and `compiler-stamp-missing`).
 
-Point 6 is the only one with two modes, so its case carries `"releaseOnly": true` in
-`fixture.json` and is examined both ways: under `--release` it must block, in a normal run
+Points 6 and 10 have two modes — a warning day to day, a block under `--release` — so their cases carry `"releaseOnly": true` in
+`fixture.json` and are examined both ways: under `--release` it must block, in a normal run
 it must **warn and pass**. An assertion on "it blocks" alone would let through a
 regression after which point 6 always blocks — and then a repository with no remote would
 not build at all.

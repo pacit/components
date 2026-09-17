@@ -7,5 +7,7 @@
  * accordion. The level is an input rather than a decision taken here for the reason every
  * heading level is a fact about the page and not about the widget — an accordion under an
  * `<h2>` wants `3`, one under an `<h3>` wants `4`, and only the consumer knows which.
+ *
+ * @since 0.1.0
  */
 export type PctAccordionHeadingLevel = 2 | 3 | 4 | 5 | 6;

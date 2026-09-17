@@ -68,6 +68,8 @@ const PCT_CHIP = new InjectionToken<void>('PCT_CHIP');
  *     <pct-chip removable (removed)="drop(filter)">{{ filter }}</pct-chip>
  *   }
  * </pct-chips>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-chips',
@@ -95,10 +97,16 @@ export class PctChips implements PctChipsRepair {
    * it: a list is allowed to be nameless, and a library default would have to guess what
    * the list holds — "Chips" names the paint, not the content (0051). Two rows on one page
    * ("recipients", "active filters") are told apart here.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** Size of every pill in the row; taken from the global configuration by default. */
+  /**
+   * Size of every pill in the row; taken from the global configuration by default.
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /** The chip hosts in document order — the map the focus repair walks. */
@@ -166,6 +174,8 @@ export class PctChips implements PctChipsRepair {
  * A chip that must stay is a chip whose `removable` is off, and the button is then not drawn
  * at all: a control drawn where it cannot be used would be a promise struck through, which
  * is why there is no disabled state here (0051).
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-chip',
@@ -201,6 +211,8 @@ export class PctChip {
    * Whether the chip draws the control that takes it back — off by default. A mixed row is
    * ordinary: the one filter the view cannot stand without keeps its `removable` off and
    * shows no button, and the focus repair steps over it.
+   *
+   * @since 0.1.0
    */
   readonly removable = input(false, { transform: booleanAttribute });
 
@@ -208,6 +220,8 @@ export class PctChip {
    * Said when the user presses remove. The collection is the application's, so this is an
    * announcement and not an act: the consumer shortens their own array and the row follows
    * on the next render — or does not, and the chip is correct to stand still.
+   *
+   * @since 0.1.0
    */
   readonly removed = output<void>();
 

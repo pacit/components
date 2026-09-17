@@ -5,6 +5,8 @@
  * exactly as before.
  *
  * The label stays a string: it is the text visible on screen, and typeahead runs on it.
+ *
+ * @since 0.1.0
  */
 export interface PctSelectOption<T = string> {
   readonly value: T;
@@ -23,6 +25,8 @@ export interface PctSelectOption<T = string> {
  *
  * `& {}` keeps editor completion for the named variants; without it the union with `string`
  * collapses to `string` alone.
+ *
+ * @since 0.1.0
  */
 export type PctSelectPanelWidth = 'field' | 'auto' | (string & {});
 
@@ -30,6 +34,8 @@ export type PctSelectPanelWidth = 'field' | 'auto' | (string & {});
  * Alignment of the panel to the control when the panel does not have the control's width
  * (`'auto'` or an explicit width). With `panelWidth="field"` every variant gives the same
  * result.
+ *
+ * @since 0.1.0
  */
 export type PctSelectPanelAlign = 'start' | 'center' | 'end';
 
@@ -44,6 +50,8 @@ export type PctSelectPanelAlign = 'start' | 'center' | 'end';
  *
  * A group with no options is drawn by nobody: a heading over nothing is noise on the screen
  * and an empty `role="group"` in the tree.
+ *
+ * @since 0.1.0
  */
 export interface PctSelectOptionGroup<T = string> {
   readonly label: string;
@@ -60,6 +68,8 @@ export interface PctSelectOptionGroup<T = string> {
  * would have to write: an object whose `options` is an array is a group. A literal carrying
  * both `value` and an `options` array is therefore read as a group — recorded here because
  * silence would make it a defect report later.
+ *
+ * @since 0.1.0
  */
 export type PctSelectItem<T = string> =
   PctSelectOption<T> | PctSelectOptionGroup<T>;
@@ -72,6 +82,8 @@ export type PctSelectItem<T = string> =
  *
  * The query arrives exactly as typed, trimmed of nothing: leading space is a character of the
  * question like any other, and a predicate that wants it gone can say so in one call.
+ *
+ * @since 0.1.0
  */
 export type PctSelectFilter<T = string> = (
   option: PctSelectOption<T>,
@@ -95,6 +107,8 @@ export type PctSelectFilter<T = string> = (
  * So the library folds case and stops there, and a list that needs its own idea of "the same
  * letter" says so in a `filterWith` of its own — where the application's language is known,
  * which is the one place the question has an answer.
+ *
+ * @since 0.1.0
  */
 export const pctFilterByLabel: PctSelectFilter<unknown> = (option, query) =>
   option.label.toLowerCase().includes(query.toLowerCase());
@@ -111,5 +125,7 @@ export const pctFilterByLabel: PctSelectFilter<unknown> = (option, query) =>
  * than a style: an arrow in a binding is a NEW function on every change detection pass, so
  * the input changes, the predicate changes, and every row of the panel is rebuilt for as long
  * as the page lives. One shared identity is the whole difference.
+ *
+ * @since 0.1.0
  */
 export const pctKeepAll: PctSelectFilter<unknown> = () => true;

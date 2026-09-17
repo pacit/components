@@ -56,6 +56,8 @@ import { PctDrawerCloseReason, PctDrawerSide } from './drawer.types';
  * <pct-drawer #nav heading="Sections" side="start">
  *   <nav>…</nav>
  * </pct-drawer>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-drawer',
@@ -89,36 +91,62 @@ export class PctDrawer {
    * Whether the drawer stands open. A `model`, because both directions are ordinary: an
    * application opens it, and the drawer closes itself on Escape, on its own cross and on a
    * second press of the trigger.
+   *
+   * @since 0.1.0
    */
   readonly open = model(false);
 
-  /** Which edge it is docked to. See [`PctDrawerSide`](./drawer.types.ts) for why it is logical. */
+  /**
+   * Which edge it is docked to. See [`PctDrawerSide`](./drawer.types.ts) for why it is logical.
+   *
+   * @since 0.1.0
+   */
   readonly side = input<PctDrawerSide>('start');
 
   /**
    * The visible title, drawn at the top of the panel and used as its accessible name. A region
    * with no name is not a landmark at all — a screen reader lists it as "region" and the user
    * has to read the panel to find out what it is — so an unnamed one is reported in dev mode.
+   *
+   * @since 0.1.0
    */
   readonly heading = input<string>('');
 
-  /** The accessible name of a drawer with no visible heading. */
+  /**
+   * The accessible name of a drawer with no visible heading.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere inside the content. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere inside the content.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
-  /** Whether the panel draws a cross of its own in the header. */
+  /**
+   * Whether the panel draws a cross of its own in the header.
+   *
+   * @since 0.1.0
+   */
   readonly closeButton = input(true, { transform: booleanAttribute });
 
   /**
    * Whether Escape closes it — and only an Escape pressed **inside** the panel, because the
    * page behind is live. A non-modal panel that answered every Escape in the document would
    * be taking the key away from whatever the user was really doing.
+   *
+   * @since 0.1.0
    */
   readonly closeOnEscape = input(true, { transform: booleanAttribute });
 
-  /** Why it closed. */
+  /**
+   * Why it closed.
+   *
+   * @since 0.1.0
+   */
   readonly closed = output<PctDrawerCloseReason>();
 
   private readonly uid = nextPctId('pct-drawer');

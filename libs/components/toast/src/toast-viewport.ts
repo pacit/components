@@ -41,6 +41,8 @@ import { PCT_TOAST_HOST, PctToastState } from './toast';
  * `display: none` live region is absent from the accessibility tree — so the region is shown
  * the moment it is created, empty, and shown again as each message is raised, which is the
  * platform's own way of saying "this is the most recent thing on the screen".
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-toast-viewport',

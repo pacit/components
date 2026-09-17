@@ -247,28 +247,60 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Holds the value and keeps the panel closed while the control stays focusable; `aria-readonly` says so. */
+  /**
+   * Holds the value and keeps the panel closed while the control stays focusable; `aria-readonly` says so.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
+  /**
+   * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
+  /**
+   * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- component API ---
@@ -297,13 +329,23 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * through `rows()`, the flat walk the panel draws: the uniqueness above is a promise about
    * the whole control and not about one heading, and an index that meant a different thing
    * inside a group would put `aria-activedescendant` and the keyboard on different rows.
+   *
+   * @since 0.1.0
    */
   readonly options = input<readonly PctSelectItem<T>[]>([]);
 
-  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
+  /**
+   * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name.
+   *
+   * @since 0.1.0
+   */
   readonly label = input<string>('');
 
-  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
+  /**
+   * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly hint = input<string>('');
 
   /**
@@ -318,6 +360,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * with a visible `label` it wins over it, that being the accessible-name algorithm rather
    * than a choice of ours: the two then say different things, which is a decision for the
    * caller and not something the component can quietly repair.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -325,6 +369,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * As `ariaLabel`, for a name that already stands somewhere on the page — a heading, the
    * header of the column the control sits in. It wins over `ariaLabel` and over `label`, in
    * ARIA's order and not ours.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabelledby = input<string>('');
 
@@ -335,10 +381,16 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * ([0014](../../../../docs/decisions/0014-texts-as-signal.md)). `placeholder=""` stays an
    * empty placeholder rather than a return to the default — absent and empty mean different
    * things.
+   *
+   * @since 0.1.0
    */
   readonly placeholder = input<string>();
 
-  /** Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config). */
+  /**
+   * Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
@@ -346,6 +398,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * Entities need comparison by key — an instance from the server is not the same reference as
    * an option on the list, so without this the selected item would not highlight after the
    * form loads.
+   *
+   * @since 0.1.0
    */
   readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
 
@@ -362,6 +416,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * What it changes is the ELEMENT the trigger is: a select-only combobox is a `<button>`, a
    * filtering one an `<input>`, because that is what each role needs — and the key map splits
    * with it, the caret taking the letters, `Home`/`End` and the space bar.
+   *
+   * @since 0.1.0
    */
   readonly filterable = input(false, { transform: booleanAttribute });
 
@@ -370,6 +426,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * can read the question and answer it with another `options` list — and the control still
    * owns the clearing, because the question belongs to the panel: it is set to `''` when the
    * panel closes and when a pick answers it. It is **not** the value and never becomes one.
+   *
+   * @since 0.1.0
    */
   readonly filterText = model<string>('');
 
@@ -382,6 +440,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * A list a **server** narrowed is already the answer, so narrowing it again here would take
    * out the rows it matched on something other than the label: that control says `pctKeepAll`
    * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+   *
+   * @since 0.1.0
    */
   readonly filterWith = input<PctSelectFilter<T>>(pctFilterByLabel);
 
@@ -397,6 +457,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * Off by default, because a cross is a promise the application has to want: a required
    * field whose answer can be taken back in one press is a form that can be left invalid by
    * accident, and only its author knows whether that is a road worth having.
+   *
+   * @since 0.1.0
    */
   readonly clearable = input(false, { transform: booleanAttribute });
 
@@ -414,6 +476,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * would send it twice; here the control is in perfect working order and its list is late —
    * the user can type the very question that fetches it. Disabling would take the focus with
    * it (a disabled element drops it on `body`), which is the end of the key map.
+   *
+   * @since 0.1.0
    */
   readonly loading = input(false, { transform: booleanAttribute });
 
@@ -436,6 +500,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * row is the same height.** The window is arithmetic over one measured row, so a label that
    * wraps onto a second line or a `pctSelectOption` template drawing two lines moves every row
    * below it. Dev mode says so — see `warnOnUnevenRows`.
+   *
+   * @since 0.1.0
    */
   readonly virtual = input(false, { transform: booleanAttribute });
 
@@ -444,10 +510,16 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * comes out exactly from its edge, so the list reads as an extension of the field. `'auto'`
    * fits the width to the longest option (without narrowing the panel below the control), and
    * a CSS length sets it outright.
+   *
+   * @since 0.1.0
    */
   readonly panelWidth = input<PctSelectPanelWidth>('field');
 
-  /** Alignment of the panel to the control when it is wider or narrower than it. */
+  /**
+   * Alignment of the panel to the control when it is wider or narrower than it.
+   *
+   * @since 0.1.0
+   */
   readonly panelAlign = input<PctSelectPanelAlign>('start');
 
   // A `<button>` or an `<input>`, whichever branch of the template is standing — one of them

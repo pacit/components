@@ -42,6 +42,8 @@ import { PctFieldSize } from './field.types';
  * <pct-field label="E-mail" hint="Your work address">
  *   <input pctText type="email" [formField]="f.email" />
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-field',
@@ -60,20 +62,34 @@ import { PctFieldSize } from './field.types';
 export class PctField implements PctFieldApi {
   private readonly config = inject(PCT_CONFIG);
 
-  /** The visible `<label>` of the row, wired to the control by `for` or by `aria-labelledby` — whichever the control's `labelStrategy` asks for. */
+  /**
+   * The visible `<label>` of the row, wired to the control by `for` or by `aria-labelledby` — whichever the control's `labelStrategy` asks for.
+   *
+   * @since 0.1.0
+   */
   readonly label = input<string>('');
 
-  /** A line of help under the row; the error message takes its place while one shows (one message at a time, req-api-message). */
+  /**
+   * A line of help under the row; the error message takes its place while one shows (one message at a time, req-api-message).
+   *
+   * @since 0.1.0
+   */
   readonly hint = input<string>('');
 
   /**
    * The field size; taken from the global configuration by default (req-api-config). It
    * concerns the **field row** — the height here equals that of a button of the same size,
    * because both take it from the `--pct-control-height-*` token (req-api-size).
+   *
+   * @since 0.1.0
    */
   readonly size = input<PctFieldSize>(this.config.defaultSize);
 
-  /** Requiredness can be given outright when the control does not report it. */
+  /**
+   * Requiredness can be given outright when the control does not report it.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
   private readonly control = signal<PctFieldControl | null>(null);

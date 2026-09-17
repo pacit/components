@@ -13,6 +13,8 @@ import { inject, Injectable } from '@angular/core';
  * A `providedIn: 'root'` instance lives as long as the application injector — that is, one
  * request on the server side and one page load on the client side. Both sides therefore
  * count from zero and render the same ids (req-project-ssr).
+ *
+ * @since 0.1.0
  */
 @Injectable({ providedIn: 'root' })
 export class PctIdCounter {
@@ -26,6 +28,8 @@ export class PctIdCounter {
 /**
  * Generates stable, unique ids for ARIA relations (req-a11y-built-in). Needs an injection
  * context — call it in a component field initialiser.
+ *
+ * @since 0.1.0
  */
 export function nextPctId(prefix = 'pct'): string {
   return `${prefix}-${inject(PctIdCounter).next()}`;

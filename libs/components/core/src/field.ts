@@ -6,7 +6,11 @@ import {
   Signal,
 } from '@angular/core';
 
-/** Minimal structural shape of a validation error — keeps `core` free of any forms API. */
+/**
+ * Minimal structural shape of a validation error — keeps `core` free of any forms API.
+ *
+ * @since 0.1.0
+ */
 export interface PctValidationError {
   readonly message?: string;
 }
@@ -15,6 +19,8 @@ export interface PctValidationError {
  * How the label is bound to the control:
  * - `for` — the label points at a single element (`<label for>`): text field, select, date,
  * - `labelledby` — the label names a container (`aria-labelledby`): radio group, field set.
+ *
+ * @since 0.1.0
  */
 export type PctLabelStrategy = 'for' | 'labelledby';
 
@@ -23,6 +29,8 @@ export type PctLabelStrategy = 'for' | 'labelledby';
  * - `boxed` — text field, select, date: a border belongs there,
  * - `bare` — checkbox, radio group: a border around those looks foreign, so the chrome
  *   supplies the label, the hint and the error message only.
+ *
+ * @since 0.1.0
  */
 export type PctFieldAppearance = 'boxed' | 'bare';
 
@@ -35,6 +43,8 @@ export type PctFieldAppearance = 'boxed' | 'bare';
  *
  * The control reports it, not the chrome stylesheet: otherwise `field.scss` would have to
  * know the classes of every control one by one, and each new one would start from that bug.
+ *
+ * @since 0.1.0
  */
 export type PctFieldCursor = 'text' | 'pointer' | 'default';
 
@@ -42,6 +52,8 @@ export type PctFieldCursor = 'text' | 'pointer' | 'default';
  * The contract by which a control presents itself to the `pct-field` chrome. The chrome is
  * presentational: it reads the control's state and hands back the ids of its descriptions
  * (`aria-describedby`).
+ *
+ * @since 0.1.0
  */
 export interface PctFieldControl {
   /** Id of the element the label is to target / be named by. */
@@ -87,7 +99,11 @@ export interface PctFieldControl {
   setLabelledBy?(id: string | null): void;
 }
 
-/** The chrome API visible to inner controls. */
+/**
+ * The chrome API visible to inner controls.
+ *
+ * @since 0.1.0
+ */
 export interface PctFieldApi {
   /** A control registers itself with the chrome (called from its constructor). */
   attach(control: PctFieldControl): void;
@@ -116,6 +132,8 @@ export interface PctFieldApi {
  * Token provided by `pct-field`. Controls inject it **optionally**: its presence means "I am
  * inside the chrome, I hand over the label and the messages". That way controls with a layout
  * of their own (checkbox, radiogroup) work both standalone and inside `pct-field`.
+ *
+ * @since 0.1.0
  */
 export const PCT_FIELD = new InjectionToken<PctFieldApi>('PCT_FIELD');
 
@@ -129,6 +147,8 @@ export const PCT_FIELD = new InjectionToken<PctFieldApi>('PCT_FIELD');
  * `api` is nullable, because a control inside the chrome and the same control standing alone
  * are the same class: with no chrome there is nothing to register with, and nothing to
  * unregister from either.
+ *
+ * @since 0.1.0
  */
 export function pctAttachToField(
   api: PctFieldApi | null,
@@ -143,6 +163,8 @@ export function pctAttachToField(
  * Shared message logic: the text of the first error, and gating visibility on `touched`.
  * Extracted because it was being copied into every control separately — a fix then had to be
  * repeated N times (req-api-wrapper).
+ *
+ * @since 0.1.0
  */
 export function pctFieldMessages(src: {
   invalid: Signal<boolean>;
@@ -166,7 +188,11 @@ export function pctFieldMessages(src: {
   return { errorText, showInvalid, showError };
 }
 
-/** Builds `aria-describedby` out of ids, skipping the inactive ones. */
+/**
+ * Builds `aria-describedby` out of ids, skipping the inactive ones.
+ *
+ * @since 0.1.0
+ */
 export function pctDescribedBy(
   parts: readonly (readonly [id: string, active: boolean])[],
 ): string | null {

@@ -56,6 +56,8 @@ const OFFSET = 4;
  * the menu, so that the item can provide it while importing the menu — the other direction
  * (`contentChildren(PctMenuItem)`) would close the import cycle. It is `pct-radio`'s channel
  * one component over, and for the same reason.
+ *
+ * @since 0.1.0
  */
 export interface PctMenuItemApi {
   /** The element the roving walk gives focus to. */
@@ -83,7 +85,11 @@ export interface PctMenuItemApi {
   unbindSubmenu(menu: PctMenu): void;
 }
 
-/** The channel through which an item announces itself to the menu it stands in. */
+/**
+ * The channel through which an item announces itself to the menu it stands in.
+ *
+ * @since 0.1.0
+ */
 export const PCT_MENU_ITEM = new InjectionToken<PctMenuItemApi>(
   'PCT_MENU_ITEM',
 );
@@ -141,6 +147,8 @@ export const PCT_MENU_ITEM = new InjectionToken<PctMenuItemApi>(
  *     <button pctMenuItem (click)="move('inbox')">Inbox</button>
  *   </pct-menu>
  * </pct-menu>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-menu',
@@ -166,6 +174,8 @@ export class PctMenu {
    * trigger and on Tab walking out — every one of which is a panel on a layer getting out of
    * the page's way. An inline menu has nowhere to get out of, and writes this from nobody but
    * the application (`inline`).
+   *
+   * @since 0.1.0
    */
   readonly open = model(false);
 
@@ -174,10 +184,16 @@ export class PctMenu {
    * is needed**: a menu with no name of its own is named by the control that opened it, which
    * is what the APG's own example does and what makes "Actions menu" come out of the two
    * words already on the screen.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   /**
@@ -185,6 +201,8 @@ export class PctMenu {
    * and the left in an Arabic one. `bottom` is the menu button's side and `end` the submenu's;
    * the window has the last word either way (`pctPlacementPositions`). Inline it is read by
    * nobody: a panel that is not positioned has no side to be on.
+   *
+   * @since 0.1.0
    */
   readonly placement = input<PctPlacement>('bottom');
 
@@ -216,10 +234,16 @@ export class PctMenu {
    * <pct-menu inline [open]="true" ariaLabel="Actions">
    *   <button pctMenuItem (click)="rename()">Rename</button>
    * </pct-menu>
+   *
+   * @since 0.1.0
    */
   readonly inline = input(false, { transform: booleanAttribute });
 
-  /** Why it closed. See `PctMenuCloseReason`. */
+  /**
+   * Why it closed. See `PctMenuCloseReason`.
+   *
+   * @since 0.1.0
+   */
   readonly closed = output<PctMenuCloseReason>();
 
   private readonly uid = nextPctId('pct-menu');

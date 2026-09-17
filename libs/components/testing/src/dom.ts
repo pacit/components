@@ -22,7 +22,11 @@ const partsIn = (node: ParentNode): string =>
     .map((el) => el.getAttribute('data-pct-part'))
     .join(', ') || '(none)';
 
-/** The element of a `data-pct-part`; throws when it is absent. */
+/**
+ * The element of a `data-pct-part`; throws when it is absent.
+ *
+ * @since 0.1.0
+ */
 export function part(root: Root, name: string): HTMLElement {
   const node = nodeOf(root);
   const el = node.querySelector<HTMLElement>(`[data-pct-part="${name}"]`);
@@ -34,14 +38,22 @@ export function part(root: Root, name: string): HTMLElement {
   return el;
 }
 
-/** Every element of a given part — an empty collection is a valid result. */
+/**
+ * Every element of a given part — an empty collection is a valid result.
+ *
+ * @since 0.1.0
+ */
 export function allParts(root: Root, name: string): HTMLElement[] {
   return Array.from(
     nodeOf(root).querySelectorAll<HTMLElement>(`[data-pct-part="${name}"]`),
   );
 }
 
-/** The first element matching a selector; throws when there is none. */
+/**
+ * The first element matching a selector; throws when there is none.
+ *
+ * @since 0.1.0
+ */
 export function query<E extends Element = HTMLElement>(
   root: Root,
   selector: string,

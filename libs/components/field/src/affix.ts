@@ -17,6 +17,8 @@ import { Directive, input } from '@angular/core';
  * Take an `inset` button one step smaller than the field: at the same size their heights are
  * equal (`req-api-size`), so a button of the same size will not fit inside the border and
  * pushes the row apart by its thickness.
+ *
+ * @since 0.1.0
  */
 export type PctAffixFit = 'inset' | 'fill';
 
@@ -49,6 +51,8 @@ const fitHost = {
  * @example
  * <span pctPrefix aria-hidden="true">PLN</span>
  * <span pctPrefix="fill" aria-hidden="true">https://</span>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctPrefix]',
@@ -59,6 +63,7 @@ const fitHost = {
   },
 })
 export class PctPrefix {
+  /** @since 0.1.0 */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctPrefix',
     transform: affixFit,
@@ -71,6 +76,8 @@ export class PctPrefix {
  * @example
  * <button pctSuffix pctButton size="sm" aria-label="Clear">×</button>
  * <button pctSuffix="fill" pctButton>Search</button>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctSuffix]',
@@ -81,6 +88,7 @@ export class PctPrefix {
   },
 })
 export class PctSuffix {
+  /** @since 0.1.0 */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctSuffix',
     transform: affixFit,

@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "since",
+  "releaseOnly": true,
+  "description": "A shipped type dated `@since next` — the word an unreleased API carries on `main` until the release names the version. In the package that IS the release it means the stamp never ran, and a consumer would read a promise where a version belongs. Day to day the same package is the ordinary state of `main` between releases, so the point only warns; under `--release` it blocks."
+}

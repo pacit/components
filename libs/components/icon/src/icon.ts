@@ -36,6 +36,8 @@ import {
  * turns out to be will want them too. Four names added once, by a decision, rather than one at a
  * time by whoever needed the first
  * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
+ *
+ * @since 0.1.0
  */
 export type PctIconName =
   | 'calendar'
@@ -57,6 +59,8 @@ export type PctIconName =
  * `TemplateRef` cannot exist without a component to live in — so the value a provider can
  * hold is the component ([0028](../../../../docs/decisions/0028-an-icon-set-is-a-component.md),
  * [`lesson-85`](../../../../docs/lessons.md#lesson-85)).
+ *
+ * @since 0.1.0
  */
 export const PCT_ICONS = new InjectionToken<Type<unknown>>('PCT_ICONS');
 
@@ -76,6 +80,8 @@ export const PCT_ICONS = new InjectionToken<Type<unknown>>('PCT_ICONS');
  * export class PrimeIcons {}
  *
  * bootstrapApplication(App, { providers: [providePctIcons(PrimeIcons)] });
+ *
+ * @since 0.1.0
  */
 export function providePctIcons(set: Type<unknown>): Provider[] {
   return [{ provide: PCT_ICONS, useValue: set }, PctIconSet];
@@ -154,12 +160,18 @@ class PctIconSet {
  *
  * @example
  * <ng-template pctIcon="check"><svg viewBox="0 0 16 16">…</svg></ng-template>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: 'ng-template[pctIcon]',
 })
 export class PctIconTemplate implements OnInit {
-  /** The icon this template draws. */
+  /**
+   * The icon this template draws.
+   *
+   * @since 0.1.0
+   */
   readonly name = input.required<PctIconName>({ alias: 'pctIcon' });
 
   private readonly template = inject<TemplateRef<void>>(TemplateRef);
@@ -200,6 +212,8 @@ export class PctIconTemplate implements OnInit {
  * <pct-icon name="chevron-down" data-pct-part="arrow">
  *   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M4 6l4 4 4-4" /></svg>
  * </pct-icon>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-icon',
@@ -220,6 +234,8 @@ export class PctIcon {
    * Which icon this is. A component of the library always names one; a consumer dropping a
    * one-off drawing into their own markup can leave it out, and then the content is all
    * there is.
+   *
+   * @since 0.1.0
    */
   readonly name = input<PctIconName | null>(null);
 

@@ -44,7 +44,11 @@ import {
   pctWeekdayNames,
 } from './locale';
 
-/** One cell of the grid, with everything the template and the reader need already decided. */
+/**
+ * One cell of the grid, with everything the template and the reader need already decided.
+ *
+ * @since 0.1.0
+ */
 export interface PctCalendarCell {
   readonly day: PctDay;
   /** The number the eye reads. */
@@ -59,7 +63,11 @@ export interface PctCalendarCell {
   readonly today: boolean;
 }
 
-/** A day the consumer refuses — weekends, holidays, a taken slot. */
+/**
+ * A day the consumer refuses — weekends, holidays, a taken slot.
+ *
+ * @since 0.1.0
+ */
 export type PctDayPredicate = (day: PctDay) => boolean;
 
 /**
@@ -96,6 +104,8 @@ function optionalDay(value: unknown): PctDay | undefined {
  * @example
  * // Weekends refused, with the bounds left open.
  * <pct-calendar [(value)]="day" [dateDisabled]="isWeekend" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-calendar',
@@ -113,47 +123,85 @@ export class PctCalendar {
   protected readonly texts = inject(PCT_TEXTS);
   private readonly appLocale = inject(LOCALE_ID);
 
-  /** The chosen day, or `null`. */
+  /**
+   * The chosen day, or `null`.
+   *
+   * @since 0.1.0
+   */
   readonly value = model<PctDay | null>(null);
 
-  /** The earliest and latest day the walk may reach; absent means no bound on that side. */
+  /**
+   * The earliest and latest day the walk may reach; absent means no bound on that side.
+   *
+   * @since 0.1.0
+   */
   readonly min = input(undefined, { transform: optionalDay });
 
-  /** The latest day the walk may reach; absent means no bound on that side — the other half of `min`. */
+  /**
+   * The latest day the walk may reach; absent means no bound on that side — the other half of `min`.
+   *
+   * @since 0.1.0
+   */
   readonly max = input(undefined, { transform: optionalDay });
 
   /**
    * Days inside the bounds that still cannot be picked. The split is deliberate:
    * **`min`/`max` are the range and this is the holes in it** — the bounds clamp where the
    * keyboard can go, a refused day is reached, announced and simply not takeable.
+   *
+   * @since 0.1.0
    */
   readonly dateDisabled = input<PctDayPredicate | null>(null);
 
-  /** Freezes the grid: no day can be picked, the walk and the month buttons stop, and `aria-disabled` says so. */
+  /**
+   * Freezes the grid: no day can be picked, the walk and the month buttons stop, and `aria-disabled` says so.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Overrides the application's `LOCALE_ID`, as on `[pctNumber]` and `<pct-slider>`. */
+  /**
+   * Overrides the application's `LOCALE_ID`, as on `[pctNumber]` and `<pct-slider>`.
+   *
+   * @since 0.1.0
+   */
   readonly locale = input<string>('');
 
   /**
    * Which day the week starts on, `1` (Monday) … `7` (Sunday). Absent, the locale decides —
    * through the platform where it answers and through a table of regions where it does not
    * (`locale.ts`, and firefox 151 is the engine that does not).
+   *
+   * @since 0.1.0
    */
   readonly firstDayOfWeek = input(0, { transform: numberAttribute });
 
-  /** Scales the grid with the field sizes, so a panel matches the field it opens from; from `providePctConfig` by default (req-api-config). */
+  /**
+   * Scales the grid with the field sizes, so a panel matches the field it opens from; from `providePctConfig` by default (req-api-config).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
-  /** The accessible name of the grid; the panel that owns one passes its own. */
+  /**
+   * The accessible name of the grid; the panel that owns one passes its own.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * A day was chosen **by the user** — which is not the same event as `value` changing, and
    * the difference is what closes a panel: a value written from outside must not.
+   *
+   * @since 0.1.0
    */
   readonly dayPicked = output<PctDay>();
 

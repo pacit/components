@@ -34,6 +34,8 @@ import {
  * <pct-field label="E-mail">
  *   <input pctText type="email" [formField]="f.email" />
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'input[pctText], textarea[pctText]',
@@ -58,33 +60,69 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly field = inject(PCT_FIELD, { optional: true });
 
-  /** The value — a required field of the `FormValueControl` contract. */
+  /**
+   * The value — a required field of the `FormValueControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly value = model<string>('');
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Keeps the value from being edited while the field stays focusable and readable — the native `readonly`. */
+  /**
+   * Keeps the value from being edited while the field stays focusable and readable — the native `readonly`.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** The native `required`; a `pct-field` around the control reads it to mark the label. */
+  /**
+   * The native `required`; a `pct-field` around the control reads it to mark the label.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; a `pct-field` around the control shows the first one's `message` in place of the hint once the field is touched. */
+  /**
+   * The form's validation errors; a `pct-field` around the control shows the first one's `message` in place of the hint once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- the PctFieldControl contract ---

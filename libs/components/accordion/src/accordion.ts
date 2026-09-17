@@ -14,6 +14,8 @@ import { PctAccordionHeadingLevel } from './accordion.types';
  * exclusive, and the level its title is drawn at. Declared HERE, beside the group, so that
  * the item can inject it while importing the group — the other direction would close the
  * import cycle. It is the tabs' channel one component over, and for the same reason.
+ *
+ * @since 0.1.0
  */
 export interface PctAccordionApi {
   /**
@@ -26,7 +28,11 @@ export interface PctAccordionApi {
   readonly headingLevel: Signal<PctAccordionHeadingLevel>;
 }
 
-/** The channel through which a group offers itself to the items below it. */
+/**
+ * The channel through which a group offers itself to the items below it.
+ *
+ * @since 0.1.0
+ */
 export const PCT_ACCORDION = new InjectionToken<PctAccordionApi>(
   'PCT_ACCORDION',
 );
@@ -51,6 +57,8 @@ export const PCT_ACCORDION = new InjectionToken<PctAccordionApi>(
  *   <pct-accordion-item label="Shipping">…</pct-accordion-item>
  *   <pct-accordion-item label="Payment">…</pct-accordion-item>
  * </pct-accordion>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-accordion',
@@ -73,6 +81,8 @@ export class PctAccordion implements PctAccordionApi {
    * There is no code behind it. `true` gives every section of this group the same `name`, and
    * from there the closing of the others is the browser's, in all three engines
    * ([0046](../../../../docs/decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)).
+   *
+   * @since 0.1.0
    */
   readonly exclusive = input(false, { transform: booleanAttribute });
 
@@ -82,6 +92,8 @@ export class PctAccordion implements PctAccordionApi {
    *
    * See [`PctAccordionHeadingLevel`](./accordion.types.ts) for why it is the consumer's
    * number and not ours.
+   *
+   * @since 0.1.0
    */
   readonly headingLevel = input<PctAccordionHeadingLevel>(3);
 

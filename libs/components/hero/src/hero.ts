@@ -21,6 +21,8 @@ import { PctHeroFace, PctHeroShow } from './hero.types';
  * <article pctHero="edge" show="interact">…</article>
  * <h3 pctHero="text">Tabs</h3>
  * <div [pctHero]="featured() ? 'fill' : null">…</div>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: '[pctHero]',
@@ -41,10 +43,16 @@ export class PctHero {
    * There is no default and no bare `<article pctHero>`: the union has no member that is the
    * obvious one, so the attribute written with no value is a type error rather than a guess
    * about which surface the consumer meant.
+   *
+   * @since 0.1.0
    */
   readonly pctHero = input<PctHeroFace | null>(null);
 
-  /** `always`, or only under hover and `:focus-visible` — never hover alone, because a treatment only a mouse can summon is one a keyboard cannot. */
+  /**
+   * `always`, or only under hover and `:focus-visible` — never hover alone, because a treatment only a mouse can summon is one a keyboard cannot.
+   *
+   * @since 0.1.0
+   */
   readonly show = input<PctHeroShow>('always');
 
   /**
@@ -60,6 +68,8 @@ export class PctHero {
    * It does not override the reader. `prefers-reduced-motion` freezes the sweep through the
    * motion axis whatever this says — the user agent's answer wins over the page's, which is
    * the only order that can be right ([`req-a11y-motion`](../../../../docs/requirements/a11y.md#req-a11y-motion)).
+   *
+   * @since 0.1.0
    */
   readonly paused = input(false, { transform: booleanAttribute });
 }

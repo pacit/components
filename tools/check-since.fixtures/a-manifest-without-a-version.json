@@ -1,0 +1,6 @@
+{
+  "description": "A manifest whose `version` is missing. Point 2 compares every since with it, and a comparison against nothing would pass everything.",
+  "point": 2,
+  "check": "manifest",
+  "version": null
+}

@@ -54,6 +54,8 @@ function isLive(element: Element): boolean {
  * this.background.hold(overlayRef.hostElement);
  * // on close, BEFORE the panel is detached, so focus has somewhere to go back to:
  * this.background.release();
+ *
+ * @since 0.1.0
  */
 @Injectable({ providedIn: 'root' })
 export class PctModalBackground {

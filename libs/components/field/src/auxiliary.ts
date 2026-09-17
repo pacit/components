@@ -20,6 +20,8 @@ import { Directive } from '@angular/core';
  *   <button pctLabelAux type="button" aria-label="What is a login?">ⓘ</button>
  *   <input pctText [(value)]="login" />
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctLabelAux]',
@@ -37,6 +39,8 @@ export class PctLabelAux {}
  *   <textarea pctText [(value)]="bio"></textarea>
  *   <span pctMessageAux aria-hidden="true">{{ bio().length }}/120</span>
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctMessageAux]',

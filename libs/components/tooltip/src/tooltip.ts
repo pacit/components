@@ -66,6 +66,8 @@ const TOUCH_STAY = 1500;
  * The panel a tooltip draws — attached to an overlay by `PctTooltip`, never written in a
  * template. It is public because it is what the part inventory names (`req-api-parts`): the
  * `panel` part a consumer styles belongs to this class.
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-tooltip',
@@ -79,16 +81,32 @@ const TOUCH_STAY = 1500;
   },
 })
 export class PctTooltipPanel {
-  /** What it says. */
+  /**
+   * What it says.
+   *
+   * @since 0.1.0
+   */
   readonly text = input('');
 
-  /** The id the trigger's `aria-describedby` points at while this is on the screen. */
+  /**
+   * The id the trigger's `aria-describedby` points at while this is on the screen.
+   *
+   * @since 0.1.0
+   */
   readonly panelId = input('');
 
-  /** What the tree stopped carrying outside the host: theme, typeface, size, direction. */
+  /**
+   * What the tree stopped carrying outside the host: theme, typeface, size, direction.
+   *
+   * @since 0.1.0
+   */
   readonly inherited = input<PctOverlayInherited | null>(null);
 
-  /** True while the panel is fading out — the state the leave transition runs from. */
+  /**
+   * True while the panel is fading out — the state the leave transition runs from.
+   *
+   * @since 0.1.0
+   */
   readonly leaving = input(false);
 }
 
@@ -126,6 +144,8 @@ export class PctTooltipPanel {
  * <button pctButton pctTooltip="Delete" pctTooltipAs="name" pctTooltipPlacement="end">
  *   <pct-icon name="trash">…</pct-icon>
  * </button>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctTooltip]',
@@ -143,25 +163,37 @@ export class PctTooltip {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
 
-  /** The text. An empty one is a tooltip that never opens rather than an empty panel. */
+  /**
+   * The text. An empty one is a tooltip that never opens rather than an empty panel.
+   *
+   * @since 0.1.0
+   */
   readonly text = input('', { alias: 'pctTooltip' });
 
   /**
    * Which side of the control it opens on — logical, so `end` is the right in an English page
    * and the left in an Arabic one. The window has the last word: a side with no room for the
    * panel falls back to the one across the control (`pctPlacementPositions`).
+   *
+   * @since 0.1.0
    */
   readonly placement = input<PctPlacement>('top', {
     alias: 'pctTooltipPlacement',
   });
 
-  /** Whether the text describes the control or names it. See `PctTooltipAs`. */
+  /**
+   * Whether the text describes the control or names it. See `PctTooltipAs`.
+   *
+   * @since 0.1.0
+   */
   readonly as = input<PctTooltipAs>('description', { alias: 'pctTooltipAs' });
 
   /**
    * Switches the tooltip off without taking it out of the template — the state a control has
    * while its own text is not worth showing. A disabled tooltip also stops naming: a name that
    * is not shown is still a name, and one an application asked to be rid of is not.
+   *
+   * @since 0.1.0
    */
   readonly disabled = input(false, {
     transform: booleanAttribute,

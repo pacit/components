@@ -39,6 +39,8 @@ import { PctPaginationItem } from './pagination.types';
  *
  * @example
  * <pct-pagination [(page)]="page" [count]="totalPages()" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-pagination',
@@ -69,6 +71,8 @@ export class PctPagination {
    * It is 1-based because it is a number the user reads — "page 3 of 20" — and the same
    * number is the button's visible label. A 0-based value would be an index, and an index is
    * not what a pager is about.
+   *
+   * @since 0.1.0
    */
   readonly page = model<number>(1);
 
@@ -76,23 +80,39 @@ export class PctPagination {
    * How many pages there are. **Not** how many items — see the class note. A `count` below 1
    * draws an empty landmark; a `count` of 1 draws a single current page with both steppers
    * disabled.
+   *
+   * @since 0.1.0
    */
   readonly count = input.required<number, unknown>({
     transform: numberAttribute,
   });
 
-  /** How many page numbers to keep on each side of the current one before folding. */
+  /**
+   * How many page numbers to keep on each side of the current one before folding.
+   *
+   * @since 0.1.0
+   */
   readonly siblingCount = input(1, { transform: numberAttribute });
 
-  /** How many page numbers to keep pinned at each end of the strip. */
+  /**
+   * How many page numbers to keep pinned at each end of the strip.
+   *
+   * @since 0.1.0
+   */
   readonly boundaryCount = input(1, { transform: numberAttribute });
 
-  /** Whether the whole control is inert — every button carries `disabled`. */
+  /**
+   * Whether the whole control is inert — every button carries `disabled`.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /**
    * The accessible name of the landmark. Overrides `texts().paginationLabel`, whose job is
    * only to carry a sensible default in the application's language.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -100,10 +120,16 @@ export class PctPagination {
    * The `id` of the region whose content this pager moves through, written as `aria-controls`
    * on each page button. Optional: when it is empty the attribute is not written, because an
    * `aria-controls` that resolves to nothing is worse than none.
+   *
+   * @since 0.1.0
    */
   readonly controls = input<string>('');
 
-  /** Size; taken from the global configuration by default (`req-api-config`). */
+  /**
+   * Size; taken from the global configuration by default (`req-api-config`).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /** The number of pages, floored at 1: there is always a page you are on. */

@@ -257,6 +257,20 @@
         "command": "node tools/check-support.mjs"
       }
     },
+    "check-since": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/libs/components/package.json",
+        "{workspaceRoot}/libs/components/*/src/**/*.ts",
+        "{workspaceRoot}/libs/components/src/**/*.ts",
+        "{workspaceRoot}/tools/check-since.mjs",
+        "{workspaceRoot}/tools/check-since.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-since.mjs"
+      }
+    },
     "check-acr": {
       "executor": "nx:run-commands",
       "cache": true,

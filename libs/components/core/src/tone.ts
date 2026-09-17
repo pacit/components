@@ -19,5 +19,7 @@
  * There is no `neutral` member: a component with no tone takes no `tone` at all, and the
  * absence is the neutral. A union with a member meaning "none of the above" would make every
  * consumer write it.
+ *
+ * @since 0.1.0
  */
 export type PctTone = 'success' | 'warning' | 'danger' | 'info';

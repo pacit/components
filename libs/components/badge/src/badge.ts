@@ -15,6 +15,8 @@ import {
  * ramps the skin does not have at all. The union grows the day the ramps land — the same
  * road `PctIconName` walks
  * ([0053](../../../../docs/decisions/0053-a-badge-is-a-word-wearing-a-tone.md)).
+ *
+ * @since 0.1.0
  */
 export type PctBadgeTone = 'neutral' | 'danger';
 
@@ -34,6 +36,8 @@ export type PctBadgeTone = 'neutral' | 'danger';
  *
  * @example
  * <h2>Invoices <pct-badge tone="danger">3 overdue</pct-badge></h2>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-badge',
@@ -47,7 +51,11 @@ export type PctBadgeTone = 'neutral' | 'danger';
 export class PctBadge {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** The tone the word wears — `neutral` by default. It repeats the text, never replaces it. */
+  /**
+   * The tone the word wears — `neutral` by default. It repeats the text, never replaces it.
+   *
+   * @since 0.1.0
+   */
   readonly tone = input<PctBadgeTone>('neutral');
 
   constructor() {

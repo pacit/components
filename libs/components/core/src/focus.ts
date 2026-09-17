@@ -34,6 +34,8 @@ import { Directive } from '@angular/core';
  *
  * @example
  * <div class="pct-select__panel" role="listbox" [pctOverlayPanel]="inherited()" pctFocusStays>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctFocusStays]',

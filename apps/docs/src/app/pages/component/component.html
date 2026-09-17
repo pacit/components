@@ -269,8 +269,23 @@
               <tr>
                 <td>
                   <code>{{ row.name }}</code
-                  ><span class="api__kindpill">{{ row.kind }}</span>
-                  @if (row.selector) {
+                  ><span class="api__kindpill">{{ row.kind }}</span>@if
+                  (row.unreleased) {<span class="api__flag api__flag--next"
+                    >unreleased</span
+                  >}@if (row.deprecated) {<span
+                    class="api__flag api__flag--gone"
+                    >deprecated</span
+                  >}@if (!row.unreleased && row.since && row.since !==
+                  h.firstVersion) {
+                  <span class="api__sub"
+                    >since <code>{{ row.since }}</code></span
+                  >
+                  }@if (row.deprecated) {
+                  <span
+                    class="api__sub api__sub--gone"
+                    [innerHTML]="row.deprecated"
+                  ></span>
+                  } @if (row.selector) {
                   <span class="api__sub"><code>{{ row.selector }}</code></span>
                   } @else if (row.detail) {
                   <span class="api__sub"
@@ -358,6 +373,14 @@
             Read from the source at build time — the types, the defaults and the
             lines of documentation are the library's own.
           </p>
+          @if (h.unreleased) {
+          <p class="api__legend" data-testid="api-unreleased">
+            <span class="api__flag api__flag--next">unreleased</span> marks {{
+            h.unreleased }} of them: on <code>main</code>, and not in
+            <code>&#64;pacit/components&#64;{{ h.version }}</code> — the next
+            release names the version.
+          </p>
+          }
         </div>
         @for (c of h.api; track c.name) {
         <div
@@ -408,7 +431,23 @@
                         >two-way</span
                       >}@if (m.required) {<span class="api__flag api__flag--req"
                         >required</span
-                      >} @if (m.default !== null) {
+                      >}@if (m.unreleased) {<span
+                        class="api__flag api__flag--next"
+                        >unreleased</span
+                      >}@if (m.deprecated) {<span
+                        class="api__flag api__flag--gone"
+                        >deprecated</span
+                      >}@if (!m.unreleased && m.since && m.since !==
+                      h.firstVersion) {
+                      <span class="api__sub"
+                        >since <code>{{ m.since }}</code></span
+                      >
+                      }@if (m.deprecated) {
+                      <span
+                        class="api__sub api__sub--gone"
+                        [innerHTML]="m.deprecated"
+                      ></span>
+                      } @if (m.default !== null) {
                       <span class="api__sub"
                         >default
                         <code class="api__default">{{ m.default }}</code></span
@@ -455,7 +494,25 @@
                   @for (m of c.members; track m.name) { @if (m.kind ===
                   'output') {
                   <tr>
-                    <td><code>{{ m.name }}</code></td>
+                    <td>
+                      <code>{{ m.name }}</code>@if (m.unreleased) {<span
+                        class="api__flag api__flag--next"
+                        >unreleased</span
+                      >}@if (m.deprecated) {<span
+                        class="api__flag api__flag--gone"
+                        >deprecated</span
+                      >}@if (!m.unreleased && m.since && m.since !==
+                      h.firstVersion) {
+                      <span class="api__sub"
+                        >since <code>{{ m.since }}</code></span
+                      >
+                      }@if (m.deprecated) {
+                      <span
+                        class="api__sub api__sub--gone"
+                        [innerHTML]="m.deprecated"
+                      ></span>
+                      }
+                    </td>
                     <td><code class="api__type">{{ m.type }}</code></td>
                     <td class="docs-prose" [innerHTML]="m.description"></td>
                   </tr>

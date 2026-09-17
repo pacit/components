@@ -5,6 +5,8 @@ import { afterNextRender, isDevMode } from '@angular/core';
  *
  * Calling it is the whole claim: a slot nobody calls is a slot nobody renders, and that is
  * what the report below is about.
+ *
+ * @since 0.1.0
  */
 export type PctSlotRead = () => void;
 
@@ -58,6 +60,8 @@ const UNREPORTED: PctSlotRead = () => undefined;
  *
  * @example
  * readonly read = pctReportOrphanSlot('pctSelectOption');
+ *
+ * @since 0.1.0
  */
 export function pctReportOrphanSlot(slot: string): PctSlotRead {
   if (!isDevMode()) return UNREPORTED;

@@ -690,6 +690,27 @@ table.api {
   color: var(--pct-on-primary-100);
 }
 
+/* Not yet in the package: an outline, because the fact is a promise. */
+.api__flag--next {
+  background: transparent;
+  border: 1px dashed var(--pct-primary);
+  color: var(--pct-primary);
+}
+
+.api__flag--gone {
+  text-decoration: line-through;
+}
+
+.api__sub--gone {
+  color: var(--pct-text);
+}
+
+.api__legend {
+  margin: var(--pct-space-3) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
 .api__value {
   white-space: nowrap;
 }

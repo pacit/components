@@ -24,6 +24,8 @@
  * a panel standing in the page's own order has no use for. A popover drawn in the page closes
  * from its trigger or from the application, and the type says so rather than the boolean:
  * `trigger` and `api` are all an inline close can carry.
+ *
+ * @since 0.1.0
  */
 export type PctPopoverCloseReason =
   'trigger' | 'escape' | 'outside' | 'away' | 'api';

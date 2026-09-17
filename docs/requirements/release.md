@@ -146,3 +146,24 @@ of its code, but on the strength of its **predictability**
 > Point 4 likewise measures **nothing until the first release tag**: before it there is no
 > installed version to migrate from, so a breaking change owes no codemod. The run says which
 > of the two states it is in on every line it prints.
+
+### <a id="req-release-since"></a>`req-release-since` — The public surface says since when
+
+**Promise.** Every public API — an input, a model, an output, an export of an entry point —
+names the version it appeared in, in the JSDoc at its declaration: `@since 0.1.0` for what
+shipped, `@since next` for what `main` has and the published package does not. The tag
+travels into the shipped `.d.ts`, so a consumer's editor reads it, and the site marks
+`unreleased` what the package at its version cannot have. The release names the version:
+`stamp-version.mjs` rewrites `next` on the run that bumps the manifest, before the build
+([0080](../decisions/0080-an-api-is-dated-next-until-the-release-names-it.md))
+**Gate:** `tools/check-since.mjs` (points 1–3: every item dated; a value that is `next` or a
+version the manifest has reached; no deprecation of what never shipped) +
+`libs/components/check-package.mjs` point 10 (`--release`: no `@since next` in the shipped
+types)
+**Control:** `tools/check-since.fixtures/` — six prepared inputs, each rejected by its own
+point; `tools/check-package.fixtures/since-next/` on the release side, warning day to day
+and blocking under `--release`
+**Non-goals:** a method or a part. A method is API when a card's contract names it, and
+the 66 public ones read on 2026-09-17 are mostly the plumbing between a component and its
+parts; a part is markup, and a since column in the card would be a second home for the fact
+([0017](../decisions/0017-one-home-per-fact.md))

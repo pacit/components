@@ -15,6 +15,8 @@ import {
  * so a single element whose `aria-live` is rewritten per call is announcing the previous
  * politeness at least once. Hence two regions and a name for choosing between them, rather
  * than one region and an argument that mutates it.
+ *
+ * @since 0.1.0
  */
 export type PctPoliteness = 'polite' | 'assertive';
 
@@ -47,6 +49,8 @@ export type PctPoliteness = 'polite' | 'assertive';
  * @example
  * private readonly announcer = inject(PctAnnouncer);
  * this.announcer.announce(this.texts().selectEmpty);
+ *
+ * @since 0.1.0
  */
 @Injectable({ providedIn: 'root' })
 export class PctAnnouncer {

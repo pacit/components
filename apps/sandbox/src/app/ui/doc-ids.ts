@@ -80,6 +80,7 @@ export type PctReqId =
   | 'req-release-metadata'
   | 'req-release-ng-add'
   | 'req-release-semver'
+  | 'req-release-since'
   | 'req-release-support'
   | 'req-token-artifacts'
   | 'req-token-bridge'

@@ -20,6 +20,8 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
  * @example
  * <button pctButton variant="outline" size="lg">Save</button>
  * <a pctButton href="/start">Get started</a>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'button[pctButton], a[pctButton]',
@@ -58,16 +60,32 @@ export class PctButton {
    */
   protected readonly isButton = this.host.nativeElement.tagName === 'BUTTON';
 
-  /** Picks the face. All five paint the same element; `hero` adds the drifting gradient and freezes it under reduced motion. */
+  /**
+   * Picks the face. All five paint the same element; `hero` adds the drifting gradient and freezes it under reduced motion.
+   *
+   * @since 0.1.0
+   */
   readonly variant = input<PctButtonVariant>('solid');
 
-  /** Height 28 / 36 / 44 px — the axis every field shares, so rows line up. From `providePctConfig` by default (req-api-config). */
+  /**
+   * Height 28 / 36 / 44 px — the axis every field shares, so rows line up. From `providePctConfig` by default (req-api-config).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctButtonSize>(this.config.defaultSize);
 
-  /** Blocks the click and greys the face; the grey is written to survive forced colors. On a link it is `aria-disabled` and a refused navigation — the platform has no disabled link. */
+  /**
+   * Blocks the click and greys the face; the grey is written to survive forced colors. On a link it is `aria-disabled` and a refused navigation — the platform has no disabled link.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Shows the spinner in the face's own colour and sets `aria-busy`. Does not block the click — pair it with `disabled` when it should. */
+  /**
+   * Shows the spinner in the face's own colour and sets `aria-busy`. Does not block the click — pair it with `disabled` when it should.
+   *
+   * @since 0.1.0
+   */
   readonly loading = input(false, { transform: booleanAttribute });
 
   protected readonly isDisabled = computed(

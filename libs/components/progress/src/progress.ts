@@ -39,6 +39,8 @@ import { PctIcon } from '@pacit/components/icon';
  * @example
  * <pct-progress [value]="uploaded()" [max]="total()" ariaLabel="Uploading" />
  * <pct-progress ariaLabelledby="report-caption" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-progress',
@@ -66,6 +68,8 @@ export class PctProgress {
    * does not parse is not a measurement, and the honest report of a number nobody has is the
    * one the platform already has a state for. Out of range it is clamped into `[0, max]`,
    * and the clamped number is what the element carries — a reader is told 100%, not 150%.
+   *
+   * @since 0.1.0
    */
   readonly value = input<number | null, unknown>(null, {
     transform: progressValue,
@@ -83,6 +87,8 @@ export class PctProgress {
    *
    * A `max` that is not a positive finite number is not a scale, so the default stands in for
    * it.
+   *
+   * @since 0.1.0
    */
   readonly max = input(DEFAULT_MAX, { transform: numberAttribute });
 
@@ -92,6 +98,8 @@ export class PctProgress {
    * It lands on the `<progress>` inside the template, which is where the role is; written on
    * the `<pct-progress>` tag it would sit on an element with no role at all
    * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -99,10 +107,16 @@ export class PctProgress {
    * The `id` of the element that already names this bar — a caption or a heading standing
    * beside it. The usual case: the sentence a sighted user reads is the name a screen-reader
    * user should hear, and repeating it in `ariaLabel` is two strings to keep in step.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabelledby = input<string>('');
 
-  /** Size; taken from the global configuration by default (`req-api-config`). */
+  /**
+   * Size; taken from the global configuration by default (`req-api-config`).
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
@@ -116,6 +130,8 @@ export class PctProgress {
    * before tones existed. The mark is the half that survives a forced palette and a reader who
    * does not separate red from green, which is why a tone here is never only a colour
    * ({@link PctTone}, 0076).
+   *
+   * @since 0.1.0
    */
   readonly tone = input<PctTone | null>(null);
 

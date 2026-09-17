@@ -33,6 +33,8 @@ import { PctIcon } from '@pacit/components/icon';
  *   <pct-crumb><a pctCrumbLink routerLink="/library">Library</a></pct-crumb>
  *   <pct-crumb><a pctCrumbLink routerLink="/library/data" aria-current="page">Data</a></pct-crumb>
  * </pct-breadcrumb>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-breadcrumb',
@@ -53,6 +55,8 @@ export class PctBreadcrumb {
   /**
    * The accessible name of the landmark. Overrides `texts().breadcrumbLabel`, whose job is
    * only to carry a sensible default in the application's language.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 }
@@ -65,6 +69,8 @@ export class PctBreadcrumb {
  * crumb hides its separator with `:first-of-type`: CSS answers "am I first" correctly on
  * every insert, removal and reorder, where a signal would need wiring to notice any of them
  * (0054).
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-crumb',
@@ -114,6 +120,8 @@ export class PctCrumb {
  * public styling API here is not to stand on `::ng-deep`. On the anchor itself, the
  * stylesheet owns rest, hover, focus and `aria-current` — while the navigation itself stays
  * entirely the platform's.
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'a[pctCrumbLink]',

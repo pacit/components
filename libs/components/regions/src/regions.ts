@@ -35,6 +35,8 @@ import { PCT_REGIONS, PctRegion, PctRegionsApi } from '@pacit/components/core';
  * `@if` would otherwise take its place in the cycle from whenever it happened to be created.
  * The toast's stack sits last, exactly where it sits in the tab order — the cycle is not there
  * to reorder the page, it is there to make one hop out of a walk.
+ *
+ * @since 0.1.0
  */
 @Injectable()
 export class PctRegions implements PctRegionsApi {
@@ -112,6 +114,8 @@ export class PctRegions implements PctRegionsApi {
  * @example
  * <nav pctRegion="Site navigation">…</nav>
  * <main pctRegion="Main content">…</main>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctRegion]',
@@ -127,6 +131,8 @@ export class PctRegionDirective {
    * uses for `[pctTooltip]` — and here it is a measurement rather than a house style: with the
    * property named after the selector, `pctRegion="Navigation"` left the signal at its default
    * and every region registered with an empty name.
+   *
+   * @since 0.1.0
    */
   readonly label = input('', { alias: 'pctRegion' });
 
@@ -155,6 +161,8 @@ export class PctRegionDirective {
  * @example
  * <div class="app" pctRegionKey>…</div>
  * <div class="app" pctRegionKey key="F8">…</div>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctRegionKey]',
@@ -164,7 +172,11 @@ export class PctRegionKey {
   private readonly regions = inject(PCT_REGIONS)!;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** The key that moves focus on to the next region. */
+  /**
+   * The key that moves focus on to the next region.
+   *
+   * @since 0.1.0
+   */
   readonly key = input('F6');
 
   /**
@@ -180,6 +192,8 @@ export class PctRegionKey {
    * installs nothing anywhere by itself, and an application that says this has decided the key
    * is free for it to take (0072). It is the value the sandbox uses, because a sandbox is an
    * application.
+   *
+   * @since 0.1.0
    */
   readonly listenOn = input<'host' | 'document'>('host');
 
@@ -225,6 +239,8 @@ export class PctRegionKey {
  *
  * @example
  * bootstrapApplication(App, { providers: [providePctRegions()] });
+ *
+ * @since 0.1.0
  */
 export function providePctRegions(): Provider[] {
   return [PctRegions, { provide: PCT_REGIONS, useExisting: PctRegions }];

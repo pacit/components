@@ -1,0 +1,15 @@
+{
+  "description": "An input at `next` carrying `@deprecated`: nobody has this API, so there is nobody to give notice to — it is removed, not deprecated.",
+  "point": 3,
+  "check": "since-deprecated",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 80,
+      "name": "tone",
+      "kind": "input",
+      "since": "next",
+      "deprecated": true
+    }
+  ]
+}

@@ -9,6 +9,8 @@ import { PctSelectItem, PctSelectOption } from './select.types';
  * four are the state the built-in row paints with `data-pct-*`, given to a template that
  * replaces it — a consumer who draws their own row still has to be able to show which option
  * is active and which is chosen.
+ *
+ * @since 0.1.0
  */
 export interface PctSelectOptionContext<T> {
   /** The option being drawn — `let-option`. */
@@ -46,6 +48,8 @@ export interface PctSelectOptionContext<T> {
  *     <img [src]="option.value.flag" alt="" /> {{ option.label }}
  *   </ng-template>
  * </pct-select>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: 'ng-template[pctSelectOption]',
@@ -58,6 +62,8 @@ export class PctSelectOptionTemplate<T> {
    * The same list the select is given — groups included, because that is the list a consumer
    * has to hand. It carries `T` into the context and is never read: binding a different list
    * of the same type changes nothing but the type.
+   *
+   * @since 0.1.0
    */
   readonly options = input.required<readonly PctSelectItem<T>[]>({
     alias: 'pctSelectOption',

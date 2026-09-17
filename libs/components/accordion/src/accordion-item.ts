@@ -38,6 +38,8 @@ import { PctAccordionHeadingLevel } from './accordion.types';
  * <pct-accordion-item label="Shipping" [(open)]="shipping">
  *   <p>Anything at all.</p>
  * </pct-accordion-item>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-accordion-item',
@@ -55,6 +57,8 @@ export class PctAccordionItem {
    * the tabs' reason one component over: a slot is a second public directive and a second
    * thing to type, and the first component to want one cannot tell a shared property from an
    * accident of the only case.
+   *
+   * @since 0.1.0
    */
   readonly label = input.required<string>();
 
@@ -72,6 +76,8 @@ export class PctAccordionItem {
    * ([0039](../../../../docs/decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md)) —
    * measured: chromium reports the summary as a disclosure triangle with `expanded` true or
    * false, and nothing in this library writes the attribute.
+   *
+   * @since 0.1.0
    */
   readonly open = model(false);
 
@@ -89,6 +95,8 @@ export class PctAccordionItem {
    * A section that is open when it is disabled **stays** open. That is what refusing the
    * press means, and it is the one arrangement in which a consumer can show a section the
    * user may not close.
+   *
+   * @since 0.1.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -101,10 +109,16 @@ export class PctAccordionItem {
    * It is empty by default and should usually stay so — `label` is the name, and a name that
    * does not contain the visible text is WCAG 2.5.3 broken. What it exists for is the case
    * the visible text cannot carry: a title that reads as a fragment out of its column.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
   /**

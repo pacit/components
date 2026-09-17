@@ -5,7 +5,7 @@
  * `PCT_VERSION` ([`lesson-41`](../docs/lessons.md#lesson-41)). The programmatic API lets
  * us step in between:
  *   1. `releaseVersion` — bumps libs/components/package.json (staged; no commit, no tag),
- *   2. `stamp-version` — writes that version into the constant in the code,
+ *   2. `stamp-version` — writes that version into the constant and dates every `@since next`,
  *   3. `build` + `check-package` — the artifact comes from already-bumped sources, and
  *      the gate stops an incomplete package before the commit, the tag and the stage,
  *   4. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
@@ -69,14 +69,13 @@ if (!version) {
 // 2. The constant in the code follows the manifest. In a dry run the manifest was left
 //    alone, so the stamp is a no-op here and the artifact stays consistent.
 run(['nx', 'stamp-version', 'components']);
-// The constant goes into the index beside the manifest, for the same commit (lesson-220).
-// Skipped in a dry run, which wrote nothing to add.
+// The constant goes into the index beside the manifest, for the same commit (lesson-220) —
+// and so does every source the stamp dated: `-u` takes the tracked files under the library
+// that the bump and the stamp rewrote (the manifest, the constant, the `@since next` lines
+// that became the version — decision 0080), and nothing untracked. Skipped in a dry run,
+// which wrote nothing to add.
 if (!dryRun)
-  execFileSync(
-    'git',
-    ['add', 'libs/components/package.json', 'libs/components/src/version.ts'],
-    { stdio: 'inherit' },
-  );
+  execFileSync('git', ['add', '-u', 'libs/components'], { stdio: 'inherit' });
 
 // 3. Only now the build — the sources already carry the new version. We call
 //    `schematics`, because that target depends on `build` and adds `ng add` plus the

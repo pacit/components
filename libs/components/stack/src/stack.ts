@@ -20,6 +20,8 @@ import { PctSize } from '@pacit/components/core';
  *   <section>…</section>
  *   <section>…</section>
  * </pct-stack>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-stack',
@@ -31,6 +33,10 @@ import { PctSize } from '@pacit/components/core';
   },
 })
 export class PctStack {
-  /** The step of the spacing scale between blocks. */
+  /**
+   * The step of the spacing scale between blocks.
+   *
+   * @since 0.1.0
+   */
   readonly gap = input<PctSize>('md');
 }

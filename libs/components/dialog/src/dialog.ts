@@ -52,6 +52,8 @@ import { PctDialogCloseReason } from './dialog.types';
  *   <button pctAutofocus (click)="cancel()">Cancel</button>
  *   <button (click)="remove()">Delete</button>
  * </pct-dialog>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctAutofocus]',
@@ -100,6 +102,8 @@ export class PctAutofocus {}
  *   <p>This cannot be undone.</p>
  *   <button pctAutofocus (click)="confirm.set(false)">Cancel</button>
  * </pct-dialog>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-dialog',
@@ -127,6 +131,8 @@ export class PctDialog {
   /**
    * Whether the dialog is up. A `model`, because both directions are ordinary: an application
    * opens it, and the dialog closes itself on Escape, on the backdrop and on its own button.
+   *
+   * @since 0.1.0
    */
   readonly open = model(false);
 
@@ -171,6 +177,8 @@ export class PctDialog {
    *
    * @example
    * <pct-dialog inline heading="Filters" [(open)]="shown">…</pct-dialog>
+   *
+   * @since 0.1.0
    */
   readonly inline = input(false, { transform: booleanAttribute });
 
@@ -178,6 +186,8 @@ export class PctDialog {
    * The visible title, rendered as the panel's heading and used as its accessible name. A
    * dialog with no name is a dialog a screen reader announces as "dialog" and nothing else,
    * so an empty one is reported in dev mode rather than passed over.
+   *
+   * @since 0.1.0
    */
   readonly heading = input<string>('');
 
@@ -185,24 +195,44 @@ export class PctDialog {
    * The accessible name of a dialog with no visible heading — an INPUT and not an attribute on
    * the tag, for the select's reason: `role="dialog"` sits on the panel inside the overlay,
    * and the host carries no role at all (`req-a11y-built-in`).
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
-  /** As `ariaLabel`, for a name that already stands somewhere inside the dialog's content. */
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere inside the dialog's content.
+   *
+   * @since 0.1.0
+   */
   readonly ariaLabelledby = input<string>('');
 
-  /** Whether Escape closes it. */
+  /**
+   * Whether Escape closes it.
+   *
+   * @since 0.1.0
+   */
   readonly closeOnEscape = input(true, { transform: booleanAttribute });
 
-  /** Whether a press on the surface around the panel closes it. */
+  /**
+   * Whether a press on the surface around the panel closes it.
+   *
+   * @since 0.1.0
+   */
   readonly closeOnBackdrop = input(true, { transform: booleanAttribute });
 
-  /** Whether the panel draws a close button of its own in the header. */
+  /**
+   * Whether the panel draws a close button of its own in the header.
+   *
+   * @since 0.1.0
+   */
   readonly closeButton = input(true, { transform: booleanAttribute });
 
   /**
    * Why it closed. The reason is what an application acts on — `escape` and `backdrop` are a
    * withdrawal, the content's own buttons are an answer — and `open` carries none of it.
+   *
+   * @since 0.1.0
    */
   readonly closed = output<PctDialogCloseReason>();
 

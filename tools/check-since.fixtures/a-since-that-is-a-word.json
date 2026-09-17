@@ -1,0 +1,15 @@
+{
+  "description": "An input dated `soon`. The tag is there and the value says nothing a comparison can read.",
+  "point": 2,
+  "check": "since-value",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 68,
+      "name": "disabled",
+      "kind": "input",
+      "since": "soon",
+      "deprecated": false
+    }
+  ]
+}

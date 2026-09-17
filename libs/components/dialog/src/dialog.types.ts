@@ -10,5 +10,7 @@
  * - `api` — the value written from the outside, which includes every button the consumer put
  *   in the content. A dialog cannot tell one of those from another, and pretending otherwise
  *   would be an invented distinction.
+ *
+ * @since 0.1.0
  */
 export type PctDialogCloseReason = 'escape' | 'backdrop' | 'close' | 'api';

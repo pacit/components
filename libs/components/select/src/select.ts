@@ -33,6 +33,8 @@ import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
  * @example
  * // Entities: equality by key, because HTTP brings back another instance.
  * <pct-select [options]="cities" [compareWith]="byId" [(value)]="city" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-select',
@@ -60,6 +62,8 @@ export class PctSelect<T = string>
    * option list alone, and the value is checked against it. Without it `T` widened to a union
    * of candidates (`string | number`), and a list of numbers with a string value compiled,
    * because both fitted the union.
+   *
+   * @since 0.1.0
    */
   readonly value = model<NoInfer<T> | null>(null);
 
@@ -67,6 +71,8 @@ export class PctSelect<T = string>
    * The value standing for no choice — set when the form is reset. `null` by default, but an
    * application with a non-nullable field (`plan: string`) supplies its own (`emptyValue=""`),
    * so that a reset does not write `null` into the model against its type.
+   *
+   * @since 0.1.0
    */
   readonly emptyValue = input<NoInfer<T> | null>(null);
 

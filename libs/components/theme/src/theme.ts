@@ -1,6 +1,10 @@
 import { Directive, input } from '@angular/core';
 
-/** The two themes the shipped skin keys its blocks on. */
+/**
+ * The two themes the shipped skin keys its blocks on.
+ *
+ * @since 0.1.0
+ */
 export type PctThemeName = 'light' | 'dark';
 
 /**
@@ -19,12 +23,18 @@ export type PctThemeName = 'light' | 'dark';
  *
  * @example
  * <aside [pctTheme]="userPrefersDark() ? 'dark' : null">…</aside>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctTheme]',
   host: { '[attr.data-theme]': 'pctTheme()' },
 })
 export class PctTheme {
-  /** The theme to pin on this subtree, or `null` to follow the page. */
+  /**
+   * The theme to pin on this subtree, or `null` to follow the page.
+   *
+   * @since 0.1.0
+   */
   readonly pctTheme = input.required<PctThemeName | null>();
 }

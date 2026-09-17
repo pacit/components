@@ -19,6 +19,8 @@ import {
  *
  * The defaults are English — the language the library is published in. An application swaps
  * them through `providePctTexts()`.
+ *
+ * @since 0.1.0
  */
 export interface PctTexts {
   /** Select: when nothing is chosen. */
@@ -170,6 +172,7 @@ export interface PctTexts {
   readonly stepDone: string;
 }
 
+/** @since 0.1.0 */
 export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',
@@ -207,6 +210,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
  * (`texts().selectEmpty`), not at construction. An input's default value is a read at
  * construction, so a library string may never be one — the `check-texts` gate watches that
  * (point "the channel in TS").
+ *
+ * @since 0.1.0
  */
 export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
   factory: () => signal(PCT_DEFAULT_TEXTS).asReadonly(),
@@ -232,6 +237,7 @@ export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
  * @example
  * // Local scope: a section in a different language from the rest of the application.
  * @Component({ providers: [providePctTexts({ selectEmpty: 'Keine Optionen' })] })
+ * @since 0.1.0
  */
 export function providePctTexts(
   texts: Partial<PctTexts> | Signal<Partial<PctTexts>>,

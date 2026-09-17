@@ -8,7 +8,11 @@ import {
 
 const ATTRIBUTE = 'data-pct-part';
 
-/** The selector of a part — the same string a stylesheet writes (`req-api-parts`). */
+/**
+ * The selector of a part — the same string a stylesheet writes (`req-api-parts`).
+ *
+ * @since 0.1.0
+ */
 export const partSelector = (name: string): string =>
   `[${ATTRIBUTE}="${name}"]`;
 
@@ -27,6 +31,8 @@ export const partSelector = (name: string): string =>
  * under the host, then — for a panel the component draws in an overlay, outside its own
  * subtree — anywhere in the document. The last step is what makes `part('panel')` answer
  * on an open select; it also means a test with two open panels of one kind reads the first.
+ *
+ * @since 0.1.0
  */
 export abstract class PctHarness<
   P extends string = string,

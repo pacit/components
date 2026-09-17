@@ -1,0 +1,15 @@
+{
+  "description": "An input dated `0.1.0-beta.1`. A since names the release line an API belongs to; a step of that line is a channel's business, not the surface's.",
+  "point": 2,
+  "check": "since-value",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 68,
+      "name": "disabled",
+      "kind": "input",
+      "since": "0.1.0-beta.1",
+      "deprecated": false
+    }
+  ]
+}

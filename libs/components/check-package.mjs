@@ -21,12 +21,15 @@
  *     dependency behind to find (`req-api-animations`),
  *  9. every citation in the shipped types and bundles is an address on the site: no
  *     repository path, no bare `req-*` / `lesson-*`, no foreign host, and not zero of them
- *     (`req-release-metadata`; the rewrite is `link-citations.mjs`, decision 0078).
+ *     (`req-release-metadata`; the rewrite is `link-citations.mjs`, decision 0078),
+ * 10. the shipped types carry no `@since next` — the release stamps the version before the
+ *     build, so a `next` in `types/` is an artefact of unstamped sources (a warning;
+ *     `--release` blocks; `req-release-since`, decision 0080).
  *
  * Point 3 is the one that catches the regression — an empty file passes 1 and 2 as well.
  * Negative control: `tools/check-package.fixtures/` (`req-quality-negative-control`).
  *
- * Usage: node libs/components/check-package.mjs [--release]  (--release: point 6 blocks)
+ * Usage: node libs/components/check-package.mjs [--release]  (--release: points 6 and 10 block)
  */
 import {
   cpSync,
@@ -858,13 +861,38 @@ const checks = (ROOT, { release }, warnings) => {
       'none',
     );
 
+  // 10. No `@since next` reaches a consumer. The word dates an API that `main` has and the
+  // package does not (`check-since`, decision 0080); `stamp-version.mjs` turns it into the
+  // version on the release run, before the build — so a `next` in the shipped types is an
+  // artefact built from sources nobody stamped. Between releases that is the ordinary state
+  // of `main` and is said as a warning; a release is the moment it must not be true.
+  const undated = [];
+  for (const path of files.filter(
+    (p) => p.includes(`${sep}types${sep}`) && p.endsWith('.d.ts'),
+  )) {
+    const hits = (readFileSync(path, 'utf8').match(/@since next\b/g) ?? [])
+      .length;
+    if (hits) undated.push(`${relative(ROOT, path)}: ${hits}`);
+  }
+  if (undated.length) {
+    const message =
+      `${undated.length} type file(s) carry \`@since next\` — API the package would ship ` +
+      `undated:\n${list(undated)}\n  \`stamp-version\` names the version on the release ` +
+      `run; a package built from unstamped sources is not the release.`;
+    if (release) fail('since', message);
+    warnings.push(message);
+  }
+
   return (
     `${THEME} present and exported, ` +
     `${used.size} used tokens covered by ${defined.size} declarations, ` +
     `PCT_VERSION = ${pkg.version}, ` +
     `${declared.size} dependencies allowed by policy against Angular ${[...stamps].join('/')}, ` +
     `${declarations} component declarations with no animation binding, ` +
-    `${citations} citations resolving on the site`
+    `${citations} citations resolving on the site, ` +
+    (undated.length
+      ? `${undated.length} type file(s) with \`@since next\``
+      : 'no `@since next` in the types')
   );
 };
 

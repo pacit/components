@@ -10,6 +10,8 @@ import { PctTone } from '@pacit/components/core';
  * every control on the page first; a clock running underneath that walk is a promise the
  * library cannot keep (WCAG 2.2.1). The type says so rather than a runtime rule:
  * {@link PctToastStanding} has no `duration` at all.
+ *
+ * @since 0.1.0
  */
 export interface PctToastAction {
   readonly label: string;
@@ -23,6 +25,8 @@ export interface PctToastAction {
  * `duration` is milliseconds; `null` keeps it up until it is dismissed, and anything at or
  * below zero reads the same way. Left out, it is the configured default
  * ({@link PctToastConfig}).
+ *
+ * @since 0.1.0
  */
 export interface PctToastNotice {
   readonly text: string;
@@ -43,6 +47,8 @@ export interface PctToastNotice {
  *
  * There is no `duration` here, and its absence is the gate for the rule above — a standing
  * message with a clock is refused by the compiler rather than by a line in a service.
+ *
+ * @since 0.1.0
  */
 export interface PctToastStanding {
   readonly text: string;
@@ -69,10 +75,18 @@ export interface PctToastStanding {
   readonly duration?: never;
 }
 
-/** What {@link PctToaster.show} takes: a bare sentence, or one of the two shapes above. */
+/**
+ * What {@link PctToaster.show} takes: a bare sentence, or one of the two shapes above.
+ *
+ * @since 0.1.0
+ */
 export type PctToastSpec = PctToastNotice | PctToastStanding;
 
-/** The handle a caller keeps — enough to take back a message that has stopped being true. */
+/**
+ * The handle a caller keeps — enough to take back a message that has stopped being true.
+ *
+ * @since 0.1.0
+ */
 export interface PctToastRef {
   readonly id: number;
   /** Takes the message down. Dismissing one that has already gone is a no-op. */
@@ -83,6 +97,8 @@ export interface PctToastRef {
  * A message as the viewport draws it: what is on the screen and nothing else. The clock, the
  * action's callback and the politeness the region was opened with stay with the service —
  * a view that cannot reach them cannot get them wrong.
+ *
+ * @since 0.1.0
  */
 export interface PctToastState {
   readonly id: number;
@@ -94,12 +110,24 @@ export interface PctToastState {
   readonly actionLabel: string;
 }
 
-/** Which edge of the block axis the stack stands at — `start` is the top of a Latin page. */
+/**
+ * Which edge of the block axis the stack stands at — `start` is the top of a Latin page.
+ *
+ * @since 0.1.0
+ */
 export type PctToastBlock = 'start' | 'end';
-/** Where on the inline axis: `start`/`end` mirror with the writing direction, `center` does not. */
+/**
+ * Where on the inline axis: `start`/`end` mirror with the writing direction, `center` does not.
+ *
+ * @since 0.1.0
+ */
 export type PctToastInline = 'start' | 'center' | 'end';
 
-/** The application's answers to the four questions a toast cannot ask per message. */
+/**
+ * The application's answers to the four questions a toast cannot ask per message.
+ *
+ * @since 0.1.0
+ */
 export interface PctToastConfig {
   readonly block: PctToastBlock;
   readonly inline: PctToastInline;
@@ -114,6 +142,7 @@ export interface PctToastConfig {
   readonly limit: number;
 }
 
+/** @since 0.1.0 */
 export const PCT_DEFAULT_TOAST_CONFIG: PctToastConfig = {
   block: 'end',
   inline: 'end',
@@ -121,6 +150,7 @@ export const PCT_DEFAULT_TOAST_CONFIG: PctToastConfig = {
   limit: 4,
 };
 
+/** @since 0.1.0 */
 export const PCT_TOAST_CONFIG = new InjectionToken<PctToastConfig>(
   'PCT_TOAST_CONFIG',
   { factory: () => PCT_DEFAULT_TOAST_CONFIG },
@@ -136,6 +166,8 @@ export const PCT_TOAST_CONFIG = new InjectionToken<PctToastConfig>(
  * bootstrapApplication(App, {
  *   providers: [providePctToastConfig({ block: 'start', inline: 'center' })],
  * });
+ *
+ * @since 0.1.0
  */
 export function providePctToastConfig(
   config: Partial<PctToastConfig>,
@@ -150,6 +182,8 @@ export function providePctToastConfig(
  * What the viewport is given, and the whole of it. The view is created by a service rather
  * than written into somebody's template, so the two are joined by a token instead of by an
  * import — which is also what keeps the two files from importing each other.
+ *
+ * @since 0.1.0
  */
 export interface PctToastHost {
   /** What is on the screen, in the order it arrived. */
@@ -169,6 +203,7 @@ export interface PctToastHost {
   release(): void;
 }
 
+/** @since 0.1.0 */
 export const PCT_TOAST_HOST = new InjectionToken<PctToastHost>(
   'PCT_TOAST_HOST',
 );

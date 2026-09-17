@@ -118,6 +118,9 @@ export class ComponentPageView {
       this.sanitizer.bypassSecurityTrustHtml(value);
     return {
       summary: trust(page.summary),
+      version: page.version,
+      firstVersion: page.firstVersion,
+      unreleased: page.unreleased,
       notes: page.notes ? trust(page.notes) : null,
       pattern: page.pattern ? trust(page.pattern) : null,
       usage: page.usage ? trust(page.usage.code) : null,
@@ -139,12 +142,14 @@ export class ComponentPageView {
         members: c.members.map((m) => ({
           ...m,
           description: trust(m.description),
+          deprecated: m.deprecated ? trust(m.deprecated) : null,
         })),
         host: c.host.map((h) => ({ ...h, note: trust(h.note) })),
       })),
       exports: page.exports.map((e) => ({
         ...e,
         description: trust(e.description),
+        deprecated: e.deprecated ? trust(e.deprecated) : null,
       })),
       parts: page.parts.map((p) => ({
         ...p,

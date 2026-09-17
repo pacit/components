@@ -14,10 +14,18 @@ import { isPctDay, PctDay, pctDayAsUtc, pctToday } from './day';
  * ([0043](../../../../docs/decisions/0043-a-day-is-not-an-instant.md)).
  */
 
-/** Which of the three fields a position in the format holds. */
+/**
+ * Which of the three fields a position in the format holds.
+ *
+ * @since 0.1.0
+ */
 export type PctDayField = 'day' | 'month' | 'year';
 
-/** The letters a format hint is written with — one per field, from `PCT_TEXTS`. */
+/**
+ * The letters a format hint is written with — one per field, from `PCT_TEXTS`.
+ *
+ * @since 0.1.0
+ */
 export interface PctDayLetters {
   readonly day: string;
   readonly month: string;
@@ -93,6 +101,8 @@ interface WeekAwareLocale extends Intl.Locale {
  * The platform first, because CLDR moves and this file does not. Where the platform is silent
  * the region decides, and a tag with no region gets one from `maximize()` — `pl` is `pl-Latn-PL`
  * and `en` is `en-Latn-US`, which is exactly the difference between Monday and Sunday.
+ *
+ * @since 0.1.0
  */
 export function pctFirstDayOfWeek(locale: string): number {
   let parsed: WeekAwareLocale;
@@ -155,7 +165,11 @@ function digitsOf(locale: string, numberingSystem: string): string[] | null {
  */
 const YEAR_WINDOW_BACK = 80;
 
-/** Everything about writing and reading a day in one language, built once per locale. */
+/**
+ * Everything about writing and reading a day in one language, built once per locale.
+ *
+ * @since 0.1.0
+ */
 export interface PctDayFormat {
   /** The locale the platform resolved, which may not be the one asked for. */
   readonly locale: string;
@@ -186,6 +200,7 @@ export interface PctDayFormat {
 /** The formatters are built per locale and shared — an `Intl` object is not cheap. */
 const CACHE = new Map<string, PctDayFormat>();
 
+/** @since 0.1.0 */
 export function pctDayFormat(locale: string): PctDayFormat {
   const cached = CACHE.get(locale);
   if (cached) return cached;
@@ -321,7 +336,11 @@ function fullYear(written: string): number | null {
 /** A Monday, so seven days from it are a week in ISO order whatever the locale. */
 const REFERENCE_MONDAY: PctDay = '2024-01-01';
 
-/** The two names a column header needs: the one the eye reads and the one a reader says. */
+/**
+ * The two names a column header needs: the one the eye reads and the one a reader says.
+ *
+ * @since 0.1.0
+ */
 export interface PctWeekdayName {
   readonly narrow: string;
   readonly long: string;
@@ -334,6 +353,8 @@ export interface PctWeekdayName {
  * what a screen reader announces — and they are two readings rather than one abbreviated,
  * because `narrow` is ambiguous by design (`S`, `S` for Saturday and Sunday in English) and
  * an ambiguous column header is a grid nobody can navigate by ear.
+ *
+ * @since 0.1.0
  */
 export function pctWeekdayNames(
   locale: string,
@@ -366,7 +387,11 @@ function shift(day: PctDay, by: number): PctDay {
   return at.toISOString().slice(0, 10);
 }
 
-/** The month and year over the grid ("December 2026"), in the value's own calendar. */
+/**
+ * The month and year over the grid ("December 2026"), in the value's own calendar.
+ *
+ * @since 0.1.0
+ */
 export function pctMonthCaption(locale: string, day: PctDay): string {
   return new Intl.DateTimeFormat(locale, {
     ...GREGORIAN,

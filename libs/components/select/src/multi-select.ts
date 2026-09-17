@@ -25,6 +25,8 @@ import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
  * @example
  * // In a form, the field is a list — that is the whole difference on this side too.
  * <pct-multi-select [options]="tags" [formField]="form.tags" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-multi-select',
@@ -54,6 +56,8 @@ export class PctMultiSelect<T = string>
    * here mutates it: every change sets a NEW array.
    *
    * `NoInfer` keeps the option list the only source of `T`, exactly as in `pct-select`.
+   *
+   * @since 0.1.0
    */
   readonly value = model<NoInfer<T>[]>([]);
 

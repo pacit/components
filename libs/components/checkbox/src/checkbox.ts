@@ -34,6 +34,8 @@ import { PctIcon } from '@pacit/components/icon';
  * @example
  * <pct-checkbox label="I accept the terms" [formField]="form.terms" />
  * <pct-checkbox label="Remember me" [(checked)]="remember" />
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-checkbox',
@@ -50,41 +52,85 @@ import { PctIcon } from '@pacit/components/icon';
   },
 })
 export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
-  /** Checked state — the only required field of the `FormCheckboxControl` contract. */
+  /**
+   * Checked state — the only required field of the `FormCheckboxControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly checked = model(false);
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** A native checkbox has no `readonly`, so the click is swallowed here instead; the control stays focusable, unlike under `disabled`, and `aria-readonly` says so. */
+  /**
+   * A native checkbox has no `readonly`, so the click is swallowed here instead; the control stays focusable, unlike under `disabled`, and `aria-readonly` says so.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
+  /**
+   * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
+  /**
+   * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- component API ---
 
-  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
+  /**
+   * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name.
+   *
+   * @since 0.1.0
+   */
   readonly label = input<string>('');
 
-  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
+  /**
+   * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly hint = input<string>('');
 
   /**
@@ -96,12 +142,16 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
    *
    * Set together with a visible `label` it wins over it — the accessible-name algorithm, not
    * a choice of ours.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabel = input<string>('');
 
   /**
    * As `ariaLabel`, for a name that already stands somewhere on the page — the header of the
    * column a checkbox in a row belongs to. It wins over `ariaLabel` and over `label`.
+   *
+   * @since 0.1.0
    */
   readonly ariaLabelledby = input<string>('');
 
@@ -112,6 +162,8 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
    * measured in three engines and in Chromium's own tree, so none is written
    * ([0039](../../../../docs/decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md),
    * [`lesson-112`](../../../../docs/lessons.md#lesson-112)).
+   *
+   * @since 0.1.0
    */
   readonly indeterminate = input(false, { transform: booleanAttribute });
 

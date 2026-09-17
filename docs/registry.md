@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     79 |
+| ✅ enforced | gate and control exist and run in CI                          |     80 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
-| **total**   |                                                               | **94** |
+| **total**   |                                                               | **95** |
 
 ## Gaps by urgency
 
@@ -123,6 +123,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ enforced | `libs/components/check-package.mjs` (point 5) — the collections are i… | `tools/check-package.fixtures/schematic-missing/` — a package whose c… |
 | [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ enforced | `libs/components/check-package.mjs` (point 6) — two different severit… | `tools/check-package.fixtures/repository-missing/` — a manifest witho… |
 | [`req-release-support`](requirements/release.md#req-release-support)   | ✅ enforced | `tools/check-support.mjs` (five points) over `docs/support.md`, which… | `tools/check-support.fixtures/` — fifteen prepared inputs, each rejec… |
+| [`req-release-since`](requirements/release.md#req-release-since)       | ✅ enforced | `tools/check-since.mjs` (points 1–3: every item dated; a value that i… | `tools/check-since.fixtures/` — six prepared inputs, each rejected by… |
 
 ## tokens
 

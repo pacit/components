@@ -10,13 +10,21 @@ import { PctHarness } from './harness';
 
 // ── @pacit/components/accordion ─────────────────────────────────────────────────
 
-/** `pct-accordion` — `PctAccordion`. */
+/**
+ * `pct-accordion` — `PctAccordion`.
+ *
+ * @since 0.1.0
+ */
 export class PctAccordionHarness extends PctHarness<never> {
   static hostSelector = 'pct-accordion';
   static override readonly parts = [] as const;
 }
 
-/** `pct-accordion-item` — `PctAccordionItem`. */
+/**
+ * `pct-accordion-item` — `PctAccordionItem`.
+ *
+ * @since 0.1.0
+ */
 export class PctAccordionItemHarness extends PctHarness<
   'heading' | 'item' | 'marker' | 'panel'
 > {
@@ -31,7 +39,11 @@ export class PctAccordionItemHarness extends PctHarness<
 
 // ── @pacit/components/avatar ────────────────────────────────────────────────────
 
-/** `pct-avatar` — `PctAvatar`. */
+/**
+ * `pct-avatar` — `PctAvatar`.
+ *
+ * @since 0.1.0
+ */
 export class PctAvatarHarness extends PctHarness<
   'image' | 'initials' | 'silhouette'
 > {
@@ -41,7 +53,11 @@ export class PctAvatarHarness extends PctHarness<
 
 // ── @pacit/components/badge ─────────────────────────────────────────────────────
 
-/** `pct-badge` — `PctBadge`. */
+/**
+ * `pct-badge` — `PctBadge`.
+ *
+ * @since 0.1.0
+ */
 export class PctBadgeHarness extends PctHarness<never> {
   static hostSelector = 'pct-badge';
   static override readonly parts = [] as const;
@@ -49,19 +65,31 @@ export class PctBadgeHarness extends PctHarness<never> {
 
 // ── @pacit/components/breadcrumb ────────────────────────────────────────────────
 
-/** `pct-breadcrumb` — `PctBreadcrumb`. */
+/**
+ * `pct-breadcrumb` — `PctBreadcrumb`.
+ *
+ * @since 0.1.0
+ */
 export class PctBreadcrumbHarness extends PctHarness<'list'> {
   static hostSelector = 'pct-breadcrumb';
   static override readonly parts = ['list'] as const;
 }
 
-/** `pct-crumb` — `PctCrumb`. */
+/**
+ * `pct-crumb` — `PctCrumb`.
+ *
+ * @since 0.1.0
+ */
 export class PctCrumbHarness extends PctHarness<'separator'> {
   static hostSelector = 'pct-crumb';
   static override readonly parts = ['separator'] as const;
 }
 
-/** `a[pctCrumbLink]` — `PctCrumbLink`. */
+/**
+ * `a[pctCrumbLink]` — `PctCrumbLink`.
+ *
+ * @since 0.1.0
+ */
 export class PctCrumbLinkHarness extends PctHarness<never> {
   static hostSelector = 'a[pctCrumbLink]';
   static override readonly parts = [] as const;
@@ -69,7 +97,11 @@ export class PctCrumbLinkHarness extends PctHarness<never> {
 
 // ── @pacit/components/button ────────────────────────────────────────────────────
 
-/** `button[pctButton], a[pctButton]` — `PctButton`. */
+/**
+ * `button[pctButton], a[pctButton]` — `PctButton`.
+ *
+ * @since 0.1.0
+ */
 export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
   static hostSelector = 'button[pctButton], a[pctButton]';
   static override readonly parts = ['label', 'spinner'] as const;
@@ -77,7 +109,11 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
 
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
-/** `pct-checkbox` — `PctCheckbox`. */
+/**
+ * `pct-checkbox` — `PctCheckbox`.
+ *
+ * @since 0.1.0
+ */
 export class PctCheckboxHarness extends PctHarness<
   'box' | 'control' | 'error' | 'hint' | 'label' | 'mark'
 > {
@@ -94,13 +130,21 @@ export class PctCheckboxHarness extends PctHarness<
 
 // ── @pacit/components/chips ─────────────────────────────────────────────────────
 
-/** `pct-chip` — `PctChip`. */
+/**
+ * `pct-chip` — `PctChip`.
+ *
+ * @since 0.1.0
+ */
 export class PctChipHarness extends PctHarness<'label' | 'remove'> {
   static hostSelector = 'pct-chip';
   static override readonly parts = ['label', 'remove'] as const;
 }
 
-/** `pct-chips` — `PctChips`. */
+/**
+ * `pct-chips` — `PctChips`.
+ *
+ * @since 0.1.0
+ */
 export class PctChipsHarness extends PctHarness<never> {
   static hostSelector = 'pct-chips';
   static override readonly parts = [] as const;
@@ -108,7 +152,11 @@ export class PctChipsHarness extends PctHarness<never> {
 
 // ── @pacit/components/container ─────────────────────────────────────────────────
 
-/** `pct-container` — `PctContainer`. */
+/**
+ * `pct-container` — `PctContainer`.
+ *
+ * @since 0.1.0
+ */
 export class PctContainerHarness extends PctHarness<never> {
   static hostSelector = 'pct-container';
   static override readonly parts = [] as const;
@@ -116,7 +164,11 @@ export class PctContainerHarness extends PctHarness<never> {
 
 // ── @pacit/components/date ──────────────────────────────────────────────────────
 
-/** `pct-calendar` — `PctCalendar`. */
+/**
+ * `pct-calendar` — `PctCalendar`.
+ *
+ * @since 0.1.0
+ */
 export class PctCalendarHarness extends PctHarness<
   'caption' | 'day' | 'grid' | 'nav' | 'week' | 'weekday'
 > {
@@ -131,7 +183,11 @@ export class PctCalendarHarness extends PctHarness<
   ] as const;
 }
 
-/** `pct-date` — `PctDate`. */
+/**
+ * `pct-date` — `PctDate`.
+ *
+ * @since 0.1.0
+ */
 export class PctDateHarness extends PctHarness<
   'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle'
 > {
@@ -148,7 +204,11 @@ export class PctDateHarness extends PctHarness<
 
 // ── @pacit/components/dialog ────────────────────────────────────────────────────
 
-/** `pct-dialog` — `PctDialog`. */
+/**
+ * `pct-dialog` — `PctDialog`.
+ *
+ * @since 0.1.0
+ */
 export class PctDialogHarness extends PctHarness<
   'backdrop' | 'close' | 'content' | 'header' | 'heading' | 'panel'
 > {
@@ -165,7 +225,11 @@ export class PctDialogHarness extends PctHarness<
 
 // ── @pacit/components/drawer ────────────────────────────────────────────────────
 
-/** `pct-drawer` — `PctDrawer`. */
+/**
+ * `pct-drawer` — `PctDrawer`.
+ *
+ * @since 0.1.0
+ */
 export class PctDrawerHarness extends PctHarness<
   'close' | 'content' | 'header' | 'heading'
 > {
@@ -178,7 +242,11 @@ export class PctDrawerHarness extends PctHarness<
   ] as const;
 }
 
-/** `button[pctDrawerTrigger]` — `PctDrawerTrigger`. */
+/**
+ * `button[pctDrawerTrigger]` — `PctDrawerTrigger`.
+ *
+ * @since 0.1.0
+ */
 export class PctDrawerTriggerHarness extends PctHarness<never> {
   static hostSelector = 'button[pctDrawerTrigger]';
   static override readonly parts = [] as const;
@@ -186,13 +254,21 @@ export class PctDrawerTriggerHarness extends PctHarness<never> {
 
 // ── @pacit/components/field ─────────────────────────────────────────────────────
 
-/** `textarea[pctText][pctAutosize]` — `PctAutosize`. */
+/**
+ * `textarea[pctText][pctAutosize]` — `PctAutosize`.
+ *
+ * @since 0.1.0
+ */
 export class PctAutosizeHarness extends PctHarness<never> {
   static hostSelector = 'textarea[pctText][pctAutosize]';
   static override readonly parts = [] as const;
 }
 
-/** `pct-field` — `PctField`. */
+/**
+ * `pct-field` — `PctField`.
+ *
+ * @since 0.1.0
+ */
 export class PctFieldHarness extends PctHarness<
   | 'field-control'
   | 'field-error'
@@ -222,37 +298,61 @@ export class PctFieldHarness extends PctHarness<
   ] as const;
 }
 
-/** `[pctLabelAux]` — `PctLabelAux`. */
+/**
+ * `[pctLabelAux]` — `PctLabelAux`.
+ *
+ * @since 0.1.0
+ */
 export class PctLabelAuxHarness extends PctHarness<'field-label-aux-item'> {
   static hostSelector = '[pctLabelAux]';
   static override readonly parts = ['field-label-aux-item'] as const;
 }
 
-/** `[pctMessageAux]` — `PctMessageAux`. */
+/**
+ * `[pctMessageAux]` — `PctMessageAux`.
+ *
+ * @since 0.1.0
+ */
 export class PctMessageAuxHarness extends PctHarness<'field-message-aux-item'> {
   static hostSelector = '[pctMessageAux]';
   static override readonly parts = ['field-message-aux-item'] as const;
 }
 
-/** `input[pctNumber]` — `PctNumber`. */
+/**
+ * `input[pctNumber]` — `PctNumber`.
+ *
+ * @since 0.1.0
+ */
 export class PctNumberHarness extends PctHarness<never> {
   static hostSelector = 'input[pctNumber]';
   static override readonly parts = [] as const;
 }
 
-/** `[pctPrefix]` — `PctPrefix`. */
+/**
+ * `[pctPrefix]` — `PctPrefix`.
+ *
+ * @since 0.1.0
+ */
 export class PctPrefixHarness extends PctHarness<'field-prefix-item'> {
   static hostSelector = '[pctPrefix]';
   static override readonly parts = ['field-prefix-item'] as const;
 }
 
-/** `[pctSuffix]` — `PctSuffix`. */
+/**
+ * `[pctSuffix]` — `PctSuffix`.
+ *
+ * @since 0.1.0
+ */
 export class PctSuffixHarness extends PctHarness<'field-suffix-item'> {
   static hostSelector = '[pctSuffix]';
   static override readonly parts = ['field-suffix-item'] as const;
 }
 
-/** `input[pctText], textarea[pctText]` — `PctText`. */
+/**
+ * `input[pctText], textarea[pctText]` — `PctText`.
+ *
+ * @since 0.1.0
+ */
 export class PctTextHarness extends PctHarness<never> {
   static hostSelector = 'input[pctText], textarea[pctText]';
   static override readonly parts = [] as const;
@@ -260,7 +360,11 @@ export class PctTextHarness extends PctHarness<never> {
 
 // ── @pacit/components/grid ──────────────────────────────────────────────────────
 
-/** `pct-grid` — `PctGrid`. */
+/**
+ * `pct-grid` — `PctGrid`.
+ *
+ * @since 0.1.0
+ */
 export class PctGridHarness extends PctHarness<never> {
   static hostSelector = 'pct-grid';
   static override readonly parts = [] as const;
@@ -268,7 +372,11 @@ export class PctGridHarness extends PctHarness<never> {
 
 // ── @pacit/components/hero ──────────────────────────────────────────────────────
 
-/** `[pctHero]` — `PctHero`. */
+/**
+ * `[pctHero]` — `PctHero`.
+ *
+ * @since 0.1.0
+ */
 export class PctHeroHarness extends PctHarness<never> {
   static hostSelector = '[pctHero]';
   static override readonly parts = [] as const;
@@ -276,19 +384,31 @@ export class PctHeroHarness extends PctHarness<never> {
 
 // ── @pacit/components/menu ──────────────────────────────────────────────────────
 
-/** `pct-menu` — `PctMenu`. */
+/**
+ * `pct-menu` — `PctMenu`.
+ *
+ * @since 0.1.0
+ */
 export class PctMenuHarness extends PctHarness<'panel'> {
   static hostSelector = 'pct-menu';
   static override readonly parts = ['panel'] as const;
 }
 
-/** `button[pctMenuItem]` — `PctMenuItem`. */
+/**
+ * `button[pctMenuItem]` — `PctMenuItem`.
+ *
+ * @since 0.1.0
+ */
 export class PctMenuItemHarness extends PctHarness<'item'> {
   static hostSelector = 'button[pctMenuItem]';
   static override readonly parts = ['item'] as const;
 }
 
-/** `[pctMenuTrigger]` — `PctMenuTrigger`. */
+/**
+ * `[pctMenuTrigger]` — `PctMenuTrigger`.
+ *
+ * @since 0.1.0
+ */
 export class PctMenuTriggerHarness extends PctHarness<never> {
   static hostSelector = '[pctMenuTrigger]';
   static override readonly parts = [] as const;
@@ -296,7 +416,11 @@ export class PctMenuTriggerHarness extends PctHarness<never> {
 
 // ── @pacit/components/pagination ────────────────────────────────────────────────
 
-/** `pct-pagination` — `PctPagination`. */
+/**
+ * `pct-pagination` — `PctPagination`.
+ *
+ * @since 0.1.0
+ */
 export class PctPaginationHarness extends PctHarness<
   'ellipsis' | 'list' | 'next' | 'page' | 'previous'
 > {
@@ -312,7 +436,11 @@ export class PctPaginationHarness extends PctHarness<
 
 // ── @pacit/components/popover ───────────────────────────────────────────────────
 
-/** `pct-popover` — `PctPopover`. */
+/**
+ * `pct-popover` — `PctPopover`.
+ *
+ * @since 0.1.0
+ */
 export class PctPopoverHarness extends PctHarness<
   'content' | 'heading' | 'panel'
 > {
@@ -320,7 +448,11 @@ export class PctPopoverHarness extends PctHarness<
   static override readonly parts = ['content', 'heading', 'panel'] as const;
 }
 
-/** `[pctPopoverTrigger]` — `PctPopoverTrigger`. */
+/**
+ * `[pctPopoverTrigger]` — `PctPopoverTrigger`.
+ *
+ * @since 0.1.0
+ */
 export class PctPopoverTriggerHarness extends PctHarness<never> {
   static hostSelector = '[pctPopoverTrigger]';
   static override readonly parts = [] as const;
@@ -328,7 +460,11 @@ export class PctPopoverTriggerHarness extends PctHarness<never> {
 
 // ── @pacit/components/progress ──────────────────────────────────────────────────
 
-/** `pct-progress` — `PctProgress`. */
+/**
+ * `pct-progress` — `PctProgress`.
+ *
+ * @since 0.1.0
+ */
 export class PctProgressHarness extends PctHarness<
   'bar' | 'fill' | 'icon' | 'track'
 > {
@@ -338,7 +474,11 @@ export class PctProgressHarness extends PctHarness<
 
 // ── @pacit/components/radio ─────────────────────────────────────────────────────
 
-/** `pct-radio` — `PctRadio`. */
+/**
+ * `pct-radio` — `PctRadio`.
+ *
+ * @since 0.1.0
+ */
 export class PctRadioHarness extends PctHarness<
   'circle' | 'control' | 'dot' | 'label'
 > {
@@ -351,7 +491,11 @@ export class PctRadioHarness extends PctHarness<
   ] as const;
 }
 
-/** `pct-radio-group` — `PctRadioGroup`. */
+/**
+ * `pct-radio-group` — `PctRadioGroup`.
+ *
+ * @since 0.1.0
+ */
 export class PctRadioGroupHarness extends PctHarness<
   'group-error' | 'group-hint' | 'group-label' | 'group-options'
 > {
@@ -366,7 +510,11 @@ export class PctRadioGroupHarness extends PctHarness<
 
 // ── @pacit/components/select ────────────────────────────────────────────────────
 
-/** `pct-multi-select` — `PctMultiSelect`. */
+/**
+ * `pct-multi-select` — `PctMultiSelect`.
+ *
+ * @since 0.1.0
+ */
 export class PctMultiSelectHarness extends PctHarness<
   | 'arrow'
   | 'clear'
@@ -404,7 +552,11 @@ export class PctMultiSelectHarness extends PctHarness<
   ] as const;
 }
 
-/** `pct-select` — `PctSelect`. */
+/**
+ * `pct-select` — `PctSelect`.
+ *
+ * @since 0.1.0
+ */
 export class PctSelectHarness extends PctHarness<
   | 'arrow'
   | 'clear'
@@ -444,7 +596,11 @@ export class PctSelectHarness extends PctHarness<
 
 // ── @pacit/components/skeleton ──────────────────────────────────────────────────
 
-/** `pct-skeleton` — `PctSkeleton`. */
+/**
+ * `pct-skeleton` — `PctSkeleton`.
+ *
+ * @since 0.1.0
+ */
 export class PctSkeletonHarness extends PctHarness<'fill' | 'track'> {
   static hostSelector = 'pct-skeleton';
   static override readonly parts = ['fill', 'track'] as const;
@@ -452,7 +608,11 @@ export class PctSkeletonHarness extends PctHarness<'fill' | 'track'> {
 
 // ── @pacit/components/slider ────────────────────────────────────────────────────
 
-/** `pct-slider` — `PctSlider`. */
+/**
+ * `pct-slider` — `PctSlider`.
+ *
+ * @since 0.1.0
+ */
 export class PctSliderHarness extends PctHarness<
   | 'bubble'
   | 'control'
@@ -480,7 +640,11 @@ export class PctSliderHarness extends PctHarness<
 
 // ── @pacit/components/stack ─────────────────────────────────────────────────────
 
-/** `pct-stack` — `PctStack`. */
+/**
+ * `pct-stack` — `PctStack`.
+ *
+ * @since 0.1.0
+ */
 export class PctStackHarness extends PctHarness<never> {
   static hostSelector = 'pct-stack';
   static override readonly parts = [] as const;
@@ -488,13 +652,21 @@ export class PctStackHarness extends PctHarness<never> {
 
 // ── @pacit/components/stepper ───────────────────────────────────────────────────
 
-/** `pct-step` — `PctStep`. */
+/**
+ * `pct-step` — `PctStep`.
+ *
+ * @since 0.1.0
+ */
 export class PctStepHarness extends PctHarness<'marker' | 'track'> {
   static hostSelector = 'pct-step';
   static override readonly parts = ['marker', 'track'] as const;
 }
 
-/** `pct-stepper` — `PctStepper`. */
+/**
+ * `pct-stepper` — `PctStepper`.
+ *
+ * @since 0.1.0
+ */
 export class PctStepperHarness extends PctHarness<never> {
   static hostSelector = 'pct-stepper';
   static override readonly parts = [] as const;
@@ -502,7 +674,11 @@ export class PctStepperHarness extends PctHarness<never> {
 
 // ── @pacit/components/switch ────────────────────────────────────────────────────
 
-/** `pct-switch` — `PctSwitch`. */
+/**
+ * `pct-switch` — `PctSwitch`.
+ *
+ * @since 0.1.0
+ */
 export class PctSwitchHarness extends PctHarness<
   'control' | 'error' | 'hint' | 'label' | 'thumb' | 'track'
 > {
@@ -519,13 +695,21 @@ export class PctSwitchHarness extends PctHarness<
 
 // ── @pacit/components/tabs ──────────────────────────────────────────────────────
 
-/** `pct-tab` — `PctTab`. */
+/**
+ * `pct-tab` — `PctTab`.
+ *
+ * @since 0.1.0
+ */
 export class PctTabHarness extends PctHarness<'panel'> {
   static hostSelector = 'pct-tab';
   static override readonly parts = ['panel'] as const;
 }
 
-/** `pct-tabs` — `PctTabs`. */
+/**
+ * `pct-tabs` — `PctTabs`.
+ *
+ * @since 0.1.0
+ */
 export class PctTabsHarness extends PctHarness<'list' | 'tab'> {
   static hostSelector = 'pct-tabs';
   static override readonly parts = ['list', 'tab'] as const;
@@ -533,7 +717,11 @@ export class PctTabsHarness extends PctHarness<'list' | 'tab'> {
 
 // ── @pacit/components/theme ─────────────────────────────────────────────────────
 
-/** `[pctTheme]` — `PctTheme`. */
+/**
+ * `[pctTheme]` — `PctTheme`.
+ *
+ * @since 0.1.0
+ */
 export class PctThemeHarness extends PctHarness<never> {
   static hostSelector = '[pctTheme]';
   static override readonly parts = [] as const;
@@ -541,7 +729,11 @@ export class PctThemeHarness extends PctHarness<never> {
 
 // ── @pacit/components/toast ─────────────────────────────────────────────────────
 
-/** `pct-toast-viewport` — `PctToastViewport`. */
+/**
+ * `pct-toast-viewport` — `PctToastViewport`.
+ *
+ * @since 0.1.0
+ */
 export class PctToastViewportHarness extends PctHarness<
   'action' | 'close' | 'icon' | 'item' | 'message'
 > {
@@ -557,13 +749,21 @@ export class PctToastViewportHarness extends PctHarness<
 
 // ── @pacit/components/tooltip ───────────────────────────────────────────────────
 
-/** `[pctTooltip]` — `PctTooltip`. */
+/**
+ * `[pctTooltip]` — `PctTooltip`.
+ *
+ * @since 0.1.0
+ */
 export class PctTooltipHarness extends PctHarness<never> {
   static hostSelector = '[pctTooltip]';
   static override readonly parts = [] as const;
 }
 
-/** `pct-tooltip` — `PctTooltipPanel`. */
+/**
+ * `pct-tooltip` — `PctTooltipPanel`.
+ *
+ * @since 0.1.0
+ */
 export class PctTooltipPanelHarness extends PctHarness<'panel'> {
   static hostSelector = 'pct-tooltip';
   static override readonly parts = ['panel'] as const;
@@ -571,13 +771,21 @@ export class PctTooltipPanelHarness extends PctHarness<'panel'> {
 
 // ── @pacit/components/tree ──────────────────────────────────────────────────────
 
-/** `pct-tree` — `PctTree`. */
+/**
+ * `pct-tree` — `PctTree`.
+ *
+ * @since 0.1.0
+ */
 export class PctTreeHarness extends PctHarness<never> {
   static hostSelector = 'pct-tree';
   static override readonly parts = [] as const;
 }
 
-/** `pct-tree-item` — `PctTreeItem`. */
+/**
+ * `pct-tree-item` — `PctTreeItem`.
+ *
+ * @since 0.1.0
+ */
 export class PctTreeItemHarness extends PctHarness<'arrow' | 'label'> {
   static hostSelector = 'pct-tree-item';
   static override readonly parts = ['arrow', 'label'] as const;

@@ -550,11 +550,58 @@ const docBefore = (text, index) => {
   const m = text.slice(0, index).match(/[\s\S]*(\/\*\*[\s\S]*?\*\/)\s*$/);
   return m ? jsdocText(m[1]) : null;
 };
+/** The lines of a JSDoc before its first tag — `@since` is a fact about the API, not prose. */
+const untilTags = (text) => {
+  const lines = text.split('\n');
+  const at = lines.findIndex((line) => /^\s*@\w/.test(line));
+  return (at === -1 ? lines : lines.slice(0, at)).join('\n');
+};
 const firstParagraph = (doc) =>
-  (doc ?? '')
-    .split(/\n\s*\n/)[0]
+  untilTags((doc ?? '').split(/\n\s*\n/)[0])
     .replace(/\s+/g, ' ')
     .trim();
+
+const newer = (a, b) => {
+  const x = a.split('.').map(Number);
+  const y = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++)
+    if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) > (y[i] ?? 0);
+  return false;
+};
+
+/**
+ * What a JSDoc says about the life of the API it stands on (position 3.6, decision 0080):
+ * `@since` — a version, or `next` for what `main` has and the package does not, which
+ * `stamp-version.mjs` turns into the version on the release run — and `@deprecated` with
+ * its notice. `unreleased` compares the since with the manifest, the twin of the last tag
+ * and present in every checkout, shallow ones included; `check-since` holds the tag to
+ * these two shapes.
+ */
+const datedBy = (doc) => {
+  const lines = (doc ?? '').split('\n');
+  const since =
+    lines.map((l) => l.match(/^\s*@since\s+(\S+)/)?.[1]).find(Boolean) ?? null;
+  const at = lines.findIndex((l) => /^\s*@deprecated\b/.test(l));
+  let deprecated = null;
+  if (at !== -1) {
+    const rest = lines.slice(at + 1).findIndex((l) => /^\s*@\w/.test(l));
+    deprecated = inline(
+      [
+        lines[at].replace(/^\s*@deprecated\s*/, ''),
+        ...lines.slice(at + 1, rest === -1 ? undefined : at + 1 + rest),
+      ]
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    );
+  }
+  return {
+    since,
+    deprecated,
+    unreleased:
+      since === 'next' || (since !== null && newer(since, manifest.version)),
+  };
+};
 
 /**
  * The text inside the bracket pair opening at `from` — strings, comments and arrows
@@ -664,6 +711,7 @@ const membersOf = (body, file, id) => {
       type: readType ?? transformed ?? inferType(dflt) ?? 'unknown',
       default: dflt?.replace(/^this\.config\./, 'config.') ?? null,
       description: inline(firstParagraph(doc)),
+      ...datedBy(doc),
     });
   }
   return members;
@@ -826,6 +874,10 @@ const exportsOf = (entry) => {
         )
           row.kind = 'token';
       }
+      Object.assign(
+        row,
+        datedBy(decorator ? decorator.doc : docBefore(text, e.index)),
+      );
       rows.push(row);
     }
   }
@@ -1560,10 +1612,18 @@ const entry = (card) => {
         `the Parts table names \`${name}\`, which the inventory does not hold`,
       );
   const exports = suffix ? exportsOf(suffix) : [];
+  const dated = [...api.flatMap((c) => c.members), ...exports];
   return {
     ...card,
     api,
     exports,
+    version: manifest.version,
+    firstVersion:
+      dated
+        .map((d) => d.since)
+        .filter((v) => v && v !== 'next')
+        .sort((a, b) => (newer(a, b) ? 1 : newer(b, a) ? -1 : 0))[0] ?? null,
+    unreleased: dated.filter((d) => d.unreleased).length,
     imports: importsFor(card, exports),
     parts: partNames.map((name) => ({
       name,
@@ -1717,6 +1777,9 @@ const pages = Object.fromEntries(
       examples: c.examples,
       api: c.api,
       exports: c.exports,
+      version: c.version,
+      firstVersion: c.firstVersion,
+      unreleased: c.unreleased,
       imports: c.imports,
       parts: c.parts,
       tokens: c.tokens,
@@ -1742,6 +1805,12 @@ export interface ApiMember {
   readonly default: string | null;
   /** Rendered HTML — the JSDoc line above the member. */
   readonly description: string;
+  /** The @since at the declaration: a version, or "next" — on main, not in the package. */
+  readonly since: string | null;
+  /** The @deprecated notice, rendered, or null. */
+  readonly deprecated: string | null;
+  /** True when since is "next" or newer than the manifest: the package does not have it. */
+  readonly unreleased: boolean;
 }
 
 export interface HostRow {
@@ -1767,6 +1836,12 @@ export interface ExportRow {
   readonly selector: string | null;
   readonly detail: string | null;
   readonly description: string;
+  /** The @since at the declaration: a version, or "next" — on main, not in the package. */
+  readonly since: string | null;
+  /** The @deprecated notice, rendered, or null. */
+  readonly deprecated: string | null;
+  /** True when since is "next" or newer than the manifest: the package does not have it. */
+  readonly unreleased: boolean;
 }
 
 export interface TokenDoc {
@@ -1829,6 +1904,12 @@ export interface ComponentPage {
   readonly examples: readonly ExampleDoc[];
   readonly api: readonly ApiClass[];
   readonly exports: readonly ExportRow[];
+  /** The manifest's version — the package the page is compared with. */
+  readonly version: string;
+  /** The oldest @since on the page; a row says "since" only when it is newer. */
+  readonly firstVersion: string | null;
+  /** How many members and exports the package at this version does not have. */
+  readonly unreleased: number;
   /** What the import line names: the card's classes plus whatever its usage fence uses. */
   readonly imports: readonly string[];
   readonly parts: readonly PartDoc[];
@@ -2039,12 +2120,16 @@ const catalogue = {
         type: m.type,
         default: m.default,
         description: plain(m.description),
+        since: m.since,
+        unreleased: m.unreleased,
+        deprecated: m.deprecated ? plain(m.deprecated) : null,
       })),
       host: c.host,
     })),
     exports: card.exports.map((e) => ({
       ...e,
       description: plain(e.description),
+      deprecated: e.deprecated ? plain(e.deprecated) : null,
     })),
     parts: card.parts.map((p) => ({
       name: p.name,

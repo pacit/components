@@ -12,6 +12,8 @@ import { Directive, input, signal, Signal } from '@angular/core';
  *
  * The list is open, and that is the point of naming it in one place: a fifth property will be
  * one entry here rather than one more read in every control that opens a panel.
+ *
+ * @since 0.1.0
  */
 export interface PctOverlayInherited {
   /**
@@ -37,6 +39,8 @@ export interface PctOverlayInherited {
  * panels and not the toasts ([`lesson-35`](../../../../docs/lessons.md#lesson-35)).
  *
  * `getComputedStyle` is a browser's; nothing here may be called on a server.
+ *
+ * @since 0.1.0
  */
 export function pctInheritedFrom(el: HTMLElement): PctOverlayInherited {
   const style = getComputedStyle(el);
@@ -53,6 +57,8 @@ export function pctInheritedFrom(el: HTMLElement): PctOverlayInherited {
 /**
  * The two elements an overlay is opened against, as functions rather than values: both are
  * read **on every open**, because either can move under a control that outlives one opening.
+ *
+ * @since 0.1.0
  */
 export interface PctOverlaySource {
   /**
@@ -73,6 +79,8 @@ export interface PctOverlaySource {
 /**
  * A panel that lives outside the host tree: its open state, and everything the tree stops
  * carrying once it does.
+ *
+ * @since 0.1.0
  */
 export interface PctOverlay {
   /** Whether the panel is open. Written only by `show()` and `hide()`. */
@@ -127,6 +135,8 @@ export interface PctOverlay {
  *   from: () => this.trigger().nativeElement,
  *   anchor: () => this.fieldApi?.surface() ?? null,
  * });
+ *
+ * @since 0.1.0
  */
 export function pctOverlay(src: PctOverlaySource): PctOverlay {
   const open = signal(false);
@@ -159,6 +169,8 @@ export function pctOverlay(src: PctOverlaySource): PctOverlay {
  *
  * @example
  * <div class="pct-select__panel" [pctOverlayPanel]="panel.inherited()">
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctOverlayPanel]',
@@ -170,7 +182,11 @@ export function pctOverlay(src: PctOverlaySource): PctOverlay {
   },
 })
 export class PctOverlayPanel {
-  /** `null` before the first opening — the panel is not rendered then either. */
+  /**
+   * `null` before the first opening — the panel is not rendered then either.
+   *
+   * @since 0.1.0
+   */
   readonly inherited = input<PctOverlayInherited | null>(null, {
     alias: 'pctOverlayPanel',
   });

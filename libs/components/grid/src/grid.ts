@@ -18,6 +18,8 @@ import { Component } from '@angular/core';
  *   <article>…</article>
  *   <article>…</article>
  * </pct-grid>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-grid',

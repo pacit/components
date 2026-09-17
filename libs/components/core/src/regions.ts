@@ -1,6 +1,10 @@
 import { InjectionToken, Signal } from '@angular/core';
 
-/** A place on the page a keyboard can be sent to, with the element that is that place. */
+/**
+ * A place on the page a keyboard can be sent to, with the element that is that place.
+ *
+ * @since 0.1.0
+ */
 export interface PctRegion {
   readonly element: HTMLElement;
   /**
@@ -21,6 +25,8 @@ export interface PctRegion {
  * measured **+19111 B over the package** ([`lesson-181`](../../../../docs/lessons.md#lesson-181),
  * `lesson-173` in its fourth disguise). A token with a `null` factory is a few bytes and asks
  * nothing of anyone.
+ *
+ * @since 0.1.0
  */
 export interface PctRegionsApi {
   readonly regions: Signal<readonly PctRegion[]>;
@@ -40,6 +46,8 @@ export interface PctRegionsApi {
  * with no `providePctRegions()` in an application, this resolves to `null`, the component does
  * nothing, and the mechanism costs the consumer a token
  * ([0072](../../../../docs/decisions/0072-a-region-key-is-the-consumers-to-install.md)).
+ *
+ * @since 0.1.0
  */
 export const PCT_REGIONS = new InjectionToken<PctRegionsApi | null>(
   'PCT_REGIONS',

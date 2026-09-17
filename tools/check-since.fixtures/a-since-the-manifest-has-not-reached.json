@@ -1,0 +1,15 @@
+{
+  "description": "An input dated `0.2.0` under a manifest at `0.1.0`: a version nobody has released, guessed by hand where `next` was the word — and wrong the day the release turns out to be `0.1.1`.",
+  "point": 2,
+  "check": "since-value",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 68,
+      "name": "disabled",
+      "kind": "input",
+      "since": "0.2.0",
+      "deprecated": false
+    }
+  ]
+}

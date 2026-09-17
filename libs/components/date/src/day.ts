@@ -18,13 +18,19 @@
  * The shape is `YYYY-MM-DD` with a four-or-more-digit year, and it is the same string
  * `<input type="date">.value` carries, `<time datetime>` takes, JSON carries and SQL `DATE`
  * stores — so the value crosses every boundary a form has without a converter.
+ *
+ * @since 0.1.0
  */
 export type PctDay = string;
 
 /** `YYYY-MM-DD`, four or more year digits — the shape alone, before the calendar is asked. */
 const SHAPE = /^(\d{4,})-(\d{2})-(\d{2})$/;
 
-/** The three fields of a day, as numbers. `month` is 1–12, the way a person says it. */
+/**
+ * The three fields of a day, as numbers. `month` is 1–12, the way a person says it.
+ *
+ * @since 0.1.0
+ */
 export interface PctDayParts {
   readonly year: number;
   readonly month: number;
@@ -51,7 +57,11 @@ function utc(year: number, month: number, day: number): Date {
   return date;
 }
 
-/** How many days February has — the Gregorian rule, written once. */
+/**
+ * How many days February has — the Gregorian rule, written once.
+ *
+ * @since 0.1.0
+ */
 export function pctDaysInMonth(year: number, month: number): number {
   if (month === 2)
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
@@ -63,6 +73,8 @@ export function pctDaysInMonth(year: number, month: number): number {
  * calendar has. `2026-02-30` has the shape and is not a day, and the difference matters —
  * a value read from a server, a query string or a `localStorage` entry is a string somebody
  * else wrote.
+ *
+ * @since 0.1.0
  */
 export function isPctDay(value: unknown): value is PctDay {
   if (typeof value !== 'string') return false;
@@ -84,6 +96,8 @@ function pad(value: number, width: number): string {
  * Builds a day from its three fields, normalising an overflow the way a person expects —
  * month `13` is January of the next year, day `0` is the last day of the previous month. That
  * is what makes `pctAddMonths` and `pctAddDays` one line each instead of three branches.
+ *
+ * @since 0.1.0
  */
 export function pctDay(year: number, month: number, day: number): PctDay {
   const date = utc(year, month, day);
@@ -114,13 +128,19 @@ export function pctDay(year: number, month: number, day: number): PctDay {
  * which is what `Intl.DateTimeFormat` with `timeZone: 'UTC'` reads back as the same three
  * fields it was built from. Handing out a local-time `Date` is the defect this whole module
  * exists to refuse.
+ *
+ * @since 0.1.0
  */
 export function pctDayAsUtc(day: PctDay): Date {
   const { year, month, day: d } = pctDayParts(day);
   return utc(year, month, d);
 }
 
-/** The three fields of a day. The caller has already established that it is one. */
+/**
+ * The three fields of a day. The caller has already established that it is one.
+ *
+ * @since 0.1.0
+ */
 export function pctDayParts(day: PctDay): PctDayParts {
   const m = SHAPE.exec(day) as RegExpExecArray;
   return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
@@ -130,12 +150,18 @@ export function pctDayParts(day: PctDay): PctDayParts {
  * Today, read from the LOCAL clock — the one read of local time in this file, and the only
  * one that belongs: "what day is it" is a question about where the user is standing, and
  * every other question here is arithmetic on a day that already has an answer.
+ *
+ * @since 0.1.0
  */
 export function pctToday(now: Date = new Date()): PctDay {
   return pctDay(now.getFullYear(), now.getMonth() + 1, now.getDate());
 }
 
-/** `n` days on (or back). */
+/**
+ * `n` days on (or back).
+ *
+ * @since 0.1.0
+ */
 export function pctAddDays(day: PctDay, n: number): PctDay {
   const { year, month, day: d } = pctDayParts(day);
   return pctDay(year, month, d + n);
@@ -145,6 +171,8 @@ export function pctAddDays(day: PctDay, n: number): PctDay {
  * `n` months on (or back), clamped to the length of the month it lands in: 31 January plus
  * one month is 28 February and not 3 March. The clamp is what a calendar's "next month"
  * button means — a walk that changed the day of the month would move the cursor twice.
+ *
+ * @since 0.1.0
  */
 export function pctAddMonths(day: PctDay, n: number): PctDay {
   const { year, month, day: d } = pctDayParts(day);
@@ -165,6 +193,8 @@ export function pctAddMonths(day: PctDay, n: number): PctDay {
  * day four thousand years past `max` down to `min`, the wrong bound entirely. A property
  * sweep of the ordering laws named it
  * ([`lesson-185`](../../../../docs/lessons.md#lesson-185)).
+ *
+ * @since 0.1.0
  */
 export function pctCompareDays(a: PctDay, b: PctDay): number {
   const left = pctDayParts(a);
@@ -178,6 +208,8 @@ export function pctCompareDays(a: PctDay, b: PctDay): number {
  * The ISO weekday: Monday is `1`, Sunday is `7` — the numbering
  * `Intl.Locale.prototype.getWeekInfo()` answers in, so the two never need converting
  * between them.
+ *
+ * @since 0.1.0
  */
 export function pctWeekday(day: PctDay): number {
   const { year, month, day: d } = pctDayParts(day);
@@ -188,6 +220,8 @@ export function pctWeekday(day: PctDay): number {
  * Held inside the bounds, either of which may be absent — and `undefined` is what absent is,
  * because that is what the `FormUiControl` contract's `min` / `max` are: a bound the schema
  * did not set is a bound the directive does not pass.
+ *
+ * @since 0.1.0
  */
 export function pctClampDay(
   day: PctDay,
@@ -207,6 +241,8 @@ export function pctClampDay(
  * than an oversight — a month spans four to six weeks depending on where it starts, and a
  * panel that changed height between March and August would move the page under the pointer
  * mid-walk.
+ *
+ * @since 0.1.0
  */
 export function pctMonthGrid(
   year: number,

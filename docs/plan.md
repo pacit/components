@@ -190,20 +190,18 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     301 to HTTPS. What is still the maintainer's: the apex on the hosting, Search Console
   - cost: 1 day · _notes:_ —
 
-- [ ] **3.6 — the public surface says since when, per API and not per component**
-  - concerns: [`req-release-semver`](requirements/release.md#req-release-semver)
-  - the site deploys from `main` on every green run, so from the first commit after the tag
-    it shows an input the published package does not have. A chip per component is too
-    coarse: the unit is the `input`, the `output`, the method, the `data-pct-part`
-  - **the source is the JSDoc at the declaration** — `@since 0.2.0`, and `@deprecated` with
-    what replaces it and when it goes. It travels into the `.d.ts`, so the consumer's editor
-    reads it too; `Status:` on a card stays what it is, the state of the component as a whole
-  - the content pass compares `@since` with the last `components@X.Y.Z` tag: newer, or no
-    tag at all, renders `unreleased` on the page. `pages.yml` then needs the tags in its
-    checkout — added with this position, not before
-  - a gate keeps `@since` honest: every public API carries one, its value is a version that
-    shipped or the next one, and `@deprecated` is held to `docs/support.md`'s two-minor window
-  - binds at: **the first commit after `0.1.0`** · _notes:_ —
+- [x] **3.6 — the public surface says since when, per API and not per component** — **closed 2026-09-17**
+  - concerns: [`req-release-since`](requirements/release.md#req-release-since)
+  - the source is the JSDoc at the declaration: `@since 0.1.0` on the 514 inputs, models,
+    outputs and entry-point exports that shipped, `@since next` on what `main` gets from now
+    on — a word, not a guess, because at `0.x` the next number is unknowable until the release
+    counts the commits; `stamp-version.mjs` names it on the release run, before the build
+  - the site compares `@since` with the MANIFEST — in every checkout where a tag is not — and
+    marks `unreleased` per row with a legend per page; the shipped `.d.ts` carry the tag too.
+    `check-since` holds every item to it; `check-package` point 10 refuses an unstamped release
+  - left out with reason: methods (66 public ones, most of them the plumbing between a
+    component and its parts; a method is API when a card's contract names it) and parts
+    (markup, not a declaration — a since column in the card would be a second home, 0017)
 
 ## 4. Open findings
 

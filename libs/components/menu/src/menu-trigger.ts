@@ -19,6 +19,8 @@ import { PCT_MENU_ITEM, PctMenu } from './menu';
  * @example
  * <button pctButton [pctMenuTrigger]="actions">Actions</button>
  * <pct-menu #actions>…</pct-menu>
+ *
+ * @since 0.1.0
  */
 @Directive({
   selector: '[pctMenuTrigger]',
@@ -42,7 +44,11 @@ export class PctMenuTrigger {
   /** The menu this control stands in, which for a submenu is its parent. */
   private readonly parent = inject(PctMenu, { optional: true });
 
-  /** The panel this control opens — the `pct-menu` from a template reference variable. */
+  /**
+   * The panel this control opens — the `pct-menu` from a template reference variable.
+   *
+   * @since 0.1.0
+   */
   readonly menu = input.required<PctMenu>({ alias: 'pctMenuTrigger' });
 
   constructor() {

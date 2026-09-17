@@ -62,6 +62,8 @@ interface PctToastClock {
  * this.toaster.show('Draft saved.');
  * this.toaster.show({ text: 'Could not save.', urgent: true });
  * this.toaster.show({ text: 'Message deleted.', action: { label: 'Undo', run: () => this.undo() } });
+ *
+ * @since 0.1.0
  */
 @Injectable({ providedIn: 'root' })
 export class PctToaster implements PctToastHost {

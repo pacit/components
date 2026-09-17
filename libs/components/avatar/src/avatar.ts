@@ -30,6 +30,8 @@ import { PctIcon } from '@pacit/components/icon';
  * never bound at all); the silhouette when there is no name to take initials from. A new
  * `src` re-arms the chain, so swapping the picture retries the image instead of
  * remembering the last failure forever.
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-avatar',
@@ -52,13 +54,23 @@ export class PctAvatar {
    * The name the initials are taken from. It is a SOURCE FOR A DRAWING, not an accessible
    * name — the host is hidden, and the name a user hears belongs to the text or the
    * control beside the picture (0052).
+   *
+   * @since 0.1.0
    */
   readonly name = input<string>('');
 
-  /** The picture's URL. Empty means none — the initials (or the silhouette) stand instead. */
+  /**
+   * The picture's URL. Empty means none — the initials (or the silhouette) stand instead.
+   *
+   * @since 0.1.0
+   */
   readonly src = input<string>('');
 
-  /** Size on the shared control axis; from the global configuration by default. */
+  /**
+   * Size on the shared control axis; from the global configuration by default.
+   *
+   * @since 0.1.0
+   */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**

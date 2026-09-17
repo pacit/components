@@ -53,6 +53,8 @@ function longest(value: string | undefined): number {
  * @example
  * panel.setAttribute('data-pct-leaving', '');
  * this.cancelLeave = pctAfterTransition(panel, () => ref.dispose());
+ *
+ * @since 0.1.0
  */
 export function pctAfterTransition(
   element: HTMLElement,

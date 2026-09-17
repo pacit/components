@@ -76,6 +76,8 @@ const BLANK = /[\s\u200e\u200f\u061c\u2066-\u2069]/g;
  *   <span pctPrefix>PLN</span>
  *   <input pctNumber [minFractionDigits]="2" [maxFractionDigits]="2" [(value)]="price" />
  * </pct-field>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'input[pctNumber]',
@@ -111,30 +113,62 @@ export class PctNumber
   private readonly field = inject(PCT_FIELD, { optional: true });
   protected readonly texts = inject(PCT_TEXTS);
 
-  /** The value — `null` means the field is empty. */
+  /**
+   * The value — `null` means the field is empty.
+   *
+   * @since 0.1.0
+   */
   readonly value = model<number | null>(null);
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
-  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
+  /**
+   * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
+   *
+   * @since 0.1.0
+   */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Keeps the value from being edited while the field stays focusable and readable — the native `readonly`. */
+  /**
+   * Keeps the value from being edited while the field stays focusable and readable — the native `readonly`.
+   *
+   * @since 0.1.0
+   */
   readonly readonly = input(false, { transform: booleanAttribute });
 
-  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
+  /**
+   * The form's verdict; shown only once `touched`, so an empty form does not open red.
+   *
+   * @since 0.1.0
+   */
   readonly invalid = input(false, { transform: booleanAttribute });
 
-  /** Whether the user has left the field once; with `invalid` it gates the error face. */
+  /**
+   * Whether the user has left the field once; with `invalid` it gates the error face.
+   *
+   * @since 0.1.0
+   */
   readonly touched = input(false, { transform: booleanAttribute });
 
-  /** The native `required`; a `pct-field` around the control reads it to mark the label. */
+  /**
+   * The native `required`; a `pct-field` around the control reads it to mark the label.
+   *
+   * @since 0.1.0
+   */
   readonly required = input(false, { transform: booleanAttribute });
 
-  /** The form's validation errors; a `pct-field` around the control shows the first one's `message` in place of the hint once the field is touched. */
+  /**
+   * The form's validation errors; a `pct-field` around the control shows the first one's `message` in place of the hint once the field is touched.
+   *
+   * @since 0.1.0
+   */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
-  /** The native `name` — what a form submission calls the value. */
+  /**
+   * The native `name` — what a form submission calls the value.
+   *
+   * @since 0.1.0
+   */
   readonly name = input<string>('');
 
   /**
@@ -158,10 +192,16 @@ export class PctNumber
    * <pct-field label="Year of birth">
    *   <input pctNumber autocomplete="bday-year" [(value)]="year" />
    * </pct-field>
+   *
+   * @since 0.1.0
    */
   readonly autocomplete = input<AutoFill>('off');
 
-  /** Emitted on blur — lets the form mark the field as touched. */
+  /**
+   * Emitted on blur — lets the form mark the field as touched.
+   *
+   * @since 0.1.0
+   */
   readonly touch = output<void>();
 
   // --- component API ---
@@ -170,25 +210,51 @@ export class PctNumber
    * Value bounds. They belong to the `FormUiControl` contract, so with `[formField]` **the
    * directive fills them itself** from the schema's `min()` / `max()` validators — there is no
    * need to repeat them in the template. The value is clamped to them on commit.
+   *
+   * @since 0.1.0
    */
   readonly min = input(undefined, { transform: optionalNumber });
 
-  /** The upper bound — as `min`: filled by the directive from the schema's `max()`, and the value is clamped to it on commit. */
+  /**
+   * The upper bound — as `min`: filled by the directive from the schema's `max()`, and the value is clamped to it on commit.
+   *
+   * @since 0.1.0
+   */
   readonly max = input(undefined, { transform: optionalNumber });
 
-  /** The up/down arrow step; PageUp/PageDown jumps ten times as far. */
+  /**
+   * The up/down arrow step; PageUp/PageDown jumps ten times as far.
+   *
+   * @since 0.1.0
+   */
   readonly step = input(1, { transform: numberAttribute });
 
-  /** Minimum number of decimal places written (`2` for amounts, say: "12.50"). */
+  /**
+   * Minimum number of decimal places written (`2` for amounts, say: "12.50").
+   *
+   * @since 0.1.0
+   */
   readonly minFractionDigits = input(0, { transform: numberAttribute });
 
-  /** Maximum number of decimal places; `0` (the default) = an integer. */
+  /**
+   * Maximum number of decimal places; `0` (the default) = an integer.
+   *
+   * @since 0.1.0
+   */
   readonly maxFractionDigits = input(0, { transform: numberAttribute });
 
-  /** Locale-aware thousands grouping ("1 234 567"). */
+  /**
+   * Locale-aware thousands grouping ("1 234 567").
+   *
+   * @since 0.1.0
+   */
   readonly useGrouping = input(true, { transform: booleanAttribute });
 
-  /** Overrides the application's `LOCALE_ID` for this field. */
+  /**
+   * Overrides the application's `LOCALE_ID` for this field.
+   *
+   * @since 0.1.0
+   */
   readonly locale = input<string>('');
 
   private readonly appLocale = inject(LOCALE_ID);

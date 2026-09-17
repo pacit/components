@@ -1,0 +1,15 @@
+{
+  "description": "An input with a JSDoc line and no `@since` tag — the state every member of the library was in before this gate: documented, and undated.",
+  "point": 1,
+  "check": "since-missing",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 68,
+      "name": "disabled",
+      "kind": "input",
+      "since": null,
+      "deprecated": false
+    }
+  ]
+}

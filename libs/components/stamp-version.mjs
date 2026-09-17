@@ -8,11 +8,15 @@
  * version` bumps the manifest alone), and `check-package.mjs` point 4 is the gate for the case
  * where somebody bumps the version and skips the script — it reads the **built** artefact.
  *
+ * On the run that moves the version it also DATES the API: every `@since next` in the
+ * library sources — the word an unreleased declaration carries (`check-since`, decision
+ * 0080) — becomes `@since <version>`, so the shipped types name the release and not a promise.
+ *
  * Usage:
  *   node libs/components/stamp-version.mjs           # write
  *   node libs/components/stamp-version.mjs --check   # check only (exit 1 on a mismatch)
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { globSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,9 +37,22 @@ const render = (
 // lands here, so that the package can report its version at runtime without pulling the
 // manifest into the bundle. A mismatch is blocked by the \`check-package\` gate.
 
-/** The library version — the same one the package manifest carries. */
+/**
+ * The library version — the same one the package manifest carries.
+ *
+ * @since 0.1.0
+ */
 export const PCT_VERSION = '${v}';
 `;
+
+/** `a` is a later release line than `b` — plain `major.minor.patch`, prerelease tails ignored. */
+const newer = (a, b) => {
+  const x = a.split('.').map((n) => parseInt(n, 10));
+  const y = b.split('.').map((n) => parseInt(n, 10));
+  for (let i = 0; i < 3; i++)
+    if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+  return false;
+};
 
 const expected = render(version);
 const current = (() => {
@@ -63,4 +80,31 @@ if (current === expected) {
 } else {
   writeFileSync(TARGET, expected);
   console.log(`✓ Wrote PCT_VERSION = ${version} to src/version.ts.`);
+  // The version names what was `next` — only when it moved FORWARD. A rehearsal writes no
+  // manifest, finds the constant current and must leave `next` where it is: dating it with
+  // the version already out would date what nobody has shipped. A constant ahead of the
+  // manifest is a checkout somebody wound back, and the same rule holds.
+  const before = current?.match(/PCT_VERSION = '([^']+)'/)?.[1] ?? '0.0.0';
+  const forward = newer(version, before);
+  const dated = [];
+  for (const file of forward
+    ? ['src/**/*.ts', '*/src/**/*.ts']
+        .flatMap((pattern) => globSync(pattern, { cwd: HERE }))
+        .filter((f) => !/\.(spec|mutation)\.ts$/.test(f))
+        .sort()
+    : []) {
+    const path = join(HERE, file);
+    const text = readFileSync(path, 'utf8');
+    const hits = (text.match(/@since next\b/g) ?? []).length;
+    if (!hits) continue;
+    writeFileSync(path, text.replace(/@since next\b/g, `@since ${version}`));
+    dated.push(`${file} (${hits})`);
+  }
+  console.log(
+    dated.length
+      ? `✓ Dated \`@since ${version}\` in place of \`next\` in ${dated.length} file(s): ${dated.join(', ')}.`
+      : forward
+        ? '✓ No `@since next` to date — nothing on main was unreleased.'
+        : `✓ The version did not move forward (${before} → ${version}); \`@since next\` is left as it is.`,
+  );
 }

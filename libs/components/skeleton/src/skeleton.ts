@@ -19,6 +19,8 @@ import {
  * consumer had drew an ellipse, and a square needed a width tied to a height, which no token
  * of the skin can say. A disc is a box whose one axis follows the other, and that is a
  * drawing, not a colour ([0067](../../../../docs/decisions/0067-a-disc-is-a-shape-because-a-radius-does-not-draw-one.md)).
+ *
+ * @since 0.1.0
  */
 export type PctSkeletonShape = 'text' | 'block' | 'circle';
 
@@ -54,6 +56,8 @@ export type PctSkeletonShape = 'text' | 'block' | 'circle';
  *     <p>{{ article().body }}</p>
  *   }
  * </div>
+ *
+ * @since 0.1.0
  */
 @Component({
   selector: 'pct-skeleton',
@@ -81,6 +85,8 @@ export class PctSkeleton {
    * will take at whatever size it is set in. Anything that is not a whole number of at least
    * one is one: a skeleton is drawn because something is coming, and a placeholder for zero
    * lines of it is a component asking to be left out of the template instead.
+   *
+   * @since 0.1.0
    */
   readonly lines = input(1, { transform: skeletonLines });
 
@@ -96,6 +102,8 @@ export class PctSkeleton {
    * `block-size: var(--pct-avatar-size)` is a disc the avatar's own size; with nothing written
    * it is one line of the surrounding text across. It stands inline, as the avatar it stands
    * in for does, so a name can sit beside it with no layout of the consumer's.
+   *
+   * @since 0.1.0
    */
   readonly shape = input<PctSkeletonShape>('text');
 
@@ -120,6 +128,8 @@ export class PctSkeleton {
    *
    * @example
    * <pct-skeleton [lines]="3" [paused]="waited() > 5000" />
+   *
+   * @since 0.1.0
    */
   readonly paused = input(false, { transform: booleanAttribute });
 
