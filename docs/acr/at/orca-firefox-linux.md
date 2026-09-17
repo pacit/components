@@ -16,7 +16,7 @@ person has made it.
 
 **Taken with**, because a reading is only ever true of one stack:
 
-- Orca version 50.2, AT-SPI2 version: 2.60.4, Session: wayland ubuntu
+- Orca version 50.2, AT-SPI2 version: 2.60.4
 - Firefox 151.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
 - 509 steps over 36 views, at most 12 stops of a view's own
 
@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 6 of 509 here. 11 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2053
-phrases, and 2046 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2054
+phrases, and 2047 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -144,7 +144,7 @@ Tab moved nothing — focus had left the page.
 ### `/number`
 
 ```
-arrive  a "Number"                                           navigation · Sandbox views · List with 30 items · Number · link. · Browse mode
+arrive  a "Number"                                           navigation · Sandbox views · List with 30 items · Number · visited link. · Browse mode
 enter   input                                                Price · spin button · 1 499,90. · The arrows change the value by 0.5. · Focus mode
 tab 1   button[field-suffix-item] "Clear the price"          Clear the price · button. · Browse mode
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -204,7 +204,7 @@ tab 1   —                                                    Theme · panel ·
 ### `/radio`
 
 ```
-arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 30 items · Radio · link.
+arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 30 items · Radio · visited link.
 enter   input[control]                                       Plan · panel · Free · not selected radio button.
 tab 1   —                                                    leaving panel. · Theme · panel · light · selected radio button. · alert. · Pick a plan
 ```
@@ -233,7 +233,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 30 items · Switch · link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 30 items · Switch · visited link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -259,7 +259,7 @@ tab 13  input[trigger]                                       Countries · editab
 tab 14  button[trigger] "Poland"                             Country · combo box. · opens listbox
 reach   button[trigger] "Sélectionner…"                      Country · combo box. · A list with a panel of its own (CDK Overlay) · opens listbox
 open    button[trigger] "Sélectionner…"                      leaving main content. · List with 6 items · Poland · not selected.
-close   button[trigger] "Sélectionner…"                      Country · combo box. · A list with a panel of its own (CDK Overlay) · opens listbox · collapsed
+close   button[trigger] "Sélectionner…"                      main content · Country · combo box. · A list with a panel of its own (CDK Overlay) · opens listbox · collapsed
 ```
 
 the act: `Enter` on `[data-testid="select-country"] [data-pct-part="trigger"]`, to open a listbox (the gesture belongs to `apps/sandbox-e2e/src/select.spec.ts`).
@@ -444,7 +444,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/toast`
 
 ```
-arrive  a "Toast"                                            navigation · Sandbox views · List with 30 items · Toast · link. · Browse mode
+arrive  a "Toast"                                            navigation · Sandbox views · List with 30 items · Toast · visited link. · Browse mode
 enter   button "Save the draft"                              Save the draft · button.
 tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
 tab 2   button "Report something that waits"                 Report something that waits · button.
@@ -507,7 +507,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving navigation. · leaving main content. · navigation · Sandbox views · List with 30 items · Progress · link.
+arrive  a "Progress"                                         leaving list. · leaving navigation. · leaving main content. · navigation · Sandbox views · List with 30 items · Progress · visited link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -628,7 +628,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · link. · Browse mode
+arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · visited link. · Browse mode
 enter   a "Home"                                             navigation · Breadcrumb · List with 3 items · Home · link.
 tab 1   a "Library"                                          Library · link.
 tab 2   a "Data"                                             Data · link. · (Current page)
@@ -653,7 +653,7 @@ Tab moved nothing — focus had left the page.
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · visited link. · Browse mode
+arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · link. · Browse mode
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -695,7 +695,7 @@ Tab moved nothing — focus had left the page.
 ### `/layout`
 
 ```
-arrive  a "Layout"                                           navigation · Sandbox views · List with 30 items · Layout · link. · Browse mode
+arrive  a "Layout"                                           navigation · Sandbox views · List with 30 items · Layout · visited link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
