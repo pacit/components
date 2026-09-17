@@ -60,7 +60,7 @@ jobs:
           key: nx-${{ runner.os }}-${{ github.event.workflow_run.head_sha || github.sha }}
           restore-keys: nx-${{ runner.os }}-
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
       # `build` pulls the token pipeline, the library build and the content pass through its
       # own `dependsOn`; nothing else is needed and no browser is installed here.
@@ -73,7 +73,7 @@ jobs:
 
       # `browser/` and nothing above it: the parent holds `prerendered-routes.json` and the
       # third-party licence roll-up, neither of which is a page.
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/apps/docs/browser
 
@@ -85,4 +85,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

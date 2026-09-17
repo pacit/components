@@ -76,8 +76,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 0  the copy off this machine  DONE — landed 2026-09-01
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
-3  publication            the premiere: 3.5 first, then 3.2, 3.3, 3.4, then 3.1 on a
-                          sentence; 3.6 on the far side of the tag
+3  publication            the premiere: 3.5 and 3.2 done; 3.3 and 3.4 wait on the
+                          maintainer's switches; 3.1 on a sentence; 3.6 past the tag
 4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
@@ -86,10 +86,10 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 **The push and the premiere are two moments**
 ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)). The quiet push landed
-on 2026-09-01 and the flip to public on 2026-09-15; npm waits for **3.5**, the three positions
-behind it, and an explicit sentence. No run turning green starts it, and standing next in
-this list is not a start either — a session that reaches **3.1** passes over it and takes the
-next item.
+on 2026-09-01, the flip to public on 2026-09-15, and the site went live at its address on
+2026-09-17; npm waits for the maintainer's two switches (**3.3**, **3.4**), a token, and an
+explicit sentence. No run turning green starts it, and standing next in this list is not a
+start either — a session that reaches **3.1** passes over it and takes the next item.
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
 decisions live: the site's address, host and deploy trigger in
@@ -130,7 +130,7 @@ repository has no first look. So the quiet half moved to the front and landed on
 the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
 
 - [~] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded**
-  — **the flip is done, 2026-09-15; the publish waits on 3.5, 3.2, 3.3, 3.4 and a sentence**
+  — **the flip is done, 2026-09-15; the publish waits on 3.4's switches, a token, and a sentence**
   - **the flip.** `pacit/components` is public: no secret across 404 commits, every README
     link answering 200, and 404 commits under a public author address for good
   - **the publish was refused the same day**, the rehearsal green end to end (690.6 kB, 114
@@ -195,26 +195,18 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     repository settings — and **the venue**: where the release is announced has no answer yet
   - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
 
-- [~] **3.5 — the site at its own address, deployed behind a green CI** — **the code landed
-  2026-09-16; the address waits on the maintainer's hands and the first dispatch**
-  - concerns: [`req-project-apps`](requirements/project.md#req-project-apps) · decided
-    2026-09-16, [0078](decisions/0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md)
-  - **what landed**: `pages.yml` on `workflow_run` after a green `CI` on `main`, building that
-    run's `head_sha`; `public/CNAME` read by the content pass into a generated `site.ts`, from
-    which canonical, `og:url`, `og:title`, `og:image`, `sitemap.xml` and `robots.txt` derive
-    with the slash Pages serves; a `not-found` page prerendered under `/404` through the
-    catch-all's `getPrerenderParams` and copied to `404.html` in the workflow
-  - **measured**: the build writes 42 routes with `/404` and no `**` directory; `routes.spec`
-    holds every route to its canonical address and `og:url`, the sitemap to the sweep's own
-    list, and an unknown address to the not-found page with a silent console — 87 cases green
-    in chromium on 2026-09-16, the other two engines the same evening
-  - not taken, and why: `.nojekyll` (an Actions deploy skips Jekyll), custom headers and
-    `immutable` chunks (Pages answers `max-age=600` to everything), a hand-written sitemap
-  - **what is left is outside the repository**: the `CNAME` record at OVH, Pages → Source:
-    Actions with the domain, the apex's Multisite entry with SSL and its `.htaccess`, Search
-    Console with the sitemap — then the first dispatch, and `curl` on the four readings the
-    decision names. The position closes on the reading, not on the push
-  - binds at: **the maintainer's DNS and Pages settings** — 3.2's links wait on the address
+- [x] **3.5 — the site at its own address, deployed behind a green CI** — **live 2026-09-17**
+  - concerns: [`req-project-apps`](requirements/project.md#req-project-apps) · decided in
+    [0078](decisions/0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md)
+  - `pages.yml` on `workflow_run` after a green `CI`; the origin stated once in `public/CNAME`
+    and derived into canonical, `og:*`, `sitemap.xml`, `robots.txt`; a `not-found` page
+    prerendered under `/404` and served as the host's `404.html`. `routes.spec` holds every
+    route to its address, 261 cases over three engines
+  - **read off the live host after the first dispatch**: `/` 200 under a Let's Encrypt
+    certificate for the domain, `/start` 301 → `/start/` 200, an unknown path **404** with
+    `noindex`, 41 addresses in the map, `pacit.github.io/components/` 301 to the domain, HTTP
+    301 to HTTPS. What is still the maintainer's: the apex on the hosting, Search Console
+  - cost: 1 day · _notes:_ —
 
 - [ ] **3.6 — the public surface says since when, per API and not per component**
   - concerns: [`req-release-semver`](requirements/release.md#req-release-semver)
