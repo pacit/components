@@ -8,6 +8,16 @@ uplinks:
     maxage: 60m
 
 packages:
+  # The package under test is LOCAL ONLY: no uplink for its scope. With the proxy below, npm's
+  # own pre-publish check found `0.1.0` on the public registry the hour it was published there
+  # and refused the local publish — two runs red for nothing that had changed in the package
+  # (lesson-223). A rehearsal registry that answers for the thing being rehearsed with the
+  # public registry's answers is not a rehearsal. The peers stay proxied, on purpose.
+  '@pacit/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+
   '**':
     # give all users (including non-authenticated users) full access
     # because it is a local registry

@@ -6220,3 +6220,20 @@ arrived is not a pass. Its controls: `npx nx --version |& scripts/nx-verdict` ex
 green `run-many` exits 0, a red one keeps nx's 1 through `pipefail`. The second repair is the
 guarantee whatever the mechanism; the first is the cure, and the next full run is its
 reading.
+
+### <a id="lesson-223"></a>`lesson-223` — The consumer gate published to a registry that knew the public one
+
+`check-consumer` packs the built package, publishes it to a Verdaccio it starts for the
+run, and installs it from there into a consumer application. From the hour `0.1.0` stood on
+npm, the publish failed: `You cannot publish over the previously published versions: 0.1.0`.
+The local registry proxied `@pacit/*` to the public one, so npm's own pre-publish check —
+a `view` against the registry it publishes to — found the version upstream and refused.
+Two runs red on it, `db0c720` inside the silence of `lesson-222` and `fcfe5b6` in the
+open; nothing about the package had changed.
+
+A gate that measures what a consumer gets from OUR archive must not be able to see anybody
+else's. The package under test is local-only in the registry's configuration now: no
+uplink for its scope, every other scope still proxied, because the peers are installed
+from the public registry on purpose. The rule generalises: a rehearsal registry that
+answers questions about the thing being rehearsed with the public registry's answers is
+not a rehearsal.

@@ -91,8 +91,8 @@ export default defineConfig({
    * lesson-222). `project.json` sets that dependency to nothing; this block is the only
    * thing that starts the server. The timeout is for a cold runner, where the first build
    * of the sandbox is the slow part; a running server is reused, which is also what lets a
-   * developer's own `nx serve sandbox` carry a suite — and go stale under it, as
-   * `lesson-`s in the memory of this repository say.
+   * developer's own `nx serve sandbox` carry a suite — and serve it a bundle older than the
+   * sources, so a suite that contradicts a reading is first a question about the server.
    */
   webServer: {
     command: 'npx nx run sandbox:serve',

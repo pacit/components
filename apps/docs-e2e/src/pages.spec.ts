@@ -955,7 +955,7 @@ test.describe('The pages', () => {
     await expect(
       page.getByTestId('acr').getByRole('heading', { name: 'Summary' }),
     ).toBeVisible();
-    await expect(page.getByTestId('acr')).toContainText('Not recorded');
+    await expect(page.getByTestId('acr')).toContainText('Recorded.');
 
     // The verdict is a chip, in the shape and the tones the promise registry states its own
     // in — one vocabulary of colour across the two places this site states a finding.

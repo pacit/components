@@ -9,13 +9,19 @@
 # pipe and turns the missing line into the failure it was: a verdict that never arrived is
 # not a pass. The step's shell has `pipefail`, so nx's own non-zero code still wins.
 #
+# Both endings count as a verdict: the pass line, and the `Failed tasks:` list nx prints above
+# its exit code 1 — the reader is not a second judge of a red run, only of a mute one.
+#
 # Usage:  npx nx affected -t … |& scripts/nx-verdict
 verdict=0
 while IFS= read -r line; do
   printf '%s\n' "$line"
-  case "$line" in *'Successfully ran target'*) verdict=1 ;; esac
+  case "$line" in
+    *'Successfully ran target'*) verdict=1 ;; # the pass — nx exits 0 with it
+    *'Failed tasks:'*) verdict=1 ;;           # the failure — nx exits 1 with it, and pipefail keeps that
+  esac
 done
 if [ "$verdict" -ne 1 ]; then
-  echo "::error::nx ended without its summary line — the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
+  echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   exit 1
 fi
