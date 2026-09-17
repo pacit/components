@@ -58,7 +58,7 @@ check-tools.mjs 4 16 168
 check-typecheck.mjs 4 16 134
 check-zoneless.mjs 6 18 153
 fresh-inputs.mjs 0 0 0
-release.mjs 5 17 135
+release.mjs 5 17 144
 restore-dictionaries.mjs 0 12 128
 ```
 
@@ -78,7 +78,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 
 ```
 1.2 open 5 62
-3.1 closed 12 147
+3.1 closed 12 160
 3.2 closed 12 143
 3.3 closed 10 153
 3.4 closed 12 169

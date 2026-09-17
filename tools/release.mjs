@@ -7,17 +7,18 @@
  *   1. `releaseVersion` — bumps libs/components/package.json (staged; no commit, no tag),
  *   2. `stamp-version` — writes that version into the constant in the code,
  *   3. `build` + `check-package` — the artifact comes from already-bumped sources, and
- *      the gate stops an incomplete package before the commit, the tag and the publish,
+ *      the gate stops an incomplete package before the commit, the tag and the stage,
  *   4. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
- *   5. `releasePublish` — the publish itself.
+ *   5. `npm stage publish` — the tarball goes to npm's stage; a maintainer approves it.
  *
  * Usage:
- *   node tools/release.mjs --dry-run          # writes nothing, publishes nothing
+ *   node tools/release.mjs --dry-run          # writes nothing, stages nothing
  *   node tools/release.mjs --specifier=minor
  *   node tools/release.mjs --first-release    # no previous tag
  */
-import { execFileSync } from 'node:child_process';
-import { releaseChangelog, releasePublish, releaseVersion } from 'nx/release';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { appendFileSync, readFileSync } from 'node:fs';
+import { releaseChangelog, releaseVersion } from 'nx/release';
 
 const arg = (name) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -37,7 +38,7 @@ const run = (args) => {
 
 if (dryRun) {
   console.log(
-    '\n=== DRY RUN (--dry-run): nothing will be written, tagged or published ===',
+    '\n=== DRY RUN (--dry-run): nothing will be written, tagged or staged ===',
   );
 }
 
@@ -56,6 +57,14 @@ const { workspaceVersion, projectsVersionData } = await releaseVersion({
   // (lesson-220). `releaseChangelog` commits the index, and nothing else fills it.
   stageChanges: true,
 });
+const version = projectsVersionData.components?.newVersion;
+if (!version) {
+  console.error(
+    '\nNothing to release: no version resolved for `components` — no commit since the tag ' +
+      'counts, and no --specifier was given.',
+  );
+  process.exit(1);
+}
 
 // 2. The constant in the code follows the manifest. In a dry run the manifest was left
 //    alone, so the stamp is a no-op here and the artifact stays consistent.
@@ -100,10 +109,67 @@ await releaseChangelog({
   gitPush: true,
 });
 
-// 5. Publish. `nx-release-publish` points at dist/libs/components, not at the source
-//    directory.
-const result = await releasePublish({ dryRun, verbose, firstRelease });
+// 5. The stage. `npm stage publish` is `npm publish` stopped one step short: the tarball is
+//    up, and the version stays invisible until a maintainer approves it with 2FA, on
+//    npmjs.com or with `npm stage approve` (decision 0079, amended 2026-09-17). The trusted
+//    publisher `release.yml` runs as may only stage — the registry refuses `npm publish`
+//    from it — and Nx's `releasePublish` knows only `npm publish`, so npm is called directly:
+//    from the package root, because `npm stage` is unaware of workspaces, and with
+//    `--provenance` said out loud, so a run that cannot sign fails instead of staging
+//    unsigned. `--json` keeps the tarball listing on stderr and puts the stage id where the
+//    summary below can read it.
+const packageRoot = 'dist/libs/components';
+const stageArgs = ['stage', 'publish', '--provenance', '--json'];
+// A dry run writes no manifest (decision 0079), so the artifact still carries the published
+// version, and npm's own check — "cannot publish over 0.1.0" — would end the rehearsal before
+// the exchange. `--force` skips that check and the prerelease-tag one, nothing else; the real
+// run has the bumped manifest and keeps both.
+if (dryRun) stageArgs.push('--dry-run', '--force');
+console.log(`\n> npm ${stageArgs.join(' ')}   (in ${packageRoot})`);
+const stage = spawnSync('npm', stageArgs, {
+  cwd: packageRoot,
+  encoding: 'utf8',
+});
+process.stderr.write(stage.stderr ?? '');
+console.log(stage.stdout ?? '');
+if (stage.status !== 0) process.exit(stage.status ?? 1);
+// The exchange is what the rehearsal on the runner is for: npm swallows a failed OIDC
+// exchange and, in a dry run, only warns that nobody is logged in. On the runner, which holds
+// no other credential (`release.yml`), that warning is the finding — the registry does not
+// know this workflow as the package's trusted publisher — and a real run would learn it after
+// the tag. Locally it says only whether somebody is logged in, so it is read on the runner.
+if (
+  dryRun &&
+  process.env.GITHUB_ACTIONS &&
+  /requires you to be logged in/.test(stage.stderr ?? '')
+) {
+  console.error(
+    '\nThe OIDC exchange returned no token: npm does not recognise this workflow as the ' +
+      "package's trusted publisher (the repository, the workflow file name, `id-token: write`). " +
+      'A real run would fail here, after the tag.',
+  );
+  process.exit(1);
+}
+let stageId;
+try {
+  stageId = JSON.parse(stage.stdout).stageId;
+} catch {
+  // Not JSON after all — the raw output above is the record, and the id is in it.
+}
 
-// The exit code is the sum of the per-project results — without it a failed publish
-// would end the workflow green.
-process.exit(Object.values(result).every((r) => r.code === 0) ? 0 : 1);
+// What happens next is a person's move, so it is said where the person looks: the job
+// summary on GitHub when there is one, the terminal otherwise.
+const { name } = JSON.parse(
+  readFileSync(`${packageRoot}/package.json`, 'utf8'),
+);
+const note = dryRun
+  ? `Dry run: ${name}@${version} would be staged on npm. Nothing was written, tagged or ` +
+    `staged; the rehearsal packed the artifact at its current version, ` +
+    `${projectsVersionData.components.currentVersion}, because a dry run writes no manifest.`
+  : `${name}@${version} is staged on npm${stageId ? ` (stage id \`${stageId}\`)` : ''}. ` +
+    'The tag and the GitHub Release are out; the version reaches consumers once a ' +
+    'maintainer approves it with 2FA — on npmjs.com, or:\n\n' +
+    `    npm stage list ${name}\n    npm stage approve <id>\n`;
+console.log(`\n${note}`);
+if (process.env.GITHUB_STEP_SUMMARY)
+  appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${note}\n`);

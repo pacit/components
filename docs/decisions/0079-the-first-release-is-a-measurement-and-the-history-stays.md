@@ -64,6 +64,16 @@ publishing is configured a minute after the first publish, because it cannot be 
    deleted, and `NODE_AUTH_TOKEN` removed from the workflow. The next release is the proof.
    This is not a preference: tokens that bypass 2FA lose the right to publish around
    2027-01, by npm's own schedule.
+   _Amended 2026-09-17, the afternoon of the publish: the publisher may only **stage**.
+   npm's staged publishing (CLI 11.15 and later) uploads the tarball and holds the version
+   until a maintainer approves it with 2FA, on npmjs.com or with `npm stage approve`; a
+   trusted publisher can be limited to that, and this one is. So `release.mjs` runs
+   `npm stage publish` — Nx's `releasePublish` knows only `npm publish`, which the registry
+   now refuses from this workflow — and the tag and the GitHub Release precede the version on
+   npm by however long the approval takes. The dry run now asks npm to skip its "cannot publish
+   over" check (`--force`, dry run only), because the artifact it packs still carries the
+   published version — and on the runner it treats npm's "not logged in" as the finding it
+   is: an OIDC exchange the registry refused. The proof stays where it was: the next release._
 5. **The order of the premiere is fixed by what depends on what.** The site at its address
    first, because the public `.d.ts` cite it; then the citations, the CI-colour check in the
    release workflow and the contributor path; then the publish, on a sentence, as

@@ -87,8 +87,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)), and both have passed:
 the quiet push on 2026-09-01, the flip to public on 2026-09-15, the site at its address and
 `@pacit/components@0.1.0` on npm on 2026-09-17, the last on the maintainer's sentence. What
-the premiere still owes is **3.6**, which binds at the first commit after the tag, and the
-switch from the token to trusted publishing, which is the maintainer's move on npm.
+the premiere still owes is **3.6**, which binds at the first commit after the tag, and one
+proof: the first version staged by the trusted publisher and approved by hand.
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
 decisions live: the site's address, host and deploy trigger in
@@ -132,12 +132,12 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
   - the flip 2026-09-15; the publish 2026-09-17 on the maintainer's word, after a dry run in
     CI on the same head: `0.1.0` from the commits, provenance attested, `PCT_VERSION` in the
     published code equal to the tag — read back from the tarball, not from the log
-  - what only the real run could show: the release commit carried the changelog and nothing
-    else, the manifest and the stamp left in the runner's checkout
-    ([`lesson-220`](lessons.md#lesson-220)); repaired by hand under the tag, and `release.mjs`
-    stages both from now on
+  - what only the real run could show: the release commit carried the changelog alone, the
+    manifest and the stamp left in the runner's checkout ([`lesson-220`](lessons.md#lesson-220));
+    repaired by hand under the tag, and `release.mjs` stages both from now on
   - `req-project-latest` is superseded by the matrix and `check-support`, as its Binds at
-    said; trusted publishing replaces the token with the next release, the maintainer's move
+    said; the token lived one run — a stage-only trusted publisher since the same afternoon,
+    so `release.yml` stages on npm and the maintainer approves with 2FA (0079, amended)
   - cost: the night of 2026-09-16 and the morning after · _notes:_ —
 
 - [x] **3.2 — citations in the public API as links** — **closed 2026-09-16**

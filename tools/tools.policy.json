@@ -3,8 +3,8 @@
   "// how reached is decided": "The command of a target the push line or the schedule invokes, then the closure over `./*.mjs` imports. A module a running gate imports is as exercised as the gate: `restore-dictionaries.mjs` was listed here until the closure was written and the gate refused the entry.",
   "// at-pass.mjs": "Drives a live screen reader on a display of its own. No runner in this workspace has one, and the reading is a person's to take (plan 2.2). `at-pass.yml` dispatches the other two readers by hand.",
   "at-pass.mjs": "by hand, and by dispatch",
-  "// release.mjs": "Publishes the package. `release.yml` runs it on a tag, and no tag has been cut, so nothing on a push or a schedule reaches it. Deliberate, and also the risk 4.65 names: the instrument of the premiere is the one nothing exercises.",
-  "release.mjs": "on a tag nobody has cut",
+  "// release.mjs": "Stages the package on npm. `release.yml` runs it by hand, and nothing on a push or a schedule reaches it — deliberate, and also the risk: the instrument of a release is the one no gate exercises, so its dry run is the rehearsal, and the tag is the proof (decision 0079).",
+  "release.mjs": "by hand, through release.yml",
   "// changelog-renderer.mjs": "Renders the CHANGELOG entry for `nx release` (decision 0079). `release.mjs` is its one caller, through `nx.json`, and nothing on a push or a schedule reaches that — the same reason `release.mjs` stands here.",
-  "changelog-renderer.mjs": "by nx release, on a tag nobody has cut"
+  "changelog-renderer.mjs": "by nx release, by hand"
 }

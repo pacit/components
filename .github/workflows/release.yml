@@ -1,13 +1,15 @@
 name: Release
 
-# Manual only, and a dry run by default. Publishing cannot be undone — a published
-# npm version can be deprecated but not withdrawn — so a deliberate click is safer
-# here than an automatic run on every merge to main.
+# Manual only, and a dry run by default. The run cuts the tag and the GitHub Release, and
+# both are public the moment they exist — a deliberate click is safer here than an
+# automatic run on every merge to main. The publish itself stops one step short: the
+# trusted publisher this workflow runs as may only *stage* on npm, and the version goes
+# live when a maintainer approves it with 2FA (decision 0079, amended 2026-09-17).
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run — nothing is tagged or published'
+        description: 'Dry run — nothing is tagged or staged'
         type: boolean
         default: true
       specifier:
@@ -22,7 +24,7 @@ on:
 
 permissions:
   contents: write # CHANGELOG commit, tag, GitHub Release entry
-  id-token: write # OIDC for `npm publish --provenance`
+  id-token: write # OIDC: npm trades it for the trusted publisher's short-lived token, and signs provenance
   actions: read # the CI run of the commit about to be published
 
 jobs:
@@ -45,8 +47,13 @@ jobs:
         with:
           node-version: 24
           cache: 'npm'
-          # Writes an .npmrc pointing at the registry and reading NODE_AUTH_TOKEN.
-          registry-url: 'https://registry.npmjs.org'
+          # No `registry-url`, on purpose, since 2026-09-17. With it, setup-node writes an
+          # .npmrc whose `_authToken` line reads NODE_AUTH_TOKEN, and nobody sets that any
+          # more: npm keeps an unset variable as literal text and takes the text for a
+          # credential, so a dry run could no longer tell a refused OIDC exchange from a working
+          # one. Without it, the registry is npm's default and the only credential this run
+          # ever holds is the short-lived token the exchange returns at publish time
+          # (`lib/utils/oidc.js` in the CLI). No stored token to leak, no secret to rotate.
 
       - run: npm ci
 
@@ -72,14 +79,12 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # No npm token here, on purpose: the registry authenticates this run by its OIDC
+      # identity (repository and workflow file, configured on the package), and that identity
+      # may only `npm stage publish`. The script says what a person does next in the job summary.
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # npm adds provenance on its own once it sees this variable and an OIDC
-          # token. It needs a correct `repository` field in the package manifest,
-          # which `check-package.mjs --release` checks before publishing.
-          NPM_CONFIG_PROVENANCE: true
           # Inputs travel through the environment rather than interpolation into
           # `run`, so a text field cannot reach the shell as code.
           SPECIFIER: ${{ inputs.specifier }}

@@ -282,9 +282,16 @@ node tools/release.mjs --dry-run --first-release
 
 A script drives the release rather than `nx release` alone, because the order matters: version →
 stamp the `PCT_VERSION` constant → build → package gate → CHANGELOG, tag, GitHub Release →
-publish. A build before the bump ships the old constant
+stage on npm. A build before the bump ships the old constant
 ([`lesson-41`](docs/lessons.md#lesson-41)). The version follows from conventional commits; before
 1.0 a breaking change bumps the minor.
+
+The publish is a **staged** one. The trusted publisher the workflow runs as may only
+`npm stage publish`: the tarball goes up with provenance, and the version reaches consumers once
+a maintainer approves it with 2FA — on npmjs.com, or with `npm stage list @pacit/components` and
+`npm stage approve <id>`. No token is stored anywhere; the workflow trades its OIDC identity for
+a short-lived one at publish time
+([0079](docs/decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md)).
 
 Publishing needs the `repository` field in `libs/components/package.json` — without it npm
 refuses to attach provenance. `check-package.mjs --release` blocks on that; day to day it only warns.
