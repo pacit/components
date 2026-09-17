@@ -82,44 +82,68 @@ shell = Gio.DBusProxy.new_sync(
 
 def ask(code):
     ok, result = shell.call_sync("Eval", GLib.Variant("(s)", (code,)), Gio.DBusCallFlags.NONE, -1, None).unpack()
-    return result if ok else None
+    if not ok:
+        # Eval answers `false` both when the shell is not in unsafe mode and when the code threw;
+        # the text tells them apart, and either is worth the record.
+        print(f"the shell refused Eval: {result[:300]}", flush=True)
+        return None
+    return result
 
 
 # Eval returns its result as JSON of its own; an expression that stringifies first hands back
 # a string inside a string, and the first runner read iterated over its characters.
-# The windows, and the actor of the shell's own stage that holds the key focus, if one does:
-# in mutter 50 the seat's input focus is resolved through that key focus, so a shell actor
-# holding it is a browser window that never hears wl_keyboard.enter however focused the
-# compositor says it is.
+# The compositor's own account, every two seconds: the windows and which has the focus, the
+# actor holding the stage's key focus, the actor holding a GRAB on the stage, whether the
+# overview is up and whether the welcome dialog is. A grab is the one that matters: in
+# mutter 50 the seat's input focus is resolved through the stage, so a shell modal — the
+# overview after its startup animation, the tour dialog a fresh profile opens — is a browser
+# window that never hears wl_keyboard.enter however focused the compositor calls it. Both
+# were measured on a runner, where every profile is fresh; on a desktop with Ubuntu's dock
+# enabled the overview is dismissed at startup by the dock, and the dialog was shown once.
+# `imports.ui.main` is the legacy loader and it cannot read an ES module; Eval awaits, so the
+# module is imported the way the Looking Glass imports it.
+MAIN = "const Main = await import('resource:///org/gnome/shell/ui/main.js');"
 ACCOUNT = (
-    "({ windows: global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()]),"
-    " key: (() => { const a = global.stage.get_key_focus(); return a ? a.toString() : null; })() })"
+    "(async () => { " + MAIN + " const grab = global.stage.get_grab_actor();"
+    " const key = global.stage.get_key_focus();"
+    " return { windows: global.display.list_all_windows().map(w => [w.get_title(), w.has_focus()]),"
+    " key: key ? String(key) : null, grab: grab ? String(grab) : null,"
+    " overview: Main.overview.visible, welcome: !!Main.welcomeDialog }; })()"
+)
+DISMISS = (
+    "(async () => { " + MAIN + " const did = [];"
+    " if (Main.welcomeDialog) { Main.welcomeDialog.close(); did.push('welcome dialog closed'); }"
+    " if (Main.overview.visible) { Main.overview.hide(); did.push('overview hidden'); }"
+    " return did.join(', ') || 'nothing to dismiss'; })()"
 )
 ACTIVATE = (
-    "global.stage.set_key_focus(null);"
-    " const w = global.display.list_all_windows()[0]; w.activate(global.get_current_time()); w.get_title()"
+    "(() => { const w = global.display.list_all_windows()[0];"
+    " w.activate(global.get_current_time()); return w.get_title(); })()"
 )
 nudged = 0
 for _ in range(90):
     time.sleep(2)
     raw = ask(ACCOUNT)
     if raw is None:
-        print("the shell refused Eval — not in unsafe mode; the windows go unwitnessed", flush=True)
         break
     account = json.loads(raw) if raw else {}
     windows = account.get("windows") if isinstance(account, dict) else None
     if not isinstance(windows, list) or any(not isinstance(w, list) or len(w) != 2 for w in windows):
         print(f"the shell answered in a shape this helper does not read: {raw[:200]!r}", flush=True)
         break
-    key = account.get("key")
+    state = {k: account.get(k) for k in ("key", "grab", "overview", "welcome")}
     focused = [title for title, has_focus in windows if has_focus]
-    if windows and not focused and nudged < 3:
+    if (account.get("grab") or account.get("overview") or account.get("welcome")) and nudged < 6:
         nudged += 1
-        print(f"windows: {windows}, stage key focus: {key!r} — none focused; activating: {ask(ACTIVATE)!r}", flush=True)
+        print(f"windows: {windows}, {state} — the shell holds the stage; dismissing: {ask(DISMISS)!r}", flush=True)
+        continue
+    if windows and not focused and nudged < 6:
+        nudged += 1
+        print(f"windows: {windows}, {state} — none focused; activating: {ask(ACTIVATE)!r}", flush=True)
         continue
     if windows:
-        print(f"windows: {windows}, stage key focus: {key!r}", flush=True)
-    if focused:
-        print(f"the compositor focuses {focused[0]!r}", flush=True)
+        print(f"windows: {windows}, {state}", flush=True)
+    if focused and not account.get("grab"):
+        print(f"the compositor focuses {focused[0]!r}, and nothing holds the stage", flush=True)
         break
 GLib.MainLoop().run()
