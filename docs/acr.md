@@ -4,7 +4,7 @@
 edit. The gate holds every citation below to the repository and rejects a report that
 differs from its claims. -->
 
-**Product:** `@pacit/components` 0.0.1 — the Angular component library. The documentation
+**Product:** `@pacit/components` 0.1.0 — the Angular component library. The documentation
 site and the consuming application are outside this report: a criterion about a page is
 theirs, and its row says so.
 

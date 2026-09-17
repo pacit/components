@@ -1,6 +1,6 @@
 {
   "name": "@pacit/components",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token theming.",
   "license": "MIT",
   "author": "PacIT - Marek Pac",

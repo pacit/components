@@ -4,4 +4,4 @@
 // manifest into the bundle. A mismatch is blocked by the `check-package` gate.
 
 /** The library version — the same one the package manifest carries. */
-export const PCT_VERSION = '0.0.1';
+export const PCT_VERSION = '0.1.0';

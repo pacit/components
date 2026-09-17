@@ -6150,3 +6150,22 @@ The second is the cost, which is real and is written into the header of every re
 than kept quiet: a reader that truly says one thing twice at one stop is now recorded saying it
 once. That is the cheaper of the two errors. The other one buried the reading under a thousand
 copies of itself.
+
+### <a id="lesson-220"></a>`lesson-220` — The release commit carried the changelog and nothing else
+
+`0.1.0` went to npm on 2026-09-17 with `PCT_VERSION = '0.1.0'` in its code and `0.1.0` in
+its manifest — read back from the tarball — and the commit the release pushed to `main`
+changed one file: `libs/components/CHANGELOG.md`. The manifest on `main` still said `0.0.1`,
+`src/version.ts` too, and the tag `components@0.1.0` pointed at exactly that.
+
+The cause was one word in `tools/release.mjs`: `releaseVersion({ stageChanges: false })`,
+written so that the commit would come later and cover the changelog and the stamped constant
+too. It came later and covered the changelog alone — `releaseChangelog` stages the files it
+writes and commits the index, and nothing had put the manifest or the constant into the index.
+
+The rehearsal could not have shown it. A dry run writes no manifest and makes no commit, so
+the two facts this defect lives between — what the build read, what the commit carried — do
+not exist in it. The first real run is the only reading, and it has to be read back file by
+file: the tarball for what shipped, the commit for what stayed. The fix is `stageChanges:
+true` and a `git add` of the constant after the stamp; the repair, the bump and the stamp
+committed by hand under the tag.
