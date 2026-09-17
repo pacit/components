@@ -152,7 +152,14 @@ if (
 }
 let stageId;
 try {
-  stageId = JSON.parse(stage.stdout).stageId;
+  // `npm stage publish` is workspace-aware and keys its JSON by package name — read on the
+  // runner's rehearsal of 2026-09-17: `{ "@pacit/components": { "id": …, … } }`. The flat
+  // shape is kept for the day npm flattens it.
+  const out = JSON.parse(stage.stdout);
+  stageId =
+    out.stageId ??
+    Object.values(out).find((v) => v && typeof v === 'object' && 'stageId' in v)
+      ?.stageId;
 } catch {
   // Not JSON after all — the raw output above is the record, and the id is in it.
 }
