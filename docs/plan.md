@@ -77,7 +77,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 3.6 stands past the tag
-4  open findings          small, good filler between the bigger items
+3  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
@@ -100,7 +100,7 @@ holds only the order.
 
 **What is left.** Section 1 ends at the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds **3.6**.
-Section 4 holds four findings, each held by a **binds at** rather than by anybody's mood.
+Section 4 holds three findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
@@ -272,22 +272,15 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **a headless Wayland compositor** — `cage`, or `weston --backend=headless`, and
     neither is installed here
 
-- [ ] **4.72 — a gate went red inside a run GitHub reported green**
-  - CI run `35104356828` on `6491aef` concluded **success**. Inside it, in the one step that
-    runs every gate: `❌ nx run @org/source:check-typecheck`, the gate's own verdict of one
-    violation, and the end-to-end suite reporting `1 flaky`. The step's own conclusion is
-    `success`, and the log carries no `NX ... failed` line and no `Failed tasks:` list
-  - the gate was RIGHT, and fixed separately; this position is about the run that swallowed it
-  - **the reading, 2026-09-17, over every completed run since 2026-09-15**: the step is silent
-    exactly when `sandbox-e2e:e2e` is its last task — nine of nine, `0df0c29` to `db0c720`,
-    two with nothing red in them — and speaks in every run another task ends. What the nine
-    hid: `check-bench` red on `chips` in six, the sandbox suite red with fifteen cases in two,
-    one consumer flake, and the publish guard of 3.3 reading `1da5fb0` as green
-    ([`lesson-222`](lessons.md#lesson-222)). On this desk the same run prints and exits 1
-  - what landed: the suite no longer has the continuous `sandbox:serve` as a dependency — the
-    one task of that kind, started and killed by nx, and the one the silent runs share — and
-    every task-running `nx` line in both workflows ends in `|& scripts/nx-verdict`, which
-    refuses an exit code of 0 that comes without nx's summary. The second is the guarantee
-    whatever the mechanism; the first is the suspect removed
-  - binds at: **the first full run with the sandbox suite last that prints its summary** — the
-    push carrying this; then the position closes on that reading
+- [x] **4.72 — a gate went red inside a run GitHub reported green** — **closed 2026-09-17**
+  - CI run `35104356828` on `6491aef` concluded **success** with `❌ check-typecheck` inside its
+    one step, no `NX … failed` line and no `Failed tasks:` list. Read over every completed run
+    since 2026-09-15: silent exactly when `sandbox-e2e:e2e` ended the step — nine of nine — and
+    hiding `check-bench` ×6, the sandbox suite ×2, one typecheck, one consumer flake, and the
+    publish guard's reading of `1da5fb0` ([`lesson-222`](lessons.md#lesson-222))
+  - what closed it: every task-running `nx` line in both workflows ends in `|& scripts/nx-verdict`,
+    which fails a run that ends without nx's summary — a mute run cannot be green again, whatever
+    the mechanism — and the sandbox suite no longer depends on the continuous `sandbox:serve`,
+    the one task of that kind and the suspect. Read on `fcfe5b6` (red, the list printed) and
+    `3be54c2` (green, the summary printed), both suites in each; the docs suite ended both runs,
+    so the suspect's removal is read by the suite's presence, not by its position
