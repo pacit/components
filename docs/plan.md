@@ -249,17 +249,17 @@ and every one is held by a **binds at** rather than by anybody's mood.
     take a second home here, so the table cites the spec that owns it rather than restating it
 
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
-  - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`, so the browser opened on the maintainer's
-    desktop while Xvfb on `:99` drew nothing — found by him, proved by his theme switch in the
-    middle of a reading. The X11 repair measured **7 utterances against 1969** and was refused:
-    the pass worked BECAUSE it was not isolated
+  - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`: the browser opened on the maintainer's desktop
+    while Xvfb drew nothing — found by him, proved by his theme switch mid-reading. The X11
+    repair measured **7 utterances against 1969** and was refused: it worked BECAUSE not isolated
   - closed by a headless GNOME Shell of the pass's own (installed all along, GNOME 47+), a
     keyboard given to its seat through mutter's remote-desktop interface — a seat without one
     tells no window it has focus, and Orca never leaves its default script — and a private,
     muted speech server; the record's surface is SAMPLED off `ss(8)` ([`lesson-224`](lessons.md#lesson-224))
   - the first isolated reading: **509 steps over 36 views, 6 silent, 11 capped** in 22 minutes,
-    against 482/0/11 on the desktop. The silences: four Escapes that closed nothing, the modal's
-    opening, and one arrival through a covered nav ([`lesson-225`](lessons.md#lesson-225))
+    against 482/0/11 on the desktop; the silences are four Escapes that closed nothing, the
+    modal's opening and one arrival through a covered nav ([`lesson-225`](lessons.md#lesson-225)).
+    The night after, a runner read the same view to the utterance (`at-pass.yml`, [`lesson-227`](lessons.md#lesson-227))
 
 - [x] **4.72 — a gate went red inside a run GitHub reported green** — **closed 2026-09-17**
   - CI run `35104356828` on `6491aef` concluded **success** with `❌ check-typecheck` inside its

@@ -6298,3 +6298,33 @@ the next, with nothing but the add between them. A green gate on a tree with unt
 is a reading of the files it was allowed to see. The habit that follows: `git add` the new
 files BEFORE the battery, not before the commit — the index is the input, so the input goes
 in first — and a local verdict is then the one the runner will give.
+
+### <a id="lesson-227"></a>`lesson-227` — The shell held the stage, and the desktop never showed it
+
+The isolated pass (4.73) ran on a runner the night after it ran on a desktop, and read one
+view in near silence seven times: 4 utterances against 107, with every witness in order —
+the compositor up with a keyboard, the reader attached and switching to the browser's
+script, the walk moving the focus through every stop. What the browser never got was
+`wl_keyboard.enter`. Its own protocol trace showed it bound to a seat that advertised a
+keyboard, holding a wl_keyboard with its keymap, and asking for xdg-activation tokens with
+serial 0 — a client trying to activate itself with no input to cite — while the compositor
+wrote "Focusing window W0 due to activation" and "Focus --> W0" on the helper's word.
+
+In mutter 50 the seat's input focus is resolved through the stage, so a shell modal is a
+browser window that never hears enter however focused the compositor calls it. Two held the
+stage on the runner, and neither on the desktop. The overview after its startup animation,
+which grabs the stage and stays up until a person leaves it: on the desktop, Ubuntu's dock —
+enabled by the system dconf layer that sits under the pass's private profile — dismisses the
+overview at startup, so the pass had been relying on a package it never named. And the
+welcome tour, a modal dialog a fresh profile opens on its first start: the desktop profile
+persists between runs and had seen it once; every runner profile is a first.
+
+The seat helper now asks the shell every two seconds what holds the stage — the grab actor,
+the overview, the dialog — through the shell's own `main` module in unsafe mode on the
+pass's private bus, dismisses them, and only then activates the window; and the profile is
+told it has seen a tour newer than any before the shell starts. The eighth dispatch read the
+view at the desktop's numbers, to the utterance. Five witnesses were needed, in this order:
+mutter's `focus` and `startup` topics, the shell's introspection (refused), the seat's
+capabilities read by `wayland-info`, the browser-side protocol trace, and the shell's Eval —
+whose legacy `imports.ui` loader cannot read an ES module, so the module is imported the way
+the Looking Glass imports it.
