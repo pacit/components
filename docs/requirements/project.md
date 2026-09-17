@@ -19,17 +19,22 @@ any target with), so it does not belong to the [`req-axis`](../00-axis.md) class
 
 ---
 
-### <a id="req-project-latest"></a>`req-project-latest` — Before 1.0 we use the newest versions
+### <a id="req-project-latest"></a>`req-project-latest` — Before 1.0 the newest versions; from the first release, the matrix
 
-**Promise.** Until the first public release the library stands on the newest available
-versions of its libraries and frameworks. The compatibility matrix (which Angular versions
-are supported) only starts to apply after that release.
+**Promise.** Until the first public release the library stood on the newest available
+versions of its libraries and frameworks, and nothing measured that: a process rule, not a
+property of the artifact. Since `0.1.0` (2026-09-17) the compatibility matrix says which
+Angular majors a release supports — `angular-majors` in [`docs/support.md`](../support.md) —
+and the manifest's peer ranges have to admit exactly that window, no wider and no narrower.
 
-**Gate:** none — deliberately: this is a process rule, not a property of the artifact; there
-is nothing to measure on the output
-**Control:** not applicable
-**Binds at:** the first public release — at that point this requirement is **superseded by**
-the compatibility matrix, and the gate comes with it
+**Gate:** `tools/check-support.mjs` (point 2) — the declared Angular window equals the one
+the manifest's `peerDependencies` admit, on every push
+**Control:** `tools/check-support.fixtures/window-narrower-than-the-manifest.json`,
+`tools/check-support.fixtures/window-wider-than-the-manifest.json` and
+`tools/check-support.fixtures/peers-that-disagree-on-the-major.json` — each rejected on
+point 2
+**Binds at:** bound. The first public release superseded the process rule with the matrix
+on 2026-09-17, as this entry always said it would
 
 ---
 

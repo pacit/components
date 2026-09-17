@@ -9,8 +9,8 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     78 |
-| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
+| ✅ enforced | gate and control exist and run in CI                          |     79 |
+| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
 | **total**   |                                                               | **94** |
 
@@ -76,7 +76,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                                    | state       | gate                                                                   | control                                                                |
 | ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-project-monorepo`](requirements/project.md#req-project-monorepo)         | 🟡 partial  | `.github/workflows/ci.yml` — the entire run goes through `nx affected` | none — deliberately: the failure is immediate and total (CI has nothi… |
-| [`req-project-latest`](requirements/project.md#req-project-latest)             | 🟡 partial  | none — deliberately: this is a process rule, not a property of the ar… | not applicable                                                         |
+| [`req-project-latest`](requirements/project.md#req-project-latest)             | ✅ enforced | `tools/check-support.mjs` (point 2) — the declared Angular window equ… | `tools/check-support.fixtures/window-narrower-than-the-manifest.json`… |
 | [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ✅ enforced | point 7 of `libs/components/check-package.mjs`, over the **packed** m… | `tools/check-package.fixtures/` — nine prepared packages for point 7 … |
 | [`req-project-apps`](requirements/project.md#req-project-apps)                 | ✅ enforced | `apps/docs/project.json`, `apps/docs-e2e/project.json` — the two proj… | `apps/docs-e2e/src/shell.spec.ts › "renders the home page from the li… |
 | [`req-project-package`](requirements/project.md#req-project-package)           | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI) —… | `tools/check-package.fixtures/` — a doctored package for every point … |
@@ -375,3 +375,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-217`](lessons.md#lesson-217) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-218`](lessons.md#lesson-218) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-219`](lessons.md#lesson-219) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-220`](lessons.md#lesson-220) | — _(not cited)_                                                                                                                                                   |

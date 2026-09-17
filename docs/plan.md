@@ -63,8 +63,8 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    94 |
-| ✅ enforced                                 |    78 |
-| 🟡 partial (deliberately without a control) |    16 |
+| ✅ enforced                                 |    79 |
+| 🟡 partial (deliberately without a control) |    15 |
 | ⛔ gap                                      |     0 |
 
 No gap is left. If adding a requirement raises the gap count and no task changes, this list
@@ -76,20 +76,19 @@ has stopped being complete, and that is a fault of this list, not of the registr
 0  the copy off this machine  DONE — landed 2026-09-01
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
-3  publication            the premiere: 3.2 to 3.5 done; 3.1 on a sentence; 3.6 past
-                          the tag
+3  publication            DONE — 0.1.0 on npm 2026-09-17; 3.6 stands past the tag
 4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
 ## Where things stand
 
-**The push and the premiere are two moments**
-([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)). The quiet push landed
-on 2026-09-01, the flip to public on 2026-09-15, and the site went live at its address on
-2026-09-17, and the release rehearsed in CI the same morning; the token is in place, and npm
-waits for an explicit sentence. No run turning green starts it, and standing next in this list is not a
-start either — a session that reaches **3.1** passes over it and takes the next item.
+**The push and the premiere were two moments**
+([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)), and both have passed:
+the quiet push on 2026-09-01, the flip to public on 2026-09-15, the site at its address and
+`@pacit/components@0.1.0` on npm on 2026-09-17, the last on the maintainer's sentence. What
+the premiere still owes is **3.6**, which binds at the first commit after the tag, and the
+switch from the token to trusted publishing, which is the maintainer's move on npm.
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
 decisions live: the site's address, host and deploy trigger in
@@ -100,9 +99,8 @@ gives way to trusted publishing in
 holds only the order.
 
 **What is left.** Section 1 ends at the table (**1.2**), deferred by
-[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 is the
-premiere. Section 4 holds four findings, each held by a **binds at** rather than by anybody's
-mood.
+[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds **3.6**.
+Section 4 holds four findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
@@ -129,26 +127,18 @@ repository with no documentation — belongs only to the second: an unannounced 
 repository has no first look. So the quiet half moved to the front and landed on 2026-09-01;
 the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
 
-- [~] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded**
-  — **the flip is done, 2026-09-15; everything else is in place, and the publish waits on a sentence**
-  - **the flip.** `pacit/components` is public: no secret across 404 commits, every README
-    link answering 200, and 404 commits under a public author address for good
-  - **the publish was refused the same day**, the rehearsal green end to end (690.6 kB, 114
-    files). What it waits for was settled 2026-09-16 in
-    [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md): the
-    version is **0.1.0**, the CHANGELOG entry is a measurement rendered by
-    `tools/changelog-renderer.mjs` rather than ~150 commit titles, and the history stays
-  - the rehearsal's 0.0.2 was Nx reading a commit's scope as a project name and counting
-    `fix(chips)!` as a patch (`useCommitScope`, off since 2026-09-17); measured, and the dry
-    run now resolves 0.1.0 from the sixteen `!` commits on its own
-  - **trusted publishing comes a minute after the first publish, not before** — npm keeps it
-    in the package's settings, and the package exists once published. A granular token with
-    2FA bypass, seven days, one run; then the publisher, and the token, the secret and
-    `NODE_AUTH_TOKEN` in `release.yml` gone. Bypass tokens lose publish around 2027-01
-  - a dry run writes no manifest, so `stamp-version` reads the OLD version
-    ([`lesson-41`](lessons.md#lesson-41)); `PCT_VERSION` in the published package is the reading
-  - the tag supersedes `req-project-latest` with the compatibility matrix and its gate, as its
-    **Binds at** says; that is the last edit of this position. The trigger stays a sentence
+- [x] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded** —
+      **closed 2026-09-17: `@pacit/components@0.1.0` is on npm**
+  - the flip 2026-09-15; the publish 2026-09-17 on the maintainer's word, after a dry run in
+    CI on the same head: `0.1.0` from the commits, provenance attested, `PCT_VERSION` in the
+    published code equal to the tag — read back from the tarball, not from the log
+  - what only the real run could show: the release commit carried the changelog and nothing
+    else, the manifest and the stamp left in the runner's checkout
+    ([`lesson-220`](lessons.md#lesson-220)); repaired by hand under the tag, and `release.mjs`
+    stages both from now on
+  - `req-project-latest` is superseded by the matrix and `check-support`, as its Binds at
+    said; trusted publishing replaces the token with the next release, the maintainer's move
+  - cost: the night of 2026-09-16 and the morning after · _notes:_ —
 
 - [x] **3.2 — citations in the public API as links** — **closed 2026-09-16**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language)
