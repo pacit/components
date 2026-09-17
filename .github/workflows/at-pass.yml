@@ -1,6 +1,7 @@
-# The assistive-technology pass on the two readers no Linux box can run: NVDA with Firefox on
-# Windows, VoiceOver with Safari on macOS. The third reader, Orca, is taken locally by
-# `tools/at-pass.sh` and needs no runner at all.
+# The assistive-technology pass on all three readers: NVDA with Firefox on Windows, VoiceOver
+# with Safari on macOS, and — since the pass stopped needing a desktop (position 4.73) — Orca
+# with Firefox on a headless GNOME Shell the job stands up itself, on Ubuntu 26.04, the first
+# image whose GNOME has `--headless`. `tools/at-pass.sh` is the same script a maintainer runs.
 #
 # DISPATCHED FOR A READING, SCHEDULED FOR A SMOKE TEST, and the two are different errands.
 # The reading moves when the components move and not when the clock does, so nothing here runs
@@ -42,9 +43,9 @@ on:
       readers:
         description: 'Which readers to run'
         required: false
-        default: 'both'
+        default: 'all'
         type: choice
-        options: [both, nvda, voiceover]
+        options: [all, nvda, voiceover, orca]
   schedule:
     # 06:30 UTC on Mondays, behind the end-to-end probe's 05:00 so two heavy dispatch-only
     # files do not ask for runners in the same minute. The hour is a preference: GitHub
@@ -62,7 +63,7 @@ jobs:
   nvda:
     # Which reader is EXCLUDED, not which is asked for: on a schedule `inputs` is empty,
     # and an empty value has to mean the declared default rather than no job at all.
-    if: inputs.readers != 'voiceover'
+    if: inputs.readers != 'voiceover' && inputs.readers != 'orca'
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
@@ -116,7 +117,7 @@ jobs:
 
   voiceover:
     # The mirror of the condition on the job above, and empty runs it for the same reason.
-    if: inputs.readers != 'nvda'
+    if: inputs.readers != 'nvda' && inputs.readers != 'orca'
     runs-on: macos-latest
     timeout-minutes: 90
     steps:
@@ -159,5 +160,65 @@ jobs:
           path: |
             docs/acr/at/voiceover-safari-macos.md
             tmp/at/voiceover-safari-macos.steps.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  orca:
+    # The reader this file could not run until 2026-09-17: `tools/at-pass.sh` needed the
+    # maintainer's desktop, and a runner has none. Since the pass stands up a headless GNOME
+    # Shell of its own (position 4.73), a runner is exactly the machine it was written for —
+    # on Ubuntu 26.04, the first image whose GNOME (50) has `--headless`; 24.04 ships 46.
+    if: inputs.readers != 'nvda' && inputs.readers != 'voiceover'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      # The compositor, the reader, the speech server and the seat helper's bindings — the
+      # same things the script asks a desktop machine for, from the image's own apt.
+      - name: The compositor, the reader and the speech server
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gnome-shell orca speech-dispatcher espeak-ng python3-gi gir1.2-glib-2.0 dbus-daemon at-spi2-core iproute2
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps firefox
+
+      # Served OUTSIDE the pass, on purpose: the script refuses to start a dev server from
+      # inside its own session bus and compositor (`at-orca.config.mts` says why).
+      - name: Serve the sandbox
+        run: |
+          mkdir -p tmp
+          npx nx run sandbox:serve > tmp/sandbox-serve.log 2>&1 &
+          for ((i = 0; i < 150; i++)); do curl -sf -o /dev/null http://localhost:4200 && break; sleep 2; done
+          curl -sf -o /dev/null http://localhost:4200
+
+      - name: Read the views with Orca
+        env:
+          AT_PASS_ROUTES: ${{ inputs.routes || '/accordion' }}
+        run: tools/at-pass.sh http://localhost:4200
+
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: at-pass-orca
+          path: |
+            docs/acr/at/orca-firefox-linux.md
+            tmp/at/steps.json
+            tmp/at/orca.debug
+            tmp/at/drive.log
+            tmp/at/shell.log
+            tmp/at/seat.out
+            tmp/at/spd.out
+            tmp/sandbox-serve.log
           retention-days: 30
           if-no-files-found: warn

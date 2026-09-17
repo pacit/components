@@ -19,6 +19,7 @@
 # untrue of the product and unreadable by the gate that holds the rule.
 #
 # Usage: tools/at-pass.sh [baseURL]     (default http://localhost:4200 — serve the sandbox first)
+#   AT_PASS_ROUTES=/a,/b  walks those views only; the default, and `all`, is every view
 #   AT_PASS_DESKTOP=1  takes the pass on the desktop session instead — NOT isolated, a real
 #                      window, and the record says which it was; for a machine whose GNOME
 #                      Shell has no `--headless` (47 and later have it).
@@ -30,7 +31,13 @@ WORK="$ROOT/tmp/at"
 # and never that one. A speech socket sits there too: a Unix socket path is limited to 108
 # bytes and `tmp/at` under a deep checkout is past it.
 AT_WL="wayland-at"
-SPD_SOCK="${XDG_RUNTIME_DIR:-/tmp}/at-speechd.sock"
+# A runner has no XDG_RUNTIME_DIR at all; the compositor needs one, and the sockets need a
+# short private path (lesson-224) — a throwaway directory under /tmp is both.
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+  XDG_RUNTIME_DIR="$(mktemp -d /tmp/at-runtime.XXXXXX)"
+  export XDG_RUNTIME_DIR
+fi
+SPD_SOCK="$XDG_RUNTIME_DIR/at-speechd.sock"
 
 # The reader's state is KEPT between runs, and that is measured rather than tidy. Clearing it
 # was tried, to rule out a `RecursionError` inside Orca's own `ax_object.py` that killed one
@@ -170,6 +177,11 @@ dbus-run-session -- bash -c '
   if [ "$ISOLATED" = "1" ]; then
     # The compositor: a headless GNOME Shell with a virtual monitor and no X server at all, so
     # a browser that could not find Wayland would fail to start rather than find the desktop.
+    # A socket a killed compositor left behind — three runs in one evening each found the one
+    # of the run before — is removed, and only when nothing listens on it.
+    if [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && ! ss -xl 2>/dev/null | grep -q "/$AT_WL "; then
+      rm -f "$XDG_RUNTIME_DIR/$AT_WL" "$XDG_RUNTIME_DIR/$AT_WL.lock"
+    fi
     gnome-shell --headless --no-x11 --wayland-display="$AT_WL" --virtual-monitor=1280x900 >"$WORK/shell.log" 2>&1 &
     SHELL_PID=$!
     for ((i = 0; i < 30; i++)); do [ -S "$XDG_RUNTIME_DIR/$AT_WL" ] && break; sleep 1; done
@@ -184,6 +196,7 @@ dbus-run-session -- bash -c '
     echo "  compositor: gnome-shell headless on $AT_WL, with a keyboard"
   fi
   rm -f "$SPD_SOCK"
+  if [ -S "$SPD_SOCK" ] && ! ss -xl 2>/dev/null | grep -q "$SPD_SOCK "; then rm -f "$SPD_SOCK"; fi
   speech-dispatcher -s -S "$SPD_SOCK" -P "$WORK/spd.pid" -C "$WORK/speechd" -L "$WORK/spd-log" >"$WORK/spd.out" 2>&1 &
   SPD=$!
   for ((i = 0; i < 10; i++)); do [ -S "$SPD_SOCK" ] && break; sleep 1; done
