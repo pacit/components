@@ -226,6 +226,9 @@ dbus-run-session -- bash -c '
   echo "  speech: a private server, muted"
   gsettings set org.gnome.desktop.interface toolkit-accessibility true >"$WORK/gsettings.log" 2>&1 || true
   export AT_PASS_DEBUG="$WORK/orca.debug"
+  # Its version, asked here where it has a display and a bus to answer with: the renderer of
+  # the record runs after this session is gone, and a runner has neither outside it.
+  orca --version >"$WORK/orca.version" 2>/dev/null || true
   orca --debug-file="$WORK/orca.debug" >"$WORK/orca.out" 2>&1 &
   ORCA=$!
   sleep 6

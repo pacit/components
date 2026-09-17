@@ -35,7 +35,24 @@ const CAP_NOTE = /^the cap bit/;
 
 // ── 1 and 2: transcribe, and write the record ─────────────────────────────────
 
+/**
+ * The reader's own account of its version. `tools/at-pass.sh` writes it to `tmp/at/orca.version`
+ * from inside its session, where the reader has a display and a bus to answer with; the
+ * command itself is the fallback, and on a runner that fallback answered "unknown" for a
+ * reader that had just read thirty-six views.
+ */
 const version = (command, args) => {
+  try {
+    const written = readFileSync(
+      join(ROOT, 'tmp/at', `${command}.version`),
+      'utf8',
+    )
+      .trim()
+      .split('\n')[0];
+    if (written) return written;
+  } catch {
+    // Not written by this run — the command is asked directly.
+  }
   try {
     return execFileSync(command, args, { encoding: 'utf8' })
       .trim()
