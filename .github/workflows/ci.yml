@@ -25,14 +25,14 @@ jobs:
     # default is six hours, which on a metered private stage is a bill, not a ceiling.
     timeout-minutes: 150
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           filter: tree:0
           # `nx affected` derives its comparison base from history; a shallow clone
           # leaves it nothing to compare against.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'
@@ -42,7 +42,7 @@ jobs:
       # Sets NX_BASE and NX_HEAD: the merge base on a pull request, the last commit
       # with a green run of this workflow on main — so a failed run does not hand the
       # next one a narrower diff than it should check.
-      - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v5
 
       # The cache key is the Playwright version, so it is invalidated when the package
       # moves rather than on every package-lock.json change. All three engines
@@ -54,7 +54,7 @@ jobs:
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -75,7 +75,7 @@ jobs:
       # answered the first run's ENOENT with whatever version the runner's release shipped;
       # the divergence its comment was waiting for got measured the day of the pin, when
       # one package name served two lists and the pool had rotated the older one away.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: tools/.dictionaries
           key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
@@ -112,7 +112,7 @@ jobs:
       # A hosted remote cache stays refused, and not because this step is as good: it is a
       # service, so it is a dependency decision rather than a setting, and the free step is
       # the weaker option taken deliberately.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             .nx/cache
@@ -144,7 +144,7 @@ jobs:
       # not one suite's path: the day docs-e2e turned red the same way, this step was still
       # spelling `sandbox-e2e` and the landing's diffs died with the machine again.
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-output
           path: dist/.playwright/apps/*/test-output

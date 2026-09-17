@@ -35,13 +35,13 @@ jobs:
           echo "::error::A release goes from main; this workflow was started from ${{ github.ref }}."
           exit 1
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # Full history and tags: both the current version
           # (`currentVersionResolver: git-tag`) and the CHANGELOG come from them.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'

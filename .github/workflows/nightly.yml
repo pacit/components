@@ -75,12 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'
@@ -94,7 +94,7 @@ jobs:
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -108,7 +108,7 @@ jobs:
 
       # The same pinned word lists as ci.yml: the gate restores and verifies them out of
       # `tools/dictionaries.lock.json` itself, the cache only spares the download.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: tools/.dictionaries
           key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
@@ -149,12 +149,12 @@ jobs:
       matrix:
         suite: [sandbox-e2e, docs-e2e]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'
@@ -167,7 +167,7 @@ jobs:
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -190,7 +190,7 @@ jobs:
         run: npx nx run ${{ matrix.suite }}:e2e --repeat-each=3 --retries=0 --reporter=json
 
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flake-report-${{ matrix.suite }}
           path: tmp/flake/
@@ -206,19 +206,19 @@ jobs:
     # `always()`, because a suite above may have been the one that found something.
     if: always()
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'
 
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: flake-report-*
           path: tmp/flake
@@ -230,7 +230,7 @@ jobs:
       # both is what a person needs to take it — two halves on two runners are not a reading
       # anybody can write down (`lesson-200`).
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flake-reports
           path: tmp/flake/
@@ -245,12 +245,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'

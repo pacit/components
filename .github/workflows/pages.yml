@@ -38,11 +38,11 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: 'npm'
@@ -51,7 +51,7 @@ jobs:
 
       # Restore only, never save: the entry for this commit is written by the CI run that
       # just went green, and a second writer under the same key would race it for nothing.
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         with:
           path: |
             .nx/cache
