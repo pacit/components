@@ -102,9 +102,13 @@
       "// workspaceChangelog": "There is exactly one publishable project, so a workspace changelog would be a second copy of the same content.",
       "workspaceChangelog": false,
       "// renderer": "The first entry is a measurement, every later one the conventional list (decision 0079). The renderer reads `PCT_FIRST_RELEASE` from `tools/release.mjs`, which is the one caller.",
+      "// renderOptions": "No authors section: one maintainer and an agent are the whole list, and a \"Thank You\" naming them under every entry is ceremony, not information (decided 2026-09-17). Everything else keeps Nx's defaults — the date in the title, the commit references.",
       "projectChangelogs": {
         "createRelease": "github",
-        "renderer": "{workspaceRoot}/tools/changelog-renderer.mjs"
+        "renderer": "{workspaceRoot}/tools/changelog-renderer.mjs",
+        "renderOptions": {
+          "authors": false
+        }
       }
     }
   },

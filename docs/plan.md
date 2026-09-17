@@ -174,8 +174,8 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     publish". A dry run is held to it too: a rehearsal against a red tree rehearses nothing
   - not taken: CI as a reusable workflow with `needs:` — a rebuild of `ci.yml` nobody needs
 
-- [~] **3.4 — the premiere is a task, not an event** — **the files landed 2026-09-17; two
-  switches and the venue are the maintainer's**
+- [~] **3.4 — the premiere is a task, not an event** — **the files landed 2026-09-17, the
+  switches are on; the venue is the maintainer's**
   - [0016](decisions/0016-mit-irreversibility.md) defers its biggest decision to "data that
     does not exist today", and no task acquired the users who would produce it: `.github/`
     held workflows and nothing else, `CONTRIBUTING.md` had two sections and no way to run
@@ -188,8 +188,9 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     names the channels. Each file is read by GitHub by its name and by nobody inside — a root
     in `tools/reach.policy.json`, the shape `CONTRIBUTING.md` already had
   - not taken: `CODE_OF_CONDUCT.md` — a promise of moderation with nobody to keep it
-  - **the maintainer's**: Discussions on, private vulnerability reporting on — both are
-    repository settings — and **the venue**: where the release is announced has no answer yet
+  - **done by the maintainer the same morning**: Discussions on, private vulnerability
+    reporting on, About with the site and five topics. **Open: the venue** — where the
+    release is announced has no answer yet
   - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
 
 - [x] **3.5 — the site at its own address, deployed behind a green CI** — **live 2026-09-17**
