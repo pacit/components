@@ -121,28 +121,28 @@
     {
       "file": "libs/components/toast/src/toast-viewport.ts",
       "mutator": "ConditionalExpression",
-      "at": "109:9-109:21",
+      "at": "111:9-111:21",
       "to": "false",
       "reason": "`if (key === null || event.key !== key) return` with the LEFT operand forced false. The right one answers for both: `key` is `string | null` and `event.key` is a `DOMString`, so whenever `key` is null, `event.key !== key` is true and the guard returns by the other road. Equivalent RELATIVE TO THE PLATFORM's type — a case could forge `key: null` onto the event and tell them apart, and it would be asserting on a state a `KeyboardEvent` cannot reach. The entry expires the day `PctRegionsApi.key` can hold something a `DOMString` can equal."
     },
     {
       "file": "libs/components/toast/src/toast-viewport.ts",
       "mutator": "OptionalChaining",
-      "at": "111:9-111:27",
+      "at": "113:9-113:27",
       "to": "this.regions.next",
       "reason": "The `?.` on a receiver that is provably not null here. `regions` is `private readonly regions = inject(PCT_REGIONS)`, set once and never reassigned, and the guard two lines up returns when it is null — so on every path reaching this line the optional chain has nothing to guard. The strongest of the four: no test distinguishes them because the mutated expression is never evaluated with a null receiver. Note the neighbour: the same `?.` removed one line earlier IS reachable, and the run reports it as an errored mutant rather than a survivor."
     },
     {
       "file": "libs/components/toast/src/toast-viewport.ts",
       "mutator": "ConditionalExpression",
-      "at": "154:9-154:33",
+      "at": "156:9-156:33",
       "to": "false",
       "reason": "`if (holding === this.holding) return` never returning, so `sync()` tells the service on every pointer and focus event instead of on a change. Nothing downstream moves: `hold()` opens with `if (this.held) return` and `release()` with `if (!this.held) return`, so a repeat is a no-op in both directions and no clock is re-armed. A spy counting calls would see the difference, which is a count rather than a behaviour. The entry expires the day either method stops being idempotent — and the guard stays, because it is what makes the counting independent of that."
     },
     {
       "file": "libs/components/regions/src/regions.ts",
       "mutator": "StringLiteral",
-      "at": "184:50-184:56",
+      "at": "198:50-198:56",
       "to": "\"\"",
       "reason": "The `'host'` default of `listenOn`, replaced by the empty string. It has exactly one reader in the whole library — `if (this.listenOn() !== 'document') return` — so every string but that one takes the same branch, installs no listener and leaves no trace on the element. The only case that could separate them reads the signal's own value, which asserts on a constant rather than on what the directive does. The entry expires the moment a second reader appears, or the moment the predicate is written the other way round."
     }
