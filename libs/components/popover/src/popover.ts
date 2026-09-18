@@ -208,7 +208,11 @@ export class PctPopover {
 
   private readonly uid = nextPctId('pct-popover');
 
-  /** What the trigger's `aria-controls` points at while the panel is up. */
+  /**
+   * What the trigger's `aria-controls` points at while the panel is up.
+   *
+   * @since 0.1.0
+   */
   readonly panelId = `${this.uid}-panel`;
 
   protected readonly headingId = `${this.uid}-heading`;

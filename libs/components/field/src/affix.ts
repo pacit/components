@@ -63,7 +63,11 @@ const fitHost = {
   },
 })
 export class PctPrefix {
-  /** @since 0.1.0 */
+  /**
+   * How the decoration sits against the border: inset from it, or flush with it.
+   *
+   * @since 0.1.0
+   */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctPrefix',
     transform: affixFit,
@@ -88,7 +92,11 @@ export class PctPrefix {
   },
 })
 export class PctSuffix {
-  /** @since 0.1.0 */
+  /**
+   * How the decoration sits against the border: inset from it, or flush with it.
+   *
+   * @since 0.1.0
+   */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctSuffix',
     transform: affixFit,

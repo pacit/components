@@ -211,7 +211,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * another, so a `multiple` a consumer could write would leave `value` typed as both shapes
    * at once and check neither ([0034](../../../../docs/decisions/0034-multiplicity-is-a-tag.md)).
    */
-  abstract readonly multiple: boolean;
+  protected abstract readonly multiple: boolean;
 
   /** What the trigger shows when there is a choice — one label, or the chosen ones. */
   protected abstract readonly displayText: Signal<string>;
@@ -556,9 +556,23 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Whether the control is inside the chrome — it then hands over label and messages. */
   protected readonly inField = this.fieldApi !== null;
 
-  /** A `<button>` is a labelable element, so `<label for>` works. */
+  /**
+   * A `<button>` is a labelable element, so `<label for>` works.
+   *
+   * @since 0.1.0
+   */
   readonly controlId: string;
+  /**
+   * `for`: the chrome's label points at the trigger, which carries the control's id.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'for';
+  /**
+   * `boxed`: the chrome draws the border, because a select has none of its own.
+   *
+   * @since 0.1.0
+   */
   readonly fieldAppearance: PctFieldAppearance = 'boxed';
   /**
    * A getter and not a field, because the answer changes with an input: over a filtering
@@ -566,6 +580,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * reads this inside a `computed`, so a getter that reads a signal is itself a signal to
    * whoever reads it there — the same reactivity as a field, without widening the contract
    * every other control implements.
+   *
+   * @since 0.1.0
    */
   get fieldCursor(): PctFieldCursor {
     return this.filterable() ? 'text' : 'pointer';
@@ -584,7 +600,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Set by the chrome when one is present. */
   private readonly fieldDescribedBy = signal<string | null>(null);
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the trigger describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
@@ -1003,6 +1023,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     errors: this.errors,
   });
   protected readonly errorText = this.messages.errorText;
+  /**
+   * Whether the control reads as invalid right now, by the chrome's own rule: invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly showInvalid = this.messages.showInvalid;
 
   /** Inside the chrome the chrome renders the message, not the control. */

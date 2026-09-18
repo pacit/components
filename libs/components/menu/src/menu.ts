@@ -248,7 +248,11 @@ export class PctMenu {
 
   private readonly uid = nextPctId('pct-menu');
 
-  /** What the trigger's `aria-controls` points at while the panel is up. */
+  /**
+   * What the trigger's `aria-controls` points at while the panel is up.
+   *
+   * @since 0.1.0
+   */
   readonly panelId = `${this.uid}-panel`;
 
   /**
@@ -262,7 +266,7 @@ export class PctMenu {
     descendants: true,
   });
 
-  readonly items = computed(() =>
+  protected readonly items = computed(() =>
     this.declared().filter((item) => item.menu === this),
   );
 

@@ -17,12 +17,20 @@ export interface PctConfig {
   defaultSize: PctSize;
 }
 
-/** @since 0.1.0 */
+/**
+ * The configuration a page gets without asking.
+ *
+ * @since 0.1.0
+ */
 export const PCT_DEFAULT_CONFIG: PctConfig = {
   defaultSize: 'md',
 };
 
-/** @since 0.1.0 */
+/**
+ * The token the library's configuration is read from; unprovided, it falls back to the default above.
+ *
+ * @since 0.1.0
+ */
 export const PCT_CONFIG = new InjectionToken<PctConfig>('PCT_CONFIG', {
   factory: () => PCT_DEFAULT_CONFIG,
 });

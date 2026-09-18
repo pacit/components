@@ -91,13 +91,25 @@ export class PctTab implements PctTabApi {
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly uid = nextPctId('pct-tab');
+  /**
+   * The id of the panel this tab controls, which the tab names in `aria-controls`.
+   *
+   * @since 0.1.0
+   */
   readonly panelId = `${this.uid}-panel`;
+  /**
+   * The id of the tab itself, which its panel names in `aria-labelledby`.
+   *
+   * @since 0.1.0
+   */
   readonly tabId = `${this.uid}-tab`;
 
   /**
    * The strip this panel stands in — injected rather than passed, because injection is what
    * resolves the DECLARATION tree: a panel written inside a nested `pct-tabs` gets that one,
    * however the two are drawn.
+   *
+   * @since 0.1.0
    */
   readonly tabs = inject(PCT_TABS, { optional: true });
 

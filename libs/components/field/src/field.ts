@@ -146,7 +146,11 @@ export class PctField implements PctFieldApi {
     () => this.control()?.fieldCursor ?? 'default',
   );
 
-  /** @since 0.1.0 */
+  /**
+   * Takes a control under the chrome. The last one attached is the one the chrome describes.
+   *
+   * @since 0.1.0
+   */
   attach(control: PctFieldControl): void {
     const taken = this.control();
     this.control.set(control);
@@ -154,7 +158,11 @@ export class PctField implements PctFieldApi {
       this.warnOnSecondControl(taken, control);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Releases a control the chrome was holding, when it leaves the field.
+   *
+   * @since 0.1.0
+   */
   detach(control: PctFieldControl): void {
     // A goodbye from a control that is no longer the current one changes nothing: the chrome
     // has already been taken over by its successor (`pctAttachToField` in `core`).
@@ -190,6 +198,8 @@ export class PctField implements PctFieldApi {
    * The field border as the reference surface for a control's overlays (req-api-wrapper).
    * `null` only before the view is built — a control asks for it when opening its panel, and
    * by then the row stands.
+   *
+   * @since 0.1.0
    */
   readonly surface = computed(() => this.row()?.nativeElement ?? null);
 

@@ -200,7 +200,11 @@ export interface PctDayFormat {
 /** The formatters are built per locale and shared — an `Intl` object is not cheap. */
 const CACHE = new Map<string, PctDayFormat>();
 
-/** @since 0.1.0 */
+/**
+ * The day, weekday and month names of a locale, built once and shared.
+ *
+ * @since 0.1.0
+ */
 export function pctDayFormat(locale: string): PctDayFormat {
   const cached = CACHE.get(locale);
   if (cached) return cached;

@@ -105,5 +105,10 @@ export class PctAccordion implements PctAccordionApi {
    */
   private readonly uid = nextPctId('pct-accordion');
 
+  /**
+   * The name the items share while the accordion is exclusive, which is what makes one of them close another.
+   *
+   * @since 0.1.0
+   */
   readonly groupName = computed(() => (this.exclusive() ? this.uid : null));
 }

@@ -43,7 +43,7 @@ export class PctMultiSelect<T = string>
   }
 
   /** The tag's whole meaning, and the one thing the template reads it for. */
-  override readonly multiple = true;
+  protected override readonly multiple = true;
 
   /**
    * The chosen values — the `FormValueControl` contract's one field, here a list. Empty is the

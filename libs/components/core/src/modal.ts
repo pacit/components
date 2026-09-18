@@ -65,6 +65,8 @@ export class PctModalBackground {
    * How many modals are holding the background. Public because it is the only thing about
    * this service a test can read without asking the document — and because a leak here is a
    * page that never scrolls again, which is worth being able to assert.
+   *
+   * @since 0.1.0
    */
   readonly depth = signal(0);
 

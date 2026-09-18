@@ -14,6 +14,22 @@ export class PctPlain {
   /** @since 0.1.0 */
   readonly value = model.required<string>();
 
+  /**
+   * A field that is no input: it ships in the types like the rest, so it is dated too.
+   *
+   * @since 0.1.0
+   */
+  readonly id = 'pct-plain-1';
+
+  /**
+   * A getter, which the readers count beside the fields.
+   *
+   * @since next
+   */
+  get ready(): boolean {
+    return true;
+  }
+
   /** @since 0.1.0 */
   open(): void {}
 
@@ -22,6 +38,8 @@ export class PctPlain {
   protected measureTwice(): number {
     return 2;
   }
+
+  protected readonly hiddenField = 'not API';
 
   private measure(): number {
     return 0;

@@ -172,7 +172,11 @@ export interface PctTexts {
   readonly stepDone: string;
 }
 
-/** @since 0.1.0 */
+/**
+ * The English texts the components speak with until an application provides its own.
+ *
+ * @since 0.1.0
+ */
 export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',

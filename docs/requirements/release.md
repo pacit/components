@@ -150,18 +150,21 @@ of its code, but on the strength of its **predictability**
 ### <a id="req-release-since"></a>`req-release-since` — The public surface says since when
 
 **Promise.** Every public API — an input, a model, an output, a public method of an exported
-class, an export of an entry point — names the version it appeared in, in the JSDoc at its
-declaration: `@since 0.1.0` for what shipped, `@since next` for what `main` has and the
-published package does not. The tag
+class, a public field or getter beside them, an export of an entry point — says what it is in
+a sentence and names the version it appeared in, in the JSDoc at its declaration:
+`@since 0.1.0` for what shipped, `@since next` for what `main` has and the published package
+does not. What can stop being public does: a member only its own template reads is
+`protected`, and a member that overrides another is dated where it is declared. The tag
 travels into the shipped `.d.ts`, so a consumer's editor reads it, and the site marks
 `unreleased` what the package at its version cannot have. The release names the version:
 `stamp-version.mjs` rewrites `next` on the run that bumps the manifest, before the build
 ([0080](../decisions/0080-an-api-is-dated-next-until-the-release-names-it.md))
-**Gate:** `tools/check-since.mjs` (points 1–3: every item dated; a value that is `next` or a
-version the manifest has reached; no deprecation of what never shipped) +
+**Gate:** `tools/check-since.mjs` (points 1–4: every item dated; a value that is `next` or a
+version the manifest has reached; no deprecation of what never shipped; a sentence above the
+tags, because a name is not a description) +
 `libs/components/check-package.mjs` point 10 (`--release`: no `@since next` in the shipped
 types)
-**Control:** `tools/check-since.fixtures/` — six prepared inputs, each rejected by its own
+**Control:** `tools/check-since.fixtures/` — seven prepared inputs, each rejected by its own
 point, and `_reader/`, a prepared library whose every API the readers must return, written
 with the `export` keyword, with a list, and under names several declarations share;
 `tools/check-package.fixtures/since-next/` on the release side, warning day to day and
@@ -170,7 +173,6 @@ blocking under `--release`
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
 one: seventy-four are dated, most of them the plumbing between a component and its parts,
 and all of them in the shipped types — the one place the tag shows, because the site
-renders no method rows. Public fields and getters that are no input, model or output — 164
-fields and 2 getters on 2026-09-18, `PctToaster.toasts` and `PctTree.items` among them —
-are not dated yet: the same argument reaches them, and the sweep that dates them is the one
-that also puts them on the site, where nothing shows them today
+renders no method rows. Nor is a public field: fifty-seven are dated, after the sweep of
+2026-09-18 made `protected` the six that only their own template read and gave the harnesses'
+two static members one declaration each in `PctHarness` instead of fifty-two

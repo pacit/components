@@ -38,8 +38,19 @@ export abstract class PctHarness<
   P extends string = string,
 > extends ComponentHarness {
   /**
+   * The element the harness attaches to — the component's own selector, verbatim. The CDK
+   * reads it off the class to find a host, and every harness below restates it as its own
+   * value; the sentence stays here, where a reader of any of them is shown it.
+   *
+   * @since 0.1.0
+   */
+  static hostSelector = '';
+
+  /**
    * The parts the component exposes — the inventory's own names, the ones
    * `libs/components/parts.snapshot.md` records for the class this harness stands on.
+   *
+   * @since 0.1.0
    */
   static readonly parts: readonly string[] = [];
 

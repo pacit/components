@@ -284,6 +284,11 @@ export class PctDate
   // --- a11y: stable ids for the ARIA relations (req-a11y-built-in) ---
 
   private readonly uid = nextPctId('pct-date');
+  /**
+   * The id of the text input the label points at.
+   *
+   * @since 0.1.0
+   */
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
@@ -293,11 +298,18 @@ export class PctDate
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
   protected readonly inField = this.fieldApi !== null;
 
+  /**
+   * `for`: the chrome's label points at the input above.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'for';
   /**
    * A click anywhere on the field places the caret — the control is typed into, and the
    * calendar is behind a button of its own. That is the one thing this control does not share
    * with the select, whose whole surface opens a panel.
+   *
+   * @since 0.1.0
    */
   readonly fieldCursor: PctFieldCursor = 'text';
 
@@ -319,6 +331,11 @@ export class PctDate
   protected readonly malformed = computed(
     () => this.rejected() !== null && !this.disabled(),
   );
+  /**
+   * Text in the field that is not a date. The form sees `null` and calls the field empty, so the control says this itself.
+   *
+   * @since 0.1.0
+   */
   readonly ownErrors = computed<readonly PctValidationError[]>(() =>
     this.malformed() ? [{ message: this.texts().dateMalformed }] : [],
   );
@@ -459,7 +476,11 @@ export class PctDate
     if (isDevMode()) this.warnOnUnsupportedUsage();
   }
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the input describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
@@ -473,7 +494,11 @@ export class PctDate
     this.control().nativeElement.focus(options);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Empties the field, the typed text and the date alike.
+   *
+   * @since 0.1.0
+   */
   reset(): void {
     this.commit('');
   }

@@ -90,7 +90,11 @@ export class PctStepper {
    */
   readonly ariaLabel = input<string>('');
 
-  /** The step hosts in document order — the numbering, read by every step. */
+  /**
+   * The step hosts in document order — the numbering, read by every step.
+   *
+   * @since 0.1.0
+   */
   readonly steps = contentChildren(PCT_STEP, { read: ElementRef });
 }
 
