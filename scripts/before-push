@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # The gates CI will run, run here first — the same list, taken from `ci.yml` itself rather
-# than copied, so the two cannot drift. Measured 2026-09-18: 48 seconds against 20 minutes of
-# waiting for a runner to say the same thing.
+# than copied, so the two cannot drift. Measured on this desk 2026-09-18, over the 23 tasks a
+# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them, and
+# some twenty minutes of waiting for a runner to say the same thing.
 #
 # `e2e` is left out by default: it is the suite that takes the other twenty minutes, and a
 # change that cannot reach the browser has nothing to learn from it. Ask for it with `--e2e`.
 #
 # A cached task is not a measurement. nx replays a result whose inputs did not move, and a
 # change outside a target's inputs — a tool, a fixture, a workflow — leaves the target green
-# without running it (`lesson-228`'s neighbour: CI found `docs:typecheck` broken on a runner
-# while this desk replayed a cache). `--cold` skips the cache for the whole run; use it when
+# without running it: on 2026-09-18 CI found `docs:typecheck` broken on a runner while this
+# desk replayed a cached pass of it. `--cold` skips the cache for the whole run; use it when
 # the change is one nx cannot see, and after `rm -rf apps/docs/src/generated` when the
 # generated sources are what moved.
 #
@@ -17,6 +18,10 @@
 set -u -o pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+# nx reads the workspace off the working directory, and npx installs a fresh one when it finds
+# none: run from anywhere else and the battery fetches an unpinned nx to tell you this is not a
+# workspace. The script is callable from any directory, and always measures this one.
+cd "$root" || exit 1
 workflow="$root/.github/workflows/ci.yml"
 
 base=main
@@ -46,6 +51,8 @@ if [ "$want_e2e" -eq 0 ]; then
 fi
 
 read -r -a list <<<"$targets"
-echo "> nx affected --base=$base ${extra[*]:-} -t ${#list[@]} targets from ci.yml"
+echo "> nx affected --base=$base ${extra[*]-} -t ${#list[@]} targets from ci.yml"
+# `${extra[@]:-}` would hand nx an empty argument when no flag was given — harmless today,
+# and a word this script never meant to say.
 exec "$root/scripts/nx-verdict" "$root/scripts/with-node" npx nx affected \
-  --base="$base" "${extra[@]:-}" -t "${list[@]}"
+  --base="$base" ${extra[@]+"${extra[@]}"} -t "${list[@]}"

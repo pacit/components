@@ -46,7 +46,8 @@ It runs `nx affected` against `main` with the targets taken from the `nx affecte
 in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), minus `e2e` — the suite that takes
 twenty of CI's minutes, and that a change unable to reach a browser has nothing to learn from.
 `--e2e` puts it back, `--base=<ref>` compares against something else, and `--cold` skips the
-nx cache.
+nx cache. A change under `tools/` took 52 seconds cold on one desk, and 3 with the cache
+holding the same 23 tasks; the runner takes twenty minutes either way.
 
 Take `--cold` seriously when the change is one nx cannot see. A cached task is not a
 measurement: nx replays a result whose inputs did not move, so a new tool, a fixture or a
