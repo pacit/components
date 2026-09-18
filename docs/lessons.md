@@ -6347,3 +6347,44 @@ lines nx writes — but the drop takes bytes, not the exit code: nx computes tha
 task results, so a red task ends a run with 1 whether or not its summary was written, and
 the green code of those nine is not explained here; lesson-222's suspect stands. The
 reader runs nx now, into a file it follows live, and judges the file.
+
+### <a id="lesson-229"></a>`lesson-229` — The gate's judge had a control; its readers had none
+
+`check-since` had six prepared inputs and every one of them was handed to the judge — a list of
+items, rejected on the point it declares. Nothing was ever handed to the READERS, and on
+2026-09-18 a reading of them found the hole: a class declared without the keyword and exported
+by a list at the foot of the file was invisible, and with it every public method it declares.
+The gate would have passed, green and loud about its 588 items, over an API nobody dated.
+
+A prepared list cannot catch that, because the list is what the reader was supposed to produce:
+its absence looks exactly like an empty file. So the readers got a prepared LIBRARY instead —
+sources written to be read, and beside them the items they must yield. Five review rounds then
+found five more of the same shape in the repair itself: one declaration per name hid a class
+merged with an interface, an overload set collapsed onto its implementation, the deprecation
+and the direction of the merge were asserted and unpinned, and the `protected`, unexported-class
+and `model.required` branches were "proved" only by real code that happens to have those shapes
+— the accident that a gate is one refactor away from losing.
+
+The rule the rounds converged on: **a control that constructs the defect is the only one that
+counts, and a reader needs one as much as a judge.** Every branch is now put back on a copy and
+named by the control; the ones knowingly left uncovered are listed where the next reader looks.
+
+### <a id="lesson-230"></a>`lesson-230` — A target passed because the directory happened to be there
+
+`docs:typecheck` compiles sources that import `src/generated/*`, which `docs:content` writes.
+It declared no dependency on it. `docs:build` has carried that edge since the pipeline landed
+on 2026-09-02, and typecheck went the sixteen days after it green — not because the order held,
+but because the directory was always already there: written by an earlier build on a desk,
+restored from the cache on a runner. On 2026-09-18 a runner had a cold `content` cache for the
+first time, nx started the two tasks side by side, and the run ended with 52 errors, 14 of them
+`TS2307` over five generated modules and the rest the implicit `any` that follows.
+
+The second half is the same lesson from the other side. The change that exposed it had passed
+here, locally, minutes earlier — `nx` replayed the target out of the cache, because the change
+was a tool and a fixture, and a tool is in no target's `inputs`. A green line that says _read
+the output from the cache_ is a memory of another tree, not a measurement of this one.
+
+`dependsOn: ["content"]` is the fix, and `inputs` would not have been: the failure is order, not
+staleness, and only an edge in the graph orders two tasks. What keeps it from happening again is
+`scripts/before-push`, which runs the gates CI will run before the push rather than after, and
+`--cold` for the change nx cannot see.
