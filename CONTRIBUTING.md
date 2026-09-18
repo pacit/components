@@ -34,17 +34,29 @@ Node 24 through nvm; a shell that has not loaded it runs every command through t
 scripts/with-node npx nx affected -t lint test build typecheck check-package
 ```
 
-The whole line CI runs — some thirty gates next to lint, tests, build and typecheck — is the
-one `nx affected` command in [`.github/workflows/ci.yml`](.github/workflows/ci.yml); copy it
-from there rather than from here, so the two cannot drift. The mutation run and the flake
-count are nightly only (`.github/workflows/nightly.yml`): too slow for a push, and a pull
-request is not asked to wait for them.
+The whole line CI runs — some thirty gates next to lint, tests, build and typecheck — has a
+script that reads it out of the workflow, so the two cannot drift and nobody has to remember
+which gates the habit omits:
 
-What people run by hand before a commit is a habit, not a list, and the habit omits two
-gates that cost a production build: `check-bundle` (byte sizes through the real builder) and
-`check-index` (derived directory indexes). Run both before a pull request that touches
-`libs/components/*/src` or anything under `docs/`
-([`lesson-188`](docs/lessons.md#lesson-188) is what it cost to learn that).
+```bash
+scripts/before-push
+```
+
+It runs `nx affected` against `main` with the targets taken from the `nx affected -t …` line
+in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), minus `e2e` — the suite that takes
+twenty of CI's minutes, and that a change unable to reach a browser has nothing to learn from.
+`--e2e` puts it back, `--base=<ref>` compares against something else, and `--cold` skips the
+nx cache.
+
+Take `--cold` seriously when the change is one nx cannot see. A cached task is not a
+measurement: nx replays a result whose inputs did not move, so a new tool, a fixture or a
+workflow leaves a target green without running it. That is how `docs:typecheck` reached a
+runner broken while this desk replayed a cache (2026-09-18). When the generated sources are
+what moved, `rm -rf apps/docs/src/generated` first.
+
+The mutation run and the flake count are nightly only
+(`.github/workflows/nightly.yml`): too slow for a push, and a pull request is not asked to
+wait for them.
 
 The documentation site is `apps/docs`, on port 4300:
 
