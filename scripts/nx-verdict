@@ -4,8 +4,8 @@
 #
 # nx ends every run of tasks with one line of its own — `Successfully ran target(s) …`, or
 # `Ran target(s) …` above a `Failed tasks:` list — and exits 1 on the second. Read off a PIPE
-# that line is not to be trusted: Node drops what is still buffered on stdout when the
-# process exits, and nx exits the moment its tasks are done. A run whose tasks were all
+# that line is not to be trusted: Node drops what is still buffered on stdout when it leaves
+# through `process.exit()`, as nx does the moment its tasks are done. A run whose tasks were all
 # cached replays their output in seconds and leaves with thousands of lines unwritten, the
 # summary among them — measured on 2026-09-18, twice on the runner and then on a desk
 # (lesson-228); the nine silent green runs of 2026-09-15..17 (lesson-222) were the same
@@ -16,13 +16,19 @@
 #
 # Usage:  scripts/nx-verdict npx nx affected -t …      NX_VERDICT_LOG names the file.
 set -u -o pipefail
+if [ "$#" -eq 0 ]; then
+  echo "usage: scripts/nx-verdict <command …>" >&2
+  exit 2
+fi
 log="${NX_VERDICT_LOG:-tmp/nx-verdict.log}"
 mkdir -p "$(dirname "$log")"
 : > "$log"
 "$@" > "$log" 2>&1 &
 command=$!
-# `--pid` ends the tail once the command is gone, after its last read — measured: the live
-# lines and the file agree to the line on a 55 885-line replay.
+# `--pid` ends the tail once the command is gone, after its last read: on the runner's GNU
+# tail the live lines and the file agree to the line on a 55 000-line replay. A desk whose
+# `tail` is uutils can show the live output short when its reader is slow; the verdict is
+# read off the file either way.
 tail -n +1 -f --pid="$command" "$log" &
 follower=$!
 wait "$command"
@@ -30,6 +36,8 @@ status=$?
 wait "$follower" 2>/dev/null
 if ! grep -q -e 'Successfully ran target' -e 'Failed tasks:' "$log"; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
-  exit 1
+  # The command's own code when it had one — 127 for a command that never started, 137 for
+  # a killed one — and 1 for a run that ended clean and mute.
+  exit "$(( status ? status : 1 ))"
 fi
 exit "$status"

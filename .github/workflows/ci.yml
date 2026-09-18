@@ -139,7 +139,7 @@ jobs:
       # `scripts/nx-verdict` RUNS nx rather than reading it off a pipe: nx ended nine runs
       # without its summary and with exit code 0, red tasks inside them (plan 4.72,
       # lesson-222), and the mechanism is Node dropping what is still buffered on a pipe when
-      # the process exits — a run whose tasks were all cached lost thousands of lines and
+      # it leaves through `process.exit()`, as nx does — a run whose tasks were all cached lost thousands of lines and
       # the summary with them, twice on 2026-09-18 (lesson-228). The runner writes nx to a
       # file, follows it live, and fails a run whose file carries no verdict; nx's own
       # non-zero code still wins.

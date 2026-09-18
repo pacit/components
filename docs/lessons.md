@@ -6339,7 +6339,8 @@ the moment `components:test` had a cached output to replay: through `|& cat` the
 at 2 562 to 4 967 lines, to a file at 55 885 with the summary on the last line, whatever the
 output style, the TUI or the daemon. Four megabytes from `node -e` behave the same way — the
 `END` line reaches a file and not a pipe. Node drops what is still buffered on a pipe when
-the process exits, and nx exits the moment its tasks are done; a long run drains its buffer
-while tasks run, a fast one leaves with it. The nine silent green runs of lesson-222 were
+the process leaves through `process.exit()` — a natural end or `process.exitCode` drains
+it — and nx calls `process.exit()` the moment its tasks are done; a long run drains its
+buffer while tasks run, a fast one leaves with it. The nine silent green runs of lesson-222 were
 the same loss with red tasks inside, since the summary and the failure list are the last
 lines nx writes. The reader runs nx now, into a file it follows live, and judges the file.

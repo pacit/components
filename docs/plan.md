@@ -270,5 +270,5 @@ and every one is held by a **binds at** rather than by anybody's mood.
     `scripts/nx-verdict`, which fails a run that ends without nx's summary, and the sandbox
     suite stopped depending on the continuous `sandbox:serve`. Read on `fcfe5b6` (red, the
     list printed) and `3be54c2` (green, the summary printed). The mechanism came 2026-09-18:
-    Node drops what is still buffered on a pipe at exit, so a fast all-cached run lost its
-    summary too; the reader RUNS nx into a file now ([`lesson-228`](lessons.md#lesson-228))
+    Node drops a pipe's buffered output at `process.exit()`, which nx calls, so a fast
+    all-cached run lost its summary too; the reader RUNS nx into a file now ([`lesson-228`](lessons.md#lesson-228))
