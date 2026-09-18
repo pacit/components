@@ -1,9 +1,9 @@
 {
-  "description": "What the readers must find in the prepared library beside it. `plain.ts` writes an ordinary component with the `export` keyword; `listed.ts` writes a class, a class renamed on its way out and a type with the keyword on no declaration at all, exported by a list; `merged.ts` writes the two shapes a name can carry more than one declaration under — a class merged with an interface, and an overload set above its implementation — which are one item each, because a consumer imports the name once — and the last two are tagged on a LATER declaration than the first — one deprecated on its second signature, one dated there, and a method dated on its second and deprecated on its third — where a reader narrowed to the first would not look. Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
+  "description": "What the readers must find in the prepared library beside it, and only that. `plain.ts` writes an ordinary component with the `export` keyword, beside a lifecycle hook, a protected method and a private one, which are not API and are absent below on purpose — a reader that starts returning them asks for a tag on what nobody can call. `listed.ts` writes a class, a class renamed on its way out and a type with the keyword on no declaration, exported by a list, and one class exported by nothing, whose method is absent for the same reason. `merged.ts` writes the shapes a name can carry more than one declaration under, each one item: three of them hold a tag away from the first declaration — one deprecated on its second signature, one dated on its second, one method dated on its second and deprecated on its third — and two are dated TWICE, a method and a function, where the first date wins and the second is shown nowhere (plan 4.75).",
   "items": [
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 6,
+      "line": 7,
       "name": "PctPlain",
       "kind": "class",
       "since": "0.1.0",
@@ -11,7 +11,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 8,
+      "line": 9,
       "name": "variant",
       "kind": "input",
       "since": "0.1.0",
@@ -19,7 +19,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 11,
+      "line": 12,
       "name": "opened",
       "kind": "output",
       "since": "next",
@@ -27,7 +27,15 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 14,
+      "line": 15,
+      "name": "value",
+      "kind": "model",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/plain.ts",
+      "line": 18,
       "name": "PctPlain.open",
       "kind": "method",
       "since": "0.1.0",
@@ -83,7 +91,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 8,
+      "line": 9,
       "name": "PctMerged",
       "kind": "class",
       "since": "0.1.0",
@@ -91,7 +99,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 10,
+      "line": 11,
       "name": "tone",
       "kind": "input",
       "since": "0.1.0",
@@ -99,7 +107,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 13,
+      "line": 14,
       "name": "PctMerged.reset",
       "kind": "method",
       "since": "0.1.0",
@@ -107,7 +115,23 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 33,
+      "line": 19,
+      "name": "PctMerged.tune",
+      "kind": "method",
+      "since": "0.1.0",
+      "deprecated": true
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 31,
+      "name": "PctMerged.blend",
+      "kind": "method",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 44,
       "name": "pctFmt",
       "kind": "function",
       "since": "0.1.0",
@@ -115,7 +139,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 42,
+      "line": 53,
       "name": "pctTrim",
       "kind": "function",
       "since": "next",
@@ -123,11 +147,11 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 18,
-      "name": "PctMerged.tune",
-      "kind": "method",
+      "line": 63,
+      "name": "pctJoin",
+      "kind": "function",
       "since": "0.1.0",
-      "deprecated": true
+      "deprecated": false
     }
   ]
 }

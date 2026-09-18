@@ -25,5 +25,10 @@ class Renamed {
 /** @since 0.1.0 */
 type PctListedSize = 'sm' | 'md';
 
+// Exported by nothing: its method ships nowhere, so the gate must not ask it for a date.
+class Kept {
+  peek(): void {}
+}
+
 export { PctListed, Renamed as PctRenamed };
 export type { PctListedSize };
