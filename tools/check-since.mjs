@@ -166,7 +166,12 @@ const memberKind = (initializer) => {
   return name && MEMBER_CALLS.has(name) ? name : null;
 };
 
-/** Every input, model and output of every class in one source file. */
+/**
+ * Every input, model and output of every class in one source file — of EVERY class, with no
+ * export guard of the kind `methodsIn` carries: a base class the file does not export still
+ * hands its inputs to the exported class that extends it, and those ship. The cost is a
+ * member of a class nobody exports counted as API, which is the safer way round.
+ */
 const membersIn = (path) => {
   const sf = parse(path);
   const out = [];

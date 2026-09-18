@@ -34,7 +34,11 @@ name arrives in:
   result, and a `model.required` whose call shape the reader has to recognise;
 - [`listed.ts`](_reader/listed.ts) — the keyword on no declaration at all: a class, a class
   renamed on its way out and a type, exported by a list at the foot of the file; and one class
-  exported by nothing, whose public method ships nowhere and must not be asked for a date;
+  exported by nothing, whose public method ships nowhere and must not be asked for a date. It
+  holds no member on purpose: `membersIn` reads every class in the file, exported or not,
+  because an unexported base class hands its inputs to the exported class that extends it;
+-
+
 - [`merged.ts`](_reader/merged.ts) — the two shapes that put several declarations under one
   name, a class merged with an interface and an overload set above its implementation. Each is
   one item, because a consumer imports the name once, and the tag is read off the first
