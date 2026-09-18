@@ -6359,11 +6359,12 @@ The gate would have passed, green and loud about its 588 items, over an API nobo
 A prepared list cannot catch that, because the list is what the reader was supposed to produce:
 its absence looks exactly like an empty file. So the readers got a prepared LIBRARY instead —
 sources written to be read, and beside them the items they must yield. Five review rounds then
-found five more of the same shape in the repair itself: one declaration per name hid a class
-merged with an interface, an overload set collapsed onto its implementation, the deprecation
-and the direction of the merge were asserted and unpinned, and the `protected`, unexported-class
-and `model.required` branches were "proved" only by real code that happens to have those shapes
-— the accident that a gate is one refactor away from losing.
+found the same shape again and again in the repair itself, eight times over: one declaration
+per name hid a class merged with an interface and collapsed an overload set onto its
+implementation; the tag was read off the first declaration only, and the deprecation likewise;
+the direction of the merge was asserted and unpinned, in one reader and then in the other; and
+the `protected`, unexported-class and `model.required` branches were "proved" only by real code
+that happens to have those shapes — the accident a gate is one refactor away from losing.
 
 The rule the rounds converged on: **a control that constructs the defect is the only one that
 counts, and a reader needs one as much as a judge.** Every branch is now put back on a copy and
@@ -6376,8 +6377,9 @@ It declared no dependency on it. `docs:build` has carried that edge since the pi
 on 2026-09-02, and typecheck went the sixteen days after it green — not because the order held,
 but because the directory was always already there: written by an earlier build on a desk,
 restored from the cache on a runner. On 2026-09-18 a runner had a cold `content` cache for the
-first time, nx started the two tasks side by side, and the run ended with 52 errors, 14 of them
-`TS2307` over five generated modules and the rest the implicit `any` that follows.
+first time, nx started the two tasks side by side, and the run ended with 52 errors: 14 of them
+`TS2307` over five generated modules, and 38 downstream of those — 36 an implicit `any`, two an
+argument that no longer fits.
 
 The second half is the same lesson from the other side. The change that exposed it had passed
 here, locally, minutes earlier — `nx` replayed the target out of the cache, because the change
@@ -6386,5 +6388,5 @@ the output from the cache_ is a memory of another tree, not a measurement of thi
 
 `dependsOn: ["content"]` is the fix, and `inputs` would not have been: the failure is order, not
 staleness, and only an edge in the graph orders two tasks. What keeps it from happening again is
-`scripts/before-push`, which runs the gates CI will run before the push rather than after, and
-`--cold` for the change nx cannot see.
+running the gates CI will run before the push rather than after, and skipping the cache for the
+change nx cannot see — `scripts/before-push` is that habit written down.
