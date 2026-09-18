@@ -223,28 +223,40 @@ const isHidden = (node) =>
   );
 
 /**
- * The public methods of an exported class — one item per name, dated when any of its
- * declarations is (an overload set carries its JSDoc on the first signature). Lifecycle
- * hooks, constructors, accessors and private names are not API.
+ * The public methods of every class a source file exports — one item per name, dated when
+ * any of its declarations is (an overload set carries its JSDoc on the first signature), and
+ * deprecated when any is. Read file-wide like the members, and not off the entry point's
+ * re-exports: a base class the index never names still ships in the types under the class
+ * that extends it (`PctSelectBase` under `PctSelect`), and a consumer's editor reads its
+ * methods there. Lifecycle hooks, constructors, accessors and private names are not API.
  */
-const methodsOf = (sf, path, cls) => {
-  const byName = new Map();
-  for (const m of cls.members) {
-    if (!ts.isMethodDeclaration(m) || !ts.isIdentifier(m.name)) continue;
-    if (isHidden(m) || LIFECYCLE.test(m.name.text)) continue;
-    const doc = docOf(m);
-    const seen = byName.get(m.name.text);
-    if (!seen)
-      byName.set(m.name.text, {
-        path,
-        line: lineOf(sf, m),
-        name: `${cls.name.text}.${m.name.text}`,
-        kind: 'method',
-        ...doc,
-      });
-    else if (!seen.since && doc.since) Object.assign(seen, doc);
+const methodsIn = (path) => {
+  const sf = parse(path);
+  const out = [];
+  for (const cls of sf.statements) {
+    if (!ts.isClassDeclaration(cls) || !cls.name || !isExported(cls)) continue;
+    const byName = new Map();
+    for (const m of cls.members) {
+      if (!ts.isMethodDeclaration(m) || !ts.isIdentifier(m.name)) continue;
+      if (isHidden(m) || LIFECYCLE.test(m.name.text)) continue;
+      const doc = docOf(m);
+      const seen = byName.get(m.name.text);
+      if (!seen)
+        byName.set(m.name.text, {
+          path,
+          line: lineOf(sf, m),
+          name: `${cls.name.text}.${m.name.text}`,
+          kind: 'method',
+          ...doc,
+        });
+      else {
+        seen.since ??= doc.since;
+        seen.deprecated ||= doc.deprecated;
+      }
+    }
+    out.push(...byName.values());
   }
-  return [...byName.values()];
+  return out;
 };
 
 /**
@@ -281,7 +293,6 @@ const exportsIn = (indexPath) => {
       for (const name of namesOf(d)) {
         if (only && !only.has(name)) continue;
         out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
-        if (kind === 'class') out.push(...methodsOf(target, path, d));
       }
     }
   }
@@ -293,7 +304,7 @@ const readItems = () => {
     .map((p) => p.split('\\').join('/'))
     .filter((p) => !NOT_SOURCE.test(p))
     .sort();
-  const items = files.flatMap(membersIn);
+  const items = [...files.flatMap(membersIn), ...files.flatMap(methodsIn)];
   const seen = new Set();
   for (const index of files.filter((p) => p.endsWith('/index.ts')))
     for (const item of exportsIn(index)) {

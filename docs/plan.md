@@ -200,7 +200,7 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
     marks `unreleased` per row with a legend per page; the shipped `.d.ts` carry the tag too.
     `check-since` holds every item to it; `check-package` point 10 refuses an unstamped release
   - parts are left out with reason — markup, not a declaration; a since column in the card
-    would be a second home (0017). The 70 public methods, refused at first as plumbing between
+    would be a second home (0017). The 74 public methods, refused at first as plumbing between
     a component and its parts, were dated the morning after on the maintainer's word
 
 ## 4. Open findings
