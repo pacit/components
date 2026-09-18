@@ -35,9 +35,11 @@ name arrives in:
   renamed on its way out and a type, exported by a list at the foot of the file;
 - [`merged.ts`](_reader/merged.ts) — the two shapes that put several declarations under one
   name, a class merged with an interface and an overload set above its implementation. Each is
-  one item, because a consumer imports the name once, and the tag is read off whichever
-  declaration carries it — the last function there is dated on its second signature, so a
-  reader narrowed to the first would lose it.
+  one item, because a consumer imports the name once, and the tag is read off the first
+  declaration that carries one — the last two names there are tagged on a later declaration
+  than the first, so a reader narrowed to the first would lose both. What one item cannot say
+  is two different dates under one name, which is
+  [4.75](../../docs/plan.md) and not yet answered.
 
 [`_reader/expected.json`](_reader/expected.json) holds what the readers must return, counted
 and not merely listed, and the gate reports a difference either way — an item gone is an API it

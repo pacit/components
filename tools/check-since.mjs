@@ -259,9 +259,10 @@ const isHidden = (node) =>
   );
 
 /**
- * The public methods of every class a source file exports — one item per name, dated when
- * any of its declarations is (an overload set carries its JSDoc on the first signature), and
- * deprecated when any is. Read file-wide like the members, and not off the entry point's
+ * The public methods of every class a source file exports — one item per name, dated by the
+ * FIRST of its declarations to carry a tag (an overload set usually carries its JSDoc on the
+ * first signature) and deprecated when any does — a merged name cannot say two dates, and
+ * plan 4.75 is where that is owed an answer. Read file-wide like the members, and not off the entry point's
  * re-exports: a base class the index never names still ships in the types under the class
  * that extends it (`PctSelectBase` under `PctSelect`), and a consumer's editor reads its
  * methods there. Lifecycle hooks, constructors, accessors and private names are not API.
@@ -332,9 +333,10 @@ const exportsIn = (indexPath) => {
       if (first < 0) continue;
       // One item per exported NAME and not per declaration: a consumer imports the name
       // once, and its declarations are one API. The line and the kind come from the first
-      // declaration that has one; the tag from WHICHEVER carries it, and the deprecation
-      // from any — the same reading `methodsIn` gives an overload set, and the one the
-      // shipped types give a consumer, who is shown the tag wherever it was written.
+      // declaration that has one, the tag from the FIRST that carries one, the deprecation
+      // from any — the same reading `methodsIn` gives an overload set. One item cannot say
+      // two dates, so a shipped name that gains a signature dated `next` still reads as
+      // shipped; that is plan 4.75, and it waits for the first name to meet it.
       out.push({
         path,
         line: lineOf(target, decls[first]),

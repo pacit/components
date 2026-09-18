@@ -77,7 +77,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 3.6 stands past the tag
-2  open findings          small, good filler between the bigger items
+3  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
@@ -237,6 +237,20 @@ and every one is held by a **binds at** rather than by anybody's mood.
     answer one. Those cards owe a sentence about the component instead of a fourth instrument
   - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
     take a second home here, so the table cites the spec that owns it rather than restating it
+
+- [ ] **4.75 — one name, several declarations, and only the first date is read**
+  - a name TypeScript lets several declarations carry — a class merged with an interface, an
+    overload set — is one item to `check-since`, and its `@since` is the first one written:
+    `methodsIn` merges with `??=`, `exportsIn` with `find(Boolean)`. A shipped function that
+    gains an overload dated `@since next` therefore still reads `0.1.0`, and the site's
+    `unreleased` mark never fires for the signature the published package does not have
+  - the opposite reading is no better: a name the library shipped would be marked unreleased
+    because one of its signatures is new. What the item cannot say is that a name is partly
+    both, and that is the thing to decide — a second item per differing date, or a point that
+    refuses the disagreement and makes the author split the declaration
+  - found by the third review of the gate's own repair, 2026-09-18; no exported overload and no
+    merged name exists in the library today, which is why nothing reads wrong yet
+  - binds at: **the first exported name with two declarations dated differently**
 
 - [ ] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate**
   - the first flake record (4.58) names one case, in `forced-colors.spec.ts` on chromium, 2 of
