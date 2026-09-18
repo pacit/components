@@ -21,7 +21,10 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 # nx reads the workspace off the working directory, and npx installs a fresh one when it finds
 # none: run from anywhere else and the battery fetches an unpinned nx to tell you this is not a
 # workspace. The script is callable from any directory, and always measures this one.
-cd "$root" || exit 1
+cd "$root" || {
+  echo "::error::cannot enter $root — the battery measures the workspace it lives in." >&2
+  exit 1
+}
 workflow="$root/.github/workflows/ci.yml"
 
 base=main
@@ -51,7 +54,8 @@ if [ "$want_e2e" -eq 0 ]; then
 fi
 
 read -r -a list <<<"$targets"
-echo "> nx affected --base=$base ${extra[*]-} -t ${#list[@]} targets from ci.yml"
+said="--base=$base${extra[0]+ ${extra[*]}}"
+echo "> nx affected $said -t ${#list[@]} targets from ci.yml"
 # `${extra[@]:-}` would hand nx an empty argument when no flag was given — harmless today,
 # and a word this script never meant to say.
 exec "$root/scripts/nx-verdict" "$root/scripts/with-node" npx nx affected \
