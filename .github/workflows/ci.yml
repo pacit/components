@@ -138,11 +138,11 @@ jobs:
       # gate reads both workflows, so the pair still counts as wired into CI.
       # `scripts/nx-verdict` RUNS nx rather than reading it off a pipe: nx ended nine runs
       # without its summary and with exit code 0, red tasks inside them (plan 4.72,
-      # lesson-222), and the mechanism is Node dropping what is still buffered on a pipe when
-      # it leaves through `process.exit()`, as nx does — a run whose tasks were all cached lost thousands of lines and
-      # the summary with them, twice on 2026-09-18 (lesson-228). The runner writes nx to a
-      # file, follows it live, and fails a run whose file carries no verdict; nx's own
-      # non-zero code still wins.
+      # lesson-222). Read off a pipe the summary is not to be trusted at all: Node drops
+      # what is still buffered there when it leaves through `process.exit()`, as nx does —
+      # a run whose tasks were all cached lost thousands of lines and the summary with them,
+      # twice on 2026-09-18 (lesson-228). The runner writes nx to a file, follows it live,
+      # and fails a run whose file carries no verdict; nx's own non-zero code still wins.
       - shell: bash
         run: scripts/nx-verdict npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools e2e
 
@@ -155,6 +155,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: e2e-output
-          path: dist/.playwright/apps/*/test-output
+          path: |
+            dist/.playwright/apps/*/test-output
+            tmp/nx-verdict.log
           retention-days: 7
           if-no-files-found: ignore

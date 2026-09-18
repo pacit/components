@@ -6341,6 +6341,9 @@ output style, the TUI or the daemon. Four megabytes from `node -e` behave the sa
 `END` line reaches a file and not a pipe. Node drops what is still buffered on a pipe when
 the process leaves through `process.exit()` — a natural end or `process.exitCode` drains
 it — and nx calls `process.exit()` the moment its tasks are done; a long run drains its
-buffer while tasks run, a fast one leaves with it. The nine silent green runs of lesson-222 were
-the same loss with red tasks inside, since the summary and the failure list are the last
-lines nx writes. The reader runs nx now, into a file it follows live, and judges the file.
+buffer while tasks run, a fast one leaves with it. The nine silent runs of lesson-222 may
+have lost their summary the same way, since the summary and the failure list are the last
+lines nx writes — but the drop takes bytes, not the exit code: nx computes that from its
+task results, so a red task ends a run with 1 whether or not its summary was written, and
+the green code of those nine is not explained here; lesson-222's suspect stands. The
+reader runs nx now, into a file it follows live, and judges the file.

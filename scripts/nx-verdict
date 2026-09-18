@@ -8,8 +8,9 @@
 # through `process.exit()`, as nx does the moment its tasks are done. A run whose tasks were all
 # cached replays their output in seconds and leaves with thousands of lines unwritten, the
 # summary among them — measured on 2026-09-18, twice on the runner and then on a desk
-# (lesson-228); the nine silent green runs of 2026-09-15..17 (lesson-222) were the same
-# loss with red tasks inside. To a FILE nothing is dropped, because stdout to a file is
+# (lesson-228); the nine silent runs of 2026-09-15..17 (lesson-222) may have lost theirs the
+# same way, though the drop takes bytes and not nx's exit code, and their green stays
+# lesson-222's open question. To a FILE nothing is dropped, because stdout to a file is
 # synchronous: the command writes to one, `tail` follows it for the live log, and the
 # verdict is read off the complete file once the command is gone. A verdict that never
 # arrived is still not a pass, and nx's own non-zero code still wins.
