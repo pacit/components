@@ -266,9 +266,9 @@ and every one is held by a **binds at** rather than by anybody's mood.
     since 2026-09-15: silent exactly when `sandbox-e2e:e2e` ended the step — nine of nine — and
     hiding `check-bench` ×6, the sandbox suite ×2, one typecheck, one consumer flake, and the
     publish guard's reading of `1da5fb0` ([`lesson-222`](lessons.md#lesson-222))
-  - what closed it: every task-running `nx` line in both workflows ends in `|& scripts/nx-verdict`,
-    which fails a run that ends without nx's summary — a mute run cannot be green again, whatever
-    the mechanism — and the sandbox suite no longer depends on the continuous `sandbox:serve`,
-    the one task of that kind and the suspect. Read on `fcfe5b6` (red, the list printed) and
-    `3be54c2` (green, the summary printed), both suites in each; the docs suite ended both runs,
-    so the suspect's removal is read by the suite's presence, not by its position
+  - what closed it: every task-running `nx` line in both workflows went through
+    `scripts/nx-verdict`, which fails a run that ends without nx's summary, and the sandbox
+    suite stopped depending on the continuous `sandbox:serve`. Read on `fcfe5b6` (red, the
+    list printed) and `3be54c2` (green, the summary printed). The mechanism came 2026-09-18:
+    Node drops what is still buffered on a pipe at exit, so a fast all-cached run lost its
+    summary too; the reader RUNS nx into a file now ([`lesson-228`](lessons.md#lesson-228))

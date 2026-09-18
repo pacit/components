@@ -119,10 +119,10 @@ jobs:
       # rather than joining the line below, so its wall-clock is readable per run straight
       # off the job's step timings — the number the plan's CI item exists to learn.
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
-        run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools |& scripts/nx-verdict
+        run: scripts/nx-verdict npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools
 
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
-        run: npx nx run-many -t e2e |& scripts/nx-verdict
+        run: scripts/nx-verdict npx nx run-many -t e2e
 
   # The third runner, and the only job here whose subject is the suite rather than the code:
   # it runs both browser suites `--repeat-each` times over with retries OFF and asks which
@@ -227,7 +227,7 @@ jobs:
           merge-multiple: true
 
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
-        run: npx nx run-many -t check-flake |& scripts/nx-verdict
+        run: scripts/nx-verdict npx nx run-many -t check-flake
 
       # The reports are what a `--write` of the record is taken from, and one artifact holding
       # both is what a person needs to take it — two halves on two runners are not a reading
@@ -261,4 +261,4 @@ jobs:
       - run: npm ci
 
       - shell: bash # `pipefail`, and the reader (plan 4.72, lesson-222)
-        run: npx nx run-many -t mutation check-mutation |& scripts/nx-verdict
+        run: scripts/nx-verdict npx nx run-many -t mutation check-mutation

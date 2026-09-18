@@ -6328,3 +6328,18 @@ mutter's `focus` and `startup` topics, the shell's introspection (refused), the 
 capabilities read by `wayland-info`, the browser-side protocol trace, and the shell's Eval —
 whose legacy `imports.ui` loader cannot read an ES module, so the module is imported the way
 the Looking Glass imports it.
+
+### <a id="lesson-228"></a>`lesson-228` — The pipe dropped the verdict
+
+The verdict reader of 4.72 stood behind a pipe — `nx … |& scripts/nx-verdict` — and on
+2026-09-18 it refused two runs of a `main` whose tree was identical to the green run before
+it: every one of 37 tasks a cache hit, nx done in three seconds, the log ending in the middle
+of a replayed stylesheet with no summary and no error. The same command reproduced on a desk
+the moment `components:test` had a cached output to replay: through `|& cat` the run ended
+at 2 562 to 4 967 lines, to a file at 55 885 with the summary on the last line, whatever the
+output style, the TUI or the daemon. Four megabytes from `node -e` behave the same way — the
+`END` line reaches a file and not a pipe. Node drops what is still buffered on a pipe when
+the process exits, and nx exits the moment its tasks are done; a long run drains its buffer
+while tasks run, a fast one leaves with it. The nine silent green runs of lesson-222 were
+the same loss with red tasks inside, since the summary and the failure list are the last
+lines nx writes. The reader runs nx now, into a file it follows live, and judges the file.

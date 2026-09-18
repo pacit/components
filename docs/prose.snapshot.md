@@ -89,5 +89,5 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.71 open 19 312
 4.74 open 8 131
 4.73 closed 12 176
-4.72 closed 12 175
+4.72 closed 12 161
 ```
