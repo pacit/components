@@ -484,8 +484,8 @@ a hand-written colour) — each on a different rule
 stay on one platform (linux/chromium) — rasterisation would scatter them anyway.
 
 **Gate:** `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, firefox,
-webkit), 458 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
-root project, in CI) — six points, 27 rules. The e2e run is blind to its own matrix:
+webkit), 2086 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
+root project, in CI) — six points, 28 rules. The e2e run is blind to its own matrix:
 Playwright exits zero after three projects exactly as it does after one, and exactly as it
 does after **zero** collected tests. So the gate asks `playwright test --list --reporter=json`
 what the engines REALLY collect and compares that with the
@@ -495,7 +495,7 @@ and the install steps from `.github/workflows/ci.yml` — `--project=chromium` i
 one narrowing invisible in the Playwright configuration, and a sharded run is the other: the six
 browser jobs are the whole suite only while their shard count is the size of their own matrix
 rather than a number typed beside it
-**Control:** `tools/check-browsers.fixtures/` — 26 doctored inputs, each rejected on its own
+**Control:** `tools/check-browsers.fixtures/` — 27 doctored inputs, each rejected on its own
 **rule**; plus nine runs against the real repository (webkit struck from `projects`; a file
 added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; an
 engine removed from the install step in CI; `--project=chromium` in the target; an exclusion

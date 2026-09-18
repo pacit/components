@@ -39,8 +39,8 @@ jobs:
   # the nx cache (the composite action says why only one may).
   gates:
     runs-on: ubuntu-latest
-    # Ten times the 2.5 minutes the battery has measured — a ceiling for a task that hangs,
-    # not a budget for a slow one.
+    # The battery has measured 2.5 minutes of work and 4.2 of job; this is a ceiling for a
+    # task that hangs, not a budget for a slow one.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7

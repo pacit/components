@@ -122,7 +122,9 @@
       ],
       "runsE2E": true,
       "$shardsNotFromMatrix": "The sharded `e2e` lines whose shard count does NOT come from `strategy.job-total`. Empty here, as in the workflow: the six browser jobs take the denominator from the size of their own matrix, so there is no second copy of that number to disagree with it.",
-      "shardsNotFromMatrix": []
+      "shardsNotFromMatrix": [],
+      "$shardCover": "The `shard:` axis of the browser job's matrix, as the workflow writes it: six numerators and no second axis. `${{ strategy.job-total }}` is the right denominator only while this is a cover — one job per shard, each numerator once — so the two halves of point 5 are read together.",
+      "shardCover": { "shards": [1, 2, 3, 4, 5, 6], "keys": ["shard"] }
     },
     "facts": {
       "author-colour-override": {

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # The gates CI will run, run here first — the same list, taken from `ci.yml` itself rather
 # than copied, so the two cannot drift. Measured on this desk 2026-09-18, over the 23 tasks a
-# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them, and
-# some twenty minutes of waiting for a runner to say the same thing.
+# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them —
+# against 4.2 minutes for the runner's battery job, inside a CI run that answers in 17.1
+# (0081; measured on the first sharded run, 2026-09-19).
 #
 # `e2e` is left out by default: the two suites took 66 of the 68 minutes of the last
 # unsharded run on a runner, and a change that cannot reach the browser has nothing to learn
@@ -50,22 +51,36 @@ done
 # short still runs and still goes green. The union is over the lines; the order is the
 # workflow's.
 #
-# What counts as a target is the rule the two gates that read the same file use
-# (`targetsIn` in check-docs and in check-tools): the words after `-t` to the end of the
-# line, minus any word beginning with a dash. That is what lets `--shard=…` stand on the e2e
-# line without becoming a target nobody can run — and a line carrying no `-t` at all is an
-# error here rather than a line quietly skipped.
+# What counts as a target is the rule the three gates that read the same file use (`targetsIn`
+# in check-docs, check-tools and check-acr): the words after `-t`, UP TO THE FIRST OPTION.
+# Both halves earn their place. A word beginning with a dash is an option wherever it stands,
+# so `--shard=…` on the e2e line never becomes a target nobody can run; and stopping there
+# rather than skipping it means an option with a separate value — `--exclude docs` — does not
+# leave its value behind as a phantom target. `run-many` is read as well as `affected`: it is
+# the form the nightly uses and the one both gates accept, and reading only `affected` is how
+# a workflow switched to the other form would have left this battery with an empty list.
+#
+# Three ways this can go wrong, and all three are LOUD here: a line with no `-t` at all, a
+# file with no such line, and a list that is empty once `e2e` is set aside. The last is the
+# one that could have passed for work: `nx affected -t ''` runs nothing and exits 0.
+if [ ! -r "$workflow" ]; then
+  echo "::error::cannot read .github/workflows/ci.yml — this battery takes its target list out of that file, and there is no file to take it from." >&2
+  exit 1
+fi
 if ! targets=$(awk '
-  /npx nx affected/ {
+  /npx nx (affected|run-many)/ {
     at = index($0, " -t ")
     if (at == 0) { bad = bad "\n    " $0; next }
     n = split(substr($0, at + 4), word, /[ \t]+/)
-    for (i = 1; i <= n; i++)
-      if (word[i] != "" && substr(word[i], 1, 1) != "-") print word[i]
+    for (i = 1; i <= n; i++) {
+      if (word[i] == "") continue
+      if (substr(word[i], 1, 1) == "-") break
+      print word[i]
+    }
   }
   END { if (bad != "") { printf "%s\n", bad > "/dev/stderr"; exit 3 } }
 ' "$workflow" | awk '!seen[$0]++'); then
-  echo "::error::a \`npx nx affected\` line in .github/workflows/ci.yml carries no \`-t\` — the battery reads its targets from there, and it cannot read that line (printed above)." >&2
+  echo "::error::a target line in .github/workflows/ci.yml carries no \`-t\` — the battery reads its targets from there, and it cannot read the line printed above." >&2
   exit 1
 fi
 if [ -z "$targets" ]; then
@@ -74,6 +89,10 @@ if [ -z "$targets" ]; then
 fi
 if [ "$want_e2e" -eq 0 ]; then
   targets=$(printf '%s\n' "$targets" | grep -vx e2e || true)
+fi
+if [ -z "$targets" ]; then
+  echo "::error::the list out of ci.yml holds nothing but \`e2e\`, which this battery sets aside by default — so it would run no target at all and say so in green. Ask for it with --e2e, or look at what became of the gate line in that workflow." >&2
+  exit 1
 fi
 
 mapfile -t list <<<"$targets"

@@ -73,9 +73,12 @@ MACHINES rather than across workers on one.**
   suggest, and a seventh would move only the straggler. What would actually flatten it is a
   split along the cost rather than the count — and that is a measurement nobody has taken
   yet, not a change to make on the strength of this paragraph.
-- **The machine time roughly doubles**, and on a public repository that is free
-  ([the minutes note](../plan.md) holds: nothing paid). Seven setups where there was one is
-  the price of the wall clock, paid in a currency this project does not spend.
+- **The machine time barely moves: 73.4 minutes against 70.6.** That was the surprise of the
+  first run, and it is worth stating plainly because "parallel costs more machine" is the
+  thing everybody assumes. Only the setup is duplicated — some four minutes a job — while the
+  66 minutes of tests are DIVIDED, so seven jobs cost 4% more than one and return the answer
+  four times sooner. On a public repository it is free either way
+  ([the minutes note](../plan.md) holds: nothing paid).
 - **A red shard no longer cancels its siblings** (`fail-fast: false`): after a failure the
   question is always which tests failed, and a cancelled shard answers nothing.
 - **The local battery cannot quietly lose a target.** `scripts/before-push` takes the union
@@ -95,10 +98,14 @@ MACHINES rather than across workers on one.**
   a queue.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
-- **One more rule and one more prepared input to keep in `check-browsers`**, and a convention
-  about where options may stand on a line that three readers now depend on. A convention
-  three tools share is a fact in three places; what keeps it honest is that all three fail
-  loudly, and the negative controls of two of them construct exactly this defect.
+- **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading
+  of a workflow line that four gates and one script now share. That reading lives in
+  `tools/workflow-targets.mjs` rather than in five copies — the copies existed, and the
+  review of this change found them disagreeing: three would not read past an option, one
+  carried `\s` in its class, two stripped comments and two did not. Of the five readers only
+  `check-docs` has negative controls for it; `check-tools` cannot have one while it reads the
+  real workflow at module load, and `scripts/before-push` has no control mechanism at all.
+  Both are written down here rather than left for the next reader to discover.
 
 ## Alternatives considered
 

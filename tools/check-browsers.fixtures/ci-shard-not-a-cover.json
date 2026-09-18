@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-shard-not-a-cover",
+  "description": "A shard matrix that is not a cover: six jobs whose numerators are [1, 1, 2, 3, 4, 5]. `${{ strategy.job-total }}` is still the size of the matrix, so the denominator rule beside this one is satisfied — and shard 1 runs twice while shard 6 never runs at all. The same hole opens from the other side when a second axis is written beside `shard`: `job-total` then counts every combination and the numerators still run 1…6, so half the suite is never asked for. Both are silent, both leave every job green, and the suite reports a pass over tests that did not happen.",
+  "ci": {
+    "shardCover": { "shards": [1, 1, 2, 3, 4, 5], "keys": ["shard"] }
+  }
+}

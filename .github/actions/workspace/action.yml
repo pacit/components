@@ -36,17 +36,19 @@ runs:
       with:
         node-version: 24
         # The npm cache is the fallback path's, not the ordinary one's: with the
-        # `node_modules` entry below hitting, `npm ci` never runs. It earns its ~5 s on the
-        # run after a lockfile change, where it is the difference between a 66-second
-        # install and a cold one in every job at once.
+        # `node_modules` entry below hitting, `npm ci` never runs at all. It earns its keep
+        # on the run after a lockfile change, where it is the difference between a
+        # 66-second install and a cold one in every job at once.
         cache: 'npm'
 
     # `node_modules` itself, keyed by the lockfile that produced it. `npm ci` took 66
-    # seconds of every run measured, and it is the same 66 seconds in each of the seven
-    # jobs this workflow now has; the tree restores in about twenty. The key carries the
-    # Node version because a native module built against one is not the tree the other
-    # wants, and `npm ci` on a miss is what keeps the fallback honest — a partial restore
-    # cannot happen, an entry is written whole or not at all.
+    # seconds of every run measured, and it is the same 66 seconds in each of the seven jobs
+    # this workflow now has. Measured across the two runs that straddle the entry's birth:
+    # this whole action took 63 seconds on the miss, where `npm ci` ran, and 19 on the hit —
+    # a 1.1 GB tree stored as 192 MB. The key carries the Node version because a native
+    # module built against one is not the tree the other wants, and `npm ci` on a miss is
+    # what keeps the fallback honest: a partial restore cannot happen, an entry is written
+    # whole or not at all.
     - uses: actions/cache@v6
       id: modules
       with:

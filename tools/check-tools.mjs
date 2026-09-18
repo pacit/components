@@ -20,6 +20,7 @@ import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
+import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = process.argv.includes('--report');
@@ -250,18 +251,14 @@ const tracked = lines(git('ls-files', ':(glob)*.mjs', ':(glob)**/*.mjs'))
  *
  * `tools/` must also not be matched with a `/` in front of it: that reaches `apps/docs/tools/`
  * as well, and the count came out one high until this line said so.
+ *
+ * Step 1's reading of a workflow line lives in `workflow-targets.mjs` — four gates answer
+ * from it and used to hold four different regexes (0017, 0081).
  */
-const targetsIn = (text) =>
-  [
-    ...String(text).matchAll(
-      /nx (?:affected|run-many)[^\n]*? -t ([a-z0-9:\- \t]+)/g,
-    ),
-  ]
-    .flatMap((m) => m[1].trim().split(/\s+/))
-    .filter((word) => word && !word.startsWith('-'));
+const invokedIn = (text) => [...targetsIn(text)];
 const invoked = new Set(
   WORKFLOWS.flatMap((file) =>
-    targetsIn(readFileSync(join(ROOT, '.github/workflows', file), 'utf8')),
+    invokedIn(readFileSync(join(ROOT, '.github/workflows', file), 'utf8')),
   ),
 );
 const NAMED = /(?:^|["'\s])tools\/([a-z0-9-]+\.mjs)/g;

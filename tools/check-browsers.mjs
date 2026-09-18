@@ -21,6 +21,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { runsTarget } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-browsers.fixtures');
@@ -357,6 +358,48 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
         `not happen, and every point above passes because the configuration is fine.`,
     );
 
+  if (
+    ci.shardCover === null &&
+    ci.shardsNotFromMatrix !== undefined &&
+    ci.sharded !== false
+  )
+    void 0; // a run with no sharded line has no matrix to read, and that is not a defect
+  if (ci.shardCover) {
+    if (ci.shardCover.unreadable)
+      throw new BrowsersError(
+        'ci',
+        'ci-shard-not-a-cover',
+        `\`${CI}\` runs a sharded suite and no matrix under it could be read — so nothing ` +
+          `here can say whether the shards cover the suite once, and a rule that answers ` +
+          `"I could not tell" with silence is the defect it was written against.`,
+      );
+    const { shards = [], keys = [] } = ci.shardCover;
+    const expected = shards.map((_, i) => i + 1);
+    const notACover =
+      shards
+        .slice()
+        .sort((a, b) => a - b)
+        .join(',') !== expected.join(',');
+    const otherAxes = keys.filter((k) => k !== 'shard');
+    if (notACover || otherAxes.length)
+      throw new BrowsersError(
+        'ci',
+        'ci-shard-not-a-cover',
+        `the shard matrix in \`${CI}\` is not a cover of the suite:\n` +
+          (notACover
+            ? `      the numerators are [${shards.join(', ')}] where ${shards.length} jobs ` +
+              `need 1…${shards.length}, each once\n`
+            : '') +
+          (otherAxes.length
+            ? `      the matrix is multiplied by \`${otherAxes.join('`, `')}\`, so ` +
+              `\`job-total\` counts ${keys.length} axes' worth of jobs and the numerators ` +
+              `still run 1…${shards.length}\n`
+            : '') +
+          `    Either way some shard of the suite is never asked for, and the jobs that do ` +
+          `run are green — the one failure of a test suite nobody sees.`,
+      );
+  }
+
   if (ci.shardsNotFromMatrix?.length)
     throw new BrowsersError(
       'ci',
@@ -553,6 +596,40 @@ const targetE2E = async () => {
  * reported this to itself on the first run after its own comment was added — it counted
  * four install steps where there are two, and fired on two of them.
  */
+/**
+ * The `shard:` axis of a workflow's matrix, read off the indentation: `{ shards, keys }`,
+ * or `null` when there is no matrix carrying one. Both fields are what point 5 needs —
+ * the numerators somebody wrote, and every axis they are multiplied by.
+ */
+const coverOf = (lines) => {
+  for (let i = 0; i < lines.length; i++) {
+    const opening = lines[i].match(/^(\s*)matrix:\s*$/);
+    if (!opening) continue;
+    const depth = opening[1].length;
+    const keys = [];
+    let shards = null;
+    // The WHOLE block, not up to the `shard:` line: an axis written after it multiplies the
+    // matrix exactly as one written before, and a reader that returned at `shard:` never saw
+    // the second kind — measured on a doctored workflow, where it passed.
+    for (let j = i + 1; j < lines.length; j++) {
+      if (!lines[j].trim()) continue;
+      const indent = lines[j].match(/^\s*/)[0].length;
+      if (indent <= depth) break;
+      const key = lines[j].match(/^\s*([A-Za-z0-9_-]+):\s*(.*)$/);
+      if (!key || indent !== depth + 2) continue;
+      keys.push(key[1]);
+      const list = key[1] === 'shard' && key[2].match(/^\[(.*)\]$/);
+      if (list)
+        shards = list[1]
+          .split(',')
+          .map((n) => Number(n.trim()))
+          .filter((n) => Number.isInteger(n));
+    }
+    if (shards) return { shards, keys };
+  }
+  return null;
+};
+
 const ciSteps = (engines) => {
   const lines = read(CI)
     .split('\n')
@@ -560,9 +637,15 @@ const ciSteps = (engines) => {
   const installs = lines
     .filter((l) => /playwright\s+install/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
-  const runsE2E = lines.some(
-    (l) => /nx\s+(?:affected|run-many)/.test(l) && /\be2e\b/.test(l),
-  );
+  /*
+   * Whether the `e2e` TARGET runs, asked of the target list rather than of the line's words.
+   * `\be2e\b` was true of `check-e2e` on the battery's own line, so this answered yes with
+   * the whole browser job deleted — and yes again from a comment, since the strip above
+   * happens in this function and the pattern was applied to the raw line elsewhere. The
+   * reading in `workflow-targets.mjs` strips comments, reads past options and takes the
+   * words after `-t` as names.
+   */
+  const runsE2E = runsTarget(read(CI), 'e2e');
   /*
    * A sharded run is a narrowed run six times over, and the six are the whole suite only if
    * the denominator is the number of jobs. Nothing else in this repository can see that
@@ -571,14 +654,30 @@ const ciSteps = (engines) => {
    * workflow says the number once — `${{ strategy.job-total }}` IS the size of the matrix —
    * and this line refuses a number typed beside it.
    */
-  const shardsNotFromMatrix = lines.filter(
-    (l) =>
-      /nx\s+(?:affected|run-many)/.test(l) &&
-      /\be2e\b/.test(l) &&
-      /--shard=/.test(l) &&
-      !/strategy\.job-total/.test(l),
+  const sharded = lines.filter(
+    (l) => /nx\s+(?:affected|run-many)/.test(l) && /--shard=/.test(l),
   );
-  return { installs, runsE2E, shardsNotFromMatrix };
+  const shardsNotFromMatrix = sharded.filter(
+    (l) => !/strategy\.job-total/.test(l),
+  );
+  /*
+   * The other half of the same question, and the half the denominator alone cannot answer:
+   * `${{ strategy.job-total }}` is the number of jobs in the matrix, so it is the right
+   * denominator only while the matrix is a COVER — one job per shard, each numerator once,
+   * none missing. Two ways to lose a sixth of the suite with the rule above satisfied, both
+   * of them silent and both measured on a doctored workflow: `shard: [1, 1, 2, 3, 4, 5]`
+   * runs shard 1 twice and shard 6 never, and a second axis beside `shard` doubles
+   * `job-total` while the numerators stay 1..6, so half the suite is never asked for.
+   *
+   * The matrix is read off the text at one indentation level, which is what prettier keeps
+   * this file at. A sharded run whose matrix cannot be read at all is the third case, and it
+   * fires with the rest: a rule that answers "I could not tell" with silence is the defect
+   * it was written against.
+   */
+  const shardCover = sharded.length
+    ? (coverOf(lines) ?? { unreadable: true })
+    : null;
+  return { installs, runsE2E, shardsNotFromMatrix, shardCover };
 };
 
 /**
