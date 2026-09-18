@@ -239,8 +239,8 @@ and every one is held by a **binds at** rather than by anybody's mood.
     take a second home here, so the table cites the spec that owns it rather than restating it
 
 - [ ] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate**
-  - the first flake record (4.58) names one case: `forced-colors.spec.ts › in a list panel the
-selection and the keyboard cursor stay distinguishable`, chromium, 2 of 3 — a visual
+  - the first flake record (4.58) names one case, in `forced-colors.spec.ts` on chromium, 2 of
+    3: the list panel whose selection and keyboard cursor must stay distinguishable — a visual
     assertion under `forced-colors: active`, read under the suite's own parallelism
   - a name in the record is a known wobble and not a finding to the gate, by design: repetitions
     are a sample, and one wobble in three says the case is not stable, not how unstable it is
