@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# The gates CI will run, run here first — the same list, taken from `ci.yml` itself rather
+# than copied, so the two cannot drift. Measured on this desk 2026-09-18, over the 23 tasks a
+# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them, and
+# some twenty minutes of waiting for a runner to say the same thing.
+#
+# `e2e` is left out by default: it is the suite that takes the other twenty minutes, and a
+# change that cannot reach the browser has nothing to learn from it. Ask for it with `--e2e`.
+#
+# A cached task is not a measurement. nx replays a result whose inputs did not move, and a
+# change outside a target's inputs — a tool, a fixture, a workflow — leaves the target green
+# without running it: on 2026-09-18 CI found `docs:typecheck` broken on a runner while this
+# desk replayed a cached pass of it. `--cold` skips the cache for the whole run; use it when
+# the change is one nx cannot see, and after `rm -rf apps/docs/src/generated` when the
+# generated sources are what moved.
+#
+# Usage:  scripts/before-push [--e2e] [--cold] [--base=main]
+set -u -o pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+# nx reads the workspace off the working directory, and npx installs a fresh one when it finds
+# none: run from anywhere else and the battery fetches an unpinned nx to tell you this is not a
+# workspace. The script is callable from any directory, and always measures this one.
+cd "$root" || {
+  echo "::error::cannot enter $root — the battery measures the workspace it lives in." >&2
+  exit 1
+}
+workflow="$root/.github/workflows/ci.yml"
+
+base=main
+extra=()
+want_e2e=0
+for arg in "$@"; do
+  case "$arg" in
+    --e2e) want_e2e=1 ;;
+    --cold) extra+=(--skip-nx-cache) ;;
+    --base=*) base="${arg#--base=}" ;;
+    *)
+      echo "usage: scripts/before-push [--e2e] [--cold] [--base=<ref>]" >&2
+      exit 2
+      ;;
+  esac
+done
+
+# The one line in CI that runs the gates. Read, not restated: `nx affected -t …` up to the end
+# of the line, with the runner and the package manager in front of it dropped.
+targets=$(sed -n 's/.*npx nx affected -t \(.*\)$/\1/p' "$workflow" | head -1)
+if [ -z "$targets" ]; then
+  echo "::error::no \`npx nx affected -t …\` line in .github/workflows/ci.yml — the battery reads its targets from there, and the line has moved or changed shape." >&2
+  exit 1
+fi
+if [ "$want_e2e" -eq 0 ]; then
+  targets=$(echo "$targets" | sed 's/\( \|^\)e2e\( \|$\)/ /g')
+fi
+
+read -r -a list <<<"$targets"
+said="--base=$base${extra[0]+ ${extra[*]}}"
+echo "> nx affected $said -t ${#list[@]} targets from ci.yml"
+# `${extra[@]:-}` would hand nx an empty argument when no flag was given — harmless today,
+# and a word this script never meant to say.
+exec "$root/scripts/nx-verdict" "$root/scripts/with-node" npx nx affected \
+  --base="$base" ${extra[@]+"${extra[@]}"} -t "${list[@]}"
