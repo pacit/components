@@ -42,10 +42,13 @@ export abstract class PctHarness<
    * reads it off the class to find a host, and every harness below overrides it with its own
    * value; the sentence stays here, where a reader of any of them is shown it.
    *
-   * Declared and not assigned, on purpose: a default of `''` would be a selector that looks
-   * valid and matches nothing, and a harness that forgot to override it would ship. With no
-   * value, `check-harness` point 1 says so by name — the cost being that it says so there
-   * rather than at the keystroke, since the type is satisfied either way.
+   * Declared and not assigned, on purpose. A default would be a value the base does not have
+   * to give: `''` is a selector that matches nothing, and it would reach a consumer's bundle
+   * as one. `check-harness` point 1 names a harness that leaves this empty either way — an
+   * empty string fails its `trim()` exactly as a missing value does — so what the `declare`
+   * buys is that nothing is emitted and nothing pretends. The cost is the same in both:
+   * a subclass that forgets to override still compiles, because the type is satisfied by the
+   * base, and the gate is what says so.
    *
    * @since 0.1.0
    */

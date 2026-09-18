@@ -30,6 +30,15 @@ export class PctPlain {
     return true;
   }
 
+  /**
+   * The middle case of an override: `merged.ts` restates this one with a comment that holds
+   * a tag and no sentence, which the editor still answers with THIS sentence — so the gate
+   * skips it there, and the date it would carry is the one written here.
+   *
+   * @since 0.1.0
+   */
+  readonly label = 'plain';
+
   /** @since 0.1.0 */
   open(): void {}
 

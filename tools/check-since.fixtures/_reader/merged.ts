@@ -25,6 +25,9 @@ export class PctMerged extends PctPlain {
     return false;
   }
 
+  /** @since 0.3.0 */
+  override readonly label = 'merged';
+
   /** @since 0.1.0 */
   reset(): void {}
 

@@ -70,7 +70,8 @@ Widen the skip to every override and the control names the item it stopped findi
 to none and it names the one it should not have found.
 
 **What it does not cover, knowingly:** a member or method whose name is computed or private by
-`#`, an anonymous `export default class`, a constructor or an accessor, `export * as ns from`,
+`#`, an anonymous `export default class`, a constructor or a setter with no getter,
+`export * as ns from`,
 and a barrel that renames what it re-exports. None of those shapes exists in the library, and
 some are refused by other gates; each would need a prepared case before it could arrive.
 
