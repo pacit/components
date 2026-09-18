@@ -39,12 +39,17 @@ export abstract class PctHarness<
 > extends ComponentHarness {
   /**
    * The element the harness attaches to — the component's own selector, verbatim. The CDK
-   * reads it off the class to find a host, and every harness below restates it as its own
+   * reads it off the class to find a host, and every harness below overrides it with its own
    * value; the sentence stays here, where a reader of any of them is shown it.
+   *
+   * Declared and not assigned, on purpose: a default of `''` would be a selector that looks
+   * valid and matches nothing, and a harness that forgot to override it would ship. With no
+   * value, `check-harness` point 1 says so by name — the cost being that it says so there
+   * rather than at the keystroke, since the type is satisfied either way.
    *
    * @since 0.1.0
    */
-  static hostSelector = '';
+  declare static hostSelector: string;
 
   /**
    * The parts the component exposes — the inventory's own names, the ones

@@ -557,7 +557,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   protected readonly inField = this.fieldApi !== null;
 
   /**
-   * A `<button>` is a labelable element, so `<label for>` works.
+   * The id of the trigger the chrome's label points at — a `<button>`, or an `<input>` while the
+   * select is filterable. Both are labelable, so `<label for>` works.
    *
    * @since 0.1.0
    */

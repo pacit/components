@@ -229,9 +229,11 @@ const membersIn = (path) => {
  * everything else, so a consumer's editor offers them, and the day an API page exists it
  * lists them.
  *
- * A member carrying `override` is skipped: the name a consumer knows is the one it overrides,
- * the editor shows that declaration's sentence and tag, and 52 harnesses restating the same
- * two lines would be 52 homes for one fact (decision 0017).
+ * A member carrying `override` is skipped — but only while it says nothing of its own: the
+ * editor shows the overridden declaration's sentence and tag, and 52 harnesses restating the
+ * same two lines would be 52 homes for one fact (decision 0017). An override that writes its
+ * OWN sentence shadows the base's in the editor, measured with the language service, so it is
+ * an item like any other; a comment holding only tags still falls back and is still skipped.
  */
 const fieldsIn = (path) => {
   const sf = parse(path);
@@ -239,20 +241,25 @@ const fieldsIn = (path) => {
   for (const cls of sf.statements) {
     if (!ts.isClassDeclaration(cls) || !cls.name) continue;
     for (const m of cls.members) {
+      // `?` on a class property is a field a consumer may find undefined; it is API all the
+      // same, and the library declares none today — the guard is here to be removed with a
+      // prepared case the day one arrives, not to excuse it quietly.
       const field =
         ts.isPropertyDeclaration(m) &&
         !memberKind(m.initializer) &&
         !m.questionToken;
       if (!field && !ts.isGetAccessor(m)) continue;
       if (!m.name || !ts.isIdentifier(m.name)) continue;
-      if (isHidden(m) || hasModifier(m, ts.SyntaxKind.OverrideKeyword))
+      if (isHidden(m)) continue;
+      const doc = docOf(m);
+      if (hasModifier(m, ts.SyntaxKind.OverrideKeyword) && !doc.description)
         continue;
       out.push({
         path,
         line: lineOf(sf, m),
         name: `${cls.name.text}.${m.name.text}`,
         kind: ts.isGetAccessor(m) ? 'getter' : 'field',
-        ...docOf(m),
+        ...doc,
       });
     }
   }

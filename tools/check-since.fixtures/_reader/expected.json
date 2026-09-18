@@ -107,7 +107,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 19,
+      "line": 29,
       "name": "PctMerged.reset",
       "kind": "method",
       "since": "0.1.0",
@@ -115,7 +115,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 24,
+      "line": 34,
       "name": "PctMerged.tune",
       "kind": "method",
       "since": "0.1.0",
@@ -123,7 +123,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 36,
+      "line": 46,
       "name": "PctMerged.blend",
       "kind": "method",
       "since": "0.1.0",
@@ -131,7 +131,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 49,
+      "line": 59,
       "name": "pctFmt",
       "kind": "function",
       "since": "0.1.0",
@@ -139,7 +139,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 58,
+      "line": 68,
       "name": "pctTrim",
       "kind": "function",
       "since": "next",
@@ -147,7 +147,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/merged.ts",
-      "line": 68,
+      "line": 78,
       "name": "pctJoin",
       "kind": "function",
       "since": "0.1.0",
@@ -165,6 +165,14 @@
       "path": "tools/check-since.fixtures/_reader/plain.ts",
       "line": 29,
       "name": "PctPlain.ready",
+      "kind": "getter",
+      "since": "next",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 24,
+      "name": "PctMerged.ready",
       "kind": "getter",
       "since": "next",
       "deprecated": false

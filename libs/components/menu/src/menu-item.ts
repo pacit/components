@@ -65,7 +65,8 @@ import { PCT_MENU_ITEM, PctMenu, PctMenuItemApi } from './menu';
 })
 export class PctMenuItem implements PctMenuItemApi {
   /**
-   * The item's own element, which the menu focuses and measures when the pointer travels to a submenu.
+   * The item's own element: what the menu focuses, reads the label off, and compares an event's
+   * target against.
    *
    * @since 0.1.0
    */

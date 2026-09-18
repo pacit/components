@@ -64,7 +64,8 @@ const fitHost = {
 })
 export class PctPrefix {
   /**
-   * How the decoration sits against the border: inset from it, or flush with it.
+   * How the decoration sits in the field: `inset`, inside the border and one size down, or
+   * `fill`, a surface of its own that takes the whole slot and the click with it.
    *
    * @since 0.1.0
    */
@@ -93,7 +94,8 @@ export class PctPrefix {
 })
 export class PctSuffix {
   /**
-   * How the decoration sits against the border: inset from it, or flush with it.
+   * How the decoration sits in the field: `inset`, inside the border and one size down, or
+   * `fill`, a surface of its own that takes the whole slot and the click with it.
    *
    * @since 0.1.0
    */

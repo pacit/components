@@ -15,6 +15,16 @@ export class PctMerged extends PctPlain {
   // and the one the gate reads. Restating it here would be a second home for one date.
   override readonly id = 'pct-merged-1';
 
+  /**
+   * An override that writes its own sentence, which the editor shows INSTEAD of the base's.
+   * It is an item, and it is asked for a date like any other.
+   *
+   * @since next
+   */
+  override get ready(): boolean {
+    return false;
+  }
+
   /** @since 0.1.0 */
   reset(): void {}
 

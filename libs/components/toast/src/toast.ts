@@ -212,7 +212,8 @@ export interface PctToastHost {
 }
 
 /**
- * The token a toaster registers itself under, so the service reaches the region that draws the messages.
+ * The token the toaster provides itself under, so the region it creates reaches it — for the
+ * messages to draw, and to say that one was dismissed or its action pressed.
  *
  * @since 0.1.0
  */

@@ -63,9 +63,11 @@ added the rest: the deprecation read off any declaration, the merge in both read
 direction it merges in, the protected and unexported exclusions, the `model.required` call.
 Put any of those readings back and the control names what it loses; the list is in the commits.
 
-`merged.ts` also holds a field that OVERRIDES one of `plain.ts` — the shape the readers skip,
-because the declaration it overrides is the one a consumer's editor shows and the one the gate
-dates. Remove the skip and the control names the item it should not have found.
+`merged.ts` also OVERRIDES two members of `plain.ts`: one silently, which the readers skip
+because the editor shows the base's sentence there, and one with a sentence of its own, which
+the editor shows INSTEAD of the base's — so that one is an item and is asked for a date.
+Widen the skip to every override and the control names the item it stopped finding; narrow it
+to none and it names the one it should not have found.
 
 **What it does not cover, knowingly:** a member or method whose name is computed or private by
 `#`, an anonymous `export default class`, a constructor or an accessor, `export * as ns from`,
