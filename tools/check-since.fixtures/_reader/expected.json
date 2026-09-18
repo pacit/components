@@ -1,0 +1,85 @@
+{
+  "description": "What the readers must find in the prepared library beside it — the same surface written twice, once with the `export` keyword (`plain.ts`) and once with a list (`listed.ts`). Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
+  "items": [
+    {
+      "path": "tools/check-since.fixtures/_reader/plain.ts",
+      "line": 5,
+      "name": "PctPlain",
+      "kind": "class",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/plain.ts",
+      "line": 7,
+      "name": "variant",
+      "kind": "input",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/plain.ts",
+      "line": 10,
+      "name": "opened",
+      "kind": "output",
+      "since": "next",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/plain.ts",
+      "line": 13,
+      "name": "PctPlain.open",
+      "kind": "method",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 5,
+      "name": "PctListed",
+      "kind": "class",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 7,
+      "name": "size",
+      "kind": "input",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 10,
+      "name": "PctListed.close",
+      "kind": "method",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 14,
+      "name": "PctRenamed",
+      "kind": "class",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 16,
+      "name": "Renamed.toggle",
+      "kind": "method",
+      "since": "next",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/listed.ts",
+      "line": 20,
+      "name": "PctListedSize",
+      "kind": "type",
+      "since": "0.1.0",
+      "deprecated": false
+    }
+  ]
+}

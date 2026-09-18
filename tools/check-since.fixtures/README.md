@@ -18,3 +18,22 @@ Each case is built ON A COPY of [`_reference.json`](_reference.json) — a relea
 `0.1.0` whose surface is dated — so the file holds nothing but its own defect: `add` appends
 items, `items` replaces them all, `version` replaces the manifest's. `point` and `check` name
 the point that has to fire and the check it fires as.
+
+## The readers have a control of their own
+
+The cases above examine the **judge** — they hand it items and require a rejection. Nothing in
+them examines the **readers**, and a reader that stops seeing an API leaves the gate green over
+an undated one: the list of items is exactly what the reader was supposed to produce, so no
+prepared list can miss its absence.
+
+[`_reader/`](_reader) is a small library written for them to read: the same surface twice, once
+with the `export` keyword (`plain.ts`) and once with a list (`listed.ts`, where the keyword is
+on nothing and every name still reaches a consumer), plus the entry point that re-exports both.
+[`_reader/expected.json`](_reader/expected.json) holds what the readers must return, and the
+gate reports a difference either way — an item gone is an API it would now excuse, an item
+added is a tag it has begun asking of what nobody can call.
+
+It was written against a real blindness: until 2026-09-18 the readers asked for the `export`
+keyword, so a class exported by a list, a class exported under another name, and a type beside
+them were invisible — five of the ten items below. Put that reading back, and the control names
+all five.

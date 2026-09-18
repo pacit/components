@@ -215,6 +215,37 @@ const namesOf = (d) =>
       ? [d.name.text]
       : [];
 
+/**
+ * What a file exports, by the name it exports it under: `export class X` under `X`, and
+ * `export { X }` — `export { X as Y }` under `Y` — for a declaration the keyword was left
+ * off. Both reach a consumer, so a reader that knows only the keyword stops seeing an API
+ * the day somebody writes the list, and this gate then passes on an undated one.
+ *
+ * `import { X } from './z'; export { X }` is NOT resolved — the declaration is in `z.ts`,
+ * where `membersIn` and `methodsIn` read it anyway; only its export item could slip, and
+ * only from an entry point, and every index here re-exports with `from`.
+ */
+const exportedFrom = (sf) => {
+  const declared = new Map();
+  const out = new Map();
+  for (const d of sf.statements) {
+    for (const name of namesOf(d)) {
+      declared.set(name, d);
+      if (isExported(d)) out.set(name, d);
+    }
+  }
+  for (const st of sf.statements) {
+    // `export { … } from './x'` is a re-export: its declarations are read in `x.ts`.
+    if (!ts.isExportDeclaration(st) || st.moduleSpecifier) continue;
+    if (!st.exportClause || !ts.isNamedExports(st.exportClause)) continue;
+    for (const e of st.exportClause.elements) {
+      const d = declared.get((e.propertyName ?? e.name).text);
+      if (d) out.set(e.name.text, d);
+    }
+  }
+  return out;
+};
+
 const isHidden = (node) =>
   (ts.canHaveModifiers(node) ? (ts.getModifiers(node) ?? []) : []).some(
     (m) =>
@@ -232,9 +263,11 @@ const isHidden = (node) =>
  */
 const methodsIn = (path) => {
   const sf = parse(path);
+  const exported = new Set(exportedFrom(sf).values());
   const out = [];
   for (const cls of sf.statements) {
-    if (!ts.isClassDeclaration(cls) || !cls.name || !isExported(cls)) continue;
+    if (!ts.isClassDeclaration(cls) || !cls.name || !exported.has(cls))
+      continue;
     const byName = new Map();
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !ts.isIdentifier(m.name)) continue;
@@ -287,13 +320,11 @@ const exportsIn = (indexPath) => {
     } catch {
       continue; // a re-export of nothing does not compile; the build says so, not this gate
     }
-    for (const d of target.statements) {
-      const kind = isExported(d) ? kindOf(d) : null;
+    for (const [name, d] of exportedFrom(target)) {
+      if (only && !only.has(name)) continue;
+      const kind = kindOf(d);
       if (!kind) continue;
-      for (const name of namesOf(d)) {
-        if (only && !only.has(name)) continue;
-        out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
-      }
+      out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
     }
   }
   return out;
@@ -338,6 +369,43 @@ const buildFixture = (fx) => {
   return input;
 };
 
+// ── the readers' own control ──────────────────────────
+
+const READER = 'tools/check-since.fixtures/_reader';
+
+/**
+ * A prepared library the READERS are run over, because the prepared inputs above examine
+ * only the judge. A reader that stops seeing an API leaves this gate green over an undated
+ * one, and no list of items can catch that — the list is what the reader was to produce.
+ * `_reader/` writes the same small surface twice, once with the `export` keyword and once
+ * with a list, and holds what both must yield.
+ */
+const readerControl = () => {
+  const expected = readFixture('_reader/expected.json').items;
+  const files = ['plain.ts', 'listed.ts'].map((n) => `${READER}/${n}`);
+  const got = [
+    ...files.flatMap(membersIn),
+    ...files.flatMap(methodsIn),
+    ...exportsIn(`${READER}/index.ts`),
+  ];
+  const say = (i) =>
+    `${i.path.split('/').pop()}:${i.line} ${i.kind} ${i.name} @since ${i.since}`;
+  const mine = got.map(say).sort();
+  const theirs = expected.map(say).sort();
+  const missing = theirs.filter((x) => !mine.includes(x));
+  const extra = mine.filter((x) => !theirs.includes(x));
+  const problems = [];
+  for (const x of missing)
+    problems.push(
+      `_reader: the readers no longer find \`${x}\` — an API this gate would now excuse`,
+    );
+  for (const x of extra)
+    problems.push(
+      `_reader: the readers found \`${x}\`, which the prepared library does not promise`,
+    );
+  return problems;
+};
+
 // ── the run ────────────────────────────────────────────
 
 const problems = [];
@@ -349,6 +417,8 @@ try {
   if (!(error instanceof SinceError)) throw error;
   problems.push(`${error.check}: ${error.message}`);
 }
+
+problems.push(...readerControl());
 
 const cases = readdirSync(FIXTURES)
   .filter((n) => n.endsWith('.json') && n !== REFERENCE)
@@ -401,5 +471,6 @@ if (problems.length) {
 
 console.log(
   `✓ Since: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the readers find ` +
+    `every API of the prepared library, written with the keyword and with a list.`,
 );
