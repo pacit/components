@@ -166,7 +166,8 @@ and blocking under `--release`
 **Non-goals:** a part. A part is markup, and a since column in the card would be a second
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
 one: seventy-four are dated, most of them the plumbing between a component and its parts,
-and all of them in the shipped types. Public fields and getters that are no input, model or
+and all of them in the shipped types — the one place the tag shows, since the site renders
+no method rows. Public fields and getters that are no input, model or
 output — 164 fields and 2 getters on 2026-09-18, `PctToaster.toasts` and `PctTree.items`
 among them — are not dated yet: the same argument reaches them, and the sweep that dates them
 is the one that also puts them on the site, where nothing shows them today
