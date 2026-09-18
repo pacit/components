@@ -86,6 +86,8 @@ export class PctModalBackground {
    *
    * A child already inert for somebody else's reason is left alone and not recorded, so the
    * release cannot hand back something this service never took.
+   *
+   * @since 0.1.0
    */
   hold(live: Element): void {
     this.depth.update((n) => n + 1);
@@ -141,6 +143,8 @@ export class PctModalBackground {
    * no-op rather than a negative count: the caller that closes twice is the ordinary case (a
    * dialog closed by Escape and then destroyed), and a counter that could go below zero would
    * leave the next `hold()` doing nothing at all.
+   *
+   * @since 0.1.0
    */
   release(): void {
     if (this.depth() === 0) return;

@@ -120,6 +120,8 @@ export class PctChips implements PctChipsRepair {
    * runs one render later and not one render longer: a removal the consumer performs behind
    * a confirmation, seconds after the press, is one the user has navigated away from, and
    * yanking focus back then would be the repair causing the defect it exists to prevent.
+   *
+   * @since 0.1.0
    */
   armRepair(removed: HTMLElement): void {
     const order = this.chips().map(

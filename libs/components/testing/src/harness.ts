@@ -46,6 +46,8 @@ export abstract class PctHarness<
   /**
    * A predicate for `getHarness` and `getAllHarnesses` with the CDK's own filters —
    * `selector` narrows the host, `ancestor` the subtree it is searched in.
+   *
+   * @since 0.1.0
    */
   static with<T extends PctHarness>(
     this: ComponentHarnessConstructor<T>,
@@ -57,17 +59,27 @@ export abstract class PctHarness<
   /**
    * A state the component writes on its host: `state('size')` reads `data-pct-size`
    * (`req-api-attributes` — state is an attribute, never a class name).
+   *
+   * @since 0.1.0
    */
   async state(name: string): Promise<string | null> {
     return (await this.host()).getAttribute(`data-pct-${name}`);
   }
 
-  /** Whether the part is drawn right now — a spinner while loading, an error once invalid. */
+  /**
+   * Whether the part is drawn right now — a spinner while loading, an error once invalid.
+   *
+   * @since 0.1.0
+   */
   async has(name: P): Promise<boolean> {
     return (await this.find(name)) !== null;
   }
 
-  /** The part's element; throws naming the parts that are drawn when this one is not. */
+  /**
+   * The part's element; throws naming the parts that are drawn when this one is not.
+   *
+   * @since 0.1.0
+   */
   async part(name: P): Promise<TestElement> {
     const found = await this.find(name);
     if (found) return found;
@@ -78,7 +90,11 @@ export abstract class PctHarness<
     );
   }
 
-  /** Every element of a part — the options, the days, the pages; an empty list is an answer. */
+  /**
+   * Every element of a part — the options, the days, the pages; an empty list is an answer.
+   *
+   * @since 0.1.0
+   */
   async parts(name: P): Promise<TestElement[]> {
     const host = await this.host();
     if ((await host.getAttribute(ATTRIBUTE)) === name) return [host];
@@ -89,7 +105,11 @@ export abstract class PctHarness<
     )();
   }
 
-  /** The part's text, trimmed. */
+  /**
+   * The part's text, trimmed.
+   *
+   * @since 0.1.0
+   */
   async text(name: P): Promise<string> {
     return (await this.part(name)).text();
   }

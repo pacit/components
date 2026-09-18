@@ -213,6 +213,8 @@ export class PctDrawer {
   /**
    * Called by [`PctDrawerTrigger`](./drawer-trigger.ts) so that a close the drawer performs
    * itself can give the keyboard back to the control that pressed it.
+   *
+   * @since 0.1.0
    */
   rememberTrigger(trigger: HTMLElement): void {
     this.openedBy = trigger;
@@ -221,6 +223,8 @@ export class PctDrawer {
   /**
    * Closes with a reason, from a path that knows one. A close while already shut is a no-op:
    * Escape pressed twice is one withdrawal, not two events.
+   *
+   * @since 0.1.0
    */
   close(reason: PctDrawerCloseReason): void {
     if (!this.open()) return;

@@ -88,6 +88,8 @@ export class PctRadio<T = string> {
    * content is the option's label, so it is read from the host rather than declared twice —
    * and `ariaLabel` wins, for the same reason it wins in the accessible name: where the
    * content is an icon or a swatch, the text is empty and the name is the only thing there is.
+   *
+   * @since 0.1.0
    */
   label(): string {
     return (
@@ -137,6 +139,7 @@ export class PctRadio<T = string> {
     this.group.markTouched();
   }
 
+  /** @since 0.1.0 */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
   }

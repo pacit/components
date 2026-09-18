@@ -61,12 +61,20 @@ export class PctRegions implements PctRegionsApi {
    */
   readonly key = signal<string | null>(null);
 
-  /** Declares the key a consumer chose — see the field above for who reads it. */
+  /**
+   * Declares the key a consumer chose — see the field above for who reads it.
+   *
+   * @since 0.1.0
+   */
   useKey(key: string): void {
     this.key.set(key);
   }
 
-  /** Adds a region and hands back the way to take it out again. */
+  /**
+   * Adds a region and hands back the way to take it out again.
+   *
+   * @since 0.1.0
+   */
   register(region: PctRegion): () => void {
     this.registered.update((list) => [...list, region]);
     return () =>
@@ -80,6 +88,8 @@ export class PctRegions implements PctRegionsApi {
    * A region is focused as a WHOLE — the element itself, not the first control inside it. That
    * is what the pattern is for: the user arrives at a named place and walks it with Tab, and a
    * jump straight to a control would skip whatever the region says about itself.
+   *
+   * @since 0.1.0
    */
   next(from: Element | null): boolean {
     const regions = this.regions();

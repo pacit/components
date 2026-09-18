@@ -234,6 +234,7 @@ export class PctTabs implements PctTabsApi {
     return tabs.findIndex((tab) => !tab.disabled());
   });
 
+  /** @since 0.1.0 */
   select(value: string): void {
     const tab = this.tabs().find((candidate) => candidate.value() === value);
     if (!tab || tab.disabled()) return;

@@ -387,6 +387,7 @@ export class PctNumber
     if (isDevMode()) this.warnOnUnsupportedUsage();
   }
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.describedBy.set(ids);
   }
@@ -530,11 +531,16 @@ export class PctNumber
     this.commit(current + delta);
   }
 
-  /** Called by signal forms (`focusBoundControl()`, for instance). */
+  /**
+   * Called by signal forms (`focusBoundControl()`, for instance).
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.el.nativeElement.focus(options);
   }
 
+  /** @since 0.1.0 */
   reset(): void {
     this.commit(null);
   }

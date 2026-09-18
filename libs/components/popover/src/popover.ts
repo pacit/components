@@ -344,6 +344,8 @@ export class PctPopover {
   /**
    * Opens it if it is closed and closes it if it is open — what a press on the trigger does,
    * and the one path whose close carries the `trigger` reason.
+   *
+   * @since 0.1.0
    */
   toggle(): void {
     if (this.open()) this.dismiss('trigger', false);
@@ -356,6 +358,8 @@ export class PctPopover {
    * Registers the control the panel hangs off. Called by `PctPopoverTrigger` and by nothing
    * else: the attributes a trigger carries belong to a directive standing on it, rather than
    * to a component reaching into an element it does not own.
+   *
+   * @since 0.1.0
    */
   bindTrigger(element: HTMLElement): void {
     // `untracked`, and it is not a tidy-up: this runs inside the trigger directive's effect,
@@ -379,6 +383,8 @@ export class PctPopover {
    * trigger from the same trigger built again — a control inside an `@if` is destroyed and
    * recreated, and a contract with only the half that speaks reports that as a defect
    * ([`lesson-68`](../../../../docs/lessons.md#lesson-68)).
+   *
+   * @since 0.1.0
    */
   unbindTrigger(element: HTMLElement): void {
     if (untracked(this.trigger) === element) this.trigger.set(null);

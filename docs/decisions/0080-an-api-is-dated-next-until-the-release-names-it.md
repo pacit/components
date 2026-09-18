@@ -60,9 +60,11 @@ than the oldest on the page, so a component that shipped whole says it once, not
   `0.2.0` are both plausible until the release.
 - **Tags at build time.** `fetch-tags` in two workflows and a site that lies in every clone
   that skipped them. The manifest carries the same fact everywhere.
-- **Dating methods and parts in this decision.** Sixty-six public methods, most of them what
-  a component and its parts say to each other; a part is markup with no declaration to
-  carry a tag. Both wait for the first card whose contract names one.
+- **Dating parts in this decision.** A part is markup with no declaration to carry a tag;
+  it waits for the first card whose contract names one. Methods were refused here at first
+  — sixty-six of them, most of them what a component and its parts say to each other — and
+  dated the same morning on the maintainer's word: public is public, a consumer's editor
+  reads every one of them in the types, and seventy carry the tag now.
 - **A `since` on every row.** Two hundred and sixty-five rows saying `0.1.0` is noise; the
   information is in the difference.
 

@@ -250,10 +250,12 @@ export class PctRadioGroup<T = string>
   private readonly fieldDescribedBy = signal<string | null>(null);
   private readonly fieldLabelledBy = signal<string | null>(null);
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
 
+  /** @since 0.1.0 */
   setLabelledBy(id: string | null): void {
     this.fieldLabelledBy.set(id);
   }
@@ -300,6 +302,8 @@ export class PctRadioGroup<T = string>
    * Whether a given option is selected (used by `pct-radio`). The absence of a choice is
    * filtered out before the comparison — the application's comparator only ever receives the
    * values it was written for.
+   *
+   * @since 0.1.0
    */
   isSelected(optionValue: T): boolean {
     const current = this.value();
@@ -345,24 +349,37 @@ export class PctRadioGroup<T = string>
     );
   }
 
-  /** Selects an option; ignored in readonly mode. */
+  /**
+   * Selects an option; ignored in readonly mode.
+   *
+   * @since 0.1.0
+   */
   select(optionValue: T): void {
     if (this.readonly()) return;
     this.value.set(optionValue);
   }
 
+  /** @since 0.1.0 */
   markTouched(): void {
     this.touch.emit();
   }
 
-  /** Called by signal forms — focuses the selected option, or the first one. */
+  /**
+   * Called by signal forms — focuses the selected option, or the first one.
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     const controls = this.controls();
     const target = controls.find((c) => c.checked) ?? controls[0];
     target?.focus(options);
   }
 
-  /** Called by signal forms when the form is reset. */
+  /**
+   * Called by signal forms when the form is reset.
+   *
+   * @since 0.1.0
+   */
   reset(): void {
     this.value.set(this.emptyValue());
   }

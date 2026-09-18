@@ -106,7 +106,11 @@ export class PctTree {
     return this.visibleItems()[0] ?? null;
   });
 
-  /** A pointer press on an item: select it, and on a branch also toggle it (0056). */
+  /**
+   * A pointer press on an item: select it, and on a branch also toggle it (0056).
+   *
+   * @since 0.1.0
+   */
   point(item: PctTreeItem): void {
     this.active.set(item);
     this.selected.set(item.value());
@@ -264,6 +268,7 @@ export class PctTreeItem {
     if (isDevMode()) afterNextRender(() => this.warnOnLooseItem());
   }
 
+  /** @since 0.1.0 */
   focusHost(): void {
     this.host.nativeElement.focus();
   }

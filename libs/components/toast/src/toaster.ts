@@ -125,6 +125,8 @@ export class PctToaster implements PctToastHost {
    * A bare string is a {@link PctToastNotice} with the configured duration. What decides
    * whether the message expires is its **shape**, not an argument: a notice has a clock, a
    * standing message has none, and the type is what keeps the two apart.
+   *
+   * @since 0.1.0
    */
   show(spec: PctToastSpec | string): PctToastRef {
     const source: PctToastSpec =
@@ -171,7 +173,11 @@ export class PctToaster implements PctToastHost {
     return { id, dismiss: () => this.dismiss(id) };
   }
 
-  /** Takes one message down. Unknown or already-gone ids are a no-op. */
+  /**
+   * Takes one message down. Unknown or already-gone ids are a no-op.
+   *
+   * @since 0.1.0
+   */
   dismiss(id: number): void {
     this.forget(id);
     this.pending = this.pending.filter((toast) => toast.id !== id);
@@ -181,7 +187,11 @@ export class PctToaster implements PctToastHost {
     if (this.list().length === 0 && this.held) this.release();
   }
 
-  /** Takes every message down — for a route change, or a sign-out. */
+  /**
+   * Takes every message down — for a route change, or a sign-out.
+   *
+   * @since 0.1.0
+   */
   clear(): void {
     for (const toast of [...this.pending, ...this.list()])
       this.forget(toast.id);
@@ -190,7 +200,11 @@ export class PctToaster implements PctToastHost {
     if (this.held) this.release();
   }
 
-  /** The user pressed a message's action: it runs, and the message has served its purpose. */
+  /**
+   * The user pressed a message's action: it runs, and the message has served its purpose.
+   *
+   * @since 0.1.0
+   */
   run(id: number): void {
     const action = this.actions.get(id);
     this.dismiss(id);
@@ -204,6 +218,8 @@ export class PctToaster implements PctToastHost {
    * focus is removed, focus goes to `body` — so a toast expiring under a user who has tabbed
    * into it takes their place on the page away
    * ([`lesson-121`](../../../../docs/lessons.md#lesson-121)).
+   *
+   * @since 0.1.0
    */
   hold(): void {
     if (this.held) return;
@@ -217,7 +233,11 @@ export class PctToaster implements PctToastHost {
     }
   }
 
-  /** Starts them again. */
+  /**
+   * Starts them again.
+   *
+   * @since 0.1.0
+   */
   release(): void {
     if (!this.held) return;
     this.held = false;

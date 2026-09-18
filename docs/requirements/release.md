@@ -149,8 +149,8 @@ of its code, but on the strength of its **predictability**
 
 ### <a id="req-release-since"></a>`req-release-since` — The public surface says since when
 
-**Promise.** Every public API — an input, a model, an output, an export of an entry point —
-names the version it appeared in, in the JSDoc at its declaration: `@since 0.1.0` for what
+**Promise.** Every public API — an input, a model, an output, a public method of an exported
+class, an export of an entry point — names the version it appeared in, in the JSDoc at its declaration: `@since 0.1.0` for what
 shipped, `@since next` for what `main` has and the published package does not. The tag
 travels into the shipped `.d.ts`, so a consumer's editor reads it, and the site marks
 `unreleased` what the package at its version cannot have. The release names the version:
@@ -163,7 +163,7 @@ types)
 **Control:** `tools/check-since.fixtures/` — six prepared inputs, each rejected by its own
 point; `tools/check-package.fixtures/since-next/` on the release side, warning day to day
 and blocking under `--release`
-**Non-goals:** a method or a part. A method is API when a card's contract names it, and
-the 66 public ones read on 2026-09-17 are mostly the plumbing between a component and its
-parts; a part is markup, and a since column in the card would be a second home for the fact
-([0017](../decisions/0017-one-home-per-fact.md))
+**Non-goals:** a part. A part is markup, and a since column in the card would be a second
+home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
+one: seventy are dated, most of them the plumbing between a component and its parts, and all
+of them in the shipped types

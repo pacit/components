@@ -20,6 +20,7 @@ import { inject, Injectable } from '@angular/core';
 export class PctIdCounter {
   private n = 0;
 
+  /** @since 0.1.0 */
   next(): number {
     return ++this.n;
   }

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Since gate: does the public surface say since when? `req-release-since` promises that
- * every input, model, output and export names the version it appeared in, at its
- * declaration — the shipped types carry it, and the site tells what `main` has beyond it.
+ * every input, model, output, public method and export names the version it appeared in,
+ * at its declaration — the shipped types carry it, and the site tells what `main` has beyond it.
  *
  *  1. every public API item carries a `@since` tag in the JSDoc at its declaration,
  *  2. its value is `next` — unreleased; the release names it — or a version the manifest
@@ -37,6 +37,13 @@ const NEXT = 'next';
 const VERSION = /^(\d+)\.(\d+)\.(\d+)$/;
 /** The declarations whose initialiser makes a member public API. */
 const MEMBER_CALLS = new Set(['input', 'model', 'output']);
+/**
+ * A method Angular calls and nobody else: public because the framework needs it so, and no
+ * API of the class. Everything else public on an exported class ships in the types and is
+ * read by a consumer's editor — plumbing between a component and its parts included, which
+ * is why the tag is honest on it too.
+ */
+const LIFECYCLE = /^ng[A-Z]\w*$/;
 
 class SinceError extends Error {
   constructor(check, message) {
@@ -105,12 +112,13 @@ const checkSince = ({ version, items }) => {
     );
 
   const members = items.filter((i) => MEMBER_CALLS.has(i.kind)).length;
+  const methods = items.filter((i) => i.kind === 'method').length;
   const unreleased = items.filter((i) => i.since === NEXT).length;
   const deprecated = items.filter((i) => i.deprecated).length;
   return (
-    `${items.length} public API items — ${members} inputs, models and outputs, ` +
-    `${items.length - members} exports — every one dated; ${unreleased} unreleased ` +
-    `(\`${NEXT}\`), ${deprecated} deprecated, against ${version}`
+    `${items.length} public API items — ${members} inputs, models and outputs, ${methods} ` +
+    `public methods, ${items.length - members - methods} exports — every one dated; ` +
+    `${unreleased} unreleased (\`${NEXT}\`), ${deprecated} deprecated, against ${version}`
   );
 };
 
@@ -207,6 +215,38 @@ const namesOf = (d) =>
       ? [d.name.text]
       : [];
 
+const isHidden = (node) =>
+  (ts.canHaveModifiers(node) ? (ts.getModifiers(node) ?? []) : []).some(
+    (m) =>
+      m.kind === ts.SyntaxKind.PrivateKeyword ||
+      m.kind === ts.SyntaxKind.ProtectedKeyword,
+  );
+
+/**
+ * The public methods of an exported class — one item per name, dated when any of its
+ * declarations is (an overload set carries its JSDoc on the first signature). Lifecycle
+ * hooks, constructors, accessors and private names are not API.
+ */
+const methodsOf = (sf, path, cls) => {
+  const byName = new Map();
+  for (const m of cls.members) {
+    if (!ts.isMethodDeclaration(m) || !ts.isIdentifier(m.name)) continue;
+    if (isHidden(m) || LIFECYCLE.test(m.name.text)) continue;
+    const doc = docOf(m);
+    const seen = byName.get(m.name.text);
+    if (!seen)
+      byName.set(m.name.text, {
+        path,
+        line: lineOf(sf, m),
+        name: `${cls.name.text}.${m.name.text}`,
+        kind: 'method',
+        ...doc,
+      });
+    else if (!seen.since && doc.since) Object.assign(seen, doc);
+  }
+  return [...byName.values()];
+};
+
 /**
  * What an entry point re-exports — `export * from './x'` takes every exported declaration
  * of `x.ts`, `export { a, b } from './x'` the named ones — each with its JSDoc read where it
@@ -238,9 +278,11 @@ const exportsIn = (indexPath) => {
     for (const d of target.statements) {
       const kind = isExported(d) ? kindOf(d) : null;
       if (!kind) continue;
-      for (const name of namesOf(d))
-        if (!only || only.has(name))
-          out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
+      for (const name of namesOf(d)) {
+        if (only && !only.has(name)) continue;
+        out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
+        if (kind === 'class') out.push(...methodsOf(target, path, d));
+      }
     }
   }
   return out;
