@@ -162,7 +162,7 @@ version the manifest has reached; no deprecation of what never shipped) +
 types)
 **Control:** `tools/check-since.fixtures/` — six prepared inputs, each rejected by its own
 point, and `_reader/`, a prepared library whose every API the readers must return, written
-with the `export` keyword and with a list; `tools/check-package.fixtures/since-next/` on the
+with the `export` keyword, with a list, and under names several declarations share; `tools/check-package.fixtures/since-next/` on the
 release side, warning day to day and blocking under `--release`
 **Non-goals:** a part. A part is markup, and a since column in the card would be a second
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not

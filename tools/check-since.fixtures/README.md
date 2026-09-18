@@ -26,14 +26,30 @@ them examines the **readers**, and a reader that stops seeing an API leaves the 
 an undated one: the list of items is exactly what the reader was supposed to produce, so no
 prepared list can miss its absence.
 
-[`_reader/`](_reader) is a small library written for them to read: the same surface twice, once
-with the `export` keyword (`plain.ts`) and once with a list (`listed.ts`, where the keyword is
-on nothing and every name still reaches a consumer), plus the entry point that re-exports both.
-[`_reader/expected.json`](_reader/expected.json) holds what the readers must return, and the
-gate reports a difference either way — an item gone is an API it would now excuse, an item
-added is a tag it has begun asking of what nobody can call.
+[`_reader/`](_reader) is a small library written for them to read, in the three shapes a public
+name arrives in:
 
-It was written against a real blindness: until 2026-09-18 the readers asked for the `export`
-keyword, so a class exported by a list, a class exported under another name, and a type beside
-them were invisible — five of the ten items below. Put that reading back, and the control names
-all five.
+- [`plain.ts`](_reader/plain.ts) — the `export` keyword on the declaration, beside a lifecycle
+  hook and a private method, which are not API and have to stay out of the result;
+- [`listed.ts`](_reader/listed.ts) — the keyword on no declaration at all: a class, a class
+  renamed on its way out and a type, exported by a list at the foot of the file;
+- [`merged.ts`](_reader/merged.ts) — the two shapes that put several declarations under one
+  name, a class merged with an interface and an overload set above its implementation. Each is
+  one item, because a consumer imports the name once, and the tag is read where a maintainer
+  writes it: on the declaration that came first.
+
+[`_reader/expected.json`](_reader/expected.json) holds what the readers must return, counted
+and not merely listed, and the gate reports a difference either way — an item gone is an API it
+would now excuse, an item added is a tag it has begun asking of what nobody can call, an item
+returned twice is a published number nobody can read back.
+
+It was written against a real blindness, and grew by a second one. Until 2026-09-18 the readers
+asked for the `export` keyword, so a class exported by a list, a class exported under another
+name, a type beside them **and the two public methods those classes declare** were invisible —
+five of the fourteen items. The repair then keyed one declaration per name, which hid a class
+merged with an interface just as thoroughly; `merged.ts` is what caught it. Put either reading
+back, and the control names what it loses.
+
+The prepared sources enter the root project's compiler program
+([`tsconfig.root.json`](../../tsconfig.root.json)): code a gate is measured against is worth
+compiling, and `check-typecheck` would otherwise read three files no compiler sees.

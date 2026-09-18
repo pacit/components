@@ -221,6 +221,11 @@ const namesOf = (d) =>
  * off. Both reach a consumer, so a reader that knows only the keyword stops seeing an API
  * the day somebody writes the list, and this gate then passes on an undated one.
  *
+ * A name maps to a LIST, because TypeScript lets several declarations carry it: a class
+ * merged with an interface, a function's overload signatures above its implementation. One
+ * declaration per name would hide the others — and with them, for a class, every public
+ * method that class declares.
+ *
  * `import { X } from './z'; export { X }` is NOT resolved — the declaration is in `z.ts`,
  * where `membersIn` and `methodsIn` read it anyway; only its export item could slip, and
  * only from an entry point, and every index here re-exports with `from`.
@@ -228,20 +233,20 @@ const namesOf = (d) =>
 const exportedFrom = (sf) => {
   const declared = new Map();
   const out = new Map();
+  const add = (map, name, d) => map.set(name, [...(map.get(name) ?? []), d]);
   for (const d of sf.statements) {
     for (const name of namesOf(d)) {
-      declared.set(name, d);
-      if (isExported(d)) out.set(name, d);
+      add(declared, name, d);
+      if (isExported(d)) add(out, name, d);
     }
   }
   for (const st of sf.statements) {
     // `export { … } from './x'` is a re-export: its declarations are read in `x.ts`.
     if (!ts.isExportDeclaration(st) || st.moduleSpecifier) continue;
     if (!st.exportClause || !ts.isNamedExports(st.exportClause)) continue;
-    for (const e of st.exportClause.elements) {
-      const d = declared.get((e.propertyName ?? e.name).text);
-      if (d) out.set(e.name.text, d);
-    }
+    for (const e of st.exportClause.elements)
+      for (const d of declared.get((e.propertyName ?? e.name).text) ?? [])
+        add(out, e.name.text, d);
   }
   return out;
 };
@@ -263,11 +268,11 @@ const isHidden = (node) =>
  */
 const methodsIn = (path) => {
   const sf = parse(path);
-  const exported = new Set(exportedFrom(sf).values());
+  const exported = new Set([...exportedFrom(sf).values()].flat());
   const out = [];
   for (const cls of sf.statements) {
-    if (!ts.isClassDeclaration(cls) || !cls.name || !exported.has(cls))
-      continue;
+    if (!ts.isClassDeclaration(cls) || !cls.name) continue;
+    if (!isExported(cls) && !exported.has(cls)) continue;
     const byName = new Map();
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !ts.isIdentifier(m.name)) continue;
@@ -320,11 +325,23 @@ const exportsIn = (indexPath) => {
     } catch {
       continue; // a re-export of nothing does not compile; the build says so, not this gate
     }
-    for (const [name, d] of exportedFrom(target)) {
+    for (const [name, decls] of exportedFrom(target)) {
       if (only && !only.has(name)) continue;
-      const kind = kindOf(d);
-      if (!kind) continue;
-      out.push({ path, line: lineOf(target, d), name, kind, ...docOf(d) });
+      const kinds = decls.map(kindOf);
+      const first = kinds.findIndex(Boolean);
+      if (first < 0) continue;
+      // One item per exported NAME and not per declaration: a consumer imports the name
+      // once, and its declarations are one API — an overload set carries its JSDoc on the
+      // first signature, a class merged with an interface on whichever came first, exactly
+      // as `methodsIn` reads an overloaded method.
+      out.push({
+        path,
+        line: lineOf(target, decls[first]),
+        name,
+        kind: kinds[first],
+        since: decls.map((d) => docOf(d).since).find(Boolean) ?? null,
+        deprecated: decls.some((d) => docOf(d).deprecated),
+      });
     }
   }
   return out;
@@ -377,32 +394,44 @@ const READER = 'tools/check-since.fixtures/_reader';
  * A prepared library the READERS are run over, because the prepared inputs above examine
  * only the judge. A reader that stops seeing an API leaves this gate green over an undated
  * one, and no list of items can catch that — the list is what the reader was to produce.
- * `_reader/` writes the same small surface twice, once with the `export` keyword and once
- * with a list, and holds what both must yield.
+ * `_reader/` writes a small surface three ways — with the `export` keyword, with a list,
+ * and under names several declarations share — and holds what all three must yield.
  */
 const readerControl = () => {
   const expected = readFixture('_reader/expected.json').items;
-  const files = ['plain.ts', 'listed.ts'].map((n) => `${READER}/${n}`);
+  const files = ['plain.ts', 'listed.ts', 'merged.ts'].map(
+    (n) => `${READER}/${n}`,
+  );
   const got = [
     ...files.flatMap(membersIn),
     ...files.flatMap(methodsIn),
     ...exportsIn(`${READER}/index.ts`),
   ];
   const say = (i) =>
-    `${i.path.split('/').pop()}:${i.line} ${i.kind} ${i.name} @since ${i.since}`;
-  const mine = got.map(say).sort();
-  const theirs = expected.map(say).sort();
-  const missing = theirs.filter((x) => !mine.includes(x));
-  const extra = mine.filter((x) => !theirs.includes(x));
+    `${i.path}:${i.line} ${i.kind} ${i.name} @since ${i.since}` +
+    (i.deprecated ? ' @deprecated' : '');
+  // Counted and not merely listed: a reader that returns the same item twice publishes a
+  // number nobody can read back, and a set would call that the promised one.
+  const tally = (xs) =>
+    xs.reduce((m, x) => m.set(x, (m.get(x) ?? 0) + 1), new Map());
+  const mine = tally(got.map(say));
+  const theirs = tally(expected.map(say));
   const problems = [];
-  for (const x of missing)
-    problems.push(
-      `_reader: the readers no longer find \`${x}\` — an API this gate would now excuse`,
-    );
-  for (const x of extra)
-    problems.push(
-      `_reader: the readers found \`${x}\`, which the prepared library does not promise`,
-    );
+  for (const [x, wanted] of theirs)
+    if ((mine.get(x) ?? 0) < wanted)
+      problems.push(
+        `_reader: the readers no longer find \`${x}\` — an API this gate would now excuse`,
+      );
+  for (const [x, found] of mine) {
+    const wanted = theirs.get(x) ?? 0;
+    if (found > wanted)
+      problems.push(
+        wanted === 0
+          ? `_reader: the readers found \`${x}\`, which the prepared library does not promise`
+          : `_reader: the readers found \`${x}\` ${found} times, and the prepared ` +
+              `library promises it ${wanted}`,
+      );
+  }
   return problems;
 };
 
@@ -472,5 +501,6 @@ if (problems.length) {
 console.log(
   `✓ Since: ${summary}. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own points, and the readers find ` +
-    `every API of the prepared library, written with the keyword and with a list.`,
+    `every API of the prepared library — written with the keyword, with a list, and under ` +
+    `names several declarations share.`,
 );

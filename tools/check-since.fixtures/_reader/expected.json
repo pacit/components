@@ -1,5 +1,5 @@
 {
-  "description": "What the readers must find in the prepared library beside it — the same surface written twice, once with the `export` keyword (`plain.ts`) and once with a list (`listed.ts`). Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
+  "description": "What the readers must find in the prepared library beside it. `plain.ts` writes an ordinary component with the `export` keyword; `listed.ts` writes a class, a class renamed on its way out and a type with the keyword on no declaration at all, exported by a list; `merged.ts` writes the two shapes a name can carry more than one declaration under — a class merged with an interface, and an overload set above its implementation — which are one item each, because a consumer imports the name once. Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
   "items": [
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
@@ -35,7 +35,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 6,
+      "line": 7,
       "name": "PctListed",
       "kind": "class",
       "since": "0.1.0",
@@ -43,7 +43,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 8,
+      "line": 9,
       "name": "size",
       "kind": "input",
       "since": "0.1.0",
@@ -51,7 +51,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 11,
+      "line": 12,
       "name": "PctListed.close",
       "kind": "method",
       "since": "0.1.0",
@@ -59,7 +59,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 15,
+      "line": 20,
       "name": "PctRenamed",
       "kind": "class",
       "since": "0.1.0",
@@ -67,7 +67,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 17,
+      "line": 22,
       "name": "Renamed.toggle",
       "kind": "method",
       "since": "next",
@@ -75,11 +75,43 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 21,
+      "line": 26,
       "name": "PctListedSize",
       "kind": "type",
       "since": "0.1.0",
       "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 7,
+      "name": "PctMerged",
+      "kind": "class",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 9,
+      "name": "tone",
+      "kind": "input",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 12,
+      "name": "PctMerged.reset",
+      "kind": "method",
+      "since": "0.1.0",
+      "deprecated": false
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 23,
+      "name": "pctFmt",
+      "kind": "function",
+      "since": "0.1.0",
+      "deprecated": true
     }
   ]
 }

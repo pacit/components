@@ -2,3 +2,4 @@
 // `exportsIn` reads.
 export * from './plain';
 export { PctListed, PctRenamed, PctListedSize } from './listed';
+export * from './merged';
