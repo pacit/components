@@ -62,8 +62,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    94 |
-| ✅ enforced                                 |    79 |
+| requirements                                |    95 |
+| ✅ enforced                                 |    80 |
 | 🟡 partial (deliberately without a control) |    15 |
 | ⛔ gap                                      |     0 |
 
