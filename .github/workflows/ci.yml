@@ -167,13 +167,31 @@ jobs:
         run: npx playwright install-deps chromium firefox webkit
 
       # `--shard` stands BEFORE `-t`, and the target list is the last thing on the line.
-      # That is a convention three readers depend on — `scripts/before-push`, `check-docs`
-      # point 3 and `check-tools` — each of which takes the words after `-t` as targets and
-      # a word beginning with a dash as an option. Playwright's own server is what serves
+      # That is a convention five readers depend on — `scripts/before-push` and the four
+      # gates that read this file through `tools/workflow-targets.mjs` — each taking the
+      # words after `-t` as targets, up to the first option. Playwright's own server serves
       # the suite (the `webServer` block in each playwright.config.mts says so), so a shard
       # builds and starts the app it tests and stops it after.
+      #
+      # The emptiness is decided here rather than inside `scripts/nx-verdict`. A job that
+      # names ONE target meets a commit that reaches no suite — a root document, say — and
+      # nx then prints `No tasks were run` and exits 0 with no verdict, which that script
+      # refuses and should go on refusing: it prints the same sentence for a target list
+      # that is a typo, and a run that checked nothing because nobody can spell is not a run
+      # that checked nothing because there was nothing. The two are told apart by asking the
+      # workspace, and asking it twice: some project HAS an `e2e` target (a typo empties
+      # this list too), and none of them is affected.
       - shell: bash
-        run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e
+        run: |
+          if [ -z "$(npx nx show projects -t e2e | tr -d '[]\" \n\r\t')" ]; then
+            echo "::error::no project in this workspace has an \`e2e\` target — the suites this job exists to run have been renamed or lost, and an empty affected set below would have looked like a quiet afternoon."
+            exit 1
+          fi
+          if [ -z "$(npx nx show projects --affected -t e2e | tr -d '[]\" \n\r\t')" ]; then
+            echo "No suite is affected by this commit — shard ${{ matrix.shard }} has nothing to run."
+            exit 0
+          fi
+          scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e
 
       # A red e2e on a runner is unreadable without its evidence: the third run this
       # workflow ever made failed two visual baselines and the diff images died with the

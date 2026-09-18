@@ -358,47 +358,28 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
         `not happen, and every point above passes because the configuration is fine.`,
     );
 
-  if (
-    ci.shardCover === null &&
-    ci.shardsNotFromMatrix !== undefined &&
-    ci.sharded !== false
-  )
-    void 0; // a run with no sharded line has no matrix to read, and that is not a defect
-  if (ci.shardCover) {
-    if (ci.shardCover.unreadable)
-      throw new BrowsersError(
-        'ci',
-        'ci-shard-not-a-cover',
-        `\`${CI}\` runs a sharded suite and no matrix under it could be read — so nothing ` +
-          `here can say whether the shards cover the suite once, and a rule that answers ` +
-          `"I could not tell" with silence is the defect it was written against.`,
-      );
-    const { shards = [], keys = [] } = ci.shardCover;
-    const expected = shards.map((_, i) => i + 1);
-    const notACover =
-      shards
-        .slice()
-        .sort((a, b) => a - b)
-        .join(',') !== expected.join(',');
-    const otherAxes = keys.filter((k) => k !== 'shard');
-    if (notACover || otherAxes.length)
-      throw new BrowsersError(
-        'ci',
-        'ci-shard-not-a-cover',
-        `the shard matrix in \`${CI}\` is not a cover of the suite:\n` +
-          (notACover
-            ? `      the numerators are [${shards.join(', ')}] where ${shards.length} jobs ` +
-              `need 1…${shards.length}, each once\n`
-            : '') +
-          (otherAxes.length
-            ? `      the matrix is multiplied by \`${otherAxes.join('`, `')}\`, so ` +
-              `\`job-total\` counts ${keys.length} axes' worth of jobs and the numerators ` +
-              `still run 1…${shards.length}\n`
-            : '') +
-          `    Either way some shard of the suite is never asked for, and the jobs that do ` +
-          `run are green — the one failure of a test suite nobody sees.`,
-      );
-  }
+  const fault = coverFault(ci.shardCover);
+  if (fault)
+    throw new BrowsersError(
+      'ci',
+      'ci-shard-not-a-cover',
+      fault === 'unreadable'
+        ? `\`${CI}\` runs a sharded suite and no matrix under it could be read — a list ` +
+            `this gate cannot take apart entry by entry is not a list it can call a cover, ` +
+            `and a rule that answers "I could not tell" with silence is the defect it was ` +
+            `written against.`
+        : fault === 'axes'
+          ? `the shard matrix in \`${CI}\` is multiplied by ` +
+            `\`${ci.shardCover.keys.filter((k) => k !== 'shard').join('`, `')}\`, so ` +
+            `\`job-total\` counts every combination while the numerators still run ` +
+            `1…${ci.shardCover.shards.length} — the rest of the suite is never asked for, ` +
+            `and the jobs that do run are green.`
+          : `the shard numerators in \`${CI}\` are ` +
+            `[${ci.shardCover.shards.join(', ')}] where ${ci.shardCover.shards.length} jobs ` +
+            `need 1…${ci.shardCover.shards.length}, each once. Some shard of the suite is ` +
+            `never asked for and every job is green — the one failure of a test suite ` +
+            `nobody sees.`,
+    );
 
   if (ci.shardsNotFromMatrix?.length)
     throw new BrowsersError(
@@ -601,13 +582,31 @@ const targetE2E = async () => {
  * or `null` when there is no matrix carrying one. Both fields are what point 5 needs —
  * the numerators somebody wrote, and every axis they are multiplied by.
  */
+/**
+ * What is wrong with one shard matrix — `unreadable`, `axes`, `numerators` — or null when it
+ * is a cover: one job per shard, each numerator once, none missing. One home, because the
+ * reader picks the matrix to complain about by the same rule the complaint is phrased with.
+ */
+const coverFault = (cover) => {
+  if (!cover) return null;
+  if (cover.unreadable) return 'unreadable';
+  if (cover.keys.some((key) => key !== 'shard')) return 'axes';
+  const expected = cover.shards.map((_, i) => i + 1).join(',');
+  const written = cover.shards
+    .slice()
+    .sort((a, b) => a - b)
+    .join(',');
+  return written === expected ? null : 'numerators';
+};
+
 const coverOf = (lines) => {
+  const found = [];
   for (let i = 0; i < lines.length; i++) {
     const opening = lines[i].match(/^(\s*)matrix:\s*$/);
     if (!opening) continue;
     const depth = opening[1].length;
     const keys = [];
-    let shards = null;
+    let written = null;
     // The WHOLE block, not up to the `shard:` line: an axis written after it multiplies the
     // matrix exactly as one written before, and a reader that returned at `shard:` never saw
     // the second kind — measured on a doctored workflow, where it passed.
@@ -618,20 +617,36 @@ const coverOf = (lines) => {
       const key = lines[j].match(/^\s*([A-Za-z0-9_-]+):\s*(.*)$/);
       if (!key || indent !== depth + 2) continue;
       keys.push(key[1]);
-      const list = key[1] === 'shard' && key[2].match(/^\[(.*)\]$/);
-      if (list)
-        shards = list[1]
-          .split(',')
-          .map((n) => Number(n.trim()))
-          .filter((n) => Number.isInteger(n));
+      const list = key[1] === 'shard' && key[2].trim().match(/^\[(.*)\]$/);
+      if (list) written = list[1];
     }
-    if (shards) return { shards, keys };
+    if (written !== null) found.push({ written, keys });
   }
-  return null;
+  if (!found.length) return null;
+  /*
+   * EVERY matrix carrying a `shard:`, and every entry of it read or the whole list given up
+   * as unreadable. Both halves come from the review of 0081, which broke the first version
+   * twice with a quoted list: `Number("'1'")` is NaN, a reader that FILTERED those out was
+   * left comparing an empty list to an empty list, and `['1','1','2','3','4','5']` — valid
+   * Actions, and a matrix that runs shard 1 twice and shard 6 never — passed in silence.
+   * That is the defect this rule exists to refuse, produced by the rule's own reader.
+   */
+  const read = found.map(({ written, keys }) => {
+    const entries = written
+      .split(',')
+      .map((entry) => entry.trim().replace(/^['"]|['"]$/g, ''));
+    const shards = entries.map(Number);
+    return shards.every((n) => Number.isInteger(n))
+      ? { shards, keys }
+      : { unreadable: true };
+  });
+  // The first matrix that is WRONG, and only otherwise the first at all: two jobs, one of
+  // them a cover and one of them not, left the second unread while the first answered for it.
+  return read.find((one) => coverFault(one)) ?? read[0];
 };
 
-const ciSteps = (engines) => {
-  const lines = read(CI)
+const ciStepsOf = (text, engines) => {
+  const lines = String(text ?? '')
     .split('\n')
     .map((l) => l.replace(/#.*$/, ''));
   const installs = lines
@@ -645,7 +660,7 @@ const ciSteps = (engines) => {
    * reading in `workflow-targets.mjs` strips comments, reads past options and takes the
    * words after `-t` as names.
    */
-  const runsE2E = runsTarget(read(CI), 'e2e');
+  const runsE2E = runsTarget(text, 'e2e');
   /*
    * A sharded run is a narrowed run six times over, and the six are the whole suite only if
    * the denominator is the number of jobs. Nothing else in this repository can see that
@@ -679,6 +694,9 @@ const ciSteps = (engines) => {
     : null;
   return { installs, runsE2E, shardsNotFromMatrix, shardCover };
 };
+
+/** The workflow on disk, read by the rule above. */
+const ciSteps = (engines) => ciStepsOf(read(CI), engines);
 
 /**
  * Probes in real browsers — one page per engine, with no server and no application. What
@@ -760,6 +778,14 @@ const buildFixture = (fx) => {
   for (const engine of fx.clearCollected ?? []) w.collected[engine] = [];
 
   if (fx.e2e) w.e2e = { ...w.e2e, ...fx.e2e };
+  /*
+   * `ciText` runs a case's own miniature workflow through the READER, where `ci` hands the
+   * rule a state and leaves the reader unexercised. The distinction is not academic: the
+   * shard reader passed a quoted list in silence while the fixture beside it, which supplied
+   * the parsed state, went on being rejected exactly as declared.
+   */
+  if (fx.ciText)
+    w.ci = ciStepsOf(fx.ciText, Object.keys(w.policy.engines ?? {}));
   if (fx.ci) w.ci = { ...w.ci, ...fx.ci };
   for (const [fact, results] of Object.entries(fx.facts ?? {}))
     w.facts[fact] = { ...w.facts[fact], ...results };

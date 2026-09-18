@@ -15,6 +15,9 @@
  * `run-many` is read beside `affected`: one form alone is half a repository's CI.
  */
 
+import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+
 /** The words after `-t` on one line, up to the first option. */
 const targetsAfterT = (tail) => {
   const targets = [];
@@ -40,3 +43,47 @@ export const targetsIn = (text) =>
 
 /** Whether a workflow really runs a target — the name on a line, not a word inside one. */
 export const runsTarget = (text, target) => targetsIn(text).has(target);
+
+/*
+ * Run directly, it prints one target per line for the workflow files named — the form
+ * `scripts/before-push` reads. That script held a sixth copy of this reading until the review
+ * of 0081 measured the two apart: its own pattern wanted the literal `npx nx` and never
+ * stripped a comment, so a comment naming a target put a phantom on the local battery and a
+ * line spelled `nx run-many` took two targets off it, both without a word.
+ *
+ * A line that runs nx and carries no `-t` is an error here rather than a line passed over:
+ * the caller is about to run whatever comes back, and a list that is short still goes green.
+ */
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  const files = process.argv.slice(2);
+  const targets = new Set();
+  for (const file of files) {
+    let text;
+    try {
+      text = readFileSync(file, 'utf8');
+    } catch {
+      console.error(
+        `::error::cannot read ${file} — a target list was to be taken out of it.`,
+      );
+      process.exit(2);
+    }
+    const mute = text
+      .split('\n')
+      .map((line) => line.replace(/#.*$/, ''))
+      .filter(
+        (line) => /nx (?:affected|run-many)/.test(line) && !/ -t /.test(line),
+      );
+    if (mute.length) {
+      console.error(
+        `::error::a line of ${file} runs nx and names no target with \`-t\`, so what it ` +
+          `runs cannot be read:\n    ${mute.map((l) => l.trim()).join('\n    ')}`,
+      );
+      process.exit(3);
+    }
+    for (const target of targetsIn(text)) targets.add(target);
+  }
+  console.log([...targets].join('\n'));
+}

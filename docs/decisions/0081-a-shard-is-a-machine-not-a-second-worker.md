@@ -75,9 +75,9 @@ MACHINES rather than across workers on one.**
   yet, not a change to make on the strength of this paragraph.
 - **The machine time barely moves: 73.4 minutes against 70.6.** That was the surprise of the
   first run, and it is worth stating plainly because "parallel costs more machine" is the
-  thing everybody assumes. Only the setup is duplicated — some four minutes a job — while the
-  66 minutes of tests are DIVIDED, so seven jobs cost 4% more than one and return the answer
-  four times sooner. On a public repository it is free either way
+  thing everybody assumes. Only the setup is duplicated — between a minute and a half and two
+  minutes a job, measured across the seven — while the 66 minutes of tests are DIVIDED, so
+  seven jobs cost 4% more than one and return the answer four times sooner. On a public repository it is free either way
   ([the minutes note](../plan.md) holds: nothing paid).
 - **A red shard no longer cancels its siblings** (`fail-fast: false`): after a failure the
   question is always which tests failed, and a cancelled shard answers nothing.
@@ -100,12 +100,19 @@ MACHINES rather than across workers on one.**
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading
   of a workflow line that four gates and one script now share. That reading lives in
-  `tools/workflow-targets.mjs` rather than in five copies — the copies existed, and the
-  review of this change found them disagreeing: three would not read past an option, one
-  carried `\s` in its class, two stripped comments and two did not. Of the five readers only
-  `check-docs` has negative controls for it; `check-tools` cannot have one while it reads the
-  real workflow at module load, and `scripts/before-push` has no control mechanism at all.
-  Both are written down here rather than left for the next reader to discover.
+  `tools/workflow-targets.mjs` rather than in six copies — the copies existed, and two
+  rounds of review found them disagreeing: three would not read past an option, one carried
+  `\s` in its class, two stripped comments and two did not, and the script wanted the literal
+  `npx nx`. What holds it honest is uneven: `check-docs` has two controls over the reading and
+  the shard rule has one that feeds it real YAML, while `check-tools` can have none as long as
+  it reads the workflow at module load, and `scripts/before-push` — which now calls the module
+  instead of repeating it — has no control mechanism at all. Written down here rather than
+  left for the next reader to find out.
+- **A job that can legitimately run nothing decides that for itself.** `scripts/nx-verdict`
+  still refuses a run with no verdict, because `No tasks were run` is what nx prints BOTH for
+  a diff that reaches nothing and for a target list that is a typo. The browser job asks the
+  workspace instead — does any project have an `e2e` target, and is any affected — so the two
+  cases are told apart where they differ rather than in the guard, where they look alike.
 
 ## Alternatives considered
 

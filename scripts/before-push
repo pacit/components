@@ -48,39 +48,18 @@ done
 # EVERY line in CI that runs targets, and not the first one. The workflow runs the battery in
 # one job and the browsers in six more, so a reader that stopped at the first line would have
 # dropped `e2e` off this battery the day that split landed — silently, because a list that is
-# short still runs and still goes green. The union is over the lines; the order is the
-# workflow's.
+# short still runs and still goes green.
 #
-# What counts as a target is the rule the three gates that read the same file use (`targetsIn`
-# in check-docs, check-tools and check-acr): the words after `-t`, UP TO THE FIRST OPTION.
-# Both halves earn their place. A word beginning with a dash is an option wherever it stands,
-# so `--shard=…` on the e2e line never becomes a target nobody can run; and stopping there
-# rather than skipping it means an option with a separate value — `--exclude docs` — does not
-# leave its value behind as a phantom target. `run-many` is read as well as `affected`: it is
-# the form the nightly uses and the one both gates accept, and reading only `affected` is how
-# a workflow switched to the other form would have left this battery with an empty list.
+# The reading is NOT repeated here. `tools/workflow-targets.mjs` is the one home for it, and
+# the four gates that read the same file answer from it too: this script held a sixth copy
+# until the review of 0081 measured the two apart, and they disagreed in both directions — a
+# comment naming a target put a phantom on this battery, a line spelled `nx run-many` took
+# two targets off it, and neither said a word.
 #
-# Three ways this can go wrong, and all three are LOUD here: a line with no `-t` at all, a
-# file with no such line, and a list that is empty once `e2e` is set aside. The last is the
-# one that could have passed for work: `nx affected -t ''` runs nothing and exits 0.
-if [ ! -r "$workflow" ]; then
-  echo "::error::cannot read .github/workflows/ci.yml — this battery takes its target list out of that file, and there is no file to take it from." >&2
-  exit 1
-fi
-if ! targets=$(awk '
-  /npx nx (affected|run-many)/ {
-    at = index($0, " -t ")
-    if (at == 0) { bad = bad "\n    " $0; next }
-    n = split(substr($0, at + 4), word, /[ \t]+/)
-    for (i = 1; i <= n; i++) {
-      if (word[i] == "") continue
-      if (substr(word[i], 1, 1) == "-") break
-      print word[i]
-    }
-  }
-  END { if (bad != "") { printf "%s\n", bad > "/dev/stderr"; exit 3 } }
-' "$workflow" | awk '!seen[$0]++'); then
-  echo "::error::a target line in .github/workflows/ci.yml carries no \`-t\` — the battery reads its targets from there, and it cannot read the line printed above." >&2
+# Three ways it can go wrong, and all three are LOUD: a file that cannot be read, a line that
+# runs nx and names no target, and a list that is empty once `e2e` is set aside. The last is
+# the one that could pass for work — `nx affected -t ''` runs nothing and exits 0.
+if ! targets=$("$root/scripts/with-node" node "$root/tools/workflow-targets.mjs" "$workflow"); then
   exit 1
 fi
 if [ -z "$targets" ]; then

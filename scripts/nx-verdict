@@ -35,14 +35,13 @@ follower=$!
 wait "$command"
 status=$?
 wait "$follower" 2>/dev/null
-# `No tasks were run` is nx's THIRD verdict and belongs on this list, for the same reason the
-# other two do: it is nx saying what it did. A job whose target list is one target — the
-# browser shards run `-t e2e` alone — meets it the first time a commit touches nothing that
-# reaches a suite (a root document, say), and without this line six green jobs would report
-# an error over a run that correctly had nothing to do. The silence this guard was written
-# for is a run that ended with tasks in it and NO sentence about them; a sentence saying
-# there were none is the opposite of that.
-if ! grep -q -e 'Successfully ran target' -e 'Failed tasks:' -e 'No tasks were run' "$log"; then
+# `No tasks were run` is NOT on this list, and that is the point of the list. It is a sentence
+# nx prints both when a diff reaches nothing and when a target list is a typo, and the two are
+# not the same fact: the second is a run that checked nothing and looked fine. A job whose
+# targets can legitimately come to nothing — the browser shards run `-t e2e` alone — decides
+# that case BEFORE calling this script, where the workspace can still be asked whether such a
+# target exists at all (ci.yml, the e2e job).
+if ! grep -q -e 'Successfully ran target' -e 'Failed tasks:' "$log"; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   # The command's own code when it had one — 127 for a command that never started, 137 for
   # a killed one — and 1 for a run that ended clean and mute.
