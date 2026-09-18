@@ -71,7 +71,19 @@
       }
     },
     "green": {
-      "$comment": "The palette's first green, and the two steps are the red ramp's shape for the red ramp's reason: `700` is the step that clears 4.5:1 as text on the light surface (5.02:1 measured) and `400` the one that clears it on the dark (10.25:1). Both are steps of the same scale every other hue here comes from, so a tone is a colour the skin already knew how to make rather than a hue somebody picked. It exists because a message with no second channel is a state carried by colour alone (0076) — the icon is that channel, and this is what paints it.",
+      "$comment": "The palette's first green. It began as two steps for a tone that only painted an icon; the family below is what a toned control needs instead — `700`/`800`/`900` for the fill, its hover and its press on the light theme, `400`/`300`/`200` for the same three on the dark, and `100`/`200` as the soft face's tint with the label on it. Every step is the same scale the other hues come from, so a tone is a colour the skin already knew how to make rather than a hue somebody picked. `700` is still where it clears 4.5:1 as text on the light surface (5.02:1) and `400` where it clears it on the dark (10.25:1).",
+      "100": {
+        "$type": "color",
+        "$value": "#dcfce7"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#bbf7d0"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#86efac"
+      },
       "400": {
         "$type": "color",
         "$value": "#4ade80"
@@ -79,10 +91,30 @@
       "700": {
         "$type": "color",
         "$value": "#15803d"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#166534"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#14532d"
       }
     },
     "amber": {
-      "$comment": "The same two steps for the warning tone, and the level is a measurement rather than a mirror of green's: an amber light enough to read as a warning is dark enough to fail as text, so `700` is where it clears 4.5:1 on white (5.02:1) and `400` where it clears it on `slate.900` (10.69:1). A `600` amber, which is the shade most palettes reach for, measures 3.19:1 on white — enough for a UI edge and not for a word.",
+      "$comment": "The same family for the warning tone, and the levels are measurements rather than a mirror of green's: an amber light enough to read as a warning is dark enough to fail as text, so `700` is where it clears 4.5:1 on white (5.02:1) and `400` where it clears it on `slate.900` (10.69:1). A `600` amber, which is the shade most palettes reach for, measures 3.19:1 on white — enough for a UI edge and not for a word.",
+      "100": {
+        "$type": "color",
+        "$value": "#fef3c7"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#fde68a"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#fcd34d"
+      },
       "400": {
         "$type": "color",
         "$value": "#fbbf24"
@@ -90,16 +122,45 @@
       "700": {
         "$type": "color",
         "$value": "#b45309"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#92400e"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#78350f"
       }
     },
     "red": {
+      "$comment": "The error ramp, and the only one here that LOST a step: `600` left with the tone axis, because `danger` moved to `700` the day a quiet button face had to carry the label on the page's own hover tint — `red.600` reads 4.41:1 there, and the policy gate blocks a build on it. That also put danger on the rule green and amber were already keeping: a tone's base is the first step that carries white text. What the rest of the ramp is for is the family a toned CONTROL needs beyond a single colour — a resting fill, a hover, a press, a tint and the word standing on it, twice over because the dark theme answers with the other end of the same scale.",
+      "100": {
+        "$type": "color",
+        "$value": "#fee2e2"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#fecaca"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#fca5a5"
+      },
       "400": {
         "$type": "color",
         "$value": "#f87171"
       },
-      "600": {
+      "700": {
         "$type": "color",
-        "$value": "#dc2626"
+        "$value": "#b91c1c"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#991b1b"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#7f1d1d"
       }
     },
     "space": {
