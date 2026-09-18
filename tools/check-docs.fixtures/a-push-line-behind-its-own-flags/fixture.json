@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "rule": "night-skips-a-target",
+  "why": "A gate whose name stands behind the options of a sharded run. When the browser job was split off `ci.yml` its line became `nx affected --shard=N/6 -t e2e`, and the reader of that file required the `-t` to follow `affected` immediately: the line read as no targets at all, so `e2e` left the push set without a word and the night was asked for less than the push line runs. The rule that would have caught a gate running on a diff and never on the whole was reading half a workflow."
+}

@@ -1,0 +1,12 @@
+# A push line whose targets stand BEHIND the options of a sharded run — the shape
+# `.github/workflows/ci.yml` gives its browser job. `check-gamma` runs on a push and never at
+# night, which is the defect this case constructs.
+#
+# The case tells two readers apart. One that requires `-t` to follow `affected` immediately
+# sees no target on this line at all, and fires `push-line-empty` — a rule this case does not
+# declare, so the gate rejects the case and names the rule it fired. Only a reader that reads
+# past the options gets to the defect that is actually here.
+jobs:
+  browsers:
+    steps:
+      - run: npx nx affected --shard=1/6 -t check-gamma

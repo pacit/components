@@ -252,9 +252,13 @@ const tracked = lines(git('ls-files', ':(glob)*.mjs', ':(glob)**/*.mjs'))
  * as well, and the count came out one high until this line said so.
  */
 const targetsIn = (text) =>
-  [...String(text).matchAll(/nx (?:affected|run-many) -t ([a-z0-9:\- \t]+)/g)]
+  [
+    ...String(text).matchAll(
+      /nx (?:affected|run-many)[^\n]*? -t ([a-z0-9:\- \t]+)/g,
+    ),
+  ]
     .flatMap((m) => m[1].trim().split(/\s+/))
-    .filter(Boolean);
+    .filter((word) => word && !word.startsWith('-'));
 const invoked = new Set(
   WORKFLOWS.flatMap((file) =>
     targetsIn(readFileSync(join(ROOT, '.github/workflows', file), 'utf8')),

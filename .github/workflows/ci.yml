@@ -12,44 +12,56 @@ permissions:
 
 # A superseded run keeps burning the runner without one: two pushes in a minute are two
 # hour-class suites running to completion for one merge-worthy result. Cancelling the older
-# is safe exactly because nx-set-shas below keys on the last GREEN run, not the last run.
+# is safe exactly because nx-set-shas keys on the last GREEN run, not the last run.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# The run is TWO kinds of job, and the split comes from a measurement rather than from a
+# taste for matrices. In the single job this workflow used to be, 68 minutes were spent so:
+# 2.5 on all 44 tasks of the battery — every lint, test, build and gate — and 66 on the two
+# Playwright suites, which nx ran one after the other. The cache was never the answer: a
+# perfect one would have saved those 2.5 minutes (measured on run 35375241392, 2026-09-18).
+#
+# So the suites are what got split, and they are split ACROSS MACHINES rather than across
+# workers on one. Nx's preset sets `workers: process.env.CI ? 1 : undefined`, and that one
+# worker stays: four cases in this repository fail their first attempt and pass on a retry
+# in a freshly started browser (lesson-214), and load on the machine is the one condition
+# they are known to react to. A shard is a whole runner to itself, so every test meets the
+# same idle machine it met before — what changes is how many machines, not what happens on
+# one. Raising the worker count would be the other, cheaper change, and it is deliberately
+# not this one.
 jobs:
-  main:
+  # Everything that is not a browser: 44 tasks, ~2.5 minutes of work, and the job that owns
+  # the nx cache (the composite action says why only one may).
+  gates:
     runs-on: ubuntu-latest
-    # Twice the worst full run yet measured (~50 min mutation + ~20 min e2e, sequential
-    # worst case) — a ceiling for a hung browser, not a budget for a slow one. GitHub's own
-    # default is six hours, which on a metered private stage is a bill, not a ceiling.
-    timeout-minutes: 150
+    # Ten times the 2.5 minutes the battery has measured — a ceiling for a task that hangs,
+    # not a budget for a slow one.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
           filter: tree:0
           # `nx affected` derives its comparison base from history; a shallow clone
-          # leaves it nothing to compare against.
+          # leaves it nothing to compare against. The e2e job below checks out the same
+          # way and for the same reason — a shallow clone there would leave `nx affected`
+          # unable to decide whether a suite is affected at all.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/workspace
         with:
-          node-version: 24
-          cache: 'npm'
-
-      - run: npm ci
-
-      # Sets NX_BASE and NX_HEAD: the merge base on a pull request, the last commit
-      # with a green run of this workflow on main — so a failed run does not hand the
-      # next one a narrower diff than it should check.
-      - uses: nrwl/nx-set-shas@v5
+          nx-cache: save
 
       # The cache key is the Playwright version, so it is invalidated when the package
       # moves rather than on every package-lock.json change. All three engines
       # (`req-quality-browsers`) must be listed in BOTH install steps below: the
       # cache-hit one installs system libraries only, so an engine named in the miss
       # branch alone silently disappears on the first hit. `check-browsers` (point 5)
-      # is what notices.
+      # is what notices — and it reads THIS file, which is why these four steps stand in
+      # the workflow twice instead of moving into the composite action with the rest of
+      # the setup. This job needs the browsers for a gate rather than for a suite:
+      # `check-browsers` point 6 probes every engine for the facts its exclusions appeal to.
       - name: Resolve the Playwright version
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
@@ -68,59 +80,6 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
-      # The language gate's word lists are a pinned input, not a runner fact: the gate
-      # restores them itself out of `tools/dictionaries.lock.json`, hash-verified on every
-      # run, so this cache never has to be trusted — it only spares the archive a 9 MB
-      # download, and a miss costs seconds, not correctness. The apt step that stood here
-      # answered the first run's ENOENT with whatever version the runner's release shipped;
-      # the divergence its comment was waiting for got measured the day of the pin, when
-      # one package name served two lists and the pool had rotated the older one away.
-      - uses: actions/cache@v6
-        with:
-          path: tools/.dictionaries
-          key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
-
-      # The nx task cache, and it names TWO directories because it IS two halves. The
-      # artifacts of a cached task live in `.nx/cache/<hash>/`; the index that says such a
-      # hash exists at all — its exit code, its terminal output — lives in the database
-      # under `.nx/workspace-data`. Measured here on nx 23.1, each half restored on its own:
-      # `.nx/cache` alone reads 0/1 hit and reruns the task (that is the snippet copied all
-      # over the internet, and it was written for the nx that kept its index beside the
-      # artifacts); the database alone reads 1/1 hit for `tokens:build` — and leaves
-      # `libs/tokens/dist` NOT EXISTING, a green build with no artifact for every gate
-      # downstream to read. So they are one entry under one key: restored together or
-      # missed together, never one without the other.
-      #
-      # What it buys, measured over the fourteen gates of the root project on a developer
-      # machine: a push that touches documentation alone restored 12 of 17 tasks and took
-      # 11.2 s instead of 50.8 s. The five that ran are the honest ones — `check-docs`,
-      # `check-acr`, `check-language` and `check-reach` all name documentation among their
-      # inputs, and `check-support` is `cache: false` because it reads git history, which is
-      # not a file pattern.
-      #
-      # What it does NOT buy is the case that reads worst: a dependency bump still reruns
-      # every gate, because `package-lock.json` is in `sharedGlobals` and every task's hash
-      # carries it. That is deliberate — a gate answered from a run taken before the bump is
-      # exactly what nobody here wants (`check-forms`'s `externalDependencies` note in
-      # project.json argues the same thing one target down). This file is in `sharedGlobals`
-      # too, so the first run after this step lands is a full one by construction.
-      #
-      # The nightly has no step like this, and that is a decision rather than an omission:
-      # it exists to re-measure everything from nothing, and a restored result is a reading
-      # somebody else's machine took on another day.
-      #
-      # A hosted remote cache stays refused, and not because this step is as good: it is a
-      # service, so it is a dependency decision rather than a setting, and the free step is
-      # the weaker option taken deliberately.
-      - uses: actions/cache@v6
-        with:
-          path: |
-            .nx/cache
-            .nx/workspace-data
-            !.nx/workspace-data/d
-          key: nx-${{ runner.os }}-${{ github.sha }}
-          restore-keys: nx-${{ runner.os }}-
-
       - run: npx nx format:check
 
       # One line runs every gate. Which promise each of them proves — and which
@@ -131,11 +90,12 @@ jobs:
       # Tokens are not built by a step of their own: `tokens` is a graph dependency
       # of its consumers, and a manual build here would only mask a missing edge.
       #
-      # `mutation` and `check-mutation` are NOT in this line while the stage is private:
-      # they run nightly (nightly.yml), which is the private stage's declared default —
-      # a metered runner cannot pay ~50 minutes of Stryker per push, and the first full
-      # run measured exactly the co-scheduling the plan's CI item predicted. The docs
-      # gate reads both workflows, so the pair still counts as wired into CI.
+      # `e2e` is the one target not on this line — it has a job of its own below, and
+      # `scripts/before-push` reads BOTH lines, so the local battery still knows the whole
+      # list. `mutation` and `check-mutation` are on neither: they run nightly
+      # (nightly.yml), where ~50 minutes of Stryker is a night's work rather than a push's.
+      # The docs gate reads both workflows, so every pair still counts as wired into CI.
+      #
       # `scripts/nx-verdict` RUNS nx rather than reading it off a pipe: nx ended nine runs
       # without its summary and with exit code 0, red tasks inside them (plan 4.72,
       # lesson-222). Read off a pipe the summary is not to be trusted at all: Node drops
@@ -144,17 +104,83 @@ jobs:
       # twice on 2026-09-18 (lesson-228). The runner writes nx to a file, follows it live,
       # and fails a run whose file carries no verdict; nx's own non-zero code still wins.
       - shell: bash
-        run: scripts/nx-verdict npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools e2e
+        run: scripts/nx-verdict npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-since check-distance check-acr check-docs check-prose check-index check-tools
 
-      # A red e2e on a runner is unreadable without its evidence: the third run failed two
-      # visual baselines and the diff images died with the machine, so the failure could
-      # only be guessed at. Kept on failure alone — green runs prove themselves. The glob,
-      # not one suite's path: the day docs-e2e turned red the same way, this step was still
-      # spelling `sandbox-e2e` and the landing's diffs died with the machine again.
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-output
+          name: gates-output
+          path: tmp/nx-verdict.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # The browsers. Every job here runs `nx affected -t e2e` over a SHARD of the suites, and
+  # the six of them together run each affected suite exactly once.
+  #
+  # The denominator is `strategy.job-total` and never a number typed beside it. That is the
+  # whole guard against the failure this arrangement could have: a matrix of six with
+  # `--shard=N/8` would run three quarters of the tests and report green on the rest, which
+  # is the worst thing a test suite can do. Written this way the two cannot disagree — the
+  # denominator IS the number of jobs. `check-browsers` (point 5) refuses a literal one.
+  #
+  # `fail-fast: false` because a red shard is not a reason to cancel the evidence in the
+  # other five: the question after a failure is always which tests failed, and a cancelled
+  # shard answers nothing.
+  e2e:
+    runs-on: ubuntu-latest
+    # A shard is a sixth of 66 minutes of tests plus its setup, so a quarter of an hour is
+    # what this should cost — the figure is a projection off the unsharded run and not yet a
+    # measurement. The ceiling is for a browser that hangs; what bounds a merely slow one is
+    # Playwright's own per-test timeout.
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          filter: tree:0
+          # The same full history as the gates job, and for the reason stated there.
+          fetch-depth: 0
+
+      - uses: ./.github/actions/workspace
+
+      - name: Resolve the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      # Both steps name all three engines, for the reason the gates job gives above.
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      # `--shard` stands BEFORE `-t`, and the target list is the last thing on the line.
+      # That is a convention three readers depend on — `scripts/before-push`, `check-docs`
+      # point 3 and `check-tools` — each of which takes the words after `-t` as targets and
+      # a word beginning with a dash as an option. Playwright's own server is what serves
+      # the suite (the `webServer` block in each playwright.config.mts says so), so a shard
+      # builds and starts the app it tests and stops it after.
+      - shell: bash
+        run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e
+
+      # A red e2e on a runner is unreadable without its evidence: the third run this
+      # workflow ever made failed two visual baselines and the diff images died with the
+      # machine, so the failure could only be guessed at. Kept on failure alone — green runs
+      # prove themselves. The name carries the shard because two jobs of one run may not
+      # upload the same artifact name.
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-output-${{ matrix.shard }}
           path: |
             dist/.playwright/apps/*/test-output
             tmp/nx-verdict.log

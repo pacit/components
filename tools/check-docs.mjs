@@ -262,16 +262,24 @@ const NIGHT_WORKFLOW = '.github/workflows/nightly.yml';
  * that is not tidiness: with `\s` in it the match ran ON past the newline and swallowed the
  * `- run: npx nx run-many -t` of the next step, so the set held `npx`, `nx`, `run:` and
  * `-t` as targets — six words that are not targets, in the set this point answers from.
+ *
+ * Two things stand between `affected` and the targets, and both are read as what they are.
+ * OPTIONS MAY COME FIRST: `ci.yml` shards its browser job with `--shard=…/…` before the
+ * `-t`, and a reader demanding the two be adjacent saw no targets on that line at all —
+ * `e2e` would then have left this set on the day the job was split, silently, because this
+ * rule is one-sided and a shorter push line asks the night for less. A WORD BEGINNING WITH
+ * A DASH IS AN OPTION, wherever it stands: read as a target it becomes a name the night
+ * cannot run, and the rule fires over a flag instead of over a gate.
  */
 const targetsIn = (text) =>
   new Set(
     [
       ...String(text ?? '').matchAll(
-        /nx (?:affected|run-many) -t ([a-z0-9:\- \t]+)/g,
+        /nx (?:affected|run-many)[^\n]*? -t ([a-z0-9:\- \t]+)/g,
       ),
     ]
       .flatMap((m) => m[1].trim().split(/\s+/))
-      .filter(Boolean),
+      .filter((word) => word && !word.startsWith('-')),
   );
 
 /**

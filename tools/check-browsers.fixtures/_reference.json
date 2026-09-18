@@ -120,7 +120,9 @@
         ["chromium", "firefox", "webkit"],
         ["chromium", "firefox", "webkit"]
       ],
-      "runsE2E": true
+      "runsE2E": true,
+      "$shardsNotFromMatrix": "The sharded `e2e` lines whose shard count does NOT come from `strategy.job-total`. Empty here, as in the workflow: the six browser jobs take the denominator from the size of their own matrix, so there is no second copy of that number to disagree with it.",
+      "shardsNotFromMatrix": []
     },
     "facts": {
       "author-colour-override": {

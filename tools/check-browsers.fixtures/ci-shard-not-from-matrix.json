@@ -1,0 +1,10 @@
+{
+  "check": "ci",
+  "rule": "ci-shard-not-from-matrix",
+  "description": "A sharded `e2e` line whose shard count is a number rather than the size of the matrix. The workflow runs the suites on six machines and the six are the whole suite only while the denominator is `${{ strategy.job-total }}`; typed out as `1/8` beside a matrix of six it is a second copy of a number, and the copies disagree the first time somebody adds or removes a shard. What the disagreement looks like is a green run over tests that never ran — the configuration still declares three engines, points 1-3 still pass, and every job is green.",
+  "ci": {
+    "shardsNotFromMatrix": [
+      "        run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/8 -t e2e"
+    ]
+  }
+}

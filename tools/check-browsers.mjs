@@ -344,8 +344,9 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       'ci-without-engine',
       `${ciGaps.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
         list(ciGaps) +
-        `\n    There are two steps (a cache miss and a cache hit) and they have to name the ` +
-        `same set: an engine installed only on a miss disappears at the first hit.`,
+        `\n    The steps come in pairs (a cache miss and a cache hit), one pair in every job ` +
+        `that needs a browser, and all of them have to name the same set: an engine ` +
+        `installed only on a miss disappears at the first hit.`,
     );
   if (!ci.runsE2E)
     throw new BrowsersError(
@@ -354,6 +355,20 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       `\`${CI}\` does not run the \`e2e\` target anywhere.\n` +
         `    That is this whole gate's denominator: the matrix describes a run that does ` +
         `not happen, and every point above passes because the configuration is fine.`,
+    );
+
+  if (ci.shardsNotFromMatrix?.length)
+    throw new BrowsersError(
+      'ci',
+      'ci-shard-not-from-matrix',
+      `${ci.shardsNotFromMatrix.length} sharded \`e2e\` line(s) in \`${CI}\` take the ` +
+        `shard count from a number instead of from the matrix:\n` +
+        list(ci.shardsNotFromMatrix.map((l) => l.trim())) +
+        `\n    The denominator has to be \`\${{ strategy.job-total }}\`, which IS the number ` +
+        `of jobs. A number typed beside the matrix is a second copy of it, and the two ` +
+        `disagree the first time somebody adds a shard: six jobs running \`--shard=N/8\` ` +
+        `run six eighths of the suite and report green over the rest — which is the one ` +
+        `failure of a test suite nobody sees.`,
     );
 
   // 6. FACT. A probe in every engine, for every fact a `measurement` exclusion appeals to.
@@ -548,7 +563,22 @@ const ciSteps = (engines) => {
   const runsE2E = lines.some(
     (l) => /nx\s+(?:affected|run-many)/.test(l) && /\be2e\b/.test(l),
   );
-  return { installs, runsE2E };
+  /*
+   * A sharded run is a narrowed run six times over, and the six are the whole suite only if
+   * the denominator is the number of jobs. Nothing else in this repository can see that
+   * arithmetic: the configuration still declares three engines whatever `--shard` says,
+   * points 1-3 pass, every job goes green, and a sixth of the tests never ran. So the
+   * workflow says the number once — `${{ strategy.job-total }}` IS the size of the matrix —
+   * and this line refuses a number typed beside it.
+   */
+  const shardsNotFromMatrix = lines.filter(
+    (l) =>
+      /nx\s+(?:affected|run-many)/.test(l) &&
+      /\be2e\b/.test(l) &&
+      /--shard=/.test(l) &&
+      !/strategy\.job-total/.test(l),
+  );
+  return { installs, runsE2E, shardsNotFromMatrix };
 };
 
 /**

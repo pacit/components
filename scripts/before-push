@@ -4,8 +4,10 @@
 # change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them, and
 # some twenty minutes of waiting for a runner to say the same thing.
 #
-# `e2e` is left out by default: it is the suite that takes the other twenty minutes, and a
-# change that cannot reach the browser has nothing to learn from it. Ask for it with `--e2e`.
+# `e2e` is left out by default: the two suites took 66 of the 68 minutes of the last
+# unsharded run on a runner, and a change that cannot reach the browser has nothing to learn
+# from them. Ask for them with `--e2e` — and get the WHOLE suite, not a shard: the workflow
+# splits the run across six machines and this desk is one.
 #
 # A cached task is not a measurement. nx replays a result whose inputs did not move, and a
 # change outside a target's inputs — a tool, a fixture, a workflow — leaves the target green
@@ -42,18 +44,39 @@ for arg in "$@"; do
   esac
 done
 
-# The one line in CI that runs the gates. Read, not restated: `nx affected -t …` up to the end
-# of the line, with the runner and the package manager in front of it dropped.
-targets=$(sed -n 's/.*npx nx affected -t \(.*\)$/\1/p' "$workflow" | head -1)
+# EVERY line in CI that runs targets, and not the first one. The workflow runs the battery in
+# one job and the browsers in six more, so a reader that stopped at the first line would have
+# dropped `e2e` off this battery the day that split landed — silently, because a list that is
+# short still runs and still goes green. The union is over the lines; the order is the
+# workflow's.
+#
+# What counts as a target is the rule the two gates that read the same file use
+# (`targetsIn` in check-docs and in check-tools): the words after `-t` to the end of the
+# line, minus any word beginning with a dash. That is what lets `--shard=…` stand on the e2e
+# line without becoming a target nobody can run — and a line carrying no `-t` at all is an
+# error here rather than a line quietly skipped.
+if ! targets=$(awk '
+  /npx nx affected/ {
+    at = index($0, " -t ")
+    if (at == 0) { bad = bad "\n    " $0; next }
+    n = split(substr($0, at + 4), word, /[ \t]+/)
+    for (i = 1; i <= n; i++)
+      if (word[i] != "" && substr(word[i], 1, 1) != "-") print word[i]
+  }
+  END { if (bad != "") { printf "%s\n", bad > "/dev/stderr"; exit 3 } }
+' "$workflow" | awk '!seen[$0]++'); then
+  echo "::error::a \`npx nx affected\` line in .github/workflows/ci.yml carries no \`-t\` — the battery reads its targets from there, and it cannot read that line (printed above)." >&2
+  exit 1
+fi
 if [ -z "$targets" ]; then
-  echo "::error::no \`npx nx affected -t …\` line in .github/workflows/ci.yml — the battery reads its targets from there, and the line has moved or changed shape." >&2
+  echo "::error::no \`npx nx affected … -t …\` line in .github/workflows/ci.yml — the battery reads its targets from there, and the line has moved or changed shape." >&2
   exit 1
 fi
 if [ "$want_e2e" -eq 0 ]; then
-  targets=$(echo "$targets" | sed 's/\( \|^\)e2e\( \|$\)/ /g')
+  targets=$(printf '%s\n' "$targets" | grep -vx e2e || true)
 fi
 
-read -r -a list <<<"$targets"
+mapfile -t list <<<"$targets"
 said="--base=$base${extra[0]+ ${extra[*]}}"
 echo "> nx affected $said -t ${#list[@]} targets from ci.yml"
 # `${extra[@]:-}` would hand nx an empty argument when no flag was given — harmless today,
