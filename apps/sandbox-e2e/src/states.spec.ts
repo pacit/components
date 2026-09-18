@@ -116,7 +116,9 @@ test.describe('States — a cross-section through every control', () => {
         .map((el) => getComputedStyle(el).borderColor),
     );
     expect(colours.length).toBeGreaterThan(0);
-    expect(new Set(colours)).toEqual(new Set(['rgb(220, 38, 38)']));
+    // `--pct-danger` — red.700 since the tone axis moved it one step down the ramp so a
+    // quiet button face could carry its label on the page's hover tint (0081).
+    expect(new Set(colours)).toEqual(new Set(['rgb(185, 28, 28)']));
   });
 
   test('the required marker belongs to the wrapper, not to the control', async ({

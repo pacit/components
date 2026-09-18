@@ -33,6 +33,87 @@ test.describe('PctButton', () => {
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
 
+  /**
+   * The tone axis (0081). The values are written out rather than read from the skin: a case
+   * that resolved `--pct-danger` at run time would agree with the stylesheet about anything,
+   * including a tone silently pointing at the wrong family.
+   */
+  const TONES = {
+    danger: {
+      base: 'rgb(185, 28, 28)', // red.700
+      tint: 'rgb(254, 226, 226)', // red.100
+      onTint: 'rgb(153, 27, 27)', // red.800
+    },
+    warning: {
+      base: 'rgb(180, 83, 9)', // amber.700
+      tint: 'rgb(254, 243, 199)', // amber.100
+      onTint: 'rgb(146, 64, 14)', // amber.800
+    },
+    success: {
+      base: 'rgb(21, 128, 61)', // green.700
+      tint: 'rgb(220, 252, 231)', // green.100
+      onTint: 'rgb(22, 101, 52)', // green.800
+    },
+    info: {
+      base: 'rgb(37, 99, 235)', // blue.600 — the brand blue, deliberately
+      tint: 'rgb(219, 234, 254)', // blue.100
+      onTint: 'rgb(29, 78, 216)', // blue.700
+    },
+  };
+
+  for (const [tone, c] of Object.entries(TONES)) {
+    test(`the ${tone} tone paints all four faces from its own family`, async ({
+      page,
+    }) => {
+      const read = (face: string) =>
+        page.getByTestId(`btn-${tone}-${face}`).evaluate((el) => {
+          const s = getComputedStyle(el);
+          return { bg: s.backgroundColor, fg: s.color, edge: s.borderTopColor };
+        });
+
+      // solid — the fill is the tone, the label the pair written for it
+      const solid = await read('solid');
+      expect(solid.bg).toBe(c.base);
+      expect(solid.fg).toBe('rgb(255, 255, 255)');
+      expect(solid.edge).toBe(c.base);
+
+      // the quiet faces — the tone is the LABEL, and the ground stays the page's
+      for (const face of ['outline', 'ghost']) {
+        const quiet = await read(face);
+        expect(quiet.fg).toBe(c.base);
+        expect(quiet.bg).toBe('rgba(0, 0, 0, 0)');
+      }
+      expect((await read('outline')).edge).toBe(c.base);
+
+      // soft — the tint is the ground and the tint's own text stands on it
+      const soft = await read('soft');
+      expect(soft.bg).toBe(c.tint);
+      expect(soft.fg).toBe(c.onTint);
+    });
+  }
+
+  test('a quiet face answers the pointer with the page tint, not with the tone', async ({
+    page,
+  }) => {
+    // Measured, and the reason the other reading was dropped: hovering onto the tone's own
+    // tint puts the label at 3.00–4.57:1, under the threshold on nine of fourteen rows.
+    const outline = page.getByTestId('btn-danger-outline');
+    await outline.hover();
+    await expect(outline).toHaveCSS('background-color', 'rgb(241, 245, 249)'); // slate.100
+    await expect(outline).toHaveCSS('color', 'rgb(185, 28, 28)');
+  });
+
+  test('the grey of a disabled button outranks the tone it was still asked for', async ({
+    page,
+  }) => {
+    // The attribute stays — the unit case holds that — and what must not stay is the paint:
+    // a control that cannot be pressed must not look like the press it refuses.
+    const off = page.getByTestId('btn-danger-disabled');
+    await expect(off).toHaveAttribute('data-pct-tone', 'danger');
+    await expect(off).toHaveCSS('background-color', 'rgb(241, 245, 249)'); // surface-disabled
+    await expect(off).toHaveCSS('color', 'rgb(100, 116, 139)'); // text-disabled
+  });
+
   test('the hero keeps its gradient under the pointer', async ({ page }) => {
     // `background` is a shorthand and resets `background-image`. The hover rule stands at two
     // attributes and the hero face at one, so painting hover with the shorthand took the drift

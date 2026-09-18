@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePctConfig } from '@pacit/components/core';
+import { providePctConfig, PctTone } from '@pacit/components/core';
 import { PctButton } from './button';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
@@ -16,6 +16,7 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
   template: `<button
     pctButton
     [variant]="variant()"
+    [tone]="tone()"
     [size]="size()"
     [loading]="loading()"
     [disabled]="disabled()"
@@ -25,6 +26,7 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
 })
 class StateHost {
   variant = input<PctButtonVariant>('solid');
+  tone = input<PctTone | null>(null);
   size = input<PctButtonSize>('md');
   loading = input(false);
   disabled = input(false);
@@ -145,6 +147,49 @@ describe('PctButton', () => {
       const { btn } = await stateHost({ variant });
       expect(btn.getAttribute('data-pct-variant')).toBe(variant);
     }
+  });
+
+  it('wears no tone unless one is asked for — the absence IS the neutral', async () => {
+    const btn = await stableBare();
+    expect(btn.hasAttribute('data-pct-tone')).toBe(false);
+  });
+
+  it('every member of the shared union reflects, and none of them is invented here', async () => {
+    // The list is written out rather than derived from the type: a case that reads the same
+    // source as the component would pass the day a name silently left it (`PctTone` is a
+    // type, and there is nothing at runtime to iterate).
+    const tones: PctTone[] = ['success', 'warning', 'danger', 'info'];
+    for (const tone of tones) {
+      const { btn } = await stateHost({ tone });
+      expect(btn.getAttribute('data-pct-tone')).toBe(tone);
+    }
+  });
+
+  it('the tone survives the disabled state as an ATTRIBUTE — what it must not survive is the paint', async () => {
+    // The grey outranking the tone is a fact about the stylesheet, and the stylesheet is read
+    // where a browser resolves it: `apps/sandbox-e2e/src/button.spec.ts`. Here the contract is
+    // only that the component keeps saying which tone was asked for.
+    const { btn } = await stateHost({ tone: 'danger', disabled: true });
+    expect(btn.getAttribute('data-pct-tone')).toBe('danger');
+    expect(btn.hasAttribute('data-pct-disabled')).toBe(true);
+  });
+
+  it('the hero face takes no tone: the attribute is not written, and dev mode says why', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { btn } = await stateHost({ variant: 'hero', tone: 'danger' });
+    expect(btn.getAttribute('data-pct-variant')).toBe('hero');
+    expect(btn.hasAttribute('data-pct-tone')).toBe(false);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/tone="danger" on variant="hero" is ignored/),
+    );
+    warn.mockRestore();
+  });
+
+  it('a hero button with no tone says nothing — the sentence is for the combination, not the face', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await stateHost({ variant: 'hero' });
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('respects the default size from providePctConfig', async () => {
