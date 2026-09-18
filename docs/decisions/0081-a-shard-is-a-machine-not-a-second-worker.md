@@ -63,10 +63,16 @@ MACHINES rather than across workers on one.**
 
 ## Consequences
 
-- **The wall clock goes from 68 minutes to a projected 17** — six shards of 66 minutes of
-  tests, plus about four minutes of setup and dev server per job. It is a projection off the
-  unsharded run until the first sharded ones are measured, and the only number in this
-  decision that is not yet evidence.
+- **The wall clock went from 68 minutes to 17.1**, measured on the first sharded run
+  (35401914426, all seven jobs green): `gates` answered in 4.2 minutes — 1.8 of them the
+  battery itself — and the six shards took 8.4, 9.2, 10.7, 11.2, 12.8 and 17.0.
+- **The wall clock is the slowest shard's, and the shards are uneven by eight minutes.**
+  Playwright balances them by test COUNT, and the engines do not cost the same: a shard
+  carrying webkit's share of the slow files runs nearly twice the length of one that does not.
+  Six shards therefore buy 17 minutes rather than the 11 that 66 divided by six would
+  suggest, and a seventh would move only the straggler. What would actually flatten it is a
+  split along the cost rather than the count — and that is a measurement nobody has taken
+  yet, not a change to make on the strength of this paragraph.
 - **The machine time roughly doubles**, and on a public repository that is free
   ([the minutes note](../plan.md) holds: nothing paid). Seven setups where there was one is
   the price of the wall clock, paid in a currency this project does not spend.
@@ -82,7 +88,11 @@ MACHINES rather than across workers on one.**
   assembled out of six logs. The nightly, which runs everything unsharded, stays the place
   where the suite speaks with one voice.
 - **Setup is paid seven times**: a checkout, a Node, a restore and an apt install of the
-  browser libraries in every job, some three minutes each of machine time.
+  browser libraries in every job — measured at 1.1 to 1.8 minutes each on the run above,
+  where the `node_modules` entry was still a miss and `npm ci` ran in all seven. The run as a
+  whole cost some 74 minutes of machine time against the 71 of the single job it replaces,
+  which is the trade taken deliberately: the same machine time, spent at once instead of in
+  a queue.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **One more rule and one more prepared input to keep in `check-browsers`**, and a convention

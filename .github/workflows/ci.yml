@@ -23,6 +23,9 @@ concurrency:
 # Playwright suites, which nx ran one after the other. The cache was never the answer: a
 # perfect one would have saved those 2.5 minutes (measured on run 35375241392, 2026-09-18).
 #
+# The first run of the arrangement below answered in 17.1 minutes with all seven jobs green
+# (35401914426): the battery in 4.2, the six shards from 8.4 to 17.0.
+#
 # So the suites are what got split, and they are split ACROSS MACHINES rather than across
 # workers on one. Nx's preset sets `workers: process.env.CI ? 1 : undefined`, and that one
 # worker stays: four cases in this repository fail their first attempt and pass on a retry
@@ -128,10 +131,10 @@ jobs:
   # shard answers nothing.
   e2e:
     runs-on: ubuntu-latest
-    # A shard is a sixth of 66 minutes of tests plus its setup, so a quarter of an hour is
-    # what this should cost — the figure is a projection off the unsharded run and not yet a
-    # measurement. The ceiling is for a browser that hangs; what bounds a merely slow one is
-    # Playwright's own per-test timeout.
+    # The first sharded run measured 8.4 to 17.0 minutes per shard (35401914426), the spread
+    # being webkit's share of the slow files rather than anything about the split. Three times
+    # the worst of them is a ceiling for a browser that hangs; what bounds a merely slow one
+    # is Playwright's own per-test timeout.
     timeout-minutes: 60
     strategy:
       fail-fast: false

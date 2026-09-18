@@ -50,7 +50,8 @@ suites that took 66 of CI's 68 minutes before that split, and that a change unab
 browser has nothing to learn from. `--e2e` puts them back, and puts them back WHOLE: a shard is
 six machines' arrangement, not a desk's. `--base=<ref>` compares against something else, and
 `--cold` skips the nx cache. A change under `tools/` took 52 seconds cold on one desk, and 3
-with the cache holding the same 23 tasks; a runner takes minutes to say the same thing.
+with the cache holding the same 23 tasks; the runner's battery job answered in 4.2 minutes
+on the first run of the split arrangement, and the whole of CI in 17.1.
 
 Take `--cold` seriously when the change is one nx cannot see. A cached task is not a
 measurement: nx replays a result whose inputs did not move, so a new tool, a fixture or a
