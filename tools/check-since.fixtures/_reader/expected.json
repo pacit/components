@@ -3,7 +3,7 @@
   "items": [
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 5,
+      "line": 6,
       "name": "PctPlain",
       "kind": "class",
       "since": "0.1.0",
@@ -11,7 +11,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 7,
+      "line": 8,
       "name": "variant",
       "kind": "input",
       "since": "0.1.0",
@@ -19,7 +19,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 10,
+      "line": 11,
       "name": "opened",
       "kind": "output",
       "since": "next",
@@ -27,7 +27,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
-      "line": 13,
+      "line": 14,
       "name": "PctPlain.open",
       "kind": "method",
       "since": "0.1.0",
@@ -35,7 +35,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 5,
+      "line": 6,
       "name": "PctListed",
       "kind": "class",
       "since": "0.1.0",
@@ -43,7 +43,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 7,
+      "line": 8,
       "name": "size",
       "kind": "input",
       "since": "0.1.0",
@@ -51,7 +51,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 10,
+      "line": 11,
       "name": "PctListed.close",
       "kind": "method",
       "since": "0.1.0",
@@ -59,7 +59,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 14,
+      "line": 15,
       "name": "PctRenamed",
       "kind": "class",
       "since": "0.1.0",
@@ -67,7 +67,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 16,
+      "line": 17,
       "name": "Renamed.toggle",
       "kind": "method",
       "since": "next",
@@ -75,7 +75,7 @@
     },
     {
       "path": "tools/check-since.fixtures/_reader/listed.ts",
-      "line": 20,
+      "line": 21,
       "name": "PctListedSize",
       "kind": "type",
       "since": "0.1.0",

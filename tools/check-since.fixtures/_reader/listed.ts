@@ -1,5 +1,6 @@
 // The same surface written with an export list. Nothing here carries the `export` keyword,
 // and every name below still reaches a consumer — this is the file the gate went blind to.
+import { input } from '@angular/core';
 
 /** @since 0.1.0 */
 class PctListed {
