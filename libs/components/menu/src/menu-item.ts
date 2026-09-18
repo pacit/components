@@ -104,7 +104,11 @@ export class PctMenuItem implements PctMenuItemApi {
     return this.menu?.holdsTabStop(this) ? '0' : '-1';
   }
 
-  /** What typeahead matches a prefix against — the item's own text, as the user reads it. */
+  /**
+   * What typeahead matches a prefix against — the item's own text, as the user reads it.
+   *
+   * @since 0.1.0
+   */
   label(): string {
     return (this.element.textContent ?? '').trim();
   }
@@ -113,11 +117,14 @@ export class PctMenuItem implements PctMenuItemApi {
    * Called by `PctMenuTrigger` standing on this same element, and by nothing else. The item
    * has to know, because the menu asks it: `ArrowRight` opens the submenu of the ACTIVE item,
    * and the walk has no other way of telling a command from a way further in.
+   *
+   * @since 0.1.0
    */
   bindSubmenu(menu: PctMenu): void {
     this.opened.set(menu);
   }
 
+  /** @since 0.1.0 */
   unbindSubmenu(menu: PctMenu): void {
     if (this.opened() === menu) this.opened.set(null);
   }

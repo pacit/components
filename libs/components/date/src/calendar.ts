@@ -339,6 +339,8 @@ export class PctCalendar {
    * to land on the grid itself takes it, so an opening never leaves focus on the `body`:
    * that is the state where every key this control owns is dead and nothing reports it
    * (`focus.ts`'s reading of the same failure, from the other side).
+   *
+   * @since 0.1.0
    */
   focusCursor(): void {
     const grid = this.grid().nativeElement;

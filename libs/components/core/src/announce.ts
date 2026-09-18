@@ -78,6 +78,8 @@ export class PctAnnouncer {
    * message on every recomputation of the signal behind it is not a second event.
    *
    * The message has to be withdrawn before it can be announced again — see {@link retract}.
+   *
+   * @since 0.1.0
    */
   announce(message: string, politeness: PctPoliteness = 'polite'): void {
     if (message === '') return;
@@ -94,6 +96,8 @@ export class PctAnnouncer {
    * It withdraws only what is still there: a component whose state has passed does not silence
    * the message another one has since put up. Two owners saying the same words are
    * indistinguishable here by design — that is what the deduplication above makes them.
+   *
+   * @since 0.1.0
    */
   retract(message: string, politeness: PctPoliteness = 'polite'): void {
     const region = this.regions.get(politeness);

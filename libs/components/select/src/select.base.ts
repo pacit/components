@@ -239,6 +239,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * the panel: a form put back to its start has no open list hanging off it. Written once
    * here rather than twice below, because "what the empty state is" is the subclass's
    * (`clearValue`) and "what a reset means" is not.
+   *
+   * @since 0.1.0
    */
   reset(): void {
     this.clearValue();
@@ -572,6 +574,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /**
    * A click on the border outside the trigger opens the list — as a click on the trigger, and
    * with the trigger's own rule about what a second click does.
+   *
+   * @since 0.1.0
    */
   activate(): void {
     this.press();
@@ -580,6 +584,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Set by the chrome when one is present. */
   private readonly fieldDescribedBy = signal<string | null>(null);
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
@@ -1611,7 +1616,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     }
   }
 
-  /** Called by signal forms (`focusBoundControl()`, for instance). */
+  /**
+   * Called by signal forms (`focusBoundControl()`, for instance).
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.trigger().nativeElement.focus(options);
   }

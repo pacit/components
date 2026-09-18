@@ -1,5 +1,5 @@
 {
-  "description": "The reference input: a released library at 0.1.0 whose public surface is dated — inputs, a model and an output at `0.1.0`, the entry point's class, type and function beside them, one input at `next` for the API the coming release names, and one export deprecated after it shipped. Every prepared case is built on a copy of it.",
+  "description": "The reference input: a released library at 0.1.0 whose public surface is dated — inputs, a model and an output at `0.1.0`, the entry point's class, type and function beside them, a public method of the class, one input at `next` for the API the coming release names, and one export deprecated after it shipped. Every prepared case is built on a copy of it.",
   "input": {
     "version": "0.1.0",
     "items": [
@@ -41,6 +41,14 @@
         "name": "hero",
         "kind": "input",
         "since": "next",
+        "deprecated": false
+      },
+      {
+        "path": "libs/components/drawer/src/drawer.ts",
+        "line": 197,
+        "name": "PctDrawer.close",
+        "kind": "method",
+        "since": "0.1.0",
         "deprecated": false
       },
       {

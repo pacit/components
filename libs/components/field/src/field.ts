@@ -146,6 +146,7 @@ export class PctField implements PctFieldApi {
     () => this.control()?.fieldCursor ?? 'default',
   );
 
+  /** @since 0.1.0 */
   attach(control: PctFieldControl): void {
     const taken = this.control();
     this.control.set(control);
@@ -153,6 +154,7 @@ export class PctField implements PctFieldApi {
       this.warnOnSecondControl(taken, control);
   }
 
+  /** @since 0.1.0 */
   detach(control: PctFieldControl): void {
     // A goodbye from a control that is no longer the current one changes nothing: the chrome
     // has already been taken over by its successor (`pctAttachToField` in `core`).

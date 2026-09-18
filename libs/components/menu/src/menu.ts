@@ -424,6 +424,8 @@ export class PctMenu {
    * `untracked` for the popover's reason: this runs inside the trigger directive's effect, and
    * a read of these signals there would make each registration depend on the registration
    * ([`lesson-94`](../../../../docs/lessons.md#lesson-94)).
+   *
+   * @since 0.1.0
    */
   bindTrigger(element: HTMLElement, parent: PctMenu | null): void {
     const current = untracked(this.trigger);
@@ -443,6 +445,8 @@ export class PctMenu {
    * Gives the registration back. It exists so that the warning above can tell a **second**
    * trigger from the same trigger built again — a control inside an `@if` is destroyed and
    * recreated ([`lesson-68`](../../../../docs/lessons.md#lesson-68)).
+   *
+   * @since 0.1.0
    */
   unbindTrigger(element: HTMLElement): void {
     if (untracked(this.trigger) !== element) return;
@@ -457,6 +461,8 @@ export class PctMenu {
    * Opens it, saying where focus is to land. An already-open menu is not opened again — the
    * intent is applied to it as it stands, which is what `ArrowRight` into a submenu the
    * pointer has already opened has to do.
+   *
+   * @since 0.1.0
    */
   openFrom(intent: PctMenuOpenIntent): void {
     this.intent = intent;
@@ -467,6 +473,8 @@ export class PctMenu {
   /**
    * Opens it if it is closed and closes the whole tree if it is open — what a press on a menu
    * button does, and the one path whose close carries the `trigger` reason.
+   *
+   * @since 0.1.0
    */
   toggle(): void {
     if (untracked(this.open)) this.closeTree('trigger', true);
@@ -479,6 +487,8 @@ export class PctMenu {
    * Closes this menu and everything below it, leaving focus where it is. The recursion goes
    * DOWN and not up: a submenu is a child view of the panel that is about to be detached, so
    * one that stayed open would be left hanging off a control that is on its way out.
+   *
+   * @since 0.1.0
    */
   closeBelow(reason: PctMenuCloseReason): void {
     for (const item of untracked(this.items)) {
@@ -501,6 +511,8 @@ export class PctMenu {
    * page its control back, a press somewhere else does not — the user is already where they
    * meant to be, and pulling focus to a button they have just left behind would take them off
    * it.
+   *
+   * @since 0.1.0
    */
   closeTree(reason: PctMenuCloseReason, restore: boolean): void {
     const root = this.root();
@@ -568,6 +580,8 @@ export class PctMenu {
    * keyboard position and visible highlight disagree answers the next `ArrowDown` from a row
    * the user is no longer looking at — and a submenu opens **without** taking focus, so that
    * crossing a row on the way somewhere else does not pull the user a level deeper.
+   *
+   * @since 0.1.0
    */
   pointTo(item: PctMenuItemApi): void {
     this.closeSubmenusExcept(item.submenu() ? item : null);
@@ -703,7 +717,11 @@ export class PctMenu {
     return items.find((item) => !item.disabled()) ?? null;
   });
 
-  /** Whether this command is the one the page's tab order stops at. Read by `PctMenuItem`. */
+  /**
+   * Whether this command is the one the page's tab order stops at. Read by `PctMenuItem`.
+   *
+   * @since 0.1.0
+   */
   holdsTabStop(item: PctMenuItemApi): boolean {
     return this.tabStop() === item;
   }

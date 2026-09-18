@@ -459,15 +459,21 @@ export class PctDate
     if (isDevMode()) this.warnOnUnsupportedUsage();
   }
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
 
-  /** Called by signal forms (`focusBoundControl()`, for instance), and by the chrome. */
+  /**
+   * Called by signal forms (`focusBoundControl()`, for instance), and by the chrome.
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
   }
 
+  /** @since 0.1.0 */
   reset(): void {
     this.commit('');
   }

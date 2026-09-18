@@ -189,6 +189,7 @@ export class PctSwitch implements FormCheckboxControl, PctFieldControl {
 
   private readonly fieldDescribedBy = signal<string | null>(null);
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
@@ -238,12 +239,20 @@ export class PctSwitch implements FormCheckboxControl, PctFieldControl {
     this.touch.emit();
   }
 
-  /** Called by signal forms (`focusBoundControl()`, for instance). */
+  /**
+   * Called by signal forms (`focusBoundControl()`, for instance).
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
   }
 
-  /** Called by signal forms when the form is reset. */
+  /**
+   * Called by signal forms when the form is reset.
+   *
+   * @since 0.1.0
+   */
   reset(): void {
     this.checked.set(false);
   }

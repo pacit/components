@@ -313,6 +313,7 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
 
   private readonly fieldDescribedBy = signal<string | null>(null);
 
+  /** @since 0.1.0 */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
@@ -453,7 +454,11 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
     this.touch.emit();
   }
 
-  /** Called by signal forms (`focusBoundControl()`, for instance). */
+  /**
+   * Called by signal forms (`focusBoundControl()`, for instance).
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
   }
@@ -461,6 +466,8 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
   /**
    * Called by signal forms when the form is reset. A slider has no empty value — the thumb
    * is always somewhere — so "reset" is the platform's own default: the midpoint.
+   *
+   * @since 0.1.0
    */
   reset(): void {
     this.value.set(this.lower() + (this.upper() - this.lower()) / 2);

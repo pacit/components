@@ -199,9 +199,9 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
   - the site compares `@since` with the MANIFEST — in every checkout where a tag is not — and
     marks `unreleased` per row with a legend per page; the shipped `.d.ts` carry the tag too.
     `check-since` holds every item to it; `check-package` point 10 refuses an unstamped release
-  - left out with reason: methods (66 public ones, most of them the plumbing between a
-    component and its parts; a method is API when a card's contract names it) and parts
-    (markup, not a declaration — a since column in the card would be a second home, 0017)
+  - parts are left out with reason — markup, not a declaration; a since column in the card
+    would be a second home (0017). The 74 public methods, refused at first as plumbing between
+    a component and its parts, were dated the morning after on the maintainer's word
 
 ## 4. Open findings
 

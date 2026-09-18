@@ -50,7 +50,7 @@ check-mutation.mjs 8 20 212
 check-parts.mjs 7 19 195
 check-prose.mjs 6 18 189
 check-reach.mjs 5 17 136
-check-since.mjs 3 15 122
+check-since.mjs 3 15 124
 check-styles.mjs 10 22 231
 check-support.mjs 5 17 150
 check-texts.mjs 6 18 172
@@ -84,7 +84,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 3.3 closed 10 153
 3.4 closed 12 169
 3.5 closed 12 134
-3.6 closed 12 180
+3.6 closed 12 179
 4.58 closed 9 140
 4.71 open 19 312
 4.74 open 8 131
