@@ -331,9 +331,10 @@ const exportsIn = (indexPath) => {
       const first = kinds.findIndex(Boolean);
       if (first < 0) continue;
       // One item per exported NAME and not per declaration: a consumer imports the name
-      // once, and its declarations are one API — an overload set carries its JSDoc on the
-      // first signature, a class merged with an interface on whichever came first, exactly
-      // as `methodsIn` reads an overloaded method.
+      // once, and its declarations are one API. The line and the kind come from the first
+      // declaration that has one; the tag from WHICHEVER carries it, and the deprecation
+      // from any — the same reading `methodsIn` gives an overload set, and the one the
+      // shipped types give a consumer, who is shown the tag wherever it was written.
       out.push({
         path,
         line: lineOf(target, decls[first]),

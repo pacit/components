@@ -150,8 +150,9 @@ of its code, but on the strength of its **predictability**
 ### <a id="req-release-since"></a>`req-release-since` — The public surface says since when
 
 **Promise.** Every public API — an input, a model, an output, a public method of an exported
-class, an export of an entry point — names the version it appeared in, in the JSDoc at its declaration: `@since 0.1.0` for what
-shipped, `@since next` for what `main` has and the published package does not. The tag
+class, an export of an entry point — names the version it appeared in, in the JSDoc at its
+declaration: `@since 0.1.0` for what shipped, `@since next` for what `main` has and the
+published package does not. The tag
 travels into the shipped `.d.ts`, so a consumer's editor reads it, and the site marks
 `unreleased` what the package at its version cannot have. The release names the version:
 `stamp-version.mjs` rewrites `next` on the run that bumps the manifest, before the build
@@ -162,8 +163,9 @@ version the manifest has reached; no deprecation of what never shipped) +
 types)
 **Control:** `tools/check-since.fixtures/` — six prepared inputs, each rejected by its own
 point, and `_reader/`, a prepared library whose every API the readers must return, written
-with the `export` keyword, with a list, and under names several declarations share; `tools/check-package.fixtures/since-next/` on the
-release side, warning day to day and blocking under `--release`
+with the `export` keyword, with a list, and under names several declarations share;
+`tools/check-package.fixtures/since-next/` on the release side, warning day to day and
+blocking under `--release`
 **Non-goals:** a part. A part is markup, and a since column in the card would be a second
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
 one: seventy-four are dated, most of them the plumbing between a component and its parts,

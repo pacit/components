@@ -1,5 +1,5 @@
 {
-  "description": "What the readers must find in the prepared library beside it. `plain.ts` writes an ordinary component with the `export` keyword; `listed.ts` writes a class, a class renamed on its way out and a type with the keyword on no declaration at all, exported by a list; `merged.ts` writes the two shapes a name can carry more than one declaration under — a class merged with an interface, and an overload set above its implementation — which are one item each, because a consumer imports the name once. Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
+  "description": "What the readers must find in the prepared library beside it. `plain.ts` writes an ordinary component with the `export` keyword; `listed.ts` writes a class, a class renamed on its way out and a type with the keyword on no declaration at all, exported by a list; `merged.ts` writes the two shapes a name can carry more than one declaration under — a class merged with an interface, and an overload set above its implementation — which are one item each, because a consumer imports the name once — and the last of them is dated on its SECOND signature, where a reader narrowed to the first would not look. Every item below reaches a consumer, so a reader that stops returning one leaves this gate green over an API nobody dated. The lifecycle hook and the private method of `plain.ts` are absent on purpose: they are not API, and a reader that starts returning them says the gate has begun asking for a tag on what nobody can call.",
   "items": [
     {
       "path": "tools/check-since.fixtures/_reader/plain.ts",
@@ -112,6 +112,14 @@
       "kind": "function",
       "since": "0.1.0",
       "deprecated": true
+    },
+    {
+      "path": "tools/check-since.fixtures/_reader/merged.ts",
+      "line": 31,
+      "name": "pctTrim",
+      "kind": "function",
+      "since": "next",
+      "deprecated": false
     }
   ]
 }

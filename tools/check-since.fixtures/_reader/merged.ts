@@ -25,3 +25,12 @@ export function pctFmt(value: number): string;
 export function pctFmt(value: unknown): string {
   return String(value);
 }
+
+// The tag on the SECOND declaration of a name, which is where a maintainer sometimes puts it
+// and where the reader has to find it — the item is the name, not one of its declarations.
+export function pctTrim(value: string): string;
+/** @since next */
+export function pctTrim(value: string, max: number): string;
+export function pctTrim(value: string, max = 0): string {
+  return max ? value.slice(0, max) : value;
+}

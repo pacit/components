@@ -35,8 +35,9 @@ name arrives in:
   renamed on its way out and a type, exported by a list at the foot of the file;
 - [`merged.ts`](_reader/merged.ts) — the two shapes that put several declarations under one
   name, a class merged with an interface and an overload set above its implementation. Each is
-  one item, because a consumer imports the name once, and the tag is read where a maintainer
-  writes it: on the declaration that came first.
+  one item, because a consumer imports the name once, and the tag is read off whichever
+  declaration carries it — the last function there is dated on its second signature, so a
+  reader narrowed to the first would lose it.
 
 [`_reader/expected.json`](_reader/expected.json) holds what the readers must return, counted
 and not merely listed, and the gate reports a difference either way — an item gone is an API it
@@ -46,10 +47,11 @@ returned twice is a published number nobody can read back.
 It was written against a real blindness, and grew by a second one. Until 2026-09-18 the readers
 asked for the `export` keyword, so a class exported by a list, a class exported under another
 name, a type beside them **and the two public methods those classes declare** were invisible —
-five of the fourteen items. The repair then keyed one declaration per name, which hid a class
+five of the fifteen items. The repair then keyed one declaration per name, which hid a class
 merged with an interface just as thoroughly; `merged.ts` is what caught it. Put either reading
 back, and the control names what it loses.
 
 The prepared sources enter the root project's compiler program
 ([`tsconfig.root.json`](../../tsconfig.root.json)): code a gate is measured against is worth
-compiling, and `check-typecheck` would otherwise read three files no compiler sees.
+compiling, and `check-typecheck` would otherwise read the directory as TypeScript no compiler
+sees.
