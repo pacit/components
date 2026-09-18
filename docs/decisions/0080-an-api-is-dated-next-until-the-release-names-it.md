@@ -4,9 +4,10 @@
 **Implements:** [`req-release-since`](../requirements/release.md#req-release-since)
 **Evidence:** the sweep of 2026-09-17 — 514 public API items in 82 files, none dated, 265 of
 them inputs, models and outputs and 249 entry-point exports, 75 of those with no JSDoc at
-all; 66 public methods read the same day; `adjustSemverBumpsForZeroMajorVersion` in Nx,
-which makes the next number depend on the commits the release will count; a CI checkout
-with `filter: tree:0` and a Pages checkout with no tags at all
+all; 66 public methods read the same day by a regular expression, 74 by the parser the
+morning after; `adjustSemverBumpsForZeroMajorVersion` in Nx, which makes the next number
+depend on the commits the release will count; a CI checkout with `filter: tree:0` and a
+Pages checkout with no tags at all
 
 ## Context
 
