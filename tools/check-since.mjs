@@ -262,10 +262,11 @@ const isHidden = (node) =>
  * The public methods of every class a source file exports — one item per name, dated by the
  * FIRST of its declarations to carry a tag (an overload set usually carries its JSDoc on the
  * first signature) and deprecated when any does — a merged name cannot say two dates, and
- * plan 4.75 is where that is owed an answer. Read file-wide like the members, and not off the entry point's
- * re-exports: a base class the index never names still ships in the types under the class
- * that extends it (`PctSelectBase` under `PctSelect`), and a consumer's editor reads its
- * methods there. Lifecycle hooks, constructors, accessors and private names are not API.
+ * plan 4.75 is where that is owed an answer. Read file-wide like the members, and not off
+ * the entry point's re-exports: a base class the index never names still ships in the types
+ * under the class that extends it (`PctSelectBase` under `PctSelect`), and a consumer's
+ * editor reads its methods there. Lifecycle hooks, constructors, accessors and private
+ * names are not API.
  */
 const methodsIn = (path) => {
   const sf = parse(path);

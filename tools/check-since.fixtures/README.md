@@ -36,8 +36,10 @@ name arrives in:
 - [`merged.ts`](_reader/merged.ts) — the two shapes that put several declarations under one
   name, a class merged with an interface and an overload set above its implementation. Each is
   one item, because a consumer imports the name once, and the tag is read off the first
-  declaration that carries one — the last two names there are tagged on a later declaration
-  than the first, so a reader narrowed to the first would lose both. What one item cannot say
+  declaration that carries one. Three of its names hold a tag away from the first
+  declaration — one deprecated on its second signature, one dated on its second, one method
+  dated on its second and deprecated on its third — so a reader that stops looking past the
+  first, or stops merging what it finds, loses one of them at once. What one item cannot say
   is two different dates under one name, which is
   [4.75](../../docs/plan.md) and not yet answered.
 

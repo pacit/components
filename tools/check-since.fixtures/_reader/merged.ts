@@ -11,6 +11,18 @@ export class PctMerged {
 
   /** @since 0.1.0 */
   reset(): void {}
+
+  // An overloaded METHOD, which is where `methodsIn` merges: the first signature carries
+  // neither tag, the second the date and the third the deprecation, so a reader that stops
+  // merging loses one or the other whichever half it drops.
+  tune(value: number): void;
+  /** @since 0.1.0 */
+  tune(value: string): void;
+  /** @deprecated since 0.1.0, gone in 0.3.0 — the value is a string now. */
+  tune(value: boolean): void;
+  tune(value: unknown): void {
+    void value;
+  }
 }
 
 export interface PctMerged {
