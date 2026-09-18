@@ -24,12 +24,17 @@
     var(--pct-motion-transition-easing);
 }
 
+/* The pointer and the press paint the COLOUR channel alone. `background` is a shorthand, and
+   a shorthand winning on specificity over the face that set a gradient resets that gradient to
+   `none`: the hero face carries its drift in `background-image` at one attribute, these rules
+   stand at two, and the image went out from under the pointer (lesson-231). `background-color`
+   touches the one channel it means to and leaves the image where the face put it. */
 :host(:hover:not([data-pct-disabled])) {
-  background: var(--pct-button-bg-hover);
+  background-color: var(--pct-button-bg-hover);
 }
 
 :host(:active:not([data-pct-disabled])) {
-  background: var(--pct-button-bg-active);
+  background-color: var(--pct-button-bg-active);
 }
 
 /* Focus for keyboard navigation only; the colour from a token (req-a11y-wcag). */

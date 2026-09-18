@@ -32,6 +32,18 @@ test.describe('PctButton', () => {
     // contrast in a way the gate cannot see (req-token-no-opacity).
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
+
+  test('the hero keeps its gradient under the pointer', async ({ page }) => {
+    // `background` is a shorthand and resets `background-image`. The hover rule stands at two
+    // attributes and the hero face at one, so painting hover with the shorthand took the drift
+    // out from under the pointer — the reading that made the rule paint `background-color`.
+    const hero = page.getByTestId('btn-hero');
+    const gradient = (el: Element) => getComputedStyle(el).backgroundImage;
+
+    expect(await hero.evaluate(gradient)).toContain('linear-gradient');
+    await hero.hover();
+    expect(await hero.evaluate(gradient)).toContain('linear-gradient');
+  });
 });
 
 /**
