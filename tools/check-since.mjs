@@ -230,8 +230,9 @@ const membersIn = (path) => {
  * lists them.
  *
  * A member carrying `override` is skipped — but only while it says nothing of its own: the
- * editor shows the overridden declaration's sentence and tag, and 52 harnesses restating the
- * same two lines would be 52 homes for one fact (decision 0017). An override that writes its
+ * editor answers there with the overridden declaration's SENTENCE (its tag is the override's
+ * own, measured with the language service), and 52 harnesses restating one line would be 52
+ * homes for one fact (decision 0017). An override that writes its
  * OWN sentence shadows the base's in the editor, measured with the language service, so it is
  * an item like any other; a comment holding only tags still falls back and is still skipped.
  */

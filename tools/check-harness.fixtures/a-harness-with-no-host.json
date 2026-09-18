@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "set",
-  "why": "PctButtonHarness carries no host selector — the shape a subclass takes when it declares parts and forgets the one line that says which element they are drawn on. The CDK then searches for nothing, and every test that asks for this harness fails where it stands rather than where the mistake is. An empty string reads the same way here as a missing value, which is why the base declares the member and assigns nothing.",
+  "why": "PctButtonHarness carries no host selector — the shape a subclass takes when it declares parts and forgets the one line that says which element they are drawn on. The CDK hands the empty string to `querySelectorAll`, which throws on it, so every test that asks for this harness fails where it stands rather than where the mistake is. An empty string reads the same way here as a missing value, which is why the base declares the member and assigns nothing.",
   "harnesses": { "PctButtonHarness": { "hostSelector": "" } }
 }

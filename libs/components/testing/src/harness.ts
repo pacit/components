@@ -43,8 +43,9 @@ export abstract class PctHarness<
    * value; the sentence stays here, where a reader of any of them is shown it.
    *
    * Declared and not assigned, on purpose. A default would be a value the base does not have
-   * to give: `''` is a selector that matches nothing, and it would reach a consumer's bundle
-   * as one. `check-harness` point 1 names a harness that leaves this empty either way — an
+   * to give: `''` is not a working selector at all — the CDK hands it to `querySelectorAll`,
+   * which throws on an empty string rather than quietly finding nothing — and it would reach
+   * a consumer's bundle as a real own property. `check-harness` point 1 names a harness that leaves this empty either way — an
    * empty string fails its `trim()` exactly as a missing value does — so what the `declare`
    * buys is that nothing is emitted and nothing pretends. The cost is the same in both:
    * a subclass that forgets to override still compiles, because the type is satisfied by the
