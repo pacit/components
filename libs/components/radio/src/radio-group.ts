@@ -234,7 +234,11 @@ export class PctRadioGroup<T = string>
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  /** The name that groups the native radios — without it the browser makes no group. */
+  /**
+   * The name that groups the native radios — without it the browser makes no group.
+   *
+   * @since 0.1.0
+   */
   readonly groupName = computed(() => this.name() || this.uid);
 
   // --- working with the chrome (req-api-no-wrapper) ---
@@ -242,20 +246,42 @@ export class PctRadioGroup<T = string>
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
   protected readonly inField = this.fieldApi !== null;
 
-  /** A group is named through `aria-labelledby`, not `<label for>`. */
+  /**
+   * A group is named through `aria-labelledby`, not `<label for>`.
+   *
+   * @since 0.1.0
+   */
   readonly controlId = this.uid;
+  /**
+   * `labelledby`: a group has no single element for a label to point at, so the chrome names it.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'labelledby';
+  /**
+   * `bare`: a border around a set of radios looks foreign, so the chrome draws none.
+   *
+   * @since 0.1.0
+   */
   readonly fieldAppearance: PctFieldAppearance = 'bare';
 
   private readonly fieldDescribedBy = signal<string | null>(null);
   private readonly fieldLabelledBy = signal<string | null>(null);
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the group describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the id of its label, and the group is named by it instead of by its own.
+   *
+   * @since 0.1.0
+   */
   setLabelledBy(id: string | null): void {
     this.fieldLabelledBy.set(id);
   }
@@ -271,6 +297,11 @@ export class PctRadioGroup<T = string>
     errors: this.errors,
   });
   protected readonly errorText = this.messages.errorText;
+  /**
+   * Whether the group reads as invalid right now, by the chrome's own rule: invalid and touched.
+   *
+   * @since 0.1.0
+   */
   readonly showInvalid = this.messages.showInvalid;
 
   protected readonly showError = computed(
@@ -359,7 +390,11 @@ export class PctRadioGroup<T = string>
     this.value.set(optionValue);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Says the group was left, which is what lets a message appear.
+   *
+   * @since 0.1.0
+   */
   markTouched(): void {
     this.touch.emit();
   }

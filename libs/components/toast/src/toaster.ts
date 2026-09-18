@@ -73,6 +73,11 @@ export class PctToaster implements PctToastHost {
   private readonly injector = inject(Injector);
   private readonly config = inject(PCT_TOAST_CONFIG);
 
+  /**
+   * Where the region sits on the screen, block and inline, as the toast configuration set it.
+   *
+   * @since 0.1.0
+   */
   readonly placement = {
     block: this.config.block,
     inline: this.config.inline,
@@ -92,7 +97,11 @@ export class PctToaster implements PctToastHost {
    */
   private pending: PctToastState[] = [];
 
-  /** What the viewport draws. Empty until the region exists — see {@link pending}. */
+  /**
+   * What the viewport draws. Empty until the region exists — see {@link pending}.
+   *
+   * @since 0.1.0
+   */
   readonly toasts = this.list.asReadonly();
 
   private viewport: ComponentRef<PctToastViewport> | null = null;
@@ -244,7 +253,11 @@ export class PctToaster implements PctToastHost {
     for (const id of this.clocks.keys()) this.arm(id);
   }
 
-  /** Whether a pointer or the keyboard is holding the stack. Read by the unit suite. */
+  /**
+   * Whether a pointer or the keyboard is holding the stack. Read by the unit suite.
+   *
+   * @since 0.1.0
+   */
   get paused(): boolean {
     return this.held;
   }

@@ -9,7 +9,8 @@
       "name": "disabled",
       "kind": "input",
       "since": "0.2.0",
-      "deprecated": false
+      "deprecated": false,
+      "description": "A prepared item, described so the case fires on its own point."
     }
   ]
 }

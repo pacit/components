@@ -42,7 +42,11 @@ import { PCT_REGIONS, PctRegion, PctRegionsApi } from '@pacit/components/core';
 export class PctRegions implements PctRegionsApi {
   private readonly registered = signal<readonly PctRegion[]>([]);
 
-  /** The registered regions, in the order a reader meets them. */
+  /**
+   * The registered regions, in the order a reader meets them.
+   *
+   * @since 0.1.0
+   */
   readonly regions = computed(() =>
     [...this.registered()].sort((a, b) =>
       // eslint-disable-next-line no-bitwise
@@ -58,6 +62,8 @@ export class PctRegions implements PctRegionsApi {
    * library that stand OUTSIDE the element the key is mounted on — the toast's stack is a
    * child of `body`, so a press inside it never reaches an application's root — and it is the
    * whole reason this service knows about a key at all.
+   *
+   * @since 0.1.0
    */
   readonly key = signal<string | null>(null);
 

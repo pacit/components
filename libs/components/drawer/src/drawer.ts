@@ -155,6 +155,8 @@ export class PctDrawer {
    * What `aria-controls` on the trigger points at. The consumer's own `id` wins if they wrote
    * one: the attribute is on the tag they typed, and a host binding that overwrote it would
    * silently break every other reference in their page.
+   *
+   * @since 0.1.0
    */
   readonly panelId = this.element.getAttribute('id') || this.uid;
 

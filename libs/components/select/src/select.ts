@@ -51,7 +51,7 @@ export class PctSelect<T = string>
   }
 
   /** One answer, so one row of the list ever carries it. */
-  override readonly multiple = false;
+  protected override readonly multiple = false;
 
   /**
    * The selected value — a required field of the `FormValueControl` contract. The type is

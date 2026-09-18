@@ -1,0 +1,16 @@
+{
+  "point": 4,
+  "check": "description",
+  "description": "An input dated and not described: the tag says when it appeared, and nothing says what it is. A consumer's editor shows the name and the version, and the API page would show a row with an empty cell — which is the state every undocumented export was in before 2026-09-18.",
+  "add": [
+    {
+      "path": "libs/components/button/src/button.ts",
+      "line": 95,
+      "name": "tone",
+      "kind": "input",
+      "since": "0.1.0",
+      "deprecated": false,
+      "description": ""
+    }
+  ]
+}

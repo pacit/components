@@ -1,6 +1,6 @@
 # Negative control of the since gate
 
-Deliberately defective inputs. `tools/check-since.mjs` runs all three of its points on each of
+Deliberately defective inputs. `tools/check-since.mjs` runs all four of its points on each of
 them and **requires every one to be rejected — and rejected by the point it declares**. An
 input that passes is a fault; an input that fires for a reason other than the one written in
 its file is a fault just the same, because it proves something other than what it declares.
@@ -30,8 +30,9 @@ prepared list can miss its absence.
 name arrives in:
 
 - [`plain.ts`](_reader/plain.ts) — the `export` keyword on the declaration, beside a lifecycle
-  hook, a protected method and a private one, which are not API and have to stay out of the
-  result, and a `model.required` whose call shape the reader has to recognise;
+  hook, a protected method, a protected field and a private method, which are not API and have
+  to stay out of the result; a `model.required` whose call shape the reader has to recognise;
+  and a field and a getter that are no input at all, which ship in the types like the rest;
 - [`listed.ts`](_reader/listed.ts) — the keyword on no declaration at all: a class, a class
   renamed on its way out and a type, exported by a list at the foot of the file; and one class
   exported by nothing, whose public method ships nowhere and must not be asked for a date. It
@@ -62,8 +63,15 @@ added the rest: the deprecation read off any declaration, the merge in both read
 direction it merges in, the protected and unexported exclusions, the `model.required` call.
 Put any of those readings back and the control names what it loses; the list is in the commits.
 
+`merged.ts` also OVERRIDES two members of `plain.ts`: one silently, which the readers skip
+because the editor shows the base's sentence there, and one with a sentence of its own, which
+the editor shows INSTEAD of the base's — so that one is an item and is asked for a date.
+Widen the skip to every override and the control names the item it stopped finding; narrow it
+to none and it names the one it should not have found.
+
 **What it does not cover, knowingly:** a member or method whose name is computed or private by
-`#`, an anonymous `export default class`, a constructor or an accessor, `export * as ns from`,
+`#`, an anonymous `export default class`, a constructor or a setter with no getter,
+`export * as ns from`,
 and a barrel that renames what it re-exports. None of those shapes exists in the library, and
 some are refused by other gates; each would need a prepared case before it could arrive.
 

@@ -83,13 +83,15 @@ export class PctTree {
   readonly ariaLabel = input<string>('');
 
   /** Every item of the hierarchy, in document order — the map the walk moves over. */
-  readonly items = contentChildren(PCT_TREE_ITEM, { descendants: true });
+  protected readonly items = contentChildren(PCT_TREE_ITEM, {
+    descendants: true,
+  });
 
   /** Where the roving `tabindex` last stood — may point at an item since folded away. */
   private readonly active = signal<PctTreeItem | null>(null);
 
   /** The items a walk may land on: every ancestor expanded, in document order. */
-  readonly visibleItems = computed(() =>
+  protected readonly visibleItems = computed(() =>
     this.items().filter((item) => item.visible()),
   );
 
@@ -98,6 +100,8 @@ export class PctTree {
    * branch that held the active item must not leave the `0` on a node nobody can see,
    * so an active item that stopped being visible hands the pointer to the first visible
    * one — and an empty tree holds nobody.
+   *
+   * @since 0.1.0
    */
   readonly activeItem = computed(() => {
     const active = this.active();
@@ -215,6 +219,8 @@ export class PctTreeItem {
   /**
    * The item one level up, resolved by injection — the visibility chain below is
    * signals all the way, never a DOM read.
+   *
+   * @since 0.1.0
    */
   readonly parent = inject(PCT_TREE_ITEM, {
     optional: true,
@@ -242,6 +248,11 @@ export class PctTreeItem {
     descendants: false,
   });
 
+  /**
+   * Whether the item has children: a branch, which is what decides its marker and `aria-expanded`.
+   *
+   * @since 0.1.0
+   */
   readonly branch = computed(() => this.children().length > 0);
 
   /** `aria-expanded` is a branch's fact alone — a leaf carries no attribute at all. */
@@ -254,7 +265,11 @@ export class PctTreeItem {
     this.tree ? `${this.tree.selected() === this.value()}` : null,
   );
 
-  /** Visible = every ancestor open. A chain of signals, so folding anywhere re-answers it. */
+  /**
+   * Visible = every ancestor open. A chain of signals, so folding anywhere re-answers it.
+   *
+   * @since 0.1.0
+   */
   readonly visible: Signal<boolean> = computed(
     () => !this.parent || (this.parent.expanded() && this.parent.visible()),
   );
@@ -268,7 +283,11 @@ export class PctTreeItem {
     if (isDevMode()) afterNextRender(() => this.warnOnLooseItem());
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Puts the focus on the item's own element, which is where a tree keeps it.
+   *
+   * @since 0.1.0
+   */
   focusHost(): void {
     this.host.nativeElement.focus();
   }

@@ -64,12 +64,20 @@ import { PCT_MENU_ITEM, PctMenu, PctMenuItemApi } from './menu';
   providers: [{ provide: PCT_MENU_ITEM, useExisting: PctMenuItem }],
 })
 export class PctMenuItem implements PctMenuItemApi {
+  /**
+   * The item's own element: what the menu focuses, reads the label off, and compares an event's
+   * target against.
+   *
+   * @since 0.1.0
+   */
   readonly element: HTMLElement = inject(ElementRef).nativeElement;
 
   /**
    * The menu this item stands in — injected rather than passed, because injection is what
    * resolves the DECLARATION tree: an item written inside a nested `pct-menu` gets that one,
    * however the two panels are drawn.
+   *
+   * @since 0.1.0
    */
   readonly menu = inject(PctMenu, { optional: true });
 
@@ -82,7 +90,11 @@ export class PctMenuItem implements PctMenuItemApi {
 
   private readonly opened = signal<PctMenu | null>(null);
 
-  /** The panel this item opens, when a `[pctMenuTrigger]` stands on it. */
+  /**
+   * The panel this item opens, when a `[pctMenuTrigger]` stands on it.
+   *
+   * @since 0.1.0
+   */
   readonly submenu = this.opened.asReadonly();
 
   constructor() {
@@ -124,7 +136,11 @@ export class PctMenuItem implements PctMenuItemApi {
     this.opened.set(menu);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Forgets the submenu this item opened, once that menu has closed on its own.
+   *
+   * @since 0.1.0
+   */
   unbindSubmenu(menu: PctMenu): void {
     if (this.opened() === menu) this.opened.set(null);
   }

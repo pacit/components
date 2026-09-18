@@ -63,7 +63,12 @@ const fitHost = {
   },
 })
 export class PctPrefix {
-  /** @since 0.1.0 */
+  /**
+   * How the decoration sits in the field: `inset`, inside the border and one size down, or
+   * `fill`, a surface of its own that takes the whole slot and the click with it.
+   *
+   * @since 0.1.0
+   */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctPrefix',
     transform: affixFit,
@@ -88,7 +93,12 @@ export class PctPrefix {
   },
 })
 export class PctSuffix {
-  /** @since 0.1.0 */
+  /**
+   * How the decoration sits in the field: `inset`, inside the border and one size down, or
+   * `fill`, a surface of its own that takes the whole slot and the click with it.
+   *
+   * @since 0.1.0
+   */
   readonly fit = input<PctAffixFit, PctAffixFit | ''>('inset', {
     alias: 'pctSuffix',
     transform: affixFit,

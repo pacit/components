@@ -212,6 +212,11 @@ export class PctTabs implements PctTabsApi {
     return named >= 0 ? named : tabs.findIndex((tab) => !tab.disabled());
   });
 
+  /**
+   * The value of the chosen tab, empty while there is none.
+   *
+   * @since 0.1.0
+   */
   readonly chosen: Signal<string> = computed(
     () => this.tabs()[this.chosenIndex()]?.value() ?? '',
   );
@@ -234,7 +239,11 @@ export class PctTabs implements PctTabsApi {
     return tabs.findIndex((tab) => !tab.disabled());
   });
 
-  /** @since 0.1.0 */
+  /**
+   * Chooses the tab with this value, as a press on it would.
+   *
+   * @since 0.1.0
+   */
   select(value: string): void {
     const tab = this.tabs().find((candidate) => candidate.value() === value);
     if (!tab || tab.disabled()) return;

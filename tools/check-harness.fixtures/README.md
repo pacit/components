@@ -38,6 +38,7 @@ it from two layers:
 | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----- | ------- |
 | [`no-testing-entrypoint.json`](no-testing-entrypoint.json)                             | the packed manifest exports no `./testing`                       | 1     | `set`   |
 | [`a-harness-off-the-base.json`](a-harness-off-the-base.json)                           | `PctButtonHarness` does not extend `PctHarness`                  | 1     | `set`   |
+| [`a-harness-with-no-host.json`](a-harness-with-no-host.json)                           | `PctButtonHarness` carries no host selector                      | 1     | `set`   |
 | [`a-part-named-twice.json`](a-part-named-twice.json)                                   | `PctButtonHarness` lists `label` twice                           | 1     | `set`   |
 | [`a-selector-nobody-answers-to.json`](a-selector-nobody-answers-to.json)               | `PctButtonHarness` stands on `pct-phantom`                       | 2     | `host`  |
 | [`a-selector-wider-than-the-class.json`](a-selector-wider-than-the-class.json)         | `PctButtonHarness` also answers to `span[pctButton]`             | 2     | `host`  |

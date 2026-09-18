@@ -173,6 +173,11 @@ export class PctSwitch implements FormCheckboxControl, PctFieldControl {
   // --- a11y: stable ids for the ARIA relations (req-a11y-built-in) ---
 
   private readonly uid = nextPctId('pct-switch');
+  /**
+   * The id of the checkbox input the label points at.
+   *
+   * @since 0.1.0
+   */
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
@@ -183,13 +188,26 @@ export class PctSwitch implements FormCheckboxControl, PctFieldControl {
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
   protected readonly inField = this.fieldApi !== null;
 
+  /**
+   * `for`: the chrome's label points at the input above.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'for';
-  /** A field border around a switch looks foreign — the chrome does not draw one. */
+  /**
+   * A field border around a switch looks foreign — the chrome does not draw one.
+   *
+   * @since 0.1.0
+   */
   readonly fieldAppearance: PctFieldAppearance = 'bare';
 
   private readonly fieldDescribedBy = signal<string | null>(null);
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the input describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
   }

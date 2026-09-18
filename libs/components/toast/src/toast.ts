@@ -142,7 +142,11 @@ export interface PctToastConfig {
   readonly limit: number;
 }
 
-/** @since 0.1.0 */
+/**
+ * The toast configuration a page gets without asking: bottom right, six seconds, four at a time.
+ *
+ * @since 0.1.0
+ */
 export const PCT_DEFAULT_TOAST_CONFIG: PctToastConfig = {
   block: 'end',
   inline: 'end',
@@ -150,7 +154,11 @@ export const PCT_DEFAULT_TOAST_CONFIG: PctToastConfig = {
   limit: 4,
 };
 
-/** @since 0.1.0 */
+/**
+ * The token the toast configuration is read from; unprovided, it falls back to the default above.
+ *
+ * @since 0.1.0
+ */
 export const PCT_TOAST_CONFIG = new InjectionToken<PctToastConfig>(
   'PCT_TOAST_CONFIG',
   { factory: () => PCT_DEFAULT_TOAST_CONFIG },
@@ -203,7 +211,12 @@ export interface PctToastHost {
   release(): void;
 }
 
-/** @since 0.1.0 */
+/**
+ * The token the toaster provides itself under, so the region it creates reaches it — for the
+ * messages to draw, and to say that one was dismissed or its action pressed.
+ *
+ * @since 0.1.0
+ */
 export const PCT_TOAST_HOST = new InjectionToken<PctToastHost>(
   'PCT_TOAST_HOST',
 );

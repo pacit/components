@@ -123,7 +123,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ enforced | `libs/components/check-package.mjs` (point 5) — the collections are i… | `tools/check-package.fixtures/schematic-missing/` — a package whose c… |
 | [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ enforced | `libs/components/check-package.mjs` (point 6) — two different severit… | `tools/check-package.fixtures/repository-missing/` — a manifest witho… |
 | [`req-release-support`](requirements/release.md#req-release-support)   | ✅ enforced | `tools/check-support.mjs` (five points) over `docs/support.md`, which… | `tools/check-support.fixtures/` — fifteen prepared inputs, each rejec… |
-| [`req-release-since`](requirements/release.md#req-release-since)       | ✅ enforced | `tools/check-since.mjs` (points 1–3: every item dated; a value that i… | `tools/check-since.fixtures/` — six prepared inputs, each rejected by… |
+| [`req-release-since`](requirements/release.md#req-release-since)       | ✅ enforced | `tools/check-since.mjs` (points 1–4: every item dated; a value that i… | `tools/check-since.fixtures/` — seven prepared inputs, each rejected … |
 
 ## tokens
 

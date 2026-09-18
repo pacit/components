@@ -264,8 +264,23 @@ export class PctNumber
 
   // --- the PctFieldControl contract ---
 
+  /**
+   * The id of the text input the label points at.
+   *
+   * @since 0.1.0
+   */
   readonly controlId = nextPctId('pct-number');
+  /**
+   * `for`: the chrome's label points at the input above.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'for';
+  /**
+   * `text`: the field area shows a caret, because the control is a text box.
+   *
+   * @since 0.1.0
+   */
   readonly fieldCursor: PctFieldCursor = 'text';
 
   protected readonly describedBy = signal<string | null>(null);
@@ -278,6 +293,11 @@ export class PctNumber
    * which is `<input type="number">`'s own failing committed one floor up (`req-api-number`).
    */
   private readonly rejected = signal<string | null>(null);
+  /**
+   * Text in the field that is not a number. The form sees `null` and calls the field empty, so the control says this itself.
+   *
+   * @since 0.1.0
+   */
   readonly ownErrors = computed<readonly PctValidationError[]>(() =>
     this.rejected() !== null && !this.disabled()
       ? [{ message: this.texts().numberMalformed }]
@@ -387,7 +407,11 @@ export class PctNumber
     if (isDevMode()) this.warnOnUnsupportedUsage();
   }
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the input describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.describedBy.set(ids);
   }
@@ -540,7 +564,11 @@ export class PctNumber
     this.el.nativeElement.focus(options);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Empties the field, text and value alike.
+   *
+   * @since 0.1.0
+   */
   reset(): void {
     this.commit(null);
   }

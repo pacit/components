@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Since gate: does the public surface say since when? `req-release-since` promises that
- * every input, model, output, public method and export names the version it appeared in,
- * at its declaration — the shipped types carry it, and the site tells what `main` has beyond it.
+ * Since gate: does the public surface say what it is and since when? Every input, model,
+ * output, public method, field, getter and export, at its declaration (`req-release-since`).
  *
  *  1. every public API item carries a `@since` tag in the JSDoc at its declaration,
  *  2. its value is `next` — unreleased; the release names it — or a version the manifest
  *     has reached, written `major.minor.patch`,
  *  3. a deprecated item is a released one: `@deprecated` on `@since next` is a removal
- *     nobody made.
+ *     nobody made,
+ *  4. a sentence stands above the tags: a name is not a description.
  *
- * A fourth run examines the gate itself (`req-quality-negative-control`): `check-since.fixtures/`.
+ * A fifth run examines the gate itself (`req-quality-negative-control`): `check-since.fixtures/`.
  *
  * Usage: node tools/check-since.mjs
  */
@@ -102,6 +102,21 @@ const checkSince = ({ version, items }) => {
           .join('\n    ')}`,
     );
 
+  // 4. Every item says what it is, in prose, before the tags.
+  const mute = items.filter((i) => !i.description);
+  if (mute.length)
+    throw new SinceError(
+      'description',
+      `${mute.length} public API items carry a tag and no sentence:\n` +
+        mute
+          .slice(0, 12)
+          .map((i) => `      ${i.path}:${i.line} ${i.kind} \`${i.name}\``)
+          .join('\n') +
+        (mute.length > 12 ? `\n      … and ${mute.length - 12} more` : '') +
+        `\n    A name is not a description. The types carry the sentence to a consumer's ` +
+        `editor, and the day there is an API page it carries it there too (req-release-since).`,
+    );
+
   // 3. A deprecated item is a released one.
   const born = items.filter((i) => i.deprecated && i.since === NEXT);
   if (born.length)
@@ -113,11 +128,15 @@ const checkSince = ({ version, items }) => {
 
   const members = items.filter((i) => MEMBER_CALLS.has(i.kind)).length;
   const methods = items.filter((i) => i.kind === 'method').length;
+  const fields = items.filter(
+    (i) => i.kind === 'field' || i.kind === 'getter',
+  ).length;
   const unreleased = items.filter((i) => i.since === NEXT).length;
   const deprecated = items.filter((i) => i.deprecated).length;
   return (
     `${items.length} public API items — ${members} inputs, models and outputs, ${methods} ` +
-    `public methods, ${items.length - members - methods} exports — every one dated; ` +
+    `public methods, ${fields} fields and getters, ` +
+    `${items.length - members - methods - fields} exports — every one dated and described; ` +
     `${unreleased} unreleased (\`${NEXT}\`), ${deprecated} deprecated, against ${version}`
   );
 };
@@ -142,13 +161,24 @@ const tagText = (tag) =>
     : (ts.getTextOfJSDocComment(tag.comment) ?? '')
   ).trim();
 
-/** The two tags this gate reads off a declaration's JSDoc. */
+/** What this gate reads off a declaration's JSDoc: two tags, and the sentence above them. */
 const docOf = (node) => {
   const tags = ts.getJSDocTags(node);
   const since = tags.find((t) => t.tagName.text === 'since');
+  const description = ts
+    .getJSDocCommentsAndTags(node)
+    .filter(ts.isJSDoc)
+    .map((d) =>
+      typeof d.comment === 'string'
+        ? d.comment
+        : (ts.getTextOfJSDocComment(d.comment) ?? ''),
+    )
+    .join(' ')
+    .trim();
   return {
     since: since ? tagText(since) : null,
     deprecated: tags.some((t) => t.tagName.text === 'deprecated'),
+    description,
   };
 };
 
@@ -192,6 +222,55 @@ const membersIn = (path) => {
   visit(sf);
   return out;
 };
+
+/**
+ * The public fields and getters of every class in a file — what is left of a class's surface
+ * once the inputs, models and outputs are counted elsewhere. They ship in the types like
+ * everything else, so a consumer's editor offers them, and the day an API page exists it
+ * lists them.
+ *
+ * A member carrying `override` is skipped — but only while it says nothing of its own: the
+ * editor answers there with the overridden declaration's SENTENCE (its tag is the override's
+ * own, measured with the language service), and 52 harnesses restating one line would be 52
+ * homes for one fact (decision 0017). An override that writes its
+ * OWN sentence shadows the base's in the editor, measured with the language service, so it is
+ * an item like any other; a comment holding only tags still falls back and is still skipped.
+ */
+const fieldsIn = (path) => {
+  const sf = parse(path);
+  const out = [];
+  for (const cls of sf.statements) {
+    if (!ts.isClassDeclaration(cls) || !cls.name) continue;
+    for (const m of cls.members) {
+      // `?` on a class property is a field a consumer may find undefined; it is API all the
+      // same, and the library declares none today — the guard is here to be removed with a
+      // prepared case the day one arrives, not to excuse it quietly.
+      const field =
+        ts.isPropertyDeclaration(m) &&
+        !memberKind(m.initializer) &&
+        !m.questionToken;
+      if (!field && !ts.isGetAccessor(m)) continue;
+      if (!m.name || !ts.isIdentifier(m.name)) continue;
+      if (isHidden(m)) continue;
+      const doc = docOf(m);
+      if (hasModifier(m, ts.SyntaxKind.OverrideKeyword) && !doc.description)
+        continue;
+      out.push({
+        path,
+        line: lineOf(sf, m),
+        name: `${cls.name.text}.${m.name.text}`,
+        kind: ts.isGetAccessor(m) ? 'getter' : 'field',
+        ...doc,
+      });
+    }
+  }
+  return out;
+};
+
+const hasModifier = (node, kind) =>
+  (ts.canHaveModifiers(node) ? (ts.getModifiers(node) ?? []) : []).some(
+    (m) => m.kind === kind,
+  );
 
 const isExported = (node) =>
   (ts.canHaveModifiers(node) ? (ts.getModifiers(node) ?? []) : []).some(
@@ -350,6 +429,7 @@ const exportsIn = (indexPath) => {
         kind: kinds[first],
         since: decls.map((d) => docOf(d).since).find(Boolean) ?? null,
         deprecated: decls.some((d) => docOf(d).deprecated),
+        description: decls.map((d) => docOf(d).description).find(Boolean) ?? '',
       });
     }
   }
@@ -361,7 +441,11 @@ const readItems = () => {
     .map((p) => p.split('\\').join('/'))
     .filter((p) => !NOT_SOURCE.test(p))
     .sort();
-  const items = [...files.flatMap(membersIn), ...files.flatMap(methodsIn)];
+  const items = [
+    ...files.flatMap(membersIn),
+    ...files.flatMap(methodsIn),
+    ...files.flatMap(fieldsIn),
+  ];
   const seen = new Set();
   for (const index of files.filter((p) => p.endsWith('/index.ts')))
     for (const item of exportsIn(index)) {
@@ -414,6 +498,7 @@ const readerControl = () => {
   const got = [
     ...files.flatMap(membersIn),
     ...files.flatMap(methodsIn),
+    ...files.flatMap(fieldsIn),
     ...exportsIn(`${READER}/index.ts`),
   ];
   const say = (i) =>

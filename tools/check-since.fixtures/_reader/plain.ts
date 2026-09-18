@@ -14,6 +14,31 @@ export class PctPlain {
   /** @since 0.1.0 */
   readonly value = model.required<string>();
 
+  /**
+   * A field that is no input: it ships in the types like the rest, so it is dated too.
+   *
+   * @since 0.1.0
+   */
+  readonly id = 'pct-plain-1';
+
+  /**
+   * A getter, which the readers count beside the fields.
+   *
+   * @since next
+   */
+  get ready(): boolean {
+    return true;
+  }
+
+  /**
+   * The middle case of an override: `merged.ts` restates this one with a comment that holds
+   * a tag and no sentence, which the editor still answers with THIS sentence — so the gate
+   * skips it there, and the date it would carry is the one written here.
+   *
+   * @since 0.1.0
+   */
+  readonly label = 'plain';
+
   /** @since 0.1.0 */
   open(): void {}
 
@@ -22,6 +47,8 @@ export class PctPlain {
   protected measureTwice(): number {
     return 2;
   }
+
+  protected readonly hiddenField = 'not API';
 
   private measure(): number {
     return 0;

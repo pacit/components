@@ -1,5 +1,5 @@
 {
-  "description": "The reference input: a released library at 0.1.0 whose public surface is dated — inputs, a model and an output at `0.1.0`, the entry point's class, type and function beside them, a public method of the class, one input at `next` for the API the coming release names, and one export deprecated after it shipped. Every prepared case is built on a copy of it.",
+  "description": "The reference input: a released library at 0.1.0 whose public surface is dated — inputs, a model and an output at `0.1.0`, the entry point's class, type and function beside them, a public method of the class, a public field beside them, one input at `next` for the API the coming release names, and one export deprecated after it shipped. Every prepared case is built on a copy of it.",
   "input": {
     "version": "0.1.0",
     "items": [
@@ -9,7 +9,8 @@
         "name": "variant",
         "kind": "input",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "Which colour of the page the button takes."
       },
       {
         "path": "libs/components/button/src/button.ts",
@@ -17,7 +18,8 @@
         "name": "loading",
         "kind": "input",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "Whether the button shows work in progress and refuses presses."
       },
       {
         "path": "libs/components/field/src/text.ts",
@@ -25,7 +27,8 @@
         "name": "value",
         "kind": "model",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "The text in the field, read and written."
       },
       {
         "path": "libs/components/dialog/src/dialog.ts",
@@ -33,7 +36,8 @@
         "name": "closed",
         "kind": "output",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "Raised when the dialog closes, with what closed it."
       },
       {
         "path": "libs/components/button/src/button.ts",
@@ -41,7 +45,8 @@
         "name": "hero",
         "kind": "input",
         "since": "next",
-        "deprecated": false
+        "deprecated": false,
+        "description": "Whether the button is the one the page leads with."
       },
       {
         "path": "libs/components/drawer/src/drawer.ts",
@@ -49,7 +54,8 @@
         "name": "PctDrawer.close",
         "kind": "method",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "Closes the drawer, as the backdrop and the escape key do."
       },
       {
         "path": "libs/components/button/src/button.ts",
@@ -57,7 +63,8 @@
         "name": "PctButton",
         "kind": "class",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "The button."
       },
       {
         "path": "libs/components/button/src/button.types.ts",
@@ -65,7 +72,8 @@
         "name": "PctButtonVariant",
         "kind": "type",
         "since": "0.1.0",
-        "deprecated": false
+        "deprecated": false,
+        "description": "The colours a button can take."
       },
       {
         "path": "libs/components/core/src/config.ts",
@@ -73,7 +81,17 @@
         "name": "providePctConfig",
         "kind": "function",
         "since": "0.1.0",
-        "deprecated": true
+        "deprecated": true,
+        "description": "Registers the configuration for a page."
+      },
+      {
+        "path": "libs/components/toast/src/toaster.ts",
+        "line": 96,
+        "name": "PctToaster.toasts",
+        "kind": "field",
+        "since": "0.1.0",
+        "deprecated": false,
+        "description": "The messages on the screen, newest first."
       }
     ]
   }

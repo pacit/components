@@ -55,6 +55,11 @@ export interface PctSelectOptionContext<T> {
   selector: 'ng-template[pctSelectOption]',
 })
 export class PctSelectOptionTemplate<T> {
+  /**
+   * The template itself, which the select renders once per option with the option's context.
+   *
+   * @since 0.1.0
+   */
   readonly template =
     inject<TemplateRef<PctSelectOptionContext<T>>>(TemplateRef);
 
@@ -72,6 +77,8 @@ export class PctSelectOptionTemplate<T> {
   /**
    * What the select calls when its content query finds this template — the whole claim that
    * the slot is home. A slot no query reaches is claimed by nobody, and that is the report.
+   *
+   * @since 0.1.0
    */
   readonly read = pctReportOrphanSlot('pctSelectOption');
 

@@ -4,11 +4,29 @@
 // on a later one, as three of the names here do. The last name is dated TWICE, which is the
 // case plan 4.75 is about: the first date wins, and the second is not shown anywhere.
 import { input } from '@angular/core';
+import { PctPlain } from './plain';
 
 /** @since 0.1.0 */
-export class PctMerged {
+export class PctMerged extends PctPlain {
   /** @since 0.1.0 */
   readonly tone = input<string>('flat');
+
+  // Overridden, so the tag of the declaration it overrides is the one a consumer is shown —
+  // and the one the gate reads. Restating it here would be a second home for one date.
+  override readonly id = 'pct-merged-1';
+
+  /**
+   * An override that writes its own sentence, which the editor shows INSTEAD of the base's.
+   * It is an item, and it is asked for a date like any other.
+   *
+   * @since next
+   */
+  override get ready(): boolean {
+    return false;
+  }
+
+  /** @since 0.3.0 */
+  override readonly label = 'merged';
 
   /** @since 0.1.0 */
   reset(): void {}

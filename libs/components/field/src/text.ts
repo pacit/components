@@ -127,8 +127,23 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
 
   // --- the PctFieldControl contract ---
 
+  /**
+   * The id of the input or textarea the label points at.
+   *
+   * @since 0.1.0
+   */
   readonly controlId = nextPctId('pct-text');
+  /**
+   * `for`: the chrome's label points at the control above.
+   *
+   * @since 0.1.0
+   */
   readonly labelStrategy: PctLabelStrategy = 'for';
+  /**
+   * `text`: the field area shows a caret, because the control is a text box.
+   *
+   * @since 0.1.0
+   */
   readonly fieldCursor: PctFieldCursor = 'text';
 
   /** Set by the chrome; exposed on the native element. */
@@ -176,7 +191,11 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
     });
   }
 
-  /** @since 0.1.0 */
+  /**
+   * The chrome hands over the ids of its hint and error, and the control describes itself by them.
+   *
+   * @since 0.1.0
+   */
   setDescribedBy(ids: string | null): void {
     this.describedBy.set(ids);
   }
@@ -198,7 +217,11 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
     this.el.nativeElement.focus(options);
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Empties the field.
+   *
+   * @since 0.1.0
+   */
   reset(): void {
     this.value.set('');
   }

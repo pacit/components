@@ -16,7 +16,7 @@ import { PctHarness } from './harness';
  * @since 0.1.0
  */
 export class PctAccordionHarness extends PctHarness<never> {
-  static hostSelector = 'pct-accordion';
+  static override hostSelector = 'pct-accordion';
   static override readonly parts = [] as const;
 }
 
@@ -28,7 +28,7 @@ export class PctAccordionHarness extends PctHarness<never> {
 export class PctAccordionItemHarness extends PctHarness<
   'heading' | 'item' | 'marker' | 'panel'
 > {
-  static hostSelector = 'pct-accordion-item';
+  static override hostSelector = 'pct-accordion-item';
   static override readonly parts = [
     'heading',
     'item',
@@ -47,7 +47,7 @@ export class PctAccordionItemHarness extends PctHarness<
 export class PctAvatarHarness extends PctHarness<
   'image' | 'initials' | 'silhouette'
 > {
-  static hostSelector = 'pct-avatar';
+  static override hostSelector = 'pct-avatar';
   static override readonly parts = ['image', 'initials', 'silhouette'] as const;
 }
 
@@ -59,7 +59,7 @@ export class PctAvatarHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctBadgeHarness extends PctHarness<never> {
-  static hostSelector = 'pct-badge';
+  static override hostSelector = 'pct-badge';
   static override readonly parts = [] as const;
 }
 
@@ -71,7 +71,7 @@ export class PctBadgeHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctBreadcrumbHarness extends PctHarness<'list'> {
-  static hostSelector = 'pct-breadcrumb';
+  static override hostSelector = 'pct-breadcrumb';
   static override readonly parts = ['list'] as const;
 }
 
@@ -81,7 +81,7 @@ export class PctBreadcrumbHarness extends PctHarness<'list'> {
  * @since 0.1.0
  */
 export class PctCrumbHarness extends PctHarness<'separator'> {
-  static hostSelector = 'pct-crumb';
+  static override hostSelector = 'pct-crumb';
   static override readonly parts = ['separator'] as const;
 }
 
@@ -91,7 +91,7 @@ export class PctCrumbHarness extends PctHarness<'separator'> {
  * @since 0.1.0
  */
 export class PctCrumbLinkHarness extends PctHarness<never> {
-  static hostSelector = 'a[pctCrumbLink]';
+  static override hostSelector = 'a[pctCrumbLink]';
   static override readonly parts = [] as const;
 }
 
@@ -103,7 +103,7 @@ export class PctCrumbLinkHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
-  static hostSelector = 'button[pctButton], a[pctButton]';
+  static override hostSelector = 'button[pctButton], a[pctButton]';
   static override readonly parts = ['label', 'spinner'] as const;
 }
 
@@ -117,7 +117,7 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
 export class PctCheckboxHarness extends PctHarness<
   'box' | 'control' | 'error' | 'hint' | 'label' | 'mark'
 > {
-  static hostSelector = 'pct-checkbox';
+  static override hostSelector = 'pct-checkbox';
   static override readonly parts = [
     'box',
     'control',
@@ -136,7 +136,7 @@ export class PctCheckboxHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctChipHarness extends PctHarness<'label' | 'remove'> {
-  static hostSelector = 'pct-chip';
+  static override hostSelector = 'pct-chip';
   static override readonly parts = ['label', 'remove'] as const;
 }
 
@@ -146,7 +146,7 @@ export class PctChipHarness extends PctHarness<'label' | 'remove'> {
  * @since 0.1.0
  */
 export class PctChipsHarness extends PctHarness<never> {
-  static hostSelector = 'pct-chips';
+  static override hostSelector = 'pct-chips';
   static override readonly parts = [] as const;
 }
 
@@ -158,7 +158,7 @@ export class PctChipsHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctContainerHarness extends PctHarness<never> {
-  static hostSelector = 'pct-container';
+  static override hostSelector = 'pct-container';
   static override readonly parts = [] as const;
 }
 
@@ -172,7 +172,7 @@ export class PctContainerHarness extends PctHarness<never> {
 export class PctCalendarHarness extends PctHarness<
   'caption' | 'day' | 'grid' | 'nav' | 'week' | 'weekday'
 > {
-  static hostSelector = 'pct-calendar';
+  static override hostSelector = 'pct-calendar';
   static override readonly parts = [
     'caption',
     'day',
@@ -191,7 +191,7 @@ export class PctCalendarHarness extends PctHarness<
 export class PctDateHarness extends PctHarness<
   'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle'
 > {
-  static hostSelector = 'pct-date';
+  static override hostSelector = 'pct-date';
   static override readonly parts = [
     'control',
     'error',
@@ -212,7 +212,7 @@ export class PctDateHarness extends PctHarness<
 export class PctDialogHarness extends PctHarness<
   'backdrop' | 'close' | 'content' | 'header' | 'heading' | 'panel'
 > {
-  static hostSelector = 'pct-dialog';
+  static override hostSelector = 'pct-dialog';
   static override readonly parts = [
     'backdrop',
     'close',
@@ -233,7 +233,7 @@ export class PctDialogHarness extends PctHarness<
 export class PctDrawerHarness extends PctHarness<
   'close' | 'content' | 'header' | 'heading'
 > {
-  static hostSelector = 'pct-drawer';
+  static override hostSelector = 'pct-drawer';
   static override readonly parts = [
     'close',
     'content',
@@ -248,7 +248,7 @@ export class PctDrawerHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctDrawerTriggerHarness extends PctHarness<never> {
-  static hostSelector = 'button[pctDrawerTrigger]';
+  static override hostSelector = 'button[pctDrawerTrigger]';
   static override readonly parts = [] as const;
 }
 
@@ -260,7 +260,7 @@ export class PctDrawerTriggerHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctAutosizeHarness extends PctHarness<never> {
-  static hostSelector = 'textarea[pctText][pctAutosize]';
+  static override hostSelector = 'textarea[pctText][pctAutosize]';
   static override readonly parts = [] as const;
 }
 
@@ -282,7 +282,7 @@ export class PctFieldHarness extends PctHarness<
   | 'field-row'
   | 'field-suffix'
 > {
-  static hostSelector = 'pct-field';
+  static override hostSelector = 'pct-field';
   static override readonly parts = [
     'field-control',
     'field-error',
@@ -304,7 +304,7 @@ export class PctFieldHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctLabelAuxHarness extends PctHarness<'field-label-aux-item'> {
-  static hostSelector = '[pctLabelAux]';
+  static override hostSelector = '[pctLabelAux]';
   static override readonly parts = ['field-label-aux-item'] as const;
 }
 
@@ -314,7 +314,7 @@ export class PctLabelAuxHarness extends PctHarness<'field-label-aux-item'> {
  * @since 0.1.0
  */
 export class PctMessageAuxHarness extends PctHarness<'field-message-aux-item'> {
-  static hostSelector = '[pctMessageAux]';
+  static override hostSelector = '[pctMessageAux]';
   static override readonly parts = ['field-message-aux-item'] as const;
 }
 
@@ -324,7 +324,7 @@ export class PctMessageAuxHarness extends PctHarness<'field-message-aux-item'> {
  * @since 0.1.0
  */
 export class PctNumberHarness extends PctHarness<never> {
-  static hostSelector = 'input[pctNumber]';
+  static override hostSelector = 'input[pctNumber]';
   static override readonly parts = [] as const;
 }
 
@@ -334,7 +334,7 @@ export class PctNumberHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctPrefixHarness extends PctHarness<'field-prefix-item'> {
-  static hostSelector = '[pctPrefix]';
+  static override hostSelector = '[pctPrefix]';
   static override readonly parts = ['field-prefix-item'] as const;
 }
 
@@ -344,7 +344,7 @@ export class PctPrefixHarness extends PctHarness<'field-prefix-item'> {
  * @since 0.1.0
  */
 export class PctSuffixHarness extends PctHarness<'field-suffix-item'> {
-  static hostSelector = '[pctSuffix]';
+  static override hostSelector = '[pctSuffix]';
   static override readonly parts = ['field-suffix-item'] as const;
 }
 
@@ -354,7 +354,7 @@ export class PctSuffixHarness extends PctHarness<'field-suffix-item'> {
  * @since 0.1.0
  */
 export class PctTextHarness extends PctHarness<never> {
-  static hostSelector = 'input[pctText], textarea[pctText]';
+  static override hostSelector = 'input[pctText], textarea[pctText]';
   static override readonly parts = [] as const;
 }
 
@@ -366,7 +366,7 @@ export class PctTextHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctGridHarness extends PctHarness<never> {
-  static hostSelector = 'pct-grid';
+  static override hostSelector = 'pct-grid';
   static override readonly parts = [] as const;
 }
 
@@ -378,7 +378,7 @@ export class PctGridHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctHeroHarness extends PctHarness<never> {
-  static hostSelector = '[pctHero]';
+  static override hostSelector = '[pctHero]';
   static override readonly parts = [] as const;
 }
 
@@ -390,7 +390,7 @@ export class PctHeroHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctMenuHarness extends PctHarness<'panel'> {
-  static hostSelector = 'pct-menu';
+  static override hostSelector = 'pct-menu';
   static override readonly parts = ['panel'] as const;
 }
 
@@ -400,7 +400,7 @@ export class PctMenuHarness extends PctHarness<'panel'> {
  * @since 0.1.0
  */
 export class PctMenuItemHarness extends PctHarness<'item'> {
-  static hostSelector = 'button[pctMenuItem]';
+  static override hostSelector = 'button[pctMenuItem]';
   static override readonly parts = ['item'] as const;
 }
 
@@ -410,7 +410,7 @@ export class PctMenuItemHarness extends PctHarness<'item'> {
  * @since 0.1.0
  */
 export class PctMenuTriggerHarness extends PctHarness<never> {
-  static hostSelector = '[pctMenuTrigger]';
+  static override hostSelector = '[pctMenuTrigger]';
   static override readonly parts = [] as const;
 }
 
@@ -424,7 +424,7 @@ export class PctMenuTriggerHarness extends PctHarness<never> {
 export class PctPaginationHarness extends PctHarness<
   'ellipsis' | 'list' | 'next' | 'page' | 'previous'
 > {
-  static hostSelector = 'pct-pagination';
+  static override hostSelector = 'pct-pagination';
   static override readonly parts = [
     'ellipsis',
     'list',
@@ -444,7 +444,7 @@ export class PctPaginationHarness extends PctHarness<
 export class PctPopoverHarness extends PctHarness<
   'content' | 'heading' | 'panel'
 > {
-  static hostSelector = 'pct-popover';
+  static override hostSelector = 'pct-popover';
   static override readonly parts = ['content', 'heading', 'panel'] as const;
 }
 
@@ -454,7 +454,7 @@ export class PctPopoverHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctPopoverTriggerHarness extends PctHarness<never> {
-  static hostSelector = '[pctPopoverTrigger]';
+  static override hostSelector = '[pctPopoverTrigger]';
   static override readonly parts = [] as const;
 }
 
@@ -468,7 +468,7 @@ export class PctPopoverTriggerHarness extends PctHarness<never> {
 export class PctProgressHarness extends PctHarness<
   'bar' | 'fill' | 'icon' | 'track'
 > {
-  static hostSelector = 'pct-progress';
+  static override hostSelector = 'pct-progress';
   static override readonly parts = ['bar', 'fill', 'icon', 'track'] as const;
 }
 
@@ -482,7 +482,7 @@ export class PctProgressHarness extends PctHarness<
 export class PctRadioHarness extends PctHarness<
   'circle' | 'control' | 'dot' | 'label'
 > {
-  static hostSelector = 'pct-radio';
+  static override hostSelector = 'pct-radio';
   static override readonly parts = [
     'circle',
     'control',
@@ -499,7 +499,7 @@ export class PctRadioHarness extends PctHarness<
 export class PctRadioGroupHarness extends PctHarness<
   'group-error' | 'group-hint' | 'group-label' | 'group-options'
 > {
-  static hostSelector = 'pct-radio-group';
+  static override hostSelector = 'pct-radio-group';
   static override readonly parts = [
     'group-error',
     'group-hint',
@@ -532,7 +532,7 @@ export class PctMultiSelectHarness extends PctHarness<
   | 'trigger'
   | 'value'
 > {
-  static hostSelector = 'pct-multi-select';
+  static override hostSelector = 'pct-multi-select';
   static override readonly parts = [
     'arrow',
     'clear',
@@ -574,7 +574,7 @@ export class PctSelectHarness extends PctHarness<
   | 'trigger'
   | 'value'
 > {
-  static hostSelector = 'pct-select';
+  static override hostSelector = 'pct-select';
   static override readonly parts = [
     'arrow',
     'clear',
@@ -602,7 +602,7 @@ export class PctSelectHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctSkeletonHarness extends PctHarness<'fill' | 'track'> {
-  static hostSelector = 'pct-skeleton';
+  static override hostSelector = 'pct-skeleton';
   static override readonly parts = ['fill', 'track'] as const;
 }
 
@@ -624,7 +624,7 @@ export class PctSliderHarness extends PctHarness<
   | 'thumb'
   | 'track'
 > {
-  static hostSelector = 'pct-slider';
+  static override hostSelector = 'pct-slider';
   static override readonly parts = [
     'bubble',
     'control',
@@ -646,7 +646,7 @@ export class PctSliderHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctStackHarness extends PctHarness<never> {
-  static hostSelector = 'pct-stack';
+  static override hostSelector = 'pct-stack';
   static override readonly parts = [] as const;
 }
 
@@ -658,7 +658,7 @@ export class PctStackHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctStepHarness extends PctHarness<'marker' | 'track'> {
-  static hostSelector = 'pct-step';
+  static override hostSelector = 'pct-step';
   static override readonly parts = ['marker', 'track'] as const;
 }
 
@@ -668,7 +668,7 @@ export class PctStepHarness extends PctHarness<'marker' | 'track'> {
  * @since 0.1.0
  */
 export class PctStepperHarness extends PctHarness<never> {
-  static hostSelector = 'pct-stepper';
+  static override hostSelector = 'pct-stepper';
   static override readonly parts = [] as const;
 }
 
@@ -682,7 +682,7 @@ export class PctStepperHarness extends PctHarness<never> {
 export class PctSwitchHarness extends PctHarness<
   'control' | 'error' | 'hint' | 'label' | 'thumb' | 'track'
 > {
-  static hostSelector = 'pct-switch';
+  static override hostSelector = 'pct-switch';
   static override readonly parts = [
     'control',
     'error',
@@ -701,7 +701,7 @@ export class PctSwitchHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctTabHarness extends PctHarness<'panel'> {
-  static hostSelector = 'pct-tab';
+  static override hostSelector = 'pct-tab';
   static override readonly parts = ['panel'] as const;
 }
 
@@ -711,7 +711,7 @@ export class PctTabHarness extends PctHarness<'panel'> {
  * @since 0.1.0
  */
 export class PctTabsHarness extends PctHarness<'list' | 'tab'> {
-  static hostSelector = 'pct-tabs';
+  static override hostSelector = 'pct-tabs';
   static override readonly parts = ['list', 'tab'] as const;
 }
 
@@ -723,7 +723,7 @@ export class PctTabsHarness extends PctHarness<'list' | 'tab'> {
  * @since 0.1.0
  */
 export class PctThemeHarness extends PctHarness<never> {
-  static hostSelector = '[pctTheme]';
+  static override hostSelector = '[pctTheme]';
   static override readonly parts = [] as const;
 }
 
@@ -737,7 +737,7 @@ export class PctThemeHarness extends PctHarness<never> {
 export class PctToastViewportHarness extends PctHarness<
   'action' | 'close' | 'icon' | 'item' | 'message'
 > {
-  static hostSelector = 'pct-toast-viewport';
+  static override hostSelector = 'pct-toast-viewport';
   static override readonly parts = [
     'action',
     'close',
@@ -755,7 +755,7 @@ export class PctToastViewportHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctTooltipHarness extends PctHarness<never> {
-  static hostSelector = '[pctTooltip]';
+  static override hostSelector = '[pctTooltip]';
   static override readonly parts = [] as const;
 }
 
@@ -765,7 +765,7 @@ export class PctTooltipHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctTooltipPanelHarness extends PctHarness<'panel'> {
-  static hostSelector = 'pct-tooltip';
+  static override hostSelector = 'pct-tooltip';
   static override readonly parts = ['panel'] as const;
 }
 
@@ -777,7 +777,7 @@ export class PctTooltipPanelHarness extends PctHarness<'panel'> {
  * @since 0.1.0
  */
 export class PctTreeHarness extends PctHarness<never> {
-  static hostSelector = 'pct-tree';
+  static override hostSelector = 'pct-tree';
   static override readonly parts = [] as const;
 }
 
@@ -787,6 +787,6 @@ export class PctTreeHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctTreeItemHarness extends PctHarness<'arrow' | 'label'> {
-  static hostSelector = 'pct-tree-item';
+  static override hostSelector = 'pct-tree-item';
   static override readonly parts = ['arrow', 'label'] as const;
 }

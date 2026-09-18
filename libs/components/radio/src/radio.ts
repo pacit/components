@@ -139,7 +139,11 @@ export class PctRadio<T = string> {
     this.group.markTouched();
   }
 
-  /** @since 0.1.0 */
+  /**
+   * Puts the focus on the radio's own input.
+   *
+   * @since 0.1.0
+   */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
   }

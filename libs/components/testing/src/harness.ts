@@ -38,8 +38,28 @@ export abstract class PctHarness<
   P extends string = string,
 > extends ComponentHarness {
   /**
+   * The element the harness attaches to — the component's own selector, verbatim. The CDK
+   * reads it off the class to find a host, and every harness below overrides it with its own
+   * value; the sentence stays here, where a reader of any of them is shown it.
+   *
+   * Declared and not assigned, on purpose. A default would be a value the base does not have
+   * to give: `''` is not a working selector at all — the CDK hands it to `querySelectorAll`,
+   * which throws on an empty string rather than quietly finding nothing — and it would reach
+   * a consumer's bundle as a real own property. `check-harness` point 1 names a harness that leaves this empty either way — an
+   * empty string fails its `trim()` exactly as a missing value does — so what the `declare`
+   * buys is that nothing is emitted and nothing pretends. The cost is the same in both:
+   * a subclass that forgets to override still compiles, because the type is satisfied by the
+   * base, and the gate is what says so.
+   *
+   * @since 0.1.0
+   */
+  declare static hostSelector: string;
+
+  /**
    * The parts the component exposes — the inventory's own names, the ones
    * `libs/components/parts.snapshot.md` records for the class this harness stands on.
+   *
+   * @since 0.1.0
    */
   static readonly parts: readonly string[] = [];
 
