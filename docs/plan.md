@@ -208,25 +208,15 @@ the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
 Small, good filler between the bigger items. Each is verified in the code and still current,
 and every one is held by a **binds at** rather than by anybody's mood.
 
-- [~] **4.58 — the suite has a flake rate and nothing has ever measured it** — **the unanimous
-  column cleared 2026-09-16; the record waits on one clean night**
-  - the race-shape rule bought the _shape_ of a race, greppable, and refused the repetition
-    job on its own wording. The two flakes it found were fixed and the rate stayed a guess
-  - what landed: a runner in `nightly.yml` per suite, `--repeat-each=3 --retries=0`, reports
-    kept as an artifact — and `check-flake`, five points over them, with `flake.policy.json`
-    and seventeen prepared inputs. The report's shape was MEASURED against Playwright:
-    repetitions carry no index, so a case is addressed by `<path> | <project>` and nothing else
-  - **first reading** (run 35070461427): `sandbox-e2e` 2086 cases over 6258 runs — 2078 clean,
-    4 wobbled, **4 unanimous**; `docs-e2e` 431 cases over 1293 runs, not one wobble
-  - **second** (run 35114204663, after the four CI-chromium fixes): 2084 clean, 2 wobbled, zero
-    unanimous — the four columns gone, which is four fixes holding under repetition. That night
-    was cut off inside the docs suite at the cap; the job is one runner per suite since
-  - **third, the first of the split job** (run 35196788397, 2026-09-17): both halves in one
-    night, and the gate stopped at point 3 rather than 5 — six `docs-e2e` cases failed every
-    repetition, the two `/acr` tests in three engines, asserting a sentence the report lost on
-    2026-09-16 ([`lesson-221`](lessons.md#lesson-221)); a failure and not a wobble, as the
-    point is written to say, and fixed the same day in `3be54c2`
-  - binds at: **the first nightly after that fix** — a clean reading, then `--write` the record
+- [x] **4.58 — the suite has a flake rate and nothing has ever measured it** — **closed 2026-09-18**
+  - the race-shape rule bought the _shape_ of a race, greppable, and refused the repetition; the
+    gate that measures it (`check-flake`, five points) landed 2026-09-16 with two nightly jobs,
+    one suite per runner, `--repeat-each 3` and retries off — a retry is what hides a wobble
+  - three readings found the instrument before the rate: the unanimous column (2026-09-16), a
+    typo in a run number, and six `docs-e2e` cases failing every repetition — a failure and not
+    a wobble, as point 3 is written to say, fixed the same day ([`lesson-221`](lessons.md#lesson-221))
+  - the fourth, dispatched 2026-09-17 (run 35279012559): **2532 cases × 3 = 7596 runs, one
+    wobbled (0.04%)** — `docs/flake.snapshot.md` is the record, and the one name in it is 4.74
 
 - [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
       — **the word is given 2026-09-16: build it, and build it narrow**
@@ -247,6 +237,15 @@ and every one is held by a **binds at** rather than by anybody's mood.
     answer one. Those cards owe a sentence about the component instead of a fourth instrument
   - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
     take a second home here, so the table cites the spec that owns it rather than restating it
+
+- [ ] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate**
+  - the first flake record (4.58) names one case: `forced-colors.spec.ts › in a list panel the
+selection and the keyboard cursor stay distinguishable`, chromium, 2 of 3 — a visual
+    assertion under `forced-colors: active`, read under the suite's own parallelism
+  - a name in the record is a known wobble and not a finding to the gate, by design: repetitions
+    are a sample, and one wobble in three says the case is not stable, not how unstable it is
+  - binds at: **the second record in which it wobbles**, or the first in which a second name
+    joins it — either is the moment to read the case rather than the rate
 
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
   - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`: the browser opened on the maintainer's desktop
