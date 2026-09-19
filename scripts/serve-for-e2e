@@ -81,9 +81,10 @@ next=$every
 said=
 # Knocked on EVERY SECOND and reported every `$every`, which are two different periods on
 # purpose: the first version did both at once and could only ever name a multiple of 15, so
-# all twelve servers of run 35434514356 reported `15s` or `30s` for builds that finished in
-# 8. The log volume is the reporting period; the accuracy is the knocking one, and a server
-# that dies is noticed in a second rather than at the next tick.
+# all twelve servers of run 35434514356 reported `15s` or `30s` over builds that took 7.3 to
+# 12.4 seconds — and the two that said `30s` are the ones a round number describes worst.
+# The log volume is the reporting period; the accuracy is the knocking one, and a server that
+# dies is noticed in a second rather than at the next tick.
 #
 # `/dev/tcp` and not curl: one fewer thing to be missing on the machine where it matters.
 # Net redirections are a bash build option rather than a guarantee of the shebang — MEASURED
@@ -103,7 +104,11 @@ while :; do
   # it. Knocked on in the other order, a dead `nx` and a stranger's server on the same number
   # read as a healthy start — measured, on a desk where a second checkout was serving 4300.
   if ! kill -0 "$server" 2>/dev/null; then
-    echo "[serve-for-e2e] $target: gone after ${now}s, and $host:$port never answered while it lived — the code below is its own." >&2
+    if [ -n "$occupied" ]; then
+      echo "[serve-for-e2e] $target: gone after ${now}s, and $host:$port was somebody else's the whole time — the code below is its own." >&2
+    else
+      echo "[serve-for-e2e] $target: gone after ${now}s, and $host:$port never answered while it lived — the code below is its own." >&2
+    fi
     break
   fi
   if knock; then

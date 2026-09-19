@@ -48,8 +48,19 @@ wait "$follower" 2>/dev/null
 # verdict — `Successfully ran target serve for project sandbox` matches the first, a failed
 # dependency build the second. An outer run that ended in the silence of lesson-222 would
 # then have been passed on a nested run's summary, which is the one mistake this script
-# exists to refuse. Not yet observed: the server is killed before it can print one.
-if ! grep -v '\[WebServer\] ' "$log" | grep -q -e 'Successfully ran target' -e 'Failed tasks:'; then
+# exists to refuse. Not yet observed: the server is killed before it can print one. The
+# prefix is Playwright's and carries its trailing space through the dim escape, but it is
+# `webServer.name` when a configuration sets one — neither of ours does, and one that did
+# would have to be told about here.
+#
+# COUNTED and not `grep -q`, which is not a style: `-q` leaves on the first match, the
+# upstream `grep -v` dies of SIGPIPE with 4 MB still to write, and `pipefail` hands the `if`
+# a 141 that reads exactly like "no verdict" — a GREEN run failed on the size of its own log.
+# Measured: a summary followed by more than the pipe's 64 KB did it every time, and the four
+# CI logs to hand escape only because their summary sits within 60 lines of the end. `-c`
+# drains its input, so there is nothing to signal.
+verdict=$(grep -v '\[WebServer\] ' "$log" | grep -c -e 'Successfully ran target' -e 'Failed tasks:')
+if [ "${verdict:-0}" -eq 0 ]; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   # The command's own code when it had one — 127 for a command that never started, 137 for
   # a killed one — and 1 for a run that ended clean and mute.

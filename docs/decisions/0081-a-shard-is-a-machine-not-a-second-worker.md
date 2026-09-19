@@ -118,8 +118,10 @@ MACHINES rather than across workers on one.**
   default, had been costing is the nx header: the line that tells a server which never started
   from one whose task never did. Both suites pipe stdout now and `scripts/serve-for-e2e` ticks
   on stderr while nothing is printed ([`lesson-231`](../lessons.md#lesson-231), position 4.76).
-  The ceiling is untouched. The 35-to-107-second reading above was two servers together, got by
-  subtraction; on run 35435901274 each of the twelve stated its own, 11 to 17 seconds.
+  The ceiling is untouched. The 35-to-107-second reading above is not these numbers and does
+  not contradict them: it was a whole step minus the test time inside it, so it counted two
+  servers plus the outer nx's own start, its graph, `docs:content` and the wait between the
+  two suites. On run 35435901274 each of the twelve servers stated its own, 11 to 17 seconds.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading
