@@ -9,9 +9,12 @@ import { visit } from './support/dom';
  * does not separate red from green, and gone again under `forced-colors: active`, where the
  * palette is the user's and the author's greens are not invited
  * ([`req-a11y-forced-colors`](../../../docs/requirements/a11y.md#req-a11y-forced-colors)). So
- * every tone in this library draws a MARK as well, one public icon name per tone, and these
- * cases hold both halves: the colour differs per tone in ordinary mode, and the mark is still
- * there when the colour is gone (0076).
+ * a tone never travels alone. On the two components measured here — the toast and the
+ * progress bar, both of which can stand with no words of their own — the second channel is a
+ * MARK, one public icon name per tone, and these cases hold both halves: the colour differs
+ * per tone in ordinary mode, and the mark is still there when the colour is gone (0076). On a
+ * component that IS text the second channel is the text, which is why the badge and the
+ * button draw no mark and are measured in their own files instead.
  *
  * The four names arrived together on purpose, so the file walks all four rather than sampling:
  * a set decided once is a set measured once.

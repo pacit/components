@@ -697,20 +697,45 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
-   * Both tones of a badge drop to the palette's one word for text in a box — which is the
-   * component's own argument made visible: a page that said something by tone alone was
-   * already saying nothing here, and the border is what keeps the box a box (0053).
+   * Every tone of a badge arrives at the palette's one word for text in a box, and the box
+   * still has an edge — which is the component's own argument made visible: a page that said
+   * something by tone alone was already saying nothing here, and the border is the channel
+   * that survives the flattening (0053).
+   *
+   * **What this case cannot say**, and its first cut claimed: which RULE won. Chromium and
+   * firefox substitute colours in this mode whichever rule painted, and the one engine that
+   * would show the difference does not run this file
+   * ([`lesson-70`](../../../docs/lessons.md#lesson-70)). So the specificity question — is the
+   * media block outranked by a tone rule? — belongs to `check-styles` point 7 and to no
+   * browser. What is left is two readings that can go red: a tone taking
+   * `forced-color-adjust: none` keeps its own colour, and a sheet that stops drawing the
+   * border measures zero width. The second is not something the MODE can do — forced colours
+   * substitute colours and never touch a width — but this is the file where the sentence
+   * "the border is the channel that survives" is made, so this is where the border is read.
    */
-  test('a badge’s two tones become one palette, and the box keeps its edge', async ({
+  test('a badge’s four tones become one palette, and the box keeps its edge', async ({
     page,
   }) => {
     await visit(page, '/badge', { media: FORCED });
     const sys = await systemColors(page);
 
-    for (const id of ['tone-neutral', 'tone-danger'] as const) {
+    for (const id of [
+      'tone-none',
+      'tone-danger',
+      'tone-warning',
+      'tone-success',
+      'tone-info',
+    ] as const) {
       const badge = page.getByTestId(id);
       expect(await styleOf(badge, 'color'), id).toBe(sys.CanvasText);
       expect(await styleOf(badge, 'border-top-color'), id).toBe(sys.CanvasText);
+      // The edge, read as a width, because a colour reading cannot: a border of zero width
+      // reports a colour just the same. The sentence this file makes is that the box keeps
+      // an edge when the fill goes — so the edge is measured, not assumed.
+      expect(
+        Number.parseFloat(await styleOf(badge, 'border-top-width')),
+        id,
+      ).toBeGreaterThanOrEqual(1);
     }
   });
 

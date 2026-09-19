@@ -2,21 +2,23 @@
 <p class="muted view__intro">
   A word wearing a tone — <code>Draft</code>, <code>Active</code>,
   <code>Overdue</code>. It is text and only text: no role, no ARIA, no string of
-  its own, and the tone repeats what the word says, never says it alone. Two
-  tones today, and no longer because the skin has colour for only two: the ramps
-  the union was waiting for landed with the button's tone axis, so what is left
-  is to collapse it onto the shared four.
+  its own, and the tone repeats what the word says, never says it alone. The
+  tones are the library's four and no list of its own, and a badge with no
+  <code>tone</code> carries no attribute at all — the absence is the neutral.
 </p>
 
 <sbx-demo
-  heading="The tones the skin can keep"
-  summary="neutral is the base — the same quiet surfaces the rest of the library stands on — and danger is the skin's error colour painting its first background, with the on-danger pair the semantic tier promised back for exactly this component."
+  heading="The four tones, and the absence"
+  summary="A badge with no tone stands on the quiet surfaces the rest of the library stands on; the four named ones are PctTone, the same list the toast, the progress bar and the button read. Every word over every box is a measured pair — the three triples this component gained are nine more rows in the contrast policy, not nine more promises."
   [reqs]="['req-token-text-pairs', 'req-a11y-forced-colors']"
   data-testid="demo-tones"
 >
   <div class="view__row">
-    <pct-badge data-testid="tone-neutral">Draft</pct-badge>
+    <pct-badge data-testid="tone-none">Draft</pct-badge>
     <pct-badge tone="danger" data-testid="tone-danger">3 overdue</pct-badge>
+    <pct-badge tone="warning" data-testid="tone-warning">Expiring</pct-badge>
+    <pct-badge tone="success" data-testid="tone-success">Paid</pct-badge>
+    <pct-badge tone="info" data-testid="tone-info">Scheduled</pct-badge>
   </div>
 </sbx-demo>
 
