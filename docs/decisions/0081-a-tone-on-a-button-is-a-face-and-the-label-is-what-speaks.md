@@ -15,8 +15,10 @@
 The library had a tone vocabulary before it had a toned control:
 [0076](0076-a-tone-is-two-channels-and-four-names.md) settled `success`, `warning`, `danger`,
 `info` for the toast and the progress bar, and the badge recorded a refusal with a named
-trigger — `success` / `warning` / `info` "need colour ramps the skin does not have at all",
-and "the union grows the day the ramps land".
+trigger: `success` / `warning` / `info` needed colour ramps the skin did not have at all, and
+"the union grows the day the ramps land". This decision lands them, so that day is today —
+which is why 0053's own sentence is in the past tense as of this branch, and why quoting it
+here in the present would now quote nothing.
 
 The ask was a button in colours: _info / warn / error / primary / accent_. Three of those are
 the settled names under other spellings, one is the default, and one is not a tone at all.

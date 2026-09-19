@@ -104,36 +104,38 @@ test.describe('PctButton', () => {
     await expect(outline).toHaveCSS('color', 'rgb(185, 28, 28)');
   });
 
-  test('a toned soft face answers the pointer and the press', async ({
+  test('a toned soft face answers the pointer, and a solid one answers the press', async ({
     page,
   }) => {
-    // The tint and its hover tint are two measured pairs, and a face that never reaches the
-    // second one is a token declared and never painted. Both the untoned and every toned face
-    // are read here, because what makes this go wrong is a TIE: the rule that paints hover and
-    // the rule that dressed a toned face once carried the same specificity, and then only the
-    // source order decided. The press is read too — it is the suite's only reading of `:active`
-    // on a button, and `--pct-button-bg-active` had none at all before it.
-    for (const [testId, rest, pressed] of [
+    // The soft face's two tints are what broke: its rule tied with the rule that paints hover
+    // and lost on source order, so the `-200` tint stood declared, measured in the contrast
+    // policy and never once on screen. All four tones, plus the untoned face that was fine.
+    for (const [testId, rest, hover] of [
       ['btn-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'], // primary-100 -> -200
       ['btn-danger-soft', 'rgb(254, 226, 226)', 'rgb(254, 202, 202)'], // danger-100 -> -200
       ['btn-warning-soft', 'rgb(254, 243, 199)', 'rgb(253, 230, 138)'],
       ['btn-success-soft', 'rgb(220, 252, 231)', 'rgb(187, 247, 208)'],
-      ['btn-info-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'],
+      ['btn-info-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'], // info aliases the brand
     ] as const) {
       const button = page.getByTestId(testId);
       await expect(button).toHaveCSS('background-color', rest);
-
       await button.hover();
-      await expect(button).toHaveCSS('background-color', pressed);
-
-      // and held down, where the same tint answers — the face has one tint for both states
-      await page.mouse.down();
-      await expect(button).toHaveCSS('background-color', pressed);
-      await page.mouse.up();
-
+      await expect(button).toHaveCSS('background-color', hover);
       await page.mouse.move(0, 0);
       await expect(button).toHaveCSS('background-color', rest);
     }
+
+    // The press is read on the SOLID face, and it has to be: the soft face paints one tint for
+    // both states, so an assertion there is satisfied by what hover already put on screen and
+    // would pass with `--pct-button-bg-active` set to anything at all — a case that tests its
+    // own setup. On the solid face the two are different steps of the ramp, so the assertion
+    // has to wait for a colour only the press produces. It is the suite's only such reading.
+    const solid = page.getByTestId('btn-danger-solid');
+    await solid.hover();
+    await expect(solid).toHaveCSS('background-color', 'rgb(153, 27, 27)'); // danger-hover, red.800
+    await page.mouse.down();
+    await expect(solid).toHaveCSS('background-color', 'rgb(127, 29, 29)'); // danger-active, red.900
+    await page.mouse.up();
   });
 
   test('the grey of a disabled button outranks the tone it was still asked for', async ({

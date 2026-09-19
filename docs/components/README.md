@@ -216,7 +216,8 @@ The order follows **architectural debt**, not popularity:
    no size, no parts ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)). Two
    tones, because the skin has colour for two: `danger` paints the error colour's first
    background with the `on-danger` pair the semantic tier had promised back for exactly
-   this component, and `success` / `warning` / `info` wait for ramps as a compile-time
+   this component, and `success` / `warning` / `info` waited for ramps — which landed with
+   0081 — as a compile-time
    fact in the union. The tone never speaks alone: an empty badge is a dev-mode warning,
    and forced colours make the argument visible by dropping both tones to one palette.
    The **breadcrumb** is built, and the split is ownership again: every anchor is the
