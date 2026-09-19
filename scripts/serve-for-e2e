@@ -6,8 +6,15 @@
 # which suspect the measurements removed, which one they did not — is
 # [`lesson-231`](../docs/lessons.md#lesson-231); the configurations that call this script
 # carry the part a reader of them needs. What belongs here is the shape of the answer: a line
-# on stderr that arrives WHILE nothing is being printed, saying how long it has been nothing,
+# written on stderr while nothing else is being written, saying how long it has been nothing,
 # so the silence has a length and the last thing the server said has a time.
+#
+# WRITTEN then, not necessarily READ then. On a runner nx buffers a task's output and flushes
+# it when the task ends, so the ticks reach the log in one burst with everything else —
+# measured, a tick timed 15s and the success line timed 30s carry the same Actions timestamp.
+# Each line names its own elapsed seconds, so a reading taken afterwards keeps its order and
+# its clock, and Playwright's own timeout ends the task and flushes the buffer with it. What
+# would lose them is the job hitting `timeout-minutes` instead, where nx never gets to flush.
 #
 # `npx` stays in the command though it costs a measured 0.45 to 1.4 seconds over
 # `node_modules/.bin/nx`. It is inside what stalled, and an instrument pointed at something

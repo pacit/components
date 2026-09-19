@@ -41,6 +41,7 @@ wait "$follower" 2>/dev/null
 # targets can legitimately come to nothing — the browser shards run `-t e2e` alone — decides
 # that case BEFORE calling this script, where the workspace can still be asked whether such a
 # target exists at all (ci.yml, the e2e job).
+#
 # The server's lines are struck out before the verdict is looked for, and that became
 # necessary the day the e2e configurations set `webServer.stdout: 'pipe'`. The suites start a
 # NESTED `nx` to serve the app they test, Playwright prefixes its output with `[WebServer] `
@@ -59,7 +60,21 @@ wait "$follower" 2>/dev/null
 # Measured: a summary followed by more than the pipe's 64 KB did it every time, and the four
 # CI logs to hand escape only because their summary sits within 60 lines of the end. `-c`
 # drains its input, so there is nothing to signal.
-verdict=$(grep -v '\[WebServer\] ' "$log" | grep -c -e 'Successfully ran target' -e 'Failed tasks:')
+#
+# `-a` ON BOTH, and the second is not decoration. GNU grep calls a stream carrying a zero
+# byte binary and writes NOTHING to stdout for it — so one stray byte anywhere in 40 targets'
+# worth of output made the count 0 and failed a green run, and `-a` on the filter alone only
+# moves the silence one stage down the pipe, since the byte it then passes through binds the
+# counter instead. Measured both ways on a log holding its summary and one such byte.
+#
+# The phrase is matched UNANCHORED, and that is a bounded risk taken knowingly rather than an
+# oversight. To anchor it on nx's own badge one would have to match `NX   Successfully ran`,
+# and those words are not contiguous: nx colours the badge, so on a runner there are escape
+# sequences between `NX ` and `Successfully` and on a desk, writing to a file, there are none.
+# An anchor would therefore read every CI run as verdictless — a green wall turned red, which
+# is the worse direction. What stays open is narrower: nx would have to exit 0, print no
+# summary, AND some task echo the sentence. Nothing in either workflow prints it today.
+verdict=$(grep -av '\[WebServer\] ' "$log" | grep -ac -e 'Successfully ran target' -e 'Failed tasks:')
 if [ "${verdict:-0}" -eq 0 ]; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   # The command's own code when it had one — 127 for a command that never started, 137 for

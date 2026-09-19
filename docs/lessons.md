@@ -6425,8 +6425,12 @@ project-graph warning ever reaching either stream. Whether the runners hit that 
 unknown — sampled every 100 ms through a real outer run, nx holds it only in bursts too short
 to catch — and the daemon is no suspect at all, since nx switches it off wherever `CI` is set.
 
-So both suites pipe stdout now, and `scripts/serve-for-e2e` puts a line on stderr every fifteen
-seconds WHILE nothing is being printed, which is the one thing a stream cannot do. The next
+So both suites pipe stdout now, and `scripts/serve-for-e2e` writes a line on stderr every
+fifteen seconds while nothing else is being written, which is the one thing a stream cannot do
+for itself — though on a runner nobody reads it live: nx holds a task's output and flushes it
+at the end, so a tick timed 15s and a success line timed 30s land on one Actions timestamp.
+Each carries its own elapsed seconds, and a web-server timeout ends the task and flushes them
+with the failure, which is the case they exist for. The next
 occurrence sorts itself: no output above the first tick means `nx` never started, the header and
 no more means its task never did, `Building…` and no more means the build is the slow part and a
 budget question.
