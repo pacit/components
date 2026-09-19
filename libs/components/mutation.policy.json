@@ -142,7 +142,7 @@
     {
       "file": "libs/components/regions/src/regions.ts",
       "mutator": "StringLiteral",
-      "at": "198:50-198:56",
+      "at": "214:50-214:56",
       "to": "\"\"",
       "reason": "The `'host'` default of `listenOn`, replaced by the empty string. It has exactly one reader in the whole library — `if (this.listenOn() !== 'document') return` — so every string but that one takes the same branch, installs no listener and leaves no trace on the element. The only case that could separate them reads the signal's own value, which asserts on a constant rather than on what the directive does. The entry expires the moment a second reader appears, or the moment the predicate is written the other way round."
     }
