@@ -1644,7 +1644,7 @@
       "severity": "warn"
     },
     {
-      "name": "badge — the word in a neutral box",
+      "name": "badge — the word in an untoned box",
       "fg": "pct.badge.fg",
       "bg": "pct.badge.bg",
       "level": "AA",
@@ -1659,7 +1659,7 @@
       "severity": "error"
     },
     {
-      "$comment": "The danger box against the page — error, not warn: unlike the neutral box's quiet edge this one IS the statement, and a danger badge that melts into the page is a warning nobody was shown.",
+      "$comment": "The danger box against the page — error, not warn: unlike the untoned box's quiet edge this one IS the statement, and a danger badge that melts into the page is a warning nobody was shown.",
       "name": "UI: badge — the danger box against the page",
       "fg": "pct.badge.bg-danger",
       "bg": "pct.surface",
@@ -1675,8 +1675,72 @@
       "severity": "error"
     },
     {
-      "$comment": "The neutral box's edge — the chips' entry at the next small box, warn for the chips' reason: not interactive, and the edge is there for the skins and modes that flatten the fill.",
-      "name": "UI: badge — the neutral box's edge against the page",
+      "$comment": "The three tones the badge could not wear until the button's axis landed their ramps (0082), each measured the same three ways as `danger` was — the word over the fill, the fill against the page, the edge against the page. Nothing here is inherited from the button: the button paints these colours on a control that can be pressed, and a pressed colour is a different pair.",
+      "name": "badge — the word in a success box",
+      "fg": "pct.badge.fg-success",
+      "bg": "pct.badge.bg-success",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the success box against the page",
+      "fg": "pct.badge.bg-success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the success box's edge against the page",
+      "fg": "pct.badge.border-success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "badge — the word in a warning box",
+      "fg": "pct.badge.fg-warning",
+      "bg": "pct.badge.bg-warning",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the warning box against the page",
+      "fg": "pct.badge.bg-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the warning box's edge against the page",
+      "fg": "pct.badge.border-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "badge — the word in an info box",
+      "fg": "pct.badge.fg-info",
+      "bg": "pct.badge.bg-info",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the info box against the page",
+      "fg": "pct.badge.bg-info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: badge — the info box's edge against the page",
+      "fg": "pct.badge.border-info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The untoned box's edge — the chips' entry at the next small box, warn for the chips' reason: not interactive, and the edge is there for the skins and modes that flatten the fill.",
+      "name": "UI: badge — the untoned box's edge against the page",
       "fg": "pct.badge.border",
       "bg": "pct.surface",
       "level": "UI",
