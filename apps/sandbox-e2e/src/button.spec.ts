@@ -107,9 +107,9 @@ test.describe('PctButton', () => {
   test('a toned soft face answers the pointer, and a solid one answers the press', async ({
     page,
   }) => {
-    // The soft face's two tints are what broke: its rule tied with the rule that paints hover
-    // and lost on source order, so the `-200` tint stood declared, measured in the contrast
-    // policy and never once on screen. All four tones, plus the untoned face that was fine.
+    // The soft face's two tints are what broke: its toned rule tied with the rule that paints
+    // hover, the tie went to whichever stood later in the file, and that was the tone — so the
+    // `-200` tint stood declared, measured in the contrast policy and never once on screen. All four tones, plus the untoned face that was fine.
     for (const [testId, rest, hover] of [
       ['btn-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'], // primary-100 -> -200
       ['btn-danger-soft', 'rgb(254, 226, 226)', 'rgb(254, 202, 202)'], // danger-100 -> -200

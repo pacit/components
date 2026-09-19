@@ -45,7 +45,7 @@ error and not a silently grey box.
 **The skin is the reason there are two.** `neutral` stands on the surfaces the skin already
 has; `danger` is the skin's error colour painting its first background, with `on-danger` as
 the text over it — the exact pair `semantic.light.json` removed as unused and promised back
-"with the first component painting a background with the error colour", naming the badge as
+back for the first component that would paint a background with the error colour, naming the badge as
 that component. `success`, `warning` and `info` needed colour ramps the skin did not have
 at all, and inventing three ramps at a component's feet would have put the skin's centre of
 gravity in the wrong file ([0019](0019-primitives-are-not-the-contract.md)). The union grows

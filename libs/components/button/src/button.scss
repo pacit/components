@@ -35,9 +35,10 @@
 
    Two rules below still paint a ground on purpose, and what keeps each out of this pair's way
    is worth naming exactly. The hero's gradient is `background-image` — a different longhand,
-   so there is nothing to contest. The disabled rule IS the same specificity as these two, and
-   what separates them is not rank but reach: `:not([data-pct-disabled])` here means the two
-   selectors can never match the same element. What the assignment buys is that order stops
+   so there is nothing to contest. The disabled rule is a list of four selectors, and only the
+   bare one carries this pair's three; the three that name a face stand an attribute above it.
+   But rank never gets a vote either way: `:not([data-pct-disabled])` here means the disabled
+   rule and these two can never match the same element at all. What the assignment buys is that order stops
    deciding what a pointer shows — it still decides between a tone and a face, further down,
    and the comment there says so.
 
