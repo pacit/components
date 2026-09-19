@@ -41,7 +41,15 @@ wait "$follower" 2>/dev/null
 # targets can legitimately come to nothing — the browser shards run `-t e2e` alone — decides
 # that case BEFORE calling this script, where the workspace can still be asked whether such a
 # target exists at all (ci.yml, the e2e job).
-if ! grep -q -e 'Successfully ran target' -e 'Failed tasks:' "$log"; then
+# The server's lines are struck out before the verdict is looked for, and that became
+# necessary the day the e2e configurations set `webServer.stdout: 'pipe'`. The suites start a
+# NESTED `nx` to serve the app they test, Playwright prefixes its output with `[WebServer] `
+# and nothing else, and a nested run prints the same two sentences this reader takes for a
+# verdict — `Successfully ran target serve for project sandbox` matches the first, a failed
+# dependency build the second. An outer run that ended in the silence of lesson-222 would
+# then have been passed on a nested run's summary, which is the one mistake this script
+# exists to refuse. Not yet observed: the server is killed before it can print one.
+if ! grep -v '\[WebServer\] ' "$log" | grep -q -e 'Successfully ran target' -e 'Failed tasks:'; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   # The command's own code when it had one — 127 for a command that never started, 137 for
   # a killed one — and 1 for a run that ended clean and mute.

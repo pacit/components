@@ -266,7 +266,7 @@ and every one is held by a **binds at** rather than by anybody's mood.
     `sandbox-e2e:e2e`, both with no server output at all; re-running the two passed them, and
     24 shard-jobs before them never hit it (0081, "What this costs us")
   - the silence on stderr is itself a reading, and a narrower one than the first taken: a shard
-    of the same run that PASSED printed 97 project-graph warnings from that server in its first
+    of the same run that PASSED printed 47 project-graph warnings from that server in its first
     seconds, and the two that failed printed none. The stall was therefore before nx read the
     workspace out, nowhere near the build, and no ceiling addresses it
   - ruled out by measurement — nx's project-graph lock, which announces a blocked nested `nx`

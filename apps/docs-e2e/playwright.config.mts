@@ -46,8 +46,8 @@ export default defineConfig({
     `sandbox-e2e/playwright.config.mts` carries the measurements, `lesson-231` the reasoning.
 
     This block has no `timeout` and so takes Playwright's 60 seconds, which is left where it
-    is: measured on run 35434514356 the six of these came up in under 30, and a ceiling is
-    not what the last failure wanted moved.
+    is: on run 35435901274 the six of these answered in 11 to 17 seconds — the log says so
+    itself now — and a ceiling is not what the last failure wanted moved.
   */
   webServer: {
     command: `scripts/serve-for-e2e docs:serve:e2e ${serverURL}`,

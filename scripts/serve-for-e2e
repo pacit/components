@@ -23,12 +23,18 @@ target="$1"
 url="$2"
 
 # A heartbeat nobody can read is the failure this script exists to end, so a value that would
-# switch it off says so instead of taking effect. `0` is refused with the rest: it would spin
-# the loop into a flood, which hides the server's own lines as thoroughly as silence does.
+# switch it off says so instead of taking effect. The accepted set is SPELLED OUT rather than
+# filtered, because the filter that reads naturally — "digits, and not zero" — lets through
+# the three values that break it: `00` is zero and floods the log a line a second, `008` is
+# an octal literal bash refuses to add (`value too great for base`), and the refusal aborts
+# the loop, leaving no tick, no knock and no liveness check for the rest of the run — the
+# instrument silently a passthrough, which is precisely what it was written to end. One to
+# four digits, no leading zero: 1 second to nearly three hours.
 every="${SERVE_FOR_E2E_HEARTBEAT:-15}"
 case "$every" in
-  '' | *[!0-9]* | 0)
-    echo "[serve-for-e2e] SERVE_FOR_E2E_HEARTBEAT=$every is not a positive whole number of seconds; ticking every 15s instead." >&2
+  [1-9] | [1-9][0-9] | [1-9][0-9][0-9] | [1-9][0-9][0-9][0-9]) ;;
+  *)
+    echo "[serve-for-e2e] SERVE_FOR_E2E_HEARTBEAT=$every is not 1 to 9999 whole seconds; ticking every 15s instead." >&2
     every=15
     ;;
 esac
@@ -45,14 +51,19 @@ if [ "$port" = "$host" ]; then
   esac
 fi
 
+# No connect timeout, and none is needed for the two callers: both name `localhost`, where a
+# closed port is refused at once rather than dropped. A url pointing anywhere else would want
+# one — and `timeout` is not on a stock macOS, so it would have to be bought elsewhere.
 knock() { (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null; }
 
 # Knocked once BEFORE anything is started, because the knock cannot tell whose server answers
 # and a live child is no proof the answer is its. Measured: with a second checkout serving
 # 4300 and `nx` still a second away from dying on a project that does not exist, the loop
-# below called that a healthy start. Under Playwright this should never fire — it reuses or
-# refuses a port already in use before it ever launches this script — so the line is for a
-# person running the wrapper by hand, and it is the one they most need.
+# below called that a healthy start. Playwright makes this rare rather than impossible — it
+# reuses or refuses an AVAILABLE port before launching this script, and availability to it is
+# an http status under 404, so a port held by something that answers neither still reaches
+# here. The line is mostly for a person running the wrapper by hand, and it is the one they
+# most need.
 occupied=
 if knock; then
   occupied=yes
@@ -80,7 +91,13 @@ said=
 # If a build ever lacks them the knock never succeeds, and the loop says so every `$every`
 # seconds for the length of the suite, which is loud in the right direction.
 while :; do
-  sleep 1 || break
+  # A heartbeat that stops has to say so. This is the one path out of the loop that is not a
+  # finding of its own — an interrupted `sleep` — and leaving it mute would end the run in
+  # exactly the silence the script exists to break.
+  if ! sleep 1; then
+    echo "[serve-for-e2e] $target: the heartbeat was interrupted after $(( SECONDS - started ))s; the server runs on, unwatched from here." >&2
+    break
+  fi
   now=$(( SECONDS - started ))
   # The child is asked about BEFORE the port is, because the port answers for whoever holds
   # it. Knocked on in the other order, a dead `nx` and a stranger's server on the same number

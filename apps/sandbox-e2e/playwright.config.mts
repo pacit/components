@@ -105,13 +105,13 @@ export default defineConfig({
    * it is `'ignore'`, and the nx header, the whole `Building…` and the bundle table all go
    * there; stderr carries the project-graph warnings inside the first seconds and then
    * nothing until the server is up. The two shards that timed out on run 35408508618 printed
-   * none of those warnings — 97 stderr lines on a shard of the same run that passed, zero on
-   * theirs — and that says more than the reading first taken off it: the stall was BEFORE nx
-   * read the workspace out, not in the build, so a larger ceiling was never the answer. What
-   * the discarded stream cost is the line that separates "nx never got going" from "nx got
-   * going and its task never did", which is the header and is all a stall reproduced on a
-   * desk ever printed. The price is volume: 48 lines a shard here became 272, nearly all of
-   * it the bundle table.
+   * none of those warnings — 47 of them from this server on a shard of the same run that
+   * passed, zero on theirs — and that says more than the reading first taken off it: the
+   * stall was BEFORE nx read the workspace out, not in the build, so a larger ceiling was
+   * never the answer. What the discarded stream cost is the line that separates "nx never
+   * got going" from "nx got going and its task never did", which is the header and is all a
+   * stall reproduced on a desk ever printed. The price is volume: this server's share of a
+   * shard's log went from 49 lines to 128, two thirds of the new ones being the bundle table.
    *
    * `scripts/serve-for-e2e` adds the thing no stream can carry, a line while nothing is
    * printed; `lesson-231` holds the measurements. It also puts this command out of reach of

@@ -6399,7 +6399,7 @@ reading taken off that was too wide: `webServer.stdout` defaults to `'ignore'` i
 the sandbox's server does most of its talking there — the `NX Running target…` header, 27 to
 29 seconds of `Building…`, the bundle table, the `➜ Local:` line — and from that it looked as
 though a hung process and a slow build were indistinguishable here. They were not. Stderr also
-carries the project-graph warnings, and it carries them early: 97 lines from the sandbox's
+carries the project-graph warnings, and it carries them early: 47 of them from the sandbox's
 server on a shard of that very run which passed, against zero on the two that did not. A build
 that was merely slow would have printed them in the first seconds. So the silence on the stream
 that WAS being read is itself the finding — the stall came before nx read the workspace out,
@@ -6437,6 +6437,8 @@ checkout on the same desk was serving 4300, `nx` had already died on a project t
 exist, and the wrapper reported the port answering after 15 seconds. A port answers for whoever
 holds it. Then it knocked and reported on the same fifteen-second period, so the number it gave
 was never a duration but the tick it fell in: all twelve servers of run `35434514356` reported
-`15s` or `30s` for builds that finished in eight. It knocks every second and reports every
-fifteen now — the accuracy is the knocking period, the volume is the reporting one — and a
-server that dies is noticed in a second instead of at the next tick.
+`15s` or `30s` over builds that took 7.3 to 12.4 seconds. It knocks every second and reports
+every fifteen now — the accuracy is the knocking period, the volume is the reporting one — and
+a server that dies is noticed in a second instead of at the next tick. The twelve of the run
+after it answered in 11 to 17 seconds, each naming its own, which is the reading the shards
+used to have to be subtracted for.
