@@ -6390,3 +6390,80 @@ the output from the cache_ is a memory of another tree, not a measurement of thi
 staleness, and only an edge in the graph orders two tasks. What keeps it from happening again is
 running the gates CI will run before the push rather than after, and skipping the cache for the
 change nx cannot see — `scripts/before-push` is that habit written down.
+
+### <a id="lesson-231"></a>`lesson-231` — Four silent minutes, and two readings of them
+
+Two shards of six died on run `35408508618` (2026-09-19) with `Timed out waiting 240000ms from
+config.webServer`, having printed no server output at all in those four minutes. The first
+reading taken off that was too wide: `webServer.stdout` defaults to `'ignore'` in Playwright,
+the sandbox's server does most of its talking there — the `NX Running target…` header, 27 to
+29 seconds of `Building…`, the bundle table, the `➜ Local:` line — and from that it looked as
+though a hung process and a slow build were indistinguishable here. They were not. Stderr also
+carries the project-graph warnings, and it carries them early: 47 of them from the sandbox's
+server on a shard of that very run which passed, against zero on the two that did not. A build
+that was merely slow would have printed them in the first seconds. So the silence on the stream
+that WAS being read is itself the finding — the stall came before nx read the workspace out,
+which is nowhere near the Angular builder, and a larger ceiling was never the answer.
+
+What the discarded stream really cost is one line: the header, which separates "nx never got
+going" from "nx got going and its task never did". That line was being thrown away, and it is
+the only thing a stall reproduced on a desk ever printed.
+
+The timeout proves a little less than it first seems, too. Playwright learns of a dead server
+through `close`, which fires once every holder of the child's pipes is gone, so what a timeout
+rules out is a process tree that exited and let go — not, strictly, a live `npx nx`. And the
+sentence it would have printed instead has two forms: `Exit code:` for a non-zero code,
+`exited early.` for zero and for a death by signal.
+
+Of the two locks a nested `nx` can hang on, one is ruled out by measurement rather than by
+argument. Blocked on nx's project-graph lock, a nested `nx` says `Waiting for graph construction
+in another process to complete` on stderr after 30 seconds — nx's own delay before it gives up
+on a spinner and warns in CI — and the failing shards said nothing. The other reproduces the
+shape exactly: with nx's `workspace-data` database lock held, the nested `nx` prints its header
+to stdout and then hangs for ever, mute on stderr, never binding and never exiting, with no
+project-graph warning ever reaching either stream. Whether the runners hit that one is still
+unknown — sampled every 100 ms through a real outer run, nx holds it only in bursts too short
+to catch — and the daemon is no suspect at all, since nx switches it off wherever `CI` is set.
+
+So both suites pipe stdout now, and `scripts/serve-for-e2e` writes a line on stderr every
+fifteen seconds while nothing else is being written, which is the one thing a stream cannot do
+for itself — though on a runner nobody reads it live: nx holds a task's output and flushes it
+at the end, so a tick timed 15s and a success line timed 30s land on one Actions timestamp.
+Each carries its own elapsed seconds, and a web-server timeout ends the task and flushes them
+with the failure, which is the case they exist for. The next
+occurrence sorts itself: no output above the first tick means `nx` never started, the header and
+no more means its task never did, `Building…` and no more means the build is the slow part and a
+budget question.
+
+The instrument had to be corrected twice before it was worth its place. It knocked on the port
+before asking after the child, and called a stranger's server a healthy start — a second
+checkout on the same desk was serving 4300, `nx` had already died on a project that does not
+exist, and the wrapper reported the port answering after 15 seconds. A port answers for whoever
+holds it. Then it knocked and reported on the same fifteen-second period, so the number it gave
+was never a duration but the tick it fell in: all twelve servers of run `35434514356` reported
+`15s` or `30s` over builds that took 7.3 to 12.4 seconds. It knocks every second and reports
+every fifteen now — the accuracy is the knocking period, the volume is the reporting one — and
+a server that dies is noticed in a second instead of at the next tick. The twelve of the run
+after it answered in 11 to 17 seconds, each naming its own, which is the reading the shards
+used to have to be subtracted for.
+
+Piping the server's output had one more consequence, in the file least able to afford it.
+`scripts/nx-verdict` decides that a run produced a verdict by looking for nx's own closing
+sentence, and a nested `nx run <app>:serve` prints that sentence too — so the log could now
+carry a second one wearing nothing but a `[WebServer] ` prefix. None has been seen: the server
+is killed long before it gets that far, and striking those lines out is a precaution rather
+than a repair. It still took three attempts, and the first put two ways to be wrong into the
+one reader whose job is not to be — a `grep -q` that left early, killed its upstream with
+SIGPIPE and handed `pipefail` a 141 that reads like "no verdict", and a filter that met a
+single zero byte, which GNU grep answers by writing nothing at all. The second attempt closed
+the first of those and left the second standing. Both failed a GREEN run, which is the safe
+direction and not an excuse.
+
+The third attempt was measured through an interactive shell where `grep` is a wrapper function
+over another implementation, and it disagreed with `/usr/bin/grep`, which is what the script
+actually runs — so the repair was right and the sentence explaining it was not. **Measure a
+script with the tool the script runs**, and attribute a number to the thing that produced it.
+This branch got that second half wrong three times: "97 stderr lines" were one job's two
+servers, a 35-to-107-second figure was claimed for servers that no server was measured for,
+and the commit correcting that one widened a 185.3-second task span to 186.8 by swallowing the
+neighbouring task — the same fault, inside its own repair.

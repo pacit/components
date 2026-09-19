@@ -261,6 +261,35 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the second record in which it wobbles**, or the first in which a second name
     joins it — either is the moment to read the case rather than the rate
 
+- [ ] **4.76 — the dev server that never bound, and where in the start it stopped**
+  - run `35408508618` lost two shards of six to a web-server timeout of 240 000 ms, both on
+    `sandbox-e2e:e2e`, both with no server output at all; re-running the two passed them, and
+    24 shard-jobs before them never hit it (0081, "What this costs us")
+  - the silence on stderr is itself a reading, and a narrower one than the first taken: a shard
+    of the same run that PASSED printed 47 project-graph warnings from that server in its first
+    seconds, and the two that failed printed none. The stall was therefore before nx read the
+    workspace out, nowhere near the build, and no ceiling addresses it
+  - ruled out by measurement — nx's project-graph lock, which announces a blocked nested `nx`
+    on stderr after 30 seconds. Reproduces the shape exactly — nx's `workspace-data` database
+    lock, under which a nested `nx` hangs mute and for ever; but a real outer run takes that
+    one only in bursts shorter than a 100 ms sample, so it is a shape and not yet a cause
+    ([`lesson-231`](lessons.md#lesson-231))
+  - what landed is the instrument and not the answer: both suites pipe stdout, and
+    `scripts/serve-for-e2e` ticks on stderr while nothing is being printed, so the next one
+    sorts itself into one of three shapes. A larger ceiling stays refused
+  - binds at: **the next shard that times out on a web server** — the tick standing above its
+    last line of output is the reading this position waits for
+
+- [ ] **4.77 — a position can leave the prose budget by wrapping a code span**
+  - `tools/check-prose.mjs` ends a position's body at the first line starting in column 0, and
+    prettier cannot indent the continuation of a code span. A position that wraps one is
+    therefore measured short: 4.76 recorded 2 lines against its real 18, and the snapshot took
+    the 2 as the accepted state until the line was reworded
+  - the budget then binds nothing and the record holds a number about the wrong text — which is
+    the failure this gate exists to prevent, happening on the gate's own denominator
+  - binds at: **a body read by indentation rather than by column 0**, with a prepared input that
+    wraps a code span across lines
+
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
   - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`: the browser opened on the maintainer's desktop
     while Xvfb drew nothing — found by him, proved by his theme switch mid-reading. The X11

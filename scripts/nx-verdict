@@ -41,7 +41,47 @@ wait "$follower" 2>/dev/null
 # targets can legitimately come to nothing — the browser shards run `-t e2e` alone — decides
 # that case BEFORE calling this script, where the workspace can still be asked whether such a
 # target exists at all (ci.yml, the e2e job).
-if ! grep -q -e 'Successfully ran target' -e 'Failed tasks:' "$log"; then
+#
+# The server's lines are struck out before the verdict is looked for, and that became
+# necessary the day the e2e configurations set `webServer.stdout: 'pipe'`. The suites start a
+# NESTED `nx` to serve the app they test, Playwright prefixes its output with `[WebServer] `
+# and nothing else, and a nested run prints the same two sentences this reader takes for a
+# verdict — `Successfully ran target serve for project sandbox` matches the first, a failed
+# dependency build the second. An outer run that ended in the silence of lesson-222 would
+# then have been passed on a nested run's summary, which is the one mistake this script
+# exists to refuse. Not yet observed: the server is killed before it can print one. The
+# prefix is Playwright's and carries its trailing space through the dim escape, but it is
+# `webServer.name` when a configuration sets one — neither of ours does, and one that did
+# would have to be told about here.
+#
+# COUNTED and not `grep -q`, which is not a style: `-q` leaves on the first match, the
+# upstream `grep -v` dies of SIGPIPE with 4 MB still to write, and `pipefail` hands the `if`
+# a 141 that reads exactly like "no verdict" — a GREEN run failed on the size of its own log.
+# Measured, and it is a BAND rather than a threshold, because the race is against whatever the
+# reader has already taken: sampling puts the first failures near 60 KB after the summary and
+# near-certainty past 96 KB, and two samplings disagreed on everything between — which is the
+# shape of the thing, not a fault in either. No edge is quoted here for that reason. The CI
+# logs to hand escape because their summary sits some 7 KB from the end. `-c` drains its
+# input, so there is nothing left to signal.
+#
+# `-a` ON THE FILTER is what repairs the next one: GNU grep calls a stream carrying a zero
+# byte binary and writes NOTHING to stdout for it, so one stray byte anywhere in 40 targets'
+# worth of output made the count 0 and failed a green run. The counter's `-a` is redundancy
+# and is kept as such — binary detection suppresses matching LINES, and a count is not a
+# line, so `grep -c` reports through it either way. A first reading said the opposite and was
+# taken through an interactive shell where `grep` is a wrapper function over another
+# implementation; this script gets `/usr/bin/grep`, and the two do not agree. Measure a
+# script with the tool the script runs.
+#
+# The phrase is matched UNANCHORED, and that is a bounded risk taken knowingly rather than an
+# oversight. To anchor it on nx's own badge one would have to match `NX   Successfully ran`,
+# and those words are not contiguous: nx colours the badge, so on a runner there are escape
+# sequences between `NX ` and `Successfully` and on a desk, writing to a file, there are none.
+# An anchor would therefore read every CI run as verdictless — a green wall turned red, which
+# is the worse direction. What stays open is narrower: nx would have to exit 0, print no
+# summary, AND some task echo the sentence. Nothing in either workflow prints it today.
+verdict=$(grep -av '\[WebServer\] ' "$log" | grep -ac -e 'Successfully ran target' -e 'Failed tasks:')
+if [ "${verdict:-0}" -eq 0 ]; then
   echo "::error::nx ended without its summary — neither 'Successfully ran' nor 'Failed tasks:' — so the run is not a verdict, and a task in it may have failed unseen (scripts/nx-verdict)."
   # The command's own code when it had one — 127 for a command that never started, 137 for
   # a killed one — and 1 for a run that ended clean and mute.

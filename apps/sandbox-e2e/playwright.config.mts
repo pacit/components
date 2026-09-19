@@ -2,8 +2,15 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-// For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
+// The server this configuration starts, named once. `webServer.url` and the argument handed
+// to `scripts/serve-for-e2e` have to be the same server — a port moved in one of two literals
+// leaves the heartbeat knocking on a door nobody opened, and it would report that for the
+// whole suite without ever being wrong about anything else.
+const serverURL = 'http://localhost:4200';
+
+// For CI, you may want to set BASE_URL to the deployed application. Separate from the above
+// on purpose: that points the SUITE somewhere, and a deployed app is not this block's to start.
+const baseURL = process.env['BASE_URL'] || serverURL;
 
 /**
  * Read environment variables from file.
@@ -93,11 +100,33 @@ export default defineConfig({
    * of the sandbox is the slow part; a running server is reused, which is also what lets a
    * developer's own `nx serve sandbox` carry a suite — and serve it a bundle older than the
    * sources, so a suite that contradicts a reading is first a question about the server.
+   *
+   * `stdout: 'pipe'` restores a stream this block used to discard. Playwright's default for
+   * it is `'ignore'`, and the nx header, the whole `Building…` and the bundle table all go
+   * there; stderr carries the project-graph warnings inside the first seconds and then
+   * nothing until the server is up. The two shards that timed out on run 35408508618 printed
+   * none of those warnings — 47 of them from this server on a shard of the same run that
+   * passed, zero on theirs — and that says more than the reading first taken off it: the
+   * stall was BEFORE nx read the workspace out, not in the build, so a larger ceiling was
+   * never the answer. What the discarded stream cost is the line that separates "nx never
+   * got going" from "nx got going and its task never did", which is the header and is all a
+   * stall reproduced on a desk ever printed. The price is volume: this server's share of a
+   * shard's log went from 49 lines to 128, two thirds of the new ones being the bundle table.
+   *
+   * `scripts/serve-for-e2e` adds the thing no stream can carry, a line while nothing is
+   * printed; `lesson-231` holds the measurements. It also puts this command out of reach of
+   * the Nx Playwright plugin's parser, and that is not nothing: the plugin sets
+   * `parallelism: false` on a target whose web server it cannot resolve, so nx runs this
+   * suite alone now. On the runners nothing moves — `docs-e2e` already forced that, its
+   * server being unreusable — and on a desk it costs this suite's overlap with lint and
+   * build, which is the trade 0081 makes anyway: the cases that fail a first attempt and
+   * pass a retry react to load, so the machine to itself is what the suite wants.
    */
   webServer: {
-    command: 'npx nx run sandbox:serve',
-    url: 'http://localhost:4200',
+    command: `scripts/serve-for-e2e sandbox:serve ${serverURL}`,
+    url: serverURL,
     reuseExistingServer: true,
+    stdout: 'pipe',
     timeout: 240_000,
     cwd: workspaceRoot,
   },
