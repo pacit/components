@@ -23,10 +23,12 @@ import { readFileSync, writeFileSync, existsSync, globSync } from 'node:fs';
 import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
+import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
 const REGISTRY = 'docs/registry.md';
+
 const REQ_IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 
 const problems = [];
@@ -257,23 +259,11 @@ for (const req of requirements) {
 const PUSH_WORKFLOW = '.github/workflows/ci.yml';
 const NIGHT_WORKFLOW = '.github/workflows/nightly.yml';
 
-/**
- * Every target a workflow's `-t` lines name. The class stops at the end of the line and
- * that is not tidiness: with `\s` in it the match ran ON past the newline and swallowed the
- * `- run: npx nx run-many -t` of the next step, so the set held `npx`, `nx`, `run:` and
- * `-t` as targets — six words that are not targets, in the set this point answers from.
+/*
+ * Every target a workflow's `-t` lines name — the reading itself lives in
+ * `workflow-targets.mjs`, because four gates and `scripts/before-push` answer from it and
+ * they used to hold four different regexes (0017, and 0081 for the line that broke them).
  */
-const targetsIn = (text) =>
-  new Set(
-    [
-      ...String(text ?? '').matchAll(
-        /nx (?:affected|run-many) -t ([a-z0-9:\- \t]+)/g,
-      ),
-    ]
-      .flatMap((m) => m[1].trim().split(/\s+/))
-      .filter(Boolean),
-  );
-
 /**
  * The night runs everything the push line runs. `nightly.yml` opens by saying so in the
  * present tense, and nothing compared the two lists: `check-prose` reached the push line

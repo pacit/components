@@ -1,6 +1,18 @@
 # The push half of point 3's reference pair. Tiny on purpose: what the rule reads is the
 # target list of an `nx affected -t` line and nothing else a workflow contains.
+#
+# TWO LINES AND TWO SHAPES, because the workflow this stands for has both: it runs its
+# battery in one job and its browsers in six sharded ones, so an option can stand before a
+# `-t` and the targets are what follows it to the end of the line. The trailing
+# `--skip-nx-cache` is the half that polices the other rule: a word beginning with a dash is
+# an option, and a reader that takes it for a target puts a name on the push line that the
+# night does not run and never could — the reference itself is then rejected, which is how
+# this file proves the reading rather than merely using it.
 jobs:
   main:
     steps:
-      - run: npx nx affected -t lint test check-alpha check-beta e2e
+      - run: npx nx affected -t lint test check-alpha check-beta e2e --skip-nx-cache
+
+  browsers:
+    steps:
+      - run: npx nx affected --shard=1/6 -t e2e

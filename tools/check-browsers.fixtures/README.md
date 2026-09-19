@@ -8,8 +8,8 @@ what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
 [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
-**eight of the twenty-six** rules moves their cases onto a neighbouring rule, and without
-that field all eight runs would be green.
+**eight of the rules** (there were twenty-six of them the day that was measured) moves their
+cases onto a neighbouring rule, and without that field all eight runs would be green.
 
 The reason it exists is the same as for every other gate
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):

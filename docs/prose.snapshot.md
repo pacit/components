@@ -61,6 +61,7 @@ check-zoneless.mjs 6 18 153
 fresh-inputs.mjs 0 0 0
 release.mjs 5 17 146
 restore-dictionaries.mjs 0 12 128
+workflow-targets.mjs 4 16 203
 ```
 
 ## Task positions

@@ -21,6 +21,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { runsTarget } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-browsers.fixtures');
@@ -344,8 +345,9 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       'ci-without-engine',
       `${ciGaps.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
         list(ciGaps) +
-        `\n    There are two steps (a cache miss and a cache hit) and they have to name the ` +
-        `same set: an engine installed only on a miss disappears at the first hit.`,
+        `\n    The steps come in pairs (a cache miss and a cache hit), one pair in every job ` +
+        `that needs a browser, and all of them have to name the same set: an engine ` +
+        `installed only on a miss disappears at the first hit.`,
     );
   if (!ci.runsE2E)
     throw new BrowsersError(
@@ -354,6 +356,46 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       `\`${CI}\` does not run the \`e2e\` target anywhere.\n` +
         `    That is this whole gate's denominator: the matrix describes a run that does ` +
         `not happen, and every point above passes because the configuration is fine.`,
+    );
+
+  const fault = coverFault(ci.shardCover);
+  if (fault)
+    throw new BrowsersError(
+      'ci',
+      'ci-shard-not-a-cover',
+      fault === 'unreadable'
+        ? `\`${CI}\` runs a sharded suite and no matrix under it could be read entry by ` +
+            `entry, so nothing here can say whether the shards cover the suite once. The ` +
+            `shape this gate reads is one line — \`shard: [1, 2, 3, 4, 5, 6]\` under ` +
+            `\`matrix:\`, two spaces in, the numerators bare or quoted. A list written down ` +
+            `the page, a flow map, or an expression is legible YAML and not legible here; ` +
+            `answering "I could not tell" with silence is the defect this rule exists for, ` +
+            `so it is answered with red instead.`
+        : fault === 'axes'
+          ? `the shard matrix in \`${CI}\` is multiplied by ` +
+            `\`${ci.shardCover.keys.filter((k) => k !== 'shard').join('`, `')}\`, so ` +
+            `\`job-total\` counts every combination while the numerators still run ` +
+            `1…${ci.shardCover.shards.length} — the rest of the suite is never asked for, ` +
+            `and the jobs that do run are green.`
+          : `the shard numerators in \`${CI}\` are ` +
+            `[${ci.shardCover.shards.join(', ')}] where ${ci.shardCover.shards.length} jobs ` +
+            `need 1…${ci.shardCover.shards.length}, each once. Some shard of the suite is ` +
+            `never asked for and every job is green — the one failure of a test suite ` +
+            `nobody sees.`,
+    );
+
+  if (ci.shardsNotFromMatrix?.length)
+    throw new BrowsersError(
+      'ci',
+      'ci-shard-not-from-matrix',
+      `${ci.shardsNotFromMatrix.length} sharded \`e2e\` line(s) in \`${CI}\` take the ` +
+        `shard count from a number instead of from the matrix:\n` +
+        list(ci.shardsNotFromMatrix.map((l) => l.trim())) +
+        `\n    The denominator has to be \`\${{ strategy.job-total }}\`, which IS the number ` +
+        `of jobs. A number typed beside the matrix is a second copy of it, and the two ` +
+        `disagree the first time somebody adds a shard: six jobs running \`--shard=N/8\` ` +
+        `run six eighths of the suite and report green over the rest — which is the one ` +
+        `failure of a test suite nobody sees.`,
     );
 
   // 6. FACT. A probe in every engine, for every fact a `measurement` exclusion appeals to.
@@ -538,18 +580,129 @@ const targetE2E = async () => {
  * reported this to itself on the first run after its own comment was added — it counted
  * four install steps where there are two, and fired on two of them.
  */
-const ciSteps = (engines) => {
-  const lines = read(CI)
+/**
+ * The `shard:` axis of a workflow's matrix, read off the indentation: `{ shards, keys }`,
+ * or `null` when there is no matrix carrying one. Both fields are what point 5 needs —
+ * the numerators somebody wrote, and every axis they are multiplied by.
+ */
+/**
+ * What is wrong with one shard matrix — `unreadable`, `axes`, `numerators` — or null when it
+ * is a cover: one job per shard, each numerator once, none missing. One home, because the
+ * reader picks the matrix to complain about by the same rule the complaint is phrased with.
+ */
+const coverFault = (cover) => {
+  if (!cover) return null;
+  if (cover.unreadable) return 'unreadable';
+  if (cover.keys.some((key) => key !== 'shard')) return 'axes';
+  const expected = cover.shards.map((_, i) => i + 1).join(',');
+  const written = cover.shards
+    .slice()
+    .sort((a, b) => a - b)
+    .join(',');
+  return written === expected ? null : 'numerators';
+};
+
+const coverOf = (lines) => {
+  const found = [];
+  for (let i = 0; i < lines.length; i++) {
+    const opening = lines[i].match(/^(\s*)matrix:\s*$/);
+    if (!opening) continue;
+    const depth = opening[1].length;
+    const keys = [];
+    let written = null;
+    // The WHOLE block, not up to the `shard:` line: an axis written after it multiplies the
+    // matrix exactly as one written before, and a reader that returned at `shard:` never saw
+    // the second kind — measured on a doctored workflow, where it passed.
+    for (let j = i + 1; j < lines.length; j++) {
+      if (!lines[j].trim()) continue;
+      const indent = lines[j].match(/^\s*/)[0].length;
+      if (indent <= depth) break;
+      const key = lines[j].match(/^\s*([A-Za-z0-9_-]+):\s*(.*)$/);
+      if (!key || indent !== depth + 2) continue;
+      keys.push(key[1]);
+      const list = key[1] === 'shard' && key[2].trim().match(/^\[(.*)\]$/);
+      if (list) written = list[1];
+    }
+    if (written !== null) found.push({ written, keys });
+  }
+  if (!found.length) return null;
+  /*
+   * EVERY matrix carrying a `shard:`, and every entry of it read or the whole list given up
+   * as unreadable. Both halves come from the review of 0081, which broke the first version
+   * twice with a quoted list: `Number("'1'")` is NaN, a reader that FILTERED those out was
+   * left comparing an empty list to an empty list, and `['1','1','2','3','4','5']` — valid
+   * Actions, and a matrix that runs shard 1 twice and shard 6 never — passed in silence.
+   * That is the defect this rule exists to refuse, produced by the rule's own reader.
+   */
+  const read = found.map(({ written, keys }) => {
+    const entries = written
+      .split(',')
+      .map((entry) => entry.trim().replace(/^['"]|['"]$/g, ''));
+    const shards = entries.map(Number);
+    return shards.every((n) => Number.isInteger(n))
+      ? { shards, keys }
+      : { unreadable: true };
+  });
+  // The first matrix that is WRONG, and only otherwise the first at all: two jobs, one of
+  // them a cover and one of them not, left the second unread while the first answered for it.
+  return read.find((one) => coverFault(one)) ?? read[0];
+};
+
+const ciStepsOf = (text, engines) => {
+  const lines = String(text ?? '')
     .split('\n')
-    .map((l) => l.replace(/#.*$/, ''));
+    .map((l) => l.replace(/#.*$/m, ''));
   const installs = lines
     .filter((l) => /playwright\s+install/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
-  const runsE2E = lines.some(
-    (l) => /nx\s+(?:affected|run-many)/.test(l) && /\be2e\b/.test(l),
+  /*
+   * Whether the `e2e` TARGET runs, asked of the target list rather than of the line's words.
+   * `\be2e\b` was true of `check-e2e` on the battery's own line, so this answered yes with
+   * the whole browser job deleted — and yes again from a comment, since the strip above
+   * happens in this function and the pattern was applied to the raw line elsewhere. The
+   * reading in `workflow-targets.mjs` strips comments, reads past options and takes the
+   * words after `-t` as names.
+   */
+  const runsE2E = runsTarget(text, 'e2e');
+  /*
+   * A sharded run is a narrowed run six times over, and the six are the whole suite only if
+   * the denominator is the number of jobs. Nothing else in this repository can see that
+   * arithmetic: the configuration still declares three engines whatever `--shard` says,
+   * points 1-3 pass, every job goes green, and a sixth of the tests never ran. So the
+   * workflow says the number once — `${{ strategy.job-total }}` IS the size of the matrix —
+   * and this line refuses a number typed beside it.
+   */
+  // `--shard=1/6` and `--shard 1/6` are the same instruction to Playwright — measured, it
+  // lists the same 348 tests — so a pattern that knows only the first leaves both rules
+  // below silent over a run that is narrowed exactly as much.
+  const sharded = lines.filter(
+    (l) => /nx\s+(?:affected|run-many)/.test(l) && /--shard(?:=|\s)/.test(l),
   );
-  return { installs, runsE2E };
+  const shardsNotFromMatrix = sharded.filter(
+    (l) => !/strategy\.job-total/.test(l),
+  );
+  /*
+   * The other half of the same question, and the half the denominator alone cannot answer:
+   * `${{ strategy.job-total }}` is the number of jobs in the matrix, so it is the right
+   * denominator only while the matrix is a COVER — one job per shard, each numerator once,
+   * none missing. Two ways to lose a sixth of the suite with the rule above satisfied, both
+   * of them silent and both measured on a doctored workflow: `shard: [1, 1, 2, 3, 4, 5]`
+   * runs shard 1 twice and shard 6 never, and a second axis beside `shard` doubles
+   * `job-total` while the numerators stay 1..6, so half the suite is never asked for.
+   *
+   * The matrix is read off the text at one indentation level, which is what prettier keeps
+   * this file at. A sharded run whose matrix cannot be read at all is the third case, and it
+   * fires with the rest: a rule that answers "I could not tell" with silence is the defect
+   * it was written against.
+   */
+  const shardCover = sharded.length
+    ? (coverOf(lines) ?? { unreadable: true })
+    : null;
+  return { installs, runsE2E, shardsNotFromMatrix, shardCover };
 };
+
+/** The workflow on disk, read by the rule above. */
+const ciSteps = (engines) => ciStepsOf(read(CI), engines);
 
 /**
  * Probes in real browsers — one page per engine, with no server and no application. What
@@ -631,6 +784,14 @@ const buildFixture = (fx) => {
   for (const engine of fx.clearCollected ?? []) w.collected[engine] = [];
 
   if (fx.e2e) w.e2e = { ...w.e2e, ...fx.e2e };
+  /*
+   * `ciText` runs a case's own miniature workflow through the READER, where `ci` hands the
+   * rule a state and leaves the reader unexercised. The distinction is not academic: the
+   * shard reader passed a quoted list in silence while the fixture beside it, which supplied
+   * the parsed state, went on being rejected exactly as declared.
+   */
+  if (fx.ciText)
+    w.ci = ciStepsOf(fx.ciText, Object.keys(w.policy.engines ?? {}));
   if (fx.ci) w.ci = { ...w.ci, ...fx.ci };
   for (const [fact, results] of Object.entries(fx.facts ?? {}))
     w.facts[fact] = { ...w.facts[fact], ...results };

@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-shard-not-a-cover",
+  "description": "A shard matrix that is not a cover, written the way that got past the first version of this rule: the numerators QUOTED, `['1', '1', '2', '3', '4', '5']`. It is valid Actions and it runs shard 1 twice and shard 6 never — and a reader that turned entries into numbers and dropped what would not convert was left comparing an empty list to an empty list, so it passed. `${{ strategy.job-total }}` is still the size of the matrix, so the denominator rule beside this one is satisfied throughout. The input is YAML rather than a state, because what is on trial here is the reading.",
+  "ciText": "jobs:\n  gates:\n    steps:\n      - run: npx playwright install --with-deps chromium firefox webkit\n      - run: npx playwright install-deps chromium firefox webkit\n  e2e:\n    strategy:\n      matrix:\n        shard: ['1', '1', '2', '3', '4', '5']\n    steps:\n      - run: npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}

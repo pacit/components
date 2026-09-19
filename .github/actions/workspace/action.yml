@@ -1,0 +1,120 @@
+name: Workspace
+description: >-
+  Everything a job needs after the checkout and before it can run one nx task: Node, the
+  dependencies, the shas `nx affected` compares against, and the caches the jobs of a run
+  share. In ONE file because the workflow now has seven jobs that need exactly the same
+  steps, and two copies of a step are a drift waiting for the first edit of either — the
+  same reason `CLAUDE.md` is three sentences and an import of `AGENTS.md`.
+
+  The checkout is the one step that CANNOT live here: a workflow reaches this file by path
+  (`uses: ./.github/actions/workspace`), and a path is only there to reach once the
+  repository is. So every job checks out first, in the same three lines, and the reason
+  those lines say what they say is written where the first of them stands.
+
+  What deliberately does NOT live here are the two `playwright install` steps. They stay in
+  `ci.yml`, in every job that needs a browser, because `check-browsers` (point 5) reads THAT
+  file for them: the gate's rule is that every install step names all three engines, and a
+  gate that reads the wrong file answers about nothing. Duplication a gate counts is not the
+  kind that drifts.
+
+inputs:
+  nx-cache:
+    description: >-
+      `save` for the one job that writes the nx task cache back, `restore` for every job
+      that only reads it. Exactly one job may save, and that is arithmetic rather than
+      taste: the entry measured 121 MB, the browsers beside it 456 MB, and a repository's
+      whole cache budget is 10 GB. Seven jobs saving an entry each, on a key that carries
+      the commit, would evict the browsers within a working day — the cache that costs the
+      most to miss.
+    required: false
+    default: restore
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        # The npm cache is the fallback path's, not the ordinary one's: with the
+        # `node_modules` entry below hitting, `npm ci` never runs at all. It earns its keep
+        # on the run after a lockfile change, where it is the difference between a
+        # 66-second install and a cold one in every job at once.
+        cache: 'npm'
+
+    # `node_modules` itself, keyed by the lockfile that produced it. `npm ci` took 66
+    # seconds of every run measured, and it is the same 66 seconds in each of the seven jobs
+    # this workflow now has. Measured across the two runs that straddle the entry's birth:
+    # this whole action took 63 seconds on the miss, where `npm ci` ran, and 19 on the hit —
+    # a 1.1 GB tree stored as 192 MB. The key carries the Node version because a native
+    # module built against one is not the tree the other wants, and `npm ci` on a miss is
+    # what keeps the fallback honest: a partial restore cannot happen, an entry is written
+    # whole or not at all.
+    - uses: actions/cache@v6
+      id: modules
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}
+
+    - if: steps.modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
+
+    # Sets NX_BASE and NX_HEAD: the merge base on a pull request, the last commit
+    # with a green run of this workflow on main — so a failed run does not hand the
+    # next one a narrower diff than it should check. Every job asks for itself, and they
+    # all get the same answer: the run is one workflow run, green or not as a whole.
+    - uses: nrwl/nx-set-shas@v5
+
+    # The language gate's word lists are a pinned input, not a runner fact: the gate
+    # restores them itself out of `tools/dictionaries.lock.json`, hash-verified on every
+    # run, so this cache never has to be trusted — it only spares the archive a 9 MB
+    # download, and a miss costs seconds, not correctness.
+    - uses: actions/cache@v6
+      with:
+        path: tools/.dictionaries
+        key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
+
+    # The nx task cache, and it names TWO directories because it IS two halves. The
+    # artifacts of a cached task live in `.nx/cache/<hash>/`; the index that says such a
+    # hash exists at all — its exit code, its terminal output — lives in the database
+    # under `.nx/workspace-data`. Measured on nx 23.1, each half restored on its own:
+    # `.nx/cache` alone reads 0/1 hit and reruns the task (that is the snippet copied all
+    # over the internet, and it was written for the nx that kept its index beside the
+    # artifacts); the database alone reads 1/1 hit for `tokens:build` — and leaves
+    # `libs/tokens/dist` NOT EXISTING, a green build with no artifact for every gate
+    # downstream to read. So they are one entry under one key: restored together or
+    # missed together, never one without the other.
+    #
+    # What it buys, measured over the fourteen gates of the root project on a developer
+    # machine: a push that touches documentation alone restored 12 of 17 tasks and took
+    # 11.2 s instead of 50.8 s. What it does NOT buy is the case that reads worst: a
+    # dependency bump still reruns every gate, because `package-lock.json` is in
+    # `sharedGlobals` and every task's hash carries it. That is deliberate — a gate
+    # answered from a run taken before the bump is exactly what nobody here wants.
+    #
+    # The nightly has no step like this, and that is a decision rather than an omission:
+    # it exists to re-measure everything from nothing, and a restored result is a reading
+    # somebody else's machine took on another day.
+    #
+    # A hosted remote cache stays refused, and not because this step is as good: it is a
+    # service, so it is a dependency decision rather than a setting, and the free step is
+    # the weaker option taken deliberately.
+    - if: inputs.nx-cache == 'save'
+      uses: actions/cache@v6
+      with:
+        path: |
+          .nx/cache
+          .nx/workspace-data
+          !.nx/workspace-data/d
+        key: nx-${{ runner.os }}-${{ github.sha }}
+        restore-keys: nx-${{ runner.os }}-
+
+    - if: inputs.nx-cache != 'save'
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          .nx/cache
+          .nx/workspace-data
+          !.nx/workspace-data/d
+        key: nx-${{ runner.os }}-${{ github.sha }}
+        restore-keys: nx-${{ runner.os }}-

@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-shard-not-from-matrix",
+  "description": "A sharded `e2e` line whose shard count is a number rather than the size of the matrix — and written with a SPACE, `--shard 1/8`, which Playwright reads exactly as `--shard=1/8` (measured: the same 348 tests listed either way). Both halves matter. The workflow runs the suites on six machines and the six are the whole suite only while the denominator is `${{ strategy.job-total }}`; typed out beside a matrix of six it is a second copy of a number, and the copies disagree the first time somebody adds or removes a shard. What the disagreement looks like is a green run over tests that never ran. The input is YAML rather than a state, because what is on trial is the reading: a pattern that knew only the `=` spelling left this line — and the cover rule beside it — silent.",
+  "ciText": "jobs:\n  gates:\n    steps:\n      - run: npx playwright install --with-deps chromium firefox webkit\n      - run: npx playwright install-deps chromium firefox webkit\n  e2e:\n    strategy:\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6]\n    steps:\n      - run: npx nx affected --shard 1/8 -t e2e\n"
+}

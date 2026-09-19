@@ -29,6 +29,7 @@ import {
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -310,12 +311,15 @@ const impliedTarget = (path) => {
   return null;
 };
 
-const ciTargets = (ci) =>
-  new Set(
-    [...ci.matchAll(/nx (?:affected|run-many) -t ([a-z0-9:\-\s]+)/g)]
-      .flatMap((m) => m[1].trim().split(/\s+/))
-      .filter(Boolean),
-  );
+/*
+ * Which targets CI runs. The reading lives in `workflow-targets.mjs`, and moving it there
+ * fixed two defects this copy had: it held `\s` in its class, so a match could run past the
+ * newline into the next step, and it read neither comments nor options. The second one had
+ * teeth — the sharded browser job puts `--shard=…` between the command and `-t`, so this
+ * gate stopped seeing the `e2e` run line, while a COMMENT naming it was enough to answer
+ * "the suite runs in CI" with the run line deleted (0081).
+ */
+const ciTargets = (ci) => targetsIn(ci);
 
 /** What one Checks row says: measured (a path), argued (deliberately, not applicable), a gap. */
 const rowState = (evidence) => {

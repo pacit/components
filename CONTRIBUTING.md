@@ -42,12 +42,16 @@ which gates the habit omits:
 scripts/before-push
 ```
 
-It runs `nx affected` against `main` with the targets taken from the `nx affected -t …` line
-in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), minus `e2e` — the suite that takes
-twenty of CI's minutes, and that a change unable to reach a browser has nothing to learn from.
-`--e2e` puts it back, `--base=<ref>` compares against something else, and `--cold` skips the
-nx cache. A change under `tools/` took 52 seconds cold on one desk, and 3 with the cache
-holding the same 23 tasks; the runner takes twenty minutes either way.
+It runs `nx affected` against `main` with the targets taken from the `nx affected -t …` lines
+in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — every one of them, because the
+workflow runs its battery in one job and its browsers in six sharded ones
+([0081](docs/decisions/0081-a-shard-is-a-machine-not-a-second-worker.md)) — minus `e2e`, the
+suites that took 66 of CI's 68 minutes before that split, and that a change unable to reach a
+browser has nothing to learn from. `--e2e` puts them back, and puts them back WHOLE: a shard is
+six machines' arrangement, not a desk's. `--base=<ref>` compares against something else, and
+`--cold` skips the nx cache. A change under `tools/` took 52 seconds cold on one desk, and 3
+with the cache holding the same 23 tasks; the runner's battery job answered in 4.2 minutes
+on the first run of the split arrangement, and the whole of CI in 17.1.
 
 Take `--cold` seriously when the change is one nx cannot see. A cached task is not a
 measurement: nx replays a result whose inputs did not move, so a new tool, a fixture or a

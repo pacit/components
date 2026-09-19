@@ -7,7 +7,7 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
 requirements/   LEVEL 1   promises: what has to be true                (95 entries)
-decisions/      LEVEL 2   why this way, and what it costs us           (80 ADRs)
+decisions/      LEVEL 2   why this way, and what it costs us           (81 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
 lessons.md                the evidence base: what actually happened    (230 entries)
 support.md                what a consumer can count on: versions, notice, codemods
@@ -136,8 +136,8 @@ It checks eight things:
    `none — gap` also has `Binds at`.
 2. **Existence.** Every path cited in `Gate` / `Control` exists on disk (a glob must have
    at least one hit).
-3. **Wired into CI.** The target implied by the cited path really does run in
-   `nx affected -t …` from `ci.yml` — or is a dependency of one that does. Same check as
+3. **Wired into CI.** The target implied by the cited path really does run in one of the
+   `nx affected -t …` lines of `ci.yml` — or is a dependency of one that does. Same check as
    point 5 in `check-package.mjs`, where we verify that the schematic factory points at the
    compiled file and not at the TS from before the build.
 4. **No dangling citations.** Every `req-*` / `lesson-*` used **anywhere in the repo**

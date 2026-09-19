@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # The gates CI will run, run here first — the same list, taken from `ci.yml` itself rather
 # than copied, so the two cannot drift. Measured on this desk 2026-09-18, over the 23 tasks a
-# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them, and
-# some twenty minutes of waiting for a runner to say the same thing.
+# change under `tools/` touches: 52 seconds with `--cold`, 3 with the cache holding them —
+# against 4.2 minutes for the runner's battery job, inside a CI run that answers in 17.1
+# (0081; measured on the first sharded run, 2026-09-19).
 #
-# `e2e` is left out by default: it is the suite that takes the other twenty minutes, and a
-# change that cannot reach the browser has nothing to learn from it. Ask for it with `--e2e`.
+# `e2e` is left out by default: the two suites took 66 of the 68 minutes of the last
+# unsharded run on a runner, and a change that cannot reach the browser has nothing to learn
+# from them. Ask for them with `--e2e` — and get the WHOLE suite, not a shard: the workflow
+# splits the run across six machines and this desk is one.
 #
 # A cached task is not a measurement. nx replays a result whose inputs did not move, and a
 # change outside a target's inputs — a tool, a fixture, a workflow — leaves the target green
@@ -42,18 +45,36 @@ for arg in "$@"; do
   esac
 done
 
-# The one line in CI that runs the gates. Read, not restated: `nx affected -t …` up to the end
-# of the line, with the runner and the package manager in front of it dropped.
-targets=$(sed -n 's/.*npx nx affected -t \(.*\)$/\1/p' "$workflow" | head -1)
+# EVERY line in CI that runs targets, and not the first one. The workflow runs the battery in
+# one job and the browsers in six more, so a reader that stopped at the first line would have
+# dropped `e2e` off this battery the day that split landed — silently, because a list that is
+# short still runs and still goes green.
+#
+# The reading is NOT repeated here. `tools/workflow-targets.mjs` is the one home for it, and
+# the four gates that read the same file answer from it too: this script held a sixth copy
+# until the review of 0081 measured the two apart, and they disagreed in both directions — a
+# comment naming a target put a phantom on this battery, a line spelled `nx run-many` took
+# two targets off it, and neither said a word.
+#
+# Three ways it can go wrong, and all three are LOUD: a file that cannot be read, a line that
+# runs nx and names no target, and a list that is empty once `e2e` is set aside. The last is
+# the one that could pass for work — `nx affected -t ''` runs nothing and exits 0.
+if ! targets=$("$root/scripts/with-node" node "$root/tools/workflow-targets.mjs" "$workflow"); then
+  exit 1
+fi
 if [ -z "$targets" ]; then
-  echo "::error::no \`npx nx affected -t …\` line in .github/workflows/ci.yml — the battery reads its targets from there, and the line has moved or changed shape." >&2
+  echo "::error::no \`npx nx affected … -t …\` line in .github/workflows/ci.yml — the battery reads its targets from there, and the line has moved or changed shape." >&2
   exit 1
 fi
 if [ "$want_e2e" -eq 0 ]; then
-  targets=$(echo "$targets" | sed 's/\( \|^\)e2e\( \|$\)/ /g')
+  targets=$(printf '%s\n' "$targets" | grep -vx e2e || true)
+fi
+if [ -z "$targets" ]; then
+  echo "::error::the list out of ci.yml holds nothing but \`e2e\`, which this battery sets aside by default — so it would run no target at all and say so in green. Ask for it with --e2e, or look at what became of the gate line in that workflow." >&2
+  exit 1
 fi
 
-read -r -a list <<<"$targets"
+mapfile -t list <<<"$targets"
 said="--base=$base${extra[0]+ ${extra[*]}}"
 echo "> nx affected $said -t ${#list[@]} targets from ci.yml"
 # `${extra[@]:-}` would hand nx an empty argument when no flag was given — harmless today,

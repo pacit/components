@@ -87,7 +87,7 @@ the library's site), a "sandbox" app (playground and the base for e2e) and e2e t
 on the sandbox.
 
 **Gate:** `apps/docs/project.json`, `apps/docs-e2e/project.json` — the two projects in the
-graph — and `.github/workflows/ci.yml`, whose `nx affected` line runs their `build`, `lint`,
+graph — and `.github/workflows/ci.yml`, whose `nx affected` lines run their `build`, `lint`,
 `typecheck` and `e2e` the moment they are touched
 **Control:** `apps/docs-e2e/src/shell.spec.ts › "renders the home page from the library,
 with a clean console"` — an application that stops building, or ships a broken shell, fails
