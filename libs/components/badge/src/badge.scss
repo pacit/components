@@ -22,15 +22,37 @@
   white-space: nowrap;
 }
 
-/* The tone swaps one triple and nothing else (`req-api-attributes`); `neutral` overrides
-   nothing, so a theme that moves the base tokens still works (`req-token-override`). */
+/* A tone swaps one triple and nothing else (`req-api-attributes`). There is no rule for
+   the untoned badge because there is no tone to select: a badge with no `tone` carries no
+   `data-pct-tone` at all, so the box keeps the base tokens `:host` already set and a theme
+   that moves them still works (`req-token-override`). The four here are the library's four
+   ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)) — one
+   list, not a second one that means the same thing. */
 :host([data-pct-tone='danger']) {
   --pct-badge-bg: var(--pct-badge-bg-danger);
   --pct-badge-fg: var(--pct-badge-fg-danger);
   --pct-badge-border: var(--pct-badge-border-danger);
 }
 
-/* Forced colours: both tones drop to the palette's one word for text in a box, and the
+:host([data-pct-tone='success']) {
+  --pct-badge-bg: var(--pct-badge-bg-success);
+  --pct-badge-fg: var(--pct-badge-fg-success);
+  --pct-badge-border: var(--pct-badge-border-success);
+}
+
+:host([data-pct-tone='warning']) {
+  --pct-badge-bg: var(--pct-badge-bg-warning);
+  --pct-badge-fg: var(--pct-badge-fg-warning);
+  --pct-badge-border: var(--pct-badge-border-warning);
+}
+
+:host([data-pct-tone='info']) {
+  --pct-badge-bg: var(--pct-badge-bg-info);
+  --pct-badge-fg: var(--pct-badge-fg-info);
+  --pct-badge-border: var(--pct-badge-border-info);
+}
+
+/* Forced colours: every tone drops to the palette's one word for text in a box, and the
    border is the box's surviving channel — which is why a page that said something by tone
    alone was already saying nothing here ([`lesson-70`](../../../../docs/lessons.md#lesson-70)
    for the written-out rules). */

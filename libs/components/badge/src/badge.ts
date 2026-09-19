@@ -6,21 +6,7 @@ import {
   input,
   isDevMode,
 } from '@angular/core';
-
-/**
- * The tones the skin can keep today. A union, so a missing tone is a compile error and not
- * a silently grey box — and deliberately two members: `neutral` stands on surfaces the skin
- * already has, `danger` is the error colour painting its first background (the `on-danger`
- * pair `semantic.light.json` promised back), and `success` / `warning` / `info` needed colour
- * ramps the skin did not have at all. **Those ramps landed with the button's tone axis**
- * ([0082](../../../../docs/decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
- * so the condition this union named has fired and what is owed is the collapse onto
- * `PctTone` itself — the same road `PctIconName` walks
- * ([0053](../../../../docs/decisions/0053-a-badge-is-a-word-wearing-a-tone.md)).
- *
- * @since 0.1.0
- */
-export type PctBadgeTone = 'neutral' | 'danger';
+import type { PctTone } from '@pacit/components/core';
 
 /**
  * A badge: a word wearing a tone — `Draft`, `Active`, `Overdue`.
@@ -54,11 +40,20 @@ export class PctBadge {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
-   * The tone the word wears — `neutral` by default. It repeats the text, never replaces it.
+   * The tone the word wears, or `null` for none — the default, and the quiet box the skin's
+   * own surfaces paint. It repeats the text, never replaces it.
+   *
+   * **The absence is the neutral, and is not a member.** A union member meaning "none of the
+   * above" makes every consumer write it, and the library settled that once for every
+   * component that would ever want tones
+   * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)). Until
+   * 0082 landed the skin's `success` / `warning` / `info` ramps this input took a list of
+   * its own, `PctBadgeTone`, naming the missing ramps as the condition for growing; the
+   * ramps arrived, so the list is gone rather than doubled.
    *
    * @since 0.1.0
    */
-  readonly tone = input<PctBadgeTone>('neutral');
+  readonly tone = input<PctTone | null>(null);
 
   constructor() {
     if (isDevMode()) afterNextRender(() => this.warnOnEmptyBadge());

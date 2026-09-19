@@ -6,11 +6,12 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PctBadge, PctBadgeTone } from './badge';
+import { PctTone } from '@pacit/components/core';
+import { PctBadge } from './badge';
 
 /**
  * Three arrangements. **Host** binds the tone through a signal — the swap is observable
- * nowhere else. **BareHost** binds nothing: the neutral default is its only witness.
+ * nowhere else. **BareHost** binds nothing: the absent default is its only witness.
  * **EmptyHost** and **BlankHost** are the two shapes of the one refused state — no text at
  * all, and text that is only whitespace — and the only arrangements whose first render may
  * warn.
@@ -20,7 +21,7 @@ import { PctBadge, PctBadgeTone } from './badge';
   template: `<pct-badge [tone]="tone()">Overdue</pct-badge>`,
 })
 class Host {
-  readonly tone = signal<PctBadgeTone>('danger');
+  readonly tone = signal<PctTone | null>('danger');
 }
 
 @Component({
@@ -80,19 +81,29 @@ describe('PctBadge — a word wearing a tone', () => {
     expect(badge().getAttribute('aria-label')).toBeNull();
   });
 
-  it('wears neutral with nothing bound — the base tone, not a fourth state', async () => {
+  it('carries no tone attribute with nothing bound — the absence is the neutral', async () => {
     await render(BareHost);
 
-    expect(badge().getAttribute('data-pct-tone')).toBe('neutral');
+    expect(badge().hasAttribute('data-pct-tone')).toBe(false);
   });
 
-  it('carries the bound tone and follows it as it changes', async () => {
+  it('reflects every member of the shared four', async () => {
+    const fixture = await render(Host);
+
+    for (const tone of ['success', 'warning', 'danger', 'info'] as const) {
+      fixture.componentInstance.tone.set(tone);
+      await settle(fixture);
+      expect(badge().getAttribute('data-pct-tone')).toBe(tone);
+    }
+  });
+
+  it('drops the attribute again when the tone goes back to null', async () => {
     const fixture = await render(Host);
 
     expect(badge().getAttribute('data-pct-tone')).toBe('danger');
-    fixture.componentInstance.tone.set('neutral');
+    fixture.componentInstance.tone.set(null);
     await settle(fixture);
-    expect(badge().getAttribute('data-pct-tone')).toBe('neutral');
+    expect(badge().hasAttribute('data-pct-tone')).toBe(false);
   });
 
   it('holds no parts — the host is the box', async () => {
