@@ -19,7 +19,7 @@ export class PctPlain {
    *
    * @since 0.1.0
    */
-  readonly id = 'pct-plain-1';
+  readonly id: string = 'pct-plain-1';
 
   /**
    * A getter, which the readers count beside the fields.
@@ -37,7 +37,7 @@ export class PctPlain {
    *
    * @since 0.1.0
    */
-  readonly label = 'plain';
+  readonly label: string = 'plain';
 
   /** @since 0.1.0 */
   open(): void {}
