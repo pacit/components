@@ -1,6 +1,6 @@
 /**
  * What a workflow's `-t` lines name — one home for a reading that four gates and
- * `scripts/before-push` answer from (0017). Five copies held it until 2026-09-19 and they
+ * `scripts/before-push` answer from (0017). Six copies held it until 2026-09-19 and they
  * disagreed; the line that broke them is the sharded one (0081). Four rules, four defects:
  *
  *  1. COMMENTS GO FIRST: these workflows explain every step of their own in prose, so a
@@ -16,6 +16,7 @@
  */
 
 import { readFileSync } from 'node:fs';
+import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 /** The words after `-t` on one line, up to the first option. */
@@ -35,7 +36,7 @@ export const targetsIn = (text) =>
     [
       ...String(text ?? '')
         .split('\n')
-        .map((line) => line.replace(/#.*$/, ''))
+        .map((line) => line.replace(/#.*$/m, ''))
         .join('\n')
         .matchAll(/nx (?:affected|run-many)[^\n]*? -t ([a-z0-9:\- \t]+)/g),
     ].flatMap((match) => targetsAfterT(match[1])),
@@ -54,11 +55,19 @@ export const runsTarget = (text, target) => targetsIn(text).has(target);
  * A line that runs nx and carries no `-t` is an error here rather than a line passed over:
  * the caller is about to run whatever comes back, and a list that is short still goes green.
  */
+// `realpathSync` and not the argument as typed: a worktree reaches this file through a
+// symlink, and a comparison of the resolved URL with an unresolved path is then false — the
+// block would not run, the caller would read an empty list, and the error it printed would
+// name the wrong file.
 if (
   process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
+  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
 ) {
   const files = process.argv.slice(2);
+  if (!files.length) {
+    console.error('usage: node tools/workflow-targets.mjs <workflow.yml> …');
+    process.exit(2);
+  }
   const targets = new Set();
   for (const file of files) {
     let text;
@@ -72,7 +81,7 @@ if (
     }
     const mute = text
       .split('\n')
-      .map((line) => line.replace(/#.*$/, ''))
+      .map((line) => line.replace(/#.*$/m, ''))
       .filter(
         (line) => /nx (?:affected|run-many)/.test(line) && !/ -t /.test(line),
       );

@@ -183,11 +183,19 @@ jobs:
       # this list too), and none of them is affected.
       - shell: bash
         run: |
-          if [ -z "$(npx nx show projects -t e2e | tr -d '[]\" \n\r\t')" ]; then
+          if ! suites=$(npx nx show projects -t e2e); then
+            echo "::error::nx could not list the projects of this workspace, so nothing below can say whether a suite was skipped or lost."
+            exit 1
+          fi
+          if [ -z "$(printf %s "$suites" | tr -d '[]\" \n\r\t')" ]; then
             echo "::error::no project in this workspace has an \`e2e\` target — the suites this job exists to run have been renamed or lost, and an empty affected set below would have looked like a quiet afternoon."
             exit 1
           fi
-          if [ -z "$(npx nx show projects --affected -t e2e | tr -d '[]\" \n\r\t')" ]; then
+          if ! affected=$(npx nx show projects --affected -t e2e); then
+            echo "::error::nx could not say which suites this commit affects — which is not the same answer as none, and this job will not read it as one."
+            exit 1
+          fi
+          if [ -z "$(printf %s "$affected" | tr -d '[]\" \n\r\t')" ]; then
             echo "No suite is affected by this commit — shard ${{ matrix.shard }} has nothing to run."
             exit 0
           fi

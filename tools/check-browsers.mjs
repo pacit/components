@@ -364,10 +364,13 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       'ci',
       'ci-shard-not-a-cover',
       fault === 'unreadable'
-        ? `\`${CI}\` runs a sharded suite and no matrix under it could be read — a list ` +
-            `this gate cannot take apart entry by entry is not a list it can call a cover, ` +
-            `and a rule that answers "I could not tell" with silence is the defect it was ` +
-            `written against.`
+        ? `\`${CI}\` runs a sharded suite and no matrix under it could be read entry by ` +
+            `entry, so nothing here can say whether the shards cover the suite once. The ` +
+            `shape this gate reads is one line — \`shard: [1, 2, 3, 4, 5, 6]\` under ` +
+            `\`matrix:\`, two spaces in, the numerators bare or quoted. A list written down ` +
+            `the page, a flow map, or an expression is legible YAML and not legible here; ` +
+            `answering "I could not tell" with silence is the defect this rule exists for, ` +
+            `so it is answered with red instead.`
         : fault === 'axes'
           ? `the shard matrix in \`${CI}\` is multiplied by ` +
             `\`${ci.shardCover.keys.filter((k) => k !== 'shard').join('`, `')}\`, so ` +
@@ -648,7 +651,7 @@ const coverOf = (lines) => {
 const ciStepsOf = (text, engines) => {
   const lines = String(text ?? '')
     .split('\n')
-    .map((l) => l.replace(/#.*$/, ''));
+    .map((l) => l.replace(/#.*$/m, ''));
   const installs = lines
     .filter((l) => /playwright\s+install/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
@@ -669,8 +672,11 @@ const ciStepsOf = (text, engines) => {
    * workflow says the number once — `${{ strategy.job-total }}` IS the size of the matrix —
    * and this line refuses a number typed beside it.
    */
+  // `--shard=1/6` and `--shard 1/6` are the same instruction to Playwright — measured, it
+  // lists the same 348 tests — so a pattern that knows only the first leaves both rules
+  // below silent over a run that is narrowed exactly as much.
   const sharded = lines.filter(
-    (l) => /nx\s+(?:affected|run-many)/.test(l) && /--shard=/.test(l),
+    (l) => /nx\s+(?:affected|run-many)/.test(l) && /--shard(?:=|\s)/.test(l),
   );
   const shardsNotFromMatrix = sharded.filter(
     (l) => !/strategy\.job-total/.test(l),

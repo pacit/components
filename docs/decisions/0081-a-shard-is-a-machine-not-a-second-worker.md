@@ -74,10 +74,14 @@ MACHINES rather than across workers on one.**
   split along the cost rather than the count — and that is a measurement nobody has taken
   yet, not a change to make on the strength of this paragraph.
 - **The machine time barely moves: 73.4 minutes against 70.6.** That was the surprise of the
-  first run, and it is worth stating plainly because "parallel costs more machine" is the
-  thing everybody assumes. Only the setup is duplicated — between a minute and a half and two
-  minutes a job, measured across the seven — while the 66 minutes of tests are DIVIDED, so
-  seven jobs cost 4% more than one and return the answer four times sooner. On a public repository it is free either way
+  first run, and it is worth stating plainly because "parallel costs more machine" is what
+  everybody assumes. What it is NOT is a tidy sum. The duplicated setup measured between a
+  minute and a half and two minutes a job, so six extra jobs should have cost some ten
+  minutes — and the total went up by under three, because the six nx steps together came to
+  57.5 minutes against the single job's 66. The tests got about eight minutes cheaper by
+  being split, and nobody here knows why: three numbers are measured and the arithmetic
+  between them is not explained. Do not reason from the 4%; it is a difference of two
+  measurements and not a model of anything. On a public repository it is free either way
   ([the minutes note](../plan.md) holds: nothing paid).
 - **A red shard no longer cancels its siblings** (`fail-fast: false`): after a failure the
   question is always which tests failed, and a cancelled shard answers nothing.
