@@ -875,7 +875,7 @@ test.describe('forced-colors: active', () => {
 
   /**
    * The tone is a colour, and this mode takes colours away. That is not a gap in the axis but
-   * the reason the library refuses to let a tone be the only channel (0076, 0081): under a
+   * the reason the library refuses to let a tone be the only channel (0076, 0082): under a
    * forced palette all four tones and the untoned button paint the same system colours, and
    * what is left saying which button does what is the label. A page that said "dangerous" by
    * red alone was already saying nothing to these readers, and nothing here can add it back.

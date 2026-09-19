@@ -34,7 +34,7 @@ test.describe('PctButton', () => {
   });
 
   /**
-   * The tone axis (0081). The values are written out rather than read from the skin: a case
+   * The tone axis (0082). The values are written out rather than read from the skin: a case
    * that resolved `--pct-danger` at run time would agree with the stylesheet about anything,
    * including a tone silently pointing at the wrong family.
    */

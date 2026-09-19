@@ -50,7 +50,7 @@ that component. `success`, `warning` and `info` needed colour ramps the skin did
 at all, and inventing three ramps at a component's feet would have put the skin's centre of
 gravity in the wrong file ([0019](0019-primitives-are-not-the-contract.md)). The union grows
 the day the ramps land — the same road `PctIconName` walks, and **that day came**: the ramps
-landed with the button's tone axis ([0081](0081-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
+landed with the button's tone axis ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
 so this refusal's condition has fired and the collapse onto `PctTone` is owed.
 
 ## What is refused, and why

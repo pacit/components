@@ -13,7 +13,7 @@ import {
  * already has, `danger` is the error colour painting its first background (the `on-danger`
  * pair `semantic.light.json` promised back), and `success` / `warning` / `info` needed colour
  * ramps the skin did not have at all. **Those ramps landed with the button's tone axis**
- * ([0081](../../../../docs/decisions/0081-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
+ * ([0082](../../../../docs/decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
  * so the condition this union named has fired and what is owed is the collapse onto
  * `PctTone` itself — the same road `PctIconName` walks
  * ([0053](../../../../docs/decisions/0053-a-badge-is-a-word-wearing-a-tone.md)).

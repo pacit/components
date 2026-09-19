@@ -217,7 +217,7 @@ The order follows **architectural debt**, not popularity:
    tones, and no longer for the reason the union records: `danger` paints the error colour's
    first background with the `on-danger` pair the semantic tier had promised back for exactly
    this component, and `success` / `warning` / `info` waited for ramps the skin did not have.
-   Those landed with [0081](../decisions/0081-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md),
+   Those landed with [0082](../decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md),
    so what holds the union at two is now only that nothing has collapsed it onto `PctTone`. The tone never speaks alone: an empty badge is a dev-mode warning,
    and forced colours make the argument visible by dropping both tones to one palette.
    The **breadcrumb** is built, and the split is ownership again: every anchor is the

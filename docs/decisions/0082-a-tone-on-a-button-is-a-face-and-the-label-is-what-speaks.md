@@ -1,4 +1,4 @@
-# 0081 — A tone on a button is a face, and the label is what speaks
+# 0082 — A tone on a button is a face, and the label is what speaks
 
 **Status:** accepted
 **Implements:** [`req-token-skin`](../requirements/tokens.md#req-token-skin),

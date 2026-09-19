@@ -99,7 +99,7 @@ test.describe('PctField — the field wrapper', () => {
     );
 
     // The field border signals the error with a colour from a token: `--pct-danger`, which
-    // is red.700 since the tone axis moved it one step down the ramp (0081).
+    // is red.700 since the tone axis moved it one step down the ramp (0082).
     await expect(field.locator('[data-pct-part="field-row"]')).toHaveCSS(
       'border-color',
       'rgb(185, 28, 28)',

@@ -56,7 +56,7 @@ today is a semantic, component or scale token, and all of those stay in the unio
   the TYPE, not from the stylesheet). What they lose is the promise that it will still be
   there, and "and always will be" was an overstatement that the next line already qualified:
   `red.600` left the palette on 2026-09-19, when `danger` moved one step down the ramp and
-  nothing read it any more (0081, and 0020's rule that the palette carries no spares).
+  nothing read it any more (0082, and 0020's rule that the palette carries no spares).
 
 ## Consequences
 
