@@ -3,6 +3,7 @@
   "$comment-coverage": "This list is the contrast gate's DENOMINATOR: a pair with no entry is not counted, so until 2026-08-05 the policy was silent about 27 colours the library really paints (lesson-33). Point 7 of `check-tokens` watches it: every colour token a stylesheet paints as background, text or outline has to stand in at least one entry. Choosing the PARTNER stays a human decision — the machine sees that a colour is unmeasured, it does not see what it lies on.",
   "$comment-partner": "The convention for choosing a partner: text is measured against the surface it stands on; a surface against the text lying on it; a border against the ADJACENT surface — for a control with a fill of its own that is the fill (`pct.checkbox.bg`), while for a button filled across its whole surface the boundary runs against the page (`pct.surface`).",
   "$comment-disabled": "The `disabled` states have severity `warn`, not `error`: SC 1.4.11 explicitly exempts parts of inactive controls, and SC 1.4.3 exempts inactive text. The entry stays, because being exempt from a requirement is no reason to STOP MEASURING — the report is to show how far the disabled state goes down, rather than have no opinion about it.",
+  "$comment-tones": "The toned button: four tones \u00d7 four faces, and the seven pairs per tone mirror the untoned button\u0027s exactly \u2014 a fill with its hover and press, the quiet faces on the page and on the page\u0027s hover tint, and the soft face\u0027s two tints. The ghost face adds no entry: it paints the same colour on the same two grounds as the outline face, and a second name for one pair would be a second place to keep it true. Nor does the disabled state, which drops every tone to the grey pair already measured above \u2014 the rule that makes it grey is the one thing a tone must not be able to outrank.",
   "checks": [
     {
       "name": "body text",
@@ -96,6 +97,202 @@
       "severity": "error"
     },
     {
+      "name": "button/danger solid — label",
+      "fg": "pct.on-danger",
+      "bg": "pct.danger",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger hover — label",
+      "fg": "pct.on-danger",
+      "bg": "pct.danger-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger active — label",
+      "fg": "pct.on-danger",
+      "bg": "pct.danger-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger outline — label",
+      "fg": "pct.danger",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger outline hover — label",
+      "fg": "pct.danger",
+      "bg": "pct.surface-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger soft — label",
+      "fg": "pct.on-danger-100",
+      "bg": "pct.danger-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/danger soft hover — label",
+      "fg": "pct.on-danger-100",
+      "bg": "pct.danger-200",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success solid — label",
+      "fg": "pct.on-success",
+      "bg": "pct.success",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success hover — label",
+      "fg": "pct.on-success",
+      "bg": "pct.success-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success active — label",
+      "fg": "pct.on-success",
+      "bg": "pct.success-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success outline — label",
+      "fg": "pct.success",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success outline hover — label",
+      "fg": "pct.success",
+      "bg": "pct.surface-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success soft — label",
+      "fg": "pct.on-success-100",
+      "bg": "pct.success-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/success soft hover — label",
+      "fg": "pct.on-success-100",
+      "bg": "pct.success-200",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning solid — label",
+      "fg": "pct.on-warning",
+      "bg": "pct.warning",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning hover — label",
+      "fg": "pct.on-warning",
+      "bg": "pct.warning-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning active — label",
+      "fg": "pct.on-warning",
+      "bg": "pct.warning-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning outline — label",
+      "fg": "pct.warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning outline hover — label",
+      "fg": "pct.warning",
+      "bg": "pct.surface-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning soft — label",
+      "fg": "pct.on-warning-100",
+      "bg": "pct.warning-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/warning soft hover — label",
+      "fg": "pct.on-warning-100",
+      "bg": "pct.warning-200",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info solid — label",
+      "fg": "pct.on-info",
+      "bg": "pct.info",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info hover — label",
+      "fg": "pct.on-info",
+      "bg": "pct.info-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info active — label",
+      "fg": "pct.on-info",
+      "bg": "pct.info-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info outline — label",
+      "fg": "pct.info",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info outline hover — label",
+      "fg": "pct.info",
+      "bg": "pct.surface-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info soft — label",
+      "fg": "pct.on-info-100",
+      "bg": "pct.info-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/info soft hover — label",
+      "fg": "pct.on-info-100",
+      "bg": "pct.info-200",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "$comment": "The other direction of the same gradient: the `text` face of `pctHero` cuts the sweep out of the WORD, so each stop is a foreground on the page's own surface and each is measured at AA — three checks again, and the weakest of the three is the one nobody looks at.",
       "name": "hero/text — the first stop as a word",
       "fg": "pct.hero-text",
@@ -152,6 +349,34 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "UI: button border (danger)",
+      "fg": "pct.danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: button border (success)",
+      "fg": "pct.success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: button border (warning)",
+      "fg": "pct.warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: button border (info)",
+      "fg": "pct.info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     },
     {
       "name": "UI: focus ring",

@@ -66,13 +66,120 @@
       "$type": "color",
       "$value": "{pct.slate.500}"
     },
+    "$comment-danger": "The dark theme's `danger`, and nothing moved here: the light theme's base stepped from `600` to `700` for a pair measured on a light ground, while this end of the ramp already carried every pair it had to. What is new is the family — the resting fill, its hover and its press go UP the ramp rather than down, because a dark ground lightens what stands on it, and the text over them is the ramp's far end (`slate.1000`) rather than white.",
     "danger": {
       "$type": "color",
       "$value": "{pct.red.400}"
     },
+    "danger-hover": {
+      "$type": "color",
+      "$value": "{pct.red.300}"
+    },
+    "danger-active": {
+      "$type": "color",
+      "$value": "{pct.red.200}"
+    },
     "on-danger": {
       "$type": "color",
       "$value": "{pct.slate.1000}"
+    },
+    "danger-100": {
+      "$type": "color",
+      "$value": "{pct.red.800}"
+    },
+    "danger-200": {
+      "$type": "color",
+      "$value": "{pct.red.700}"
+    },
+    "on-danger-100": {
+      "$type": "color",
+      "$value": "{pct.red.100}"
+    },
+    "$comment-tones": "The same family the light theme gained, read off the other end of the ramps. Three readings say why the direction inverts: measured on `slate.900` the bases are 10.25:1, 10.69:1 and 7.02:1, which a `700` step could not reach here. The soft face inverts with them — `800` is the resting tint and `700` its hover, with the ramp's lightest step as the label, and the two tightest pairs in the whole skin are here (`warning` 4.51:1 and `success` 4.57:1 on that hover tint), which is a note for whoever next touches these two steps. The rest of the reason stands with the light theme's: a tone is never only a colour, and on a button the second channel is the label (0076, 0053).",
+    "success": {
+      "$type": "color",
+      "$value": "{pct.green.400}"
+    },
+    "success-hover": {
+      "$type": "color",
+      "$value": "{pct.green.300}"
+    },
+    "success-active": {
+      "$type": "color",
+      "$value": "{pct.green.200}"
+    },
+    "on-success": {
+      "$type": "color",
+      "$value": "{pct.slate.1000}"
+    },
+    "success-100": {
+      "$type": "color",
+      "$value": "{pct.green.800}"
+    },
+    "success-200": {
+      "$type": "color",
+      "$value": "{pct.green.700}"
+    },
+    "on-success-100": {
+      "$type": "color",
+      "$value": "{pct.green.100}"
+    },
+    "warning": {
+      "$type": "color",
+      "$value": "{pct.amber.400}"
+    },
+    "warning-hover": {
+      "$type": "color",
+      "$value": "{pct.amber.300}"
+    },
+    "warning-active": {
+      "$type": "color",
+      "$value": "{pct.amber.200}"
+    },
+    "on-warning": {
+      "$type": "color",
+      "$value": "{pct.slate.1000}"
+    },
+    "warning-100": {
+      "$type": "color",
+      "$value": "{pct.amber.800}"
+    },
+    "warning-200": {
+      "$type": "color",
+      "$value": "{pct.amber.700}"
+    },
+    "on-warning-100": {
+      "$type": "color",
+      "$value": "{pct.amber.100}"
+    },
+    "$comment-info": "Info is the brand blue, and deliberately the same value as `primary`: an informational message is not an alarm, the skin has exactly one calm accent, and a fourth hue invented for it would be a colour with no meaning behind it. The name is separate because the ROLE is — a theme that recolours its brand should not have to think about what that does to a message. The family below is its own for the same reason, and is written out rather than pointed at `primary`: a skin where the two diverge changes seven values here and nothing anywhere else.",
+    "info": {
+      "$type": "color",
+      "$value": "{pct.blue.400}"
+    },
+    "info-hover": {
+      "$type": "color",
+      "$value": "{pct.blue.300}"
+    },
+    "info-active": {
+      "$type": "color",
+      "$value": "{pct.blue.200}"
+    },
+    "on-info": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
+    "info-100": {
+      "$type": "color",
+      "$value": "{pct.blue.800}"
+    },
+    "info-200": {
+      "$type": "color",
+      "$value": "{pct.blue.700}"
+    },
+    "on-info-100": {
+      "$type": "color",
+      "$value": "{pct.blue.200}"
     },
     "surface-disabled": {
       "$type": "color",
@@ -81,20 +188,6 @@
     "text-disabled": {
       "$type": "color",
       "$value": "{pct.slate.500}"
-    },
-    "$comment-tones": "The dark theme’s three, one step up the same ramps for the same reason every other colour here goes up: the ground lightens a colour by standing dark under it. Measured on `slate.900`: 10.25:1, 10.69:1 and 7.02:1. The rest of the note stands with the light theme’s — the three colours a tone needs beside `danger`, which the skin has had since the badge. They paint an ICON first and a fill second, because a tone that is only a colour is a state carried by colour alone (`req-a11y-forced-colors`) — the drawing is the channel that survives a forced palette and a reader who cannot tell red from green. No `on-` pair for any of them: nothing in this library sets text on a toned background yet, and a declared-and-unused pair looks like coverage that does not exist (the note above `danger` records what that cost the last time).",
-    "success": {
-      "$type": "color",
-      "$value": "{pct.green.400}"
-    },
-    "warning": {
-      "$type": "color",
-      "$value": "{pct.amber.400}"
-    },
-    "$comment-info": "Info is the brand blue, and deliberately the same value as `primary`: an informational message is not an alarm, the skin has exactly one calm accent, and a fourth hue invented for it would be a colour with no meaning behind it. The name is separate because the ROLE is — a theme that recolours its brand should not have to think about what that does to a message.",
-    "info": {
-      "$type": "color",
-      "$value": "{pct.blue.400}"
     },
     "$comment-scrim": "The veil, and here it has to be the ramp's endpoint rather than `slate.900`: the dark theme's page IS `slate.900`, so a veil of the same step would dim it by nothing at all. How translucent it is, and how far the page behind it is blurred, are the component's two other tokens — all three are the skin's to set.",
     "scrim": {

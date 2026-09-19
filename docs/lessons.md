@@ -6534,3 +6534,27 @@ read on this date_, the last because the table is live and grew while this was b
 [`lesson-230`](#lesson-230) one floor up: there a target passed because an undeclared edge happened
 to hold, here a number passed because a filtered row happened to be missing, and in both the green
 came from a condition nobody had checked.
+
+### <a id="lesson-234"></a>`lesson-234` — A shorthand is a reset, and it reached over a face that had drawn
+
+`background` is a shorthand: writing it sets every one of the eight longhands, and the seven
+not mentioned go to their initial value. `background-image` is one of them.
+
+The button's hover rule painted `background: var(--pct-button-bg-hover)` at
+`:host(:hover:not([data-pct-disabled]))` — two attributes — while the hero face drew its
+gradient in `background-image` at `:host([data-pct-variant='hero'])`, one. So the pointer
+landed, the shorthand won on specificity, and the drift was gone: `getComputedStyle(el)
+.backgroundImage` reads **`none`** on hover, `linear-gradient(...)` off it. Measured in
+chromium on 2026-09-18, on the face's own sandbox card, by reverting one word and running the
+case again.
+
+It shipped that way in `0.1.0`, and nothing caught it: the visual baselines photograph a page
+at rest, the contrast policy measures colours and not which of them the cascade keeps, and the
+face's own comment said hover "answers with lift, not colour" — true of what the rule meant to
+do and not of what the sheet did. The repair is one word, `background-color`, which touches the
+channel it means to and leaves the image where the face put it.
+
+The general form: **a shorthand at a higher specificity than the rule it is layered over is a
+reset of everything that rule set through a longhand of the same family.** `background`,
+`font`, `border`, `grid`, `transition` and `animation` all carry it, and none of them says so
+at the call site — the property that disappears is the one nobody wrote on the losing line.

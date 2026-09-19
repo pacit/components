@@ -91,6 +91,7 @@ const CARDS: ReadonlyArray<
   readonly [path: string, testId: string, name: string]
 > = [
   ['/button', 'demo-variants', 'button-variants'],
+  ['/button', 'demo-tones', 'button-tones'],
   ['/button', 'demo-sizes', 'button-sizes'],
   ['/button', 'demo-states', 'button-states'],
   ['/button', 'demo-links', 'button-links'],

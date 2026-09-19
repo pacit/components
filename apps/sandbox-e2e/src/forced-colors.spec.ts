@@ -874,6 +874,49 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The tone is a colour, and this mode takes colours away. That is not a gap in the axis but
+   * the reason the library refuses to let a tone be the only channel (0076, 0082): under a
+   * forced palette all four tones and the untoned button paint the same system colours, and
+   * what is left saying which button does what is the label. A page that said "dangerous" by
+   * red alone was already saying nothing to these readers, and nothing here can add it back.
+   */
+  test('a tone is gone under a forced palette, and every face reads the same', async ({
+    page,
+  }) => {
+    await visit(page, '/button', { media: FORCED });
+    const sys = await systemColors(page);
+
+    // Not "what colour is it" but "does anything still tell them apart" — the question this
+    // whole file asks. The untoned button is the yardstick: whatever the palette hands it is
+    // what every toned one has to read as too.
+    const paint = async (id: string) => ({
+      bg: await styleOf(page.getByTestId(id), 'background-color'),
+      fg: await styleOf(page.getByTestId(id), 'color'),
+    });
+
+    const plain = await paint('btn-solid');
+    expect(plain.fg).toBe(sys.ButtonText);
+    for (const id of [
+      'btn-danger-solid',
+      'btn-warning-solid',
+      'btn-success-solid',
+      'btn-info-solid',
+    ] as const) {
+      expect(await paint(id), `${id} kept something of its tone`).toEqual(
+        plain,
+      );
+    }
+
+    // And the soft face, whose tint is the first thing a flattening takes: the edge the
+    // stylesheet hands back is the same for a toned button as for an untoned one.
+    const quiet = await styleOf(page.getByTestId('btn-soft'), 'border-color');
+    expect(quiet).toBe(sys.ButtonText);
+    expect(
+      await styleOf(page.getByTestId('btn-danger-soft'), 'border-color'),
+    ).toBe(quiet);
+  });
+
+  /**
    * Forced colours strips colours and keeps IMAGES, so a gradient left alone goes on painting
    * over the forced Canvas — the skeleton's shimmer and the site's own rim in one. All three
    * faces of `pctHero` drop theirs, and the word comes back as a word: `CanvasText` is what

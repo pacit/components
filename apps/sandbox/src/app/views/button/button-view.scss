@@ -1,3 +1,11 @@
 :host {
   display: block;
 }
+
+/* The tone grid: one row per tone, the faces across it — so a reading compares the four
+   faces of one tone horizontally and the four tones of one face vertically. */
+.tones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-3);
+}

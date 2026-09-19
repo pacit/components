@@ -52,6 +52,43 @@
 </sbx-demo>
 
 <sbx-demo
+  #tonesDemo
+  heading="Tones"
+  summary="Four tones from the skin's own families, on the four faces that wear one. The hero face takes none — it is the brand gradient. Every pair here stands in the contrast policy with a measured ratio, in both themes."
+  [reqs]="['req-token-skin', 'req-a11y-forced-colors']"
+  data-testid="demo-tones"
+>
+  <div class="tones">
+    @for (tone of tones; track tone) {
+    <div class="row" [attr.data-testid]="'tone-row-' + tone">
+      @for (face of tonedFaces; track face) {
+      <button
+        pctButton
+        [variant]="face"
+        [tone]="tone"
+        [size]="tonesDemo.activeSize()"
+        [attr.data-testid]="'btn-' + tone + '-' + face"
+      >
+        {{ tone }}
+      </button>
+      }
+    </div>
+    }
+    <div class="row">
+      <button
+        pctButton
+        tone="danger"
+        disabled
+        [size]="tonesDemo.activeSize()"
+        data-testid="btn-danger-disabled"
+      >
+        Disabled, and still asked for danger
+      </button>
+    </div>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="Sizes"
   summary="Three sizes side by side — here the size axis is the content of the example, so the card does not move it."
   [reqs]="['req-api-size']"

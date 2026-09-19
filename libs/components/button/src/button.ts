@@ -8,7 +8,7 @@ import {
   input,
   isDevMode,
 } from '@angular/core';
-import { PCT_CONFIG } from '@pacit/components/core';
+import { PCT_CONFIG, PctTone } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
@@ -30,6 +30,9 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
   host: {
     class: 'pct-button',
     '[attr.data-pct-variant]': 'variant()',
+    // Absent when there is no tone, and absent on the hero face whatever was asked for: an
+    // attribute the stylesheet must not answer is better not written than written and ignored.
+    '[attr.data-pct-tone]': 'appliedTone()',
     '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-loading]': 'loading() ? "" : null',
     // The face's own hook, written on both elements, because only one of them has a
@@ -68,6 +71,25 @@ export class PctButton {
   readonly variant = input<PctButtonVariant>('solid');
 
   /**
+   * Which of the skin's four families the face paints from — `danger`, `warning`, `success`,
+   * `info` — or `null`, the default, which is the brand. The names are shared with every other
+   * component that wears a tone rather than invented here ({@link PctTone},
+   * [0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)), and
+   * there is no `primary` member because primary is what a button with no tone already is.
+   *
+   * It paints four faces and refuses the fifth: `hero` is the brand gradient and keeps it.
+   *
+   * **The tone is not the message.** On a button the second channel a tone owes
+   * ([`req-a11y-forced-colors`](../../../../docs/requirements/a11y.md#req-a11y-forced-colors))
+   * is the LABEL — "Delete account" says danger in words, and a reader hears the same
+   * "Delete account, button" whatever the face is painted with. A red button labelled "OK"
+   * says nothing to anyone who cannot see the red, and no attribute here can repair that.
+   *
+   * @since next
+   */
+  readonly tone = input<PctTone | null>(null);
+
+  /**
    * Height 28 / 36 / 44 px — the axis every field shares, so rows line up. From `providePctConfig` by default (req-api-config).
    *
    * @since 0.1.0
@@ -92,7 +114,14 @@ export class PctButton {
     () => this.disabled() || this.loading(),
   );
 
+  /** The tone the element really wears: every face but the hero's, which takes none. */
+  protected readonly appliedTone = computed(() =>
+    this.variant() === 'hero' ? null : this.tone(),
+  );
+
   constructor() {
+    if (isDevMode()) afterNextRender(() => this.warnOnToneOnTheHeroFace());
+
     // A `<button>` gets nothing here, and that is the point: the platform refuses a disabled
     // press by itself, so a listener on every button in an application would be a cost with
     // no promise behind it — the cost record measured six of them on one preview and said so.
@@ -111,6 +140,20 @@ export class PctButton {
       { capture: true },
     );
     if (isDevMode()) afterNextRender(() => this.warnOnLinkWithNowhereToGo());
+  }
+
+  /**
+   * A tone asked of the one face that cannot wear it. Said rather than swallowed: the
+   * attribute is not written, so nothing in the page shows that the tone was asked for, and a
+   * silent refusal is how a consumer comes to believe the tone is there.
+   */
+  private warnOnToneOnTheHeroFace(): void {
+    if (this.variant() !== 'hero' || this.tone() === null) return;
+    console.warn(
+      `[pctButton] tone="${this.tone()}" on variant="hero" is ignored. The hero face is the ` +
+        `brand gradient and paints from no other family — drop the tone, or ask for a face ` +
+        `that wears one (solid, outline, ghost, soft).`,
+    );
   }
 
   /**

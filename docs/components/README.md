@@ -214,10 +214,11 @@ The order follows **architectural debt**, not popularity:
    character.
    The **badge** is built, and it is a word wearing a tone — no role, no ARIA, no string,
    no size, no parts ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)). Two
-   tones, because the skin has colour for two: `danger` paints the error colour's first
-   background with the `on-danger` pair the semantic tier had promised back for exactly
-   this component, and `success` / `warning` / `info` wait for ramps as a compile-time
-   fact in the union. The tone never speaks alone: an empty badge is a dev-mode warning,
+   tones, and no longer for the reason the union records: `danger` paints the error colour's
+   first background with the `on-danger` pair the semantic tier had promised back for exactly
+   this component, and `success` / `warning` / `info` waited for ramps the skin did not have.
+   Those landed with [0082](../decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md),
+   so what holds the union at two is now only that nothing has collapsed it onto `PctTone`. The tone never speaks alone: an empty badge is a dev-mode warning,
    and forced colours make the argument visible by dropping both tones to one palette.
    The **breadcrumb** is built, and the split is ownership again: every anchor is the
    consumer's own `<a href>` (the router writes `aria-current`, never this component), and

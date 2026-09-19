@@ -81,28 +81,120 @@
       "$type": "color",
       "$value": "{pct.slate.500}"
     },
-    "$comment-danger": "`danger` paints the message text, the error state's border — and, since the badge (0053), its first BACKGROUND. The `on-danger` pair below is the one this comment used to promise back \"with the first component painting a background with the error colour\": it was removed while nothing read it, because a declared-and-unused pair looks like coverage that does not exist, and it returned in the diff exactly as promised.",
+    "$comment-danger": "`danger` paints the message text, the error state's border and — since the badge (0053) — a background with `on-danger` over it. Two things happened to it when a control started WEARING a tone: it grew the family below, and it moved one step down the ramp. `red.600` carried the label everywhere but one — 4.41:1 on the page's own hover tint, under a quiet button face — and the policy gate blocks a build on that. At `red.700` the same pair reads 5.91:1, and danger joins the rule `success` and `warning` were already keeping: a tone's base is the first step that carries white text. `red.600` left the palette with it, having no reader left (0020).",
     "danger": {
       "$type": "color",
-      "$value": "{pct.red.600}"
+      "$value": "{pct.red.700}"
+    },
+    "danger-hover": {
+      "$type": "color",
+      "$value": "{pct.red.800}"
+    },
+    "danger-active": {
+      "$type": "color",
+      "$value": "{pct.red.900}"
     },
     "on-danger": {
       "$type": "color",
       "$value": "{pct.slate.0}"
     },
-    "$comment-tones": "The three colours a tone needs beside `danger`, which the skin has had since the badge. They paint an ICON first and a fill second, because a tone that is only a colour is a state carried by colour alone (`req-a11y-forced-colors`) — the drawing is the channel that survives a forced palette and a reader who cannot tell red from green. No `on-` pair for any of them: nothing in this library sets text on a toned background yet, and a declared-and-unused pair looks like coverage that does not exist (the note above `danger` records what that cost the last time).",
+    "danger-100": {
+      "$type": "color",
+      "$value": "{pct.red.100}"
+    },
+    "danger-200": {
+      "$type": "color",
+      "$value": "{pct.red.200}"
+    },
+    "on-danger-100": {
+      "$type": "color",
+      "$value": "{pct.red.800}"
+    },
+    "$comment-tones": "The family each tone carries, and the clause that used to stand here is spent. It said there was no `on-` pair because nothing in this library set text on a toned background — the toned button does, on four faces, so each tone now carries what a CONTROL needs: a resting fill, its hover and its press, the text on them, and the soft face's tint with its own text. Seven names per tone, and every one of them measured in `contrast.policy.json` rather than declared. What has not changed is why a tone is never only a colour: the drawing under the matching name in `PctIconName` is the channel that survives a forced palette and a reader who cannot tell red from green (0076). On a button that second channel is the label — “Delete account” says danger in words, which is the badge's road (0053).",
     "success": {
       "$type": "color",
       "$value": "{pct.green.700}"
+    },
+    "success-hover": {
+      "$type": "color",
+      "$value": "{pct.green.800}"
+    },
+    "success-active": {
+      "$type": "color",
+      "$value": "{pct.green.900}"
+    },
+    "on-success": {
+      "$type": "color",
+      "$value": "{pct.slate.0}"
+    },
+    "success-100": {
+      "$type": "color",
+      "$value": "{pct.green.100}"
+    },
+    "success-200": {
+      "$type": "color",
+      "$value": "{pct.green.200}"
+    },
+    "on-success-100": {
+      "$type": "color",
+      "$value": "{pct.green.800}"
     },
     "warning": {
       "$type": "color",
       "$value": "{pct.amber.700}"
     },
-    "$comment-info": "Info is the brand blue, and deliberately the same value as `primary`: an informational message is not an alarm, the skin has exactly one calm accent, and a fourth hue invented for it would be a colour with no meaning behind it. The name is separate because the ROLE is — a theme that recolours its brand should not have to think about what that does to a message.",
+    "warning-hover": {
+      "$type": "color",
+      "$value": "{pct.amber.800}"
+    },
+    "warning-active": {
+      "$type": "color",
+      "$value": "{pct.amber.900}"
+    },
+    "on-warning": {
+      "$type": "color",
+      "$value": "{pct.slate.0}"
+    },
+    "warning-100": {
+      "$type": "color",
+      "$value": "{pct.amber.100}"
+    },
+    "warning-200": {
+      "$type": "color",
+      "$value": "{pct.amber.200}"
+    },
+    "on-warning-100": {
+      "$type": "color",
+      "$value": "{pct.amber.800}"
+    },
+    "$comment-info": "Info is the brand blue, and deliberately the same value as `primary`: an informational message is not an alarm, the skin has exactly one calm accent, and a fourth hue invented for it would be a colour with no meaning behind it. The name is separate because the ROLE is — a theme that recolours its brand should not have to think about what that does to a message. The family below is its own for the same reason, and is written out rather than pointed at `primary`: a skin where the two diverge changes seven values here and nothing anywhere else.",
     "info": {
       "$type": "color",
       "$value": "{pct.blue.600}"
+    },
+    "info-hover": {
+      "$type": "color",
+      "$value": "{pct.blue.700}"
+    },
+    "info-active": {
+      "$type": "color",
+      "$value": "{pct.blue.800}"
+    },
+    "on-info": {
+      "$type": "color",
+      "$value": "{pct.slate.0}"
+    },
+    "info-100": {
+      "$type": "color",
+      "$value": "{pct.blue.100}"
+    },
+    "info-200": {
+      "$type": "color",
+      "$value": "{pct.blue.200}"
+    },
+    "on-info-100": {
+      "$type": "color",
+      "$value": "{pct.blue.700}"
     },
     "$comment-scrim": "The veil a modal draws over the page, and the reason it is a SEMANTIC token rather than a value in a component sheet: how much a modal takes the page away is a property of the skin, not of the dialog. Here it is the ramp's darkest ordinary step — over a light page that reads as a dimming rather than as a blackout. The dark theme answers differently, which is the whole point of the tier.",
     "scrim": {

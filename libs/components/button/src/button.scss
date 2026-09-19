@@ -24,12 +24,34 @@
     var(--pct-motion-transition-easing);
 }
 
+/* NO RULE BELOW DECIDES `background-color` BY ORDER. Every face and every tone assigns
+   `--pct-button-bg`, `-hover` and `-active` instead of painting a ground of its own, and that
+   is not tidiness. A bare face painting one lost cleanly — `:host` plus one attribute against
+   `:host` plus `:hover` plus `:not()`, which is three. A TONE ON A FACE is `:host` plus two,
+   which ties, and the tie went to whichever stood later in the file: a toned `soft` button had
+   no hover and no press at all, its `-200` tint declared, measured in the contrast policy and
+   never once on screen. Read in chromium before the repair: `rgb(254, 226, 226)` under the
+   pointer where `rgb(254, 202, 202)` was promised.
+
+   Two rules below still paint a ground on purpose, and what keeps each out of this pair's way
+   is worth naming exactly. The hero's gradient is `background-image` — a different longhand,
+   so there is nothing to contest. The disabled rule is a list of four selectors, and only the
+   bare one carries this pair's three; the three that name a face stand an attribute above it.
+   But rank never gets a vote either way: `:not([data-pct-disabled])` here means the disabled
+   rule and these two can never match the same element at all. What the assignment buys is that order stops
+   deciding what a pointer shows — it still decides between a tone and a face, further down,
+   and the comment there says so.
+
+   The colour channel alone, too. `background` is a shorthand, so a shorthand winning over the
+   face that set a gradient resets that gradient to `none`: the hero face draws its drift at
+   `:host` plus one attribute, these rules stand at `:host` plus two, and the image went out
+   from under the pointer (lesson-234). `background-color` touches the one channel it means. */
 :host(:hover:not([data-pct-disabled])) {
-  background: var(--pct-button-bg-hover);
+  background-color: var(--pct-button-bg-hover);
 }
 
 :host(:active:not([data-pct-disabled])) {
-  background: var(--pct-button-bg-active);
+  background-color: var(--pct-button-bg-active);
 }
 
 /* Focus for keyboard navigation only; the colour from a token (req-a11y-wcag). */
@@ -47,30 +69,61 @@
   text-decoration: none;
 }
 
-/* The disabled state expressed by explicit colour tokens — no opacity, so that the contrast is
-   verifiable by the policy gate (req-a11y-wcag, req-token-text-pairs). The compound selector
-   also beats the outline variant whatever the rule order. */
-:host([data-pct-disabled]:not([data-pct-loading])),
-:host([data-pct-disabled][data-pct-variant='outline']:not([data-pct-loading])) {
-  background: var(--pct-button-bg-disabled);
-  color: var(--pct-button-fg-disabled);
-  border-color: var(--pct-button-border-disabled);
-  cursor: not-allowed;
+/* ── The tone ────────────────────────────────────────────────────────────────────────────
+   Which of the skin's families the button paints from. Four names, shared with the toast,
+   the progress bar and the badge rather than invented here
+   ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)), and
+   NO `primary` member: the absence is the default, which is what these rules override.
+
+   A tone swaps the base tokens and nothing else — the idiom the sizes below already use, so
+   the `:host` rule stays the only place that knows where which value lands. That is also why
+   these rules stand HERE, above the faces: a tone and a face are both one attribute, so a
+   quiet face's own ground (`transparent`, the page's tint) has to be read after the tone's
+   fill, and the pairs that need both are written out below the faces at two attributes, where
+   no order is load-bearing.
+
+   `hero` is missing on purpose and the component refuses to write the attribute for it: the
+   gradient IS the brand, three contrast checks per tone, and a tone would be repainting the
+   one face whose whole content is that it is not repainted (0058). */
+
+:host([data-pct-tone='danger']) {
+  --pct-button-bg: var(--pct-danger);
+  --pct-button-bg-hover: var(--pct-danger-hover);
+  --pct-button-bg-active: var(--pct-danger-active);
+  --pct-button-fg: var(--pct-on-danger);
+  --pct-button-border: var(--pct-danger);
 }
 
-/* Loading keeps the variant's colour (primary), only without interaction. */
-:host([data-pct-disabled]) {
-  cursor: not-allowed;
+:host([data-pct-tone='warning']) {
+  --pct-button-bg: var(--pct-warning);
+  --pct-button-bg-hover: var(--pct-warning-hover);
+  --pct-button-bg-active: var(--pct-warning-active);
+  --pct-button-fg: var(--pct-on-warning);
+  --pct-button-border: var(--pct-warning);
+}
+
+:host([data-pct-tone='success']) {
+  --pct-button-bg: var(--pct-success);
+  --pct-button-bg-hover: var(--pct-success-hover);
+  --pct-button-bg-active: var(--pct-success-active);
+  --pct-button-fg: var(--pct-on-success);
+  --pct-button-border: var(--pct-success);
+}
+
+:host([data-pct-tone='info']) {
+  --pct-button-bg: var(--pct-info);
+  --pct-button-bg-hover: var(--pct-info-hover);
+  --pct-button-bg-active: var(--pct-info-active);
+  --pct-button-fg: var(--pct-on-info);
+  --pct-button-border: var(--pct-info);
 }
 
 /* The outline variant */
 :host([data-pct-variant='outline']) {
-  background: transparent;
+  --pct-button-bg: transparent;
   color: var(--pct-primary);
-}
-
-:host([data-pct-variant='outline']:hover:not([data-pct-disabled])) {
-  background: var(--pct-surface-100);
+  --pct-button-bg-hover: var(--pct-surface-100);
+  --pct-button-bg-active: var(--pct-surface-100);
 }
 
 /* The ghost variant — the outline stripped of its boundary: toolbars, top bars, rows of
@@ -78,13 +131,10 @@
    under it — the same pair the outline variant already measures. */
 :host([data-pct-variant='ghost']) {
   border-color: transparent;
-  background: transparent;
+  --pct-button-bg: transparent;
   color: var(--pct-primary);
-}
-
-:host([data-pct-variant='ghost']:hover:not([data-pct-disabled])),
-:host([data-pct-variant='ghost']:active:not([data-pct-disabled])) {
-  background: var(--pct-surface-100);
+  --pct-button-bg-hover: var(--pct-surface-100);
+  --pct-button-bg-active: var(--pct-surface-100);
 }
 
 /* The soft variant — a tinted resting surface for secondary actions. Real colours, not
@@ -93,13 +143,10 @@
    on their own. */
 :host([data-pct-variant='soft']) {
   border-color: transparent;
-  background: var(--pct-primary-100);
+  --pct-button-bg: var(--pct-primary-100);
   color: var(--pct-on-primary-100);
-}
-
-:host([data-pct-variant='soft']:hover:not([data-pct-disabled])),
-:host([data-pct-variant='soft']:active:not([data-pct-disabled])) {
-  background: var(--pct-primary-200);
+  --pct-button-bg-hover: var(--pct-primary-200);
+  --pct-button-bg-active: var(--pct-primary-200);
 }
 
 /* The hero variant — the library's one loud face (0058): the brand gradient, drifting.
@@ -148,6 +195,84 @@
        version would change nothing but the animation's initial phase. */
     background-position: 300% 0;
   }
+}
+
+/* ── The tone on a face that is not the solid one ────────────────────────────────────────
+   A quiet face paints the tone as its LABEL and keeps the page's own tint under the pointer —
+   measured: hovering onto the tone's tint instead reads 3.00–5.30:1 across the four tones and
+   fails five of the eight tone-and-theme rows, because a tint sits too close to the base to
+   carry it — `info` fails on BOTH themes. The soft
+   face names the tint as its ground and the tint's own text on it. Two attributes each, so
+   these outrank both the tone above and the face they name, whatever the order — and they
+   assign rather than paint, which is what keeps them out of the tie described at the top. */
+
+:host([data-pct-tone='danger'][data-pct-variant='outline']),
+:host([data-pct-tone='danger'][data-pct-variant='ghost']) {
+  color: var(--pct-danger);
+}
+
+:host([data-pct-tone='danger'][data-pct-variant='soft']) {
+  --pct-button-bg: var(--pct-danger-100);
+  color: var(--pct-on-danger-100);
+  --pct-button-bg-hover: var(--pct-danger-200);
+  --pct-button-bg-active: var(--pct-danger-200);
+}
+
+:host([data-pct-tone='warning'][data-pct-variant='outline']),
+:host([data-pct-tone='warning'][data-pct-variant='ghost']) {
+  color: var(--pct-warning);
+}
+
+:host([data-pct-tone='warning'][data-pct-variant='soft']) {
+  --pct-button-bg: var(--pct-warning-100);
+  color: var(--pct-on-warning-100);
+  --pct-button-bg-hover: var(--pct-warning-200);
+  --pct-button-bg-active: var(--pct-warning-200);
+}
+
+:host([data-pct-tone='success'][data-pct-variant='outline']),
+:host([data-pct-tone='success'][data-pct-variant='ghost']) {
+  color: var(--pct-success);
+}
+
+:host([data-pct-tone='success'][data-pct-variant='soft']) {
+  --pct-button-bg: var(--pct-success-100);
+  color: var(--pct-on-success-100);
+  --pct-button-bg-hover: var(--pct-success-200);
+  --pct-button-bg-active: var(--pct-success-200);
+}
+
+:host([data-pct-tone='info'][data-pct-variant='outline']),
+:host([data-pct-tone='info'][data-pct-variant='ghost']) {
+  color: var(--pct-info);
+}
+
+:host([data-pct-tone='info'][data-pct-variant='soft']) {
+  --pct-button-bg: var(--pct-info-100);
+  color: var(--pct-on-info-100);
+  --pct-button-bg-hover: var(--pct-info-200);
+  --pct-button-bg-active: var(--pct-info-200);
+}
+
+/* The disabled state expressed by explicit colour tokens — no opacity, so that the contrast is
+   verifiable by the policy gate (req-a11y-wcag, req-token-text-pairs). It stands last and names
+   every face that paints a colour of its own, which is what keeps it ABOVE the tones: a tone on
+   a face is two attributes and so is a bare disabled button, and a rule that won only by
+   standing later would be a promise held by line numbers. Grey outranking the tone is the
+   promise — a control that cannot be pressed must not still look like the press it refuses. */
+:host([data-pct-disabled]:not([data-pct-loading])),
+:host([data-pct-disabled][data-pct-variant='outline']:not([data-pct-loading])),
+:host([data-pct-disabled][data-pct-variant='ghost']:not([data-pct-loading])),
+:host([data-pct-disabled][data-pct-variant='soft']:not([data-pct-loading])) {
+  background: var(--pct-button-bg-disabled);
+  color: var(--pct-button-fg-disabled);
+  border-color: var(--pct-button-border-disabled);
+  cursor: not-allowed;
+}
+
+/* Loading keeps the variant's colour, only without interaction. */
+:host([data-pct-disabled]) {
+  cursor: not-allowed;
 }
 
 /* Sizes driven by a state attribute (req-api-attributes). A variant swaps the base tokens for
@@ -203,12 +328,16 @@
 
   /* The selector repeats the base rule's, and it has to: `@media` adds no specificity of its
      own, so the shorter `:host([data-pct-disabled])` loses to it and this rule paints nothing
-     (lesson-70). Loading keeps the variant's colour here as well — greying out a button that
-     is working would say "unavailable" about it. */
+     (lesson-70). All four of them, because the base rule names all four — the day the tones
+     landed, the two faces added there were missing here, and the gate said so before a
+     browser could. Loading keeps the variant's colour here as well — greying out a button
+     that is working would say "unavailable" about it. */
   :host([data-pct-disabled]:not([data-pct-loading])),
   :host(
     [data-pct-disabled][data-pct-variant='outline']:not([data-pct-loading])
-  ) {
+  ),
+  :host([data-pct-disabled][data-pct-variant='ghost']:not([data-pct-loading])),
+  :host([data-pct-disabled][data-pct-variant='soft']:not([data-pct-loading])) {
     color: GrayText;
     border-color: GrayText;
   }
