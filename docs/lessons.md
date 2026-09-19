@@ -6446,3 +6446,19 @@ every fifteen now — the accuracy is the knocking period, the volume is the rep
 a server that dies is noticed in a second instead of at the next tick. The twelve of the run
 after it answered in 11 to 17 seconds, each naming its own, which is the reading the shards
 used to have to be subtracted for.
+
+Piping the server's output had one more consequence, in the file least able to afford it.
+`scripts/nx-verdict` decides that a run produced a verdict by looking for nx's own closing
+sentence, and a nested `nx run <app>:serve` prints that sentence too — so the log now carried a
+second one, wearing only a `[WebServer] ` prefix. Striking those lines out took three attempts,
+and each of the first two put a new way to be wrong into the one reader whose job is not to be:
+a `grep -q` that left early, killed its upstream with SIGPIPE and handed `pipefail` a 141 that
+reads like "no verdict"; then a filter that met a single zero byte, which GNU grep answers by
+writing nothing at all. Both failed a GREEN run, which is the safe direction and not an excuse.
+
+The third attempt was measured through an interactive shell where `grep` is a wrapper function
+over another implementation, and it disagreed with `/usr/bin/grep`, which is what the script
+actually runs — so the repair was right and the sentence explaining it was not. **Measure a
+script with the tool the script runs**, and when a number has to be attributed, attribute it to
+the thing that produced it: the same round found "97 stderr lines" that were one job's two
+servers, and a 35-to-107-second figure for servers that the arithmetic it names cannot yield.

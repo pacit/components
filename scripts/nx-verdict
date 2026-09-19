@@ -57,15 +57,18 @@ wait "$follower" 2>/dev/null
 # COUNTED and not `grep -q`, which is not a style: `-q` leaves on the first match, the
 # upstream `grep -v` dies of SIGPIPE with 4 MB still to write, and `pipefail` hands the `if`
 # a 141 that reads exactly like "no verdict" — a GREEN run failed on the size of its own log.
-# Measured: a summary followed by more than the pipe's 64 KB did it every time, and the four
-# CI logs to hand escape only because their summary sits within 60 lines of the end. `-c`
-# drains its input, so there is nothing to signal.
+# Measured: 128 KB after the summary did it, 70 KB did not, and the CI logs to hand escape
+# because their summary sits some 7 KB from the end. `-c` drains its input, so there is
+# nothing left to signal.
 #
-# `-a` ON BOTH, and the second is not decoration. GNU grep calls a stream carrying a zero
-# byte binary and writes NOTHING to stdout for it — so one stray byte anywhere in 40 targets'
-# worth of output made the count 0 and failed a green run, and `-a` on the filter alone only
-# moves the silence one stage down the pipe, since the byte it then passes through binds the
-# counter instead. Measured both ways on a log holding its summary and one such byte.
+# `-a` ON THE FILTER is what repairs the next one: GNU grep calls a stream carrying a zero
+# byte binary and writes NOTHING to stdout for it, so one stray byte anywhere in 40 targets'
+# worth of output made the count 0 and failed a green run. The counter's `-a` is redundancy
+# and is kept as such — binary detection suppresses matching LINES, and a count is not a
+# line, so `grep -c` reports through it either way. A first reading said the opposite and was
+# taken through an interactive shell where `grep` is a wrapper function over another
+# implementation; this script gets `/usr/bin/grep`, and the two do not agree. Measure a
+# script with the tool the script runs.
 #
 # The phrase is matched UNANCHORED, and that is a bounded risk taken knowingly rather than an
 # oversight. To anchor it on nx's own badge one would have to match `NX   Successfully ran`,
