@@ -261,6 +261,25 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the second record in which it wobbles**, or the first in which a second name
     joins it — either is the moment to read the case rather than the rate
 
+- [ ] **4.76 — the dev server that never bound, and the stream that would have said why**
+  - run `35408508618` lost two shards of six to `Timed out waiting 240000ms from
+config.webServer`, both on `sandbox-e2e:e2e`, both with no server output at all; re-running
+    the two passed them, and 24 shard-jobs before them never hit it (0081, "What this costs us")
+  - the four minutes DO prove the process was alive and not listening, since Playwright reports
+    a child that dies with its exit code instead. They prove nothing else: `webServer.stdout`
+    defaults to `'ignore'`, so the nx header, the build and the `➜ Local:` line were discarded,
+    and the stream that was kept is quiet for the whole build in any case
+  - ruled out by measurement — nx's project-graph lock, which announces a blocked nested `nx`
+    on stderr after 30 seconds. Reproduces the silhouette exactly — nx's `workspace-data`
+    database lock, under which a nested `nx` hangs mute and for ever; but a real outer run takes
+    that one only in bursts shorter than a 100 ms sample, so it is a shape and not yet a cause
+    ([`lesson-231`](lessons.md#lesson-231))
+  - what landed is the instrument and not the answer: both suites pipe stdout, and
+    `scripts/serve-for-e2e` ticks on stderr while nothing is being printed, so the next one
+    sorts itself into one of three shapes. A larger ceiling stays refused
+  - binds at: **the next shard that times out on a web server** — the tick standing above its
+    last line of output is the reading this position waits for
+
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
   - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`: the browser opened on the maintainer's desktop
     while Xvfb drew nothing — found by him, proved by his theme switch mid-reading. The X11

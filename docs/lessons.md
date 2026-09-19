@@ -6390,3 +6390,44 @@ the output from the cache_ is a memory of another tree, not a measurement of thi
 staleness, and only an edge in the graph orders two tasks. What keeps it from happening again is
 running the gates CI will run before the push rather than after, and skipping the cache for the
 change nx cannot see — `scripts/before-push` is that habit written down.
+
+### <a id="lesson-231"></a>`lesson-231` — Four silent minutes, on the stream nobody read
+
+Two shards of six died on run `35408508618` (2026-09-19) with `Timed out waiting 240000ms from
+config.webServer`, and the reading taken off them was that the server had printed nothing at
+all in those four minutes — not a slow build but a process that never got going. Half of that
+was the arrangement talking. `webServer.stdout` defaults to `'ignore'` in Playwright, and the
+sandbox's server does nearly all its talking there: measured on a desk, `nx run sandbox:serve`
+puts its `NX Running target…` header, 27 to 29 seconds of `Building…`, the whole bundle table
+and the `➜ Local:` line on stdout, while stderr gets three bursts inside the first six seconds
+and nothing more until the port is up. A hung process and a slow build had the same silhouette
+here, and the log could not be asked which one it was holding.
+
+The timeout does prove one thing, and it is worth having: Playwright races its wait against the
+child's exit and says `Process from config.webServer was not able to start. Exit code:` when the
+child dies, so a run that ends on the timeout instead had a process ALIVE and not listening for
+the whole 240 seconds. It hung; it did not crash.
+
+Of the two locks a nested `nx` can hang on, one is ruled out by measurement rather than by
+argument. Blocked on nx's project-graph lock, a nested `nx` says `Waiting for graph construction
+in another process to complete` on stderr after 30 seconds — nx's own delay before it gives up
+on a spinner and warns in CI — and the two failing shards said nothing, so that was not it. The
+other reproduces the silhouette exactly: with nx's `workspace-data` database lock held, the
+nested `nx` prints its header to stdout and then hangs for ever, mute on stderr, never binding
+and never exiting. Whether the runners hit that one is still unknown — sampled every 100 ms
+through a real outer run, nx holds it only in bursts too short to catch — and the daemon is no
+suspect at all, since nx switches it off wherever `CI` is set.
+
+So the answer is not a larger ceiling for a process that prints nothing. Both suites pipe stdout
+now, and `scripts/serve-for-e2e` puts a line on stderr every fifteen seconds WHILE nothing is
+being printed, which is the one thing a stream cannot do. The next occurrence sorts itself: no
+output above the first tick means `nx` never started, the header and no more means its task
+never did, `Building…` and no more means the build is the slow part and a budget question. A run
+that succeeds now states the number that used to be arrived at by subtracting test time from
+step time — `accepts connections after 90s`.
+
+The instrument found its own defect first. Knocking on the port before asking after the child,
+it called a stranger's server a healthy start: a second checkout on the same desk was serving
+4300, `nx` had already died on a project that does not exist, and the wrapper reported the port
+answering after 15 seconds. A port answers for whoever holds it, and the question was never
+about the port.

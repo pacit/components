@@ -93,11 +93,23 @@ export default defineConfig({
    * of the sandbox is the slow part; a running server is reused, which is also what lets a
    * developer's own `nx serve sandbox` carry a suite — and serve it a bundle older than the
    * sources, so a suite that contradicts a reading is first a question about the server.
+   *
+   * `stdout: 'pipe'` is the correction of a reading, not a preference. Playwright's default
+   * for it is `'ignore'`, and the nx header, the whole `Building…` and the bundle table go
+   * to stdout — a healthy serve writes to stderr three times inside the first six seconds
+   * and then not again until it is up. So when two shards of run 35408508618 timed out
+   * "printing not one line of server output", that was the arrangement talking and not the
+   * server: this block was watching the quiet stream. `scripts/serve-for-e2e` adds the other
+   * half, a line that arrives WHILE nothing is printed, and its header says what each shape
+   * of silence means. The wrapper also takes `sandbox:serve` out of what the Nx Playwright
+   * plugin can read here, which changes nothing — `project.json` already sets that inferred
+   * dependency to nothing, and says why.
    */
   webServer: {
-    command: 'npx nx run sandbox:serve',
+    command: 'scripts/serve-for-e2e sandbox:serve http://localhost:4200',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
+    stdout: 'pipe',
     timeout: 240_000,
     cwd: workspaceRoot,
   },

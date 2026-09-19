@@ -32,11 +32,20 @@ export default defineConfig({
     any `docs:serve` a person left listening on 4300 is attached to instead — the reload
     channels open, and possibly a stale view of `src/generated` besides (lesson-154). A port
     already in use now stops the suite rather than quietly changing what it tests.
+
+    The wrapper and `stdout: 'pipe'` are the sandbox suite's, taken for the same reason and
+    not out of symmetry: this server is started by the same nested `npx nx` inside the same
+    outer `nx affected`, six times a run since the shards landed, and it is the one that
+    HAPPENED to come up on 2026-09-19 — on the two shards where the sandbox's did not, this
+    one printed its output normally in the same job minutes later. A suite that watched only
+    the quiet stream could not have said that the difference was the server's and not the
+    dice's. `sandbox-e2e/playwright.config.mts` carries the measurement.
   */
   webServer: {
-    command: 'npx nx run docs:serve:e2e',
+    command: 'scripts/serve-for-e2e docs:serve:e2e http://localhost:4300',
     url: 'http://localhost:4300',
     reuseExistingServer: false,
+    stdout: 'pipe',
     cwd: workspaceRoot,
   },
   projects: [
