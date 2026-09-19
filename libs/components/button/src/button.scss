@@ -45,7 +45,7 @@
    The colour channel alone, too. `background` is a shorthand, so a shorthand winning over the
    face that set a gradient resets that gradient to `none`: the hero face draws its drift at
    `:host` plus one attribute, these rules stand at `:host` plus two, and the image went out
-   from under the pointer (lesson-231). `background-color` touches the one channel it means. */
+   from under the pointer (lesson-234). `background-color` touches the one channel it means. */
 :host(:hover:not([data-pct-disabled])) {
   background-color: var(--pct-button-bg-hover);
 }

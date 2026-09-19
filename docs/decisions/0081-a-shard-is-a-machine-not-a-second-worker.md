@@ -106,12 +106,30 @@ MACHINES rather than across workers on one.**
   badly once.** On run 35408508618 two shards of six failed with
   `Timed out waiting 240000ms from config.webServer` — and the failing tasks printed NOT ONE
   line of server output in those four minutes, while their siblings on the same run had both
-  their servers up inside 35 to 107 seconds together. So it is a hang and not a budget, and a
+  their servers up inside 35 to 107 seconds together — a figure the correction below withdraws.
+  So it is a hang and not a budget, and a
   larger ceiling would buy nothing; re-running the two jobs passed them both. What the
   arrangement changed is how often the question is asked: twelve cold starts a run instead of
   two. It is written down here because the next occurrence is evidence and this one is only a
   reading — whether the nested `npx nx run sandbox:serve` is what stalls is not something one
-  run can say.
+  run can say. **Read again on 2026-09-19, that silence narrowed rather than widened**: a shard
+  of this same run which passed printed 47 project-graph warnings from its sandbox server
+  inside the first seconds, and the two that failed printed none — so the stall came before nx
+  read the workspace out, nowhere near the build. What `webServer.stdout`, an `'ignore'` by
+  default, had been costing is the nx header: the line that tells a server which never started
+  from one whose task never did. Both suites pipe stdout now and `scripts/serve-for-e2e` ticks
+  on stderr while nothing else is written — read at the end of the task, not live, since nx
+  flushes a task's output when it finishes ([`lesson-231`](../lessons.md#lesson-231), 4.76).
+  The ceiling is untouched. **And the 35-to-107-second reading above was never about the
+  servers**: Playwright's printed time ALREADY CONTAINS the wait for one — measured on run
+  35435901274, where `docs-e2e` printed `3.1m` across a task span of 185.3 seconds that held a
+  server taking 14 — the two together some fifteen seconds longer than the span containing
+  both. No subtraction of that number can isolate what it already includes. Where 35 to 107
+  came from is not reconstructed here and is not guessed at a third time; what can be said is
+  that the step's duration less the two printed suite times — the subtraction the figure was
+  described by — yields 9 to 12 seconds across the six shards of the run it is attributed to.
+  Until this instrument the servers had no measurement of their own, and on run 35435901274
+  each of the twelve stated it: 11 to 17 seconds.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading

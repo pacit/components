@@ -2,7 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
+// Named once, for the reason `sandbox-e2e/playwright.config.mts` gives: `webServer.url` and
+// the argument handed to `scripts/serve-for-e2e` have to be the same server.
+const serverURL = 'http://localhost:4300';
+
+const baseURL = process.env['BASE_URL'] || serverURL;
 
 /**
  * The docs site's suite — the sandbox-e2e configuration's younger sibling, and smaller on
@@ -32,11 +36,24 @@ export default defineConfig({
     any `docs:serve` a person left listening on 4300 is attached to instead — the reload
     channels open, and possibly a stale view of `src/generated` besides (lesson-154). A port
     already in use now stops the suite rather than quietly changing what it tests.
+
+    The wrapper and `stdout: 'pipe'` are the sandbox suite's, taken for the same reason and
+    not out of symmetry: this server comes up through the same nested `npx nx` inside the same
+    outer `nx affected`, six times a run since the shards landed. On 2026-09-19 it was simply
+    the one that came up — in the two jobs where the sandbox's never did, this one served its
+    own suite minutes later, in the same job on the same machine — and nothing in the
+    arrangement says which of the two it will be next time.
+    `sandbox-e2e/playwright.config.mts` carries the measurements, `lesson-231` the reasoning.
+
+    This block has no `timeout` and so takes Playwright's 60 seconds, which is left where it
+    is: on run 35435901274 the six of these answered in 11 to 17 seconds — the log says so
+    itself now — and a ceiling is not what the last failure wanted moved.
   */
   webServer: {
-    command: 'npx nx run docs:serve:e2e',
-    url: 'http://localhost:4300',
+    command: `scripts/serve-for-e2e docs:serve:e2e ${serverURL}`,
+    url: serverURL,
     reuseExistingServer: false,
+    stdout: 'pipe',
     cwd: workspaceRoot,
   },
   projects: [

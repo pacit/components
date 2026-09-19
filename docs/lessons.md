@@ -6391,7 +6391,151 @@ staleness, and only an edge in the graph orders two tasks. What keeps it from ha
 running the gates CI will run before the push rather than after, and skipping the cache for the
 change nx cannot see — `scripts/before-push` is that habit written down.
 
-### <a id="lesson-231"></a>`lesson-231` — A shorthand is a reset, and it reached over a face that had drawn
+### <a id="lesson-231"></a>`lesson-231` — Four silent minutes, and two readings of them
+
+Two shards of six died on run `35408508618` (2026-09-19) with `Timed out waiting 240000ms from
+config.webServer`, having printed no server output at all in those four minutes. The first
+reading taken off that was too wide: `webServer.stdout` defaults to `'ignore'` in Playwright,
+the sandbox's server does most of its talking there — the `NX Running target…` header, 27 to
+29 seconds of `Building…`, the bundle table, the `➜ Local:` line — and from that it looked as
+though a hung process and a slow build were indistinguishable here. They were not. Stderr also
+carries the project-graph warnings, and it carries them early: 47 of them from the sandbox's
+server on a shard of that very run which passed, against zero on the two that did not. A build
+that was merely slow would have printed them in the first seconds. So the silence on the stream
+that WAS being read is itself the finding — the stall came before nx read the workspace out,
+which is nowhere near the Angular builder, and a larger ceiling was never the answer.
+
+What the discarded stream really cost is one line: the header, which separates "nx never got
+going" from "nx got going and its task never did". That line was being thrown away, and it is
+the only thing a stall reproduced on a desk ever printed.
+
+The timeout proves a little less than it first seems, too. Playwright learns of a dead server
+through `close`, which fires once every holder of the child's pipes is gone, so what a timeout
+rules out is a process tree that exited and let go — not, strictly, a live `npx nx`. And the
+sentence it would have printed instead has two forms: `Exit code:` for a non-zero code,
+`exited early.` for zero and for a death by signal.
+
+Of the two locks a nested `nx` can hang on, one is ruled out by measurement rather than by
+argument. Blocked on nx's project-graph lock, a nested `nx` says `Waiting for graph construction
+in another process to complete` on stderr after 30 seconds — nx's own delay before it gives up
+on a spinner and warns in CI — and the failing shards said nothing. The other reproduces the
+shape exactly: with nx's `workspace-data` database lock held, the nested `nx` prints its header
+to stdout and then hangs for ever, mute on stderr, never binding and never exiting, with no
+project-graph warning ever reaching either stream. Whether the runners hit that one is still
+unknown — sampled every 100 ms through a real outer run, nx holds it only in bursts too short
+to catch — and the daemon is no suspect at all, since nx switches it off wherever `CI` is set.
+
+So both suites pipe stdout now, and `scripts/serve-for-e2e` writes a line on stderr every
+fifteen seconds while nothing else is being written, which is the one thing a stream cannot do
+for itself — though on a runner nobody reads it live: nx holds a task's output and flushes it
+at the end, so a tick timed 15s and a success line timed 30s land on one Actions timestamp.
+Each carries its own elapsed seconds, and a web-server timeout ends the task and flushes them
+with the failure, which is the case they exist for. The next
+occurrence sorts itself: no output above the first tick means `nx` never started, the header and
+no more means its task never did, `Building…` and no more means the build is the slow part and a
+budget question.
+
+The instrument had to be corrected twice before it was worth its place. It knocked on the port
+before asking after the child, and called a stranger's server a healthy start — a second
+checkout on the same desk was serving 4300, `nx` had already died on a project that does not
+exist, and the wrapper reported the port answering after 15 seconds. A port answers for whoever
+holds it. Then it knocked and reported on the same fifteen-second period, so the number it gave
+was never a duration but the tick it fell in: all twelve servers of run `35434514356` reported
+`15s` or `30s` over builds that took 7.3 to 12.4 seconds. It knocks every second and reports
+every fifteen now — the accuracy is the knocking period, the volume is the reporting one — and
+a server that dies is noticed in a second instead of at the next tick. The twelve of the run
+after it answered in 11 to 17 seconds, each naming its own, which is the reading the shards
+used to have to be subtracted for.
+
+Piping the server's output had one more consequence, in the file least able to afford it.
+`scripts/nx-verdict` decides that a run produced a verdict by looking for nx's own closing
+sentence, and a nested `nx run <app>:serve` prints that sentence too — so the log could now
+carry a second one wearing nothing but a `[WebServer] ` prefix. None has been seen: the server
+is killed long before it gets that far, and striking those lines out is a precaution rather
+than a repair. It still took three attempts, and the first put two ways to be wrong into the
+one reader whose job is not to be — a `grep -q` that left early, killed its upstream with
+SIGPIPE and handed `pipefail` a 141 that reads like "no verdict", and a filter that met a
+single zero byte, which GNU grep answers by writing nothing at all. The second attempt closed
+the first of those and left the second standing. Both failed a GREEN run, which is the safe
+direction and not an excuse.
+
+The third attempt was measured through an interactive shell where `grep` is a wrapper function
+over another implementation, and it disagreed with `/usr/bin/grep`, which is what the script
+actually runs — so the repair was right and the sentence explaining it was not. **Measure a
+script with the tool the script runs**, and attribute a number to the thing that produced it.
+This branch got that second half wrong three times: "97 stderr lines" were one job's two
+servers, a 35-to-107-second figure was claimed for servers that no server was measured for,
+and the commit correcting that one widened a 185.3-second task span to 186.8 by swallowing the
+neighbouring task — the same fault, inside its own repair.
+
+### <a id="lesson-232"></a>`lesson-232` — The ceiling named the moment, and the case it named was innocent
+
+The local battery of 2026-09-19 00:17 ended with two unit cases at `Test timed out in 5000ms` —
+`calendar.spec.ts`'s first grid case and `date.spec.ts`'s backward Tab — and a rerun of the same
+task hash passed ten minutes later. (nx keeps no terminal for a failed task, so which two is a
+reading of that run rather than an artifact.) Ten uncached runs on a quiet desk put the two
+at **409 ms** and **134 ms**, twelve and thirty-seven times under the ceiling, while the case
+nearest to it — `day.property.spec.ts` at 2081 ms, a factor of 2.4 — was green in the very run that
+killed them. [`lesson-202`](#lesson-202) already carries the rule from the browser side: a red from
+a full run is re-run before it is read. This is the unit suite's version, and three things it adds.
+
+**The clock does not order the verdict.** nx's `task_history` (`.nx/workspace-data/*-v3.db`) keeps
+every invocation's start and end, so conditions can be read back afterwards. Of the eight runs of `components:test` that table held between 119 s and 185 s on
+2026-09-19, four of them this campaign's own loaded runs:
+184.3 s green, 139.4 s green, **136.2 s red**, **135.9 s red**, 126.6 s green, 124.4 s green,
+121.4 s green, **119.5 s red**. Sixty-five seconds separate the slowest green of the eight from the
+fastest red, in the wrong direction. Above the band sit a 502.6 s failure and two cancellations
+from one August evening ([`lesson-233`](#lesson-233) counts them) — a suite stuck, not slowed.
+
+**A stall fails a run; a slowdown does not.** The ten quiet runs were green and two of five loaded
+ones red, in six cases over five spec files and none of them the original two: 9285 ms against an
+idle median of 22 ms, 8957 against 75, 8599 against 49, 6919 against 97, and 12654 and 12409 inside
+the two files that held the originals, on other cases of them. Over those runs the MEDIAN case
+moved by ×1.2 to ×1.9 — and two further contended runs, medians ×1.66 and ×2.04, failed nothing at
+all. Something stops for seconds and it stops whichever case is resident. Nothing waits on a page:
+through one contended run, itself green, the desk pushed **171.5 MB out** to swap and pulled
+**665 pages** back in — pressure, but nowhere near an eight-second wait.
+
+**Nothing repeats this suite to compare the repeats.** What clears the two cases is that record and
+nothing read off the code: `whenStable()` carries no deadline, so the ceiling is its only bound and
+no reading tells a stall from a hang. The ten runs that altered nothing are the control
+[`lesson-214`](#lesson-214) demands, and [`lesson-59`](#lesson-59) is why one was needed — the load
+hypothesis is the convenient one, and it was false the last time this log reached for it. Every nx
+task in that window was the battery's own, five at peak, so the seven vitest workers
+(`availableParallelism() − 1`) and the ceiling, both vitest defaults set nowhere here, are this
+repository's arithmetic and not a neighbour's — and neither is the cure. What would rule is the
+instrument the browser suites have: the nightly repeating them with retries off for `check-flake`
+to read.
+
+### <a id="lesson-233"></a>`lesson-233` — Twice a superlative was put on a population that had been narrowed
+
+Writing [`lesson-232`](#lesson-232) needed the slowest run of one nx target, and the sentence "the
+slowest run on record" went into a commit message, a pull request title and the entry — wrong both
+times it was written, for two different reasons, and caught both times by a reviewer rather than by
+the author.
+
+The first reading opened `task_history` with `immutable=1`, which tells sqlite to ignore the
+write-ahead log beside the file. That left **21 of this target's 983 rows** invisible — two per
+cent, and the two per cent that mattered, because they were the newest: the very runs the campaign
+had just written, one of which was slower than the run being called slowest. The second reading
+fixed the flag and kept a `start >= 2026-09-17` filter from an earlier query, which hid an August
+evening holding this target's four longest runs — 502.6 s, 399.2 s, 338.7 s and 299.0 s. The true
+maximum was never behind the log at all; it was behind the date.
+
+Both sentences were checkable in one line and neither was checked, because a superlative reads like
+a reading when it is really a claim about a **population** — and the population was named in the
+query, not in the sentence. A filter is invisible in its own result: `max()` answers whatever is in
+front of it and says nothing about what is not. The same trap has a second mouth, which the third
+review found in this very entry: `task_history` holds 16,252 rows across every target, so even
+"983 rows" is a population and has to say whose.
+
+So a superlative earns a scope written next to it — _of that day_, _of this target's rows_, _as
+read on this date_, the last because the table is live and grew while this was being written. It is
+[`lesson-230`](#lesson-230) one floor up: there a target passed because an undeclared edge happened
+to hold, here a number passed because a filtered row happened to be missing, and in both the green
+came from a condition nobody had checked.
+
+### <a id="lesson-234"></a>`lesson-234` — A shorthand is a reset, and it reached over a face that had drawn
 
 `background` is a shorthand: writing it sets every one of the eight longhands, and the seven
 not mentioned go to their initial value. `background-image` is one of them.
