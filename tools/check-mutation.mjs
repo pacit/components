@@ -1081,7 +1081,7 @@ const ciTargets = () => {
   const targets = WORKFLOWS.flatMap((file) =>
     (read(file) ?? '')
       .split('\n')
-      .map((line) => line.replace(/#.*$/, ''))
+      .map((line) => line.replace(/#.*$/m, ''))
       .filter((line) => /nx\s+(?:affected|run-many)/.test(line))
       .flatMap((line) => line.split(/\s+/)),
   ).filter(Boolean);

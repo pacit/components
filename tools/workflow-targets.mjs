@@ -19,10 +19,15 @@ import { readFileSync } from 'node:fs';
 import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-/** The words after `-t` on one line, up to the first option. */
+/**
+ * The words after `-t` on one line, up to the first option. Spelt four ways that nx accepts
+ * and this repository does not use — `--targets`, `-t=lint`, `-t "lint test"`, `-t a,b` —
+ * because a spelling the reader does not know takes targets OFF the local battery without a
+ * word, and short is the direction that goes quiet.
+ */
 const targetsAfterT = (tail) => {
   const targets = [];
-  for (const word of tail.trim().split(/\s+/)) {
+  for (const word of tail.trim().split(/[,\s]+/)) {
     if (!word) continue;
     if (word.startsWith('-')) break;
     targets.push(word);
@@ -38,7 +43,9 @@ export const targetsIn = (text) =>
         .split('\n')
         .map((line) => line.replace(/#.*$/m, ''))
         .join('\n')
-        .matchAll(/nx (?:affected|run-many)[^\n]*? -t ([a-z0-9:\- \t]+)/g),
+        .matchAll(
+          /nx\s+(?:affected|run-many)[^\n]*?\s(?:-t|--targets)[= ]\s*['"]?([a-z0-9:,\- \t]+)/g,
+        ),
     ].flatMap((match) => targetsAfterT(match[1])),
   );
 
@@ -55,13 +62,22 @@ export const runsTarget = (text, target) => targetsIn(text).has(target);
  * A line that runs nx and carries no `-t` is an error here rather than a line passed over:
  * the caller is about to run whatever comes back, and a list that is short still goes green.
  */
+/** The resolved path, or the path as given when there is nothing at it to resolve. */
+const realpathOf = (path) => {
+  try {
+    return realpathSync(path);
+  } catch {
+    return path;
+  }
+};
+
 // `realpathSync` and not the argument as typed: a worktree reaches this file through a
 // symlink, and a comparison of the resolved URL with an unresolved path is then false — the
 // block would not run, the caller would read an empty list, and the error it printed would
 // name the wrong file.
 if (
   process.argv[1] &&
-  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
+  import.meta.url === pathToFileURL(realpathOf(process.argv[1])).href
 ) {
   const files = process.argv.slice(2);
   if (!files.length) {
@@ -79,11 +95,15 @@ if (
       );
       process.exit(2);
     }
+    // A line that runs nx and yields no target — asked of the READER and not of a second
+    // pattern, so a spelling the reader understands cannot be an error here and a spelling
+    // it does not understand cannot pass as a line with nothing to run.
     const mute = text
       .split('\n')
       .map((line) => line.replace(/#.*$/m, ''))
       .filter(
-        (line) => /nx (?:affected|run-many)/.test(line) && !/ -t /.test(line),
+        (line) =>
+          /nx\s+(?:affected|run-many)/.test(line) && !targetsIn(line).size,
       );
     if (mute.length) {
       console.error(

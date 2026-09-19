@@ -95,11 +95,23 @@ MACHINES rather than across workers on one.**
   assembled out of six logs. The nightly, which runs everything unsharded, stays the place
   where the suite speaks with one voice.
 - **Setup is paid seven times**: a checkout, a Node, a restore and an apt install of the
-  browser libraries in every job — measured at 1.1 to 1.8 minutes each on the run above,
-  where the `node_modules` entry was still a miss and `npm ci` ran in all seven. The run as a
+  browser libraries in every job — a minute and a half to two minutes each, measured from the
+  start of a job to the start of its nx step on the run above, where the `node_modules` entry
+  was still a miss and `npm ci` ran in all seven. The job's whole non-test time is a little
+  more, 2.1 minutes on average, the rest of it two dev servers and nx's own. The run as a
   whole cost some 74 minutes of machine time against the 71 of the single job it replaces,
   which is the trade taken deliberately: the same machine time, spent at once instead of in
   a queue.
+- **The run starts twelve dev servers where it used to start two, and that dice has come up
+  badly once.** On run 35408508618 two shards of six failed with
+  `Timed out waiting 240000ms from config.webServer` — and the failing tasks printed NOT ONE
+  line of server output in those four minutes, while their siblings on the same run had both
+  their servers up inside 35 to 107 seconds together. So it is a hang and not a budget, and a
+  larger ceiling would buy nothing; re-running the two jobs passed them both. What the
+  arrangement changed is how often the question is asked: twelve cold starts a run instead of
+  two. It is written down here because the next occurrence is evidence and this one is only a
+  reading — whether the nested `npx nx run sandbox:serve` is what stalls is not something one
+  run can say.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading
