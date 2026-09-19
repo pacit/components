@@ -779,9 +779,9 @@ const indexSurfaces = ({ entrypoints, modules }) =>
  * exports too. This is the narrowed promise of `req-project-files`, on the axis that pays: not
  * WHICH file a type stands in, but whether a consumer can name it at all.
  *
- * The defect it fires on has no other symptom. A `PctBadgeTone` that `badge/src/index.ts` never
+ * The defect it fires on has no other symptom. A `PctButtonVariant` that `button/src/index.ts` never
  * re-exports resolves perfectly inside the library — the component compiles, the spec passes,
- * the demo renders — and the person outside, holding `@pacit/components/badge`, cannot write
+ * the demo renders — and the person outside, holding `@pacit/components/button`, cannot write
  * the variable that receives it, cannot type the wrapper they were going to put around it and
  * cannot say in their own test what they expect back. Nothing in the toolchain is even looking:
  * ng-packagr publishes what the index names and reports nothing about the rest.

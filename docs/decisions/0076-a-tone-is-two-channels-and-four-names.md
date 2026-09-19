@@ -46,12 +46,21 @@ The mechanism, and what each channel costs at the element, is in the header of
   is spent.** It was a refusal with a named condition, the condition is met, and the toast
   carries tones today. The clause stays in that record as history, with a line saying so —
   a refusal whose condition has fired is not deleted, it is closed.
-- **A component adopting a tone adopts both channels.** Taking the colour without the drawing
-  is the failure the decision exists to prevent, and it is the one shape review has to watch,
-  because nothing measures a missing icon on a toned element yet.
+- **A component adopting a tone adopts both channels** — but the second channel is not always
+  a drawing. Where the tone lands on a thing that might carry no words — a toast, a progress
+  bar — it is the icon this decision names, and taking the colour without it is the failure
+  the decision exists to prevent. Where the component IS text and cannot exist without it, the
+  words are the second channel and an icon would only repeat them: the badge
+  ([0053](0053-a-badge-is-a-word-wearing-a-tone.md)) and the button
+  ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)) take tones and
+  draw no mark, and both refuse the empty case in dev mode instead. Either way it is the one
+  shape review has to watch, because nothing measures a missing second channel yet.
 - **The union is closed and widening it is a breaking change** for anyone matching on it
-  exhaustively. Four was chosen to be the set that does not need a fifth: `PctBadgeTone` is
-  still `'neutral' | 'danger'` and joins this list only when the ramps behind it land.
+  exhaustively. Four was chosen to be the set that does not need a fifth, and the one list
+  standing outside it is gone: `PctBadgeTone` named the skin's missing ramps as its condition
+  for growing, the ramps landed with
+  [0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md), and the badge
+  now reads this one rather than a second one of its own.
 
 ## What this costs us
 

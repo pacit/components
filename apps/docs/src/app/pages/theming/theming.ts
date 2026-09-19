@@ -58,7 +58,7 @@ const COMPONENT_TIER = PUBLIC.filter((row) => row.tier === 'component');
  * tier IS the contract and a contract you have to visit 34 pages to read is a worse page and
  * not a shorter one. What changed is that it can be reached: the two moves come first and
  * side by side, the three tiers have addresses and a bar that says which one the reader is
- * in, the finder the gallery ships filters all 559 by name, and the component tier is folded
+ * in, the finder the gallery ships filters all 568 by name, and the component tier is folded
  * into 28 groups — one per component, by the prefix the snapshot already states, each
  * carrying its count and the link to the page that says what those dials paint.
  *

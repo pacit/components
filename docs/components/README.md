@@ -213,13 +213,17 @@ The order follows **architectural debt**, not popularity:
    platform's segmenter, so an emoji family, a flag or a matra never comes back as half a
    character.
    The **badge** is built, and it is a word wearing a tone — no role, no ARIA, no string,
-   no size, no parts ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)). Two
-   tones, and no longer for the reason the union records: `danger` paints the error colour's
-   first background with the `on-danger` pair the semantic tier had promised back for exactly
-   this component, and `success` / `warning` / `info` waited for ramps the skin did not have.
-   Those landed with [0082](../decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md),
-   so what holds the union at two is now only that nothing has collapsed it onto `PctTone`. The tone never speaks alone: an empty badge is a dev-mode warning,
-   and forced colours make the argument visible by dropping both tones to one palette.
+   no size, no parts ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)). Four
+   tones and the absence of one, and the four are not this component's list: `danger` paints
+   the error colour's first background with the `on-danger` pair the semantic tier had
+   promised back for exactly this component, and `success` / `warning` / `info` waited for
+   ramps the skin did not have. Those landed with
+   [0082](../decisions/0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md),
+   and the union of its own was spent rather than widened — `tone` now takes `PctTone | null`
+   ([0076](../decisions/0076-a-tone-is-two-channels-and-four-names.md)), with `null` painting
+   what `'neutral'` painted. The tone never speaks alone: an empty badge is a dev-mode
+   warning, and forced colours make the argument visible by dropping every tone to one
+   palette.
    The **breadcrumb** is built, and the split is ownership again: every anchor is the
    consumer's own `<a href>` (the router writes `aria-current`, never this component), and
    the structure is the library's — a named `navigation` landmark, a `list` a reader
