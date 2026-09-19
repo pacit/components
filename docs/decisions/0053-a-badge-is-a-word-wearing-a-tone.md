@@ -46,10 +46,12 @@ error and not a silently grey box.
 has; `danger` is the skin's error colour painting its first background, with `on-danger` as
 the text over it — the exact pair `semantic.light.json` removed as unused and promised back
 "with the first component painting a background with the error colour", naming the badge as
-that component. `success`, `warning` and `info` need colour ramps the skin does not have at
-all, and inventing three ramps at a component's feet would put the skin's centre of gravity
-in the wrong file ([0019](0019-primitives-are-not-the-contract.md)). The union grows the
-day the ramps land — the same road `PctIconName` walks.
+that component. `success`, `warning` and `info` needed colour ramps the skin did not have
+at all, and inventing three ramps at a component's feet would have put the skin's centre of
+gravity in the wrong file ([0019](0019-primitives-are-not-the-contract.md)). The union grows
+the day the ramps land — the same road `PctIconName` walks, and **that day came**: the ramps
+landed with the button's tone axis ([0081](0081-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
+so this refusal's condition has fired and the collapse onto `PctTone` is owed.
 
 ## What is refused, and why
 

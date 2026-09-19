@@ -108,19 +108,29 @@ test.describe('PctButton', () => {
     page,
   }) => {
     // The tint and its hover tint are two measured pairs, and a face that never reaches the
-    // second one is a token declared and never painted. Both faces are read here, because
-    // what makes this go wrong is a TIE: the rule that paints hover and the rule that dresses
-    // a toned face can carry the same specificity, and then only the source order decides.
-    for (const [testId, rest, hover] of [
+    // second one is a token declared and never painted. Both the untoned and every toned face
+    // are read here, because what makes this go wrong is a TIE: the rule that paints hover and
+    // the rule that dressed a toned face once carried the same specificity, and then only the
+    // source order decided. The press is read too — it is the suite's only reading of `:active`
+    // on a button, and `--pct-button-bg-active` had none at all before it.
+    for (const [testId, rest, pressed] of [
       ['btn-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'], // primary-100 -> -200
       ['btn-danger-soft', 'rgb(254, 226, 226)', 'rgb(254, 202, 202)'], // danger-100 -> -200
       ['btn-warning-soft', 'rgb(254, 243, 199)', 'rgb(253, 230, 138)'],
       ['btn-success-soft', 'rgb(220, 252, 231)', 'rgb(187, 247, 208)'],
+      ['btn-info-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'],
     ] as const) {
       const button = page.getByTestId(testId);
       await expect(button).toHaveCSS('background-color', rest);
+
       await button.hover();
-      await expect(button).toHaveCSS('background-color', hover);
+      await expect(button).toHaveCSS('background-color', pressed);
+
+      // and held down, where the same tint answers — the face has one tint for both states
+      await page.mouse.down();
+      await expect(button).toHaveCSS('background-color', pressed);
+      await page.mouse.up();
+
       await page.mouse.move(0, 0);
       await expect(button).toHaveCSS('background-color', rest);
     }

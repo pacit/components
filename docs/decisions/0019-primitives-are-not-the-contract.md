@@ -51,8 +51,8 @@ today is a semantic, component or scale token, and all of those stay in the unio
   implementation, and it should be visibly harder than an assertion about `--pct-primary`.
 - **The union is 143 names, not 146** — a public API change, and it is visible in review
   because `tokens.snapshot.md` moved three lines from `public` to `private`.
-- **Re-theming stays semantic-only in the type.** A consumer who wants our exact red still has
-  it in the CSS (`--pct-red-600` was declared in `pct.css` — a private prefix hides a name from
+- **Re-theming stays semantic-only in the type.** A consumer who wanted our exact red had it
+  in the CSS (`--pct-red-600` was declared in `pct.css` — a private prefix hides a name from
   the TYPE, not from the stylesheet). What they lose is the promise that it will still be
   there, and "and always will be" was an overstatement that the next line already qualified:
   `red.600` left the palette on 2026-09-19, when `danger` moved one step down the ramp and

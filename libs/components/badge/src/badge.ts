@@ -11,9 +11,11 @@ import {
  * The tones the skin can keep today. A union, so a missing tone is a compile error and not
  * a silently grey box — and deliberately two members: `neutral` stands on surfaces the skin
  * already has, `danger` is the error colour painting its first background (the `on-danger`
- * pair `semantic.light.json` promised back), and `success` / `warning` / `info` need colour
- * ramps the skin does not have at all. The union grows the day the ramps land — the same
- * road `PctIconName` walks
+ * pair `semantic.light.json` promised back), and `success` / `warning` / `info` needed colour
+ * ramps the skin did not have at all. **Those ramps landed with the button's tone axis**
+ * ([0081](../../../../docs/decisions/0081-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
+ * so the condition this union named has fired and what is owed is the collapse onto
+ * `PctTone` itself — the same road `PctIconName` walks
  * ([0053](../../../../docs/decisions/0053-a-badge-is-a-word-wearing-a-tone.md)).
  *
  * @since 0.1.0

@@ -49,7 +49,7 @@ nothing more. A tone on a button is a face; putting it in the accessible name wo
 translated word out of an emphasis, and would lie the first time a consumer reached for red
 without meaning danger.
 
-**One focus ring.** `--pct-focus-ring` is `blue.500` in both themes and 18 components read it, over 20 stylesheets.
+**One focus ring.** `--pct-focus-ring` is `blue.500` in both themes and 20 stylesheets in the library read it.
 Whether a control in an error state should ring in its own colour is a question for the skin,
 and a shared property settled by whoever needed it first is an accident of that one case.
 

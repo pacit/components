@@ -5,7 +5,7 @@ import { SbxDemo } from '../../ui/demo';
 /**
  * Badge: a word wearing a tone. What is worth watching is what is NOT here — no role, no
  * label, no size, no pill — and the union: two tones today because the skin has colour for
- * two, with the rest arriving the day the ramps do, as a type change every consumer sees.
+ * two, with the rest owed now that the ramps have landed (0081), as a type change every consumer sees.
  */
 @Component({
   selector: 'sbx-badge-view',

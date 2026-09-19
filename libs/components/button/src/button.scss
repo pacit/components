@@ -24,19 +24,25 @@
     var(--pct-motion-transition-easing);
 }
 
-/* THESE TWO RULES AND THE ONE ABOVE ARE THE ONLY PLACES THAT PAINT A GROUND. Everything
-   below — every face, every tone — assigns `--pct-button-bg`, `-hover` and `-active` and
-   paints nothing, and that is not tidiness: a face that painted its own ground competed with
-   these rules for the same property, and a tone on a face carries the same specificity they
-   do (three, counting `:host`). The tie then went to whichever rule stood later in the file,
-   and a toned `soft` button had no hover and no press at all — its `-200` tint declared,
-   measured in the contrast policy, and never once on screen. Read in chromium before the
-   repair: `rgb(254, 226, 226)` under the pointer where `rgb(254, 202, 202)` was promised.
+/* NO RULE BELOW COMPETES FOR `background-color`. Every face and every tone assigns
+   `--pct-button-bg`, `-hover` and `-active` instead of painting a ground of its own, and that
+   is not tidiness: a face that painted one competed with these two rules for the same
+   property at the same specificity — `:host` plus two attributes on one side, `:host` plus
+   `:hover` plus `:not()` on the other — and the tie went to whichever stood later in the
+   file. A toned `soft` button therefore had no hover and no press at all, its `-200` tint
+   declared, measured in the contrast policy and never once on screen. Read in chromium before
+   the repair: `rgb(254, 226, 226)` under the pointer where `rgb(254, 202, 202)` was promised.
+
+   Two rules below still paint a ground on purpose and neither can tie with these: the hero's
+   gradient (`background-image`, a different property) and the disabled state, which is written
+   to outrank every face by an attribute. What the assignment buys is that ORDER stops deciding
+   what a pointer shows — it still decides between a tone and a face, one line below, and the
+   comment there says so.
 
    The colour channel alone, too. `background` is a shorthand, so a shorthand winning over the
-   face that set a gradient resets that gradient to `none`: the hero face carries its drift in
-   `background-image` at one attribute, these rules stand at three, and the image went out from
-   under the pointer (lesson-231). `background-color` touches the one channel it means to. */
+   face that set a gradient resets that gradient to `none`: the hero face draws its drift at
+   `:host` plus one attribute, these rules stand at `:host` plus two, and the image went out
+   from under the pointer (lesson-231). `background-color` touches the one channel it means. */
 :host(:hover:not([data-pct-disabled])) {
   background-color: var(--pct-button-bg-hover);
 }
