@@ -122,14 +122,13 @@ MACHINES rather than across workers on one.**
   flushes a task's output when it finishes ([`lesson-231`](../lessons.md#lesson-231), 4.76).
   The ceiling is untouched. **And the 35-to-107-second reading above was never about the
   servers**: Playwright's printed time ALREADY CONTAINS the wait for one — measured on run
-  35435901274, where `docs-e2e` printed `3.1m` across a task span of 186.8 seconds holding a
-  server that took 14, and where printed-plus-server exceeds the span on four of the six
-  shards. No subtraction of that number can isolate what it already includes. Where 35 to 107
-  came from is not reconstructed here and should not be guessed at a third time: the
-  subtraction it was described by yields 9 to 12 seconds on the run it is attributed to, and
-  the quantity that does resemble it is the setup this page already counts two bullets above.
-  Until this instrument the servers had no measurement of their own; on that run each of the
-  twelve stated it, 11 to 17 seconds.
+  35435901274, where `docs-e2e` printed `3.1m` across a task span of 185.3 seconds that held a
+  server taking 14, the printed figure alone already past the span. No subtraction of that
+  number can isolate what it already includes. Where 35 to 107 came from is not reconstructed
+  here and is not guessed at a third time; what can be said is that the subtraction it was
+  described by yields 9 to 12 seconds across the six shards of the run it is attributed to.
+  Until this instrument the servers had no measurement of their own, and on run 35435901274
+  each of the twelve stated it: 11 to 17 seconds.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading

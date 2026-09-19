@@ -6449,16 +6449,21 @@ used to have to be subtracted for.
 
 Piping the server's output had one more consequence, in the file least able to afford it.
 `scripts/nx-verdict` decides that a run produced a verdict by looking for nx's own closing
-sentence, and a nested `nx run <app>:serve` prints that sentence too — so the log now carried a
-second one, wearing only a `[WebServer] ` prefix. Striking those lines out took three attempts,
-and each of the first two put a new way to be wrong into the one reader whose job is not to be:
-a `grep -q` that left early, killed its upstream with SIGPIPE and handed `pipefail` a 141 that
-reads like "no verdict"; then a filter that met a single zero byte, which GNU grep answers by
-writing nothing at all. Both failed a GREEN run, which is the safe direction and not an excuse.
+sentence, and a nested `nx run <app>:serve` prints that sentence too — so the log could now
+carry a second one wearing nothing but a `[WebServer] ` prefix. None has been seen: the server
+is killed long before it gets that far, and striking those lines out is a precaution rather
+than a repair. It still took three attempts, and the first put two ways to be wrong into the
+one reader whose job is not to be — a `grep -q` that left early, killed its upstream with
+SIGPIPE and handed `pipefail` a 141 that reads like "no verdict", and a filter that met a
+single zero byte, which GNU grep answers by writing nothing at all. The second attempt closed
+the first of those and left the second standing. Both failed a GREEN run, which is the safe
+direction and not an excuse.
 
 The third attempt was measured through an interactive shell where `grep` is a wrapper function
 over another implementation, and it disagreed with `/usr/bin/grep`, which is what the script
 actually runs — so the repair was right and the sentence explaining it was not. **Measure a
-script with the tool the script runs**, and when a number has to be attributed, attribute it to
-the thing that produced it: the same round found "97 stderr lines" that were one job's two
-servers, and a 35-to-107-second figure for servers that the arithmetic it names cannot yield.
+script with the tool the script runs**, and attribute a number to the thing that produced it.
+This branch got that second half wrong three times: "97 stderr lines" were one job's two
+servers, a 35-to-107-second figure was claimed for servers that no server was measured for,
+and the commit correcting that one widened a 185.3-second task span to 186.8 by swallowing the
+neighbouring task — the same fault, inside its own repair.
