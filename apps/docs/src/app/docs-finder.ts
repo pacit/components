@@ -5,7 +5,7 @@ import { PctField, PctLabelAux, PctText } from '@pacit/components/field';
  * The finder: one `pct-field`, and the count of what survives the typing sitting in the
  * field's own label add-on.
  *
- * The gallery got it on 2026-09-08 and it is a component the day `theming` (536 tokens) and
+ * The gallery got it on 2026-09-08 and it is a component the day `theming` (559 tokens) and
  * `trust` (94 requirements) want the same thing — the same field, the same place for the
  * count, the same live region, so three long pages answer typing the same way rather than
  * three ways. What is NOT here is the rule: the page owns what a match means, because a
