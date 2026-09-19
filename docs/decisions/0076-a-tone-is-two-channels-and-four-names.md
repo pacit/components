@@ -20,13 +20,21 @@ This is that decision.
 
 ## Decision
 
-**A tone is a pair of channels, never one: the colour a skin gives it, and a drawing the
-library ships under the matching name in `PctIconName`.**
+**A tone is a pair of channels, never one: the colour a skin gives it, and a second channel
+that survives the colour's absence.** Where the tone lands on something that can stand with no
+words of its own — a toast, a progress bar — that second channel is a drawing the library ships
+under the matching name in `PctIconName`. Where the component IS text and cannot exist without
+it, the words are the second channel and a drawing would only repeat them.
 
 That is not decoration doubled up. A state painted in colour alone is a state carried by colour
 alone — gone for a reader who cannot separate red from green, and gone again in forced-colours
 mode, where the palette is the user's and an author's greens are not invited
 ([`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors)).
+
+The text half was written down late, in 2026-09, when the badge and the button took tones: both
+are text by construction, neither draws a mark, and the rule as first stated would have made
+them violations of the decision they implement. What the rule really refuses is a tone that
+speaks ALONE, and this names the two ways it does not.
 
 **Four names, decided once, for every component that will ever want them:** `success`,
 `warning`, `danger`, `info` — landing in `PctIconName` together
@@ -53,8 +61,12 @@ The mechanism, and what each channel costs at the element, is in the header of
   words are the second channel and an icon would only repeat them: the badge
   ([0053](0053-a-badge-is-a-word-wearing-a-tone.md)) and the button
   ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)) take tones and
-  draw no mark, and both refuse the empty case in dev mode instead. Either way it is the one
-  shape review has to watch, because nothing measures a missing second channel yet.
+  draw no mark. What each does about the shape where the text goes missing differs, and only
+  one of them can act: a badge with no text is a colour swatch and is refused by a dev-mode
+  warning, while a button labelled "OK" in red is a sentence that says nothing to whoever
+  cannot see the red — and no attribute there can repair it, which the button's own record
+  says outright. Either way it is the one shape review has to watch, because nothing measures
+  a missing second channel yet.
 - **The union is closed and widening it is a breaking change** for anyone matching on it
   exhaustively. Four was chosen to be the set that does not need a fifth, and the one list
   standing outside it is gone: `PctBadgeTone` named the skin's missing ramps as its condition
