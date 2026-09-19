@@ -23,20 +23,21 @@ palette with the border carrying the box.
 
 ## Contract
 
-|             |                                                                                                                                                                                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Value**   | none — a word holds no value                                                                                                                                                                                             |
-| **Inputs**  | `tone` (`'neutral' \| 'danger'`, default `'neutral'`) — a union, so a missing tone is a compile error; it grows the day the skin grows ramps for `success` / `warning` / `info`, the same road `PctIconName` walks       |
-| **Outputs** | none — nothing happens to a word                                                                                                                                                                                         |
-| **Slots**   | the content — the word, and any glyph the consumer projects beside it (the gap is a token, not a slot)                                                                                                                   |
-| **Parts**   | none — the host is the box                                                                                                                                                                                               |
-| **Harness** | `PctBadgeHarness`                                                                                                                                                                                                        |
-| **Tokens**  | the `--pct-badge-*` prefix plus five entries in `contrast.policy.json`; the skin gained `on-danger`, the pair `semantic.light.json` promised back "with the first component painting a background with the error colour" |
-| **Strings** | **none.** The fourth component in the library to add nothing to `PCT_TEXTS` — the word is the consumer's                                                                                                                 |
+|             |                                                                                                                                                                                                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**   | none — a word holds no value                                                                                                                                                                                                                                               |
+| **Inputs**  | `tone` (`'neutral' \| 'danger'`, default `'neutral'`) — a union, so a missing tone is a compile error; the ramps it was waiting for landed with the button's tone axis (0081), so what holds the union at two now is only that nothing has collapsed it onto `PctTone` yet |
+| **Outputs** | none — nothing happens to a word                                                                                                                                                                                                                                           |
+| **Slots**   | the content — the word, and any glyph the consumer projects beside it (the gap is a token, not a slot)                                                                                                                                                                     |
+| **Parts**   | none — the host is the box                                                                                                                                                                                                                                                 |
+| **Harness** | `PctBadgeHarness`                                                                                                                                                                                                                                                          |
+| **Tokens**  | the `--pct-badge-*` prefix plus five entries in `contrast.policy.json`; the skin gained `on-danger`, the pair `semantic.light.json` promised back "with the first component painting a background with the error colour"                                                   |
+| **Strings** | **none.** The fourth component in the library to add nothing to `PCT_TEXTS` — the word is the consumer's                                                                                                                                                                   |
 
 **Why two tones.** `neutral` stands on surfaces the skin already has; `danger` is the error
-colour painting its first background. `success`, `warning` and `info` need colour ramps the
-skin does not have at all, and inventing three ramps at a component's feet would put the
+colour painting its first background. `success`, `warning` and `info` needed colour ramps the
+skin did not have at all — they landed with the button's tone axis (0081) and the condition
+this union named has fired — and inventing three ramps at a component's feet would have put the
 skin's centre of gravity in the wrong file
 ([0019](../decisions/0019-primitives-are-not-the-contract.md)).
 
@@ -100,7 +101,8 @@ three ramps at a component's feet),
 
 ## Known limitations
 
-- **Two tones.** `success` / `warning` / `info` wait for the skin's ramps; the union makes
+- **Two tones.** `success` / `warning` / `info` waited for the skin's ramps, which landed with
+  0081; what is owed now is the collapse onto `PctTone` itself. The union makes
   the wait a compile-time fact rather than a silently grey box.
 - **No count overlay.** The `3` on a bell's corner is a different component — anchoring,
   a live region for the changing number, truncation — and it does not exist yet.

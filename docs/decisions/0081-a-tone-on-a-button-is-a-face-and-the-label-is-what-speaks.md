@@ -5,8 +5,9 @@
 [`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors),
 [`req-token-text-pairs`](../requirements/tokens.md#req-token-text-pairs)
 **Evidence:** `libs/components/button/src/button.scss` and the tone cases in
-`button.spec.ts`; the 32 entries under `button/<tone>` in
-`libs/tokens/src/contrast.policy.json`, measured on every build; the `Tones` card in
+`button.spec.ts`; the 32 entries the tones added to
+`libs/tokens/src/contrast.policy.json` — 28 named `button/<tone> …` and four
+`UI: button border (<tone>)` — measured on every build; the `Tones` card in
 `apps/sandbox/src/app/views/button/` and the readings that walk it
 
 ## The question
@@ -48,7 +49,7 @@ nothing more. A tone on a button is a face; putting it in the accessible name wo
 translated word out of an emphasis, and would lie the first time a consumer reached for red
 without meaning danger.
 
-**One focus ring.** `--pct-focus-ring` is `blue.500` in both themes and 19 components read it.
+**One focus ring.** `--pct-focus-ring` is `blue.500` in both themes and 18 components read it, over 20 stylesheets.
 Whether a control in an error state should ring in its own colour is a question for the skin,
 and a shared property settled by whoever needed it first is an accident of that one case.
 
@@ -74,9 +75,12 @@ press it refuses.
 
 ## Consequences
 
-- **The badge's refusal is spent.** Its `'neutral' | 'danger'` union collapses onto `PctTone`,
-  with `null` painting the pill that `'neutral'` painted — a breaking API change with no
-  visual change at all.
+- **The badge's refusal has lost its reason, and is not yet spent.** `PctBadgeTone` names the
+  ramps the skin lacked as the condition for growing, and this decision lands them — but the
+  badge is untouched here and still takes `'neutral' | 'danger'`. The collapse onto `PctTone`,
+  with `null` painting the pill `'neutral'` paints, is a breaking API change with no visual
+  change at all, and it is owed in its own commit. Until it lands the library has two tone
+  vocabularies, which is the state 0076 exists to end.
 - **Forty-six semantic tokens and sixteen primitive steps land**, and every colour pair the
   faces paint is measured: 32 entries, both themes, none below AA.
 - **Two pairs sit close to the line** — `warning` 4.51:1 and `success` 4.57:1 on the dark
@@ -106,6 +110,6 @@ press it refuses.
   `null`. A union member meaning "none of the above" makes every consumer write it.
 - **A `PctButtonTone` of its own.** The shape that would have allowed both extra names.
   Refused for 0076's reason: two lists that mean the same thing drift.
-- **Hovering a quiet face onto the tone's own tint.** Measured and dropped — 3.00–4.57:1 across
-  the tones, failing nine of fourteen rows, because a tint sits too close to its base to carry
-  the label. The quiet faces keep the page's tint.
+- **Hovering a quiet face onto the tone's own tint.** Measured and dropped — 3.00–5.30:1 across the
+  four tones and both themes, failing five of those eight rows (`info` on both), because a tint
+  sits too close to its base to carry the label. The quiet faces keep the page's tint.

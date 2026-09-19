@@ -192,6 +192,15 @@ describe('PctButton', () => {
     warn.mockRestore();
   });
 
+  it('and a toned button that is not a hero says nothing either — the other half of the same guard', async () => {
+    // Both halves, because the guard is a conjunction: with `variant() !== 'hero'` forced
+    // true, every toned button on a page would warn and the case above would stay green.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await stateHost({ variant: 'soft', tone: 'danger' });
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it('respects the default size from providePctConfig', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({

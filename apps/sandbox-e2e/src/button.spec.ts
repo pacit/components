@@ -96,11 +96,34 @@ test.describe('PctButton', () => {
     page,
   }) => {
     // Measured, and the reason the other reading was dropped: hovering onto the tone's own
-    // tint puts the label at 3.00–4.57:1, under the threshold on nine of fourteen rows.
+    // tint puts the label at 3.00–5.30:1, under the threshold on five of the eight tone-and-
+    // theme rows — `info` on both.
     const outline = page.getByTestId('btn-danger-outline');
     await outline.hover();
     await expect(outline).toHaveCSS('background-color', 'rgb(241, 245, 249)'); // slate.100
     await expect(outline).toHaveCSS('color', 'rgb(185, 28, 28)');
+  });
+
+  test('a toned soft face answers the pointer and the press', async ({
+    page,
+  }) => {
+    // The tint and its hover tint are two measured pairs, and a face that never reaches the
+    // second one is a token declared and never painted. Both faces are read here, because
+    // what makes this go wrong is a TIE: the rule that paints hover and the rule that dresses
+    // a toned face can carry the same specificity, and then only the source order decides.
+    for (const [testId, rest, hover] of [
+      ['btn-soft', 'rgb(219, 234, 254)', 'rgb(191, 219, 254)'], // primary-100 -> -200
+      ['btn-danger-soft', 'rgb(254, 226, 226)', 'rgb(254, 202, 202)'], // danger-100 -> -200
+      ['btn-warning-soft', 'rgb(254, 243, 199)', 'rgb(253, 230, 138)'],
+      ['btn-success-soft', 'rgb(220, 252, 231)', 'rgb(187, 247, 208)'],
+    ] as const) {
+      const button = page.getByTestId(testId);
+      await expect(button).toHaveCSS('background-color', rest);
+      await button.hover();
+      await expect(button).toHaveCSS('background-color', hover);
+      await page.mouse.move(0, 0);
+      await expect(button).toHaveCSS('background-color', rest);
+    }
   });
 
   test('the grey of a disabled button outranks the tone it was still asked for', async ({

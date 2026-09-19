@@ -24,13 +24,19 @@
     var(--pct-motion-transition-easing);
 }
 
-/* The pointer and the press paint the COLOUR channel alone. `background` is a shorthand, and
-   a shorthand winning on specificity over the face that set a gradient resets that gradient to
-   `none`: the hero face carries its drift in `background-image` at one attribute, these rules
-   stand at two, and the image went out from under the pointer. `background-color` touches the
-   one channel it means to and leaves the image where the face put it. The faces below set
-   these two tokens rather than painting hover themselves — one place per face knows which
-   ground answers the pointer, and a tone has one place to change it. */
+/* THESE TWO RULES AND THE ONE ABOVE ARE THE ONLY PLACES THAT PAINT A GROUND. Everything
+   below — every face, every tone — assigns `--pct-button-bg`, `-hover` and `-active` and
+   paints nothing, and that is not tidiness: a face that painted its own ground competed with
+   these rules for the same property, and a tone on a face carries the same specificity they
+   do (three, counting `:host`). The tie then went to whichever rule stood later in the file,
+   and a toned `soft` button had no hover and no press at all — its `-200` tint declared,
+   measured in the contrast policy, and never once on screen. Read in chromium before the
+   repair: `rgb(254, 226, 226)` under the pointer where `rgb(254, 202, 202)` was promised.
+
+   The colour channel alone, too. `background` is a shorthand, so a shorthand winning over the
+   face that set a gradient resets that gradient to `none`: the hero face carries its drift in
+   `background-image` at one attribute, these rules stand at three, and the image went out from
+   under the pointer (lesson-231). `background-color` touches the one channel it means to. */
 :host(:hover:not([data-pct-disabled])) {
   background-color: var(--pct-button-bg-hover);
 }
@@ -105,7 +111,7 @@
 
 /* The outline variant */
 :host([data-pct-variant='outline']) {
-  background: transparent;
+  --pct-button-bg: transparent;
   color: var(--pct-primary);
   --pct-button-bg-hover: var(--pct-surface-100);
   --pct-button-bg-active: var(--pct-surface-100);
@@ -116,7 +122,7 @@
    under it — the same pair the outline variant already measures. */
 :host([data-pct-variant='ghost']) {
   border-color: transparent;
-  background: transparent;
+  --pct-button-bg: transparent;
   color: var(--pct-primary);
   --pct-button-bg-hover: var(--pct-surface-100);
   --pct-button-bg-active: var(--pct-surface-100);
@@ -128,7 +134,7 @@
    on their own. */
 :host([data-pct-variant='soft']) {
   border-color: transparent;
-  background: var(--pct-primary-100);
+  --pct-button-bg: var(--pct-primary-100);
   color: var(--pct-on-primary-100);
   --pct-button-bg-hover: var(--pct-primary-200);
   --pct-button-bg-active: var(--pct-primary-200);
@@ -184,10 +190,12 @@
 
 /* ── The tone on a face that is not the solid one ────────────────────────────────────────
    A quiet face paints the tone as its LABEL and keeps the page's own tint under the pointer —
-   measured: hovering onto the tone's tint instead reads 3.00–4.57:1 across the four tones and
-   fails nine of fourteen rows, because a tint sits too close to the base to carry it. The soft
-   face paints the tint as its ground and the tint's own text on it. Two attributes each, so
-   these outrank both the tone above and the face they name, whatever the order. */
+   measured: hovering onto the tone's tint instead reads 3.00–5.30:1 across the four tones and
+   fails five of the eight tone-and-theme rows, because a tint sits too close to the base to
+   carry it — `info` fails on BOTH themes. The soft
+   face names the tint as its ground and the tint's own text on it. Two attributes each, so
+   these outrank both the tone above and the face they name, whatever the order — and they
+   assign rather than paint, which is what keeps them out of the tie described at the top. */
 
 :host([data-pct-tone='danger'][data-pct-variant='outline']),
 :host([data-pct-tone='danger'][data-pct-variant='ghost']) {
@@ -195,7 +203,7 @@
 }
 
 :host([data-pct-tone='danger'][data-pct-variant='soft']) {
-  background: var(--pct-danger-100);
+  --pct-button-bg: var(--pct-danger-100);
   color: var(--pct-on-danger-100);
   --pct-button-bg-hover: var(--pct-danger-200);
   --pct-button-bg-active: var(--pct-danger-200);
@@ -207,7 +215,7 @@
 }
 
 :host([data-pct-tone='warning'][data-pct-variant='soft']) {
-  background: var(--pct-warning-100);
+  --pct-button-bg: var(--pct-warning-100);
   color: var(--pct-on-warning-100);
   --pct-button-bg-hover: var(--pct-warning-200);
   --pct-button-bg-active: var(--pct-warning-200);
@@ -219,7 +227,7 @@
 }
 
 :host([data-pct-tone='success'][data-pct-variant='soft']) {
-  background: var(--pct-success-100);
+  --pct-button-bg: var(--pct-success-100);
   color: var(--pct-on-success-100);
   --pct-button-bg-hover: var(--pct-success-200);
   --pct-button-bg-active: var(--pct-success-200);
@@ -231,7 +239,7 @@
 }
 
 :host([data-pct-tone='info'][data-pct-variant='soft']) {
-  background: var(--pct-info-100);
+  --pct-button-bg: var(--pct-info-100);
   color: var(--pct-on-info-100);
   --pct-button-bg-hover: var(--pct-info-200);
   --pct-button-bg-active: var(--pct-info-200);
