@@ -6467,3 +6467,70 @@ This branch got that second half wrong three times: "97 stderr lines" were one j
 servers, a 35-to-107-second figure was claimed for servers that no server was measured for,
 and the commit correcting that one widened a 185.3-second task span to 186.8 by swallowing the
 neighbouring task — the same fault, inside its own repair.
+
+### <a id="lesson-232"></a>`lesson-232` — The ceiling named the moment, and the case it named was innocent
+
+The local battery of 2026-09-19 00:17 ended with two unit cases at `Test timed out in 5000ms` —
+`calendar.spec.ts`'s first grid case and `date.spec.ts`'s backward Tab — and a rerun of the same
+task hash passed ten minutes later. (nx keeps no terminal for a failed task, so which two is a
+reading of that run rather than an artifact.) Ten uncached runs on a quiet desk put the two
+at **409 ms** and **134 ms**, twelve and thirty-seven times under the ceiling, while the case
+nearest to it — `day.property.spec.ts` at 2081 ms, a factor of 2.4 — was green in the very run that
+killed them. [`lesson-202`](#lesson-202) already carries the rule from the browser side: a red from
+a full run is re-run before it is read. This is the unit suite's version, and three things it adds.
+
+**The clock does not order the verdict.** nx's `task_history` (`.nx/workspace-data/*-v3.db`) keeps
+every invocation's start and end, so conditions can be read back afterwards. Of the eight runs of `components:test` that table held between 119 s and 185 s on
+2026-09-19, four of them this campaign's own loaded runs:
+184.3 s green, 139.4 s green, **136.2 s red**, **135.9 s red**, 126.6 s green, 124.4 s green,
+121.4 s green, **119.5 s red**. Sixty-five seconds separate the slowest green of the eight from the
+fastest red, in the wrong direction. Above the band sit a 502.6 s failure and two cancellations
+from one August evening ([`lesson-233`](#lesson-233) counts them) — a suite stuck, not slowed.
+
+**A stall fails a run; a slowdown does not.** The ten quiet runs were green and two of five loaded
+ones red, in six cases over five spec files and none of them the original two: 9285 ms against an
+idle median of 22 ms, 8957 against 75, 8599 against 49, 6919 against 97, and 12654 and 12409 inside
+the two files that held the originals, on other cases of them. Over those runs the MEDIAN case
+moved by ×1.2 to ×1.9 — and two further contended runs, medians ×1.66 and ×2.04, failed nothing at
+all. Something stops for seconds and it stops whichever case is resident. Nothing waits on a page:
+through one contended run, itself green, the desk pushed **171.5 MB out** to swap and pulled
+**665 pages** back in — pressure, but nowhere near an eight-second wait.
+
+**Nothing repeats this suite to compare the repeats.** What clears the two cases is that record and
+nothing read off the code: `whenStable()` carries no deadline, so the ceiling is its only bound and
+no reading tells a stall from a hang. The ten runs that altered nothing are the control
+[`lesson-214`](#lesson-214) demands, and [`lesson-59`](#lesson-59) is why one was needed — the load
+hypothesis is the convenient one, and it was false the last time this log reached for it. Every nx
+task in that window was the battery's own, five at peak, so the seven vitest workers
+(`availableParallelism() − 1`) and the ceiling, both vitest defaults set nowhere here, are this
+repository's arithmetic and not a neighbour's — and neither is the cure. What would rule is the
+instrument the browser suites have: the nightly repeating them with retries off for `check-flake`
+to read.
+
+### <a id="lesson-233"></a>`lesson-233` — Twice a superlative was put on a population that had been narrowed
+
+Writing [`lesson-232`](#lesson-232) needed the slowest run of one nx target, and the sentence "the
+slowest run on record" went into a commit message, a pull request title and the entry — wrong both
+times it was written, for two different reasons, and caught both times by a reviewer rather than by
+the author.
+
+The first reading opened `task_history` with `immutable=1`, which tells sqlite to ignore the
+write-ahead log beside the file. That left **21 of this target's 983 rows** invisible — two per
+cent, and the two per cent that mattered, because they were the newest: the very runs the campaign
+had just written, one of which was slower than the run being called slowest. The second reading
+fixed the flag and kept a `start >= 2026-09-17` filter from an earlier query, which hid an August
+evening holding this target's four longest runs — 502.6 s, 399.2 s, 338.7 s and 299.0 s. The true
+maximum was never behind the log at all; it was behind the date.
+
+Both sentences were checkable in one line and neither was checked, because a superlative reads like
+a reading when it is really a claim about a **population** — and the population was named in the
+query, not in the sentence. A filter is invisible in its own result: `max()` answers whatever is in
+front of it and says nothing about what is not. The same trap has a second mouth, which the third
+review found in this very entry: `task_history` holds 16,252 rows across every target, so even
+"983 rows" is a population and has to say whose.
+
+So a superlative earns a scope written next to it — _of that day_, _of this target's rows_, _as
+read on this date_, the last because the table is live and grew while this was being written. It is
+[`lesson-230`](#lesson-230) one floor up: there a target passed because an undeclared edge happened
+to hold, here a number passed because a filtered row happened to be missing, and in both the green
+came from a condition nobody had checked.
