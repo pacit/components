@@ -58,9 +58,11 @@ wait "$follower" 2>/dev/null
 # upstream `grep -v` dies of SIGPIPE with 4 MB still to write, and `pipefail` hands the `if`
 # a 141 that reads exactly like "no verdict" — a GREEN run failed on the size of its own log.
 # Measured, and it is a BAND rather than a threshold, because the race is against whatever the
-# reader has already consumed: 60 KB after the summary never did it, 70 KB did it ten times in
-# a hundred, 96 KB and beyond always. The CI logs to hand escape because their summary sits
-# some 7 KB from the end. `-c` drains its input, so there is nothing left to signal.
+# reader has already taken: sampling puts the first failures near 60 KB after the summary and
+# near-certainty past 96 KB, and two samplings disagreed on everything between — which is the
+# shape of the thing, not a fault in either. No edge is quoted here for that reason. The CI
+# logs to hand escape because their summary sits some 7 KB from the end. `-c` drains its
+# input, so there is nothing left to signal.
 #
 # `-a` ON THE FILTER is what repairs the next one: GNU grep calls a stream carrying a zero
 # byte binary and writes NOTHING to stdout for it, so one stray byte anywhere in 40 targets'

@@ -123,10 +123,11 @@ MACHINES rather than across workers on one.**
   The ceiling is untouched. **And the 35-to-107-second reading above was never about the
   servers**: Playwright's printed time ALREADY CONTAINS the wait for one — measured on run
   35435901274, where `docs-e2e` printed `3.1m` across a task span of 185.3 seconds that held a
-  server taking 14, the printed figure alone already past the span. No subtraction of that
-  number can isolate what it already includes. Where 35 to 107 came from is not reconstructed
-  here and is not guessed at a third time; what can be said is that the subtraction it was
-  described by yields 9 to 12 seconds across the six shards of the run it is attributed to.
+  server taking 14 — the two together some fifteen seconds longer than the span containing
+  both. No subtraction of that number can isolate what it already includes. Where 35 to 107
+  came from is not reconstructed here and is not guessed at a third time; what can be said is
+  that the step's duration less the two printed suite times — the subtraction the figure was
+  described by — yields 9 to 12 seconds across the six shards of the run it is attributed to.
   Until this instrument the servers had no measurement of their own, and on run 35435901274
   each of the twelve stated it: 11 to 17 seconds.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
