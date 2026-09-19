@@ -1,42 +1,39 @@
 #!/usr/bin/env bash
 # Starts the dev server a Playwright suite waits for, and puts a clock beside its silence.
 #
-# Playwright reports a server that never binds with one line — `Timed out waiting 240000ms
-# from config.webServer` — and the two shards that failed that way on run 35408508618
-# (2026-09-19) had printed NOT ONE line of server output in those four minutes. That reading
-# was worth less than it looked. `webServer.stdout` defaults to `'ignore'`, and measured on a
-# desk a healthy `nx run sandbox:serve` writes its nx header, its 29 seconds of `Building…`
-# and its whole bundle table to STDOUT; on stderr it writes three bursts inside the first six
-# seconds and then nothing until the port is up. So the empty four minutes is what this
-# arrangement looks like from outside NO MATTER what the server was doing. The configurations
-# pipe both streams now; this script adds the one thing a stream cannot carry — a line that
-# arrives while nothing is being printed, saying how long it has been nothing.
-#
-# What that separates, read against the measured timeline: no line at all, and nx never
-# started; `NX Running target …` and nothing after, and nx started while its task never did —
-# reproduced on a desk by holding nx's own `workspace-data` lock, where a nested nx hangs for
-# ever and mute, the only stall found that prints nothing; `❯ Building…` and nothing after,
-# and the build is the slow part, which is a budget question and not this one. nx's OTHER
-# lock is ruled out rather than listed: a nested nx blocked on the project-graph lock says
-# `Waiting for graph construction in another process to complete` on stderr after 30 seconds,
-# measured twice, and the two failing shards said nothing.
+# Two shards of run 35408508618 timed out on a server that never bound, and the log could not
+# say WHERE in the start it stopped. The whole account of that — which stream carries what,
+# which suspect the measurements removed, which one they did not — is
+# [`lesson-231`](../docs/lessons.md#lesson-231); the configurations that call this script
+# carry the part a reader of them needs. What belongs here is the shape of the answer: a line
+# on stderr that arrives WHILE nothing is being printed, saying how long it has been nothing,
+# so the silence has a length and the last thing the server said has a time.
 #
 # `npx` stays in the command though it costs a measured 0.45 to 1.4 seconds over
 # `node_modules/.bin/nx`. It is inside what stalled, and an instrument pointed at something
 # other than the suspect answers a question nobody asked.
 #
 # Usage:  scripts/serve-for-e2e <nx target> <url>   e.g. `sandbox:serve http://localhost:4200`
-set -u
+set -u -o pipefail
 if [ "$#" -ne 2 ]; then
   echo "usage: scripts/serve-for-e2e <nx-target> <url>" >&2
   exit 2
 fi
 target="$1"
 url="$2"
-every="${SERVE_FOR_E2E_HEARTBEAT:-15}"
 
-# The host and port the heartbeat knocks on, taken from the url Playwright is waiting for so
-# the two cannot name different servers.
+# A heartbeat nobody can read is the failure this script exists to end, so a value that would
+# switch it off says so instead of taking effect. `0` is refused with the rest: it would spin
+# the loop into a flood, which hides the server's own lines as thoroughly as silence does.
+every="${SERVE_FOR_E2E_HEARTBEAT:-15}"
+case "$every" in
+  '' | *[!0-9]* | 0)
+    echo "[serve-for-e2e] SERVE_FOR_E2E_HEARTBEAT=$every is not a positive whole number of seconds; ticking every 15s instead." >&2
+    every=15
+    ;;
+esac
+
+# The host and port the heartbeat knocks on, read off the url the caller also hands Playwright.
 hostport="${url#*://}"
 hostport="${hostport%%/*}"
 host="${hostport%%:*}"
@@ -48,6 +45,20 @@ if [ "$port" = "$host" ]; then
   esac
 fi
 
+knock() { (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null; }
+
+# Knocked once BEFORE anything is started, because the knock cannot tell whose server answers
+# and a live child is no proof the answer is its. Measured: with a second checkout serving
+# 4300 and `nx` still a second away from dying on a project that does not exist, the loop
+# below called that a healthy start. Under Playwright this should never fire — it reuses or
+# refuses a port already in use before it ever launches this script — so the line is for a
+# person running the wrapper by hand, and it is the one they most need.
+occupied=
+if knock; then
+  occupied=yes
+  echo "[serve-for-e2e] $target: $host:$port was ALREADY answering before $target was started — whatever the times below are about, it is not this server." >&2
+fi
+
 # Both streams are the child's own — inherited, not read through this script. A wrapper that
 # relays output is a wrapper that can buffer it, and the failure under investigation is
 # already one of output that never arrived.
@@ -55,33 +66,47 @@ npx nx run "$target" &
 server=$!
 
 started=$SECONDS
-# `/dev/tcp` and not curl: bash is the shebang, so the knock has no dependency to be missing
-# on the one machine where it matters. It answers whether anything is listening, which is
-# exactly what a server that never binds fails to do; between a listening port and the url
-# Playwright asked for, Playwright's own error is the better witness and says so itself.
+next=$every
 said=
+# Knocked on EVERY SECOND and reported every `$every`, which are two different periods on
+# purpose: the first version did both at once and could only ever name a multiple of 15, so
+# all twelve servers of run 35434514356 reported `15s` or `30s` for builds that finished in
+# 8. The log volume is the reporting period; the accuracy is the knocking one, and a server
+# that dies is noticed in a second rather than at the next tick.
+#
+# `/dev/tcp` and not curl: one fewer thing to be missing on the machine where it matters.
+# Net redirections are a bash build option rather than a guarantee of the shebang — MEASURED
+# present on the runner by run 35434514356, where every one of the twelve servers reported.
+# If a build ever lacks them the knock never succeeds, and the loop says so every `$every`
+# seconds for the length of the suite, which is loud in the right direction.
 while :; do
-  sleep "$every" || break
-  elapsed=$(( SECONDS - started ))
+  sleep 1 || break
+  now=$(( SECONDS - started ))
   # The child is asked about BEFORE the port is, because the port answers for whoever holds
   # it. Knocked on in the other order, a dead `nx` and a stranger's server on the same number
   # read as a healthy start — measured, on a desk where a second checkout was serving 4300.
   if ! kill -0 "$server" 2>/dev/null; then
-    echo "[serve-for-e2e] $target: gone after ${elapsed}s, and $host:$port never answered while it lived — the code below is its own." >&2
+    echo "[serve-for-e2e] $target: gone after ${now}s, and $host:$port never answered while it lived — the code below is its own." >&2
     break
   fi
-  if (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null; then
-    echo "[serve-for-e2e] $target: $host:$port accepts connections after ${elapsed}s." >&2
+  if knock; then
+    if [ -n "$occupied" ]; then
+      echo "[serve-for-e2e] $target: $host:$port answers at ${now}s, and was answering before $target started — this is a reading of somebody else's server." >&2
+    else
+      echo "[serve-for-e2e] $target: $host:$port accepts connections after ${now}s." >&2
+    fi
     break
   fi
+  [ "$now" -lt "$next" ] && continue
+  next=$(( next + every ))
   # The first tick carries the sentence and the rest carry the clock: what a reader needs
   # from the sixteenth of them is when it was written, and the reason repeated sixteen times
-  # is the noise a log of this failure has to be read through.
+  # is noise to read the server's own lines through.
   if [ -z "$said" ]; then
     said=yes
-    echo "[serve-for-e2e] $target: ${elapsed}s, and nothing is listening on $host:$port yet — whatever the server has printed by now is above this line, and a tick with nothing above it is a server that has not spoken at all." >&2
+    echo "[serve-for-e2e] $target: ${now}s, and nothing is listening on $host:$port yet — whatever the server has printed by now is above this line, and a tick with nothing above it is a server that has not spoken at all." >&2
   else
-    echo "[serve-for-e2e] $target: ${elapsed}s, still nothing on $host:$port." >&2
+    echo "[serve-for-e2e] $target: ${now}s, still nothing on $host:$port." >&2
   fi
 done
 

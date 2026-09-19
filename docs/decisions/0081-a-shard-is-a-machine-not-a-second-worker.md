@@ -111,11 +111,16 @@ MACHINES rather than across workers on one.**
   arrangement changed is how often the question is asked: twelve cold starts a run instead of
   two. It is written down here because the next occurrence is evidence and this one is only a
   reading — whether the nested `npx nx run sandbox:serve` is what stalls is not something one
-  run can say. **Read again on 2026-09-19, "not one line" turned out to be half this
-  arrangement's own doing**: `webServer.stdout` defaults to `'ignore'`, and the server does
-  nearly all its talking there. Both suites pipe it now, and `scripts/serve-for-e2e` ticks on
-  stderr while nothing is printed, so the next occurrence arrives already sorted
-  ([`lesson-231`](../lessons.md#lesson-231), position 4.76). The ceiling is untouched.
+  run can say. **Read again on 2026-09-19, that silence narrowed rather than widened**: a shard
+  of this same run which passed printed 97 project-graph warnings from its sandbox server
+  inside the first seconds, and the two that failed printed none — so the stall came before nx
+  read the workspace out, nowhere near the build. What `webServer.stdout`, an `'ignore'` by
+  default, had been costing is the nx header: the line that tells a server which never started
+  from one whose task never did. Both suites pipe stdout now and `scripts/serve-for-e2e` ticks
+  on stderr while nothing is printed ([`lesson-231`](../lessons.md#lesson-231), position 4.76).
+  The ceiling is untouched. The 35-to-107-second reading above was two servers together, got
+  by subtraction; each of the twelve on run 35434514356 named its own start, all inside 30
+  seconds.
 - **A task first run inside an e2e job is not saved for the next run**, because only `gates`
   writes the cache. The alternative was worse and is measured above.
 - **Two more rules and two more prepared inputs to keep in `check-browsers`**, and a reading

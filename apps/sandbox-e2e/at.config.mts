@@ -33,6 +33,14 @@ export default defineConfig({
   retries: 0,
   reporter: [['list']],
   use: { ...screenReaderConfig.use, baseURL },
+  // The BARE command, where `playwright.config.mts` next door now wraps it in
+  // `scripts/serve-for-e2e` — and the difference is the runners, not an oversight. This
+  // configuration's projects run on `windows-latest` (NVDA) and `macos-latest` (VoiceOver),
+  // and the wrapper is bash reaching for `/dev/tcp`, which Windows has neither of. The
+  // reading it would buy is already bought elsewhere besides: the Orca job starts this server
+  // OUTSIDE the pass and keeps both its streams in `tmp/sandbox-serve.log` (`at-pass.yml`),
+  // so the one job where a stalled start would cost a night already has the log
+  // ([`lesson-231`](../../docs/lessons.md#lesson-231)).
   webServer: {
     command: 'npx nx run sandbox:serve',
     url: 'http://localhost:4200',
