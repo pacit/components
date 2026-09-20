@@ -179,8 +179,8 @@ const checkSupport = ({
     throw new SupportError(
       'collection',
       `\`${COLLECTION}\` declares no \`schematics\` object — that is not an empty ` +
-        `collection, it is no collection, and \`ng update\` reads it from the version ` +
-        `INSTALLED at the consumer (req-release-ng-add)`,
+        `collection, it is no collection, and the key that points here has to resolve in ` +
+        `the version that declares it (req-release-ng-add)`,
     );
   for (const entry of migrations) {
     const where = `\`${COLLECTION}\` → \`${entry.name}\``;

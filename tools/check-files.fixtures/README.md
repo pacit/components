@@ -44,7 +44,7 @@ the name on the file says nothing certain about what stands inside.
 
 So the promise was narrowed to what this library really does, and then the narrowed promise was
 gated on the axis that pays. What a consumer is hurt by is not which file a type lives in but
-whether they can **name** it: an `input()` typed `PctBadgeTone` that the entrypoint's index
+whether they can **name** it: an `input()` typed `PctButtonVariant` that the entrypoint's index
 never exports is an input nobody can write a variable for, nobody can wrap and nobody can hold a
 test to — and the library compiles over it, ships it and reports nothing, because inside the
 entrypoint the name resolves perfectly. That is point 10, and it is the half of the old promise

@@ -6,6 +6,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "schematics/**/*.spec.ts",
     "src/**/*.d.ts",
     "core/**/*.ts",
     "accordion/**/*.ts",

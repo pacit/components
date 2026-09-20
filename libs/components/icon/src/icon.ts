@@ -29,9 +29,13 @@ import {
  * a name nothing draws is a promise nobody keeps, a drawing with no name cannot be swapped.
  *
  * **The four tones arrived together, and that was the point of waiting.** `success`, `warning`,
- * `danger` and `info` are the second channel a tone needs — a state painted in colour alone is
- * a state carried by colour alone ([`req-a11y-forced-colors`](../../../../docs/requirements/a11y.md#req-a11y-forced-colors))
- * — and the set is one nobody's single component could judge: the toast wanted it, the progress
+ * `danger` and `info` are the second channel a tone needs **wherever the thing wearing it can
+ * stand with no words** — a toast, a progress bar — because a state painted in colour alone is
+ * a state carried by colour alone ([`req-a11y-forced-colors`](../../../../docs/requirements/a11y.md#req-a11y-forced-colors)).
+ * On a component that IS text the words are that channel and these drawings would only repeat
+ * them, which is why the badge and the button wear tones and ship no glyph
+ * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
+ * The set is one nobody's single component could judge: the toast wanted it, the progress
  * bar wanted the same four, and the field's error, the dialog's confirm and whatever the banner
  * turns out to be will want them too. Four names added once, by a decision, rather than one at a
  * time by whoever needed the first

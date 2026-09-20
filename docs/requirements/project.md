@@ -247,7 +247,7 @@ the `internal` list of `libs/components/files.policy.json`.
 
 The axis is the index because that is where the consumer is. Which file a type lives in is a
 question for whoever opens the directory; whether the index names it decides whether anybody
-outside can write the type down at all — an `input()` typed `PctBadgeTone` that `badge`'s index
+outside can write the type down at all — an `input()` typed `PctButtonVariant` that `button`'s index
 passes over is an input nobody can declare a variable for, wrap, or hold a test to, while the
 library compiles over it and ships it without a word. The filename half was also measured and
 was never true here: of the 30 entrypoints that declare a component, 18 have no `*.types.ts` at
@@ -272,11 +272,10 @@ needed, 10 a type a source exports is named by its entrypoint's index — follow
 index's own re-exports, and an edge that walk cannot read (a package specifier, `export * as ns
 from`) is reported rather than passed over, because over a list of names known to be short
 "this type is not exported" has nothing behind it. The run measures 35 entrypoints, 43
-declarations, 81 templates and sheets and 82 exported types, and excuses seven things: two
+declarations, 81 templates and sheets and 77 exported types, and excuses three things: two
 components whose host **is** a native `<input>` and whose template is therefore the empty
-string, and five types no public signature carries — the four view shapes of the select panel,
-which type `protected` members of a base class the index does not export either, and
-`PctArbitrary`, the property sweep's generator, which the `testing` entrypoint publishes none of
+string, and one type no public signature carries — `PctArbitrary`, the property sweep's
+generator, which lives in a testkit the `testing` entrypoint deliberately publishes none of.
 **Control:** `tools/check-files.fixtures/` — 27 prepared trees, each rejected on its own point
 **and its own rule**, among them this requirement's named control
 `template-in-the-decorator/` (a component keeping its template in the decorator — the defect

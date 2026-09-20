@@ -4,9 +4,9 @@ import { SbxDemo } from '../../ui/demo';
 
 /**
  * Badge: a word wearing a tone. What is worth watching is what is NOT here — no role, no
- * label, no size, no pill — and the union: two tones today, though no longer for the reason it
- * records. The ramps it was waiting for landed with the button's tone axis (0082), so the rest
- * is owed — as a type change every consumer sees.
+ * label, no size, no pill, and no tone attribute on the untoned badge. The list of tones is
+ * not here either: it is `PctTone`, shared with every other component that wears one (0076),
+ * since the ramps the badge's own union was waiting for landed with the button's axis (0082).
  */
 @Component({
   selector: 'sbx-badge-view',

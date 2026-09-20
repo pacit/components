@@ -20,13 +20,21 @@ This is that decision.
 
 ## Decision
 
-**A tone is a pair of channels, never one: the colour a skin gives it, and a drawing the
-library ships under the matching name in `PctIconName`.**
+**A tone is a pair of channels, never one: the colour a skin gives it, and a second channel
+that survives the colour's absence.** Where the tone lands on something that can stand with no
+words of its own — a toast, a progress bar — that second channel is a drawing the library ships
+under the matching name in `PctIconName`. Where the component IS text and cannot exist without
+it, the words are the second channel and a drawing would only repeat them.
 
 That is not decoration doubled up. A state painted in colour alone is a state carried by colour
 alone — gone for a reader who cannot separate red from green, and gone again in forced-colours
 mode, where the palette is the user's and an author's greens are not invited
 ([`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors)).
+
+The text half was written down late, in 2026-09, when the badge and the button took tones: both
+are text by construction, neither draws a mark, and the rule as first stated would have made
+them violations of the decision they implement. What the rule really refuses is a tone that
+speaks ALONE, and this names the two ways it does not.
 
 **Four names, decided once, for every component that will ever want them:** `success`,
 `warning`, `danger`, `info` — landing in `PctIconName` together
@@ -46,12 +54,25 @@ The mechanism, and what each channel costs at the element, is in the header of
   is spent.** It was a refusal with a named condition, the condition is met, and the toast
   carries tones today. The clause stays in that record as history, with a line saying so —
   a refusal whose condition has fired is not deleted, it is closed.
-- **A component adopting a tone adopts both channels.** Taking the colour without the drawing
-  is the failure the decision exists to prevent, and it is the one shape review has to watch,
-  because nothing measures a missing icon on a toned element yet.
+- **A component adopting a tone adopts both channels** — but the second channel is not always
+  a drawing. Where the tone lands on a thing that might carry no words — a toast, a progress
+  bar — it is the icon this decision names, and taking the colour without it is the failure
+  the decision exists to prevent. Where the component IS text and cannot exist without it, the
+  words are the second channel and an icon would only repeat them: the badge
+  ([0053](0053-a-badge-is-a-word-wearing-a-tone.md)) and the button
+  ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)) take tones and
+  draw no mark. What each does about the shape where the text goes missing differs, and only
+  one of them can act: a badge with no text is a colour swatch and is refused by a dev-mode
+  warning, while a button labelled "OK" in red is a sentence that says nothing to whoever
+  cannot see the red — and no attribute there can repair it, which the button's own record
+  says outright. Either way it is the one shape review has to watch, because nothing measures
+  a missing second channel yet.
 - **The union is closed and widening it is a breaking change** for anyone matching on it
-  exhaustively. Four was chosen to be the set that does not need a fifth: `PctBadgeTone` is
-  still `'neutral' | 'danger'` and joins this list only when the ramps behind it land.
+  exhaustively. Four was chosen to be the set that does not need a fifth, and the one list
+  standing outside it is gone: `PctBadgeTone` named the skin's missing ramps as its condition
+  for growing, the ramps landed with
+  [0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md), and the badge
+  now reads this one rather than a second one of its own.
 
 ## What this costs us
 

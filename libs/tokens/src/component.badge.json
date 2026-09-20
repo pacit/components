@@ -1,7 +1,7 @@
 {
   "pct": {
     "badge": {
-      "$comment": "A word wearing a tone (0053). The box is text-sized — a badge stands on no control axis, because it is not a control — and every tone is one bg/fg/border triple: `neutral` is the base with no suffix (the `md` rule, on the tone axis), `danger` the first variant, and the union in `PctBadgeTone` grows the day the skin grows ramps for the rest. The border is drawn under every tone for the forced-colours reason the chips wrote down: the fill is the first thing every flattening takes.",
+      "$comment": "A word wearing a tone (0053). The box is text-sized — a badge stands on no control axis, because it is not a control — and every tone is one bg/fg/border triple: the base carries no suffix and is what a badge with no tone wears, and the four suffixed triples are the library's four tones (`PctTone`, 0076). They arrived in two goes: `danger` was here first, alone, because it was the only tone the skin had a colour for, and `success` / `warning` / `info` followed the ramps the button's tone axis landed (0082). The border is drawn under every tone for the forced-colours reason the chips wrote down: the fill is the first thing every flattening takes.",
       "$comment-radius": "`radius.md` and deliberately not the chips' pill: a chip LOOKS grabbable because it is, and a word of status must not borrow that costume — the corner is the one visual cue telling the scanning eye which small box answers the pointer.",
       "radius": {
         "$type": "dimension",
@@ -43,7 +43,7 @@
         "$value": "{pct.border}",
         "$description": "Edge colour of the badge."
       },
-      "$comment-danger": "The skin's error colour painting its first background — the return `semantic.light.json` promised, with `on-danger` as the word over it. The border is the same colour as the fill on purpose: the edge exists for the modes that drop the fill, and in the author palette it simply thickens the box by nothing.",
+      "$comment-tones": "Four triples, one shape: `{pct.<tone>}` for the fill, `{pct.on-<tone>}` for the word, and `{pct.<tone>}` again for the edge. The border is the same colour as the fill on purpose — the edge exists for the modes that drop the fill, and in the author palette it simply thickens the box by nothing. `danger` reads differently from the other three only in its history: it is the skin's error colour painting its first background, the return `semantic.light.json` promised, and for one release it was the only suffix here.",
       "bg-danger": {
         "$type": "color",
         "$value": "{pct.danger}",
@@ -58,6 +58,51 @@
         "$type": "color",
         "$value": "{pct.danger}",
         "$description": "Edge colour of the badge in the danger tone."
+      },
+      "bg-success": {
+        "$type": "color",
+        "$value": "{pct.success}",
+        "$description": "Background of the badge in the success tone."
+      },
+      "fg-success": {
+        "$type": "color",
+        "$value": "{pct.on-success}",
+        "$description": "Text colour of the badge in the success tone."
+      },
+      "border-success": {
+        "$type": "color",
+        "$value": "{pct.success}",
+        "$description": "Edge colour of the badge in the success tone."
+      },
+      "bg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Background of the badge in the warning tone."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.on-warning}",
+        "$description": "Text colour of the badge in the warning tone."
+      },
+      "border-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Edge colour of the badge in the warning tone."
+      },
+      "bg-info": {
+        "$type": "color",
+        "$value": "{pct.info}",
+        "$description": "Background of the badge in the info tone."
+      },
+      "fg-info": {
+        "$type": "color",
+        "$value": "{pct.on-info}",
+        "$description": "Text colour of the badge in the info tone."
+      },
+      "border-info": {
+        "$type": "color",
+        "$value": "{pct.info}",
+        "$description": "Edge colour of the badge in the info tone."
       }
     }
   }

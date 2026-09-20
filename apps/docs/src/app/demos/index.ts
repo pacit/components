@@ -151,6 +151,11 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       key: 'tones',
       load: () => import('./badge.tones.demo').then((m) => m.BadgeTonesDemo),
     },
+    {
+      key: 'statuses',
+      load: () =>
+        import('./badge.statuses.demo').then((m) => m.BadgeStatusesDemo),
+    },
   ],
   skeleton: [
     {

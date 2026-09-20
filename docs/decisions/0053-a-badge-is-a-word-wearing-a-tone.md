@@ -37,21 +37,32 @@ text is a colour swatch pretending to be information), and forced colours drop e
 to one palette with the **border** carrying the box — so a page that said something only by
 tone was already saying nothing to those users, with nothing this component can add.
 
-## Two tones today, and why not five
+## Two tones, then four — and never a list of its own
 
-`tone` is `'neutral' | 'danger'` — a union, so the day a tone is missing it is a compile
-error and not a silently grey box.
+`tone` is `PctTone | null`: the library's four names
+([0076](0076-a-tone-is-two-channels-and-four-names.md)) and the absence of one. It did not
+start there. For the first release it was `PctBadgeTone`, `'neutral' | 'danger'` — a union
+of the component's own — and the reason was the skin, not the design.
 
-**The skin is the reason there are two.** `neutral` stands on the surfaces the skin already
-has; `danger` is the skin's error colour painting its first background, with `on-danger` as
-the text over it — the exact pair `semantic.light.json` removed as unused and promised back
-back for the first component that would paint a background with the error colour, naming the badge as
-that component. `success`, `warning` and `info` needed colour ramps the skin did not have
-at all, and inventing three ramps at a component's feet would have put the skin's centre of
-gravity in the wrong file ([0019](0019-primitives-are-not-the-contract.md)). The union grows
-the day the ramps land — the same road `PctIconName` walks, and **that day came**: the ramps
-landed with the button's tone axis ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)),
-so this refusal's condition has fired and the collapse onto `PctTone` is owed.
+**The skin is why there were two.** `neutral` stood on the surfaces the skin already had;
+`danger` is the skin's error colour painting its first background, with `on-danger` as the
+text over it — the exact pair `semantic.light.json` removed as unused and promised back for
+the first component that would paint a background with the error colour, naming the badge as
+that component. `success`, `warning` and `info` needed colour ramps the skin did not have at
+all, and inventing three ramps at a component's feet would have put the skin's centre of
+gravity in the wrong file ([0019](0019-primitives-are-not-the-contract.md)).
+
+So the union named the missing ramps as its condition for growing — the same road
+`PctIconName` walks — and **the condition fired**: the ramps landed with the button's tone
+axis ([0082](0082-a-tone-on-a-button-is-a-face-and-the-label-is-what-speaks.md)). The list
+was then spent rather than widened. Widening it would have left the library with two
+vocabularies for one idea, which is the state 0076 exists to end; deleting it is a breaking
+change every consumer sees at compile time, which is the honest version of the same news.
+
+**`neutral` did not survive the collapse, and not one pixel moved with it.** The quiet box is
+what a badge with no `tone` wears: no `data-pct-tone` on the host at all, the base tokens
+`:host` already sets, the same colours it always had. The absence is the neutral — a union
+member meaning "none of the above" makes every consumer write it.
 
 ## What is refused, and why
 
@@ -71,7 +82,9 @@ so this refusal's condition has fired and the collapse onto `PctTone` is owed.
 - `pct-badge` is one host: projected content, `data-pct-tone`, no parts (the host is the
   box), tokens for the pill's geometry and one bg/fg/border triple per tone.
 - The skin gains `on-danger` — the promised pair returns, measured by the contrast build
-  like every other text pair (`req-token-text-pairs`).
-- Forced colours: the border is the box's surviving channel; both tones read `CanvasText`
-  on `Canvas` with the ring standing.
+  like every other text pair (`req-token-text-pairs`). `on-success`, `on-warning` and
+  `on-info` followed with 0082, and the badge's fourteen rows in `contrast.policy.json` are
+  the reading for all four.
+- Forced colours: the border is the box's surviving channel; every tone reads `CanvasText`
+  on `Canvas`, and the box stays a box.
 - The mutation surface is one warning's guard; everything else is tokens and a template.

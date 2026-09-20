@@ -1,5 +1,12 @@
 {
   "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
-  "//": "The `ng update` migration collection. It is empty, because the library has no released version to migrate from yet — but it exists from the start deliberately. The `ng-update` entry in the manifest has to point at a file present in the package from the first release: adding it only at the first breaking change will not help consumers who installed an earlier version, because `ng update` reads the collection from the INSTALLED version.",
-  "schematics": {}
+  "//": "The `ng update` migration collection, pointed at by the `ng-update.migrations` key of the manifest. The CLI resolves it from the version being INSTALLED and runs it after the install (`update/schematic/index.js` takes `target.updateMetadata.migrations`, and its own comment says `we need to do this post installation`) — which means a migration added in 0.2.0 does reach somebody upgrading from 0.1.0, whose own copy of this file is empty. The file existed from the first release anyway, and that costs nothing: the manifest key has to resolve in whatever version declares it, and a collection that appears halfway through a package's life is one more thing to remember.",
+  "schematics": {
+    "badge-tone": {
+      "version": "0.2.0",
+      "description": "pct-badge: tone=\"neutral\" is removed from HTML templates, because the absence of a tone is now what 'neutral' was. TypeScript is reported and never written — an inline template cannot be found there without parsing TypeScript, and a migration that parses it badly deletes code.",
+      "factory": "./migrations/badge-tone/index#badgeTone"
+    }
+  },
+  "// version": "A version here is hand-written, and 0080 refused hand-written versions for `@since` on exactly the ground that bites here: the coming release's number depends on every commit until it is cut. It is determinate in ONE direction — a breaking change before 1.0 bumps the minor, so a branch carrying one knows the release is the next minor — and the exposure is the other: if some other branch releases that minor first, this entry falls at or below the tag and `ng update` will never run it, since the CLI keeps migrations satisfying `>from <=to`. `check-support` point 4 would not notice, because it asks only whether SOME migration is newer than the last tag. Nothing stamps this file the way `stamp-version.mjs` stamps `@since next`, so until something does, a migration written in one cycle and released in another is a thing to re-read rather than a thing the gates hold."
 }

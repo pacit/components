@@ -77,12 +77,13 @@ press it refuses.
 
 ## Consequences
 
-- **The badge's refusal has lost its reason, and is not yet spent.** `PctBadgeTone` names the
-  ramps the skin lacked as the condition for growing, and this decision lands them — but the
-  badge is untouched here and still takes `'neutral' | 'danger'`. The collapse onto `PctTone`,
-  with `null` painting the pill `'neutral'` paints, is a breaking API change with no visual
-  change at all, and it is owed in its own commit. Until it lands the library has two tone
-  vocabularies, which is the state 0076 exists to end.
+- **The badge's refusal has lost its reason, and has been spent.** `PctBadgeTone` named the
+  ramps the skin lacked as the condition for growing, and this decision landed them. The
+  badge was untouched here on purpose — a breaking API change does not belong in the commit
+  that makes it possible — and the collapse onto `PctTone | null` followed in its own,
+  with `null` painting exactly what `'neutral'` painted and not one pixel moving
+  ([0053](0053-a-badge-is-a-word-wearing-a-tone.md)). The library has one tone vocabulary
+  again, which is the state 0076 exists to keep.
 - **Forty-six semantic tokens and sixteen primitive steps land**, and every colour pair the
   faces paint is measured: 32 entries, both themes, none below AA.
 - **Two pairs sit close to the line** — `warning` 4.51:1 and `success` 4.57:1 on the dark

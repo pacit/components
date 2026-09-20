@@ -4,8 +4,9 @@ import { PctBadge } from '@pacit/components/badge';
 /**
  * Tones
  *
- * Two tones, deliberately: neutral says "a state", danger says "look here". A badge is a
- * word wearing a colour, and every word keeps its contrast on both themes.
+ * Four tones and the absence of one. A badge with no `tone` wears the skin's quiet
+ * surfaces; the four named ones are `PctTone`, the same list the toast and the button
+ * read, and every word over every box is a measured pair on both themes.
  */
 @Component({
   selector: 'demo-badge-tones',
@@ -14,9 +15,10 @@ import { PctBadge } from '@pacit/components/badge';
     ':host { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }',
   template: `
     <pct-badge>Draft</pct-badge>
-    <pct-badge>Scheduled</pct-badge>
     <pct-badge tone="danger">3 overdue</pct-badge>
-    <pct-badge tone="danger">Failing</pct-badge>
+    <pct-badge tone="warning">Expiring</pct-badge>
+    <pct-badge tone="success">Paid</pct-badge>
+    <pct-badge tone="info">Scheduled</pct-badge>
   `,
 })
 export class BadgeTonesDemo {}

@@ -13,17 +13,42 @@ test.describe('PctBadge — a word wearing a tone', () => {
     await visit(page, '/badge');
   });
 
-  test('carries its tone as a state attribute, neutral being the base', async ({
+  test('carries its tone as a state attribute, and no attribute for none', async ({
     page,
   }) => {
-    await expect(page.getByTestId('tone-neutral')).toHaveAttribute(
+    // The absence is the neutral (0082), so the untoned badge is measured by what is NOT
+    // on it: an attribute reading `neutral` would be a fifth tone in the stylesheet's eyes.
+    await expect(page.getByTestId('tone-none')).not.toHaveAttribute(
       'data-pct-tone',
-      'neutral',
+      /./,
     );
-    await expect(page.getByTestId('tone-danger')).toHaveAttribute(
-      'data-pct-tone',
-      'danger',
-    );
+    for (const tone of ['danger', 'warning', 'success', 'info'] as const) {
+      await expect(page.getByTestId(`tone-${tone}`)).toHaveAttribute(
+        'data-pct-tone',
+        tone,
+      );
+    }
+  });
+
+  test('every tone paints a box the untoned one does not', async ({ page }) => {
+    // Four rules, four grounds — and the reading that the rules are reached at all. A tone
+    // whose triple never lands leaves the base tokens standing, which looks like a badge
+    // and is a tone that did nothing; the untoned box is the control that catches it.
+    const ground = async (id: string) =>
+      page
+        .getByTestId(id)
+        .evaluate((el) => getComputedStyle(el).backgroundColor);
+
+    const plain = await ground('tone-none');
+    const seen = new Set<string>([plain]);
+    for (const tone of ['danger', 'warning', 'success', 'info'] as const) {
+      const painted = await ground(`tone-${tone}`);
+      expect(painted, tone).not.toBe(plain);
+      expect(seen.has(painted), `${tone} repeats a ground already seen`).toBe(
+        false,
+      );
+      seen.add(painted);
+    }
   });
 
   test('is plain text to the tree: no role, no name, no parts', async ({
@@ -40,7 +65,7 @@ test.describe('PctBadge — a word wearing a tone', () => {
     // No `size` input is a measurable sentence: the box is its own type plus breathing
     // room, and it must come in UNDER the smallest control height — a badge as tall as a
     // button is a button wanting to be quiet.
-    const box = await boxOf(page.getByTestId('tone-neutral'));
+    const box = await boxOf(page.getByTestId('tone-none'));
     expect(box.height).toBeLessThan(28);
   });
 

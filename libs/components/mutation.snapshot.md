@@ -57,11 +57,11 @@ two-sided, over the assertion reading of the same row.
 libs/components/accordion/src/accordion-item.ts 100.00 16(0) 0 0 0 1
 libs/components/accordion/src/accordion.ts 75.00 3(0) 1 0 0 1
 libs/components/avatar/src/avatar.ts 87.50 28(0) 3 0 1 0
-libs/components/badge/src/badge.ts 83.33 10(0) 2 0 0 0
+libs/components/badge/src/badge.ts 81.82 9(0) 2 0 0 0
 libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0 0
-libs/components/button/src/button.ts 81.25 26(0) 6 0 0 2
+libs/components/button/src/button.ts 84.62 44(0) 8 0 0 2
 libs/components/checkbox/src/checkbox.ts 92.73 51(0) 4 0 0 6
-libs/components/chips/src/chips.ts 90.74 49(0) 5 0 0 2
+libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0 0
 libs/components/core/src/field.ts 97.73 43(0) 1 0 0 0
@@ -117,5 +117,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 83.77 4424/5281
+TOTAL 83.78 4443/5303
 ```

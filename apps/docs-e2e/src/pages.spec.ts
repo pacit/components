@@ -854,7 +854,7 @@ test.describe('The pages', () => {
       '--pct-surface',
     );
 
-    // The component tier is 28 groups and not one alphabetical run of 486 rows. The
+    // The component tier is 28 groups and not one alphabetical run of 495 rows. The
     // inventory is all still here: opening a group shows the dials it counts.
     const groups = page.getByTestId('token-groups').locator('details');
     await expect(groups).toHaveCount(28);
@@ -872,9 +872,10 @@ test.describe('The pages', () => {
   }) => {
     await visit(page, '/theming');
     const count = page.getByTestId('theming-count');
-    // The skin's own size, and it moves when the skin grows: 559 since the tone axis gave
-    // `danger`, `warning`, `success` and `info` the family `primary` already had (0082).
-    await expect(count).toHaveText('559 of 559');
+    // The skin's own size, and it moves when the skin grows: 559 when the tone axis gave
+    // `danger`, `warning`, `success` and `info` the family `primary` already had (0082),
+    // 568 since the badge learned to wear all four and the skin grew nine dials for it.
+    await expect(count).toHaveText('568 of 568');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -882,7 +883,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 559$/);
+    await expect(count).toHaveText(/^\d+ of 568$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -898,7 +899,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('559 of 559');
+    await expect(count).toHaveText('568 of 568');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

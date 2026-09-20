@@ -1,8 +1,12 @@
 /**
  * What a message says about itself besides what it says — and the same four words everywhere.
  *
- * A tone is a **pair of channels, never one**: the colour a skin gives it, and a drawing the
- * component ships under the matching name in `PctIconName`. That is not decoration doubled up.
+ * A tone is a **pair of channels, never one**: the colour a skin gives it, and a second
+ * channel that survives the colour's absence. Which channel that is depends on what wears the
+ * tone. On something that can stand with no words of its own — a toast, a progress bar — it is
+ * a drawing the component ships under the matching name in `PctIconName`. On a component that
+ * IS text and cannot exist without it — a badge, a button — the words are the channel, and a
+ * drawing would only repeat them. That is not decoration doubled up.
  * A state painted in colour alone is a state carried by colour alone
  * ([`req-a11y-forced-colors`](../../../../docs/requirements/a11y.md#req-a11y-forced-colors)):
  * it is gone for a reader who cannot separate red from green, and gone again in forced-colours
