@@ -74,9 +74,13 @@ const NOT_A_SOURCE = [
   (p) => p === `${PROJECT}/src/version.ts`,
   // The mutation run's own harness: it is what RUNS the specs, not something they measure.
   (p) => p === `${PROJECT}/mutation.setup.ts`,
-  // The `ng add` schematic. It runs once, in the consumer's CLI at install time, and it is
-  // measured where it runs — `check-consumer` installs the package into a real application
-  // and runs the schematic there.
+  // The schematics: the `ng add` one and the `ng update` migrations. Both run once, in the
+  // consumer's CLI, and each is measured where it can be — `check-consumer` installs the
+  // package into a real application and runs `ng add` there, while of a migration it asks
+  // only whether the collection and the factory reach the archive, because nothing in this
+  // workspace executes one. A migration's cases therefore stand in `test` alone: nothing
+  // under here is mutated, so the run never selects the spec that holds them, which is the
+  // case the policy's `coversNothing` register was written for.
   (p) => p.startsWith(`${PROJECT}/schematics/`),
 ];
 
@@ -548,18 +552,24 @@ export const checkMutation = (input) => {
     throw new MutationError(
       'tests',
       'tests-unmeasured',
-      `the report lists no test file at all. Without \`coverageAnalysis: ` +
-        `"perTest"\` there is no way to check WHETHER the mutation run sees the same ` +
-        `specs as the \`test\` target — and that target owns the score's denominator.`,
+      `the report lists no test file at all. \`testFiles\` is rendered from the DRY RUN's ` +
+        `own results, so an empty one means the run executed no spec — and every point ` +
+        `below would rule on the specs of a measurement that never happened.`,
     );
   const specs = input.specs ?? [];
-  // A spec whose whole subject stands OUTSIDE `patterns` covers no mutant, and a per-test
-  // report lists only the tests that cover one — so absence from it means "ran and covered
-  // nothing" exactly as often as it means "never ran". Stryker cannot tell the two apart and
-  // neither can this point; `coversNothing` is what does, and it is a permit of the same
-  // shape as `unmeasured`: an entry, a reason, and a check in both directions. The cheap
-  // alternative would be to widen the measurement until the spec covers something, which is
-  // the move this whole file exists to refuse.
+  // `testFiles` holds every spec of the DRY RUN and not the covering ones alone: it is
+  // rendered from `testCoverage.testsById`, which core builds from the dry run's own
+  // results. So a spec that ran stands in it whatever it covered, and an absence means the
+  // run never executed it — which happens with nothing drifting at all. Stryker drives
+  // Vitest in RELATED mode (`vitest.related`, schema default `true`) over the mutated
+  // inventory, so a spec whose module graph reaches no mutated file is never selected, and
+  // that absence looks here exactly like a spec the configuration dropped. This point cannot
+  // tell the two apart; `coversNothing` is what does, and it is a permit of the same shape
+  // as `unmeasured`: an entry, a reason, and a check in both directions. The reason is
+  // measured rather than read off this comment — an earlier version of it named a mechanism
+  // the runner does not have, and the first entry written from that was false
+  // (`lesson-235`). The cheap alternative would be to widen the measurement until the spec
+  // covers something, which is the move this whole file exists to refuse.
   const coversNothing = Array.isArray(policy.coversNothing)
     ? policy.coversNothing
     : [];
@@ -572,9 +582,13 @@ export const checkMutation = (input) => {
       `${notRun.length} of the library's specs did not enter the mutation ` +
         `run:\n` +
         list(notRun) +
-        `\n    They run in the \`test\` target and do not run here — so a mutant they ` +
-        `kill counts as surviving. Two paths to the same specs have drifted ` +
-        `(\`mutation.vitest.config.mts\` against \`test\`).`,
+        `\n    A spec the run did not execute kills nothing here, so a mutant it would ` +
+        `have killed counts as surviving. The report cannot say WHY it is missing, and ` +
+        `the remedies differ — among them: the related filter never selected it, because ` +
+        `nothing it reaches is mutated, which belongs in \`coversNothing\` with a reason; ` +
+        `the two paths to the same specs have drifted (\`mutation.vitest.config.mts\` ` +
+        `against \`test\`); or this report is older than the git index and predates the ` +
+        `spec, which wants another run and an entry nowhere.`,
     );
   for (const entry of coversNothing) {
     if (!specs.includes(entry?.spec))
@@ -589,19 +603,20 @@ export const checkMutation = (input) => {
     if (run.includes(entry.spec))
       throw new MutationError(
         'tests',
-        'excuse-that-covers',
-        `\`${entry.spec}\` is excused for covering no mutant, and the report says it covers ` +
-          `some.\n` +
-          `    The entry has outlived its reason: from here on it would excuse this spec's ` +
-          `real absence too, which is the one thing point 3 exists to catch.`,
+        'excuse-that-runs',
+        `\`${entry.spec}\` is excused as a spec the run never executes, and the report ` +
+          `lists it.\n` +
+          `    Everything in \`testFiles\` ran, whatever it covered — so the entry has ` +
+          `outlived its reason, and from here on it would excuse this spec's real absence ` +
+          `too, which is the one thing point 3 exists to catch.`,
       );
     if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40)
       throw new MutationError(
         'tests',
         'excuse-without-reason',
         `the \`coversNothing\` entry for \`${entry.spec}\` carries no reason.\n` +
-          `    Without one the register says "this spec covers nothing", which is what the ` +
-          `report says anyway by leaving it out. The reason is the whole entry.`,
+          `    Without one the register says "the run does not execute this spec", which ` +
+          `is what the report says anyway by leaving it out. The reason is the whole entry.`,
       );
   }
 

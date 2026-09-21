@@ -199,7 +199,7 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: eight points and 51 rules for the measurement being current, covering the
+denominator: eight points and 53 rules for the measurement being current, covering the
 declared file inventory **and every source file of the library** — the candidate set is read
 off the git index and not off `mutate`, so a file nobody decided about is a violation
 (`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`
@@ -223,7 +223,7 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 52 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 55 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
