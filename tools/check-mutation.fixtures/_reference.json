@@ -68,7 +68,7 @@
       "libs/fake/beta.spec.ts",
       "libs/fake/epsilon.spec.ts"
     ],
-    "// testFiles": "Written out rather than derived from `specs`, so that one spec of the fake library covers no mutant — `epsilon.spec.ts`, which `coversNothing` excuses. Without it the register would have nothing to be true ABOUT here, and its three cases would each be proving a rule the reference input never exercises.",
+    "// testFiles": "Written out rather than derived from `specs`, so that one spec of the fake library is a spec the run never selects — `epsilon.spec.ts`, which `coversNothing` excuses. Without it the register would have nothing to be true ABOUT here, and its three cases would each be proving a rule the reference input never exercises.",
     "testFiles": ["libs/fake/alpha.spec.ts", "libs/fake/beta.spec.ts"],
     "policy": {
       "patterns": [
@@ -96,7 +96,7 @@
       "coversNothing": [
         {
           "spec": "libs/fake/epsilon.spec.ts",
-          "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so nothing it reaches is mutated, the run never selects it, and the report lists it nowhere. It ran; it killed nothing."
+          "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so nothing it reaches is mutated, the run never selects it, and the report lists it nowhere."
         }
       ],
       "threshold": 80,

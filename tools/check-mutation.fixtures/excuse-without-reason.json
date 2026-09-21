@@ -1,7 +1,7 @@
 {
   "check": "tests",
   "rule": "excuse-without-reason",
-  "// defect": "An entry in `coversNothing` with no reason. Without one the register says \"this spec covers nothing\", which is what the report says anyway by leaving it out — so the reason is the whole entry.",
+  "// defect": "An entry in `coversNothing` with no reason. Without one the register says \"the run does not execute this spec\", which is what the report says anyway by leaving it out — so the reason is the whole entry.",
   "policy": {
     "coversNothing": [{ "spec": "libs/fake/epsilon.spec.ts", "reason": "none" }]
   }

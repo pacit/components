@@ -199,7 +199,7 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: eight points and 51 rules for the measurement being current, covering the
+denominator: eight points and 53 rules for the measurement being current, covering the
 declared file inventory **and every source file of the library** — the candidate set is read
 off the git index and not off `mutate`, so a file nobody decided about is a violation
 (`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`

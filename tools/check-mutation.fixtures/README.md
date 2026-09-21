@@ -76,7 +76,7 @@ and the disarm of `columns-adrift` gives a green run — "PASSED" — instead of
 the case onto a neighbour. Measured: with the arithmetic disarmed the second case passes, and
 the first moves to `incomplete-snapshot`, because a row nobody can read is a file with no row.
 
-## The spec that can kill nothing
+## The spec the run never selects
 
 `epsilon.spec.ts` is the fake library's `delta.ts` one floor down: it stands in `specs` and
 NOT in `testFiles`, and the only thing that makes the reference input pass is its entry in

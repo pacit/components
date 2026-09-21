@@ -582,9 +582,12 @@ export const checkMutation = (input) => {
       `${notRun.length} of the library's specs did not enter the mutation ` +
         `run:\n` +
         list(notRun) +
-        `\n    They run in the \`test\` target and do not run here — so a mutant they ` +
-        `kill counts as surviving. Two paths to the same specs have drifted ` +
-        `(\`mutation.vitest.config.mts\` against \`test\`).`,
+        `\n    They run in the \`test\` target and did not run here — so a mutant they ` +
+        `kill counts as surviving. Two states look like this and the report cannot tell ` +
+        `them apart: the related filter never selected the spec, because nothing it ` +
+        `reaches is mutated — which belongs in \`coversNothing\` with a reason — or the ` +
+        `two paths to the same specs have drifted (\`mutation.vitest.config.mts\` against ` +
+        `\`test\`).`,
     );
   for (const entry of coversNothing) {
     if (!specs.includes(entry?.spec))

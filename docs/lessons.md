@@ -6579,8 +6579,9 @@ repository's own configuration, whose Vitest root is `libs/components`: `vitest 
 badge/src/badge.ts` selects the badge's spec and the harness's and not this one; the same
 command over the migration file selects it, 81 cases. Spelled from the repository root instead,
 both commands find no test file at all and print the shape of a conclusion while measuring
-nothing — which is how the first draft of this paragraph quoted them. Same register entry, opposite reason — and the reason is the whole of an
-entry, because it is what the next reader compares the world against.
+nothing — which is how the first draft of this paragraph quoted them. Same register entry,
+opposite reason — and the reason is the whole of an entry, because it is what the next reader
+compares the world against.
 
 The general form: **a gate's comment about the machinery under it is a claim, and an entry
 written from one inherits whatever the claim got wrong.** A permit is where a false mechanism
