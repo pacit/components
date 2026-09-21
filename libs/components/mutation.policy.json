@@ -115,7 +115,12 @@
     }
   ],
   "// coversNothing": "The register of specs that RUN in the mutation run and cover no mutant. Stryker's per-test report lists only the tests that cover one, so a spec whose whole subject stands outside `patterns` is absent from it — and point 3 cannot tell that apart from a spec the run never saw. An entry here does not say \"this spec matters less\"; it says \"this spec can kill nothing, and here is what it holds instead\". The register exists because the cheap way to keep point 3 green would be to widen the measurement until the spec covers something, which is the move this whole file refuses.",
-  "coversNothing": [],
+  "coversNothing": [
+    {
+      "spec": "libs/components/schematics/migrations/badge-tone/index.spec.ts",
+      "reason": "The `badge-tone` migration stands under `schematics/`, which `check-mutation`'s own `NOT_A_SOURCE` keeps out of the candidate set as a CATEGORY — so this spec runs here and can kill nothing, because its subject has no mutants to kill. That it runs is measured rather than assumed: `mutation.vitest.config.mts` collects it and its 81 cases pass (2026-09-21), which is the half of point 3 the per-test report cannot show. What it holds instead is the migration's correctness under `test`, where the same 81 cases run, and the mutants they were built against, which were run by hand when the migration landed (#13). Widening the measurement would not be an edit of `patterns` either: the migration's code lives in `index.ts`, which every route into the run strikes as a re-export barrel — so measuring it means moving the file, and that is owed rather than done."
+    }
+  ],
   "// equivalent": "The fourth register, and the only one about a MUTANT rather than a file: a survivor the suite cannot tell from the original. It is keyed on the operator, the span and the replacement, so an entry dies with the line it excuses rather than drifting onto the next mutant to take that place. Nothing here excuses a score: a registered mutant is still counted as surviving, because it is. What the entry buys is that the next reader does not re-derive the argument — and proving one by hand has two traps, both met in this repository (`lesson-199`): the edit must be one the compiler accepts, and a kill by hand can still be reported as a survivor. An entry is red the day the run kills the mutant, the day the line moves, and the day it carries no sentence.",
   "equivalent": [
     {

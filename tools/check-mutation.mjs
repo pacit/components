@@ -74,9 +74,13 @@ const NOT_A_SOURCE = [
   (p) => p === `${PROJECT}/src/version.ts`,
   // The mutation run's own harness: it is what RUNS the specs, not something they measure.
   (p) => p === `${PROJECT}/mutation.setup.ts`,
-  // The `ng add` schematic. It runs once, in the consumer's CLI at install time, and it is
-  // measured where it runs — `check-consumer` installs the package into a real application
-  // and runs the schematic there.
+  // The schematics: the `ng add` one and the `ng update` migrations. Both run once, in the
+  // consumer's CLI, and each is measured where it can be — `check-consumer` installs the
+  // package into a real application and runs `ng add` there, while of a migration it asks
+  // only whether the collection and the factory reach the archive, because nothing in this
+  // workspace executes one. A migration's cases therefore stand in `test` alone, and the
+  // spec holding them runs in the mutation run and kills nothing there, which is the case
+  // the policy's `coversNothing` register was written for.
   (p) => p.startsWith(`${PROJECT}/schematics/`),
 ];
 
