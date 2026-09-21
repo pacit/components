@@ -557,13 +557,19 @@ export const checkMutation = (input) => {
         `specs as the \`test\` target — and that target owns the score's denominator.`,
     );
   const specs = input.specs ?? [];
-  // A spec whose whole subject stands OUTSIDE `patterns` covers no mutant, and a per-test
-  // report lists only the tests that cover one — so absence from it means "ran and covered
-  // nothing" exactly as often as it means "never ran". Stryker cannot tell the two apart and
-  // neither can this point; `coversNothing` is what does, and it is a permit of the same
-  // shape as `unmeasured`: an entry, a reason, and a check in both directions. The cheap
-  // alternative would be to widen the measurement until the spec covers something, which is
-  // the move this whole file exists to refuse.
+  // `testFiles` holds every spec of the DRY RUN and not the covering ones alone: it is
+  // rendered from `testCoverage.testsById`, which the report helper builds from the run's
+  // results. So a spec that ran stands in it whatever it covered, and an absence means the
+  // run never executed it — which happens with nothing drifting at all. Stryker drives
+  // Vitest in RELATED mode (`vitest.related`, schema default `true`) over the mutated
+  // inventory, so a spec whose module graph reaches no mutated file is never selected, and
+  // that absence looks here exactly like a spec the configuration dropped. This point cannot
+  // tell the two apart; `coversNothing` is what does, and it is a permit of the same shape
+  // as `unmeasured`: an entry, a reason, and a check in both directions. The reason is
+  // measured rather than read off this comment — an earlier version of it named a mechanism
+  // the runner does not have, and the first entry written from that was false
+  // (`lesson-235`). The cheap alternative would be to widen the measurement until the spec
+  // covers something, which is the move this whole file exists to refuse.
   const coversNothing = Array.isArray(policy.coversNothing)
     ? policy.coversNothing
     : [];
