@@ -60,9 +60,14 @@ const NOT_A_SOURCE = [
   (p) => SPEC.test(p),
   // Pure types: they vanish at compilation, so there is no executable line to break.
   (p) => p.endsWith('.types.ts'),
-  // Re-export barrels. `export * from './x'` promises nothing that the file it names does
-  // not promise itself — and the same three lines stand in `mutate` as exclusions.
-  (p) => p.endsWith('/index.ts'),
+  // Re-export barrels — an entrypoint's `src/index.ts` and nothing else. `export * from
+  // './x'` promises nothing that the file it names does not promise itself, and the same
+  // line stands in `mutate` as an exclusion. Spelled by PATH and not by basename, because
+  // the two schematics factories are called `index.ts` too: the Angular CLI resolves a
+  // factory by the path it is given (`./migrations/badge-tone/index#badgeTone`), so a file
+  // carrying the whole of a migration wears a barrel's name. `endsWith('/index.ts')` struck
+  // it out of the inventory while reading like a rule about re-exports.
+  (p) => p.endsWith('/src/index.ts'),
   // The harness entrypoint (`@pacit/components/testing`). Its harnesses are declarations
   // over the parts inventory, held to the built package by `check-harness` in both
   // directions, and the base class's few methods are driven by the harness spec; the
@@ -74,14 +79,16 @@ const NOT_A_SOURCE = [
   (p) => p === `${PROJECT}/src/version.ts`,
   // The mutation run's own harness: it is what RUNS the specs, not something they measure.
   (p) => p === `${PROJECT}/mutation.setup.ts`,
-  // The schematics: the `ng add` one and the `ng update` migrations. Both run once, in the
-  // consumer's CLI, and each is measured where it can be — `check-consumer` installs the
-  // package into a real application and runs `ng add` there, while of a migration it asks
-  // only whether the collection and the factory reach the archive, because nothing in this
-  // workspace executes one. A migration's cases therefore stand in `test` alone: nothing
-  // under here is mutated, so the run never selects the spec that holds them, which is the
-  // case the policy's `coversNothing` register was written for.
-  (p) => p.startsWith(`${PROJECT}/schematics/`),
+  // The `ng add` schematic, and since 2026-09-21 that alone rather than the whole of
+  // `schematics/`. It runs once, in the consumer's CLI at install time, and it is measured
+  // where it runs: `check-consumer` installs the package into a real application and runs
+  // `ng add` there. Of an `ng update` migration that same gate asks only whether the
+  // collection and the factory reach the archive, and nothing else in this workspace
+  // executes one — so a migration has no second measurement to be excused to, and it is
+  // measured HERE instead, by `mutate` (`stryker.config.json`, `// mutate`). That is what
+  // retires the `coversNothing` entry this category's previous wording pointed at: the
+  // related filter now selects the spec, because what it reaches is mutated.
+  (p) => p.startsWith(`${PROJECT}/schematics/ng-add/`),
 ];
 
 /** The library's source files, off the git index — everything `NOT_A_SOURCE` leaves. */
@@ -199,14 +206,47 @@ repeat with an editor.
 the score exactly as one killed by an assertion, and whether it times out is decided by the
 machine: one full run produced timeouts on \`motion.ts\`, \`placement.ts\` and \`texts.ts\` over
 untouched code, where this record has never carried one on any of the three. Most runs agree
-with it exactly — the eight below are the same eight, in the same six files, as the run before
-them — and that is what makes the exception expensive rather than cheap: a record written from
+with it very nearly, and the drift is small and named: over the runs of one afternoon the
+library's clock kills went eight in six files, seven in five, then eight in six again, the
+wanderer being \`day.ts\` — and no row's SCORE moved with them, which is the whole reason
+the comparison below is made on the killed minus this column — and that is what makes the
+exception expensive rather than cheap: a record written from
 the run that lands its timeouts reddens every run that does not, and one written from the run
 that does not turns them into headroom excusing assertions nobody wrote. So the row keeps the
 clock column as EVIDENCE — it is how \`clock.clockShare\` is read, and how a score bought with
 run time shows — while the drift below is measured on the killed minus that column: the
 mutants an assertion caught
 ([0077](../../docs/decisions/0077-the-clock-is-evidence-and-the-workers-are-a-ceiling.md)).
+
+**The migration's row needs a word, and it is not the one the eye reaches for.**
+\`badge-tone/index.ts\` joined the run on 2026-09-21: 280 mutants, 78.93%, 56 of them
+surviving, against a coverage report that says 100% of its lines. Nothing about either number
+is a record — eleven rows here score lower. What the row is worth reading for is what a low
+score MEANS on a file of this shape, because it does not mean there what it means on a
+component.
+
+Most of what survives cannot reach a consumer's file. 15 of the 56 are string literals and 12
+of those sit inside the four sentences the run prints at the end, where the only killing case
+is one that pins the wording of a message: declined, because it breaks the day somebody
+improves the sentence. Another 18 are its regular expressions, and 13 of those are on the one
+that reads a source line for the REPORT — where a survivor costs a line of advice and never a
+byte of anybody's code — while 5 are an \`?.\` on a value Angular's parser always sets.
+
+What the row IS a true statement about is the shape of the instrument. The cases drive the
+migration from outside — a \`Tree\` in, a \`Tree\` and its logs out — which is the right way
+round for a tool that writes to a consumer's files, because it is the only way round that can
+be wrong about the file on disk. A long tail of mutants no outside case can reach is what that
+costs, and three of them are not reachable at all and say so in the \`not covered\` column.
+Most of that file's 151 cases pin a DELEGATION to Angular's parser rather than a decision this
+run can mutate: 41 distinct tests are recorded here as killing one of its mutants, and the
+report cannot say more than that, because Stryker stops at the first failing test.
+
+**The clock column is empty for this file, and that is the change rather than the score.** It
+carried most of one run's timeouts while it read templates with a scan of its own, because a
+mutated loop condition does not run slowly, it does not stop. The scan is gone — Angular's
+parser answers for a template now — and with it went the timeouts and every defect the reviews
+found in it ([\`lesson-236\`](../../docs/lessons.md#lesson-236),
+[\`lesson-238\`](../../docs/lessons.md#lesson-238)).
 
 Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
 ignored. The score follows from them — \`killed / (killed + surviving + errored + not

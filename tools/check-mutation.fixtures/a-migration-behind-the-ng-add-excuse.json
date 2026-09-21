@@ -1,0 +1,14 @@
+{
+  "check": "inventory",
+  "rule": "source-unaccounted",
+  "// defect": "A file under `schematics/`, which used to be excused whole. The reason written beside that excuse is true of `ng add` alone — `check-consumer` installs the package into a real application and runs the schematic there — and NO gate in this workspace executes an `ng update` migration, so for that half the excuse pointed at a measurement that does not exist. The rule reads `schematics/ng-add/` now. Widen it back to `schematics/` and this case PASSES. The path deliberately does not end in `index.ts`: were it to, the case would also fire under the barrel rule and could no longer say which of the two narrowings it measures.",
+  "inRepo": [
+    "libs/fake/alpha.ts",
+    "libs/fake/beta.ts",
+    "libs/fake/empty.ts",
+    "libs/fake/delta.ts",
+    "libs/fake/alpha.spec.ts",
+    "libs/fake/beta.spec.ts",
+    "libs/components/schematics/migrations/badge-tone/badge-tone.ts"
+  ]
+}

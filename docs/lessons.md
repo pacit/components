@@ -6588,3 +6588,167 @@ written from one inherits whatever the claim got wrong.** A permit is where a fa
 is hardest to see afterwards, because a register is read as a record of decisions rather than
 of readings. What cost minutes here was measuring the runner instead: two commands, and the
 answer contradicted a sentence that had stood in the gate since it was written.
+
+### <a id="lesson-236"></a>`lesson-236` — Six defects, one cause: the scan was a second lexer
+
+The `badge-tone` migration read `.html` with a hand-written scan — a walk over tags that
+stepped through quotes. Four independent reviews found six defects in it over one day, and
+every one of them was the same shape: **the scan WROTE where Angular would not.** Each was
+measured against `parseTemplate`, and each repair was itself reached by the next review.
+
+| what it read                           | what Angular reads                                 | what it cost                                      |
+| -------------------------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `</script/>` and `</script ` as closes | neither closes anything                            | the text of a `<script>`, edited                  |
+| `\s` as whitespace                     | 9 to 32 and U+00A0 — they differ on 36 code points | a close inside a script, again                    |
+| `<![CDATA[…]]>` as markup              | text                                               | a sample, edited                                  |
+| `<svg:script>` as an ordinary element  | a script, by its local name                        | its content, edited                               |
+| a tag name ending at a space           | also at `<`, a quote or `=`                        | `<script=a>`'s content, edited, silently          |
+| the space before the attribute, always | a separator the next attribute may need            | **335 of 2899 clean templates stopped compiling** |
+
+The last is the one to read twice. `<pct-badge tone="neutral"(click)="f()">` is an ordinary
+template; the scan turned it into `<pct-badge(click)="f()">`, which does not compile, and
+reported success — the backstop could not see it, because the rewrite carried away the word
+it looks for.
+
+**Three repairs were attempted before the right one.** Transcribe the close rule. Then
+transcribe the whitespace predicate instead of sampling it. Then transcribe `isNameEnd` and
+`isPrefixEnd` too. Each was correct and each was incomplete, because each was still the same
+move: _keep a second copy of a lexer that already exists, and keep it right by hand._
+
+The repair that held was to stop keeping one. `HtmlParser` from `@angular/compiler` returns
+every element and every attribute with its exact span; the six faces left with the code that
+wore them, and two behaviours that had been wrong for a year came right for free — a
+character entity in a value is decoded before it is compared (the one miss the backstop could
+never name), and `<foreignObject>` leaves the SVG namespace, so a badge inside one is the
+component again. Against `main`, counted with
+`grep -v -c -E '^\s*(\*|/\*|//|$)'`: the file went 356 lines to 485 and its CODE went 232 to 197,
+because what left as machinery came back as the reasons for it. The suite kept 130 of the 132
+cases it had when the last of those reviews read it, because they were written about behaviour
+rather than about machinery; the two that changed had been pinning defects.
+
+The general form: **a pattern written against a parser is a second implementation of it, and
+a second implementation is wrong until something compares them. Comparing is not the fix —
+the fix is to have one.** The parser was in `node_modules` the whole time, answered in a
+second, and the argument for not calling it ("a migration must not drag build tooling into a
+consumer's tree") turned out to be about `dependencies`, not about `import()`: every workspace
+that builds an Angular application already has it, because `@angular/build` requires it as a
+peer and an install brings a required peer.
+
+### <a id="lesson-237"></a>`lesson-237` — A guard is invisible to every case that carries what it filters
+
+`badge-tone` reports a `.ts` file whose text still looks like it holds the attribute, and
+it asks first: `if (mayStillHoldATone(before)) unread.push(shown)`. Drop the condition and
+**every readable TypeScript file in the workspace** is named in that warning — a consumer's
+whole `src/` printed under a sentence saying each one is worth a look.
+
+Eighty-one cases did not notice. Not one of them was careless: they were cases about a
+migration, so every single one carried a badge, or the word, or the deleted type. The
+condition is false only for a file that carries none of the three, and a suite written
+around a subject never supplies one. The case that sees it is three words long —
+`export const a = 1;` — and asserts that the run says nothing but "nothing to migrate".
+
+The general form: **a guard that filters is visible only on the input it filters OUT, and a
+suite written around its subject supplies that input by accident or not at all.** The
+question to ask of a condition is not "which case exercises this line" — many did — but
+"which case makes it false", and if the answer is none, the line is decoration.
+
+### <a id="lesson-238"></a>`lesson-238` — A false measurement is worse than none, because it closes the question
+
+`badge-tone` had to know whether a `<pct-badge>` inside `<svg>` is the component, because the
+answer decides whether its tone may be removed. The reading was made with Angular's own
+machinery, written down as measured, and it was wrong:
+
+```js
+const m = new SelectorMatcher();
+m.addSelectables(CssSelector.parse('pct-badge'), 'PctBadge');
+const s = new CssSelector();
+s.setElement(':svg:pct-badge'); // the parser's own name for the node
+m.match(s, () => (hit = true)); // false
+```
+
+`false` is not the answer Angular gives. `createCssSelectorFromNode` calls `splitNsName` on the
+name before it matches anything, so what the selector sees is `pct-badge` and every badge
+inside `<svg>` or `<math>` IS the component.
+
+Why the probe said otherwise is worth one more line, because the first account of THAT was
+invented too — it blamed a pseudo-selector, and `CssSelector.parse(':svg:pct-badge')` in fact
+returns the element `pct-badge` and matches. The real cause is duller and more instructive:
+`setElement` does not parse anything. It stores the string, so the comparison was
+`':svg:pct-badge'` against `'pct-badge'` — the parser's raw output handed to an API that wants
+the parsed name, which is precisely the gap `splitNsName` exists to sit in.
+
+What it cost was not the mistake but the sentence it produced. "Measured with Angular's own
+`SelectorMatcher`" went into the code as a comment, into a case that asserted the skip as
+correct, into a lesson and into a pull request. The behaviour was a regression against `main`,
+green, with an account of itself that read like evidence — and in one shape it was silent: a
+tone written as `&#110;eutral` is decoded by the parser and grepped for by the backstop, so the
+run said "nothing to migrate" about a template it had walked past. It took an independent
+review reading the compiler's source to reopen a question three earlier reviews had no reason
+to ask.
+
+The general form: **an unmeasured claim invites the next reader to check it; a falsely measured
+one tells them not to bother.** The guard is to measure through the caller rather than through
+the API the caller happens to use — `findMatchingDirectivesAndPipes` over a real template
+answers this in one line, where a hand-built `CssSelector` can be built wrong in a way that
+still runs. Where a measurement decides a behaviour, the thing to record is the CALL, so the
+next reader can run it rather than believe it.
+
+**And the guard has a floor of its own, found the same way.** The first draft of this lesson
+said that caller "cannot be held wrong". It can: inside an `ngNonBindable` it reports
+`pct-badge` where Angular instantiates no component at all, because it answers which
+directives a template makes CANDIDATES and not which ones survive to run. The migration
+deleted a live attribute out of such a subtree for a day on the strength of it. What settled
+that one was a RENDER — a component whose template is `[BOUND]`, and looking for the marker.
+
+So the rule is not "use this call"; it is **use the instrument that observes the thing you are
+claiming**, and each instrument sees one layer down. A selector matcher answers matching, a
+binder answers candidates, and only the DOM answers what the user gets.
+
+### <a id="lesson-239"></a>`lesson-239` — A measurement nobody looked at the machine for is a measurement of the machine
+
+Every timing in the `badge-tone` work was taken on this desk and written down with the
+condition "four workers" beside it. One condition was missing and nobody thought to check it:
+whether anything else was running.
+
+Something was. A review agent had written itself a mutant harness with **no timeout**, planted
+a mutant inside one of the `while` loops of the migration's old scan, and hung. Its output went
+nowhere, its parent shell was orphaned, and `ps -eo pid,etime,pcpu` showed it at 96.6% of a
+core with an elapsed time of `1-04:47` — across every measurement in the branch. It surfaced
+only when somebody asked what was spinning.
+
+That last sentence is as far as the evidence goes, and the difference matters to anyone
+reading this afterwards: the two wall-clock readings below are in the scratch logs and can be
+compared; the hung process is gone, so its CPU share and its age are a transcription of one
+`ps` line and its contents are not recoverable at all. What IS recoverable is the shape —
+`git show main:libs/components/schematics/migrations/badge-tone/index.ts` still holds the ten
+hand-written `while` loops, any of which stops terminating if its index arithmetic is
+mutated.
+
+The size of the error, from the one reading that was repeated once the machine was quiet —
+`npx stryker run libs/components/stryker.config.json --mutate
+'libs/components/schematics/migrations/**/*.ts,!libs/components/**/*.spec.ts'`, run twice over
+the same tree, the same 280 mutants, the same 221/56/3 result:
+
+| the same scoped run    | wall clock |
+| ---------------------- | ---------- |
+| with the stray process | 159.36 s   |
+| without it             | 143.33 s   |
+
+Eleven per cent on one pair — which is what was measured, and not a rate established over
+several — on numbers whose whole job was to answer "what does this cost". Every other timing
+in the branch was taken inside the same window and none was repeated, so each of them is an
+upper bound of unknown tightness, and each now says so. That is the repair: not a corrected
+set of numbers, but numbers that carry the condition they were taken under.
+
+Two things fall out, and the second is the one worth keeping.
+
+**The clock column is not decoration.** What hung was a mutated loop condition, which is
+exactly the class the mutation run kills by elapsed time: a mutated loop does not run slowly,
+it does not stop. Stryker has a clock for it. The hand-rolled runner had none, and inherited
+the defect it was built to find.
+
+The general form: **a measurement states the conditions its author thought to check, and the
+machine is a condition.** `nproc`, the load average and a look at what else is running cost
+thirty seconds and belong in the same line as "four workers" — and a long-lived session should
+ask who is still holding a core before it believes its own stopwatch, not after somebody else
+notices.

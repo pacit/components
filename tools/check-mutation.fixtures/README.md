@@ -93,10 +93,13 @@ two carry `epsilon`'s valid entry BESIDE the defective one, deliberately: strip 
 `spec-outside-measurement` fires first, and the case would then prove a neighbour's rule
 rather than its own — which is the fault this whole tree is built to refuse.
 
-The live entry is `libs/components/schematics/migrations/badge-tone/index.spec.ts`, the
-library's first spec under `schematics/`: the migration it measures is outside `patterns`,
-which reaches `*/src/**` alone and strikes every `index.ts` besides, so the related filter
-never selects the spec that holds its 81 cases.
+There is no live entry. There was one until 2026-09-21 —
+`libs/components/schematics/migrations/badge-tone/index.spec.ts`, whose migration stood
+outside `patterns` — and it came out the moment `schematics/migrations/**` went in: what that
+spec reaches is mutated now, so the related filter selects it and an entry left behind would
+fire `excuse-that-runs`. The register being EMPTY is the state this control has to keep
+working in, which is what the fake library's `epsilon.spec.ts` is for: the reference input
+exercises every rule of the register without the real one holding anything.
 
 ## The rule that outlives disarming Stryker itself
 
@@ -109,8 +112,12 @@ that the score has started buying the clock rather than the assertion.
 
 `a-dry-run-on-the-default-ceiling.json` is the one case here that cannot catch the failure it
 is about. Before the first mutant, Stryker runs the whole suite once with coverage
-instrumentation, and its own ceiling for that is five minutes; this suite measures 4:57 on a
-machine twice the size of a CI runner. A run that dies there writes **no report**, so every
+instrumentation, and its own ceiling for that is five minutes. That reading was 4:57 on
+2026-09-14, on a machine twice the size of a CI runner, and it is the number
+`dryRunTimeoutMinutes` was raised against; the run this snapshot comes from measured the same
+pass at 1:42 for 1425 tests. Neither figure is the ceiling's reason — a ceiling guards against
+a runner that has HUNG and does not care which of the two it is — but a number written here
+without its date invites the next reader to take it for the current one. A run that dies there writes **no report**, so every
 rule downstream — every rule in this directory — has nothing to read and the gate says only
 that the measurement is unreadable. The rule therefore stands on the SETTING: it fires one run
 late, on the next run that succeeds, and what it buys is that the value cannot quietly go back
@@ -145,3 +152,20 @@ an excuse with no sentence (`absence-without-reason`).
 Its reason is the real one, shortened: `field/src/affix.ts` cannot be instrumented without
 bringing the initial test run down ([`lesson-123`](../../docs/lessons.md#lesson-123)). A fake
 library made only of files that CAN be measured would have had nowhere to put that case.
+
+## Two cases that are not in the fake library, and why
+
+`a-nested-index-that-is-not-a-barrel` and `a-migration-behind-the-ng-add-excuse` each add one
+path to `inRepo` and change nothing else, so each fires `source-unaccounted` — the same rule
+as the case above it, from a different direction. They are here because `NOT_A_SOURCE` was
+narrowed twice on 2026-09-21, from `endsWith('/index.ts')` to `endsWith('/src/index.ts')` and
+from `schematics/` to `schematics/ng-add/`, and **every other case in this directory is a
+`libs/fake/*.ts` path that neither spelling can tell apart**: the whole control would have
+gone on passing with either narrowing reverted. Measured, by reverting each in turn — the
+nested case passes with the basename spelling restored, the migration case with the
+directory-wide excuse restored, and neither reverting reddens the other.
+
+The migration's path deliberately does not end in `index.ts`. Were it to, it would fire under
+both narrowings at once and could no longer say which one it measures — the same defect as a
+fixture firing on a neighbouring rule ([`lesson-50`](../../docs/lessons.md#lesson-50)), one
+scope out.

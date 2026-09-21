@@ -86,6 +86,14 @@ const SOURCES = [
   `${PROJECT}/*/src/**/*.ts`,
   `${PROJECT}/src/**/*.html`,
   `${PROJECT}/*/src/**/*.html`,
+  // The `ng update` migrations, which live outside every entrypoint's `src/` and so were
+  // matched by none of the four above. They are code a consumer runs over their own
+  // repository, and until 2026-09-21 no floor of any kind stood under them. `ng add` is
+  // measured elsewhere — `check-consumer` executes it in a real application, where a
+  // migration has no gate at all — and this list does not EXCUSE it the way the mutation
+  // run's `NOT_A_SOURCE` does: it simply never reaches it. Said plainly because the two
+  // read alike and only one of them would survive a widening to `schematics/**/*.ts`.
+  `${PROJECT}/schematics/migrations/**/*.ts`,
 ];
 
 /**

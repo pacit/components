@@ -4,6 +4,12 @@
   "$allowed": "One entry per package. `name` is the package as it stands in the manifest, `kind` is the field it has to stand in — `peer` for `peerDependencies` (the consumer already has it, and a second copy in their tree is a second injector), `runtime` for `dependencies` (it arrives with the install and weighs something in every application). `reason` says why it is deliberate; it is read by a person, and its absence fires. `unimported` is the exception for a dependency no import in the package can show — it carries its own reason, and without it a dependency nothing imports fires as dead weight. There is deliberately no entry for what the Angular CLI provides to a schematic at `ng add` time (`@angular-devkit/schematics` and its neighbours): today the only schematic imports it as a TYPE, which the compiler erases, so the artefact needs no such rule — and a mechanism with no case behind it is a rule nobody has read.",
   "allowed": [
     {
+      "name": "@angular/compiler",
+      "kind": "peer",
+      "reason": "Angular's own template parser, and the `ng update` migration is the only thing that calls it: `HtmlParser` returns every element and attribute of an `.html` file with its exact span, which is how `badge-tone` stopped keeping a second copy of the lexer and stopped writing where Angular would not (lesson-236). A peer and never a runtime dependency — it is a compiler, it has no business weighing on an application, and every workspace that builds an Angular application already has it, because `@angular/build` requires it as a peer of its own. `peerDependenciesMeta` marks it OPTIONAL, which is the honest shape: the migration reaches it through a dynamic `import()` and treats failure as an answer, writing nowhere and reporting every file worth a look.",
+      "unimported": "No bundle imports it and none ever will: the call is a dynamic `import()` inside the schematics tree, which ng-packagr does not build and which ships as CommonJS beside the package. The entry says so out loud, because a dependency the packed code cannot show an import for is otherwise dead weight — here the import exists, in the one file the consumer runs once."
+    },
+    {
       "name": "@angular/core",
       "kind": "peer",
       "reason": "The framework the components are compiled against. It can be nothing but a peer: a second copy of `@angular/core` in the consumer's tree is a second injector and a second set of the tokens the library resolves through, and the failure it produces reads as a bug in the library."

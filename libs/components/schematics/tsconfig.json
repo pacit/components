@@ -1,7 +1,8 @@
 {
-  "// ": "The schematics live outside the Angular package: the Angular CLI runs them in Node, not the browser, so they compile separately to CommonJS. ng-packagr does not see them (they are not in the entrypoint graph), hence a build of their own wired into dist after it.",
+  "// ": "The schematics live outside the Angular package: the Angular CLI runs them in Node, not the browser, so they compile separately to CommonJS. ng-packagr does not see them (they are not in the entrypoint graph), hence a build of their own wired into dist after it. `module` is `node16` and NOT `commonjs`, which emits CommonJS all the same — `package.dist.json` says `\"type\": \"commonjs\"` and the output carries `exports.badgeTone = …` either way. What the two settings do differently is a DYNAMIC import: under `commonjs` tsc rewrites `await import('@angular/compiler')` into a `require`, and under `node16` the import survives as an import. Both WORK on the Node versions this package supports — `require(esm)` has been unflagged since 22.12 and the compiler's own `engines` start at 22.22 — which is measured rather than assumed, because the first version of this comment claimed the `require` would throw and it does not. The setting is still this one, for a smaller reason: the import is written as an import, and the emit that keeps it that way is the emit that does not lean on a semantics Node spent three majors arriving at. `ng-add`'s output is byte-identical either way, and the whole program type-checks the same.",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
+    "moduleResolution": "node16",
     "target": "es2022",
     "lib": ["es2022"],
     "types": ["node"],

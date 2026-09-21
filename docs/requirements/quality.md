@@ -223,7 +223,7 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 55 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 57 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires

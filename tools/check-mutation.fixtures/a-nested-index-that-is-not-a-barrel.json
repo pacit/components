@@ -1,0 +1,14 @@
+{
+  "check": "inventory",
+  "rule": "source-unaccounted",
+  "// defect": "A source file called `index.ts` that is not a barrel. The excuse used to read `endsWith('/index.ts')` and to speak of re-exports, while striking out every file that merely wears the name — the two schematics factories among them, each carrying the whole of what it does rather than pointing at where it is. It reads `endsWith('/src/index.ts')` now, so an `index.ts` anywhere else is a source like any other and has to be decided about. Spell the rule by basename again and this case PASSES, which is the whole of what it measures: without it the narrowing had no control behind it, and the gate's own fixtures are all `libs/fake/*` paths that neither spelling can tell apart.",
+  "inRepo": [
+    "libs/fake/alpha.ts",
+    "libs/fake/beta.ts",
+    "libs/fake/empty.ts",
+    "libs/fake/delta.ts",
+    "libs/fake/alpha.spec.ts",
+    "libs/fake/beta.spec.ts",
+    "libs/fake/nested/index.ts"
+  ]
+}
