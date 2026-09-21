@@ -582,12 +582,13 @@ export const checkMutation = (input) => {
       `${notRun.length} of the library's specs did not enter the mutation ` +
         `run:\n` +
         list(notRun) +
-        `\n    They run in the \`test\` target and did not run here — so a mutant they ` +
-        `kill counts as surviving. Two states look like this and the report cannot tell ` +
-        `them apart: the related filter never selected the spec, because nothing it ` +
-        `reaches is mutated — which belongs in \`coversNothing\` with a reason — or the ` +
+        `\n    A spec the run did not execute kills nothing here, so a mutant it would ` +
+        `have killed counts as surviving. The report cannot say WHY it is missing, and ` +
+        `the remedies differ: the related filter never selected it, because nothing it ` +
+        `reaches is mutated — that one belongs in \`coversNothing\` with a reason; or the ` +
         `two paths to the same specs have drifted (\`mutation.vitest.config.mts\` against ` +
-        `\`test\`).`,
+        `\`test\`); or this report is older than the git index and predates the spec, ` +
+        `which wants another run and an entry nowhere.`,
     );
   for (const entry of coversNothing) {
     if (!specs.includes(entry?.spec))

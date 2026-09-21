@@ -19,7 +19,7 @@ import { defineConfig } from 'vite';
  * the same thing twice.
  *
  * The price is one and written down plainly: this is a SECOND way of running the same specs, so
- * it can drift from the first. The `check-mutation.mjs` gate watches that (point 2): the set of
+ * it can drift from the first. The `check-mutation.mjs` gate watches that (point 3): the set of
  * files the mutation run REALLY ran has to match the set of the library's specs from the git
  * index — the same denominator the `test` target walks. Otherwise a file added to the library
  * and unseen here would be a test whose mutants nobody kills.
