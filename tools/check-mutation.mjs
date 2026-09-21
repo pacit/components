@@ -78,9 +78,9 @@ const NOT_A_SOURCE = [
   // consumer's CLI, and each is measured where it can be — `check-consumer` installs the
   // package into a real application and runs `ng add` there, while of a migration it asks
   // only whether the collection and the factory reach the archive, because nothing in this
-  // workspace executes one. A migration's cases therefore stand in `test` alone, and the
-  // spec holding them runs in the mutation run and kills nothing there, which is the case
-  // the policy's `coversNothing` register was written for.
+  // workspace executes one. A migration's cases therefore stand in `test` alone: nothing
+  // under here is mutated, so the run never selects the spec that holds them, which is the
+  // case the policy's `coversNothing` register was written for.
   (p) => p.startsWith(`${PROJECT}/schematics/`),
 ];
 
@@ -552,13 +552,13 @@ export const checkMutation = (input) => {
     throw new MutationError(
       'tests',
       'tests-unmeasured',
-      `the report lists no test file at all. Without \`coverageAnalysis: ` +
-        `"perTest"\` there is no way to check WHETHER the mutation run sees the same ` +
-        `specs as the \`test\` target — and that target owns the score's denominator.`,
+      `the report lists no test file at all. \`testFiles\` is rendered from the DRY RUN's ` +
+        `own results, so an empty one means the run executed no spec — and every point ` +
+        `below would rule on the specs of a measurement that never happened.`,
     );
   const specs = input.specs ?? [];
   // `testFiles` holds every spec of the DRY RUN and not the covering ones alone: it is
-  // rendered from `testCoverage.testsById`, which the report helper builds from the run's
+  // rendered from `testCoverage.testsById`, which core builds from the dry run's own
   // results. So a spec that ran stands in it whatever it covered, and an absence means the
   // run never executed it — which happens with nothing drifting at all. Stryker drives
   // Vitest in RELATED mode (`vitest.related`, schema default `true`) over the mutated
@@ -599,19 +599,20 @@ export const checkMutation = (input) => {
     if (run.includes(entry.spec))
       throw new MutationError(
         'tests',
-        'excuse-that-covers',
-        `\`${entry.spec}\` is excused for covering no mutant, and the report says it covers ` +
-          `some.\n` +
-          `    The entry has outlived its reason: from here on it would excuse this spec's ` +
-          `real absence too, which is the one thing point 3 exists to catch.`,
+        'excuse-that-runs',
+        `\`${entry.spec}\` is excused as a spec the run never executes, and the report ` +
+          `lists it.\n` +
+          `    Everything in \`testFiles\` ran, whatever it covered — so the entry has ` +
+          `outlived its reason, and from here on it would excuse this spec's real absence ` +
+          `too, which is the one thing point 3 exists to catch.`,
       );
     if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40)
       throw new MutationError(
         'tests',
         'excuse-without-reason',
         `the \`coversNothing\` entry for \`${entry.spec}\` carries no reason.\n` +
-          `    Without one the register says "this spec covers nothing", which is what the ` +
-          `report says anyway by leaving it out. The reason is the whole entry.`,
+          `    Without one the register says "the run does not execute this spec", which ` +
+          `is what the report says anyway by leaving it out. The reason is the whole entry.`,
       );
   }
 

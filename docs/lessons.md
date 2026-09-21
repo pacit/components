@@ -6571,13 +6571,15 @@ policy's register — this spec runs in the measurement and can kill nothing.
 Both halves were wrong, and the runner's own source says so. `testFiles` is rendered from
 `testCoverage.testsById`, which is built from every test of the dry run and not from the
 covering ones — so a spec that ran stands in the report whatever it covered, and an entry
-claiming otherwise would have tripped the register's opposite rule, `excuse-that-covers`. And
+claiming otherwise would have tripped the register's opposite rule, `excuse-that-runs`. And
 the spec does not run at all: `@stryker-mutator/vitest-runner` leaves `vitest.related` at its
 schema default of `true`, the dry run is handed the mutated inventory as its related set, and
 Vitest then keeps only the specs whose module graph reaches a mutated file. Measured on this
-repository's own configuration: `vitest related libs/components/badge/src/badge.ts` selects
-the badge's spec and the harness's and not this one; the same command over the migration file
-selects it, 81 cases. Same register entry, opposite reason — and the reason is the whole of an
+repository's own configuration, whose Vitest root is `libs/components`: `vitest related
+badge/src/badge.ts` selects the badge's spec and the harness's and not this one; the same
+command over the migration file selects it, 81 cases. Spelled from the repository root instead,
+both commands find no test file at all and print the shape of a conclusion while measuring
+nothing — which is how the first draft of this paragraph quoted them. Same register entry, opposite reason — and the reason is the whole of an
 entry, because it is what the next reader compares the world against.
 
 The general form: **a gate's comment about the machinery under it is a claim, and an entry

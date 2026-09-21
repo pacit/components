@@ -80,20 +80,23 @@ the first moves to `incomplete-snapshot`, because a row nobody can read is a fil
 
 `epsilon.spec.ts` is the fake library's `delta.ts` one floor down: it stands in `specs` and
 NOT in `testFiles`, and the only thing that makes the reference input pass is its entry in
-`coversNothing`. Which is the whole point — a per-test report lists the tests that cover a
-mutant, so a spec whose subject was struck out of `patterns` is absent from it for a reason
-that is not drift, and point 3 has no way of telling that apart from a spec the run never saw.
+`coversNothing`. Which is the whole point — Stryker drives Vitest in related mode over the
+mutated inventory, so a spec whose subject was struck out of `patterns` is never selected and
+never reaches the report, for a reason that is not drift; point 3 has no way of telling that
+apart from a spec the configuration really dropped. What `testFiles` holds is every spec of
+the dry run, covering or not, so a spec that RAN is not the absent case (`lesson-235`).
 
 Three cases stand around it, each breaking one thing: an excuse for a spec the library does
-not have (`excuse-without-spec`), an excuse for a spec that does cover mutants
-(`excuse-that-covers`), and an excuse with no sentence (`excuse-without-reason`). The first
+not have (`excuse-without-spec`), an excuse for a spec the run does execute
+(`excuse-that-runs`), and an excuse with no sentence (`excuse-without-reason`). The first
 two carry `epsilon`'s valid entry BESIDE the defective one, deliberately: strip it and
 `spec-outside-measurement` fires first, and the case would then prove a neighbour's rule
 rather than its own — which is the fault this whole tree is built to refuse.
 
-The live entry is `libs/components/testing/src/property.spec.ts`, which holds the property
-sweep four of this library's specs rest on and mutates nothing, because
-`!libs/components/testing/**` is in `patterns`.
+The live entry is `libs/components/schematics/migrations/badge-tone/index.spec.ts`, the
+library's first spec under `schematics/`: the migration it measures is outside `patterns`,
+which reaches `*/src/**` alone and strikes every `index.ts` besides, so the related filter
+never selects the spec that holds its 81 cases.
 
 ## The rule that outlives disarming Stryker itself
 

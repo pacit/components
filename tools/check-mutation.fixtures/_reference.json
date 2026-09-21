@@ -96,7 +96,7 @@
       "coversNothing": [
         {
           "spec": "libs/fake/epsilon.spec.ts",
-          "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so it covers no mutant and the report lists it nowhere. It ran; it killed nothing."
+          "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so nothing it reaches is mutated, the run never selects it, and the report lists it nowhere. It ran; it killed nothing."
         }
       ],
       "threshold": 80,
