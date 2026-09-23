@@ -5,7 +5,7 @@
  * zero, so a threshold over it is a gate born dead ([`lesson-45`](../docs/lessons.md#lesson-45)).
  *
  *  1. the report exists at all and has a total for every enforced metric,
- *  2. the list of source files is not empty (else point 3 has nothing to examine),
+ *  2. the list of source files is not empty and matches the tree both ways, less the excused,
  *  3. COMPLETE: every source file of the library — its templates included — is in the report,
  *  4. the `test` target declares a line AND a branch threshold, neither below MINIMUM,
  *  5. the report meets both declared thresholds,
@@ -17,6 +17,7 @@
  *
  * Usage: node tools/check-coverage.mjs
  */
+import { execFileSync } from 'node:child_process';
 import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -80,6 +81,17 @@ const TEMPLATE_EXCEPTIONS = {};
  * configuration would remove a file from both sides of the comparison at once and point 3
  * would stop seeing anything. An independent definition makes a narrowed
  * `coverageInclude` show up as a file missing from the report — that is, as a failure.
+ *
+ * And this list is held to the tree in turn (point 2), both ways: every `.ts` and `.html`
+ * git lists under the library must be reached by a pattern here or excused by a category
+ * of `NOT_A_SOURCE`, and every file the patterns reach must be in that listing. Until this
+ * point was written nothing held the list. Every case hands the gate a list of files, so no
+ * case can see the list itself (`lesson-237`), and the review that followed #14 measured
+ * what that leaves open: a copy of this gate without the migrations' pattern below walked
+ * 145 files instead of 146, passed, and rejected all twelve prepared inputs on their own
+ * points. A pattern struck out takes its files off the list point 3 walks, and point 3
+ * passes with fewer to look for — git's listing is the one reading of the library that no
+ * pattern here produces, and the other direction keeps that listing from being narrowed.
  */
 const SOURCES = [
   `${PROJECT}/src/**/*.ts`,
@@ -111,6 +123,42 @@ const SKIPPED = [
 ];
 
 /**
+ * What git lists under the library that this gate has no business demanding — the tree side
+ * of point 2. Categories, each with a reason; a single file left out is a pattern's
+ * business, not this list's. Three of them repeat `SKIPPED`, and on purpose: were point 2 to
+ * filter the tree with that list, a predicate added to it would strike a file from BOTH sides
+ * of the comparison at once and the point would stop seeing anything — the argument that
+ * keeps `SOURCES` apart from `coverageInclude`, one list over. Spelled twice, a `SKIPPED`
+ * predicate widened shows up as the tree's leftover; a category here widened costs the floor
+ * nothing — the patterns still demand its files — and only blinds the tree side to them, so
+ * dropping a file silently takes an edit to each list, not to one.
+ */
+const NOT_A_SOURCE = [
+  // Anything that is not TypeScript or a template. The measurement sees these two and nothing
+  // else (`coverageInclude` names both extensions and no other); styles, JSON, prose and the
+  // `.mjs`/`.mts` tooling that lives beside the sources stand outside it.
+  (p) => !p.endsWith('.ts') && !p.endsWith('.html'),
+  // The tests themselves.
+  (p) => p.endsWith('.spec.ts'),
+  // Types, as `SKIPPED` has them. Not all of them pure — `select.types.ts` exports two
+  // runtime functions under no floor — and that is a flaw of the category in three lists
+  // (this one, `SKIPPED`, `coverageExclude`), a task of its own rather than a reason here.
+  (p) => p.endsWith('.types.ts'),
+  // The version stamp (see `SKIPPED`).
+  (p) => p === `${PROJECT}/src/version.ts`,
+  // The mutation run's own harness: what RUNS the specs there, not something they measure —
+  // and the `test` target never loads it.
+  (p) => p === `${PROJECT}/mutation.setup.ts`,
+  // The `ng add` schematic, and that directory alone. It runs once, in the consumer's CLI,
+  // and is measured where it runs: `check-consumer` installs the package into a real
+  // application and executes it there. A migration under `schematics/migrations/` is NOT
+  // this — no gate runs one in a real application, so its floor is here, through the fifth
+  // pattern of `SOURCES` — and `migration-behind-ng-add-excuse.json` is what keeps this line
+  // from widening back to `schematics/`, the way the mutation run's copy of it once read.
+  (p) => p.startsWith(`${PROJECT}/schematics/ng-add/`),
+];
+
+/**
  * Templates (`.html`) are required in the report as much as the code is — and that is a
  * promise this gate did not use to make. A template enters the statistic only once some
  * test RENDERS its component, so demanding it there demands a rendering test for every
@@ -138,15 +186,35 @@ class CoverageError extends Error {
 }
 
 /**
+ * The point each check belongs to. A case declares both, and is held to this table: a
+ * point its check does not stand on would put the wrong number in every message about it.
+ * A new check comes with its row here, as it comes with its case.
+ */
+const CHECK_POINTS = {
+  report: 1,
+  sources: 2,
+  'outside-tree': 2,
+  unaccounted: 2,
+  complete: 3,
+  threshold: 4,
+  result: 5,
+  templates: 6,
+  'exception-stale': 6,
+};
+
+/**
  * The full set of checks over a ready input:
  *   `report` — `{ total, files }` with paths relative to the repository root (or null),
  *   `sources` — the files that MUST be in the report,
+ *   `tree` — every file of the library as git lists it; point 2 holds `sources` to it
+ *            both ways, so a pattern narrowed is seen where a case cannot see it,
+ *   `gone` — the listed files git reports deleted from the working tree (for the message),
  *   `target` — the options of the `test` target from `project.json`,
  *   `exceptions` — the templates allowed below the floor, by file and by metric.
  * Throws `CoverageError` on the first violation — the checks run from the most basic one,
  * so the later ones would have nothing to examine anyway.
  */
-const checkCoverage = ({ report, sources, target, exceptions }) => {
+const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
   // 1. The report exists and has a total for every metric a threshold is declared over.
   for (const metric of GLOBAL_METRICS)
     if (typeof report?.total?.[metric]?.pct !== 'number')
@@ -162,6 +230,50 @@ const checkCoverage = ({ report, sources, target, exceptions }) => {
       'sources',
       `not a single source file found (${SOURCES.join(', ')}) — ` +
         `point 3 would then always pass, having nothing to look for in the report`,
+    );
+
+  // ...and it is the WHOLE library, held both ways to git's listing of it — the one reading
+  // of the library that no pattern of this gate produces, so a pattern narrowed shows up
+  // here as listed files the list no longer reaches, where the cases, which hand the gate a
+  // list, cannot see it. First the listing itself: it is read under a pathspec, and a
+  // listing that does not hold what the patterns reach — narrowed, or empty because the
+  // reading failed — would leave the check after it blind.
+  const listed = new Set(tree ?? []);
+  const outside = sources.filter((p) => !listed.has(p));
+  if (outside.length)
+    throw new CoverageError(
+      'outside-tree',
+      `${outside.length} source files the patterns reach are not in git's listing of ` +
+        `${PROJECT}` +
+        (listed.size ? ':\n' : ` — a listing with nothing in it at all:\n`) +
+        outside.map((p) => `      ${p}`).join('\n') +
+        `\n    The listing is what holds the patterns to the whole library, so a listing ` +
+        `narrowed — a pathspec, an ignore rule, a reading that failed — would leave the ` +
+        `next check blind. Remedy: list the library whole (libraryTree), or stop ignoring ` +
+        `the file.`,
+    );
+  const demanded = new Set(sources);
+  const unaccounted = (tree ?? []).filter(
+    (p) => !NOT_A_SOURCE.some((no) => no(p)) && !demanded.has(p),
+  );
+  const deleted = new Set(gone ?? []);
+  const why = (p) =>
+    SKIPPED.some((skip) => skip(p))
+      ? 'struck by a SKIPPED predicate'
+      : deleted.has(p)
+        ? 'gone from the working tree, still listed by git'
+        : 'reached by no SOURCES pattern';
+  if (unaccounted.length)
+    throw new CoverageError(
+      'unaccounted',
+      `${unaccounted.length} source files of the library are demanded by no pattern and ` +
+        `excused by no category:\n` +
+        unaccounted.map((p) => `      ${p} (${why(p)})`).join('\n') +
+        `\n    A pattern narrowed or struck out, or a SKIPPED predicate widened, takes ` +
+        `files off the list point 3 walks, and point 3 passes with fewer to look for — ` +
+        `the percentage says nothing about them (lesson-45, lesson-237). Remedy: a ` +
+        `pattern in SOURCES that reaches the file, a SKIPPED predicate that no longer ` +
+        `strikes it, or a category in NOT_A_SOURCE with a reason.`,
     );
 
   // 3. Complete: every source file is in the report.
@@ -287,34 +399,223 @@ const targetOptions = () =>
   JSON.parse(readFileSync(join(ROOT, PROJECT, 'project.json'), 'utf8')).targets
     ?.test?.options;
 
+/**
+ * The library as git lists it: the tracked files and the untracked ones it does not ignore,
+ * so a file written a minute ago counts and a generated one does not. Read under one
+ * pathspec — `outside-tree` is what keeps that pathspec from being narrowed.
+ */
+const libraryTree = () =>
+  execFileSync(
+    'git',
+    [
+      'ls-files',
+      '-z',
+      '--cached',
+      '--others',
+      '--exclude-standard',
+      '--',
+      PROJECT,
+    ],
+    { cwd: ROOT, encoding: 'utf8' },
+  )
+    .split('\0')
+    .filter(Boolean)
+    .map((p) => p.split('\\').join('/'))
+    .sort();
+
+/** The listed files git reports deleted from the working tree — a `git rm` not yet made. */
+const libraryGone = () =>
+  execFileSync('git', ['ls-files', '-z', '--deleted', '--', PROJECT], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  })
+    .split('\0')
+    .filter(Boolean)
+    .map((p) => p.split('\\').join('/'));
+
 // ── negative control ──────────────────────────────────────────────────────────
 
-const readFixture = (name) =>
-  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
+/**
+ * A case, or the reference, that the builder cannot apply as written. Read loosely, a typo
+ * in a fixture — a key misspelt, a list written as a string, a path that is not there, a
+ * value equal to the one it replaces — makes the case change nothing: it passes, and the
+ * gate blames its own point for it. Refused by name instead, before the gate is asked.
+ */
+class FixtureError extends Error {}
+
+const has = Object.hasOwn;
+const isObject = (v) =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const readFixture = (name) => {
+  let text;
+  try {
+    text = readFileSync(join(FIXTURES, name), 'utf8');
+  } catch (error) {
+    throw new FixtureError(
+      error.code === 'ENOENT'
+        ? 'the file is missing'
+        : `the file cannot be read (${error.code ?? error.message})`,
+    );
+  }
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch (error) {
+    throw new FixtureError(`not JSON — ${error.message}`);
+  }
+  if (!isObject(value)) throw new FixtureError('the file is not an object');
+  return value;
+};
+
+/** Every key a case may carry, and the kind of value each has to hold. */
+const CASE_KEYS = {
+  point: 'number',
+  check: 'string',
+  description: 'string',
+  dropReport: 'boolean',
+  clearSources: 'boolean',
+  clearTree: 'boolean',
+  dropFromSources: 'paths',
+  dropFromTree: 'paths',
+  addToTree: 'paths',
+  dropFromReport: 'paths',
+  pct: 'number',
+  branchPct: 'number',
+  filePct: 'object',
+  target: 'any',
+  exceptions: 'any',
+};
+
+/**
+ * A list of paths, each of which `pool` holds — or, for an addition, does not: dropping a
+ * path that is not there, or adding one that already is, changes nothing.
+ */
+const paths = (holder, key, pool, adding = false) => {
+  if (!has(holder, key)) return [];
+  const value = holder[key];
+  if (!Array.isArray(value) || !value.every((p) => typeof p === 'string'))
+    throw new FixtureError(
+      `\`${key}\` must be a list of paths, and reads ${JSON.stringify(value)}`,
+    );
+  if (new Set(value).size !== value.length)
+    throw new FixtureError(`\`${key}\` names a path twice`);
+  const idle = pool ? value.filter((p) => pool.has(p) === adding) : [];
+  if (idle.length)
+    throw new FixtureError(
+      `\`${key}\` names ${idle.map((p) => `\`${p}\``).join(', ')}, which ` +
+        `${adding ? 'is already there' : 'is not there'} — the operation would ` +
+        `change nothing`,
+    );
+  return value;
+};
+
+/** A value written with its keys in order, so two inputs compare by what they hold. */
+const stable = (v) =>
+  Array.isArray(v)
+    ? `[${v.map(stable).join(',')}]`
+    : isObject(v)
+      ? `{${Object.keys(v)
+          .sort()
+          .map((k) => `${JSON.stringify(k)}:${stable(v[k])}`)
+          .join(',')}}`
+      : String(JSON.stringify(v));
+
+/** An input as a comparison sees it: the two lists are sets, whatever order built them. */
+const canonical = (input) =>
+  stable({
+    ...input,
+    sources: [...new Set(input.sources)].sort(),
+    tree: [...new Set(input.tree)].sort(),
+  });
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing but
  * its own defect — you cannot break something in passing and not notice.
  */
 const buildFixture = (fx) => {
+  for (const [key, value] of Object.entries(fx)) {
+    if (!has(CASE_KEYS, key))
+      throw new FixtureError(
+        `\`${key}\` is no key a case may carry (${Object.keys(CASE_KEYS).join(', ')})`,
+      );
+    const kind = CASE_KEYS[key];
+    const fits =
+      kind === 'any' ||
+      kind === 'paths' ||
+      (kind === 'object' ? isObject(value) : typeof value === kind);
+    if (!fits)
+      throw new FixtureError(
+        `\`${key}\` must be ${kind === 'object' ? 'an object' : `a ${kind}`}, and reads ` +
+          JSON.stringify(value),
+      );
+  }
+  if (
+    fx.dropReport &&
+    ['dropFromReport', 'pct', 'branchPct', 'filePct'].some((k) => has(fx, k))
+  )
+    throw new FixtureError(
+      '`dropReport` leaves no report for the other report operations to change',
+    );
+
   const reference = readFixture(REFERENCE);
+  const { report } = reference;
+  if (
+    !isObject(report?.files) ||
+    !Object.values(report.files).every(isObject) ||
+    !isObject(report?.total?.lines) ||
+    !isObject(report?.total?.branches)
+  )
+    throw new FixtureError(
+      'the reference holds no report whose every file is an object, with a line and a ' +
+        'branch total',
+    );
   const input = {
-    report: structuredClone(reference.report),
-    sources: [...reference.sources],
+    report: structuredClone(report),
+    sources: [...paths(reference, 'sources')],
+    tree: [...paths(reference, 'tree')],
+    gone: [],
     target: structuredClone(reference.target),
     exceptions: structuredClone(reference.exceptions),
   };
   if (fx.dropReport) input.report = null;
   if (fx.clearSources) input.sources = [];
-  for (const p of fx.dropFromReport ?? []) delete input.report.files[p];
-  if (fx.pct !== undefined) input.report.total.lines.pct = fx.pct;
-  if (fx.branchPct !== undefined)
-    input.report.total.branches.pct = fx.branchPct;
-  for (const [path, metrics] of Object.entries(fx.filePct ?? {}))
-    for (const [metric, value] of Object.entries(metrics))
-      input.report.files[path][metric].pct = value;
-  if (fx.target !== undefined) input.target = fx.target;
-  if (fx.exceptions !== undefined) input.exceptions = fx.exceptions;
+  if (fx.clearTree) input.tree = [];
+  const dropped = (key, list) => {
+    const gone = new Set(paths(fx, key, new Set(list)));
+    return list.filter((p) => !gone.has(p));
+  };
+  input.sources = dropped('dropFromSources', input.sources);
+  input.tree = dropped('dropFromTree', input.tree);
+  input.tree.push(...paths(fx, 'addToTree', new Set(input.tree), true));
+  if (input.report) {
+    const { files, total } = input.report;
+    for (const p of paths(fx, 'dropFromReport', new Set(Object.keys(files))))
+      delete files[p];
+    if (has(fx, 'pct')) total.lines.pct = fx.pct;
+    if (has(fx, 'branchPct')) total.branches.pct = fx.branchPct;
+    for (const [path, metrics] of Object.entries(fx.filePct ?? {})) {
+      if (!has(files, path) || !isObject(metrics))
+        throw new FixtureError(
+          `\`filePct\` names \`${path}\`, which the report does not hold, or gives it ` +
+            `no object of metrics`,
+        );
+      for (const [metric, value] of Object.entries(metrics)) {
+        if (
+          !has(files[path], metric) ||
+          !isObject(files[path][metric]) ||
+          typeof value !== 'number'
+        )
+          throw new FixtureError(
+            `\`filePct\` sets ${metric} of \`${path}\` to ${JSON.stringify(value)}, and ` +
+              `the report has no such number to change`,
+          );
+        files[path][metric].pct = value;
+      }
+    }
+  }
+  if (has(fx, 'target')) input.target = fx.target;
+  if (has(fx, 'exceptions')) input.exceptions = fx.exceptions;
   return input;
 };
 
@@ -327,6 +628,8 @@ try {
   summary = checkCoverage({
     report: readReport(),
     sources: librarySources(),
+    tree: libraryTree(),
+    gone: libraryGone(),
     target: targetOptions(),
     exceptions: TEMPLATE_EXCEPTIONS,
   });
@@ -345,22 +648,77 @@ if (cases.length === 0)
       `can fail is one more silent defect (req-quality-negative-control)`,
   );
 
+/**
+ * A case's declaration and input — the reference's is built with no operations — or null,
+ * with the reason recorded, when the file cannot be read as one. A case is held against
+ * `base`, the reference's input: one that builds the same input changes nothing, and would
+ * pass with its point blamed.
+ */
+const built = (name, base) => {
+  try {
+    const fx = name === REFERENCE ? {} : readFixture(name);
+    if (
+      name !== REFERENCE &&
+      (!has(CHECK_POINTS, fx.check) || CHECK_POINTS[fx.check] !== fx.point)
+    )
+      throw new FixtureError(
+        `a case has to declare one of this gate's checks and the point it stands on ` +
+          `(${Object.entries(CHECK_POINTS)
+            .map(([check, point]) => `${check} ${point}`)
+            .join(', ')}), and declares ${JSON.stringify(fx.check)} on ` +
+          JSON.stringify(fx.point),
+      );
+    if (
+      name !== REFERENCE &&
+      (typeof fx.description !== 'string' || fx.description.trim().length < 40)
+    )
+      throw new FixtureError(
+        'a case has to say, in `description`, what it breaks and why that matters — ' +
+          'a defect nobody explained is the silent exception this gate stands against',
+      );
+    const input = buildFixture(fx);
+    if (base && canonical(input) === canonical(base))
+      throw new FixtureError(
+        'the case builds the reference input unchanged — every operation in it is ' +
+          'already the reference',
+      );
+    return { fx, input };
+  } catch (error) {
+    if (!(error instanceof FixtureError)) throw error;
+    problems.push(
+      name === REFERENCE
+        ? `${REFERENCE}: malformed — ${error.message}; every case is built on it, so ` +
+            `none of the ${cases.length} was judged`
+        : `${name}: malformed — ${error.message}; a case that cannot be read as data ` +
+            `measures nothing, whatever the gate answers to it`,
+    );
+    return null;
+  }
+};
+
 // The reference input MUST pass. Were it defective itself, every case would fire because
 // of it rather than because of its own defect — and every "it fired" would be false.
-try {
-  checkCoverage(buildFixture({}));
-} catch (error) {
-  if (!(error instanceof CoverageError)) throw error;
-  problems.push(
-    `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
-      `every prepared case now fires because of it.\n    ${error.message}`,
-  );
-}
-
-for (const name of cases) {
-  const fx = readFixture(name);
+const reference = built(REFERENCE);
+if (reference)
   try {
-    checkCoverage(buildFixture(fx));
+    checkCoverage(reference.input);
+  } catch (error) {
+    if (!(error instanceof CoverageError)) throw error;
+    problems.push(
+      `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+        `every prepared case now fires because of it.\n    ${error.message}`,
+    );
+  }
+
+// A reference that cannot be read leaves no case to judge: every one is built on it.
+const covered = new Set();
+for (const name of reference ? cases : []) {
+  const one = built(name, reference.input);
+  if (!one) continue;
+  const { fx, input } = one;
+  covered.add(fx.check);
+  try {
+    checkCoverage(input);
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
@@ -375,6 +733,20 @@ for (const name of cases) {
       );
   }
 }
+
+// Every check has a case. The loop above walks the cases, so a check whose last case is
+// deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
+// is what `req-axis` forbids. `CHECK_POINTS` is the list of checks; each row needs a case.
+const uncovered = reference
+  ? Object.keys(CHECK_POINTS).filter((check) => !covered.has(check))
+  : [];
+if (uncovered.length)
+  problems.push(
+    `${uncovered.map((c) => `\`${c}\``).join(', ')}: no case declares ` +
+      `${uncovered.length === 1 ? 'this check' : 'these checks'} — a check with no case ` +
+      `is a promise no machine can fire on (req-axis), and nothing else notices its last ` +
+      `case go`,
+  );
 
 // ── result ────────────────────────────────────────────────────────────────────
 

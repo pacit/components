@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "outside-tree",
+  "description": "Git's listing of the library yields not a single file — the reading failed, or ran somewhere that is not a checkout. It is the narrowed listing in the extreme: every source the patterns reach is outside it, so the same check fires that fires for a pathspec cut down to `src/` (`source-outside-tree.json`), and says so. An emptiness check of its own stood here first and was measured to be decoration — disabled, this case still fired, one check over — so what a listing with nothing in it gets is the message, not a point.",
+  "clearTree": true
+}

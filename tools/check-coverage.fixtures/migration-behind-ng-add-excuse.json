@@ -1,0 +1,8 @@
+{
+  "point": 2,
+  "check": "unaccounted",
+  "description": "A migration under `schematics/migrations/`, in the tree and reached by no pattern — the state of the real library until #14 wrote the fifth pattern of SOURCES. The category that excuses `ng add` reads `schematics/ng-add/` and must not read `schematics/`: the reason beside it — check-consumer executes the schematic in a real application — is true of `ng add` alone, and no gate in this workspace executes a migration. Widen the category to the whole directory and this case PASSES; that is the whole of what it measures. Every other case here is a path under `src/` that either spelling leaves alone. The path deliberately does not end in `index.ts`, although the real migration's does: a barrel excuse (`endsWith('/index.ts')`) would then make this case pass as well, and its red would blame the `ng add` category for a narrowing it did not make (lesson-50) — the mutation gate's case is spelled the same way for the same reason.",
+  "addToTree": [
+    "libs/components/schematics/migrations/badge-tone/badge-tone.ts"
+  ]
+}

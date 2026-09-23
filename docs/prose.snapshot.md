@@ -35,7 +35,7 @@ check-bridge.mjs 7 19 200
 check-browsers.mjs 6 18 168
 check-bundle.mjs 13 25 269
 check-consumer.mjs 7 19 197
-check-coverage.mjs 6 18 182
+check-coverage.mjs 6 18 184
 check-distance.mjs 5 17 190
 check-docs.mjs 8 20 213
 check-e2e.mjs 4 15 142

@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "unaccounted",
+  "description": "A template the patterns no longer reach — the point-2 twin of `template-outside-report.json`. Templates are half of the extension category on the tree side (`.ts` or `.html`), and the `.ts` half is measured by every other case here while the `.html` half was measured by none: with templates excused on the tree side, both `.html` patterns could leave SOURCES and the gate walked 106 files instead of 146, green — the 40 templates out of point 3's denominator, and point 6, which walks the report alone, never asked after a component nobody renders. Strike `.html` from the category, or restrict the unaccounted filter to `.ts`, and this case PASSES.",
+  "dropFromSources": ["libs/components/button/src/button.html"]
+}

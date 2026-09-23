@@ -1,6 +1,7 @@
 {
   "point": 2,
   "check": "sources",
-  "description": "The list of source files is empty — this is what a typo in the SOURCES pattern or a moved directory looks like. Point 3 would then always pass, having nothing to look for in the report: a completeness check with no denominator is empty.",
-  "clearSources": true
+  "description": "The list of source files is empty, and so is git's listing of the library — the one input no other check stands in front of. Point 3 would then always pass, having nothing to look for in the report: a completeness check with no denominator is empty. The case empties BOTH on purpose. With the listing still full, an empty list fires `unaccounted` one check over, so deleting this check would leave the case red on its neighbour — the very measurement that retired the listing's own emptiness check as decoration — and the input only this check catches would stand in no case. A typo in ONE pattern never emptied the list: it shortened it with nothing firing, which `file-outside-sources.json` now catches on the same point.",
+  "clearSources": true,
+  "clearTree": true
 }
