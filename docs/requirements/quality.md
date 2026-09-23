@@ -282,13 +282,16 @@ floor cannot live in the target: the executor's `coverageThresholds` is four num
 `libs/components/src/public-api.spec.ts` brings the modules of every package gate into the run
 — without it a file with no test does not show up as zero, it **drops out of the statistic**
 ([`lesson-45`](../lessons.md#lesson-45))
-**Control:** `tools/check-coverage.fixtures/` — twelve doctored inputs, one per way of
+**Control:** `tools/check-coverage.fixtures/` — thirteen doctored inputs, one per way of
 disarming the gate (no report, an empty source list, a source file outside the report, a
-TEMPLATE outside the report, measurement switched off, a threshold removed, the branch
-threshold alone removed, a threshold lowered, lines below the threshold, branches below the
-threshold, a template below its floor, an exception that no longer covers anything). Each must
-be rejected **by the point it declares**, and the reference input must pass — it carries an
-exempted template, which is the only place where the gate staying SILENT is measured. Plus
+TEMPLATE outside the report, a MIGRATION in the git index and outside the report — the one
+case that reaches the denominator's definition, since the gate's sources come off the index
+and not off a list of patterns a case could never touch — measurement switched off, a
+threshold removed, the branch threshold alone removed, a threshold lowered, lines below the
+threshold, branches below the threshold, a template below its floor, an exception that no
+longer covers anything). Each must be rejected **by the point it declares**, and the
+reference input must pass — it carries an exempted template and one file of every excused
+category, which is the only place where the gate staying SILENT is measured. Plus
 three runs against the real repository: removing `libs/components/src/public-api.spec.ts`
 leaves the `test` target **green** (96.55%) while `check-coverage` fires on
 `libs/components/src/index.ts`; removing `select.spec.ts` and `number.spec.ts` drops coverage

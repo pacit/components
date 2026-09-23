@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "complete",
+  "description": "An `ng update` migration in the index and not in the report. It lives outside every entrypoint's `src/`, and until 2026-09-21 no floor stood under it; from then until 2026-09-23 the floor was a fifth pattern in a list of the gate's own, and that line could be struck off with nothing firing — the cases handed the check their sources ready-made, so none of them ever reached the list: 145 files instead of 146, green both ways. The denominator is the git index now, and the only way out of it is a category in `NOT_A_SOURCE`. Widen the `ng-add/` category back to `schematics/`, or excuse whatever lies outside `src/`, and this case PASSES — that is the whole of what it measures, and the two cases beside it on point 3 cannot: their files sit under `src/`, where no spelling of the categories tells them apart. The path is a real one and deliberately not a spec, a types file or the harness: under any of those the case would pass by a category that is right to be silent, and could no longer say which narrowing it measures.",
+  "addToRepo": ["libs/components/schematics/migrations/badge-tone/index.ts"]
+}

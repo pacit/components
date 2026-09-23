@@ -19,10 +19,10 @@ threshold guarding such a number always passes, and the louder the less is teste
 A case is not a thirteenth copy of the correct input with one thing broken. The gate builds
 it from two layers:
 
-1. `_reference.json` — the reference input: the report, the list of source files, the
-   target options and the template exceptions,
-2. the operations from the case file, applied to a copy of it (`dropReport`,
-   `clearSources`, `dropFromReport`, `pct`, `branchPct`, `filePct`, `target`,
+1. `_reference.json` — the reference input: the report, the library's files as the git
+   index lists them (`inRepo`), the target options and the template exceptions,
+2. the operations from the case file, applied to a copy of it (`dropReport`, `inRepo`,
+   `addToRepo`, `dropFromReport`, `pct`, `branchPct`, `filePct`, `target`,
    `exceptions`).
 
 That way the case file holds **nothing but the defect** — it is visible without comparing
@@ -33,15 +33,18 @@ reference itself defective, every case would fire because of it rather than beca
 its own defect, and every "rejected" would be false — that is, this whole negative
 control would become exactly what it stands against.
 
-It carries one thing besides: a template that does **not** reach the floor and an exception
-saying why. That is the only place where the gate staying SILENT is measured. A case file
-proves a check FIRES; that point 6 keeps quiet where a reason is written down has nowhere
-else to be shown — and the case beside it (`template-exception-stale.json`) proves the other
+It carries two things besides, because a case file proves a check FIRES and the gate
+staying SILENT has nowhere else to be shown. One is a template that does **not** reach the
+floor and an exception saying why — that point 6 keeps quiet where a reason is written down
+is measured here, and the case beside it (`template-exception-stale.json`) proves the other
 side of that same exception, the one that fires when the metric climbs above what the
-exception allows.
+exception allows. The other is one file of every category `NOT_A_SOURCE` excuses — a
+stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
+schematic — none of them in the report: that the gate does not ask for them is measured
+here, and a category struck off the list fires here, on point 3.
 
 The input is **data, not a directory on disk**: the gate examines the decision, not the
-reading of files. The plumbing defends itself — were the source glob or the path
+reading of files. The plumbing defends itself — were the reading of the index or the path
 normalisation from the report to stop working, point 2 or 3 fires on the real run, loudly
 and at once.
 
@@ -59,6 +62,7 @@ and at once.
 | [`below-threshold.json`](below-threshold.json)                   | lines below the declared threshold                         | 5     |
 | [`branches-below-threshold.json`](branches-below-threshold.json) | branches below the declared threshold                      | 5     |
 | [`template-outside-report.json`](template-outside-report.json)   | a template outside the report — a component nobody renders | 3     |
+| [`migration-outside-report.json`](migration-outside-report.json) | a migration in the index and not in the report             | 3     |
 | [`template-below-floor.json`](template-below-floor.json)         | a template below the floor of its own                      | 6     |
 | [`template-exception-stale.json`](template-exception-stale.json) | an exception the metric has climbed above                  | 6     |
 
@@ -74,6 +78,18 @@ point 3 guards the **denominator** it came from — and that is what quietly shr
 guards the part of the denominator too small to matter to the total: the templates are a
 seventh of the lines, so any one of them can go unrendered without moving the percentage off
 its threshold, and a floor per template is the only thing that notices.
+
+Point 3 has a third case, and it is the only one that reaches the denominator's
+**definition**. The two beside it drop a file from the report; this one adds a file to the
+index — a migration, outside every entrypoint's `src/` — and asks whether the gate wants it.
+Until 2026-09-23 the gate's list of sources was five glob patterns that walked the real
+tree, and a case could not touch it: the check was handed its sources ready-made, so the
+migrations' pattern could be struck off with all twelve cases still firing on their points
+(145 files instead of 146, green both ways). The denominator is the git index now — there
+is no line to strike — and what remains narrowable is the list of excused categories in
+`NOT_A_SOURCE`. Widen its `ng-add/` entry back to `schematics/`, or excuse everything
+outside `src/`, and this case passes; delete the entry and the reference fails. Both were
+run before the case was counted, the way the mutation gate's two inventory cases were.
 
 ## Adding a new check to the gate
 

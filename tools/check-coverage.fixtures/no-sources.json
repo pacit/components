@@ -1,6 +1,9 @@
 {
   "point": 2,
   "check": "sources",
-  "description": "The list of source files is empty — this is what a typo in the SOURCES pattern or a moved directory looks like. Point 3 would then always pass, having nothing to look for in the report: a completeness check with no denominator is empty.",
-  "clearSources": true
+  "description": "The index holds files and not one of them is a source: a stylesheet and a spec, which is what a moved library directory looks like, or a category in `NOT_A_SOURCE` written wide enough to take everything with it. Point 3 would then always pass, having nothing to look for in the report: a completeness check with no denominator is empty.",
+  "inRepo": [
+    "libs/components/button/src/button.scss",
+    "libs/components/button/src/button.spec.ts"
+  ]
 }
