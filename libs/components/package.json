@@ -21,11 +21,18 @@
     "zoneless",
     "ssr"
   ],
+  "// peerDependencies": "The four the package imports, plus one it does NOT: `@angular/compiler` is reached only by the `ng update` migration, at the consumer's, through a dynamic `import()` — nothing in the shipped bundle names it. It is declared because the truth is that the code can call it, and `peerDependenciesMeta` marks it OPTIONAL because the truth is also that the call is allowed to fail: a workspace without it gets a migration that writes nowhere and reports every file worth a look. Declaring it costs a consumer nothing they do not already have: `@angular/build` requires `@angular/compiler` as a peer, and an install brings a required peer, so every workspace that builds an Angular application has it — and `req-project-dependencies` is satisfied by the shape rather than by silence: this is not build tooling entering a runtime tree, it is a one-off tool borrowing the parser that is already installed beside it.",
   "peerDependencies": {
     "@angular/cdk": "^22.0.0",
     "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/compiler": {
+      "optional": true
+    }
   },
   "sideEffects": false,
   "schematics": "./schematics/collection.json",
