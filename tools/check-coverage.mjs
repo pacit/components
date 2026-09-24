@@ -238,7 +238,7 @@ const checkoutOf = (path) => {
 /**
  * The full set of checks over a ready input:
  *   `report` — `{ total, files }` with paths relative to the repository root (or null);
- *            a file outside it keeps the `../` that says so, which point 1 reads,
+ *            point 1 asks which of them lie in this checkout's library,
  *   `sources` — the files that MUST be in the report,
  *   `tree` — every file of the library as git lists it; point 2 holds `sources` to it
  *            both ways, so a pattern narrowed is seen where a case cannot see it,
@@ -270,7 +270,8 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
     throw new CoverageError(
       'foreign-report',
       `the report (${REPORT}) was written in another checkout — not one of its ` +
-        `${files.length} files lies in this one's ${PROJECT} (${ROOT}); they lie under:\n` +
+        `${files.length} files lies in this one's library (${join(ROOT, PROJECT)}); they ` +
+        `lie under:\n` +
         [...new Set(elsewhere.map(checkoutOf))]
           .sort()
           .map((checkout) => `      ${checkout}`)
@@ -444,8 +445,9 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
 
 /**
  * The report in the shape `checkCoverage` expects: paths relative to the repo root. v8
- * writes them absolute, so a report another checkout wrote comes out climbing out of this
- * one — `../` — and point 1 is what reads that; nothing here decides it.
+ * writes them absolute, so a report another checkout wrote comes out outside this one's
+ * library — climbing out (`../`), or under `.claude/worktrees/` for a nested one — and
+ * point 1 is what reads that; nothing here decides it.
  */
 const readReport = () => {
   const path = join(ROOT, REPORT);

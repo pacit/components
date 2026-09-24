@@ -301,12 +301,12 @@ its floor, an exception that no longer covers anything). Each must be rejected *
 point it declares**, and the reference input must pass — it carries an exempted template and
 one listed file of every excused category, and is the one input on which every point stays
 SILENT: a case shows that only for the points before its own. Plus six runs against the real
-repository: removing `libs/components/src/public-api.spec.ts` leaves the `test` target **green** (96.55%) while
-`check-coverage` fires on `libs/components/src/index.ts`; removing `select.spec.ts` and
-`number.spec.ts` drops coverage to 64.96% and fires both thresholds at once; taking the
-three template tests back out leaves the `test` target green as well (235 passed, both
-thresholds met) while point 6 names three metrics across two files; striking the migrations'
-pattern from `SOURCES` fires point 2 on
+repository: removing `libs/components/src/public-api.spec.ts` leaves the `test` target
+**green** (96.55%) while `check-coverage` fires on `libs/components/src/index.ts`; removing
+`select.spec.ts` and `number.spec.ts` drops coverage to 64.96% and fires both thresholds at
+once; taking the three template tests back out leaves the `test` target green as well (235
+passed, both thresholds met) while point 6 names three metrics across two files; striking the
+migrations' pattern from `SOURCES` fires point 2 on
 `libs/components/schematics/migrations/badge-tone/index.ts`, where before point 2 held the
 list it left the gate green over 145 files instead of 146 with all twelve cases still
 rejected — no case can see a list every case is handed
