@@ -807,31 +807,41 @@ const throwsOf = (source) => {
  * read off a misread file cannot be trusted: `</` is a JSX token to it in a JS file, and the
  * code behind it can turn into a string with a construction inside. Only the errors that
  * stand in the file count — the options and the emit can report their own, and those say
- * nothing about the reading.
+ * nothing about the reading. Each source is read once: the prepared inputs below share five.
  */
-const misreadOf = (source) =>
-  (
-    ts.transpileModule(source, {
-      fileName: GATE,
-      reportDiagnostics: true,
-      compilerOptions: {
-        module: ts.ModuleKind.ESNext,
-        target: ts.ScriptTarget.Latest,
-      },
-    }).diagnostics ?? []
-  ).filter((diagnostic) => diagnostic.file && diagnostic.start !== undefined);
+const misreadings = new Map();
+const misreadOf = (source) => {
+  if (!misreadings.has(source))
+    misreadings.set(
+      source,
+      (
+        ts.transpileModule(source, {
+          fileName: GATE,
+          reportDiagnostics: true,
+          compilerOptions: {
+            module: ts.ModuleKind.ESNext,
+            target: ts.ScriptTarget.Latest,
+          },
+        }).diagnostics ?? []
+      ).filter(
+        (diagnostic) => diagnostic.file && diagnostic.start !== undefined,
+      ),
+    );
+  return misreadings.get(source);
+};
 
 // ── the control, over any input ───────────────────────────────────────────────
 
 /**
- * The negative control over any input: the gate's own `source`, its `table` of checks, the
- * `names` of the cases and a `read` that hands over a fixture's text. It returns what it
+ * The negative control over any input: the gate's own `source` and `where` it was read, its
+ * `table` of checks, the `names` of the cases and a `read` that hands over a fixture's text —
+ * the prepared inputs below name their source for what it is. It returns what it
  * finds, each violation with the rule that fired and what it fired on, and the number of
  * checks the source constructs. The run hands it the real input; the control's own control
  * below hands it prepared ones, because on the real input every rule here stays silent — and
  * a rule loosened or struck out stays silent with it.
  */
-const controlOf = ({ source, table, names, read }) => {
+const controlOf = ({ source, where, table, names, read }) => {
   const found = [];
   const say = (rule, subject, text) =>
     found.push({ rule, subject: String(subject), text });
@@ -848,7 +858,7 @@ const controlOf = ({ source, table, names, read }) => {
   // held to the table and the missing-case line below walks it, so a check constructed with
   // neither a row nor a case would be seen by neither: the list the table is held to is the
   // source itself.
-  const here = (line) => `${relative(ROOT, GATE)}:${line}`;
+  const here = (line) => `${where}:${line}`;
   const misread = misreadOf(source);
   if (misread.length) {
     const [first] = misread;
@@ -870,7 +880,7 @@ const controlOf = ({ source, table, names, read }) => {
     say(
       'no-reference',
       '',
-      `${relative(ROOT, GATE)}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
+      `${where}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
         `looks for the name \`ERROR_CLASS\` holds, so while that and the class's own name ` +
         `differ it has nothing to hold the table to; give the two the same name`,
     );
@@ -1044,7 +1054,7 @@ const controlOf = ({ source, table, names, read }) => {
 const READINGS = [
   [
     'names that merely contain the class name',
-    [`const ${ERROR_CLASS}s = [];`, `class My${ERROR_CLASS} extends Error {}`],
+    [`const ${ERROR_CLASS}s = [];`, `throw new My${ERROR_CLASS}('x', '');`],
     '',
   ],
   [
@@ -1077,6 +1087,11 @@ const READINGS = [
       `throw new ${ERROR_CLASS}(\`\${check}\`, '');`,
     ],
     '?:1 ?:2 ?:3',
+  ],
+  [
+    'a literal that is no string: a number, a regular expression',
+    [`throw new ${ERROR_CLASS}(7, '');`, `throw new ${ERROR_CLASS}(/x/, '');`],
+    '?:1 ?:2',
   ],
   [
     'an empty literal, and no argument at all',
@@ -1144,6 +1159,15 @@ const READINGS = [
       `throw new ${ERROR_CLASS}.Inner('y', '');`,
     ],
     '?:1 ?:2',
+  ],
+  [
+    'the class on the right of another operator: an assignment, a comma, a default',
+    [
+      `let Alias; Alias = ${ERROR_CLASS};`,
+      `throw new (0, ${ERROR_CLASS})('x', '');`,
+      `const Other = maybe ?? ${ERROR_CLASS};`,
+    ],
+    '?:1 ?:2 ?:3',
   ],
   [
     'the left side of instanceof',
@@ -1216,10 +1240,14 @@ const readingOf = (source) =>
     .map(([line, check]) => `${check}:${line}`)
     .join(' ');
 
-/** The one source file of the prepared library, a stylesheet beside it, and a path it lacks. */
+/**
+ * The one source file of the prepared library, a stylesheet beside it, a path it lacks, and a
+ * second file for the edges where a rule reads "every" — all of two, but one.
+ */
 const FILE = `${PROJECT}/src/prepared.ts`;
 const STYLESHEET = `${PROJECT}/src/prepared.scss`;
 const ABSENT = `${PROJECT}/src/absent.ts`;
+const OTHER = `${PROJECT}/src/other.ts`;
 
 /** A case's declaration, for the prepared cases that the operations beside them complete. */
 const DECLARED = {
@@ -1316,6 +1344,16 @@ const ANSWERS = [
     [['unresolved', '4']],
   ],
   [
+    'a phantom named like a member of every object',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('constructor', '');`,
+      ],
+    },
+    [['unlisted', 'constructor']],
+  ],
+  [
     'a class of another name than ERROR_CLASS',
     {
       source: PREPARED.source.map((line) =>
@@ -1333,7 +1371,18 @@ const ANSWERS = [
         'const r = 1 </x/.source.length;',
       ],
     },
-    [['misread', '5']],
+    [['misread', '5', 'with 2 errors']],
+  ],
+  [
+    'a source the parser misreads in one place',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('impossible', '');`,
+        'r = 1 </x/i;',
+      ],
+    },
+    [['misread', '5', 'with an error']],
   ],
   [
     'a reference that does not pass',
@@ -1388,6 +1437,26 @@ const ANSWERS = [
     },
     [['malformed', 'malformed.json', 'no such number to change']],
   ],
+  [
+    'a move that lands one of two files on a file the report holds',
+    {
+      files: {
+        [REFERENCE]: withReport({
+          files: {
+            [FILE]: { lines: { pct: 100 } },
+            [OTHER]: { lines: { pct: 100 } },
+            [`x/${FILE}`]: { lines: { pct: 100 } },
+          },
+        }),
+        'malformed.json': {
+          ...DECLARED,
+          reportRoot: 'x',
+          reportRootFiles: [FILE, OTHER],
+        },
+      },
+    },
+    [['malformed', 'malformed.json', 'leaves a file where it was']],
+  ],
 ];
 
 const NO_REPORT = 'leaves no report for the other report operations';
@@ -1408,8 +1477,17 @@ const REFUSED = [
   [unreadable('EACCES'), 'the file cannot be read (EACCES)'],
   [{ dropReprot: true }, 'is no key a case may carry'],
   [{ pct: '50' }, 'must be a number'],
+  [{ branchPct: '50' }, 'must be a number'],
+  [{ reportRoot: 7 }, 'must be a string'],
+  [{ dropReport: 'yes' }, 'must be a boolean'],
+  [{ clearSources: 'yes' }, 'must be a boolean'],
+  [{ clearTree: 1 }, 'must be a boolean'],
+  [{ absoluteReport: 'yes' }, 'must be a boolean'],
   [{ filePct: [] }, 'must be an object'],
   [{ dropReport: false }, 'reads false, which changes nothing'],
+  [{ clearSources: false }, 'reads false, which changes nothing'],
+  [{ clearTree: false }, 'reads false, which changes nothing'],
+  [{ absoluteReport: false }, 'reads false, which changes nothing'],
   [{ dropReport: true, dropFromReport: [FILE] }, NO_REPORT],
   [{ dropReport: true, pct: 50 }, NO_REPORT],
   [{ dropReport: true, branchPct: 50 }, NO_REPORT],
@@ -1422,6 +1500,7 @@ const REFUSED = [
   [{ dropFromSources: [FILE, FILE] }, 'names a path twice'],
   [{ dropFromSources: [ABSENT] }, 'which is not there'],
   [{ dropFromTree: [ABSENT] }, 'which is not there'],
+  [{ dropFromTree: [FILE, ABSENT] }, 'which is not there'],
   [{ dropFromReport: [ABSENT] }, 'which is not there'],
   [{ reportRoot: '../x', reportRootFiles: [ABSENT] }, 'which is not there'],
   [{ addToTree: [FILE] }, 'which is already there'],
@@ -1470,6 +1549,11 @@ const REFERENCE_REFUSED = [
     'names a path twice',
   ],
   ['whose files are a list', withReport({ files: [] }), NO_SHAPE],
+  [
+    'with one file of two that is no object',
+    withReport({ files: { [FILE]: { lines: { pct: 100 } }, [OTHER]: 7 } }),
+    NO_SHAPE,
+  ],
   [
     'with a file that is no object',
     withReport({ files: { [FILE]: 7 } }),
@@ -1525,7 +1609,7 @@ const PREPARED_INPUTS = [
  * counts are of what it ran, so the green line cannot claim a control that did not run.
  */
 const ownControl = () => {
-  const problems = [];
+  const violations = [];
   let sources = 0;
   let inputs = 0;
   for (const [what, source, expected] of READINGS) {
@@ -1537,7 +1621,7 @@ const ownControl = () => {
       read = `an error (${error.message})`;
     }
     if (read !== expected)
-      problems.push(
+      violations.push(
         `the control's own control, the prepared source "${what}": \`throwsOf\` has to ` +
           `read ${expected || 'nothing'} in it, and reads ${read || 'nothing'} — the table ` +
           `would now be held to a reading that is not the source's`,
@@ -1552,6 +1636,7 @@ const ownControl = () => {
     try {
       ({ found } = controlOf({
         source: (change.source ?? PREPARED.source).join('\n'),
+        where: 'the prepared source',
         table: change.table ?? PREPARED.table,
         names: Object.keys(files)
           .filter((name) => name !== REFERENCE && files[name] !== undefined)
@@ -1559,7 +1644,7 @@ const ownControl = () => {
         read: readFrom(files),
       }));
     } catch (error) {
-      problems.push(
+      violations.push(
         `the control's own control, "${what}": the control throws on it (${error.message})`,
       );
       continue;
@@ -1574,7 +1659,7 @@ const ownControl = () => {
       return at === -1;
     });
     if (unmet.length || left.length)
-      problems.push(
+      violations.push(
         `the control's own control, "${what}": the control has to find ` +
           `${expected.map(said).join(', ') || 'nothing'}` +
           (unmet.length ? `, and misses ${unmet.map(said).join(', ')}` : '') +
@@ -1585,7 +1670,7 @@ const ownControl = () => {
           `real one otherwise too, and on the real one it is silent either way`,
       );
   }
-  return { problems, sources, inputs };
+  return { violations, sources, inputs };
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -1612,12 +1697,13 @@ const cases = readdirSync(FIXTURES)
   .sort();
 const control = controlOf({
   source: readFileSync(GATE, 'utf8'),
+  where: relative(ROOT, GATE),
   table: CHECK_POINTS,
   names: cases,
   read: (name) => readFileSync(join(FIXTURES, name), 'utf8'),
 });
 const own = ownControl();
-problems.push(...control.found.map(({ text }) => text), ...own.problems);
+problems.push(...control.found.map(({ text }) => text), ...own.violations);
 
 // ── result ────────────────────────────────────────────────────────────────────
 

@@ -192,32 +192,38 @@ a check relabelled on the error, a construction reached through another expressi
 `.constructor`, `this`), or a second error class the catches accept. A violation reported
 without the class at all — a line pushed straight onto `problems` — is outside the table.
 
-Measured once, on copies, none of that stayed held: every rule of this control has a reject
-path only a defective input takes, and the real input takes none of them — its constructions
-name literal checks, its cases are well-formed, every row has one — so a rule loosened or
-struck out left the run exactly as green. The run holds them itself now, every time, on
-prepared inputs in the gate, each answered as written beside it or named:
+Measured once, on copies, and held by nothing afterwards: every rule of this control has a
+reject path only a defective input takes, and the real input takes none of them — its
+constructions name literal checks, its cases are well-formed, every row has one — so a rule
+loosened or struck out left the run exactly as green. The run holds them itself now, every
+time, on prepared inputs in the gate, each answered as written beside it or named:
 
 - `READINGS`, sources `throwsOf` has to read check by check and line by line: a check in
-  double quotes or backticks read; a variable, a concatenation or a `${}` template read as
-  none; a helper `fail(check, message)`, a subclass handing a literal to `super`, an alias,
-  an export, `Reflect.construct` and a class declared in an inner scope reported;
+  double quotes or backticks read; a variable, a concatenation, a `${}` template, a number or
+  a regular expression read as none; a helper `fail(check, message)`, a subclass handing a
+  literal to `super`, an alias, an export, `Reflect.construct`, a class declared in an inner
+  scope and the class on the right of an operator other than `instanceof` reported;
   `new (Name)(…)` read through its parentheses, and a comment between `new`, the name and `(`
   through the comment; a line comment ending in `class`, `instanceof` or `new` above the name
-  excusing nothing; a construction quoted in a comment or a string, and the name in
-  backticks, not read — under the patterns a quoted construction counted, under the parser
-  it does not;
+  excusing nothing; a name that merely contains the class's not taken for it; a construction
+  quoted in a comment or a string, and the name in backticks, not read — under the patterns
+  a quoted construction counted, under the parser it does not;
 - `ANSWERS`, changes to a prepared input of its own — two rows, a source constructing both, a
   reference and a case for each — with what `controlOf`, the whole control as a function of
-  its input, has to find: a literal phantom with no row, a row nothing names, a use no check
-  resolves from, a class of another name than `ERROR_CLASS`, a source the parser misreads, a
-  reference that fails, a case that passes, one firing another check, no case at all, and a
-  row with no case and one whose only case is malformed (`uncovered`, both);
+  its input, has to find: a literal phantom with no row, and one named like a member of every
+  object; a row nothing names; a use no check resolves from; a class of another name than
+  `ERROR_CLASS`; a source the parser misreads in one place, and in two; a reference that
+  fails; a case that passes, and one firing another check; no case at all, a row with no
+  case, and one whose only case is malformed (`uncovered`, both);
 - `REFUSED` and `REFERENCE_REFUSED`, a case and a reference for every reason the builder
   refuses one, with a part of that reason — a refusal giving another reason is a rule gone
-  quiet behind a neighbour — and one per edge where a rule has several: each operation
-  `dropReport` excludes, each list whose paths must be there, each kind of value a file can
-  be instead of an object, the key `__proto__` that only `has` refuses.
+  quiet behind a neighbour — and one per edge where a rule has several: each key's kind of
+  value, and each switch set to false; each operation `dropReport` excludes; each list whose
+  paths must be there, and one path of two that is not; each kind of value a file can be
+  instead of an object, and one file of two in the report that is not; the key `__proto__`
+  that only `has` refuses. The two refusals that need a reference of their own — a metric
+  that is no object, a move landing one of two files on a file the report holds — stand in
+  `ANSWERS`.
 
 The prepared sources never spell out the class's name — `ERROR_CLASS` stands in for it — so
 the gate's reading of its own source finds none of their constructions, by the parser or by a
@@ -229,7 +235,7 @@ these tables deleted, or an edit to what holds them: the two comparisons in `own
 the line handing their violations to the run.
 
 Measured on copies of the gate in `tmp/`, each loosening one pattern or disabling one rule:
-all 86 red, each naming the prepared input that caught it — 82 the real run alone passes, two
-it fails, and two (`isObject` loosened) crash it before the control is reached. The untouched
-copy is green, and so is a check added whole — throw, row and case: `foreign-report` came that
-way, and the real run is green with 22 cases.
+all 104 red. 102 name the prepared input that caught them — 100 of those the real run alone
+passes, two it fails — and two (`isObject` loosened) crash the run before the control is
+reached. The untouched copy is green, and so is a check added whole — throw, row and case:
+`foreign-report` came that way, and the real run is green with 22 cases.
