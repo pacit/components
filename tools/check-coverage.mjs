@@ -26,7 +26,8 @@ import {
   realpathSync,
 } from 'node:fs';
 import { dirname, join, posix, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { URL, fileURLToPath } from 'node:url';
+import { getCallSites } from 'node:util';
 import ts from 'typescript';
 
 // The real path: reached through a link (`--preserve-symlinks-main`), ROOT would name a
@@ -183,15 +184,33 @@ const librarySources = () =>
     .sort();
 
 /**
+ * Where a construction stands in this file: the line and column of its `new`, read off V8's
+ * frame for it rather than the text of the stack, whose first line is a message of several
+ * lines here. V8 places a construction at its `new` whatever lines its name and arguments run
+ * over, and `throwsOf` places one there too, so a run and a reading name one construction
+ * alike — and two on one line apart. A frame of another script (`eval`) has no site here.
+ * Node marks `getCallSites` as still in development; a change to what it hands over moves
+ * every construction's site at once, and the run turns red on every case, never quietly.
+ */
+const siteOf = (frame) =>
+  frame?.scriptName === import.meta.url
+    ? `${frame.lineNumber}:${frame.columnNumber}`
+    : null;
+
+/**
  * A violation of one of the checks, which `CHECK_POINTS` sorts into the six points. It
  * carries the check's identifier, not just the message: the negative control has to verify
  * that a prepared input fired ON ITS OWN point — a fixture failing for a reason other than
- * the one written into it proves something other than what it declares.
+ * the one written into it proves something other than what it declares. It also carries the
+ * construction that made it: a check thrown in two places is two conditions, and the control
+ * holds each to a case that fires it.
  */
 class CoverageError extends Error {
   constructor(check, description) {
     super(description);
     this.check = check;
+    // The frame below this constructor's own: the construction.
+    this.site = siteOf(getCallSites(2)[1]);
   }
 }
 
@@ -751,16 +770,20 @@ const buildFixture = (fx, read) => {
 const ERROR_CLASS = 'CoverageError';
 
 /**
- * The checks a source's constructions name, each with its lines. Read by the TypeScript
+ * The checks a source's constructions name, each with where they stand. Read by the TypeScript
  * parser, not by a pattern over the text — a pattern is a second lexer (`lesson-236`). A
  * check is the non-empty string literal a construction by name passes first. Every other
  * reference to the class — a check that is no such literal, a helper's parameter, a
  * subclass, an alias, an export, `Reflect.construct`, a class of the same name declared in
  * an inner scope — is filed under `null`, and so reported; the top-level declaration and the
  * right side of `instanceof` are left alone, and comments and strings are no references at
- * all. What a reading of the code cannot follow is what happens as it runs: a check
- * relabelled on the error, a construction reached through another expression (`eval`,
- * `.constructor`, `this`), or a second error class the catches accept. A violation reported
+ * all. A construction by name stands at its `new`, line and column as V8 counts them, since
+ * that is where a run places it (`siteOf`); any other use stands at the name. What a reading
+ * of the code cannot follow is what happens as it runs: a check relabelled on the error, a
+ * construction reached through another expression (`eval`, `.constructor`, `this`), or a
+ * second error class the catches accept. The control sees the first whatever the cases do —
+ * a case reaching the construction fires another check than the one read there, and none
+ * reaching it leaves it unreached — and the second once a case fires it. A violation reported
  * without the class at all, a line pushed straight onto `problems`, is outside the table.
  */
 const throwsOf = (source) => {
@@ -780,19 +803,21 @@ const throwsOf = (source) => {
           parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword &&
           parent.right === outer);
       if (!leftAlone) {
-        const [first] =
-          ts.isNewExpression(parent) && parent.expression === outer
-            ? (parent.arguments ?? [])
-            : [];
+        const construction =
+          ts.isNewExpression(parent) && parent.expression === outer;
+        const [first] = construction ? (parent.arguments ?? []) : [];
         const literal =
           first &&
           (ts.isStringLiteral(first) ||
             ts.isNoSubstitutionTemplateLiteral(first));
         const check = (literal && first.text) || null;
-        const { line } = file.getLineAndCharacterOfPosition(
-          node.getStart(file),
+        const { line, character } = file.getLineAndCharacterOfPosition(
+          (construction ? parent : node).getStart(file),
         );
-        thrown.set(check, [...(thrown.get(check) ?? []), line + 1]);
+        thrown.set(check, [
+          ...(thrown.get(check) ?? []),
+          { line: line + 1, column: character + 1 },
+        ]);
       }
     }
     ts.forEachChild(node, visit);
@@ -834,14 +859,15 @@ const misreadOf = (source) => {
 
 /**
  * The negative control over any input: the gate's own `source` and `where` it was read, its
- * `table` of checks, the `names` of the cases and a `read` that hands over a fixture's text —
- * the prepared inputs below name their source for what it is. It returns what it
- * finds, each violation with the rule that fired and what it fired on, and the number of
- * checks the source constructs. The run hands it the real input; the control's own control
- * below hands it prepared ones, because on the real input every rule here stays silent — and
- * a rule loosened or struck out stays silent with it.
+ * `table` of checks, the `names` of the cases, a `read` that hands over a fixture's text, and
+ * `placed`, the site in `source` of the construction a case fired, given the error and the
+ * case — the prepared inputs below name their source for what it is. It returns what it
+ * finds, each violation with the rule that fired and what it fired on, and the numbers of
+ * checks and constructions the source holds. The run hands it the real input; the control's
+ * own control below hands it prepared ones, because on the real input every rule here stays
+ * silent — and a rule loosened or struck out stays silent with it.
  */
-const controlOf = ({ source, where, table, names, read }) => {
+const controlOf = ({ source, where, table, names, read, placed }) => {
   const found = [];
   const say = (rule, subject, text) =>
     found.push({ rule, subject: String(subject), text });
@@ -874,8 +900,16 @@ const controlOf = ({ source, where, table, names, read }) => {
     );
   }
   const thrown = misread.length ? new Map() : throwsOf(source);
-  const lines = (check) => [...new Set(thrown.get(check))];
+  const lines = (check) => [
+    ...new Set(thrown.get(check).map(({ line }) => line)),
+  ];
   const locations = (check) => lines(check).map(here).join(', ');
+  // Where a check's constructions stand, written as `siteOf` writes the one a case fired.
+  const sites = (check) => [
+    ...new Set(
+      (thrown.get(check) ?? []).map(({ line, column }) => `${line}:${column}`),
+    ),
+  ];
   if (!misread.length && thrown.size === 0)
     say(
       'no-reference',
@@ -984,8 +1018,13 @@ const controlOf = ({ source, where, table, names, read }) => {
       );
     }
 
-  // A reference that cannot be read leaves no case to judge: every one is built on it.
+  // A reference that cannot be read leaves no case to judge: every one is built on it. Each
+  // case leaves the site of the construction it fired in `reached`, and a check one of whose
+  // cases is named below for itself — it passed, fired another check, or fired where no
+  // construction of it is read — is `broken`.
   const covered = new Set();
+  const reached = new Set();
+  const broken = new Set();
   for (const name of reference ? names : []) {
     const one = built(name, reference.input);
     if (!one) continue;
@@ -993,6 +1032,7 @@ const controlOf = ({ source, where, table, names, read }) => {
     covered.add(fx.check);
     try {
       checkCoverage(input);
+      broken.add(fx.check);
       say(
         'passed',
         name,
@@ -1001,7 +1041,10 @@ const controlOf = ({ source, where, table, names, read }) => {
       );
     } catch (error) {
       if (!(error instanceof CoverageError)) throw error;
-      if (error.check !== fx.check)
+      const site = placed(error, name);
+      reached.add(site);
+      if (error.check !== fx.check) {
+        broken.add(fx.check);
         say(
           'fired-other',
           name,
@@ -1009,6 +1052,19 @@ const controlOf = ({ source, where, table, names, read }) => {
             `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
             `what it declares`,
         );
+      } else if (thrown.has(fx.check) && !sites(fx.check).includes(site)) {
+        broken.add(fx.check);
+        say(
+          'unplaced',
+          name,
+          `${name}: \`${fx.check}\` fired ` +
+            `${site ? `at ${here(site)}` : `outside ${where}`}, where this reading puts no ` +
+            `construction of it — relabelled on the error, or constructed through an ` +
+            `expression the reading cannot follow, so what fired is held to no case and the ` +
+            `case to no construction; construct the check by name, with its literal, where ` +
+            `it fires`,
+        );
+      }
     }
   }
 
@@ -1031,7 +1087,36 @@ const controlOf = ({ source, where, table, names, read }) => {
         `case go`,
     );
 
-  return { found, checks: checks.length };
+  // Every construction of a check its cases declare is reached by one. The line above counts
+  // cases by check: a construction added under a check that has one, or one no input reaches,
+  // would need no case of its own — and each is a promise of its own (req-axis). One rule per
+  // defect: a check no case declares is named above, whole; a check with a case named for
+  // itself waits for that case, whose line names the defect; and a construction a case
+  // reached under another check is that case's line.
+  const unfired = [...thrown.keys()]
+    .filter((check) => covered.has(check) && !broken.has(check))
+    .flatMap((check) =>
+      sites(check)
+        .filter((site) => !reached.has(site))
+        .map((site) => [check, site]),
+    );
+  if (unfired.length)
+    say(
+      'unfired',
+      unfired.map(([, site]) => site).join(', '),
+      `${unfired.map(([check, site]) => `\`${check}\` at ${here(site)}`).join(', ')}: ` +
+        `no readable case reaches ` +
+        `${unfired.length === 1 ? 'this construction' : 'these constructions'} — a ` +
+        `construction no case reaches is a promise no machine can fire on (req-axis), as ` +
+        `a check with no case is; give each a case that fires it, or delete the ones no ` +
+        `input can`,
+    );
+
+  return {
+    found,
+    checks: checks.length,
+    constructions: checks.reduce((n, check) => n + sites(check).length, 0),
+  };
 };
 
 // ── the control's own control ─────────────────────────────────────────────────
@@ -1049,7 +1134,8 @@ const controlOf = ({ source, where, table, names, read }) => {
 
 /**
  * Prepared sources, each with what `throwsOf` has to read in it: `check:line` for every use
- * of the class it does not leave alone, `?` for a use it resolves no check from.
+ * of the class it does not leave alone — a construction on the line of its `new`, any other
+ * use on the name's — and `?` for a use it resolves no check from.
  */
 const READINGS = [
   [
@@ -1183,7 +1269,7 @@ const READINGS = [
       `  ${ERROR_CLASS}`,
       `)('z', '');`,
     ],
-    'x:1 y:2 z:4',
+    'x:1 y:2 z:3',
   ],
   [
     'a comment between new and the name, and between the name and (',
@@ -1193,7 +1279,7 @@ const READINGS = [
       `  ${ERROR_CLASS} // another`,
       `  ('y', '');`,
     ],
-    'x:1 y:3',
+    'x:1 y:2',
   ],
   [
     'a line comment ending in class on the line above the name',
@@ -1233,12 +1319,23 @@ const READINGS = [
     [`// \`${ERROR_CLASS}\` is the class`, `const d = \`${ERROR_CLASS}\`;`],
     '',
   ],
+  [
+    'uses that are no construction, their expression starting a line above the name',
+    [
+      `const Other = maybe ??`,
+      `  ${ERROR_CLASS};`,
+      `const Again = (`,
+      `  ${ERROR_CLASS}`,
+      `);`,
+    ],
+    '?:2 ?:4',
+  ],
 ];
 
 /** What `throwsOf` reads in a source, written the way `READINGS` writes it. */
 const readingOf = (source) =>
   [...throwsOf(source)]
-    .flatMap(([check, at]) => at.map((line) => [line, check ?? '?']))
+    .flatMap(([check, at]) => at.map(({ line }) => [line, check ?? '?']))
     .sort(([a, x], [b, y]) => a - b || (x < y ? -1 : x > y ? 1 : 0))
     .map(([line, check]) => `${check}:${line}`)
     .join(' ');
@@ -1283,7 +1380,10 @@ const withReport = (report) => ({
 
 /**
  * The prepared input every entry below changes: two rows, a source that constructs both, the
- * reference, and a well-formed case for each row — on it the control finds nothing.
+ * reference, a well-formed case for each row, and the site in the source of what each case
+ * fires — on it the control finds nothing. The checks a case runs are this gate's own, so the
+ * construction it fires stands in this file, not in the prepared source: where it stands
+ * there is prepared too, by case, as `line:column` of the `new`.
  */
 const PREPARED = {
   source: [
@@ -1297,6 +1397,7 @@ const PREPARED = {
     'report.json': { ...DECLARED, point: 1, check: 'report', dropReport: true },
     'complete.json': { ...DECLARED, dropFromReport: [FILE] },
   },
+  sites: { 'report.json': '2:7', 'complete.json': '3:7' },
 };
 
 /** What reading a file throws when it cannot be read. */
@@ -1472,6 +1573,14 @@ const ANSWERS = [
     [['passed', 'complete.json']],
   ],
   [
+    'a row whose one case fires another check',
+    {
+      files: { 'complete.json': { ...DECLARED, dropReport: true } },
+      sites: { 'complete.json': '2:7' },
+    },
+    [['fired-other', 'complete.json']],
+  ],
+  [
     'a case that fires another check',
     { files: { 'stray.json': { ...DECLARED, dropReport: true } } },
     [['fired-other', 'stray.json']],
@@ -1498,6 +1607,7 @@ const ANSWERS = [
           dropReport: true,
         },
       },
+      sites: { 'foreign.json': '4:7', 'stray.json': '2:7' },
     },
     [['fired-other', 'stray.json']],
   ],
@@ -1549,6 +1659,122 @@ const ANSWERS = [
     'a row with no case',
     { files: { 'complete.json': undefined } },
     [['uncovered', 'complete']],
+  ],
+  [
+    'a second construction of a check, fired by no case',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+    },
+    [['unfired', '4:7', '`complete` at the prepared source:4:7']],
+  ],
+  [
+    'the first of two constructions of a check, reached by no case',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      sites: { 'complete.json': '4:7' },
+    },
+    [['unfired', '3:7']],
+  ],
+  [
+    'a check waiting for its case, beside a construction of another no case reaches',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('complete', '');`,
+        `throw new ${ERROR_CLASS}('report', '');`,
+      ],
+      files: { 'complete-too.json': { ...DECLARED, pct: 90 } },
+    },
+    [
+      ['passed', 'complete-too.json'],
+      ['unfired', '5:7'],
+    ],
+  ],
+  [
+    'three constructions of a check, only the first reached',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('complete', '');`,
+        `throw new ${ERROR_CLASS}('complete', '');`,
+      ],
+    },
+    [['unfired', '4:7, 5:7']],
+  ],
+  [
+    'a check of two constructions waiting for its case that fires another check',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      files: { 'complete-too.json': { ...DECLARED, dropReport: true } },
+      sites: { 'complete-too.json': '2:7' },
+    },
+    [['fired-other', 'complete-too.json']],
+  ],
+  [
+    'a check of two constructions waiting for its case that fires where none of them is read',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      files: {
+        'complete-too.json': { ...DECLARED, dropFromReport: [FILE], pct: 90 },
+      },
+      sites: { 'complete-too.json': '2:7' },
+    },
+    [['unplaced', 'complete-too.json', 'at the prepared source:2:7']],
+  ],
+  [
+    'two constructions of a check, each fired by a case of its own',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      files: {
+        'complete-too.json': { ...DECLARED, dropFromReport: [FILE], pct: 90 },
+      },
+      sites: { 'complete-too.json': '4:7' },
+    },
+    [],
+  ],
+  [
+    'two constructions of a check on one line, one of them fired',
+    {
+      source: [
+        PREPARED.source[0],
+        `${PREPARED.source[1]} ${PREPARED.source[1]}`,
+        PREPARED.source[2],
+      ],
+    },
+    // The second `new` stands a statement and a space past the first.
+    [['unfired', `2:${PREPARED.source[1].length + 1 + 7}`]],
+  ],
+  [
+    'a construction only a case of another check reaches',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('report', '');`],
+      files: { 'other.json': { ...DECLARED, dropReport: true } },
+      sites: { 'other.json': '4:7' },
+    },
+    [['fired-other', 'other.json']],
+  ],
+  [
+    'a construction reached as another check, as a relabelled one is',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      sites: { 'report.json': '4:7' },
+    },
+    [['unplaced', 'report.json', 'at the prepared source:4:7']],
+  ],
+  [
+    'a case that fires its check where the reading puts no construction of it',
+    { sites: { 'report.json': '3:7' } },
+    [['unplaced', 'report.json', 'at the prepared source:3:7']],
+  ],
+  [
+    'a case that fires its check on the line of its construction, at another column',
+    { sites: { 'report.json': '2:8' } },
+    [['unplaced', 'report.json', 'at the prepared source:2:8']],
+  ],
+  [
+    'a case that fires its check outside the source',
+    { sites: { 'report.json': undefined } },
+    [['unplaced', 'report.json', 'outside the prepared source']],
   ],
   [
     'a metric of the reference that is no object',
@@ -1755,13 +1981,43 @@ const PREPARED_INPUTS = [
 ];
 
 /**
- * The control's own control: every prepared source read as written, every prepared input
- * answered as written, and anything else a violation that names the prepared input. The
- * counts are of what it ran, so the green line cannot claim a control that did not run.
+ * Frames `siteOf` has to place, each with the site it has to give. The run holds the rest of
+ * it: every construction a real case fires has to stand where the reading puts one, but every
+ * one of them stands in this file, so what places a frame of another script — unnamed, as an
+ * `eval` makes, or another file — is held here.
+ */
+const PLACES = [
+  [
+    'a frame of this file',
+    { scriptName: import.meta.url, lineNumber: 12, columnNumber: 5 },
+    '12:5',
+  ],
+  [
+    'a frame of another script, as an `eval` makes',
+    { scriptName: '', lineNumber: 12, columnNumber: 5 },
+    null,
+  ],
+  [
+    'a frame of another file',
+    {
+      scriptName: new URL('other.mjs', import.meta.url).href,
+      lineNumber: 12,
+      columnNumber: 5,
+    },
+    null,
+  ],
+];
+
+/**
+ * The control's own control: every prepared source read as written, every prepared frame
+ * placed as written, every prepared input answered as written, and anything else a violation
+ * that names the prepared input. The counts are of what it ran, so the green line cannot
+ * claim a control that did not run.
  */
 const ownControl = () => {
   const violations = [];
   let sources = 0;
+  let frames = 0;
   let inputs = 0;
   for (const [what, source, expected] of READINGS) {
     sources++;
@@ -1778,11 +2034,23 @@ const ownControl = () => {
           `would now be held to a reading that is not the source's`,
       );
   }
+  const where = (site) => (site ? `at ${site}` : 'nowhere');
+  for (const [what, frame, expected] of PLACES) {
+    frames++;
+    const site = siteOf(frame);
+    if (site !== expected)
+      violations.push(
+        `the control's own control, the prepared frame "${what}": \`siteOf\` has to ` +
+          `place it ${where(expected)}, and places it ${where(site)} — a case would be ` +
+          `held to a construction other than the one it fired`,
+      );
+  }
   const said = ([rule, subject, reason]) =>
     `${rule}${subject ? ` ${subject}` : ''}${reason ? ` (${reason})` : ''}`;
   for (const [what, change, expected] of PREPARED_INPUTS) {
     inputs++;
     const files = { ...PREPARED.files, ...change.files };
+    const sites = { ...PREPARED.sites, ...change.sites };
     let found;
     try {
       ({ found } = controlOf({
@@ -1793,6 +2061,7 @@ const ownControl = () => {
           .filter((name) => name !== REFERENCE && files[name] !== undefined)
           .sort(),
         read: readFrom(files),
+        placed: (_, name) => (has(sites, name) ? (sites[name] ?? null) : null),
       }));
     } catch (error) {
       violations.push(
@@ -1821,7 +2090,7 @@ const ownControl = () => {
           `real one otherwise too, and on the real one it is silent either way`,
       );
   }
-  return { violations, sources, inputs };
+  return { violations, sources, frames, inputs };
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -1852,6 +2121,7 @@ const control = controlOf({
   table: CHECK_POINTS,
   names: cases,
   read: (name) => readFileSync(join(FIXTURES, name), 'utf8'),
+  placed: ({ site }) => site,
 });
 const own = ownControl();
 problems.push(...control.found.map(({ text }) => text), ...own.violations);
@@ -1867,8 +2137,9 @@ if (problems.length) {
 
 console.log(
   `✓ Coverage: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points, and each of the ` +
-    `${control.checks} checks the gate's constructions name has its row and a case. Its ` +
-    `own control: ${own.sources} prepared sources read as written, and ${own.inputs} ` +
-    `prepared inputs answered as written.`,
+    `${cases.length} prepared ones rejected on their own points, each of the ` +
+    `${control.checks} checks the gate's constructions name has its row and a case, and ` +
+    `each of its ${control.constructions} constructions a case that fires it. Its own ` +
+    `control: ${own.sources} prepared sources read as written, ${own.frames} prepared ` +
+    `frames placed as written, and ${own.inputs} prepared inputs answered as written.`,
 );
