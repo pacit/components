@@ -621,18 +621,29 @@ const buildFixture = (fx) => {
 };
 
 /**
- * The checks a source throws, each with the lines that construct it. Read off the text,
- * comments included — a construction quoted in one counts as one. The check has to be the
- * literal first argument; a construction with anything else there is filed under `null`,
- * because the table can be held only to a check the source names where it is thrown.
+ * The checks a source throws, each with the lines that construct it — read off the text,
+ * comments included, so a construction quoted in one counts as one. A check is read only
+ * where the class is constructed by name with the check as a plain literal first argument.
+ * Every other use of the name — a construction whose check is no literal, a helper's
+ * parameter, a subclass, an alias, a construction spelt some other way — is filed under
+ * `null`: the table can be held only to a check the source names where it is thrown.
+ * Declaring the class, `instanceof` and a mention in backticks are left alone. The patterns
+ * bracket one letter of the name, so that they are no use of it themselves.
  */
-const CONSTRUCTION =
-  /\bnew\s+CoverageError\s*\(\s*(?:(['"`])([^'"`\\$\n]*)\1(?=\s*[,)]))?/g;
+const NAME = /\bCoverage[E]rror\b/g;
+const LEFT_ALONE = /(?:\bclass|\binstanceof)\s+$|`$/;
+const CONSTRUCTED = /\bnew\s+$/;
+const LITERAL =
+  /\s*\(\s*(?:'([^'\\\n]+)'|"([^"\\\n]+)"|`([^`\\$\n]+)`)(?=\s*[,)])/y;
 const throwsOf = (source) => {
   const thrown = new Map();
-  for (const match of source.matchAll(CONSTRUCTION)) {
-    const check = match[2] ?? null;
-    const line = source.slice(0, match.index).split('\n').length;
+  for (const { 0: name, index } of source.matchAll(NAME)) {
+    const before = source.slice(Math.max(0, index - 64), index);
+    if (LEFT_ALONE.test(before)) continue;
+    LITERAL.lastIndex = index + name.length;
+    const literal = CONSTRUCTED.test(before) ? LITERAL.exec(source) : null;
+    const check = literal ? (literal[1] ?? literal[2] ?? literal[3]) : null;
+    const line = source.slice(0, index).split('\n').length;
     thrown.set(check, [...(thrown.get(check) ?? []), line]);
   }
   return thrown;
@@ -670,32 +681,36 @@ if (cases.length === 0)
 // Every check the gate throws has its row, and every row is thrown. A case is held to the
 // table and the missing-case line below walks it, so a check thrown with neither a row nor
 // a case would be seen by neither: the list the table is held to is the source itself.
-const thrown = throwsOf(readFileSync(fileURLToPath(import.meta.url), 'utf8'));
-const lines = (check) =>
-  `line${thrown.get(check).length === 1 ? '' : 's'} ${thrown.get(check).join(', ')}`;
+const ownFile = fileURLToPath(import.meta.url);
+const thrown = throwsOf(readFileSync(ownFile, 'utf8'));
+const at = (check) =>
+  thrown
+    .get(check)
+    .map((line) => `${relative(ROOT, ownFile)}:${line}`)
+    .join(', ');
 if (thrown.has(null))
   problems.push(
-    `${lines(null)}: a \`CoverageError\` whose check is not a literal — the table is held ` +
-      `to the checks this file names where it throws them, and this one it cannot read`,
+    `${at(null)}: \`CoverageError\` used where this reading resolves no check — the table ` +
+      `is held to the checks the source names, so a construction spells its check as a ` +
+      `plain literal first argument, and the name appears nowhere else but in the class ` +
+      `declaration, \`instanceof\` and a mention in backticks`,
   );
 const checks = [...thrown.keys()].filter((check) => check !== null);
 const unlisted = checks.filter((check) => !has(CHECK_POINTS, check));
 if (unlisted.length)
   problems.push(
-    `${unlisted.map((c) => `\`${c}\` (${lines(c)})`).join(', ')}: thrown, and ` +
-      `\`CHECK_POINTS\` holds no row for ${unlisted.length === 1 ? 'it' : 'them'} — a ` +
-      `case naming a check the table does not hold is refused, and the missing-case line ` +
-      `walks the rows, so nothing would ever show ${unlisted.length === 1 ? 'it' : 'them'} fire`,
+    `${unlisted.map((c) => `\`${c}\` (${at(c)})`).join(', ')}: thrown with no row in ` +
+      `\`CHECK_POINTS\` — a case naming a check the table does not hold is refused, and ` +
+      `the missing-case line walks the rows: nothing would ever ask for a case`,
   );
 const unthrown = Object.keys(CHECK_POINTS).filter(
   (check) => !thrown.has(check),
 );
 if (unthrown.length)
   problems.push(
-    `${unthrown.map((c) => `\`${c}\``).join(', ')}: ` +
-      `${unthrown.length === 1 ? 'a row' : 'rows'} of \`CHECK_POINTS\` no throw uses — no ` +
-      `input can make the gate fire ${unthrown.length === 1 ? 'it' : 'them'}, so the table ` +
-      `lists a check the gate does not make, and a case declaring one can only fail`,
+    `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\` and named by no ` +
+      `construction in this file — the table lists a check the source does not ` +
+      `throw by name: delete the row, or name the check where it is thrown`,
   );
 
 /**
@@ -786,8 +801,8 @@ for (const name of reference ? cases : []) {
 
 // Every check has a case. The loop above walks the cases, so a check whose last case is
 // deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
-// is what `req-axis` forbids. A row the gate throws is a check, and needs a readable case;
-// a row no throw uses is named above instead, since a case for it could only fail.
+// is what `req-axis` forbids. A row the gate throws by name is a check, and needs a readable
+// case; a row no construction names is reported above instead, and a case is not its remedy.
 const uncovered = reference
   ? Object.keys(CHECK_POINTS).filter(
       (check) => thrown.has(check) && !covered.has(check),

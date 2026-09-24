@@ -144,11 +144,15 @@ A check thrown with neither a row nor a case met neither of them: the review of 
 it, and a copy of the gate throwing `new CoverageError('impossible', …)` with no row and no
 case ran green with 17 cases. The run reads its own file, collects the check of every
 `new CoverageError('…'`, and requires that set to equal the rows both ways — a check thrown
-with no row is named with its line, and a row no throw uses is named too, since no input can
-fire it and a case declaring it could only fail. The check has to be a literal where it is
-thrown: a construction with anything else there (a variable, a helper's parameter, a
-concatenation) is reported by its line, because the table cannot be held to a check the
-source does not name. The text is read comments included, so a construction quoted in a
-comment counts as one. Measured on copies of the gate: the phantom throw reddens naming
-`impossible` and its line, a row no throw uses reddens naming it, the phantom given a row
-asks for its case instead, and the real run stays green with 17.
+with no row is named with its line, and a row no construction names is named too: the table
+would list a check the source does not throw by name. A check is read only where the class
+is constructed by name with the check as a plain literal first argument; every other use of
+the name — a variable or a concatenation for the check, a helper's parameter, a subclass, an
+alias, `new (CoverageError)(…)` — is reported by its line, because the table cannot be held
+to a check the source does not name. Declaring the class, `instanceof` and a mention in
+backticks are left alone, and the text is read comments included, so a construction quoted
+in a comment counts as one. Measured on copies of the gate: the phantom throw reddens naming
+`impossible` and its line, a row no construction names reddens naming it, the phantom given
+a row asks for its case instead, a subclass or an alias throwing a check of its own reddens
+by its line, a check added whole — throw, row and case — is green with 18 cases, and the
+real run stays green with 17.
