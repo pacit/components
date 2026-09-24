@@ -193,31 +193,31 @@ a check relabelled on the error, a construction reached through another expressi
 answered below. A violation reported without the class at all — a line pushed straight onto
 `problems` — is outside the table.
 
-The unit of both rules is the check, not the place it is thrown: a second construction under
-a check that already had a case needed no case of its own. The review of PR #18 measured it —
-`if (target.coverageThresholds.functions === 0) throw new CoverageError('threshold', …)` after
-point 4 left the gate green — and `req-axis` says of a construction what it says of a check.
-So each construction of a check its cases declare has to be reached by one of them, or it is
-named with its line and column (`unfired`): one added under an old check, and a dead one no
-input reaches. One defect is named by one rule, once per case it trips: a check no readable
-case declares is named whole (`uncovered`); a check with a case named for itself — it passed,
-fired another check, or fired where no construction of it is read — waits for that case; and
-a construction a case reached under another check is that case's line. A malformed case
-counts for nothing, here as for `uncovered`, so a construction only it would reach is named
-beside it.
+The unit of both rules is the check, not the place it is constructed: a second construction
+under a check that already had a case needed no case of its own. The review of PR #18 measured
+it — `if (target.coverageThresholds.functions === 0) throw new CoverageError('threshold', …)`
+after point 4 left the gate green — and `req-axis` says of a construction what it says of a
+check. So each construction of a check its cases declare has to be reached by one of them, or it
+is named with its line and column (`unfired`): one added under an old check, and a dead one no
+input reaches. One defect is named by one rule, once per case it trips: a check no readable case
+declares is named whole (`uncovered`); a check with a case named for itself — it passed, fired
+another check, or fired where no construction of it is read — waits for that case; and a
+construction a case reached under another check is that case's line. A malformed case counts for
+nothing, here as for `uncovered`, so a construction only it would reach is named beside it.
 
-A run and a reading have to agree on which construction fired, and they meet at its `new`.
-V8 places a construction's frame there, whatever lines its name and arguments run over; the
-error records that frame's line and column in `check-coverage.mjs` (`siteOf`, from V8's
-frames, not from the text of the stack, whose first line is a message of several lines here);
-and `throwsOf` places a construction by name at its `new` too — so two constructions on one
-line are two. A case that fires its check where the reading puts no construction of it, or
-outside the gate's file, is named (`unplaced`). A check relabelled on the error is therefore
-red whatever the cases do — a case reaching the construction fires another check than the one
-read there, and none reaching it leaves it unreached — and a construction through
-`.constructor` or `eval` is seen once a case fires it, and stays unseen while none does. So
-does a condition joined to an existing construction's test (`||`): it is that construction,
-and any one case reaching it holds both.
+A run and a reading have to agree on which construction fired, and they meet at its `new`. V8
+places a construction's frame there, whatever lines its name and arguments run over; the error
+records that frame's line and column in `check-coverage.mjs` (`siteOf`, from V8's frames, not
+from the text of the stack, whose first line is a message of several lines here); and `throwsOf`
+places a construction by name at its `new` too — so two constructions on one line are two. A
+case that fires its check where the reading puts no construction of it, or outside the gate's
+file, is named (`unplaced`) with what the reading puts there. A check relabelled on the error is
+therefore red whatever the cases do — a case reaching the construction fires another check than
+the one read there, and none reaching it leaves it unreached — and a construction through
+`.constructor` or `eval` is seen once a case fires it, and stays unseen while none does. So does
+a condition joined to an existing construction's test (`||`), another call of a helper that
+makes the construction, or another pass of a loop around one: each is that construction, and any
+one case reaching it holds them all.
 
 Measured once, on copies, and held by nothing afterwards: every rule of this control has a
 reject path only a defective input takes, and the real input takes none of them — its
@@ -254,13 +254,14 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   constructions waiting for its case, which passed, fired another check or fired where none of
   them is read; a construction only a case of another check reaches, and one reached as
   another check, as a relabelled one is; a case firing its check where no construction of it
-  is read, on its construction's line at another column, and outside the source (`unplaced`)
+  is read, on its construction's line at another column, and outside the source (`unplaced`);
+  a construction only a malformed case would reach, and one whose name stands in parentheses
   — each case of the prepared input names the site of what it fires, since the checks it runs
   are this gate's own;
 - `PLACES`, frames `siteOf` has to place: one of the gate's file at its line and column, and
-  one of another script — unnamed, as an `eval` makes, or another file — nowhere; the real
-  run holds the rest, since every construction a case fires has to stand where the reading
-  puts one;
+  one of another script — unnamed, as an `eval` makes, another file, one of the same name in
+  another directory, or this one loaded again under a query — nowhere; the real run holds the
+  rest, since every construction a case fires has to stand where the reading puts one;
 - `REFUSED` and `REFERENCE_REFUSED`, a case and a reference for every reason the builder
   refuses one, with a part of that reason — a refusal giving another reason is a rule gone
   quiet behind a neighbour — and one per edge where a rule has several: each key's kind of
@@ -273,22 +274,22 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   files on a file the report holds — stand in `ANSWERS`, and the one prepared description is
   exactly the 40 characters the rule asks for.
 
-The prepared sources never spell out the class's name — `ERROR_CLASS` stands in for it — so
-the gate's reading of its own source finds none of their constructions, by the parser or by a
+The prepared sources never spell out the class's name — `ERROR_CLASS` stands in for it — so the
+gate's reading of its own source finds none of their constructions, by the parser or by a
 pattern, and their findings name "the prepared source" rather than a line of the gate. A new
-refusal of the builder comes with its row in `REFUSED`, a new rule of the control with its
-entry in `ANSWERS`, a new prepared case that fires a check its source constructs with its site
-in `sites` — left out, it fires "outside the prepared source" —, and a new check the prepared
-reference does not pass reddens nearly every prepared input at once — give
-`PREPARED_REFERENCE` what the check asks, as `_reference.json` was given it. Nothing notices a rule no prepared input takes, a row of these tables deleted,
-or an edit to the own control itself — its loops and their catch, the comparisons, the mapping
-of the tables to inputs, the line handing its violations to the run. Nor five presence tests
-written by truthiness rather than by `has` — of `pct`, `branchPct`, `target` and `exceptions`,
-and of the operations `dropReport` excludes: a falsy value is then dropped, in silence beside
-another operation and as "unchanged" alone, which hides no defect — `target` is the only
-operation that reaches point 4, and points 5 and 6 stay held by cases of one operation each.
-Reading the `say('…'` rules to require an input for each was considered and left out: that
-reading would need a control of its own, one floor up.
+refusal of the builder comes with its row in `REFUSED`, a new rule of the control with its entry
+in `ANSWERS`, and a new prepared case that fires a check its source constructs with its site in
+`sites`: left out, the case fires "outside the prepared source". A new check the prepared
+reference does not pass reddens nearly every prepared input at once — give `PREPARED_REFERENCE`
+what the check asks, as `_reference.json` was given it. Nothing notices a rule no prepared input
+takes, a row of these tables deleted, or an edit to the own control itself — its loops and their
+catch, the comparisons, the mapping of the tables to inputs, the line handing its violations to
+the run. Nor five presence tests written by truthiness rather than by `has` — of `pct`,
+`branchPct`, `target` and `exceptions`, and of the operations `dropReport` excludes: a falsy
+value is then dropped, in silence beside another operation and as "unchanged" alone, which hides
+no defect — `target` is the only operation that reaches point 4, and points 5 and 6 stay held by
+cases of one operation each. Reading the `say('…'` rules to require an input for each was
+considered and left out: that reading would need a control of its own, one floor up.
 
 Measured on copies of the gate in `tmp/`, each loosening one pattern or disabling one rule:
 all 137 red. 135 name the prepared input that caught them — 133 of those the real run alone
@@ -297,13 +298,14 @@ before its own control is reached. The untouched copy is green, and so is a chec
 — throw, row and case: `foreign-report` came that way, and the real run is green with 22
 cases.
 
-The rule over constructions was measured the same way. The review's `threshold` construction,
-added before point 4's loop, is red and named with its line and column; a dead `result`
-construction before the summary is red; a check relabelled on the error —
+The rule over constructions was measured the same way. The review's `threshold` construction is
+red and named with its line and column wherever it stands — after point 4, as the review added
+it, or before the point's loop; a dead `result` construction before the summary is red; a check
+relabelled on the error —
 `Object.assign(new CoverageError('report', …), { check: 'threshold' })` at point 4's second
-throw — is red, its three cases `unplaced`. Of 35 copies each loosening one piece of the
-rule, all are red: 33 name the prepared input that caught them — 26 of those the real run
-alone passes, seven it fails — and the other two, the frame the error records and the site
-the run hands over, only the real run catches, as it has to. The untouched copy is green, its
-22 cases reaching all 11 constructions of its 10 checks, and a check added whole stays green
-with 23 cases, 11 checks and 12 constructions.
+throw — is red, its three cases `unplaced`. Of 41 copies each loosening one piece of the rule,
+all are red: 39 name the prepared input that caught them — 32 of those the real run alone
+passes, seven it fails — and the other two, the frame the error records and the site the run
+hands over, only the real run catches, as it has to. The untouched copy is green, its 22 cases
+reaching all 11 constructions of its 10 checks, and a check added whole stays green with 23
+cases, 11 checks and 12 constructions.

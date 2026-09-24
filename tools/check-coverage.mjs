@@ -202,8 +202,8 @@ const siteOf = (frame) =>
  * carries the check's identifier, not just the message: the negative control has to verify
  * that a prepared input fired ON ITS OWN point — a fixture failing for a reason other than
  * the one written into it proves something other than what it declares. It also carries the
- * construction that made it: a check thrown in two places is two conditions, and the control
- * holds each to a case that fires it.
+ * construction that made it: a check constructed in two places is two conditions, and the
+ * control holds each to a case that fires it.
  */
 class CoverageError extends Error {
   constructor(check, description) {
@@ -907,7 +907,7 @@ const controlOf = ({ source, where, table, names, read, placed }) => {
   // Where a check's constructions stand, written as `siteOf` writes the one a case fired.
   const sites = (check) => [
     ...new Set(
-      (thrown.get(check) ?? []).map(({ line, column }) => `${line}:${column}`),
+      thrown.get(check).map(({ line, column }) => `${line}:${column}`),
     ),
   ];
   if (!misread.length && thrown.size === 0)
@@ -1054,15 +1054,23 @@ const controlOf = ({ source, where, table, names, read, placed }) => {
         );
       } else if (thrown.has(fx.check) && !sites(fx.check).includes(site)) {
         broken.add(fx.check);
+        // What the reading puts there tells a relabel from what it cannot follow.
+        const other = [...thrown.keys()].find((check) =>
+          sites(check).includes(site),
+        );
         say(
           'unplaced',
           name,
           `${name}: \`${fx.check}\` fired ` +
-            `${site ? `at ${here(site)}` : `outside ${where}`}, where this reading puts no ` +
-            `construction of it — relabelled on the error, or constructed through an ` +
-            `expression the reading cannot follow, so what fired is held to no case and the ` +
-            `case to no construction; construct the check by name, with its literal, where ` +
-            `it fires`,
+            (!site
+              ? `outside ${where}, in code this reading does not hold (\`eval\`)`
+              : other
+                ? `at ${here(site)}, where this reading puts \`${other}\` — relabelled ` +
+                  `on the error`
+                : `at ${here(site)}, where this reading puts no check — reached through ` +
+                  `an expression it cannot follow`) +
+            `; what fired is held to no case, and the case to no construction — construct ` +
+            `the check by name, with its literal, where it fires`,
         );
       }
     }
@@ -1702,6 +1710,36 @@ const ANSWERS = [
     [['unfired', '4:7, 5:7']],
   ],
   [
+    'a construction only a malformed case would reach',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
+      files: {
+        'complete-too.json': {
+          ...DECLARED,
+          point: 6,
+          dropFromReport: [FILE],
+          pct: 90,
+        },
+      },
+      sites: { 'complete-too.json': '4:7' },
+    },
+    [
+      ['malformed', 'complete-too.json', "one of this gate's checks"],
+      ['unfired', '4:7'],
+    ],
+  ],
+  [
+    'a construction whose name stands in parentheses, placed at its new',
+    {
+      source: [
+        PREPARED.source[0],
+        PREPARED.source[1],
+        `throw new (${ERROR_CLASS})('complete', '');`,
+      ],
+    },
+    [],
+  ],
+  [
     'a check of two constructions waiting for its case that fires another check',
     {
       source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
@@ -1719,7 +1757,13 @@ const ANSWERS = [
       },
       sites: { 'complete-too.json': '2:7' },
     },
-    [['unplaced', 'complete-too.json', 'at the prepared source:2:7']],
+    [
+      [
+        'unplaced',
+        'complete-too.json',
+        'at the prepared source:2:7, where this reading puts `report`',
+      ],
+    ],
   ],
   [
     'two constructions of a check, each fired by a case of its own',
@@ -1759,22 +1803,46 @@ const ANSWERS = [
       source: [...PREPARED.source, `throw new ${ERROR_CLASS}('complete', '');`],
       sites: { 'report.json': '4:7' },
     },
-    [['unplaced', 'report.json', 'at the prepared source:4:7']],
+    [
+      [
+        'unplaced',
+        'report.json',
+        'at the prepared source:4:7, where this reading puts `complete` — relabelled',
+      ],
+    ],
   ],
   [
     'a case that fires its check where the reading puts no construction of it',
     { sites: { 'report.json': '3:7' } },
-    [['unplaced', 'report.json', 'at the prepared source:3:7']],
+    [
+      [
+        'unplaced',
+        'report.json',
+        'at the prepared source:3:7, where this reading puts `complete`',
+      ],
+    ],
   ],
   [
     'a case that fires its check on the line of its construction, at another column',
     { sites: { 'report.json': '2:8' } },
-    [['unplaced', 'report.json', 'at the prepared source:2:8']],
+    [
+      [
+        'unplaced',
+        'report.json',
+        'at the prepared source:2:8, where this reading puts no check — reached',
+      ],
+    ],
   ],
   [
     'a case that fires its check outside the source',
     { sites: { 'report.json': undefined } },
-    [['unplaced', 'report.json', 'outside the prepared source']],
+    [
+      [
+        'unplaced',
+        'report.json',
+        'outside the prepared source, in code this reading does not hold',
+      ],
+    ],
   ],
   [
     'a metric of the reference that is no object',
@@ -2004,6 +2072,23 @@ const PLACES = [
       lineNumber: 12,
       columnNumber: 5,
     },
+    null,
+  ],
+  [
+    'a frame of a file of the same name in another directory',
+    {
+      scriptName: new URL(
+        `other/${import.meta.url.split('/').pop()}`,
+        import.meta.url,
+      ).href,
+      lineNumber: 12,
+      columnNumber: 5,
+    },
+    null,
+  ],
+  [
+    'a frame of this file loaded again under a query, another module',
+    { scriptName: `${import.meta.url}?again`, lineNumber: 12, columnNumber: 5 },
     null,
   ],
 ];
