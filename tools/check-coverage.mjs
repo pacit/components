@@ -807,7 +807,7 @@ const throwsOf = (source) => {
  * read off a misread file cannot be trusted: `</` is a JSX token to it in a JS file, and the
  * code behind it can turn into a string with a construction inside. Only the errors that
  * stand in the file count — the options and the emit can report their own, and those say
- * nothing about the reading. Each source is read once: the prepared inputs below share five.
+ * nothing about the reading. Each source is read once: most prepared inputs below share one.
  */
 const misreadings = new Map();
 const misreadOf = (source) => {
@@ -1175,12 +1175,15 @@ const READINGS = [
     '?:1',
   ],
   [
-    'new (Name)(…), in one pair of parentheses and in two',
+    'new (Name)(…), in one pair of parentheses and in two, the name on a line of its own',
     [
       `throw new (${ERROR_CLASS})('x', '');`,
       `throw new ((${ERROR_CLASS}))('y', '');`,
+      `throw new (`,
+      `  ${ERROR_CLASS}`,
+      `)('z', '');`,
     ],
-    'x:1 y:2',
+    'x:1 y:2 z:4',
   ],
   [
     'a comment between new and the name, and between the name and (',
@@ -1249,12 +1252,15 @@ const STYLESHEET = `${PROJECT}/src/prepared.scss`;
 const ABSENT = `${PROJECT}/src/absent.ts`;
 const OTHER = `${PROJECT}/src/other.ts`;
 
-/** A case's declaration, for the prepared cases that the operations beside them complete. */
+/**
+ * A case's declaration, for the prepared cases that the operations beside them complete. Its
+ * description is exactly the 40 characters the rule asks for, so a rule asking more refuses
+ * every prepared case.
+ */
 const DECLARED = {
   point: 3,
   check: 'complete',
-  description:
-    "A prepared case: the control's own control judges it, the run never does.",
+  description: 'Prepared for the own control, not a run.',
 };
 
 /** The prepared reference: every point silent over one source file and its report. */
@@ -1339,9 +1345,31 @@ const ANSWERS = [
     [['unthrown', 'templates']],
   ],
   [
-    'a use the reading resolves no check from',
-    { source: [...PREPARED.source, `const Alias = ${ERROR_CLASS};`] },
-    [['unresolved', '4']],
+    'a use the reading resolves no check from, twice on one line',
+    {
+      source: [
+        ...PREPARED.source,
+        `const Alias = ${ERROR_CLASS}, Again = ${ERROR_CLASS};`,
+      ],
+    },
+    [['unresolved', '4', 'the prepared source:4:']],
+  ],
+  [
+    'every use unresolved, no check constructed',
+    { source: [PREPARED.source[0], `const Alias = ${ERROR_CLASS};`] },
+    [
+      ['unresolved', '2'],
+      ['unthrown', 'report, complete'],
+    ],
+  ],
+  [
+    'a gate of one check',
+    {
+      source: PREPARED.source.slice(0, 2),
+      table: { report: 1 },
+      files: { 'complete.json': undefined },
+    },
+    [],
   ],
   [
     'a phantom named like a member of every object',
@@ -1360,7 +1388,7 @@ const ANSWERS = [
         line.replaceAll(ERROR_CLASS, 'AnotherError'),
       ),
     },
-    [['no-reference', '']],
+    [['no-reference', '', 'the prepared source: no reference']],
   ],
   [
     'a source the parser reads otherwise than Node runs it',
@@ -1385,6 +1413,18 @@ const ANSWERS = [
     [['misread', '5', 'with an error']],
   ],
   [
+    'a source misread in two places, the first not on the last line',
+    {
+      source: [
+        ...PREPARED.source,
+        'r = 1 </x/i;',
+        `throw new ${ERROR_CLASS}('impossible', '');`,
+        's = 2 </y/i;',
+      ],
+    },
+    [['misread', '4', 'with 2 errors']],
+  ],
+  [
     'a reference that does not pass',
     {
       files: {
@@ -1396,9 +1436,9 @@ const ANSWERS = [
     [['reference-fails', 'result']],
   ],
   [
-    'a case that passes',
-    { files: { 'passes.json': { ...DECLARED, pct: 90 } } },
-    [['passed', 'passes.json']],
+    'a row whose one case passes',
+    { files: { 'complete.json': { ...DECLARED, pct: 90 } } },
+    [['passed', 'complete.json']],
   ],
   [
     'a case that fires another check',
@@ -1473,9 +1513,12 @@ const REFUSED = [
   ['[]', 'the file is not an object'],
   ['null', 'the file is not an object'],
   ['7', 'the file is not an object'],
+  ['"x"', 'the file is not an object'],
+  ['true', 'the file is not an object'],
   [unreadable('ENOENT'), 'the file is missing'],
   [unreadable('EACCES'), 'the file cannot be read (EACCES)'],
   [{ dropReprot: true }, 'is no key a case may carry'],
+  [{ constructor: 1 }, 'is no key a case may carry'],
   [{ pct: '50' }, 'must be a number'],
   [{ branchPct: '50' }, 'must be a number'],
   [{ reportRoot: 7 }, 'must be a string'],
@@ -1497,6 +1540,9 @@ const REFUSED = [
   [{ dropReport: true, absoluteReport: true }, NO_REPORT],
   [{ dropFromSources: FILE }, 'must be a list of paths'],
   [{ dropFromSources: [7] }, 'must be a list of paths'],
+  [{ dropFromSources: [FILE, 7] }, 'must be a list of paths'],
+  [{ dropFromSources: null }, 'must be a list of paths'],
+  [{ reportRoot: '../x', reportRootFiles: null }, 'must be a list of paths'],
   [{ dropFromSources: [FILE, FILE] }, 'names a path twice'],
   [{ dropFromSources: [ABSENT] }, 'which is not there'],
   [{ dropFromTree: [ABSENT] }, 'which is not there'],
@@ -1506,10 +1552,15 @@ const REFUSED = [
   [{ addToTree: [FILE] }, 'which is already there'],
   [{ filePct: { [ABSENT]: { lines: 50 } } }, 'which the report does not hold'],
   [{ filePct: { [FILE]: 50 } }, 'which the report does not hold'],
+  [
+    { filePct: { constructor: { lines: 50 } } },
+    'which the report does not hold',
+  ],
   [{ filePct: { [FILE]: { functions: 50 } } }, 'no such number to change'],
   [{ filePct: { [FILE]: { ['__proto__']: 50 } } }, 'no such number to change'],
   [{ filePct: { [FILE]: { lines: '50' } } }, 'no such number to change'],
   [{ reportRootFiles: [FILE] }, 'and there is no `reportRoot`'],
+  [{ reportRootFiles: null }, 'and there is no `reportRoot`'],
   [
     { reportRoot: '../x', reportRootFiles: [] },
     'no file of the report to move',

@@ -203,39 +203,46 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   a regular expression read as none; a helper `fail(check, message)`, a subclass handing a
   literal to `super`, an alias, an export, `Reflect.construct`, a class declared in an inner
   scope and the class on the right of an operator other than `instanceof` reported;
-  `new (Name)(…)` read through its parentheses, and a comment between `new`, the name and `(`
-  through the comment; a line comment ending in `class`, `instanceof` or `new` above the name
-  excusing nothing; a name that merely contains the class's not taken for it; a construction
-  quoted in a comment or a string, and the name in backticks, not read — under the patterns
-  a quoted construction counted, under the parser it does not;
+  `new (Name)(…)` read through its parentheses, the name's own line kept, and a comment
+  between `new`, the name and `(` through the comment; a line comment ending in `class`,
+  `instanceof` or `new` above the name excusing nothing; a name that merely contains the
+  class's not taken for it; a construction quoted in a comment or a string, and the name in
+  backticks, not read — under the patterns a quoted construction counted, under the parser it
+  does not;
 - `ANSWERS`, changes to a prepared input of its own — two rows, a source constructing both, a
   reference and a case for each — with what `controlOf`, the whole control as a function of
   its input, has to find: a literal phantom with no row, and one named like a member of every
-  object; a row nothing names; a use no check resolves from; a class of another name than
-  `ERROR_CLASS`; a source the parser misreads in one place, and in two; a reference that
-  fails; a case that passes, and one firing another check; no case at all, a row with no
-  case, and one whose only case is malformed (`uncovered`, both);
+  object; a row nothing names; a use no check resolves from, twice on one line, and every use
+  unresolved; a gate of one check, and a class of another name than `ERROR_CLASS`; a source
+  the parser misreads in one place, in two, and in two with the first not on the last line; a
+  reference that fails; a row whose one case passes, and a case firing another check; no case
+  at all, a row with no case, and one whose only case is malformed (`uncovered`, both);
 - `REFUSED` and `REFERENCE_REFUSED`, a case and a reference for every reason the builder
   refuses one, with a part of that reason — a refusal giving another reason is a rule gone
   quiet behind a neighbour — and one per edge where a rule has several: each key's kind of
   value, and each switch set to false; each operation `dropReport` excludes; each list whose
-  paths must be there, and one path of two that is not; each kind of value a file can be
-  instead of an object, and one file of two in the report that is not; the key `__proto__`
+  paths must be there, one path of two that is not, one of two that is no string, and a list
+  set to `null`; every kind of JSON a file can be instead of an object, and one file of two in
+  the report that is none; the names every object inherits, `__proto__` and `constructor`,
   that only `has` refuses. The two refusals that need a reference of their own — a metric
   that is no object, a move landing one of two files on a file the report holds — stand in
-  `ANSWERS`.
+  `ANSWERS`, and the one prepared description is exactly the 40 characters the rule asks for.
 
 The prepared sources never spell out the class's name — `ERROR_CLASS` stands in for it — so
 the gate's reading of its own source finds none of their constructions, by the parser or by a
-pattern. A new refusal of the builder comes with its row in `REFUSED`, a new rule of the
-control with its entry in `ANSWERS`, and a new check the prepared reference does not pass
-reddens nearly every prepared input at once — give `PREPARED_REFERENCE` what the check asks,
-as `_reference.json` was given it. Nothing notices a rule no prepared input takes, a row of
-these tables deleted, or an edit to what holds them: the two comparisons in `ownControl` and
-the line handing their violations to the run.
+pattern, and their findings name "the prepared source" rather than a line of the gate. A new
+refusal of the builder comes with its row in `REFUSED`, a new rule of the control with its
+entry in `ANSWERS`, and a new check the prepared reference does not pass reddens nearly every
+prepared input at once — give `PREPARED_REFERENCE` what the check asks, as `_reference.json`
+was given it. Nothing notices a rule no prepared input takes, a row of these tables deleted,
+or an edit to the own control itself — its loops and their catch, the comparisons, the
+mapping of the tables to inputs, the line handing its violations to the run. Reading the
+`say('…'` rules to require an input for each was considered and left out: that reading would
+need a control of its own, one floor up.
 
 Measured on copies of the gate in `tmp/`, each loosening one pattern or disabling one rule:
-all 104 red. 102 name the prepared input that caught them — 100 of those the real run alone
-passes, two it fails — and two (`isObject` loosened) crash the run before the control is
-reached. The untouched copy is green, and so is a check added whole — throw, row and case:
-`foreign-report` came that way, and the real run is green with 22 cases.
+all 122 red. 120 name the prepared input that caught them — 118 of those the real run alone
+passes, two it fails — and two (`isObject` loosened) crash the control over the real cases,
+before its own control is reached. The untouched copy is green, and so is a check added whole
+— throw, row and case: `foreign-report` came that way, and the real run is green with 22
+cases.
