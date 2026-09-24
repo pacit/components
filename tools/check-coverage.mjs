@@ -622,19 +622,21 @@ const buildFixture = (fx) => {
   return input;
 };
 
+/** The class the reading below looks for: renamed, it is renamed here too. */
+const ERROR_CLASS = 'CoverageError';
+
 /**
  * The checks a source's constructions name, each with its lines. Read by the TypeScript
- * parser, not by a pattern over the text: a pattern is a second lexer, and the one written
- * here before took a comment ending in `class` for the keyword (`lesson-236`). A check is
- * the string literal a construction by name passes first. Every other reference to the
- * class — a check that is no literal, a helper's parameter, a subclass, an alias, an
- * export, `Reflect.construct` — is filed under `null`, and so reported; the declaration
- * and the right side of `instanceof` are left alone, and comments and strings are no
- * references at all. What a reading of the code cannot follow is what happens as it runs:
- * a check relabelled on the error, a construction reached through another expression
- * (`eval`, `.constructor`), or a second error class the catches accept.
+ * parser, not by a pattern over the text — a pattern is a second lexer (`lesson-236`). A
+ * check is the non-empty string literal a construction by name passes first. Every other
+ * reference to the class — a check that is no such literal, a helper's parameter, a
+ * subclass, an alias, an export, `Reflect.construct`, a class of the same name declared in
+ * an inner scope — is filed under `null`, and so reported; the top-level declaration and the
+ * right side of `instanceof` are left alone, and comments and strings are no references at
+ * all. What a reading of the code cannot follow is what happens as it runs: a check
+ * relabelled on the error, a construction reached through another expression (`eval`,
+ * `.constructor`, `this`), or a second error class the catches accept.
  */
-const ERROR_CLASS = 'CoverageError';
 const throwsOf = (source) => {
   const file = ts.createSourceFile(GATE, source, ts.ScriptTarget.Latest, true);
   const thrown = new Map();
@@ -646,6 +648,7 @@ const throwsOf = (source) => {
       const leftAlone =
         (ts.isClassDeclaration(parent) &&
           parent.name === node &&
+          parent.parent === file &&
           !(ts.getCombinedModifierFlags(parent) & ts.ModifierFlags.Export)) ||
         (ts.isBinaryExpression(parent) &&
           parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword &&
@@ -671,6 +674,22 @@ const throwsOf = (source) => {
   visit(file);
   return thrown;
 };
+
+/**
+ * Where the parser reads a source otherwise than Node runs it. Node would not have started
+ * on a syntax error, so every error the parser reports here is a misreading, and the checks
+ * read off a misread file cannot be trusted: `</` is a JSX token to it in a JS file, and the
+ * code behind it can turn into a string with a construction inside.
+ */
+const misreadOf = (source) =>
+  ts.transpileModule(source, {
+    fileName: GATE,
+    reportDiagnostics: true,
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.Latest,
+    },
+  }).diagnostics ?? [];
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
@@ -705,17 +724,39 @@ if (cases.length === 0)
 // held to the table and the missing-case line below walks it, so a check constructed with
 // neither a row nor a case would be seen by neither: the list the table is held to is the
 // source itself.
-const thrown = throwsOf(readFileSync(GATE, 'utf8'));
+const source = readFileSync(GATE, 'utf8');
+const here = (line) => `${relative(ROOT, GATE)}:${line}`;
+const misread = misreadOf(source);
+if (misread.length) {
+  const [first] = misread;
+  const where =
+    first.file && first.start !== undefined
+      ? here(first.file.getLineAndCharacterOfPosition(first.start).line + 1)
+      : relative(ROOT, GATE);
+  problems.push(
+    `${where}: the TypeScript parser reads this file with ` +
+      `${misread.length === 1 ? 'an error' : `${misread.length} errors`} Node does not ` +
+      `have, the first "${ts.flattenDiagnosticMessageText(first.messageText, ' ')}" — no ` +
+      `check read off a misread file can be trusted, so none is; spell the line so that ` +
+      `both read it alike (prettier's spacing does)`,
+  );
+}
+const thrown = misread.length ? new Map() : throwsOf(source);
 const locations = (check) =>
-  [...new Set(thrown.get(check))]
-    .map((line) => `${relative(ROOT, GATE)}:${line}`)
-    .join(', ');
+  [...new Set(thrown.get(check))].map(here).join(', ');
+if (!misread.length && thrown.size === 0)
+  problems.push(
+    `${relative(ROOT, GATE)}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
+      `looks for that name, so a class renamed without \`ERROR_CLASS\` leaves it nothing ` +
+      `to hold the table to; rename it there too`,
+  );
 if (thrown.has(null))
   problems.push(
-    `${locations(null)}: \`CoverageError\` used where this reading resolves no check — it ` +
-      `reads a check only from a construction by name whose first argument is a string ` +
-      `literal, and it leaves alone nothing but the unexported class declaration and the ` +
-      `right side of \`instanceof\``,
+    `${locations(null)}: \`${ERROR_CLASS}\` used where this reading resolves no check — ` +
+      `it reads a check only from a construction by name whose first argument is a ` +
+      `non-empty string literal, and leaves alone nothing but the top-level unexported ` +
+      `declaration and the right side of \`instanceof\`; spell the check at the ` +
+      `construction, and use the class for nothing else`,
   );
 const thrownChecks = [...thrown.keys()].filter((check) => check !== null);
 const unlisted = thrownChecks.filter((check) => !has(CHECK_POINTS, check));
@@ -723,11 +764,12 @@ if (unlisted.length)
   problems.push(
     `${unlisted.map((c) => `\`${c}\` (${locations(c)})`).join(', ')}: constructed with ` +
       `no row in \`CHECK_POINTS\` — a case naming a check the table does not hold is ` +
-      `refused, and the missing-case line walks the rows: nothing would ever ask for a case`,
+      `refused, and the missing-case line walks the rows, so nothing would ever ask for a ` +
+      `case; give each a row and a case that fires it`,
   );
-const unthrown = Object.keys(CHECK_POINTS).filter(
-  (check) => !thrown.has(check),
-);
+const unthrown = thrown.size
+  ? Object.keys(CHECK_POINTS).filter((check) => !thrown.has(check))
+  : [];
 if (unthrown.length)
   problems.push(
     `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\`, and no ` +

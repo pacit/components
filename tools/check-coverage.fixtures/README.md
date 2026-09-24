@@ -147,18 +147,20 @@ case ran green with 17 cases. The run reads its own file, collects the check of 
 constructed with no row is named with its line, and a row no construction names is named
 too: the table would list a check the source does not throw by name.
 
-The source is read by the TypeScript parser, not by a pattern over its text. The rule's first
-reading was a pattern, and a review found it taking a comment that ended in `class` for the
-keyword: four copies threw a check past it and stayed green. That is
+The source is read by the TypeScript parser, not by a pattern over its text. PR #18 read it
+with patterns first, and its review found one taking a comment that ended in `class` or
+`instanceof` for the keyword: four copies threw a check past it and stayed green. That is
 [`lesson-236`](../../docs/lessons.md#lesson-236) one gate over — a pattern written against a
-parser is a second lexer. A check is the string literal a construction by name passes first.
-Every other reference to the class — a variable or a concatenation for the check, a helper's
-parameter, a subclass, an alias, an export, `Reflect.construct` — is reported by its line,
-because the table cannot be held to a check the source does not name; the declaration and
-the right side of `instanceof` are left alone, and comments and strings are no code, so they
-are not read at all. What a reading of the code cannot follow is what happens as it runs: a
-check relabelled on the error, a construction reached through another expression (`eval`,
-`.constructor`), or a second error class the catches accept.
+parser is a second lexer. A check is the non-empty string literal a construction by name
+passes first. Every other reference to the class — a variable or a concatenation for the
+check, a helper's parameter, a subclass, an alias, an export, `Reflect.construct`, a class of
+the same name in an inner scope — is reported by its line, because the table cannot be held
+to a check the source does not name; the top-level declaration and the right side of
+`instanceof` are left alone, and comments and strings are no code, so they are not read at
+all. A file the parser reads otherwise than Node runs it (`</` is a JSX token to it) is
+reported and not read. What a reading of the code cannot follow is what happens as it runs:
+a check relabelled on the error, a construction reached through another expression (`eval`,
+`.constructor`, `this`), or a second error class the catches accept.
 
 Measured on copies of the gate. The phantom throw reddens naming `impossible` and its line, a
 row no construction names reddens naming it, and the phantom given a row asks for its case
