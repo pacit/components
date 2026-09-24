@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "unaccounted",
+  "description": "A source file the SOURCES patterns no longer reach — one struck out, or one narrowed by a character. The file is still in the tree and still in the report, and the gate is green both ways: point 3 walks a shorter list and finds every entry of it. This is what the review that followed PR #14 measured on a copy of the gate without the migrations' pattern: 145 files instead of 146, and all twelve prepared inputs still rejected on their own points, because every one of them hands the gate a list and none can see the list itself (lesson-237). The git index is the reading no pattern produces, and the file is still in it.",
+  "dropFromSources": ["libs/components/field/src/number.ts"]
+}

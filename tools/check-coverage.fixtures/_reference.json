@@ -1,5 +1,5 @@
 {
-  "description": "The reference input. The report covers every source file — the template among them — the target declares both thresholds and the coverage meets them; the template stands at its own floor, and the one metric that does not reach it has an exception with a reason. Cases are built on a copy of this file, so each of them holds nothing but its own defect.",
+  "description": "The reference input. The report covers every source file — the template among them — the target declares both thresholds and the coverage meets them; the template stands at its own floor, and the one metric that does not reach it has an exception with a reason. The tree holds the three sources and one file of every category NOT_A_SOURCE excuses — a stylesheet, a spec, a types file, the version stamp, the mutation harness, the ng-add schematic — so that point 2 staying silent on each of them is measured, and a category deleted reddens the reference rather than nothing. Cases are built on a copy of this file, so each of them holds nothing but its own defect.",
   "target": {
     "coverage": true,
     "coverageThresholds": { "lines": 80, "branches": 80 }
@@ -8,6 +8,17 @@
     "libs/components/button/src/button.ts",
     "libs/components/button/src/button.html",
     "libs/components/field/src/number.ts"
+  ],
+  "tree": [
+    "libs/components/button/src/button.html",
+    "libs/components/button/src/button.scss",
+    "libs/components/button/src/button.ts",
+    "libs/components/button/src/button.types.ts",
+    "libs/components/field/src/number.spec.ts",
+    "libs/components/field/src/number.ts",
+    "libs/components/mutation.setup.ts",
+    "libs/components/schematics/ng-add/index.ts",
+    "libs/components/src/version.ts"
   ],
   "exceptions": {
     "libs/components/button/src/button.html": {

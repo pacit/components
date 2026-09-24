@@ -272,7 +272,13 @@ separately. `libs/components/project.json` — the `test` target collects covera
 `coverageInclude`) and **fails** below `coverageThresholds.lines` = 80 and
 `coverageThresholds.branches` = 80. `tools/check-coverage.mjs` (target `check-coverage`, in
 CI) guards the rest in six points: **every source file of the library, its templates included,
-must be in the report**; both thresholds must be declared and no lower than 80, because vitest
+must be in the report**, and the list of them is held to git's listing of the library both
+ways — every `.ts` and `.html` listed is reached by one of its patterns or excused by a
+category with a reason, and every file the patterns reach is listed — so a pattern narrowed
+shows up as the files it no longer reaches, and a listing narrowed as the files it no longer
+holds (point 2; before it nothing held that list, and a copy of the gate without the
+migrations' pattern walked 145 files instead of 146 and stayed green); both thresholds must
+be declared and no lower than 80, because vitest
 enforces the keys it is handed and infers none from the other; and **every template must meet
 a floor of its own — 100% of lines, statements, branches and functions** (point 6), since in
 the whole-report figure a template is a rounding error and each of the four metrics turned out
@@ -282,21 +288,30 @@ floor cannot live in the target: the executor's `coverageThresholds` is four num
 `libs/components/src/public-api.spec.ts` brings the modules of every package gate into the run
 — without it a file with no test does not show up as zero, it **drops out of the statistic**
 ([`lesson-45`](../lessons.md#lesson-45))
-**Control:** `tools/check-coverage.fixtures/` — twelve doctored inputs, one per way of
-disarming the gate (no report, an empty source list, a source file outside the report, a
-TEMPLATE outside the report, measurement switched off, a threshold removed, the branch
-threshold alone removed, a threshold lowered, lines below the threshold, branches below the
-threshold, a template below its floor, an exception that no longer covers anything). Each must
-be rejected **by the point it declares**, and the reference input must pass — it carries an
-exempted template, which is the only place where the gate staying SILENT is measured. Plus
-three runs against the real repository: removing `libs/components/src/public-api.spec.ts`
-leaves the `test` target **green** (96.55%) while `check-coverage` fires on
-`libs/components/src/index.ts`; removing `select.spec.ts` and `number.spec.ts` drops coverage
-to 64.96% and fires both thresholds at once; taking the three template tests back out leaves
-the `test` target green as well (235 passed, both thresholds met) while point 6 names three
-metrics across two files
+**Control:** `tools/check-coverage.fixtures/` — seventeen doctored inputs, one per way of
+disarming the gate (no report, an empty source list with an empty listing, an empty listing
+of the tree, a source the patterns no longer reach, a TEMPLATE the patterns no longer reach,
+a migration behind an `ng add` excuse widened to `schematics/`, a source the narrowed
+listing no longer holds, a source file outside the report, a TEMPLATE outside the report,
+measurement switched off, a threshold removed, the branch threshold alone removed, a
+threshold lowered, lines below the threshold, branches below the threshold, a template below
+its floor, an exception that no longer covers anything). Each must be rejected **by the
+point it declares**, and the reference input must pass — it carries an exempted template and
+one listed file of every excused category, which is the only place where the gate staying
+SILENT is measured. Plus five runs against the real repository: removing
+`libs/components/src/public-api.spec.ts` leaves the `test` target **green** (96.55%) while
+`check-coverage` fires on `libs/components/src/index.ts`; removing `select.spec.ts` and
+`number.spec.ts` drops coverage to 64.96% and fires both thresholds at once; taking the
+three template tests back out leaves the `test` target green as well (235 passed, both
+thresholds met) while point 6 names three metrics across two files; striking the migrations'
+pattern from `SOURCES` fires point 2 on
+`libs/components/schematics/migrations/badge-tone/index.ts`, where before point 2 held the
+list it left the gate green over 145 files instead of 146 with all twelve cases still
+rejected — no case can see a list every case is handed
+([`lesson-237`](../lessons.md#lesson-237)); and narrowing the listing's pathspec to `src/`
+fires point 2 the other way, on the 145 sources the listing no longer holds
 **Lessons:** [`lesson-5`](../lessons.md#lesson-5), [`lesson-45`](../lessons.md#lesson-45),
-[`lesson-71`](../lessons.md#lesson-71)
+[`lesson-71`](../lessons.md#lesson-71), [`lesson-237`](../lessons.md#lesson-237)
 
 > Why two gates for one number. The threshold alone guards **the numerator over the
 > denominator**, and v8 computes both only over the modules that entered the run. Removing

@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "outside-tree",
+  "description": "A source the patterns reach that git's listing of the library does not hold — what a narrowed reading looks like. The listing is read under one pathspec, and a pathspec is a pattern the cases cannot reach any more than they could reach SOURCES: narrowed to `src/` alone, the tree side of point 2 stops seeing the migrations and the pattern that reaches them can leave SOURCES again with nothing firing — the review of PR #16 reproduced the original 145 with an exclusion pathspec of its own, `:!schematics/migrations`. Held both ways, a listing that does not hold what the patterns reach is a violation of its own.",
+  "dropFromTree": ["libs/components/field/src/number.ts"]
+}
