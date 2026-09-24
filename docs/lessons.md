@@ -6781,7 +6781,9 @@ Measured on two worktrees at the same content: with no key for the checkout, the
 a load of 3.5) and hit its own entry after, and switching the input off and on in one worktree
 returned, each time, the entry that input names. The gate, for its part, now asks whose report
 it holds before it looks for anything in it: a report none of whose files lies in this
-checkout is point 1's (`foreign-report`), named with the checkout that wrote it.
+checkout's library is point 1's (`foreign-report`), named with the checkout that wrote it —
+the library, not everything under the root, since every worktree under `.claude/worktrees/`
+lies inside the main checkout and its report would never climb out of it.
 
 The rule is `lesson-221` turned over. That one: a target's inputs list what it reads. This one:
 a target whose output names the place it ran in has the place among its inputs — and a cache

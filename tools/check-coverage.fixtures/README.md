@@ -16,7 +16,7 @@ threshold guarding such a number always passes, and the louder the less is teste
 
 ## How a case is built
 
-A case is not a twenty-second copy of the correct input with one thing broken. The gate
+A case is not a twenty-third copy of the correct input with one thing broken. The gate
 builds it from two layers:
 
 1. `_reference.json` — the reference input: the report, the list of source files, the tree
@@ -44,16 +44,17 @@ reference itself defective, every case would fire because of it rather than beca
 its own defect, and every "rejected" would be false — that is, this whole negative
 control would become exactly what it stands against.
 
-It carries two things besides, because a case file proves a check FIRES, and shows a point
-staying SILENT only where a later point fires in its place — the three cases on point 1's
-edges do that; for the two below, the reference is the one place. One is a template that
-does **not** reach the floor and an exception saying why: that point 6 keeps quiet where a
-reason is written down is shown here, and the case beside it (`template-exception-stale.json`)
-proves the other side of that same exception, the one that fires when the metric climbs
-above what the exception allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses — a
-stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
-schematic: that point 2 keeps quiet on each of them is shown here, and a category deleted
-reddens the reference rather than nothing.
+It carries two things besides, because a case file proves a check FIRES and shows the gate
+staying SILENT only on the points before its own: the reference is the one input on which
+every point stays silent. One is a template that does **not** reach the floor and an
+exception saying why: that point 6 keeps quiet where a reason is written down is shown here
+and nowhere else, and the case beside it (`template-exception-stale.json`) proves the other
+side of that same exception, the one that fires when the metric climbs above what the
+exception allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses
+— a stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
+schematic: that point 2 keeps quiet on each of them is shown here and by every case past
+point 2, so a category deleted reddens the reference and those thirteen cases rather than
+nothing (measured with the mutation harness's category struck).
 
 The input is **data, not a directory on disk**: the gate examines the decision, not the
 reading of files. The plumbing defends itself — were the source glob or the path
@@ -73,6 +74,7 @@ direction is what keeps that pathspec from being narrowed in turn.
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----- |
 | [`missing-report.json`](missing-report.json)                                           | the run left no coverage report                               | 1     |
 | [`report-from-another-checkout.json`](report-from-another-checkout.json)               | a report another checkout wrote — every file outside this one | 1     |
+| [`report-from-a-nested-checkout.json`](report-from-a-nested-checkout.json)             | a report a checkout nested in this one wrote                  | 1     |
 | [`report-partly-from-another-checkout.json`](report-partly-from-another-checkout.json) | every file of the report elsewhere but one                    | 3     |
 | [`report-keyed-by-absolute-path.json`](report-keyed-by-absolute-path.json)             | keys left absolute, in this very checkout                     | 3     |
 | [`report-with-no-file.json`](report-with-no-file.json)                                 | a report with its totals and not one file                     | 3     |
@@ -93,22 +95,25 @@ direction is what keeps that pathspec from being narrowed in turn.
 | [`template-below-floor.json`](template-below-floor.json)                               | a template below the floor of its own                         | 6     |
 | [`template-exception-stale.json`](template-exception-stale.json)                       | an exception the metric has climbed above                     | 6     |
 
-Point 1 has two cases: a report that is not there, and one another checkout wrote — nx
-shares its cache across git worktrees and v8 keys the report by absolute path, so one
-worktree can be handed another's ([`lesson-240`](../../docs/lessons.md#lesson-240)).
-`reportRoot` moves the reference report's files under another directory, which is how such a
-report reads once made relative here. Three cases on point 3 hold the edges of that check,
-because its claim is "another checkout wrote this" and only a report none of whose files lies
-here makes it: every file elsewhere but one (`reportRootFiles` names the ones `reportRoot`
-moves), keys left absolute in this very checkout (`absoluteReport` — lost normalisation, not
-another checkout), and a report with no file at all. The review of PR #19 found the three
-edges held by nothing: a copy of the gate reading "any file" for "every file", one letting an
-empty report through as foreign, and one reading a path's spelling instead of its place each
-ran green with 18 cases; its second round found the first case moving one file of three,
-which let "most files" and "all but one" through as well — so it moves two, and a single file
-left here is what every rule short of "every" misreads. Measured on such copies since: each
-reddens its own case and no other, on `foreign-report`, and with the check disabled the
-report another checkout wrote alone fires `complete`.
+Point 1 has three cases: a report that is not there, one another checkout wrote, and one a
+checkout nested in this one wrote — nx shares its cache across git worktrees and v8 keys the
+report by absolute path, so one worktree can be handed another's
+([`lesson-240`](../../docs/lessons.md#lesson-240)), and every worktree under
+`.claude/worktrees/` lies inside the main checkout. `reportRoot` moves the reference report's
+files under another directory, which is how such a report reads once made relative here;
+"here" is this checkout's library, not everything under its root, or the nested report never
+leaves it. Three cases on point 3 hold the other edges of the check, because its claim is
+"another checkout wrote this" and only a report none of whose files lies here makes it: every
+file elsewhere but one (`reportRootFiles` names the ones `reportRoot` moves), keys left
+absolute in this very checkout (`absoluteReport` — lost normalisation, not another checkout),
+and a report with no file at all. The review of PR #19 found each edge held by nothing, in
+three rounds: copies of the gate reading "any file" for "every file", letting an empty report
+through as foreign, and reading a path's spelling instead of its place ran green with 18
+cases; "most files" and "all but one" with 21, while the partial case moved one file of
+three; and the rule this check first had — a file is elsewhere when it climbs out of the
+checkout — left the nested report to point 3, on all 146 files of the real one. Measured on
+such copies since: each reddens its own case and no other, and with the check disabled the
+two reports another checkout wrote alone fire `complete`.
 
 Point 4 has four cases, because there are four different ways of disarming the same
 enforcement: turning the measurement off, removing the thresholds, declaring one of the two
@@ -191,4 +196,4 @@ Measured on copies of the gate. The phantom throw reddens naming `impossible` an
 row no construction names reddens naming it, and the phantom given a row asks for its case
 instead. A subclass, an alias, `Reflect.construct` and an export each redden by their line,
 behind a comment ending in `class` or `instanceof` as well. A check added whole — throw, row
-and case — is green: `foreign-report` came that way, and the real run is green with 21 cases.
+and case — is green: `foreign-report` came that way, and the real run is green with 22 cases.

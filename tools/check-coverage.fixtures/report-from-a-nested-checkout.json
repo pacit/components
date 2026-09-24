@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "foreign-report",
+  "description": "A report written by a checkout nested inside this one. Every git worktree under `.claude/worktrees/` lies inside the main checkout, so the files of its report never climb out of the main one, and only asking whether they lie in THIS checkout's library tells the two apart. Asked whether a file climbs out, point 1 kept silent here and point 3 called every file missing — the defect this check exists to name, from the side of the main checkout.",
+  "reportRoot": ".claude/worktrees/another-checkout"
+}

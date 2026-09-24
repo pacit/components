@@ -25,7 +25,7 @@ import {
   readdirSync,
   realpathSync,
 } from 'node:fs';
-import { dirname, isAbsolute, join, posix, relative, resolve } from 'node:path';
+import { dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -215,13 +215,15 @@ const CHECK_POINTS = {
 };
 
 /**
- * A file of the report outside this checkout — where it lies, not how its path is spelt: the
- * way back from here climbs out, or there is none (another drive).
+ * A file of the report outside this checkout's library — where it lies, not how its path is
+ * spelt. Not "outside this checkout": every git worktree under `.claude/worktrees/` lies
+ * inside the main checkout, so a report one of them wrote never climbs out of it.
  */
-const isElsewhere = (path) => {
-  const back = relative(ROOT, resolve(ROOT, path)).split('\\').join('/');
-  return back === '..' || back.startsWith('../') || isAbsolute(back);
-};
+const isElsewhere = (path) =>
+  !relative(ROOT, resolve(ROOT, path))
+    .split('\\')
+    .join('/')
+    .startsWith(`${PROJECT}/`);
 
 /**
  * The checkout a file of the report lies in: its absolute path cut before the library's
@@ -260,14 +262,15 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
   // written in another checkout names files this one does not hold, and point 3 would call
   // every one of them missing and advise an import that is already there (`lesson-240`).
   // The claim is "another checkout wrote this", and only a report none of whose files lies
-  // here makes it: a single file left here, or no file at all, is point 3's to name.
+  // in this checkout's library makes it: a single file left here, or no file at all, is
+  // point 3's to name.
   const files = Object.keys(report.files);
   const elsewhere = files.filter(isElsewhere);
   if (files.length && elsewhere.length === files.length)
     throw new CoverageError(
       'foreign-report',
       `the report (${REPORT}) was written in another checkout — not one of its ` +
-        `${files.length} files lies under this one (${ROOT}); they lie under:\n` +
+        `${files.length} files lies in this one's ${PROJECT} (${ROOT}); they lie under:\n` +
         [...new Set(elsewhere.map(checkoutOf))]
           .sort()
           .map((checkout) => `      ${checkout}`)
