@@ -1,7 +1,10 @@
 {
   "point": 3,
   "check": "complete",
-  "description": "One file of the report lies in another checkout, the rest here. Point 1 claims that another checkout wrote the report, and one file elsewhere does not make that claim — no run writes such a report, and the file is simply not where point 3 looks for it. Read as \"any file\" instead of \"every file\", point 1 would take this case and blame a checkout for a report it did not write.",
+  "description": "Every file of the report but one lies in another checkout. Point 1 claims that another checkout wrote the report, and a single file left here denies it — no run writes such a report, and the files moved are simply not where point 3 looks for them. Any rule short of \"every file\" — \"any\", \"most\", \"all but one\" — would take this case and blame a checkout for a report it did not write; the file left here is what tells them apart.",
   "reportRoot": "../another-checkout",
-  "reportRootFiles": ["libs/components/field/src/number.ts"]
+  "reportRootFiles": [
+    "libs/components/button/src/button.ts",
+    "libs/components/field/src/number.ts"
+  ]
 }

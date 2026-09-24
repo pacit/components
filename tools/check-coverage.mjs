@@ -260,7 +260,7 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
   // written in another checkout names files this one does not hold, and point 3 would call
   // every one of them missing and advise an import that is already there (`lesson-240`).
   // The claim is "another checkout wrote this", and only a report none of whose files lies
-  // here makes it: one file elsewhere, or no file at all, is point 3's to name.
+  // here makes it: a single file left here, or no file at all, is point 3's to name.
   const files = Object.keys(report.files);
   const elsewhere = files.filter(isElsewhere);
   if (files.length && elsewhere.length === files.length)
@@ -612,6 +612,10 @@ const buildFixture = (fx) => {
       throw new FixtureError(
         `\`${key}\` must be ${kind === 'object' ? 'an object' : `a ${kind}`}, and reads ` +
           JSON.stringify(value),
+      );
+    if (kind === 'boolean' && value === false)
+      throw new FixtureError(
+        `\`${key}\` reads false, which changes nothing — a switch left out says the same`,
       );
   }
   if (

@@ -290,17 +290,17 @@ floor cannot live in the target: the executor's `coverageThresholds` is four num
 ([`lesson-45`](../lessons.md#lesson-45))
 **Control:** `tools/check-coverage.fixtures/` — twenty-one doctored inputs, one per way of
 disarming the gate (no report, a report another checkout wrote, and the three that report is
-not: one file elsewhere, keys left absolute here, no file at all; an empty source list with
-an empty listing, an empty listing of the tree, a source the patterns no longer reach, a
-TEMPLATE the patterns no longer reach, a migration behind an `ng add` excuse widened to
-`schematics/`, a source the narrowed listing no longer holds, a source file outside the
+not: every file elsewhere but one, keys left absolute here, no file at all; an empty source
+list with an empty listing, an empty listing of the tree, a source the patterns no longer
+reach, a TEMPLATE the patterns no longer reach, a migration behind an `ng add` excuse widened
+to `schematics/`, a source the narrowed listing no longer holds, a source file outside the
 report, a TEMPLATE outside the report, measurement switched off, a threshold removed, the
 branch threshold alone removed, a threshold lowered, lines below the threshold, branches
 below the threshold, a template below its floor, an exception that no longer covers
-anything). Each must be rejected **by the
-point it declares**, and the reference input must pass — it carries an exempted template and
-one listed file of every excused category, which is the only place where the gate staying
-SILENT is measured. Plus six runs against the real repository: removing
+anything). Each must be rejected **by the point it declares**, and the reference input must
+pass — it carries an exempted template and one listed file of every excused category, which
+is where the gate staying SILENT is measured, apart from the three cases that hold point 1
+silent while point 3 fires. Plus six runs against the real repository: removing
 `libs/components/src/public-api.spec.ts` leaves the `test` target **green** (96.55%) while
 `check-coverage` fires on `libs/components/src/index.ts`; removing `select.spec.ts` and
 `number.spec.ts` drops coverage to 64.96% and fires both thresholds at once; taking the

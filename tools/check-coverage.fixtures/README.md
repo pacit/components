@@ -29,26 +29,28 @@ builds it from two layers:
 That way the case file holds **nothing but the defect** — it is visible without comparing
 files — and does not drift from the reference when the shape of the report changes. A case
 the builder cannot apply as written is refused by name: a key that is no operation, a value
-of the wrong kind, a path that is not there to drop, already there to add or named twice, a
-move of the report's files that moves none or leaves one where it was, a file that is
-missing, unreadable or not JSON, a check that is not this gate's or a point it does not
-stand on, a case with no `description` saying what it breaks, and operations that leave the
-reference input exactly as it was. Read loosely, most of them change nothing and the case
-passes with the gate's own point blamed for a typo in the fixture; a wrong point misnumbers
-every message about its case, and an unreadable file used to stop the run without its name.
-A reference that cannot be read is reported once, and no case is judged on it.
+of the wrong kind, a switch set to `false`, a path that is not there to drop, already there
+to add or named twice, a move of the report's files that moves none or leaves one where it
+was, a file that is missing, unreadable or not JSON, a check that is not this gate's or a
+point it does not stand on, a case with no `description` saying what it breaks, and
+operations that leave the reference input exactly as it was. Read loosely, most of them
+change nothing and the case passes with the gate's own point blamed for a typo in the
+fixture; a wrong point misnumbers every message about its case, and an unreadable file used
+to stop the run without its name. A reference that cannot be read is reported once, and no
+case is judged on it.
 
 **The reference input must pass.** This is not a check for good measure: were the
 reference itself defective, every case would fire because of it rather than because of
 its own defect, and every "rejected" would be false — that is, this whole negative
 control would become exactly what it stands against.
 
-It carries two things besides, because a case file proves a check FIRES and the gate staying
-SILENT has nowhere else to be measured. One is a template that does **not** reach the floor
-and an exception saying why: that point 6 keeps quiet where a reason is written down is
-shown here, and the case beside it (`template-exception-stale.json`) proves the other side
-of that same exception, the one that fires when the metric climbs above what the exception
-allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses — a
+It carries two things besides, because a case file proves a check FIRES, and shows a point
+staying SILENT only where a later point fires in its place — the three cases on point 1's
+edges do that; for the two below, the reference is the one place. One is a template that
+does **not** reach the floor and an exception saying why: that point 6 keeps quiet where a
+reason is written down is shown here, and the case beside it (`template-exception-stale.json`)
+proves the other side of that same exception, the one that fires when the metric climbs
+above what the exception allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses — a
 stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
 schematic: that point 2 keeps quiet on each of them is shown here, and a category deleted
 reddens the reference rather than nothing.
@@ -71,7 +73,7 @@ direction is what keeps that pathspec from being narrowed in turn.
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----- |
 | [`missing-report.json`](missing-report.json)                                           | the run left no coverage report                               | 1     |
 | [`report-from-another-checkout.json`](report-from-another-checkout.json)               | a report another checkout wrote — every file outside this one | 1     |
-| [`report-partly-from-another-checkout.json`](report-partly-from-another-checkout.json) | one file of the report elsewhere, the rest here               | 3     |
+| [`report-partly-from-another-checkout.json`](report-partly-from-another-checkout.json) | every file of the report elsewhere but one                    | 3     |
 | [`report-keyed-by-absolute-path.json`](report-keyed-by-absolute-path.json)             | keys left absolute, in this very checkout                     | 3     |
 | [`report-with-no-file.json`](report-with-no-file.json)                                 | a report with its totals and not one file                     | 3     |
 | [`no-sources.json`](no-sources.json)                                                   | an empty list of source files, and an empty listing with it   | 2     |
@@ -97,14 +99,16 @@ worktree can be handed another's ([`lesson-240`](../../docs/lessons.md#lesson-24
 `reportRoot` moves the reference report's files under another directory, which is how such a
 report reads once made relative here. Three cases on point 3 hold the edges of that check,
 because its claim is "another checkout wrote this" and only a report none of whose files lies
-here makes it: one file elsewhere (`reportRootFiles` names the one `reportRoot` moves), keys
-left absolute in this very checkout (`absoluteReport` — lost normalisation, not another
-checkout), and a report with no file at all. The review of PR #19 found the three edges held
-by nothing: a copy of the gate reading "any file" for "every file", one letting an empty
-report through as foreign, and one reading a path's spelling instead of its place each ran
-green with 18 cases. Measured on such copies since: each reddens its own case and no other,
-on `foreign-report`, and with the check disabled the report another checkout wrote alone
-fires `complete`.
+here makes it: every file elsewhere but one (`reportRootFiles` names the ones `reportRoot`
+moves), keys left absolute in this very checkout (`absoluteReport` — lost normalisation, not
+another checkout), and a report with no file at all. The review of PR #19 found the three
+edges held by nothing: a copy of the gate reading "any file" for "every file", one letting an
+empty report through as foreign, and one reading a path's spelling instead of its place each
+ran green with 18 cases; its second round found the first case moving one file of three,
+which let "most files" and "all but one" through as well — so it moves two, and a single file
+left here is what every rule short of "every" misreads. Measured on such copies since: each
+reddens its own case and no other, on `foreign-report`, and with the check disabled the
+report another checkout wrote alone fires `complete`.
 
 Point 4 has four cases, because there are four different ways of disarming the same
 enforcement: turning the measurement off, removing the thresholds, declaring one of the two
