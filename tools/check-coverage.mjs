@@ -513,10 +513,15 @@ const has = Object.hasOwn;
 const isObject = (v) =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
-const readFixture = (name) => {
+/**
+ * A fixture as data. `read` hands over a file's text by its name, and throws what
+ * `readFileSync` throws — the run reads `check-coverage.fixtures/` through it, and the
+ * control's own control reads prepared files through the same lines.
+ */
+const fixtureOf = (read, name) => {
   let text;
   try {
-    text = readFileSync(join(FIXTURES, name), 'utf8');
+    text = read(name);
   } catch (error) {
     throw new FixtureError(
       error.code === 'ENOENT'
@@ -602,7 +607,7 @@ const canonical = (input) =>
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing but
  * its own defect — you cannot break something in passing and not notice.
  */
-const buildFixture = (fx) => {
+const buildFixture = (fx, read) => {
   for (const [key, value] of Object.entries(fx)) {
     if (!has(CASE_KEYS, key))
       throw new FixtureError(
@@ -639,7 +644,7 @@ const buildFixture = (fx) => {
       '`dropReport` leaves no report for the other report operations to change',
     );
 
-  const reference = readFixture(REFERENCE);
+  const reference = fixtureOf(read, REFERENCE);
   const { report } = reference;
   if (
     !isObject(report?.files) ||
@@ -816,6 +821,773 @@ const misreadOf = (source) =>
     }).diagnostics ?? []
   ).filter((diagnostic) => diagnostic.file && diagnostic.start !== undefined);
 
+// ── the control, over any input ───────────────────────────────────────────────
+
+/**
+ * The negative control over any input: the gate's own `source`, its `table` of checks, the
+ * `names` of the cases and a `read` that hands over a fixture's text. It returns what it
+ * finds, each violation with the rule that fired and what it fired on, and the number of
+ * checks the source constructs. The run hands it the real input; the control's own control
+ * below hands it prepared ones, because on the real input every rule here stays silent — and
+ * a rule loosened or struck out stays silent with it.
+ */
+const controlOf = ({ source, table, names, read }) => {
+  const found = [];
+  const say = (rule, subject, text) =>
+    found.push({ rule, subject: String(subject), text });
+
+  if (names.length === 0)
+    say(
+      'no-cases',
+      '',
+      `tools/check-coverage.fixtures: no prepared inputs — a gate with no proof that it ` +
+        `can fail is one more silent defect (req-quality-negative-control)`,
+    );
+
+  // Every check a construction names has its row, and every row is named by one. A case is
+  // held to the table and the missing-case line below walks it, so a check constructed with
+  // neither a row nor a case would be seen by neither: the list the table is held to is the
+  // source itself.
+  const here = (line) => `${relative(ROOT, GATE)}:${line}`;
+  const misread = misreadOf(source);
+  if (misread.length) {
+    const [first] = misread;
+    const { line } = first.file.getLineAndCharacterOfPosition(first.start);
+    say(
+      'misread',
+      line + 1,
+      `${here(line + 1)}: the TypeScript parser reads this file with ` +
+        `${misread.length === 1 ? 'an error' : `${misread.length} errors`} Node does not ` +
+        `have, the first "${ts.flattenDiagnosticMessageText(first.messageText, ' ')}" — no ` +
+        `check read off a misread file can be trusted, so none is; spell the line so that ` +
+        `both read it alike (prettier's spacing does)`,
+    );
+  }
+  const thrown = misread.length ? new Map() : throwsOf(source);
+  const lines = (check) => [...new Set(thrown.get(check))];
+  const locations = (check) => lines(check).map(here).join(', ');
+  if (!misread.length && thrown.size === 0)
+    say(
+      'no-reference',
+      '',
+      `${relative(ROOT, GATE)}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
+        `looks for the name \`ERROR_CLASS\` holds, so while that and the class's own name ` +
+        `differ it has nothing to hold the table to; give the two the same name`,
+    );
+  if (thrown.has(null))
+    say(
+      'unresolved',
+      lines(null).join(', '),
+      `${locations(null)}: \`${ERROR_CLASS}\` used where this reading resolves no check — ` +
+        `it reads a check only from a construction by name whose first argument is a ` +
+        `non-empty string literal, and leaves alone nothing but the top-level unexported ` +
+        `declaration and the right side of \`instanceof\`; spell the check at the ` +
+        `construction, and use the class for nothing else`,
+    );
+  const checks = [...thrown.keys()].filter((check) => check !== null);
+  const unlisted = checks.filter((check) => !has(table, check));
+  if (unlisted.length)
+    say(
+      'unlisted',
+      unlisted.join(', '),
+      `${unlisted.map((c) => `\`${c}\` (${locations(c)})`).join(', ')}: constructed with ` +
+        `no row in \`CHECK_POINTS\` — a case naming a check the table does not hold is ` +
+        `refused, and the missing-case line walks the rows, so nothing would ever ask for a ` +
+        `case; give each a row and a case that fires it`,
+    );
+  const unthrown = thrown.size
+    ? Object.keys(table).filter((check) => !thrown.has(check))
+    : [];
+  if (unthrown.length)
+    say(
+      'unthrown',
+      unthrown.join(', '),
+      `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\`, and no ` +
+        `construction this reading resolves names it — delete the row, or spell the check ` +
+        `at its throw so that one does`,
+    );
+
+  /**
+   * A case's declaration and input — the reference's is built with no operations — or null,
+   * with the reason recorded, when the file cannot be read as one. A case is held against
+   * `base`, the reference's input: one that builds the same input changes nothing, and would
+   * pass with its point blamed.
+   */
+  const built = (name, base) => {
+    try {
+      const fx = name === REFERENCE ? {} : fixtureOf(read, name);
+      if (
+        name !== REFERENCE &&
+        (!has(table, fx.check) || table[fx.check] !== fx.point)
+      )
+        throw new FixtureError(
+          `a case has to declare one of this gate's checks and the point it stands on ` +
+            `(${Object.entries(table)
+              .map(([check, point]) => `${check} ${point}`)
+              .join(', ')}), and declares ${JSON.stringify(fx.check)} on ` +
+            JSON.stringify(fx.point),
+        );
+      if (
+        name !== REFERENCE &&
+        (typeof fx.description !== 'string' ||
+          fx.description.trim().length < 40)
+      )
+        throw new FixtureError(
+          'a case has to say, in `description`, what it breaks and why that matters — ' +
+            'a defect nobody explained is the silent exception this gate stands against',
+        );
+      const input = buildFixture(fx, read);
+      if (base && canonical(input) === canonical(base))
+        throw new FixtureError(
+          'the case builds the reference input unchanged — every operation in it is ' +
+            'already the reference',
+        );
+      return { fx, input };
+    } catch (error) {
+      if (!(error instanceof FixtureError)) throw error;
+      say(
+        'malformed',
+        name,
+        name === REFERENCE
+          ? `${REFERENCE}: malformed — ${error.message}; every case is built on it, so ` +
+              `none of the ${names.length} was judged`
+          : `${name}: malformed — ${error.message}; a case that cannot be read as data ` +
+              `measures nothing, whatever the gate answers to it`,
+      );
+      return null;
+    }
+  };
+
+  // The reference input MUST pass. Were it defective itself, every case would fire because
+  // of it rather than because of its own defect — and every "it fired" would be false.
+  const reference = built(REFERENCE);
+  if (reference)
+    try {
+      checkCoverage(reference.input);
+    } catch (error) {
+      if (!(error instanceof CoverageError)) throw error;
+      say(
+        'reference-fails',
+        error.check,
+        `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+          `every prepared case now fires because of it.\n    ${error.message}`,
+      );
+    }
+
+  // A reference that cannot be read leaves no case to judge: every one is built on it.
+  const covered = new Set();
+  for (const name of reference ? names : []) {
+    const one = built(name, reference.input);
+    if (!one) continue;
+    const { fx, input } = one;
+    covered.add(fx.check);
+    try {
+      checkCoverage(input);
+      say(
+        'passed',
+        name,
+        `${name}: the prepared input PASSED and was meant not to — ` +
+          `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
+      );
+    } catch (error) {
+      if (!(error instanceof CoverageError)) throw error;
+      if (error.check !== fx.check)
+        say(
+          'fired-other',
+          name,
+          `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
+            `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
+            `what it declares`,
+        );
+    }
+  }
+
+  // Every check has a case. The loop above walks the cases, so a check whose last case is
+  // deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
+  // is what `req-axis` forbids. A row a construction names is a check, and needs a readable
+  // case; a row none names is reported above instead, and a case is not its remedy.
+  const uncovered = reference
+    ? Object.keys(table).filter(
+        (check) => thrown.has(check) && !covered.has(check),
+      )
+    : [];
+  if (uncovered.length)
+    say(
+      'uncovered',
+      uncovered.join(', '),
+      `${uncovered.map((c) => `\`${c}\``).join(', ')}: no readable case declares ` +
+        `${uncovered.length === 1 ? 'this check' : 'these checks'} — a check with no case ` +
+        `is a promise no machine can fire on (req-axis), and nothing else notices its last ` +
+        `case go`,
+    );
+
+  return { found, checks: checks.length };
+};
+
+// ── the control's own control ─────────────────────────────────────────────────
+
+/*
+ * Every rule of the control above has a reject path that only a defective input takes — a
+ * use of the class the reading cannot resolve, a case the builder cannot apply, a row no
+ * readable case declares — and the real input takes none of them. A rule loosened or struck
+ * out leaves the real run as green as it was: the second review of PR #18 found four such
+ * escapes in one reading of the source. So the rules run, every time, over prepared inputs
+ * that take each reject path, and each has to be answered as written beside it. The prepared
+ * sources never spell out the class's name — `ERROR_CLASS` stands in for it — so the gate's
+ * reading of its own source finds none of their constructions, by the parser or a pattern.
+ */
+
+/**
+ * Prepared sources, each with what `throwsOf` has to read in it: `check:line` for every use
+ * of the class it does not leave alone, `?` for a use it resolves no check from.
+ */
+const READINGS = [
+  [
+    'names that merely contain the class name',
+    [`const ${ERROR_CLASS}s = [];`, `class My${ERROR_CLASS} extends Error {}`],
+    '',
+  ],
+  [
+    'the top-level declaration, and the right side of instanceof',
+    [
+      `class ${ERROR_CLASS} extends Error {}`,
+      `if (error instanceof ${ERROR_CLASS}) throw error;`,
+      `if (error instanceof (${ERROR_CLASS})) throw error;`,
+    ],
+    '',
+  ],
+  [
+    'a construction over several lines, as prettier writes one',
+    [`throw new ${ERROR_CLASS}(`, `  'x',`, `  '',`, `);`],
+    'x:1',
+  ],
+  [
+    'a check in double quotes, and in backticks with no substitution',
+    [
+      `throw new ${ERROR_CLASS}("x", '');`,
+      `throw new ${ERROR_CLASS}(\`y\`, '');`,
+    ],
+    'x:1 y:2',
+  ],
+  [
+    'a check that is no literal: a variable, a concatenation, a substitution',
+    [
+      `throw new ${ERROR_CLASS}(check, '');`,
+      `throw new ${ERROR_CLASS}('x' + check, '');`,
+      `throw new ${ERROR_CLASS}(\`\${check}\`, '');`,
+    ],
+    '?:1 ?:2 ?:3',
+  ],
+  [
+    'an empty literal, and no argument at all',
+    [
+      `throw new ${ERROR_CLASS}('', '');`,
+      `throw new ${ERROR_CLASS}();`,
+      `throw new ${ERROR_CLASS};`,
+    ],
+    '?:1 ?:2 ?:3',
+  ],
+  [
+    'a helper fail(check, message)',
+    [
+      `const fail = (check, message) => {`,
+      `  throw new ${ERROR_CLASS}(check, message);`,
+      `};`,
+      `fail('x', '');`,
+    ],
+    '?:2',
+  ],
+  [
+    'a subclass passing a literal to super',
+    [
+      `class Sub extends ${ERROR_CLASS} {`,
+      `  constructor() {`,
+      `    super('x', '');`,
+      `  }`,
+      `}`,
+      `throw new Sub();`,
+    ],
+    '?:1',
+  ],
+  [
+    'an alias, and a shorthand property',
+    [
+      `const Alias = ${ERROR_CLASS};`,
+      `const errors = { ${ERROR_CLASS} };`,
+      `throw new Alias('x', '');`,
+    ],
+    '?:1 ?:2',
+  ],
+  [
+    'an export: of the declaration, in a list, as the default',
+    [
+      `export class ${ERROR_CLASS} extends Error {}`,
+      `export { ${ERROR_CLASS} };`,
+      `export default ${ERROR_CLASS};`,
+    ],
+    '?:1 ?:2 ?:3',
+  ],
+  [
+    'a class of the same name declared in an inner scope',
+    [`{`, `  class ${ERROR_CLASS} extends Error {}`, `}`],
+    '?:2',
+  ],
+  [
+    'Reflect.construct',
+    [`Reflect.construct(${ERROR_CLASS}, ['x', '']);`],
+    '?:1',
+  ],
+  [
+    'the class handed to another construction, and a member of it constructed',
+    [
+      `throw new Wrapper('x', ${ERROR_CLASS});`,
+      `throw new ${ERROR_CLASS}.Inner('y', '');`,
+    ],
+    '?:1 ?:2',
+  ],
+  [
+    'the left side of instanceof',
+    [`if (${ERROR_CLASS} instanceof Function) throw error;`],
+    '?:1',
+  ],
+  [
+    'new (Name)(…), in one pair of parentheses and in two',
+    [
+      `throw new (${ERROR_CLASS})('x', '');`,
+      `throw new ((${ERROR_CLASS}))('y', '');`,
+    ],
+    'x:1 y:2',
+  ],
+  [
+    'a comment between new and the name, and between the name and (',
+    [
+      `throw new /* a comment */ ${ERROR_CLASS} /* another */ ('x', '');`,
+      `throw new // a comment`,
+      `  ${ERROR_CLASS} // another`,
+      `  ('y', '');`,
+    ],
+    'x:1 y:3',
+  ],
+  [
+    'a line comment ending in class on the line above the name',
+    [`// what follows is a class`, `${ERROR_CLASS}.prototype.name = 'x';`],
+    '?:2',
+  ],
+  [
+    'a line comment ending in instanceof on the line above the name',
+    [`// what follows is the right side of an instanceof`, `${ERROR_CLASS};`],
+    '?:2',
+  ],
+  [
+    'a line comment ending in new on the line above the name',
+    [`// what follows is called without new`, `${ERROR_CLASS}('x', '');`],
+    '?:2',
+  ],
+  [
+    'a construction quoted in a comment',
+    [
+      `// throw new ${ERROR_CLASS}('x', '');`,
+      `/* throw new ${ERROR_CLASS}('y', ''); */`,
+      `/** throw new ${ERROR_CLASS}('z', ''); */`,
+    ],
+    '',
+  ],
+  [
+    'a construction quoted in a string',
+    [
+      `const a = "throw new ${ERROR_CLASS}('x', '')";`,
+      `const b = 'throw new ${ERROR_CLASS}("y", "")';`,
+      `const c = \`throw new ${ERROR_CLASS}('z', '')\`;`,
+    ],
+    '',
+  ],
+  [
+    'the name in backticks',
+    [`// \`${ERROR_CLASS}\` is the class`, `const d = \`${ERROR_CLASS}\`;`],
+    '',
+  ],
+];
+
+/** What `throwsOf` reads in a source, written the way `READINGS` writes it. */
+const readingOf = (source) =>
+  [...throwsOf(source)]
+    .flatMap(([check, at]) => at.map((line) => [line, check ?? '?']))
+    .sort(([a, x], [b, y]) => a - b || (x < y ? -1 : x > y ? 1 : 0))
+    .map(([line, check]) => `${check}:${line}`)
+    .join(' ');
+
+/** The one source file of the prepared library, a stylesheet beside it, and a path it lacks. */
+const FILE = `${PROJECT}/src/prepared.ts`;
+const STYLESHEET = `${PROJECT}/src/prepared.scss`;
+const ABSENT = `${PROJECT}/src/absent.ts`;
+
+/** A case's declaration, for the prepared cases that the operations beside them complete. */
+const DECLARED = {
+  point: 3,
+  check: 'complete',
+  description:
+    "A prepared case: the control's own control judges it, the run never does.",
+};
+
+/** The prepared reference: every point silent over one source file and its report. */
+const PREPARED_REFERENCE = {
+  target: { coverage: true, coverageThresholds: { lines: 80, branches: 80 } },
+  sources: [FILE],
+  tree: [FILE, STYLESHEET],
+  exceptions: {},
+  report: {
+    total: { lines: { pct: 100 }, branches: { pct: 100 } },
+    files: { [FILE]: { lines: { pct: 100 } } },
+  },
+};
+
+/** The prepared reference with its report changed. */
+const withReport = (report) => ({
+  ...PREPARED_REFERENCE,
+  report: { ...PREPARED_REFERENCE.report, ...report },
+});
+
+/**
+ * The prepared input every entry below changes: two rows, a source that constructs both, the
+ * reference, and a well-formed case for each row — on it the control finds nothing.
+ */
+const PREPARED = {
+  source: [
+    `class ${ERROR_CLASS} extends Error {}`,
+    `throw new ${ERROR_CLASS}('report', '');`,
+    `throw new ${ERROR_CLASS}('complete', '');`,
+  ],
+  table: { report: 1, complete: 3 },
+  files: {
+    [REFERENCE]: PREPARED_REFERENCE,
+    'report.json': { ...DECLARED, point: 1, check: 'report', dropReport: true },
+    'complete.json': { ...DECLARED, dropFromReport: [FILE] },
+  },
+};
+
+/** What reading a file throws when it cannot be read. */
+const unreadable = (code) =>
+  Object.assign(new Error(`${code}: a prepared file`), { code });
+
+/**
+ * Prepared files read the way `readFileSync` reads a directory: a string is a file's text, a
+ * value is written as JSON, an error is what reading the file throws, and a file not there
+ * throws `ENOENT`.
+ */
+const readFrom = (files) => (name) => {
+  const file = has(files, name) ? files[name] : undefined;
+  if (file === undefined) throw unreadable('ENOENT');
+  if (file instanceof Error) throw file;
+  return typeof file === 'string' ? file : JSON.stringify(file);
+};
+
+/**
+ * Changes to the prepared input, each with what the control has to find on it: the rule, what
+ * it fires on, and for a refusal a part of its reason. Nothing else may be found.
+ */
+const ANSWERS = [
+  ['the prepared input as it stands', {}, []],
+  [
+    'no case at all',
+    { files: { 'report.json': undefined, 'complete.json': undefined } },
+    [
+      ['no-cases', ''],
+      ['uncovered', 'report, complete'],
+    ],
+  ],
+  [
+    'a literal phantom with no row',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('impossible', '');`,
+      ],
+    },
+    [['unlisted', 'impossible']],
+  ],
+  [
+    'a row nothing names',
+    { table: { ...PREPARED.table, templates: 6 } },
+    [['unthrown', 'templates']],
+  ],
+  [
+    'a use the reading resolves no check from',
+    { source: [...PREPARED.source, `const Alias = ${ERROR_CLASS};`] },
+    [['unresolved', '4']],
+  ],
+  [
+    'a class of another name than ERROR_CLASS',
+    {
+      source: PREPARED.source.map((line) =>
+        line.replaceAll(ERROR_CLASS, 'AnotherError'),
+      ),
+    },
+    [['no-reference', '']],
+  ],
+  [
+    'a source the parser reads otherwise than Node runs it',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('impossible', '');`,
+        'const r = 1 </x/.source.length;',
+      ],
+    },
+    [['misread', '5']],
+  ],
+  [
+    'a reference that does not pass',
+    {
+      files: {
+        [REFERENCE]: withReport({
+          total: { lines: { pct: 50 }, branches: { pct: 100 } },
+        }),
+      },
+    },
+    [['reference-fails', 'result']],
+  ],
+  [
+    'a case that passes',
+    { files: { 'passes.json': { ...DECLARED, pct: 90 } } },
+    [['passed', 'passes.json']],
+  ],
+  [
+    'a case that fires another check',
+    { files: { 'other.json': { ...DECLARED, dropReport: true } } },
+    [['fired-other', 'other.json']],
+  ],
+  [
+    'a row whose one case is malformed',
+    {
+      files: {
+        'complete.json': { ...PREPARED.files['complete.json'], point: 6 },
+      },
+    },
+    [
+      ['malformed', 'complete.json', "one of this gate's checks"],
+      ['uncovered', 'complete'],
+    ],
+  ],
+  [
+    'a row with no case',
+    { files: { 'complete.json': undefined } },
+    [['uncovered', 'complete']],
+  ],
+  [
+    'a metric of the reference that is no object',
+    {
+      files: {
+        [REFERENCE]: withReport({
+          files: { [FILE]: { lines: { pct: 100 }, functions: 7 } },
+        }),
+        'malformed.json': {
+          ...DECLARED,
+          filePct: { [FILE]: { functions: 50 } },
+        },
+      },
+    },
+    [['malformed', 'malformed.json', 'no such number to change']],
+  ],
+];
+
+const NO_REPORT = 'leaves no report for the other report operations';
+const UNCHANGED = 'builds the reference input unchanged';
+const NO_SHAPE = 'the reference holds no report whose every file is an object';
+
+/**
+ * Cases the builder has to refuse, each with a part of the reason it has to give: operations
+ * over `DECLARED`, or a file's text, or the error reading it throws. A refusal that gives
+ * another reason is a rule gone quiet behind a neighbour.
+ */
+const REFUSED = [
+  ['{', 'not JSON'],
+  ['[]', 'the file is not an object'],
+  ['null', 'the file is not an object'],
+  ['7', 'the file is not an object'],
+  [unreadable('ENOENT'), 'the file is missing'],
+  [unreadable('EACCES'), 'the file cannot be read (EACCES)'],
+  [{ dropReprot: true }, 'is no key a case may carry'],
+  [{ pct: '50' }, 'must be a number'],
+  [{ filePct: [] }, 'must be an object'],
+  [{ dropReport: false }, 'reads false, which changes nothing'],
+  [{ dropReport: true, dropFromReport: [FILE] }, NO_REPORT],
+  [{ dropReport: true, pct: 50 }, NO_REPORT],
+  [{ dropReport: true, branchPct: 50 }, NO_REPORT],
+  [{ dropReport: true, filePct: { [FILE]: { lines: 50 } } }, NO_REPORT],
+  [{ dropReport: true, reportRoot: '../x' }, NO_REPORT],
+  [{ dropReport: true, reportRootFiles: [FILE] }, NO_REPORT],
+  [{ dropReport: true, absoluteReport: true }, NO_REPORT],
+  [{ dropFromSources: FILE }, 'must be a list of paths'],
+  [{ dropFromSources: [7] }, 'must be a list of paths'],
+  [{ dropFromSources: [FILE, FILE] }, 'names a path twice'],
+  [{ dropFromSources: [ABSENT] }, 'which is not there'],
+  [{ dropFromTree: [ABSENT] }, 'which is not there'],
+  [{ dropFromReport: [ABSENT] }, 'which is not there'],
+  [{ reportRoot: '../x', reportRootFiles: [ABSENT] }, 'which is not there'],
+  [{ addToTree: [FILE] }, 'which is already there'],
+  [{ filePct: { [ABSENT]: { lines: 50 } } }, 'which the report does not hold'],
+  [{ filePct: { [FILE]: 50 } }, 'which the report does not hold'],
+  [{ filePct: { [FILE]: { functions: 50 } } }, 'no such number to change'],
+  [{ filePct: { [FILE]: { ['__proto__']: 50 } } }, 'no such number to change'],
+  [{ filePct: { [FILE]: { lines: '50' } } }, 'no such number to change'],
+  [{ reportRootFiles: [FILE] }, 'and there is no `reportRoot`'],
+  [
+    { reportRoot: '../x', reportRootFiles: [] },
+    'no file of the report to move',
+  ],
+  [{ reportRoot: '' }, 'leaves a file where it was'],
+  [{ reportRoot: '/x', absoluteReport: true }, 'no key to make absolute'],
+  [{ check: 'impossible', point: undefined }, "one of this gate's checks"],
+  [{ point: 1 }, "one of this gate's checks"],
+  [{ description: undefined }, 'has to say, in `description`'],
+  [{ description: ` ${'x'.repeat(39)} ` }, 'has to say, in `description`'],
+  [{ pct: 100 }, UNCHANGED],
+  [{ dropFromTree: [FILE], addToTree: [FILE] }, UNCHANGED],
+  [
+    {
+      target: {
+        coverageThresholds: { branches: 80, lines: 80 },
+        coverage: true,
+      },
+    },
+    UNCHANGED,
+  ],
+];
+
+/** References the builder has to refuse, each with a part of the reason it has to give. */
+const REFERENCE_REFUSED = [
+  ['that is not JSON', '{', 'not JSON'],
+  ['that is missing', unreadable('ENOENT'), 'the file is missing'],
+  ['with no report', { ...PREPARED_REFERENCE, report: undefined }, NO_SHAPE],
+  [
+    'whose sources are no list',
+    { ...PREPARED_REFERENCE, sources: FILE },
+    'must be a list of paths',
+  ],
+  [
+    'whose tree names a path twice',
+    { ...PREPARED_REFERENCE, tree: [FILE, FILE, STYLESHEET] },
+    'names a path twice',
+  ],
+  ['whose files are a list', withReport({ files: [] }), NO_SHAPE],
+  [
+    'with a file that is no object',
+    withReport({ files: { [FILE]: 7 } }),
+    NO_SHAPE,
+  ],
+  [
+    'with no line total',
+    withReport({ total: { branches: { pct: 100 } } }),
+    NO_SHAPE,
+  ],
+  [
+    'with no branch total',
+    withReport({ total: { lines: { pct: 100 } } }),
+    NO_SHAPE,
+  ],
+];
+
+/** A prepared file as a message names it. */
+const shown = (file) =>
+  file instanceof Error
+    ? `a file whose reading throws ${file.code}`
+    : typeof file === 'string'
+      ? `a file that reads ${JSON.stringify(file)}`
+      : JSON.stringify(file, (key, value) =>
+          value === undefined ? '(none)' : value,
+        );
+
+/** Every prepared input the control is run over, with what it has to find there. */
+const PREPARED_INPUTS = [
+  ...ANSWERS,
+  ...REFUSED.map(([file, reason]) => [
+    `the case ${shown(file)}`,
+    {
+      files: {
+        'malformed.json':
+          isObject(file) && !(file instanceof Error)
+            ? { ...DECLARED, ...file }
+            : file,
+      },
+    },
+    [['malformed', 'malformed.json', reason]],
+  ]),
+  ...REFERENCE_REFUSED.map(([what, file, reason]) => [
+    `the reference ${what}`,
+    { files: { [REFERENCE]: file } },
+    [['malformed', REFERENCE, reason]],
+  ]),
+];
+
+/**
+ * The control's own control: every prepared source read as written, every prepared input
+ * answered as written, and anything else a violation that names the prepared input. The
+ * counts are of what it ran, so the green line cannot claim a control that did not run.
+ */
+const ownControl = () => {
+  const problems = [];
+  let sources = 0;
+  let inputs = 0;
+  for (const [what, source, expected] of READINGS) {
+    sources++;
+    let read;
+    try {
+      read = readingOf(source.join('\n'));
+    } catch (error) {
+      read = `an error (${error.message})`;
+    }
+    if (read !== expected)
+      problems.push(
+        `the control's own control, the prepared source "${what}": \`throwsOf\` has to ` +
+          `read ${expected || 'nothing'} in it, and reads ${read || 'nothing'} — the table ` +
+          `would now be held to a reading that is not the source's`,
+      );
+  }
+  const said = ([rule, subject, reason]) =>
+    `${rule}${subject ? ` ${subject}` : ''}${reason ? ` (${reason})` : ''}`;
+  for (const [what, change, expected] of PREPARED_INPUTS) {
+    inputs++;
+    const files = { ...PREPARED.files, ...change.files };
+    let found;
+    try {
+      ({ found } = controlOf({
+        source: (change.source ?? PREPARED.source).join('\n'),
+        table: change.table ?? PREPARED.table,
+        names: Object.keys(files)
+          .filter((name) => name !== REFERENCE && files[name] !== undefined)
+          .sort(),
+        read: readFrom(files),
+      }));
+    } catch (error) {
+      problems.push(
+        `the control's own control, "${what}": the control throws on it (${error.message})`,
+      );
+      continue;
+    }
+    const left = [...found];
+    const unmet = expected.filter(([rule, subject, reason = '']) => {
+      const at = left.findIndex(
+        (f) =>
+          f.rule === rule && f.subject === subject && f.text.includes(reason),
+      );
+      if (at !== -1) left.splice(at, 1);
+      return at === -1;
+    });
+    if (unmet.length || left.length)
+      problems.push(
+        `the control's own control, "${what}": the control has to find ` +
+          `${expected.map(said).join(', ') || 'nothing'}` +
+          (unmet.length ? `, and misses ${unmet.map(said).join(', ')}` : '') +
+          (left.length
+            ? `, and finds ${left.map((f) => `${f.rule}: ${f.text}`).join(' | ')}`
+            : '') +
+          ` — a rule of the control that answers a prepared input otherwise answers the ` +
+          `real one otherwise too, and on the real one it is silent either way`,
+      );
+  }
+  return { problems, sources, inputs };
+};
+
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
@@ -838,169 +1610,14 @@ try {
 const cases = readdirSync(FIXTURES)
   .filter((n) => n.endsWith('.json') && n !== REFERENCE)
   .sort();
-
-if (cases.length === 0)
-  problems.push(
-    `tools/check-coverage.fixtures: no prepared inputs — a gate with no proof that it ` +
-      `can fail is one more silent defect (req-quality-negative-control)`,
-  );
-
-// Every check a construction names has its row, and every row is named by one. A case is
-// held to the table and the missing-case line below walks it, so a check constructed with
-// neither a row nor a case would be seen by neither: the list the table is held to is the
-// source itself.
-const source = readFileSync(GATE, 'utf8');
-const here = (line) => `${relative(ROOT, GATE)}:${line}`;
-const misread = misreadOf(source);
-if (misread.length) {
-  const [first] = misread;
-  const { line } = first.file.getLineAndCharacterOfPosition(first.start);
-  problems.push(
-    `${here(line + 1)}: the TypeScript parser reads this file with ` +
-      `${misread.length === 1 ? 'an error' : `${misread.length} errors`} Node does not ` +
-      `have, the first "${ts.flattenDiagnosticMessageText(first.messageText, ' ')}" — no ` +
-      `check read off a misread file can be trusted, so none is; spell the line so that ` +
-      `both read it alike (prettier's spacing does)`,
-  );
-}
-const thrown = misread.length ? new Map() : throwsOf(source);
-const locations = (check) =>
-  [...new Set(thrown.get(check))].map(here).join(', ');
-if (!misread.length && thrown.size === 0)
-  problems.push(
-    `${relative(ROOT, GATE)}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
-      `looks for the name \`ERROR_CLASS\` holds, so while that and the class's own name ` +
-      `differ it has nothing to hold the table to; give the two the same name`,
-  );
-if (thrown.has(null))
-  problems.push(
-    `${locations(null)}: \`${ERROR_CLASS}\` used where this reading resolves no check — ` +
-      `it reads a check only from a construction by name whose first argument is a ` +
-      `non-empty string literal, and leaves alone nothing but the top-level unexported ` +
-      `declaration and the right side of \`instanceof\`; spell the check at the ` +
-      `construction, and use the class for nothing else`,
-  );
-const thrownChecks = [...thrown.keys()].filter((check) => check !== null);
-const unlisted = thrownChecks.filter((check) => !has(CHECK_POINTS, check));
-if (unlisted.length)
-  problems.push(
-    `${unlisted.map((c) => `\`${c}\` (${locations(c)})`).join(', ')}: constructed with ` +
-      `no row in \`CHECK_POINTS\` — a case naming a check the table does not hold is ` +
-      `refused, and the missing-case line walks the rows, so nothing would ever ask for a ` +
-      `case; give each a row and a case that fires it`,
-  );
-const unthrown = thrown.size
-  ? Object.keys(CHECK_POINTS).filter((check) => !thrown.has(check))
-  : [];
-if (unthrown.length)
-  problems.push(
-    `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\`, and no ` +
-      `construction this reading resolves names it — delete the row, or spell the check ` +
-      `at its throw so that one does`,
-  );
-
-/**
- * A case's declaration and input — the reference's is built with no operations — or null,
- * with the reason recorded, when the file cannot be read as one. A case is held against
- * `base`, the reference's input: one that builds the same input changes nothing, and would
- * pass with its point blamed.
- */
-const built = (name, base) => {
-  try {
-    const fx = name === REFERENCE ? {} : readFixture(name);
-    if (
-      name !== REFERENCE &&
-      (!has(CHECK_POINTS, fx.check) || CHECK_POINTS[fx.check] !== fx.point)
-    )
-      throw new FixtureError(
-        `a case has to declare one of this gate's checks and the point it stands on ` +
-          `(${Object.entries(CHECK_POINTS)
-            .map(([check, point]) => `${check} ${point}`)
-            .join(', ')}), and declares ${JSON.stringify(fx.check)} on ` +
-          JSON.stringify(fx.point),
-      );
-    if (
-      name !== REFERENCE &&
-      (typeof fx.description !== 'string' || fx.description.trim().length < 40)
-    )
-      throw new FixtureError(
-        'a case has to say, in `description`, what it breaks and why that matters — ' +
-          'a defect nobody explained is the silent exception this gate stands against',
-      );
-    const input = buildFixture(fx);
-    if (base && canonical(input) === canonical(base))
-      throw new FixtureError(
-        'the case builds the reference input unchanged — every operation in it is ' +
-          'already the reference',
-      );
-    return { fx, input };
-  } catch (error) {
-    if (!(error instanceof FixtureError)) throw error;
-    problems.push(
-      name === REFERENCE
-        ? `${REFERENCE}: malformed — ${error.message}; every case is built on it, so ` +
-            `none of the ${cases.length} was judged`
-        : `${name}: malformed — ${error.message}; a case that cannot be read as data ` +
-            `measures nothing, whatever the gate answers to it`,
-    );
-    return null;
-  }
-};
-
-// The reference input MUST pass. Were it defective itself, every case would fire because
-// of it rather than because of its own defect — and every "it fired" would be false.
-const reference = built(REFERENCE);
-if (reference)
-  try {
-    checkCoverage(reference.input);
-  } catch (error) {
-    if (!(error instanceof CoverageError)) throw error;
-    problems.push(
-      `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
-        `every prepared case now fires because of it.\n    ${error.message}`,
-    );
-  }
-
-// A reference that cannot be read leaves no case to judge: every one is built on it.
-const covered = new Set();
-for (const name of reference ? cases : []) {
-  const one = built(name, reference.input);
-  if (!one) continue;
-  const { fx, input } = one;
-  covered.add(fx.check);
-  try {
-    checkCoverage(input);
-    problems.push(
-      `${name}: the prepared input PASSED and was meant not to — ` +
-        `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
-    );
-  } catch (error) {
-    if (!(error instanceof CoverageError)) throw error;
-    if (error.check !== fx.check)
-      problems.push(
-        `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
-          `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
-          `what it declares`,
-      );
-  }
-}
-
-// Every check has a case. The loop above walks the cases, so a check whose last case is
-// deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
-// is what `req-axis` forbids. A row a construction names is a check, and needs a readable
-// case; a row none names is reported above instead, and a case is not its remedy.
-const uncovered = reference
-  ? Object.keys(CHECK_POINTS).filter(
-      (check) => thrown.has(check) && !covered.has(check),
-    )
-  : [];
-if (uncovered.length)
-  problems.push(
-    `${uncovered.map((c) => `\`${c}\``).join(', ')}: no readable case declares ` +
-      `${uncovered.length === 1 ? 'this check' : 'these checks'} — a check with no case ` +
-      `is a promise no machine can fire on (req-axis), and nothing else notices its last ` +
-      `case go`,
-  );
+const control = controlOf({
+  source: readFileSync(GATE, 'utf8'),
+  table: CHECK_POINTS,
+  names: cases,
+  read: (name) => readFileSync(join(FIXTURES, name), 'utf8'),
+});
+const own = ownControl();
+problems.push(...control.found.map(({ text }) => text), ...own.problems);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1014,5 +1631,7 @@ if (problems.length) {
 console.log(
   `✓ Coverage: ${summary}. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own points, and each of the ` +
-    `${thrownChecks.length} checks the gate's constructions name has its row and a case.`,
+    `${control.checks} checks the gate's constructions name has its row and a case. Its ` +
+    `own control: ${own.sources} prepared sources read as written, and ${own.inputs} ` +
+    `prepared inputs answered as written.`,
 );
