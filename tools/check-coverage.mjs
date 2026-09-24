@@ -1473,8 +1473,8 @@ const ANSWERS = [
   ],
   [
     'a case that fires another check',
-    { files: { 'other.json': { ...DECLARED, dropReport: true } } },
-    [['fired-other', 'other.json']],
+    { files: { 'stray.json': { ...DECLARED, dropReport: true } } },
+    [['fired-other', 'stray.json']],
   ],
   [
     'a case that fires another check on its own point',
@@ -1491,7 +1491,7 @@ const ANSWERS = [
           check: 'foreign-report',
           reportRoot: '../x',
         },
-        'other.json': {
+        'stray.json': {
           ...DECLARED,
           point: 1,
           check: 'foreign-report',
@@ -1499,7 +1499,7 @@ const ANSWERS = [
         },
       },
     },
-    [['fired-other', 'other.json']],
+    [['fired-other', 'stray.json']],
   ],
   [
     'the line total changed alone, below the branch threshold',
@@ -1648,6 +1648,7 @@ const REFUSED = [
   [{ filePct: { [FILE]: { ['__proto__']: 50 } } }, 'no such number to change'],
   [{ filePct: { [FILE]: { lines: '50' } } }, 'no such number to change'],
   [{ reportRootFiles: [FILE] }, 'and there is no `reportRoot`'],
+  [{ reportRoot: '', reportRootFiles: [FILE] }, 'leaves a file where it was'],
   [{ reportRootFiles: null }, 'and there is no `reportRoot`'],
   [
     { reportRoot: '../x', reportRootFiles: [] },
