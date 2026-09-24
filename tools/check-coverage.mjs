@@ -1063,7 +1063,8 @@ const controlOf = ({ source, where, table, names, read, placed }) => {
           name,
           `${name}: \`${fx.check}\` fired ` +
             (!site
-              ? `outside ${where}, in code this reading does not hold (\`eval\`)`
+              ? `outside ${where}, in code this reading does not hold (\`eval\`) or ` +
+                `in a frame \`siteOf\` no longer places`
               : other
                 ? `at ${here(site)}, where this reading puts \`${other}\` — relabelled ` +
                   `on the error`
@@ -1738,6 +1739,43 @@ const ANSWERS = [
       ],
     },
     [],
+  ],
+  [
+    'a construction with a comment before its new, placed at the new',
+    {
+      source: [
+        PREPARED.source[0],
+        PREPARED.source[1],
+        `throw /* why */ new ${ERROR_CLASS}('complete', '');`,
+      ],
+      sites: { 'complete.json': '3:17' },
+    },
+    [],
+  ],
+  [
+    'a case that fires its check where the reading resolves no check',
+    {
+      source: [...PREPARED.source, `throw new ${ERROR_CLASS}(check, '');`],
+      sites: { 'report.json': '4:7' },
+    },
+    [
+      ['unresolved', '4'],
+      ['unplaced', 'report.json', 'where this reading puts no check'],
+    ],
+  ],
+  [
+    'a case that fires its check where the reading puts a check with no row',
+    {
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('impossible', '');`,
+      ],
+      sites: { 'report.json': '4:7' },
+    },
+    [
+      ['unlisted', 'impossible'],
+      ['unplaced', 'report.json', 'where this reading puts `impossible`'],
+    ],
   ],
   [
     'a check of two constructions waiting for its case that fires another check',

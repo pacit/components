@@ -254,10 +254,11 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   constructions waiting for its case, which passed, fired another check or fired where none of
   them is read; a construction only a case of another check reaches, and one reached as
   another check, as a relabelled one is; a case firing its check where no construction of it
-  is read, on its construction's line at another column, and outside the source (`unplaced`);
-  a construction only a malformed case would reach, and one whose name stands in parentheses
-  — each case of the prepared input names the site of what it fires, since the checks it runs
-  are this gate's own;
+  is read, on its construction's line at another column, where the reading resolves no check
+  or puts a check with no row, and outside the source (`unplaced`); a construction only a
+  malformed case would reach, one whose name stands in parentheses, and one with a comment
+  before its `new` — each case of the prepared input names the site of what it fires, since
+  the checks it runs are this gate's own;
 - `PLACES`, frames `siteOf` has to place: one of the gate's file at its line and column, and
   one of another script — unnamed, as an `eval` makes, another file, one of the same name in
   another directory, or this one loaded again under a query — nowhere; the real run holds the
@@ -303,8 +304,8 @@ red and named with its line and column wherever it stands — after point 4, as 
 it, or before the point's loop; a dead `result` construction before the summary is red; a check
 relabelled on the error —
 `Object.assign(new CoverageError('report', …), { check: 'threshold' })` at point 4's second
-throw — is red, its three cases `unplaced`. Of 41 copies each loosening one piece of the rule,
-all are red: 39 name the prepared input that caught them — 32 of those the real run alone
+throw — is red, its three cases `unplaced`. Of 44 copies each loosening one piece of the rule,
+all are red: 42 name the prepared input that caught them — 35 of those the real run alone
 passes, seven it fails — and the other two, the frame the error records and the site the run
 hands over, only the real run catches, as it has to. The untouched copy is green, its 22 cases
 reaching all 11 constructions of its 10 checks, and a check added whole stays green with 23
