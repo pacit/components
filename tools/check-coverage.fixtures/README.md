@@ -16,41 +16,45 @@ threshold guarding such a number always passes, and the louder the less is teste
 
 ## How a case is built
 
-A case is not an eighteenth copy of the correct input with one thing broken. The gate builds
-it from two layers:
+A case is not a twenty-third copy of the correct input with one thing broken. The gate
+builds it from two layers:
 
 1. `_reference.json` — the reference input: the report, the list of source files, the tree
    as git lists it, the target options and the template exceptions,
 2. the operations from the case file, applied to a copy of it (`dropReport`,
    `clearSources`, `dropFromSources`, `clearTree`, `dropFromTree`, `addToTree`,
-   `dropFromReport`, `pct`, `branchPct`, `filePct`, `target`, `exceptions`).
+   `dropFromReport`, `pct`, `branchPct`, `filePct`, `reportRoot`, `reportRootFiles`,
+   `absoluteReport`, `target`, `exceptions`).
 
 That way the case file holds **nothing but the defect** — it is visible without comparing
 files — and does not drift from the reference when the shape of the report changes. A case
 the builder cannot apply as written is refused by name: a key that is no operation, a value
-of the wrong kind, a path that is not there to drop, already there to add or named twice, a
-file that is missing, unreadable or not JSON, a check that is not this gate's or a point it
-does not stand on, a case with no `description` saying what it breaks, and operations that
-leave the reference input exactly as it was. Read loosely, most of them change nothing and
-the case passes with the gate's own point blamed for a typo in the fixture; a wrong point
-misnumbers every message about its case, and an unreadable file used to stop the run
-without its name. A reference that cannot be read is reported once, and no case is judged
-on it.
+of the wrong kind, a switch set to `false`, a path that is not there to drop, already there
+to add or named twice, a move of the report's files that moves none or leaves one where it
+was, a file that is missing, unreadable or not JSON, a check that is not this gate's or a
+point it does not stand on, a case with no `description` saying what it breaks, and
+operations that leave the reference input exactly as it was. Read loosely, most of them
+change nothing and the case passes with the gate's own point blamed for a typo in the
+fixture; a wrong point misnumbers every message about its case, and an unreadable file used
+to stop the run without its name. A reference that cannot be read is reported once, and no
+case is judged on it.
 
 **The reference input must pass.** This is not a check for good measure: were the
 reference itself defective, every case would fire because of it rather than because of
 its own defect, and every "rejected" would be false — that is, this whole negative
 control would become exactly what it stands against.
 
-It carries two things besides, because a case file proves a check FIRES and the gate staying
-SILENT has nowhere else to be measured. One is a template that does **not** reach the floor
-and an exception saying why: that point 6 keeps quiet where a reason is written down is
-shown here, and the case beside it (`template-exception-stale.json`) proves the other side
-of that same exception, the one that fires when the metric climbs above what the exception
-allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses — a
-stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
-schematic: that point 2 keeps quiet on each of them is shown here, and a category deleted
-reddens the reference rather than nothing.
+It carries two things besides, because a case file proves a check FIRES and shows the gate
+staying SILENT only on the points before its own: the reference is the one input on which
+every point stays silent. One is a template that does **not** reach the floor and an
+exception saying why: that point 6 keeps quiet where a reason is written down is shown here
+and nowhere else, and the case beside it (`template-exception-stale.json`) proves the other
+side of that same exception, the one that fires when the metric climbs above what the
+exception allows. The other is a tree with one file of every category `NOT_A_SOURCE` excuses
+— a stylesheet, a spec, a types file, the version stamp, the mutation harness, the `ng add`
+schematic: that point 2 keeps quiet on each of them is shown here and by every case past
+point 2, so a category deleted reddens the reference and those thirteen cases rather than
+nothing (measured with the mutation harness's category struck).
 
 The input is **data, not a directory on disk**: the gate examines the decision, not the
 reading of files. The plumbing defends itself — were the source glob or the path
@@ -66,25 +70,50 @@ direction is what keeps that pathspec from being narrowed in turn.
 
 ## The cases
 
-| file                                                                         | what it breaks                                                | point |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------- | ----- |
-| [`missing-report.json`](missing-report.json)                                 | the run left no coverage report                               | 1     |
-| [`no-sources.json`](no-sources.json)                                         | an empty list of source files, and an empty listing with it   | 2     |
-| [`no-tree.json`](no-tree.json)                                               | an empty listing of the tree — every source outside it        | 2     |
-| [`file-outside-sources.json`](file-outside-sources.json)                     | a tracked source the patterns no longer reach                 | 2     |
-| [`migration-behind-ng-add-excuse.json`](migration-behind-ng-add-excuse.json) | a migration under an `ng add` excuse widened to `schematics/` | 2     |
-| [`template-outside-sources.json`](template-outside-sources.json)             | a template the patterns no longer reach                       | 2     |
-| [`source-outside-tree.json`](source-outside-tree.json)                       | a source the narrowed listing of the tree no longer holds     | 2     |
-| [`file-outside-report.json`](file-outside-report.json)                       | a source file outside the report, with a rising percentage    | 3     |
-| [`coverage-off.json`](coverage-off.json)                                     | the target has a threshold but collects no coverage           | 4     |
-| [`no-threshold.json`](no-threshold.json)                                     | the target collects coverage but has no threshold             | 4     |
-| [`threshold-below-minimum.json`](threshold-below-minimum.json)               | a threshold below the minimum from `req-quality-coverage`     | 4     |
-| [`branch-threshold-unset.json`](branch-threshold-unset.json)                 | a line threshold declared and no branch one                   | 4     |
-| [`below-threshold.json`](below-threshold.json)                               | lines below the declared threshold                            | 5     |
-| [`branches-below-threshold.json`](branches-below-threshold.json)             | branches below the declared threshold                         | 5     |
-| [`template-outside-report.json`](template-outside-report.json)               | a template outside the report — a component nobody renders    | 3     |
-| [`template-below-floor.json`](template-below-floor.json)                     | a template below the floor of its own                         | 6     |
-| [`template-exception-stale.json`](template-exception-stale.json)             | an exception the metric has climbed above                     | 6     |
+| file                                                                                   | what it breaks                                                | point |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----- |
+| [`missing-report.json`](missing-report.json)                                           | the run left no coverage report                               | 1     |
+| [`report-from-another-checkout.json`](report-from-another-checkout.json)               | a report another checkout wrote — every file outside this one | 1     |
+| [`report-from-a-nested-checkout.json`](report-from-a-nested-checkout.json)             | a report a checkout nested in this one wrote                  | 1     |
+| [`report-partly-from-another-checkout.json`](report-partly-from-another-checkout.json) | every file of the report elsewhere but one                    | 3     |
+| [`report-keyed-by-absolute-path.json`](report-keyed-by-absolute-path.json)             | keys left absolute, in this very checkout                     | 3     |
+| [`report-with-no-file.json`](report-with-no-file.json)                                 | a report with its totals and not one file                     | 3     |
+| [`no-sources.json`](no-sources.json)                                                   | an empty list of source files, and an empty listing with it   | 2     |
+| [`no-tree.json`](no-tree.json)                                                         | an empty listing of the tree — every source outside it        | 2     |
+| [`file-outside-sources.json`](file-outside-sources.json)                               | a tracked source the patterns no longer reach                 | 2     |
+| [`migration-behind-ng-add-excuse.json`](migration-behind-ng-add-excuse.json)           | a migration under an `ng add` excuse widened to `schematics/` | 2     |
+| [`template-outside-sources.json`](template-outside-sources.json)                       | a template the patterns no longer reach                       | 2     |
+| [`source-outside-tree.json`](source-outside-tree.json)                                 | a source the narrowed listing of the tree no longer holds     | 2     |
+| [`file-outside-report.json`](file-outside-report.json)                                 | a source file outside the report, with a rising percentage    | 3     |
+| [`coverage-off.json`](coverage-off.json)                                               | the target has a threshold but collects no coverage           | 4     |
+| [`no-threshold.json`](no-threshold.json)                                               | the target collects coverage but has no threshold             | 4     |
+| [`threshold-below-minimum.json`](threshold-below-minimum.json)                         | a threshold below the minimum from `req-quality-coverage`     | 4     |
+| [`branch-threshold-unset.json`](branch-threshold-unset.json)                           | a line threshold declared and no branch one                   | 4     |
+| [`below-threshold.json`](below-threshold.json)                                         | lines below the declared threshold                            | 5     |
+| [`branches-below-threshold.json`](branches-below-threshold.json)                       | branches below the declared threshold                         | 5     |
+| [`template-outside-report.json`](template-outside-report.json)                         | a template outside the report — a component nobody renders    | 3     |
+| [`template-below-floor.json`](template-below-floor.json)                               | a template below the floor of its own                         | 6     |
+| [`template-exception-stale.json`](template-exception-stale.json)                       | an exception the metric has climbed above                     | 6     |
+
+Point 1 has three cases: a report that is not there, one another checkout wrote, and one a
+checkout nested in this one wrote — nx shares its cache across git worktrees and v8 keys the
+report by absolute path, so one worktree can be handed another's
+([`lesson-240`](../../docs/lessons.md#lesson-240)), and every worktree under
+`.claude/worktrees/` lies inside the main checkout. `reportRoot` moves the reference report's
+files under another directory, which is how such a report reads once made relative here;
+"here" is this checkout's library, not everything under its root, or the nested report never
+leaves it. Three cases on point 3 hold the other edges of the check, because its claim is
+"another checkout wrote this" and only a report none of whose files lies here makes it: every
+file elsewhere but one (`reportRootFiles` names the ones `reportRoot` moves), keys left
+absolute in this very checkout (`absoluteReport` — lost normalisation, not another checkout),
+and a report with no file at all. The review of PR #19 found each edge held by nothing, in
+three rounds: copies of the gate reading "any file" for "every file", letting an empty report
+through as foreign, and reading a path's spelling instead of its place ran green with 18
+cases; "most files" and "all but one" with 21, while the partial case moved one file of
+three; and the rule this check first had — a file is elsewhere when it climbs out of the
+checkout — left the nested report to point 3, on all 146 files of the real one. Measured on
+such copies since: each reddens its own case and no other, and with the check disabled the
+two reports another checkout wrote alone fire `complete`.
 
 Point 4 has four cases, because there are four different ways of disarming the same
 enforcement: turning the measurement off, removing the thresholds, declaring one of the two
@@ -167,4 +196,4 @@ Measured on copies of the gate. The phantom throw reddens naming `impossible` an
 row no construction names reddens naming it, and the phantom given a row asks for its case
 instead. A subclass, an alias, `Reflect.construct` and an export each redden by their line,
 behind a comment ending in `class` or `instanceof` as well. A check added whole — throw, row
-and case — is green with 18 cases, and the real run stays green with 17.
+and case — is green: `foreign-report` came that way, and the real run is green with 22 cases.

@@ -1,0 +1,10 @@
+{
+  "point": 3,
+  "check": "complete",
+  "description": "A report with its totals and not one file — a run that counted nothing it could name. None of its files lies elsewhere, because there are none, and that is no evidence of another checkout: point 3 names every source as missing. Were an empty report to count as foreign, point 1 would blame a checkout that wrote nothing.",
+  "dropFromReport": [
+    "libs/components/button/src/button.ts",
+    "libs/components/field/src/number.ts",
+    "libs/components/button/src/button.html"
+  ]
+}
