@@ -6752,3 +6752,34 @@ machine is a condition.** `nproc`, the load average and a look at what else is r
 thirty seconds and belong in the same line as "four workers" — and a long-lived session should
 ask who is still holding a core before it believes its own stopwatch, not after somebody else
 notices.
+
+### <a id="lesson-240"></a>`lesson-240` — One cache for every worktree, and a report that names its own
+
+On 2026-09-24 a fresh worktree ran `nx run components:check-coverage` and read
+`components:test [local cache]`, then "complete: 146 source files are missing from the coverage
+report", with the advice to import the entrypoint in `public-api.spec.ts`. All 146 were in the
+report. Its keys named `.claude/worktrees/coverage-sources-negative-control` — a worktree that
+no longer existed.
+
+Two facts met. nx 23.1 resolves its cache directory through `getMainWorktreeRoot`, so every git
+worktree of a repository shares one `.nx/cache`
+(`node_modules/nx/dist/src/utils/cache-directory.js`). And the `json-summary` reporter writes
+each key from `fileCoverage.path`, which v8 makes absolute, with no option to write it
+otherwise — and the unit-test builder takes no reporter but the built-in ones. So the output of
+`components:test` depended on something its hash did not carry: where it ran. The gate made
+every key relative to its own checkout, got `../coverage-sources-negative-control/libs/…`,
+matched nothing, and blamed the library. It fired only when the gate's hash moved and the
+test's did not — a change to the gate — so it landed on exactly the people changing the gate,
+and CI, a fresh checkout at a path that never moves, could not see it.
+
+Measured on two worktrees at the same content: with no key for the checkout, the second read
+`[local cache]` and another checkout's report; with the checkout among the target's inputs —
+`{ "runtime": "git rev-parse --show-toplevel" }` — it ran its own suite (42–43 s on 8 cores at
+a load of 3.5) and hit its own entry after, and switching the input off and on in one worktree
+returned, each time, the entry that input names. The gate, for its part, now asks whose report
+it holds before it looks for anything in it: a report none of whose files lies in this
+checkout is point 1's (`foreign-report`), named with the checkout that wrote it.
+
+The rule is `lesson-221` turned over. That one: a target's inputs list what it reads. This one:
+a target whose output names the place it ran in has the place among its inputs — and a cache
+shared between checkouts is where the difference stops being theoretical.

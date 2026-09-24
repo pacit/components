@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "foreign-report",
+  "description": "A report another checkout wrote, as it reads here: v8 keys files by absolute path, so once they are made relative to this checkout every one of them climbs out of it. nx shares one cache across git worktrees, and on 2026-09-24 a fresh worktree was handed the `test` output of one that no longer existed — point 3 called all 146 files missing and advised an import that was already there. A report is this checkout's before anything is looked for in it.",
+  "reportRoot": "../another-checkout"
+}

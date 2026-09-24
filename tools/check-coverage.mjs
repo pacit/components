@@ -4,7 +4,7 @@
  * threshold really enforced? A file with no test drops OUT of the report rather than reading
  * zero, so a threshold over it is a gate born dead ([`lesson-45`](../docs/lessons.md#lesson-45)).
  *
- *  1. the report exists at all and has a total for every enforced metric,
+ *  1. this checkout's report exists and has a total for every enforced metric,
  *  2. the list of source files is not empty and matches the tree both ways, less the excused,
  *  3. COMPLETE: every source file of the library — its templates included — is in the report,
  *  4. the `test` target declares a line AND a branch threshold, neither below MINIMUM,
@@ -19,7 +19,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, isAbsolute, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -195,6 +195,7 @@ class CoverageError extends Error {
  */
 const CHECK_POINTS = {
   report: 1,
+  'foreign-report': 1,
   sources: 2,
   'outside-tree': 2,
   unaccounted: 2,
@@ -206,8 +207,28 @@ const CHECK_POINTS = {
 };
 
 /**
+ * A file of the report outside this checkout — where it lies, not how its path is spelt: the
+ * way back from here climbs out, or there is none (another drive).
+ */
+const isElsewhere = (path) => {
+  const back = relative(ROOT, resolve(ROOT, path)).split('\\').join('/');
+  return back === '..' || back.startsWith('../') || isAbsolute(back);
+};
+
+/**
+ * The checkout a file of the report lies in: its absolute path cut before the library's
+ * directory — or, for a file outside every copy of the library, the directory it is in.
+ */
+const checkoutOf = (path) => {
+  const absolute = resolve(ROOT, path).split('\\').join('/');
+  const at = absolute.lastIndexOf(`/${PROJECT}/`);
+  return at === -1 ? dirname(absolute) : absolute.slice(0, at);
+};
+
+/**
  * The full set of checks over a ready input:
- *   `report` — `{ total, files }` with paths relative to the repository root (or null),
+ *   `report` — `{ total, files }` with paths relative to the repository root (or null);
+ *            a file outside it keeps the `../` that says so, which point 1 reads,
  *   `sources` — the files that MUST be in the report,
  *   `tree` — every file of the library as git lists it; point 2 holds `sources` to it
  *            both ways, so a pattern narrowed is seen where a case cannot see it,
@@ -226,6 +247,27 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
         `no coverage report, or a report with no ${metric} total (${REPORT}) — ` +
           `the test run collected no coverage and the gate has nothing to examine`,
       );
+
+  // ...and it is this checkout's own. v8 keys the report by absolute path, so a report
+  // written in another checkout names files this one does not hold, and point 3 would call
+  // every one of them missing and advise an import that is already there (`lesson-240`).
+  const files = Object.keys(report.files);
+  const elsewhere = files.filter(isElsewhere);
+  if (files.length && elsewhere.length === files.length)
+    throw new CoverageError(
+      'foreign-report',
+      `the report (${REPORT}) was written in another checkout — not one of its ` +
+        `${files.length} files lies under this one (${ROOT}); they lie under:\n` +
+        [...new Set(elsewhere.map(checkoutOf))]
+          .sort()
+          .map((checkout) => `      ${checkout}`)
+          .join('\n') +
+        `\n    nx shares one cache across git worktrees, and the \`test\` target's hash ` +
+        `carries the checkout's path (${PROJECT}/project.json) so that none of them is ` +
+        `handed another's report: if nx restored this one, that input is gone; if not, ` +
+        `the report was left by a checkout that moved, or copied in. Remedy: ` +
+        `scripts/with-node npx nx run components:test --skip-nx-cache`,
+    );
 
   // 2. The list of source files is not empty.
   if (!sources?.length)
@@ -385,7 +427,11 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-/** The report in the shape `checkCoverage` expects: paths relative to the repo root. */
+/**
+ * The report in the shape `checkCoverage` expects: paths relative to the repo root. v8
+ * writes them absolute, so a report another checkout wrote comes out climbing out of this
+ * one — `../` — and point 1 is what reads that; nothing here decides it.
+ */
 const readReport = () => {
   const path = join(ROOT, REPORT);
   if (!existsSync(path)) return null;
@@ -486,6 +532,7 @@ const CASE_KEYS = {
   pct: 'number',
   branchPct: 'number',
   filePct: 'object',
+  reportRoot: 'string',
   target: 'any',
   exceptions: 'any',
 };
@@ -555,7 +602,9 @@ const buildFixture = (fx) => {
   }
   if (
     fx.dropReport &&
-    ['dropFromReport', 'pct', 'branchPct', 'filePct'].some((k) => has(fx, k))
+    ['dropFromReport', 'pct', 'branchPct', 'filePct', 'reportRoot'].some((k) =>
+      has(fx, k),
+    )
   )
     throw new FixtureError(
       '`dropReport` leaves no report for the other report operations to change',
@@ -615,6 +664,19 @@ const buildFixture = (fx) => {
           );
         files[path][metric].pct = value;
       }
+    }
+    // Last, so that the operations above name the files where the reference has them.
+    if (has(fx, 'reportRoot')) {
+      const moved = Object.entries(files).map(([p, value]) => [
+        posix.join(fx.reportRoot, p),
+        value,
+      ]);
+      if (moved.some(([p]) => has(files, p)))
+        throw new FixtureError(
+          `\`reportRoot\` reads ${JSON.stringify(fx.reportRoot)}, which leaves a file ` +
+            `where it was — the operation would change nothing`,
+        );
+      input.report.files = Object.fromEntries(moved);
     }
   }
   if (has(fx, 'target')) input.target = fx.target;
