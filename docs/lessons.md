@@ -6762,15 +6762,18 @@ report. Its keys named `.claude/worktrees/coverage-sources-negative-control` —
 no longer existed.
 
 Two facts met. nx 23.1 resolves its cache directory through `getMainWorktreeRoot`, so every git
-worktree of a repository shares one `.nx/cache`
-(`node_modules/nx/dist/src/utils/cache-directory.js`). And the `json-summary` reporter writes
-each key from `fileCoverage.path`, which v8 makes absolute, with no option to write it
-otherwise — and the unit-test builder takes no reporter but the built-in ones. So the output of
-`components:test` depended on something its hash did not carry: where it ran. The gate made
-every key relative to its own checkout, got `../coverage-sources-negative-control/libs/…`,
-matched nothing, and blamed the library. It fired only when the gate's hash moved and the
-test's did not — a change to the gate — so it landed on exactly the people changing the gate,
-and CI, a fresh checkout at a path that never moves, could not see it.
+worktree of a repository shares one `.nx/cache` — and one database of the hashes it holds
+(`node_modules/nx/dist/src/utils/cache-directory.js`, `db-connection.js`). And the
+`json-summary` reporter writes each key from `fileCoverage.path`, which v8 makes absolute, with
+no option to write it otherwise; only a reporter of the repository's own could, loaded through
+a Vitest `runnerConfig`, since the builder's `coverageReporters` takes built-in names alone. So
+the output of `components:test` depended on something its hash did not carry: where it ran.
+The gate made every key relative to its own checkout, got
+`../coverage-sources-negative-control/libs/…`, matched nothing, and blamed the library. It
+fired whenever the test was another checkout's hit and the gate was not — its hash moved, or
+the other checkout ran the suite without it, or it failed there, and nx caches no failure — so
+it landed hardest on whoever changes the gate, and CI, a fresh checkout at a path that never
+moves, could not see it.
 
 Measured on two worktrees at the same content: with no key for the checkout, the second read
 `[local cache]` and another checkout's report; with the checkout among the target's inputs —

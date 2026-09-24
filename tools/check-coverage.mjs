@@ -18,12 +18,20 @@
  * Usage: node tools/check-coverage.mjs
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  globSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+} from 'node:fs';
 import { dirname, isAbsolute, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
-const GATE = fileURLToPath(import.meta.url);
+// The real path: reached through a link (`--preserve-symlinks-main`), ROOT would name a
+// directory no key of v8's does, and point 1 would call this checkout another one.
+const GATE = realpathSync(fileURLToPath(import.meta.url));
 const ROOT = join(dirname(GATE), '..');
 const PROJECT = 'libs/components';
 const REPORT = 'coverage/components/coverage-summary.json';
@@ -251,6 +259,8 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
   // ...and it is this checkout's own. v8 keys the report by absolute path, so a report
   // written in another checkout names files this one does not hold, and point 3 would call
   // every one of them missing and advise an import that is already there (`lesson-240`).
+  // The claim is "another checkout wrote this", and only a report none of whose files lies
+  // here makes it: one file elsewhere, or no file at all, is point 3's to name.
   const files = Object.keys(report.files);
   const elsewhere = files.filter(isElsewhere);
   if (files.length && elsewhere.length === files.length)
@@ -264,8 +274,10 @@ const checkCoverage = ({ report, sources, tree, gone, target, exceptions }) => {
           .join('\n') +
         `\n    nx shares one cache across git worktrees, and the \`test\` target's hash ` +
         `carries the checkout's path (${PROJECT}/project.json) so that none of them is ` +
-        `handed another's report: if nx restored this one, that input is gone; if not, ` +
-        `the report was left by a checkout that moved, or copied in. Remedy: ` +
+        `handed another's report. If nx restored this one, that input is gone: put it ` +
+        `back first, because a run without it — --skip-nx-cache included — writes its ` +
+        `report into the cache for the next checkout to be handed. If not, the report was ` +
+        `left by a checkout that moved, or copied in. Then run the suite here: ` +
         `scripts/with-node npx nx run components:test --skip-nx-cache`,
     );
 
@@ -533,6 +545,8 @@ const CASE_KEYS = {
   branchPct: 'number',
   filePct: 'object',
   reportRoot: 'string',
+  reportRootFiles: 'paths',
+  absoluteReport: 'boolean',
   target: 'any',
   exceptions: 'any',
 };
@@ -602,9 +616,15 @@ const buildFixture = (fx) => {
   }
   if (
     fx.dropReport &&
-    ['dropFromReport', 'pct', 'branchPct', 'filePct', 'reportRoot'].some((k) =>
-      has(fx, k),
-    )
+    [
+      'dropFromReport',
+      'pct',
+      'branchPct',
+      'filePct',
+      'reportRoot',
+      'reportRootFiles',
+      'absoluteReport',
+    ].some((k) => has(fx, k))
   )
     throw new FixtureError(
       '`dropReport` leaves no report for the other report operations to change',
@@ -666,17 +686,46 @@ const buildFixture = (fx) => {
       }
     }
     // Last, so that the operations above name the files where the reference has them.
+    if (has(fx, 'reportRootFiles') && !has(fx, 'reportRoot'))
+      throw new FixtureError(
+        '`reportRootFiles` names the files `reportRoot` moves, and there is no `reportRoot`',
+      );
     if (has(fx, 'reportRoot')) {
-      const moved = Object.entries(files).map(([p, value]) => [
-        posix.join(fx.reportRoot, p),
-        value,
-      ]);
-      if (moved.some(([p]) => has(files, p)))
+      const chosen = new Set(
+        has(fx, 'reportRootFiles')
+          ? paths(fx, 'reportRootFiles', new Set(Object.keys(files)))
+          : Object.keys(files),
+      );
+      const to = (p) => posix.join(fx.reportRoot, p);
+      if (!chosen.size)
+        throw new FixtureError(
+          '`reportRoot` has no file of the report to move — the operation would change ' +
+            'nothing',
+        );
+      if ([...chosen].some((p) => has(files, to(p))))
         throw new FixtureError(
           `\`reportRoot\` reads ${JSON.stringify(fx.reportRoot)}, which leaves a file ` +
-            `where it was — the operation would change nothing`,
+            `where it was, or on one the report holds — the operation would change nothing`,
         );
-      input.report.files = Object.fromEntries(moved);
+      input.report.files = Object.fromEntries(
+        Object.entries(files).map(([p, value]) => [
+          chosen.has(p) ? to(p) : p,
+          value,
+        ]),
+      );
+    }
+    // The keys as v8 writes them — absolute — wherever the operations above left them.
+    if (fx.absoluteReport) {
+      const keyed = Object.entries(input.report.files).map(([p, value]) => [
+        resolve(ROOT, p).split('\\').join('/'),
+        value,
+      ]);
+      if (keyed.every(([p]) => has(input.report.files, p)))
+        throw new FixtureError(
+          '`absoluteReport` finds no key to make absolute — the operation would change ' +
+            'nothing',
+        );
+      input.report.files = Object.fromEntries(keyed);
     }
   }
   if (has(fx, 'target')) input.target = fx.target;

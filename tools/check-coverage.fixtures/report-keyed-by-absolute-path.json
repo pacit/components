@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "complete",
+  "description": "The report keyed by absolute path in this very checkout — as v8 writes it, and as `readReport` would hand it over were it to stop making the keys relative. That is lost normalisation, not another checkout: point 1 asks where a file lies, not how its path is spelt, and point 3 names the sources it cannot match. Read by the spelling, point 1 would call this checkout another one and name it.",
+  "absoluteReport": true
+}
