@@ -21,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const GATE = fileURLToPath(import.meta.url);
 const ROOT = join(dirname(GATE), '..');
@@ -190,7 +191,7 @@ class CoverageError extends Error {
  * The point each check belongs to. A case declares both, and is held to this table: a
  * point its check does not stand on would put the wrong number in every message about it.
  * A new check comes with its row here, as it comes with its case — and the run holds the
- * table to the checks this file throws, both ways (`throwsOf`).
+ * table to the checks this file's constructions name, both ways (`throwsOf`).
  */
 const CHECK_POINTS = {
   report: 1,
@@ -622,37 +623,52 @@ const buildFixture = (fx) => {
 };
 
 /**
- * The checks a source throws, as its constructions name them, each with its lines — read off
- * the text, comments included, so a construction quoted in one counts as one. A check is
- * read only from the name constructed with `new` and a plain literal first argument, with
- * whitespace alone between them, and only spaces or tabs before the name: a comment ending
- * in `new`, `class` or `instanceof` on the line above cannot stand in for the keyword. Every
- * other use of the name — a check that is no literal, a helper's parameter, a subclass, an
- * alias, a construction spelt another way — is filed under `null`, and so reported; the
- * class declaration, `instanceof` and the name itself in backticks are left alone. What the
- * text cannot show is what happens after a construction: a check relabelled on the error,
- * or another class the catches accept, is not read. The lookback of 64 characters is far
- * more than any spacing prettier leaves, and a longer gap is reported, not skipped. The
- * patterns bracket one letter of the name, so that they are no use of it themselves.
+ * The checks a source's constructions name, each with its lines. Read by the TypeScript
+ * parser, not by a pattern over the text: a pattern is a second lexer, and the one written
+ * here before took a comment ending in `class` for the keyword (`lesson-236`). A check is
+ * the string literal a construction by name passes first. Every other reference to the
+ * class — a check that is no literal, a helper's parameter, a subclass, an alias, an
+ * export, `Reflect.construct` — is filed under `null`, and so reported; the declaration
+ * and the right side of `instanceof` are left alone, and comments and strings are no
+ * references at all. What a reading of the code cannot follow is what happens as it runs:
+ * a check relabelled on the error, a construction reached through another expression
+ * (`eval`, `.constructor`), or a second error class the catches accept.
  */
-const ERROR_NAME = /\bCoverage[E]rror\b/g;
-const NAME_LEFT_ALONE = /(?:\bclass|\binstanceof)[ \t]+$|`$/;
-const NAME_CONSTRUCTED = /\bnew[ \t]+$/;
-const CHECK_LITERAL =
-  /\s*\(\s*(?:'([^'\\\n]+)'|"([^"\\\n]+)"|`([^`\\$\n]+)`)(?=\s*[,)])/y;
+const ERROR_CLASS = 'CoverageError';
 const throwsOf = (source) => {
+  const file = ts.createSourceFile(GATE, source, ts.ScriptTarget.Latest, true);
   const thrown = new Map();
-  for (const { 0: name, index } of source.matchAll(ERROR_NAME)) {
-    const before = source.slice(Math.max(0, index - 64), index);
-    if (NAME_LEFT_ALONE.test(before)) continue;
-    CHECK_LITERAL.lastIndex = index + name.length;
-    const literal = NAME_CONSTRUCTED.test(before)
-      ? CHECK_LITERAL.exec(source)
-      : null;
-    const check = literal ? (literal[1] ?? literal[2] ?? literal[3]) : null;
-    const line = source.slice(0, index).split('\n').length;
-    thrown.set(check, [...(thrown.get(check) ?? []), line]);
-  }
+  const visit = (node) => {
+    if (ts.isIdentifier(node) && node.text === ERROR_CLASS) {
+      let outer = node;
+      while (ts.isParenthesizedExpression(outer.parent)) outer = outer.parent;
+      const { parent } = outer;
+      const leftAlone =
+        (ts.isClassDeclaration(parent) &&
+          parent.name === node &&
+          !(ts.getCombinedModifierFlags(parent) & ts.ModifierFlags.Export)) ||
+        (ts.isBinaryExpression(parent) &&
+          parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword &&
+          parent.right === outer);
+      if (!leftAlone) {
+        const [first] =
+          ts.isNewExpression(parent) && parent.expression === outer
+            ? (parent.arguments ?? [])
+            : [];
+        const literal =
+          first &&
+          (ts.isStringLiteral(first) ||
+            ts.isNoSubstitutionTemplateLiteral(first));
+        const check = (literal && first.text) || null;
+        const { line } = file.getLineAndCharacterOfPosition(
+          node.getStart(file),
+        );
+        thrown.set(check, [...(thrown.get(check) ?? []), line + 1]);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
   return thrown;
 };
 
@@ -685,21 +701,21 @@ if (cases.length === 0)
       `can fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Every check the gate throws has its row, and every row is thrown. A case is held to the
-// table and the missing-case line below walks it, so a check thrown with neither a row nor
-// a case would be seen by neither: the list the table is held to is the source itself.
+// Every check a construction names has its row, and every row is named by one. A case is
+// held to the table and the missing-case line below walks it, so a check constructed with
+// neither a row nor a case would be seen by neither: the list the table is held to is the
+// source itself.
 const thrown = throwsOf(readFileSync(GATE, 'utf8'));
 const locations = (check) =>
-  thrown
-    .get(check)
+  [...new Set(thrown.get(check))]
     .map((line) => `${relative(ROOT, GATE)}:${line}`)
     .join(', ');
 if (thrown.has(null))
   problems.push(
     `${locations(null)}: \`CoverageError\` used where this reading resolves no check — it ` +
-      `reads a check only where \`new\` and the name share a line and a plain literal is ` +
-      `the first argument, with no comment inside, and it leaves alone nothing but the ` +
-      `class declaration, \`instanceof\` and the name itself in backticks`,
+      `reads a check only from a construction by name whose first argument is a string ` +
+      `literal, and it leaves alone nothing but the unexported class declaration and the ` +
+      `right side of \`instanceof\``,
   );
 const thrownChecks = [...thrown.keys()].filter((check) => check !== null);
 const unlisted = thrownChecks.filter((check) => !has(CHECK_POINTS, check));
@@ -834,5 +850,5 @@ if (problems.length) {
 console.log(
   `✓ Coverage: ${summary}. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own points, and each of the ` +
-    `${thrownChecks.length} checks its constructions name has its row and a case.`,
+    `${thrownChecks.length} checks the gate's constructions name has its row and a case.`,
 );

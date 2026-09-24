@@ -1,7 +1,7 @@
 # Negative control of the coverage gate
 
-Deliberately defective inputs. `tools/check-coverage.mjs` runs every check of its six points
-on each of them and **requires every one to be rejected — and rejected by the point it
+Deliberately defective inputs. `tools/check-coverage.mjs` runs all six of its points on
+each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its file is a fault just the same, because it proves something other
 than what it declares.
@@ -147,18 +147,21 @@ case ran green with 17 cases. The run reads its own file, collects the check of 
 constructed with no row is named with its line, and a row no construction names is named
 too: the table would list a check the source does not throw by name.
 
-A check is read only from `new`, the name and a plain literal first argument — spaces or
-tabs between the first two, whitespace alone around the parenthesis — so a comment ending in
-`new`, `class` or `instanceof` on the line above cannot stand in for the keyword. Every other
-use of the name — a variable or a concatenation for the check, a helper's parameter, a
-subclass, an alias, `new (CoverageError)(…)` — is reported by its line, because the table
-cannot be held to a check the source does not name; the class declaration, `instanceof` and
-the name itself in backticks are left alone, and the text is read comments included, so a
-construction quoted in a comment counts as one. What a reading of the text cannot see is
-what happens after a construction: a check relabelled on the error, or a second error class
-the catches accept, is not read. Measured on copies of the gate: the phantom throw reddens
-naming `impossible` and its line, a row no construction names reddens naming it, the phantom
-given a row asks for its case instead, a subclass, an alias or `Reflect.construct` throwing a
-check of its own reddens by its line — behind a comment ending in `class` or `instanceof` as
-well — a check added whole (throw, row and case) is green with 18 cases, and the real run
-stays green with 17.
+The source is read by the TypeScript parser, not by a pattern over its text. The rule's first
+reading was a pattern, and a review found it taking a comment that ended in `class` for the
+keyword: four copies threw a check past it and stayed green. That is
+[`lesson-236`](../../docs/lessons.md#lesson-236) one gate over — a pattern written against a
+parser is a second lexer. A check is the string literal a construction by name passes first.
+Every other reference to the class — a variable or a concatenation for the check, a helper's
+parameter, a subclass, an alias, an export, `Reflect.construct` — is reported by its line,
+because the table cannot be held to a check the source does not name; the declaration and
+the right side of `instanceof` are left alone, and comments and strings are no code, so they
+are not read at all. What a reading of the code cannot follow is what happens as it runs: a
+check relabelled on the error, a construction reached through another expression (`eval`,
+`.constructor`), or a second error class the catches accept.
+
+Measured on copies of the gate. The phantom throw reddens naming `impossible` and its line, a
+row no construction names reddens naming it, and the phantom given a row asks for its case
+instead. A subclass, an alias, `Reflect.construct` and an export each redden by their line,
+behind a comment ending in `class` or `instanceof` as well. A check added whole — throw, row
+and case — is green with 18 cases, and the real run stays green with 17.
