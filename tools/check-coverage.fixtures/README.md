@@ -211,12 +211,15 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   does not;
 - `ANSWERS`, changes to a prepared input of its own — two rows, a source constructing both, a
   reference and a case for each — with what `controlOf`, the whole control as a function of
-  its input, has to find: a literal phantom with no row, and one named like a member of every
-  object; a row nothing names; a use no check resolves from, twice on one line, and every use
-  unresolved; a gate of one check, and a class of another name than `ERROR_CLASS`; a source
-  the parser misreads in one place, in two, and in two with the first not on the last line; a
-  reference that fails; a row whose one case passes, and a case firing another check; no case
-  at all, a row with no case, and one whose only case is malformed (`uncovered`, both);
+  its input, has to find, down to the location a message gives: two literal phantoms with no
+  row, and one named like a member of every object; a row nothing names; a use no check
+  resolves from, twice on one line, and every use unresolved, on two; a gate of one check,
+  and a class of another name than `ERROR_CLASS`; a source the parser misreads in one place,
+  in two, and in two with the first not on the last line; a reference that fails; a row whose
+  one case passes, a case firing another check, and one firing another on its own point; a
+  line total and a branch total each changed alone under the other's threshold, so that the
+  builder writes each where it belongs; no case at all, a row with no case, and one whose only
+  case is malformed (`uncovered`, both);
 - `REFUSED` and `REFERENCE_REFUSED`, a case and a reference for every reason the builder
   refuses one, with a part of that reason — a refusal giving another reason is a rule gone
   quiet behind a neighbour — and one per edge where a rule has several: each key's kind of
@@ -236,12 +239,15 @@ entry in `ANSWERS`, and a new check the prepared reference does not pass reddens
 prepared input at once — give `PREPARED_REFERENCE` what the check asks, as `_reference.json`
 was given it. Nothing notices a rule no prepared input takes, a row of these tables deleted,
 or an edit to the own control itself — its loops and their catch, the comparisons, the
-mapping of the tables to inputs, the line handing its violations to the run. Reading the
-`say('…'` rules to require an input for each was considered and left out: that reading would
-need a control of its own, one floor up.
+mapping of the tables to inputs, the line handing its violations to the run. Nor an
+operation's presence tested by truthiness rather than by `has`: a falsy value is then dropped
+in silence, which hides no defect — `target` is the only operation that reaches point 4, and
+points 5 and 6 stay held by cases of one operation each. Reading the `say('…'` rules to
+require an input for each was considered and left out: that reading would need a control of
+its own, one floor up.
 
 Measured on copies of the gate in `tmp/`, each loosening one pattern or disabling one rule:
-all 122 red. 120 name the prepared input that caught them — 118 of those the real run alone
+all 134 red. 132 name the prepared input that caught them — 130 of those the real run alone
 passes, two it fails — and two (`isObject` loosened) crash the control over the real cases,
 before its own control is reached. The untouched copy is green, and so is a check added whole
 — throw, row and case: `foreign-report` came that way, and the real run is green with 22

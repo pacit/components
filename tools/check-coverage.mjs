@@ -1330,14 +1330,21 @@ const ANSWERS = [
     ],
   ],
   [
-    'a literal phantom with no row',
+    'a literal phantom with no row, and a second',
     {
       source: [
         ...PREPARED.source,
         `throw new ${ERROR_CLASS}('impossible', '');`,
+        `throw new ${ERROR_CLASS}('unheard', '');`,
       ],
     },
-    [['unlisted', 'impossible']],
+    [
+      [
+        'unlisted',
+        'impossible, unheard',
+        '`impossible` (the prepared source:4), `unheard` (the prepared source:5):',
+      ],
+    ],
   ],
   [
     'a row nothing names',
@@ -1356,9 +1363,15 @@ const ANSWERS = [
   ],
   [
     'every use unresolved, no check constructed',
-    { source: [PREPARED.source[0], `const Alias = ${ERROR_CLASS};`] },
+    {
+      source: [
+        PREPARED.source[0],
+        `const Alias = ${ERROR_CLASS};`,
+        `const Again = ${ERROR_CLASS};`,
+      ],
+    },
     [
-      ['unresolved', '2'],
+      ['unresolved', '2, 3', 'the prepared source:2, the prepared source:3:'],
       ['unthrown', 'report, complete'],
     ],
   ],
@@ -1399,7 +1412,13 @@ const ANSWERS = [
         'const r = 1 </x/.source.length;',
       ],
     },
-    [['misread', '5', 'with 2 errors']],
+    [
+      [
+        'misread',
+        '5',
+        'the prepared source:5: the TypeScript parser reads this file with 2 errors',
+      ],
+    ],
   ],
   [
     'a source the parser misreads in one place',
@@ -1410,7 +1429,13 @@ const ANSWERS = [
         'r = 1 </x/i;',
       ],
     },
-    [['misread', '5', 'with an error']],
+    [
+      [
+        'misread',
+        '5',
+        'the prepared source:5: the TypeScript parser reads this file with an error',
+      ],
+    ],
   ],
   [
     'a source misread in two places, the first not on the last line',
@@ -1422,7 +1447,13 @@ const ANSWERS = [
         's = 2 </y/i;',
       ],
     },
-    [['misread', '4', 'with 2 errors']],
+    [
+      [
+        'misread',
+        '4',
+        'the prepared source:4: the TypeScript parser reads this file with 2 errors',
+      ],
+    ],
   ],
   [
     'a reference that does not pass',
@@ -1444,6 +1475,49 @@ const ANSWERS = [
     'a case that fires another check',
     { files: { 'other.json': { ...DECLARED, dropReport: true } } },
     [['fired-other', 'other.json']],
+  ],
+  [
+    'a case that fires another check on its own point',
+    {
+      table: { report: 1, complete: 1 },
+      files: {
+        'complete.json': { ...DECLARED, point: 1, dropFromReport: [FILE] },
+        'other.json': { ...DECLARED, point: 1, dropReport: true },
+      },
+    },
+    [['fired-other', 'other.json']],
+  ],
+  [
+    'the line total changed alone, below the branch threshold',
+    {
+      files: {
+        [REFERENCE]: {
+          ...PREPARED_REFERENCE,
+          target: {
+            coverage: true,
+            coverageThresholds: { lines: 80, branches: 95 },
+          },
+        },
+        'lines.json': { ...DECLARED, pct: 90 },
+      },
+    },
+    [['passed', 'lines.json']],
+  ],
+  [
+    'the branch total changed alone, below the line threshold',
+    {
+      files: {
+        [REFERENCE]: {
+          ...PREPARED_REFERENCE,
+          target: {
+            coverage: true,
+            coverageThresholds: { lines: 95, branches: 80 },
+          },
+        },
+        'branches.json': { ...DECLARED, branchPct: 90 },
+      },
+    },
+    [['passed', 'branches.json']],
   ],
   [
     'a row whose one case is malformed',
@@ -1567,6 +1641,7 @@ const REFUSED = [
   ],
   [{ reportRoot: '' }, 'leaves a file where it was'],
   [{ reportRoot: '/x', absoluteReport: true }, 'no key to make absolute'],
+  [{ dropFromReport: [FILE], absoluteReport: true }, 'no key to make absolute'],
   [{ check: 'impossible', point: undefined }, "one of this gate's checks"],
   [{ point: 1 }, "one of this gate's checks"],
   [{ description: undefined }, 'has to say, in `description`'],
@@ -1587,7 +1662,17 @@ const REFUSED = [
 /** References the builder has to refuse, each with a part of the reason it has to give. */
 const REFERENCE_REFUSED = [
   ['that is not JSON', '{', 'not JSON'],
-  ['that is missing', unreadable('ENOENT'), 'the file is missing'],
+  [
+    'that is missing',
+    unreadable('ENOENT'),
+    'the file is missing; every case is built on it, so none of the 2 was judged',
+  ],
+  [
+    'that cannot be read',
+    unreadable('EACCES'),
+    'the file cannot be read (EACCES)',
+  ],
+  ['that is a list', '[]', 'the file is not an object'],
   ['with no report', { ...PREPARED_REFERENCE, report: undefined }, NO_SHAPE],
   [
     'whose sources are no list',
