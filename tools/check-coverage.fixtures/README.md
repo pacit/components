@@ -160,7 +160,8 @@ to a check the source does not name; the top-level declaration and the right sid
 all. A file the parser reads otherwise than Node runs it (`</` is a JSX token to it) is
 reported and not read. What a reading of the code cannot follow is what happens as it runs:
 a check relabelled on the error, a construction reached through another expression (`eval`,
-`.constructor`, `this`), or a second error class the catches accept.
+`.constructor`, `this`), or a second error class the catches accept. A violation reported
+without the class at all — a line pushed straight onto `problems` — is outside the table.
 
 Measured on copies of the gate. The phantom throw reddens naming `impossible` and its line, a
 row no construction names reddens naming it, and the phantom given a row asks for its case

@@ -635,7 +635,8 @@ const ERROR_CLASS = 'CoverageError';
  * right side of `instanceof` are left alone, and comments and strings are no references at
  * all. What a reading of the code cannot follow is what happens as it runs: a check
  * relabelled on the error, a construction reached through another expression (`eval`,
- * `.constructor`, `this`), or a second error class the catches accept.
+ * `.constructor`, `this`), or a second error class the catches accept. A violation reported
+ * without the class at all, a line pushed straight onto `problems`, is outside the table.
  */
 const throwsOf = (source) => {
   const file = ts.createSourceFile(GATE, source, ts.ScriptTarget.Latest, true);
@@ -679,17 +680,21 @@ const throwsOf = (source) => {
  * Where the parser reads a source otherwise than Node runs it. Node would not have started
  * on a syntax error, so every error the parser reports here is a misreading, and the checks
  * read off a misread file cannot be trusted: `</` is a JSX token to it in a JS file, and the
- * code behind it can turn into a string with a construction inside.
+ * code behind it can turn into a string with a construction inside. Only the errors that
+ * stand in the file count — the options and the emit can report their own, and those say
+ * nothing about the reading.
  */
 const misreadOf = (source) =>
-  ts.transpileModule(source, {
-    fileName: GATE,
-    reportDiagnostics: true,
-    compilerOptions: {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.Latest,
-    },
-  }).diagnostics ?? [];
+  (
+    ts.transpileModule(source, {
+      fileName: GATE,
+      reportDiagnostics: true,
+      compilerOptions: {
+        module: ts.ModuleKind.ESNext,
+        target: ts.ScriptTarget.Latest,
+      },
+    }).diagnostics ?? []
+  ).filter((diagnostic) => diagnostic.file && diagnostic.start !== undefined);
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
@@ -729,12 +734,9 @@ const here = (line) => `${relative(ROOT, GATE)}:${line}`;
 const misread = misreadOf(source);
 if (misread.length) {
   const [first] = misread;
-  const where =
-    first.file && first.start !== undefined
-      ? here(first.file.getLineAndCharacterOfPosition(first.start).line + 1)
-      : relative(ROOT, GATE);
+  const { line } = first.file.getLineAndCharacterOfPosition(first.start);
   problems.push(
-    `${where}: the TypeScript parser reads this file with ` +
+    `${here(line + 1)}: the TypeScript parser reads this file with ` +
       `${misread.length === 1 ? 'an error' : `${misread.length} errors`} Node does not ` +
       `have, the first "${ts.flattenDiagnosticMessageText(first.messageText, ' ')}" — no ` +
       `check read off a misread file can be trusted, so none is; spell the line so that ` +
@@ -747,8 +749,8 @@ const locations = (check) =>
 if (!misread.length && thrown.size === 0)
   problems.push(
     `${relative(ROOT, GATE)}: no reference to \`${ERROR_CLASS}\` at all — the reading ` +
-      `looks for that name, so a class renamed without \`ERROR_CLASS\` leaves it nothing ` +
-      `to hold the table to; rename it there too`,
+      `looks for the name \`ERROR_CLASS\` holds, so while that and the class's own name ` +
+      `differ it has nothing to hold the table to; give the two the same name`,
   );
 if (thrown.has(null))
   problems.push(
