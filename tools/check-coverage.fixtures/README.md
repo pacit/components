@@ -135,6 +135,20 @@ A new check in `check-coverage.mjs` comes **together with the case** that fires 
 with an identifier that tells you it was this check that fired — and with its row in
 `CHECK_POINTS`, since a case naming a check the table does not hold is refused. A check
 with no case is exactly what [`req-axis`](../../docs/00-axis.md) forbids: a promise with no
-machine able to fire on it, only one floor up. That is why a row no case declares is a
-violation of its own: the run walks the cases, so a check losing its last case would
+machine able to fire on it, only one floor up. That is why a row no readable case declares
+is a violation of its own: the run walks the cases, so a check losing its last case would
 otherwise leave nothing to notice it go.
+
+Both rules start from the table, so the table is held in turn to the gate's **own source**.
+A check thrown with neither a row nor a case met neither of them: the review of PR #17 named
+it, and a copy of the gate throwing `new CoverageError('impossible', …)` with no row and no
+case ran green with 17 cases. The run reads its own file, collects the check of every
+`new CoverageError('…'`, and requires that set to equal the rows both ways — a check thrown
+with no row is named with its line, and a row no throw uses is named too, since no input can
+fire it and a case declaring it could only fail. The check has to be a literal where it is
+thrown: a construction with anything else there (a variable, a helper's parameter, a
+concatenation) is reported by its line, because the table cannot be held to a check the
+source does not name. The text is read comments included, so a construction quoted in a
+comment counts as one. Measured on copies of the gate: the phantom throw reddens naming
+`impossible` and its line, a row no throw uses reddens naming it, the phantom given a row
+asks for its case instead, and the real run stays green with 17.

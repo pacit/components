@@ -188,7 +188,8 @@ class CoverageError extends Error {
 /**
  * The point each check belongs to. A case declares both, and is held to this table: a
  * point its check does not stand on would put the wrong number in every message about it.
- * A new check comes with its row here, as it comes with its case.
+ * A new check comes with its row here, as it comes with its case — and the run holds the
+ * table to the checks this file throws, both ways (`throwsOf`).
  */
 const CHECK_POINTS = {
   report: 1,
@@ -619,6 +620,24 @@ const buildFixture = (fx) => {
   return input;
 };
 
+/**
+ * The checks a source throws, each with the lines that construct it. Read off the text,
+ * comments included — a construction quoted in one counts as one. The check has to be the
+ * literal first argument; a construction with anything else there is filed under `null`,
+ * because the table can be held only to a check the source names where it is thrown.
+ */
+const CONSTRUCTION =
+  /\bnew\s+CoverageError\s*\(\s*(?:(['"`])([^'"`\\$\n]*)\1(?=\s*[,)]))?/g;
+const throwsOf = (source) => {
+  const thrown = new Map();
+  for (const match of source.matchAll(CONSTRUCTION)) {
+    const check = match[2] ?? null;
+    const line = source.slice(0, match.index).split('\n').length;
+    thrown.set(check, [...(thrown.get(check) ?? []), line]);
+  }
+  return thrown;
+};
+
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
@@ -646,6 +665,37 @@ if (cases.length === 0)
   problems.push(
     `tools/check-coverage.fixtures: no prepared inputs — a gate with no proof that it ` +
       `can fail is one more silent defect (req-quality-negative-control)`,
+  );
+
+// Every check the gate throws has its row, and every row is thrown. A case is held to the
+// table and the missing-case line below walks it, so a check thrown with neither a row nor
+// a case would be seen by neither: the list the table is held to is the source itself.
+const thrown = throwsOf(readFileSync(fileURLToPath(import.meta.url), 'utf8'));
+const lines = (check) =>
+  `line${thrown.get(check).length === 1 ? '' : 's'} ${thrown.get(check).join(', ')}`;
+if (thrown.has(null))
+  problems.push(
+    `${lines(null)}: a \`CoverageError\` whose check is not a literal — the table is held ` +
+      `to the checks this file names where it throws them, and this one it cannot read`,
+  );
+const checks = [...thrown.keys()].filter((check) => check !== null);
+const unlisted = checks.filter((check) => !has(CHECK_POINTS, check));
+if (unlisted.length)
+  problems.push(
+    `${unlisted.map((c) => `\`${c}\` (${lines(c)})`).join(', ')}: thrown, and ` +
+      `\`CHECK_POINTS\` holds no row for ${unlisted.length === 1 ? 'it' : 'them'} — a ` +
+      `case naming a check the table does not hold is refused, and the missing-case line ` +
+      `walks the rows, so nothing would ever show ${unlisted.length === 1 ? 'it' : 'them'} fire`,
+  );
+const unthrown = Object.keys(CHECK_POINTS).filter(
+  (check) => !thrown.has(check),
+);
+if (unthrown.length)
+  problems.push(
+    `${unthrown.map((c) => `\`${c}\``).join(', ')}: ` +
+      `${unthrown.length === 1 ? 'a row' : 'rows'} of \`CHECK_POINTS\` no throw uses — no ` +
+      `input can make the gate fire ${unthrown.length === 1 ? 'it' : 'them'}, so the table ` +
+      `lists a check the gate does not make, and a case declaring one can only fail`,
   );
 
 /**
@@ -736,13 +786,16 @@ for (const name of reference ? cases : []) {
 
 // Every check has a case. The loop above walks the cases, so a check whose last case is
 // deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
-// is what `req-axis` forbids. `CHECK_POINTS` is the list of checks; each row needs a case.
+// is what `req-axis` forbids. A row the gate throws is a check, and needs a readable case;
+// a row no throw uses is named above instead, since a case for it could only fail.
 const uncovered = reference
-  ? Object.keys(CHECK_POINTS).filter((check) => !covered.has(check))
+  ? Object.keys(CHECK_POINTS).filter(
+      (check) => thrown.has(check) && !covered.has(check),
+    )
   : [];
 if (uncovered.length)
   problems.push(
-    `${uncovered.map((c) => `\`${c}\``).join(', ')}: no case declares ` +
+    `${uncovered.map((c) => `\`${c}\``).join(', ')}: no readable case declares ` +
       `${uncovered.length === 1 ? 'this check' : 'these checks'} — a check with no case ` +
       `is a promise no machine can fire on (req-axis), and nothing else notices its last ` +
       `case go`,
@@ -759,5 +812,6 @@ if (problems.length) {
 
 console.log(
   `✓ Coverage: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and each of the ` +
+    `${checks.length} checks the gate throws has its row and a case.`,
 );
