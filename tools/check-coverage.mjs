@@ -22,7 +22,8 @@ import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const GATE = fileURLToPath(import.meta.url);
+const ROOT = join(dirname(GATE), '..');
 const PROJECT = 'libs/components';
 const REPORT = 'coverage/components/coverage-summary.json';
 const FIXTURES = join(ROOT, 'tools/check-coverage.fixtures');
@@ -173,10 +174,10 @@ const librarySources = () =>
     .sort();
 
 /**
- * A violation of one of the six checks. It carries the check's identifier, not just the
- * message: the negative control has to verify that a prepared input fired ON ITS OWN
- * point — a fixture failing for a reason other than the one written into it proves
- * something other than what it declares.
+ * A violation of one of the checks, which `CHECK_POINTS` sorts into the six points. It
+ * carries the check's identifier, not just the message: the negative control has to verify
+ * that a prepared input fired ON ITS OWN point — a fixture failing for a reason other than
+ * the one written into it proves something other than what it declares.
  */
 class CoverageError extends Error {
   constructor(check, description) {
@@ -621,27 +622,33 @@ const buildFixture = (fx) => {
 };
 
 /**
- * The checks a source throws, each with the lines that construct it — read off the text,
- * comments included, so a construction quoted in one counts as one. A check is read only
- * where the class is constructed by name with the check as a plain literal first argument.
- * Every other use of the name — a construction whose check is no literal, a helper's
- * parameter, a subclass, an alias, a construction spelt some other way — is filed under
- * `null`: the table can be held only to a check the source names where it is thrown.
- * Declaring the class, `instanceof` and a mention in backticks are left alone. The patterns
- * bracket one letter of the name, so that they are no use of it themselves.
+ * The checks a source throws, as its constructions name them, each with its lines — read off
+ * the text, comments included, so a construction quoted in one counts as one. A check is
+ * read only from the name constructed with `new` and a plain literal first argument, with
+ * whitespace alone between them, and only spaces or tabs before the name: a comment ending
+ * in `new`, `class` or `instanceof` on the line above cannot stand in for the keyword. Every
+ * other use of the name — a check that is no literal, a helper's parameter, a subclass, an
+ * alias, a construction spelt another way — is filed under `null`, and so reported; the
+ * class declaration, `instanceof` and the name itself in backticks are left alone. What the
+ * text cannot show is what happens after a construction: a check relabelled on the error,
+ * or another class the catches accept, is not read. The lookback of 64 characters is far
+ * more than any spacing prettier leaves, and a longer gap is reported, not skipped. The
+ * patterns bracket one letter of the name, so that they are no use of it themselves.
  */
-const NAME = /\bCoverage[E]rror\b/g;
-const LEFT_ALONE = /(?:\bclass|\binstanceof)\s+$|`$/;
-const CONSTRUCTED = /\bnew\s+$/;
-const LITERAL =
+const ERROR_NAME = /\bCoverage[E]rror\b/g;
+const NAME_LEFT_ALONE = /(?:\bclass|\binstanceof)[ \t]+$|`$/;
+const NAME_CONSTRUCTED = /\bnew[ \t]+$/;
+const CHECK_LITERAL =
   /\s*\(\s*(?:'([^'\\\n]+)'|"([^"\\\n]+)"|`([^`\\$\n]+)`)(?=\s*[,)])/y;
 const throwsOf = (source) => {
   const thrown = new Map();
-  for (const { 0: name, index } of source.matchAll(NAME)) {
+  for (const { 0: name, index } of source.matchAll(ERROR_NAME)) {
     const before = source.slice(Math.max(0, index - 64), index);
-    if (LEFT_ALONE.test(before)) continue;
-    LITERAL.lastIndex = index + name.length;
-    const literal = CONSTRUCTED.test(before) ? LITERAL.exec(source) : null;
+    if (NAME_LEFT_ALONE.test(before)) continue;
+    CHECK_LITERAL.lastIndex = index + name.length;
+    const literal = NAME_CONSTRUCTED.test(before)
+      ? CHECK_LITERAL.exec(source)
+      : null;
     const check = literal ? (literal[1] ?? literal[2] ?? literal[3]) : null;
     const line = source.slice(0, index).split('\n').length;
     thrown.set(check, [...(thrown.get(check) ?? []), line]);
@@ -681,36 +688,35 @@ if (cases.length === 0)
 // Every check the gate throws has its row, and every row is thrown. A case is held to the
 // table and the missing-case line below walks it, so a check thrown with neither a row nor
 // a case would be seen by neither: the list the table is held to is the source itself.
-const ownFile = fileURLToPath(import.meta.url);
-const thrown = throwsOf(readFileSync(ownFile, 'utf8'));
-const at = (check) =>
+const thrown = throwsOf(readFileSync(GATE, 'utf8'));
+const locations = (check) =>
   thrown
     .get(check)
-    .map((line) => `${relative(ROOT, ownFile)}:${line}`)
+    .map((line) => `${relative(ROOT, GATE)}:${line}`)
     .join(', ');
 if (thrown.has(null))
   problems.push(
-    `${at(null)}: \`CoverageError\` used where this reading resolves no check — the table ` +
-      `is held to the checks the source names, so a construction spells its check as a ` +
-      `plain literal first argument, and the name appears nowhere else but in the class ` +
-      `declaration, \`instanceof\` and a mention in backticks`,
+    `${locations(null)}: \`CoverageError\` used where this reading resolves no check — it ` +
+      `reads a check only where \`new\` and the name share a line and a plain literal is ` +
+      `the first argument, with no comment inside, and it leaves alone nothing but the ` +
+      `class declaration, \`instanceof\` and the name itself in backticks`,
   );
-const checks = [...thrown.keys()].filter((check) => check !== null);
-const unlisted = checks.filter((check) => !has(CHECK_POINTS, check));
+const thrownChecks = [...thrown.keys()].filter((check) => check !== null);
+const unlisted = thrownChecks.filter((check) => !has(CHECK_POINTS, check));
 if (unlisted.length)
   problems.push(
-    `${unlisted.map((c) => `\`${c}\` (${at(c)})`).join(', ')}: thrown with no row in ` +
-      `\`CHECK_POINTS\` — a case naming a check the table does not hold is refused, and ` +
-      `the missing-case line walks the rows: nothing would ever ask for a case`,
+    `${unlisted.map((c) => `\`${c}\` (${locations(c)})`).join(', ')}: constructed with ` +
+      `no row in \`CHECK_POINTS\` — a case naming a check the table does not hold is ` +
+      `refused, and the missing-case line walks the rows: nothing would ever ask for a case`,
   );
 const unthrown = Object.keys(CHECK_POINTS).filter(
   (check) => !thrown.has(check),
 );
 if (unthrown.length)
   problems.push(
-    `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\` and named by no ` +
-      `construction in this file — the table lists a check the source does not ` +
-      `throw by name: delete the row, or name the check where it is thrown`,
+    `${unthrown.map((c) => `\`${c}\``).join(', ')}: in \`CHECK_POINTS\`, and no ` +
+      `construction this reading resolves names it — delete the row, or spell the check ` +
+      `at its throw so that one does`,
   );
 
 /**
@@ -801,8 +807,8 @@ for (const name of reference ? cases : []) {
 
 // Every check has a case. The loop above walks the cases, so a check whose last case is
 // deleted leaves it nothing to notice — a promise with no machine able to fire on it, which
-// is what `req-axis` forbids. A row the gate throws by name is a check, and needs a readable
-// case; a row no construction names is reported above instead, and a case is not its remedy.
+// is what `req-axis` forbids. A row a construction names is a check, and needs a readable
+// case; a row none names is reported above instead, and a case is not its remedy.
 const uncovered = reference
   ? Object.keys(CHECK_POINTS).filter(
       (check) => thrown.has(check) && !covered.has(check),
@@ -828,5 +834,5 @@ if (problems.length) {
 console.log(
   `✓ Coverage: ${summary}. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own points, and each of the ` +
-    `${checks.length} checks the gate throws has its row and a case.`,
+    `${thrownChecks.length} checks its constructions name has its row and a case.`,
 );

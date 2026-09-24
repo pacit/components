@@ -1,7 +1,7 @@
 # Negative control of the coverage gate
 
-Deliberately defective inputs. `tools/check-coverage.mjs` runs all six of its checks on
-each of them and **requires every one to be rejected — and rejected by the point it
+Deliberately defective inputs. `tools/check-coverage.mjs` runs every check of its six points
+on each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its file is a fault just the same, because it proves something other
 than what it declares.
@@ -143,16 +143,22 @@ Both rules start from the table, so the table is held in turn to the gate's **ow
 A check thrown with neither a row nor a case met neither of them: the review of PR #17 named
 it, and a copy of the gate throwing `new CoverageError('impossible', …)` with no row and no
 case ran green with 17 cases. The run reads its own file, collects the check of every
-`new CoverageError('…'`, and requires that set to equal the rows both ways — a check thrown
-with no row is named with its line, and a row no construction names is named too: the table
-would list a check the source does not throw by name. A check is read only where the class
-is constructed by name with the check as a plain literal first argument; every other use of
-the name — a variable or a concatenation for the check, a helper's parameter, a subclass, an
-alias, `new (CoverageError)(…)` — is reported by its line, because the table cannot be held
-to a check the source does not name. Declaring the class, `instanceof` and a mention in
-backticks are left alone, and the text is read comments included, so a construction quoted
-in a comment counts as one. Measured on copies of the gate: the phantom throw reddens naming
-`impossible` and its line, a row no construction names reddens naming it, the phantom given
-a row asks for its case instead, a subclass or an alias throwing a check of its own reddens
-by its line, a check added whole — throw, row and case — is green with 18 cases, and the
-real run stays green with 17.
+`new CoverageError('…'`, and requires that set to equal the rows both ways — a check
+constructed with no row is named with its line, and a row no construction names is named
+too: the table would list a check the source does not throw by name.
+
+A check is read only from `new`, the name and a plain literal first argument — spaces or
+tabs between the first two, whitespace alone around the parenthesis — so a comment ending in
+`new`, `class` or `instanceof` on the line above cannot stand in for the keyword. Every other
+use of the name — a variable or a concatenation for the check, a helper's parameter, a
+subclass, an alias, `new (CoverageError)(…)` — is reported by its line, because the table
+cannot be held to a check the source does not name; the class declaration, `instanceof` and
+the name itself in backticks are left alone, and the text is read comments included, so a
+construction quoted in a comment counts as one. What a reading of the text cannot see is
+what happens after a construction: a check relabelled on the error, or a second error class
+the catches accept, is not read. Measured on copies of the gate: the phantom throw reddens
+naming `impossible` and its line, a row no construction names reddens naming it, the phantom
+given a row asks for its case instead, a subclass, an alias or `Reflect.construct` throwing a
+check of its own reddens by its line — behind a comment ending in `class` or `instanceof` as
+well — a check added whole (throw, row and case) is green with 18 cases, and the real run
+stays green with 17.
