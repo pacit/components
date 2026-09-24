@@ -1479,10 +1479,24 @@ const ANSWERS = [
   [
     'a case that fires another check on its own point',
     {
-      table: { report: 1, complete: 1 },
+      source: [
+        ...PREPARED.source,
+        `throw new ${ERROR_CLASS}('foreign-report', '');`,
+      ],
+      table: { ...PREPARED.table, 'foreign-report': 1 },
       files: {
-        'complete.json': { ...DECLARED, point: 1, dropFromReport: [FILE] },
-        'other.json': { ...DECLARED, point: 1, dropReport: true },
+        'foreign.json': {
+          ...DECLARED,
+          point: 1,
+          check: 'foreign-report',
+          reportRoot: '../x',
+        },
+        'other.json': {
+          ...DECLARED,
+          point: 1,
+          check: 'foreign-report',
+          dropReport: true,
+        },
       },
     },
     [['fired-other', 'other.json']],

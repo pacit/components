@@ -226,8 +226,8 @@ time, on prepared inputs in the gate, each answered as written beside it or name
   value, and each switch set to false; each operation `dropReport` excludes; each list whose
   paths must be there, one path of two that is not, one of two that is no string, and a list
   set to `null`; every kind of JSON a file can be instead of an object, and one file of two in
-  the report that is none; the names every object inherits, `__proto__` and `constructor`,
-  that only `has` refuses. The two refusals that need a reference of their own — a metric
+  the report that is none; a report emptied before its keys are made absolute; the names every
+  object inherits, `__proto__` and `constructor`, that only `has` refuses. The two refusals that need a reference of their own — a metric
   that is no object, a move landing one of two files on a file the report holds — stand in
   `ANSWERS`, and the one prepared description is exactly the 40 characters the rule asks for.
 
@@ -239,15 +239,17 @@ entry in `ANSWERS`, and a new check the prepared reference does not pass reddens
 prepared input at once — give `PREPARED_REFERENCE` what the check asks, as `_reference.json`
 was given it. Nothing notices a rule no prepared input takes, a row of these tables deleted,
 or an edit to the own control itself — its loops and their catch, the comparisons, the
-mapping of the tables to inputs, the line handing its violations to the run. Nor an
-operation's presence tested by truthiness rather than by `has`: a falsy value is then dropped
-in silence, which hides no defect — `target` is the only operation that reaches point 4, and
-points 5 and 6 stay held by cases of one operation each. Reading the `say('…'` rules to
+mapping of the tables to inputs, the line handing its violations to the run. Nor five
+presence tests written by truthiness rather than by `has` — of `pct`, `branchPct`, `target`
+and `exceptions`, and of the operations `dropReport` excludes: a falsy value is then dropped,
+in silence beside another operation and as "unchanged" alone, which hides no defect —
+`target` is the only operation that reaches point 4, and points 5 and 6 stay held by cases of
+one operation each. Reading the `say('…'` rules to
 require an input for each was considered and left out: that reading would need a control of
 its own, one floor up.
 
 Measured on copies of the gate in `tmp/`, each loosening one pattern or disabling one rule:
-all 134 red. 132 name the prepared input that caught them — 130 of those the real run alone
+all 135 red. 133 name the prepared input that caught them — 131 of those the real run alone
 passes, two it fails — and two (`isObject` loosened) crash the control over the real cases,
 before its own control is reached. The untouched copy is green, and so is a check added whole
 — throw, row and case: `foreign-report` came that way, and the real run is green with 22
