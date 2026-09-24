@@ -1,6 +1,6 @@
 # Negative control of the coverage gate
 
-Deliberately defective inputs. `tools/check-coverage.mjs` runs all six of its checks on
+Deliberately defective inputs. `tools/check-coverage.mjs` runs all six of its points on
 each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its file is a fault just the same, because it proves something other
@@ -135,6 +135,36 @@ A new check in `check-coverage.mjs` comes **together with the case** that fires 
 with an identifier that tells you it was this check that fired — and with its row in
 `CHECK_POINTS`, since a case naming a check the table does not hold is refused. A check
 with no case is exactly what [`req-axis`](../../docs/00-axis.md) forbids: a promise with no
-machine able to fire on it, only one floor up. That is why a row no case declares is a
-violation of its own: the run walks the cases, so a check losing its last case would
+machine able to fire on it, only one floor up. That is why a row no readable case declares
+is a violation of its own: the run walks the cases, so a check losing its last case would
 otherwise leave nothing to notice it go.
+
+Both rules start from the table, so the table is held in turn to the gate's **own source**.
+A check thrown with neither a row nor a case met neither of them: the review of PR #17 named
+it, and a copy of the gate throwing `new CoverageError('impossible', …)` with no row and no
+case ran green with 17 cases. The run reads its own file, collects the check of every
+`new CoverageError('…'`, and requires that set to equal the rows both ways — a check
+constructed with no row is named with its line, and a row no construction names is named
+too: the table would list a check the source does not throw by name.
+
+The source is read by the TypeScript parser, not by a pattern over its text. PR #18 read it
+with patterns first, and its review found one taking a comment that ended in `class` or
+`instanceof` for the keyword: four copies threw a check past it and stayed green. That is
+[`lesson-236`](../../docs/lessons.md#lesson-236) one gate over — a pattern written against a
+parser is a second lexer. A check is the non-empty string literal a construction by name
+passes first. Every other reference to the class — a variable or a concatenation for the
+check, a helper's parameter, a subclass, an alias, an export, `Reflect.construct`, a class of
+the same name in an inner scope — is reported by its line, because the table cannot be held
+to a check the source does not name; the top-level declaration and the right side of
+`instanceof` are left alone, and comments and strings are no code, so they are not read at
+all. A file the parser reads otherwise than Node runs it (`</` is a JSX token to it) is
+reported and not read. What a reading of the code cannot follow is what happens as it runs:
+a check relabelled on the error, a construction reached through another expression (`eval`,
+`.constructor`, `this`), or a second error class the catches accept. A violation reported
+without the class at all — a line pushed straight onto `problems` — is outside the table.
+
+Measured on copies of the gate. The phantom throw reddens naming `impossible` and its line, a
+row no construction names reddens naming it, and the phantom given a row asks for its case
+instead. A subclass, an alias, `Reflect.construct` and an export each redden by their line,
+behind a comment ending in `class` or `instanceof` as well. A check added whole — throw, row
+and case — is green with 18 cases, and the real run stays green with 17.
