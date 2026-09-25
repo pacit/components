@@ -956,6 +956,15 @@ const buildFixture = (name, fx) => {
 
 const RELEASE_MODE = process.argv.includes('--release');
 const REHEARSAL_MODE = process.argv.includes('--rehearsal');
+// One artefact per run: the release's, or a dry run's. Both flags at once would read as
+// `--release` and leave the usage line untrue, so they are refused rather than ranked.
+if (RELEASE_MODE && REHEARSAL_MODE) {
+  console.error(
+    'X `--release` and `--rehearsal` name two different artefacts — the release and a dry ' +
+      "run's — and one run examines one of them.",
+  );
+  process.exit(2);
+}
 const problems = [];
 
 const result = checkPackage(DIST, {
@@ -1035,7 +1044,13 @@ for (const name of cases) {
     // and the case says which of the two it gets there: point 6 blocks, because a dry run
     // packs the same manifest; point 10 warns, because a dry run builds before any stamp,
     // and the first rehearsal after a `@since next` reached `main` failed on exactly that
-    // (`lesson-242`). A release-only case that does not say is refused.
+    // (`lesson-242`). A release-only case that does not say is refused — and so is a
+    // `rehearsal` on a case that is not release-only, since nothing below would read it.
+    if (fx.rehearsal !== undefined && !fx.releaseOnly)
+      problems.push(
+        `${name}: \`rehearsal\` without \`releaseOnly\` — the third reading is examined ` +
+          `only on a case with two modes, so this declaration is never read`,
+      );
     if (fx.releaseOnly) {
       const ordinary = checkPackage(directory, { release: false });
       if (ordinary.error)
@@ -1050,14 +1065,17 @@ for (const name of cases) {
         );
       const rehearsal = checkPackage(directory, { rehearsal: true });
       if (fx.rehearsal === 'blocks') {
-        if (rehearsal.error?.check !== fx.check)
+        if (!rehearsal.error)
           problems.push(
-            `${name}: under \`--rehearsal\` the gate ` +
-              (rehearsal.error
-                ? `fired \`${rehearsal.error.check}\``
-                : 'passed') +
-              ` and point ${fx.point} (\`${fx.check}\`) was meant to block — a dry run ` +
-              `would rehearse past what the release refuses`,
+            `${name}: under \`--rehearsal\` the gate passed and point ${fx.point} ` +
+              `(\`${fx.check}\`) was meant to block — a dry run would rehearse past what ` +
+              `the release refuses`,
+          );
+        else if (rehearsal.error.check !== fx.check)
+          problems.push(
+            `${name}: under \`--rehearsal\` check \`${rehearsal.error.check}\` fired, and ` +
+              `point ${fx.point} (\`${fx.check}\`) was meant to — the case is rejected for ` +
+              `the wrong reason`,
           );
       } else if (fx.rehearsal === 'warns') {
         if (rehearsal.error)

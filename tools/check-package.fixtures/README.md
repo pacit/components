@@ -91,7 +91,8 @@ reading, and such a case says which of the two it gets there, `"rehearsal": "blo
 is what a dry run cannot make, so `since-next` warns — held to `--release`, the first
 rehearsal after a `@since next` reached `main` failed there
 ([`lesson-242`](../../docs/lessons.md#lesson-242)). A release-only case that does not say
-is refused.
+is refused, and so is a `rehearsal` on a case that is not release-only, which nothing would
+read.
 
 Point 7 is the first with more than one rule under one check, so its cases name the
 **rule** as well, and the gate compares that too. The argument is the one the whole
