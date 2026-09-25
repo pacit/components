@@ -91,6 +91,10 @@ publishing is configured a minute after the first publish, because it cannot be 
 - **A dry run still cannot reach one thing**: it writes no manifest, so `stamp-version` reads
   the old version ([`lesson-41`](../lessons.md#lesson-41)). The real run is the only proof of
   the order, and `PCT_VERSION` in the published package equal to the tag is its reading.
+  Since 2026-09-25 the dry run's gate knows this: `release.mjs` hands it `--rehearsal`, and
+  the `@since next` no stamp has dated is a warning naming what the real run will date, where
+  `--release` refuses it — the first rehearsal after the word reached `main` had ended there
+  ([`lesson-242`](../lessons.md#lesson-242)).
 
 ## What this costs us
 

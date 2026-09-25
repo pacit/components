@@ -77,7 +77,8 @@ the consumer does not have.
 
 **Gate:** `libs/components/check-package.mjs` (point 6) — two different severities, because
 these are two different conditions. Manifest fields: a warning in an ordinary run, an
-**error under `--release`**, for as long as `repository` has nothing to point at. The
+**error under `--release`** (and under `--rehearsal`, the dry run's mode, which packs the
+same manifest), for as long as `repository` has nothing to point at. The
 `licence` check: **always an error** — a LICENSE file in the artifact, non-empty, naming
 a licence that matches the `license` field, with a `Copyright (c) <year> <entity>` line.
 Plus `tools/check-consumer.mjs` (point 1, rule `licence-missing`) — a file present in `dist`
@@ -100,6 +101,7 @@ call it a match. The archive is guarded by
 `tools/check-package.fixtures/citation-relative/`, `citation-bare/` and `citation-none/` —
 a path, a word, and a package whose types cite nothing, each rejected on its own rule
 **Decision:** [0015 — MIT everywhere, rights to the entity, no CLA](../decisions/0015-license-and-model.md)
+**Lessons:** [`lesson-242`](../lessons.md#lesson-242)
 **Binds at:** the first publish — the LICENSE file, its gate and the `repository` field are
 all in place, and `github.com/pacit/components` has been public since 2026-09-15, so
 provenance has a repository to agree with. The citations resolve once the site answers at
@@ -168,7 +170,8 @@ types)
 point, and `_reader/`, a prepared library whose every API the readers must return, written
 with the `export` keyword, with a list, and under names several declarations share;
 `tools/check-package.fixtures/since-next/` on the release side, warning day to day and
-blocking under `--release`
+under `--rehearsal` — a dry run builds before any stamp — and blocking under `--release`
+**Lessons:** [`lesson-242`](../lessons.md#lesson-242)
 **Non-goals:** a part. A part is markup, and a since column in the card would be a second
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
 one: seventy-four are dated, most of them the plumbing between a component and its parts,

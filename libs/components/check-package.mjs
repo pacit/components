@@ -13,7 +13,8 @@
  *  4. `PCT_VERSION` in the code matches `version` from the manifest,
  *  5. the `ng add` / `ng update` collections are there and their factories point at
  *     compiled files,
- *  6. the manifest has the metadata publishing needs (a warning; `--release` blocks),
+ *  6. the manifest has the metadata publishing needs (a warning; `--release` and
+ *     `--rehearsal` block),
  *  7. the dependency lists: nothing forbidden is imported, declared or permitted, every
  *     declared name is deliberate, everything the code imports is declared, and the
  *     `@angular/*` ranges admit the compiler that built the package,
@@ -23,13 +24,15 @@
  *     repository path, no bare `req-*` / `lesson-*`, no foreign host, and not zero of them
  *     (`req-release-metadata`; the rewrite is `link-citations.mjs`, decision 0078),
  * 10. the shipped types carry no `@since next` — the release stamps the version before the
- *     build, so a `next` in `types/` is an artefact of unstamped sources (a warning;
- *     `--release` blocks; `req-release-since`, decision 0080).
+ *     build, so a `next` in `types/` is an artefact of unstamped sources (a warning, under
+ *     `--rehearsal` too, since a dry run builds before any stamp; `--release` blocks;
+ *     `req-release-since`, decision 0080).
  *
  * Point 3 is the one that catches the regression — an empty file passes 1 and 2 as well.
  * Negative control: `tools/check-package.fixtures/` (`req-quality-negative-control`).
  *
- * Usage: node libs/components/check-package.mjs [--release]  (--release: points 6 and 10 block)
+ * Usage: node libs/components/check-package.mjs [--release | --rehearsal]
+ *   (--release: points 6 and 10 block; --rehearsal: the dry run's artefact — 6 blocks, 10 warns)
  */
 import {
   cpSync,
@@ -218,7 +221,7 @@ class PackageError extends Error {
  * violation — the checks run from the most basic one, so the later ones would have
  * nothing to examine anyway. Returns a summary sentence.
  */
-const checks = (ROOT, { release }, warnings) => {
+const checks = (ROOT, { release, rehearsal }, warnings) => {
   const fail = (check, msg, rule) => {
     throw new PackageError(check, msg, rule);
   };
@@ -385,7 +388,8 @@ const checks = (ROOT, { release }, warnings) => {
   // **refuses** to issue provenance when it is missing or disagrees with the repository
   // the publish runs from. As long as the project has no remote, a missing field is not a
   // build error — it is a lack of release readiness, so day to day it only warns and
-  // blocks under `--release`.
+  // blocks under `--release` — and under `--rehearsal`, since a dry run packs the same
+  // manifest, and a rehearsal that lets it through has rehearsed nothing.
   const REQUIRED_META = {
     description: 'npm shows this on the package page and in search results',
     license: 'without it npm marks the package UNLICENSED',
@@ -400,7 +404,7 @@ const checks = (ROOT, { release }, warnings) => {
     const list = missingMeta
       .map(([key, why]) => `  - ${key}  (${why})`)
       .join('\n');
-    if (release) {
+    if (release || rehearsal) {
       fail(
         'metadata',
         `the package manifest lacks fields required for publishing:\n${list}\n` +
@@ -865,7 +869,10 @@ const checks = (ROOT, { release }, warnings) => {
   // package does not (`check-since`, decision 0080); `stamp-version.mjs` turns it into the
   // version on the release run, before the build — so a `next` in the shipped types is an
   // artefact built from sources nobody stamped. Between releases that is the ordinary state
-  // of `main` and is said as a warning; a release is the moment it must not be true.
+  // of `main` and is said as a warning; a release is the moment it must not be true. A dry
+  // run is not that moment: it writes no manifest, so nothing is stamped before its build
+  // (decision 0079, `lesson-41`), and under `--rehearsal` the same finding is the warning
+  // that names what the real run will date (`lesson-242`).
   const undated = [];
   for (const path of files.filter(
     (p) => p.includes(`${sep}types${sep}`) && p.endsWith('.d.ts'),
@@ -903,13 +910,13 @@ const checks = (ROOT, { release }, warnings) => {
  * exit code — that is, in a way that makes a fixture firing for the wrong reason look
  * like proof.
  */
-const checkPackage = (root, { release = false } = {}) => {
+const checkPackage = (root, { release = false, rehearsal = false } = {}) => {
   const warnings = [];
   try {
     return {
       error: null,
       warnings,
-      description: checks(root, { release }, warnings),
+      description: checks(root, { release, rehearsal }, warnings),
     };
   } catch (e) {
     if (!(e instanceof PackageError)) throw e;
@@ -948,9 +955,22 @@ const buildFixture = (name, fx) => {
 // ── the package ────────────────────────────────────────────────────────────────────
 
 const RELEASE_MODE = process.argv.includes('--release');
+const REHEARSAL_MODE = process.argv.includes('--rehearsal');
+// One artefact per run: the release's, or a dry run's. Both flags at once would read as
+// `--release` and leave the usage line untrue, so they are refused rather than ranked.
+if (RELEASE_MODE && REHEARSAL_MODE) {
+  console.error(
+    'X `--release` and `--rehearsal` name two different artefacts — the release and a dry ' +
+      "run's — and one run examines one of them.",
+  );
+  process.exit(2);
+}
 const problems = [];
 
-const result = checkPackage(DIST, { release: RELEASE_MODE });
+const result = checkPackage(DIST, {
+  release: RELEASE_MODE,
+  rehearsal: REHEARSAL_MODE,
+});
 if (result.error)
   problems.push(`${result.error.check}: ${result.error.message}`);
 for (const o of result.warnings) console.warn(`! ${o}`);
@@ -1017,10 +1037,20 @@ for (const name of cases) {
           `\`${fx.rule}\` was meant to — the case is rejected for the wrong reason`,
       );
 
-    // Point 6 is the only one with two modes, so its fixture examines both: under
-    // `--release` it blocks, day to day it only warns. The "it blocks" assertion alone
-    // would let through a regression in which point 6 starts blocking always — and then a
-    // repository with no remote would not build at all.
+    // Points 6 and 10 have two modes, so their fixtures examine both: under `--release`
+    // they block, day to day they only warn. The "it blocks" assertion alone would let
+    // through a regression in which point 6 starts blocking always — and then a
+    // repository with no remote would not build at all. `--rehearsal` is a third reading,
+    // and the case says which of the two it gets there: point 6 blocks, because a dry run
+    // packs the same manifest; point 10 warns, because a dry run builds before any stamp,
+    // and the first rehearsal after a `@since next` reached `main` failed on exactly that
+    // (`lesson-242`). A release-only case that does not say is refused — and so is a
+    // `rehearsal` on a case that is not release-only, since nothing below would read it.
+    if (fx.rehearsal !== undefined && !fx.releaseOnly)
+      problems.push(
+        `${name}: \`rehearsal\` without \`releaseOnly\` — the third reading is examined ` +
+          `only on a case with two modes, so this declaration is never read`,
+      );
     if (fx.releaseOnly) {
       const ordinary = checkPackage(directory, { release: false });
       if (ordinary.error)
@@ -1032,6 +1062,41 @@ for (const name of cases) {
         problems.push(
           `${name}: in an ordinary run neither an error nor a warning — ` +
             `missing metadata passes without a trace`,
+        );
+      const rehearsal = checkPackage(directory, { rehearsal: true });
+      if (fx.rehearsal === 'blocks') {
+        if (!rehearsal.error)
+          problems.push(
+            `${name}: under \`--rehearsal\` the gate passed and point ${fx.point} ` +
+              `(\`${fx.check}\`) was meant to block — a dry run would rehearse past what ` +
+              `the release refuses`,
+          );
+        else if (rehearsal.error.check !== fx.check)
+          problems.push(
+            `${name}: under \`--rehearsal\` check \`${rehearsal.error.check}\` fired, and ` +
+              `point ${fx.point} (\`${fx.check}\`) was meant to — the case is rejected for ` +
+              `the wrong reason`,
+          );
+      } else if (fx.rehearsal === 'warns') {
+        if (rehearsal.error)
+          problems.push(
+            `${name}: under \`--rehearsal\` the gate BLOCKS (${rehearsal.error.check}) ` +
+              `and was meant only to warn — a dry run builds before any stamp, so every ` +
+              `rehearsal would end here (\`lesson-242\`)`,
+          );
+        else if (rehearsal.warnings.length === 0)
+          problems.push(
+            `${name}: under \`--rehearsal\` neither an error nor a warning — what the ` +
+              `real run is to stamp passes without a trace`,
+          );
+      } else
+        problems.push(
+          `${name}: ` +
+            (fx.rehearsal === undefined
+              ? '`releaseOnly` without `rehearsal`'
+              : `\`rehearsal\` is \`${JSON.stringify(fx.rehearsal)}\``) +
+            ` — a case with two modes says what the third reading does: ` +
+            `\`"blocks"\` or \`"warns"\``,
         );
     }
   } finally {

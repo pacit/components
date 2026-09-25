@@ -81,11 +81,18 @@ missing constant. The second means the shape of the output changed and the versi
 has nothing left to compare — while passing green. Point 7 carries the same pair for the
 same reason (`peer-range-behind-compiler` and `compiler-stamp-missing`).
 
-Points 6 and 10 have two modes — a warning day to day, a block under `--release` — so their cases carry `"releaseOnly": true` in
-`fixture.json` and are examined both ways: under `--release` it must block, in a normal run
-it must **warn and pass**. An assertion on "it blocks" alone would let through a
-regression after which point 6 always blocks — and then a repository with no remote would
-not build at all.
+Points 6 and 10 have two modes — a warning day to day, a block under `--release` — so their
+cases carry `"releaseOnly": true` in `fixture.json` and are examined both ways: under
+`--release` it must block, in a normal run it must **warn and pass**. An assertion on "it
+blocks" alone would let through a regression after which point 6 always blocks — and then a
+repository with no remote would not build at all. The dry run's `--rehearsal` is a third
+reading, and such a case says which of the two it gets there, `"rehearsal": "blocks"` or
+`"warns"`: the manifest is the same in a dry run, so `repository-missing` blocks; the stamp
+is what a dry run cannot make, so `since-next` warns — held to `--release`, the first
+rehearsal after a `@since next` reached `main` failed there
+([`lesson-242`](../../docs/lessons.md#lesson-242)). A release-only case that does not say
+is refused, and so is a `rehearsal` on a case that is not release-only, which nothing would
+read.
 
 Point 7 is the first with more than one rule under one check, so its cases name the
 **rule** as well, and the gate compares that too. The argument is the one the whole
