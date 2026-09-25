@@ -76,10 +76,10 @@ publishing is configured a minute after the first publish, because it cannot be 
    is: an OIDC exchange the registry refused. The proof stays where it was: the next release._
    _Read 2026-09-25, the release of `0.2.0` (run 36142718568 on `dcf69606`): the proof is in.
    The publisher staged — `npm stage publish --provenance`, the provenance statement in the
-   transparency log at index 2956911741 — the tag and the GitHub Release went out at
-   13:44 UTC, and the maintainer
-   approved with 2FA at 20:16 UTC; `npm view` then said `latest: 0.2.0` with the SLSA v1
-   predicate under `dist.attestations`. Two more proofs went out with it, neither reachable
+   transparency log at index 2956911741 — the tag and the GitHub Release went out at 13:44
+   UTC, and the maintainer approved with 2FA at 20:16 UTC; `npm view` then said
+   `latest: 0.2.0` with the SLSA v1 predicate under `dist.attestations`. Two more proofs
+   went out with it, neither reachable
    by a dry run: the first `@since next` dated on the release run — the button's `tone`,
    `@since 0.2.0` in the shipped `.d.ts`, and `PCT_VERSION = '0.2.0'` in the tarball equal
    to the tag — and the first codemod in the collection a consumer installs, `badge-tone`

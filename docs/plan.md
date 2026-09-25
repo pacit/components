@@ -77,7 +77,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
-3  open findings          small, good filler between the bigger items
+4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
@@ -129,7 +129,8 @@ form exists and is a condition of entering a release. Thirty-four cards are fill
 premiere were one moment here, and the fear that held them both — a first look landing on a
 repository with no documentation — belongs only to the second: an unannounced private
 repository has no first look. So the quiet half moved to the front and landed on 2026-09-01;
-the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
+the flip followed on 2026-09-15, npm on 2026-09-17 after **3.5** and a sentence, and the
+proof of the staged path on 2026-09-25.
 
 - [x] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded** —
       **closed 2026-09-17: `@pacit/components@0.1.0` is on npm**
