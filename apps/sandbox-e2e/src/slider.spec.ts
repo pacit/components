@@ -113,18 +113,29 @@ test.describe('PctSlider — the platform’s range, drawn', () => {
 
     const box = await pressAlong(control, 3 / 4);
 
+    // The value lands with the press; the drawing follows a change detection later, and a
+    // read in between is the thumb still at 30 — 167 px off, every copy, in chromium alone
+    // (the tick case below and `lesson-241`). So the distance polls.
     await expect(control).not.toHaveValue('30');
-    const thumb = await centreOf(partOf(host, 'thumb'));
-    expect(Math.abs(thumb.x - (box.x + box.width * 0.75))).toBeLessThanOrEqual(
-      2,
-    );
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await centreOf(partOf(host, 'thumb'))).x -
+            (box.x + box.width * 0.75),
+        ),
+      )
+      .toBeLessThanOrEqual(2);
 
     // And a drag is one press with the button held down — no release in between.
     const dragged = await dragAlong(page, control, 3 / 4, 1 / 4);
-    const after = await centreOf(partOf(host, 'thumb'));
-    expect(
-      Math.abs(after.x - (dragged.x + dragged.width * 0.25)),
-    ).toBeLessThanOrEqual(2);
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await centreOf(partOf(host, 'thumb'))).x -
+            (dragged.x + dragged.width * 0.25),
+        ),
+      )
+      .toBeLessThanOrEqual(2);
   });
 
   /**
@@ -135,14 +146,31 @@ test.describe('PctSlider — the platform’s range, drawn', () => {
     page,
   }) => {
     const host = page.getByTestId('slider-volume');
+    const row = host.locator('.pct-slider__row');
     const control = host.locator('input');
 
+    // Two reads, and a change detection can land between them: a fill still at the start
+    // against a thumb already at the end is 362 px. So the pair polls — together with the
+    // thumb's place at that end, because a fill and a thumb both still at 30 agree as well,
+    // and that would be a pass at neither end.
     for (const key of ['Home', 'End'] as const) {
       await control.focus();
       await page.keyboard.press(key);
-      const fill = await boxOf(partOf(host, 'fill'));
-      const thumb = await centreOf(partOf(host, 'thumb'));
-      expect(Math.abs(fill.x + fill.width - thumb.x)).toBeLessThanOrEqual(1);
+      await expect
+        .poll(async () => {
+          const fill = await boxOf(partOf(host, 'fill'));
+          const thumb = await boxOf(partOf(host, 'thumb'));
+          const track = await boxOf(row);
+          const edge =
+            key === 'Home'
+              ? thumb.x - track.x
+              : track.x + track.width - (thumb.x + thumb.width);
+          return Math.max(
+            Math.abs(fill.x + fill.width - (thumb.x + thumb.width / 2)),
+            Math.abs(edge),
+          );
+        })
+        .toBeLessThanOrEqual(1);
     }
   });
 
@@ -160,15 +188,20 @@ test.describe('PctSlider — the platform’s range, drawn', () => {
 
     await control.focus();
     await page.keyboard.press('Home');
-    const ltr = await boxOf(partOf(host, 'thumb'));
-    const ltrRow = await boxOf(row);
-    // At the minimum, in LTR, the thumb stands at the inline start — the left.
-    expect(ltr.x - ltrRow.x).toBeLessThanOrEqual(1);
+    // At the minimum, in LTR, the thumb stands at the inline start — the left. The press
+    // moves it from 30, so the drawing is a change detection behind and the place polls.
+    await expect
+      .poll(async () =>
+        Math.abs((await boxOf(partOf(host, 'thumb'))).x - (await boxOf(row)).x),
+      )
+      .toBeLessThanOrEqual(1);
 
     await setRtl(page);
 
     await control.focus();
     await page.keyboard.press('Home');
+    // One read is enough here: the value is already 0, so there is nothing to redraw, and
+    // the mirroring is the stylesheet's, laid out by the read itself.
     const rtl = await boxOf(partOf(host, 'thumb'));
     const rtlRow = await boxOf(row);
     // The same minimum, the other end of the same box.

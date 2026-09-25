@@ -6788,3 +6788,29 @@ lies inside the main checkout and its report would never climb out of it.
 The rule is `lesson-221` turned over. That one: a target's inputs list what it reads. This one:
 a target whose output names the place it ran in has the place among its inputs — and a cache
 shared between checkouts is where the difference stops being theoretical.
+
+### <a id="lesson-241"></a>`lesson-241` — A repair made to one case of a file, and the file kept its other copies
+
+On 2026-09-24 the scheduled run stopped at `check-flake` on one case, `slider.spec.ts` —
+"a press lands the drawn thumb where the pointer is" — at **0/3 in chromium**, 3/3 in the other
+two engines; on 2026-09-22 the same case and its neighbour, "the fill ends at the thumb's
+centre", had read 2/3. The report carried the number that settles it. Every failed copy was
+off by **167.40625 px**, and every failed copy of the neighbour by **362 px**. On a track of
+about 380 px with an 18 px thumb, 167.4 is exactly a thumb drawn at the OLD value, 30, against
+a press at three quarters; 362 is the travel, a fill read at `Home` beside a thumb already
+redrawn at `End`. Neither is an engine disagreeing about arithmetic. Both are one read taken
+between the press, which moves the native value in its own task, and the change detection
+that redraws the host's `--_pct-slider-fraction` a turn later.
+
+The file already knew. The tick case in it was repaired for this very race — its comment
+names the two halves and says the distance, not a barrier, is what polls — and the three
+cases above it, written the same way, were left as they were. A repair tells whoever makes it
+where the defect IS; it says nothing about where else it was copied, and in a spec file the
+copy is the neighbour.
+
+The rule is short: after a flaky case is fixed, read the whole file for the same shape — here
+"act, then one `boxOf`" — and give every copy the same repair in the same commit. One more edge
+came out of doing that. Polled on its own, the fill-and-thumb distance is satisfied by a
+drawing that has not moved at all, because a fill and a thumb both still at 30 agree; the case
+now polls the thumb's place at the end too, or "at either end of the track" would be a claim
+about the middle.
