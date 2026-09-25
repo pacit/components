@@ -49,9 +49,10 @@ repository, and deploys only from a commit on `main` whose CI run concluded gree
    a workflow file that is not on the default branch yet.
    _Read 2026-09-25, the release of `0.2.0`: the release commit is pushed by the bot with
    `GITHUB_TOKEN`, and a push made with that token starts no workflow — so `CI` never ran on
-   it, `workflow_run` never fired, and the site stayed at the commit before the release for
-   six and a half hours, `unreleased` still on the button's `tone`, until an unrelated pull
-   request merged ([`lesson-243`](../lessons.md#lesson-243)). From the next release
+   it, `workflow_run` never fired, and the site stayed at the commit before the release,
+   `unreleased` still on the button's `tone`, until the pull request that wrote the release
+   into 0079 merged that evening and its own CI went green — more than seven hours after
+   the tag ([`lesson-243`](../lessons.md#lesson-243)). From the next release
    `release.yml` dispatches `CI` on `main` after its push — a dispatch is one of the two
    events the token may raise — and the site follows that run the way it follows every
    other._

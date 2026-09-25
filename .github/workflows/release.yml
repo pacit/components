@@ -103,9 +103,15 @@ jobs:
       # behind a green CI (`pages.yml`, decision 0078), stayed at the commit before it
       # (lesson-243). A dispatch is one of the two events the token may raise, so CI is
       # dispatched on `main` here: the release commit earns its verdict, and Pages follows
-      # CI's `workflow_run`. A dry run pushed nothing and dispatches nothing.
+      # CI's `workflow_run`. A dry run pushed nothing and dispatches nothing. A real run
+      # dispatches even when the step above failed, because it can fail AFTER its push —
+      # the stage is the last thing it does — and the commit is on `main` either way; when
+      # the failure came before the push, the price is one more run of an unmoved, green
+      # `main`. `--ref main` names the branch, not the commit: a merge landing in the
+      # seconds between the push and the dispatch takes the run, and covers the release
+      # commit with it.
       - name: CI on the release commit, and the site after it
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.dry_run && !cancelled() }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run ci.yml --ref main
