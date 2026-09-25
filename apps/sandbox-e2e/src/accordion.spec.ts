@@ -206,10 +206,15 @@ test.describe('PctAccordion — a stack of sections the platform opens', () => {
       .locator('[data-pct-part="marker"]');
     await expect(marker).toBeVisible();
 
-    const closed = await marker.evaluate((el) => getComputedStyle(el).rotate);
+    expect(await marker.evaluate((el) => getComputedStyle(el).rotate)).toBe(
+      'none',
+    );
     await summary.click();
-    const open = await marker.evaluate((el) => getComputedStyle(el).rotate);
-    expect(closed).not.toBe(open);
+    // Retried, and to the resting angle: the marker turns by a transition, so a reading taken
+    // straight after the click is some angle on the way (20 to 162 degrees under held timers)
+    // — different from `none`, and so a pass that says nothing about where it stops
+    // ([`lesson-241`](../../../docs/lessons.md#lesson-241)).
+    await expect(marker).toHaveCSS('rotate', '180deg');
   });
 
   test('the whole heading row is the touch target', async ({ page }) => {

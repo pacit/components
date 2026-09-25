@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { visit } from './support/dom';
+import { boxOf, settled, visit } from './support/dom';
 import { styleOf, systemColors } from './support/css';
 
 /**
@@ -146,12 +146,33 @@ test.describe('forced-colors: active', () => {
     const read = async () => ({
       thumb: await styleOf(thumb, 'background-color'),
       track: await styleOf(track, 'background-color'),
-      x: (await thumb.boundingBox())?.x ?? 0,
+      x: (await boxOf(thumb)).x,
     });
 
+    // The thumb's gaps to the two ends of its track. At rest it stands the same inset from
+    // whichever end it has travelled to, and a whole travel from the other.
+    const gaps = async () => {
+      const [t, k] = [await boxOf(thumb), await boxOf(track)];
+      return { start: t.x - k.x, end: k.x + k.width - (t.x + t.width) };
+    };
+    // Settled first: it starts checked, and this is its rest at the inline end.
+    await settled(page);
+    const { end: inset } = await gaps();
+
+    // Each state is read only once the thumb has ARRIVED. The checkedness lands in the
+    // action's own task and the thumb follows a change detection and a transition later, so
+    // a baseline read straight after `uncheck` could be the thumb still at the end — and
+    // then no later position is "greater" than it, and the poll below waits for nothing
+    // that can happen ([`lesson-241`](../../../docs/lessons.md#lesson-241)).
     await control.uncheck();
+    await expect
+      .poll(async () => Math.abs((await gaps()).start - inset))
+      .toBeLessThanOrEqual(1);
     const off = await read();
     await control.check();
+    await expect
+      .poll(async () => Math.abs((await gaps()).end - inset))
+      .toBeLessThanOrEqual(1);
     const on = await read();
 
     expect(on.thumb).toBe(sys.FieldText);
@@ -159,13 +180,11 @@ test.describe('forced-colors: active', () => {
     // The two states are indistinguishable by colour — and that is the point being made.
     expect(on.thumb).toBe(off.thumb);
     expect(on.track).toBe(off.track);
-    // What tells them apart survives any palette: the thumb moved. The position is POLLED,
-    // because the thumb may still be travelling when the first frame is read — under a
-    // loaded machine the one-shot reading came back mid-flight (497.5 against a resting
-    // 503.1), which is `lesson-130`'s family at a fourth component.
-    await expect
-      .poll(async () => (await thumb.boundingBox())?.x ?? 0)
-      .toBeGreaterThan(off.x);
+    // What tells them apart survives any palette: the thumb moved. Both readings are taken at
+    // rest, after the polls above — a one-shot reading under a loaded machine once came back
+    // mid-flight (497.5 against a resting 503.1), which is `lesson-130`'s family at a fourth
+    // component.
+    expect(on.x).toBeGreaterThan(off.x);
   });
 
   /**
@@ -667,9 +686,11 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(chip, 'border-top-color')).toBe(sys.CanvasText);
     expect(await styleOf(cross, 'color')).toBe(sys.ButtonText);
 
+    // Retried: the hover returns before the engine has restyled what it points at
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)).
     await cross.hover();
-    expect(await styleOf(cross, 'background-color')).toBe(sys.Highlight);
-    expect(await styleOf(cross, 'color')).toBe(sys.HighlightText);
+    await expect(cross).toHaveCSS('background-color', sys.Highlight);
+    await expect(cross).toHaveCSS('color', sys.HighlightText);
   });
 
   /**

@@ -350,17 +350,24 @@ test.describe('The pages', () => {
       .click();
 
     await expect(page).toHaveURL(/#api$/);
-    const landed = await page.evaluate(() => ({
-      id: document.activeElement?.id ?? '',
-      top: Math.round(
-        document.getElementById('api')?.getBoundingClientRect().top ??
-          Number.NaN,
-      ),
-    }));
-    expect(landed.id).toBe('api');
-    // And the router still owns the scrolling, at the offset the stylesheet declares.
-    expect(landed.top).toBeGreaterThanOrEqual(80);
-    expect(landed.top).toBeLessThanOrEqual(128);
+    expect(await page.evaluate(() => document.activeElement?.id ?? '')).toBe(
+      'api',
+    );
+    // And the router still owns the scrolling, at the offset the stylesheet declares. Polled:
+    // the URL lands with the navigation, the scroll a timer and a frame after it, and a
+    // heading read in between still stands some 4490 px down the page — the same landing the
+    // reading-line case below already polls
+    // ([`lesson-241`](../../../docs/lessons.md#lesson-241)). The upper bound is what polls,
+    // because it is the one a heading that has not moved cannot meet.
+    const top = () =>
+      page.evaluate(() =>
+        Math.round(
+          document.getElementById('api')?.getBoundingClientRect().top ??
+            Number.NaN,
+        ),
+      );
+    await expect.poll(top).toBeLessThanOrEqual(128);
+    expect(await top()).toBeGreaterThanOrEqual(80);
   });
 
   test('the component index is reachable at every width', async ({ page }) => {
