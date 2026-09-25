@@ -19,10 +19,9 @@ import { PctIconTemplate, providePctIcons } from '@pacit/components/icon';
 import { PctField } from '@pacit/components/field';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
+import { pctFilterByLabel, pctKeepAll } from './select-filter';
 import { PctSelectOptionTemplate } from './select.template';
 import {
-  pctFilterByLabel,
-  pctKeepAll,
   PctSelectFilter,
   PctSelectItem,
   PctSelectOption,

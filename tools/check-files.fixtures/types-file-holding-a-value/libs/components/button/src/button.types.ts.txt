@@ -1,0 +1,13 @@
+// The shape `select.types.ts` had until its two predicates moved out: the type of a predicate
+// and two predicates beside it, in a file every measurement skips as pure types.
+export type FxButtonVariant = 'solid' | 'outline';
+
+export type FxButtonPredicate = (variant: FxButtonVariant) => boolean;
+
+export const fxIsSolid: FxButtonPredicate = (variant) => variant === 'solid';
+
+export const fxAny: FxButtonPredicate = () => true;
+
+export interface FxButtonLook {
+  readonly variant: FxButtonVariant;
+}

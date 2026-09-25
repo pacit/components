@@ -1,0 +1,6 @@
+// A value in each of the two types files. The rule fires on the first as surely as on both, so
+// what this case holds is the message: one that named the first file and stopped would send a
+// person to half of the defect.
+export type FxButtonVariant = 'solid' | 'outline';
+
+export const fxButtonVariants: readonly FxButtonVariant[] = ['solid', 'outline'];

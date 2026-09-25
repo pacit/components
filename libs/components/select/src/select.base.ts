@@ -42,12 +42,12 @@ import {
   PctSize,
 } from '@pacit/components/core';
 import { PctIcon } from '@pacit/components/icon';
+import { pctFilterByLabel } from './select-filter';
 import {
   PctSelectOptionContext,
   PctSelectOptionTemplate,
 } from './select.template';
 import {
-  pctFilterByLabel,
   PctSelectFilter,
   PctSelectItem,
   PctSelectOption,

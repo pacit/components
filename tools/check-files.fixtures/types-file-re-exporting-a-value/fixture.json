@@ -1,0 +1,7 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "A types file re-exporting a value. The line declares nothing and runs no logic of its own, yet compilation keeps it under every option, and the types file becomes one more route to a value — the surface the name promises to hold none of.",
+  "names": ["libs/components/button/src/button.types.ts:6"]
+}

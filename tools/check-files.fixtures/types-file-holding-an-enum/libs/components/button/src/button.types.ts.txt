@@ -1,0 +1,9 @@
+// An enum is a type AND a value: compilation keeps an object for it, and this gate's own
+// pattern for exported types counts it among the types. What point 8 asks is what compilation
+// keeps, so the enum is code in a file every measurement skips.
+export type FxButtonSize = 'small' | 'large';
+
+export enum FxButtonVariant {
+  Solid = 'solid',
+  Outline = 'outline',
+}

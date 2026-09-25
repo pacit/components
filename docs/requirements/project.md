@@ -240,10 +240,12 @@ stylesheet and spec — `button.ts`, `button.html`, `button.scss`, `button.spec.
 entrypoint's `index.ts` and `ng-package.json`. Template and styles **always** in separate files.
 A `button.types.ts` is **not** part of that fixed shape: it is what a component reaches for when
 its types outgrow the source that owns them or when two sources of the entrypoint share them,
-and where it exists it is named after the component and exported by the index. What is promised
-of a type is not the file it stands in but the **index**: a type a source of an entrypoint
-exports is exported by that entrypoint's `src/index.ts` too — or it stands, with a reason, in
-the `internal` list of `libs/components/files.policy.json`.
+and where it exists it is named after the component, exported by the index and holds types
+alone: interfaces, type aliases, ambient declarations, `import type … from` and `export type`,
+forms TypeScript erases whatever the compiler options say — a value goes to a module of its own.
+What is promised of a type is not the file it stands in but the **index**: a type a source of an
+entrypoint exports is exported by that entrypoint's `src/index.ts` too — or it stands, with a
+reason, in the `internal` list of `libs/components/files.policy.json`.
 
 The axis is the index because that is where the consumer is. Which file a type lives in is a
 question for whoever opens the directory; whether the index names it decides whether anybody
@@ -252,10 +254,12 @@ passes over is an input nobody can declare a variable for, wrap, or hold a test 
 library compiles over it and ships it without a word. The filename half was also measured and
 was never true here: of the 30 entrypoints that declare a component, 18 have no `*.types.ts` at
 all and 13 export a public type from the component's own source, so a point demanding the file
-would have been red on the day it was written — a plan, not a gate. And `select.types.ts` shows
-the demand would have been for the wrong thing anyway: it exports `pctFilterByLabel` and
-`pctKeepAll`, which are functions, so even where the convention is kept the name on the file
-says nothing certain about what is inside it.
+would have been red on the day it was written — a plan, not a gate. What the name does promise
+is the content, and that half is no convention: coverage and the mutation run both skip a
+`*.types.ts` as pure types, so a value written into one stands under no floor, with nothing but
+the name saying it is not there. `select.types.ts` held both of the select's filter predicates,
+`pctFilterByLabel` and `pctKeepAll`, that way until they moved to `select-filter.ts`, where both
+measurements reach them.
 
 **Gate:** `tools/check-files.mjs` (target `check-files`, in CI) — ten points over the files of
 `libs/components` as the **git index** carries them: 1 the denominator (entrypoints, sources,
@@ -266,7 +270,9 @@ so a directory of sources with no manifest beside it fires too, 3 the eponymous 
 component entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no `template:` and no `styles:`
 in a decorator, 6 what a declaration names is a **sibling**, under the extension it promises, and
 in the index, 7 the other direction — no template or sheet a rename left behind, 8 a `*.types.ts`
-exported by the index of its entrypoint, 9 the register `libs/components/files.policy.json` in
+exported by the index of its entrypoint and holding nothing but types — read with the TypeScript
+parser in every types file of the library, an entrypoint's or not, because that is the set the
+measurements skip, 9 the register `libs/components/files.policy.json` in
 both of its lists, where every excuse names what it excuses, carries a reason and is still
 needed, 10 a type a source exports is named by its entrypoint's index — followed through the
 index's own re-exports, and an edge that walk cannot read (a package specifier, `export * as ns
@@ -276,7 +282,7 @@ declarations, 81 templates and sheets and 77 exported types, and excuses three t
 components whose host **is** a native `<input>` and whose template is therefore the empty
 string, and one type no public signature carries — `PctArbitrary`, the property sweep's
 generator, which lives in a testkit the `testing` entrypoint deliberately publishes none of.
-**Control:** `tools/check-files.fixtures/` — 27 prepared trees, each rejected on its own point
+**Control:** `tools/check-files.fixtures/` — 35 prepared trees, each rejected on its own point
 **and its own rule**, among them this requirement's named control
 `template-in-the-decorator/` (a component keeping its template in the decorator — the defect
 that arrives looking like Angular's own advice), `styles-in-the-decorator/` (styles no rule of
@@ -288,12 +294,16 @@ that arrives looking like Angular's own advice), `styles-in-the-decorator/` (sty
 `re-export-the-gate-cannot-follow/` (a star re-export that leaves an entrypoint's surface open,
 so point 10 stops being able to rule on it), `register-internal-entry-nothing-uses/` (the type
 went public and the excuse stayed), `register-entry-nothing-uses/` (the component was fixed and
-the excuse stayed) and six cases of point 1 alone, each a different way for the gate to examine
-nothing and report it green. Plus two runs against the real repository: with the register entry
-for `PctText` removed, the gate names `libs/components/field/src/text.ts` and the line of its
-decorator; with `export * from './accordion';` taken out of
-`libs/components/accordion/src/index.ts`, it names `PctAccordionApi`, the line it is declared on
-and the index that no longer carries it
+the excuse stayed), `types-file-holding-a-value/` (two predicates beside the type they
+implement, the shape `select.types.ts` had) with seven more cases of where point 8's second rule
+reads and `FORMS`, 43 statements the rule admits or refuses on every run, and six
+cases of point 1 alone, each a different way for the gate to examine nothing and report it
+green. Plus three runs against the real repository: with the register entry for `PctText`
+removed, the gate names `libs/components/field/src/text.ts` and the line of its decorator; with
+`export * from './accordion';` taken out of `libs/components/accordion/src/index.ts`, it names
+`PctAccordionApi`, the line it is declared on and the index that no longer carries it; with
+`select.types.ts` as it stood before the predicates moved, it names both of them and the line
+each starts on
 **Decision:** [0001 — templates and styles in separate files](../decisions/0001-separate-files.md)
 
 > This is a **deliberate departure** from Angular's official guidance to "prefer inline

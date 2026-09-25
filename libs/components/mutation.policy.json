@@ -61,6 +61,7 @@
     "libs/components/regions/src/regions.ts",
     "libs/components/schematics/migrations/badge-tone/index.ts",
     "libs/components/select/src/multi-select.ts",
+    "libs/components/select/src/select-filter.ts",
     "libs/components/select/src/select.base.ts",
     "libs/components/select/src/select.template.ts",
     "libs/components/select/src/select.ts",

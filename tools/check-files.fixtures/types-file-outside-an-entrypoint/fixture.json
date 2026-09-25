@@ -1,0 +1,9 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "A value in a types file outside every entrypoint, where an `ng update` migration keeps its shapes. Both measurements skip a `*.types.ts` wherever it stands, and the first rule of this point reads only the files of an entrypoint — so the second has to read every types file the library carries, or this value stands under no floor with no rule looking.",
+  "names": [
+    "libs/components/schematics/migrations/fx-rename/fx-rename.types.ts:6"
+  ]
+}

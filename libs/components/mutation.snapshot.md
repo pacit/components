@@ -132,6 +132,7 @@ libs/components/radio/src/radio.ts 90.24 37(0) 3 0 1 1
 libs/components/regions/src/regions.ts 96.88 62(0) 2 0 0 2
 libs/components/schematics/migrations/badge-tone/index.ts 78.93 221(0) 56 0 3 0
 libs/components/select/src/multi-select.ts 97.14 34(0) 0 1 0 0
+libs/components/select/src/select-filter.ts 100.00 5(0) 0 0 0 0
 libs/components/select/src/select.base.ts 84.91 574(1) 100 0 2 9
 libs/components/select/src/select.template.ts 33.33 1(0) 0 0 2 2
 libs/components/select/src/select.ts 88.89 32(0) 3 1 0 0
@@ -151,5 +152,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 83.54 4664/5583
+TOTAL 83.55 4669/5588
 ```

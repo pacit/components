@@ -1,0 +1,3 @@
+// A second types file, and a clean one. It sorts after `button.types.ts`, so a case that puts
+// code into that one does not also put it into the last file point 8 reads.
+export type FxFieldSize = 'small' | 'large';

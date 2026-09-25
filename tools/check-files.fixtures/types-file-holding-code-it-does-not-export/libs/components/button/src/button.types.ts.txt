@@ -1,0 +1,6 @@
+// Nothing here is exported as a value, and the file is not pure: the table is a statement
+// compilation keeps, whoever can reach it. A rule asking only what a types file EXPORTS
+// passes it, and the table is code under no floor all the same.
+const VARIANTS = ['solid', 'outline'] as const;
+
+export type FxButtonVariant = (typeof VARIANTS)[number];

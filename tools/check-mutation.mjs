@@ -58,7 +58,8 @@ const NOT_A_SOURCE = [
   (p) => !p.endsWith('.ts'),
   // The tests themselves.
   (p) => SPEC.test(p),
-  // Pure types: they vanish at compilation, so there is no executable line to break.
+  // Pure types: they vanish at compilation, so there is no executable line to break — which
+  // `check-files` point 8 holds of every `*.types.ts`, rather than trusting the name.
   (p) => p.endsWith('.types.ts'),
   // Re-export barrels — an entrypoint's `src/index.ts` and nothing else. `export * from
   // './x'` promises nothing that the file it names does not promise itself, and the same

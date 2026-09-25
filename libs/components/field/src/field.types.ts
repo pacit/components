@@ -1,4 +1,4 @@
-import { PctSize } from '@pacit/components/core';
+import type { PctSize } from '@pacit/components/core';
 
 /**
  * The size of a field: the library's own scale.

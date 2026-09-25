@@ -1,0 +1,11 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "A value in each of two types files. Either one fires the rule, so the case is about the message: a finding that listed the first file's statements and stopped would send whoever reads it to half of the defect, and the second value would stay under no floor after the first was moved.",
+  "names": [
+    "libs/components/button/src/button.types.ts:6",
+    "libs/components/field/src/field.types.ts:4",
+    "2 statement(s) in types files"
+  ]
+}

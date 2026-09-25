@@ -1,0 +1,11 @@
+// `type` on every name and not on the clause. Elision drops the line today, and only because
+// `verbatimModuleSyntax` is off: turned on, it leaves `import {} from` behind and the module
+// is loaded from a file that promises nothing runs. A plain `import { X }` of a type is the
+// same case one keyword further; `import type` is erased whatever the options say.
+import { type FxTone } from '@fx/components/core';
+
+export type FxButtonVariant = 'solid' | 'outline';
+
+export interface FxButtonLook {
+  readonly tone: FxTone;
+}

@@ -1,1 +1,19 @@
+// One of every form point 8 lets a types file hold — an `import type`, a type alias, an
+// interface, an `export type` and a `declare` — each erased whatever the compiler options say.
+// A rule that stopped letting one of them through reddens this tree rather than nothing.
+import type { FxTone } from '@fx/components/core';
+
 export type FxButtonVariant = 'solid' | 'outline';
+
+export interface FxButtonLook {
+  readonly variant: FxButtonVariant;
+  readonly tone: FxTone;
+}
+
+export type { FxSize } from '@fx/components/core';
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'fx-button': HTMLElement;
+  }
+}

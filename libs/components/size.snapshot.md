@@ -132,7 +132,7 @@ is worth, and it is the largest single number this file has ever moved.
 ./field PctField 3 16130 25349
 ./menu PctMenu 2 19193 19195
 ./radio PctRadio 2 15418 15420
-./select PctMultiSelect 2 45270 69662
+./select PctMultiSelect 2 45274 69666
 ./stepper PctStep 2 10602 10604
 ./tabs PctTab 2 16064 16066
 ./tree PctTree 2 9020 9022

@@ -1,0 +1,9 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "An enum in a types file. It reads like a type and is counted as one by the pattern point 10 uses, but compilation keeps an object for it and the functions that fill it — code in a file coverage and the mutation run both skip as pure types.",
+  "names": [
+    "libs/components/button/src/button.types.ts:6 — `export enum FxButtonVariant {`"
+  ]
+}

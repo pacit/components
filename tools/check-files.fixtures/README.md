@@ -22,7 +22,8 @@ at all until this directory existed: nothing in the toolchain was ever going to 
 ## The two denominators, and why there are two
 
 The layout points (2, 3, 8 and 10) run over **entrypoints**, because `ng-package.json` and
-`index.ts` are an entrypoint's files and there is exactly one of each per directory. The
+`index.ts` are an entrypoint's files and there is exactly one of each per directory — all but
+point 8's second rule, which reads every `*.types.ts` of the library, an entrypoint's or not. The
 template and stylesheet points (4 to 7) run over **`@Component` declarations**, because an
 entrypoint is not a component: `breadcrumb/` declares three of them in a single source file,
 and `core/`, `testing/`, `theme/` and `regions/` declare none at all. A rule written per
@@ -33,33 +34,22 @@ one with no component in it anywhere.
 
 ## Why the index, and not the filename
 
-The promise this gate measures used to name `button.types.ts` among a component's files, and
-the library never kept that half of it: of the 30 entrypoints that declare a component, **18
-have no `*.types.ts` at all**, and 13 export a public type from the component's own source
-instead. A point demanding the file would have been red on the day it was written — a plan, not
-a gate — and eighteen entries in the register would have been the same thing with more words.
-`select.types.ts` argues the other side of it: the file exists, and what it exports includes
-`pctFilterByLabel` and `pctKeepAll`, which are functions — so even where the convention is kept,
-the name on the file says nothing certain about what stands inside.
+[`req-project-files`](../../docs/requirements/project.md#req-project-files) gives the argument
+and its numbers: the library never kept the filename half of the promise it used to make, so the
+promise was narrowed to the axis that pays — whether a consumer can **name** a type, which is
+point 10.
 
-So the promise was narrowed to what this library really does, and then the narrowed promise was
-gated on the axis that pays. What a consumer is hurt by is not which file a type lives in but
-whether they can **name** it: an `input()` typed `PctButtonVariant` that the entrypoint's index
-never exports is an input nobody can write a variable for, nobody can wrap and nobody can hold a
-test to — and the library compiles over it, ships it and reports nothing, because inside the
-entrypoint the name resolves perfectly. That is point 10, and it is the half of the old promise
-worth keeping.
-
-Point 8 stays beside it rather than folding into it. It rules over a different set — the files
-whose whole reason for existing is to be exported — and it sees one thing point 10, which reads
-types, cannot: a `*.types.ts` holding runtime values on a day when it declares no type at all.
+Point 8 stays beside it rather than folding into it, because it rules over the files where point
+10 rules over the types in them. Its first rule holds the files whose whole reason for existing is
+to be exported; its second, what the name does promise about what stands inside — the requirement
+says why that half is no convention.
 
 A type that is deliberately internal — one no public signature carries — goes into the
 `internal` list of [`files.policy.json`](_reference/libs/components/files.policy.json) with a
 reason, and point 9 holds that reason to the same forty characters as every other excuse here.
-The library has five such types today, in two files. The list is meant to stay short: a type a
-public input, output or method carries does not belong in it, because that is the defect point
-10 exists for and the fix is the missing line of the index.
+The list is meant to stay short: a type a public input, output or method carries does not belong
+in it, because that is the defect point 10 exists for and the fix is the missing line of the
+index.
 
 ## How a case is built
 
@@ -75,6 +65,14 @@ three layers:
 That way the case directory holds **nothing but the defect** — it is visible without comparing
 files — and does not drift from the reference when the shape of an entrypoint changes.
 
+Beside the point, the check and the rule, a case may list `names`: strings its message has to
+contain, none of them empty, each found with no digit on either side — `button.types.ts:7` is
+not named by `button.types.ts:70`, nor `2 statement(s)` by `12 statement(s)`. The rule is the one
+that fires, so without them a finding naming the wrong line, or one statement of two, stays
+green; the cases of point 8's second rule name the file and the line of every statement they
+break, two name the excerpt too — one of them a statement of several lines, read by its first —
+and the two with two statements name the count.
+
 Sources sit in the repository as `*.ts.txt` and become `*.ts` only inside the temporary
 directory the case is assembled in. The reason is hard: a `.ts` file under `tools/` belongs to
 no compiler program, so it would fire `check-typecheck` (point 1 — a file with no project). One
@@ -88,13 +86,18 @@ from a fixture or from the library.
 
 **The reference tree must pass.** Were it defective itself, every case would fire because of it
 rather than because of its own defect, and every "rejected" would be false — that is, this whole
-negative control would become exactly what it stands against. It carries the five shapes that
+negative control would become exactly what it stands against. It carries the six shapes that
 are easy to leave unexercised: an entrypoint with two components in one source file and a
 template named after neither, a plain entrypoint with no component in it, the package's own
 entrypoint (which point 3 asks nothing of, being named after the package and not after a
-component), a component whose host **is** a native input, and a source holding a type the index
-deliberately passes over. The last two are the ones that stand in the register — an excuse is a
-branch like any other, and one nothing exercises is one that can rot without a sound.
+component), two types files — one holding a form of each kind point 8 lets through, and a clean
+one sorting after it, so that a case breaking the first does not break the last file the rule
+reads as well — a component whose host **is** a native input, and a source holding a type the
+index deliberately passes over. The last two are the ones that stand in the register — an excuse
+is a branch like any other, and one nothing exercises is one that can rot without a sound. The
+first types file is the same argument for a rule that lets things through: `export type { … }`
+and `declare` stand in no types file of the library, so a rule that stopped admitting them would
+redden nothing in the library — only this file and the rows of `FORMS` that admit them.
 
 ## The cases
 
@@ -118,7 +121,15 @@ branch like any other, and one nothing exercises is one that can rot without a s
 | [`template-that-is-not-in-the-tree`](template-that-is-not-in-the-tree/)                               |     6 | `sibling`              | `missing-file`                  | a sibling the git index does not carry                                    |
 | [`stylesheet-that-is-plain-css`](stylesheet-that-is-plain-css/)                                       |     6 | `sibling`              | `wrong-extension`               | a `.css` beside the component, outside every SCSS rule                    |
 | [`a-template-no-declaration-names`](a-template-no-declaration-names/)                                 |     7 | `orphan`               | —                               | the file a rename left behind                                             |
-| [`types-file-the-index-does-not-export`](types-file-the-index-does-not-export/)                       |     8 | `types`                | —                               | types written, compiled, used — and invisible to the consumer             |
+| [`types-file-the-index-does-not-export`](types-file-the-index-does-not-export/)                       |     8 | `types`                | `not-exported`                  | types written, compiled, used — and invisible to the consumer             |
+| [`types-file-holding-a-value`](types-file-holding-a-value/)                                           |     8 | `types`                | `not-type-only`                 | a predicate beside its type, in a file the measurements skip              |
+| [`types-file-holding-code-it-does-not-export`](types-file-holding-code-it-does-not-export/)           |     8 | `types`                | `not-type-only`                 | code a types file keeps to itself, so it exports no value                 |
+| [`types-file-holding-an-enum`](types-file-holding-an-enum/)                                           |     8 | `types`                | `not-type-only`                 | a type to this gate's own pattern and an object to the compiler           |
+| [`types-file-importing-with-type-on-each-name`](types-file-importing-with-type-on-each-name/)         |     8 | `types`                | `not-type-only`                 | `type` on each imported name and none on the clause                       |
+| [`types-file-importing-for-its-effect`](types-file-importing-for-its-effect/)                         |     8 | `types`                | `not-type-only`                 | an import with no clause, there for what the module does                  |
+| [`types-file-re-exporting-a-value`](types-file-re-exporting-a-value/)                                 |     8 | `types`                | `not-type-only`                 | a value handed on through a file that promises none                       |
+| [`types-file-outside-an-entrypoint`](types-file-outside-an-entrypoint/)                               |     8 | `types`                | `not-type-only`                 | a value in a migration's types file, which the first rule never reads     |
+| [`types-files-each-holding-a-value`](types-files-each-holding-a-value/)                               |     8 | `types`                | `not-type-only`                 | a value in each of two types files, and a message naming both             |
 | [`register-entry-for-a-class-that-is-gone`](register-entry-for-a-class-that-is-gone/)                 |     9 | `register`             | `entry-without-declaration`     | an excuse naming a class no source declares                               |
 | [`register-entry-without-a-reason`](register-entry-without-a-reason/)                                 |     9 | `register`             | `entry-without-reason`          | an entry that says what the decorator already says                        |
 | [`register-entry-nothing-uses`](register-entry-nothing-uses/)                                         |     9 | `register`             | `entry-unused`                  | the component was fixed and the excuse stayed                             |
@@ -142,6 +153,27 @@ Points 4 to 6 run from the declaration towards the file; point 7 runs back the o
 directions are needed, and a rename is what shows why: it moves the decorator to a new name and
 leaves the old template behind, where nothing compiles it, nothing ships it and nothing reports
 it.
+
+Point 8's second rule is held in two halves. Its eight cases hold **where** it reads: every
+statement and not the exported ones alone, every types file and not the entrypoints' alone, the
+first file and the last, the first statement and the last, and, through `names`, the line of each
+statement, its excerpt, each of two in one file and each of two files. **How** it reads a form is
+held by `FORMS`, a list in the gate — 43 statements, each alone in a types file not named after
+its directory and admitted or refused by the rule itself as marked beside it, on every run —
+because a case per keyword would be a directory per keyword, and a form no case carried could be
+admitted in silence. Measured on copies of the gate, each changing one piece of the rule: 55
+copies, all red, each named by the cases or rows it lets through — among them
+`export { type X } from`, `export * from`, `export * as ns from`, `export import`, `const enum`,
+`import defer`, `import {} from`, a function, a class or an enum of the file's own, a bare call,
+a namespace, `export default`, `declare` taken on an import or an export, a filter in the rule's
+loop rather than in its reading, the files named after their directory alone, the last file
+alone, a stop after the first, a zero-based line, a line off by a factor of ten, an excerpt empty
+or taken from the last line, a count off by one, by ten or with a digit in front, and one
+statement of two — or, where it strikes an admitted form, by the rows it refuses, and by the
+reference where it holds that form. **Not held:** a form the list does not name, which the allow-list refuses and nothing here
+would notice being admitted, and the control's own rules — the `names` comparison switched off,
+reading a name beside a digit on either side as a match or accepting an empty list, and the
+`FORMS` loop switched off each leave the run green, like every other rule of this control.
 
 Point 9 keeps two lists — the components excused their inline member, and the types excused
 their absence from an index — and the three cases of each are the whole life cycle of an excuse:

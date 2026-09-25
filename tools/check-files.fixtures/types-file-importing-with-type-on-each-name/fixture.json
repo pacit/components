@@ -1,0 +1,7 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "An import of types with `type` on each name and none on the clause. Elision removes it only while `verbatimModuleSyntax` is off; with the flag on, TypeScript keeps `import {} from` and the module loads from a file that promises nothing runs. The rule asks for the form no option can keep — `import type` — rather than for a flag this gate does not read.",
+  "names": ["libs/components/button/src/button.types.ts:5"]
+}

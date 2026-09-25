@@ -1,0 +1,1 @@
+// The second types file of the reference, emptied the same way.

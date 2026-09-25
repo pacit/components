@@ -1,0 +1,6 @@
+// A types file no entrypoint holds: an `ng update` migration keeping its shapes beside its
+// factory. Coverage and the mutation run skip the name wherever it stands, so point 8 reads
+// every `*.types.ts` the library carries — a rule reading the entrypoints alone passes this.
+export type FxRename = { readonly from: string; readonly to: string };
+
+export const fxRenames: readonly FxRename[] = [{ from: 'solid', to: 'filled' }];
