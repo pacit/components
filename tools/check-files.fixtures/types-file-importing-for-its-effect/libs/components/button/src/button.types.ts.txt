@@ -1,0 +1,5 @@
+// An import with no clause is there for what the module DOES when it loads — code, run from a
+// file every measurement skips as holding none. No option of the compiler erases it.
+import '@fx/components/core';
+
+export type FxButtonVariant = 'solid' | 'outline';

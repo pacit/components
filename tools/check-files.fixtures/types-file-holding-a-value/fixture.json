@@ -1,0 +1,11 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "Values in a types file: two predicates written beside the type they implement — the shape `select.types.ts` had. They compile, the component can import them, every spec that calls them passes — and coverage and the mutation run both skip the file as pure types, so the functions stand under no floor at all, with nothing but the name on the file saying they are not there.",
+  "names": [
+    "libs/components/button/src/button.types.ts:7 — `export const fxIsSolid:",
+    "libs/components/button/src/button.types.ts:9 — `export const fxAny:",
+    "2 statement(s) in types files"
+  ]
+}

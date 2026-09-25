@@ -1,4 +1,4 @@
-import { PctSize } from '@pacit/components/core';
+import type { PctSize } from '@pacit/components/core';
 
 /**
  * How much of the page's colour a button takes: solid, outline, ghost, soft, or `hero` — the

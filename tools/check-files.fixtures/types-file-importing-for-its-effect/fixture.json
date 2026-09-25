@@ -1,0 +1,7 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "A side-effect import in a types file: no name imported, so no rule about names can see it, and it is there precisely for what the module does when it loads. No compiler option erases it, and both measurements skip the file as holding no code.",
+  "names": ["libs/components/button/src/button.types.ts:3"]
+}

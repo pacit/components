@@ -1,0 +1,4 @@
+// The second types file of the reference, with a value of its own.
+export type FxFieldSize = 'small' | 'large';
+
+export const fxFieldSizes: readonly FxFieldSize[] = ['small', 'large'];

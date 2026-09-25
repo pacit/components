@@ -1,4 +1,2 @@
-// A types file holding no type: the list of variants, and the union derived from it elsewhere.
-// The repository has one of these — `select.types.ts` exports two filter functions — which is
-// why the name on a file is not what point 10 measures.
-export const fxButtonVariants = ['solid', 'outline'];
+// A types file with its one type taken out and nothing put in its place, so that the whole
+// library declares none and point 10 has nothing left to hold an index to.

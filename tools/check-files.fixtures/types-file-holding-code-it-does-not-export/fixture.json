@@ -1,0 +1,7 @@
+{
+  "point": 8,
+  "check": "types",
+  "rule": "not-type-only",
+  "description": "Code a types file keeps to itself: a table the exported type is derived from. No value leaves the module, so a rule asking what a types file exports finds nothing — and the table is still a statement compilation keeps, in a file both measurements skip as holding none.",
+  "names": ["libs/components/button/src/button.types.ts:4"]
+}

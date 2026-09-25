@@ -1,0 +1,6 @@
+// A re-export with no `type` on the clause hands on whatever the name is — here a value, so
+// the file every measurement skips as pure types exports code. `export type` is erased
+// whatever the options say; this line is kept by all of them.
+export type FxButtonVariant = 'solid' | 'outline';
+
+export { defaultTone } from '@fx/components/core';

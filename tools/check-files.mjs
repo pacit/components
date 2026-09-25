@@ -11,13 +11,13 @@
  *  5. STYLES: no component keeps its styles in the decorator,
  *  6. SIBLING: the file a declaration names stands beside it, under the extension it promises,
  *  7. ORPHAN: every template and stylesheet is named by a declaration,
- *  8. TYPES: a `*.types.ts` is exported by the index of its entrypoint,
+ *  8. TYPES: a `*.types.ts` is exported by its entrypoint's index and holds nothing but types,
  *  9. REGISTER: an excuse in `libs/components/files.policy.json` says what and why, and is used,
  * 10. INDEX: a type a source of an entrypoint exports is named by that entrypoint's index.
  *
  * Two denominators, not one: the layout points (2, 3, 8, 10) rule over ENTRYPOINTS, the template
  * and stylesheet points (4 to 7) over `@Component` DECLARATIONS — a per-entrypoint rule would
- * demand a `.html` of `core/`. Point 8 stays beside 10: it also sees a types file with no type.
+ * demand a `.html` of `core/`. Point 8's second rule reads every `*.types.ts` of the library.
  *
  * Usage: node tools/check-files.mjs
  */
@@ -36,6 +36,7 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -120,7 +121,7 @@ const MANIFEST = new RegExp(`^${PROJECT}/(?:[^/]+/)?ng-package\\.json$`);
 const list = (entries) => entries.map((e) => `      ${e}`).join('\n');
 
 /**
- * A violation of one of the nine points. It carries the point's name and the rule under it,
+ * A violation of one of the ten points. It carries the point's name and the rule under it,
  * not only the message: the negative control has to verify that a prepared input fired ON ITS
  * OWN point and its own rule — an input failing for another reason proves something other
  * than what it declares.
@@ -676,15 +677,113 @@ const orphan = ({ assets }, referenced) => {
 };
 
 /**
- * 8. TYPES — a `*.types.ts` is exported by the index of its entrypoint. A types file the
- * index passes over is the one arrangement here that looks finished from every side: the
- * types are written, they compile, the library uses them internally — and the consumer,
- * who can only see what the index re-exports, cannot name a single one of them.
+ * The declarations `declare` makes ambient, which is to say erased. On an import, an export or
+ * an `export default` the keyword is a grammar error the emitter does not honour — TypeScript
+ * writes the statement out all the same — so there it admits nothing.
+ */
+const AMBIENT = [
+  ts.isVariableStatement,
+  ts.isFunctionDeclaration,
+  ts.isClassDeclaration,
+  ts.isEnumDeclaration,
+  ts.isModuleDeclaration,
+];
+
+/**
+ * What point 8 lets a `*.types.ts` hold: an interface, a type alias, an ambient declaration, and
+ * an import or an export with `type` on the whole clause. An allow-list, each form on it erased
+ * whatever the compiler options say. `import { X }` of a type is dropped by elision, which
+ * `verbatimModuleSyntax` switches off, and `import { type X }` leaves `import {} from` behind
+ * under it — the module still loads, for nothing. Two forms erased everywhere are refused all
+ * the same, a namespace of types and `import type X = require()`: nothing here writes them, and
+ * a list naming what it admits is one a reader can check.
+ */
+const typeOnly = (statement) =>
+  ts.isInterfaceDeclaration(statement) ||
+  ts.isTypeAliasDeclaration(statement) ||
+  (ts.isImportDeclaration(statement) &&
+    statement.importClause?.phaseModifier === ts.SyntaxKind.TypeKeyword) ||
+  (ts.isExportDeclaration(statement) && statement.isTypeOnly) ||
+  (AMBIENT.some((is) => is(statement)) &&
+    (ts.getModifiers(statement) ?? []).some(
+      (modifier) => modifier.kind === ts.SyntaxKind.DeclareKeyword,
+    ));
+
+/**
+ * Point 8's reading, form by form, held on every run: each statement, alone in a types file, is
+ * admitted or refused by the rule itself the way it is marked, or the run names it. The prepared
+ * trees hold WHERE the rule reads — which files, which statements, what its message names; this
+ * list holds HOW it reads a form, because a tree per keyword is a directory per keyword, and a
+ * form no tree carried could be admitted in silence. A form it does not name is refused by the
+ * allow-list above, and nothing here would notice that change.
+ */
+const FORMS = [
+  // Admitted — each erased whatever the options say.
+  ['interface A {}', true],
+  ['export type A = string;', true],
+  ['import type { A } from "a";', true],
+  ['import type * as A from "a";', true],
+  ['export type { A } from "a";', true],
+  ['export type * from "a";', true],
+  ['export type {};', true],
+  ['declare const a: number;', true],
+  ['export declare function f(): void;', true],
+  ['declare class C {}', true],
+  ['declare enum E { A }', true],
+  ['declare namespace N { const a: number; }', true],
+  ['declare global { interface W {} }', true],
+  // Refused — compilation keeps each of these under some option, most of them under every one.
+  ['export const a = 1;', false],
+  ['const a = 1;', false],
+  ['export function f() {}', false],
+  ['export class C {}', false],
+  ['export enum E { A }', false],
+  ['export const enum E { A }', false],
+  ['f();', false],
+  ['export default a;', false],
+  ['import { A } from "a";', false],
+  ['import { type A } from "a";', false],
+  ['import "a";', false],
+  ['import defer * as A from "a";', false],
+  ['export { a } from "a";', false],
+  ['export { type A } from "a";', false],
+  ['export * from "a";', false],
+  ['export * as ns from "a";', false],
+  ['export import A = N.B;', false],
+  ['function f() {}', false],
+  ['class C {}', false],
+  ['enum E { A }', false],
+  ['import A = N.B;', false],
+  ['import {} from "a";', false],
+  ['export { A };', false],
+  // Kept as written under `verbatimModuleSyntax` and runs nothing: `export type {}` is the
+  // admitted spelling of the same module marker.
+  ['export {};', false],
+  ['declare export { a } from "a";', false],
+  ['declare import { a } from "a";', false],
+  ['declare import A = N.B;', false],
+  ['declare export default a;', false],
+  // Refused though erased — the allow-list names what it admits.
+  ['namespace N { export type A = string; }', false],
+  ['import type A = require("a");', false],
+];
+
+/**
+ * 8. TYPES — a `*.types.ts` is exported by the index of its entrypoint, and holds nothing but
+ * types. A types file the index passes over is the one arrangement here that looks finished
+ * from every side: the types are written, they compile, the library uses them internally —
+ * and the consumer, who can only see what the index re-exports, cannot name a single one.
+ *
+ * The second rule is the premise coverage and the mutation run skip the name on —
+ * `req-project-files` says why. It reads EVERY `*.types.ts` the library carries, not only those
+ * of an entrypoint, because that is the set they skip; and it reads them with the parser,
+ * because what compilation keeps is a fact about syntax, and a pattern over the text is a second
+ * lexer ([`lesson-236`](../docs/lessons.md#lesson-236)).
  *
  * That every component HAS such a file is the half of the promise this gate does not measure;
  * the reason and the count are both in `req-project-files`.
  */
-const types = ({ has, sources, read }) => {
+const types = ({ has, files, sources, read }) => {
   const typeFiles = sources.filter((f) => f.endsWith('.types.ts'));
   const unexported = [];
   for (const file of typeFiles) {
@@ -699,7 +798,7 @@ const types = ({ has, sources, read }) => {
   if (unexported.length)
     throw new FilesError(
       'types',
-      null,
+      'not-exported',
       `${unexported.length} types file(s) are not exported by their entrypoint's index:\n` +
         list(
           unexported.map(
@@ -709,6 +808,40 @@ const types = ({ has, sources, read }) => {
         ) +
         `\n    The types compile, the library uses them, and the consumer cannot name one ` +
         `of them: the index is the whole of what an entrypoint exports.`,
+    );
+
+  const kept = [];
+  for (const file of files.filter((f) => f.endsWith('.types.ts'))) {
+    const source = ts.createSourceFile(
+      file,
+      read(file),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    for (const statement of source.statements)
+      if (!typeOnly(statement))
+        kept.push({
+          file,
+          line:
+            source.getLineAndCharacterOfPosition(statement.getStart(source))
+              .line + 1,
+          text: statement.getText(source).split('\n')[0],
+        });
+  }
+  if (kept.length)
+    throw new FilesError(
+      'types',
+      'not-type-only',
+      `${kept.length} statement(s) in types files are not type-only:\n` +
+        list(
+          kept.map(({ file, line, text }) => `${file}:${line} — \`${text}\``),
+        ) +
+        `\n    Coverage and the mutation run skip a \`*.types.ts\` as pure types, so whatever ` +
+        `compilation keeps of one is code under no floor, and only the name on the file says ` +
+        `there is none. A types file holds interfaces, type aliases, ambient declarations, ` +
+        `\`import type … from\` and \`export type\` — forms TypeScript erases whatever the options ` +
+        `say; a plain \`import\` of a type is erased only while \`verbatimModuleSyntax\` is ` +
+        `off. A value goes to a module of its own, where both measurements reach it.`,
     );
 };
 
@@ -1073,6 +1206,30 @@ const fixtureInput = (directory) =>
       .sort(),
   );
 
+/**
+ * Where a row of `FORMS` stands when the rule reads it: a types file of an entrypoint, and one
+ * NOT named after its directory, as every types file of the library and of the trees is.
+ */
+const FORM = `${PROJECT}/form/src/row.types.ts`;
+
+/**
+ * A name of a case found in its message with no digit on either side — `button.types.ts:7` is
+ * not named by `button.types.ts:70`, nor `2 statement(s)` by `12 statement(s)`.
+ */
+const namedIn = (message, named) => {
+  for (
+    let at = message.indexOf(named);
+    at !== -1;
+    at = message.indexOf(named, at + 1)
+  )
+    if (
+      !/[0-9]/.test(message[at - 1] ?? '') &&
+      !/[0-9]/.test(message[at + named.length] ?? '')
+    )
+      return true;
+  return false;
+};
+
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
@@ -1148,9 +1305,72 @@ for (const name of cases) {
           `built for \`${fx.rule ?? '—'}\` — one point, several rules, and the one this ` +
           `input exists to prove is the one that stayed silent`,
       );
+    // What the message has to name, where a case says: a rule firing with the wrong line, or
+    // with one statement of two, sends a person to the wrong place and stays green otherwise.
+    else if (
+      fx.names !== undefined &&
+      (!Array.isArray(fx.names) ||
+        !fx.names.length ||
+        fx.names.some((named) => typeof named !== 'string' || !named.trim()))
+    )
+      problems.push(
+        `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
+          `what its message names proves nothing about it, and an empty one is named anywhere`,
+      );
+    else {
+      const unnamed = (fx.names ?? []).filter(
+        (named) => !namedIn(error.message, named),
+      );
+      if (unnamed.length)
+        problems.push(
+          `${name}: point ${fx.point} fired on its own rule, and its message does not name ` +
+            `${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that sends a ` +
+            `person to the wrong place, or to none`,
+        );
+    }
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+}
+
+// Point 8's reading, form by form: every row of `FORMS` is one statement, alone in a types file,
+// and the rule itself — not the reading it calls — admits or refuses it as the row is marked.
+for (const [text, admitted] of FORMS) {
+  const { statements } = ts.createSourceFile(
+    FORM,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  if (statements.length !== 1) {
+    problems.push(
+      `FORMS: \`${text}\` reads as ${statements.length} statements, and a row is one — ` +
+        `the form it was written for is not what the rule is asked about`,
+    );
+    continue;
+  }
+  let refused = false;
+  try {
+    types({ has: new Set(), files: [FORM], sources: [], read: () => text });
+  } catch (error) {
+    if (!(error instanceof FilesError)) throw error;
+    if (error.check !== 'types' || error.rule !== 'not-type-only') {
+      problems.push(
+        `FORMS: \`${text}\` fired \`${error.check} / ${error.rule}\`, and a form is ` +
+          `admitted or refused by \`types / not-type-only\` alone`,
+      );
+      continue;
+    }
+    refused = true;
+  }
+  if (refused === admitted)
+    problems.push(
+      admitted
+        ? `FORMS: point 8 refuses \`${text}\`, which the list admits — a form TypeScript ` +
+            `erases, turned into a red nobody can act on`
+        : `FORMS: point 8 admits \`${text}\`, which the list refuses — code let into a file ` +
+            `both measurements skip`,
+    );
 }
 
 // ── result ────────────────────────────────────────────────────────────────────
@@ -1164,5 +1384,6 @@ if (problems.length) {
 
 console.log(
   `✓ Files: ${description}. Negative control: the reference tree passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, ${FORMS.length} forms ` +
+    `read as marked.`,
 );
