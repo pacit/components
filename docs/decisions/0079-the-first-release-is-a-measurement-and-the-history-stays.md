@@ -87,7 +87,11 @@ publishing is configured a minute after the first publish, because it cannot be 
    manifest. The release commit `b0e4525d` carries the CHANGELOG, the manifest, the constant
    and the dated source together, which closes [`lesson-220`](../lessons.md#lesson-220) by
    reading; the rehearsal before it had a finding of its own
-   ([`lesson-242`](../lessons.md#lesson-242))._
+   ([`lesson-242`](../lessons.md#lesson-242)), and so had the first CI after the tag: on the
+   pull request that wrote this note it found `docs/acr.md` still rendered at `0.1.0`, because
+   the release commit moves the manifest and re-renders nothing that reads it, and a push with
+   `GITHUB_TOKEN` gives it no CI of its own ([`lesson-243`](../lessons.md#lesson-243)) — both
+   go into the release path next._
 5. **The order of the premiere is fixed by what depends on what.** The site at its address
    first, because the public `.d.ts` cite it; then the citations, the CI-colour check in the
    release workflow and the contributor path; then the publish, on a sentence, as

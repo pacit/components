@@ -399,3 +399,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-240`](lessons.md#lesson-240) | `req-quality-coverage`                                                                                                                                            |
 | [`lesson-241`](lessons.md#lesson-241) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-242`](lessons.md#lesson-242) | `req-release-metadata`, `req-release-since`                                                                                                                       |
+| [`lesson-243`](lessons.md#lesson-243) | — _(not cited)_                                                                                                                                                   |
