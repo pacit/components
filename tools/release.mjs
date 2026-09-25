@@ -6,13 +6,14 @@
  * us step in between:
  *   1. `releaseVersion` — bumps libs/components/package.json (staged; no commit, no tag),
  *   2. `stamp-version` — writes that version into the constant and dates every `@since next`,
- *   3. `build` + `check-package` — the artifact comes from already-bumped sources, and
+ *   3. `check-acr --write` — re-renders the report that embeds the version (lesson-243),
+ *   4. `build` + `check-package` — the artifact comes from already-bumped sources, and
  *      the gate stops an incomplete package before the commit, the tag and the stage,
- *   4. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
- *   5. `npm stage publish` — the tarball goes to npm's stage; a maintainer approves it.
+ *   5. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
+ *   6. `npm stage publish` — the tarball goes to npm's stage; a maintainer approves it.
  *
  * Usage:
- *   node tools/release.mjs --dry-run          # writes nothing, stages nothing
+ *   node tools/release.mjs --dry-run          # bumps, tags and stages nothing
  *   node tools/release.mjs --specifier=minor
  *   node tools/release.mjs --first-release    # no previous tag
  */
@@ -42,8 +43,9 @@ if (dryRun) {
   );
 }
 
-// 1. Version. Commit and tag deliberately deferred — they are to cover the CHANGELOG
-//    and the rewritten constant too, and those appear only in steps 2 and 4.
+// 1. Version. Commit and tag deliberately deferred — they are to cover the rewritten
+//    constant, the re-rendered report and the CHANGELOG too, and those appear only in
+//    steps 2, 3 and 5.
 const { workspaceVersion, projectsVersionData } = await releaseVersion({
   specifier,
   dryRun,
@@ -51,7 +53,7 @@ const { workspaceVersion, projectsVersionData } = await releaseVersion({
   firstRelease,
   gitCommit: false,
   gitTag: false,
-  // Staged, not committed: the commit comes in step 4 and has to carry the manifest as well
+  // Staged, not committed: the commit comes in step 5 and has to carry the manifest as well
   // as the CHANGELOG. `false` here let the first release commit the CHANGELOG alone — the
   // manifest and the stamp stayed in the runner's checkout while 0.1.0 went to npm
   // (lesson-220). `releaseChangelog` commits the index, and nothing else fills it.
@@ -77,7 +79,18 @@ run(['nx', 'stamp-version', 'components']);
 if (!dryRun)
   execFileSync('git', ['add', '-u', 'libs/components'], { stdio: 'inherit' });
 
-// 3. Only now the build — the sources already carry the new version. We call
+// 3. What else reads the manifest is re-rendered now, for the same commit. `docs/acr.md`
+//    carries the version in its product line, and the release of 0.2.0 left it a version
+//    behind: the first CI after the tag went red on `check-acr`, six and a half hours later,
+//    on a pull request about something else (lesson-243). `--write` rewrites the report in
+//    place in a dry run too: on a clean tree the bytes are the same, since the manifest did
+//    not move, and nothing is added — so the rehearsal proves that the step runs, not that
+//    it re-renders with the new version; a dirty `claims.json` would be rendered, dry or not.
+console.log('\n> node tools/check-acr.mjs --write');
+execFileSync('node', ['tools/check-acr.mjs', '--write'], { stdio: 'inherit' });
+if (!dryRun) execFileSync('git', ['add', 'docs/acr.md'], { stdio: 'inherit' });
+
+// 4. Only now the build — the sources already carry the new version. We call
 //    `schematics`, because that target depends on `build` and adds `ng add` plus the
 //    migration collection to dist. The gate runs directly rather than through an nx
 //    target, because `--release` sharpens it with the metadata npm requires (among them
@@ -99,7 +112,7 @@ execFileSync('node', ['libs/components/check-package.mjs', gate], {
   stdio: 'inherit',
 });
 
-// 4. CHANGELOG from conventional commits + commit + tag + GitHub Release. The renderer
+// 5. CHANGELOG from conventional commits + commit + tag + GitHub Release. The renderer
 //    (`tools/changelog-renderer.mjs`, decision 0079) renders the first release as a
 //    measurement and every later one as the list; this is how it learns which it is.
 process.env.PCT_FIRST_RELEASE = firstRelease ? '1' : '0';
@@ -114,7 +127,7 @@ await releaseChangelog({
   gitPush: true,
 });
 
-// 5. The stage. `npm stage publish` is `npm publish` stopped one step short: the tarball is
+// 6. The stage. `npm stage publish` is `npm publish` stopped one step short: the tarball is
 //    up, and the version stays invisible until a maintainer approves it with 2FA, on
 //    npmjs.com or with `npm stage approve` (decision 0079, amended 2026-09-17). The trusted
 //    publisher `release.yml` runs as may only stage — the registry refuses `npm publish`

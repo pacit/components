@@ -6852,10 +6852,19 @@ triggers no workflow, so the release commit is the one commit on `main` that nev
 verdict of its own, and the site, which deploys behind a green CI by 0078, stayed at the
 previous commit for the same reason.
 
-Two fixes, both in the release path and both provable only on the next release: `release.mjs`
-re-renders `docs/acr.md` after the bump and stages it with the rest, and `release.yml`
-dispatches CI on `main` after the push — `workflow_dispatch` is one of the two events the token
-may raise, `repository_dispatch` the other — so the release commit earns its green and, through
-`workflow_run`, the site follows.
-Until then the rendering is repaired by hand in #27, the way the manifest was in `e649f1fa`
+The push run after #27 merged, the first on `main` since the tag, showed the same class once
+more: red at `format:check`, on `libs/components/CHANGELOG.md` — three double spaces in the
+entry of `0.2.0`, two after ⚠️ and one between a breaking change and its references, where
+Nx's renderer writes two and prettier writes one. #27's own run
+could not see it, because a pull request's range starts at the merge base and the release
+commit lay before it; `main`'s range starts at the last green push run, and the release
+commit lay inside.
+
+Three fixes, all in the release path and all provable only on the next release: `release.mjs`
+re-renders `docs/acr.md` after the bump and stages it with the rest; `changelog-renderer.mjs`
+hands its entry to prettier, as `check-acr` does its report; and `release.yml` dispatches CI
+on `main` after the push — `workflow_dispatch` is one of the two events the token may raise,
+`repository_dispatch` the other — so the release commit earns its green and, through
+`workflow_run`, the site follows. Until then the renderings are repaired by hand, `acr.md` in
+#27 and the CHANGELOG in #28, the way the manifest was in `e649f1fa`
 ([`lesson-220`](#lesson-220)).

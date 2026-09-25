@@ -25,7 +25,7 @@ on:
 permissions:
   contents: write # CHANGELOG commit, tag, GitHub Release entry
   id-token: write # OIDC: npm trades it for the trusted publisher's short-lived token, and signs provenance
-  actions: read # the CI run of the commit about to be published
+  actions: write # read: the CI run of the commit about to be published; write: CI dispatched on the release commit
 
 jobs:
   release:
@@ -83,6 +83,7 @@ jobs:
       # identity (repository and workflow file, configured on the package), and that identity
       # may only `npm stage publish`. The script says what a person does next in the job summary.
       - name: Release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Inputs travel through the environment rather than interpolation into
@@ -96,3 +97,24 @@ jobs:
           if [ "$FIRST_RELEASE" = "true" ]; then ARGS+=("--first-release"); fi
           if [ "$DRY_RUN" = "true" ]; then ARGS+=("--dry-run"); fi
           node tools/release.mjs "${ARGS[@]}"
+
+      # The push above is the bot's, with `GITHUB_TOKEN`, and a push made with that token
+      # starts no workflow: after `0.2.0` the release commit stood on `main` for six and a
+      # half hours with no CI verdict — red, as it turned out — and the site, which deploys
+      # behind a green CI (`pages.yml`, decision 0078), stayed at the commit before it
+      # (lesson-243). A dispatch is one of the two events the token may raise, so CI is
+      # dispatched on `main` here: the release commit earns its verdict, and Pages follows
+      # CI's `workflow_run`. A dry run pushed nothing and dispatches nothing. A real run
+      # dispatches even when the step above failed, because it can fail AFTER its push —
+      # the stage is the last thing it does — and the commit is on `main` either way; when
+      # the failure came before the push, the price is one more run of an unmoved, green
+      # `main`. Not when the script never ran, though: a run the guard refused (CI still in
+      # progress on `main`) pushed nothing, and a dispatch would only cancel and restart
+      # the run the guard was waiting for. `--ref main` names the branch, not the commit:
+      # a merge landing in the seconds between the push and the dispatch takes the run,
+      # and covers the release commit with it.
+      - name: CI on the release commit, and the site after it
+        if: ${{ !inputs.dry_run && !cancelled() && steps.release.outcome != 'skipped' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref main

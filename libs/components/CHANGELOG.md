@@ -2,7 +2,7 @@
 
 ### Features
 
-- ⚠️  **badge:** the tone is the library's four, and the absence is the neutral ([#13](https://github.com/pacit/components/pull/13), [#9](https://github.com/pacit/components/issues/9))
+- ⚠️ **badge:** the tone is the library's four, and the absence is the neutral ([#13](https://github.com/pacit/components/pull/13), [#9](https://github.com/pacit/components/issues/9))
 - **button:** a tone is a colour the button wears, and every wearing is measured ([#9](https://github.com/pacit/components/pull/9))
 - **api:** what can stop being public does, and everything public says what it is ([352aee2](https://github.com/pacit/components/commit/352aee2))
 - **api:** the public methods say since when too ([5ffc3ff](https://github.com/pacit/components/commit/5ffc3ff))
@@ -20,9 +20,9 @@
 - **select:** the filter predicates leave the types file, and a types file holds types alone ([#22](https://github.com/pacit/components/pull/22))
 - **schematics:** the migration calls Angular's parser instead of imitating it ([#15](https://github.com/pacit/components/issues/15), [#110](https://github.com/pacit/components/issues/110))
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
-- **badge:** the tone is the library's four, and the absence is the neutral  ([#13](https://github.com/pacit/components/pull/13), [#9](https://github.com/pacit/components/issues/9))
+- **badge:** the tone is the library's four, and the absence is the neutral ([#13](https://github.com/pacit/components/pull/13), [#9](https://github.com/pacit/components/issues/9))
   `PctBadgeTone` is gone and `tone` takes `PctTone | null`,
   default `null`. `tone="neutral"` no longer compiles — a badge with no tone takes
   no `tone` at all — and an untoned badge no longer carries `data-pct-tone` at all,

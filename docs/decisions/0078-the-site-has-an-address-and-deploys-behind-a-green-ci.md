@@ -47,6 +47,17 @@ repository, and deploys only from a commit on `main` whose CI run concluded gree
    rather than the head of the branch. A deploy in progress is never cancelled — one site,
    one queue — and the first run is a manual dispatch, because `workflow_run` cannot fire for
    a workflow file that is not on the default branch yet.
+   _Read 2026-09-25, the release of `0.2.0`: the release commit is pushed by the bot with
+   `GITHUB_TOKEN`, and a push made with that token starts no workflow — so `CI` never ran on
+   it, `workflow_run` never fired, and the site stayed at the commit before the release,
+   `unreleased` still on the button's `tone`. The pull request that wrote the release into
+   0079 merged that evening, seven and a quarter hours after the tag, and its push run went
+   red too — at `format:check`, on the CHANGELOG the release had written — so the site was
+   still a release behind when the release path was repaired
+   ([`lesson-243`](../lessons.md#lesson-243)). From the next release
+   `release.yml` dispatches `CI` on `main` after its push — a dispatch is one of the two
+   events the token may raise — and the site follows that run the way it follows every
+   other._
 4. **The 404 is a page of the site.** A `not-found` page is prerendered under `/404` through
    the catch-all's `getPrerenderParams` — `{ '**': '404' }`, the parameter name Angular
    documents for a catch-all — and the workflow copies it to the root `404.html` that Pages
