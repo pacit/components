@@ -76,8 +76,8 @@ has stopped being complete, and that is a fault of this list, not of the registr
 0  the copy off this machine  DONE — landed 2026-09-01
 1  components             1.2 only, deferred by 0016 rather than scheduled
 2  trust surface          DONE — the site is built; its address is 3.5
-3  publication            DONE — 0.1.0 on npm 2026-09-17; 3.6 stands past the tag
-3  open findings          small, good filler between the bigger items
+3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
+4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  DONE — the last trigger fired on 2026-09-14
 ```
 
@@ -86,9 +86,12 @@ has stopped being complete, and that is a fault of this list, not of the registr
 **The push and the premiere were two moments**
 ([0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md)), and both have passed:
 the quiet push on 2026-09-01, the flip to public on 2026-09-15, the site at its address and
-`@pacit/components@0.1.0` on npm on 2026-09-17, the last on the maintainer's sentence. What
-the premiere still owes is **3.6**, which binds at the first commit after the tag, and one
-proof: the first version staged by the trusted publisher and approved by hand.
+`@pacit/components@0.1.0` on npm on 2026-09-17, the last on the maintainer's sentence. The
+premiere owes nothing since 2026-09-25: `0.2.0` was the proof — staged by the trusted
+publisher and approved by hand with 2FA, the first `@since next` dated on the release run
+(**3.6** past the tag), the first codemod under the version a consumer installs — read back
+from npm and the tarball the same day
+([0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md)).
 
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
 decisions live: the site's address, host and deploy trigger in
@@ -99,8 +102,9 @@ gives way to trusted publishing in
 holds only the order.
 
 **What is left.** Section 1 ends at the table (**1.2**), deferred by
-[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds **3.6**.
-Section 4 holds two findings, each held by a **binds at** rather than by anybody's mood.
+[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds nothing
+since `0.2.0`. Section 4 holds two findings, each held by a **binds at** rather than by
+anybody's mood.
 
 ## 1. Components
 
@@ -125,7 +129,8 @@ form exists and is a condition of entering a release. Thirty-four cards are fill
 premiere were one moment here, and the fear that held them both — a first look landing on a
 repository with no documentation — belongs only to the second: an unannounced private
 repository has no first look. So the quiet half moved to the front and landed on 2026-09-01;
-the flip followed on 2026-09-15, and npm waits for **3.5** and a sentence.
+the flip followed on 2026-09-15, npm on 2026-09-17 after **3.5** and a sentence, and the
+proof of the staged path on 2026-09-25.
 
 - [x] **3.1 — the premiere: the flip to public, npm, and `req-project-latest` superseded** —
       **closed 2026-09-17: `@pacit/components@0.1.0` is on npm**

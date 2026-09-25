@@ -6838,3 +6838,24 @@ reading, `--rehearsal`: the metadata edge blocks as in a release, since a dry ru
 same manifest, and the undated `next` is a warning that lists the files the real run will
 date. The negative control holds it both ways — `repository-missing` must block under it,
 `since-next` must warn, and a release-only case that does not say which is refused.
+
+### <a id="lesson-243"></a>`lesson-243` — The release commit moved the manifest, and the rendering that embeds it stood still
+
+The first CI run after the tag `components@0.2.0` — on #27, the pull request that wrote the
+release into 0079, six and a half hours after the bot's push — went red on `check-acr`: `docs/acr.md`
+said `@pacit/components 0.1.0` in its product line, and that file is the rendering of
+`docs/acr/claims.json` with the version read from the manifest, which the release commit
+`b0e4525d` had moved to `0.2.0`. The commit carried what `release.mjs` stages — the CHANGELOG,
+the manifest, the constant, the dated sources — and nothing re-renders what reads the manifest
+before that commit. `main` was red from 13:44 UTC and nobody knew: a push with `GITHUB_TOKEN`
+triggers no workflow, so the release commit is the one commit on `main` that never gets a
+verdict of its own, and the site, which deploys behind a green CI by 0078, stayed at the
+previous commit for the same reason.
+
+Two fixes, both in the release path and both provable only on the next release: `release.mjs`
+re-renders `docs/acr.md` after the bump and stages it with the rest, and `release.yml`
+dispatches CI on `main` after the push — `workflow_dispatch` is one of the two events the token
+may raise, `repository_dispatch` the other — so the release commit earns its green and, through
+`workflow_run`, the site follows.
+Until then the rendering is repaired by hand in #27, the way the manifest was in `e649f1fa`
+([`lesson-220`](#lesson-220)).

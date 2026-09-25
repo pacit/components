@@ -74,6 +74,24 @@ publishing is configured a minute after the first publish, because it cannot be 
    over" check (`--force`, dry run only), because the artifact it packs still carries the
    published version — and on the runner it treats npm's "not logged in" as the finding it
    is: an OIDC exchange the registry refused. The proof stays where it was: the next release._
+   _Read 2026-09-25, the release of `0.2.0` (run 36142718568 on `dcf69606`): the proof is in.
+   The publisher staged — `npm stage publish --provenance`, the provenance statement in the
+   transparency log at index 2956911741 — the tag and the GitHub Release went out at 13:44
+   UTC, and the maintainer approved with 2FA at 20:16 UTC; `npm view` then said
+   `latest: 0.2.0` with the SLSA v1 predicate under `dist.attestations`. Two more proofs
+   went out with it, neither reachable
+   by a dry run: the first `@since next` dated on the release run — the button's `tone`,
+   `@since 0.2.0` in the shipped `.d.ts`, and `PCT_VERSION = '0.2.0'` in the tarball equal
+   to the tag — and the first codemod in the collection a consumer installs, `badge-tone`
+   under `0.2.0` in `migration.json`, reached through `ng-update.migrations` in the
+   manifest. The release commit `b0e4525d` carries the CHANGELOG, the manifest, the constant
+   and the dated source together, which closes [`lesson-220`](../lessons.md#lesson-220) by
+   reading; the rehearsal before it had a finding of its own
+   ([`lesson-242`](../lessons.md#lesson-242)), and so had the first CI after the tag: on the
+   pull request that wrote this note it found `docs/acr.md` still rendered at `0.1.0`, because
+   the release commit moves the manifest and re-renders nothing that reads it, and a push with
+   `GITHUB_TOKEN` gives it no CI of its own ([`lesson-243`](../lessons.md#lesson-243)) — both
+   go into the release path next._
 5. **The order of the premiere is fixed by what depends on what.** The site at its address
    first, because the public `.d.ts` cite it; then the citations, the CI-colour check in the
    release workflow and the contributor path; then the publish, on a sentence, as
