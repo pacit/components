@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { boxOf, setRtl, visit } from './support/dom';
+import { boxOf, setRtl, settled, visit } from './support/dom';
 import { styleOf } from './support/css';
 
 test.describe('PctSwitch — a setting that takes effect at once', () => {
@@ -106,11 +106,27 @@ test.describe('PctSwitch — a setting that takes effect at once', () => {
     await expect(control).toBeChecked();
     expect(await styleOf(thumb, 'pointer-events')).toBe('none');
 
+    const track = host.locator('[data-pct-part="track"]');
+    // Settled first, so the knob is at rest at the inline end rather than trusted to be: the
+    // gap between it and the track's end is the inset it will keep at the other end.
+    await settled(page);
     const knob = await boxOf(thumb);
+    const rail = await boxOf(track);
+    const inset = rail.x + rail.width - (knob.x + knob.width);
     await page.mouse.click(knob.x + knob.width / 2, knob.y + knob.height / 2);
     await expect(control).not.toBeChecked();
 
-    // And back, from where the knob has travelled to.
+    // And back, from where the knob has travelled to. The checkedness lands in the click's
+    // own task; the knob follows a change detection and a transition later, so one read
+    // here can catch it where it was or half-way. What polls is the knob's gap to the
+    // track's START against the inset it had at the end: a knob that has not moved stands
+    // a whole travel away from it, and one caught in flight part of one
+    // ([`lesson-241`](../../../docs/lessons.md#lesson-241)).
+    await expect
+      .poll(async () =>
+        Math.abs((await boxOf(thumb)).x - (await boxOf(track)).x - inset),
+      )
+      .toBeLessThanOrEqual(1);
     const moved = await boxOf(thumb);
     await page.mouse.click(
       moved.x + moved.width / 2,
