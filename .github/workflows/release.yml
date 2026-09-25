@@ -83,6 +83,7 @@ jobs:
       # identity (repository and workflow file, configured on the package), and that identity
       # may only `npm stage publish`. The script says what a person does next in the job summary.
       - name: Release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Inputs travel through the environment rather than interpolation into
@@ -107,11 +108,13 @@ jobs:
       # dispatches even when the step above failed, because it can fail AFTER its push —
       # the stage is the last thing it does — and the commit is on `main` either way; when
       # the failure came before the push, the price is one more run of an unmoved, green
-      # `main`. `--ref main` names the branch, not the commit: a merge landing in the
-      # seconds between the push and the dispatch takes the run, and covers the release
-      # commit with it.
+      # `main`. Not when the script never ran, though: a run the guard refused (CI still in
+      # progress on `main`) pushed nothing, and a dispatch would only cancel and restart
+      # the run the guard was waiting for. `--ref main` names the branch, not the commit:
+      # a merge landing in the seconds between the push and the dispatch takes the run,
+      # and covers the release commit with it.
       - name: CI on the release commit, and the site after it
-        if: ${{ !inputs.dry_run && !cancelled() }}
+        if: ${{ !inputs.dry_run && !cancelled() && steps.release.outcome != 'skipped' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run ci.yml --ref main

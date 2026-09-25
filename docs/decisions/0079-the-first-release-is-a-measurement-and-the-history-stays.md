@@ -90,8 +90,9 @@ publishing is configured a minute after the first publish, because it cannot be 
    ([`lesson-242`](../lessons.md#lesson-242)), and so had the first CI after the tag: on the
    pull request that wrote this note it found `docs/acr.md` still rendered at `0.1.0`, because
    the release commit moves the manifest and re-renders nothing that reads it, and a push with
-   `GITHUB_TOKEN` gives it no CI of its own ([`lesson-243`](../lessons.md#lesson-243)) — both
-   go into the release path next._
+   `GITHUB_TOKEN` gives it no CI of its own; the push run after that pull request merged added
+   a third, `format:check` red on the CHANGELOG the release had written
+   ([`lesson-243`](../lessons.md#lesson-243)) — all three go into the release path next._
 5. **The order of the premiere is fixed by what depends on what.** The site at its address
    first, because the public `.d.ts` cite it; then the citations, the CI-colour check in the
    release workflow and the contributor path; then the publish, on a sentence, as

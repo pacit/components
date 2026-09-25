@@ -27,7 +27,7 @@ the points, and a number copied here would be a second home for a number 0017 al
 
 ```
 at-pass.mjs 2 14 175
-changelog-renderer.mjs 3 14 122
+changelog-renderer.mjs 4 16 159
 check-acr.mjs 8 20 211
 check-aria.mjs 9 21 245
 check-bench.mjs 6 18 191
