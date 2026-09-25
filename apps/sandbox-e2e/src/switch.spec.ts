@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { boxOf, setRtl, visit } from './support/dom';
+import { boxOf, setRtl, settled, visit } from './support/dom';
 import { styleOf } from './support/css';
 
 test.describe('PctSwitch — a setting that takes effect at once', () => {
@@ -107,11 +107,12 @@ test.describe('PctSwitch — a setting that takes effect at once', () => {
     expect(await styleOf(thumb, 'pointer-events')).toBe('none');
 
     const track = host.locator('[data-pct-part="track"]');
-    const knob = await boxOf(thumb);
-    const box = await boxOf(track);
-    // `visit` waits for a stable page, so this knob is at rest at the inline end, and the
+    // Settled first, so the knob is at rest at the inline end rather than trusted to be: the
     // gap between it and the track's end is the inset it will keep at the other end.
-    const inset = box.x + box.width - (knob.x + knob.width);
+    await settled(page);
+    const knob = await boxOf(thumb);
+    const rail = await boxOf(track);
+    const inset = rail.x + rail.width - (knob.x + knob.width);
     await page.mouse.click(knob.x + knob.width / 2, knob.y + knob.height / 2);
     await expect(control).not.toBeChecked();
 
