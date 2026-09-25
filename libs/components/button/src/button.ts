@@ -85,7 +85,7 @@ export class PctButton {
    * "Delete account, button" whatever the face is painted with. A red button labelled "OK"
    * says nothing to anyone who cannot see the red, and no attribute here can repair that.
    *
-   * @since next
+   * @since 0.2.0
    */
   readonly tone = input<PctTone | null>(null);
 
