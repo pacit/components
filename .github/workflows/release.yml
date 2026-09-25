@@ -25,7 +25,7 @@ on:
 permissions:
   contents: write # CHANGELOG commit, tag, GitHub Release entry
   id-token: write # OIDC: npm trades it for the trusted publisher's short-lived token, and signs provenance
-  actions: read # the CI run of the commit about to be published
+  actions: write # read: the CI run of the commit about to be published; write: CI dispatched on the release commit
 
 jobs:
   release:
@@ -96,3 +96,16 @@ jobs:
           if [ "$FIRST_RELEASE" = "true" ]; then ARGS+=("--first-release"); fi
           if [ "$DRY_RUN" = "true" ]; then ARGS+=("--dry-run"); fi
           node tools/release.mjs "${ARGS[@]}"
+
+      # The push above is the bot's, with `GITHUB_TOKEN`, and a push made with that token
+      # starts no workflow: after `0.2.0` the release commit stood on `main` for six and a
+      # half hours with no CI verdict — red, as it turned out — and the site, which deploys
+      # behind a green CI (`pages.yml`, decision 0078), stayed at the commit before it
+      # (lesson-243). A dispatch is one of the two events the token may raise, so CI is
+      # dispatched on `main` here: the release commit earns its verdict, and Pages follows
+      # CI's `workflow_run`. A dry run pushed nothing and dispatches nothing.
+      - name: CI on the release commit, and the site after it
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref main

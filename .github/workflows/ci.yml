@@ -5,6 +5,12 @@ on:
     branches:
       - main
   pull_request:
+  # For the release commit alone. Its push is the bot's, with `GITHUB_TOKEN`, and a push
+  # made with that token starts no workflow — so the one commit on `main` that moves the
+  # manifest was the one commit with no verdict, and the site behind `workflow_run` stayed
+  # a release behind (lesson-243). `release.yml` dispatches this workflow after its push:
+  # a dispatch is one of the two events the token may raise.
+  workflow_dispatch:
 
 permissions:
   actions: read

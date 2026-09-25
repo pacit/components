@@ -6,10 +6,11 @@
  * us step in between:
  *   1. `releaseVersion` — bumps libs/components/package.json (staged; no commit, no tag),
  *   2. `stamp-version` — writes that version into the constant and dates every `@since next`,
- *   3. `build` + `check-package` — the artifact comes from already-bumped sources, and
+ *   3. `check-acr --write` — re-renders the report that embeds the version (lesson-243),
+ *   4. `build` + `check-package` — the artifact comes from already-bumped sources, and
  *      the gate stops an incomplete package before the commit, the tag and the stage,
- *   4. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
- *   5. `npm stage publish` — the tarball goes to npm's stage; a maintainer approves it.
+ *   5. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
+ *   6. `npm stage publish` — the tarball goes to npm's stage; a maintainer approves it.
  *
  * Usage:
  *   node tools/release.mjs --dry-run          # writes nothing, stages nothing
@@ -77,7 +78,16 @@ run(['nx', 'stamp-version', 'components']);
 if (!dryRun)
   execFileSync('git', ['add', '-u', 'libs/components'], { stdio: 'inherit' });
 
-// 3. Only now the build — the sources already carry the new version. We call
+// 3. What else reads the manifest is re-rendered now, for the same commit. `docs/acr.md`
+//    carries the version in its product line, and the release of 0.2.0 left it a version
+//    behind: the first CI after the tag went red on `check-acr`, six and a half hours later,
+//    on a pull request about something else (lesson-243). In a dry run the manifest did not
+//    move, so the rendering does not either, and nothing is added.
+console.log('\n> node tools/check-acr.mjs --write');
+execFileSync('node', ['tools/check-acr.mjs', '--write'], { stdio: 'inherit' });
+if (!dryRun) execFileSync('git', ['add', 'docs/acr.md'], { stdio: 'inherit' });
+
+// 4. Only now the build — the sources already carry the new version. We call
 //    `schematics`, because that target depends on `build` and adds `ng add` plus the
 //    migration collection to dist. The gate runs directly rather than through an nx
 //    target, because `--release` sharpens it with the metadata npm requires (among them
