@@ -77,7 +77,8 @@ the consumer does not have.
 
 **Gate:** `libs/components/check-package.mjs` (point 6) — two different severities, because
 these are two different conditions. Manifest fields: a warning in an ordinary run, an
-**error under `--release`**, for as long as `repository` has nothing to point at. The
+**error under `--release`** (and under `--rehearsal`, the dry run's mode, which packs the
+same manifest), for as long as `repository` has nothing to point at. The
 `licence` check: **always an error** — a LICENSE file in the artifact, non-empty, naming
 a licence that matches the `license` field, with a `Copyright (c) <year> <entity>` line.
 Plus `tools/check-consumer.mjs` (point 1, rule `licence-missing`) — a file present in `dist`
@@ -168,7 +169,7 @@ types)
 point, and `_reader/`, a prepared library whose every API the readers must return, written
 with the `export` keyword, with a list, and under names several declarations share;
 `tools/check-package.fixtures/since-next/` on the release side, warning day to day and
-blocking under `--release`
+under `--rehearsal` — a dry run builds before any stamp — and blocking under `--release`
 **Non-goals:** a part. A part is markup, and a since column in the card would be a second
 home for the fact ([0017](../decisions/0017-one-home-per-fact.md)). A public method is not
 one: seventy-four are dated, most of them the plumbing between a component and its parts,

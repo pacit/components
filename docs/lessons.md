@@ -6814,3 +6814,25 @@ came out of doing that. Polled on its own, the fill-and-thumb distance is satisf
 drawing that has not moved at all, because a fill and a thumb both still at 30 agree; the case
 now polls the thumb's place at the end too, or "at either end of the track" would be a claim
 about the middle.
+
+### <a id="lesson-242"></a>`lesson-242` — The rehearsal was held to a stamp it cannot make
+
+The first dry run of the release after `0.1.0` — 2026-09-25, run 36134704944 on `dadc4a19`,
+the head that was to become `0.2.0` — stopped at the package gate:
+`types/pacit-components-button.d.ts` carried one `@since next`, the button's `tone`, and
+under `--release` point 10 refuses a package that ships the word. The gate was right about a
+release and wrong about the run it was in. A dry run writes no manifest, so `stamp-version`
+finds the constant current and leaves `next` where it is — by design
+([0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md),
+[`lesson-41`](#lesson-41)), and said in the run's own summary — and `release.mjs` handed the
+gate the same `--release` it hands the real run. From the first `@since next` on `main`, every
+rehearsal ended before the changelog preview and the stage rehearsal, the two readings it
+exists to give. The rehearsal of 2026-09-17 passed because the word did not exist yet: it
+came with `ba39abc8`, the next morning.
+
+The shape is general: a flag that says "this artefact is the real thing", handed to the check
+of an artefact the caller itself describes as not the real thing. The fix names the third
+reading, `--rehearsal`: the metadata edge blocks as in a release, since a dry run packs the
+same manifest, and the undated `next` is a warning that lists the files the real run will
+date. The negative control holds it both ways — `repository-missing` must block under it,
+`since-next` must warn, and a release-only case that does not say which is refused.

@@ -48,7 +48,8 @@ so on the site.
 every item to a `@since` that is `next` or a version the manifest has reached, and refuses
 a deprecation of what never shipped. `check-package` point 10 reads the built types and
 refuses, under `--release`, a package that still carries `next` — the artefact of a build
-nobody stamped; day to day it warns, because `next` on `main` is the ordinary state.
+nobody stamped; day to day it warns, because `next` on `main` is the ordinary state — and
+in a dry run, which builds before any stamp (`--rehearsal`, [`lesson-242`](../lessons.md#lesson-242)).
 
 **The page says it per row**, with an outlined `unreleased` mark and a legend that names
 the package version the count is against; a row says `since` only when its version is newer

@@ -82,14 +82,20 @@ if (!dryRun)
 //    migration collection to dist. The gate runs directly rather than through an nx
 //    target, because `--release` sharpens it with the metadata npm requires (among them
 //    `repository`, without which there is no provenance). Day to day that condition only
-//    warns: a missing remote repository is not a defect in the code.
+//    warns: a missing remote repository is not a defect in the code. A dry run hands the
+//    gate `--rehearsal` instead — the same edge on the metadata, but the `@since next` no
+//    stamp has dated (a dry run writes no manifest, so there is nothing to stamp) is said
+//    as a warning naming what the real run will date, not as the refusal it is in a
+//    release: held to `--release`, the first rehearsal after the word reached `main` ended
+//    here, before the changelog and the stage it exists to show (`lesson-242`).
 //    `schematics` depends on `citations` too, so the one invocation also turns the JSDoc's
 //    citations into the site's addresses (decision 0078) before the gate reads them. ONE
 //    invocation on purpose: `build` owns the whole of dist, and a second `nx` run restoring
 //    it from the cache wipes what the first wrote inside (project.json, `// schematics`).
 run(['nx', 'schematics', 'components']);
-console.log('\n> node libs/components/check-package.mjs --release');
-execFileSync('node', ['libs/components/check-package.mjs', '--release'], {
+const gate = dryRun ? '--rehearsal' : '--release';
+console.log(`\n> node libs/components/check-package.mjs ${gate}`);
+execFileSync('node', ['libs/components/check-package.mjs', gate], {
   stdio: 'inherit',
 });
 
