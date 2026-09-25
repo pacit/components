@@ -71,6 +71,10 @@ test.describe('PctBreadcrumb — the way here, told in links', () => {
     // retries, and every retry resolves the locator again.
     await expect(rest).toHaveCSS('text-decoration-line', 'underline');
     await current.hover();
+    // `none` is also the current step's value at rest, so a read taken before the hover is
+    // painted would pass for any rule. The resting link letting go of its underline is the
+    // proof that the pointer has moved in the drawing too; only then is the read a claim.
+    await expect(rest).toHaveCSS('text-decoration-line', 'none');
     expect(await styleOf(current, 'text-decoration-line')).toBe('none');
   });
 
