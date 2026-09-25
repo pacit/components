@@ -6853,8 +6853,9 @@ verdict of its own, and the site, which deploys behind a green CI by 0078, staye
 previous commit for the same reason.
 
 The push run after #27 merged, the first on `main` since the tag, showed the same class once
-more: red at `format:check`, on `libs/components/CHANGELOG.md` — Nx's renderer writes two
-spaces after ⚠️, three times in the entry of `0.2.0`, and prettier writes one. #27's own run
+more: red at `format:check`, on `libs/components/CHANGELOG.md` — three double spaces in the
+entry of `0.2.0`, two after ⚠️ and one between a breaking change and its references, where
+Nx's renderer writes two and prettier writes one. #27's own run
 could not see it, because a pull request's range starts at the merge base and the release
 commit lay before it; `main`'s range starts at the last green push run, and the release
 commit lay inside.

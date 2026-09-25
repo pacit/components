@@ -10,7 +10,7 @@
  *  3. MEASURED: every number is read at render time — `docs/components/`, `tools/check-*.mjs`,
  *     `apps/docs/public/CNAME` — never typed here,
  *  4. FORMATTED: the entry is what prettier writes, so `format:check` reads the release commit
- *     as green — Nx's two spaces after ⚠️ made the push run after `0.2.0` red (lesson-243).
+ *     as green — Nx's double spaces made the push run after `0.2.0` red (lesson-243).
  *
  * Reached by `nx release` alone (`tools.policy.json`), through `nx.json`'s
  * `projectChangelogs.renderer`; the GitHub Release carries the same text.
