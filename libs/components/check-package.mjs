@@ -1091,8 +1091,12 @@ for (const name of cases) {
           );
       } else
         problems.push(
-          `${name}: \`releaseOnly\` without \`rehearsal\` — a case with two modes says ` +
-            `what the third reading does: \`"blocks"\` or \`"warns"\``,
+          `${name}: ` +
+            (fx.rehearsal === undefined
+              ? '`releaseOnly` without `rehearsal`'
+              : `\`rehearsal\` is \`${JSON.stringify(fx.rehearsal)}\``) +
+            ` — a case with two modes says what the third reading does: ` +
+            `\`"blocks"\` or \`"warns"\``,
         );
     }
   } finally {

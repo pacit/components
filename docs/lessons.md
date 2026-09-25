@@ -6828,8 +6828,9 @@ finds the constant current and leaves `next` where it is — by design
 `release.mjs` handed the gate the same `--release` it hands the real run. From the first
 `@since next` on `main`, no rehearsal could reach the changelog preview and the stage
 rehearsal, the two readings it exists to give. The rehearsal of 2026-09-17 (run 35251837572
-on `3be54c2f`, after `0.1.0`) passed because the word did not exist yet: it reached `main`
-with `ba39abc8`, the next morning.
+on `3be54c2f`, after `0.1.0`) passed because no API carried the word yet: `ba39abc8` dated
+every API `0.1.0`, and the first `next` — the button's `tone`, the hit above — reached `main`
+with `f839670d` on 2026-09-19.
 
 The shape is general: a flag that says "this artefact is the real thing", handed to the check
 of an artefact the caller itself describes as not the real thing. The fix names the third
