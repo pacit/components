@@ -177,9 +177,9 @@ proof of the staged path on 2026-09-25.
     `config.yml` sending questions to Discussions and vulnerabilities to the private channel,
     a PR template asking which gates ran, `SECURITY.md`, `CONTRIBUTING.md` with the way to
     run the gates; Discussions, private reporting and About switched on by the maintainer
-  - **the venue, decided 2026-09-17, revised 2026-09-25**: no announcement yet — around
-    `0.8.0`, on a sentence, with much to fix and add first; it no longer waits for the table
-    (1.2): the data 0016 waits for arrives with the announcement. The channels and the reason
+  - **the venue, decided 2026-09-17, its date revised 2026-09-25**: no announcement yet —
+    around `0.8.0`, on a sentence, with much to fix and add first; it no longer waits for
+    the table (1.2): the data 0016 waits for comes with the announcement. Channels and reason
     stand in [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md), amended
 
 - [x] **3.5 — the site at its own address, deployed behind a green CI** — **live 2026-09-17**
