@@ -177,10 +177,10 @@ proof of the staged path on 2026-09-25.
     `config.yml` sending questions to Discussions and vulnerabilities to the private channel,
     a PR template asking which gates ran, `SECURITY.md`, `CONTRIBUTING.md` with the way to
     run the gates; Discussions, private reporting and About switched on by the maintainer
-  - **the venue, decided**: no announcement at `0.1.0`. The library is announced when it
-    stands closer to 1.0 — the table (1.2) in hand — and the order on record for that day is
-    a write-up (dev.to) → r/Angular → LinkedIn → X, Show HN last. Until then the site and
-    npm are findable, not advertised; the data 0016 waits for comes with that announcement
+  - **the venue, decided 2026-09-17, its date revised 2026-09-25**: no announcement yet —
+    around `0.8.0`, on a sentence, with much to fix and add first; it no longer waits for
+    the table (1.2): the data 0016 waits for comes with the announcement. Channels and reason
+    stand in [0075](decisions/0075-the-push-and-the-premiere-are-two-moments.md), amended
 
 - [x] **3.5 — the site at its own address, deployed behind a green CI** — **live 2026-09-17**
   - concerns: [`req-project-apps`](requirements/project.md#req-project-apps) · decided in

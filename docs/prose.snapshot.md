@@ -83,7 +83,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 3.1 closed 12 160
 3.2 closed 12 143
 3.3 closed 10 153
-3.4 closed 12 169
+3.4 closed 12 153
 3.5 closed 12 134
 3.6 closed 12 179
 4.58 closed 9 140
