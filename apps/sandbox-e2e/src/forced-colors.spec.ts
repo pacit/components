@@ -303,12 +303,27 @@ test.describe('forced-colors: active', () => {
 
     // The keyboard cursor: an outline, that is a channel independent of the
     // background. Thanks to that an option both selected and active shows both
-    // states at once.
+    // states at once — the answer's row on opening, which the open's own render
+    // creates carrying both, so this read has no move to race.
+    await expect(
+      page.locator(
+        '[data-pct-part="option"][data-pct-active][data-pct-selected]',
+      ),
+    ).toHaveCSS('outline-style', 'solid');
     await trigger.press('ArrowDown');
-    const active = page.locator('[data-pct-part="option"][data-pct-active]');
-    await expect(active).toHaveCount(1);
-    expect(await styleOf(active, 'outline-color')).toBe(sys.Highlight);
-    expect(await styleOf(active, 'outline-style')).toBe('solid');
+    // The cursor moves in the key's own task and the outline follows a change detection
+    // later — and the row it leaves already wore it, since an answered list opens on its
+    // answer. So a count of one was true before the key and barred nothing, and a one-shot
+    // read is two round trips, resolve and read, with room for that change detection
+    // between them: 16 of 39 nightly repetitions in chromium, 2026-09-17 to 09-27, read the
+    // answer's row ([`lesson-241`](../../../docs/lessons.md#lesson-241)). Polled on the row
+    // the cursor moved TO — the one row active and not selected, which cannot exist before
+    // the move — and every retry resolves and reads in one.
+    const moved = page.locator(
+      '[data-pct-part="option"][data-pct-active]:not([data-pct-selected])',
+    );
+    await expect(moved).toHaveCSS('outline-style', 'solid');
+    await expect(moved).toHaveCSS('outline-color', sys.Highlight);
   });
 
   /**
