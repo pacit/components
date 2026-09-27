@@ -257,14 +257,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     merged name exists in the library today, which is why nothing reads wrong yet
   - binds at: **the first exported name with two declarations dated differently**
 
-- [ ] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate**
-  - the first flake record (4.58) names one case, in `forced-colors.spec.ts` on chromium, 2 of
-    3: the list panel whose selection and keyboard cursor must stay distinguishable — a visual
-    assertion under `forced-colors: active`, read under the suite's own parallelism
-  - a name in the record is a known wobble and not a finding to the gate, by design: repetitions
-    are a sample, and one wobble in three says the case is not stable, not how unstable it is
-  - binds at: **the second record in which it wobbles**, or the first in which a second name
-    joins it — either is the moment to read the case rather than the rate
+- [x] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate** — **closed 2026-09-27**
+  - the first flake record (4.58) named one case, the list panel of `forced-colors.spec.ts` on
+    chromium, 2 of 3. It bound the next night — 2026-09-18, run 35319850439, 2 of 3 again — and
+    the second name, `slider.spec.ts` (2026-09-22, run 35701669075), was read first
+    ([`lesson-241`](lessons.md#lesson-241)); the thirteen nightly reports from 35279012559 to
+    36306161890, read on 2026-09-27, put this one at 16 of 39 chromium repetitions
+  - the reading: `ArrowDown` moves the cursor in its own task and the attribute follows a change
+    detection later; the count of one before the read was true BEFORE the key, since an answered
+    list opens on its answer, and a one-shot `styleOf` is two round trips — the answer's row
+    resolved, then read once it had lost the cursor. Held 400 ms it passes, every read preceding
+    the move; held 30 ms 2 of 5 go red and 45 ms 4 of 5, in CI's own two messages. It polls the
+    outline on the row the cursor moved TO; no second copy; the name stays; nightlies read the rate
 
 - [ ] **4.76 — the dev server that never bound, and where in the start it stopped**
   - run `35408508618` lost two shards of six to a web-server timeout of 240 000 ms, both on
