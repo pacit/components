@@ -47,6 +47,23 @@ sentence from the maintainer.**
    external contributors on a private stage whose expectations a weaker push gate could
    betray, so the cheapest arrangement is available here and nowhere later.
 
+_Amended 2026-09-25: **the announcement is a third moment, and it is not the premiere's.**
+Both moments above have passed — the push on 2026-09-01, the flip on 2026-09-15, npm on
+2026-09-17 — and no announcement went with either, on purpose: the venue decided on
+2026-09-17 had the library announced "closer to 1.0, the table in hand". That condition ran
+backwards. The table is the item [0016](0016-mit-irreversibility.md) defers until there are
+users, and users are what an announcement brings, so an announcement waiting for the table
+was waiting for its own effect — read off the API on 2026-09-27: no star, fork, issue or
+discussion under `pacit/components`. The maintainer's sentence: nothing is announced now,
+there is much to fix and add first, and the announcement comes around `0.8.0`. The number
+is a bearing, not a trigger — like the premiere, the announcement starts on a sentence, and
+a release reaching it starts nothing. It no longer waits for the table, which stays deferred
+by 0016 as before; what it brings 0016 is the data. The order for that day, on record since
+2026-09-17 and unchanged: a write-up on dev.to, then r/Angular, LinkedIn, X, and Show HN
+last. Until then the site and npm are findable, not advertised. The cost is the one named
+below, extended: a public stage nobody has been told about is reviewed by nobody, and the
+deferral now runs to about `0.8.0`._
+
 ## Consequences
 
 - **The copy off this machine exists**, and with it the first real measurement of CI. The two
