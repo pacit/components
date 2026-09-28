@@ -37,9 +37,11 @@ export interface Act {
    * Whether that key is the control's DEFAULT ACTION, which is not a keystroke on every
    * reader. Asked with a literal `Enter`, VoiceOver answered eight of these nine with
    * "You are currently on a button. To click this button, press Control-Option-Space" and
-   * opened nothing; NVDA answered `pressed` and opened nothing either. Where this is true the
-   * reader is ASKED to act (`Reader.activate`) instead of being handed a key, and the reading
-   * is of the component rather than of Guidepup's key handling.
+   * opened nothing; NVDA answered `pressed` and opened nothing either — for a reason found
+   * later and elsewhere: its Enter had followed the window's focus out of the page
+   * (`lesson-245`). Where this is true the reader is ASKED to act (`Reader.activate`) instead
+   * of being handed a key, and the reading is of the component rather than of Guidepup's key
+   * handling.
    */
   readonly acts: boolean;
   /** The end-to-end case that owns this gesture — cited, never restated. */
@@ -89,14 +91,14 @@ export const ACTS: Readonly<Record<string, Act>> = {
   },
   '/toast': {
     what: 'a message in a live region',
-    on: '[data-testid="raise-notice"]',
+    on: '[data-testid="raise-brief"]',
     key: 'Enter',
     acts: true,
     owner: 'apps/sandbox-e2e/src/toast.spec.ts',
   },
   '/date': {
     what: 'a month grid',
-    on: '[data-testid="date-starts-on"] [data-pct-part="toggle"]',
+    on: '[data-testid="date-standalone"] [data-pct-part="toggle"]',
     key: 'Enter',
     acts: true,
     owner: 'apps/sandbox-e2e/src/date.spec.ts',

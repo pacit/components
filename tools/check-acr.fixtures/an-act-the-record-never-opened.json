@@ -1,0 +1,13 @@
+{
+  "point": 7,
+  "check": "pass",
+  "description": "The pass is claimed as recorded, and the act table names a control the logs on disk never opened: the toast act is moved to the urgent message, which its owning spec does press, while every log still quotes the brief one. A record taken by a walk that did not act — or acted on something else — answers the cards' opening question with silence, and reads exactly like one that did. The table is the source and the logs are its record; when the table moves, the record has to be taken again.",
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "acts": {
+    "/toast": {
+      "on": "[data-testid=\"raise-urgent\"]"
+    }
+  }
+}

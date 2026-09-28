@@ -10,7 +10,7 @@
  *  4. WIRED: a cited gate or suite runs in CI (`nx affected -t …`),
  *  5. CARDS: a claim over the component cards is the cards' own Checks rows,
  *  6. FINDINGS: a finding a row leans on is still open in the plan,
- *  7. THE PASS: an assistive-technology pass claimed as recorded has its logs and readings,
+ *  7. THE PASS: each act owned by a spec; a recorded pass has its logs, readings and acts,
  *  8. RENDERING: `docs/acr.md` is the rendering of the claims.
  *
  * A row cannot say more than a gate proves, and the rows nothing measures say so in their own
@@ -29,6 +29,7 @@ import {
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -41,6 +42,7 @@ const CI = '.github/workflows/ci.yml';
 const IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 const MANIFEST = 'libs/components/package.json';
 const LIB = 'libs/components';
+const ACTS = 'apps/sandbox-e2e/at/acts.ts';
 const FIXTURES = join(ROOT, 'tools/check-acr.fixtures');
 const REFERENCE = '_reference.json';
 
@@ -243,15 +245,76 @@ const readIds = () => {
   return { reqFile, lessons };
 };
 
-/** Every path the claims cite, read once — a fixture overrides the map, not the disk. */
-const readTexts = (claims, files) => {
+/**
+ * The act table of the reader walk — per route, the control an act presses and the spec
+ * cited as the owner of the gesture — read with the TypeScript parser and not a pattern
+ * (`lesson-236`). A field that is not a string literal reads as absent, and point 7 then
+ * says the citation resolves to nothing.
+ */
+const readActs = () => {
+  const source = ts.createSourceFile(
+    ACTS,
+    read(ACTS),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const text = (node) =>
+    node && ts.isStringLiteralLike(node) ? node.text : undefined;
+  const acts = {};
+  const visit = (node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === 'ACTS' &&
+      node.initializer &&
+      ts.isObjectLiteralExpression(node.initializer)
+    )
+      for (const entry of node.initializer.properties) {
+        const route = ts.isPropertyAssignment(entry)
+          ? text(entry.name)
+          : undefined;
+        if (
+          route === undefined ||
+          !ts.isObjectLiteralExpression(entry.initializer)
+        )
+          continue;
+        acts[route] = Object.fromEntries(
+          entry.initializer.properties
+            .filter(
+              (f) => ts.isPropertyAssignment(f) && ts.isIdentifier(f.name),
+            )
+            .map((f) => [f.name.text, text(f.initializer)]),
+        );
+      }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return acts;
+};
+
+/** One view's section of a reader's log: its heading to the next one, or `null`. */
+const sectionOf = (log, route) => {
+  const from = log.indexOf(`### \`${route}\`\n`);
+  if (from === -1) return null;
+  const next = log.indexOf('\n### ', from + 1);
+  return log.slice(from, next === -1 ? undefined : next);
+};
+
+/**
+ * Every path the claims cite, and every spec the act table names as an owner, read once —
+ * a fixture overrides the map, not the disk.
+ */
+const readTexts = (claims, files, acts) => {
   const texts = {};
-  for (const c of claims.criteria ?? [])
-    for (const e of c.evidence ?? []) {
-      const path = e.gate ?? e.spec ?? e.source;
-      if (path && files.has(path) && texts[path] === undefined)
-        texts[path] = read(path);
-    }
+  const cited = [
+    ...(claims.criteria ?? []).flatMap((c) =>
+      (c.evidence ?? []).map((e) => e.gate ?? e.spec ?? e.source),
+    ),
+    ...Object.values(acts).map((act) => act.owner),
+  ];
+  for (const path of cited)
+    if (path && files.has(path) && texts[path] === undefined)
+      texts[path] = read(path);
   return texts;
 };
 
@@ -263,10 +326,19 @@ const readInput = () => {
       .filter(Boolean),
   );
   const at = join(ROOT, claims.assistiveTechnology?.logs ?? 'docs/acr/at/');
+  const atLogs = existsSync(at)
+    ? readdirSync(at)
+        .filter((f) => f.endsWith('.md'))
+        .sort()
+    : [];
+  const atTexts = Object.fromEntries(
+    atLogs.map((f) => [f, readFileSync(join(at, f), 'utf8')]),
+  );
+  const acts = readActs();
   return {
     claims,
     files,
-    texts: readTexts(claims, files),
+    texts: readTexts(claims, files, acts),
     sources: librarySources(),
     cards: readCards(),
     ids: readIds(),
@@ -275,24 +347,15 @@ const readInput = () => {
     ),
     ci: read(CI),
     plan: read(PLAN),
-    atLogs: existsSync(at)
-      ? readdirSync(at).filter((f) => f.endsWith('.md'))
-      : [],
+    acts,
+    atLogs,
+    atTexts,
     // How much of the sandbox each log actually covers. Counting the FILES is what the
     // report used to do, and three files would have read as three readings — while two of
     // them can be a single view out of thirty-six, taken to prove a runner works.
-    atViews: existsSync(at)
-      ? readdirSync(at)
-          .filter((f) => f.endsWith('.md'))
-          .sort()
-          .map((f) =>
-            Number(
-              /over (\d+) views?/.exec(
-                readFileSync(join(at, f), 'utf8'),
-              )?.[1] ?? 0,
-            ),
-          )
-      : [],
+    atViews: atLogs.map((f) =>
+      Number(/over (\d+) views?/.exec(atTexts[f])?.[1] ?? 0),
+    ),
     version: JSON.parse(read(MANIFEST)).version,
     rendered: existsSync(join(ROOT, REPORT)) ? read(REPORT) : null,
   };
@@ -597,6 +660,26 @@ const checkAcr = (input) => {
       'pass',
       `the assistive-technology pass names no readers or no place for its logs`,
     );
+  // The act table's citations, recorded or not. The key that opens a menu has one home — the
+  // spec that presses it — and the table points there instead of restating it (0017), so
+  // the file it names must be tracked and must name the control the act presses. Two of nine
+  // did not, for twelve days, and nothing read them.
+  for (const [route, act] of Object.entries(input.acts)) {
+    if (act.on === undefined || act.owner === undefined)
+      throw new AcrError(
+        'owner',
+        `the act on \`${route}\` names its control or its owner with something other than a ` +
+          `string literal, and this gate reads only literals`,
+      );
+    const control = /data-testid="([^"]+)"/.exec(act.on)?.[1] ?? act.on;
+    if (!files.has(act.owner) || !texts[act.owner]?.includes(control))
+      throw new AcrError(
+        'owner',
+        `the act on \`${route}\` cites \`${act.owner}\` as the owner of its gesture, and that ` +
+          `file is not tracked or never names \`${control}\` — the citation resolves to ` +
+          `nothing, and the act presses a control no spec owns`,
+      );
+  }
   const sr = aggregate(cards, SCREEN_READER_ROW);
   if (at.recorded === true) {
     if (!input.atLogs.length)
@@ -611,6 +694,21 @@ const checkAcr = (input) => {
         `the pass is claimed as recorded and ${owed.length} cards carry no reading in their ` +
           `\`${SCREEN_READER_ROW}\` row: ${owed.join(', ')}`,
       );
+    // Every act in every log, on the control the table names today. A record taken by a
+    // walk that did not act answers the cards' opening question with silence and reads like
+    // one that did; a record taken from an older table quotes a control nobody presses now.
+    for (const [file, log] of Object.entries(input.atTexts))
+      for (const [route, act] of Object.entries(input.acts)) {
+        const section = sectionOf(log, route);
+        if (!section || !/^open\s/m.test(section) || !section.includes(act.on))
+          throw new AcrError(
+            'pass',
+            `the pass is claimed as recorded and \`${file}\` holds no \`open\` row on ` +
+              `\`${act.on}\` under \`${route}\` — the act table names it (\`${ACTS}\`), so ` +
+              `this record was taken without the act: by a walk that did not act, acted on ` +
+              `something else, or never visited the view`,
+          );
+      }
   }
 
   // 8. RENDERING
@@ -841,6 +939,9 @@ const buildFixture = (live, fx) => {
     );
   if (fx.ci !== undefined) w.ci = fx.ci;
   if (fx.atLogs !== undefined) w.atLogs = fx.atLogs;
+  for (const [route, patch] of Object.entries(fx.acts ?? {}))
+    if (patch === null) delete w.acts[route];
+    else w.acts[route] = { ...w.acts[route], ...patch };
   return w;
 };
 

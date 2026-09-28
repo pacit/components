@@ -9,10 +9,13 @@ import { routesAsked, walk } from './walk';
 test('NVDA reads the sandbox views', async ({ page, nvda }) => {
   await walk(
     page,
-    // `act()` and not `press('Enter')`: asked with the key, this reader answered `pressed`
-    // and opened nothing, at eight of the nine views that have something to open. The
-    // methods are listed one by one because they live on a PROTOTYPE — a spread of this
-    // object carries the fields and leaves `press` and `spokenPhraseLog` behind.
+    // `act()` is this reader's Enter under Guidepup's own name (`keyCodeCommands.activate`),
+    // kept for symmetry with VoiceOver, where the two differ and the difference is the whole
+    // opening. The `pressed` this reader answered at eight of nine acts on 2026-09-16 and at
+    // five on 2026-09-28 was never the key's doing: the walk had Tabbed out of the page, and
+    // the key followed the window (`lesson-245`). The methods are listed one by one because
+    // they live on a PROTOTYPE — a spread of this object carries the fields and leaves
+    // `press` and `spokenPhraseLog` behind.
     {
       spokenPhraseLog: () => nvda.spokenPhraseLog(),
       press: (key: string) => nvda.press(key),

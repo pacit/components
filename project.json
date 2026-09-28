@@ -290,6 +290,7 @@
         "{workspaceRoot}/docs/requirements/*.md",
         "{workspaceRoot}/docs/decisions/*.md",
         "{workspaceRoot}/apps/sandbox-e2e/src/**/*.ts",
+        "{workspaceRoot}/apps/sandbox-e2e/at/*.ts",
         "{workspaceRoot}/libs/components/*/src/**/*",
         "{workspaceRoot}/libs/components/package.json",
         "{workspaceRoot}/libs/tokens/src/**/*",
