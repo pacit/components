@@ -122,7 +122,11 @@ const parsePlan = (text) => {
   return { spanned, itemEnd };
 };
 
-const readPositions = (text) => {
+const readPositions = (raw) => {
+  // Lines where the parser ends them: a carriage return, alone or before a line feed, ends a
+  // line for it, and a split on line feeds alone falls one line behind it from the first
+  // stray one on — every span and item it reports then lands on the wrong line, silently.
+  const text = raw.replace(/\r\n?/g, '\n');
   const all = text.split('\n');
   const { spanned, itemEnd } = parsePlan(text);
   const out = [];

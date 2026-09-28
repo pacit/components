@@ -1,0 +1,14 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "closed position 9.19 carries a lone carriage return, which the parser takes for a line ending, as CommonMark does: the reading splits there too, and the text after it stands in column 0 as a lazy line, refused. A reading that split on line feeds alone would keep the line whole and fall one line behind the parser from there on — and position 9.20, below it, would lose its span's continuation without a word, and the case would fail on the missing rows",
+  "plan": [
+    "- [x] **9.19 — a position with a lone carriage return**",
+    "  - line 2 carries one here\rand goes on",
+    "",
+    "- [x] **9.20 — a later position wrapping a span into column 0**",
+    "  - line 2 opens a span `one",
+    "two` — line 3, in column 0",
+    "  - line 4"
+  ]
+}

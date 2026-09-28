@@ -18,7 +18,7 @@ entry that stretches with the text excuses the paragraph nobody read.
 
 ## How a case is built
 
-A case is not a forty-second copy of the correct input with one thing broken. The gate builds
+A case is not a forty-fifth copy of the correct input with one thing broken. The gate builds
 it from two layers:
 
 1. the **live input** — the repository itself as it stands at the commit under test: the
@@ -61,6 +61,7 @@ every case would fire because of it rather than because of its own defect, and e
 | [`a-lost-line-past-the-budget.json`](a-lost-line-past-the-budget.json)                               | fourteen lines, two past the budget, and then a line lost in column 0 — the loss is reported before the count              | 1     | `measured`    |
 | [`a-nested-position-that-lost-a-line.json`](a-nested-position-that-lost-a-line.json)                 | a nested position whose link title prettier moves to column 0 — refused as itself, not as its parent                       | 1     | `measured`    |
 | [`a-position-that-goes-on-after-a-nested-one.json`](a-position-that-goes-on-after-a-nested-one.json) | an outer position that goes on, indented, after the one nested in it                                                       | 1     | `measured`    |
+| [`a-lone-carriage-return.json`](a-lone-carriage-return.json)                                         | a lone carriage return, which ends a line for the parser and has to for the reading                                        | 1     | `measured`    |
 | [`a-script-nobody-tracks.json`](a-script-nobody-tracks.json)                                         | the walk measured a script git does not carry                                                                              | 2     | `denominator` |
 | [`a-script-the-walk-missed.json`](a-script-the-walk-missed.json)                                     | git carries a script the walk has no unit for                                                                              | 2     | `denominator` |
 | [`no-script-at-all.json`](no-script-at-all.json)                                                     | the walk over `tools/` found nothing — an empty denominator passes forever                                                 | 2     | `denominator` |
@@ -84,6 +85,8 @@ every case would fire because of it rather than because of its own defect, and e
 | [`a-position-under-a-position.json`](a-position-under-a-position.json)                               | twelve lines, and a position indented under them whose span in column 0 is its own                                         | 4     | `snapshot`    |
 | [`a-bullet-beside-the-position.json`](a-bullet-beside-the-position.json)                             | twelve lines, and a plain bullet right after them in column 0 — a sibling, outside the position                            | 4     | `snapshot`    |
 | [`a-position-that-opens-with-a-position.json`](a-position-that-opens-with-a-position.json)           | a position whose first line under it is a nested one, wrapping a span of its own into column 0                             | 4     | `snapshot`    |
+| [`a-one-line-position-last-in-its-parent.json`](a-one-line-position-last-in-its-parent.json)         | a one-line nested position as its parent's last line — the whole of its item is the parent's last line                     | 4     | `snapshot`    |
+| [`a-plan-in-crlf.json`](a-plan-in-crlf.json)                                                         | twelve lines ending in a carriage return and a line feed each — one line ending, not two                                   | 4     | `snapshot`    |
 | [`a-header-that-grew.json`](a-header-that-grew.json)                                                 | one line more than the record says, inside the budget all the same                                                         | 5     | `exact`       |
 | [`a-header-that-shrank.json`](a-header-that-shrank.json)                                             | one line fewer — prose leaving fails exactly as prose arriving does                                                        | 5     | `exact`       |
 | [`words-without-lines.json`](words-without-lines.json)                                               | eighteen more words on the same fifteen lines — the elastic line                                                           | 5     | `exact`       |
@@ -92,22 +95,22 @@ every case would fire because of it rather than because of its own defect, and e
 | [`words-of-a-span-continuation.json`](words-of-a-span-continuation.json)                             | a span's continuation whose words the record left out, though its line is counted                                          | 5     | `exact`       |
 | [`prose-drift.json`](prose-drift.json)                                                               | every row right, and the sentence saying the record holds no tolerance reversed                                            | 6     | `verbatim`    |
 
-Point 1 has eleven cases because a reading can be hollow in five ways that all parse: a header
+Point 1 has twelve cases because a reading can be hollow in five ways that all parse: a header
 the walk never found, one with no point to count a budget from, a block with no word in it, a
 count that is not whole, and a mark no budget belongs to — and because a position can hold a
-line the reading would lose or charge to another, in the six shapes below. Point 2 has six
+line the reading would lose or charge to another, in the seven shapes below. Point 2 has six
 because a denominator has two sides and two readings: a unit the walk invented, a unit it
 skipped, and — the shape that actually happened — a layer that quietly went empty; the sixth
 holds that a case's own checkboxes are counted as a second reading too. Point 3 has ten because
 a register is the part of a gate that can be turned into a list — an excuse may outlive its
 unit, stretch with it, or arrive with no sentence behind it — and because four positions built
 one line past the budget hold the reading: one that loses a line never gets there. Point 4 has
-seven: the record gone, a row lost, a row kept for prose that is gone, and four cases about the
+nine: the record gone, a row lost, a row kept for prose that is gone, and six cases about the
 reading below. Point 5 has six because both columns move in both directions, because the two
 derived facts a row carries — a header's numbered points and a position's state — are what the
 budget is picked from, and because a span's continuation carries its words as well as its line.
 
-Sixteen cases reach the reading itself rather than a count it produced, through `plan`. A
+Nineteen cases reach the reading itself rather than a count it produced, through `plan`. A
 position's body is its own line and what hangs under it, down to the next position at any
 indent or to column 0 — and a line in column 0 is still its own when it continues a code span,
 which prettier prints with its lines unindented. Whatever else the parser keeps inside the
@@ -117,12 +120,15 @@ a span has closed, a link title prettier moves to column 0, inline math it leave
 anything a position carries after one nested in it, which has to be the last thing in it. The
 refusal comes before the budget, so that a position with a lost line is told what it lost rather
 than to cut a count it never finished (`a-lost-line-past-the-budget`); a nested position answers
-for its own lines, and one standing directly under its parent's title is found as nested all the
-same. The cases on points 3 and 4 stand at the budget's edge, where a reading one line off
-shows: those on point 3 are one line over it, so a reading that loses a line never reaches it,
-and three on point 4 are exactly at it — a blank line before column-0 text, a position under a
-position, a bullet beside the position — so a reading that takes a line too many stops at the
-budget, and one that refuses a line outside the position stops at point 1, before either reaches
-the missing row they declare. `a-box-the-plan-reader-missed` keeps the operation's checkbox
+for its own lines, and one standing directly under its parent's title, or as its parent's last
+line, is found as nested all the same. Lines end where the parser ends them — a carriage return,
+alone or before a line feed, ends one — or the reading falls a line behind the parser at the first
+stray one and every span and item after it lands on the wrong line (`a-lone-carriage-return`,
+`a-plan-in-crlf`). The four cases on point 3 and four on point 4 stand at the budget's edge, where
+a reading one line off shows: those on point 3 are one line over it, so a reading that loses a
+line never reaches it, and those on point 4 are exactly at it — a blank line before column-0
+text, a position under a position, a bullet beside the position, a plan in CRLF — so a reading
+that takes a line too many stops at the budget, and one that refuses a line outside the position
+stops at point 1, before either reaches the missing row they declare. `a-box-the-plan-reader-missed` keeps the operation's checkbox
 count a second reading, and `words-of-a-span-continuation` holds that a continuation's words
 count with its line.
