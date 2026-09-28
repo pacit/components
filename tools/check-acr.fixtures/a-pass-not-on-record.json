@@ -1,0 +1,12 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is set to not recorded over rows that all stand at Supports or Not Applicable. The status sentence is the decision's — machine-audited, and not conformant until the pass is on record. The pass is read before the rows: a rule that read the rows alone would put the stronger word on a report with no transcript behind it, which is the lie 0061 was written against.",
+  "assistiveTechnology": {
+    "recorded": false
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": ["until the assistive-technology pass is on record"]
+  }
+}

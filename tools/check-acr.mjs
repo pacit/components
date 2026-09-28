@@ -11,7 +11,7 @@
  *  5. CARDS: a claim over the component cards is the cards' own Checks rows,
  *  6. FINDINGS: a finding a row leans on is still open in the plan,
  *  7. THE PASS: each act owned by a spec; a recorded pass has its logs, readings and acts,
- *  8. RENDERING: `docs/acr.md` is the rendering of the claims.
+ *  8. RENDERING: `docs/acr.md` is the rendering of the claims, status sentence included.
  *
  * A row cannot say more than a gate proves, and the rows nothing measures say so in their own
  * words. A ninth run examines the gate itself (`req-quality-negative-control`):
@@ -751,6 +751,99 @@ const renderEvidence = (e, ids, aggregates, scanned) => {
   return '';
 };
 
+/** The template's three words under Supports: a row at one of them holds the report there. */
+const BELOW = new Set([
+  'Partially Supports',
+  'Does Not Support',
+  'Not Evaluated',
+]);
+
+/** "A", "A and B", "A, B and C" — three would read "A and B and C" without this. */
+const listed = (items) =>
+  items.length < 3
+    ? items.join(' and ')
+    : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
+/** The plan's order for findings: 4.8 before 4.75, which the string's order gets wrong. */
+const byNumber = (a, b) => {
+  const [am, an] = a.split('.').map(Number);
+  const [bm, bn] = b.split('.').map(Number);
+  return am - bm || an - bn;
+};
+
+/**
+ * The status sentence — the one line of the report a procurement reads first — read from
+ * the claims so that it is true on the day it is rendered, not on the day it was written
+ * (0061, amended 2026-09-28: for twelve days it stood two lines under "recorded" and said the
+ * pass was what it waited for). Three states: the pass not on record — the decision's
+ * sentence; on record with a row below Supports — the rows counted and their owners named,
+ * a finding in the plan or a card that owes the row; on record with none — the word the
+ * decision reserves for this report. A row below Supports always has an owner: point 2 and
+ * point 5 refuse one without.
+ */
+const renderStatus = (claims, aggregates) => {
+  const byId = new Map(claims.criteria.map((c) => [c.id, c]));
+  const below = CATALOGUE.map(([id]) => byId.get(id)).filter((c) =>
+    BELOW.has(c.conformance),
+  );
+  if (!claims.assistiveTechnology.recorded)
+    return `**Status: machine-audited.** The library is built and machine-audited to WCAG 2.2 AA; it does
+not call itself conformant until the assistive-technology pass is on record — the wording
+law of decision 0061, held by the documentation site's own suite.`;
+  if (!below.length)
+    return (
+      `**Status: conformant.** Every one of the ${CATALOGUE.length} rows reads Supports, on a gate ` +
+      `that runs on every commit, or Not Applicable, on something the library does not ship, and ` +
+      `the assistive-technology pass is on record. The word is the one decision 0061 reserves for ` +
+      `this report and for this state of it (amended 2026-09-28); the documentation site's landing ` +
+      `keeps "machine-audited", a law of the same decision that the site's own suite holds and the ` +
+      `report's word does not move.`
+    );
+  const findings = [
+    ...new Set(
+      below.flatMap((c) =>
+        c.evidence
+          .filter((e) => e.finding !== undefined)
+          .map((e) => String(e.finding)),
+      ),
+    ),
+  ].sort(byNumber);
+  const owing = new Map();
+  for (const c of below)
+    for (const e of c.evidence) {
+      if (e.cards === undefined) continue;
+      const owed = [
+        ...aggregates[e.cards].gaps,
+        ...aggregates[e.cards].missing,
+      ];
+      if (owed.length) owing.set(e.cards, owed);
+    }
+  const held = [
+    ...(findings.length
+      ? [
+          `finding${findings.length > 1 ? 's' : ''} ${listed(findings)} in [plan.md](plan.md)`,
+        ]
+      : []),
+    ...[...owing].map(
+      ([label, owed]) => `the cards' \`${label}\` row, owed by ${listed(owed)}`,
+    ),
+  ];
+  return (
+    `**Status: machine-audited.** The library is built and machine-audited to WCAG 2.2 AA, and ` +
+    `the assistive-technology pass is on record; it does not call itself conformant while ` +
+    `${below.length} row${below.length === 1 ? ' stands' : 's stand'} below Supports — ` +
+    `${listed(below.map((c) => `${c.id} (${c.conformance})`))} — held by ${listed(held)}. ` +
+    `The word is decision 0061's (amended 2026-09-28), and it changes the day every row reads ` +
+    `Supports or Not Applicable.`
+  );
+};
+
+/** The status sentence of a rendering: the word after `Status:`, and the paragraph on one line. */
+const statusOf = (rendered) => {
+  const m = /^\*\*Status: ([a-z-]+)\.\*\*[^\n]*(?:\n[^\n]+)*/m.exec(rendered);
+  return m ? { word: m[1], sentence: m[0].replace(/\s+/g, ' ') } : null;
+};
+
 const renderAcr = (input, aggregates, scanned, sr) => {
   const { claims, ids, version, cards } = input;
   const byId = new Map(claims.criteria.map((c) => [c.id, c]));
@@ -779,18 +872,13 @@ const renderAcr = (input, aggregates, scanned, sr) => {
     ...LEVELS.map((w) => `| ${w} | ${count('A', w)} | ${count('AA', w)} |`),
   ].join('\n');
   const at = claims.assistiveTechnology;
-  // Two readers read as "A and B"; three would read as "A and B and C" without this.
-  const readers = (list) =>
-    list.length < 3
-      ? list.join(' and ')
-      : `${list.slice(0, -1).join(', ')} and ${list.at(-1)}`;
   const total = Object.keys(cards).length;
   const notEvaluated = CATALOGUE.filter(
     ([id]) => byId.get(id).conformance === 'Not Evaluated',
   );
   const passText = at.recorded
-    ? `**Recorded.** ${readers(at.readers)} over ${at.views}; the logs stand under \`${at.logs}\` (${input.atLogs.length} file${input.atLogs.length === 1 ? '' : 's'}), and every one of the ${total} component cards points its \`${SCREEN_READER_ROW}\` row at them.`
-    : `**Not recorded.** The gates end where axe ends — the DOM and the CSS. What a screen reader says on arriving at each view is a question they do not answer, and this report says so rather than guessing: ${sr.gaps.length} of the ${total} component cards carry a \`${SCREEN_READER_ROW}\` row that reads \`none — gap\`, ${sr.measured.length} carry a reading, and ${sr.missing.length} have no row yet. The pass this report waits for: ${readers(at.readers)}, over ${at.views}, one log per reader under \`${at.logs}\` (${input.atLogs.length} of ${at.readers.length} on disk today${input.atViews?.length ? `, covering ${input.atViews.join(', ')} view(s)` : ''}), the announcement transcribed per view. The day the claims say \`"recorded": true\`, point 7 of the gate demands the logs on disk and a reading in every card. Until then the site says "machine-audited" and never "conformant" (decision 0061).`;
+    ? `**Recorded.** ${listed(at.readers)} over ${at.views}; the logs stand under \`${at.logs}\` (${input.atLogs.length} file${input.atLogs.length === 1 ? '' : 's'}), and every one of the ${total} component cards points its \`${SCREEN_READER_ROW}\` row at them.`
+    : `**Not recorded.** The gates end where axe ends — the DOM and the CSS. What a screen reader says on arriving at each view is a question they do not answer, and this report says so rather than guessing: ${sr.gaps.length} of the ${total} component cards carry a \`${SCREEN_READER_ROW}\` row that reads \`none — gap\`, ${sr.measured.length} carry a reading, and ${sr.missing.length} have no row yet. The pass this report waits for: ${listed(at.readers)}, over ${at.views}, one log per reader under \`${at.logs}\` (${input.atLogs.length} of ${at.readers.length} on disk today${input.atViews?.length ? `, covering ${input.atViews.join(', ')} view(s)` : ''}), the announcement transcribed per view. The day the claims say \`"recorded": true\`, point 7 of the gate demands the logs on disk and a reading in every card. Until then the site says "machine-audited" and never "conformant" (decision 0061).`;
   return `# Accessibility Conformance Report
 
 <!-- GENERATED by \`node tools/check-acr.mjs --write\` from \`docs/acr/claims.json\` — do not
@@ -814,9 +902,7 @@ key per component, forced colours and reduced motion emulated and read back, an 
 name gate over the sources, and scans over the library's templates and stylesheets for what
 a criterion forbids. The assistive-technology pass: **${at.recorded ? 'recorded' : 'not recorded'}** (see below).
 
-**Status: machine-audited.** The library is built and machine-audited to WCAG 2.2 AA; it does
-not call itself conformant until the assistive-technology pass is on record — the wording
-law of decision 0061, held by the documentation site's own suite.
+${renderStatus(claims, aggregates)}
 
 ## The words
 
@@ -895,7 +981,7 @@ try {
         `${at + 1}: ${JSON.stringify(b[at] ?? '')} — run \`node tools/check-acr.mjs --write\``,
     );
   }
-  summary = { input, aggregates, sr };
+  summary = { input, aggregates, sr, status: statusOf(rendered) };
 } catch (error) {
   if (!(error instanceof AcrError)) throw error;
   problems.push(`${error.check}: ${error.message}`);
@@ -908,8 +994,9 @@ const readFixture = (name) =>
 
 /**
  * Builds a case's input ON A COPY of the live one, so the case file holds nothing but its
- * own defect. The live input is the reference: the report is a reading of this repository
- * and a case is that reading with one thing broken.
+ * own defect — or, for a case of the status sentence, nothing but its own state. The live
+ * input is the reference: the report is a reading of this repository and a case is that
+ * reading with one thing broken.
  */
 const buildFixture = (live, fx) => {
   const w = structuredClone(live);
@@ -930,13 +1017,24 @@ const buildFixture = (live, fx) => {
   Object.assign(w.texts, fx.texts ?? {});
   Object.assign(w.sources, fx.sources ?? {});
   for (const path of fx.dropFiles ?? []) w.files.delete(path);
-  for (const [n, state] of Object.entries(fx.plan ?? {}))
-    w.plan = w.plan.replace(
-      new RegExp(`^- \\[( |~)\\] \\*\\*${n.replace('.', '\\.')} — `, 'm'),
-      state === 'absent'
-        ? '- **gone — '
-        : `- [${state === 'closed' ? 'x' : '-'}] **${n} — `,
+  // A finding closed, dropped or absent — or opened: a case that needs an open finding builds
+  // its own, because one borrowed from the plan closes the day the work is done and takes the
+  // case's meaning with it (`a-finding-that-has-closed.json` moved three times for that).
+  for (const [n, state] of Object.entries(fx.plan ?? {})) {
+    const item = new RegExp(
+      `^- \\[( |x|~|-)\\] \\*\\*${n.replace('.', '\\.')} — `,
+      'm',
     );
+    if (state === 'open' && !item.test(w.plan))
+      w.plan += `\n- [ ] **${n} — a finding this case opens**\n`;
+    else
+      w.plan = w.plan.replace(
+        item,
+        state === 'absent'
+          ? '- **gone — '
+          : `- [${{ open: ' ', closed: 'x' }[state] ?? '-'}] **${n} — `,
+      );
+  }
   if (fx.ci !== undefined) w.ci = fx.ci;
   if (fx.atLogs !== undefined) w.atLogs = fx.atLogs;
   for (const [route, patch] of Object.entries(fx.acts ?? {}))
@@ -954,12 +1052,46 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
+let states = 0;
 if (summary) {
   // The live input MUST pass (it did, above) — every case is built on it.
   for (const name of cases) {
     const fx = readFixture(name);
+    const input = buildFixture(summary.input, fx);
+    if (fx.status !== undefined) {
+      // A state of the status sentence, not a defect: the gate must ACCEPT the input, and the
+      // rendering must say the word the case declares and every phrase it names — the rows
+      // counted, their owners. A rule with three branches lies in three ways, and each one
+      // reads like a report.
+      states++;
+      let rendered;
+      try {
+        ({ rendered } = checkAcr(input));
+      } catch (error) {
+        if (!(error instanceof AcrError)) throw error;
+        problems.push(
+          `${name}: the prepared input was REJECTED (\`${error.check}\`: ${error.message}) ` +
+            `and was meant to be rendered — point ${fx.point} (\`${fx.check}\`) never saw it`,
+        );
+        continue;
+      }
+      const status = statusOf(rendered);
+      if (status?.word !== fx.status.word)
+        problems.push(
+          `${name}: the rendering says "Status: ${status?.word ?? '(none)'}" and the case ` +
+            `expects "Status: ${fx.status.word}" — point ${fx.point} (\`${fx.check}\`) put ` +
+            `the wrong word on the report`,
+        );
+      for (const phrase of fx.status.says ?? [])
+        if (!status?.sentence.includes(phrase))
+          problems.push(
+            `${name}: the status sentence does not say "${phrase}" — it reads: ` +
+              `${status?.sentence ?? '(no status sentence)'}`,
+          );
+      continue;
+    }
     try {
-      checkAcr(buildFixture(summary.input, fx));
+      checkAcr(input);
       problems.push(
         `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
           `(\`${fx.check}\`) stopped examining anything`,
@@ -993,6 +1125,8 @@ console.log(
   `✓ Conformance gate: ${CATALOGUE.length} criteria — ` +
     LEVELS.map((w) => `${words[w]} ${w.toLowerCase()}`).join(', ') +
     `; the assistive-technology pass ${input.claims.assistiveTechnology.recorded ? 'recorded' : `not recorded (${sr.gaps.length + sr.missing.length} of ${Object.keys(input.cards).length} cards owe the reading)`}; ` +
+    `the status reads "${summary.status?.word ?? '(none)'}"; ` +
     `${WRITE ? `${REPORT} written` : `${REPORT} is the rendering of the claims`}. ` +
-    `Negative control: the live input passes, ${cases.length} prepared ones rejected on their own points.`,
+    `Negative control: the live input passes, ${cases.length - states} prepared ones rejected ` +
+    `on their own points and ${states} rendered with the status they declare.`,
 );

@@ -1,0 +1,57 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "Three rows below Supports, one at each of the template's three words under it — 1.4.4 Does Not Support, 2.4.7 Not Evaluated, 4.1.2 Partially Supports — on three findings the case opens, one of them cited by two rows. The count is three, in the plural; the rows are listed in the standard's order; and the three owners are named once each, in the plan's order and not in the order the rows cite them. A rule that counted one of the three words and not the other two, or named the first finding and stopped, or named a shared finding twice, would read like a report with two rows fewer or one owner more.",
+  "criteria": {
+    "1.4.4": {
+      "conformance": "Does Not Support",
+      "evidence": [
+        {
+          "finding": "9.98"
+        }
+      ]
+    },
+    "2.4.7": {
+      "conformance": "Not Evaluated",
+      "evidence": [
+        {
+          "finding": "9.97"
+        }
+      ]
+    },
+    "4.1.2": {
+      "conformance": "Partially Supports",
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [1, 2, 3, 4, 8]
+        },
+        {
+          "cards": "Screen-reader log"
+        },
+        {
+          "finding": "9.99"
+        },
+        {
+          "finding": "9.97"
+        }
+      ]
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "plan": {
+    "9.97": "open",
+    "9.98": "open",
+    "9.99": "open"
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": [
+      "3 rows stand below Supports",
+      "1.4.4 (Does Not Support), 2.4.7 (Not Evaluated) and 4.1.2 (Partially Supports)",
+      "held by findings 9.97, 9.98 and 9.99 in [plan.md](plan.md). The word"
+    ]
+  }
+}

@@ -5,9 +5,9 @@
   "snapshot": {
     "replace": [
       {
-        "pattern": "^check-acr\\.mjs 8 20 215$",
+        "pattern": "^check-acr\\.mjs 8 20 218$",
         "flags": "m",
-        "with": "check-acr.mjs 8 20 215\ncheck-ghost.mjs 1 13 40"
+        "with": "check-acr.mjs 8 20 218\ncheck-ghost.mjs 1 13 40"
       }
     ]
   }

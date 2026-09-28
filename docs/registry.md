@@ -37,7 +37,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts` — every audit reads the page at *… | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
 | [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts` — the axis itself, in the … | `preferences.spec.ts › "with no preference the motion axis stands at … |
 | [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts` — what the browser paint… | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
-| [`req-a11y-acr`](requirements/a11y.md#req-a11y-acr)                     | ✅ enforced | `tools/check-acr.mjs` — eight points: the catalogue is the standard's… | `tools/check-acr.fixtures/` — eighteen prepared inputs, each rejected… |
+| [`req-a11y-acr`](requirements/a11y.md#req-a11y-acr)                     | ✅ enforced | `tools/check-acr.mjs` — eight points: the catalogue is the standard's… | `tools/check-acr.fixtures/` — twenty-four prepared inputs: eighteen r… |
 
 ## API
 

@@ -1,0 +1,12 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is set to recorded over rows that all stand at Supports or Not Applicable — the report since 2026-09-28, when 4.71 closed and 4.1.2 was raised. The word is the one decision 0061 reserves for the report: conformant. The rows are the live ones, and the case says so rather than pretending otherwise: a row that drops below Supports turns this case RED — the weaker word in the rendering against the stronger one named here — instead of passing on nothing, and the day it happens the case patches that row back up and keeps its meaning.",
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "status": {
+    "word": "conformant",
+    "says": ["the assistive-technology pass is on record"]
+  }
+}

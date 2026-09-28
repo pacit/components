@@ -1,0 +1,36 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is recorded and 4.1.2 stands at Partially Supports on a finding the case opens — the report as it stood from 2026-09-16 to 2026-09-28, with 4.71 in the finding's place, while the sentence under it went on saying the pass was what it waited for. The word stays machine-audited, and the sentence names what holds it there: one row, counted in the singular, and the finding that owns it. The level and the evidence are set here rather than borrowed, because the live row says Supports since 4.71 closed, and the finding is the case's own rather than the plan's, because a plan's finding closes the day the work is done and would take the case's meaning with it.",
+  "criteria": {
+    "4.1.2": {
+      "conformance": "Partially Supports",
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [1, 2, 3, 4, 8]
+        },
+        {
+          "cards": "Screen-reader log"
+        },
+        {
+          "finding": "9.99"
+        }
+      ]
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "plan": {
+    "9.99": "open"
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": [
+      "1 row stands below Supports",
+      "4.1.2 (Partially Supports)",
+      "held by finding 9.99 in [plan.md](plan.md). The word"
+    ]
+  }
+}

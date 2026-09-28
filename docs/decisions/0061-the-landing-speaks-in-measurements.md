@@ -38,6 +38,23 @@ The law is enforced the way this repository enforces words: the e2e suite assert
 strip never contains "conformant". The day the ACR lands, that assertion is the one line
 the stronger sentence must delete first.
 
+_Amended 2026-09-28: **the report's status sentence is read from the claims, and the
+landing's law is untouched.** The condition above — a recorded assistive-technology pass —
+was the one input the report was missing on the day this was written, and it went into
+`check-acr` as a sentence rather than a reading. The pass went on record on 2026-09-16, and
+for twelve days the report said "recorded" two lines above "it does not call itself
+conformant until the assistive-technology pass is on record"; the honest reason for the word
+was by then a row at Partially Supports (4.1.2, held by finding 4.71 until 2026-09-28), and
+the sentence named neither. So the gate renders the status from the claims, in three states:
+the pass not on record — the sentence as it stood; on record with a row below Supports —
+"machine-audited", the rows counted and their owners named, a finding in the plan or a card
+that owes the row; on record with every row at Supports or Not Applicable — "conformant",
+the word this decision reserves for the report, and the report says it since 2026-09-28. Six
+prepared inputs hold the three states, one per edge. The landing does not follow: the strip
+says "machine-audited" and its suite still asserts it never says "conformant" — that line is
+the one the stronger sentence must delete first, as above, and deleting it is a decision of
+its own, not a consequence of the report's word._
+
 ## A number nothing measured cannot reach the page
 
 The strip's figures ride `DOCS_EVIDENCE` only — the content pass (2.1.5) reads them from

@@ -1,0 +1,26 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is recorded, 2.1.1 stands at Partially Supports over the cards' `Keyboard map` row, and the button's row is set to `none — gap`: a limit with no finding in the plan, the second kind of owner point 2 admits and point 5 holds. The sentence names the card that owes the row, because the owner of this limit is a card and not a plan item — a rule that looked for findings alone would say the row is held by nothing.",
+  "criteria": {
+    "2.1.1": {
+      "conformance": "Partially Supports"
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "cards": {
+    "button": {
+      "Keyboard map": "none — gap: the keys were never walked"
+    }
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": [
+      "1 row stands below Supports",
+      "2.1.1 (Partially Supports)",
+      "held by the cards' `Keyboard map` row, owed by button. The word"
+    ]
+  }
+}
