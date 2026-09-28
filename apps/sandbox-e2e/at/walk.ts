@@ -268,6 +268,10 @@ export async function walk(
       if (!at.moved) {
         steps[steps.length - 1].note =
           'Tab moved nothing — focus had left the page';
+        // The Firefox pattern: the page's focus stays put while the reader announces the
+        // browser's chrome. Safari's — a focus that becomes null — ends the loop a line above
+        // and leaves this false; VoiceOver acts on its own cursor and opened those views
+        // without the click below.
         left = true;
         break;
       }
@@ -290,6 +294,7 @@ export async function walk(
     const act = ACTS[route];
     if (act) {
       let reached = true;
+      let clicked = false;
       await step(route, 'reach', tab, async () => {
         // A reader's key follows the WINDOW's focus, and the walk may have Tabbed out of the
         // document into the browser's own chrome. On the first full pass with acts NVDA
@@ -303,6 +308,9 @@ export async function walk(
             .locator('main h2')
             .first()
             .click({ timeout: 5_000 })
+            .then(() => {
+              clicked = true;
+            })
             .catch(() => undefined);
         await page
           .locator(act.on)
@@ -316,11 +324,17 @@ export async function walk(
         steps[steps.length - 1].note =
           `the act found no \`${act.on}\` to press, so ${act.what} is unread here`;
       else {
+        // Written from what the click DID, not from what it was for: a title the pointer
+        // could not reach in five seconds — a panel left standing over it — leaves the
+        // window's focus where the walk had put it, and the row says so instead of claiming.
         if (left)
-          steps[steps.length - 1].note =
-            "the walk had Tabbed out of the page into the browser's own chrome, so a pointer " +
-            "click on the view's title gave the document the window's focus back before the " +
-            "control was focused — a reader's key follows the window, not the page";
+          steps[steps.length - 1].note = clicked
+            ? "the walk had Tabbed out of the page into the browser's own chrome, so a pointer " +
+              "click on the view's title gave the document the window's focus back before the " +
+              "control was focused — a reader's key follows the window, not the page"
+            : "the walk had Tabbed out of the page into the browser's own chrome, and the " +
+              "pointer could not reach the view's title in five seconds to bring the window's " +
+              'focus back — the key that follows may have gone to the chrome';
         await step(route, 'open', tab, () =>
           act.acts && reader.activate
             ? reader.activate()

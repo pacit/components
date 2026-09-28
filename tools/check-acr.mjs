@@ -10,7 +10,7 @@
  *  4. WIRED: a cited gate or suite runs in CI (`nx affected -t …`),
  *  5. CARDS: a claim over the component cards is the cards' own Checks rows,
  *  6. FINDINGS: a finding a row leans on is still open in the plan,
- *  7. THE PASS: a recorded pass has its logs, its readings, its acts in every log, each owned,
+ *  7. THE PASS: each act owned by a spec; a recorded pass has its logs, readings and acts,
  *  8. RENDERING: `docs/acr.md` is the rendering of the claims.
  *
  * A row cannot say more than a gate proves, and the rows nothing measures say so in their own
@@ -665,15 +665,16 @@ const checkAcr = (input) => {
   // the file it names must be tracked and must name the control the act presses. Two of nine
   // did not, for twelve days, and nothing read them.
   for (const [route, act] of Object.entries(input.acts)) {
-    const control = /data-testid="([^"]+)"/.exec(act.on ?? '')?.[1] ?? act.on;
-    if (
-      !control ||
-      !act.owner ||
-      !files.has(act.owner) ||
-      !texts[act.owner]?.includes(control)
-    )
+    if (act.on === undefined || act.owner === undefined)
       throw new AcrError(
-        'pass',
+        'owner',
+        `the act on \`${route}\` names its control or its owner with something other than a ` +
+          `string literal, and this gate reads only literals`,
+      );
+    const control = /data-testid="([^"]+)"/.exec(act.on)?.[1] ?? act.on;
+    if (!files.has(act.owner) || !texts[act.owner]?.includes(control))
+      throw new AcrError(
+        'owner',
         `the act on \`${route}\` cites \`${act.owner}\` as the owner of its gesture, and that ` +
           `file is not tracked or never names \`${control}\` — the citation resolves to ` +
           `nothing, and the act presses a control no spec owns`,
@@ -704,7 +705,8 @@ const checkAcr = (input) => {
             'pass',
             `the pass is claimed as recorded and \`${file}\` holds no \`open\` row on ` +
               `\`${act.on}\` under \`${route}\` — the act table names it (\`${ACTS}\`), so ` +
-              `this record was taken by a walk that did not act, or acted on something else`,
+              `this record was taken without the act: by a walk that did not act, acted on ` +
+              `something else, or never visited the view`,
           );
       }
   }

@@ -60,7 +60,7 @@ the real run's alone, and the cases run with the rendering left out.
 | [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                           | finding 4.75 is ticked in the plan while 4.1.2 still leans on it                     | 6     | `finding`   |
 | [`a-pass-claimed-without-its-logs.json`](a-pass-claimed-without-its-logs.json)               | `recorded: true` with nothing under `docs/acr/at/`                                   | 7     | `pass`      |
 | [`a-pass-claimed-with-a-card-still-owing.json`](a-pass-claimed-with-a-card-still-owing.json) | `recorded: true` with a log on disk, and every card still reading `none — gap`       | 7     | `pass`      |
-| [`an-act-whose-owner-never-presses-it.json`](an-act-whose-owner-never-presses-it.json)       | the dialog act cites the axe sweep as its owner, a spec that never names the control | 7     | `pass`      |
+| [`an-act-whose-owner-never-presses-it.json`](an-act-whose-owner-never-presses-it.json)       | the dialog act cites the axe sweep as its owner, a spec that never names the control | 7     | `owner`     |
 | [`an-act-the-record-never-opened.json`](an-act-the-record-never-opened.json)                 | `recorded: true`, and the toast act moves to a control no log has an `open` row on   | 7     | `pass`      |
 
 Point 2 has four cases because a level can be wrong in four directions and every one of
