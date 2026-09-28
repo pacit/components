@@ -1,14 +1,14 @@
 {
   "point": 4,
   "check": "snapshot",
-  "why": "closed position 9.23 is twelve lines, four of them carrying a character that ends no line for the parser: a U+2028 line separator, a NEL, a form feed and a vertical tab. Each line stays one line, the position fits exactly, and the first thing wrong is the missing row. A reading that ended lines at any of them as well would run ahead of the parser and refuse a plan prettier accepts",
+  "why": "closed position 9.23 is twelve lines, five of them carrying a character that ends no line for the parser: a U+2028 line separator, a U+2029 paragraph separator, a NEL, a form feed and a vertical tab. Each line stays one line, the position fits exactly, and the first thing wrong is the missing row. A reading that ended lines at any of them as well would run ahead of the parser and refuse a plan prettier accepts",
   "plan": [
-    "- [x] **9.23 — four characters that end no line**",
+    "- [x] **9.23 — five characters that end no line**",
     "  - line 2 carries a U+2028 here\u2028and goes on, one line for the parser",
     "  - line 3 carries a NEL here\u0085and goes on",
     "  - line 4 carries a form feed here\fand goes on",
     "  - line 5 carries a vertical tab here\u000band goes on",
-    "  - line 6",
+    "  - line 6 carries a paragraph separator here\u2029and goes on",
     "  - line 7",
     "  - line 8",
     "  - line 9",
