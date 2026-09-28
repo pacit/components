@@ -55,14 +55,16 @@ in a single line that reads like a report. `status` in the check column is the r
 label for these cases and not a point's identifier: point 8's is `rendering`, and it fires on
 the real run alone. Every case that counts rows leans on the live rows standing at Supports
 or Not Applicable, and turns red the day one drops — a count one higher than the case names.
-The one that would not is [`a-pass-not-on-record.json`](a-pass-not-on-record.json), whose
-sentence is the same either way: it would go on passing as a duplicate of its sibling, so
-[`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json)
-— red on that day with the weaker word against the stronger one it names — is its canary,
-and the two are patched together. A `null` that names no row, no card or no criterion is an
-authoring fault, reported by the case's name; a `plan` state on an item the plan lacks and an
-`acts` `null` on a route the table lacks are still silent, so a case that uses them names in
-its `says` or its point what the operation changed.
+The two that would not are the pass-unrecorded pair, whose sentence is the same either way;
+the second keeps its edge, and the first,
+[`a-pass-not-on-record.json`](a-pass-not-on-record.json), would go on passing as a duplicate
+of it — so
+[`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json),
+red on that day with the weaker word against the stronger one it names, is its canary, and
+the two are patched together. A `null` that names no row, no card or no criterion, and a
+`plan` state other than `open` on an item the plan lacks, are authoring faults reported by
+the case's name; an `acts` `null` on a route the table lacks and a `dropFiles` path the
+tracked set lacks are still silent, and no case uses either that way.
 
 ## The cases
 

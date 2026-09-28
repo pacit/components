@@ -1044,15 +1044,22 @@ const buildFixture = (live, fx) => {
   for (const path of fx.dropFiles ?? []) w.files.delete(path);
   // A finding closed, dropped or absent — or opened: a case that needs an open finding builds
   // its own, because one borrowed from the plan closes the day the work is done and takes the
-  // case's meaning with it (`a-finding-that-has-closed.json` kept moving for that).
+  // case's meaning with it (`a-finding-that-has-closed.json` kept moving for that). Only
+  // `open` may name an item the plan lacks: the other states on one were a no-op, and point 6
+  // fires "no such item" under the same check as "closed", so the case would count as rejected
+  // on its own point while proving the other reason.
   for (const [n, state] of Object.entries(fx.plan ?? {})) {
     const item = new RegExp(
       `^- \\[( |x|~|-)\\] \\*\\*${n.replace('.', '\\.')} — `,
       'm',
     );
-    if (state === 'open' && !item.test(w.plan))
+    if (!item.test(w.plan)) {
+      if (state !== 'open')
+        throw new Error(
+          `the case marks finding ${n} ${state}, and the plan has no such item`,
+        );
       w.plan += `\n- [ ] **${n} — a finding this case opens**\n`;
-    else
+    } else
       w.plan = w.plan.replace(
         item,
         state === 'absent'
