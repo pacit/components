@@ -1,0 +1,53 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is recorded and two rows stand below Supports with the two kinds of owner on one report: 1.4.4 at Does Not Support on two findings the case opens, and 2.1.1 at Partially Supports over the cards' `Keyboard map` row on a third — with the button's row set to `none — gap` and the chips card's row dropped altogether, so one card owes by a gap and one by having no row. The sentence names both kinds, the findings first and the cards after, the findings in the plan's order — 9.8 before 9.75, which the string's order gets wrong and no other case tells apart from the number's — and the two cards together. A sentence that named the first owner and stopped, or dropped the cards once a finding existed, or read the owners off the first row alone, or sorted by the string, or counted a gap as owing and a missing row as not, would read like a report with one owner fewer (the review of PR #32 ran each of those and watched the six earlier cases let it through).",
+  "criteria": {
+    "1.4.4": {
+      "conformance": "Does Not Support",
+      "evidence": [
+        {
+          "finding": "8.9"
+        },
+        {
+          "finding": "9.75"
+        }
+      ]
+    },
+    "2.1.1": {
+      "conformance": "Partially Supports",
+      "evidence": [
+        {
+          "cards": "Keyboard map"
+        },
+        {
+          "finding": "9.8"
+        }
+      ]
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "cards": {
+    "button": {
+      "Keyboard map": "none — gap: the keys were never walked"
+    },
+    "chips": {
+      "Keyboard map": null
+    }
+  },
+  "plan": {
+    "8.9": "open",
+    "9.75": "open",
+    "9.8": "open"
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": [
+      "2 rows stand below Supports",
+      "1.4.4 (Does Not Support) and 2.1.1 (Partially Supports)",
+      "held by findings 8.9, 9.8 and 9.75 in [plan.md](plan.md) and the cards' `Keyboard map` row, owed by button and chips. The word"
+    ]
+  }
+}

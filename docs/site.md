@@ -123,8 +123,9 @@ side). Top to bottom:
    builder's diary, not the buyer's question — and WCAG conformance is a procurement
    gate since the EAA, not an ornament). The tiles speak to the visitor's own stakes:
    **built and machine-audited to WCAG 2.2 AA** (never "conformant" — our gates end
-   where axe ends, and the certification language waits for the ACR with a recorded
-   assistive-technology pass); the colour pairs contrast-measured at build, both themes;
+   where axe ends; the certification language is the ACR's, which says the word its
+   claims have earned, and the strip follows only by a decision of its own — 0061,
+   amended 2026-09-28); the colour pairs contrast-measured at build, both themes;
    axe across every component view in three engines, every commit; the 24 px touch
    floor measured per control; forced colors and reduced motion as first-class modes.
    Still **read from tracked files at build time — a number nothing generates does not

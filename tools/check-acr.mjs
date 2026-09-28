@@ -651,6 +651,16 @@ const checkAcr = (input) => {
 
   // 7. THE PASS
   const at = claims.assistiveTechnology ?? {};
+  // Three renderings read the flag and, since 2026-09-28, so does the status sentence — while
+  // this point verifies the pass only when it is exactly `true`. A word in its place ("false",
+  // "yes") is truthy: the pass went unverified and the report said "recorded", and would now
+  // say the stronger word. The claims have no schema, so the flag is held to its type here.
+  if (typeof at.recorded !== 'boolean')
+    throw new AcrError(
+      'pass',
+      `the assistive-technology pass says \`"recorded": ${JSON.stringify(at.recorded)}\`, which ` +
+        `is neither true nor false — every rendering reads the flag, and a word there reads as true`,
+    );
   if (
     !Array.isArray(at.readers) ||
     !at.readers.length ||
@@ -792,8 +802,8 @@ not call itself conformant until the assistive-technology pass is on record — 
 law of decision 0061, held by the documentation site's own suite.`;
   if (!below.length)
     return (
-      `**Status: conformant.** Every one of the ${CATALOGUE.length} rows reads Supports, on a gate ` +
-      `that runs on every commit, or Not Applicable, on something the library does not ship, and ` +
+      `**Status: conformant.** Every one of the ${CATALOGUE.length} rows reads Supports, on the ` +
+      `evidence its row names, or Not Applicable, on something the library does not ship, and ` +
       `the assistive-technology pass is on record. The word is the one decision 0061 reserves for ` +
       `this report and for this state of it (amended 2026-09-28); the documentation site's landing ` +
       `keeps "machine-audited", a law of the same decision that the site's own suite holds and the ` +
@@ -1008,10 +1018,14 @@ const buildFixture = (live, fx) => {
     else w.claims.criteria[i] = { ...w.claims.criteria[i], ...patch };
   }
   Object.assign(w.claims.assistiveTechnology, fx.assistiveTechnology ?? {});
+  // A card's row rewritten, added or, with `null`, dropped — a card owes a row by a gap in it
+  // or by not having it at all, and the two are counted alike.
   for (const [id, rows] of Object.entries(fx.cards ?? {}))
     for (const [label, evidence] of Object.entries(rows)) {
       const row = w.cards[id]?.find((r) => r.criterion.includes(label));
-      if (row) row.evidence = evidence;
+      if (evidence === null) {
+        if (row) w.cards[id].splice(w.cards[id].indexOf(row), 1);
+      } else if (row) row.evidence = evidence;
       else (w.cards[id] ??= []).push({ criterion: label, evidence });
     }
   Object.assign(w.texts, fx.texts ?? {});
@@ -1019,7 +1033,7 @@ const buildFixture = (live, fx) => {
   for (const path of fx.dropFiles ?? []) w.files.delete(path);
   // A finding closed, dropped or absent — or opened: a case that needs an open finding builds
   // its own, because one borrowed from the plan closes the day the work is done and takes the
-  // case's meaning with it (`a-finding-that-has-closed.json` moved three times for that).
+  // case's meaning with it (`a-finding-that-has-closed.json` kept moving for that).
   for (const [n, state] of Object.entries(fx.plan ?? {})) {
     const item = new RegExp(
       `^- \\[( |x|~|-)\\] \\*\\*${n.replace('.', '\\.')} — `,

@@ -1,0 +1,9 @@
+{
+  "point": 7,
+  "check": "pass",
+  "description": "The claims say `\"recorded\": \"false\"` — a word, not a boolean — with nothing under the log directory. Point 7 verified the pass only when the flag was exactly `true`, and every rendering read it as truthy: before 2026-09-28 the lie stayed in the sub-heading (\"recorded\", \"**Recorded.**\"), and the day the status sentence started reading the flag it would have put `Status: conformant` on a report whose pass nobody verified. A flag in words is refused before anything reads it; the claims have no schema, and a hand edit is exactly how a word gets there (the review of PR #32 built this input and watched it pass).",
+  "assistiveTechnology": {
+    "recorded": "false"
+  },
+  "atLogs": []
+}

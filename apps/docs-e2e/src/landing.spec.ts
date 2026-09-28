@@ -61,8 +61,9 @@ test.describe('The landing', () => {
     // as unreadable — measured, webkit, 1.01:1 (2026-09-04).
     for (let at = 0; at < 5; at++)
       await expect(facts.nth(at)).toHaveCSS('opacity', '1');
-    // The certification sentence waits for the ACR (`req-a11y-acr`) — the page must not
-    // jump the gun.
+    // The strip keeps "machine-audited" whatever the report says: "conformant" is the ACR's
+    // word (`req-a11y-acr`), and bringing it here is a decision of its own (0061, amended
+    // 2026-09-28) — this line is the one that decision would delete first.
     await expect(strip).not.toContainText(/conformant/i);
     // The AI tile points at files this same build really serves.
     for (const address of ['/llms.txt', '/components.json']) {
