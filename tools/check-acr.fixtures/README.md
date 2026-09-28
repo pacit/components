@@ -68,6 +68,6 @@ them reads like a report: a word outside the five, a _Supports_ on prose, a _Sup
 names its own limit, a _Not Evaluated_ with no owner. Point 3 has five, one per kind of
 citation that can go stale — a gate's point, a case's title, a quoted sentence, a
 decision's number, a scan over the sources — because each goes stale for a different reason
-and at a different moment. Point 7 has four because "recorded" can be a lie in four places:
-the directory, the cards, the act table — a gesture cited to a spec that never presses it —
-and the logs, which can stand on disk without one `open` row the table promises.
+and at a different moment. Point 7 has four: "recorded" can be a lie in three places — the
+directory, the cards, and the logs, which can stand on disk without one `open` row the table
+promises — and the act table can cite a spec that never presses the control, recorded or not.

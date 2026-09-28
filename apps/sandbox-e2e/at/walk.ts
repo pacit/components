@@ -268,10 +268,11 @@ export async function walk(
       if (!at.moved) {
         steps[steps.length - 1].note =
           'Tab moved nothing — focus had left the page';
-        // The Firefox pattern: the page's focus stays put while the reader announces the
-        // browser's chrome. Safari's — a focus that becomes null — ends the loop a line above
-        // and leaves this false; VoiceOver acts on its own cursor and opened those views
-        // without the click below.
+        // Set whenever the page's focus stayed put. Under Firefox the reader had moved on
+        // to the browser's chrome, and the click below is what brings the key back; under
+        // Safari VoiceOver's Tab may merely re-announce the element it is on — twenty-two
+        // views of one record — and the click does no harm. A focus gone null, VoiceOver's
+        // other pattern, ends the loop a line above and leaves this false.
         left = true;
         break;
       }

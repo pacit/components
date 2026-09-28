@@ -6877,7 +6877,11 @@ the nine cited a spec that never pressed the control the act named: the toast ac
 `raise-notice` while `toast.spec.ts` presses `raise-brief`, `raise-urgent`, `raise-standing`
 and `raise-action`; the date act pressed the `date-starts-on` toggle while `date.spec.ts`
 opens `date-standalone`. Both citations were written by component — the toast's spec for
-the toast's act — and read by nobody: the walk never opens the file it cites and the record prints the path as written. The table carried them for twelve days, from its first commit on 2026-09-16 (`cc714715`), and the Orca log on disk quoted the wrong control under the right heading for eleven, from `01012a43` on 2026-09-17 to the morning of 2026-09-28, when the gate was written and asked.
+the toast's act — and read by nobody: the walk never opens the file it cites and the record
+prints the path as written. The table carried them for twelve days, from its first commit
+on 2026-09-16 (`cc714715`), and the Orca log on disk quoted the wrong control under the
+right heading for eleven, from `01012a43` on 2026-09-17 to the morning of 2026-09-28, when
+the gate was written and asked.
 
 What 0017 says about links is that a link is an identifier BECAUSE `check-docs` resolves it,
 and the table had taken the first half of that sentence without the second: a path is not a
@@ -6907,9 +6911,17 @@ What the five had in common was the row above them. Every one had ended its walk
 chrome while the page's `activeElement` stayed where it was, which the walk writes as "Tab
 moved nothing — focus had left the page". `reach` then focused the control programmatically;
 the page's focus moved and the window's did not, the reader announced nothing — it never
-sees a focus the window did not give — and its Enter went where the window's focus was, the tab strip, which answered `pressed`. The four that opened had ended their walks inside the page — the toast's on `banner landmark`, after one Tab. Orca had the same five rows and opened everything, because its key is pressed by Playwright into the page and not by a reader into the window; VoiceOver had them on the same five and opened those five, because its default action is asked of the VoiceOver cursor — the record on disk, from the third pass, has it silent at four other openings, for reasons of its own. The walk now clicks the view's title — inert — before focusing the control
-on those views, so the document holds the window's focus when the key arrives, and the
-`reach` row says so. Orca read the dialog and the menu through it on this desk before the
+sees a focus the window did not give — and its Enter went where the window's focus was, the
+tab strip, which answered `pressed`. The four that opened had ended their walks inside the
+page — the toast's on `banner landmark`, after one Tab. Orca had the same five rows and
+opened everything, because its key is pressed by Playwright into the page and not by a
+reader into the window. VoiceOver had the row on three of the five — the modal, the menu,
+the popover — and a focus gone null on the other two, and opened all five, because its
+default action is asked of the VoiceOver cursor; on Safari its Tab stands still for reasons
+of its own, on twenty-two views of the record on disk, and the same row there says nothing
+about where a key went. The walk now clicks the view's title — inert — before focusing the
+control on those views, so the document holds the window's focus when the key arrives, and
+the `reach` row says so. Orca read the dialog and the menu through it on this desk before the
 third dispatch, and the menu that had answered `expanded` announced itself: `Actions · menu
 · Rename.` The third pass (run `36388327497`) read NVDA opening all nine — `Project settings,
 dialog`, `Rename, 1 of 4`, `Filters, dialog`, and `expanded` on the region and the section —
