@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.2, AT-SPI2 version: 2.60.4
 - Firefox 151.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 509 steps over 36 views, at most 12 stops of a view's own
+- 505 steps over 36 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -27,10 +27,10 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 6 of 509 here. 11 view(s) hit the cap, and each says so.
+at — 6 of 505 here. 11 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2054
-phrases, and 2047 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2041
+phrases, and 2034 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -69,19 +69,15 @@ tab 2   button "Ghost"                                       Ghost · button.
 tab 3   button "Soft"                                        Soft · button.
 tab 4   button "Hero"                                        Hero · button.
 tab 5   input[control]                                       Theme · panel · light · selected radio button.
-tab 6   button "Small"                                       leaving panel. · Small · button.
-tab 7   button "Medium"                                      Medium · button.
-tab 8   button "Large"                                       Large · button.
-tab 9   input[control]                                       Theme · panel · light · selected radio button.
-tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 12  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 13  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 14  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 15  a "Get started"                                      leaving panel. · Get started · link.
-tab 16  a "Hero link"                                        Hero link · link.
-tab 17  a "Disabled link"                                    Disabled link · link.
-tab 18  button "Get started"                                 Get started · button.
+tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 8   button "danger"                                      leaving panel. · danger · button.
+tab 9   button "danger"                                      danger · button.
+tab 10  button "danger"                                      danger · button.
+tab 11  button "danger"                                      danger · button.
+tab 12  button "warning"                                     warning · button.
+tab 13  button "warning"                                     warning · button.
+tab 14  button "warning"                                     warning · button.
 ```
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
@@ -144,7 +140,7 @@ Tab moved nothing — focus had left the page.
 ### `/number`
 
 ```
-arrive  a "Number"                                           navigation · Sandbox views · List with 30 items · Number · visited link. · Browse mode
+arrive  a "Number"                                           navigation · Sandbox views · List with 30 items · Number · link. · Browse mode
 enter   input                                                Price · spin button · 1 499,90. · The arrows change the value by 0.5. · Focus mode
 tab 1   button[field-suffix-item] "Clear the price"          Clear the price · button. · Browse mode
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -186,10 +182,10 @@ tab 22  button[nav] "Mois précédent"                         leaving panel. ·
 tab 23  button[nav] "Mois suivant"                           Mois suivant · button.
 reach   button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog · Focus mode
 open    td[day] "jeudi 27 août 2026"                         Choisir une date · dialog · août 2026. · table with 7 rows 7 columns · jeudi column header 27 · row 6 column 4
-close   input[control]                                       Start date · entry · 27/08/2026 · required. · Type it, or pick it from the calendar.
+close   input[control]                                       Day · entry · 27/08/2026. · The sandbox runs under fr-FR, so the format hint reads jj/mm/aaaa.
 ```
 
-the act: `Enter` on `[data-testid="date-starts-on"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
+the act: `Enter` on `[data-testid="date-standalone"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
@@ -204,7 +200,7 @@ tab 1   —                                                    Theme · panel ·
 ### `/radio`
 
 ```
-arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 30 items · Radio · visited link.
+arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 30 items · Radio · link.
 enter   input[control]                                       Plan · panel · Free · not selected radio button.
 tab 1   —                                                    leaving panel. · Theme · panel · light · selected radio button. · alert. · Pick a plan
 ```
@@ -283,6 +279,8 @@ close   button "Open the dialog"                             main content · Ope
 
 Tab moved nothing — focus had left the page.
 
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
 the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the gesture belongs to `apps/sandbox-e2e/src/dialog.spec.ts`).
 
 ### `/tooltip`
@@ -324,23 +322,27 @@ close   button "Filters"                                     main content · Fil
 
 Tab moved nothing — focus had left the page.
 
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
 the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog (the gesture belongs to `apps/sandbox-e2e/src/popover.spec.ts`).
 
 ### `/menu`
 
 ```
-arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 30 items · Menu · visited link. · Browse mode
+arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 30 items · Menu · link. · Browse mode
 enter   button "Actions"                                     Actions · collapsed button. · opens menu · Focus mode
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
 tab 3   button "Language"                                    Language · collapsed button. · opens menu
 tab 4   button "Language"                                    Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 reach   button "Actions"                                     main content · Count up · button. · Browse mode · Actions · collapsed button. · opens menu · Focus mode
-open    button[item] "Rename"                                expanded
-close   button "Actions"                                     collapsed
+open    button[item] "Rename"                                leaving main content. · Actions · menu · Rename.
+close   button "Actions"                                     main content · Actions · collapsed button. · opens menu · collapsed
 ```
 
 Tab moved nothing — focus had left the page.
+
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gesture belongs to `apps/sandbox-e2e/src/menu.spec.ts`).
 
@@ -366,6 +368,8 @@ close   button "Sections"                                    (silence)
 ```
 
 Tab moved nothing — focus had left the page.
+
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="trigger-nav"]`, to open a named region beside the page (the gesture belongs to `apps/sandbox-e2e/src/drawer.spec.ts`).
 
@@ -395,7 +399,7 @@ tab 18  input[control]                                       Theme · panel · l
 tab 19  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 20  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 21  summary[heading] "More about this"                   leaving panel. · More about this · collapsed button. · Focus mode
-tab 22  summary[heading] "More about this"                   Browser tabs · tool bar.
+tab 22  summary[heading] "More about this"                   Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
 reach   summary[heading] "Payment"                           main content · Returns · collapsed button. · Focus mode · Payment
 open    summary[heading] "Payment"                           expanded
 close   summary[heading] "Payment"                           (silence)
@@ -404,6 +408,8 @@ close   summary[heading] "Payment"                           (silence)
 the pointer's way to the nav stood under `pct-drawer (drawer-nav)` when this view was asked for, and the link was reached through its own click event.
 
 Tab moved nothing — focus had left the page.
+
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to open a revealed section (the gesture belongs to `apps/sandbox-e2e/src/accordion.spec.ts`).
 
@@ -444,7 +450,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/toast`
 
 ```
-arrive  a "Toast"                                            navigation · Sandbox views · List with 30 items · Toast · visited link. · Browse mode
+arrive  a "Toast"                                            navigation · Sandbox views · List with 30 items · Toast · link. · Browse mode
 enter   button "Save the draft"                              Save the draft · button.
 tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
 tab 2   button "Report something that waits"                 Report something that waits · button.
@@ -469,14 +475,16 @@ tab 20  input[control]                                       leaving panel. · S
 tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 22  button "Open the settings"                           leaving panel. · Open the settings · button.
 tab 23  button "Open the settings"                           Firefox View · toggle button not pressed. · View recent browsing across windows and devices.
-reach   button "Save the draft"                              main content · Copy (a shorter clock) · button. · Browse mode · Save the draft
-open    button "Save the draft"                              Notifications. Draft saved.
-close   button "Save the draft"                              (silence)
+reach   button "Copy (a shorter clock)"                      main content · Report something that waits · button. · Browse mode · Copy (a shorter clock)
+open    button "Copy (a shorter clock)"                      Notifications. Copied to the clipboard.
+close   button "Copy (a shorter clock)"                      (silence)
 ```
 
 Tab moved nothing — focus had left the page.
 
-the act: `Enter` on `[data-testid="raise-notice"]`, to open a message in a live region (the gesture belongs to `apps/sandbox-e2e/src/toast.spec.ts`).
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
+the act: `Enter` on `[data-testid="raise-brief"]`, to open a message in a live region (the gesture belongs to `apps/sandbox-e2e/src/toast.spec.ts`).
 
 ### `/pagination`
 
@@ -589,7 +597,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/avatar`
 
 ```
-arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 30 items · Avatar · link.
+arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 30 items · Avatar · visited link.
 enter   button "Swap the source"                             Swap the source · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -628,7 +636,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · visited link. · Browse mode
+arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 30 items · Breadcrumb · link. · Browse mode
 enter   a "Home"                                             navigation · Breadcrumb · List with 3 items · Home · link.
 tab 1   a "Library"                                          Library · link.
 tab 2   a "Data"                                             Data · link. · (Current page)
@@ -653,7 +661,7 @@ Tab moved nothing — focus had left the page.
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · link. · Browse mode
+arrive  a "Hero"                                             navigation · Sandbox views · List with 30 items · Hero · visited link. · Browse mode
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -719,7 +727,7 @@ Tab moved nothing — focus had left the page.
 ### `/size`
 
 ```
-arrive  a "Size"                                             navigation · Sandbox views · List with 6 items · Size · link. · Browse mode
+arrive  a "Size"                                             navigation · Sandbox views · List with 6 items · Size · visited link. · Browse mode
 enter   input                                                Field sm · entry · Text sm. · Focus mode
 tab 1   button "Button sm"                                   Button sm · button. · Browse mode
 tab 2   button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode
@@ -740,7 +748,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/density`
 
 ```
-arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · link. · Browse mode
+arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · visited link. · Browse mode
 enter   input                                                Field sm · entry · Text sm. · Focus mode
 tab 1   button "Button sm"                                   Button sm · button. · Browse mode
 tab 2   button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode
@@ -784,7 +792,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/announce`
 
 ```
-arrive  a "Live regions"                                     leaving main content. · navigation · Sandbox views · List with 6 items · Live regions · visited link. · Browse mode
+arrive  a "Live regions"                                     leaving main content. · navigation · Sandbox views · List with 6 items · Live regions · link. · Browse mode
 enter   button "Announce politely"                           Announce politely · button.
 tab 1   button "Interrupt"                                   Interrupt · button.
 tab 2   button "Interrupt"                                   Firefox View · toggle button not pressed. · View recent browsing across windows and devices.

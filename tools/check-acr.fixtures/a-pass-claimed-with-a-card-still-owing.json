@@ -1,7 +1,12 @@
 {
   "point": 7,
   "check": "pass",
-  "description": "The pass is claimed as recorded and a log stands on disk, while one card's `Screen-reader log` row still reads `none — gap`. A pass that a card does not point at is a transcript nobody wired to the component it measured. The defect is BUILT here rather than borrowed: until 2026-09-16 this case set `recorded` and leaned on the live cards, every one of which read `none — gap` — and the day the readings landed the case passed, because the repository had stopped supplying the fault the case was meant to prove. A control that depends on the live input being broken is a control that retires itself the moment the work is done.",
+  "description": "The pass is claimed as recorded and a log stands on disk, while one card's `Screen-reader log` row still reads `none — gap`. A pass that a card does not point at is a transcript nobody wired to the component it measured. The defect is BUILT here rather than borrowed: until 2026-09-16 this case set `recorded` and leaned on the live cards, every one of which read `none — gap` — and the day the readings landed the case passed, because the repository had stopped supplying the fault the case was meant to prove. A control that depends on the live input being broken is a control that retires itself the moment the work is done. Since 2026-09-28 the case also sets 4.1.2 to Partially Supports: the live row says Supports over the cards, and a Supports with a card owing fires point 5 before point 7 ever reads the pass.",
+  "criteria": {
+    "4.1.2": {
+      "conformance": "Partially Supports"
+    }
+  },
   "assistiveTechnology": {
     "recorded": true
   },

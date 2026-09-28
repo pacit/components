@@ -28,7 +28,7 @@ the points, and a number copied here would be a second home for a number 0017 al
 ```
 at-pass.mjs 2 14 175
 changelog-renderer.mjs 4 16 157
-check-acr.mjs 8 20 211
+check-acr.mjs 8 20 215
 check-aria.mjs 9 21 245
 check-bench.mjs 6 18 191
 check-bridge.mjs 7 19 200
@@ -87,7 +87,8 @@ position, because a denominator that empties quietly is the defect it exists to 
 3.5 closed 12 134
 3.6 closed 12 179
 4.58 closed 9 140
-4.71 open 19 312
+4.71 closed 10 150
+4.78 open 10 148
 4.75 open 13 191
 4.74 closed 12 196
 4.76 open 18 261

@@ -6868,3 +6868,56 @@ on `main` after the push — `workflow_dispatch` is one of the two events the to
 `workflow_run`, the site follows. Until then the renderings are repaired by hand, `acr.md` in
 #27 and the CHANGELOG in #28, the way the manifest was in `e649f1fa`
 ([`lesson-220`](#lesson-220)).
+
+### <a id="lesson-244"></a>`lesson-244` — The table cited a spec by the component's name, and nothing ever opened the spec
+
+The act table of the reader walk (4.71) names, for each of nine gestures, the end-to-end
+spec that owns it — the one home for the key, by 0017, cited rather than restated. Two of
+the nine cited a spec that never pressed the control the act named: the toast act pressed
+`raise-notice` while `toast.spec.ts` presses `raise-brief`, `raise-urgent`, `raise-standing`
+and `raise-action`; the date act pressed the `date-starts-on` toggle while `date.spec.ts`
+opens `date-standalone`. Both citations were written by component — the toast's spec for
+the toast's act — and read by nobody: the walk never opens the file it cites, the record
+prints the path as written, and the Orca log on disk quoted the wrong control under the right
+heading for twelve days, from the table's second commit on 2026-09-16 to the morning of
+2026-09-28, when the gate was written and asked.
+
+What 0017 says about links is that a link is an identifier BECAUSE `check-docs` resolves it,
+and the table had taken the first half of that sentence without the second: a path is not a
+link until something opens it. Point 7 of `check-acr` opens it now — the owner must be a
+tracked file that names the control, and every log must hold an `open` row on the control
+the table names today — and two prepared inputs prove each half can fail. The order of the
+morning is the other half of the lesson: the full pass with acts had been dispatched from
+the unfixed table half an hour before the check was written, and the record it produced
+would have been the one on disk, quoting a control no spec presses, had the gate not been
+read before the reading was.
+
+### <a id="lesson-245"></a>`lesson-245` — The key followed the window, and two readings had blamed the key
+
+The first full pass with acts (2026-09-28, run `36384932162`) read NVDA answering `pressed`
+at five of nine `open` rows — the modal, the menu, the popover, the drawer, the accordion —
+with the browser's focus still on the trigger, while the toast, the month grid, the listbox
+and the tab panel opened and were announced. Two readings before it had blamed the key: on
+2026-09-16 the same reader said `pressed` at eight of nine to a literal Enter, and the walk
+grew a seam that asks a reader for its default action instead. Guidepup's `act()` is that
+same Enter for NVDA (`keyCodeCommands.activate`), so the seam bought VoiceOver its opening
+— there the default action is Control-Option-Space, and a literal Enter is answered with a
+hint — and NVDA nothing, and nothing measured the difference until the nine acts ran on all
+three readers at once.
+
+What the five had in common was the row above them. Every one had ended its walk on
+`Browser tabs, tool bar`: the reader's Tab had left the document for the browser's own
+chrome while the page's `activeElement` stayed where it was, which the walk writes as "Tab
+moved nothing — focus had left the page". `reach` then focused the control programmatically;
+the page's focus moved and the window's did not, the reader announced nothing — it never
+sees a focus the window did not give — and its Enter went where the window's focus was, the
+tab strip, which answered `pressed`. Orca had the same rows and opened everything, because
+its key is pressed by Playwright into the page and not by a reader into the window;
+VoiceOver had them and opened everything, because its default action is asked of the
+VoiceOver cursor. The walk now clicks the view's title — inert — before focusing the control
+on those views, so the document holds the window's focus when the key arrives, and the
+`reach` row says so. Orca read the dialog and the menu through it on this desk before the
+third dispatch, and the menu that had answered `expanded` announced itself: `Actions · menu
+· Rename.` The third pass (run `36388327497`) read NVDA opening all nine — `Project settings,
+dialog`, `Rename, 1 of 4`, `Filters, dialog`, and `expanded` on the region and the section —
+where the first had read `pressed` five times.

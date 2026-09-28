@@ -1,7 +1,7 @@
 {
   "point": 6,
   "check": "finding",
-  "description": "A criterion keeps citing a finding the plan marks closed. A limit that has gone is a level to raise, not a citation to keep; the report would otherwise understate the library on the day it improved. The case carries BOTH halves of its own defect — the citation and the closing — and the evidence beside the finding is copied here rather than borrowed, because point 5 rules on the level before point 6 sees the finding and a criterion left with nothing but a citation fires the wrong check. Until 2026-09-16 the case named whichever finding a row leaned on today, and it had moved three times for that reason (4.8, then 4.37 on the night 4.37 closed, then 4.45). The fourth time it did not move: 2.2 closed, nothing cited it, and the control passed while proving nothing (`lesson-216`).",
+  "description": "A criterion keeps citing a finding the plan marks closed. A limit that has gone is a level to raise, not a citation to keep; the report would otherwise understate the library on the day it improved. The case carries BOTH halves of its own defect — the citation and the closing — and the evidence beside the finding is copied here rather than borrowed, because point 5 rules on the level before point 6 sees the finding and a criterion left with nothing but a citation fires the wrong check. Until 2026-09-16 the case named whichever finding a row leaned on today, and it had moved three times for that reason (4.8, then 4.37 on the night 4.37 closed, then 4.45, then 4.71). The fourth time it did not move: 2.2 closed, nothing cited it, and the control passed while proving nothing (`lesson-216`). Since 2026-09-28 it names 4.75 and sets the level itself: the row it patches says Supports in the live claims, and a Supports with a finding attached fires point 2 before point 6 ever reads the plan.",
   "criteria": {
     "4.1.2": {
       "evidence": [
@@ -16,12 +16,13 @@
           "cards": "Screen-reader log"
         },
         {
-          "finding": "4.71"
+          "finding": "4.75"
         }
-      ]
+      ],
+      "conformance": "Partially Supports"
     }
   },
   "plan": {
-    "4.71": "closed"
+    "4.75": "closed"
   }
 }

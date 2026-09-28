@@ -103,7 +103,7 @@ holds only the order.
 
 **What is left.** Section 1 ends at the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds nothing
-since `0.2.0`. Section 4 holds two findings, each held by a **binds at** rather than by
+since `0.2.0`. Section 4 holds four findings, each held by a **binds at** rather than by
 anybody's mood.
 
 ## 1. Components
@@ -223,25 +223,27 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the fourth, dispatched 2026-09-17 (run 35279012559): **2532 cases × 3 = 7596 runs, one
     wobbled (0.04%)** — `docs/flake.snapshot.md` is the record, and the one name in it is 4.74
 
-- [ ] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens**
-      — **the word is given 2026-09-16: build it, and build it narrow**
-  - seven cards ask what a reader announces when something opens — a modal, a menu, a popover,
-    a toast, a month grid, a revealed tab panel, a select list — and the answer for all seven
-    is the same: the walk presses Tab and nothing else, so no panel in the three logs was ever
-    opened. 2.2 closed with that stated rather than blurred
-  - it is also why **4.1.2 stays `Partially Supports`** with the pass recorded: what the walk
-    answers it answers well, and the half it cannot reach is the half a modal lives in
-  - **why it is worth paying for**: for a tree, arrival is most of the story; for a dialog it
-    is none of it. Opening IS the component in all seven, so the record as it stands answers a
-    question nobody asked of them, and no rewording of the remark repairs that
-  - **the scope**: one act per component, the gesture its own e2e spec already presses, read
-    by the same three readers into the same record shape. Not a longer walk, not a framework
-  - **refused — the say-all pass**: a `progressbar`, a badge and a skeleton take no focus, so
-    a Tab walk cannot tell their silence from their absence. But three readers' say-all
-    outputs answer three different questions, and this record's whole worth is that all three
-    answer one. Those cards owe a sentence about the component instead of a fourth instrument
-  - binds at: **the act table**, which is where 0017 bites — the key that opens a menu must not
-    take a second home here, so the table cites the spec that owns it rather than restating it
+- [x] **4.71 — the walk reads what a view SAYS on arrival, and nothing about what opens** — **closed 2026-09-28**
+  - nine acts (`at/acts.ts`), one per view with something to open, read by all three readers on
+    runners (`at-pass.yml`, run 36388327497): a modal, a menu, a popover, a toast, a month grid,
+    a tab panel, a listbox, a docked region, a disclosure. Same walk, same record shape; every
+    `open` row is the first announcement after the thing appears, and fourteen cards were re-read
+  - two of the nine cited a spec that never pressed the control ([`lesson-244`](lessons.md#lesson-244)),
+    and NVDA opened nothing where the walk had Tabbed out of the page ([`lesson-245`](lessons.md#lesson-245));
+    point 7 of `check-acr` resolves the owner and demands the act in every log, two prepared inputs
+  - the reading raised 4.1.2 to Supports, and what it left open is 4.78. The say-all pass stays
+    refused, as written
+
+- [ ] **4.78 — Orca says nothing when the modal takes focus**
+  - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
+    2026-09-17, the runner on 2026-09-28, twice — with the browser's focus on the dialog's close
+    button; on the same act NVDA says `Project settings, dialog` and VoiceOver names the dialog,
+    its size and the close button. Orca speaks again on Escape, so it is the arrival it misses
+  - a popover taking focus and a menu opening are both announced by the same reader, so the modal
+    is the odd one: `showModal()`, the page made inert behind it, or focus moved before the dialog
+    is drawn — three suspects, none measured. A desk with Orca asks in two minutes
+    (`AT_PASS_ROUTES=/dialog tools/at-pass.sh`)
+  - binds at: **the dialog card's reading**, which says the silence rather than explaining it
 
 - [ ] **4.75 — one name, several declarations, and only the first date is read**
   - a name TypeScript lets several declarations carry — a class merged with an interface, an
