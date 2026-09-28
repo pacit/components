@@ -301,7 +301,7 @@ and every one is held by a **binds at** rather than by anybody's mood.
     lexer of backticks ([`lesson-236`](lessons.md#lesson-236)). Any other line in column 0 the
     parser keeps inside the position — prettier moves a wrapped link title there too — is
     refused on point 1 rather than dropped; the next position ends the body at any indent
-  - twelve prepared inputs go through the reader itself. Measured again, the plan does not
+  - sixteen prepared inputs go through the reader itself. Measured again, the plan does not
     move: no position wraps a span today
 
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**

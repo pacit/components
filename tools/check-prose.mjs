@@ -4,7 +4,7 @@
  * (`req-project-concise`)? The budget is 0017's; this holds it, and holds the record in
  * `docs/prose.snapshot.md` the way `check-bundle` holds bytes.
  *
- *  1. MEASURED: every gate has a header with numbered points, every count is whole,
+ *  1. MEASURED: headers with numbered points, whole counts, and no line a position loses,
  *  2. DENOMINATOR: the units are the tracked scripts and the plan's own boxes, both ways,
  *  3. BUDGET: 12 lines + 1 per point, 12 closed / 20 open — past it only with a reason,
  *  4. SNAPSHOT: the record has a row for every unit, and no other,
@@ -140,18 +140,21 @@ const readPositions = (text) => {
       i,
       (l, at) => POSITION.test(l) || (/^\S/.test(l) && !spanned.has(at)),
     );
-    // What the parser still keeps inside the position — its list item, down to the next
-    // position — and the body did not read: a line in column 0 that continues no span.
-    // Prettier moves a wrapped link title there as it moves a span, and leaves inline math
-    // where it was written. Point 1 refuses such a position rather than measure it short.
-    const next = all.findIndex((l, k) => k > i && POSITION.test(l));
-    const last = Math.min(
-      itemEnd.get(i) ?? i,
-      next < 0 ? all.length - 1 : next - 1,
-    );
+    // What the parser still keeps inside the position — its list item, less the items of
+    // positions nested in it, which answer for their own — and the body did not read. A
+    // line in column 0 that continues no span: prettier moves a wrapped link title there as
+    // it moves a span, and leaves inline math where it was written. Or anything the position
+    // carries after one nested in it, which the nested body would read on into by
+    // indentation. Point 1 refuses such a position rather than measure it short or charge its
+    // lines to another.
+    const end = itemEnd.get(i) ?? i;
+    const nested = [];
+    for (let j = i + 1; j <= end; j++)
+      if (POSITION.test(all[j])) nested.push([j, itemEnd.get(j) ?? j]);
     const lost = [];
-    for (let k = i + body.length; k <= last; k++)
-      if (/^\S/.test(all[k])) lost.push(k + 1);
+    for (let k = i + body.length; k <= end; k++)
+      if (all[k].trim() !== '' && !nested.some(([a, b]) => k >= a && k <= b))
+        lost.push(k + 1);
     out.push({
       kind: 'position',
       unit: m[2],
@@ -304,7 +307,8 @@ const checkMeasured = ({ headers, positions, tracked, boxes, policy }) => {
     if (p.lost?.length)
       throw new ProseError(
         'measured',
-        `position ${p.unit}: line ${p.lost[0]} stands in column 0 inside the position and continues no code span — the body stops there, and the rest would leave the budget unmeasured`,
+        `position ${p.unit}: line ${p.lost[0]} of \`${PLAN}\` is inside the position and its body never reaches it — the rest would leave the budget unmeasured, or be charged to another. ` +
+          `A line in column 0 counts only as a code span's continuation: keep a link title on one line, since prettier puts its continuation back in column 0, and indent anything else. A position nested in another has to be the last thing in it`,
       );
   // 2. Denominator.
   if (headers.length === 0)

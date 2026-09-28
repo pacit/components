@@ -1,0 +1,13 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "closed position 9.17 carries position 9.17.1 and then more of its own, indented. 9.17's body stopped at the nested position, and 9.17.1's reads on into those lines by indentation, which would charge them to 9.17.1: point 1 refuses 9.17 instead, since a position nested in another has to be the last thing in it. A refusal kept to column 0 would let the nested position count them, and the case would fail on the missing rows",
+  "plan": [
+    "- [x] **9.17 — a position that goes on after the one nested in it**",
+    "  - line 2",
+    "  - [x] **9.17.1 — the nested position**",
+    "    - its line",
+    "  - line 5 is 9.17's again, indented as the rest of it",
+    "  - line 6"
+  ]
+}

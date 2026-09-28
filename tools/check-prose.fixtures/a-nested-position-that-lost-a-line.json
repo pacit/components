@@ -1,0 +1,13 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "position 9.15.1, nested under closed position 9.15, links a page whose title prettier moves to column 0. A nested position is refused like any other, and the line is its own: 9.15 leaves the items of the positions under it to them",
+  "plan": [
+    "- [x] **9.15 — a position with another under it**",
+    "  - line 2",
+    "  - [x] **9.15.1 — a nested position with a link title in column 0**",
+    "    - its line links [a page](https://example.com 'a title",
+    "over two lines') — prettier moves this to column 0",
+    "    - its last line"
+  ]
+}
