@@ -6926,3 +6926,97 @@ third dispatch, and the menu that had answered `expanded` announced itself: `Act
 · Rename.` The third pass (run `36388327497`) read NVDA opening all nine — `Project settings,
 dialog`, `Rename, 1 of 4`, `Filters, dialog`, and `expanded` on the region and the section —
 where the first had read `pressed` five times.
+
+### <a id="lesson-246"></a>`lesson-246` — The rule saw a shape and the repair a cause, and neither walked the cause
+
+On 2026-09-11, the day `check-e2e` was written, its point 3 fired on the slider's tick case: a
+`.first()` and a `.last()` read in the windows two key presses opened. The repair read the
+finding correctly and past it — "the gate is formally right and points one element off"
+(`93cc2ce6`): the ticks stand still, and the thumb's value lands in the key's own task while its
+drawing follows a change detection later. The tick case was made to poll, and the thumb's other
+reads were left to a rule that could not see them, twice over. Point 3 knows positional locators
+only, and every other read of the thumb goes through `[data-pct-part="thumb"]` — the same window,
+and no rule. And it closes its window at ANY auto-retrying assertion, as its comment has said
+plainly since that commit, so the press case would have passed it with a `.first()` too: its
+`not.toHaveValue('30')`, there since the slider's first commit, waits for the native value — the
+platform's half — while the drawing is still a change detection away. A retrying assertion
+settles the thing it names ([`lesson-130`](#lesson-130)); the rule counts it as settling
+everything up to the next action.
+
+Nor did the cause's population stop at the file. The nightly dispatched by hand on 2026-09-21
+(run `35624580763`) printed two names at 0/3: the press, and the switch's forced-colours case,
+whose OFF baseline was a one-shot `boundingBox` straight after `uncheck()` — which returns once
+the native state has flipped, the platform's half again, while the thumb follows the host's
+`data-pct-checked` a change detection later. It read the ON place all three times:
+`Expected: > 513.5`, `Received: 513.5`. [`lesson-202`](#lesson-202) names that case as a member
+of this family and holds up its repair, `0066c7fd`, as the model: a poll of the reading after
+`check()`, with the one before it left as it was. [`lesson-241`](#lesson-241) says to read the
+whole file, and the file was the wrong boundary: #25 swept every spec and found the switch, but
+only its commit says the walk is the suite's.
+
+What a sample of three repetitions is worth, the same cases say in numbers. From the first night
+of repetitions to the repairs, the nightly ran fourteen times on `main`, on one code of both
+components — the same bytes from 2026-09-19, the same but for comments before — and read, in
+chromium (firefox read all three 3/3 every time, and webkit, which does not run the
+forced-colours file, the slider's two; dispatch times UTC):
+
+| run                       | press | fill | switch | the verdict printed                 |
+| ------------------------- | ----- | ---- | ------ | ----------------------------------- |
+| 2026-09-16                | 1/3   | 1/3  | 2/3    | `case-always-failed`: four others   |
+| 2026-09-16 15:16, by hand | 3/3   | 2/3  | 3/3    | `no-report`                         |
+| 2026-09-16 18:20, by hand | 3/3   | 2/3  | 3/3    | `case-always-failed`: others        |
+| 2026-09-17                | 3/3   | 3/3  | 3/3    | `case-always-failed`: others        |
+| 2026-09-17 21:51, by hand | 3/3   | 3/3  | 3/3    | `no-record`                         |
+| 2026-09-18                | 3/3   | 3/3  | 3/3    | `wobble-unrecorded`: another case   |
+| 2026-09-19                | 3/3   | 2/3  | 3/3    | `case-always-failed`: another case  |
+| 2026-09-20                | 3/3   | 3/3  | 3/3    | green                               |
+| 2026-09-21                | 3/3   | 3/3  | 3/3    | green                               |
+| 2026-09-21 16:16, by hand | 0/3   | 3/3  | 0/3    | `case-always-failed`: press, switch |
+| 2026-09-22                | 2/3   | 2/3  | 3/3    | `wobble-unrecorded`: press, fill    |
+| 2026-09-23                | 3/3   | 3/3  | 3/3    | green                               |
+| 2026-09-24                | 0/3   | 1/3  | 2/3    | `case-always-failed`: press         |
+| 2026-09-25                | 3/3   | 3/3  | 3/3    | green                               |
+
+The press read early 9 times in 42, the fill 8 and the switch 5, and the verdict went from green
+to a failure to a wobble on three consecutive runs, each right by its rule — by point 3 of
+`check-flake` a case that failed every repetition is a failure, not a wobble. The family read
+early on seven of the fourteen runs, and the verdict named it on three. `checkFlake` stops at its
+first finding, so a later point never speaks, and until the first record, of 2026-09-18, point 4
+had no list to name a wobble against: the one run of those days that got past point 3 printed
+`no-record`. On 2026-09-16, the night [`lesson-214`](#lesson-214) is about, the press, the fill
+and the switch stood behind its four cases at 0/3. Nor does the ordinary suite of the same run
+settle what a unanimous 0/3 means, though point 3's own message sends a reader there: it passed
+the press at its first attempt on both 0/3 nights, and failed it at its first attempt, with the
+switch, on 2026-09-25, when the repetitions read 3/3.
+
+Whether the window exists is not a question about the machine: in the very task that dispatches
+the `input` event, the control's value is already `75` and the host's `--_pct-slider-fraction`
+still `0.3`, three of three on this desk. The machine decides whether a read lands in it, and on
+this desk — 8 cores, 15 GB, a one-minute load between 1.5 and 15 with its peaks this work's own
+four-worker runs, no one's battery beside it — none did: 20 of 20 with four workers;
+0.89 px, the thumb under the pointer, with the renderer throttled twenty times over through CDP;
+0.89 px and 40 of 40 with the browser held to a fifth of a core by a cgroup quota. Both
+throttles slow every task and reorder none. Holding the page's own `setTimeout` and
+`requestAnimationFrame` 120 ms, the pair the zoneless scheduler races, turns the one-shot reads
+into the nightly's failures on demand: the press case reads the nightly's number to the
+hundredth, 167.41 px, in two repetitions of three — the third read came after the hold had ended
+— and the fill and the thumb come from two drawings in three of three. It opens the window on a
+case no night ever caught, too: 108.59 px at the RTL case's edge, three of three. A poll
+survives the hold on its first or second attempt. On the nightly's machine, whose browser shares
+its cores with Playwright and the dev server, nothing had to be held; the replays of #23 and #25
+held 400 ms, and neither says why slowing the desk would not have done.
+
+Three things to keep. **A rule sees a shape and a repair sees a cause; when the repair has just
+written that the two differ, the cause's population is walked by hand, through the suite — the
+file is too narrow, `check-flake`'s verdict stops at its first finding, and a barrier on the
+platform's half satisfies the rule while settling nothing for the drawing.** A window is
+reproduced by holding the task that closes it, not by slowing the machine, which stretches every
+task and keeps their order — and the length is the read's to decide: at 120 ms one press read of
+three came after the hold, and at 400 ms, #25's length, the list panel's two-trip read landed
+whole before the move, on a state that satisfies it (#30). And a night's verdict belongs to its
+sample, not to the case.
+
+Written on 2026-09-23 with a repair of its own, on a branch that never merged — its review found
+the switch on the list — this entry was carried to `main` later, its table read again from the
+log of every nightly run on `main` on that code; #23 and #25 had repaired the same cases on
+2026-09-25.
