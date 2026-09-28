@@ -4,7 +4,7 @@
   "why": "the check-acr.mjs row is gone from the record while the header is still measured",
   "snapshot": {
     "replace": [
-      { "pattern": "^check-acr\\.mjs 8 20 215\\n", "flags": "m", "with": "" }
+      { "pattern": "^check-acr\\.mjs 8 20 218\\n", "flags": "m", "with": "" }
     ]
   }
 }

@@ -1371,7 +1371,8 @@ const supportHtml = await render(
 // the document's own: this frames them and does not rewrite them, because check-acr holds
 // that file to its claims and a page may not edit what a gate reads. Only the leading
 // run of `**Label:** value` paragraphs moves; the first paragraph that is not one ends it,
-// which is what keeps `**Status: machine-audited.**` where the report puts it.
+// which is what keeps the `**Status: …**` paragraph where the report puts it, whichever
+// word the claims have earned (the colon stands inside the bold there, not after it).
 const acrFacts = [];
 let acrBody = read('docs/acr.md')
   .replace(/^# .*\n/, '')

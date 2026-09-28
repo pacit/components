@@ -1,0 +1,32 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is set to not recorded and 4.1.2 to Partially Supports, on a finding the case opens. The sentence is still the decision's and not the one that counts rows: that one opens with \"the assistive-technology pass is on record\", which would be false here. The pass is read first, and the rows only once it is — a rule with the two branches the other way round would tell the truth about the rows in a sentence that lies about the pass.",
+  "criteria": {
+    "4.1.2": {
+      "conformance": "Partially Supports",
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [1, 2, 3, 4, 8]
+        },
+        {
+          "cards": "Screen-reader log"
+        },
+        {
+          "finding": "9.99"
+        }
+      ]
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": false
+  },
+  "plan": {
+    "9.99": "open"
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": ["until the assistive-technology pass is on record"]
+  }
+}

@@ -21,9 +21,7 @@ key per component, forced colours and reduced motion emulated and read back, an 
 name gate over the sources, and scans over the library's templates and stylesheets for what
 a criterion forbids. The assistive-technology pass: **recorded** (see below).
 
-**Status: machine-audited.** The library is built and machine-audited to WCAG 2.2 AA; it does
-not call itself conformant until the assistive-technology pass is on record — the wording
-law of decision 0061, held by the documentation site's own suite.
+**Status: conformant.** Every one of the 55 rows reads Supports, on the evidence its row names, or Not Applicable, on something the library does not ship, and the assistive-technology pass is on record. The word is the one decision 0061 reserves for this report and for this state of it (amended 2026-09-28); the documentation site's landing keeps "machine-audited", a law of the same decision that the site's own suite holds and the report's word does not move.
 
 ## The words
 

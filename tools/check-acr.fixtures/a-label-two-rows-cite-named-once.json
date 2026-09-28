@@ -1,0 +1,29 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is recorded, and 1.3.3 and 2.4.4 both stand at Partially Supports over the same cards' row, `Strings through`, with the button's row set to `none — gap`. One row of the cards is one limit however many criteria lean on it, so the sentence names the label once while the count of rows stays two. A sentence that collected the owners row by row would name the same card twice, and a reader would count two limits where the cards hold one (review of PR #32).",
+  "criteria": {
+    "1.3.3": {
+      "conformance": "Partially Supports"
+    },
+    "2.4.4": {
+      "conformance": "Partially Supports"
+    }
+  },
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "cards": {
+    "button": {
+      "Strings through": "none — gap: the strings were never read"
+    }
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": [
+      "2 rows stand below Supports",
+      "1.3.3 (Partially Supports) and 2.4.4 (Partially Supports)",
+      "held by the cards' `Strings through` row, owed by button. The word"
+    ]
+  }
+}

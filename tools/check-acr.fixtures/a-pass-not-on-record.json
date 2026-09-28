@@ -1,0 +1,12 @@
+{
+  "point": 8,
+  "check": "status",
+  "description": "The pass is set to not recorded over rows that all stand at Supports or Not Applicable. The status sentence is the decision's — machine-audited, and not conformant until the pass is on record. The pass is read before the rows: a rule that read the rows alone would put the stronger word on a report with no transcript behind it, which is the lie 0061 was written against. The rows are the live ones, as in every case that counts them — but where those turn red the day a live row drops below Supports, this one would go on passing as a duplicate of `a-pass-not-on-record-and-a-row-below-supports.json`, so `nothing-holds-the-report-below-supports.json` is its canary and the two are patched together.",
+  "assistiveTechnology": {
+    "recorded": false
+  },
+  "status": {
+    "word": "machine-audited",
+    "says": ["until the assistive-technology pass is on record"]
+  }
+}
