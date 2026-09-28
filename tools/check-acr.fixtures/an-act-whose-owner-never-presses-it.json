@@ -1,0 +1,10 @@
+{
+  "point": 7,
+  "check": "pass",
+  "description": "The act table cites, for the dialog, a spec that never names the control the act presses. The table owes its gestures to the specs — the key that opens a menu has one home and the table points there (0017) — and a citation that points at a file which never touches the control is prose dressed as a link. The defect is built here: the owner of `/dialog` is rewritten to the axe sweep, a tracked spec that presses nothing. It was live for twelve days before this case existed: two of nine acts named a control their cited spec had never pressed.",
+  "acts": {
+    "/dialog": {
+      "owner": "apps/sandbox-e2e/src/a11y.spec.ts"
+    }
+  }
+}
