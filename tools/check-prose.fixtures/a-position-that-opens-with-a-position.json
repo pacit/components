@@ -1,0 +1,11 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "the first line under closed position 9.16 is position 9.16.1, whose title wraps a span into column 0 — a line 9.16.1's own body reads. Both fit and nothing is refused, so the first thing wrong is the missing rows; a scan of 9.16 that missed a position standing directly under its title would charge 9.16 with that line and stop at point 1",
+  "plan": [
+    "- [x] **9.16 — a position whose first line under it is a position**",
+    "  - [x] **9.16.1 — nested at once, wrapping a span `one",
+    "two` into column 0, its own line**",
+    "    - its line"
+  ]
+}

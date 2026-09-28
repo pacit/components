@@ -1,0 +1,9 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "closed position 9.8 carries a checkbox with no number under it, which the reader does not take for a position. The `plan` operation counts a case's checkboxes itself, the way the live plan's are counted, so the two readings part by one; counting them from what the reader found would make the second reading the first one again, and the case would fail on the missing row instead",
+  "plan": [
+    "- [x] **9.8 — a position with an unnumbered box under it**",
+    "  - [ ] an unnumbered box, which the reader does not take for a position"
+  ]
+}

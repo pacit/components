@@ -1,0 +1,22 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.4 is twelve lines with position 9.4.1 under it, indented, so that nothing but its being a position ends the body there — column 0 does not. And 9.4.1 wraps a span into column 0: that line is 9.4.1's, not one 9.4 lost. Read right, both fit and the first thing wrong is the missing rows; a reading that let the next position in would measure 9.4 at fifteen lines and stop at the budget, and one that charged 9.4 with its neighbour's line would stop at point 1",
+  "plan": [
+    "- [x] **9.4 — a position with another under it**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11",
+    "  - line 12",
+    "  - [x] **9.4.1 — the position under it**",
+    "    - its own line opens a span, `one",
+    "two` — and this line in column 0 is 9.4.1's"
+  ]
+}

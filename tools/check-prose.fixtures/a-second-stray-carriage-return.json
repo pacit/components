@@ -1,0 +1,24 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "two paragraphs before closed position 9.22 each carry a stray carriage return, and 9.22 wraps a span into column 0: thirteen lines against twelve. Every carriage return is a line ending, the second as much as the first; a reading that turned only the first into a line feed would fall one line behind the parser at the second, lose the span's continuation without a word, and never reach the budget",
+  "plan": [
+    "A paragraph before the position carries a stray carriage return here\rand goes on.",
+    "",
+    "So does a second paragraph,\rafter which a reading that turned only the first into a line feed falls behind.",
+    "",
+    "- [x] **9.22 — a position after two stray carriage returns**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11 opens a span `one",
+    "two` — line 12, in column 0",
+    "  - line 13"
+  ]
+}

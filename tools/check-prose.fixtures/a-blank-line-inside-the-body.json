@@ -1,0 +1,20 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "closed position 9.6 carries a second paragraph after a blank line, indented: a blank line before indented text does not end the body, only one before column 0 does. Thirteen lines against twelve; a reading that ended the body at the blank line would find eleven, fit, and fire on the missing row",
+  "plan": [
+    "- [x] **9.6 — a blank line inside the body**",
+    "  - line 2",
+    "    line 3",
+    "    line 4",
+    "    line 5",
+    "    line 6",
+    "    line 7",
+    "    line 8",
+    "    line 9",
+    "    line 10",
+    "    line 11",
+    "",
+    "    line 13 is a second paragraph of the same item"
+  ]
+}

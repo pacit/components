@@ -1,0 +1,10 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "the last line of closed position 9.18 is position 9.18.1, one line long: the last line of 9.18's item is 9.18.1's whole item. It is found as nested, both fit, and the first thing wrong is the missing rows; a search for nested positions that stopped short of the item's last line would charge 9.18 with that line and stop at point 1",
+  "plan": [
+    "- [x] **9.18 — a position whose last line is a one-line nested position**",
+    "  - line 2",
+    "  - [x] **9.18.1 — nested, one line, the last of its parent**"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.21 is twelve lines ending in a carriage return and a line feed each, and wraps a span into column 0. The pair is one line ending, so the position fits exactly and the first thing wrong is the missing row; a reading that turned every carriage return into a line feed of its own would double the lines, break the span, and stop at the budget instead",
+  "plan": [
+    "- [x] **9.21 — a position written with CRLF line endings**\r",
+    "  - line 2\r",
+    "  - line 3\r",
+    "  - line 4\r",
+    "  - line 5\r",
+    "  - line 6\r",
+    "  - line 7\r",
+    "  - line 8\r",
+    "  - line 9\r",
+    "  - line 10 opens a span `one\r",
+    "two` — line 11 closes it in column 0\r",
+    "  - line 12\r"
+  ]
+}

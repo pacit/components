@@ -4,7 +4,7 @@
  * (`req-project-concise`)? The budget is 0017's; this holds it, and holds the record in
  * `docs/prose.snapshot.md` the way `check-bundle` holds bytes.
  *
- *  1. MEASURED: every gate has a header with numbered points, every count is whole,
+ *  1. MEASURED: headers with numbered points, whole counts, and no line a position loses,
  *  2. DENOMINATOR: the units are the tracked scripts and the plan's own boxes, both ways,
  *  3. BUDGET: 12 lines + 1 per point, 12 closed / 20 open — past it only with a reason,
  *  4. SNAPSHOT: the record has a row for every unit, and no other,
@@ -21,6 +21,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parsers } from 'prettier/plugins/markdown';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -75,7 +76,7 @@ const headerOf = (lines) => {
 /** Body of a section: from its heading down to the next one, blank tail dropped. */
 const bodyOf = (lines, from, isNext) => {
   let end = from + 1;
-  while (end < lines.length && !isNext(lines[end])) end++;
+  while (end < lines.length && !isNext(lines[end], end)) end++;
   while (end > from && lines[end - 1].trim() === '') end--;
   return lines.slice(from, end);
 };
@@ -96,16 +97,68 @@ const readHeaders = () =>
       };
     });
 
-const readPositions = (text) => {
+/**
+ * Two facts about the plan's lines, as indexes into `text.split('\n')`, from the parser
+ * prettier formats it with: `spanned`, the lines a code span carries past its first, and
+ * `itemEnd`, the last line of the list item a line opens. Prettier prints a span's content
+ * with its lines unindented, so the continuation of a wrapped span lands in column 0 however
+ * it was written, and a body that ended at column 0 lost it: a position was recorded at 2
+ * lines against its real 18. The reading prettier prints from is the one asked, rather than
+ * a second lexer of backticks kept right by hand (`lesson-236`). It counts lines from 1, so
+ * a span's `start.line` is already the index of the line after its first.
+ */
+const parsePlan = (text) => {
+  const spanned = new Set();
+  const itemEnd = new Map();
+  const visit = (node) => {
+    if (node.type === 'inlineCode')
+      for (let i = node.position.start.line; i < node.position.end.line; i++)
+        spanned.add(i);
+    if (node.type === 'listItem')
+      itemEnd.set(node.position.start.line - 1, node.position.end.line - 1);
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(parsers.markdown.parse(text));
+  return { spanned, itemEnd };
+};
+
+const readPositions = (raw) => {
+  // Lines where the parser ends them: a carriage return, alone or before a line feed, ends a
+  // line for it, and a split on line feeds alone falls one line behind it from the first
+  // stray one on — every span and item it reports then lands on the wrong line, silently.
+  const text = raw.replace(/\r\n?/g, '\n');
   const all = text.split('\n');
+  const { spanned, itemEnd } = parsePlan(text);
   const out = [];
   for (let i = 0; i < all.length; i++) {
     const m = all[i].match(POSITION);
     if (!m) continue;
-    // A position's body is its own line and what hangs under it — the next position, or
-    // anything that starts back at column 0, is somebody else's. Without the second half the
-    // last position in the file swallows the paragraph that closes it.
-    const body = bodyOf(all, i, (l) => POSITION.test(l) || /^\S/.test(l));
+    // A position's body is its own line and what hangs under it, read by indentation: the
+    // next position, at any indent, or anything that starts back at column 0 is somebody
+    // else's — without the second half the last position in the file swallows the paragraph
+    // that closes it. A line in column 0 is still the position's when it continues a code
+    // span opened above it (`spanned`), and in no other case: not the text after the span
+    // closes, not a line that opens one, not what follows a blank line.
+    const body = bodyOf(
+      all,
+      i,
+      (l, at) => POSITION.test(l) || (/^\S/.test(l) && !spanned.has(at)),
+    );
+    // What the parser still keeps inside the position — its list item, less the items of
+    // positions nested in it, which answer for their own — and the body did not read. A
+    // line in column 0 that continues no span: prettier moves a wrapped link title there as
+    // it moves a span, and leaves inline math where it was written. Or anything the position
+    // carries after one nested in it, which the nested body would read on into by
+    // indentation. Point 1 refuses such a position rather than measure it short or charge its
+    // lines to another.
+    const end = itemEnd.get(i) ?? i;
+    const nested = [];
+    for (let j = i + 1; j <= end; j++)
+      if (POSITION.test(all[j])) nested.push([j, itemEnd.get(j) ?? j]);
+    const lost = [];
+    for (let k = i + body.length; k <= end; k++)
+      if (all[k].trim() !== '' && !nested.some(([a, b]) => k >= a && k <= b))
+        lost.push(k + 1);
     out.push({
       kind: 'position',
       unit: m[2],
@@ -114,6 +167,7 @@ const readPositions = (text) => {
       lines: body.length,
       words: words(body.join(' ')),
       body,
+      lost,
     });
   }
   return out;
@@ -252,6 +306,13 @@ const checkMeasured = ({ headers, positions, tracked, boxes, policy }) => {
       throw new ProseError(
         'measured',
         `position ${p.unit} carries the mark \`[${p.mark}]\`, which is none of \`[${CLOSED_MARKS}${OPEN_MARKS}]\` — the budget cannot be picked for it`,
+      );
+  for (const p of positions)
+    if (p.lost?.length)
+      throw new ProseError(
+        'measured',
+        `position ${p.unit}: line ${p.lost[0]} of \`${PLAN}\` is inside the position and its body never reaches it — the rest would leave the budget unmeasured, or be charged to another. ` +
+          `A line in column 0 counts only as a code span's continuation: keep a link title on one line, since prettier puts its continuation back in column 0, and indent anything else. A position nested in another has to be the last thing in it`,
       );
   // 2. Denominator.
   if (headers.length === 0)
@@ -435,7 +496,9 @@ try {
  * `boxesDelta` moves the other BY a number rather than TO one,
  * `policy` adds or drops a register entry, `snapshot: null` loses the record and
  * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds
- * nothing is a case that broke nothing.
+ * nothing is a case that broke nothing. `plan` is the one operation that reaches the reading
+ * rather than a count it produced: its lines go through `readPositions` as a plan of their
+ * own, and what that finds joins the live positions, its checkboxes joining the count.
  */
 const buildFixture = (fixtureLive, fx) => {
   const w = structuredClone({ ...fixtureLive, snapshot: fixtureLive.snapshot });
@@ -462,6 +525,7 @@ const buildFixture = (fixtureLive, fx) => {
           lines: 1,
           words: 1,
           body: [],
+          lost: [],
           ...patch,
         });
       else
@@ -489,6 +553,16 @@ const buildFixture = (fixtureLive, fx) => {
   // breaking anything the day the repository reaches it — which this one did, the afternoon
   // the plan's ninety-seventh box was written (`lesson-207`).
   if (fx.boxesDelta !== undefined) w.boxes += fx.boxesDelta;
+  if (fx.plan) {
+    const added = readPositions(fx.plan.join('\n'));
+    for (const p of added)
+      if (w.positions.some((u) => u.unit === p.unit))
+        throw new Error(
+          `${fx.check}: position ${p.unit} is the plan's own — a case builds the unit it measures`,
+        );
+    w.positions.push(...added);
+    w.boxes += fx.plan.filter((l) => BOX.test(l)).length;
+  }
   if (fx.policy) {
     w.policy.oversize = (w.policy.oversize ?? []).filter(
       (e) => !(fx.policy.drop ?? []).includes(`${e.kind}:${e.unit}`),
