@@ -258,6 +258,7 @@ export async function walk(
 
     let own = entered && !entered.scaffold ? 1 : 0;
     let pressed = 0;
+    let left = false;
     while (entered?.inMain && own < CAP && pressed < PRESSES) {
       pressed += 1;
       const at = await step(route, `tab ${pressed}`, tab, () =>
@@ -267,6 +268,7 @@ export async function walk(
       if (!at.moved) {
         steps[steps.length - 1].note =
           'Tab moved nothing — focus had left the page';
+        left = true;
         break;
       }
       if (!at.scaffold) own += 1;
@@ -288,19 +290,37 @@ export async function walk(
     const act = ACTS[route];
     if (act) {
       let reached = true;
-      await step(route, 'reach', tab, () =>
-        page
+      await step(route, 'reach', tab, async () => {
+        // A reader's key follows the WINDOW's focus, and the walk may have Tabbed out of the
+        // document into the browser's own chrome. On the first full pass with acts NVDA
+        // answered five of nine with `pressed` and opened nothing, and the five were exactly
+        // the views whose last Tab had left the page: its Enter went to the tab strip, while a
+        // programmatic `focus()` had moved the page's focus and not the window's. A pointer
+        // click on the view's title — inert — gives the document the window's focus again;
+        // the control is then focused for real, and the key reaches it (`lesson-245`).
+        if (left)
+          await page
+            .locator('main h2')
+            .first()
+            .click({ timeout: 5_000 })
+            .catch(() => undefined);
+        await page
           .locator(act.on)
           .first()
           .focus({ timeout: 5_000 })
           .catch(() => {
             reached = false;
-          }),
-      );
+          });
+      });
       if (!reached)
         steps[steps.length - 1].note =
           `the act found no \`${act.on}\` to press, so ${act.what} is unread here`;
       else {
+        if (left)
+          steps[steps.length - 1].note =
+            "the walk had Tabbed out of the page into the browser's own chrome, so a pointer " +
+            "click on the view's title gave the document the window's focus back before the " +
+            "control was focused — a reader's key follows the window, not the page";
         await step(route, 'open', tab, () =>
           act.acts && reader.activate
             ? reader.activate()
