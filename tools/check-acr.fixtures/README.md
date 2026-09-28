@@ -53,12 +53,16 @@ rule with three branches can lie in three ways — the stronger word on a report
 transcript behind it, a count that skips a level, an owner left unnamed — every one of them
 in a single line that reads like a report. `status` in the check column is the runner's own
 label for these cases and not a point's identifier: point 8's is `rendering`, and it fires on
-the real run alone. Two of them lean on the live rows standing at Supports or Not Applicable,
-[`a-pass-not-on-record.json`](a-pass-not-on-record.json) and
-[`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json);
-the second is the canary for both — the day a live row drops below Supports it turns red, the
-weaker word against the stronger one it names, while the first would go on passing as a
-duplicate of its sibling — so the two are patched together.
+the real run alone. Every case that counts rows leans on the live rows standing at Supports
+or Not Applicable, and turns red the day one drops — a count one higher than the case names.
+The one that would not is [`a-pass-not-on-record.json`](a-pass-not-on-record.json), whose
+sentence is the same either way: it would go on passing as a duplicate of its sibling, so
+[`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json)
+— red on that day with the weaker word against the stronger one it names — is its canary,
+and the two are patched together. A `null` that names no row, no card or no criterion is an
+authoring fault, reported by the case's name; a `plan` state on an item the plan lacks and an
+`acts` `null` on a route the table lacks are still silent, so a case that uses them names in
+its `says` or its point what the operation changed.
 
 ## The cases
 

@@ -659,7 +659,7 @@ const checkAcr = (input) => {
     throw new AcrError(
       'pass',
       `the assistive-technology pass says \`"recorded": ${JSON.stringify(at.recorded)}\`, which ` +
-        `is neither true nor false — every rendering reads the flag, and a word there reads as true`,
+        `is neither true nor false — every rendering reads the flag by its truthiness, not its meaning`,
     );
   if (
     !Array.isArray(at.readers) ||
@@ -1011,9 +1011,19 @@ const readFixture = (name) =>
 const buildFixture = (live, fx) => {
   const w = structuredClone(live);
   w.rendered = null; // a case examines the decision, not the drift of the file on disk
+  // A `null` that names nothing is an authoring fault and says so, by the case's name, rather
+  // than dropping nothing (a case that then proves something other than it declares) — or,
+  // as this loop did until 2026-09-28, dropping the LAST row on a misspelled id: `splice(-1, 1)`.
+  const drop = (list, at, what) => {
+    if (at === -1)
+      throw new Error(
+        `the case drops ${what}, and the live input holds no such thing`,
+      );
+    list.splice(at, 1);
+  };
   for (const [id, patch] of Object.entries(fx.criteria ?? {})) {
     const i = w.claims.criteria.findIndex((c) => c.id === id);
-    if (patch === null) w.claims.criteria.splice(i, 1);
+    if (patch === null) drop(w.claims.criteria, i, `the row for \`${id}\``);
     else if (i === -1) w.claims.criteria.push({ id, ...patch });
     else w.claims.criteria[i] = { ...w.claims.criteria[i], ...patch };
   }
@@ -1022,10 +1032,11 @@ const buildFixture = (live, fx) => {
   // or by not having it at all, and the two are counted alike.
   for (const [id, rows] of Object.entries(fx.cards ?? {}))
     for (const [label, evidence] of Object.entries(rows)) {
-      const row = w.cards[id]?.find((r) => r.criterion.includes(label));
-      if (evidence === null) {
-        if (row) w.cards[id].splice(w.cards[id].indexOf(row), 1);
-      } else if (row) row.evidence = evidence;
+      const card = w.cards[id] ?? [];
+      const at = card.findIndex((r) => r.criterion.includes(label));
+      if (evidence === null)
+        drop(card, at, `the \`${label}\` row of the ${id} card`);
+      else if (at !== -1) card[at].evidence = evidence;
       else (w.cards[id] ??= []).push({ criterion: label, evidence });
     }
   Object.assign(w.texts, fx.texts ?? {});
@@ -1071,7 +1082,13 @@ if (summary) {
   // The live input MUST pass (it did, above) — every case is built on it.
   for (const name of cases) {
     const fx = readFixture(name);
-    const input = buildFixture(summary.input, fx);
+    let input;
+    try {
+      input = buildFixture(summary.input, fx);
+    } catch (error) {
+      problems.push(`${name}: the case cannot be built — ${error.message}`);
+      continue;
+    }
     if (fx.status !== undefined) {
       // A state of the status sentence, not a defect: the gate must ACCEPT the input, and the
       // rendering must say the word the case declares and every phrase it names — the rows
