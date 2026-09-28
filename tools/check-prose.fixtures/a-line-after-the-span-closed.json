@@ -1,0 +1,20 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.2 ends on a span that closes in column 0, and the next line carries the same paragraph on in column 0 with no span left open — text prettier would indent, and not the position's. Twelve lines, exactly the budget, so the first thing wrong is the missing row; a reading that took the thirteenth line would stop at the budget instead",
+  "plan": [
+    "- [x] **9.2 — the text after a span has closed**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11 opens a span, `one",
+    "two` — line 12 closes it in column 0, the last line of the position",
+    "line 13 goes on in column 0 with no span to continue"
+  ]
+}

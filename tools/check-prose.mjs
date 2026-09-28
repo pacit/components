@@ -21,6 +21,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parsers } from 'prettier/plugins/markdown';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -75,7 +76,7 @@ const headerOf = (lines) => {
 /** Body of a section: from its heading down to the next one, blank tail dropped. */
 const bodyOf = (lines, from, isNext) => {
   let end = from + 1;
-  while (end < lines.length && !isNext(lines[end])) end++;
+  while (end < lines.length && !isNext(lines[end], end)) end++;
   while (end > from && lines[end - 1].trim() === '') end--;
   return lines.slice(from, end);
 };
@@ -96,16 +97,45 @@ const readHeaders = () =>
       };
     });
 
+/**
+ * The lines a code span carries past its first, as indexes into `text.split('\n')` — read
+ * by the parser prettier formats the plan with. Prettier prints a span's content as it
+ * stands, so a span wrapped across lines leaves its continuation in column 0, where a body
+ * that ended at column 0 lost it: a position was recorded at 2 lines against its real 18.
+ * The reading prettier prints from is the one asked, rather than a second lexer of backticks
+ * kept right by hand (`lesson-236`). The parser counts lines from 1, so its `start.line` is
+ * already the index of the line after the span's first.
+ */
+const spanned = (text) => {
+  const inside = new Set();
+  const visit = (node) => {
+    if (node.type === 'inlineCode')
+      for (let i = node.position.start.line; i < node.position.end.line; i++)
+        inside.add(i);
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(parsers.markdown.parse(text));
+  return inside;
+};
+
 const readPositions = (text) => {
   const all = text.split('\n');
+  const inSpan = spanned(text);
   const out = [];
   for (let i = 0; i < all.length; i++) {
     const m = all[i].match(POSITION);
     if (!m) continue;
-    // A position's body is its own line and what hangs under it — the next position, or
-    // anything that starts back at column 0, is somebody else's. Without the second half the
-    // last position in the file swallows the paragraph that closes it.
-    const body = bodyOf(all, i, (l) => POSITION.test(l) || /^\S/.test(l));
+    // A position's body is its own line and what hangs under it, read by indentation: the
+    // next position, at any indent, or anything that starts back at column 0 is somebody
+    // else's — without the second half the last position in the file swallows the paragraph
+    // that closes it. A line in column 0 is still the position's when it continues a code
+    // span opened above it (`spanned`), and in no other case: not the text after the span
+    // closes, not a line that opens one, not what follows a blank line.
+    const body = bodyOf(
+      all,
+      i,
+      (l, at) => POSITION.test(l) || (/^\S/.test(l) && !inSpan.has(at)),
+    );
     out.push({
       kind: 'position',
       unit: m[2],
@@ -435,7 +465,9 @@ try {
  * `boxesDelta` moves the other BY a number rather than TO one,
  * `policy` adds or drops a register entry, `snapshot: null` loses the record and
  * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds
- * nothing is a case that broke nothing.
+ * nothing is a case that broke nothing. `plan` is the one operation that reaches the reading
+ * rather than a count it produced: its lines go through `readPositions` as a plan of their
+ * own, and what that finds joins the live positions, its checkboxes joining the count.
  */
 const buildFixture = (fixtureLive, fx) => {
   const w = structuredClone({ ...fixtureLive, snapshot: fixtureLive.snapshot });
@@ -489,6 +521,16 @@ const buildFixture = (fixtureLive, fx) => {
   // breaking anything the day the repository reaches it — which this one did, the afternoon
   // the plan's ninety-seventh box was written (`lesson-207`).
   if (fx.boxesDelta !== undefined) w.boxes += fx.boxesDelta;
+  if (fx.plan) {
+    const added = readPositions(fx.plan.join('\n'));
+    for (const p of added)
+      if (w.positions.some((u) => u.unit === p.unit))
+        throw new Error(
+          `${fx.check}: position ${p.unit} is the plan's own — a case builds the unit it measures`,
+        );
+    w.positions.push(...added);
+    w.boxes += fx.plan.filter((l) => BOX.test(l)).length;
+  }
   if (fx.policy) {
     w.policy.oversize = (w.policy.oversize ?? []).filter(
       (e) => !(fx.policy.drop ?? []).includes(`${e.kind}:${e.unit}`),

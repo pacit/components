@@ -479,13 +479,15 @@ carries and the walk skipped, and the plan's own checkboxes counted a second tim
 the parser found. The limit is written down rather than passed over: the machine measures
 **volume, not weight** — growth becomes a line in the diff, while the judgment of whether a
 paragraph carries anything stays with review
-**Control:** `tools/check-prose.fixtures/` — twenty-five prepared inputs, each rejected on its
+**Control:** `tools/check-prose.fixtures/` — twenty-nine prepared inputs, each rejected on its
 own point, built on the live repository rather than on a stored copy. Both halves of what this
 field asked for are there: `a-header-past-its-budget` for a paragraph that arrived, and
 `a-header-that-shrank` for a file shortened without rewriting the record. Beside them
 `words-without-lines` for the elastic line, `no-script-at-all` and `no-position-at-all` for a
-denominator that empties quietly, and `a-position-the-parser-lost` for the defect that
-actually happened — a numbering that moved under the instrument measuring it
+denominator that empties quietly, `a-position-the-parser-lost` for the defect that actually
+happened — a numbering that moved under the instrument measuring it — and
+`a-code-span-wrapped-into-column-0` for the next one that did: a position measured short,
+because prettier prints a wrapped code span's continuation in column 0, where the body ended
 
 ---
 

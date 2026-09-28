@@ -1,0 +1,20 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "closed position 9.1 wraps a code span over three lines, and prettier prints a span's content as it stands, so the second and the third start in column 0. Read with them, the body is thirteen lines against twelve; a reading that ends at column 0 finds nine, fits, and the case fires on the missing row instead of the budget — the record then holding a number about the wrong text",
+  "plan": [
+    "- [x] **9.1 — a code span wrapped into column 0**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9 opens a span on its last word, `one",
+    "two, line 10, which prettier leaves in column 0,",
+    "three` — line 11 closes the span there, and the body goes on",
+    "  - line 12",
+    "  - line 13"
+  ]
+}
