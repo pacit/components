@@ -6,7 +6,7 @@ import { ACTS } from './acts';
 
 /**
  * THE walk — one file, all three readers. Load a view, put focus on its first stop, then Tab
- * until focus leaves the content, and on the seven views that have something to open, open it
+ * until focus leaves the content, and on the views that have something to open, open it
  * (`at/acts.ts`). Three logs comparable with each other are worth more than three logs each
  * taken the way its own reader likes best.
  *
@@ -281,8 +281,8 @@ export async function walk(
         `${PRESSES} presses reached, ${own} of them this view's own`;
 
     // The half a Tab walk cannot reach (4.71). `reach` focuses the control that opens the
-    // thing and shows what merely arriving at it sounds like; `open` is the answer all seven
-    // of those cards ask for; `close` is not tidying — what a reader says on Escape is worth
+    // thing and shows what merely arriving at it sounds like; `open` is the answer those
+    // cards ask for; `close` is not tidying — what a reader says on Escape is worth
     // a row of its own, and what is still standing after it is written on the next view's
     // `arrive`. Views with nothing to open have no act and get none of the three.
     const act = ACTS[route];

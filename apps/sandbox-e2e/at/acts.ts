@@ -89,14 +89,14 @@ export const ACTS: Readonly<Record<string, Act>> = {
   },
   '/toast': {
     what: 'a message in a live region',
-    on: '[data-testid="raise-notice"]',
+    on: '[data-testid="raise-brief"]',
     key: 'Enter',
     acts: true,
     owner: 'apps/sandbox-e2e/src/toast.spec.ts',
   },
   '/date': {
     what: 'a month grid',
-    on: '[data-testid="date-starts-on"] [data-pct-part="toggle"]',
+    on: '[data-testid="date-standalone"] [data-pct-part="toggle"]',
     key: 'Enter',
     acts: true,
     owner: 'apps/sandbox-e2e/src/date.spec.ts',
