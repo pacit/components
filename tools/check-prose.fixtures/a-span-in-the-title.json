@@ -1,0 +1,20 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "the title of closed position 9.7 opens a span, and prettier prints its continuation in column 0 on the next line. The title is read like any other line: thirteen lines against twelve, and a reading that lost the title's continuation would never reach the budget",
+  "plan": [
+    "- [x] **9.7 — a title that opens a span, `one",
+    "two` — line 2 closes it in column 0**",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11",
+    "  - line 12",
+    "  - line 13"
+  ]
+}

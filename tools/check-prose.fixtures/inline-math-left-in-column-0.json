@@ -1,0 +1,11 @@
+{
+  "point": 1,
+  "check": "measured",
+  "why": "closed position 9.11 holds inline math whose second line stands in column 0, where it was written and where prettier leaves it. It is not a span, so point 1 refuses the position rather than measure it short — a reading that took math in as a span would pass point 1, and one that dropped the line silently would fail on the missing row",
+  "plan": [
+    "- [x] **9.11 — inline math left in column 0**",
+    "  - line 2 holds math, $a +",
+    "b$ — line 3, which prettier leaves where it was written",
+    "  - line 4"
+  ]
+}

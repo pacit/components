@@ -293,15 +293,16 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [x] **4.77 — a position can leave the prose budget by wrapping a code span** — **closed 2026-09-28**
   - `tools/check-prose.mjs` ended a position's body at the first line in column 0, and prettier
-    prints a code span's content as it stands, so the continuation of a wrapped one lands there:
+    prints a code span's content unindented, so the continuation of a wrapped one lands there:
     4.76 was recorded at 2 lines against its real 18 until the line was reworded, the budget
     binding nothing and the record holding a number about the wrong text
   - the body is read by indentation now, and a line in column 0 is still the position's when it
     continues a code span, as the parser prettier formats the plan with reads it, not a second
-    lexer of backticks ([`lesson-236`](lessons.md#lesson-236)). No other line in column 0 is,
-    and the next position ends the body at any indent
-  - four prepared inputs go through the reader itself, each at the budget's edge. Measured
-    again, the plan does not move: no position wraps a span today
+    lexer of backticks ([`lesson-236`](lessons.md#lesson-236)). Any other line in column 0 the
+    parser keeps inside the position — prettier moves a wrapped link title there too — is
+    refused on point 1 rather than dropped; the next position ends the body at any indent
+  - twelve prepared inputs go through the reader itself. Measured again, the plan does not
+    move: no position wraps a span today
 
 - [x] **4.73 — the reader pass was never isolated, and the record said it was** — **closed 2026-09-17**
   - GTK reads `WAYLAND_DISPLAY` before `DISPLAY`: the browser opened on the maintainer's desktop

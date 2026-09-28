@@ -1,0 +1,18 @@
+{
+  "point": 5,
+  "check": "exact",
+  "why": "closed position 9.12 is three lines, the third a span's continuation in column 0, and the record holds it at 17 words — what a reading that took the line but skipped its words would count. Read right, the position carries 34: the continuation's words are the position's as its line is, and a reading that dropped them would agree with the record and pass",
+  "plan": [
+    "- [x] **9.12 — the words of a span's continuation**",
+    "  - line 2 opens a span, `one",
+    "two three four` — line 3 closes it in column 0, and its words are the position's"
+  ],
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "\\n```\\n$",
+        "with": "\n9.12 closed 3 17\n```\n"
+      }
+    ]
+  }
+}

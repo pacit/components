@@ -1,0 +1,20 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.13 is twelve lines, and a plain bullet follows it in column 0 with no blank line between — a sibling in the same list, which the parser does not keep inside the position. Column 0 ends the body there and nothing is refused: the position fits exactly and the first thing wrong is the missing row. A reading that took the bullet in would stop at the budget, and one that charged the position with a line past its own item would stop at point 1",
+  "plan": [
+    "- [x] **9.13 — a plain bullet beside the position**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11",
+    "  - line 12",
+    "- a plain bullet in column 0, the next item of the same list"
+  ]
+}

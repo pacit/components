@@ -1,7 +1,7 @@
 {
   "point": 4,
   "check": "snapshot",
-  "why": "closed position 9.3 is twelve lines, then a blank line and a paragraph in column 0 whose first line opens a span wrapped onto the next. A blank line before column-0 text ends the body even when that text is a span, so the position fits exactly and the first thing wrong is the missing row; a reading that kept the blank line, or took the span's first line in, would stop at the budget instead",
+  "why": "closed position 9.3 is twelve lines, then a blank line and a paragraph in column 0 whose first line opens a span wrapped onto the next. A blank line before column-0 text ends the body, and the paragraph is no longer inside the position, so nothing is refused: the position fits exactly and the first thing wrong is the missing row. A reading that kept the blank line, or took the span's first line in, would stop at the budget instead, and one that counted the paragraph as the position's would stop at point 1",
   "plan": [
     "- [x] **9.3 — a blank line before column 0**",
     "  - line 2",

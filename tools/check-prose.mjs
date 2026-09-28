@@ -98,29 +98,33 @@ const readHeaders = () =>
     });
 
 /**
- * The lines a code span carries past its first, as indexes into `text.split('\n')` — read
- * by the parser prettier formats the plan with. Prettier prints a span's content as it
- * stands, so a span wrapped across lines leaves its continuation in column 0, where a body
- * that ended at column 0 lost it: a position was recorded at 2 lines against its real 18.
- * The reading prettier prints from is the one asked, rather than a second lexer of backticks
- * kept right by hand (`lesson-236`). The parser counts lines from 1, so its `start.line` is
- * already the index of the line after the span's first.
+ * Two facts about the plan's lines, as indexes into `text.split('\n')`, from the parser
+ * prettier formats it with: `spanned`, the lines a code span carries past its first, and
+ * `itemEnd`, the last line of the list item a line opens. Prettier prints a span's content
+ * with its lines unindented, so the continuation of a wrapped span lands in column 0 however
+ * it was written, and a body that ended at column 0 lost it: a position was recorded at 2
+ * lines against its real 18. The reading prettier prints from is the one asked, rather than
+ * a second lexer of backticks kept right by hand (`lesson-236`). It counts lines from 1, so
+ * a span's `start.line` is already the index of the line after its first.
  */
-const spanned = (text) => {
-  const inside = new Set();
+const parsePlan = (text) => {
+  const spanned = new Set();
+  const itemEnd = new Map();
   const visit = (node) => {
     if (node.type === 'inlineCode')
       for (let i = node.position.start.line; i < node.position.end.line; i++)
-        inside.add(i);
+        spanned.add(i);
+    if (node.type === 'listItem')
+      itemEnd.set(node.position.start.line - 1, node.position.end.line - 1);
     for (const child of node.children ?? []) visit(child);
   };
   visit(parsers.markdown.parse(text));
-  return inside;
+  return { spanned, itemEnd };
 };
 
 const readPositions = (text) => {
   const all = text.split('\n');
-  const inSpan = spanned(text);
+  const { spanned, itemEnd } = parsePlan(text);
   const out = [];
   for (let i = 0; i < all.length; i++) {
     const m = all[i].match(POSITION);
@@ -134,8 +138,20 @@ const readPositions = (text) => {
     const body = bodyOf(
       all,
       i,
-      (l, at) => POSITION.test(l) || (/^\S/.test(l) && !inSpan.has(at)),
+      (l, at) => POSITION.test(l) || (/^\S/.test(l) && !spanned.has(at)),
     );
+    // What the parser still keeps inside the position — its list item, down to the next
+    // position — and the body did not read: a line in column 0 that continues no span.
+    // Prettier moves a wrapped link title there as it moves a span, and leaves inline math
+    // where it was written. Point 1 refuses such a position rather than measure it short.
+    const next = all.findIndex((l, k) => k > i && POSITION.test(l));
+    const last = Math.min(
+      itemEnd.get(i) ?? i,
+      next < 0 ? all.length - 1 : next - 1,
+    );
+    const lost = [];
+    for (let k = i + body.length; k <= last; k++)
+      if (/^\S/.test(all[k])) lost.push(k + 1);
     out.push({
       kind: 'position',
       unit: m[2],
@@ -144,6 +160,7 @@ const readPositions = (text) => {
       lines: body.length,
       words: words(body.join(' ')),
       body,
+      lost,
     });
   }
   return out;
@@ -282,6 +299,12 @@ const checkMeasured = ({ headers, positions, tracked, boxes, policy }) => {
       throw new ProseError(
         'measured',
         `position ${p.unit} carries the mark \`[${p.mark}]\`, which is none of \`[${CLOSED_MARKS}${OPEN_MARKS}]\` — the budget cannot be picked for it`,
+      );
+  for (const p of positions)
+    if (p.lost?.length)
+      throw new ProseError(
+        'measured',
+        `position ${p.unit}: line ${p.lost[0]} stands in column 0 inside the position and continues no code span — the body stops there, and the rest would leave the budget unmeasured`,
       );
   // 2. Denominator.
   if (headers.length === 0)
@@ -494,6 +517,7 @@ const buildFixture = (fixtureLive, fx) => {
           lines: 1,
           words: 1,
           body: [],
+          lost: [],
           ...patch,
         });
       else

@@ -1,0 +1,20 @@
+{
+  "point": 3,
+  "check": "budget",
+  "why": "closed position 9.5 wraps a span of two backticks, holding one, into column 0. The parser reads one span over two lines and the body is thirteen lines against twelve; a lexer that pairs backticks one by one closes the span on the first line, loses the continuation and never reaches the budget — which is why the parser prettier formats with is asked rather than a second lexer (`lesson-236`)",
+  "plan": [
+    "- [x] **9.5 — a double-backtick span wrapped into column 0**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9 opens a span of two backticks around one, ``one `x`",
+    "two`` — line 10 closes it in column 0",
+    "  - line 11",
+    "  - line 12",
+    "  - line 13"
+  ]
+}
