@@ -268,11 +268,12 @@ export async function walk(
       if (!at.moved) {
         steps[steps.length - 1].note =
           'Tab moved nothing — focus had left the page';
-        // Set whenever the page's focus stayed put. Under Firefox the reader had moved on
-        // to the browser's chrome, and the click below is what brings the key back; under
-        // Safari VoiceOver's Tab may merely re-announce the element it is on — twenty-two
-        // views of one record — and the click does no harm. A focus gone null, VoiceOver's
-        // other pattern, ends the loop a line above and leaves this false.
+        // Set whenever the page's focus stayed put. Under Firefox NVDA had moved on to the
+        // browser's chrome, and the click below is what brings its key back; under Safari
+        // VoiceOver's Tab may merely re-announce the element it is on — twenty-two views of
+        // one record — and the click runs there too, with the /tabs row the one that may be
+        // paying for it. A focus gone null, VoiceOver's other pattern, ends the loop a line
+        // above and leaves this false.
         left = true;
         break;
       }
