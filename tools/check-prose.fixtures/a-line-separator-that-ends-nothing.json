@@ -1,0 +1,19 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.23 is twelve lines, one of them carrying a U+2028 line separator, which is no line ending for the parser: the line stays one line, the position fits exactly, and the first thing wrong is the missing row. A reading that ended lines at the separator as well would run ahead of the parser and refuse a plan prettier accepts",
+  "plan": [
+    "- [x] **9.23 — a line separator inside a line**",
+    "  - line 2 carries a U+2028 here\u2028and goes on, one line for the parser",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8",
+    "  - line 9",
+    "  - line 10",
+    "  - line 11",
+    "  - line 12"
+  ]
+}
