@@ -88,7 +88,7 @@ every case would fire because of it rather than because of its own defect, and e
 | [`a-position-that-opens-with-a-position.json`](a-position-that-opens-with-a-position.json)           | a position whose first line under it is a nested one, wrapping a span of its own into column 0                             | 4     | `snapshot`    |
 | [`a-one-line-position-last-in-its-parent.json`](a-one-line-position-last-in-its-parent.json)         | a one-line nested position as its parent's last line — the whole of its item is the parent's last line                     | 4     | `snapshot`    |
 | [`a-plan-in-crlf.json`](a-plan-in-crlf.json)                                                         | twelve lines ending in a carriage return and a line feed each — one line ending, not two                                   | 4     | `snapshot`    |
-| [`a-line-separator-that-ends-nothing.json`](a-line-separator-that-ends-nothing.json)                 | a U+2028 line separator inside a line, which ends no line for the parser                                                   | 4     | `snapshot`    |
+| [`a-line-separator-that-ends-nothing.json`](a-line-separator-that-ends-nothing.json)                 | a line separator, a NEL, a form feed and a vertical tab inside lines — none ends a line for the parser                     | 4     | `snapshot`    |
 | [`a-header-that-grew.json`](a-header-that-grew.json)                                                 | one line more than the record says, inside the budget all the same                                                         | 5     | `exact`       |
 | [`a-header-that-shrank.json`](a-header-that-shrank.json)                                             | one line fewer — prose leaving fails exactly as prose arriving does                                                        | 5     | `exact`       |
 | [`words-without-lines.json`](words-without-lines.json)                                               | eighteen more words on the same fifteen lines — the elastic line                                                           | 5     | `exact`       |
@@ -123,11 +123,12 @@ anything a position carries after one nested in it, which has to be the last thi
 refusal comes before the budget, so that a position with a lost line is told what it lost rather
 than to cut a count it never finished (`a-lost-line-past-the-budget`); a nested position answers
 for its own lines, and one standing directly under its parent's title, or as its parent's last
-line, is found as nested all the same. Lines end where the parser ends them: a carriage return, alone or before a line feed, ends one,
-and nothing else does. Split anywhere else and the reading falls a line behind the parser at the
-first stray carriage return, and every span and item after it lands on the wrong line
-(`a-lone-carriage-return`, `a-second-stray-carriage-return`); a CRLF pair stays one line ending
-(`a-plan-in-crlf`), and a line separator ends none (`a-line-separator-that-ends-nothing`). The
+line, is found as nested all the same. Lines end where the parser ends them: a line feed ends a line, and so does a carriage return,
+alone or before one; nothing else does. A reading that does not split at a carriage return falls
+a line behind the parser at the first stray one, and every span and item after it lands on the
+wrong line (`a-lone-carriage-return`, `a-second-stray-carriage-return`); one that splits at
+anything else runs ahead of it (`a-line-separator-that-ends-nothing`); and a CRLF pair stays one
+line ending (`a-plan-in-crlf`). The
 five cases on point 3 and five on point 4 stand at the budget's edge, where a reading one line
 off shows: those on point 3 are one line over it, so a reading that loses a line never reaches
 it, and those on point 4 are exactly at it — a blank line before column-0 text, a position under
