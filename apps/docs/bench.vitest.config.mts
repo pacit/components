@@ -1,6 +1,5 @@
 /// <reference types='vitest' />
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { join } from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -20,9 +19,10 @@ import { defineConfig } from 'vite';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/docs-bench',
+  // Paths resolved by Vite itself, for the reason `apps/sandbox/vite.config.mts` gives.
+  resolve: { tsconfigPaths: true },
   plugins: [
     angular({ jit: false, tsconfig: join(__dirname, 'tsconfig.bench.json') }),
-    nxViteTsPaths(),
   ],
   test: {
     name: 'docs-bench',

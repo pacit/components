@@ -1,17 +1,21 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/sandbox',
-  plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
-  // Uncomment this if you are using workers.
-  // worker: {
-  //   plugins: () => [ nxViteTsPaths() ],
-  // },
+  /**
+   * Vite resolves the paths of `tsconfig.base.json` (`@pacit/components/*`) itself. Not with
+   * `nxViteTsPaths`: deprecated in Nx 23, gone in Nx 24. Not with `vite-tsconfig-paths` either,
+   * the plugin that deprecation points to: Vite 8 warns about it in every `resolveConfig`, and
+   * `@nx/vite/plugin` and `@nx/vitest` both call that while building the project graph, so one
+   * warning would have replaced the other on every nx command. The option is marked
+   * experimental; `vite` is pinned to an exact version, so a change to it arrives only with a
+   * bump somebody makes on purpose.
+   */
+  resolve: { tsconfigPaths: true },
+  plugins: [angular()],
   test: {
     name: 'sandbox',
     watch: false,
