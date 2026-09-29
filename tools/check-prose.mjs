@@ -22,6 +22,7 @@ import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parsers } from 'prettier/plugins/markdown';
+import { withoutFences } from './markdown-fences.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -129,10 +130,17 @@ const readPositions = (raw) => {
   const text = raw.replace(/\r\n?/g, '\n');
   const all = text.split('\n');
   const { spanned, itemEnd } = parsePlan(text);
+  // A position is a line POSITION matches and the parser opens a list item on. A task line
+  // quoted in a fenced block is an example of one, and read as one it ended the body of the
+  // position quoting it: point 1 refused that position for the lines after the quote, with
+  // remedies that did not apply, and before that refusal it was measured short in silence.
+  // The loop, the end of a body and the nested positions all ask this one set.
+  const opens = new Set(
+    all.flatMap((l, i) => (POSITION.test(l) && itemEnd.has(i) ? [i] : [])),
+  );
   const out = [];
-  for (let i = 0; i < all.length; i++) {
+  for (const i of opens) {
     const m = all[i].match(POSITION);
-    if (!m) continue;
     // A position's body is its own line and what hangs under it, read by indentation: the
     // next position, at any indent, or anything that starts back at column 0 is somebody
     // else's — without the second half the last position in the file swallows the paragraph
@@ -142,7 +150,7 @@ const readPositions = (raw) => {
     const body = bodyOf(
       all,
       i,
-      (l, at) => POSITION.test(l) || (/^\S/.test(l) && !spanned.has(at)),
+      (l, at) => opens.has(at) || (/^\S/.test(l) && !spanned.has(at)),
     );
     // What the parser still keeps inside the position — its list item, less the items of
     // positions nested in it, which answer for their own — and the body did not read. A
@@ -151,10 +159,10 @@ const readPositions = (raw) => {
     // carries after one nested in it, which the nested body would read on into by
     // indentation. Point 1 refuses such a position rather than measure it short or charge its
     // lines to another.
-    const end = itemEnd.get(i) ?? i;
+    const end = itemEnd.get(i);
     const nested = [];
     for (let j = i + 1; j <= end; j++)
-      if (POSITION.test(all[j])) nested.push([j, itemEnd.get(j) ?? j]);
+      if (opens.has(j)) nested.push([j, itemEnd.get(j)]);
     const lost = [];
     for (let k = i + body.length; k <= end; k++)
       if (all[k].trim() !== '' && !nested.some(([a, b]) => k >= a && k <= b))
@@ -173,11 +181,25 @@ const readPositions = (raw) => {
   return out;
 };
 
+/**
+ * A plan's two readings of one denominator: the positions, and the checkboxes outside its
+ * fenced blocks, counted line by line with a reading of fences of their own. Taken from the
+ * parser, the count would agree with the positions by construction and point 2 would compare
+ * a reading with itself. One function reads the live plan and a case's, so a case counts its
+ * checkboxes exactly as the live plan's are counted.
+ */
+const readPlan = (raw) => ({
+  positions: readPositions(raw),
+  boxes: withoutFences(raw)
+    .split('\n')
+    .filter((l) => BOX.test(l)).length,
+});
+
 const readInput = () => {
-  const plan = read(PLAN);
+  const plan = readPlan(read(PLAN));
   return {
     headers: readHeaders(),
-    positions: readPositions(plan),
+    positions: plan.positions,
     // The two independent readings of the same denominators: what git carries, and what
     // the plan puts a checkbox in front of. A script nobody tracks and a position the
     // parser walked past are both invisible to the walk that produced the units.
@@ -188,7 +210,7 @@ const readInput = () => {
       .split('\n')
       .filter(Boolean)
       .map((p) => p.replace(/^tools\//, '')),
-    boxes: plan.split('\n').filter((l) => BOX.test(l)).length,
+    boxes: plan.boxes,
     policy: JSON.parse(read(POLICY)),
     snapshot: existsSync(join(ROOT, SNAPSHOT)) ? read(SNAPSHOT) : null,
   };
@@ -338,11 +360,20 @@ const checkMeasured = ({ headers, positions, tracked, boxes, policy }) => {
         'denominator',
         `the walk measured \`tools/${h.unit}\`, which git does not carry — the record would hold a row for a file nobody has`,
       );
-  if (boxes !== positions.length)
+  if (boxes > positions.length)
     throw new ProseError(
       'denominator',
-      `\`${PLAN}\` puts a checkbox in front of ${boxes} items and the parser read ${positions.length} — ` +
-        `a position whose number does not match \`${POSITION.source}\` is one the budget never sees`,
+      `\`${PLAN}\` puts a checkbox in front of ${boxes} items outside its fenced blocks and the parser read ${positions.length} positions — ` +
+        `a checkbox whose number does not match \`${POSITION.source}\`, or one the parser opens no list item on, is a position the budget never sees. ` +
+        `An example of a task belongs in a fenced block, which both readings skip. The count reads fences a line at a time: a fence mark the parser reads as HTML, math, indented code or a paragraph puts it out of step, ` +
+        `and so does a fence closed outside its list item, which the parser reads as opening another`,
+    );
+  if (boxes < positions.length)
+    throw new ProseError(
+      'denominator',
+      `the parser read ${positions.length} positions in \`${PLAN}\` and the count finds ${boxes} checkboxes outside its fenced blocks — ` +
+        `the count missed a position the parser read. The count reads fences a line at a time: a fence mark the parser reads as HTML, math, indented code or a paragraph opens one for it, ` +
+        `and a fence left open runs on past the list item the parser closes it with. Quote a fence mark inside a fenced block, and close every fence`,
     );
   // 3. Budget.
   const units = [...headers, ...positions];
@@ -497,8 +528,8 @@ try {
  * `policy` adds or drops a register entry, `snapshot: null` loses the record and
  * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds
  * nothing is a case that broke nothing. `plan` is the one operation that reaches the reading
- * rather than a count it produced: its lines go through `readPositions` as a plan of their
- * own, and what that finds joins the live positions, its checkboxes joining the count.
+ * rather than a count it produced: its lines go through `readPlan` as a plan of their own,
+ * its positions joining the live ones and its checkboxes the count.
  */
 const buildFixture = (fixtureLive, fx) => {
   const w = structuredClone({ ...fixtureLive, snapshot: fixtureLive.snapshot });
@@ -554,14 +585,14 @@ const buildFixture = (fixtureLive, fx) => {
   // the plan's ninety-seventh box was written (`lesson-207`).
   if (fx.boxesDelta !== undefined) w.boxes += fx.boxesDelta;
   if (fx.plan) {
-    const added = readPositions(fx.plan.join('\n'));
-    for (const p of added)
+    const added = readPlan(fx.plan.join('\n'));
+    for (const p of added.positions)
       if (w.positions.some((u) => u.unit === p.unit))
         throw new Error(
           `${fx.check}: position ${p.unit} is the plan's own — a case builds the unit it measures`,
         );
-    w.positions.push(...added);
-    w.boxes += fx.plan.filter((l) => BOX.test(l)).length;
+    w.positions.push(...added.positions);
+    w.boxes += added.boxes;
   }
   if (fx.policy) {
     w.policy.oversize = (w.policy.oversize ?? []).filter(

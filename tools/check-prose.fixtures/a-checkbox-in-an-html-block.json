@@ -1,0 +1,13 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "closed position 9.26 carries a task line inside an HTML block, which the parser reads as raw HTML up to the next blank line and opens no list item on, so the line is no position. The count reads fences and nothing else, and takes its checkbox: the two readings part by one, which is what there are two of them for. A count that asked the parser for its list items would agree with the positions by construction and the case would fail on the missing row, and a reading that took the line for a position would end 9.26's body there and stop at point 1",
+  "plan": [
+    "- [x] **9.26 — a position that carries a checkbox in an HTML block**",
+    "  - line 2 goes on into a collapsed block, raw HTML to the parser up to a blank line:",
+    "",
+    "  <details>",
+    "  - [x] **9.27 — a checkbox the parser opens no list item on**",
+    "  </details>"
+  ]
+}

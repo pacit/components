@@ -1,0 +1,19 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.24 is twelve lines, and three of them are a fenced block quoting a task line — an example of a position, on which the parser opens no list item. Read right, the quote is neither a position nor a checkbox: the body goes on through the fence to its twelfth line, the count skips the block, and the first thing wrong is the missing row. A reading that took the quote for a position would end 9.24's body there and stop at point 1 on the lines after it, and a count that took its checkbox would part from the positions by one and stop at point 2",
+  "plan": [
+    "- [x] **9.24 — a position that quotes a task line in a fenced block**",
+    "  - line 2",
+    "  - line 3",
+    "  - line 4",
+    "  - line 5",
+    "  - line 6",
+    "  - line 7",
+    "  - line 8 quotes a task line, the way the plan shows its own notation:",
+    "    ```",
+    "    - [x] **9.25 — an example of a position, and not one**",
+    "    ```",
+    "  - line 12"
+  ]
+}

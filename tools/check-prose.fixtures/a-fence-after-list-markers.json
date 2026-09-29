@@ -1,0 +1,26 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "open position 9.36 has items that open fences on their own lines, after every kind of list marker — a dash, a star, a plus followed by four spaces, a zero with a dot and two spaces, nine digits with a parenthesis, and two markers at once — and each fence quotes a task line. The fence starts after the markers, so every quoted line is neither a position nor a checkbox: nineteen lines against twenty, and the first thing wrong is the missing row. A count that looked for a fence at the head of a line alone would miss an opening line, take the quoted checkbox and read the closing line as an opening one; one that knew fewer markers, fewer spaces after one or fewer digits in one, or took no number that starts with a zero, would do so for the fence it could not read, and either stops at point 2. Prettier writes all of these but the plus, which it turns into a dash",
+  "plan": [
+    "- [ ] **9.36 — a position whose items open fences on their own lines, after each marker**",
+    "  - ```md",
+    "    - [x] **9.37 — quoted in a fence a dash opens**",
+    "    ```",
+    "  * ```md",
+    "    - [x] **9.38 — quoted in a fence a star opens**",
+    "    ```",
+    "  +    ```md",
+    "       - [x] **9.39 — quoted in a fence a plus and four spaces open**",
+    "       ```",
+    "  0.  ```md",
+    "      - [x] **9.40 — quoted in a fence a zero, a dot and two spaces open**",
+    "      ```",
+    "  123456789) ```md",
+    "             - [x] **9.41 — quoted in a fence nine digits and a parenthesis open**",
+    "             ```",
+    "  - - ```md",
+    "      - [x] **9.42 — quoted in a fence two markers open**",
+    "      ```"
+  ]
+}

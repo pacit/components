@@ -1,0 +1,16 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.30 quotes a task line in a fence of four backticks, and after it the same shape again in a fence of three inside the first — the length prettier gives a block that holds three. Four open the fence and only a run of four closes it, so neither quoted line is a position or a checkbox: the position fits and the first thing wrong is the missing row. A count that opened a fence on exactly three backticks would take 9.45, quoted in the fence of four alone, and one that closed it on any run of three would take 9.31; either stops at point 2",
+  "plan": [
+    "- [x] **9.30 — a position that quotes a task line in a fence of four, and a fence of three in it**",
+    "  - line 2 quotes a task line, then the same shape in a fence of its own:",
+    "    ````",
+    "    - [x] **9.45 — an example of a position, in the fence of four alone**",
+    "    ```",
+    "    - [x] **9.31 — an example of a position, in both fences**",
+    "    ```",
+    "    ````",
+    "  - line 9"
+  ]
+}

@@ -368,6 +368,7 @@
       "inputs": [
         "{workspaceRoot}/docs/**/*.md",
         "{workspaceRoot}/tools/check-docs.mjs",
+        "{workspaceRoot}/tools/markdown-fences.mjs",
         "{workspaceRoot}/tools/check-docs.fixtures/**/*.md",
         "{workspaceRoot}/.github/workflows/ci.yml"
       ],
