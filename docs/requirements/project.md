@@ -479,7 +479,7 @@ carries and the walk skipped, and the plan's own checkboxes counted a second tim
 the parser found. The limit is written down rather than passed over: the machine measures
 **volume, not weight** — growth becomes a line in the diff, while the judgment of whether a
 paragraph carries anything stays with review
-**Control:** `tools/check-prose.fixtures/` — forty-eight prepared inputs, each rejected on its
+**Control:** `tools/check-prose.fixtures/` — fifty-two prepared inputs, each rejected on its
 own point, built on the live repository rather than on a stored copy. Both halves of what this
 field asked for are there: `a-header-past-its-budget` for a paragraph that arrived, and
 `a-header-that-shrank` for a file shortened without rewriting the record. Beside them

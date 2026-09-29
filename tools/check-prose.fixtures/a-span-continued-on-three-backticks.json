@@ -1,0 +1,12 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.32 wraps a code span onto a line in column 0 that opens with three backticks, where prettier prints a span's continuation. A backtick after the run makes that line text rather than a fence, for the parser and the count alike, so position 9.33 below it is counted by both and the first thing wrong is the missing rows. A count that opened a fence on any run of three would run it past 9.33, fall one short and stop at point 2",
+  "plan": [
+    "- [x] **9.32 — a position whose span wraps onto a line opening with three backticks**",
+    "  - line 2 opens a span `one",
+    "```two` — line 3 closes it: a backtick after the run makes the line text, not a fence",
+    "- [x] **9.33 — the next position**",
+    "  - line 2"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.34 has a line that opens with a span of two backticks, and a fence takes three. Position 9.35 below it is counted by both readings, and the first thing wrong is the missing rows; a count that opened a fence on two backticks would run it past 9.35, fall one short and stop at point 2",
+  "plan": [
+    "- [x] **9.34 — a position with a line that opens with two backticks**",
+    "  - line 2 goes on, and its next line opens a span of two backticks",
+    "    ``one",
+    "` two`` — line 4 closes it in column 0, where prettier prints a span's continuation",
+    "- [x] **9.35 — the next position**",
+    "  - line 2"
+  ]
+}

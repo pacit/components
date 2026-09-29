@@ -1,0 +1,15 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.30 quotes a fenced block, task line and all, in a fence of four backticks — the length prettier gives a block that holds three. Only a run of four closes it, so the quoted fence's own lines are its content and the quoted task line is neither a position nor a checkbox: the position fits and the first thing wrong is the missing row. A count that closed the fence on any run of three would take the quoted checkbox and stop at point 2",
+  "plan": [
+    "- [x] **9.30 — a position that quotes a fenced block, in a fence of four**",
+    "  - line 2 shows how a task line is quoted:",
+    "    ````",
+    "    ```",
+    "    - [x] **9.31 — an example of a position, and not one**",
+    "    ```",
+    "    ````",
+    "  - line 8"
+  ]
+}

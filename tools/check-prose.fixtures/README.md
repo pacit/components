@@ -18,7 +18,7 @@ entry that stretches with the text excuses the paragraph nobody read.
 
 ## How a case is built
 
-A case is not a forty-ninth copy of the correct input with one thing broken. The gate builds
+A case is not a fifty-third copy of the correct input with one thing broken. The gate builds
 it from two layers:
 
 1. the **live input** — the repository itself as it stands at the commit under test: the
@@ -69,6 +69,7 @@ every case would fire because of it rather than because of its own defect, and e
 | [`a-position-the-parser-lost.json`](a-position-the-parser-lost.json)                                 | one more checkbox in the plan than the parser read — the numbering moved under it                                                          | 2     | `denominator` |
 | [`a-box-the-plan-reader-missed.json`](a-box-the-plan-reader-missed.json)                             | a checkbox with no number under a position, counted by the case the way the live plan counts its own                                       | 2     | `denominator` |
 | [`a-checkbox-in-an-html-block.json`](a-checkbox-in-an-html-block.json)                               | a task line in an HTML block, which the parser opens no list item on and the count, reading only fences, takes                             | 2     | `denominator` |
+| [`a-fence-left-open.json`](a-fence-left-open.json)                                                   | a fence left open, which the parser closes where its list item ends and the count runs on past the next position                           | 2     | `denominator` |
 | [`a-header-past-its-budget.json`](a-header-past-its-budget.json)                                     | thirty lines against twenty, with no entry in the register                                                                                 | 3     | `budget`      |
 | [`a-position-past-its-budget.json`](a-position-past-its-budget.json)                                 | an open position at twenty-five lines against twenty                                                                                       | 3     | `budget`      |
 | [`an-excuse-that-stretched.json`](an-excuse-that-stretched.json)                                     | position 3.1 grew two lines past the count its register entry holds                                                                        | 3     | `budget`      |
@@ -91,6 +92,9 @@ every case would fire because of it rather than because of its own defect, and e
 | [`a-plan-in-crlf.json`](a-plan-in-crlf.json)                                                         | twelve lines ending in a carriage return and a line feed each — one line ending, not two                                                   | 4     | `snapshot`    |
 | [`a-line-separator-that-ends-nothing.json`](a-line-separator-that-ends-nothing.json)                 | a line separator, a paragraph separator, a U+0085 next line, a form feed and a vertical tab inside lines — none ends a line for the parser | 4     | `snapshot`    |
 | [`a-task-line-quoted-in-a-fence.json`](a-task-line-quoted-in-a-fence.json)                           | twelve lines, three of them a fenced block quoting a task line — an example of a position, and not one                                     | 4     | `snapshot`    |
+| [`a-fence-of-four-backticks.json`](a-fence-of-four-backticks.json)                                   | a fenced block quoted, task line and all, in a fence of four backticks — only a run of four closes it                                      | 4     | `snapshot`    |
+| [`a-span-continued-on-three-backticks.json`](a-span-continued-on-three-backticks.json)               | a span continued on a line that opens with three backticks and holds another — text, not a fence                                           | 4     | `snapshot`    |
+| [`a-line-opening-with-two-backticks.json`](a-line-opening-with-two-backticks.json)                   | a line that opens with a span of two backticks — a fence takes three                                                                       | 4     | `snapshot`    |
 | [`a-header-that-grew.json`](a-header-that-grew.json)                                                 | one line more than the record says, inside the budget all the same                                                                         | 5     | `exact`       |
 | [`a-header-that-shrank.json`](a-header-that-shrank.json)                                             | one line fewer — prose leaving fails exactly as prose arriving does                                                                        | 5     | `exact`       |
 | [`words-without-lines.json`](words-without-lines.json)                                               | eighteen more words on the same fifteen lines — the elastic line                                                                           | 5     | `exact`       |
@@ -102,46 +106,54 @@ every case would fire because of it rather than because of its own defect, and e
 Point 1 has twelve cases because a reading can be hollow in five ways that all parse: a header
 the walk never found, one with no point to count a budget from, a block with no word in it, a
 count that is not whole, and a mark no budget belongs to — and because a position can hold a
-line the reading would lose or charge to another, in the seven shapes below. Point 2 has seven
+line the reading would lose or charge to another, in the seven shapes below. Point 2 has eight
 because a denominator has two sides and two readings: a unit the walk invented, a unit it
 skipped, and — the shape that actually happened — a layer that quietly went empty; the sixth
-holds that a case's own checkboxes are counted as a second reading too, and the seventh that the
-count does not ask the parser what it is compared with. Point 3 has eleven because
-a register is the part of a gate that can be turned into a list — an excuse may outlive its
-unit, stretch with it, or arrive with no sentence behind it — and because five positions built
-one line past the budget hold the reading: one that loses a line never gets there. Point 4 has
-eleven: the record gone, a row lost, a row kept for prose that is gone, and eight cases about the
-reading below. Point 5 has six because both columns move in both directions, because the two
-derived facts a row carries — a header's numbered points and a position's state — are what the
-budget is picked from, and because a span's continuation carries its words as well as its line.
+holds that a case's own checkboxes are counted as a second reading too, the seventh that the
+count does not ask the parser what it is compared with, and the eighth that the positions do not
+read fences the count's way, and that a count falling short is refused as one running over is.
+Point 3 has eleven because a register is the part of a gate that can be turned into a list — an
+excuse may outlive its unit, stretch with it, or arrive with no sentence behind it — and because
+five positions built one line past the budget hold the reading: one that loses a line never gets
+there. Point 4 has fourteen: the record gone, a row lost, a row kept for prose that is gone, and
+eleven cases about the reading below. Point 5 has six because both columns move in both
+directions, because the two derived facts a row carries — a header's numbered points and a
+position's state — are what the budget is picked from, and because a span's continuation carries
+its words as well as its line.
 
-Twenty-three cases reach the reading itself rather than a count it produced, through `plan`. A
+Twenty-seven cases reach the reading itself rather than a count it produced, through `plan`. A
 position is a line the parser opens a list item on, and its body is that line and what hangs
 under it, down to the next position at any indent or to column 0 — and a line in column 0 is
 still its own when it continues a code span, which prettier prints with its lines unindented. A
 task line quoted in a fenced block is an example of a position and not one: it neither ends the
-body quoting it nor joins the count, which skips the block by a reading of fences of its own.
-Whatever else the parser keeps inside the
-position, outside the items of positions nested in it, and the body does not read is refused on
-point 1, because it would leave the budget unmeasured or be charged to another: the text after
-a span has closed, a link title prettier moves to column 0, inline math it leaves there, and
-anything a position carries after one nested in it, which has to be the last thing in it. The
-refusal comes before the budget, so that a position with a lost line is told what it lost rather
-than to cut a count it never finished (`a-lost-line-past-the-budget`); a nested position answers
-for its own lines, and one standing directly under its parent's title, or as its parent's last
-line, is found as nested all the same. Lines end where the parser ends them: a line feed ends a line, and so does a carriage return,
-alone or before one; nothing else does. A reading that does not split at a carriage return falls
-a line behind the parser at the first stray one, and every span and item after it lands on the
-wrong line (`a-lone-carriage-return`, `a-second-stray-carriage-return`); one that splits at
-anything else runs ahead of it (`a-line-separator-that-ends-nothing`); and a CRLF pair stays one
-line ending (`a-plan-in-crlf`). The
-five cases on point 3 and six on point 4 stand at the budget's edge, where a reading one line
-off shows: those on point 3 are one line over it, so a reading that loses a line never reaches
-it, and those on point 4 are exactly at it — a blank line before column-0 text, a position under
-a position, a bullet beside the position, a plan in CRLF, a line separator inside a line, a task
-line quoted in a fence — so a
-reading that takes a line too many stops at the budget, and one that refuses a line outside the
-position stops at point 1, before either reaches the missing row they declare. `a-box-the-plan-reader-missed` keeps the operation's checkbox
-count a second reading, `a-checkbox-in-an-html-block` keeps it from asking the parser — a
-checkbox in an HTML block, which only the parser reads, parts the two readings on point 2 — and `words-of-a-span-continuation` holds that a continuation's words
+body quoting it nor joins the count, which skips the block by a reading of fences of its own, as
+prettier writes them. It takes three backticks or more to open a fence
+(`a-line-opening-with-two-backticks`), with no other backtick after them on the line, which
+would make it text with a span in it (`a-span-continued-on-three-backticks`), and a run at least
+as long to close one, since prettier quotes a fence of three in a fence of four
+(`a-fence-of-four-backticks`). Whatever else the parser keeps inside the position, outside the
+items of positions nested in it, and the body does not read is refused on point 1, because it
+would leave the budget unmeasured or be charged to another: the text after a span has closed, a
+link title prettier moves to column 0, inline math it leaves there, and anything a position
+carries after one nested in it, which has to be the last thing in it. The refusal comes before
+the budget, so that a position with a lost line is told what it lost rather than to cut a count
+it never finished (`a-lost-line-past-the-budget`); a nested position answers for its own lines,
+and one standing directly under its parent's title, or as its parent's last line, is found as
+nested all the same. Lines end where the parser ends them: a line feed ends a line, and so does
+a carriage return, alone or before one; nothing else does. A reading that does not split at a
+carriage return falls a line behind the parser at the first stray one, and every span and item
+after it lands on the wrong line (`a-lone-carriage-return`, `a-second-stray-carriage-return`);
+one that splits at anything else runs ahead of it (`a-line-separator-that-ends-nothing`); and a
+CRLF pair stays one line ending (`a-plan-in-crlf`). The five cases on point 3 and six on point 4
+stand at the budget's edge, where a reading one line off shows: those on point 3 are one line
+over it, so a reading that loses a line never reaches it, and those on point 4 are exactly at it
+— a blank line before column-0 text, a position under a position, a bullet beside the position,
+a plan in CRLF, a line separator inside a line, a task line quoted in a fence — so a reading
+that takes a line too many stops at the budget, and one that refuses a line outside the position
+stops at point 1, before either reaches the missing row they declare.
+`a-box-the-plan-reader-missed` keeps the operation's checkbox count a second reading,
+`a-checkbox-in-an-html-block` keeps it from asking the parser — a checkbox in an HTML block,
+which only the parser reads, parts the two readings on point 2 —, `a-fence-left-open` keeps the
+positions off the count's reading of fences, which runs a fence left open past the list item the
+parser closes it with, and `words-of-a-span-continuation` holds that a continuation's words
 count with its line.

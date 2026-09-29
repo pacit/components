@@ -1,0 +1,13 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "closed position 9.28 opens a fence and never closes it, and position 9.29 follows in column 0. The parser closes the fence where 9.28's list item ends and reads 9.29; the count reads fences a line at a time, runs this one on, and never sees 9.29's checkbox — the two readings part, and point 2 says so. Readings that shared one reading of fences would lose 9.29 together and agree, and a comparison that looked one way only would pass a count that fell short: either would fail on the missing rows instead",
+  "plan": [
+    "- [x] **9.28 — a position that opens a fence and never closes it**",
+    "  - line 2 opens a fence and leaves it open:",
+    "    ```",
+    "    quoted text",
+    "- [x] **9.29 — the next position, where the parser closes that fence**",
+    "  - line 2"
+  ]
+}

@@ -764,7 +764,7 @@ const checkPlanClaims = (rel, text, states, report) => {
   }
 
   // Both counts read the text with its fenced blocks blanked out, so an example of a task
-  // quoted in one can never make them disagree either.
+  // quoted in one is in neither of them and cannot make the two disagree.
   const body = withoutFences(text);
   const items = planItems(body);
   const boxes = (body.match(PLAN_BOX) ?? []).length;
