@@ -73,9 +73,6 @@
         }
       }
     },
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    },
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,

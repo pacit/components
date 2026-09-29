@@ -400,9 +400,6 @@
       "options": {
         "command": "node tools/check-styles.mjs"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }
