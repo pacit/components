@@ -6,13 +6,16 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/sandbox',
   /**
-   * Vite resolves the paths of `tsconfig.base.json` (`@pacit/components/*`) itself. Not with
-   * `nxViteTsPaths`: deprecated in Nx 23, gone in Nx 24. Not with `vite-tsconfig-paths` either,
-   * the plugin that deprecation points to: Vite 8 warns about it in every `resolveConfig`, and
-   * `@nx/vite/plugin` and `@nx/vitest` both call that while building the project graph, so one
-   * warning would have replaced the other on every nx command. The option is marked
-   * experimental; `vite` is pinned to an exact version, so a change to it arrives only with a
-   * bump somebody makes on purpose.
+   * Vite resolves the `paths` of `tsconfig.base.json` (`@pacit/components/*`) itself, reading
+   * them from the nearest `tsconfig.json` of each importing file. Every such file here extends
+   * the base, except the one in `libs/components/schematics/`: that program has no paths, and
+   * nothing in it imports an alias. Not with `nxViteTsPaths`: deprecated in Nx 23, gone in
+   * Nx 24, and it applied the base to every importer. Not with `vite-tsconfig-paths` either, the
+   * plugin that deprecation points to: Vite 8 warns about it in every `resolveConfig`, which
+   * `@nx/vite/plugin` and `@nx/vitest` call whenever they build the project graph from this
+   * file, and every vitest run calls again, so one warning would only have replaced the other.
+   * The option is marked experimental; `vite` is pinned to an exact version, so a change to it
+   * arrives only with a bump somebody makes on purpose.
    */
   resolve: { tsconfigPaths: true },
   plugins: [angular()],

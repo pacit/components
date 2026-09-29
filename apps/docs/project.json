@@ -176,10 +176,11 @@
       "inputs": [
         "{projectRoot}/bench/**/*",
         "{projectRoot}/bench.vitest.config.mts",
-        "{projectRoot}/tsconfig.bench.json",
+        "{projectRoot}/tsconfig*.json",
         "{projectRoot}/src/app/demos/**/*",
         "{workspaceRoot}/libs/components/src/**/*",
         "{workspaceRoot}/libs/components/*/src/**/*",
+        "{workspaceRoot}/libs/components/tsconfig*.json",
         {
           "externalDependencies": [
             "vitest",
@@ -214,5 +215,5 @@
       }
     }
   },
-  "// bench": "The cost run (req-quality-benchmark): every card's preview rendered in jsdom by bench/previews.bench.ts, five readings per scene written to tmp/bench/report.json, which `check-bench` holds against bench.snapshot.md. The inputs are what the readings depend on — the scenes, the demos they render and the library they render with. The site's own pages are not among them: no page is rendered here."
+  "// bench": "The cost run (req-quality-benchmark): every card's preview rendered in jsdom by bench/previews.bench.ts, five readings per scene written to tmp/bench/report.json, which `check-bench` holds against bench.snapshot.md. The inputs are what the readings depend on — the scenes, the demos they render and the library they render with, and the tsconfig files of the site and of the library: the scenes compile by them, and Vite resolves every import by the nearest one (`resolve.tsconfigPaths`, apps/sandbox/vite.config.mts). The site's own pages are not among them: no page is rendered here."
 }
