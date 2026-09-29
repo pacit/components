@@ -1,0 +1,13 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.43 is written with a carriage return and a line feed at the end of every line, and quotes a task line in a fenced block. The count reads a fence line to its end, carriage return and all, so the quoted line is neither a position nor a checkbox and the first thing wrong is the missing row. A reading of fences that stopped at the carriage return would not recognise the fence at all, take the quoted checkbox and stop at point 2",
+  "plan": [
+    "- [x] **9.43 — a position in CRLF that quotes a task line in a fenced block**\r",
+    "  - line 2 quotes one:\r",
+    "    ```\r",
+    "    - [x] **9.44 — an example of a position, and not one**\r",
+    "    ```\r",
+    "  - line 6\r"
+  ]
+}

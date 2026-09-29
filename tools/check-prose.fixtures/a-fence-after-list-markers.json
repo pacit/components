@@ -1,0 +1,26 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "open position 9.36 has items that open fences on their own lines, after every kind of list marker — a dash, a star, a plus, a number with a dot and with a parenthesis, and two markers at once — and each fence quotes a task line. The fence starts after the markers, so every quoted line is neither a position nor a checkbox: nineteen lines against twenty, and the first thing wrong is the missing row. A count that looked for a fence at the head of a line alone would miss the opening line, take the quoted checkbox and read the closing line as an opening one; one that knew fewer markers would do so for the fence after the one it lacks, and either stops at point 2. Prettier writes the dash; the others are CommonMark's, and it rewrites some of them",
+  "plan": [
+    "- [ ] **9.36 — a position whose items open fences on their own lines, after each marker**",
+    "  - ```md",
+    "    - [x] **9.37 — quoted in a fence a dash opens**",
+    "    ```",
+    "  * ```md",
+    "    - [x] **9.38 — quoted in a fence a star opens**",
+    "    ```",
+    "  + ```md",
+    "    - [x] **9.39 — quoted in a fence a plus opens**",
+    "    ```",
+    "  1. ```md",
+    "     - [x] **9.40 — quoted in a fence an item numbered with a dot opens**",
+    "     ```",
+    "  2) ```md",
+    "     - [x] **9.41 — quoted in a fence an item numbered with a parenthesis opens**",
+    "     ```",
+    "  - - ```md",
+    "      - [x] **9.42 — quoted in a fence two markers open**",
+    "      ```"
+  ]
+}

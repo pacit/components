@@ -365,14 +365,14 @@ const checkMeasured = ({ headers, positions, tracked, boxes, policy }) => {
       'denominator',
       `\`${PLAN}\` puts a checkbox in front of ${boxes} items outside its fenced blocks and the parser read ${positions.length} positions — ` +
         `a checkbox whose number does not match \`${POSITION.source}\`, or one the parser opens no list item on, is a position the budget never sees. ` +
-        `An example of a task belongs in a fenced block, which both readings skip`,
+        `An example of a task belongs in a fenced block, which both readings skip. The count reads fences a line at a time, and a fence mark inside HTML or an indented code block puts it out of step`,
     );
   if (boxes < positions.length)
     throw new ProseError(
       'denominator',
       `the parser read ${positions.length} positions in \`${PLAN}\` and the count finds ${boxes} checkboxes outside its fenced blocks — ` +
-        `the count misses a position the parser read, most likely behind a fence it reads on past where the parser closes it: one left open in a list item, which the parser closes where the item ends. ` +
-        `Close every fence on a line of its own`,
+        `the count read a fence where the parser did not and blanked a position after it. The count reads fences a line at a time: a fence mark inside HTML or an indented code block opens one, ` +
+        `and a fence left open runs on past the list item the parser closes it with. Quote a fence mark inside a fenced block, and close every fence`,
     );
   // 3. Budget.
   const units = [...headers, ...positions];
