@@ -1,0 +1,15 @@
+{
+  "point": 4,
+  "check": "snapshot",
+  "why": "closed position 9.46 has an item with five spaces after its marker, which makes the rest of the line indented code, and position 9.47 a paragraph that opens with ten digits and a dot, which no ordered item takes: neither backtick run opens a fence, for the parser or the count. All three positions are counted by both readings, and the first thing wrong is the missing rows; a count that took any run of spaces after a marker, or any run of digits for one, would open a fence there, run it past 9.48 and stop at point 2. Prettier leaves both lines as they are",
+  "plan": [
+    "- [x] **9.46 — a position whose item has five spaces after its marker**",
+    "  -     ```",
+    "- [x] **9.47 — a position with a paragraph that opens with ten digits and a dot**",
+    "",
+    "  1234567890. ```",
+    "",
+    "- [x] **9.48 — the position after them**",
+    "  - line 2"
+  ]
+}
