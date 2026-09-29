@@ -7,8 +7,8 @@
  *
  * It reads a fence as prettier writes one, a line at a time, and nothing more: not tildes,
  * which prettier turns into backticks, nor the block a fence mark stands in — one the parser
- * reads as HTML, indented code or a paragraph opens a fence here, and one left open runs on
- * past its list item. `check-prose` point 2 sees that only where it moves the count.
+ * reads as HTML, math, indented code or a paragraph opens a fence here, and one left open
+ * runs on past its list item. `check-prose` point 2 sees that only where it moves the count.
  */
 export const withoutFences = (text) => {
   let fence = '';
