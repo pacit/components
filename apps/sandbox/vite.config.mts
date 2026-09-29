@@ -12,8 +12,8 @@ export default defineConfig(() => ({
    * nothing in it imports an alias. Not with `nxViteTsPaths`: deprecated in Nx 23, gone in
    * Nx 24, and it applied the base to every importer. Not with `vite-tsconfig-paths` either, the
    * plugin that deprecation points to: Vite 8 warns about it in every `resolveConfig`, which
-   * `@nx/vite/plugin` and `@nx/vitest` call whenever they build the project graph from this
-   * file, and every vitest run calls again, so one warning would only have replaced the other.
+   * `@nx/vite/plugin` and `@nx/vitest` call whenever they infer this project's targets anew,
+   * and every vitest run calls again, so one warning would only have replaced the other.
    * The option is marked experimental; `vite` is pinned to an exact version, so a change to it
    * arrives only with a bump somebody makes on purpose.
    */
