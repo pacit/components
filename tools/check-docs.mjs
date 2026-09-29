@@ -24,6 +24,7 @@ import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { targetsIn } from './workflow-targets.mjs';
+import { withoutFences } from './markdown-fences.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -724,27 +725,6 @@ const PLAN_CITATION = /`(req-[a-z][a-z0-9-]*[a-z0-9])`/g;
 /** `[x]` closed and `[-]` dropped are both finished business. `[~]` is neither; see above. */
 const PLAN_SETTLED = new Set(['x', '-']);
 
-/**
- * The text with every fenced block blanked out, LINE FOR LINE so that the numbers this
- * point reports stay the numbers a person scrolls to. The plan documents its own notation
- * and its own commands, and a task line quoted inside a code block is an example of a task
- * rather than one. Both counts below read the stripped text, so an example can never make
- * them disagree with each other either.
- */
-const withoutFences = (text) => {
-  let open = false;
-  return String(text ?? '')
-    .split('\n')
-    .map((line) => {
-      if (/^\s*```/.test(line)) {
-        open = !open;
-        return '';
-      }
-      return open ? '' : line;
-    })
-    .join('\n');
-};
-
 /** Every task of a plan: its mark, the line it stands on, the requirements its title names. */
 const planItems = (text) => {
   const out = [];
@@ -783,6 +763,8 @@ const checkPlanClaims = (rel, text, states, report) => {
     return { items: 0, compared: 0 };
   }
 
+  // Both counts read the text with its fenced blocks blanked out, so an example of a task
+  // quoted in one can never make them disagree either.
   const body = withoutFences(text);
   const items = planItems(body);
   const boxes = (body.match(PLAN_BOX) ?? []).length;
