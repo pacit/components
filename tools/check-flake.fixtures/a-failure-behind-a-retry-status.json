@@ -2,14 +2,14 @@
   "check": "outcomes",
   "rule": "case-always-failed",
   "beside": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
-  "// defect": "Point 3's two rules, each finding something, and in two suites: a `flaky` status in the first report, a case failing every repetition in the second. The failure is point 3's LAST rule over the LAST suite, so a point 3 that stopped at its first rule or at the first suite with a finding would lose it either way.",
+  "// defect": "Point 3's two rules, each with a finding, in ONE suite: a `flaky` status on one case and a failure on every repetition of another. The failure is point 3's second rule, so a point 3 that stopped at its first rule — over the whole run, or suite by suite as the gate once read — would lose it.",
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "expected",
       "flaky",
       "expected"
     ],
-    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox": [
       "unexpected",
       "unexpected",
       "unexpected"

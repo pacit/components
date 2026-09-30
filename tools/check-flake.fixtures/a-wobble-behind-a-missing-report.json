@@ -1,0 +1,14 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "beside": [{ "check": "measured", "rule": "no-report" }],
+  "// defect": "The second report never arrived, and the first holds a case that passed, failed and passed again in no record. A missing report takes its own suite out of the measurement and nothing else: the one that arrived is read in full. On 2026-09-16 a run printed `no-report` alone while the report that did arrive held the slider's fill at 2/3 (`lesson-246`).",
+  "dropReports": ["fake-docs-e2e"],
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "unexpected",
+      "expected"
+    ]
+  }
+}
