@@ -1,13 +1,13 @@
 {
   "check": "measured",
   "rule": "too-few-repetitions",
-  "// defect": "The middle one of three projects declares two repetitions, one short of the floor. A rule reading the first and the last project would take the run as measured. Only the configuration is edited, so every case still ran three times and point 2 has nothing to say.",
+  "// defect": "The middle one of three projects declares two repetitions, one short of the floor. A rule reading only the first and the last project would take the run as measured.",
   "addReports": {
     "fake-docs-e2e": {
       "config": {
         "projects": [
           { "name": "chromium", "repeatEach": 3, "retries": 0 },
-          { "name": "firefox", "repeatEach": 2, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 },
           { "name": "webkit", "repeatEach": 3, "retries": 0 }
         ]
       },
@@ -62,5 +62,6 @@
         "skipped": 0
       }
     }
-  }
+  },
+  "projects": { "fake-docs-e2e::firefox": { "repeatEach": 2 } }
 }

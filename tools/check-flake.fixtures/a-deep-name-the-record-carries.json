@@ -1,7 +1,7 @@
 {
   "check": "record",
   "rule": "stale-prose",
-  "// defect": "A wobble two describes deep that the record carries by its whole path, beside a record whose prose has drifted. The drift is what rejects the case; the name is what it holds. A walk naming the case by anything less than its path — the describes without the file, the file and the last describe, the last describe alone — would call a recorded wobble new, so nothing else may fire.",
+  "// defect": "A wobble two describes deep that the record carries by its whole path, beside a record whose prose has drifted in its last line. The drift is what rejects the case; the name is what it holds. A walk naming the case by anything less than its path — the describes without the file, the file and the last describe, the last describe alone — would call a recorded wobble new, so nothing else may fire.",
   "addReports": {
     "fake-docs-e2e": {
       "config": {
@@ -60,7 +60,10 @@
         "pattern": "chromium 2/3\\n```",
         "with": "chromium 2/3\ngamma.spec.ts › the landing › on a phone › renders | chromium 2/3\n```"
       },
-      { "pattern": "re-run until green", "with": "re-run until red" }
+      {
+        "pattern": "over how many cases and runs\\.",
+        "with": "over how many cases."
+      }
     ]
   }
 }

@@ -1,13 +1,13 @@
 {
   "check": "measured",
   "rule": "retries-on",
-  "// defect": "Retries on in the middle one of three projects — chromium, firefox, webkit, the order the live suites run them in. With two projects a rule reading the first and the last reads every one of them; here it would pass the run.",
+  "// defect": "Retries on in the middle one of three projects, and off at both ends. A rule reading only the first and the last project would pass the run.",
   "addReports": {
     "fake-docs-e2e": {
       "config": {
         "projects": [
           { "name": "chromium", "repeatEach": 3, "retries": 0 },
-          { "name": "firefox", "repeatEach": 3, "retries": 1 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 },
           { "name": "webkit", "repeatEach": 3, "retries": 0 }
         ]
       },
@@ -62,5 +62,6 @@
         "skipped": 0
       }
     }
-  }
+  },
+  "projects": { "fake-docs-e2e::firefox": { "retries": 1 } }
 }

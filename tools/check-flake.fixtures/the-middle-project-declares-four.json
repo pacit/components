@@ -7,7 +7,7 @@
       "config": {
         "projects": [
           { "name": "chromium", "repeatEach": 3, "retries": 0 },
-          { "name": "firefox", "repeatEach": 4, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 },
           { "name": "webkit", "repeatEach": 3, "retries": 0 }
         ]
       },
@@ -62,5 +62,6 @@
         "skipped": 0
       }
     }
-  }
+  },
+  "projects": { "fake-docs-e2e::firefox": { "repeatEach": 4 } }
 }

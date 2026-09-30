@@ -1,6 +1,67 @@
 {
   "check": "measured",
   "rule": "too-few-repetitions",
-  "// defect": "The mirror of `the-first-project-one-short.json`: three repetitions declared in the first project and two in the second, one short of the floor. A rule that read only the first project would take this run as measured.",
-  "projects": { "fake-e2e::firefox": { "repeatEach": 2 } }
+  "// defect": "The mirror of `the-first-project-one-short.json`: the last of three projects declares two repetitions, one short of the floor. A rule reading only the first project, or the first two, would take the run as measured.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [
+          { "name": "chromium", "repeatEach": 3, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 },
+          { "name": "webkit", "repeatEach": 3, "retries": 0 }
+        ]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 9,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "projects": { "fake-docs-e2e::webkit": { "repeatEach": 2 } }
 }

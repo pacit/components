@@ -1,12 +1,12 @@
 {
   "check": "record",
   "rule": "rows-contradict-reading",
-  "// defect": "The reading counts one wobble and the record holds two rows: a name written in by hand under a reading nobody took again. The other case of this rule has the reading ahead of its rows; this one has the rows ahead, by one, and a number written in prose has to equal what it counts from either side.",
+  "// defect": "The reading counts one wobble and the record holds two rows: the recorded name written in a second time by hand, under a reading nobody took again. The other case of this rule has the reading ahead of its rows; this one has the rows ahead, by one, and they are counted as rows — a count of the distinct names would find one and agree. A number written in prose has to equal what it counts from either side.",
   "snapshot": {
     "replace": [
       {
         "pattern": "chromium 2/3\\n```",
-        "with": "chromium 2/3\nalpha.spec.ts › opens on click | firefox 2/3\n```"
+        "with": "chromium 2/3\nalpha.spec.ts › closes on escape | chromium 2/3\n```"
       }
     ]
   }

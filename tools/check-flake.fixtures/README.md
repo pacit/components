@@ -44,21 +44,21 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-report-with-no-project-list.json`](a-report-with-no-project-list.json)       | cases under a `projects` that is not a list: nothing to hold them to           | `measured`    | `empty-report`               |
 | [`retries-left-on.json`](retries-left-on.json)                                   | retries on — the mechanism that makes a flake report itself green              | `measured`    | `retries-on`                 |
 | [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json)       | retries on, and the `flaky` status a retry gives — point 1 alone may speak     | `measured`    | `retries-on`                 |
-| [`the-first-project-retries.json`](the-first-project-retries.json)               | retries on in the first project only: a rule reading the last one passes it    | `measured`    | `retries-on`                 |
+| [`the-first-project-retries.json`](the-first-project-retries.json)               | retries on in the first of three projects: reading the last two passes it      | `measured`    | `retries-on`                 |
 | [`the-middle-project-retries.json`](the-middle-project-retries.json)             | retries on in the middle one of three projects: reading the ends passes it     | `measured`    | `retries-on`                 |
-| [`the-last-project-retries.json`](the-last-project-retries.json)                 | retries on in the last project only: a rule reading the first one passes it    | `measured`    | `retries-on`                 |
+| [`the-last-project-retries.json`](the-last-project-retries.json)                 | retries on in the last of three projects: reading the first two passes it      | `measured`    | `retries-on`                 |
 | [`a-single-run-of-each.json`](a-single-run-of-each.json)                         | each case run once: a green rate over a sample that cannot hold a disagreement | `measured`    | `too-few-repetitions`        |
 | [`a-single-run-that-failed.json`](a-single-run-that-failed.json)                 | one run of each case, and one failed: a unanimous column one run tall          | `measured`    | `too-few-repetitions`        |
-| [`the-first-project-one-short.json`](the-first-project-one-short.json)           | the first project declares two repetitions, one short of the floor             | `measured`    | `too-few-repetitions`        |
+| [`the-first-project-one-short.json`](the-first-project-one-short.json)           | the first of three projects declares two repetitions, one short of the floor   | `measured`    | `too-few-repetitions`        |
 | [`the-middle-project-one-short.json`](the-middle-project-one-short.json)         | the middle one of three projects declares two repetitions, one short           | `measured`    | `too-few-repetitions`        |
-| [`the-last-project-one-short.json`](the-last-project-one-short.json)             | the last project declares two repetitions, one short of the floor              | `measured`    | `too-few-repetitions`        |
+| [`the-last-project-one-short.json`](the-last-project-one-short.json)             | the last of three projects declares two repetitions, one short of the floor    | `measured`    | `too-few-repetitions`        |
 | [`a-tally-that-disagrees.json`](a-tally-that-disagrees.json)                     | the report's own `stats` count more runs than the walk found                   | `denominator` | `readings-disagree`          |
 | [`a-run-the-tally-does-not-count.json`](a-run-the-tally-does-not-count.json)     | the walk found one run more than the report's own `stats` count                | `denominator` | `readings-disagree`          |
 | [`a-case-that-ran-fewer-times.json`](a-case-that-ran-fewer-times.json)           | one case ran twice where every other ran three times, the tally agreeing       | `denominator` | `case-run-unevenly`          |
 | [`a-case-that-ran-more-times.json`](a-case-that-ran-more-times.json)             | one case ran four times where its suite declares three, the tally agreeing     | `denominator` | `case-run-unevenly`          |
-| [`the-first-project-declares-four.json`](the-first-project-declares-four.json)   | the first project declares four repetitions and every case ran three           | `denominator` | `case-run-unevenly`          |
+| [`the-first-project-declares-four.json`](the-first-project-declares-four.json)   | the first of three projects declares four, and every case ran three            | `denominator` | `case-run-unevenly`          |
 | [`the-middle-project-declares-four.json`](the-middle-project-declares-four.json) | the middle one of three projects declares four, and every case ran three       | `denominator` | `case-run-unevenly`          |
-| [`the-last-project-declares-four.json`](the-last-project-declares-four.json)     | the last project declares four repetitions and every case ran three            | `denominator` | `case-run-unevenly`          |
+| [`the-last-project-declares-four.json`](the-last-project-declares-four.json)     | the last of three projects declares four, and every case ran three             | `denominator` | `case-run-unevenly`          |
 | [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json)   | the walk lost the one pass of a case, and two failures look unanimous          | `denominator` | `readings-disagree`          |
 | [`two-tests-under-one-path.json`](two-tests-under-one-path.json)                 | two tests under one path merge into one case — point 2 alone may speak         | `denominator` | `case-run-unevenly`          |
 | [`two-suites-taken-out.json`](two-suites-taken-out.json)                         | both suites taken out, each by a rule of its own                               | `denominator` | `readings-disagree`          |
@@ -72,7 +72,7 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-name-the-record-does-not-carry.json`](a-name-the-record-does-not-carry.json) | a case that passed, failed and passed again, standing in no record             | `names`       | `wobble-unrecorded`          |
 | [`a-title-recorded-in-another-file.json`](a-title-recorded-in-another-file.json) | a wobble under a title the record carries, but in another file                 | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-two-describes-deep.json`](a-wobble-two-describes-deep.json)           | a wobble two describes deep, in the second file and the second describe        | `names`       | `wobble-unrecorded`          |
-| [`a-name-one-describe-apart.json`](a-name-one-describe-apart.json)               | a wobble whose record carries names one describe away, at either depth         | `names`       | `wobble-unrecorded`          |
+| [`near-misses-in-the-record.json`](near-misses-in-the-record.json)               | a wobble the record misses by one part of its path, at each part in turn       | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-a-failure.json`](a-wobble-behind-a-failure.json)               | one case failing every repetition and two wobbling beside it: 2026-09-24       | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json)               | the second report never arrived, and the first holds a wobble                  | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-a-retry-status.json`](a-wobble-behind-a-retry-status.json)     | a `flaky` status and a wobble, in one suite                                    | `names`       | `wobble-unrecorded`          |
@@ -160,10 +160,11 @@ or last, or its lone pass first, in the middle or last. A rule reading a case's 
 first or the last one skipped loses one of them, and one reading only those two loses the middle.
 
 Projects are positions as well. Point 1 holds every project of a report and point 2 holds every
-case to the most any project declares, so each of the three rules that read projects has a case
-with the odd project first among good ones, one with it in the middle of three — chromium,
-firefox, webkit, the order the live suites run — and one with it last; `projects` patches a
-single project as `<suite>::<project>`. The floor is held where it bites, two repetitions against
+case to the most any project declares, so each of the three rules that read projects has three
+cases on a report of three projects — chromium, firefox, webkit, the order the live suites run
+them in — with the odd one first, in the middle and last: a rule reading a fixed one or two of
+them, or skipping any one, passes at least one of the three. `projects` patches a single project
+as `<suite>::<project>`. The floor is held where it bites, two repetitions against
 three, and each comparison of two readings of one number is held both ways at its edge: the walk
 a run ahead of the tally and a run behind, the rows one ahead of the reading and one behind, a
 case run once too often and once too few, the printed rate a hundredth above what its counts
@@ -179,8 +180,8 @@ into one case. A case is named by all of its path, on both sides of the comparis
 carry a wobble two describes deep by its whole path, which a walk naming it by less would call
 new, and the record's side is held by
 [`a-title-recorded-in-another-file.json`](a-title-recorded-in-another-file.json), a recorded
-title in another file, and [`a-name-one-describe-apart.json`](a-name-one-describe-apart.json),
-recorded names one describe away at either depth.
+title in another file, and [`near-misses-in-the-record.json`](near-misses-in-the-record.json), a
+record carrying a wobble's name with one part changed, at each part in turn.
 
 A skipped repetition ran nothing, so it is no pass, no failure and no retry status. Point 2
 counts it in both readings, and point 3 reads "failed every repetition" as every repetition that
@@ -213,8 +214,9 @@ Nor a run stopped early, which the gate does not look for. Under `maxFailures` o
 `globalTimeout` Playwright marks every test it never reached `skipped`, with no result, and counts
 it in the tally like a skip the test decided (measured), so such a run reads as complete: every
 case has its three runs, most of them skips. Neither suite sets either, and the job's own
-timeout leaves no report at all; a rule for it would read the empty `results` of a test never
-reached.
+timeout leaves no report at all. A rule for it would read a `skipped` test that carries no `skip`
+or `fixme` annotation — never reached, or cut off in flight with one result — or the report's own
+`errors`, which name both kinds of stop.
 
 Which cases a finding lists. The control compares rules, not the lines under them: a finding
 naming one of the two cases it found would pass. Every rule of points 3 and 4 that names cases
