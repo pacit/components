@@ -1,0 +1,14 @@
+{
+  "check": "measured",
+  "rule": "retries-on",
+  "hides": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
+  "// defect": "Retries on, and the `flaky` status they give a case that failed and then passed on a retry. Point 1 is what refuses the run, and it has to stop it: past point 1, point 3 would report that status as contradicting a reading of retries OFF — a reading this run never had.",
+  "projects": { "fake-e2e": { "retries": 2 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "flaky",
+      "expected"
+    ]
+  }
+}

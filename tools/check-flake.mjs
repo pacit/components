@@ -275,30 +275,39 @@ const checkDenominator = (input) => {
   }
 };
 
-/** 3. OUTCOMES — a test that always fails is red, and a `flaky` status contradicts point 1. */
+/**
+ * 3. OUTCOMES — a test that always fails is red, and a `flaky` status contradicts point 1.
+ * Returns its findings rather than throwing them: one list over every suite, and each rule
+ * once over all of it, so neither a suite nor a rule hides what the next one found.
+ */
 const checkOutcomes = (input) => {
-  for (const [suite, report] of Object.entries(input.reports ?? {})) {
-    const cases = casesOf(report);
-    const retried = cases.filter((c) => c.runs.includes(RETRIED));
-    if (retried.length)
-      throw new FlakeError(
+  const cases = Object.entries(input.reports ?? {}).flatMap(([suite, report]) =>
+    casesOf(report).map((c) => ({ ...c, where: `\`${suite}\`: ${c.key}` })),
+  );
+  const findings = [];
+  const retried = cases.filter((c) => c.runs.includes(RETRIED));
+  if (retried.length)
+    findings.push(
+      new FlakeError(
         'outcomes',
         'status-contradicts-retries',
-        `\`${suite}\`: ${retried.length} case(s) carry the \`${RETRIED}\` status, which ` +
+        `${retried.length} case(s) carry the \`${RETRIED}\` status, which ` +
           `Playwright gives a test that failed and then passed ON A RETRY:\n` +
-          list(retried.map((c) => c.key)) +
+          list(retried.map((c) => c.where)) +
           `\n    Point 1 read the configuration and found retries off. One of the two is ` +
           `not describing this run.`,
-      );
-    const broken = cases.filter(
-      (c) => c.failed === c.runs.length && c.runs.length > 0,
+      ),
     );
-    if (broken.length)
-      throw new FlakeError(
+  const broken = cases.filter(
+    (c) => c.failed === c.runs.length && c.runs.length > 0,
+  );
+  if (broken.length)
+    findings.push(
+      new FlakeError(
         'outcomes',
         'case-always-failed',
-        `\`${suite}\`: ${broken.length} case(s) failed every repetition:\n` +
-          list(broken.map((c) => `${c.key} — 0/${c.runs.length}`)) +
+        `${broken.length} case(s) failed every repetition:\n` +
+          list(broken.map((c) => `${c.where} — 0/${c.runs.length}`)) +
           `\n    They are separated from the wobbles because a repetition job swallows ` +
           `an ordinary failure otherwise: the run exits non-zero, the step is allowed to, ` +
           `and a gate counting DISAGREEMENTS finds none. What a unanimous column MEANS is ` +
@@ -309,8 +318,9 @@ const checkOutcomes = (input) => {
           `browser. The evidence that tells the two apart is OUTSIDE this report, in the same ` +
           `commit's ordinary suite. On 2026-09-16 that suite called these same four "flaky" ` +
           `while this one read 0/3 (\`lesson-214\`).`,
-      );
-  }
+      ),
+    );
+  return findings;
 };
 
 /** 4. NAMES — one-sided by design: what appeared is a finding, what behaved is not. */
@@ -399,37 +409,74 @@ const checkRecord = (input, snapshot) => {
   }
 };
 
-const checkFlake = (input) => {
-  checkMeasured(input);
-  checkDenominator(input);
-  checkOutcomes(input);
-  checkNames(input, input.snapshot);
-  checkRecord(input, input.snapshot);
-  return input;
+/** A point that stops at its first finding, as the list the run gathers: none, or that one. */
+const firstOf = (point) => {
+  try {
+    point();
+    return [];
+  } catch (error) {
+    if (!(error instanceof FlakeError)) throw error;
+    return [error];
+  }
 };
+
+/**
+ * Every finding of one run, in the order of the points. Points 1 and 2 stop it: they are what
+ * makes the input a measurement, and a rule read past them rules on something else — with
+ * retries on, point 3 would call a `flaky` status a contradiction of a reading point 1 never
+ * made, and over two tests merged under one path point 4 would name a wobble neither has.
+ * Points 3 to 5 are rules over a measurement, and each reports, whatever the others found: a
+ * night is a sample that does not come again, and what one finding hid is lost with it. One
+ * family of races read early on seven of fourteen nightly runs and the verdict named it on
+ * three (`lesson-246`): a failure on one case stood in front of the wobbles of the others.
+ */
+const checkFlake = (input) => {
+  const denominator = firstOf(() => {
+    checkMeasured(input);
+    checkDenominator(input);
+  });
+  return denominator.length ? denominator : checkRules(input);
+};
+
+/**
+ * Points 3 to 5, over an input points 1 and 2 accepted. Point 4 has one finding to give and
+ * point 5 keeps its first, as one command answers all of point 5's: `--write`. Point 5 reads
+ * a record, and a record that is not there is point 4's finding and not a second one.
+ */
+const checkRules = (input) => [
+  ...checkOutcomes(input),
+  ...firstOf(() => checkNames(input, input.snapshot)),
+  ...(input.snapshot === null || input.snapshot === undefined
+    ? []
+    : firstOf(() => checkRecord(input, input.snapshot))),
+];
+
+/**
+ * The findings that refuse `--write`. Points 1 to 3 stand before the record because `--write`
+ * needs them: a run with retries on, or one the walk read half of, must not be written down
+ * as the accepted state (`lesson-49`).
+ */
+const BEFORE_RECORD = new Set(['measured', 'denominator', 'outcomes']);
+const refusalOf = (findings) =>
+  findings.filter((f) => BEFORE_RECORD.has(f.check));
 
 // ── the live run ──────────────────────────────────────────────────────────────
 
 const problems = [];
-let live = null;
-try {
-  const input = readInput();
-  if (WRITE) {
-    // Points 1 to 3 stand before the record because `--write` needs them: a run with
-    // retries on, or one the walk read half of, must not be written down as the accepted
-    // state (`lesson-49`).
-    checkMeasured(input);
-    checkDenominator(input);
-    checkOutcomes(input);
-    writeFileSync(join(ROOT, SNAPSHOT), renderSnapshot(input));
-    input.snapshot = read(SNAPSHOT);
+const live = readInput();
+let findings = checkFlake(live);
+if (WRITE) {
+  // A refused write reports what refused it and nothing more: points 4 and 5 would speak of
+  // the record it leaves in place, and prescribe the very command that was just refused.
+  const refused = refusalOf(findings);
+  if (refused.length) findings = refused;
+  else {
+    writeFileSync(join(ROOT, SNAPSHOT), renderSnapshot(live));
+    live.snapshot = read(SNAPSHOT);
+    findings = checkFlake(live);
   }
-  checkFlake(input);
-  live = input;
-} catch (error) {
-  if (!(error instanceof FlakeError)) throw error;
-  problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
+for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
 
 // ── the negative control ──────────────────────────────────────────────────────
 
@@ -526,38 +573,76 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
-try {
-  checkFlake(buildFixture({ rule: REFERENCE }));
-} catch (error) {
-  if (!(error instanceof FlakeError)) throw error;
+const reference = checkFlake(buildFixture({ rule: REFERENCE }));
+for (const error of reference)
   problems.push(
     `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
       `every prepared case now fires because of it.\n    ${error.message}`,
   );
-  cases.length = 0;
-}
+if (reference.length) cases.length = 0;
 
+/** A rule as a case declares it and as a finding carries it. */
+const ruleOf = (f) => `${f.check}/${f.rule}`;
+const listed = (rules) => `\`${rules.join('`, `')}\``;
+
+/**
+ * A case is held to the WHOLE set its run reports: its own rule, the rules it names `beside`
+ * it, and not one more — a case that fires a rule it does not declare is satisfied by
+ * whichever of its defects still works. A denominator case names in `hides` what points 3 to
+ * 5 find on its input once past the stop, and that is read off the rules rather than taken on
+ * trust: a hidden finding that is not there proves no stop.
+ */
 for (const name of cases) {
   const fx = JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
-  try {
-    checkFlake(buildFixture(fx));
+  const input = buildFixture(fx);
+  const found = checkFlake(input);
+  const fired = found.map(ruleOf);
+  const declared = [fx, ...(fx.beside ?? [])].map(ruleOf);
+  const extra = fired.filter((r) => !declared.includes(r));
+  const silent = declared.filter((r) => !fired.includes(r));
+  if (!fired.length)
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `\`${fx.check}\`/\`${fx.rule}\` stopped examining anything`,
     );
-  } catch (error) {
-    if (!(error instanceof FlakeError)) throw error;
-    if (error.check !== fx.check || error.rule !== fx.rule)
+  else if (extra.length)
+    problems.push(
+      `${name}: ${listed(extra)} fired where the case declares ${listed(declared)} — ` +
+        `the case proves something other than what it declares`,
+    );
+  else if (silent.length)
+    problems.push(
+      `${name}: ${listed(silent)} stayed silent beside ${listed(fired)} — either one ` +
+        `finding hid another, and a night loses what it found behind the first, or the ` +
+        `case does not build the defect it declares`,
+    );
+  const past = fx.hides ? checkRules(input).map(ruleOf) : [];
+  for (const rule of (fx.hides ?? []).map(ruleOf))
+    if (!past.includes(rule))
       problems.push(
-        `${name}: \`${error.check}\`/\`${error.rule}\` fired where \`${fx.check}\`/` +
-          `\`${fx.rule}\` was meant to — the case proves something other than what it declares`,
+        `${name}: the case hides \`${rule}\` behind \`${ruleOf(fx)}\`, and points 3 to 5 ` +
+          `do not fire it on this input past the stop either — the case proves no stop`,
       );
-  }
+  // `--write` refuses exactly what points 1 to 3 reject, read off those points and not off
+  // the set the refusal is written with.
+  const rejected =
+    firstOf(() => {
+      checkMeasured(input);
+      checkDenominator(input);
+    }).length > 0 || checkOutcomes(input).length > 0;
+  if (rejected !== refusalOf(found).length > 0)
+    problems.push(
+      rejected
+        ? `${name}: points 1 to 3 reject this input and \`--write\` would record it — a run ` +
+            `they refuse would be written down as the accepted state (\`lesson-49\`)`
+        : `${name}: points 1 to 3 accept this input and \`--write\` would refuse it — the ` +
+            `command that writes a finding down would turn away the run that found it`,
+    );
 }
 
 // ── the report ────────────────────────────────────────────────────────────────
 
-if (REPORT && live) {
+if (REPORT) {
   const tally = tallyOf(live);
   console.log(
     `\n== ${tally.cases.length} cases over ${tally.repetitions} repetitions ==`,

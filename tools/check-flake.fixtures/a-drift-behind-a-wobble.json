@@ -1,0 +1,21 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "beside": [{ "check": "names", "rule": "wobble-unrecorded" }],
+  "// defect": "A case that wobbled and stands in no record, and a record whose prose has drifted from what the renderer writes. Point 5 reads the record and nothing of the run, so it has a finding to give whatever point 4 found — and a gate that went quiet after its first finding would keep it for the next night.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "unexpected",
+      "expected"
+    ]
+  },
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "\\*\\*The rate is dated and compared by nobody\\*\\*",
+        "with": "**The rate is compared with the last reading**"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "check": "outcomes",
+  "rule": "case-always-failed",
+  "beside": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
+  "// defect": "Point 3's two rules, each finding something, and in two suites: a `flaky` status in the first report, a case failing every repetition in the second. The failure is point 3's LAST rule over the LAST suite, so a point 3 that stopped at its first rule or at the first suite with a finding would lose it either way.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "flaky",
+      "expected"
+    ],
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  }
+}

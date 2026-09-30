@@ -1,0 +1,57 @@
+{
+  "check": "denominator",
+  "rule": "case-run-unevenly",
+  "hides": [{ "check": "names", "rule": "wobble-unrecorded" }],
+  "// defect": "Two tests under one path, one passing every repetition and one failing every repetition. Repetitions are found by grouping on the path, so the two merge into one case that ran six times where every other ran three, and the tally agrees. Point 2 is what refuses the run, and it has to stop it: past point 2, point 4 would read three passes of one test and three failures of the other as a case that wobbled — a race that neither test has.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "line": 3,
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "line": 3,
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "line": 3,
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "line": 9,
+              "tests": [{ "projectName": "chromium", "status": "unexpected" }]
+            },
+            {
+              "title": "the landing renders",
+              "line": 9,
+              "tests": [{ "projectName": "chromium", "status": "unexpected" }]
+            },
+            {
+              "title": "the landing renders",
+              "line": 9,
+              "tests": [{ "projectName": "chromium", "status": "unexpected" }]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 3,
+        "unexpected": 3,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

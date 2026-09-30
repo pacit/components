@@ -1,0 +1,18 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "beside": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "One case failed every repetition and another passed, failed and passed again, in one run: the shape of the nightly of 2026-09-24, whose verdict named the slider's press at 0/3 and never reached the fill at 1/3 or the switch at 2/3 behind it (`lesson-246`). Both have to be named, because the night is a sample and the next one may not catch the wobble again. The wobble stands in the SECOND suite, the failure in the first, so a point 4 that stopped reading at the first report would miss it too.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ],
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "expected",
+      "unexpected",
+      "expected"
+    ]
+  }
+}
