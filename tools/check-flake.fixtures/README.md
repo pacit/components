@@ -97,6 +97,7 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-floor-of-two.json`](a-floor-of-two.json)                                     | a floor of two beside a drifted record: point 1 takes it, nothing else fires   | `record`      | `stale-prose`                |
 | [`a-case-that-never-ran.json`](a-case-that-never-ran.json)                       | a case skipped in every repetition beside a drifted record: nothing else fires | `record`      | `stale-prose`                |
 | [`a-deep-name-the-record-carries.json`](a-deep-name-the-record-carries.json)     | a wobble two describes deep that the record carries, beside a drift            | `record`      | `stale-prose`                |
+| [`a-project-repaired-by-name.json`](a-project-repaired-by-name.json)             | firefox broken in the report and repaired by name, beside a drifted record     | `record`      | `stale-prose`                |
 
 Point 1 has six rules because a measurement can be hollow in six ways that all parse, and
 five of them leave a report that looks entirely normal. Point 5 has five because a record is
@@ -164,7 +165,8 @@ case to the most any project declares, so each of the three rules that read proj
 cases on a report of three projects — chromium, firefox, webkit, the order the live suites run
 them in — with the odd one first, in the middle and last: a rule reading a fixed one or two of
 them, or skipping any one, passes at least one of the three. `projects` patches a single project
-as `<suite>::<project>`. The floor is held where it bites, two repetitions against
+as `<suite>::<project>`, and [`a-project-repaired-by-name.json`](a-project-repaired-by-name.json)
+holds that it reaches the one it names. The floor is held where it bites, two repetitions against
 three, and each comparison of two readings of one number is held both ways at its edge: the walk
 a run ahead of the tally and a run behind, the rows one ahead of the reading and one behind, a
 case run once too often and once too few, the printed rate a hundredth above what its counts
@@ -214,9 +216,9 @@ Nor a run stopped early, which the gate does not look for. Under `maxFailures` o
 `globalTimeout` Playwright marks every test it never reached `skipped`, with no result, and counts
 it in the tally like a skip the test decided (measured), so such a run reads as complete: every
 case has its three runs, most of them skips. Neither suite sets either, and the job's own
-timeout leaves no report at all. A rule for it would read a `skipped` test that carries no `skip`
-or `fixme` annotation — never reached, or cut off in flight with one result — or the report's own
-`errors`, which name both kinds of stop.
+timeout leaves no report at all. A rule for it would read the report's own `errors`, which name
+both kinds of stop. A `skipped` test with no `skip` or `fixme` annotation is no sign of one: a
+serial group after a failure and a failed `beforeAll` leave the same, with no error (measured).
 
 Which cases a finding lists. The control compares rules, not the lines under them: a finding
 naming one of the two cases it found would pass. Every rule of points 3 and 4 that names cases
