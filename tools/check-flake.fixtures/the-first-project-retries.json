@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "retries-on",
+  "// defect": "Retries on in the first project of a suite and off in the second. `retries-left-on.json` puts them on in every project at once, which a rule reading one project catches too: here a rule that read only the last project would pass the run, and a race in chromium would report itself green.",
+  "projects": { "fake-e2e::chromium": { "retries": 1 } }
+}

@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "too-few-repetitions",
+  "// defect": "The mirror of `the-first-project-one-short.json`: three repetitions declared in the first project and two in the second, one short of the floor. A rule that read only the first project would take this run as measured.",
+  "projects": { "fake-e2e::firefox": { "repeatEach": 2 } }
+}

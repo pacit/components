@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "case-run-unevenly",
+  "// defect": "The mirror of `the-first-project-declares-four.json`: the second project declares four repetitions and every case ran three. Read off the first project alone, the run would pass as complete.",
+  "projects": { "fake-e2e::firefox": { "repeatEach": 4 } }
+}

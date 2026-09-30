@@ -1,0 +1,21 @@
+{
+  "check": "measured",
+  "rule": "empty-report",
+  "// defect": "The report a run leaves when nothing matched its filter, as the reporter writes it: the projects listed with retries off, not one file and not one case, a tally of nothing that agrees with the walk — and a repetition count of one, because the `--repeat-each` of a run that ran nothing never reaches its report (measured, `--pass-with-no-tests` exiting 0 included). Point 1 calls it empty before it calls it short, since a report that ran nothing is no run of one repetition. `an-empty-report.json` lists no project either; here the projects are all there and the cases alone are missing.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 1, "retries": 0 }]
+      },
+      "suites": [],
+      "errors": [{ "message": "Error: No tests found" }],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 0,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "case-run-unevenly",
+  "// defect": "The first project declares four repetitions and every case of the suite ran three: the fourth never happened, and the tally agrees, since it counts what ran. Point 2 holds every case to the most any project declares — read off the second project alone, three runs of each would pass for the whole measurement.",
+  "projects": { "fake-e2e::chromium": { "repeatEach": 4 } }
+}

@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "retries-on",
+  "// defect": "Retries off in the first project of a suite and on in the second — the mirror of `the-first-project-retries.json`. A rule that read only the first project would pass the run, and a race in firefox would report itself green.",
+  "projects": { "fake-e2e::firefox": { "retries": 1 } }
+}

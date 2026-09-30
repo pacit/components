@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "readings-disagree",
+  "// defect": "The walk found one run more than the report's own `stats` count: the tally is behind, where `a-tally-that-disagrees.json` has it ahead, and by one run, the smallest margin there is. A walk that read one spec entry twice would put itself ahead by exactly this much, so the two readings are compared both ways — whichever of them is wrong, a rate over this run has no denominator.",
+  "stats": { "fake-e2e": { "expected": 10 } }
+}

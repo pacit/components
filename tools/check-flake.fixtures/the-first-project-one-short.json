@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "too-few-repetitions",
+  "// defect": "The first project of a suite declares two repetitions, one short of the floor of three, and the second declares three. Point 1 holds every project to the floor and holds it exactly: two is the most it refuses. Only the configuration is edited, so the report still carries three runs of each case, and point 2 — holding every case to the most any project declares — has nothing to say.",
+  "projects": { "fake-e2e::chromium": { "repeatEach": 2 } }
+}

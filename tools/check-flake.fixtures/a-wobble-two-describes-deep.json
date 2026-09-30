@@ -1,0 +1,109 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "A wobble two describes deep, in the second of two files and under the second of two sibling describes, whose parent has a test of its own. The walk has to reach every spec at every depth and name it by its whole path: a walk that stopped at the file, or one level down, or at the first file or the first describe, loses the wobble and the tally counts it anyway; one that dropped the describes from the path merges the three `renders` into one case run nine times.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            }
+          ]
+        },
+        {
+          "title": "gamma.spec.ts",
+          "specs": [],
+          "suites": [
+            {
+              "title": "the landing",
+              "specs": [
+                {
+                  "title": "renders",
+                  "tests": [{ "projectName": "chromium", "status": "expected" }]
+                },
+                {
+                  "title": "renders",
+                  "tests": [{ "projectName": "chromium", "status": "expected" }]
+                },
+                {
+                  "title": "renders",
+                  "tests": [{ "projectName": "chromium", "status": "expected" }]
+                }
+              ],
+              "suites": [
+                {
+                  "title": "on a tablet",
+                  "specs": [
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "on a phone",
+                  "specs": [
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "unexpected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 11,
+        "unexpected": 1,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}
