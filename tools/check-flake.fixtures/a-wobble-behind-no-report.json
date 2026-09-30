@@ -1,12 +1,7 @@
 {
   "check": "names",
   "rule": "wobble-unrecorded",
-  "beside": [
-    {
-      "check": "measured",
-      "rule": "no-report"
-    }
-  ],
+  "beside": [{ "check": "measured", "rule": "no-report" }],
   "// defect": "The second report never arrived, and the first holds a case that failed twice and passed its last repetition, in no record. A missing report takes its own suite out of the measurement and nothing else: the report that arrived is read in full. The pass stands last, so neither a count nor a read skipping a case's last run may take the case for a failure.",
   "dropReports": ["fake-docs-e2e"],
   "replaceStatuses": {

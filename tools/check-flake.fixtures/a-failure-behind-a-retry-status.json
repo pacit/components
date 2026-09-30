@@ -1,13 +1,9 @@
 {
   "check": "outcomes",
   "rule": "case-always-failed",
-  "beside": [
-    {
-      "check": "outcomes",
-      "rule": "status-contradicts-retries"
-    }
-  ],
+  "beside": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
   "// defect": "Point 3's two rules, each with a finding, in ONE suite: a `flaky` status on the first repetition of one case and a failure on every repetition of another. The failure is point 3's second rule, so a point 3 that stopped at its first rule — over the whole run, or suite by suite as the gate once read — would lose it. The status stands first so that a read skipping a case's first run would lose it too.",
+  "stats": { "fake-e2e": { "expected": 7, "unexpected": 4, "flaky": 1 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "flaky",

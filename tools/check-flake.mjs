@@ -436,16 +436,16 @@ const firstOf = (point) => {
 };
 
 /**
- * Every finding of one run, in the order of the points. A finding of points 1 and 2 takes out
- * of the measurement what it names and no more — the register's two every suite, any other
- * its own suite. A rule read over a report that failed them speaks of something else: with
- * retries on, point 3 would call a `flaky` status a contradiction of a reading point 1 never
- * made, and over two tests merged under one path point 4 would name a wobble neither has.
- * What still stands is read in full, and point 5 reads the record whatever the run was: a
- * night is a sample that does not come again, and what one finding hid is lost with it. One
- * family of races read early on seven of fourteen nightly runs and the verdict named it on
- * three (`lesson-246`) — hidden behind a failure on another case, and once behind a report
- * that never arrived.
+ * Every finding of one run: points 1 and 2 suite by suite, then 3 to 5. A finding of 1 or 2
+ * takes out of the measurement what it names and no more — the register's two every suite,
+ * any other its own suite. A rule read over a report that failed them speaks of something
+ * else: with retries on, point 3 would call a `flaky` status a contradiction of a reading
+ * point 1 never made, and over two tests merged under one path point 4 would name a wobble
+ * neither has. What still stands is read in full, and point 5 reads the record whatever the
+ * run was: a night is a sample that does not come again, and what one finding hid is lost
+ * with it. One family of races read early on seven of fourteen nightly runs and the verdict
+ * named it on three (`lesson-246`) — hidden behind a failure on another case, and once behind
+ * a report that never arrived.
  */
 const checkFlake = (input) => {
   const findings = firstOf(() => checkRegister(input));
@@ -616,9 +616,9 @@ const listed = (rules) => `\`${rules.join('`, `')}\``;
 /**
  * A case is held to the WHOLE set its run reports: its own rule, the rules it names `beside`
  * it, and not one more — a case that fires a rule it does not declare is satisfied by
- * whichever of its defects still works. A case names in `hides` what a finding of points 1 and
- * 2 keeps silent on its input, and that is read off every point run with nothing taken out
- * rather than taken on trust: a hidden finding that is not there proves no stop.
+ * whichever of its defects still works. A case names in `hides` everything a finding of points
+ * 1 and 2 keeps silent on its input, read off every point run with nothing taken out: a hidden
+ * finding that is not there proves no stop, and one left unnamed is a stop nobody accounted for.
  */
 for (const name of cases) {
   const fx = JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
@@ -652,13 +652,20 @@ for (const name of cases) {
       ...firstOf(() => checkDenominator(input, suite)),
     ]),
   ];
-  const past = fx.hides ? [...unstopped, ...checkRules(input)].map(ruleOf) : [];
-  for (const rule of (fx.hides ?? []).map(ruleOf))
-    if (!past.includes(rule))
-      problems.push(
-        `${name}: the case hides \`${rule}\`, and it does not fire on this input even with ` +
-          `nothing taken out — the case proves no stop`,
-      );
+  const silenced = [...unstopped, ...checkRules(input)]
+    .map(ruleOf)
+    .filter((r, i, all) => !fired.includes(r) && all.indexOf(r) === i);
+  const hides = (fx.hides ?? []).map(ruleOf);
+  for (const rule of hides.filter((r) => !silenced.includes(r)))
+    problems.push(
+      `${name}: the case hides \`${rule}\`, and nothing on this input keeps it silent — it ` +
+        `fires in the run, or not even with nothing taken out: the case proves no stop`,
+    );
+  for (const rule of silenced.filter((r) => !hides.includes(r)))
+    problems.push(
+      `${name}: \`${rule}\` fires with nothing taken out and a stop keeps it silent, and the ` +
+        `case does not name it in \`hides\` — a stop nobody accounted for`,
+    );
   // `--write` refuses exactly what points 1 to 3 reject, read off those points and not off
   // the set the refusal is written with.
   const rejected = unstopped.length > 0 || checkOutcomes(input).length > 0;

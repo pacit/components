@@ -1,12 +1,7 @@
 {
   "check": "record",
   "rule": "stale-prose",
-  "beside": [
-    {
-      "check": "names",
-      "rule": "wobble-unrecorded"
-    }
-  ],
+  "beside": [{ "check": "names", "rule": "wobble-unrecorded" }],
   "// defect": "A case that passed its first repetition and failed the other two, in no record, and a record whose prose has drifted. Point 5 rules on the record and on nothing the run measured, so it has a finding to give whatever point 4 found. One pass in three is the fill's count on 2026-09-24: a wobble and not a failure, though all but one run failed — and all but the FIRST, so neither a count nor a read skipping that run may take it for a failure. It stands in the LAST suite alone.",
   "replaceStatuses": {
     "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [

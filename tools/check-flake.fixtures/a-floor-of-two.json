@@ -1,0 +1,11 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "// defect": "A floor of two — the smallest the register allows, and a floor — beside a record whose prose has drifted. The drift is what rejects the case; the floor is what it holds: point 1 accepts two and takes no suite out, and point 5 holds the reading to it, so nothing else may fire.",
+  "policy": { "minimumRepetitions": 2 },
+  "snapshot": {
+    "replace": [
+      { "pattern": "Rows: case · project", "with": "Rows: project · case" }
+    ]
+  }
+}

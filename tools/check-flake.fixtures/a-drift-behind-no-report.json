@@ -1,13 +1,8 @@
 {
   "check": "record",
   "rule": "stale-prose",
-  "beside": [
-    {
-      "check": "measured",
-      "rule": "no-report"
-    }
-  ],
-  "// defect": "A report that never arrived, and a record whose prose has drifted. A suite taken out is out of the measurement, and the record is not part of it: point 5 speaks behind any finding of points 1 and 2.",
+  "beside": [{ "check": "measured", "rule": "no-report" }],
+  "// defect": "A report that never arrived, and a record whose prose has drifted. A suite taken out is out of the measurement, and the record is not part of it: point 5 speaks behind a take-out.",
   "dropReports": ["fake-docs-e2e"],
   "snapshot": {
     "replace": [

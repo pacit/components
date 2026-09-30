@@ -12,10 +12,7 @@
   },
   "snapshot": {
     "replace": [
-      {
-        "pattern": "Retries are off because",
-        "with": "Retries are on because"
-      }
+      { "pattern": "Retries are off because", "with": "Retries are on because" }
     ]
   }
 }

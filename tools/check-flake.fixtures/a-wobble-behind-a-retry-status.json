@@ -1,13 +1,9 @@
 {
   "check": "names",
   "rule": "wobble-unrecorded",
-  "beside": [
-    {
-      "check": "outcomes",
-      "rule": "status-contradicts-retries"
-    }
-  ],
+  "beside": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
   "// defect": "A `flaky` status on one case and, in the same suite, a case that failed its first repetition and passed the other two — the switch's shape on 2026-09-24 — in no record. Each rule of point 3 is a finding that must not keep point 4 from the suite it came from. The only failure stands first, so a read skipping a case's first run would not see a wobble at all.",
+  "stats": { "fake-e2e": { "expected": 9, "unexpected": 2, "flaky": 1 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "expected",

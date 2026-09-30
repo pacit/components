@@ -1,0 +1,16 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "beside": [{ "check": "measured", "rule": "no-repetition-floor" }],
+  "hides": [{ "check": "measured", "rule": "too-few-repetitions" }],
+  "// defect": "The register's floor is 4.5 — a number, and not a count of repetitions — and the record's prose has drifted. Point 1 refuses a floor that is not a whole number of at least two, so every suite is taken out (`hides`); point 5 still speaks, and holds the reading of three repetitions to no floor at all rather than to 4.5, which it would call too short. The twin of the floor written in quotes: that one is not a number, this one is not whole.",
+  "policy": { "minimumRepetitions": 4.5 },
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "is worse than a test that fails always",
+        "with": "is better than a test that fails always"
+      }
+    ]
+  }
+}

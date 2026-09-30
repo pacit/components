@@ -1,0 +1,19 @@
+{
+  "check": "names",
+  "rule": "no-record",
+  "beside": [
+    { "check": "measured", "rule": "no-report" },
+    { "check": "outcomes", "rule": "case-always-failed" }
+  ],
+  "// defect": "No record on disk, in a run that has more to say: the second report never arrived, and the first holds a case that failed every repetition. Every night before 2026-09-18 had no record (`lesson-246`), and the verdict of such a night is still every finding it holds — a missing record neither silences the suites nor is silenced by them.",
+  "snapshot": null,
+  "dropReports": ["fake-docs-e2e"],
+  "stats": { "fake-e2e": { "expected": 8, "unexpected": 4 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  }
+}

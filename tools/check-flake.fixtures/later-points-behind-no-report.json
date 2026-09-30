@@ -1,0 +1,27 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "beside": [
+    { "check": "measured", "rule": "no-report" },
+    { "check": "outcomes", "rule": "status-contradicts-retries" },
+    { "check": "record", "rule": "stale-prose" }
+  ],
+  "// defect": "The FIRST report never arrived; in the second, one case passed, passed on a retry and failed — a `flaky` status and a wobble at once — and the record's prose has drifted. Every point after the take-out has a finding here, behind a stop in the first suite, where the cases before it put each behind the last.",
+  "dropReports": ["fake-e2e"],
+  "stats": { "fake-docs-e2e": { "expected": 1, "unexpected": 1, "flaky": 1 } },
+  "replaceStatuses": {
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "expected",
+      "flaky",
+      "unexpected"
+    ]
+  },
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "found here by hand and fixed",
+        "with": "found here by hand and left"
+      }
+    ]
+  }
+}

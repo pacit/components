@@ -58,7 +58,9 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-wobble-behind-a-failure.json`](a-wobble-behind-a-failure.json)               | one case failing every repetition and two wobbling beside it: 2026-09-24       | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json)               | the second report never arrived, and the first holds a wobble                  | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-a-retry-status.json`](a-wobble-behind-a-retry-status.json)     | a `flaky` status and a wobble, in one suite                                    | `names`       | `wobble-unrecorded`          |
+| [`later-points-behind-no-report.json`](later-points-behind-no-report.json)       | the first report never arrived, and every later point has a finding            | `names`       | `wobble-unrecorded`          |
 | [`no-record-at-all.json`](no-record-at-all.json)                                 | no record on disk, which is the state this gate was written in                 | `names`       | `no-record`                  |
+| [`no-record-behind-a-red-run.json`](no-record-behind-a-red-run.json)             | no record, in a run with a missing report and a failure                        | `names`       | `no-record`                  |
 | [`a-record-with-no-reading.json`](a-record-with-no-reading.json)                 | names with no denominator beside them — a list, and not a rate                 | `record`      | `reading-missing`            |
 | [`a-reading-under-the-floor.json`](a-reading-under-the-floor.json)               | a record taken over fewer repetitions than could have found anything           | `record`      | `reading-below-floor`        |
 | [`a-row-the-reading-does-not-count.json`](a-row-the-reading-does-not-count.json) | the reading claims two wobbles over one row                                    | `record`      | `rows-contradict-reading`    |
@@ -69,6 +71,8 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-drift-behind-a-retry-status.json`](a-drift-behind-a-retry-status.json)       | a `flaky` status, and a record whose prose has drifted                         | `record`      | `stale-prose`                |
 | [`a-drift-behind-no-report.json`](a-drift-behind-no-report.json)                 | a report that never arrived, and a record whose prose has drifted              | `record`      | `stale-prose`                |
 | [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json) | a floor written as a string, and a record whose prose has drifted              | `record`      | `stale-prose`                |
+| [`a-drift-behind-a-decimal-floor.json`](a-drift-behind-a-decimal-floor.json)     | a floor of 4.5, and a record whose prose has drifted                           | `record`      | `stale-prose`                |
+| [`a-floor-of-two.json`](a-floor-of-two.json)                                     | a floor of two beside a drifted record: point 1 takes it, nothing else fires   | `record`      | `stale-prose`                |
 
 Point 1 has six rules because a measurement can be hollow in six ways that all parse, and
 five of them leave a report that looks entirely normal. Point 5 has five because a record is
@@ -78,33 +82,41 @@ two things at once — a reading and a list — and each can contradict the othe
 
 A finding of points 1 and 2 takes out of the measurement what it names, and no more: the
 register's two rules every suite, any other rule its own suite. A report that failed them is
-not a measurement, and a rule read over it speaks of something else. Six cases carry exactly
-that second finding and name it in `hides`; the control runs every point with nothing taken out
-and requires the hidden rule to fire there, so a hidden finding that has stopped existing
-cannot pass for a stop:
+not a measurement, and a rule read over it speaks of something else. Seven cases carry exactly
+that second finding and name it in `hides`. The control runs every point with nothing taken out
+and holds `hides` to what the stop keeps silent, both ways: a hidden finding that has stopped
+existing cannot pass for a stop, and a silenced one left unnamed is a stop nobody accounted for.
 
-- [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json) — point 3 would call the `flaky` status a retry
-  gives a contradiction of retries OFF;
-- [`a-single-run-that-failed.json`](a-single-run-that-failed.json) — point 3 would call one failure unanimous;
-- [`a-report-with-no-project-list.json`](a-report-with-no-project-list.json) — point 4 would name a wobble that nothing
-  certifies was measured with retries off;
-- [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json) — point 3 would call the two failures a lost
-  pass leaves unanimous;
-- [`two-tests-under-one-path.json`](two-tests-under-one-path.json) — point 4 would name a wobble neither test has;
-- [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json) — point 1, suite by suite, would find every
-  suite short of a floor that is not one.
+- [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json) — point 3 would call the
+  `flaky` status a retry gives a contradiction of retries OFF;
+- [`a-single-run-that-failed.json`](a-single-run-that-failed.json) — point 3 would call one failure
+  unanimous;
+- [`a-report-with-no-project-list.json`](a-report-with-no-project-list.json) — point 2 would find
+  every case uneven, and point 4 would name a wobble nothing certifies was measured with retries
+  off;
+- [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json) — point 3 would call
+  the two failures a lost pass leaves unanimous;
+- [`two-tests-under-one-path.json`](two-tests-under-one-path.json) — point 4 would name a wobble neither
+  test has;
+- [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json) and
+  [`a-drift-behind-a-decimal-floor.json`](a-drift-behind-a-decimal-floor.json) — point 1, suite by
+  suite, would find every suite short of a floor that is not one.
 
-[`a-single-run-of-each.json`](a-single-run-of-each.json) hides the finding point 2 would add about a suite point 1
-has already taken out: one suite, one finding. A report that never arrived leaves nothing to
-read, so taking it out prevents nothing and no case is built for that.
+[`a-single-run-of-each.json`](a-single-run-of-each.json) hides the finding point 2 would add
+about a suite point 1 has already taken out: one suite, one finding. A report that never
+arrived leaves nothing to read, so taking it out prevents nothing and no case is built for that.
 
-The suites still standing are read in full, whichever suite was taken out and however many:
-[`a-failure-behind-no-report.json`](a-failure-behind-no-report.json) loses the first report,
-[`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json) the second, and [`two-suites-taken-out.json`](two-suites-taken-out.json)
-both, each for a rule of its own. Point 5 reads the record whatever the run was — behind a
-missing report ([`a-drift-behind-no-report.json`](a-drift-behind-no-report.json)) and behind a register fault
-([`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json)) — and holds its reading to a floor point 1
-accepted and to no other.
+The suites still standing are read in full, whichever suite was taken out and however many.
+Behind a stop in the first suite, [`later-points-behind-no-report.json`](later-points-behind-no-report.json)
+has a finding for every later point and [`a-failure-behind-no-report.json`](a-failure-behind-no-report.json)
+one more for point 3; behind a stop in the last,
+[`no-record-behind-a-red-run.json`](no-record-behind-a-red-run.json) holds point 3,
+[`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json) point 4 and
+[`a-drift-behind-no-report.json`](a-drift-behind-no-report.json) point 5; and
+[`two-suites-taken-out.json`](two-suites-taken-out.json) takes out both, each for a rule of its
+own. Point 5 reads the record whatever the run was, behind a register fault too, and holds its
+reading to a floor point 1 accepted and to no other — not to a floor written in quotes, nor to
+4.5. A missing record is point 4's finding beside the rest, not in their place.
 
 Points 3 to 5 each report whatever the others found. A night is a sample that does not come
 again: on 2026-09-24 the verdict named the slider's press at 0/3 and stopped, with the fill at
@@ -128,7 +140,8 @@ themselves, not off the set the refusal is written with.
 The reading of the reports off disk, and the register that says where they are. Both are a few
 lines and both are guarded by the run itself: a path that resolves to nothing is
 `no-report`, a file that is not JSON throws where it is parsed, and JSON of another shape is
-`no-report` or `empty-report`, its lists read as lists or as nothing. What is
+read as far as it goes — its lists as lists or as nothing — and fails a rule of points 1 and 2
+rather than the run. What is
 deliberately not covered is the **repetition job** — whether `--repeat-each` reached Playwright
 at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what
 notice when it did not.

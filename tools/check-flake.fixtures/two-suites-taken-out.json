@@ -1,17 +1,8 @@
 {
   "check": "denominator",
   "rule": "readings-disagree",
-  "beside": [
-    {
-      "check": "measured",
-      "rule": "no-report"
-    }
-  ],
+  "beside": [{ "check": "measured", "rule": "no-report" }],
   "// defect": "Both suites taken out, each by a rule of its own: the first report's `stats` count more runs than the walk found, and the second report never arrived. Each suite gets its finding, so a run that kept only the first or only the last of them would say half of why nothing was measured.",
-  "stats": {
-    "fake-e2e": {
-      "expected": 40
-    }
-  },
+  "stats": { "fake-e2e": { "expected": 40 } },
   "dropReports": ["fake-docs-e2e"]
 }

@@ -1,13 +1,9 @@
 {
   "check": "record",
   "rule": "stale-prose",
-  "beside": [
-    {
-      "check": "outcomes",
-      "rule": "status-contradicts-retries"
-    }
-  ],
+  "beside": [{ "check": "outcomes", "rule": "status-contradicts-retries" }],
   "// defect": "A `flaky` status in a run whose configuration says retries are off, and a record whose prose has drifted. The record is not part of the run, so point 3's finding, whichever rule gives it, leaves point 5 speaking.",
+  "stats": { "fake-e2e": { "expected": 10, "flaky": 1 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "expected",
@@ -17,10 +13,7 @@
   },
   "snapshot": {
     "replace": [
-      {
-        "pattern": "Both suites run with",
-        "with": "One suite runs with"
-      }
+      { "pattern": "Both suites run with", "with": "One suite runs with" }
     ]
   }
 }
