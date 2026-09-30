@@ -1,0 +1,19 @@
+{
+  "check": "outcomes",
+  "rule": "case-always-failed",
+  "beside": [
+    {
+      "check": "measured",
+      "rule": "no-report"
+    }
+  ],
+  "// defect": "The FIRST report never arrived, and the second holds a case that failed every repetition. A missing report takes out its own suite and no other, whichever suite it is: a run that stopped reading at the first suite it took out, or let a take-out silence point 3, would lose the failure.",
+  "dropReports": ["fake-e2e"],
+  "replaceStatuses": {
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  }
+}

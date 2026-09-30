@@ -1,0 +1,28 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "beside": [
+    {
+      "check": "measured",
+      "rule": "no-repetition-floor"
+    }
+  ],
+  "hides": [
+    {
+      "check": "measured",
+      "rule": "too-few-repetitions"
+    }
+  ],
+  "// defect": "The register writes its floor as the string \"5\", and the record's prose has drifted. Every suite is certified against the floor, so a floor that is not one takes every suite out: point 1 read suite by suite past it would report each one short of it (`hides`). Point 5 still speaks, and holds the record's reading to a floor point 1 accepted and to no other — against \"5\" it would call a reading of three repetitions too short, a finding about a number that is not there.",
+  "policy": {
+    "minimumRepetitions": "5"
+  },
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "is worse than a test that fails always",
+        "with": "is better than a test that fails always"
+      }
+    ]
+  }
+}

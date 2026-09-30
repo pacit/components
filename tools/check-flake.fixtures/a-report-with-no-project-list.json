@@ -1,0 +1,63 @@
+{
+  "check": "measured",
+  "rule": "empty-report",
+  "hides": [
+    {
+      "check": "names",
+      "rule": "wobble-unrecorded"
+    }
+  ],
+  "// defect": "A report whose `projects` is an object and not a list, over cases that are all there — one of them failing only its last repetition. With no project to read there is no retry count or repetition count to hold the cases to, so point 1 takes the suite out; past it, point 4 would name a wobble that nothing certifies was measured with retries off.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": {
+          "name": "chromium",
+          "repeatEach": 3,
+          "retries": 0
+        }
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "expected"
+                }
+              ]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "expected"
+                }
+              ]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "unexpected"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 2,
+        "unexpected": 1,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

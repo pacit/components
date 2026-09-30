@@ -1,8 +1,13 @@
 {
   "check": "names",
   "rule": "wobble-unrecorded",
-  "beside": [{ "check": "outcomes", "rule": "case-always-failed" }],
-  "// defect": "The nightly of 2026-09-24 in miniature: in ONE suite, one case failed every repetition, one passed once in three and one twice. That verdict named the slider's press at 0/3 and never reached the fill at 1/3 or the switch at 2/3 behind it (`lesson-246`). All three stand in the same report and no other report wobbles, so a point 4 that skipped the suite point 3 had a finding in would name nothing.",
+  "beside": [
+    {
+      "check": "outcomes",
+      "rule": "case-always-failed"
+    }
+  ],
+  "// defect": "The nightly of 2026-09-24 in miniature, in ONE suite and in its own order: the slider's press failed every repetition, the fill passed only its second and the switch failed only its first. That verdict named the press at 0/3 and never reached the two behind it (`lesson-246`). No other report wobbles, so a point 4 that skipped the suite point 3 had a finding in would name nothing.",
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "unexpected",
@@ -15,8 +20,8 @@
       "unexpected"
     ],
     "fake-e2e::alpha.spec.ts › closes on escape | firefox": [
-      "expected",
       "unexpected",
+      "expected",
       "expected"
     ]
   }

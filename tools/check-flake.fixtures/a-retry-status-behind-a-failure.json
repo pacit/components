@@ -1,8 +1,13 @@
 {
   "check": "outcomes",
   "rule": "status-contradicts-retries",
-  "beside": [{ "check": "outcomes", "rule": "case-always-failed" }],
-  "// defect": "Point 3 with a finding in each suite: a failure on every repetition in the first report and a `flaky` status in the second. The status stands in the LAST suite and nowhere else, so a point 3 that stopped at the first suite with a finding, as the gate once did, or read one suite for this rule, would lose it.",
+  "beside": [
+    {
+      "check": "outcomes",
+      "rule": "case-always-failed"
+    }
+  ],
+  "// defect": "Point 3 with a finding in each suite: a failure on every repetition in the first report and a `flaky` status on the last repetition of a case in the second. The status stands in the LAST suite and nowhere else, so a point 3 that stopped at the first suite with a finding, as the gate once did, or read one suite for this rule, would lose it — and so would a read that skipped a case's last run.",
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "unexpected",
@@ -11,8 +16,8 @@
     ],
     "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
       "expected",
-      "flaky",
-      "expected"
+      "expected",
+      "flaky"
     ]
   }
 }

@@ -1,12 +1,11 @@
 # Negative control of the flake gate
 
 Deliberately defective inputs. `tools/check-flake.mjs` runs all five of its points on each of
-them, over whatever points 1 and 2 leave standing, and **requires every one to be rejected — by
-the rules it declares, and by no other**. An
-input that passes is a fault; an input that fires somewhere other than where its file says is
-a fault just the same, because it proves something other than what it declares — and so is
-one that fires there and somewhere else too, being satisfied by whichever of its defects still
-works.
+them, the later ones over the suites the first two leave standing, and **requires every one to
+be rejected by the rules it declares and by no other**. An input that passes is a fault; an
+input that fires somewhere other than where its file says is a fault just the same, because it
+proves something other than what it declares — and so is one that fires there and somewhere
+else too, being satisfied by whichever of its defects still works.
 
 The reason it exists is the same as for every other gate here
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
@@ -40,6 +39,7 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-floor-of-one-repetition.json`](a-floor-of-one-repetition.json)               | a floor of one run of each — nothing for a case to disagree with               | `measured`    | `no-repetition-floor`        |
 | [`a-suite-with-no-report.json`](a-suite-with-no-report.json)                     | one of the two reports never arrived, and half a suite reads as clean          | `measured`    | `no-report`                  |
 | [`an-empty-report.json`](an-empty-report.json)                                   | a report with no project and no case, which agrees with every record           | `measured`    | `empty-report`               |
+| [`a-report-with-no-project-list.json`](a-report-with-no-project-list.json)       | cases under a `projects` that is not a list: nothing to hold them to           | `measured`    | `empty-report`               |
 | [`retries-left-on.json`](retries-left-on.json)                                   | retries on — the mechanism that makes a flake report itself green              | `measured`    | `retries-on`                 |
 | [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json)       | retries on, and the `flaky` status a retry gives — point 1 alone may speak     | `measured`    | `retries-on`                 |
 | [`a-single-run-of-each.json`](a-single-run-of-each.json)                         | each case run once: a green rate over a sample that cannot hold a disagreement | `measured`    | `too-few-repetitions`        |
@@ -48,13 +48,16 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`a-case-that-ran-fewer-times.json`](a-case-that-ran-fewer-times.json)           | one case ran twice where every other ran three times, the tally agreeing       | `denominator` | `case-run-unevenly`          |
 | [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json)   | the walk lost the one pass of a case, and two failures look unanimous          | `denominator` | `readings-disagree`          |
 | [`two-tests-under-one-path.json`](two-tests-under-one-path.json)                 | two tests under one path merge into one case — point 2 alone may speak         | `denominator` | `case-run-unevenly`          |
+| [`two-suites-taken-out.json`](two-suites-taken-out.json)                         | both suites taken out, each by a rule of its own                               | `denominator` | `readings-disagree`          |
 | [`a-status-only-a-retry-gives.json`](a-status-only-a-retry-gives.json)           | a `flaky` status in a run whose configuration says retries are off             | `outcomes`    | `status-contradicts-retries` |
 | [`a-case-that-always-failed.json`](a-case-that-always-failed.json)               | a case failing every repetition, which a wobble counter cannot see at all      | `outcomes`    | `case-always-failed`         |
 | [`a-failure-behind-a-retry-status.json`](a-failure-behind-a-retry-status.json)   | a `flaky` status and a case failing every repetition, in one suite             | `outcomes`    | `case-always-failed`         |
 | [`a-retry-status-behind-a-failure.json`](a-retry-status-behind-a-failure.json)   | a case failing every repetition in one suite, a `flaky` status in the other    | `outcomes`    | `status-contradicts-retries` |
+| [`a-failure-behind-no-report.json`](a-failure-behind-no-report.json)             | the first report never arrived, and the second holds a failure                 | `outcomes`    | `case-always-failed`         |
 | [`a-name-the-record-does-not-carry.json`](a-name-the-record-does-not-carry.json) | a case that passed, failed and passed again, standing in no record             | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-a-failure.json`](a-wobble-behind-a-failure.json)               | one case failing every repetition and two wobbling beside it: 2026-09-24       | `names`       | `wobble-unrecorded`          |
-| [`a-wobble-behind-a-missing-report.json`](a-wobble-behind-a-missing-report.json) | a report that never arrived, and a wobble in the one that did                  | `names`       | `wobble-unrecorded`          |
+| [`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json)               | the second report never arrived, and the first holds a wobble                  | `names`       | `wobble-unrecorded`          |
+| [`a-wobble-behind-a-retry-status.json`](a-wobble-behind-a-retry-status.json)     | a `flaky` status and a wobble, in one suite                                    | `names`       | `wobble-unrecorded`          |
 | [`no-record-at-all.json`](no-record-at-all.json)                                 | no record on disk, which is the state this gate was written in                 | `names`       | `no-record`                  |
 | [`a-record-with-no-reading.json`](a-record-with-no-reading.json)                 | names with no denominator beside them — a list, and not a rate                 | `record`      | `reading-missing`            |
 | [`a-reading-under-the-floor.json`](a-reading-under-the-floor.json)               | a record taken over fewer repetitions than could have found anything           | `record`      | `reading-below-floor`        |
@@ -63,7 +66,9 @@ here by that same string, and why point 2 checks that every case ran the same nu
 | [`prose-drift.json`](prose-drift.json)                                           | every number right, and the sentence saying a name is never deleted reversed   | `record`      | `stale-prose`                |
 | [`a-drift-behind-a-wobble.json`](a-drift-behind-a-wobble.json)                   | a wobble of one pass in three, and a record whose prose has drifted            | `record`      | `stale-prose`                |
 | [`a-drift-behind-a-failure.json`](a-drift-behind-a-failure.json)                 | a case failing every repetition, and a record whose prose has drifted          | `record`      | `stale-prose`                |
-| [`a-drift-behind-no-floor.json`](a-drift-behind-no-floor.json)                   | no floor in the register, and a record whose prose has drifted                 | `record`      | `stale-prose`                |
+| [`a-drift-behind-a-retry-status.json`](a-drift-behind-a-retry-status.json)       | a `flaky` status, and a record whose prose has drifted                         | `record`      | `stale-prose`                |
+| [`a-drift-behind-no-report.json`](a-drift-behind-no-report.json)                 | a report that never arrived, and a record whose prose has drifted              | `record`      | `stale-prose`                |
+| [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json) | a floor written as a string, and a record whose prose has drifted              | `record`      | `stale-prose`                |
 
 Point 1 has six rules because a measurement can be hollow in six ways that all parse, and
 five of them leave a report that looks entirely normal. Point 5 has five because a record is
@@ -73,44 +78,57 @@ two things at once — a reading and a list — and each can contradict the othe
 
 A finding of points 1 and 2 takes out of the measurement what it names, and no more: the
 register's two rules every suite, any other rule its own suite. A report that failed them is
-not a measurement, and a rule read over it speaks of something else. Five cases carry exactly
+not a measurement, and a rule read over it speaks of something else. Six cases carry exactly
 that second finding and name it in `hides`; the control runs every point with nothing taken out
 and requires the hidden rule to fire there, so a hidden finding that has stopped existing
 cannot pass for a stop:
 
-- [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json) — point 3 would
-  call the `flaky` status a retry gives a contradiction of retries OFF;
-- [`a-single-run-that-failed.json`](a-single-run-that-failed.json) — point 3 would call one
-  failure unanimous;
-- [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json) — point 3
-  would call the two failures a lost pass leaves unanimous;
-- [`two-tests-under-one-path.json`](two-tests-under-one-path.json) — point 4 would name a
-  wobble neither test has;
-- [`a-drift-behind-no-floor.json`](a-drift-behind-no-floor.json) — point 1, suite by suite,
-  would find every suite short of a floor that is not there.
+- [`retries-on-and-a-rescued-case.json`](retries-on-and-a-rescued-case.json) — point 3 would call the `flaky` status a retry
+  gives a contradiction of retries OFF;
+- [`a-single-run-that-failed.json`](a-single-run-that-failed.json) — point 3 would call one failure unanimous;
+- [`a-report-with-no-project-list.json`](a-report-with-no-project-list.json) — point 4 would name a wobble that nothing
+  certifies was measured with retries off;
+- [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json) — point 3 would call the two failures a lost
+  pass leaves unanimous;
+- [`two-tests-under-one-path.json`](two-tests-under-one-path.json) — point 4 would name a wobble neither test has;
+- [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json) — point 1, suite by suite, would find every
+  suite short of a floor that is not one.
 
-[`a-single-run-of-each.json`](a-single-run-of-each.json) hides the finding point 2 would add
-about a suite point 1 has already taken out: one suite, one finding. A report that is missing
-or empty leaves nothing to read, so taking it out prevents nothing and no case is built for it.
+[`a-single-run-of-each.json`](a-single-run-of-each.json) hides the finding point 2 would add about a suite point 1
+has already taken out: one suite, one finding. A report that never arrived leaves nothing to
+read, so taking it out prevents nothing and no case is built for that.
 
-What still stands is read in full, and point 5 reads the record whatever the run was: points 3
-to 5 each report whatever the others found. A night is a sample that does not come again — on
-2026-09-24 the verdict named the slider's press at 0/3 and stopped, with the fill at 1/3 and the
-switch at 2/3 in the same report, and on 2026-09-16 a run printed `no-report` alone while the
-report that did arrive held the fill at 2/3 ([`lesson-246`](../../docs/lessons.md#lesson-246)).
+The suites still standing are read in full, whichever suite was taken out and however many:
+[`a-failure-behind-no-report.json`](a-failure-behind-no-report.json) loses the first report,
+[`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json) the second, and [`two-suites-taken-out.json`](two-suites-taken-out.json)
+both, each for a rule of its own. Point 5 reads the record whatever the run was — behind a
+missing report ([`a-drift-behind-no-report.json`](a-drift-behind-no-report.json)) and behind a register fault
+([`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json)) — and holds its reading to a floor point 1
+accepted and to no other.
+
+Points 3 to 5 each report whatever the others found. A night is a sample that does not come
+again: on 2026-09-24 the verdict named the slider's press at 0/3 and stopped, with the fill at
+1/3 and the switch at 2/3 in the same report ([`lesson-246`](../../docs/lessons.md#lesson-246)).
 So a case is held to the WHOLE set of rules its run reports — its own, the ones it names in
 `beside`, and not one more. Each case named "… behind …" carries a finding that a verdict
-stopping at its first would never have reached.
+stopping at an earlier one would never have reached; together they pair each rule of point 3
+with point 4 and with point 5, and point 4 with point 5.
 
-Every case also holds the one thing `--write` decides: it refuses exactly the runs points 1 to
-3 reject, and records the rest. That is read off the three points themselves, not off the set
-the refusal is written with.
+Positions are part of the cases too. The `flaky` status stands first, in the middle and last
+across them; a wobble that is the only one in its run has its lone failure first, in the middle
+or last, or its lone pass first or last. A rule reading a case's runs with the first or the last
+one skipped loses one of them.
+
+Every case also holds the one thing `--write` decides, which is whether to refuse: it refuses
+exactly the runs points 1 to 3 reject and records the rest. That is read off the three points
+themselves, not off the set the refusal is written with.
 
 ## What these cases do NOT exercise
 
 The reading of the reports off disk, and the register that says where they are. Both are a few
 lines and both are guarded by the run itself: a path that resolves to nothing is
-`no-report`, and a file that is not a Playwright report throws where it is parsed. What is
+`no-report`, a file that is not JSON throws where it is parsed, and JSON of another shape is
+`no-report` or `empty-report`, its lists read as lists or as nothing. What is
 deliberately not covered is the **repetition job** — whether `--repeat-each` reached Playwright
 at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what
 notice when it did not.
@@ -121,6 +139,9 @@ has a case whose finding stands in the first suite alone and one whose finding s
 last, so a rule that lost a suite outright is a case above going silent; a list cut short
 inside a finding is read by the person and nobody else. Nor are findings counted: point 3
 gives one per rule, and one per rule and suite would repeat its paragraph without hiding a
-case. Nor is the write itself run: the control holds which findings refuse `--write` over every
-case, and that the live run consults them before it writes is a few lines read in review — as
-is `--report`, which reads every report, taken out or not.
+case. Nor does every rule of points 1 and 2 meet every later point: each later point is held
+behind `no-report`, point 5 behind a register fault too, and a take-out that silenced one point
+for one rule alone would need a case for each pair. Nor is the write itself run: the control
+checks over every case whether `--write` would refuse, not what the refusal says, and that the
+live run consults it before it writes is a few lines read in review — as is `--report`, which
+reads every report, taken out or not.

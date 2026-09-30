@@ -44,6 +44,8 @@ class FlakeError extends Error {
 }
 
 const list = (items) => items.map((i) => `      ${i}`).join('\n');
+/** A field a report promises is a list, as a list whatever it holds. */
+const listOf = (value) => (Array.isArray(value) ? value : []);
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 const json = (path) =>
   existsSync(join(ROOT, path)) ? JSON.parse(read(path)) : null;
@@ -55,22 +57,22 @@ const json = (path) =>
  * found by grouping on that path and not by any field of the report.
  */
 const specsOf = (suite, path = []) => [
-  ...(suite?.specs ?? []).map((spec) => ({
+  ...listOf(suite?.specs).map((spec) => ({
     spec,
-    path: [...path, spec.title],
+    path: [...path, spec?.title],
   })),
-  ...(suite?.suites ?? []).flatMap((child) =>
-    specsOf(child, [...path, child.title]),
+  ...listOf(suite?.suites).flatMap((child) =>
+    specsOf(child, [...path, child?.title]),
   ),
 ];
 
 /** A case: one test, in one project, across the repetitions of one run. */
 const casesOf = (report) => {
   const cases = new Map();
-  for (const { spec, path } of (report?.suites ?? []).flatMap((s) =>
-    specsOf(s, [s.title]),
+  for (const { spec, path } of listOf(report?.suites).flatMap((s) =>
+    specsOf(s, [s?.title]),
   ))
-    for (const test of spec?.tests ?? []) {
+    for (const test of listOf(spec?.tests)) {
       const key = `${path.join(' › ')} | ${test?.projectName}`;
       const at = cases.get(key) ?? { key, runs: [] };
       at.runs.push(test?.status);
@@ -83,9 +85,12 @@ const casesOf = (report) => {
   }));
 };
 
-/** A report's projects, as a list whatever the report carries in their place. */
-const projectsOf = (report) =>
-  Array.isArray(report?.config?.projects) ? report.config.projects : [];
+const projectsOf = (report) => listOf(report?.config?.projects);
+/** The register's floor when it is one, and null when point 1 refuses it. */
+const floorOf = (policy) => {
+  const floor = policy?.minimumRepetitions;
+  return Number.isInteger(floor) && floor >= 2 ? floor : null;
+};
 
 const readInput = () => {
   const policy = json(POLICY) ?? {};
@@ -198,12 +203,12 @@ const checkRegister = (input) => {
       `\`${POLICY}\` names no suite to repeat — with an empty list every later point rules ` +
         `on nothing and this gate reports a repository with no flaky test in it`,
     );
-  const floor = input.policy?.minimumRepetitions;
-  if (!Number.isInteger(floor) || floor < 2)
+  if (floorOf(input.policy) === null)
     throw new FlakeError(
       'measured',
       'no-repetition-floor',
-      `\`${POLICY}\` declares \`minimumRepetitions\` as ${JSON.stringify(floor)}. Below two ` +
+      `\`${POLICY}\` declares \`minimumRepetitions\` as ` +
+        `${JSON.stringify(input.policy?.minimumRepetitions)}. Below two ` +
         `there is nothing for a case to disagree WITH, and the measurement is the suite`,
     );
 };
@@ -373,13 +378,15 @@ const checkRecord = (input, snapshot) => {
         `they were measured over. A list of names and no denominator is not a rate`,
     );
   const [, , repetitions, , cases, , wobbled, rate] = reading;
-  if (Number(repetitions) < (input.policy?.minimumRepetitions ?? 0))
+  // Held to a floor point 1 accepted: point 5 speaks behind a register finding too, and a
+  // floor written as "5" or 4.5 is point 1's to name, not a reading taken under it.
+  const floor = floorOf(input.policy);
+  if (floor !== null && Number(repetitions) < floor)
     throw new FlakeError(
       'record',
       'reading-below-floor',
       `the record was taken over ${repetitions} repetitions, under the floor of ` +
-        `${input.policy?.minimumRepetitions} — it is a record of a run that could not ` +
-        `have found anything`,
+        `${floor} — it is a record of a run that could not have found anything`,
     );
   const rows = (snapshot ?? '')
     .split('\n')
@@ -486,8 +493,12 @@ if (WRITE) {
   // A refused write reports what refused it and nothing more: points 4 and 5 would speak of
   // the record it leaves in place, and prescribe the very command that was just refused.
   const refused = refusalOf(findings);
-  if (refused.length) findings = refused;
-  else {
+  if (refused.length) {
+    findings = refused;
+    console.error(
+      `\`--write\` wrote nothing: points 1 to 3 refuse this run.\n`,
+    );
+  } else {
     writeFileSync(join(ROOT, SNAPSHOT), renderSnapshot(live));
     live.snapshot = read(SNAPSHOT);
     findings = checkFlake(live);
