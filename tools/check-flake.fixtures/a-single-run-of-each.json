@@ -1,6 +1,7 @@
 {
   "check": "measured",
   "rule": "too-few-repetitions",
-  "// defect": "The job ran each case once. The report is well-formed, every case agrees with itself trivially, and the rate is zero — a green measurement over a sample that cannot contain a disagreement.",
+  "hides": [{ "check": "denominator", "rule": "case-run-unevenly" }],
+  "// defect": "The job ran each case once. The report is well-formed, every case agrees with itself trivially, and the rate is zero — a green measurement over a sample that cannot contain a disagreement. Only the configuration is edited, so the report still carries three runs of each case, which point 2 would call uneven against the one declared: a suite point 1 has taken out gets no second finding (`hides`).",
   "projects": { "fake-e2e": { "repeatEach": 1 } }
 }

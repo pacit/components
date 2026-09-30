@@ -1,0 +1,18 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "beside": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "A case that failed every repetition, and a record whose prose has drifted from what the renderer writes. Point 5 rules on the record and on nothing the run measured, so neither finding is the other's to hide. The failure stands in the LAST suite and nowhere else, so a point 3 that read one suite would lose it.",
+  "replaceStatuses": {
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  },
+  "snapshot": {
+    "replace": [
+      { "pattern": "Retries are off because", "with": "Retries are on because" }
+    ]
+  }
+}

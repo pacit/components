@@ -1,0 +1,25 @@
+{
+  "check": "measured",
+  "rule": "too-few-repetitions",
+  "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "A job that really ran each case once: the configuration says one repetition and the report holds one run of each, one of which failed. Point 1 takes the suite out, and has to: past it, point 3 would report that single failure as a case that failed EVERY repetition — a unanimous column one run tall.",
+  "projects": { "fake-e2e": { "repeatEach": 1 } },
+  "stats": { "fake-e2e": { "expected": 3, "unexpected": 1 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  },
+  "dropRepetitions": [
+    "fake-e2e::alpha.spec.ts › opens on click | chromium",
+    "fake-e2e::alpha.spec.ts › opens on click | chromium",
+    "fake-e2e::alpha.spec.ts › opens on click | firefox",
+    "fake-e2e::alpha.spec.ts › opens on click | firefox",
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium",
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium",
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox",
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox"
+  ]
+}

@@ -1,7 +1,8 @@
 {
   "check": "outcomes",
   "rule": "status-contradicts-retries",
-  "// defect": "A case carries the `flaky` status, which Playwright gives a test that failed and then passed ON A RETRY. Point 1 read the configuration and found retries off, so one of the two is not describing this run — and the one that is wrong decides whether the measurement means anything.",
+  "// defect": "A case carries the `flaky` status, which Playwright gives a test that failed and then passed ON A RETRY. Point 1 read the configuration and found retries off, so one of the two is not describing this run — and the one that is wrong decides whether the measurement means anything. Its tally counts that run where Playwright does, under `flaky`, so point 2 has to read that counter too — without it the walk and the tally would disagree, and the suite would be taken out before point 3 could name the status.",
+  "stats": { "fake-e2e": { "expected": 10, "flaky": 1 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
       "expected",

@@ -7019,4 +7019,5 @@ sample, not to the case.
 Written on 2026-09-23 with a repair of its own, on a branch that never merged — its review found
 the switch on the list — this entry was carried to `main` later, its table read again from the
 log of every nightly run on `main` on that code; #23 and #25 had repaired the same cases on
-2026-09-25.
+2026-09-25. The verdict's half was repaired in #38 on 2026-09-30: a run names every finding it
+holds, and a report that fails points 1 and 2 takes out its own suite and no other.

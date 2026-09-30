@@ -1,0 +1,14 @@
+{
+  "check": "denominator",
+  "rule": "readings-disagree",
+  "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "The walk lost one run the report's own `stats` still count: the pass of a case that passed once and failed twice. Point 2 takes the suite out, and has to: past it, point 3 would read the two failures left as a case that failed every repetition.",
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium": [
+      "expected",
+      "unexpected",
+      "unexpected"
+    ]
+  },
+  "dropRepetitions": ["fake-e2e::alpha.spec.ts › closes on escape | chromium"]
+}

@@ -44,6 +44,8 @@ class FlakeError extends Error {
 }
 
 const list = (items) => items.map((i) => `      ${i}`).join('\n');
+/** A field a report promises is a list, as a list whatever it holds. */
+const listOf = (value) => (Array.isArray(value) ? value : []);
 const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 const json = (path) =>
   existsSync(join(ROOT, path)) ? JSON.parse(read(path)) : null;
@@ -55,22 +57,22 @@ const json = (path) =>
  * found by grouping on that path and not by any field of the report.
  */
 const specsOf = (suite, path = []) => [
-  ...(suite?.specs ?? []).map((spec) => ({
+  ...listOf(suite?.specs).map((spec) => ({
     spec,
-    path: [...path, spec.title],
+    path: [...path, spec?.title],
   })),
-  ...(suite?.suites ?? []).flatMap((child) =>
-    specsOf(child, [...path, child.title]),
+  ...listOf(suite?.suites).flatMap((child) =>
+    specsOf(child, [...path, child?.title]),
   ),
 ];
 
 /** A case: one test, in one project, across the repetitions of one run. */
 const casesOf = (report) => {
   const cases = new Map();
-  for (const { spec, path } of (report?.suites ?? []).flatMap((s) =>
-    specsOf(s, [s.title]),
+  for (const { spec, path } of listOf(report?.suites).flatMap((s) =>
+    specsOf(s, [s?.title]),
   ))
-    for (const test of spec?.tests ?? []) {
+    for (const test of listOf(spec?.tests)) {
       const key = `${path.join(' › ')} | ${test?.projectName}`;
       const at = cases.get(key) ?? { key, runs: [] };
       at.runs.push(test?.status);
@@ -81,6 +83,13 @@ const casesOf = (report) => {
     passed: c.runs.filter((s) => s === PASSED).length,
     failed: c.runs.filter((s) => s === FAILED).length,
   }));
+};
+
+const projectsOf = (report) => listOf(report?.config?.projects);
+/** The register's floor when it is one, and null when point 1 refuses it. */
+const floorOf = (policy) => {
+  const floor = policy?.minimumRepetitions;
+  return Number.isInteger(floor) && floor >= 2 ? floor : null;
 };
 
 const readInput = () => {
@@ -168,7 +177,7 @@ const tallyOf = (input) => {
     repetitions: Math.max(
       0,
       ...entries.flatMap(([, r]) =>
-        (r?.config?.projects ?? []).map((p) => p?.repeatEach ?? 0),
+        projectsOf(r).map((p) => p?.repeatEach ?? 0),
       ),
     ),
     suites: entries.length,
@@ -182,123 +191,136 @@ const tallyOf = (input) => {
 
 // ── the checks ────────────────────────────────────────────────────────────────
 
-/** 1. MEASURED — a run that never happened reads as a suite that never wobbles. */
-const checkMeasured = (input) => {
-  const declared = Object.keys(input.policy?.reports ?? {});
-  if (!declared.length)
+/**
+ * 1. MEASURED, its register half: a list of suites and a floor. Every suite is certified
+ * against the two, so a finding here takes every suite out of the measurement.
+ */
+const checkRegister = (input) => {
+  if (!Object.keys(input.policy?.reports ?? {}).length)
     throw new FlakeError(
       'measured',
       'no-suite-declared',
       `\`${POLICY}\` names no suite to repeat — with an empty list every later point rules ` +
         `on nothing and this gate reports a repository with no flaky test in it`,
     );
-  const floor = input.policy?.minimumRepetitions;
-  if (!Number.isInteger(floor) || floor < 2)
+  if (floorOf(input.policy) === null)
     throw new FlakeError(
       'measured',
       'no-repetition-floor',
-      `\`${POLICY}\` declares \`minimumRepetitions\` as ${JSON.stringify(floor)}. Below two ` +
+      `\`${POLICY}\` declares \`minimumRepetitions\` as ` +
+        `${JSON.stringify(input.policy?.minimumRepetitions)}. Below two ` +
         `there is nothing for a case to disagree WITH, and the measurement is the suite`,
     );
-  for (const suite of declared) {
-    const report = input.reports?.[suite];
-    if (!report)
+};
+
+/** 1. MEASURED — a run that never happened reads as a suite that never wobbles. */
+const checkMeasured = (input, suite) => {
+  const floor = input.policy?.minimumRepetitions;
+  const report = input.reports?.[suite];
+  if (!report)
+    throw new FlakeError(
+      'measured',
+      'no-report',
+      `no report for \`${suite}\` at \`${input.policy?.reports?.[suite]}\`.\n` +
+        `    This gate runs after the repetition job and not beside the other gates: ` +
+        `what it reads is produced by that job and by nothing else.`,
+    );
+  const projects = projectsOf(report);
+  if (!projects.length || !casesOf(report).length)
+    throw new FlakeError(
+      'measured',
+      'empty-report',
+      `the report for \`${suite}\` holds no project or no case at all — an empty ` +
+        `measurement agrees with every record ever written`,
+    );
+  for (const project of projects) {
+    if ((project?.retries ?? 0) !== 0)
       throw new FlakeError(
         'measured',
-        'no-report',
-        `no report for \`${suite}\` at \`${input.policy.reports[suite]}\`.\n` +
-          `    This gate runs after the repetition job and not beside the other gates: ` +
-          `what it reads is produced by that job and by nothing else.`,
+        'retries-on',
+        `\`${suite}\`/\`${project?.name}\` ran with ${project?.retries} retries.\n` +
+          `    A retry is the mechanism that makes a flake invisible: the case fails, ` +
+          `runs again, passes, and is reported green. With retries on, this whole ` +
+          `measurement reads zero.`,
       );
-    const projects = report?.config?.projects ?? [];
-    if (!projects.length || !casesOf(report).length)
+    if (!((project?.repeatEach ?? 0) >= floor))
       throw new FlakeError(
         'measured',
-        'empty-report',
-        `the report for \`${suite}\` holds no project or no case at all — an empty ` +
-          `measurement agrees with every record ever written`,
+        'too-few-repetitions',
+        `\`${suite}\`/\`${project?.name}\` ran each case ` +
+          `${JSON.stringify(project?.repeatEach)} time(s) against a floor of ${floor}`,
       );
-    for (const project of projects) {
-      if ((project?.retries ?? 0) !== 0)
-        throw new FlakeError(
-          'measured',
-          'retries-on',
-          `\`${suite}\`/\`${project?.name}\` ran with ${project?.retries} retries.\n` +
-            `    A retry is the mechanism that makes a flake invisible: the case fails, ` +
-            `runs again, passes, and is reported green. With retries on, this whole ` +
-            `measurement reads zero.`,
-        );
-      if (!((project?.repeatEach ?? 0) >= floor))
-        throw new FlakeError(
-          'measured',
-          'too-few-repetitions',
-          `\`${suite}\`/\`${project?.name}\` ran each case ` +
-            `${JSON.stringify(project?.repeatEach)} time(s) against a floor of ${floor}`,
-        );
-    }
   }
 };
 
 /** 2. DENOMINATOR — the walk and the report's own tally are two readings of one run. */
-const checkDenominator = (input) => {
-  for (const [suite, report] of Object.entries(input.reports ?? {})) {
-    const cases = casesOf(report);
-    const walked = cases.reduce((a, c) => a + c.runs.length, 0);
-    const stats = report?.stats ?? {};
-    const counted =
-      (stats.expected ?? 0) +
-      (stats.unexpected ?? 0) +
-      (stats.flaky ?? 0) +
-      (stats.skipped ?? 0);
-    if (walked !== counted)
-      throw new FlakeError(
-        'denominator',
-        'readings-disagree',
-        `\`${suite}\`: the walk found ${walked} test runs where the report's own \`stats\` ` +
-          `count ${counted}. A walk that loses a nested \`describe\` loses every case in it ` +
-          `and says nothing`,
-      );
-    const repeats = Math.max(
-      0,
-      ...(report?.config?.projects ?? []).map((p) => p?.repeatEach ?? 0),
+const checkDenominator = (input, suite) => {
+  const report = input.reports?.[suite];
+  const cases = casesOf(report);
+  const walked = cases.reduce((a, c) => a + c.runs.length, 0);
+  const stats = report?.stats ?? {};
+  const counted =
+    (stats.expected ?? 0) +
+    (stats.unexpected ?? 0) +
+    (stats.flaky ?? 0) +
+    (stats.skipped ?? 0);
+  if (walked !== counted)
+    throw new FlakeError(
+      'denominator',
+      'readings-disagree',
+      `\`${suite}\`: the walk found ${walked} test runs where the report's own \`stats\` ` +
+        `count ${counted}. A walk that loses a nested \`describe\` loses every case in it ` +
+        `and says nothing`,
     );
-    const short = cases.filter((c) => c.runs.length !== repeats);
-    if (short.length)
-      throw new FlakeError(
-        'denominator',
-        'case-run-unevenly',
-        `\`${suite}\`: ${short.length} case(s) did not run ${repeats} times:\n` +
-          list(short.map((c) => `${c.key} — ${c.runs.length}`)) +
-          `\n    Repetitions of one case are found by GROUPING on its path, so a path that ` +
-          `is not unique silently merges two cases into one and neither is measured.`,
-      );
-  }
+  const repeats = Math.max(
+    0,
+    ...projectsOf(report).map((p) => p?.repeatEach ?? 0),
+  );
+  const short = cases.filter((c) => c.runs.length !== repeats);
+  if (short.length)
+    throw new FlakeError(
+      'denominator',
+      'case-run-unevenly',
+      `\`${suite}\`: ${short.length} case(s) did not run ${repeats} times:\n` +
+        list(short.map((c) => `${c.key} — ${c.runs.length}`)) +
+        `\n    Repetitions of one case are found by GROUPING on its path, so a path that ` +
+        `is not unique silently merges two cases into one and neither is measured.`,
+    );
 };
 
-/** 3. OUTCOMES — a test that always fails is red, and a `flaky` status contradicts point 1. */
+/**
+ * 3. OUTCOMES — a test that always fails is red, and a `flaky` status contradicts point 1.
+ * Returns its findings rather than throwing them: one list over every suite it is given, and
+ * each rule once over all of it, so neither a suite nor a rule hides what the next one found.
+ */
 const checkOutcomes = (input) => {
-  for (const [suite, report] of Object.entries(input.reports ?? {})) {
-    const cases = casesOf(report);
-    const retried = cases.filter((c) => c.runs.includes(RETRIED));
-    if (retried.length)
-      throw new FlakeError(
+  const cases = Object.entries(input.reports ?? {}).flatMap(([suite, report]) =>
+    casesOf(report).map((c) => ({ ...c, where: `\`${suite}\`: ${c.key}` })),
+  );
+  const findings = [];
+  const retried = cases.filter((c) => c.runs.includes(RETRIED));
+  if (retried.length)
+    findings.push(
+      new FlakeError(
         'outcomes',
         'status-contradicts-retries',
-        `\`${suite}\`: ${retried.length} case(s) carry the \`${RETRIED}\` status, which ` +
+        `${retried.length} case(s) carry the \`${RETRIED}\` status, which ` +
           `Playwright gives a test that failed and then passed ON A RETRY:\n` +
-          list(retried.map((c) => c.key)) +
+          list(retried.map((c) => c.where)) +
           `\n    Point 1 read the configuration and found retries off. One of the two is ` +
           `not describing this run.`,
-      );
-    const broken = cases.filter(
-      (c) => c.failed === c.runs.length && c.runs.length > 0,
+      ),
     );
-    if (broken.length)
-      throw new FlakeError(
+  const broken = cases.filter(
+    (c) => c.failed === c.runs.length && c.runs.length > 0,
+  );
+  if (broken.length)
+    findings.push(
+      new FlakeError(
         'outcomes',
         'case-always-failed',
-        `\`${suite}\`: ${broken.length} case(s) failed every repetition:\n` +
-          list(broken.map((c) => `${c.key} — 0/${c.runs.length}`)) +
+        `${broken.length} case(s) failed every repetition:\n` +
+          list(broken.map((c) => `${c.where} — 0/${c.runs.length}`)) +
           `\n    They are separated from the wobbles because a repetition job swallows ` +
           `an ordinary failure otherwise: the run exits non-zero, the step is allowed to, ` +
           `and a gate counting DISAGREEMENTS finds none. What a unanimous column MEANS is ` +
@@ -309,8 +331,9 @@ const checkOutcomes = (input) => {
           `browser. The evidence that tells the two apart is OUTSIDE this report, in the same ` +
           `commit's ordinary suite. On 2026-09-16 that suite called these same four "flaky" ` +
           `while this one read 0/3 (\`lesson-214\`).`,
-      );
-  }
+      ),
+    );
+  return findings;
 };
 
 /** 4. NAMES — one-sided by design: what appeared is a finding, what behaved is not. */
@@ -355,13 +378,15 @@ const checkRecord = (input, snapshot) => {
         `they were measured over. A list of names and no denominator is not a rate`,
     );
   const [, , repetitions, , cases, , wobbled, rate] = reading;
-  if (Number(repetitions) < (input.policy?.minimumRepetitions ?? 0))
+  // Held to a floor point 1 accepted: point 5 speaks behind a register finding too, and a
+  // floor written as "5" or 4.5 is point 1's to name, not a reading taken under it.
+  const floor = floorOf(input.policy);
+  if (floor !== null && Number(repetitions) < floor)
     throw new FlakeError(
       'record',
       'reading-below-floor',
       `the record was taken over ${repetitions} repetitions, under the floor of ` +
-        `${input.policy?.minimumRepetitions} — it is a record of a run that could not ` +
-        `have found anything`,
+        `${floor} — it is a record of a run that could not have found anything`,
     );
   const rows = (snapshot ?? '')
     .split('\n')
@@ -399,37 +424,87 @@ const checkRecord = (input, snapshot) => {
   }
 };
 
-const checkFlake = (input) => {
-  checkMeasured(input);
-  checkDenominator(input);
-  checkOutcomes(input);
-  checkNames(input, input.snapshot);
-  checkRecord(input, input.snapshot);
-  return input;
+/** A point that stops at its first finding, as the list the run gathers: none, or that one. */
+const firstOf = (point) => {
+  try {
+    point();
+    return [];
+  } catch (error) {
+    if (!(error instanceof FlakeError)) throw error;
+    return [error];
+  }
 };
+
+/**
+ * Every finding of one run: points 1 and 2 suite by suite, then 3 to 5. A finding of 1 or 2
+ * takes out of the measurement what it names and no more — the register's two every suite,
+ * any other its own suite. A rule read over a report that failed them speaks of something
+ * else: with retries on, point 3 would call a `flaky` status a contradiction of a reading
+ * point 1 never made, and over two tests merged under one path point 4 would name a wobble
+ * neither has. What still stands is read in full, and point 5 reads the record whatever the
+ * run was: a night is a sample that does not come again, and what one finding hid is lost
+ * with it. One family of races read early on seven of fourteen nightly runs and the verdict
+ * named it on three (`lesson-246`) — hidden behind a failure on another case, and once behind
+ * a report that never arrived.
+ */
+const checkFlake = (input) => {
+  const findings = firstOf(() => checkRegister(input));
+  const standing = {};
+  if (!findings.length)
+    for (const suite of Object.keys(input.policy.reports)) {
+      const stop = firstOf(() => {
+        checkMeasured(input, suite);
+        checkDenominator(input, suite);
+      });
+      if (stop.length) findings.push(...stop);
+      else standing[suite] = input.reports[suite];
+    }
+  return [...findings, ...checkRules({ ...input, reports: standing })];
+};
+
+/**
+ * Points 3 to 5, over the suites still standing. Point 4 has one finding to give and point 5
+ * keeps its first, as one command answers all of point 5's: `--write`. Point 5 reads a record,
+ * and a record that is not there is point 4's finding and not a second one.
+ */
+const checkRules = (input) => [
+  ...checkOutcomes(input),
+  ...firstOf(() => checkNames(input, input.snapshot)),
+  ...(input.snapshot === null || input.snapshot === undefined
+    ? []
+    : firstOf(() => checkRecord(input, input.snapshot))),
+];
+
+/**
+ * The findings that refuse `--write`. Points 1 to 3 stand before the record because `--write`
+ * needs them: a run with retries on, or one the walk read half of, must not be written down
+ * as the accepted state (`lesson-49`).
+ */
+const BEFORE_RECORD = new Set(['measured', 'denominator', 'outcomes']);
+const refusalOf = (findings) =>
+  findings.filter((f) => BEFORE_RECORD.has(f.check));
 
 // ── the live run ──────────────────────────────────────────────────────────────
 
 const problems = [];
-let live = null;
-try {
-  const input = readInput();
-  if (WRITE) {
-    // Points 1 to 3 stand before the record because `--write` needs them: a run with
-    // retries on, or one the walk read half of, must not be written down as the accepted
-    // state (`lesson-49`).
-    checkMeasured(input);
-    checkDenominator(input);
-    checkOutcomes(input);
-    writeFileSync(join(ROOT, SNAPSHOT), renderSnapshot(input));
-    input.snapshot = read(SNAPSHOT);
+const live = readInput();
+let findings = checkFlake(live);
+if (WRITE) {
+  // A refused write reports what refused it and nothing more: points 4 and 5 would speak of
+  // the record it leaves in place, and prescribe the very command that was just refused.
+  const refused = refusalOf(findings);
+  if (refused.length) {
+    findings = refused;
+    console.error(
+      `\`--write\` wrote nothing: points 1 to 3 refuse this run.\n`,
+    );
+  } else {
+    writeFileSync(join(ROOT, SNAPSHOT), renderSnapshot(live));
+    live.snapshot = read(SNAPSHOT);
+    findings = checkFlake(live);
   }
-  checkFlake(input);
-  live = input;
-} catch (error) {
-  if (!(error instanceof FlakeError)) throw error;
-  problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
+for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
 
 // ── the negative control ──────────────────────────────────────────────────────
 
@@ -526,38 +601,87 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
-try {
-  checkFlake(buildFixture({ rule: REFERENCE }));
-} catch (error) {
-  if (!(error instanceof FlakeError)) throw error;
+const reference = checkFlake(buildFixture({ rule: REFERENCE }));
+for (const error of reference)
   problems.push(
     `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
       `every prepared case now fires because of it.\n    ${error.message}`,
   );
-  cases.length = 0;
-}
+if (reference.length) cases.length = 0;
 
+/** A rule as a case declares it and as a finding carries it. */
+const ruleOf = (f) => `${f.check}/${f.rule}`;
+const listed = (rules) => `\`${rules.join('`, `')}\``;
+
+/**
+ * A case is held to the WHOLE set its run reports: its own rule, the rules it names `beside`
+ * it, and not one more — a case that fires a rule it does not declare is satisfied by
+ * whichever of its defects still works. A case names in `hides` everything a finding of points
+ * 1 and 2 keeps silent on its input, read off every point run with nothing taken out: a hidden
+ * finding that is not there proves no stop, and one left unnamed is a stop nobody accounted for.
+ */
 for (const name of cases) {
   const fx = JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
-  try {
-    checkFlake(buildFixture(fx));
+  const input = buildFixture(fx);
+  const found = checkFlake(input);
+  const fired = found.map(ruleOf);
+  const declared = [fx, ...(fx.beside ?? [])].map(ruleOf);
+  const extra = fired.filter((r) => !declared.includes(r));
+  const silent = declared.filter((r) => !fired.includes(r));
+  if (!fired.length)
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `\`${fx.check}\`/\`${fx.rule}\` stopped examining anything`,
     );
-  } catch (error) {
-    if (!(error instanceof FlakeError)) throw error;
-    if (error.check !== fx.check || error.rule !== fx.rule)
-      problems.push(
-        `${name}: \`${error.check}\`/\`${error.rule}\` fired where \`${fx.check}\`/` +
-          `\`${fx.rule}\` was meant to — the case proves something other than what it declares`,
-      );
-  }
+  else if (extra.length)
+    problems.push(
+      `${name}: ${listed(extra)} fired where the case declares ${listed(declared)} — ` +
+        `the case proves something other than what it declares`,
+    );
+  else if (silent.length)
+    problems.push(
+      `${name}: ${listed(silent)} stayed silent beside ${listed(fired)} — either one ` +
+        `finding hid another, and a night loses what it found behind the first, or the ` +
+        `case does not build the defect it declares`,
+    );
+  // Points 1 and 2 with nothing taken out: every suite, and each point's first finding.
+  const unstopped = [
+    ...firstOf(() => checkRegister(input)),
+    ...Object.keys(input.policy?.reports ?? {}).flatMap((suite) => [
+      ...firstOf(() => checkMeasured(input, suite)),
+      ...firstOf(() => checkDenominator(input, suite)),
+    ]),
+  ];
+  const silenced = [...unstopped, ...checkRules(input)]
+    .map(ruleOf)
+    .filter((r, i, all) => !fired.includes(r) && all.indexOf(r) === i);
+  const hides = (fx.hides ?? []).map(ruleOf);
+  for (const rule of hides.filter((r) => !silenced.includes(r)))
+    problems.push(
+      `${name}: the case hides \`${rule}\`, and nothing on this input keeps it silent — it ` +
+        `fires in the run, or not even with nothing taken out: the case proves no stop`,
+    );
+  for (const rule of silenced.filter((r) => !hides.includes(r)))
+    problems.push(
+      `${name}: \`${rule}\` fires with nothing taken out and a stop keeps it silent, and the ` +
+        `case does not name it in \`hides\` — a stop nobody accounted for`,
+    );
+  // `--write` refuses exactly what points 1 to 3 reject, read off those points and not off
+  // the set the refusal is written with.
+  const rejected = unstopped.length > 0 || checkOutcomes(input).length > 0;
+  if (rejected !== refusalOf(found).length > 0)
+    problems.push(
+      rejected
+        ? `${name}: points 1 to 3 reject this input and \`--write\` would record it — a run ` +
+            `they refuse would be written down as the accepted state (\`lesson-49\`)`
+        : `${name}: points 1 to 3 accept this input and \`--write\` would refuse it — the ` +
+            `command that writes a finding down would turn away the run that found it`,
+    );
 }
 
 // ── the report ────────────────────────────────────────────────────────────────
 
-if (REPORT && live) {
+if (REPORT) {
   const tally = tallyOf(live);
   console.log(
     `\n== ${tally.cases.length} cases over ${tally.repetitions} repetitions ==`,

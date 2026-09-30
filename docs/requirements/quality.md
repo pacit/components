@@ -381,7 +381,7 @@ denominator, two for the scanner and three for the rules, each rejected **by the
 the rule it declares**, and a reference corpus that must pass. That reference carries the two
 real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
 by the reference refusing to pass rather than out in a spec somebody then rewrites to please
-a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, seventeen
+a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, thirty-eight
 prepared inputs and a reference that must pass — and it is the one control here built on a
 STORED input rather than on the repository, because what the gate reads is produced by an
 hour-long job on a machine that is not this one. The shape of that stored report was measured
