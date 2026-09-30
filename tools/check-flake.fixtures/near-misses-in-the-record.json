@@ -1,0 +1,65 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "A wobble two describes deep, `gamma.spec.ts › the landing › on a phone › renders`, under a record that carries its name four times with one part changed: the file, the first describe, the second, the title. The record is matched on the whole path, so the wobble stands in no record; matched on any fixed few of its parts, or with any one of them left out, it would pass for one of the four.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "gamma.spec.ts",
+          "specs": [],
+          "suites": [
+            {
+              "title": "the landing",
+              "specs": [],
+              "suites": [
+                {
+                  "title": "on a phone",
+                  "specs": [
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "unexpected" }
+                      ]
+                    },
+                    {
+                      "title": "renders",
+                      "tests": [
+                        { "projectName": "chromium", "status": "expected" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 2,
+        "unexpected": 1,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "snapshot": {
+    "replace": [
+      { "pattern": "1 wobbled \\(20\\.00%\\)", "with": "5 wobbled (100.00%)" },
+      {
+        "pattern": "chromium 2/3\\n```",
+        "with": "chromium 2/3\ndelta.spec.ts › the landing › on a phone › renders | chromium 2/3\ngamma.spec.ts › the footer › on a phone › renders | chromium 2/3\ngamma.spec.ts › the landing › on a tablet › renders | chromium 2/3\ngamma.spec.ts › the landing › on a phone › shows | chromium 2/3\n```"
+      }
+    ]
+  }
+}

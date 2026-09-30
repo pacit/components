@@ -1,0 +1,38 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "A wobble under a title the record already carries — `closes on escape`, in chromium — but in another file. The record names a case by its whole path, so this one stands in no record; matched by its title and project alone it would pass for the recorded one, and a new race would hide behind an old name. Its one pass stands in the middle, where a rule reading only the first and the last run would call the case a failure.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "closes on escape",
+              "tests": [{ "projectName": "chromium", "status": "unexpected" }]
+            },
+            {
+              "title": "closes on escape",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "closes on escape",
+              "tests": [{ "projectName": "chromium", "status": "unexpected" }]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 1,
+        "unexpected": 2,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

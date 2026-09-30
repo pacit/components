@@ -1,0 +1,67 @@
+{
+  "check": "measured",
+  "rule": "retries-on",
+  "// defect": "Retries on in the last of three projects, the mirror of `the-first-project-retries.json`: a rule reading only the first project, or the first two, would pass the run.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [
+          { "name": "chromium", "repeatEach": 3, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 },
+          { "name": "webkit", "repeatEach": 3, "retries": 0 }
+        ]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "firefox", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "webkit", "status": "expected" }]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 9,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "projects": { "fake-docs-e2e::webkit": { "retries": 1 } }
+}

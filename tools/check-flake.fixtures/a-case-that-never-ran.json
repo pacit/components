@@ -1,0 +1,22 @@
+{
+  "check": "record",
+  "rule": "stale-prose",
+  "// defect": "A case skipped in every repetition, as `test.skip` and `test.fixme` leave it (measured), beside a record whose prose has drifted in its first line. The drift is what rejects the case; the skip is what it holds. A skipped repetition ran nothing: it is no failure for point 3, no retry status, no half of a wobble, and point 2 counts it in both readings, the walk and the tally's `skipped`. So nothing else may fire.",
+  "stats": { "fake-e2e": { "expected": 8, "skipped": 3 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | firefox": [
+      "skipped",
+      "skipped",
+      "skipped"
+    ]
+  },
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "^# End-to-end flake snapshot$",
+        "flags": "m",
+        "with": "# End-to-end flake record"
+      }
+    ]
+  }
+}

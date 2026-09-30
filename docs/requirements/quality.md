@@ -356,10 +356,10 @@ takes the baseline a later assertion is measured against. How many races are LEF
 separate measurement and a separate machine: `tools/check-flake.mjs` (target `check-flake`, in
 the nightly's repetition job) — five points over a run of both suites `--repeat-each` times
 with retries OFF, which writes the cases that did not agree with themselves into
-`docs/flake.snapshot.md`. That record is **not taken yet** and the gate says so rather than
-starting empty: the first reading belongs to the first nightly that runs the job, because the
-failure mode being measured IS contention and a reading off this desktop would be a fact about
-this desktop ([`lesson-200`](../lessons.md#lesson-200)). It is read ONE way: a name that
+`docs/flake.snapshot.md`. Its first reading comes from a nightly — run 35279012559 of
+2026-09-17, committed the next day — and not from this desktop, because the failure mode being
+measured IS contention and a reading off this desktop would be a fact about this desktop
+([`lesson-200`](../lessons.md#lesson-200)). It is read ONE way: a name that
 appears and is not in the record turns the run red, a recorded name that behaved is not
 removed, because repetitions of a suite are a sample and absence is not proof
 **Control:** there are **two** thresholds and both come from measurement. The pixel count is
@@ -381,7 +381,7 @@ denominator, two for the scanner and three for the rules, each rejected **by the
 the rule it declares**, and a reference corpus that must pass. That reference carries the two
 real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
 by the reference refusing to pass rather than out in a spec somebody then rewrites to please
-a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, thirty-eight
+a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, sixty-three
 prepared inputs and a reference that must pass — and it is the one control here built on a
 STORED input rather than on the repository, because what the gate reads is produced by an
 hour-long job on a machine that is not this one. The shape of that stored report was measured

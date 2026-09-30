@@ -6,7 +6,7 @@
  *
  *  1. MEASURED: a report per suite, none empty, retries off, repetitions at or above the floor,
  *  2. DENOMINATOR: the walk's tally equals the report's own `stats`, and every case ran N times,
- *  3. OUTCOMES: a case that failed EVERY repetition is a failure and not a wobble,
+ *  3. OUTCOMES: a case that failed EVERY repetition it ran is a failure and not a wobble,
  *  4. NAMES: every case that wobbled stands in the record — ONE-sided, this being a sample,
  *  5. RECORD: a dated reading whose rate equals its own rows, and the prose the renderer writes.
  *
@@ -311,16 +311,27 @@ const checkOutcomes = (input) => {
           `not describing this run.`,
       ),
     );
+  // A skipped repetition ran nothing, so it is neither a pass nor a failure: a case that failed
+  // every repetition it RAN is the ordinary failure this rule keeps from being swallowed, and
+  // one that ran none is no failure at all.
   const broken = cases.filter(
-    (c) => c.failed === c.runs.length && c.runs.length > 0,
+    (c) => c.failed > 0 && c.runs.every((s) => s === FAILED || s === SKIPPED),
   );
   if (broken.length)
     findings.push(
       new FlakeError(
         'outcomes',
         'case-always-failed',
-        `${broken.length} case(s) failed every repetition:\n` +
-          list(broken.map((c) => `${c.where} — 0/${c.runs.length}`)) +
+        `${broken.length} case(s) failed every repetition that ran:\n` +
+          list(
+            broken.map(
+              (c) =>
+                `${c.where} — 0/${c.runs.length}` +
+                (c.failed < c.runs.length
+                  ? `, ${c.runs.length - c.failed} skipped`
+                  : ''),
+            ),
+          ) +
           `\n    They are separated from the wobbles because a repetition job swallows ` +
           `an ordinary failure otherwise: the run exits non-zero, the step is allowed to, ` +
           `and a gate counting DISAGREEMENTS finds none. What a unanimous column MEANS is ` +
@@ -515,10 +526,11 @@ for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
  * one, so there is no live input to build on and a stored one is the honest alternative.
  *
  * Operations: `dropReports` and `addReports` over the suites; `projects` patches every
- * project of a report; `stats` patches its tally; `replaceStatuses` rewrites one case's
- * repetitions by its path and `dropRepetitions` takes one away; `policy` adds or drops a
- * register key; `snapshot: null` loses the record, and `snapshot.replace` rewrites it by a
- * pattern that has to match — a needle that finds nothing is a case that breaks nothing.
+ * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally;
+ * `replaceStatuses` rewrites one case's repetitions by its path and `dropRepetitions` takes
+ * one away; `policy` adds or drops a register key; `snapshot: null` loses the record, and
+ * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds nothing
+ * is a case that breaks nothing.
  */
 const buildFixture = (fx) => {
   const reference = JSON.parse(readFileSync(join(FIXTURES, REFERENCE), 'utf8'));
@@ -528,9 +540,19 @@ const buildFixture = (fx) => {
   for (const suite of fx.dropReports ?? []) delete w.reports[suite];
   for (const [suite, report] of Object.entries(fx.addReports ?? {}))
     w.reports[suite] = report;
-  for (const [suite, patch] of Object.entries(fx.projects ?? {}))
-    for (const project of w.reports[suite]?.config?.projects ?? [])
-      Object.assign(project, patch);
+  // One project by name, because a bad project among good ones is what a rule reading only the
+  // first or the last of them passes — and a name that patches nothing breaks nothing.
+  for (const [at, patch] of Object.entries(fx.projects ?? {})) {
+    const [suite, name] = at.split('::');
+    const hit = (w.reports[suite]?.config?.projects ?? []).filter(
+      (p) => name === undefined || p?.name === name,
+    );
+    if (!hit.length)
+      throw new Error(
+        `${fx.rule}: \`${at}\` names no project to patch — the case breaks nothing`,
+      );
+    for (const project of hit) Object.assign(project, patch);
+  }
   for (const [suite, patch] of Object.entries(fx.stats ?? {}))
     Object.assign(w.reports[suite].stats, patch);
   // A case is addressed the way the record names it — `<suite>::<path> | <project>` — because

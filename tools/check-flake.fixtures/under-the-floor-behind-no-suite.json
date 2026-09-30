@@ -1,0 +1,10 @@
+{
+  "check": "record",
+  "rule": "reading-below-floor",
+  "beside": [{ "check": "measured", "rule": "no-suite-declared" }],
+  "// defect": "A register that names no suite, so none stands, and a record whose reading was taken over two repetitions, under the floor of three the same register declares. Point 5 reads the record whatever the run was and holds its reading to any floor point 1 accepts — three is one — whether or not a suite stands beside it.",
+  "policy": { "reports": {} },
+  "snapshot": {
+    "replace": [{ "pattern": "· 3 repetitions ·", "with": "· 2 repetitions ·" }]
+  }
+}
