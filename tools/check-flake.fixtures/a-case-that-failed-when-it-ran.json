@@ -1,13 +1,13 @@
 {
   "check": "outcomes",
   "rule": "case-always-failed",
-  "// defect": "A case that failed both repetitions that ran and was skipped in the one between, by a skip decided while the test ran. It never passed, so it is no wobble; read as failing EVERY repetition it would be no failure either, and the repetition job, which tolerates a red exit, would swallow an ordinary failure whole. A skip ran nothing, so the case failed every repetition that ran, and point 3 names it.",
-  "stats": { "fake-e2e": { "expected": 8, "unexpected": 3, "skipped": 1 } },
+  "// defect": "A case that failed the one repetition that ran and was skipped in the two around it, by a skip decided while the test ran. It never passed, so it is no wobble; read as failing EVERY repetition it would be no failure either, and the repetition job, which tolerates a red exit, would swallow an ordinary failure whole. A skip ran nothing, so the case failed every repetition that ran — one failure is enough, no majority is asked for — and point 3 names it.",
+  "stats": { "fake-e2e": { "expected": 8, "unexpected": 2, "skipped": 2 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [
-      "unexpected",
       "skipped",
-      "unexpected"
+      "unexpected",
+      "skipped"
     ]
   }
 }

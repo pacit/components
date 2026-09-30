@@ -1,0 +1,8 @@
+{
+  "check": "record",
+  "rule": "rate-contradicts-reading",
+  "// defect": "The printed rate is one hundredth above what the record's own counts give: 20.01% for one wobble in five cases, the least two decimals can differ by. `a-rate-that-is-not-the-rows.json` prints a rate below its counts; this one prints one above, so the rate is held to its counts both ways.",
+  "snapshot": {
+    "replace": [{ "pattern": "\\(20\\.00%\\)", "with": "(20.01%)" }]
+  }
+}

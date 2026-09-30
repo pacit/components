@@ -1,0 +1,42 @@
+{
+  "check": "denominator",
+  "rule": "case-run-unevenly",
+  "// defect": "One case ran four times where its suite declares three, and the tally agrees: a repetition too many is as uneven as one too few, and one over is the least it can be. `a-case-that-ran-fewer-times.json` is one short; `two-tests-under-one-path.json` is two tests merged into six runs.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [{ "projectName": "chromium", "status": "expected" }]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 4,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

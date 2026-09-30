@@ -1,0 +1,7 @@
+{
+  "check": "measured",
+  "rule": "no-repetition-floor",
+  "hides": [{ "check": "measured", "rule": "too-few-repetitions" }],
+  "// defect": "The register lost its floor: `minimumRepetitions` is not there at all. Point 1 refuses a floor that is not one and takes every suite out with it; read suite by suite past it, every suite would fall short of a floor that is not there (`hides`).",
+  "policy": { "minimumRepetitions": null }
+}

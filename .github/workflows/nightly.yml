@@ -133,7 +133,7 @@ jobs:
   # Both repetition steps tolerate a non-zero exit, and that is not laxity: with retries off a
   # single wobble fails the run, and the gate has to see the report to say which case it was.
   # What stops an ordinary red suite from being swallowed here is point 3 of `check-flake` —
-  # a case that failed EVERY repetition is reported as a failure and not as a wobble.
+  # a case that failed EVERY repetition it ran is reported as a failure and not as a wobble.
   # ONE SUITE PER RUNNER, and that is a change of 2026-09-16 rather than the original shape.
   # The two ran on one runner because a docs suite beside a sandbox dev server reads the load
   # and not the page — true of one MACHINE and of nothing else. Serialised, the pair outgrew
