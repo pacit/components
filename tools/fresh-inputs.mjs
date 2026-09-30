@@ -8,10 +8,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
  * Rebuild what a snapshot is written FROM, ignoring the task cache — on a `--write`, and
  * never on a check.
  *
- * The one piece of shared code among the gates, and it is here because the property it
- * carries belongs to **writing a snapshot** rather than to any one gate. Five tools in this
- * repository rewrite a recorded measurement, four of them read an artefact somebody else's
- * target produced, and every one of them had the same hole: a cached artefact is not
+ * The first code the gates shared (2026-08-26 — `workflow-targets.mjs` and
+ * `markdown-fences.mjs` have joined it since), and a module of its own because the property
+ * it carries belongs to **writing a snapshot** rather than to any one gate. Five tools in
+ * this repository rewrote a recorded measurement then, four of them from an artefact somebody
+ * else's target produced, and every one of them had the same hole: a cached artefact is not
  * necessarily what the sources at that commit produce, and a number written from one is a
  * reading of the cache. `check-bundle` is where it was found, because a size gate exists to
  * notice eighteen bytes and eighteen bytes of cache look exactly like eighteen bytes of code
