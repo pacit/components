@@ -1,7 +1,7 @@
 {
   "check": "record",
   "rule": "stale-prose",
-  "// defect": "Firefox broken in the report — retries on — and repaired by name, `projects` patching `fake-docs-e2e::firefox` back to none, beside a record whose prose has drifted. The drift is what rejects the case; the repair is what it holds. Every project case puts its odd value where `<suite>::<project>` points, and a patch that reached the first project, or the last, or every one but the one it names, would leave firefox broken — so nothing else may fire.",
+  "// defect": "Firefox broken in the report — retries on — and repaired by name, `projects` patching `fake-docs-e2e::firefox` back to none, beside a record whose prose has drifted. The drift is what rejects the case; the repair is what it holds. Eight of the nine project cases put their odd value where `<suite>::<project>` points (`the-middle-project-retries.json` writes its own into the report), and a patch that reached the first project, or the last, or every one but the one it names, would leave firefox broken — so nothing else may fire.",
   "addReports": {
     "fake-docs-e2e": {
       "config": {
