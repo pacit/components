@@ -1,13 +1,13 @@
 {
   "check": "measured",
   "rule": "retries-on",
-  "// defect": "Retries on in the middle one of three projects, and off at both ends. A rule reading only the first and the last project would pass the run.",
+  "// defect": "Retries on in the middle one of three projects and off at both ends, written into the report itself rather than patched by name, so the gate's reading of the middle project is held apart from the builder's. A rule reading only the first and the last project would pass the run.",
   "addReports": {
     "fake-docs-e2e": {
       "config": {
         "projects": [
           { "name": "chromium", "repeatEach": 3, "retries": 0 },
-          { "name": "firefox", "repeatEach": 3, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 1 },
           { "name": "webkit", "repeatEach": 3, "retries": 0 }
         ]
       },
@@ -62,6 +62,5 @@
         "skipped": 0
       }
     }
-  },
-  "projects": { "fake-docs-e2e::firefox": { "retries": 1 } }
+  }
 }
