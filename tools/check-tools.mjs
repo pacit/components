@@ -70,11 +70,12 @@ const LOADS = {
 };
 const RUNS = {
   // Three targets as the graph hands them. `four-ways` runs a list of commands, one of them
-  // quoted, one beside a `&&`, one under a configuration, all from a `cwd` of their own, and
-  // names one script the index does not hold. `a-cd-away` changes directory inside the
-  // command instead, so its one script resolves to nothing, and passes a glob, which is no
-  // script at all. `a-glob-after-node` hands `node` a glob, which the shell expands into a
-  // script list the reader cannot — a script it cannot find, rather than one passed over.
+  // quoted, one beside a `&&`, one under a configuration, all from a `cwd` of their own,
+  // names one script the index does not hold, and hands a glob to a program after a `&&`,
+  // which is no script. `a-cd-away` changes directory inside the command instead, so its one
+  // script resolves to nothing, and passes a glob too. `a-glob-after-node` hands `node` a
+  // glob, which the shell expands into a script list the reader cannot — a script it cannot
+  // find, rather than one passed over.
   targets: {
     'four-ways': {
       options: {
@@ -85,7 +86,7 @@ const RUNS = {
             command:
               'node "a-name-the-browser-declares.mjs" --quiet && node ../check-tools.mjs',
           },
-          'node a-script-nobody-wrote.mjs',
+          'node a-script-nobody-wrote.mjs && prettier --check "*.mjs"',
         ],
       },
       configurations: { alt: { command: 'node ../check-prose.mjs' } },
