@@ -1,0 +1,18 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "A `beforeAll` that failed in chromium's second repetition and no other (measured): the first test of that repetition fails with the hook's error, and the test after it is `skipped` over one `skipped` result, with no annotation and no error — what a run stopped from outside also leaves on a test it stopped just before it began. Here nothing stopped the run, which reached its end, and point 1 does not refuse it: a rule reading a `skipped` result as an interruption refuses every run in which a hook failed once. The failure is a wobble the record does not carry, and point 4 names it; the recorded wobble, skipped in that repetition, passed the two it ran, which is no finding.",
+  "stats": { "fake-e2e": { "expected": 10, "unexpected": 1, "skipped": 1 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      { "status": "unexpected", "results": ["failed"] },
+      "expected"
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium": [
+      "expected",
+      { "status": "skipped", "results": ["skipped"] },
+      "expected"
+    ]
+  }
+}

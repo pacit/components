@@ -1,0 +1,33 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "// defect": "`--max-failures=1` with two workers, as it leaves a run (measured): one worker failed the recorded wobble's second repetition and reached the limit while the other ran the first test of chromium's third, and that test ends `interrupted` — the runner gives the status, errors dropped, to every test that ends once the limit is reached — and every test after them is `skipped` with no result. The stop names itself in `errors`, and point 1 names the stop: the `interrupted` result is what it left behind, and a rule asking about results before the stop sentence names the trace instead of the cause, with a remedy — let the run reach its end — that the same `maxFailures` defeats again. Past point 1 nothing more is found: the wobble kept a pass and its failure.",
+  "errors": {
+    "fake-e2e": [
+      { "message": "Testing stopped early after 1 maximum allowed failures." }
+    ]
+  },
+  "stats": { "fake-e2e": { "expected": 3, "unexpected": 1, "skipped": 8 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "expected",
+      { "status": "skipped", "results": ["interrupted"] }
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium": [
+      "expected",
+      "unexpected",
+      { "status": "skipped", "results": [] }
+    ],
+    "fake-e2e::alpha.spec.ts › opens on click | firefox": [
+      { "status": "skipped", "results": [] },
+      { "status": "skipped", "results": [] },
+      { "status": "skipped", "results": [] }
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox": [
+      { "status": "skipped", "results": [] },
+      { "status": "skipped", "results": [] },
+      { "status": "skipped", "results": [] }
+    ]
+  }
+}

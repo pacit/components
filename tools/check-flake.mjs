@@ -4,7 +4,7 @@
  * the SHAPE of a race as a greppable rule; this asks how many are left, by running the suites
  * N times over and writing down what did not agree with itself.
  *
- *  1. MEASURED: a report per suite, none empty, retries off, N ≥ the floor, no early stop or error,
+ *  1. MEASURED: a report per suite, none empty, retries off, N ≥ the floor, run to its end, no error,
  *  2. DENOMINATOR: the walk's tally equals the report's own `stats`, and every case ran N times,
  *  3. OUTCOMES: a case that failed EVERY repetition it ran is a failure and not a wobble,
  *  4. NAMES: every case that wobbled stands in the record — ONE-sided, this being a sample,
@@ -35,31 +35,34 @@ const FAILED = 'unexpected';
 const SKIPPED = 'skipped';
 /** `flaky` cannot happen with retries off, which is why seeing it is a rule and not a case. */
 const RETRIED = 'flaky';
+/**
+ * The status of a RESULT, not of a test — an entry of its `results`, one attempt: the one a run
+ * stopped while the test ran leaves on the result it cut off, the test itself counted `skipped`.
+ */
+const INTERRUPTED = 'interrupted';
 
 /**
  * The two sentences Playwright puts in a report's `errors` when it stops a run before its end
  * (1.61.1, measured): `maxFailures` — `-x` is one — on the failure that reaches it, the last
  * test to run included, and `globalTimeout` while the tests run, a timeout in any other phase
  * naming that phase instead. Whole sentences, and a narrow match is safe only because of the
- * rule beside it: a stop reworded by a later version is still an error outside a test.
+ * rules after it: a stop reworded by a later version is still an error outside a test, or the
+ * interruption it left on the test another worker was running.
  */
 const STOPS = [
   /^Testing stopped early after \d+ maximum allowed failures\.$/,
   /^Timed out waiting \d+(?:\.\d+)?s for the test suite to run$/,
 ];
 /**
- * Every error a report lists outside any test. `listOf` reads a field that is not a list as an
- * empty one, which refuses a report whose cases that field holds; read that way, an `errors`
- * that is not a list would pass the run, so it is read as the one error it holds instead. A
- * report with no `errors` at all lists none: the reporter writes the key on every report, and
- * the reports built by hand here leave out a list of nothing.
+ * Every error a report lists outside any test, or every result of a test. `listOf` reads a
+ * field that is not a list as an empty one, which refuses a report whose cases that field
+ * holds; read that way, an `errors` or a `results` that is not a list would pass the run, so it
+ * is read as the one entry it holds instead. A missing one holds none: the reporter writes both
+ * keys every time, and the reports built by hand here leave out an empty `errors`, and the
+ * `results` of most tests.
  */
-const errorsOf = (report) =>
-  report.errors === undefined
-    ? []
-    : Array.isArray(report.errors)
-      ? report.errors
-      : [report.errors];
+const entriesOf = (value) =>
+  value === undefined ? [] : Array.isArray(value) ? value : [value];
 /**
  * An error as a report holds it, less the colour `nx` turns on for the tasks it runs. A thrown
  * value that is not an `Error` has a `value` and no `message`.
@@ -105,7 +108,10 @@ const specsOf = (suite, path = []) => [
   ),
 ];
 
-/** A case: one test, in one project, across the repetitions of one run. */
+/**
+ * A case: one test, in one project, across the repetitions of one run — the status of each
+ * repetition, and the status of every result under them, which the first does not say.
+ */
 const casesOf = (report) => {
   const cases = new Map();
   for (const { spec, path } of listOf(report?.suites).flatMap((s) =>
@@ -113,8 +119,9 @@ const casesOf = (report) => {
   ))
     for (const test of listOf(spec?.tests)) {
       const key = `${path.join(' › ')} | ${test?.projectName}`;
-      const at = cases.get(key) ?? { key, runs: [] };
+      const at = cases.get(key) ?? { key, runs: [], results: [] };
       at.runs.push(test?.status);
+      at.results.push(...entriesOf(test?.results).map((r) => r?.status));
       cases.set(key, at);
     }
   return [...cases.values()].map((c) => ({
@@ -290,10 +297,13 @@ const checkMeasured = (input, suite) => {
           `${JSON.stringify(project?.repeatEach)} time(s) against a floor of ${floor}`,
       );
   }
-  // What a run did, after how it was set up. A stop is read off the report's own `errors` and
-  // nothing else: a `skipped` test with no annotation is no sign of one, a serial group after a
-  // failure and a failed `beforeAll` leaving the same with no error at all (measured).
-  const errors = errorsOf(report).map(textOf);
+  // What a run did, after how it was set up: whether it ran to its end, then what else went
+  // wrong in it. A stop the run made itself names itself in the report's own `errors`, and one
+  // made from outside nowhere but on the results it cut off; nothing else is read for either.
+  // A `skipped` test is no sign of one: a serial group after a failure and a failed `beforeAll`
+  // leave one over a `skipped` result, a failed dependency one with no result, and none of them
+  // an error (measured).
+  const errors = entriesOf(report.errors).map(textOf);
   const early = errors.find((e) => STOPS.some((s) => s.test(e)));
   if (early !== undefined)
     throw new FlakeError(
@@ -305,6 +315,21 @@ const checkMeasured = (input, suite) => {
         `short reads as one that never ran, or as one that failed every repetition it ran. ` +
         `Nothing in the report says what the stop cost — repeat the suite with neither ` +
         `\`maxFailures\` nor \`globalTimeout\`.`,
+    );
+  // After the stop sentence, which names a cause where an `interrupted` result is a trace: a
+  // `maxFailures` stop leaves one on the test another worker was running (measured).
+  const cut = casesOf(report).filter((c) => c.results.includes(INTERRUPTED));
+  if (cut.length)
+    throw new FlakeError(
+      'measured',
+      'interrupted',
+      `\`${suite}\` was interrupted before its end, in ${cut.length} case(s):\n` +
+        list(cut.map((c) => c.key)) +
+        `\n    A run stopped from outside — Ctrl+C, a SIGINT — names itself in no error: the ` +
+        `test it cut off is \`skipped\` over an \`interrupted\` result, every test after it ` +
+        `\`skipped\` with none, and the tally counts both like a skip the test decided, so ` +
+        `the report reads as complete. Nothing in it says what the interruption cost — ` +
+        `repeat the suite, and let it run to its end.`,
     );
   if (errors.length)
     throw new FlakeError(
@@ -595,7 +620,8 @@ for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
  * Operations: `dropReports` and `addReports` over the suites; `projects` patches every
  * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally and
  * `errors` replaces the errors it lists outside any test; `replaceStatuses` rewrites one
- * case's repetitions by its path and `dropRepetitions` takes one away, both over the
+ * case's repetitions by its path, the statuses of their results too where a repetition is
+ * written `{ status, results }`, and `dropRepetitions` takes one away, both over the
  * reference's shape, a repetition being a spec entry to them; `policy` adds or drops a
  * register key; `snapshot: null` loses the record, and `snapshot.replace` rewrites it by a
  * pattern that has to match — a needle that finds nothing is a case that breaks nothing.
@@ -656,7 +682,15 @@ const buildFixture = (fx) => {
           `${statuses.length} — a case that misses is a case that breaks nothing`,
       );
     hit.forEach(({ tests }, i) => {
-      for (const test of tests) test.status = statuses[i];
+      for (const test of tests)
+        if (typeof statuses[i] === 'string') test.status = statuses[i];
+        else {
+          test.status = statuses[i].status;
+          test.results = statuses[i].results.map((s, retry) => ({
+            status: s,
+            retry,
+          }));
+        }
     });
   }
   for (const path of fx.dropRepetitions ?? []) {

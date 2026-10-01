@@ -1,0 +1,27 @@
+{
+  "check": "measured",
+  "rule": "interrupted",
+  "// defect": "Ctrl+C in the last test of the second suite, and a global teardown that threw while the interrupted run cleaned up (measured: the teardown runs after a SIGINT, and its error lands in `errors` with the stack, location and snippet the reporter gives it, its message with no colour). Point 1 asks whether a run reached its end before it asks what else went wrong in it, so the interruption is named and the error is not; a rule asking about errors first calls this run an error outside a test, which says nothing of what was cut short. Nothing else is skipped: the result cut off is the suite's last, in its last repetition.",
+  "errors": {
+    "fake-docs-e2e": [
+      {
+        "message": "Error: global teardown broke",
+        "stack": "Error: global teardown broke\n    at default (/fake/global-teardown.ts:2:9)",
+        "location": {
+          "file": "/fake/global-teardown.ts",
+          "column": 9,
+          "line": 2
+        },
+        "snippet": "\u001b[90m   at \u001b[39mglobal-teardown.ts:2\n\n  1 | export default async () => {\n> 2 |   throw new Error('global teardown broke');\n    |         ^\n  3 | };"
+      }
+    ]
+  },
+  "stats": { "fake-docs-e2e": { "expected": 2, "skipped": 1 } },
+  "replaceStatuses": {
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "expected",
+      "expected",
+      { "status": "skipped", "results": ["interrupted"] }
+    ]
+  }
+}
