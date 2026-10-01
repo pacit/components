@@ -25,18 +25,19 @@ that is not this one, so there is nothing live to build on and
 fifteen runs, one wobble.
 
 That shape was not written from the documentation. It was **measured against the reporter**,
-and the measurement mattered — and it was taken from one working directory, which is the half
+and the measurement mattered — but it was taken from one working directory, which is the half
 it missed. Where `--repeat-each` puts the repetitions depends on the directory the suite is run
-from (measured again 2026-09-30, Playwright 1.61.1, a toy of two projects and a nested
-`describe`): the JSON reporter merges a test's entries across repetitions and projects by
-title and location, and it compares the location through `path.relative(rootDir, spec.file)`
-over a `file` that is already relative — which resolves against the process's working
-directory. Run from the test directory, ONE spec entry carries every repetition of every
-project of a test (`tests: [alpha×3, beta×3]`); run from anywhere else, as
-`npx nx run <suite>:e2e` runs the nightly's suites (`cwd: apps/<suite>`, the tests under
-`src/`), every repetition is a SEPARATE spec entry with exactly one test. A `describe` merges
-either way, and no repeat index is recorded anywhere in the JSON. The reference holds the
-nightly's shape and [`a-wobble-in-one-spec-entry.json`](a-wobble-in-one-spec-entry.json) the
+from (measured 2026-09-30 on a toy of two projects, and again 2026-10-01 with a nested
+`describe`; Playwright 1.61.1): the JSON reporter merges a test's entries across repetitions
+and projects by title and location, and it compares the location through
+`path.relative(rootDir, spec.file)` over a `file` that is already relative — which resolves
+against the process's working directory. Run from the test directory, ONE spec entry carries
+every repetition of every project of a test (`tests: [alpha×3, beta×3]`); run from anywhere
+else, as `npx nx run <suite>:e2e` runs the nightly's suites (`cwd: apps/<suite>`, the tests
+under `src/`), every repetition is a SEPARATE spec entry with exactly one test. A `describe`
+merges either way, and no repeat index is recorded anywhere in the JSON. The reference holds
+the nightly's shape, and [`a-wobble-in-one-spec-entry.json`](a-wobble-in-one-spec-entry.json)
+and [`two-projects-in-one-spec-entry.json`](two-projects-in-one-spec-entry.json) hold the
 other, so the repetitions of one case are found by grouping on `<path> | <project>` over every
 test of every entry and by nothing else — which is also why a case is addressed here by that
 same string, and why point 2 checks that every case ran the same number of times.
@@ -83,6 +84,7 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`a-title-recorded-in-another-file.json`](a-title-recorded-in-another-file.json) | a wobble under a title the record carries, but in another file                 | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-two-describes-deep.json`](a-wobble-two-describes-deep.json)           | a wobble two describes deep, in the second file and the second describe        | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-in-one-spec-entry.json`](a-wobble-in-one-spec-entry.json)             | a wobble whose three runs stand in one spec entry, run from the test directory | `names`       | `wobble-unrecorded`          |
+| [`two-projects-in-one-spec-entry.json`](two-projects-in-one-spec-entry.json)     | two projects' six runs of a case in one spec entry, the firefox copy wobbling  | `names`       | `wobble-unrecorded`          |
 | [`near-misses-in-the-record.json`](near-misses-in-the-record.json)               | a wobble the record misses by one part of its path, at each part in turn       | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-a-failure.json`](a-wobble-behind-a-failure.json)               | one case failing every repetition and two wobbling beside it: 2026-09-24       | `names`       | `wobble-unrecorded`          |
 | [`a-wobble-behind-no-report.json`](a-wobble-behind-no-report.json)               | the second report never arrived, and the first holds a wobble                  | `names`       | `wobble-unrecorded`          |
@@ -183,8 +185,9 @@ a run ahead of the tally and a run behind, the rows one ahead of the reading and
 case run once too often and once too few, the printed rate a hundredth above what its counts
 give and a hundredth below.
 
-The walk has edges of its own, which the reference — one file per report, no `describe` — leaves
-unheld. [`a-wobble-two-describes-deep.json`](a-wobble-two-describes-deep.json) puts a wobble two
+The walk has edges of its own, which the reference — one file per report, no `describe`, one
+test per spec entry — leaves unheld.
+[`a-wobble-two-describes-deep.json`](a-wobble-two-describes-deep.json) puts a wobble two
 describes deep, in the second of two files and under the second of two describes: a walk that
 stops at the file or one level down, or reads the first file or the first describe only, loses
 it while the tally counts it, and one that drops the describes from the path merges three tests
@@ -193,8 +196,13 @@ three repetitions of a case in one spec entry, the shape a run from the test dir
 where the reference has one test per entry: a walk reading one test per entry, the entry's
 first, finds a case run once where the tally counts three and never reaches the wobble, so
 point 2 speaks where the case declares point 4 — it fires on a rule it does not declare, which
-the control refuses. That walk passes every other case here (measured). A case is named by all
-of its path, on both sides of the comparison:
+the control refuses. That walk passes every other case here (measured).
+[`two-projects-in-one-spec-entry.json`](two-projects-in-one-spec-entry.json) is the reference's
+first suite in that shape, both projects' six repetitions in each entry, with the firefox copy
+of the recorded wobble wobbling too: a walk taking a case's project off the entry's first test
+keys all six under chromium, a case run six times where the suite declares three, and never
+names the firefox one — and it passes every other case here, the one-project entry above
+included (measured). A case is named by all of its path, on both sides of the comparison:
 [`a-deep-name-the-record-carries.json`](a-deep-name-the-record-carries.json) has the record
 carry a wobble two describes deep by its whole path, which a walk naming it by less would call
 new, and the record's side is held by
@@ -228,12 +236,6 @@ entries where it should count cases agrees with it on every report the reporter 
 deliberately not covered is the **repetition job** — whether `--repeat-each` reached Playwright
 at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what
 notice when it did not.
-
-Nor the projects' half of the merged shape. The reference's `fake-docs-e2e` runs one project,
-so [`a-wobble-in-one-spec-entry.json`](a-wobble-in-one-spec-entry.json) puts one project's
-three repetitions in one entry and not two projects' six: the walk reads a test's project off
-the test itself, the one place either shape carries it, and a second project is the same list,
-longer.
 
 Nor a run stopped early, which the gate does not look for. Under `maxFailures` or a
 `globalTimeout` Playwright marks every test it never reached `skipped`, with no result, and counts

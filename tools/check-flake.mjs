@@ -533,9 +533,10 @@ for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
  * Operations: `dropReports` and `addReports` over the suites; `projects` patches every
  * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally;
  * `replaceStatuses` rewrites one case's repetitions by its path and `dropRepetitions` takes
- * one away; `policy` adds or drops a register key; `snapshot: null` loses the record, and
- * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds nothing
- * is a case that breaks nothing.
+ * one away, both over the reference's shape, a repetition being a spec entry to them; `policy`
+ * adds or drops a register key; `snapshot: null` loses the record, and `snapshot.replace`
+ * rewrites it by a pattern that has to match — a needle that finds nothing is a case that
+ * breaks nothing.
  */
 const buildFixture = (fx) => {
   const reference = JSON.parse(readFileSync(join(FIXTURES, REFERENCE), 'utf8'));
@@ -562,7 +563,10 @@ const buildFixture = (fx) => {
     Object.assign(w.reports[suite].stats, patch);
   // A case is addressed the way the record names it — `<suite>::<path> | <project>` — because
   // a path alone reaches every project's copy of it: one spec entry per project in the
-  // reference's shape, and every project's tests in one entry in the other (`specsOf`).
+  // reference's shape, and every project's tests in one entry in the other (`specsOf`). A
+  // repetition is a spec entry here, the reference's shape, and a merged entry is ONE
+  // repetition: `replaceStatuses` over it rewrites every repetition of the case at once, and
+  // `dropRepetitions` drops the case whole. A case in that shape is built with `addReports`.
   const repetitionsOf = (suite, key) => {
     const cut = key.lastIndexOf(' | ');
     const [path, project] = [key.slice(0, cut), key.slice(cut + 3)];

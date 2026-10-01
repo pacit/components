@@ -1,0 +1,51 @@
+{
+  "check": "names",
+  "rule": "wobble-unrecorded",
+  "// defect": "The reference's first suite as a run from the test directory writes it: both projects' six repetitions of each case in ONE spec entry, under one `tests` list, chromium's three before firefox's — and the firefox copy of the recorded wobble wobbling too, its failure in the middle. The chromium copy stands in the record and the firefox one does not, so point 4 has one name to give. A walk taking a case's project off the entry's first test, which is the project every entry of the reference's shape has one of, keys all six under chromium: a case run six times where the suite declares three, point 2's finding, and the firefox wobble never named — the case fires on a rule it does not declare. That walk passes every other case here, `a-wobble-in-one-spec-entry.json` included, whose one entry holds one project.",
+  "addReports": {
+    "fake-e2e": {
+      "config": {
+        "projects": [
+          { "name": "chromium", "repeatEach": 3, "retries": 0 },
+          { "name": "firefox", "repeatEach": 3, "retries": 0 }
+        ]
+      },
+      "suites": [
+        {
+          "title": "alpha.spec.ts",
+          "specs": [
+            {
+              "title": "opens on click",
+              "tests": [
+                { "projectName": "chromium", "status": "expected" },
+                { "projectName": "chromium", "status": "expected" },
+                { "projectName": "chromium", "status": "expected" },
+                { "projectName": "firefox", "status": "expected" },
+                { "projectName": "firefox", "status": "expected" },
+                { "projectName": "firefox", "status": "expected" }
+              ]
+            },
+            {
+              "title": "closes on escape",
+              "tests": [
+                { "projectName": "chromium", "status": "expected" },
+                { "projectName": "chromium", "status": "unexpected" },
+                { "projectName": "chromium", "status": "expected" },
+                { "projectName": "firefox", "status": "expected" },
+                { "projectName": "firefox", "status": "unexpected" },
+                { "projectName": "firefox", "status": "expected" }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T02:11:04.000Z",
+        "expected": 10,
+        "unexpected": 2,
+        "flaky": 0,
+        "skipped": 0
+      }
+    }
+  }
+}
