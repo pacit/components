@@ -1,12 +1,13 @@
 {
   "// why": "The reference input of the negative control: a minimal but WHOLE repository, in which every tracked file is reached from a root. Every case beside it is built on a copy of this one and brings in exactly one defect, so a case file holds the defect alone rather than one more copy of a correct input. Were this reference itself defective, every case would fire because of it — which is why the gate checks it separately.",
 
-  "// files": "Sixteen files covering the five ways a file is reached at once: from a root (`package.json`), by a path in a configuration (`vendor.json`), by a pattern in `inputs` (`src/button.scss`), by an import with the extension left off (`./button` in `src/index.ts`), by a bare unique name (`guide.md` in the README) and through the two grants that are not names — the fixtures tree of `check-widget.mjs`, and the `vendor` tree of the register. `assets/logo.png` is binary: it has no entry in `texts`, mentions nothing and still has to be reached.",
+  "// files": "Seventeen files covering the five ways a file is reached at once: from a root (`package.json`), by a path in a configuration (`vendor.json`), by a pattern in `inputs` (`src/button.scss`), by an import with the extension left off (`./button` in `src/index.ts`), by a bare unique name (`guide.md` in the README) and through the two grants that are not names — the fixtures tree of `check-widget.mjs`, and the `vendor` tree of the register. `assets/logo.png` is binary: it has no entry in `texts`, mentions nothing and still has to be reached. `docs/retired.md` is tracked and gone from the working tree: it has no entry in `texts` and no place in nx's file set, and the README still reaches it.",
   "files": [
     "README.md",
     "assets/logo.png",
     "docs/guide.md",
     "docs/plan.md",
+    "docs/retired.md",
     "package.json",
     "project.json",
     "src/button.html",
@@ -22,7 +23,7 @@
   ],
 
   "texts": {
-    "README.md": "The plan is in docs/plan.md, the shape of a page in guide.md, and the mark in assets/logo.png.",
+    "README.md": "The plan is in docs/plan.md, the shape of a page in guide.md, and the mark in assets/logo.png. The old plan was docs/retired.md.",
     "docs/guide.md": "How a page is written. Points nowhere further.",
     "docs/plan.md": "The task list. Points nowhere further.",
     "package.json": "{ \"name\": \"reference\", \"scripts\": { \"check\": \"node tools/check-widget.mjs\" }, \"vendor\": \"vendor.json\" }",
@@ -61,5 +62,44 @@
         "reason": "The outside tool walks its own tree and finds a skill by the shape of the directory, so no path to those files is ever written down here."
       }
     ]
+  },
+
+  "// hashed": "nx's own file set: every tracked file the working tree holds, and `docs/draft.md`, a page not yet added. nx walks the disk, so its set is wider than the index, and wider is no defect. `docs/retired.md` is missing from it for the plain reason that there is nothing to hash.",
+  "hashed": [
+    "README.md",
+    "assets/logo.png",
+    "docs/draft.md",
+    "docs/guide.md",
+    "docs/plan.md",
+    "package.json",
+    "project.json",
+    "src/button.html",
+    "src/button.scss",
+    "src/button.ts",
+    "src/index.ts",
+    "tools/check-widget.fixtures/_reference.json",
+    "tools/check-widget.fixtures/case.json",
+    "tools/check-widget.mjs",
+    "vendor.json",
+    "vendor/skills/build/SKILL.md",
+    "vendor/skills/build/notes.md"
+  ],
+
+  "// absent": "The deletion of `docs/retired.md`, not yet staged: point 6 has to tell a file the working tree lost from one an ignore rule hides.",
+  "absent": ["docs/retired.md"],
+
+  "// listings": "The disk where nx looks for a dotenv file. The workspace root, the one project root here, holds four names that only look like one — `.envrc` (direnv), `sample.env`, `docker.local.env` and `.prod.env.example`, none of which nx opens. `docs` holds a real `.env`, in a directory that is no project root, so nx never loads it.",
+  "listings": {
+    "": [
+      ".envrc",
+      ".prod.env.example",
+      "README.md",
+      "docker.local.env",
+      "package.json",
+      "project.json",
+      "sample.env",
+      "vendor.json"
+    ],
+    "docs": [".env", "guide.md", "plan.md"]
   }
 }

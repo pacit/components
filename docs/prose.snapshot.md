@@ -49,7 +49,7 @@ check-language.mjs 7 19 196
 check-mutation.mjs 8 20 212
 check-parts.mjs 7 19 195
 check-prose.mjs 6 18 189
-check-reach.mjs 5 17 136
+check-reach.mjs 7 19 178
 check-since.mjs 4 15 120
 check-styles.mjs 10 22 231
 check-support.mjs 5 17 150

@@ -1,0 +1,6 @@
+{
+  "// why": "A tracked image a nested `.gitignore` matches, as a rule like `*.png` takes a baseline screenshot. nx walks past it, so it is in no task hash, and every gate that reads it answers an edit with its cached pass — measured on `docs/acr.md`, which a one-line `docs/.gitignore` took out of the hashes of `check-acr` and `check-docs` while both still read it. The file is binary, so a rule that walks only the readable files lets it through.",
+  "point": 6,
+  "check": "hashed",
+  "dropHashed": ["assets/logo.png"]
+}

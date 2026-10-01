@@ -1,0 +1,19 @@
+{
+  "// why": "A dotenv file in the root of a project, where nx loads one into that project's tasks. Two projects join the workspace and the file sits in the first, the middle place of three, and is the first name of its listing — a rule that reads only the workspace root, or only the ends of a list, passes it.",
+  "point": 7,
+  "check": "environment",
+  "addFiles": {
+    "libs/gauge/project.json": "{ \"targets\": {} }",
+    "libs/widget/project.json": "{ \"targets\": {} }"
+  },
+  "addRoots": [
+    {
+      "name": "project.json",
+      "reason": "The task runner enumerates project configurations by this name, at any depth."
+    }
+  ],
+  "addListings": {
+    "libs/gauge": [".env.build", "project.json"],
+    "libs/widget": ["project.json"]
+  }
+}

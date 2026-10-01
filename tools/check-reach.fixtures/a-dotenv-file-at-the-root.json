@@ -1,0 +1,6 @@
+{
+  "// why": "A `.env` at the workspace root. nx reads it into its own process on start and every `nx:run-commands` task inherits it, whatever `NX_LOAD_DOT_ENV_FILES` says. Measured: a root `.env` setting `PLAYWRIGHT_BROWSERS_PATH` to a missing directory left the hash of `check-browsers` as it was, and `nx run` answered green from the cache while the run without it failed. The name sits between two others in the listing.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": [".env", "notes.txt"] }
+}
