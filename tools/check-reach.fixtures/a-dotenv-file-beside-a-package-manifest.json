@@ -9,5 +9,6 @@
       "reason": "The package manager reads a manifest by this name in every package of the workspace."
     }
   ],
-  "addListings": { "libs/widget": [".local.env", "package.json"] }
+  "addListings": { "libs/widget": [".local.env", "package.json"] },
+  "names": ["libs/widget/.local.env"]
 }

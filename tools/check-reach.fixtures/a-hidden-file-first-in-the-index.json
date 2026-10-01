@@ -2,5 +2,6 @@
   "// why": "The first path of the index, out of nx's file set — a `.nxignore` naming the README, which git's own list of ignored files never shows. First, so a rule that starts its walk one file in passes it.",
   "point": 6,
   "check": "hashed",
-  "dropHashed": ["README.md"]
+  "dropHashed": ["README.md"],
+  "names": ["README.md"]
 }

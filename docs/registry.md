@@ -91,7 +91,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
 | [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | 🟡 partial  | `apps/docs/project.json`, `apps/sandbox/project.json`, `apps/sandbox-… | none — deliberately: the violation is immediate and total — a project… |
-| [`req-project-reach`](requirements/project.md#req-project-reach)               | ✅ enforced | `tools/check-reach.mjs` (target `check-reach` in the root project, in… | `tools/check-reach.fixtures/` — 26 prepared inputs, each rejected on … |
+| [`req-project-reach`](requirements/project.md#req-project-reach)               | ✅ enforced | `tools/check-reach.mjs` (target `check-reach` in the root project, in… | `tools/check-reach.fixtures/` — 32 prepared inputs, each rejected on … |
 
 ## quality
 

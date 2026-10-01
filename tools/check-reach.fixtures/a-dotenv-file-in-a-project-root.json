@@ -15,5 +15,6 @@
   "addListings": {
     "libs/gauge": [".env.build", "project.json"],
     "libs/widget": ["project.json"]
-  }
+  },
+  "names": ["libs/gauge/.env.build"]
 }

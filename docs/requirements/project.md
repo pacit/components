@@ -576,24 +576,28 @@ root matching nothing fires, an entry whose reader has left fires, and an entry 
 walk reaches anyway fires, measured by repeating the walk without it. Points 6 and 7 hold the
 one reader every gate shares, nx's task hash, where no `inputs` entry can name what it misses,
 so the target runs uncached: every tracked file the working tree holds is in nx's own file
-set — not git's list of ignored files, since a `.nxignore` hides a file at any depth and nx
-skips `.nx/cache`, `.nx/workspace-data`, `.yarn/cache` and `node_modules` wherever they sit
-— and no dotenv file lies in the workspace root or a project root, where nx loads it into a
-task's environment and no hash reads it
-**Control:** `tools/check-reach.fixtures/` — 26 prepared inputs, each rejected on its own
+set — not git's list of ignored files, since a `.nxignore` and an `.ignore` hide a file at
+any depth and nx skips `.nx/cache`, `.nx/workspace-data`, `.yarn/cache`, `node_modules` and a
+symlink to a directory wherever they sit — and no dotenv file lies in the workspace root or
+in a project root of nx's own file set, where nx loads it into a task's environment and no
+hash is bound to read it
+**Control:** `tools/check-reach.fixtures/` — 32 prepared inputs, each rejected on its own
 point: a file nothing points at; two files citing only each other; a name two files share; a
 pattern naming a kind and not a file; a root written as a pattern, as a path in the name form,
 in both forms at once, with a one-word reason, and pointing at a file that is gone; a register
 entry that grants nothing, one whose reader is gone, one over an empty tree, one without a
 reason; a fixtures tree whose gate is gone; an empty index; a corpus with nothing readable in
-it; a policy with no roots; a project root with no listing; a tracked file out of nx's file
-set, binary, first in the index and last in it; a dotenv file at the root as `.env`, as
-`.env.<target>` and as `.<target>.env`, in a project root taken from a `project.json`, and
-beside a `package.json`. Plus runs against the real repository: the deleted copy of the
-vendored guide put back as two files citing each other, which fired point 5 with both named;
-and a nested `.gitignore`, a nested and a root `.nxignore`, a tracked file under `.nx/cache`,
-a `git add -f` behind a rule, and a `.env.check-tools` gitignored or not, each of which fired
-its point under `nx run` as well (2026-10-01)
+it; a policy with no roots; a project root with no listing, at the root and in the middle of
+the places; a tracked file out of nx's file set, binary, first in the index, last in it, and
+two at once; a dotenv file at the root as `.env`, as `.env.<target>`, as
+`.env.<target>.<configuration>`, as `.<target>.env` and as `.<target>.local.env`, two side by
+side, in a project root taken from a `project.json`, beside a `package.json`, and beside a
+manifest nobody has added yet. The cases of points 1, 6 and 7 also name what their message has
+to name. Plus runs against the real repository: the deleted copy of the vendored guide put
+back as two files citing each other, which fired point 5 with both named; and a nested
+`.gitignore`, a nested and a root `.nxignore`, a tracked file under `.nx/cache`, a `git add -f`
+behind a rule, and a `.env.check-tools` gitignored or not, each of which fired its point under
+`nx run` as well (2026-10-01)
 **Decision:** [0040 — a lockfile is repository material, the tree it locks is not](../decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)
 **Lessons:** [`lesson-61`](../lessons.md#lesson-61),, [`lesson-142`](../lessons.md#lesson-142)
 [`lesson-113`](../lessons.md#lesson-113)

@@ -1,0 +1,7 @@
+{
+  "// why": "Two tracked files out of nx's file set. The message has to give the count and name both: a report that names the first of two sends a person to fix one file and come back to the same red.",
+  "point": 6,
+  "check": "hashed",
+  "dropHashed": ["docs/guide.md", "src/button.ts"],
+  "names": ["2 tracked files", "docs/guide.md", "src/button.ts"]
+}

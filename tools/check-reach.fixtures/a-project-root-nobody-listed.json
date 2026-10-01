@@ -3,5 +3,6 @@
   "point": 1,
   "check": "denominator",
   "clearListings": true,
-  "addListings": { ".": [".env", "package.json", "project.json"] }
+  "addListings": { ".": [".env", "package.json", "project.json"] },
+  "names": ["no listing of `.`"]
 }

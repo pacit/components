@@ -2,5 +2,6 @@
   "// why": "The second form nx loads for a target, `.<target>.env`. A rule that knows only names starting with `.env` lets it through.",
   "point": 7,
   "check": "environment",
-  "addListings": { "": [".check-widget.env"] }
+  "addListings": { "": [".check-widget.env"] },
+  "names": [".check-widget.env"]
 }
