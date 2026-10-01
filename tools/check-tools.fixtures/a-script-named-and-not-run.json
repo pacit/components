@@ -4,6 +4,7 @@
   "rule": "unnamed",
   "what": "the inputs name a script the command does not run, complete with its import, and not the one it runs — a reader that takes the scripts from the inputs rather than from the command examines the wrong one and finds nothing missing",
   "targets": {
+    "clear": true,
     "add": [
       {
         "project": "@org/source",

@@ -4,6 +4,7 @@
   "rule": "unnamed",
   "what": "inputs of {workspaceRoot}/**/* with a ! that takes the imported module back out, resolved by nx's planner over a copy of the graph — a reader that sees the first pattern and calls everything named passes it; the other half, that the pattern alone names everything, is the live check-docs",
   "targets": {
+    "clear": true,
     "add": [
       {
         "project": "@org/source",

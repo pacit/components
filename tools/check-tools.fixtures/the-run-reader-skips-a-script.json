@@ -1,0 +1,15 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "runs-misread",
+  "what": "the command reader returned three of the prepared target's four scripts — the one under a configuration missing, which is the shape of a reader that reads `options` alone while nx runs the configuration",
+  "runs": {
+    "set": {
+      "scripts": [
+        "tools/check-tools.fixtures/a-name-nothing-declares.mjs",
+        "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+        "tools/check-tools.mjs"
+      ]
+    }
+  }
+}

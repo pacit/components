@@ -4,6 +4,7 @@
   "rule": "unnamed",
   "what": "a target runs a script that imports a module, and its inputs name the script alone — the shape six gates had until 2026-09-30, when an edit to fresh-inputs.mjs or workflow-targets.mjs left their hash where it was and nx replayed a cached green",
   "targets": {
+    "clear": true,
     "add": [
       {
         "project": "@org/source",

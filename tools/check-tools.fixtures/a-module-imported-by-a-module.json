@@ -4,6 +4,7 @@
   "rule": "unnamed",
   "what": "the script's own import is named and the module THAT one imports is not, the deeper module importing the script back — a reader one import deep passes it, and a walk with no memory of where it has been never returns",
   "targets": {
+    "clear": true,
     "add": [
       {
         "project": "@org/source",
