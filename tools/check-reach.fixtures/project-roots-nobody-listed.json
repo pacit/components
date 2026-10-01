@@ -1,0 +1,18 @@
+{
+  "// why": "Three projects join the workspace and only the last is listed. The two places point 7 would read and was handed nothing of sit in the middle of the list of places, so a refusal that looks only at the workspace root, only at the last place or only at the ends passes them — and the message has to name both.",
+  "point": 1,
+  "check": "denominator",
+  "addFiles": {
+    "libs/alpha/project.json": "{ \"targets\": {} }",
+    "libs/gauge/project.json": "{ \"targets\": {} }",
+    "libs/widget/project.json": "{ \"targets\": {} }"
+  },
+  "addRoots": [
+    {
+      "name": "project.json",
+      "reason": "The task runner enumerates project configurations by this name, at any depth."
+    }
+  ],
+  "addListings": { "libs/widget": ["project.json"] },
+  "names": ["no listing of `libs/alpha`, `libs/gauge` — point 7"]
+}

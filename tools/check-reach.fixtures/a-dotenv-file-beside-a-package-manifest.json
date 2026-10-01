@@ -1,0 +1,14 @@
+{
+  "// why": "A `.local.env` beside a `package.json` with no `project.json` next to it. nx makes a project of such a manifest under `workspaces`, and this gate counts it a place either way. It is the last place of the walk, so a rule that stops one place short, or reads `project.json` alone, passes it.",
+  "point": 7,
+  "check": "environment",
+  "addFiles": { "libs/widget/package.json": "{ \"name\": \"widget\" }" },
+  "addRoots": [
+    {
+      "name": "package.json",
+      "reason": "The package manager reads a manifest by this name in every package of the workspace."
+    }
+  ],
+  "addListings": { "libs/widget": [".local.env", "package.json"] },
+  "names": ["libs/widget/.local.env"]
+}

@@ -1,0 +1,9 @@
+{
+  "// why": "A `.env` at the workspace root. nx reads it into its own process on start and every `nx:run-commands` task inherits it, whatever `NX_LOAD_DOT_ENV_FILES` says. Measured: a root `.env` setting `PLAYWRIGHT_BROWSERS_PATH` to a missing directory left the hash of `check-browsers` as it was, and `nx run` answered green from the cache while the run without it failed. The name sits between two others the case lists with it, and the message gives one file, once, though the workspace root is a place three times over.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": ["notes.md", ".env", "notes.txt"] },
+  "names": [
+    "1 dotenv files in the workspace root or beside a `project.json` or a `package.json`:\n      .env\n    nx loads"
+  ]
+}

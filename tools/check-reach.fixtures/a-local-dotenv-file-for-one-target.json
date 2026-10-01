@@ -1,0 +1,7 @@
+{
+  "// why": "The local variant of the second form, `.<target>.local.env`. Two segments come before `.env`, so a rule that takes the name as one segment lets it through.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": [".check-widget.local.env"] },
+  "names": [".check-widget.local.env"]
+}

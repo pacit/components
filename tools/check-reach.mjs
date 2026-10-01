@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 /**
- * Reach gate: is there a tracked file nothing in the repository reads (`req-project-reach`)?
- * Such a file is invisible to every other gate at once — it compiles nothing, ships nothing
- * and fires nothing.
+ * Reach gate: is there a tracked file nothing in the repository reads (`req-project-reach`),
+ * or a file a task reads and no hash is bound to: one nx leaves out, or a dotenv file it loads?
  *
- *  1. DENOMINATOR: the git index, the readable text in it and the declared roots,
+ *  1. DENOMINATOR: the git index, its readable text, the declared roots, a listing per project,
  *  2. every root of the policy is one existing file,
  *  3. every entry of the register still grants reach to something,
  *  4. every `check-<x>.fixtures/` tree has the gate that walks it,
- *  5. REACH: every tracked file is reached from a root.
+ *  5. REACH: every tracked file is reached from a root,
+ *  6. HASHED: nx's own file set holds every tracked file the working tree holds,
+ *  7. ENVIRONMENT: no dotenv file lies where nx loads one into a task's environment.
  *
- * Point 5 is a walk FROM THE ROOTS and not "does any other file mention this one", which
- * calls a dead island alive ([`lesson-61`](../docs/lessons.md#lesson-61),
- * [`lesson-113`](../docs/lessons.md#lesson-113)). Negative control: `check-reach.fixtures/`.
+ * Point 5 walks FROM THE ROOTS, since "does any other file mention this one" calls a dead
+ * island alive ([`lesson-61`](../docs/lessons.md#lesson-61),
+ * [`lesson-113`](../docs/lessons.md#lesson-113)). Points 6 and 7 read what no `inputs` entry
+ * can name, so the target runs uncached. Negative control: `check-reach.fixtures/`.
  *
  * Usage: node tools/check-reach.mjs
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
@@ -59,7 +61,7 @@ const TOKEN = /[A-Za-z0-9_@.*/-]{3,}/g;
 const COMPLETIONS = ['.ts', '.mjs', '.mts', '.scss', '/index.ts'];
 
 /**
- * A violation of one of the five points. It carries the point's identifier, so the
+ * A violation of one of the seven points. It carries the point's identifier, so the
  * negative control can require a prepared input to fire ON ITS OWN point — a case that
  * fires elsewhere proves something other than what it declares (`lesson-50`).
  */
@@ -273,17 +275,53 @@ const shapeDefect = (entry, field) => {
 };
 
 /**
+ * The names nx loads into a task's environment (`nx/src/tasks-runner/task-env-paths.js`):
+ * `.env`, `.env.local` and `.local.env`, and `.env.<id>`, `.<id>.env` and their `.local`
+ * forms, where `<id>` is the target, the configuration or both (`.env.build.production`).
+ * Read wider than that list on purpose — a target can be called anything, so `.env.example`
+ * is one `example` target away from being loaded — and no wider: `.envrc`, `sample.env` and
+ * `.prod.env.example` are nothing nx opens.
+ */
+const DOTENV = /^\.env(?:\..+)?$|^\..+\.env$/;
+
+/**
+ * The places nx loads those names from: the workspace root, for every task, and the root of
+ * the project whose task runs — here, every directory of nx's own file set holding a
+ * `project.json` or a `package.json`. Read off nx's set and not off the index, because nx
+ * makes its projects of that set: a `project.json` nobody has added yet is a project
+ * already. Wider than the graph by every `package.json` — nx makes a project of one only
+ * under `workspaces` or beside a `project.json`, tracked or not — which takes in the
+ * fixtures trees that carry a manifest. A project a plugin would make of another file is not
+ * among them, and every project here has a `project.json`.
+ */
+const envRootsOf = (files) => [
+  ...new Set([
+    '',
+    ...files
+      .filter((f) => /(?:^|\/)(?:project|package)\.json$/.test(f))
+      .map((f) => f.slice(0, Math.max(0, f.lastIndexOf('/')))),
+  ]),
+];
+
+/**
  * The full set of checks over a ready input:
- *   `files`  — every path in the git index, relative to the repository root,
- *   `texts`  — `{ [path]: string }` for the readable ones,
- *   `policy` — `{ roots: [{ path, reason }], enumerated: [{ tree, reader, reason }] }`.
+ *   `files`    — every path in the git index, relative to the repository root,
+ *   `texts`    — `{ [path]: string }` for the readable ones,
+ *   `policy`   — `{ roots: [{ path, reason }], enumerated: [{ tree, reader, reason }] }`,
+ *   `hashed`   — every path in nx's own file set, the one each task hash is computed over,
+ *   `absent`   — the paths of the index that the working tree holds nothing at,
+ *   `listings` — `{ [directory]: [file names] }` for the workspace root (`''`) and each
+ *                project root of `hashed`, as the disk holds them, tracked or not.
  * Throws `ReachError` on the first violation: the points run from the denominator
  * outwards, and each later one leans on what the earlier ones establish.
  */
-const checkReach = ({ files, texts, policy }) => {
-  // 1. DENOMINATOR. Three ways for this gate to pass while measuring nothing: an empty
+const checkReach = ({ files, texts, policy, hashed, absent, listings }) => {
+  // 1. DENOMINATOR. Four ways for this gate to pass while measuring nothing: an empty
   // index (nothing to reach), an empty corpus (nothing names anything, so the walk stops
-  // at the roots) and an empty root list (the walk never starts).
+  // at the roots), an empty root list (the walk never starts) and a project root nobody
+  // listed (point 7 reads names on the disk, and a place it was handed no listing of is a
+  // place it looked at and found clean — the shape a reading takes when it keys the
+  // workspace root as `.` and not as `''`).
   if (!files.length)
     throw new ReachError(
       'denominator',
@@ -303,6 +341,14 @@ const checkReach = ({ files, texts, policy }) => {
       'denominator',
       `${POLICY} declares no roots — the walk starts nowhere, so nothing is reached ` +
         `and the gate becomes a list of every file in the repository`,
+    );
+  const envRoots = envRootsOf(hashed ?? []);
+  const unlisted = envRoots.filter((dir) => !Array.isArray(listings?.[dir]));
+  if (unlisted.length)
+    throw new ReachError(
+      'denominator',
+      `no listing of ${unlisted.map((dir) => `\`${dir || '.'}\``).join(', ')} — point 7 ` +
+        `would then find no dotenv file in a place it never read`,
     );
 
   // 2. The roots exist. A root is the one place where "a tool finds this by its own
@@ -455,10 +501,66 @@ const checkReach = ({ files, texts, policy }) => {
         `reader named (req-project-reach).`,
     );
 
+  // 6. HASHED. nx computes every task hash over ONE file set, the workspace walked with
+  // the ignore rules applied, and a tracked file outside it is out of every hash at once:
+  // an edit to it is answered from the cache by each gate that reads it, whatever that
+  // gate's `inputs` say. The set is asked of nx and not rebuilt from git's list of ignored
+  // files, because the two differ: a `.nxignore` hides a file at any depth, not only at the
+  // root, so does an `.ignore` (ripgrep's, which git never reads), and nx skips
+  // `node_modules`, `.nx/cache`, `.nx/workspace-data` and `.yarn/cache` wherever they sit,
+  // and a symlink to a directory or to nothing, with no rule anywhere (measured on nx 23.1,
+  // 2026-10-01). A file the working tree holds nothing at is out of the set because there
+  // is nothing to hash, and it comes back the moment the file does — that one is not hidden.
+  const inSet = new Set(hashed ?? []);
+  const gone = new Set(absent ?? []);
+  const hidden = files.filter((f) => !inSet.has(f) && !gone.has(f));
+  if (hidden.length)
+    throw new ReachError(
+      'hashed',
+      `${hidden.length} tracked files nx leaves out of every hash:\n` +
+        hidden.map((f) => `      ${f}`).join('\n') +
+        `\n    An ignore rule hides them — a \`.gitignore\`, a \`.nxignore\` or an ` +
+        `\`.ignore\` at any depth, \`.git/info/exclude\`, the global excludes file — or ` +
+        `nx's walker skips them: a directory it never walks, a symlink to a directory or ` +
+        `to nothing. Every gate that reads one replays its cached pass after an edit. ` +
+        `Remedy: drop the rule, or stop tracking the file; ` +
+        `\`git check-ignore -v --no-index <file>\` names a rule of git's own, and reads ` +
+        `no \`.nxignore\` and no \`.ignore\`.`,
+    );
+
+  // 7. ENVIRONMENT. nx loads the names `DOTENV` reads from the workspace root and from
+  // the project root into a task's environment, and no hash is bound to read them — a gate
+  // whose `inputs` are `{workspaceRoot}/**/*` happens to, most do not — so a variable set
+  // there changes what a gate does while its cached pass stands. The rule forbids the file
+  // rather than hashing it. `NX_LOAD_DOT_ENV_FILES=false` keeps the per-target files out
+  // and not the root ones: nx reads those into its own process on start, whatever the
+  // switch says, and every `nx:run-commands` command inherits that environment (measured
+  // with `.env` and `.local.env`, 2026-10-01). A pattern in `inputs` stops naming the
+  // file the day a `.gitignore` takes it, and a listing of the disk does not.
+  const loaded = envRoots.flatMap((dir) =>
+    (listings?.[dir] ?? [])
+      .filter((name) => DOTENV.test(name))
+      .map((name) => (dir ? `${dir}/${name}` : name)),
+  );
+  if (loaded.length)
+    throw new ReachError(
+      'environment',
+      `${loaded.length} dotenv files in the workspace root or beside a \`project.json\` ` +
+        `or a \`package.json\`:\n` +
+        loaded.map((f) => `      ${f}`).join('\n') +
+        `\n    nx loads a file of these names into a task's environment — from the ` +
+        `workspace root for every task, from a project's root for that project's tasks — ` +
+        `and no task hash is bound to read it, so a cached pass can outlive any variable ` +
+        `it sets. A \`package.json\` counts here whether nx makes a project of it or not. ` +
+        `This repository configures nothing through dotenv: a variable a task needs ` +
+        `belongs in its command or in the workflow. Remedy: delete or rename the file.`,
+    );
+
   return (
     `${files.length} tracked files, all reached from ${rootPaths.length} roots ` +
     `(${trees.size} fixtures trees through their gates, ` +
-    `${enumerated.length} trees through the register)`
+    `${enumerated.length} trees through the register) and all in nx's file set; ` +
+    `no dotenv file in the workspace root or beside a manifest (${envRoots.length} places)`
   );
 };
 
@@ -490,6 +592,74 @@ const repoTexts = (files) => {
   return texts;
 };
 
+/**
+ * nx's own file set, the one each task hash is computed over. Asked in this process with
+ * the daemon off, because a running daemon's set can disagree with the disk: it learns of a
+ * `.gitignore` or of the root `.nxignore` by restarting, and of a nested `.nxignore`, an
+ * `.ignore` or `.git/info/exclude` not at all (measured 2026-10-01), nor, by its watcher's
+ * code, of the global excludes file — a rule written since it started leaves the file in
+ * its set, and a rule it started under keeps the file out after the rule is gone, until the
+ * file is next edited. The disk is what CI and a fresh daemon read, and a direct run of this
+ * gate would otherwise start a daemon.
+ */
+const nxFiles = async () => {
+  process.env.NX_DAEMON = 'false';
+  const { getAllFileDataInContext } =
+    await import('nx/src/utils/workspace-context.js');
+  return (await getAllFileDataInContext(ROOT)).map(({ file }) => file);
+};
+
+/**
+ * The paths of the index the working tree holds nothing at: deleted and not yet staged so,
+ * or left out of a sparse checkout, which `git ls-files --deleted` does not list. A symlink
+ * is held at its own path, whatever it points to.
+ */
+const repoAbsent = (files) =>
+  files.filter((file) => {
+    try {
+      lstatSync(join(ROOT, file));
+      return false;
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return true;
+      throw error;
+    }
+  });
+
+/** Whether a symlink leads to a file — dotenv reads nothing through one that does not. */
+const leadsToFile = (path) => {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * The file names in each place nx loads a dotenv file from, read off the disk and not off
+ * the index: nx reads the disk, tracked or not, ignored or not. What dotenv cannot read as
+ * a file is left out — a directory, as a Python environment called `.env` is, and a symlink
+ * to a directory or to nothing — and a place that is gone holds nothing.
+ */
+const repoListings = (hashed) => {
+  const listings = {};
+  for (const dir of envRootsOf(hashed)) {
+    try {
+      listings[dir] = readdirSync(join(ROOT, dir), { withFileTypes: true })
+        .filter(
+          (entry) =>
+            entry.isFile() ||
+            (entry.isSymbolicLink() &&
+              leadsToFile(join(ROOT, dir, entry.name))),
+        )
+        .map((entry) => entry.name);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      listings[dir] = [];
+    }
+  }
+  return listings;
+};
+
 // ── negative control ──────────────────────────────────────────────────────────
 
 const readFixture = (name) =>
@@ -505,13 +675,20 @@ const buildFixture = (fx) => {
     files: reference.files,
     texts: reference.texts,
     policy: reference.policy,
+    hashed: reference.hashed,
+    absent: reference.absent,
+    listings: reference.listings,
   });
 
   if (fx.clearFiles) input.files = [];
   if (fx.clearTexts) input.texts = {};
   if (fx.clearRoots) input.policy.roots = [];
+  if (fx.clearListings) input.listings = {};
   for (const [file, text] of Object.entries(fx.addFiles ?? {})) {
+    // A file a case adds is one nx hashes, as any new tracked file is; a case that means
+    // otherwise says so with `dropHashed`.
     input.files.push(file);
+    input.hashed.push(file);
     if (text !== null) input.texts[file] = text;
   }
   input.files = input.files.filter((f) => !(fx.dropFiles ?? []).includes(f));
@@ -520,9 +697,31 @@ const buildFixture = (fx) => {
     input.texts[file] = text;
   input.policy.roots.push(...(fx.addRoots ?? []));
   input.policy.enumerated.push(...(fx.addEntries ?? []));
+  input.hashed = input.hashed.filter((f) => !(fx.dropHashed ?? []).includes(f));
+  input.hashed.push(...(fx.addHashed ?? []));
+  for (const [dir, names] of Object.entries(fx.addListings ?? {}))
+    input.listings[dir] = [...(input.listings[dir] ?? []), ...names];
   input.files.sort();
 
   return input;
+};
+
+/**
+ * A name a case requires of its message, found with no digit on either side — `2 dotenv
+ * files` is not named by `12 dotenv files`. The same reading as `check-files`.
+ */
+const namedIn = (message, named) => {
+  for (
+    let at = message.indexOf(named);
+    at !== -1;
+    at = message.indexOf(named, at + 1)
+  )
+    if (
+      !/[0-9]/.test(message[at - 1] ?? '') &&
+      !/[0-9]/.test(message[at + named.length] ?? '')
+    )
+      return true;
+  return false;
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -532,10 +731,14 @@ let summary = null;
 
 try {
   const files = repoFiles();
+  const hashed = await nxFiles();
   summary = checkReach({
     files,
     texts: repoTexts(files),
     policy: JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8')),
+    hashed,
+    absent: repoAbsent(files),
+    listings: repoListings(hashed),
   });
 } catch (error) {
   if (!(error instanceof ReachError)) throw error;
@@ -579,6 +782,30 @@ for (const name of cases) {
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
+    // What the message has to name, where a case says: a finding that names one file of
+    // two, or a file without its directory, sends a person to the wrong place and is green
+    // otherwise.
+    else if (
+      fx.names !== undefined &&
+      (!Array.isArray(fx.names) ||
+        !fx.names.length ||
+        fx.names.some((named) => typeof named !== 'string' || !named.trim()))
+    )
+      problems.push(
+        `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
+          `what its message names proves nothing about it, and an empty one is named anywhere`,
+      );
+    else {
+      const unnamed = (fx.names ?? []).filter(
+        (named) => !namedIn(error.message, named),
+      );
+      if (unnamed.length)
+        problems.push(
+          `${name}: point ${fx.point} fired on its own check, and its message does not ` +
+            `name ${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that ` +
+            `sends a person to the wrong place, or to none`,
+        );
+    }
   }
 }
 

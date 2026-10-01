@@ -1,0 +1,7 @@
+{
+  "// why": "A dotenv file for one target under one configuration, `.env.<target>.<configuration>`, which nx loads when that configuration runs. Two segments follow `.env`, so a rule that takes the suffix as one segment lets it through.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": [".env.check-widget.production"] },
+  "names": [".env.check-widget.production"]
+}

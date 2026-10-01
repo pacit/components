@@ -1,0 +1,7 @@
+{
+  "// why": "The last path of the index, out of nx's file set — a file in a directory nx never walks, such as one called `.nx/cache` at any depth, with no ignore rule anywhere. Last, so a rule that stops one file short passes it.",
+  "point": 6,
+  "check": "hashed",
+  "dropHashed": ["vendor/skills/build/notes.md"],
+  "names": ["vendor/skills/build/notes.md"]
+}

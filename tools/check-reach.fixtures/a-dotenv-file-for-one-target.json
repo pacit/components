@@ -1,0 +1,7 @@
+{
+  "// why": "A dotenv file for the tasks of one target, `.env.<target>`. Measured: a `.env.check-tools` setting `GIT_INDEX_FILE` to a missing file left the hash of `check-tools` as it was, and the gate's cached pass was replayed while a run without the cache failed. The name is the last of the listing.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": [".env.check-widget"] },
+  "names": [".env.check-widget"]
+}

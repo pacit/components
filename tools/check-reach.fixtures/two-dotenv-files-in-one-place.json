@@ -1,0 +1,9 @@
+{
+  "// why": "Two dotenv files side by side at the workspace root. The message has to give the count and name both; a pattern that keeps its position from one test to the next (a `g` flag) reads the second name from the wrong place and reports the first alone.",
+  "point": 7,
+  "check": "environment",
+  "addListings": { "": [".env.check-widget", ".check-widget.env"] },
+  "names": [
+    "2 dotenv files in the workspace root or beside a `project.json` or a `package.json`:\n      .env.check-widget\n      .check-widget.env\n    nx loads"
+  ]
+}

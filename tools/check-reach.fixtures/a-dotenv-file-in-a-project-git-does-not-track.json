@@ -1,0 +1,8 @@
+{
+  "// why": "A project whose `project.json` nobody has added yet. nx makes a project of it all the same, since it takes its projects from its own file set, and loads the `.env` beside it into that project's tasks — measured: `nx run` of such a project printed the variable. Places read off the index would not include it.",
+  "point": 7,
+  "check": "environment",
+  "addHashed": ["libs/draft/project.json"],
+  "addListings": { "libs/draft": [".env", "project.json"] },
+  "names": ["libs/draft/.env"]
+}
