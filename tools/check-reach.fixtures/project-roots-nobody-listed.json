@@ -14,5 +14,5 @@
     }
   ],
   "addListings": { "libs/widget": ["project.json"] },
-  "names": ["libs/alpha", "libs/gauge"]
+  "names": ["no listing of `libs/alpha`, `libs/gauge` — point 7"]
 }

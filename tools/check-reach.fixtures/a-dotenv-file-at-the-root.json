@@ -3,5 +3,7 @@
   "point": 7,
   "check": "environment",
   "addListings": { "": ["notes.md", ".env", "notes.txt"] },
-  "names": ["1 dotenv files", ".env"]
+  "names": [
+    "1 dotenv files in the workspace root or beside a project manifest:\n      .env\n    nx loads"
+  ]
 }

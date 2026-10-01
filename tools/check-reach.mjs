@@ -286,10 +286,12 @@ const DOTENV = /^\.env(?:\..+)?$|^\..+\.env$/;
 
 /**
  * The places nx loads those names from: the workspace root, for every task, and the root of
- * the project whose task runs — a directory of nx's own file set holding a `project.json` or
- * a `package.json`. Read off nx's set and not off the index, because nx makes its projects of
- * that set: a manifest nobody has added yet is a project already. Wider than the graph by the
- * fixtures trees that carry a manifest; a project a plugin would make of another file is not
+ * the project whose task runs — here, every directory of nx's own file set holding a
+ * `project.json` or a `package.json`. Read off nx's set and not off the index, because nx
+ * makes its projects of that set: a `project.json` nobody has added yet is a project
+ * already. Wider than the graph by every `package.json` — nx makes a project of one only
+ * under `workspaces` or beside a `project.json`, tracked or not — which takes in the
+ * fixtures trees that carry a manifest. A project a plugin would make of another file is not
  * among them, and every project here has a `project.json`.
  */
 const envRootsOf = (files) => [
@@ -543,19 +545,20 @@ const checkReach = ({ files, texts, policy, hashed, absent, listings }) => {
   if (loaded.length)
     throw new ReachError(
       'environment',
-      `${loaded.length} dotenv files where nx loads them into a task:\n` +
+      `${loaded.length} dotenv files in the workspace root or beside a project manifest:\n` +
         loaded.map((f) => `      ${f}`).join('\n') +
-        `\n    No task hash is bound to read them, so a cached pass can outlive any ` +
-        `variable they set. ` +
-        `This repository configures nothing through dotenv: a variable a task needs ` +
-        `belongs in its command or in the workflow. Remedy: delete or rename the file.`,
+        `\n    nx loads such a file into the environment of a project's tasks, and no ` +
+        `task hash is bound to read it, so a cached pass can outlive any variable it ` +
+        `sets. This repository configures nothing through dotenv: a variable a task ` +
+        `needs belongs in its command or in the workflow. Remedy: delete or rename the ` +
+        `file.`,
     );
 
   return (
     `${files.length} tracked files, all reached from ${rootPaths.length} roots ` +
     `(${trees.size} fixtures trees through their gates, ` +
     `${enumerated.length} trees through the register) and all in nx's file set; ` +
-    `no dotenv file in the ${envRoots.length} places nx loads one from`
+    `no dotenv file in the workspace root or beside a manifest (${envRoots.length} places)`
   );
 };
 
@@ -590,11 +593,12 @@ const repoTexts = (files) => {
 /**
  * nx's own file set, the one each task hash is computed over. Asked in this process with
  * the daemon off, because a running daemon's set can disagree with the disk: it learns of a
- * `.gitignore` or of the root `.nxignore` by restarting, and of a nested `.nxignore` or an
- * `.ignore` not at all — a rule written since it started leaves the file in its set, and a
- * rule it started under keeps the file out after the rule is gone, until the file is next
- * edited (measured 2026-10-01). The disk is what CI and a fresh daemon read, and a direct
- * run of this gate would otherwise start a daemon.
+ * `.gitignore` or of the root `.nxignore` by restarting, and of a nested `.nxignore`, an
+ * `.ignore` or `.git/info/exclude` not at all (measured 2026-10-01), nor, by its watcher's
+ * code, of the global excludes file — a rule written since it started leaves the file in
+ * its set, and a rule it started under keeps the file out after the rule is gone, until the
+ * file is next edited. The disk is what CI and a fresh daemon read, and a direct run of this
+ * gate would otherwise start a daemon.
  */
 const nxFiles = async () => {
   process.env.NX_DAEMON = 'false';

@@ -3,5 +3,7 @@
   "point": 6,
   "check": "hashed",
   "dropHashed": ["docs/guide.md", "src/button.ts"],
-  "names": ["2 tracked files", "docs/guide.md", "src/button.ts"]
+  "names": [
+    "2 tracked files nx leaves out of every hash:\n      docs/guide.md\n      src/button.ts\n    An ignore rule"
+  ]
 }

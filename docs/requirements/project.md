@@ -581,19 +581,19 @@ any depth and nx skips `.nx/cache`, `.nx/workspace-data`, `.yarn/cache`, `node_m
 symlink to a directory wherever they sit — and no dotenv file lies in the workspace root or
 in a project root of nx's own file set, where nx loads it into a task's environment and no
 hash is bound to read it
-**Control:** `tools/check-reach.fixtures/` — 32 prepared inputs, each rejected on its own
+**Control:** `tools/check-reach.fixtures/` — 33 prepared inputs, each rejected on its own
 point: a file nothing points at; two files citing only each other; a name two files share; a
 pattern naming a kind and not a file; a root written as a pattern, as a path in the name form,
 in both forms at once, with a one-word reason, and pointing at a file that is gone; a register
 entry that grants nothing, one whose reader is gone, one over an empty tree, one without a
 reason; a fixtures tree whose gate is gone; an empty index; a corpus with nothing readable in
-it; a policy with no roots; a project root with no listing, at the root and in the middle of
-the places; a tracked file out of nx's file set, binary, first in the index, last in it, and
+it; a policy with no roots; a project root with no listing, at the root, in the middle of the
+places, and for a project nobody has added yet; a tracked file out of nx's file set, binary, first in the index, last in it, and
 two at once; a dotenv file at the root as `.env`, as `.env.<target>`, as
 `.env.<target>.<configuration>`, as `.<target>.env` and as `.<target>.local.env`, two side by
 side, in a project root taken from a `project.json`, beside a `package.json`, and beside a
-manifest nobody has added yet. The cases of points 1, 6 and 7 also name what their message has
-to name. Plus runs against the real repository: the deleted copy of the vendored guide put
+manifest nobody has added yet. The cases added for points 1, 6 and 7 also name what their
+message has to name, the whole list where it holds two. Plus runs against the real repository: the deleted copy of the vendored guide put
 back as two files citing each other, which fired point 5 with both named; and a nested
 `.gitignore`, a nested and a root `.nxignore`, a tracked file under `.nx/cache`, a `git add -f`
 behind a rule, and a `.env.check-tools` gitignored or not, each of which fired its point under

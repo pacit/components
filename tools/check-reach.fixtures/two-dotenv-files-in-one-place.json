@@ -3,5 +3,7 @@
   "point": 7,
   "check": "environment",
   "addListings": { "": [".env.check-widget", ".check-widget.env"] },
-  "names": ["2 dotenv files", ".env.check-widget", ".check-widget.env"]
+  "names": [
+    "2 dotenv files in the workspace root or beside a project manifest:\n      .env.check-widget\n      .check-widget.env\n    nx loads"
+  ]
 }

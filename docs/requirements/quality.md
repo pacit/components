@@ -128,7 +128,7 @@ points. The decisions index is **generated** (`--write`), because its three colu
 a home in the decision file; a fixtures table is **measured**, because its `defect` column is
 a sentence a human writes. A tree claims to list its cases with the heading `## The cases`,
 and nowhere else: completeness cannot tell a deliberate selection
-(`check-reach.fixtures/README.md` tabulates eighteen of thirty-two) from a list that has lost two
+(`check-reach.fixtures/README.md` tabulates nineteen of thirty-three) from a list that has lost two
 rows, so the claim is written down. **The limit is deliberate**: the gate measures the lists
 that exist and does not require a list to exist — five fixture trees carry no README, and
 deleting a table to silence the gate is a removal visible in the diff, which drift never was.

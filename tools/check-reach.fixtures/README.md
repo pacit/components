@@ -72,12 +72,14 @@ directory that is no project root.
 | `a-local-dotenv-file-for-one-target.json`            | `.<target>.local.env`, two segments before `.env`             |
 | `two-dotenv-files-in-one-place.json`                 | the message gives the count and names both files              |
 | `a-dotenv-file-in-a-project-root.json`               | a project root taken from `project.json`, the middle of three |
-| `a-dotenv-file-beside-a-package-manifest.json`       | a project root taken from `package.json`, the last place      |
+| `a-dotenv-file-beside-a-package-manifest.json`       | a place taken from a `package.json` alone, the last place     |
 | `a-dotenv-file-in-a-project-git-does-not-track.json` | a project nx sees before anyone adds its manifest             |
 | `a-project-root-nobody-listed.json`                  | point 1: the workspace root keyed as `.` and not as `''`      |
 | `project-roots-nobody-listed.json`                   | point 1: two places in the middle, both named                 |
+| `an-untracked-project-nobody-listed.json`            | point 1: the places of nx's set, not of the index             |
 
 The readers stay outside this control, as the index and text readers do: the file set nx
-is asked for, the paths the working tree holds nothing at, and the listings of the disk. The
-live run holds them, and point 1 catches two of their mistakes — a workspace root keyed as
-`.`, and a place left unlisted.
+is asked for, the paths the working tree holds nothing at, and the listings of the disk. A
+live run passes with any of them broken on a clean repository. What holds them is point 1,
+which refuses a workspace root keyed as `.` and, while nx sees a project the index does not
+hold, listings taken off the index — and the plants this change was checked by.

@@ -1,0 +1,7 @@
+{
+  "// why": "A project whose `project.json` nobody has added yet, with no listing of its directory. Point 1 has to take its places from nx's file set, as point 7 does: taken off the index, it would not ask for this listing, and a reader that lists only the index's places would let the `.env` of such a project through in silence.",
+  "point": 1,
+  "check": "denominator",
+  "addHashed": ["libs/draft/project.json"],
+  "names": ["no listing of `libs/draft` — point 7"]
+}
