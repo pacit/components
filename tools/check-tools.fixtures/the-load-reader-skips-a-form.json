@@ -1,0 +1,16 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "loads-misread",
+  "what": "the import reader returned four of the prepared script's five loads — the import() missing, which is the shape of a reader that stopped seeing one form, and a module then leaves the closure without a word",
+  "loads": {
+    "set": {
+      "resolved": [
+        "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+        "tools/workflow-targets.mjs",
+        "tools/check-tools.fixtures/a-module-nobody-wrote.mjs",
+        "tools/check-tools.fixtures/a-hop-in-typescript.ts"
+      ]
+    }
+  }
+}

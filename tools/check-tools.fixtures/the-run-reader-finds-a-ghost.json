@@ -1,0 +1,20 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "runs-misread",
+  "what": "the command reader resolved the script the index does not hold as if it did — a reader that never asks the index holds a target to a file nobody can name in its inputs, and never says a `cd` took the directory out of its sight",
+  "runs": {
+    "set": {
+      "prepared:four-ways": {
+        "scripts": [
+          "tools/check-tools.fixtures/a-name-nothing-declares.mjs",
+          "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+          "tools/check-tools.mjs",
+          "tools/check-prose.mjs",
+          "tools/check-tools.fixtures/a-script-nobody-wrote.mjs"
+        ],
+        "unresolved": []
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "nothing-to-read",
+  "what": "a target the planner gave no file list for — a key nobody could read must not pass as a key that names everything",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-with-no-plan",
+        "scripts": ["tools/check-tools.mjs"]
+      }
+    ]
+  }
+}

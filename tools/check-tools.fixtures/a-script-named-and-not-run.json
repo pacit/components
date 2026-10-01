@@ -1,0 +1,23 @@
+{
+  "point": 5,
+  "check": "inputs",
+  "rule": "unnamed",
+  "what": "the inputs name a script the command does not run, complete with its import, and not the one it runs — a reader that takes the scripts from the inputs rather than from the command examines the wrong one and finds nothing missing",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-hashing-its-neighbour",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/another-gate.mjs", "tools/its-module.mjs"]
+      }
+    ]
+  },
+  "imports": {
+    "set": {
+      "tools/a-gate.mjs": ["tools/a-module.mjs"],
+      "tools/another-gate.mjs": ["tools/its-module.mjs"]
+    }
+  }
+}

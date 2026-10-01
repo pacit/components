@@ -1,0 +1,19 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "runs-misread",
+  "what": "the command reader returned a script the prepared target never runs — a reader that takes a path out of an argument or a sentence would, and a comparison that asks only whether every expected script was read lets it",
+  "runs": {
+    "set": {
+      "prepared:four-ways": {
+        "scripts": [
+          "tools/check-tools.fixtures/a-name-nothing-declares.mjs",
+          "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+          "tools/check-tools.mjs",
+          "tools/check-prose.mjs",
+          "tools/check-index.mjs"
+        ]
+      }
+    }
+  }
+}

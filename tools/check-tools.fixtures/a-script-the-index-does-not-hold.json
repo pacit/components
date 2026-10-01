@@ -1,0 +1,18 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "script-unresolved",
+  "what": "a command names build.mjs with the directory in a `cd` rather than in `cwd`, so the path resolves to no tracked file — dropped without a word, the target would stand under no rule at all",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "tokens",
+        "target": "a-build-that-changes-directory",
+        "scripts": [],
+        "unresolved": ["build.mjs"],
+        "names": []
+      }
+    ]
+  }
+}

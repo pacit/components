@@ -1,0 +1,23 @@
+{
+  "point": 5,
+  "check": "inputs",
+  "rule": "unnamed",
+  "what": "the script's own import is named and the module THAT one imports is not, the deeper module importing the script back — a reader one import deep passes it, and a walk with no memory of where it has been never returns",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-two-imports-deep",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/a-gate.mjs", "tools/a-module.mjs"]
+      }
+    ]
+  },
+  "imports": {
+    "set": {
+      "tools/a-gate.mjs": ["tools/a-module.mjs"],
+      "tools/a-module.mjs": ["tools/a-deeper-module.mjs", "tools/a-gate.mjs"]
+    }
+  }
+}

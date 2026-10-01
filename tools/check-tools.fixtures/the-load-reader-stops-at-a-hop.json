@@ -1,0 +1,16 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "loads-misread",
+  "what": "the walk reached the prepared `.ts` and went no further, so the module that file loads is missing from the closure — the shape of a walk that follows `.mjs` edges alone, under which what a loaded `.ts` loads is held by nobody",
+  "loads": {
+    "set": {
+      "closure": [
+        "tools/check-tools.fixtures/a-script-that-loads.mjs",
+        "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+        "tools/workflow-targets.mjs",
+        "tools/check-tools.fixtures/a-hop-in-typescript.ts"
+      ]
+    }
+  }
+}

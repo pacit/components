@@ -13,12 +13,13 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "// include": "A pattern, not a list of names: a file added at the root should come under the compiler by itself. The single star is deliberate — it covers the root alone, so `tools/foo.ts` does NOT slip in here quietly; it fires `check-typecheck` and forces a decision about which project it belongs to. Two decisions are taken below the root, both for prepared inputs of a gate: the package gate's `.d.ts` (`tools/check-package.fixtures/*/types/`) and the since gate's small library (`tools/check-since.fixtures/_reader/`) are TypeScript, they belong to the root project that owns `tools/`, and they enter this program — a fixture of a shipped surface has to keep the extension its gate reads, and code a gate is measured against is worth compiling.",
+  "// include": "A pattern, not a list of names: a file added at the root should come under the compiler by itself. The single star is deliberate — it covers the root alone, so `tools/foo.ts` does NOT slip in here quietly; it fires `check-typecheck` and forces a decision about which project it belongs to. Three decisions are taken below the root, all for prepared inputs of a gate: the package gate's `.d.ts` (`tools/check-package.fixtures/*/types/`), the since gate's small library (`tools/check-since.fixtures/_reader/`) and the scripts gate's hop (`tools/check-tools.fixtures/*.ts`, a `.ts` a prepared script loads, so that the walk over what a script reaches is measured through a file that is no script) are TypeScript, they belong to the root project that owns `tools/`, and they enter this program — a fixture of a shipped surface has to keep the extension its gate reads, and code a gate is measured against is worth compiling.",
   "include": [
     "*.ts",
     "*.mts",
     "*.cts",
     "tools/check-package.fixtures/*/types/*.d.ts",
-    "tools/check-since.fixtures/_reader/*.ts"
+    "tools/check-since.fixtures/_reader/*.ts",
+    "tools/check-tools.fixtures/*.ts"
   ]
 }

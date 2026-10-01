@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "runs-misread",
+  "what": "the prepared target whose only script resolves to nothing is missing from what the reader returned — the shape of a filter that keeps a target for the scripts it found and drops one that found none, under which a `cd` in a command is never a finding",
+  "runs": { "drop": ["prepared:a-cd-away"] }
+}

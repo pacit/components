@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "measured",
+  "rule": "nothing-to-read",
+  "what": "the graph hands no target that runs a script, so point 5 holds nothing to its inputs and passes on an empty set",
+  "targets": { "clear": true }
+}

@@ -1,0 +1,17 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "loads-misread",
+  "what": "the import reader returned the two modules nobody wrote as tracked — a reader that never asks the index holds a target to files nobody can name in its inputs, and the `resolved` half of the control, read alone, cannot tell",
+  "loads": {
+    "set": {
+      "tracked": [
+        "tools/check-tools.fixtures/a-name-the-browser-declares.mjs",
+        "tools/workflow-targets.mjs",
+        "tools/check-tools.fixtures/a-module-nobody-wrote.mjs",
+        "tools/check-tools.fixtures/a-module-loaded-later.mjs",
+        "tools/check-tools.fixtures/a-hop-in-typescript.ts"
+      ]
+    }
+  }
+}
