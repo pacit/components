@@ -1,7 +1,7 @@
 {
   "check": "measured",
   "rule": "interrupted",
-  "// defect": "Ctrl+C in the last test of the second suite, and a global teardown that threw while the interrupted run cleaned up (measured: the teardown runs after a SIGINT, and its error lands in `errors` with the stack, location and snippet the reporter gives it, with no colour). Point 1 asks whether a run reached its end before it asks what else went wrong in it, so the interruption is named and the error is not; a rule asking about errors first calls this run an error outside a test, which says nothing of what was cut short. Nothing else is skipped: the attempt cut off is the suite's last, in its last repetition.",
+  "// defect": "Ctrl+C in the last test of the second suite, and a global teardown that threw while the interrupted run cleaned up (measured: the teardown runs after a SIGINT, and its error lands in `errors` with the stack, location and snippet the reporter gives it, its message with no colour). Point 1 asks whether a run reached its end before it asks what else went wrong in it, so the interruption is named and the error is not; a rule asking about errors first calls this run an error outside a test, which says nothing of what was cut short. Nothing else is skipped: the result cut off is the suite's last, in its last repetition.",
   "errors": {
     "fake-docs-e2e": [
       {

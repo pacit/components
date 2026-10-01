@@ -1,0 +1,56 @@
+{
+  "check": "measured",
+  "rule": "interrupted",
+  "// defect": "A test whose `results` holds one result rather than a list of them. No reporter writes it; the case holds how the field is read. Every other field a report promises as a list is read as an empty one when it is not, which refuses a report whose cases that field holds; read that way, this one would pass the run, so it is read as the one result it holds, as an `errors` that is not a list is (`errors-that-are-not-a-list.json`) — here the `interrupted` one a Ctrl+C leaves on the second suite's first test, its two repetitions after it never reached.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "skipped",
+                  "results": { "status": "interrupted" }
+                }
+              ]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "skipped",
+                  "results": []
+                }
+              ]
+            },
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "skipped",
+                  "results": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 0,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 3
+      }
+    }
+  }
+}

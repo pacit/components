@@ -2,7 +2,7 @@
   "check": "measured",
   "rule": "interrupted",
   "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
-  "// defect": "Ctrl+C in chromium's second repetition of the case the record calls a wobble, after its first repetition failed (measured shape: one worker, every chromium repetition before the first firefox one): `closes on escape | chromium` failed once and was cut off once, and every test after it never ran. The run's `errors` are empty, so nothing names a stop. Past point 1, point 3 would call a wobble cut off after one failing run a case failing every repetition it ran (`hides`), as it would behind an early stop. The interruption stands in the middle repetition of a first project's case, the last of that case's two attempts.",
+  "// defect": "Ctrl+C in chromium's second repetition of the case the record calls a wobble, after its first repetition failed (measured shape: one worker, every chromium repetition before the first firefox one): `closes on escape | chromium` failed once and was cut off once, and every test after it never ran. The run's `errors` are empty, so nothing names a stop. Past point 1, point 3 would call a wobble cut off after one failing run a case failing every repetition it ran (`hides`), as it would behind an early stop. The interruption stands in the middle repetition of a first project's case, the last of that case's two results.",
   "stats": { "fake-e2e": { "expected": 2, "unexpected": 1, "skipped": 9 } },
   "replaceStatuses": {
     "fake-e2e::alpha.spec.ts › opens on click | chromium": [

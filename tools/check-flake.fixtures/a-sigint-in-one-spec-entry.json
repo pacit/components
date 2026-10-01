@@ -1,0 +1,46 @@
+{
+  "check": "measured",
+  "rule": "interrupted",
+  "// defect": "Ctrl+C on two workers in a run from the test directory, where one spec entry carries every repetition of a case (both shapes measured): one worker passed the first repetition and then the third while the other was still in the second, which the Ctrl+C cut off. A run interrupted by hand is a local one, and the `nx` preset leaves the workers to Playwright off CI, which starts several. So the `interrupted` result is the second of the entry's three tests and stands between two passes among the case's results: a rule reading one test per entry, the entry's first, or only a case's first or last result, passes the run. The tally agrees with the walk.",
+  "addReports": {
+    "fake-docs-e2e": {
+      "config": {
+        "projects": [{ "name": "chromium", "repeatEach": 3, "retries": 0 }]
+      },
+      "suites": [
+        {
+          "title": "beta.spec.ts",
+          "specs": [
+            {
+              "title": "the landing renders",
+              "tests": [
+                {
+                  "projectName": "chromium",
+                  "status": "expected",
+                  "results": [{ "status": "passed" }]
+                },
+                {
+                  "projectName": "chromium",
+                  "status": "skipped",
+                  "results": [{ "status": "interrupted" }]
+                },
+                {
+                  "projectName": "chromium",
+                  "status": "expected",
+                  "results": [{ "status": "passed" }]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "startTime": "2026-09-15T03:02:41.000Z",
+        "expected": 2,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 1
+      }
+    }
+  }
+}

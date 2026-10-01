@@ -1,7 +1,7 @@
 {
   "check": "measured",
   "rule": "too-few-repetitions",
-  "// defect": "A run whose last project declares two repetitions, one short of the floor, and which was interrupted in the last test it ran. Point 1 names how a run was set up before what it did, as it does beside an early stop (`a-stop-and-a-project-one-short.json`): a run set up short has to be taken again whatever happened to it. The short project is the last one, so its floor is the last setup rule the run reads, and an attempt rule let in anywhere before it — ahead of the projects, inside the loop over them, or after the first one's floor — speaks here first. Point 1 gives a suite one finding, so the interruption goes unnamed.",
+  "// defect": "A run whose last project declares two repetitions, one short of the floor, and which was interrupted in the last test it ran. Point 1 names how a run was set up before what it did, as it does beside an early stop (`a-stop-and-a-project-one-short.json`): a run set up short has to be taken again whatever happened to it. The short project is the last one, so its floor is the last setup rule the run reads, and a rule on results let in anywhere before it — ahead of the projects, inside the loop over them, or after the first one's floor — speaks here first. Point 1 gives a suite one finding, so the interruption goes unnamed.",
   "projects": { "fake-e2e::firefox": { "repeatEach": 2 } },
   "stats": { "fake-e2e": { "expected": 10, "skipped": 1 } },
   "replaceStatuses": {

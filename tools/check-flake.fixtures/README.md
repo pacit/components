@@ -14,8 +14,8 @@ The reason it exists is the same as for every other gate here
 For this gate the rule bites in one direction. Almost every defect below makes the flake rate
 read **lower** than it is, and a low rate is a green run: retries left on, one repetition
 instead of three, a suite whose report never arrived, a run that stopped at its first failure
-or was interrupted by hand, a walk that lost half the cases. The one measurement this gate exists to take is the one its
-own defects erase.
+or was interrupted by hand, a walk that lost half the cases. The one measurement this gate
+exists to take is the one its own defects erase.
 
 ## Why this control is built on a stored input
 
@@ -75,6 +75,8 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`a-run-interrupted-by-hand.json`](a-run-interrupted-by-hand.json)               | Ctrl+C in firefox's first repetition: no error, every other point passes it    | `measured`    | `interrupted`                |
 | [`an-interruption-after-a-failure.json`](an-interruption-after-a-failure.json)   | Ctrl+C after a wobble's failing first run: point 3 would call it a failure     | `measured`    | `interrupted`                |
 | [`an-interruption-beside-an-error.json`](an-interruption-beside-an-error.json)   | Ctrl+C in the second suite's last test, and a global teardown that threw       | `measured`    | `interrupted`                |
+| [`a-sigint-in-one-spec-entry.json`](a-sigint-in-one-spec-entry.json)             | Ctrl+C on two workers in one spec entry: the result cut off between passes     | `measured`    | `interrupted`                |
+| [`results-that-are-not-a-list.json`](results-that-are-not-a-list.json)           | a `results` that is one result and not a list: read as it, not as none         | `measured`    | `interrupted`                |
 | [`an-error-outside-any-test.json`](an-error-outside-any-test.json)               | two worker errors outside any test, which took both passes of a wobble         | `measured`    | `error-outside-tests`        |
 | [`a-timeout-in-the-teardown.json`](a-timeout-in-the-teardown.json)               | a timeout in the global teardown after every test ran: no stop, still refused  | `measured`    | `error-outside-tests`        |
 | [`an-error-thrown-as-a-value.json`](an-error-thrown-as-a-value.json)             | a global teardown that threw a string: an error with no message at all         | `measured`    | `error-outside-tests`        |
@@ -125,7 +127,7 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`a-drift-behind-a-decimal-floor.json`](a-drift-behind-a-decimal-floor.json)     | a floor of 4.5, and a record whose prose has drifted                           | `record`      | `stale-prose`                |
 | [`a-floor-of-two.json`](a-floor-of-two.json)                                     | a floor of two beside a drifted record: point 1 takes it, nothing else fires   | `record`      | `stale-prose`                |
 | [`a-case-that-never-ran.json`](a-case-that-never-ran.json)                       | a case skipped in every repetition beside a drifted record: nothing else fires | `record`      | `stale-prose`                |
-| [`a-project-behind-a-failed-one.json`](a-project-behind-a-failed-one.json)       | firefox behind chromium's failure: no attempt, no error — nothing else fires   | `record`      | `stale-prose`                |
+| [`a-project-that-never-started.json`](a-project-that-never-started.json)         | firefox behind chromium's timeout: no result, no error — nothing else fires    | `record`      | `stale-prose`                |
 | [`a-deep-name-the-record-carries.json`](a-deep-name-the-record-carries.json)     | a wobble two describes deep that the record carries, beside a drift            | `record`      | `stale-prose`                |
 | [`a-project-repaired-by-name.json`](a-project-repaired-by-name.json)             | firefox broken in the report and repaired by name, beside a drifted record     | `record`      | `stale-prose`                |
 
@@ -266,28 +268,33 @@ how a run was set up is named before what it did, its last project short of the 
 setup rule the run reads.
 
 A run stopped from outside names itself nowhere in `errors`: a Ctrl+C, a `SIGINT`, leaves a
-report with no error at all, the test in flight `skipped` over one `interrupted` attempt and
-every test after it `skipped` with none (measured). That attempt is the only trace, so
-`interrupted` reads attempts where every other rule reads a test's status, and refuses a run in
+report with no error at all, the test in flight `skipped` over one `interrupted` result and
+every test after it `skipped` with none (measured). That result is the only trace, so
+`interrupted` reads results where every other rule reads a test's status, and refuses a run in
 which any was cut off. [`a-run-interrupted-by-hand.json`](a-run-interrupted-by-hand.json) is that
 run as one worker leaves it, firefox cut off in its first repetition, and passes every other
 point: `--write` would record a reading in which five of firefox's six runs were never made.
 [`an-interruption-after-a-failure.json`](an-interruption-after-a-failure.json) cuts the recorded
-wobble off after its failing first run, which point 3 would call a failure, and
+wobble off after its failing first run, which point 3 would call a failure,
 [`an-interruption-beside-an-error.json`](an-interruption-beside-an-error.json) the second suite's
-last test: across the three, the attempt cut off stands first, in the middle and last of its
-case's repetitions, in both projects and in both suites. The rule comes after the stop sentence,
-which names a cause where an attempt is a trace — `maxFailures` on two workers cuts off the test
-the other one was running, as [`a-stop-that-cut-off-a-test.json`](a-stop-that-cut-off-a-test.json)
-holds — and before any other error: whether a run reached its end is asked before what else went
-wrong in it, so the global teardown that threw beside the second suite's interruption goes
-unnamed. [`a-sigint-and-a-project-one-short.json`](a-sigint-and-a-project-one-short.json) holds it
-behind the setup rules. Nothing but an `interrupted` attempt is read: a failed `beforeAll` leaves
-the test after it over a `skipped` attempt
-([`a-hook-that-failed-once.json`](a-hook-that-failed-once.json)), a failed dependency leaves every
-test behind it with no attempt at all
-([`a-project-behind-a-failed-one.json`](a-project-behind-a-failed-one.json)), neither with an
-error, and an interruption between two tests leaves the one or the other.
+last test, and [`a-sigint-in-one-spec-entry.json`](a-sigint-in-one-spec-entry.json) the second of
+three tests in the one entry a run from the test directory writes, on two workers and between
+two passes. Across the four, the result cut off stands first, in the middle and last of its
+case's repetitions, alone, last and between two among its case's results, in both projects and
+both suites; [`results-that-are-not-a-list.json`](results-that-are-not-a-list.json) holds the
+field itself, read as the one result it holds when it is not a list, as `errors` is. The rule
+comes after the stop sentence, which names a cause where a result is a trace — `maxFailures` on
+two workers cuts off the test the other one was running, as
+[`a-stop-that-cut-off-a-test.json`](a-stop-that-cut-off-a-test.json) holds — and before any other
+error: whether a run reached its end is asked before what else went wrong in it, so the global
+teardown that threw beside the second suite's interruption goes unnamed.
+[`a-sigint-and-a-project-one-short.json`](a-sigint-and-a-project-one-short.json) holds it behind
+the setup rules. Only an `interrupted` result is read, and none of the shapes above that are no
+sign of a stop is one: [`a-hook-that-failed-once.json`](a-hook-that-failed-once.json) holds the
+`skipped` result a failed `beforeAll` leaves, and
+[`a-project-that-never-started.json`](a-project-that-never-started.json) the tests a failed
+dependency leaves with no result, the dependency failing on a `timedOut` one — the way an e2e
+wobble most often fails.
 
 Any other entry in `errors` is `error-outside-tests`, and a narrow match is safe only because of
 it: a stop sentence a later version rewords is refused all the same, as an error — or as an
@@ -318,10 +325,11 @@ themselves, not off the set the refusal is written with.
 The reading of the reports off disk, and the register that says where they are. Both are a few
 lines and both are guarded by the run itself: a path that resolves to nothing is `no-report`, a
 file that is not JSON throws where it is parsed, and JSON of another shape is read as far as it
-goes — its lists as lists or as nothing, an `errors` that is not one as the error it holds — and
-fails a rule of points 1 and 2 rather than the run. A missing `errors` is read as none, as a
-missing `retries` is read as off and a missing counter in `stats` as zero: the reporter writes
-each of them on every report, and the reports built by hand here leave out the empty `errors`.
+goes — its lists as lists or as nothing, an `errors` or a `results` that is not one as the entry
+it holds — and fails a rule of points 1 and 2 rather than the run. A missing `errors` or
+`results` is read as none, as a missing `retries` is read as off and a missing counter in
+`stats` as zero: the reporter writes each of them every time, and the reports built by hand here
+leave out the empty `errors`, and the `results` of most tests.
 Nor a file, `describe` or spec entry with no test in it: the reporter writes none, so a report
 of no case is an empty list of files
 ([`a-report-with-no-case.json`](a-report-with-no-case.json)), and a rule counting files or
@@ -330,22 +338,23 @@ deliberately not covered is the **repetition job** — whether `--repeat-each` r
 at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what notice
 when it did not.
 
-Nor an interruption that leaves no `interrupted` attempt (all measured). One between two tests —
-while the next repetition's worker starts, as no worker runs two, or once a worker has taken its
-tests and before the first begins — leaves tests `skipped` with no attempt, or one over a
-`skipped` attempt, as a failed dependency and a failed `beforeAll` do. A second Ctrl+C, more than
-a second after the first and while the run still cleans up, has the report written before the
-test it cut off reports its end, which keeps a `skipped` attempt; and one in a test that has
-already failed leaves that failure. Each reads as a run that reached its end. The nightly's own
-cap leaves no report (`no-report`), as a `SIGTERM` does, so the way in is a repetition
-interrupted by hand and then written down. Nor a stop sentence inside a longer message, nor the
-test suite's teardown sentence on its own. Playwright writes each stop sentence as the whole of
-a message, so a rule that finds one anywhere in a message agrees with this one on every report
-the reporter writes. The test suite stops its workers before its own teardown runs, so that
-teardown runs out of time only after the suite itself has, or after a `SIGINT` cut the suite
-short (read in the runner, and the second measured since: the test cut off keeps a `skipped`
-attempt): a rule that takes it for a stop as well calls that interrupted run an early stop where
-this one calls it an error outside a test, and refuses it all the same.
+Nor an interruption that leaves no `interrupted` result (all measured). One between two tests —
+while the next repetition's worker starts, no worker running two repetitions, or once a worker
+has taken its tests and before the first begins — leaves tests `skipped` with no result, or one
+over a `skipped` result, which is what a failed dependency and a failed `beforeAll` leave too. A
+second Ctrl+C, more than a second after the first and while the run still cleans up, has the
+report written before the test the first one cut off reports its end, and that test keeps a
+`skipped` result; a single Ctrl+C in a test that has already failed leaves that failure. Each
+reads as a run that reached its end. The nightly's own cap leaves no report (`no-report`), as a
+`SIGTERM` does, so the way in is a repetition interrupted by hand and then written down. Nor a
+stop sentence inside a longer message, nor the test suite's teardown sentence on its own.
+Playwright writes each stop sentence as the whole of a message, so a rule that finds one
+anywhere in a message agrees with this one on every report the reporter writes. The test suite
+stops its workers before its own teardown runs, so that teardown runs out of time only after the
+suite itself has, or after a `SIGINT` cut the suite short (read in the runner, and the second
+measured since: the test cut off keeps a `skipped` result): a rule that takes it for a stop as
+well calls that interrupted run an early stop where this one calls it an error outside a test,
+and refuses it all the same.
 
 Which cases a finding lists. The control compares rules, not the lines under them: a finding
 naming one of the two cases it found would pass. Every rule of points 3 and 4 that names cases
