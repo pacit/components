@@ -1,0 +1,17 @@
+{
+  "point": 5,
+  "check": "inputs",
+  "rule": "unnamed",
+  "what": "a target runs a script that imports a module, and its inputs name the script alone — the shape six gates had until 2026-09-30, when an edit to fresh-inputs.mjs or workflow-targets.mjs left their hash where it was and nx replayed a cached green",
+  "targets": {
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-with-a-module",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/a-gate.mjs"]
+      }
+    ]
+  },
+  "imports": { "set": { "tools/a-gate.mjs": ["tools/a-module.mjs"] } }
+}

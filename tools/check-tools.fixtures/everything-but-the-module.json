@@ -1,0 +1,22 @@
+{
+  "point": 5,
+  "check": "inputs",
+  "rule": "unnamed",
+  "what": "inputs of {workspaceRoot}/**/* with a ! that takes the imported module back out, resolved by nx's planner over a copy of the graph — a reader that sees the first pattern and calls everything named passes it; the other half, that the pattern alone names everything, is the live check-docs",
+  "targets": {
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-hashing-everything-but-one",
+        "scripts": ["tools/check-tools.mjs"],
+        "inputs": [
+          "{workspaceRoot}/**/*",
+          "!{workspaceRoot}/tools/workflow-targets.mjs"
+        ]
+      }
+    ]
+  },
+  "imports": {
+    "set": { "tools/check-tools.mjs": ["tools/workflow-targets.mjs"] }
+  }
+}
