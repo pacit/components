@@ -58,7 +58,8 @@ const STOPS = [
  * field that is not a list as an empty one, which refuses a report whose cases that field
  * holds; read that way, an `errors` or a `results` that is not a list would pass the run, so it
  * is read as the one entry it holds instead. A missing one holds none: the reporter writes both
- * keys every time, and the reports built by hand here leave out a list of nothing.
+ * keys every time, and the reports built by hand here leave out an empty `errors`, and the
+ * `results` of most tests.
  */
 const entriesOf = (value) =>
   value === undefined ? [] : Array.isArray(value) ? value : [value];

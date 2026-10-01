@@ -69,7 +69,7 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json)             | `-x` in colour: stopped at a wobble's first, failing run, the rest skipped     | `measured`    | `stopped-early`              |
 | [`a-stop-that-skipped-nothing.json`](a-stop-that-skipped-nothing.json)           | the limit reached by the last test to run: nothing skipped, still a stop       | `measured`    | `stopped-early`              |
 | [`a-run-out-of-time.json`](a-run-out-of-time.json)                               | out of time in the second suite, the sentence first of two, at 12.25 seconds   | `measured`    | `stopped-early`              |
-| [`a-stop-behind-another-error.json`](a-stop-behind-another-error.json)           | ten failures under a limit of ten, the sentence second of two errors           | `measured`    | `stopped-early`              |
+| [`a-stop-after-another-error.json`](a-stop-after-another-error.json)             | ten failures under a limit of ten, the sentence second of two errors           | `measured`    | `stopped-early`              |
 | [`errors-that-are-not-a-list.json`](errors-that-are-not-a-list.json)             | an `errors` that is one error and not a list: read as that error, not none     | `measured`    | `stopped-early`              |
 | [`a-stop-that-cut-off-a-test.json`](a-stop-that-cut-off-a-test.json)             | `--max-failures=1` on two workers: the stop named, not the test it cut off     | `measured`    | `stopped-early`              |
 | [`a-run-interrupted-by-hand.json`](a-run-interrupted-by-hand.json)               | Ctrl+C in firefox's first repetition: no error, every other point passes it    | `measured`    | `interrupted`                |
@@ -155,7 +155,7 @@ existing cannot pass for a stop, and a silenced one left unnamed is a stop nobod
   the two failures a lost pass leaves unanimous;
 - [`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json) — point 3 would call a wobble
   an early stop cut off after one failing run a case failing every repetition it ran;
-- [`a-stop-behind-another-error.json`](a-stop-behind-another-error.json) — point 3 would name three
+- [`a-stop-after-another-error.json`](a-stop-after-another-error.json) — point 3 would name three
   broken cases, read off a run that cannot say what stopping cost it;
 - [`an-interruption-after-a-failure.json`](an-interruption-after-a-failure.json) — point 3 would call
   a wobble a Ctrl+C cut off after its failing first run a failure;
@@ -223,7 +223,8 @@ three repetitions of a case in one spec entry, the shape a run from the test dir
 where the reference has one test per entry: a walk reading one test per entry, the entry's
 first, finds a case run once where the tally counts three and never reaches the wobble, so
 point 2 speaks where the case declares point 4 — it fires on a rule it does not declare, which
-the control refuses. That walk passes every other case here but the next (measured).
+the control refuses. That walk passes every other case here but the next and
+[`a-sigint-in-one-spec-entry.json`](a-sigint-in-one-spec-entry.json) (measured).
 [`two-projects-in-one-spec-entry.json`](two-projects-in-one-spec-entry.json) is the reference's
 first suite in that shape, both projects' six repetitions in each entry, with the firefox copy
 of the recorded wobble wobbling too: a walk taking a case's project off the entry's first test
@@ -258,7 +259,7 @@ once the colour `nx` turns on for its tasks is off them:
 [`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json) is `-x` in that red,
 [`a-run-out-of-time.json`](a-run-out-of-time.json) a timeout of 12.25 seconds whose sentence is
 the first of two errors, and
-[`a-stop-behind-another-error.json`](a-stop-behind-another-error.json) a limit of ten whose
+[`a-stop-after-another-error.json`](a-stop-after-another-error.json) a limit of ten whose
 sentence is the second. [`a-stop-that-skipped-nothing.json`](a-stop-that-skipped-nothing.json)
 reached its limit on the last test to run and is refused all the same: a timeout that runs out
 in the last worker's teardown says the test suite timed out as well, with every test run
@@ -267,8 +268,8 @@ in the last worker's teardown says the test suite timed out as well, with every 
 how a run was set up is named before what it did, its last project short of the floor, the last
 setup rule the run reads.
 
-A run stopped from outside names itself nowhere in `errors`: a Ctrl+C, a `SIGINT`, leaves a
-report with no error at all, the test in flight `skipped` over one `interrupted` result and
+A run stopped from outside names itself nowhere in `errors`: a Ctrl+C, a `SIGINT`, writes no
+error of its own, and leaves the test in flight `skipped` over one `interrupted` result and
 every test after it `skipped` with none (measured). That result is the only trace, so
 `interrupted` reads results where every other rule reads a test's status, and refuses a run in
 which any was cut off. [`a-run-interrupted-by-hand.json`](a-run-interrupted-by-hand.json) is that
@@ -289,12 +290,12 @@ two workers cuts off the test the other one was running, as
 error: whether a run reached its end is asked before what else went wrong in it, so the global
 teardown that threw beside the second suite's interruption goes unnamed.
 [`a-sigint-and-a-project-one-short.json`](a-sigint-and-a-project-one-short.json) holds it behind
-the setup rules. Only an `interrupted` result is read, and none of the shapes above that are no
-sign of a stop is one: [`a-hook-that-failed-once.json`](a-hook-that-failed-once.json) holds the
-`skipped` result a failed `beforeAll` leaves, and
-[`a-project-that-never-started.json`](a-project-that-never-started.json) the tests a failed
-dependency leaves with no result, the dependency failing on a `timedOut` one — the way an e2e
-wobble most often fails.
+the setup rules. Only an `interrupted` result is read, and the shapes above that are no sign of
+a stop are no sign of an interruption either:
+[`a-hook-that-failed-once.json`](a-hook-that-failed-once.json) holds the `skipped` result a
+failed `beforeAll` leaves, and [`a-project-that-never-started.json`](a-project-that-never-started.json)
+the tests a failed dependency leaves with no result, the dependency failing on a `timedOut` one —
+a test that ran out of its own time, which is an ordinary failure.
 
 Any other entry in `errors` is `error-outside-tests`, and a narrow match is safe only because of
 it: a stop sentence a later version rewords is refused all the same, as an error — or as an
