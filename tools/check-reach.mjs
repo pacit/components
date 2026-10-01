@@ -545,13 +545,15 @@ const checkReach = ({ files, texts, policy, hashed, absent, listings }) => {
   if (loaded.length)
     throw new ReachError(
       'environment',
-      `${loaded.length} dotenv files in the workspace root or beside a project manifest:\n` +
+      `${loaded.length} dotenv files in the workspace root or beside a \`project.json\` ` +
+        `or a \`package.json\`:\n` +
         loaded.map((f) => `      ${f}`).join('\n') +
-        `\n    nx loads such a file into the environment of a project's tasks, and no ` +
-        `task hash is bound to read it, so a cached pass can outlive any variable it ` +
-        `sets. This repository configures nothing through dotenv: a variable a task ` +
-        `needs belongs in its command or in the workflow. Remedy: delete or rename the ` +
-        `file.`,
+        `\n    nx loads a file of these names into a task's environment — from the ` +
+        `workspace root for every task, from a project's root for that project's tasks — ` +
+        `and no task hash is bound to read it, so a cached pass can outlive any variable ` +
+        `it sets. A \`package.json\` counts here whether nx makes a project of it or not. ` +
+        `This repository configures nothing through dotenv: a variable a task needs ` +
+        `belongs in its command or in the workflow. Remedy: delete or rename the file.`,
     );
 
   return (

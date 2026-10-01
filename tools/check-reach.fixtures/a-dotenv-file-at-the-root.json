@@ -4,6 +4,6 @@
   "check": "environment",
   "addListings": { "": ["notes.md", ".env", "notes.txt"] },
   "names": [
-    "1 dotenv files in the workspace root or beside a project manifest:\n      .env\n    nx loads"
+    "1 dotenv files in the workspace root or beside a `project.json` or a `package.json`:\n      .env\n    nx loads"
   ]
 }

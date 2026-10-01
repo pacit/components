@@ -4,6 +4,6 @@
   "check": "environment",
   "addListings": { "": [".env.check-widget", ".check-widget.env"] },
   "names": [
-    "2 dotenv files in the workspace root or beside a project manifest:\n      .env.check-widget\n      .check-widget.env\n    nx loads"
+    "2 dotenv files in the workspace root or beside a `project.json` or a `package.json`:\n      .env.check-widget\n      .check-widget.env\n    nx loads"
   ]
 }
