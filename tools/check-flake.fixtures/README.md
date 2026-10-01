@@ -13,8 +13,9 @@ The reason it exists is the same as for every other gate here
 
 For this gate the rule bites in one direction. Almost every defect below makes the flake rate
 read **lower** than it is, and a low rate is a green run: retries left on, one repetition
-instead of three, a suite whose report never arrived, a walk that lost half the cases. The one
-measurement this gate exists to take is the one its own defects erase.
+instead of three, a suite whose report never arrived, a run that stopped at its first failure,
+a walk that lost half the cases. The one measurement this gate exists to take is the one its
+own defects erase.
 
 ## Why this control is built on a stored input
 
@@ -63,6 +64,15 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`the-first-project-one-short.json`](the-first-project-one-short.json)           | the first of three projects declares two repetitions, one short of the floor   | `measured`    | `too-few-repetitions`        |
 | [`the-middle-project-one-short.json`](the-middle-project-one-short.json)         | the middle one of three projects declares two repetitions, one short           | `measured`    | `too-few-repetitions`        |
 | [`the-last-project-one-short.json`](the-last-project-one-short.json)             | the last of three projects declares two repetitions, one short of the floor    | `measured`    | `too-few-repetitions`        |
+| [`a-stop-and-a-project-one-short.json`](a-stop-and-a-project-one-short.json)     | the last project one short of the floor, and an early stop: setup named first  | `measured`    | `too-few-repetitions`        |
+| [`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json)             | `-x` in colour: stopped at a wobble's first, failing run, the rest skipped     | `measured`    | `stopped-early`              |
+| [`a-stop-that-skipped-nothing.json`](a-stop-that-skipped-nothing.json)           | the limit reached by the last test to run: nothing skipped, still a stop       | `measured`    | `stopped-early`              |
+| [`a-run-out-of-time.json`](a-run-out-of-time.json)                               | out of time in the second suite, the sentence first of two, at 12.25 seconds   | `measured`    | `stopped-early`              |
+| [`a-stop-behind-another-error.json`](a-stop-behind-another-error.json)           | ten failures under a limit of ten, the sentence second of two errors           | `measured`    | `stopped-early`              |
+| [`errors-that-are-not-a-list.json`](errors-that-are-not-a-list.json)             | an `errors` that is one error and not a list: read as that error, not none     | `measured`    | `stopped-early`              |
+| [`an-error-outside-any-test.json`](an-error-outside-any-test.json)               | two worker errors outside any test, which took both passes of a wobble         | `measured`    | `error-outside-tests`        |
+| [`a-timeout-in-the-teardown.json`](a-timeout-in-the-teardown.json)               | a timeout in the global teardown after every test ran: no stop, still refused  | `measured`    | `error-outside-tests`        |
+| [`an-error-thrown-as-a-value.json`](an-error-thrown-as-a-value.json)             | a global teardown that threw a string: an error with no message at all         | `measured`    | `error-outside-tests`        |
 | [`a-tally-that-disagrees.json`](a-tally-that-disagrees.json)                     | the report's own `stats` count more runs than the walk found                   | `denominator` | `readings-disagree`          |
 | [`a-run-the-tally-does-not-count.json`](a-run-the-tally-does-not-count.json)     | the walk found one run more than the report's own `stats` count                | `denominator` | `readings-disagree`          |
 | [`a-case-that-ran-fewer-times.json`](a-case-that-ran-fewer-times.json)           | one case ran twice where every other ran three times, the tally agreeing       | `denominator` | `case-run-unevenly`          |
@@ -112,15 +122,15 @@ same string, and why point 2 checks that every case ran the same number of times
 | [`a-deep-name-the-record-carries.json`](a-deep-name-the-record-carries.json)     | a wobble two describes deep that the record carries, beside a drift            | `record`      | `stale-prose`                |
 | [`a-project-repaired-by-name.json`](a-project-repaired-by-name.json)             | firefox broken in the report and repaired by name, beside a drifted record     | `record`      | `stale-prose`                |
 
-Point 1 has six rules because a measurement can be hollow in six ways that all parse, and
-five of them leave a report that looks entirely normal. Point 5 has five because a record is
+Point 1 has eight rules because a measurement can be hollow in eight ways that all parse, and
+seven of them leave a report that looks entirely normal. Point 5 has five because a record is
 two things at once — a reading and a list — and each can contradict the other or itself.
 
 ## One run, every finding
 
 A finding of points 1 and 2 takes out of the measurement what it names, and no more: the
 register's two rules every suite, any other rule its own suite. A report that failed them is
-not a measurement, and a rule read over it speaks of something else. Eight cases carry exactly
+not a measurement, and a rule read over it speaks of something else. Eleven cases carry exactly
 that second finding and name it in `hides`. The control runs every point with nothing taken out
 and holds `hides` to what the stop keeps silent, both ways: a hidden finding that has stopped
 existing cannot pass for a stop, and a silenced one left unnamed is a stop nobody accounted for.
@@ -134,6 +144,12 @@ existing cannot pass for a stop, and a silenced one left unnamed is a stop nobod
   off;
 - [`a-lost-run-that-makes-a-failure.json`](a-lost-run-that-makes-a-failure.json) — point 3 would call
   the two failures a lost pass leaves unanimous;
+- [`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json) — point 3 would call a wobble
+  an early stop cut off after one failing run a case failing every repetition it ran;
+- [`a-stop-behind-another-error.json`](a-stop-behind-another-error.json) — point 3 would name three
+  broken cases, read off a run that cannot say what stopping cost it;
+- [`an-error-outside-any-test.json`](an-error-outside-any-test.json) — point 3 would say the same of a
+  wobble whose two passes two worker errors took;
 - [`two-tests-under-one-path.json`](two-tests-under-one-path.json) — point 4 would name a wobble neither
   test has;
 - [`a-drift-behind-a-floor-in-quotes.json`](a-drift-behind-a-floor-in-quotes.json),
@@ -219,6 +235,46 @@ in all three, is no failure at all. A `flaky` run is held from the other side: b
 failures and no pass, in [`a-retry-status-among-failures.json`](a-retry-status-among-failures.json),
 it makes neither a wobble nor a failure.
 
+An early stop is read off the report's own `errors` and off nothing else (measured, Playwright
+1.61.1). Under `maxFailures` every test the run never reached is `skipped` with no result, under
+a `globalTimeout` the one in flight keeps a `skipped` result besides, and the tally counts both
+like a skip the test decided — so a run that stopped early reads as complete, and a wobble cut
+off after one failing run fails every repetition that ran. A `skipped` test with no annotation
+is no sign of a stop: a serial group after a failure and a failed `beforeAll` leave one, a
+failed dependency project leaves tests with no result at all, and none of the three writes an
+error. So `stopped-early` matches the two whole sentences Playwright writes when it stops a run,
+once the colour `nx` turns on for its tasks is off them:
+[`a-run-stopped-at-a-failure.json`](a-run-stopped-at-a-failure.json) is `-x` in that red,
+[`a-run-out-of-time.json`](a-run-out-of-time.json) a timeout of 12.25 seconds whose sentence is
+the first of two errors, and
+[`a-stop-behind-another-error.json`](a-stop-behind-another-error.json) a limit of ten whose
+sentence is the second. [`a-stop-that-skipped-nothing.json`](a-stop-that-skipped-nothing.json)
+reached its limit on the last test to run and is refused all the same: a timeout that runs out
+in the last worker's teardown says the test suite timed out as well, with every test run
+(measured), and a report cannot say what stopping cost, so the gate takes it at its word.
+[`a-stop-and-a-project-one-short.json`](a-stop-and-a-project-one-short.json) holds the order —
+how a run was set up is named before what it did, its last project short of the floor, the last
+setup rule the run reads.
+
+Any other entry in `errors` is `error-outside-tests`, and a narrow match is safe only because of
+it: a stop sentence a later version rewords is refused all the same, as an error.
+[`an-error-outside-any-test.json`](an-error-outside-any-test.json) is why the rule is there — a
+worker's unhandled error between two tests takes the next one with it, as a skip with one result
+and no annotation, and only the error tells.
+[`a-timeout-in-the-teardown.json`](a-timeout-in-the-teardown.json) is a timeout sentence with
+another phase in it, after every test had run, and it is refused too: telling an error that cost
+a case from one that cost none would mean reading Playwright's wording for every phase it has,
+and the gate does not interpret an error outside a test.
+[`an-error-thrown-as-a-value.json`](an-error-thrown-as-a-value.json) has no `message` at all — a
+thrown value that is not an `Error` keeps only its `value` — and is an error all the same, and
+[`errors-that-are-not-a-list.json`](errors-that-are-not-a-list.json) holds the field itself: an
+`errors` that is not a list is read as the one error it holds, where read as an empty list, the
+way every other field is, it would pass the run. A file that fails to load, a web server that
+never answers, a global setup that throws, a `.only` under `forbidOnly` and a timeout before the
+tests begin each leave a report of no case at all (measured), which is `empty-report` before it
+is an error — as [`a-report-with-no-case.json`](a-report-with-no-case.json) holds, its
+`No tests found` and all.
+
 Every case also holds the one thing `--write` decides, which is whether to refuse: it refuses
 exactly the runs points 1 to 3 reject and records the rest. That is read off the three points
 themselves, not off the set the refusal is written with.
@@ -226,24 +282,31 @@ themselves, not off the set the refusal is written with.
 ## What these cases do NOT exercise
 
 The reading of the reports off disk, and the register that says where they are. Both are a few
-lines and both are guarded by the run itself: a path that resolves to nothing is
-`no-report`, a file that is not JSON throws where it is parsed, and JSON of another shape is
-read as far as it goes — its lists as lists or as nothing — and fails a rule of points 1 and 2
-rather than the run. Nor a file, `describe` or spec entry with no test in it: the reporter writes
-none, so a report of no case is an empty list of files
+lines and both are guarded by the run itself: a path that resolves to nothing is `no-report`, a
+file that is not JSON throws where it is parsed, and JSON of another shape is read as far as it
+goes — its lists as lists or as nothing, an `errors` that is not one as the error it holds — and
+fails a rule of points 1 and 2 rather than the run. A missing `errors` is read as none, as a
+missing `retries` is read as off and a missing counter in `stats` as zero: the reporter writes
+each of them on every report, and the reports built by hand here leave out the empty `errors`.
+Nor a file, `describe` or spec entry with no test in it: the reporter writes none, so a report
+of no case is an empty list of files
 ([`a-report-with-no-case.json`](a-report-with-no-case.json)), and a rule counting files or
 entries where it should count cases agrees with it on every report the reporter writes. What is
 deliberately not covered is the **repetition job** — whether `--repeat-each` reached Playwright
-at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what
-notice when it did not.
+at all is a property of the workflow, and `retries-on` and `too-few-repetitions` are what notice
+when it did not.
 
-Nor a run stopped early, which the gate does not look for. Under `maxFailures` or a
-`globalTimeout` Playwright marks every test it never reached `skipped`, with no result, and counts
-it in the tally like a skip the test decided (measured), so such a run reads as complete: every
-case has its three runs, most of them skips. Neither suite sets either, and the job's own
-timeout leaves no report at all. A rule for it would read the report's own `errors`, which name
-both kinds of stop. A `skipped` test with no `skip` or `fixme` annotation is no sign of one: a
-serial group after a failure and a failed `beforeAll` leave the same, with no error (measured).
+Nor a run interrupted from outside, which names itself nowhere in `errors`: a `SIGINT` leaves a
+report with no error at all, the test in flight with an `interrupted` result and the tests after
+it with none (measured). The nightly's own cap leaves no report (`no-report`), so the way in is
+a repetition interrupted by hand and then written down. Nor a stop sentence inside a longer
+message, nor the test suite's teardown sentence on its own. Playwright writes each stop sentence
+as the whole of a message, so a rule that finds one anywhere in a message agrees with this one
+on every report the reporter writes. The test suite stops its workers before its own teardown
+runs, so that teardown runs out of time only after the suite itself has, or after a `SIGINT` cut
+the suite short (read in the runner, the second not measured): a rule that takes it for a stop
+as well calls that interrupted run an early stop where this one calls it an error outside a
+test, and refuses it all the same.
 
 Which cases a finding lists. The control compares rules, not the lines under them: a finding
 naming one of the two cases it found would pass. Every rule of points 3 and 4 that names cases

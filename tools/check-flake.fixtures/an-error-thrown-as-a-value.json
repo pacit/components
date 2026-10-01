@@ -1,0 +1,6 @@
+{
+  "check": "measured",
+  "rule": "error-outside-tests",
+  "// defect": "A global teardown that threw a string after every test had run (measured): Playwright keeps a thrown value that is not an `Error` as `value`, with no `message` at all. It is an error outside a test all the same, and a rule that reads only the errors that carry a message passes it.",
+  "errors": { "fake-e2e": [{ "value": "'teardown broke'" }] }
+}

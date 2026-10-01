@@ -1,0 +1,30 @@
+{
+  "check": "measured",
+  "rule": "error-outside-tests",
+  "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "Twice in one run a promise a test left behind rejected after that test returned (measured): each time the worker goes, the error lands in the report's `errors` and in no test — with the stack, location and snippet the reporter gives it — and the test the worker was about to run is `skipped` with one result and no annotation: no pass, no failure, no half of a wobble. Here those were both passes of the recorded wobble, and what is left of it is its failure: past point 1, point 3 would call it a case failing every repetition it ran (`hides`). The run went on to its end, so this is no early stop, and only its errors say what it lost.",
+  "errors": {
+    "fake-e2e": [
+      {
+        "message": "Error: late rejection",
+        "stack": "Error: late rejection\n    at Timeout._onTimeout (/fake/alpha.spec.ts:5:43)",
+        "location": { "file": "/fake/alpha.spec.ts", "column": 43, "line": 5 },
+        "snippet": "   at alpha.spec.ts:5\n\n  4 | test('opens on click', async ({ page }) => {\n> 5 |   setTimeout(() => { Promise.reject(new Error('late rejection')); }, 10);\n    |                                           ^\n  6 |   await page.getByRole('button').click();"
+      },
+      {
+        "message": "Error: late rejection",
+        "stack": "Error: late rejection\n    at Timeout._onTimeout (/fake/alpha.spec.ts:5:43)",
+        "location": { "file": "/fake/alpha.spec.ts", "column": 43, "line": 5 },
+        "snippet": "   at alpha.spec.ts:5\n\n  4 | test('opens on click', async ({ page }) => {\n> 5 |   setTimeout(() => { Promise.reject(new Error('late rejection')); }, 10);\n    |                                           ^\n  6 |   await page.getByRole('button').click();"
+      }
+    ]
+  },
+  "stats": { "fake-e2e": { "expected": 9, "skipped": 2 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium": [
+      "skipped",
+      "unexpected",
+      "skipped"
+    ]
+  }
+}

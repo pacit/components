@@ -1,0 +1,11 @@
+{
+  "check": "measured",
+  "rule": "too-few-repetitions",
+  "// defect": "A run whose last project declares two repetitions, one short of the floor, and which also stopped early, its limit reached by the last test to run. Point 1 names how a run was set up before what it did: a run set up short has to be taken again whatever it did, and a remedy for its stop would be wasted on it. The short project is the last one, so its floor is the last setup rule the run reads, and an error rule let in anywhere before it — ahead of the projects, inside the loop over them, or after the first one's floor — speaks here first. Point 1 gives a suite one finding, so the stop goes unnamed; the run taken again names it if it stops again.",
+  "projects": { "fake-e2e::firefox": { "repeatEach": 2 } },
+  "errors": {
+    "fake-e2e": [
+      { "message": "Testing stopped early after 1 maximum allowed failures." }
+    ]
+  }
+}

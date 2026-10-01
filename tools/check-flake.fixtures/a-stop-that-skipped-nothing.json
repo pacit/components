@@ -1,0 +1,10 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "// defect": "The limit reached by the last test to run. Playwright writes its sentence on the failure that reaches `maxFailures` whether or not anything is left to run, and a `globalTimeout` that runs out in the last worker's teardown writes its own with every test run as well (both measured), so a run can stop early at no cost at all: every case here ran its three, and the reference is untouched but for the error. The run is refused all the same, and a rule that also asks for a skipped test passes it: a report counts a test the run never reached and a test that skipped itself alike, so what stopping cost cannot be read off it. The sentence is plain, as a run outside `nx` and outside a terminal writes it.",
+  "errors": {
+    "fake-e2e": [
+      { "message": "Testing stopped early after 1 maximum allowed failures." }
+    ]
+  }
+}

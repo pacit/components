@@ -1,0 +1,35 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "Ten failures under `--max-failures=10` — three cases broken outright and the recorded wobble's one — the tenth the last test to run, and before the stop sentence the error a worker fixture threw in its teardown. A worker that closes after its tests passed puts that error in `errors`, red inside where it lists the tests it ran; one torn down by a failure puts it in that test's own result (both measured). The stop sentence is the second of two errors, so a rule reading only the first calls the run an error outside a test, and its count has two digits, which a sentence copied from `-x` does not match. Past point 1, point 3 would name the three broken cases (`hides`), read off a run that cannot say what stopping cost it.",
+  "errors": {
+    "fake-e2e": [
+      {
+        "message": "Error: worker teardown broke\n\n\u001b[31mFailed worker ran 1 test:\u001b[39m\n[chromium] › alpha.spec.ts:3:1 › closes on escape",
+        "stack": "Error: worker teardown broke\n\n\u001b[31mFailed worker ran 1 test:\u001b[39m\n[chromium] › alpha.spec.ts:3:1 › closes on escape\n    at Object.session (/fake/fixtures.ts:7:11)",
+        "location": { "file": "/fake/fixtures.ts", "column": 11, "line": 7 },
+        "snippet": "   at fixtures.ts:7\n\n  6 |     await use(session);\n> 7 |     throw new Error('worker teardown broke');\n    |           ^\n  8 |   },"
+      },
+      { "message": "Testing stopped early after 10 maximum allowed failures." }
+    ]
+  },
+  "stats": { "fake-e2e": { "expected": 2, "unexpected": 10 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ],
+    "fake-e2e::alpha.spec.ts › opens on click | firefox": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox": [
+      "unexpected",
+      "unexpected",
+      "unexpected"
+    ]
+  }
+}
