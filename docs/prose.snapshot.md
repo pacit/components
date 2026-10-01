@@ -40,7 +40,7 @@ check-distance.mjs 5 17 190
 check-docs.mjs 8 20 213
 check-e2e.mjs 4 15 142
 check-files.mjs 10 22 232
-check-flake.mjs 5 17 205
+check-flake.mjs 5 17 206
 check-forms.mjs 4 16 139
 check-harness.mjs 6 18 168
 check-icons.mjs 6 18 167
