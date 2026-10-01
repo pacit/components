@@ -196,7 +196,7 @@ three repetitions of a case in one spec entry, the shape a run from the test dir
 where the reference has one test per entry: a walk reading one test per entry, the entry's
 first, finds a case run once where the tally counts three and never reaches the wobble, so
 point 2 speaks where the case declares point 4 — it fires on a rule it does not declare, which
-the control refuses. That walk passes every other case here (measured).
+the control refuses. That walk passes every other case here but the next (measured).
 [`two-projects-in-one-spec-entry.json`](two-projects-in-one-spec-entry.json) is the reference's
 first suite in that shape, both projects' six repetitions in each entry, with the firefox copy
 of the recorded wobble wobbling too: a walk taking a case's project off the entry's first test

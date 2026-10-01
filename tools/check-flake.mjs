@@ -566,7 +566,8 @@ const buildFixture = (fx) => {
   // reference's shape, and every project's tests in one entry in the other (`specsOf`). A
   // repetition is a spec entry here, the reference's shape, and a merged entry is ONE
   // repetition: `replaceStatuses` over it rewrites every repetition of the case at once, and
-  // `dropRepetitions` drops the case whole. A case in that shape is built with `addReports`.
+  // `dropRepetitions` drops the entry, every project's copy of the case with it. A case in
+  // that shape is built with `addReports`.
   const repetitionsOf = (suite, key) => {
     const cut = key.lastIndexOf(' | ');
     const [path, project] = [key.slice(0, cut), key.slice(cut + 3)];
