@@ -51,10 +51,15 @@ const json = (path) =>
   existsSync(join(ROOT, path)) ? JSON.parse(read(path)) : null;
 
 /**
- * Every spec in a report, carrying the path a person would grep for. A `--repeat-each` run
- * puts each repetition in a SEPARATE spec entry under the same title — measured against the
- * reporter rather than read out of the documentation — so the repetitions of one case are
- * found by grouping on that path and not by any field of the report.
+ * Every spec in a report, carrying the path a person would grep for. Where a `--repeat-each`
+ * run puts the repetitions depends on the WORKING DIRECTORY the suite ran from — measured
+ * against the reporter rather than read out of the documentation (Playwright 1.61.1): it
+ * merges a test's entries across repetitions and projects by title and location, through a
+ * `path.relative(rootDir, spec.file)` over a `file` that is already relative, so the path
+ * resolves against the process's cwd. Run from the test directory, one spec entry carries
+ * every repetition of every project; run from anywhere else, as `nx run <suite>:e2e` does,
+ * each repetition is a separate entry with one test. So the repetitions of one case are found
+ * by grouping on that path over EVERY test of EVERY entry, and not by any field of the report.
  */
 const specsOf = (suite, path = []) => [
   ...listOf(suite?.specs).map((spec) => ({
@@ -528,9 +533,10 @@ for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
  * Operations: `dropReports` and `addReports` over the suites; `projects` patches every
  * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally;
  * `replaceStatuses` rewrites one case's repetitions by its path and `dropRepetitions` takes
- * one away; `policy` adds or drops a register key; `snapshot: null` loses the record, and
- * `snapshot.replace` rewrites it by a pattern that has to match — a needle that finds nothing
- * is a case that breaks nothing.
+ * one away, both over the reference's shape, a repetition being a spec entry to them; `policy`
+ * adds or drops a register key; `snapshot: null` loses the record, and `snapshot.replace`
+ * rewrites it by a pattern that has to match — a needle that finds nothing is a case that
+ * breaks nothing.
  */
 const buildFixture = (fx) => {
   const reference = JSON.parse(readFileSync(join(FIXTURES, REFERENCE), 'utf8'));
@@ -556,7 +562,12 @@ const buildFixture = (fx) => {
   for (const [suite, patch] of Object.entries(fx.stats ?? {}))
     Object.assign(w.reports[suite].stats, patch);
   // A case is addressed the way the record names it — `<suite>::<path> | <project>` — because
-  // one spec entry carries one project, and a path alone reaches every project's copy of it.
+  // a path alone reaches every project's copy of it: one spec entry per project in the
+  // reference's shape, and every project's tests in one entry in the other (`specsOf`). A
+  // repetition is a spec entry here, the reference's shape, and a merged entry is ONE
+  // repetition: `replaceStatuses` over it rewrites every repetition of the case at once, and
+  // `dropRepetitions` drops the entry, every project's copy of the case with it. A case in
+  // that shape is built with `addReports`.
   const repetitionsOf = (suite, key) => {
     const cut = key.lastIndexOf(' | ');
     const [path, project] = [key.slice(0, cut), key.slice(cut + 3)];

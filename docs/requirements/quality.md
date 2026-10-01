@@ -381,13 +381,15 @@ denominator, two for the scanner and three for the rules, each rejected **by the
 the rule it declares**, and a reference corpus that must pass. That reference carries the two
 real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
 by the reference refusing to pass rather than out in a spec somebody then rewrites to please
-a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, sixty-three
+a gate. The flake gate has a tree of its own — `tools/check-flake.fixtures/`, sixty-five
 prepared inputs and a reference that must pass — and it is the one control here built on a
 STORED input rather than on the repository, because what the gate reads is produced by an
 hour-long job on a machine that is not this one. The shape of that stored report was measured
-against Playwright's own reporter rather than read out of its documentation: under
-`--repeat-each` every repetition is a separate spec entry under the same title, with no repeat
-index recorded anywhere
+against Playwright's own reporter rather than read out of its documentation, and it depends on
+the working directory the suite ran from: run from outside the test directory, as the
+nightly's `nx run` does, every repetition is a separate spec entry under the same title, with
+no repeat index recorded anywhere; run from inside it, one entry carries every repetition of
+every project, and the gate reads both
 **Lessons:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
 [`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39),
 [`lesson-50`](../lessons.md#lesson-50), [`lesson-165`](../lessons.md#lesson-165),
