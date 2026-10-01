@@ -65,15 +65,16 @@ const LOADS = {
     `${FIXTURES}/a-name-the-browser-declares.mjs`,
     'tools/workflow-targets.mjs',
     `${FIXTURES}/a-hop-in-typescript.ts`,
-    `${FIXTURES}/a-name-nothing-declares.mjs`,
+    `${FIXTURES}/a-module-beyond-the-hop.mjs`,
   ],
 };
 const RUNS = {
-  // Two targets as the graph hands them. `four-ways` runs a list of commands, one of them
+  // Three targets as the graph hands them. `four-ways` runs a list of commands, one of them
   // quoted, one beside a `&&`, one under a configuration, all from a `cwd` of their own, and
   // names one script the index does not hold. `a-cd-away` changes directory inside the
   // command instead, so its one script resolves to nothing, and passes a glob, which is no
-  // script at all.
+  // script at all. `a-glob-after-node` hands `node` a glob, which the shell expands into a
+  // script list the reader cannot — a script it cannot find, rather than one passed over.
   targets: {
     'four-ways': {
       options: {
@@ -94,6 +95,9 @@ const RUNS = {
         command: `cd ${FIXTURES} && node a-name-nothing-declares.mjs && prettier --check "*.mjs"`,
       },
     },
+    'a-glob-after-node': {
+      options: { cwd: FIXTURES, command: 'node --no-warnings a-name-*.mjs' },
+    },
   },
   // What the reader has to make of them, by target, through the same road the live targets
   // take — so a filter that drops a target on that road drops a prepared one too.
@@ -110,6 +114,10 @@ const RUNS = {
     'prepared:a-cd-away': {
       scripts: [],
       unresolved: ['a-name-nothing-declares.mjs'],
+    },
+    'prepared:a-glob-after-node': {
+      scripts: [],
+      unresolved: [`${FIXTURES}/a-name-*.mjs`],
     },
   },
 };
@@ -255,8 +263,9 @@ const checkTools = (input) => {
         .join(', ') +
         ' and the index holds no such file. A script the reader cannot find is one it ' +
         "cannot hold — a `cd` inside the command is the usual cause, and the target's " +
-        '`cwd` is where nx wants the directory. A glob is passed over; anything else that ' +
-        'ends in `.mjs` has to be a file',
+        '`cwd` is where nx wants the directory. A glob is passed over unless `node` is ' +
+        'handed it, since the shell then expands a script list the reader cannot; anything ' +
+        'else that ends in `.mjs` has to be a file',
     );
 
   // 2. NAMES — the finding itself.
@@ -330,10 +339,10 @@ const checkTools = (input) => {
     fire(
       'control',
       'runs-misread',
-      'the two prepared targets run four scripts — one per command, one quoted, one beside ' +
-        'a `&&`, one under a configuration, all from a `cwd` of their own — and name one the ' +
+      'the prepared targets run four scripts — one per command, one quoted, one beside a ' +
+        '`&&`, one under a configuration, all from a `cwd` of their own — and name one the ' +
         'index does not hold; the second changes directory inside the command and passes a ' +
-        'glob. The reader read ' +
+        'glob, the third hands `node` a glob. The reader read ' +
         (Object.entries(runs)
           .map(
             ([id, r]) =>
@@ -575,11 +584,17 @@ const scriptsOf = (def) => {
     const ran = [variant.command, ...(variant.commands ?? [])]
       .map((one) => (typeof one === 'string' ? one : (one?.command ?? '')))
       .join('\n');
-    for (const token of ran.split(/[\s"'=;&|()]+/))
-      if (token.endsWith('.mjs') && !/[*?[{]/.test(token)) {
-        const path = posix.normalize(posix.join(variant.cwd ?? '.', token));
-        (index.has(path) ? scripts : unresolved).add(path);
-      }
+    const tokens = ran.split(/[\s"'=;&|()]+/);
+    tokens.forEach((token, i) => {
+      if (!token.endsWith('.mjs')) return;
+      // A glob is no script — unless it is what `node` is handed: the shell then expands it
+      // into a script list the reader cannot, and `node b*.mjs` is a script it cannot find.
+      const handedToNode =
+        tokens.slice(0, i).findLast((t) => !t.startsWith('-')) === 'node';
+      if (/[*?[{]/.test(token) && !handedToNode) return;
+      const path = posix.normalize(posix.join(variant.cwd ?? '.', token));
+      (index.has(path) ? scripts : unresolved).add(path);
+    });
   }
   return { scripts: [...scripts], unresolved: [...unresolved] };
 };

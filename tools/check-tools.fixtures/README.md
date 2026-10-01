@@ -48,19 +48,23 @@ the reader was supposed to produce. So point 3 holds the readers as it holds the
   shape `check-consumer.mjs` writes into generated code) and one inside a comment. The import
   reader is held to exactly five, three of them files the index holds, and the walk from the
   script is held to arrive at what the `.ts` loads (`LOADS` in the gate);
-- two prepared target definitions (`RUNS` in the gate) go through the same road the live
+- three prepared target definitions (`RUNS` in the gate) go through the same road the live
   targets take. One carries a list of commands, one of them quoted, one beside a `&&`, one under
   a configuration, all from a `cwd` of their own, and one script the index does not hold; the
-  other changes directory inside the command, so its one script resolves to nothing, and passes
-  a glob. The command reader is held to what it has to make of each, by target.
+  second changes directory inside the command, so its one script resolves to nothing, and
+  passes a glob that is no script; the third hands `node` a glob, which the shell would expand
+  into a script list the reader cannot. The command reader is held to what it has to make of
+  each, by target.
 
 [`a-name-nothing-declares.mjs`](a-name-nothing-declares.mjs) and
 [`a-name-the-browser-declares.mjs`](a-name-the-browser-declares.mjs) are the same kind of input
 for the name reader: point 3 hands them to ESLint and holds it to one finding on the first and
-none on the second. The four prepared files declare nothing, and the table says what they are
+none on the second. The five prepared files declare nothing, and the table says what they are
 for. The `.ts` enters the root project's compiler program
 ([`tsconfig.root.json`](../../tsconfig.root.json)), as the since gate's prepared library does:
-code a gate is measured against is worth compiling.
+code a gate is measured against is worth compiling. What the hop loads is a clean module of its
+own rather than the name reader's prepared defect, so a compiler that one day followed the
+import would not read a file that is wrong on purpose.
 
 ## The cases
 
@@ -78,6 +82,7 @@ code a gate is measured against is worth compiling.
 | [`a-name-the-browser-declares.mjs`](a-name-the-browser-declares.mjs)                   | the name reader's prepared pass: only names a browser hands a `page.evaluate` callback                                                                 | 3     | `control`  | —                    |
 | [`a-script-that-loads.mjs`](a-script-that-loads.mjs)                                   | the import reader's prepared input: five loads five ways, and two that are not loads                                                                   | 3     | `control`  | —                    |
 | [`a-hop-in-typescript.ts`](a-hop-in-typescript.ts)                                     | the import reader's prepared hop: a file that is no script, loaded by one and loading one more                                                         | 3     | `control`  | —                    |
+| [`a-module-beyond-the-hop.mjs`](a-module-beyond-the-hop.mjs)                           | the import reader's prepared far end: the module beyond the `.ts`, reached through nothing else                                                        | 3     | `control`  | —                    |
 | [`the-reader-says-nothing.json`](the-reader-says-nothing.json)                         | the prepared defect went unreported                                                                                                                    | 3     | `control`  | `control-passed`     |
 | [`the-reader-cries-wolf.json`](the-reader-cries-wolf.json)                             | the prepared browser names were reported                                                                                                               | 3     | `control`  | `control-cries-wolf` |
 | [`the-load-reader-skips-a-form.json`](the-load-reader-skips-a-form.json)               | the import reader returned four loads of five, the `import()` missing                                                                                  | 3     | `control`  | `loads-misread`      |
