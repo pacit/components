@@ -6,7 +6,7 @@
  *
  *  1. MEASURED: the scripts are found at all, and the set is read two different ways,
  *  2. NAMES: no identifier in any of them resolves to nothing,
- *  3. CONTROL: the readers read the prepared inputs as written — a name, four loads, four runs,
+ *  3. CONTROL: the readers read the prepared inputs as written — a name, the loads, the runs,
  *  4. RUN: every script under `tools/` is executed by a pass, or the register says why not,
  *  5. INPUTS: a target that runs a script hashes it and every module it imports.
  *
@@ -44,45 +44,74 @@ const PASSED = 'a-name-the-browser-declares.mjs';
 const LOADS = {
   script: `${FIXTURES}/a-script-that-loads.mjs`,
   // Every relative specifier of the script, resolved against it: a static import, a re-export
-  // from the directory above, an `export *` and an `import()`. A string and a comment in the
-  // file spell two more, and neither is a load.
+  // from the directory above, an `export *`, an `import()` and a `.ts` that is no script. A
+  // string and a comment in the file spell two more, and neither is a load.
   resolved: [
     `${FIXTURES}/a-name-the-browser-declares.mjs`,
     'tools/workflow-targets.mjs',
     `${FIXTURES}/a-module-nobody-wrote.mjs`,
     `${FIXTURES}/a-module-loaded-later.mjs`,
+    `${FIXTURES}/a-hop-in-typescript.ts`,
   ],
-  // The two of them the index holds.
+  // The three of them the index holds…
   tracked: [
     `${FIXTURES}/a-name-the-browser-declares.mjs`,
     'tools/workflow-targets.mjs',
+    `${FIXTURES}/a-hop-in-typescript.ts`,
+  ],
+  // …and everything the script reaches: the walk passes through the `.ts` to what it loads.
+  closure: [
+    `${FIXTURES}/a-script-that-loads.mjs`,
+    `${FIXTURES}/a-name-the-browser-declares.mjs`,
+    'tools/workflow-targets.mjs',
+    `${FIXTURES}/a-hop-in-typescript.ts`,
+    `${FIXTURES}/a-name-nothing-declares.mjs`,
   ],
 };
 const RUNS = {
-  // A target as the graph hands one: a list of commands, one of them quoted, one beside a
-  // `&&`, one under a configuration, all from a `cwd` of their own — and one script the index
-  // does not hold.
-  definition: {
-    options: {
-      cwd: FIXTURES,
-      commands: [
-        'node a-name-nothing-declares.mjs',
-        {
-          command:
-            'node "a-name-the-browser-declares.mjs" --quiet && node ../check-tools.mjs',
-        },
-        'node a-script-nobody-wrote.mjs',
-      ],
+  // Two targets as the graph hands them. `four-ways` runs a list of commands, one of them
+  // quoted, one beside a `&&`, one under a configuration, all from a `cwd` of their own, and
+  // names one script the index does not hold. `a-cd-away` changes directory inside the
+  // command instead, so its one script resolves to nothing, and passes a glob, which is no
+  // script at all.
+  targets: {
+    'four-ways': {
+      options: {
+        cwd: FIXTURES,
+        commands: [
+          'node a-name-nothing-declares.mjs',
+          {
+            command:
+              'node "a-name-the-browser-declares.mjs" --quiet && node ../check-tools.mjs',
+          },
+          'node a-script-nobody-wrote.mjs',
+        ],
+      },
+      configurations: { alt: { command: 'node ../check-prose.mjs' } },
     },
-    configurations: { alt: { command: 'node ../check-prose.mjs' } },
+    'a-cd-away': {
+      options: {
+        command: `cd ${FIXTURES} && node a-name-nothing-declares.mjs && prettier --check "*.mjs"`,
+      },
+    },
   },
-  scripts: [
-    `${FIXTURES}/a-name-nothing-declares.mjs`,
-    `${FIXTURES}/a-name-the-browser-declares.mjs`,
-    'tools/check-tools.mjs',
-    'tools/check-prose.mjs',
-  ],
-  unresolved: [`${FIXTURES}/a-script-nobody-wrote.mjs`],
+  // What the reader has to make of them, by target, through the same road the live targets
+  // take — so a filter that drops a target on that road drops a prepared one too.
+  read: {
+    'prepared:four-ways': {
+      scripts: [
+        `${FIXTURES}/a-name-nothing-declares.mjs`,
+        `${FIXTURES}/a-name-the-browser-declares.mjs`,
+        'tools/check-tools.mjs',
+        'tools/check-prose.mjs',
+      ],
+      unresolved: [`${FIXTURES}/a-script-nobody-wrote.mjs`],
+    },
+    'prepared:a-cd-away': {
+      scripts: [],
+      unresolved: ['a-name-nothing-declares.mjs'],
+    },
+  },
 };
 
 /**
@@ -226,7 +255,8 @@ const checkTools = (input) => {
         .join(', ') +
         ' and the index holds no such file. A script the reader cannot find is one it ' +
         "cannot hold — a `cd` inside the command is the usual cause, and the target's " +
-        '`cwd` is where nx wants the directory',
+        '`cwd` is where nx wants the directory. A glob is passed over; anything else that ' +
+        'ends in `.mjs` has to be a file',
     );
 
   // 2. NAMES — the finding itself.
@@ -267,33 +297,51 @@ const checkTools = (input) => {
         'everything is as useless as one that reports nothing, and louder',
     );
   // The readers of point 5, held to `LOADS` and `RUNS` in both directions: a form they
-  // stopped seeing, and a string or a ghost they started seeing.
+  // stopped seeing, a hop they stopped walking, a target they dropped — and a string, a ghost
+  // or a glob they started seeing.
   const same = (a, b) =>
     JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+  const list = (items) =>
+    items.length ? `\`${items.join('`, `')}\`` : 'nothing';
   if (
     !same(input.loads.resolved, LOADS.resolved) ||
-    !same(input.loads.tracked, LOADS.tracked)
+    !same(input.loads.tracked, LOADS.tracked) ||
+    !same(input.loads.closure, LOADS.closure)
   )
     fire(
       'control',
       'loads-misread',
-      `\`${LOADS.script}\` loads four modules four ways, two of them files the index ` +
-        `holds, and the reader read \`${input.loads.resolved.join('`, `')}\`, of which ` +
-        `\`${input.loads.tracked.join('`, `')}\` tracked. Point 5 holds a target to what ` +
-        'this reader sees, and a form it stopped seeing is a module it stopped holding',
+      `\`${LOADS.script}\` loads five modules five ways, three of them files the index ` +
+        'holds and one of those a `.ts` loading one more; the reader read ' +
+        `${list(input.loads.resolved)}, of which ${list(input.loads.tracked)} tracked, ` +
+        `and walked to ${list(input.loads.closure)}. Point 5 holds a target to what this ` +
+        'reader sees, and a form it stopped seeing is a module it stopped holding',
     );
+  const runs = input.runs ?? {};
+  const ids = Object.keys(RUNS.read);
   if (
-    !same(input.runs.scripts, RUNS.scripts) ||
-    !same(input.runs.unresolved, RUNS.unresolved)
+    !same(Object.keys(runs), ids) ||
+    ids.some(
+      (id) =>
+        !same(runs[id].scripts, RUNS.read[id].scripts) ||
+        !same(runs[id].unresolved, RUNS.read[id].unresolved),
+    )
   )
     fire(
       'control',
       'runs-misread',
-      'the prepared target runs four scripts — one per command, one quoted, one beside a ' +
-        '`&&`, one under a configuration, all from a `cwd` of its own — and names one the ' +
-        `index does not hold; the reader read \`${input.runs.scripts.join('`, `')}\` and ` +
-        `\`${input.runs.unresolved.join('`, `')}\` unresolved. Point 5 holds a target to ` +
-        'what this reader sees, and a shape it stopped seeing is a target it stopped holding',
+      'the two prepared targets run four scripts — one per command, one quoted, one beside ' +
+        'a `&&`, one under a configuration, all from a `cwd` of their own — and name one the ' +
+        'index does not hold; the second changes directory inside the command and passes a ' +
+        'glob. The reader read ' +
+        (Object.entries(runs)
+          .map(
+            ([id, r]) =>
+              `${id}: ${list(r.scripts)}, unresolved ${list(r.unresolved)}`,
+          )
+          .join('; ') || 'no target at all') +
+        '. Point 5 holds a target to what this reader sees, and a shape it stopped seeing ' +
+        'is a target it stopped holding',
     );
 
   // 4. RUN — point 2 asks whether the names inside a script resolve. This asks whether
@@ -477,25 +525,35 @@ const resolvedOf = (path) => [
       .map((spec) => posix.normalize(posix.join(posix.dirname(path), spec))),
   ),
 ];
-/** …and the ones the index holds: the edges the closure walks. */
+/**
+ * …and the ones the index holds: the edges the closure walks. A specifier without an
+ * extension is followed nowhere, as node would follow it nowhere.
+ */
 const edgesOf = (path) => resolvedOf(path).filter((p) => index.has(p));
-// The edges of every script, and of every file a script reaches, `.mjs` or not: `at-pass.mjs`
-// loads a `.ts`, and what that one loads is as loaded as it is.
-const imports = {};
-for (const queue = [...scripts]; queue.length;) {
-  const path = queue.shift();
-  if (Object.hasOwn(imports, path)) continue;
-  imports[path] = edgesOf(path);
-  queue.push(...imports[path]);
-}
+/**
+ * The edges of every root, and of every file a root reaches, `.mjs` or not: `at-pass.mjs`
+ * loads a `.ts`, and what that one loads is as loaded as it is.
+ */
+const importsFrom = (roots) => {
+  const imports = {};
+  for (const queue = [...roots]; queue.length;) {
+    const path = queue.shift();
+    if (Object.hasOwn(imports, path)) continue;
+    imports[path] = edgesOf(path);
+    queue.push(...imports[path]);
+  }
+  return imports;
+};
+const imports = importsFrom(scripts);
 
 /**
  * Every target of the graph that runs a tracked script, and the files its `inputs` resolve
  * to. `scripts` are the `.mjs` tokens of its command(s) — under every configuration, since a
  * configuration may swap the command — resolved against the command's `cwd` and kept when the
  * index holds them, `unresolved` the ones it does not: `node build.mjs` under `libs/tokens`
- * is `libs/tokens/build.mjs`. The graph arrives with `{projectRoot}` and its kin already
- * resolved in every option, so a command reads as nx will run it. `names` are asked of nx's
+ * is `libs/tokens/build.mjs`, and a glob is passed over, since `prettier --check "*.mjs"`
+ * runs no script. The graph arrives with `{projectRoot}` and its kin already resolved in
+ * every option, so a command reads as nx will run it. `names` are asked of nx's
  * own hash planner, the class `nx show target inputs` answers from, rather than of a second
  * reading of the patterns: `{projectRoot}`, a `!`, a brace group and a named input such as
  * `default` are then read as the hasher reads them, over the graph as plugins and
@@ -518,13 +576,25 @@ const scriptsOf = (def) => {
       .map((one) => (typeof one === 'string' ? one : (one?.command ?? '')))
       .join('\n');
     for (const token of ran.split(/[\s"'=;&|()]+/))
-      if (token.endsWith('.mjs')) {
+      if (token.endsWith('.mjs') && !/[*?[{]/.test(token)) {
         const path = posix.normalize(posix.join(variant.cwd ?? '.', token));
         (index.has(path) ? scripts : unresolved).add(path);
       }
   }
   return { scripts: [...scripts], unresolved: [...unresolved] };
 };
+/** Every target of a graph that runs a script, or tries to: its id, and what its commands name. */
+const runsOf = (graph) =>
+  Object.entries(graph.nodes)
+    .flatMap(([project, node]) =>
+      Object.entries(node.data.targets ?? {}).map(([target, def]) => ({
+        id: `${project}:${target}`,
+        project,
+        target,
+        ...scriptsOf(def),
+      })),
+    )
+    .filter((t) => t.scripts.length || t.unresolved.length);
 const namesOf = (planner, graph, project, target) => {
   const def = graph.nodes[project].data.targets[target];
   const id = def.defaultConfiguration
@@ -535,17 +605,10 @@ const namesOf = (planner, graph, project, target) => {
 const graph = await createProjectGraphAsync({ exitOnError: false });
 const planner = new HashPlanInspector(graph, ROOT);
 await planner.init();
-const targets = Object.entries(graph.nodes)
-  .flatMap(([project, node]) =>
-    Object.entries(node.data.targets ?? {}).map(([target, def]) => ({
-      id: `${project}:${target}`,
-      project,
-      target,
-      ...scriptsOf(def),
-    })),
-  )
-  .filter((t) => t.scripts.length || t.unresolved.length)
-  .map((t) => ({ ...t, names: namesOf(planner, graph, t.project, t.target) }));
+const targets = runsOf(graph).map((t) => ({
+  ...t,
+  names: namesOf(planner, graph, t.project, t.target),
+}));
 
 // The closure. A gate that runs pulls in what it imports, and that module is as exercised as
 // the gate is — measured, not assumed: `check-language` imports `restore-dictionaries.mjs`.
@@ -566,8 +629,16 @@ const live = {
   underTools,
   targets,
   imports,
-  loads: { resolved: resolvedOf(LOADS.script), tracked: edgesOf(LOADS.script) },
-  runs: scriptsOf(RUNS.definition),
+  loads: {
+    resolved: resolvedOf(LOADS.script),
+    tracked: edgesOf(LOADS.script),
+    closure: closureOf([LOADS.script], importsFrom([LOADS.script])),
+  },
+  runs: Object.fromEntries(
+    runsOf({ nodes: { prepared: { data: { targets: RUNS.targets } } } }).map(
+      (t) => [t.id, { scripts: t.scripts, unresolved: t.unresolved }],
+    ),
+  ),
   policy: JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8')),
   findings: await readNames(tracked),
   reported: (await readNames([`${FIXTURES}/${REPORTED}`])).length,
@@ -622,7 +693,9 @@ const buildFixture = (base, fx) => {
   );
   Object.assign(w.imports, fx.imports?.set ?? {});
   Object.assign(w.loads, fx.loads?.set ?? {});
-  Object.assign(w.runs, fx.runs?.set ?? {});
+  for (const id of fx.runs?.drop ?? []) delete w.runs[id];
+  for (const [id, read] of Object.entries(fx.runs?.set ?? {}))
+    w.runs[id] = { ...w.runs[id], ...read };
   return w;
 };
 

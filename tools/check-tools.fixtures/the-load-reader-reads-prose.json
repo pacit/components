@@ -2,7 +2,7 @@
   "point": 3,
   "check": "control",
   "rule": "loads-misread",
-  "what": "the import reader returned a fifth load, the one the prepared script spells inside a string — a reader that reads prose holds a target to generated code, which is check-consumer's shape, and a pattern over the text is such a reader",
+  "what": "the import reader returned a sixth load, the one the prepared script spells inside a string — a reader that reads prose holds a target to generated code, which is check-consumer's shape, and a pattern over the text is such a reader",
   "loads": {
     "set": {
       "resolved": [
@@ -10,6 +10,7 @@
         "tools/workflow-targets.mjs",
         "tools/check-tools.fixtures/a-module-nobody-wrote.mjs",
         "tools/check-tools.fixtures/a-module-loaded-later.mjs",
+        "tools/check-tools.fixtures/a-hop-in-typescript.ts",
         "tools/check-tools.fixtures/a-module-in-a-string.mjs"
       ]
     }

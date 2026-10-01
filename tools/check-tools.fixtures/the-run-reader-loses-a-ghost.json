@@ -1,0 +1,11 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "runs-misread",
+  "what": "the command reader returned the four scripts and no unresolved token — the ghost dropped without a word, which is the round-one defect's own shape, and the `scripts` half of the control, read alone, cannot tell",
+  "runs": {
+    "set": {
+      "prepared:four-ways": { "unresolved": [] }
+    }
+  }
+}

@@ -28,6 +28,7 @@
         "{workspaceRoot}/*.cts",
         "{workspaceRoot}/tools/check-package.fixtures/*/types/*.d.ts",
         "{workspaceRoot}/tools/check-since.fixtures/_reader/**/*",
+        "{workspaceRoot}/tools/check-tools.fixtures/*.ts",
         "{workspaceRoot}/tsconfig.root.json",
         "{workspaceRoot}/tsconfig.base.json",
         {
