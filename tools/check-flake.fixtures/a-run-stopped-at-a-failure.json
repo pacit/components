@@ -1,0 +1,36 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "hides": [{ "check": "outcomes", "rule": "case-always-failed" }],
+  "// defect": "The run `-x` (`maxFailures: 1`) leaves, with the colour `nx` turns on for the tasks it runs (measured, Playwright 1.61.1): it stopped at its first failure, the first repetition of the case the record calls a wobble, and every test it never reached is `skipped` with no result, counted in the tally's `skipped` like a skip the test decided. So the report reads as complete — every case has its three runs, point 2 agrees with itself — and only its own `errors` say that the run stopped. Point 1 takes the suite out, and has to: past it, point 3 would call a wobble cut off after one failing run a case failing every repetition it ran (`hides`).",
+  "errors": {
+    "fake-e2e": [
+      {
+        "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+      }
+    ]
+  },
+  "stats": { "fake-e2e": { "expected": 1, "unexpected": 1, "skipped": 10 } },
+  "replaceStatuses": {
+    "fake-e2e::alpha.spec.ts › opens on click | chromium": [
+      "expected",
+      "skipped",
+      "skipped"
+    ],
+    "fake-e2e::alpha.spec.ts › opens on click | firefox": [
+      "skipped",
+      "skipped",
+      "skipped"
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | chromium": [
+      "unexpected",
+      "skipped",
+      "skipped"
+    ],
+    "fake-e2e::alpha.spec.ts › closes on escape | firefox": [
+      "skipped",
+      "skipped",
+      "skipped"
+    ]
+  }
+}

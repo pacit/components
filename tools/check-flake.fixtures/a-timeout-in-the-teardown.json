@@ -1,0 +1,12 @@
+{
+  "check": "measured",
+  "rule": "error-outside-tests",
+  "// defect": "A `globalTimeout` that ran out in the global teardown, after every test had run (measured). The measurement is whole, and the run is refused all the same: an error outside a test is not interpreted here — a worker's unhandled error between two tests costs the next one (`an-error-outside-any-test.json`), this one costs nothing, and telling the two apart would mean reading Playwright's wording for every phase it has. It is the stop sentence of a timeout with another phase in it, so a rule that takes any `Timed out waiting …s for the … to run` for an early stop takes this one too.",
+  "errors": {
+    "fake-docs-e2e": [
+      {
+        "message": "Timed out waiting 4s for the teardown for global teardown to run"
+      }
+    ]
+  }
+}

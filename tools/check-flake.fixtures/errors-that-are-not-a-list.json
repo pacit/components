@@ -1,0 +1,10 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "// defect": "An `errors` that holds one error rather than a list of them. No reporter writes it; the case holds how the field is read. Every other field a report promises as a list is read as an empty one when it is not, which refuses a report whose cases it holds; read that way, this one would pass the run. So it is read as the one error it holds, here the sentence of a `globalTimeout` that ran out in the last worker's teardown with every test run (measured) — a whole number of seconds, in the second suite.",
+  "errors": {
+    "fake-docs-e2e": {
+      "message": "Timed out waiting 7200s for the test suite to run"
+    }
+  }
+}

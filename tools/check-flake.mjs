@@ -4,7 +4,7 @@
  * the SHAPE of a race as a greppable rule; this asks how many are left, by running the suites
  * N times over and writing down what did not agree with itself.
  *
- *  1. MEASURED: a report per suite, none empty, retries off, repetitions at or above the floor,
+ *  1. MEASURED: a report per suite, none empty, retries off, N ≥ the floor, no early stop or error,
  *  2. DENOMINATOR: the walk's tally equals the report's own `stats`, and every case ran N times,
  *  3. OUTCOMES: a case that failed EVERY repetition it ran is a failure and not a wobble,
  *  4. NAMES: every case that wobbled stands in the record — ONE-sided, this being a sample,
@@ -19,6 +19,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -34,6 +35,39 @@ const FAILED = 'unexpected';
 const SKIPPED = 'skipped';
 /** `flaky` cannot happen with retries off, which is why seeing it is a rule and not a case. */
 const RETRIED = 'flaky';
+
+/**
+ * The two sentences Playwright puts in a report's `errors` when it stops a run before its end
+ * (1.61.1, measured): `maxFailures` — `-x` is one — on the failure that reaches it, the last
+ * test to run included, and `globalTimeout` while the tests run, a timeout in any other phase
+ * naming that phase instead. Whole sentences, and a narrow match is safe only because of the
+ * rule beside it: a stop reworded by a later version is still an error outside a test.
+ */
+const STOPS = [
+  /^Testing stopped early after \d+ maximum allowed failures\.$/,
+  /^Timed out waiting \d+(?:\.\d+)?s for the test suite to run$/,
+];
+/**
+ * Every error a report lists outside any test. `listOf` reads a field that is not a list as an
+ * empty one, which refuses a report whose cases that field holds; read that way, an `errors`
+ * that is not a list would pass the run, so it is read as the one error it holds instead. A
+ * report with no `errors` at all lists none: the reporter writes the key on every report, and
+ * the reports built by hand here leave out a list of nothing.
+ */
+const errorsOf = (report) =>
+  report.errors === undefined
+    ? []
+    : Array.isArray(report.errors)
+      ? report.errors
+      : [report.errors];
+/**
+ * An error as a report holds it, less the colour `nx` turns on for the tasks it runs. A thrown
+ * value that is not an `Error` has a `value` and no `message`.
+ */
+const textOf = (error) =>
+  stripVTControlCharacters(
+    String(error?.message ?? error?.value ?? JSON.stringify(error)),
+  );
 
 class FlakeError extends Error {
   constructor(check, rule, message) {
@@ -256,6 +290,33 @@ const checkMeasured = (input, suite) => {
           `${JSON.stringify(project?.repeatEach)} time(s) against a floor of ${floor}`,
       );
   }
+  // What a run did, after how it was set up. A stop is read off the report's own `errors` and
+  // nothing else: a `skipped` test with no annotation is no sign of one, a serial group after a
+  // failure and a failed `beforeAll` leaving the same with no error at all (measured).
+  const errors = errorsOf(report).map(textOf);
+  const early = errors.find((e) => STOPS.some((s) => s.test(e)));
+  if (early !== undefined)
+    throw new FlakeError(
+      'measured',
+      'stopped-early',
+      `\`${suite}\` stopped before its end: "${early}".\n` +
+        `    Every test a stopped run never reached is \`skipped\`, and the tally counts it ` +
+        `like a skip the test decided, so the report reads as complete: a case the stop cut ` +
+        `short reads as one that never ran, or as one that failed every repetition it ran. ` +
+        `Nothing in the report says what the stop cost — repeat the suite with neither ` +
+        `\`maxFailures\` nor \`globalTimeout\`.`,
+    );
+  if (errors.length)
+    throw new FlakeError(
+      'measured',
+      'error-outside-tests',
+      `\`${suite}\` reported ${errors.length} error(s) that belong to no test:\n` +
+        list([...new Set(errors.map((e) => e.split('\n')[0]))]) +
+        `\n    What such an error cost is not in the report. A worker's unhandled error ` +
+        `between two tests takes the next one with it, which then reads as a case that ` +
+        `skipped itself; a teardown that throws after the last test costs nothing. Nothing ` +
+        `in the report tells the two apart, so neither run is taken as a measurement.`,
+    );
 };
 
 /** 2. DENOMINATOR — the walk and the report's own tally are two readings of one run. */
@@ -456,7 +517,8 @@ const firstOf = (point) => {
  * takes out of the measurement what it names and no more — the register's two every suite,
  * any other its own suite. A rule read over a report that failed them speaks of something
  * else: with retries on, point 3 would call a `flaky` status a contradiction of a reading
- * point 1 never made, and over two tests merged under one path point 4 would name a wobble
+ * point 1 never made, over a run that stopped early it would call a wobble cut off after one
+ * failing run a failure, and over two tests merged under one path point 4 would name a wobble
  * neither has. What still stands is read in full, and point 5 reads the record whatever the
  * run was: a night is a sample that does not come again, and what one finding hid is lost
  * with it. One family of races read early on seven of fourteen nightly runs and the verdict
@@ -531,12 +593,12 @@ for (const f of findings) problems.push(`${f.check}/${f.rule}: ${f.message}`);
  * one, so there is no live input to build on and a stored one is the honest alternative.
  *
  * Operations: `dropReports` and `addReports` over the suites; `projects` patches every
- * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally;
- * `replaceStatuses` rewrites one case's repetitions by its path and `dropRepetitions` takes
- * one away, both over the reference's shape, a repetition being a spec entry to them; `policy`
- * adds or drops a register key; `snapshot: null` loses the record, and `snapshot.replace`
- * rewrites it by a pattern that has to match — a needle that finds nothing is a case that
- * breaks nothing.
+ * project of a report, or the one `<suite>::<project>` names; `stats` patches its tally and
+ * `errors` replaces the errors it lists outside any test; `replaceStatuses` rewrites one
+ * case's repetitions by its path and `dropRepetitions` takes one away, both over the
+ * reference's shape, a repetition being a spec entry to them; `policy` adds or drops a
+ * register key; `snapshot: null` loses the record, and `snapshot.replace` rewrites it by a
+ * pattern that has to match — a needle that finds nothing is a case that breaks nothing.
  */
 const buildFixture = (fx) => {
   const reference = JSON.parse(readFileSync(join(FIXTURES, REFERENCE), 'utf8'));
@@ -561,6 +623,8 @@ const buildFixture = (fx) => {
   }
   for (const [suite, patch] of Object.entries(fx.stats ?? {}))
     Object.assign(w.reports[suite].stats, patch);
+  for (const [suite, errors] of Object.entries(fx.errors ?? {}))
+    w.reports[suite].errors = errors;
   // A case is addressed the way the record names it — `<suite>::<path> | <project>` — because
   // a path alone reaches every project's copy of it: one spec entry per project in the
   // reference's shape, and every project's tests in one entry in the other (`specsOf`). A

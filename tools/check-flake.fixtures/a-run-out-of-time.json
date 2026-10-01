@@ -1,0 +1,21 @@
+{
+  "check": "measured",
+  "rule": "stopped-early",
+  "// defect": "A `globalTimeout` that ran out while the second suite ran, as `--global-timeout=2500` left it (measured) and `--global-timeout=12250` prints it: the repetition in flight keeps one result, `skipped`, the one after it has none, and `errors` hold two sentences — the stop's, and one more for the teardown that ran out of the same time. A teardown that runs out of time is no early stop (`a-timeout-in-the-teardown.json`), so a rule that reads only the last error, or asks about other errors before it asks about stops, calls this run an error outside a test. Playwright prints the timeout as its milliseconds over a thousand, two digits either side of the point here, which a sentence copied from one measurement does not expect.",
+  "errors": {
+    "fake-docs-e2e": [
+      { "message": "Timed out waiting 12.25s for the test suite to run" },
+      {
+        "message": "Timed out waiting 12.25s for the teardown for test suite to run"
+      }
+    ]
+  },
+  "stats": { "fake-docs-e2e": { "expected": 1, "skipped": 2 } },
+  "replaceStatuses": {
+    "fake-docs-e2e::beta.spec.ts › the landing renders | chromium": [
+      "expected",
+      "skipped",
+      "skipped"
+    ]
+  }
+}
