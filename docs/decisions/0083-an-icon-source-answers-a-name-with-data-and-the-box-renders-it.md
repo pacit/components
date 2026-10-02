@@ -109,7 +109,11 @@ unseen here too: one and the same glyph in two tones meaning two states.
   `PCT_ICON_SOURCES`, the list. The first cut widened `PCT_ICONS` itself and called the
   widening harmless because no file here injects it; review read that as a hope about
   consumers, and a consumer's `{ provide: PCT_ICONS, useValue: MySet }` would have crashed
-  on the first `map`. A second token costs one declaration and no release record.
+  on the first `map`. A second token costs one declaration and no release record. The one
+  thing that moved: an application that called `providePctIcons(MySet)` and then injected
+  `PCT_ICONS` in its own code read `MySet` in 0.2.0 and finds no provider now —
+  `PCT_ICON_SOURCES` is where the list is, and `PCT_ICONS` is only what somebody provides
+  under that name themselves.
 - An icon of a consumer's and an icon of the library's are the same element, with the same
   box, so a tone or a size step reaches both — and the library's components keep naming roles,
   never ids (`check-icons` point 3).
