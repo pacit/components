@@ -155,19 +155,19 @@ test.describe('PctAutosize — a textarea as tall as its text', () => {
   });
 
   /**
-   * Which road this engine is on — recorded rather than assumed, and it is the one assertion
-   * here written to **expire**. `field-sizing` is in chromium and webkit and not in firefox;
-   * the day firefox ships it this case fails, and the failure is the notice that the measured
-   * road in `autosize.ts` has lost its last consumer and can go.
+   * Which road this engine is on — recorded rather than assumed. It was written to **expire**,
+   * asserting firefox as the engine without `field-sizing`, and it did: firefox 155 (Playwright
+   * 1.63) ships it, so all three engines here are on the platform road. The measured road in
+   * `autosize.ts` is now exercised by the unit suite alone (jsdom has no `CSS.supports`); whether
+   * it stays for older engines is a decision of its own, not of the version bump that showed it.
    */
   test('the engine is on the road the decision says it is', async ({
     page,
-    browserName,
   }) => {
     const supported = await page.evaluate(() =>
       CSS.supports('field-sizing', 'content'),
     );
 
-    expect(supported).toBe(browserName !== 'firefox');
+    expect(supported).toBe(true);
   });
 });
