@@ -1,8 +1,9 @@
 <!--
   The drawing from data, element by element. The `@switch` IS the list of tags the renderer
-  knows: a tag outside it has no case and draws nothing, which is how a `<script>` or a
-  `<foreignObject>` in somebody's icon data ends. The attributes go through `pctSvgAttributes`,
-  which paints geometry and nothing else — so no `on*`, no `href`, no `style` reaches an
+  knows — the only list there is — and a tag outside it has no case and draws nothing,
+  which is how a `<script>` or a `<foreignObject>` in somebody's icon data ends. The
+  attributes go through `pctSvgAttributes`, which paints geometry and nothing else — so no
+  `on*`, no `href`, no `style`, and no `url(` to anywhere but the document itself, reaches an
   element, however the data spells it (0083). A sprite is one `<use>`, its address a path
   or `http(s):` and nothing that names another scheme.
 -->

@@ -55,8 +55,12 @@ Five sentences, and each is a measurement or a refusal.
    word, which are attribute bindings. A drawing is elements and attributes, which the
    renderer writes through a list of seven tags and a list of thirty attributes: a tag outside
    it has no case, an attribute outside it never reaches an element, and `onload`, `href`,
-   `style` and `class` are dropped with a word in dev mode. That list is the whole sanitizer,
-   honest because it is a list of geometry.
+   `style` and `class` are dropped with a word in dev mode. A VALUE is read too: `fill="url(…)"`
+   makes a browser fetch a paint server from wherever the data says (Chromium across origins,
+   measured in review), so a `url(` in a value is refused unless it points into the document,
+   `url(#id)`; and a sprite's address is read the way a URL parser reads it, blanks and
+   controls stripped, before its scheme is judged. That list is the whole sanitizer, honest
+   because it is a list of geometry.
 2. **A source is a plain object: `resolve(id)` and an optional `roles` map.** The set
    component of 0028 is one source among the others, wrapped: its template names are its
    roles and its ids alike. `providePctIcons(…)` takes any number, in order of precedence,
@@ -74,7 +78,8 @@ Five sentences, and each is a measurement or a refusal.
    `--pct-icon-fg-<tone>`, the size steps `--pct-icon-size(-sm|-lg)`, the label turns
    `aria-hidden` into `role="img"`. The SVG renderer is `@pacit/components/svg-icon`, an
    entrypoint of its own: measured in `./icon` it cost 3558 B on every one of the fourteen
-   entrypoints that draw an arrow, because a component in a barrel is not shaken out the way a
+   entrypoints that draw an arrow (on Angular 22.0.6; the final rows `size.snapshot.md` holds read
+   11652 and 15252 on 22.2.1, with the box's own growth in them), because a component in a barrel is not shaken out the way a
    function is ([`lesson-248`](../lessons.md#lesson-248), the same law as
    [`lesson-86`](../lessons.md#lesson-86)). The box itself grew by what it learned, and that
    growth stands in `size.snapshot.md` as fourteen visible lines.
@@ -99,9 +104,12 @@ unseen here too: one and the same glyph in two tones meaning two states.
 
 ## Consequences
 
-- `PCT_ICONS` carries a list of sets and sources where it carried one component type; the
-  token keeps its `@since` because `providePctIcons` is the API and nothing else reads it.
-  Every call that compiled before compiles unchanged.
+- `PCT_ICONS` carries a list of sets and sources where it carried one component type. No
+  file in this repository injects it (measured: `grep -rn "inject(PCT_ICONS"` finds the
+  registry alone), `providePctIcons` is the API and every call of it that compiled before
+  compiles unchanged — but a consumer's own `inject(PCT_ICONS)` would stop compiling, so the
+  change is **marked breaking** in the release record rather than hoped past. No migration:
+  a schematic cannot know what a consumer did with the type it read.
 - An icon of a consumer's and an icon of the library's are the same element, with the same
   box, so a tone or a size step reaches both — and the library's components keep naming roles,
   never ids (`check-icons` point 3).

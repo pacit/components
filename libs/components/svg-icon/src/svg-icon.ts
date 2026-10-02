@@ -18,18 +18,15 @@ import type {
 } from '@pacit/components/icon';
 
 /**
- * The elements a drawing from data may hold: geometry, and only geometry. The `@switch` in
- * `svg-icon.html` is the same list as cases; a tag with no case draws nothing.
+ * A node as the renderer reads it: a tag and a map of attributes. The list of TAGS is the
+ * `@switch` of `svg-icon.html` and nowhere else — a tag with no case draws nothing — so what
+ * is checked here is only the SHAPE, for data that arrived as JSON rather than through a type.
  */
-const TAGS = new Set([
-  'path',
-  'circle',
-  'ellipse',
-  'rect',
-  'line',
-  'polyline',
-  'polygon',
-]);
+const isNode = (node: unknown): node is PctSvgNode =>
+  Array.isArray(node) &&
+  typeof node[0] === 'string' &&
+  typeof node[1] === 'object' &&
+  node[1] !== null;
 
 /**
  * The attributes the renderer paints: the geometry of each element and the paint an icon
@@ -71,9 +68,32 @@ const ATTRIBUTES = new Set([
   'vector-effect',
 ]);
 
-/** An address that names a scheme at all, and the two schemes a sprite may come from. */
+/**
+ * A paint value that names an address: `fill="url(https://…)"` makes a browser fetch a paint
+ * server from wherever the data says — Chromium across origins, measured — so a `url(` in a
+ * value is refused unless it is a reference into the document itself, `url(#id)`.
+ */
+const ADDRESS = /url\s*\(/i;
+const LOCAL = /^url\(\s*#[^()]*\)$/i;
+
+/**
+ * An address that names a scheme at all, and the two schemes a sprite may come from. The
+ * address is read the way a URL parser reads it — tabs and newlines gone from anywhere, C0
+ * controls and spaces gone from both ends — because `' javascript:'` IS `javascript:` to the
+ * element, and a check on the raw string would be a check on nothing.
+ */
 const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 const HTTP = /^https?:/i;
+const STRIPPED = /[\t\n\r]/g;
+
+/** `trim()` the way a URL parser trims: everything at or below U+0020, off both ends. */
+const trimControls = (text: string): string => {
+  let start = 0;
+  let end = text.length;
+  while (start < end && text.charCodeAt(start) <= 0x20) start += 1;
+  while (end > start && text.charCodeAt(end - 1) <= 0x20) end -= 1;
+  return text.slice(start, end);
+};
 
 /** The names already warned about, so a drawing of a hundred paths says it once. */
 const dropped = new Set<string>();
@@ -129,7 +149,19 @@ export class PctSvgAttributes {
           }
           continue;
         }
-        this.renderer.setAttribute(element, name, String(value));
+        const text = String(value);
+        if (ADDRESS.test(text) && !LOCAL.test(text)) {
+          if (isDevMode() && !dropped.has(`${name}=url`)) {
+            dropped.add(`${name}=url`);
+            console.warn(
+              `[pct-svg-icon] \`${name}\` names an address (\`${text}\`) and was dropped. ` +
+                `A paint value may reference the document itself — \`url(#id)\` — and ` +
+                `nothing beyond it.`,
+            );
+          }
+          continue;
+        }
+        this.renderer.setAttribute(element, name, text);
         painted.push(name);
       }
     });
@@ -185,7 +217,9 @@ export class PctSvgIcon {
    */
   protected readonly address = computed(() => {
     const href = this.href();
-    if (href === null || !SCHEME.test(href) || HTTP.test(href)) return href;
+    if (href === null) return null;
+    const read = trimControls(href.replace(STRIPPED, ''));
+    if (!SCHEME.test(read) || HTTP.test(read)) return read;
     if (isDevMode())
       console.warn(
         `[pct-svg-icon] \`${href}\` names a scheme a sprite cannot come from and was ` +
@@ -195,8 +229,8 @@ export class PctSvgIcon {
   });
   protected readonly viewBox = computed(() => this.data()?.viewBox ?? null);
   protected readonly attributes = computed(() => this.data()?.attributes ?? {});
-  protected readonly nodes = computed(
-    () => this.data()?.nodes.filter(([tag]) => TAGS.has(tag)) ?? [],
+  protected readonly nodes = computed(() =>
+    (this.data()?.nodes ?? []).filter(isNode),
   );
 }
 

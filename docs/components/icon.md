@@ -29,7 +29,8 @@ stays when forced colours take the colour — so a toned icon never speaks alone
 only way round it is the library trusting a string a consumer wrote. So a drawing arrives as
 data and is rendered element by element through a list of tags and a list of attributes
 (`@pacit/components/svg-icon`): a tag outside the list draws nothing, an attribute outside it
-never reaches an element, and a drawing from anybody's data is as safe as one from nobody's.
+never reaches an element, a `url(` in a paint value is refused unless it points into the
+document, and a drawing from anybody's data is as safe as one from nobody's.
 
 ## Usage
 
@@ -58,7 +59,7 @@ one differently. `@pacit/components/svg-icon` carries the renderer and `svgIcons
 tabler node list, a FontAwesome SVG definition, or a drawing written out) with `svgSprite()`;
 it is an entrypoint of its own because a component in a barrel is not shaken out the way a
 function is, and measured in `./icon` it put 3558 B on every entrypoint that draws an arrow
-([`lesson-248`](../lessons.md#lesson-248)). Sources are asked in order: the first that answers
+(the final rows: `./accordion` 11652 → 15252 on Angular 22.2.1; [`lesson-248`](../lessons.md#lesson-248)). Sources are asked in order: the first that answers
 draws, a font or a sprite answers for every id and so stands last.
 
 ## Parts

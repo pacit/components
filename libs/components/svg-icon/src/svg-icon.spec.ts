@@ -367,6 +367,146 @@ describe('@pacit/components/svg-icon', () => {
       }
     });
 
+    it('a paint value naming an address is dropped, a reference into the document is kept', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        @Component({
+          imports: [PctSvgIcon],
+          template: `<pct-svg-icon [data]="data" />`,
+        })
+        class Host {
+          readonly data: PctSvgIconData = {
+            viewBox: '0 0 1 1',
+            attributes: {
+              fill: 'url(https://evil.example/paint.svg#g)',
+              stroke: 'url(#local-gradient)',
+            },
+            nodes: [
+              ['path', { d: 'M0 0', fill: 'URL( //evil.example/p.svg#g )' }],
+              [
+                'rect',
+                {
+                  x: 0,
+                  fill: 'url(data:image/svg+xml,x)',
+                  stroke: 'currentColor',
+                },
+              ],
+            ],
+          };
+        }
+        const fixture = await mount(Host);
+        const svg = svgOf(fixture);
+        // A browser fetches a paint server from wherever `fill` points — measured in
+        // chromium across origins — so an address in a value is as refused as `href`.
+        expect(svg.hasAttribute('fill')).toBe(false);
+        expect(svg.getAttribute('stroke')).toBe('url(#local-gradient)');
+        expect(svg.querySelector('path')?.hasAttribute('fill')).toBe(false);
+        expect(svg.querySelector('rect')?.hasAttribute('fill')).toBe(false);
+        expect(svg.querySelector('rect')?.getAttribute('stroke')).toBe(
+          'currentColor',
+        );
+        // Once per attribute name, and the message carries the value a consumer can find.
+        const said = warn.mock.calls.map((c) => String(c[0]));
+        expect(said).toHaveLength(1);
+        expect(said[0]).toBe(
+          '[pct-svg-icon] `fill` names an address (`url(https://evil.example/paint.svg#g)`) ' +
+            'and was dropped. A paint value may reference the document itself — `url(#id)` ' +
+            '— and nothing beyond it.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('an address is read the way a URL parser reads it: blanks and controls around a scheme hide nothing', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        @Component({
+          imports: [PctSvgIcon],
+          template: `
+            <pct-svg-icon [href]="' javascript:alert(1)#a'" />
+            <pct-svg-icon [href]="'java\\tscript:alert(1)#b'" />
+            <pct-svg-icon [href]="'java\\nscript:alert(1)#c'" />
+            <pct-svg-icon [href]="'\\u0001data:text/html,x#d'" />
+            <pct-svg-icon [href]="'  ./icons.svg#e\\t'" />
+          `,
+        })
+        class Host {}
+        const fixture = await mount(Host);
+        // Four refused outright — the element is not written — and the one path kept, as
+        // the parser would read it, with the blanks gone.
+        expect(
+          [...fixture.nativeElement.querySelectorAll('use')].map((u: Element) =>
+            u.getAttribute('href'),
+          ),
+        ).toEqual(['./icons.svg#e']);
+        expect(warn).toHaveBeenCalledTimes(4);
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('a scheme is any name with a digit, a plus, a dot or a dash in it, and only http(s) passes', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        @Component({
+          imports: [PctSvgIcon],
+          template: `
+            <pct-svg-icon href="x-custom+1.0:thing#a" />
+            <pct-svg-icon href="ms-word:open#b" />
+            <pct-svg-icon href="ftp://host/icons.svg#c" />
+            <pct-svg-icon href="icons.svg#d" />
+          `,
+        })
+        class Host {}
+        const fixture = await mount(Host);
+        expect(
+          [...fixture.nativeElement.querySelectorAll('use')].map((u: Element) =>
+            u.getAttribute('href'),
+          ),
+        ).toEqual(['icons.svg#d']);
+        expect(warn).toHaveBeenCalledTimes(3);
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('data that is not a drawing — from a manifest, past the types — draws nothing and throws nothing', async () => {
+      @Component({
+        imports: [PctSvgIcon],
+        template: `
+          <pct-svg-icon [data]="noNodes" />
+          <pct-svg-icon [data]="nullNode" />
+          <pct-svg-icon [data]="nullAttributes" />
+        `,
+      })
+      class Host {
+        readonly noNodes = { viewBox: '0 0 1 1' } as unknown as PctSvgIconData;
+        readonly nullNode = {
+          viewBox: '0 0 1 1',
+          nodes: [null, ['path', null], 'path'],
+        } as unknown as PctSvgIconData;
+        readonly nullAttributes = {
+          viewBox: '0 0 1 1',
+          attributes: null,
+          nodes: [],
+        } as unknown as PctSvgIconData;
+      }
+      const fixture = await mount(Host);
+      const svgs = [
+        ...fixture.nativeElement.querySelectorAll('svg'),
+      ] as SVGSVGElement[];
+      expect(svgs).toHaveLength(3);
+      for (const svg of svgs) expect(svg.children).toHaveLength(0);
+      expect(svgs[0].getAttribute('viewBox')).toBe('0 0 1 1');
+    });
+
     it('an absolute http(s) address and a relative one are kept as they are', async () => {
       @Component({
         imports: [PctSvgIcon],

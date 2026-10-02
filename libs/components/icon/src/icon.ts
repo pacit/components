@@ -347,9 +347,9 @@ const warned = new Set<string>();
     // Decoration unless it is given a name: beside the text it belongs to — the select's
     // arrow next to the chosen value, the checkbox's tick inside a labelled control — a
     // second reading of the same thing is noise in a screen reader. Named, it is an image.
-    '[attr.aria-hidden]': 'label() === null ? "true" : null',
-    '[attr.role]': 'label() === null ? null : "img"',
-    '[attr.aria-label]': 'label()',
+    '[attr.aria-hidden]': 'named() === null ? "true" : null',
+    '[attr.role]': 'named() === null ? null : "img"',
+    '[attr.aria-label]': 'named()',
     '[attr.data-pct-tone]': 'tone()',
     '[attr.data-pct-size]': 'size()',
   },
@@ -404,6 +404,15 @@ export class PctIcon {
    * @since next
    */
   readonly label = input<string | null>(null);
+
+  /**
+   * The label with its blanks taken off, or `null`: an empty string bound from a row with no
+   * label is no name, and an image with no name is worse than decoration.
+   */
+  protected readonly named = computed(() => {
+    const label = this.label()?.trim();
+    return label ? label : null;
+  });
 
   /** What the sources answered, or `null` — and then the content renders. */
   protected readonly rendering = computed<PctIconRendering | null>(() => {

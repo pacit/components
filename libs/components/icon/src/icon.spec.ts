@@ -510,6 +510,23 @@ describe('@pacit/components/icon', () => {
     expect(named.getAttribute('aria-label')).toBe('Unread messages');
   });
 
+  it('an empty or blank label is no label: the icon stays hidden, with no empty name', async () => {
+    @Component({
+      imports: [PctIcon],
+      template: `
+        <pct-icon label="" data-testid="empty"><svg></svg></pct-icon>
+        <pct-icon label="   " data-testid="blank"><svg></svg></pct-icon>
+      `,
+    })
+    class Host {}
+    const fixture = await mount(Host);
+    for (const id of ['empty', 'blank']) {
+      expect(icon(fixture, id).getAttribute('aria-hidden'), id).toBe('true');
+      expect(icon(fixture, id).hasAttribute('role'), id).toBe(false);
+      expect(icon(fixture, id).hasAttribute('aria-label'), id).toBe(false);
+    }
+  });
+
   // ── what is said in dev mode ─────────────────────────────────────────────────
 
   const warned = async <T>(type: new () => T, providers: Provider[] = []) => {
@@ -531,6 +548,12 @@ describe('@pacit/components/icon', () => {
     })
     class Host {}
     const said = await warned(Host, providePctIcons(probeFont()));
+    // What is DRAWN, not only what is said: the id's glyph, and not the role's content.
+    const fixture = await mount(Host, providePctIcons(probeFont()));
+    expect(
+      fixture.nativeElement.querySelector('pct-icon')?.firstElementChild
+        ?.className,
+    ).toBe('pct-icon__glyph x x-both-bell');
     expect(said).toEqual([
       '[pct-icon] `both-bell` is asked for by `icon` and `check` by `name` on one ' +
         'element. The id is read and the role is not: `name` is for a component of the ' +
