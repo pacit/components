@@ -1,0 +1,22 @@
+.view__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-4);
+}
+
+.icon-view__text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+  font-size: 20px;
+}
+
+.icon-view__pair {
+  gap: var(--pct-space-6);
+}
+
+.icon-view__plain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+}

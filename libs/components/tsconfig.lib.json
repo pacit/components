@@ -42,6 +42,7 @@
     "theme/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
+    "svg-icon/**/*.ts",
     "testing/**/*.ts"
   ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/*.testkit.ts"]

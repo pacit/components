@@ -404,3 +404,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-245`](lessons.md#lesson-245) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-246`](lessons.md#lesson-246) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-247`](lessons.md#lesson-247) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-248`](lessons.md#lesson-248) | `req-api-icons`                                                                                                                                                   |

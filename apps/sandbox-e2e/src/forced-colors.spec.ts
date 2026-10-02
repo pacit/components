@@ -776,6 +776,38 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A toned icon loses its colour and keeps its shape — which is the whole reason an icon
+   * may wear a tone at all (0076): the glyph IS the channel that survives. No rule of the
+   * icon's sheet says so; the mode forces `color` itself, and this is the reading that the
+   * sheet did not fight it with `forced-color-adjust: none`. The drawing is read as
+   * present rather than as a colour: a `<path>` whose stroke is `currentColor` follows the
+   * forced colour, and a reading of it would only repeat the first.
+   */
+  test('a toned icon arrives at the palette’s word for text, with its drawing standing', async ({
+    page,
+  }) => {
+    await visit(page, '/icon', { media: FORCED });
+    const sys = await systemColors(page);
+
+    for (const tone of [
+      'none',
+      'success',
+      'warning',
+      'danger',
+      'info',
+    ] as const) {
+      const icon = page.getByTestId(`tone-${tone}`);
+      expect(await styleOf(icon, 'color'), tone).toBe(sys.CanvasText);
+      await expect(
+        icon.locator(
+          'svg path, svg polygon, svg polyline, svg circle, svg line',
+        ),
+        tone,
+      ).not.toHaveCount(0);
+    }
+  });
+
+  /**
    * In a trail every anchor wears the palette's one word for a link — the rest colours and
    * the current colour go with the mode together, which is why 0054 gave the current step a
    * WEIGHT: the one channel of the pair that survives. The separator is decoration and

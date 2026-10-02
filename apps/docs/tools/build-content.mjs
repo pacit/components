@@ -135,6 +135,7 @@ const CARD_ORDER = [
   'stepper',
   'progress',
   'badge',
+  'icon',
   'avatar',
   'skeleton',
   // Layout & theming

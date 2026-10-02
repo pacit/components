@@ -6,6 +6,7 @@
   "projectType": "application",
   "tags": ["type:app"],
   "// implicitDependencies": "`styles` reaches for libs/tokens/dist/pct.css — a generated, gitignored artefact. Without that edge the build walks into an empty directory and ends in SUCCESS, only with not one token definition. The same edge, for the same reason, as in `sandbox`.",
+  "// primeicons": "The icon page's demos draw with PrimeIcons 7 (MIT — version 8 moved to the PrimeUI licence with a key, and is not what a documentation site should carry) and with lucide (a permissive licence of its own), both devDependencies of the WORKSPACE and of nothing the library ships: the library brings no icon set (req-api-icons-custom), it brings the adapters, and a page showing an adapter at work needs a real font behind the classes. The stylesheet stands in `styles` because a font's `@font-face` has to be in the document; the lucide drawings arrive as data through the demo's own import and need no line here.",
   "// conventions": "What the builder finds by its own convention rather than by a line here: apps/docs/src/index.html (the document), and the assets glob below carrying apps/docs/public/favicon.ico, apps/docs/public/InterVariable.woff2 and apps/docs/public/InterVariable-LICENSE.txt into dist, and the code face beside them: apps/docs/public/JetBrainsMono-latin.woff2 and apps/docs/public/JetBrainsMono-LICENSE.txt. Named in full because a bare file name stopped choosing between the two apps the day this one copied the sandbox's (req-project-reach).",
   "implicitDependencies": ["tokens"],
   "// typecheck": "The same override as in `sandbox`, for the same measured reason: the inferred target runs `tsconfig.app.json` only. The second command is the cost run's own program (tsconfig.bench.json, req-quality-benchmark) — the site's first TypeScript outside the application; the day it grows specs, a third command lands here the same way.",
@@ -84,6 +85,7 @@
         "styles": [
           "node_modules/@angular/cdk/overlay-prebuilt.css",
           "libs/tokens/dist/pct.css",
+          "node_modules/primeicons/primeicons.css",
           "apps/docs/src/styles.scss"
         ],
         "server": "apps/docs/src/main.server.ts",

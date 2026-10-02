@@ -1,0 +1,7 @@
+/* The renderer's host is layout-transparent: the `<svg>` inside it is sized by the icon's
+   box as if it stood there directly, which is what a swapped drawing is promised (0028). No
+   paint here — `fill` and `stroke` arrive as the drawing's own attributes, in `currentColor`
+   (`check-styles` point 8). */
+:host {
+  display: contents;
+}

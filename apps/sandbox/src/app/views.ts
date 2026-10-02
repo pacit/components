@@ -231,6 +231,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/badge/badge-view').then((m) => m.BadgeView),
   },
   {
+    path: 'icon',
+    title: 'Icon',
+    summary:
+      'A drawing in a box the text sizes and colours — and the sources that answer for it.',
+    group: 'components',
+    load: () => import('./views/icon/icon-view').then((m) => m.IconView),
+  },
+  {
     path: 'breadcrumb',
     title: 'Breadcrumb',
     summary: 'The way here, told in links — and who writes aria-current.',

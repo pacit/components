@@ -1,5 +1,27 @@
-@if (replacement(); as template) {
-<ng-container [ngTemplateOutlet]="template" />
+<!--
+  What the sources answered decides what stands in the box, and the content is the fallback:
+  a template renders in place, a font glyph is a span wearing the font's classes, anything
+  else is a component the source named. The box knows three kinds and no drawing (0083).
+-->
+@if (rendering(); as drawn) { @if (drawn.kind === 'template') {
+<ng-container [ngTemplateOutlet]="drawn.template" />
+} @else if (drawn.kind === 'font') {
+<!--
+  Hidden on its own as well as through the host: a ligature font keeps the glyph's NAME as
+  the text of the span, and a named icon (`role="img"`) would otherwise read it twice.
+-->
+<span
+  class="pct-icon__glyph"
+  aria-hidden="true"
+  [class]="drawn.class"
+  [style]="drawn.style ?? null"
+  >{{ drawn.text ?? '' }}</span
+>
 } @else {
+<ng-container
+  [ngComponentOutlet]="drawn.component"
+  [ngComponentOutletInputs]="drawn.inputs ?? undefined"
+/>
+} } @else {
 <ng-content />
 }

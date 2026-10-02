@@ -1,0 +1,43 @@
+{
+  "pct": {
+    "icon": {
+      "$comment": "The box an icon is drawn in (0028, 0083). The box has no colour of its own at rest — it inherits the text's, which is why there is no `fg` here: a token for \"inherit\" is a token two places have to agree about. What the skin DOES give the box is the four tones, one colour each and the same four every component reads (0076), and three size steps for an icon that stands on its own rather than beside text. The toast and the date both draw their icons on 16px, so the small step is the number the library already uses; the base and the large step follow the control heights up by one line of the space scale each.",
+      "$comment-tones": "Each tone paints the box in the semantic tone colour outright, as the toast's marks do: `{pct.<tone>}`, measured against the page in `contrast.policy.json` as a graphical object (SC 1.4.11), because a toned icon with no words beside it is exactly that. Forced colours need no entry — the mode forces `color` itself and the SHAPE is what is left, which is the whole reason an icon may wear a tone (0076).",
+      "size-sm": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Size of the icon's box at the small step."
+      },
+      "size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Size of the icon's box at the base step."
+      },
+      "size-lg": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Size of the icon's box at the large step."
+      },
+      "fg-success": {
+        "$type": "color",
+        "$value": "{pct.success}",
+        "$description": "Colour of an icon wearing the success tone."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Colour of an icon wearing the warning tone."
+      },
+      "fg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Colour of an icon wearing the danger tone."
+      },
+      "fg-info": {
+        "$type": "color",
+        "$value": "{pct.info}",
+        "$description": "Colour of an icon wearing the info tone."
+      }
+    }
+  }
+}

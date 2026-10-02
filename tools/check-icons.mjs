@@ -6,7 +6,7 @@
  * ([0011](../docs/decisions/0011-icons.md), [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
  *
  *  1. DENOMINATOR: the name list read, every template parsed, every drawing the walk saw,
- *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>` — outside one it is nobody's icon,
+ *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>`, or is the SVG renderer's own,
  *  3. NAMED: a `<pct-icon>` of the library carries a name, because a set is asked by name,
  *  4. DEFAULT: a named icon carries its own drawing, so a consumer with no set sees an icon,
  *  5. INVENTORY: the names drawn and `PctIconName` are the same set, both ways,
@@ -46,6 +46,15 @@ const LITERAL = /'([^']*)'/g;
 
 const ICON = 'pct-icon';
 const DRAWING = 'svg';
+/**
+ * The one place a bare `<svg>` is the mechanism and not a drawing: the SVG renderer's own
+ * templates, where a drawing given as DATA is rendered element by element (0083). Every
+ * template there is the renderer of what a source answered, so nothing in it is a picture
+ * a consumer would want to swap — the swap already happened one level up. Narrow on
+ * purpose: one entrypoint's templates, and the reference input carries one of them so that
+ * the exemption is exercised and not merely written.
+ */
+const RENDERER = new RegExp(`^${PROJECT}/svg-icon/src/[^/]+\\.html$`);
 const PART = 'data-pct-part';
 
 /** The same two tags counted without parsing, as the denominator of the walk. */
@@ -220,7 +229,7 @@ const checkIcons = ({ templates, names }) => {
 
   // ── 2. a drawing stands inside an icon ───────────────────────────────────────
   const loose = drawings
-    .filter((d) => d.inside === null)
+    .filter((d) => d.inside === null && !RENDERER.test(d.file))
     .map((d) => d.file)
     .filter((file, i, all) => all.indexOf(file) === i);
   if (loose.length)

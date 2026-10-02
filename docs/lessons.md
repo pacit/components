@@ -7055,3 +7055,24 @@ decides the verdict. Outside the closure stay three things. One is a mode change
 alone, and `check-language` reads modes. Another is any other subcommand that reads the index,
 though no script runs one. The last is the refs `check-distance` and `check-support` ask for,
 and both of them run uncached.
+
+### <a id="lesson-248"></a>`lesson-248` — A component in a barrel is paid for by every importer, measured a second time
+
+[`lesson-86`](#lesson-86) measured the icon layer in `./core` and moved it to an entrypoint of
+its own, because a component is not shaken out of a barrel the way a function is. On 2026-10-02
+the same law was met one floor up, inside that entrypoint. The icon box learned sources
+(0083), and the first cut put the SVG renderer — a component with a seven-case template and an
+attribute directive — in `./icon` beside the box. `check-bundle` read the fourteen entrypoints
+that import `./icon` and every one of them had grown by 3558 B: `./accordion` from 11564 to
+15122, for a renderer no accordion ever creates. The font adapters in the same file cost those
+rows nothing — plain functions over constant maps, and esbuild dropped them; a probe of the
+accordion over the built package held not one of their strings.
+
+Moved to `@pacit/components/svg-icon`, the renderer is a row of its own at 5523 B, and the
+fourteen rows moved by what the BOX learned instead: about 3.5 kB each for three kinds of
+rendering, five inputs, four tones and three sizes in the sheet. That growth was kept, in the
+one visible diff the snapshot exists for. The rule the two measurements make together: a
+component the box does not create belongs to the source that names it, in an entrypoint only
+that source imports — and the question is answered by `size.snapshot.md`, never by reading the
+import graph, because the graph said the renderer was reachable from one place and the bundle
+said fourteen.

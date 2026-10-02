@@ -115,7 +115,7 @@ in hand. A library is allowed to grow in public, and a repository that moves is 
 argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
-form exists and is a condition of entering a release. Thirty-four cards are filled in.
+form exists and is a condition of entering a release. Thirty-five cards are filled in.
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
