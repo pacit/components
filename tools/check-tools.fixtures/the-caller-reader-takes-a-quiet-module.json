@@ -1,0 +1,16 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "callers-misread",
+  "what": "the caller reader returned the module beyond the .ts as well, which asks nothing — the shape of a reader that takes everything a caller reaches for a caller",
+  "called": {
+    "set": [
+      "tools/check-tools.fixtures/a-hop-that-asks.ts",
+      "tools/check-tools.fixtures/a-module-that-asks-nothing.mjs",
+      "tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs"
+    ]
+  },
+  "names": [
+    "The reader read `tools/check-tools.fixtures/a-hop-that-asks.ts`, `tools/check-tools.fixtures/a-module-that-asks-nothing.mjs`, `tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs`. Point"
+  ]
+}

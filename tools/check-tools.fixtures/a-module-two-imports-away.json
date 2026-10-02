@@ -1,0 +1,32 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "unhashed",
+  "what": "the call sits two imports from the script, in a module that imports the script back — a rule that looks one import deep passes it, and a walk that does not stop at a module it has seen never ends",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-with-a-deep-call",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": [
+          "tools/a-gate.mjs",
+          "tools/a-module.mjs",
+          "tools/a-deeper-module.mjs"
+        ]
+      }
+    ]
+  },
+  "imports": {
+    "set": {
+      "tools/a-gate.mjs": ["tools/a-module.mjs"],
+      "tools/a-module.mjs": ["tools/a-deeper-module.mjs"],
+      "tools/a-deeper-module.mjs": ["tools/a-gate.mjs"]
+    }
+  },
+  "callers": { "add": ["tools/a-deeper-module.mjs"] },
+  "names": [
+    "1 target(s) run a script that asks `git ls-files` and do not hash the answer:\n  @org/source:a-gate-with-a-deep-call — `tools/a-deeper-module.mjs`\nnx"
+  ]
+}

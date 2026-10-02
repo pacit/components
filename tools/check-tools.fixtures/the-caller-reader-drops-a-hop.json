@@ -1,0 +1,12 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "callers-misread",
+  "what": "the caller reader returned the prepared script alone and not the .ts it loads, which asks once — the shape of a reader that counts scripts only, or modules that ask more than once; with it, point 6 stops holding a target whose call sits one import away",
+  "called": {
+    "set": ["tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs"]
+  },
+  "names": [
+    "The reader read `tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs`. Point"
+  ]
+}

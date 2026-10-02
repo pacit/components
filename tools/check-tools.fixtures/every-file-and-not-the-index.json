@@ -1,0 +1,27 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "unhashed",
+  "what": "two targets resolved by nx's planner over a copy of the graph: {workspaceRoot}/**/* alone, the inputs check-docs had while it replayed a pass after a git add — every file and still not the index — and the same with the named input index beside it, which the planner turns into the runtime command; only the first may be named",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-hashing-every-file",
+        "scripts": ["tools/check-tools.mjs"],
+        "inputs": ["{workspaceRoot}/**/*"]
+      },
+      {
+        "project": "@org/source",
+        "target": "a-gate-hashing-the-index-too",
+        "scripts": ["tools/check-tools.mjs"],
+        "inputs": ["{workspaceRoot}/**/*", "index"]
+      }
+    ]
+  },
+  "callers": { "add": ["tools/check-tools.mjs"] },
+  "names": [
+    "1 target(s) run a script that asks `git ls-files` and do not hash the answer:\n  @org/source:a-gate-hashing-every-file — `tools/check-tools.mjs`\nnx"
+  ]
+}

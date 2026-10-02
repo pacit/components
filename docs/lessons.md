@@ -7021,3 +7021,37 @@ the switch on the list — this entry was carried to `main` later, its table rea
 log of every nightly run on `main` on that code; #23 and #25 had repaired the same cases on
 2026-09-25. The verdict's half was repaired in #38 on 2026-09-30: a run names every finding it
 holds, and a report that fails points 1 and 2 takes out its own suite and no other.
+
+### <a id="lesson-247"></a>`lesson-247` — The index was the input, and the hash was the tree's
+
+[`lesson-226`](#lesson-226) made the git index the input of three gates, and drew a habit from
+it: `git add` the new files before the battery. By 2026-10-01 twenty-one scripts under `tools/`
+asked `git ls-files`, and #45 measured what that habit meets in nx 23.1. nx hashes the working
+tree, and the index is no file in it. Write a file, run a gate, `git add` the file, run the gate
+again: the second run came from the cache with "2250 tracked files", where a direct run
+counted 2251. A `git add -f` of a file a rule covers did the same.
+
+On 2026-10-02 each of the twenty cached gates went down that road in a clone with
+`NX_DAEMON=false`, each with a file it rejects once the file is tracked: a Polish sentence, an
+orphaned stylesheet, a bare `<svg>`, a dangling `req-`. Sixteen flipped on a `git add`
+(`check-mutation` without its 72-minute dependency, on a borrowed report). `check-acr`,
+`check-bundle` and `check-prose` flipped on a `git rm --cached` of a file they need tracked.
+`check-prose` compares the disk with the index both ways, so an untracked script is red there
+already. `check-coverage` reads `--cached --others` and flipped only on a `git add -f` of an
+ignored file. Every time, the task's hash in nx's database stayed where it was, and nx replayed
+a pass the direct run failed. Only `check-reach` ran, because it is uncached.
+
+The closure puts the index in the hash: `{ "runtime": "git ls-files" }`, the named input `index`
+of `nx.json`, on all twenty-one targets. It was measured before it was chosen, for the daemon
+keeps one task hasher for as long as its project graph stands, and a `git add` does not move the
+graph. Its log read "Reusing in-memory cached project graph because no files changed", and the
+gate ran anyway, red. `cache: false` was the other closure, and it costs the gates' own time on
+every run: 95 seconds summed on this desk, against 6 ms for the command. The runtime input costs
+a run of the twenty-one only when the list of tracked paths changes, which 23 of the 46 commits
+on `main` since 2026-09-18 did. `check-tools` point 6 holds it: a target whose script, or a module
+the script imports, asks `git ls-files` names that command among its runtime inputs. The habit of
+[`lesson-226`](#lesson-226) holds again, because the order of `git add` and a run no longer
+decides the verdict. Outside the closure stay three things. One is a mode changed in the index
+alone, and `check-language` reads modes. Another is any other subcommand that reads the index,
+though no script runs one. The last is the refs `check-distance` and `check-support` ask for,
+and both of them run uncached.

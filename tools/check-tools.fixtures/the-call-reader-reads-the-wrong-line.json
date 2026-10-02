@@ -1,0 +1,12 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "calls-misread",
+  "what": "the call reader returned twelve lines, as many as it should, one of them a word that only ends in ls-files in place of the dashed git-ls-files — a control that counts the calls passes it",
+  "calls": {
+    "set": [16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 28, 35]
+  },
+  "names": [
+    "the reader read lines `16`, `17`, `18`, `19`, `20`, `21`, `22`, `24`, `25`, `26`, `28`, `35`. Point"
+  ]
+}

@@ -6,9 +6,10 @@
  *
  *  1. MEASURED: the scripts are found at all, and the set is read two different ways,
  *  2. NAMES: no identifier in any of them resolves to nothing,
- *  3. CONTROL: the readers read the prepared inputs as written — a name, the loads, the runs,
+ *  3. CONTROL: the readers read the prepared inputs as written — names, loads, runs, git calls,
  *  4. RUN: every script under `tools/` is executed by a pass, or the register says why not,
- *  5. INPUTS: a target that runs a script hashes it and every module it imports.
+ *  5. INPUTS: a target that runs a script hashes it and every module it imports,
+ *  6. INDEX: a target that runs a script asking git for its index hashes the index too.
  *
  * `at-pass.mjs` carried `CEILING_TAB`, declared nowhere, and threw on the first view of every
  * run for a day and a half (`lesson-210`). `no-undef` is the whole instrument on purpose: a
@@ -122,6 +123,29 @@ const RUNS = {
     },
   },
 };
+/**
+ * The two readers of point 6 are held the same way. The call reader gets a prepared script
+ * holding twelve calls, one per entry, each the only string on its line that names the word:
+ * the argument `ls-files`, a string with a `$(…)` before the subcommand, a template with no
+ * substitution, the head, a middle and the tail of a template, a template over two lines, a
+ * `bash -lc` body with escaped quotes, a brace group, a sentence, the dashed `git-ls-files`, and
+ * a hyphen written as an escape, which the string's value holds and its source does not.
+ * Beside them stand six near misses it must not read: a longer word, one joined by a hyphen, a
+ * word that ends in `ls-files`, another subcommand, the word split across a concatenation, and a
+ * regular expression, which is no string. The caller reader walks from the script: the script
+ * asks, the `.ts` it loads asks once, and the module beyond that asks nothing and loads the `.ts`
+ * back.
+ */
+const CALLS = {
+  script: `${FIXTURES}/a-script-that-asks-for-the-index.mjs`,
+  lines: [16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28],
+  callers: [
+    `${FIXTURES}/a-hop-that-asks.ts`,
+    `${FIXTURES}/a-script-that-asks-for-the-index.mjs`,
+  ],
+};
+/** The command whose answer a target asking git for its index hashes: `{ "runtime": … }`. */
+const INDEX = 'git ls-files';
 
 /**
  * Every name a script here may use without declaring it, written out. The `globals` package
@@ -157,7 +181,7 @@ class ToolsError extends Error {
 
 /**
  * The roots and everything they load, transitively, each module once: a module that imports
- * its importer back ends the walk rather than the process. Points 4 and 5 walk the same
+ * its importer back ends the walk rather than the process. Points 4, 5 and 6 walk the same
  * edges — `imports`, one reading of what every script loads.
  */
 const closureOf = (roots, imports) => {
@@ -170,6 +194,17 @@ const closureOf = (roots, imports) => {
   }
   return seen;
 };
+/** The targets whose scripts reach a module that asks git for its index, and those modules. */
+const askingOf = (input) =>
+  input.targets
+    .map((t) => ({
+      id: t.id,
+      runtime: t.runtime,
+      callers: closureOf(t.scripts, input.imports).filter((module) =>
+        input.callers.includes(module),
+      ),
+    }))
+    .filter((t) => t.callers.length);
 
 // ── the rules ─────────────────────────────────────────────────────────────────
 
@@ -353,6 +388,30 @@ const checkTools = (input) => {
         '. Point 5 holds a target to what this reader sees, and a shape it stopped seeing ' +
         'is a target it stopped holding',
     );
+  // The readers of point 6, held to `CALLS` both ways: a form the call reader stopped seeing
+  // is a caller it stopped holding, a mention it started seeing is a caller somebody silences
+  // next, and the caller reader has to walk where the live one walks — past a `.ts`, and to
+  // every module that asks once.
+  if (!same(input.calls.map(String), CALLS.lines.map(String)))
+    fire(
+      'control',
+      'calls-misread',
+      `\`${CALLS.script}\` asks git for its index on lines ` +
+        `${list(CALLS.lines.map(String))}, twelve ways, beside six near misses it must not ` +
+        `read; the reader read lines ${list(input.calls.map(String))}. Point 6 ` +
+        'holds a target to what this reader sees, and a form it stopped seeing is a target ' +
+        'it stopped holding',
+    );
+  if (!same(input.called, CALLS.callers))
+    fire(
+      'control',
+      'callers-misread',
+      `the callers over what \`${CALLS.script}\` reaches are ${list(CALLS.callers)}: the ` +
+        'script, and the `.ts` it loads, which asks once — not the module beyond, which asks ' +
+        `nothing. The reader read ${list(input.called)}. Point 6 follows a target to the ` +
+        'callers this reader finds, and a caller it stopped finding is a target it stopped ' +
+        'holding',
+    );
 
   // 4. RUN — point 2 asks whether the names inside a script resolve. This asks whether
   // anything ever reaches the script. `at-pass.mjs` answered yes to the first for a day and
@@ -413,6 +472,39 @@ const checkTools = (input) => {
         '\nnx keys the task on its `inputs`, so an edit to such a module leaves the hash ' +
         'where it was, and a cached target is then answered from the cache. Name the module ' +
         "in the target's `inputs` as written above, beside the script that imports it",
+    );
+
+  // 6. INDEX — point 5 holds a target to the files its scripts load, and the git index is no
+  // file. nx hashes the working tree, so `git add` of a file the tree already holds, or
+  // `git rm --cached` of one it keeps, moves no hash, and a target that asks `git ls-files`
+  // replays the verdict of the index it last ran on: measured 2026-10-02 on all twenty
+  // cached gates that ask, each replaying a pass its direct run failed (`lesson-247`). A
+  // runtime input puts the answer in the hash, and the planner names it under `runtime`,
+  // beside the files — `{workspaceRoot}/**/*` names every file and still not the index.
+  const asking = askingOf(input);
+  if (!asking.length)
+    fire(
+      'index',
+      'nothing-to-read',
+      'no target of the graph runs a script that asks git for its index. Point 6 would then ' +
+        'hold nothing, which is a reading of the call reader and not of the repository',
+    );
+  const blind = asking.filter((t) => !t.runtime.includes(INDEX));
+  if (blind.length)
+    fire(
+      'index',
+      'unhashed',
+      `${blind.length} target(s) run a script that asks \`${INDEX}\` and do not hash the ` +
+        `answer:\n` +
+        blind
+          .map(
+            (t) => `  ${t.id} — ${t.callers.map((m) => `\`${m}\``).join(', ')}`,
+          )
+          .join('\n') +
+        '\nnx hashes the working tree, and the index is no file in it: `git add` of a file ' +
+        'the tree already holds, or `git rm --cached` of one it keeps, moves no hash, and a ' +
+        'cached target then replays the verdict of the index it last ran on. Name `index` — ' +
+        `\`{ "runtime": "${INDEX}" }\` in \`nx.json\` — in the target's \`inputs\``,
     );
 };
 
@@ -557,6 +649,43 @@ const importsFrom = (roots) => {
 const imports = importsFrom(scripts);
 
 /**
+ * Where a file asks git for its index: a line holding a string that names `ls-files` as a word —
+ * a string, a template with no substitution, or any piece of a template, each read alone. A
+ * comment is no string (`lesson-236`). Prose that names the word is read as well, on purpose:
+ * a false positive asks a target for one named input it does not need, a false negative reopens
+ * the route for that target, and three rounds of review found a shell form that a reading of
+ * commands missed each time. The word split across pieces, or built from variables, is not read.
+ * One line per string.
+ */
+const ASKS = /(?<!\w)ls-files(?![\w-])/;
+const STRINGS = [
+  ts.SyntaxKind.StringLiteral,
+  ts.SyntaxKind.NoSubstitutionTemplateLiteral,
+  ts.SyntaxKind.TemplateHead,
+  ts.SyntaxKind.TemplateMiddle,
+  ts.SyntaxKind.TemplateTail,
+];
+const callsOf = (path) => {
+  const source = parse(path);
+  const lines = [];
+  const walk = (node) => {
+    if (STRINGS.includes(node.kind) && ASKS.test(node.text))
+      lines.push(
+        source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+      );
+    ts.forEachChild(node, walk);
+  };
+  walk(source);
+  return lines;
+};
+/** The modules of an import map that ask git for its index — what point 6 follows. */
+const callersOf = (imports) =>
+  Object.keys(imports)
+    .filter((path) => callsOf(path).length)
+    .sort();
+const callers = callersOf(imports);
+
+/**
  * Every target of the graph that runs a tracked script, and the files its `inputs` resolve
  * to. `scripts` are the `.mjs` tokens of its command(s) — under every configuration, since a
  * configuration may swap the command — resolved against the command's `cwd` and kept when the
@@ -568,7 +697,8 @@ const imports = importsFrom(scripts);
  * reading of the patterns: `{projectRoot}`, a `!`, a brace group and a named input such as
  * `default` are then read as the hasher reads them, over the graph as plugins and
  * `targetDefaults` leave it. Measured 2026-10-01: the planner, once built, answered for every
- * target in a fifth of a second, and one invocation of the command took five.
+ * target in a fifth of a second, and one invocation of the command took five. `runtime` comes
+ * from the same answer: the commands whose output the hasher keys the target on.
  */
 const scriptsOf = (def) => {
   const options = def.options ?? {};
@@ -611,19 +741,20 @@ const runsOf = (graph) =>
       })),
     )
     .filter((t) => t.scripts.length || t.unresolved.length);
-const namesOf = (planner, graph, project, target) => {
+const inputsOf = (planner, graph, project, target) => {
   const def = graph.nodes[project].data.targets[target];
   const id = def.defaultConfiguration
     ? `${project}:${target}:${def.defaultConfiguration}`
     : `${project}:${target}`;
-  return planner.inspectTaskInputs({ project, target })[id]?.files ?? null;
+  const inputs = planner.inspectTaskInputs({ project, target })[id];
+  return { names: inputs?.files ?? null, runtime: inputs?.runtime ?? [] };
 };
 const graph = await createProjectGraphAsync({ exitOnError: false });
 const planner = new HashPlanInspector(graph, ROOT);
 await planner.init();
 const targets = runsOf(graph).map((t) => ({
   ...t,
-  names: namesOf(planner, graph, t.project, t.target),
+  ...inputsOf(planner, graph, t.project, t.target),
 }));
 
 // The closure. A gate that runs pulls in what it imports, and that module is as exercised as
@@ -645,6 +776,9 @@ const live = {
   underTools,
   targets,
   imports,
+  callers,
+  calls: callsOf(CALLS.script),
+  called: callersOf(importsFrom([CALLS.script])),
   loads: {
     resolved: resolvedOf(LOADS.script),
     tracked: edgesOf(LOADS.script),
@@ -674,10 +808,11 @@ try {
 /**
  * A case is built ON A COPY of the live reading, so its file holds nothing but its own
  * defect: `scripts` and `tracked` are emptied, replaced or padded, `findings` extended, the
- * two control counts set, a target added to `targets` with its `names` as given or resolved,
- * an edge set in `imports`, what the readers said of their prepared inputs set in `loads` and
- * `runs`. A stored copy of the input is deliberately absent — it would measure the repository
- * as it stood the day somebody stored it (`lesson-207`).
+ * two control counts set, a target added to `targets` with its `names` and `runtime` as given
+ * or resolved, an edge set in `imports`, `callers` extended, what the readers said
+ * of their prepared inputs set in `loads`, `runs` and `calls`. A stored copy of the input is
+ * deliberately absent — it would measure the repository as it stood the day somebody stored
+ * it (`lesson-207`).
  */
 const buildFixture = (base, fx) => {
   const w = structuredClone(base);
@@ -705,9 +840,13 @@ const buildFixture = (base, fx) => {
       scripts: t.scripts,
       unresolved: t.unresolved ?? [],
       names: t.names ?? null,
+      runtime: t.runtime ?? [],
     })),
   );
   Object.assign(w.imports, fx.imports?.set ?? {});
+  w.callers.push(...(fx.callers?.add ?? []));
+  if (fx.calls?.set !== undefined) w.calls = fx.calls.set;
+  if (fx.called?.set !== undefined) w.called = fx.called.set;
   Object.assign(w.loads, fx.loads?.set ?? {});
   for (const id of fx.runs?.drop ?? []) delete w.runs[id];
   for (const [id, read] of Object.entries(fx.runs?.set ?? {}))
@@ -733,7 +872,8 @@ const fixtures = cases.map((name) => [
  * the planner the live reading asked, over a copy of the graph that carries the target under
  * a name of its own — so a pattern over the whole workspace with a `!` beside it is read
  * exactly as nx reads it, and a case at that edge measures the planner rather than a
- * transcription of it. The names land on the case's own entry, where `buildFixture` reads.
+ * transcription of it. The names and the runtime commands land on the case's own entry, where
+ * `buildFixture` reads.
  */
 const prepared = fixtures.flatMap(([, fx]) =>
   (fx.targets?.add ?? []).filter((t) => Array.isArray(t.inputs)),
@@ -751,9 +891,27 @@ if (prepared.length) {
   const second = new HashPlanInspector(copy, ROOT);
   await second.init();
   prepared.forEach((t, i) => {
-    t.names = namesOf(second, copy, t.project, `${t.target}-${i}`);
+    Object.assign(t, inputsOf(second, copy, t.project, `${t.target}-${i}`));
   });
 }
+
+/**
+ * A text a case requires of its message, found with no digit on either side — `1 target(s)`
+ * is not named by `11 target(s)`. The same reading as `check-files` and `check-reach`.
+ */
+const namedIn = (message, named) => {
+  for (
+    let at = message.indexOf(named);
+    at !== -1;
+    at = message.indexOf(named, at + 1)
+  )
+    if (
+      !/[0-9]/.test(message[at - 1] ?? '') &&
+      !/[0-9]/.test(message[at + named.length] ?? '')
+    )
+      return true;
+  return false;
+};
 
 for (const [name, fx] of fixtures) {
   try {
@@ -770,6 +928,30 @@ for (const [name, fx] of fixtures) {
           `(\`${fx.check}\`/\`${fx.rule}\`) was meant to — the case proves something other ` +
           'than what it declares',
       );
+    // What the message has to name, where a case says: a finding that names one target of
+    // two, or the script where the module asks, sends a person to the wrong place and is
+    // green otherwise.
+    else if (
+      fx.names !== undefined &&
+      (!Array.isArray(fx.names) ||
+        !fx.names.length ||
+        fx.names.some((named) => typeof named !== 'string' || !named.trim()))
+    )
+      problems.push(
+        `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
+          'what its message names proves nothing about it, and an empty one is named anywhere',
+      );
+    else {
+      const unnamed = (fx.names ?? []).filter(
+        (named) => !namedIn(error.message, named),
+      );
+      if (unnamed.length)
+        problems.push(
+          `${name}: point ${fx.point} fired on its own rule, and its message does not ` +
+            `name ${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that ` +
+            'sends a person to the wrong place, or to none',
+        );
+    }
   }
 }
 
@@ -786,7 +968,8 @@ process.stdout.write(
     `${live.underTools.filter((n) => live.exercised.includes(n)).length} of the ` +
     `${live.underTools.length} under \`tools/\` run in a pass ` +
     `and the rest carry a reason; ${live.targets.length} target(s) run a script and hash ` +
-    `it with what it loads. ` +
+    `it with what it loads, ${askingOf(live).length} of them asking git for its index and ` +
+    `hashing the answer. ` +
     `Negative control: the prepared defect is reported and the prepared browser names are ` +
     `not, ${cases.length} prepared input(s) rejected on their own points.\n`,
 );

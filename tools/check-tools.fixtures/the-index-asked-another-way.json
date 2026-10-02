@@ -1,0 +1,25 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "unhashed",
+  "what": "the inputs carry a runtime command that starts like the index and is not it — the untracked list, resolved by nx's planner over a copy of the graph; a rule that takes any command beginning with git ls-files passes it",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-hashing-the-untracked",
+        "scripts": ["tools/check-tools.mjs"],
+        "inputs": [
+          "{workspaceRoot}/tools/check-tools.mjs",
+          "{workspaceRoot}/tools/workflow-targets.mjs",
+          { "runtime": "git ls-files --others --exclude-standard" }
+        ]
+      }
+    ]
+  },
+  "callers": { "add": ["tools/check-tools.mjs"] },
+  "names": [
+    "1 target(s) run a script that asks `git ls-files` and do not hash the answer:\n  @org/source:a-gate-hashing-the-untracked — `tools/check-tools.mjs`\nnx"
+  ]
+}
