@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "// sharedGlobals": "Files outside every project whose change has to invalidate everything. An empty `sharedGlobals` would mean that bumping Angular in package.json, or changing paths in tsconfig.base.json, starts NOT ONE task — a pipeline green without having checked anything. Note: values in `namedInputs` must be arrays, so the comment cannot sit inside one.",
+  "// index": "The git index, as the list of tracked paths. nx hashes the working tree, and the index is no file in it: `git add` of a file the tree already holds, or `git rm --cached` of one it keeps, moves no hash, and a target that asks `git ls-files` then replays the verdict of the index it last ran on (measured 2026-10-02, `lesson-247`: each of the twenty cached gates that ask replayed a pass its direct run failed). A target whose script runs `git ls-files` names `index`, which `check-tools` point 6 holds. The command runs on every hash, the daemon's too, in about 6 ms, so the cache is lost only when the list of tracked paths changes. It is the paths alone: no gate reads a staged blob.",
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
@@ -23,7 +24,8 @@
       "{workspaceRoot}/package-lock.json",
       "{workspaceRoot}/tsconfig.base.json",
       "{workspaceRoot}/.github/workflows/ci.yml"
-    ]
+    ],
+    "index": [{ "runtime": "git ls-files" }]
   },
   "// lint": "`targetDefaults.lint` takes the `lint` targets `@nx/eslint/plugin` infers — the filter, because in any other `lint` target `...` expands to nothing and the root config would be its only input — keeps what the plugin infers (`...`: `default`, `^default`, the flat configs, `tools/eslint-rules/**/*`, the version of `eslint`) and names the root flat config once more. The plugin hashes the first root config it finds, `.eslintrc*` before `eslint.config.mjs`, and leaves the root configs out of its own cache key: a stray root `.eslintrc.json`, seen once, kept `eslint.config.mjs` out of the hash of every project with a config of its own after the file was gone, until a file of that project changed, and an edit of the root config replayed a cached pass (measured 2026-09-29). Flat-config ESLint 9 reads neither `.eslintrc*` nor `.eslintignore`, so neither is named. A `targetDefaults` key for `nx:run-commands`, the executor of the inferred target, would win over this one and switch it off; so would a `project.json` that restates the `lint` executor or command, because the target is then that file's and the filter no longer matches it.",
   "targetDefaults": {

@@ -1,0 +1,12 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "calls-misread",
+  "what": "the call reader returned a thirteenth line, the longer word that only starts with ls-files — a reader that stops looking at the end of the word demands the index of every target that names a filesystem",
+  "calls": {
+    "set": [16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 33]
+  },
+  "names": [
+    "the reader read lines `16`, `17`, `18`, `19`, `20`, `21`, `22`, `24`, `25`, `26`, `27`, `28`, `33`. Point"
+  ]
+}

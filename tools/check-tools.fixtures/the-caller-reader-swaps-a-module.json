@@ -1,0 +1,15 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "callers-misread",
+  "what": "the caller reader returned two modules, as many as it should, the module that asks nothing in place of the .ts that asks once — a control that counts the callers passes it",
+  "called": {
+    "set": [
+      "tools/check-tools.fixtures/a-module-that-asks-nothing.mjs",
+      "tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs"
+    ]
+  },
+  "names": [
+    "The reader read `tools/check-tools.fixtures/a-module-that-asks-nothing.mjs`, `tools/check-tools.fixtures/a-script-that-asks-for-the-index.mjs`. Point"
+  ]
+}

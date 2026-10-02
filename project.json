@@ -65,7 +65,8 @@
         "{workspaceRoot}/tools/check-typecheck.fixtures/**/*",
         {
           "externalDependencies": ["typescript"]
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-typecheck.mjs"
@@ -94,7 +95,8 @@
         },
         {
           "dependentTasksOutputFiles": "**/*"
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-tokens.mjs"
@@ -133,7 +135,8 @@
         "{workspaceRoot}/tools/check-parts.fixtures/**/*",
         {
           "dependentTasksOutputFiles": "**/*"
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-parts.mjs"
@@ -149,7 +152,8 @@
         "{workspaceRoot}/docs/components/**/*.md",
         "{workspaceRoot}/tools/check-aria.mjs",
         "{workspaceRoot}/tools/check-aria.fixtures/**/*",
-        { "externalDependencies": ["axe-core", "@angular/compiler"] }
+        { "externalDependencies": ["axe-core", "@angular/compiler"] },
+        "index"
       ],
       "options": {
         "command": "node tools/check-aria.mjs"
@@ -165,7 +169,8 @@
         "{workspaceRoot}/tools/check-forms.fixtures/**/*",
         {
           "externalDependencies": ["@angular/forms"]
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-forms.mjs"
@@ -181,7 +186,8 @@
         "{workspaceRoot}/tools/check-icons.fixtures/**/*",
         {
           "externalDependencies": ["@angular/compiler"]
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-icons.mjs"
@@ -210,7 +216,8 @@
             "@nx/playwright",
             "@axe-core/playwright"
           ]
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-browsers.mjs"
@@ -223,7 +230,8 @@
         "{workspaceRoot}/apps/sandbox-e2e/src/**/*.ts",
         "{workspaceRoot}/apps/docs-e2e/src/**/*.ts",
         "{workspaceRoot}/tools/check-e2e.mjs",
-        "{workspaceRoot}/tools/check-e2e.fixtures/**/*"
+        "{workspaceRoot}/tools/check-e2e.fixtures/**/*",
+        "index"
       ],
       "options": {
         "command": "node tools/check-e2e.mjs"
@@ -245,7 +253,8 @@
         "{workspaceRoot}/tools/check-language.fixtures/**/*",
         {
           "dependentTasksOutputFiles": "**/*"
-        }
+        },
+        "index"
       ],
       "options": {
         "command": "node tools/check-language.mjs"
@@ -258,7 +267,8 @@
         "{workspaceRoot}/**/*",
         "{workspaceRoot}/tools/check-reach.mjs",
         "{workspaceRoot}/tools/reach.policy.json",
-        "{workspaceRoot}/tools/check-reach.fixtures/**/*"
+        "{workspaceRoot}/tools/check-reach.fixtures/**/*",
+        "index"
       ],
       "options": {
         "command": "node tools/check-reach.mjs"
@@ -318,7 +328,8 @@
         "{workspaceRoot}/.prettierrc",
         "{workspaceRoot}/package.json",
         "{workspaceRoot}/{package.yaml,.prettierrc.*,prettier.config.*}",
-        "{workspaceRoot}/docs/{package.json,package.yaml,.prettierrc*,prettier.config.*}"
+        "{workspaceRoot}/docs/{package.json,package.yaml,.prettierrc*,prettier.config.*}",
+        "index"
       ],
       "options": {
         "command": "node tools/check-acr.mjs"
@@ -351,7 +362,8 @@
         "{workspaceRoot}/tools/check-prose.fixtures/**/*",
         "{workspaceRoot}/docs/plan.md",
         "{workspaceRoot}/docs/prose.snapshot.md",
-        { "externalDependencies": ["prettier"] }
+        { "externalDependencies": ["prettier"] },
+        "index"
       ],
       "options": {
         "command": "node tools/check-prose.mjs"
@@ -382,7 +394,8 @@
         "{workspaceRoot}/.github/workflows/nightly.yml",
         "{workspaceRoot}/tools/check-tools.mjs",
         "{workspaceRoot}/tools/tools.policy.json",
-        "{workspaceRoot}/tools/check-tools.fixtures/**/*"
+        "{workspaceRoot}/tools/check-tools.fixtures/**/*",
+        "index"
       ],
       "options": {
         "command": "node tools/check-tools.mjs"
@@ -397,7 +410,7 @@
           "target": "build"
         }
       ],
-      "inputs": ["{workspaceRoot}/**/*"],
+      "inputs": ["{workspaceRoot}/**/*", "index"],
       "options": {
         "command": "node tools/check-docs.mjs"
       }

@@ -1,0 +1,42 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "unhashed",
+  "what": "the first and the last of three asking targets are blind and the middle one hashes the index; the last reaches two callers, its script and the module it imports — a message that names one end of either list, or drops a separator, sends a person to half the work",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "the-first-blind-gate",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/a-gate.mjs"]
+      },
+      {
+        "project": "@org/source",
+        "target": "a-hashed-gate",
+        "scripts": ["tools/b-gate.mjs"],
+        "names": ["tools/b-gate.mjs"],
+        "runtime": ["git ls-files"]
+      },
+      {
+        "project": "@org/source",
+        "target": "the-last-blind-gate",
+        "scripts": ["tools/c-gate.mjs"],
+        "names": ["tools/c-gate.mjs", "tools/c-module.mjs"]
+      }
+    ]
+  },
+  "imports": { "set": { "tools/c-gate.mjs": ["tools/c-module.mjs"] } },
+  "callers": {
+    "add": [
+      "tools/a-gate.mjs",
+      "tools/b-gate.mjs",
+      "tools/c-gate.mjs",
+      "tools/c-module.mjs"
+    ]
+  },
+  "names": [
+    "2 target(s) run a script that asks `git ls-files` and do not hash the answer:\n  @org/source:the-first-blind-gate — `tools/a-gate.mjs`\n  @org/source:the-last-blind-gate — `tools/c-gate.mjs`, `tools/c-module.mjs`\nnx"
+  ]
+}

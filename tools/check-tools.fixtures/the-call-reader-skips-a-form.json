@@ -1,0 +1,12 @@
+{
+  "point": 3,
+  "check": "control",
+  "rule": "calls-misread",
+  "what": "the call reader returned eleven of the prepared script's twelve calls — the one in the middle piece of a template missing, the shape of a reader that reads a template's ends alone; a target asking that way would leave point 6 without a word",
+  "calls": {
+    "set": [16, 17, 18, 19, 21, 22, 24, 25, 26, 27, 28]
+  },
+  "names": [
+    "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "nothing-to-read",
+  "what": "the graph hands one target, and its script reaches no module that asks git for its index while such modules exist — point 6 would hold nothing, and a count of the callers alone would call it measured",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-gate-asking-nothing",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/a-gate.mjs"]
+      }
+    ]
+  },
+  "names": ["no target of the graph runs a script that asks git for its index"]
+}

@@ -1,0 +1,37 @@
+{
+  "point": 6,
+  "check": "index",
+  "rule": "unhashed",
+  "what": "three targets ask git ls-files, the first and the last hash the answer behind another runtime command, the middle one does not — a rule that reads one end of the list, or the first runtime command alone, misses it or names all three",
+  "targets": {
+    "clear": true,
+    "add": [
+      {
+        "project": "@org/source",
+        "target": "a-hashed-gate",
+        "scripts": ["tools/a-gate.mjs"],
+        "names": ["tools/a-gate.mjs"],
+        "runtime": ["git rev-parse --show-toplevel", "git ls-files"]
+      },
+      {
+        "project": "@org/source",
+        "target": "the-blind-gate",
+        "scripts": ["tools/b-gate.mjs"],
+        "names": ["tools/b-gate.mjs"]
+      },
+      {
+        "project": "@org/source",
+        "target": "another-hashed-gate",
+        "scripts": ["tools/c-gate.mjs"],
+        "names": ["tools/c-gate.mjs"],
+        "runtime": ["git rev-parse --show-toplevel", "git ls-files"]
+      }
+    ]
+  },
+  "callers": {
+    "add": ["tools/a-gate.mjs", "tools/b-gate.mjs", "tools/c-gate.mjs"]
+  },
+  "names": [
+    "1 target(s) run a script that asks `git ls-files` and do not hash the answer:\n  @org/source:the-blind-gate — `tools/b-gate.mjs`\nnx"
+  ]
+}
