@@ -57,6 +57,7 @@ const SNAPSHOT = `${PROJECT}/size.snapshot.md`;
 const TOOLCHAIN = [
   '@angular/core',
   '@angular/compiler-cli',
+  '@babel/core',
   '@angular/build',
   'ng-packagr',
   'esbuild',

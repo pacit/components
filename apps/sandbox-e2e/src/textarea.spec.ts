@@ -9,9 +9,11 @@ import { boxOf, visit } from './support/dom';
  * never the geometry ([`autosize.spec.ts`](../../../libs/components/field/src/autosize.spec.ts)).
  *
  * The file is also **two implementations under one set of assertions**
- * ([0041](../../../docs/decisions/0041-a-height-the-platform-computes.md)): chromium and
- * webkit are laid out by `field-sizing: content`, firefox is measured in script, and the
- * point of asking the same questions of all three is that the answers have to agree.
+ * ([0041](../../../docs/decisions/0041-a-height-the-platform-computes.md)): a browser with
+ * `field-sizing: content` is laid out by it, one without is measured in script, and the
+ * same questions have to get the same answers on both roads. Since firefox 155 all three
+ * engines here are on the first road, so the second has no engine in this file — the last
+ * case below records that, and the plan holds the decision it leaves open.
  */
 
 /** A line of the field, read from the control rather than assumed. */

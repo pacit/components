@@ -27,6 +27,7 @@ nothing here recorded what the numbers had been produced BY
 
 - @angular/core 22.2.1
 - @angular/compiler-cli 22.2.1
+- @babel/core 8.0.6
 - @angular/build 22.2.1
 - ng-packagr 22.2.4
 - esbuild 0.28.2

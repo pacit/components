@@ -1,9 +1,9 @@
-# Dependabot keeps the dependency drift visible: without it, 2026-10-02 found the tree three
+# Dependabot keeps the dependency drift visible: without it, 2026-10-02 found the tree two
 # Angular minors and 65 audit findings behind, and nothing had said so.
 #
 # Nx and everything it migrates are left out on purpose. `nx migrate` moves them together and
 # runs the code migrations that come with them; a Dependabot bump of `@nx/*` or Angular alone
-# would change the versions without the migrations, so they move by `nx migrate latest`.
+# would change the versions without the migrations, so they move with `nx migrate`.
 version: 2
 updates:
   - package-ecosystem: npm
