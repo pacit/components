@@ -375,6 +375,49 @@ describe('@pacit/components/icon', () => {
     expect(ProbeSet.built).toBe(1);
   });
 
+  it('a set component answers null for an id it has no template for, and the content stands', async () => {
+    @Component({
+      imports: [PctIcon],
+      template: `<pct-icon icon="nobody-drew-this" data-testid="box"
+        ><svg data-built-in="own"></svg
+      ></pct-icon>`,
+    })
+    class Host {}
+    const fixture = await mount(Host, providePctIcons(ProbeSet));
+    expect(
+      (icon(fixture, 'box').firstElementChild as HTMLElement).dataset[
+        'builtIn'
+      ],
+    ).toBe('own');
+  });
+
+  it('a source with no roles map leaves every role alone, and answers ids as it can', async () => {
+    const bare: PctIconSource = {
+      resolve: (id) =>
+        id === 'bare' ? { kind: 'font', class: 'bare bare-glyph' } : null,
+    };
+    @Component({
+      imports: [PctIcon],
+      template: `
+        <pct-icon name="check" data-testid="role"
+          ><svg data-built-in="check"></svg
+        ></pct-icon>
+        <pct-icon icon="bare" data-testid="id" />
+      `,
+    })
+    class Host {}
+    const fixture = await mount(Host, providePctIcons(bare));
+    // `roles` is optional on purpose: a source written as `{ resolve }` is a whole source.
+    expect(
+      (icon(fixture, 'role').firstElementChild as HTMLElement).dataset[
+        'builtIn'
+      ],
+    ).toBe('check');
+    expect(icon(fixture, 'id').firstElementChild?.className).toBe(
+      'pct-icon__glyph bare bare-glyph',
+    );
+  });
+
   it('a component source creates the component in the box, with its inputs', async () => {
     @Component({
       selector: 'pct-probe-glyph',
@@ -514,6 +557,19 @@ describe('@pacit/components/icon', () => {
         'own — it renders as nothing. Register a source with `providePctIcons()`, or ' +
         'write the drawing as content.',
     ]);
+  });
+
+  it('whitespace is no drawing: an id no source answers over a box of blanks says so', async () => {
+    @Component({
+      imports: [PctIcon],
+      // A non-breaking space, because the compiler strips plain whitespace out of a
+      // template before the box ever sees it; `trim()` strips this one as well.
+      template: `<pct-icon icon="blank-space">&nbsp;</pct-icon>`,
+    })
+    class Host {}
+    const said = await warned(Host);
+    expect(said).toHaveLength(1);
+    expect(said[0]).toContain('No source answers for `blank-space`');
   });
 
   it('an id no source answers is quiet over a box that holds a drawing or a glyph of text', async () => {

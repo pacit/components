@@ -19,7 +19,7 @@ import { primeIcons, providePctIcons } from '@pacit/components/icon';
   styles: ':host { display: inline-flex; align-items: center; gap: 12px; }',
   template: `
     <pct-avatar />
-    <pct-checkbox [checked]="true">PrimeIcons</pct-checkbox>
+    <pct-checkbox label="PrimeIcons" [checked]="true" />
   `,
 })
 export class IconDressedCard {}
@@ -44,7 +44,7 @@ export class IconDressedCard {}
     <demo-icon-dressed-card />
     <span class="plain">
       <pct-avatar />
-      <pct-checkbox [checked]="true">Built in</pct-checkbox>
+      <pct-checkbox label="Built in" [checked]="true" />
     </span>
   `,
 })

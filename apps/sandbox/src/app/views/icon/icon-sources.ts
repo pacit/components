@@ -86,9 +86,11 @@ export const SBX_GLYPHS: PctIconSource = iconFont({
   imports: [PctAvatar, PctCheckbox],
   template: `
     <pct-avatar data-testid="dressed-avatar" />
-    <pct-checkbox [checked]="true" data-testid="dressed-checkbox"
-      >Done</pct-checkbox
-    >
+    <pct-checkbox
+      label="Done"
+      [checked]="true"
+      data-testid="dressed-checkbox"
+    />
   `,
   styles: `
     :host {
@@ -100,6 +102,15 @@ export const SBX_GLYPHS: PctIconSource = iconFont({
   providers: [providePctIcons(SBX_GLYPHS)],
 })
 export class SbxIconDressed {}
+
+/**
+ * The same glyph font with NO roles map, for the view to provide: a source that carries no
+ * roles leaves every component's drawing alone, which is what lets the plain pair beside the
+ * dressed card draw what it ships with while the font still answers `icon="chevron"`.
+ */
+export const SBX_GLYPHS_ALONE: PctIconSource = iconFont({
+  class: (id) => `sbx-glyph sbx-glyph-${id}`,
+});
 
 /** The sandbox's drawings as a source, for the view to provide. */
 export const SBX_ICONS = svgIcons(SBX_DRAWINGS);
