@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { iconFont } from './fonts';
-import { PctIcon, PctIconTemplate, providePctIcons } from './icon';
+import { PCT_ICONS, PctIcon, PctIconTemplate, providePctIcons } from './icon';
 import type { PctIconSource } from './source.types';
 
 /**
@@ -415,6 +415,30 @@ describe('@pacit/components/icon', () => {
     ).toBe('check');
     expect(icon(fixture, 'id').firstElementChild?.className).toBe(
       'pct-icon__glyph bare bare-glyph',
+    );
+  });
+
+  it('a set provided under PCT_ICONS the way 0.1.0 wrote it still draws, and stands first', async () => {
+    @Component({
+      imports: [PctIcon],
+      template: `
+        <pct-icon name="check" data-testid="check"><svg></svg></pct-icon>
+        <pct-icon name="indeterminate" data-testid="dash"><svg></svg></pct-icon>
+      `,
+    })
+    class Host {}
+    // The token keeps its 0.1.0 shape — ONE component type — so a consumer who provided it
+    // directly, or reads it, compiles and runs as before; the registry reads it ahead of
+    // everything `providePctIcons` carries.
+    const fixture = await mount(Host, [
+      { provide: PCT_ICONS, useValue: ProbeSet },
+      ...providePctIcons(probeFont({ check: 'x', indeterminate: 'dash' })),
+    ]);
+    expect(
+      (icon(fixture, 'check').firstElementChild as HTMLElement).dataset['set'],
+    ).toBe('check');
+    expect(icon(fixture, 'dash').firstElementChild?.className).toBe(
+      'pct-icon__glyph x x-dash',
     );
   });
 

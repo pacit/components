@@ -7064,15 +7064,15 @@ the same law was met one floor up, inside that entrypoint. The icon box learned 
 (0083), and the first cut put the SVG renderer — a component with a seven-case template and an
 attribute directive — in `./icon` beside the box. `check-bundle` read the fourteen entrypoints
 that import `./icon` and every one of them had grown by 3558 B: `./accordion` from 11564 to
-15122 (on Angular 22.0.6; the final rows of the change read 11652 and 15252 on 22.2.1),
+15122 (on Angular 22.0.6; the rows `size.snapshot.md` holds are the final ones, on 22.2.1),
 for a renderer no accordion ever creates. The font adapters in the same file cost those
 rows nothing — plain functions over constant maps, and esbuild dropped them; a probe of the
 accordion over the built package held not one of their strings.
 
-Moved to `@pacit/components/svg-icon`, the renderer is a row of its own (5523 B first, 6030 B
-once review added the paint-value rule and the address trim), and the fourteen rows moved by what the BOX learned instead: about 3.5 kB each
+Moved to `@pacit/components/svg-icon`, the renderer is a row of its own (5523 B when first measured; the snapshot holds
+the final figure, the paint-value rule and the address trim of review in it), and the fourteen rows moved by what the BOX learned instead: about 3.5 kB each
 for three kinds of rendering, five inputs, four tones and three sizes in the sheet — `./icon`
-itself from 2552 to 8026 B. That growth was kept, in the
+itself from 2552 B to the figure the snapshot holds. That growth was kept, in the
 one visible diff the snapshot exists for. The rule the two measurements make together: a
 component the box does not create belongs to the source that names it, in an entrypoint only
 that source imports — and the question is answered by `size.snapshot.md`, never by reading the

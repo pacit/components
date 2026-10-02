@@ -59,7 +59,7 @@ one differently. `@pacit/components/svg-icon` carries the renderer and `svgIcons
 tabler node list, a FontAwesome SVG definition, or a drawing written out) with `svgSprite()`;
 it is an entrypoint of its own because a component in a barrel is not shaken out the way a
 function is, and measured in `./icon` it put 3558 B on every entrypoint that draws an arrow
-(the final rows: `./accordion` 11652 → 15252 on Angular 22.2.1; [`lesson-248`](../lessons.md#lesson-248)). Sources are asked in order: the first that answers
+(`size.snapshot.md` holds the final rows; [`lesson-248`](../lessons.md#lesson-248)). Sources are asked in order: the first that answers
 draws, a font or a sprite answers for every id and so stands last.
 
 ## Parts

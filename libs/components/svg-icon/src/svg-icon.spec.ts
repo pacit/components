@@ -420,6 +420,53 @@ describe('@pacit/components/svg-icon', () => {
       }
     });
 
+    it('a CSS escape spells `url` without writing it, so a value holding a backslash is refused; a quoted local reference is kept', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        @Component({
+          imports: [PctSvgIcon],
+          template: `<pct-svg-icon [data]="data" />`,
+        })
+        class Host {
+          readonly data: PctSvgIconData = {
+            viewBox: '0 0 1 1',
+            // The tokenizer reads `u\\72l(` and `\\75rl(` as `url(` — measured in chromium,
+            // where both fetched a paint server the regex over the raw text let through.
+            attributes: {
+              fill: 'u\\72l(https://evil.example/a.svg#g)',
+              stroke: '\\75rl(https://evil.example/b.svg#g)',
+            },
+            nodes: [
+              [
+                'path',
+                { d: 'M0 0', fill: 'url("#quoted")', stroke: "url('#single')" },
+              ],
+              [
+                'rect',
+                { x: 0, fill: 'url(#a) url(https://evil.example/c.svg#g)' },
+              ],
+            ],
+          };
+        }
+        const fixture = await mount(Host);
+        const svg = svgOf(fixture);
+        expect(svg.hasAttribute('fill')).toBe(false);
+        expect(svg.hasAttribute('stroke')).toBe(false);
+        expect(svg.querySelector('path')?.getAttribute('fill')).toBe(
+          'url("#quoted")',
+        );
+        expect(svg.querySelector('path')?.getAttribute('stroke')).toBe(
+          "url('#single')",
+        );
+        expect(svg.querySelector('rect')?.hasAttribute('fill')).toBe(false);
+        expect(warn).toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
     it('an address is read the way a URL parser reads it: blanks and controls around a scheme hide nothing', async () => {
       const warn = vi
         .spyOn(console, 'warn')
@@ -484,6 +531,7 @@ describe('@pacit/components/svg-icon', () => {
           <pct-svg-icon [data]="noNodes" />
           <pct-svg-icon [data]="nullNode" />
           <pct-svg-icon [data]="nullAttributes" />
+          <pct-svg-icon [data]="nodesNotAList" />
         `,
       })
       class Host {
@@ -497,12 +545,16 @@ describe('@pacit/components/svg-icon', () => {
           attributes: null,
           nodes: [],
         } as unknown as PctSvgIconData;
+        readonly nodesNotAList = {
+          viewBox: '0 0 1 1',
+          nodes: { 0: ['path', { d: 'M0 0' }] },
+        } as unknown as PctSvgIconData;
       }
       const fixture = await mount(Host);
       const svgs = [
         ...fixture.nativeElement.querySelectorAll('svg'),
       ] as SVGSVGElement[];
-      expect(svgs).toHaveLength(3);
+      expect(svgs).toHaveLength(4);
       for (const svg of svgs) expect(svg.children).toHaveLength(0);
       expect(svgs[0].getAttribute('viewBox')).toBe('0 0 1 1');
     });

@@ -78,8 +78,8 @@ Five sentences, and each is a measurement or a refusal.
    `--pct-icon-fg-<tone>`, the size steps `--pct-icon-size(-sm|-lg)`, the label turns
    `aria-hidden` into `role="img"`. The SVG renderer is `@pacit/components/svg-icon`, an
    entrypoint of its own: measured in `./icon` it cost 3558 B on every one of the fourteen
-   entrypoints that draw an arrow (on Angular 22.0.6; the final rows `size.snapshot.md` holds read
-   11652 and 15252 on 22.2.1, with the box's own growth in them), because a component in a barrel is not shaken out the way a
+   entrypoints that draw an arrow (on Angular 22.0.6; the rows `size.snapshot.md` holds are the final ones, the
+   box's own growth in them), because a component in a barrel is not shaken out the way a
    function is ([`lesson-248`](../lessons.md#lesson-248), the same law as
    [`lesson-86`](../lessons.md#lesson-86)). The box itself grew by what it learned, and that
    growth stands in `size.snapshot.md` as fourteen visible lines.
@@ -104,12 +104,12 @@ unseen here too: one and the same glyph in two tones meaning two states.
 
 ## Consequences
 
-- `PCT_ICONS` carries a list of sets and sources where it carried one component type. No
-  file in this repository injects it (measured: `grep -rn "inject(PCT_ICONS"` finds the
-  registry alone), `providePctIcons` is the API and every call of it that compiled before
-  compiles unchanged — but a consumer's own `inject(PCT_ICONS)` would stop compiling, so the
-  change is **marked breaking** in the release record rather than hoped past. No migration:
-  a schematic cannot know what a consumer did with the type it read.
+- **Two tokens, no breaking change.** `PCT_ICONS` keeps the shape 0028 gave it — one
+  component type — and the registry reads it first; `providePctIcons(…)` provides the new
+  `PCT_ICON_SOURCES`, the list. The first cut widened `PCT_ICONS` itself and called the
+  widening harmless because no file here injects it; review read that as a hope about
+  consumers, and a consumer's `{ provide: PCT_ICONS, useValue: MySet }` would have crashed
+  on the first `map`. A second token costs one declaration and no release record.
 - An icon of a consumer's and an icon of the library's are the same element, with the same
   box, so a tone or a size step reaches both — and the library's components keep naming roles,
   never ids (`check-icons` point 3).

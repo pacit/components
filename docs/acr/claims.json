@@ -27,7 +27,7 @@
         },
         {
           "source": "libs/components/icon/src/icon.ts",
-          "says": "'[attr.aria-hidden]': 'label() === null ? \"true\" : null'"
+          "says": "'[attr.aria-hidden]': 'named() === null ? \"true\" : null'"
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",

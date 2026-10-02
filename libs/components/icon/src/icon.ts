@@ -76,20 +76,29 @@ export type PctIconName =
 export type PctIconSetOrSource = Type<unknown> | PctIconSource;
 
 /**
- * The consumer's icons, in order of precedence: set components and sources alike.
+ * ONE set component, as [0028](../../../../docs/decisions/0028-an-icon-set-is-a-component.md)
+ * wrote it — kept in that shape so that whoever read or provided it keeps compiling and
+ * running. A set standing here is read first, before everything `PCT_ICON_SOURCES` carries.
  *
  * The shape of the set is a measurement rather than a taste. A registry maps a name onto
  * markup, the only thing in Angular that carries markup a consumer wrote is a `TemplateRef`,
  * and a `TemplateRef` cannot exist without a component to live in — so the value a provider
- * holds is the component ([0028](../../../../docs/decisions/0028-an-icon-set-is-a-component.md),
- * [`lesson-85`](../../../../docs/lessons.md#lesson-85)). A source holds no markup at all,
- * which is why it can be a plain object.
+ * holds is the component ([`lesson-85`](../../../../docs/lessons.md#lesson-85)).
  *
  * @since 0.1.0
  */
-export const PCT_ICONS = new InjectionToken<readonly PctIconSetOrSource[]>(
-  'PCT_ICONS',
-);
+export const PCT_ICONS = new InjectionToken<Type<unknown>>('PCT_ICONS');
+
+/**
+ * The consumer's icons, in order of precedence: set components and sources alike — what
+ * `providePctIcons(…)` provides ([0083](../../../../docs/decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
+ * A source holds no markup at all, which is why it can be a plain object.
+ *
+ * @since next
+ */
+export const PCT_ICON_SOURCES = new InjectionToken<
+  readonly PctIconSetOrSource[]
+>('PCT_ICON_SOURCES');
 
 /**
  * Registers the application's icons, for the whole application or for one subtree
@@ -124,7 +133,7 @@ export const PCT_ICONS = new InjectionToken<readonly PctIconSetOrSource[]>(
  * @since 0.1.0
  */
 export function providePctIcons(...sources: PctIconSetOrSource[]): Provider[] {
-  return [{ provide: PCT_ICONS, useValue: sources }, PctIconSet];
+  return [{ provide: PCT_ICON_SOURCES, useValue: sources }, PctIconSet];
 }
 
 /**
@@ -222,7 +231,9 @@ class PctIconComponentSource implements PctIconSource {
  */
 @Injectable()
 class PctIconSet {
-  private readonly entries = inject(PCT_ICONS);
+  /** The one set of 0028, if somebody still provides it that way; it stands first. */
+  private readonly legacy = inject(PCT_ICONS, { optional: true });
+  private readonly entries = inject(PCT_ICON_SOURCES, { optional: true }) ?? [];
   private readonly parent = inject(EnvironmentInjector);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -250,7 +261,10 @@ class PctIconSet {
   }
 
   private all(): readonly PctIconSource[] {
-    this.sources ??= this.entries.map((entry) =>
+    this.sources ??= [
+      ...(this.legacy === null ? [] : [this.legacy]),
+      ...this.entries,
+    ].map((entry) =>
       typeof entry === 'function'
         ? new PctIconComponentSource(entry, this.parent, this.destroyRef)
         : entry,

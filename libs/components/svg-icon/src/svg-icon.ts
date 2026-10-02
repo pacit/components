@@ -71,10 +71,14 @@ const ATTRIBUTES = new Set([
 /**
  * A paint value that names an address: `fill="url(https://…)"` makes a browser fetch a paint
  * server from wherever the data says — Chromium across origins, measured — so a `url(` in a
- * value is refused unless it is a reference into the document itself, `url(#id)`.
+ * value is refused unless it is a reference into the document itself, `url(#id)`, bare or
+ * quoted. A value holding a backslash is refused outright: the CSS tokenizer unescapes
+ * `u\72l(` to `url(` before it decides what the word is (measured in review), and an
+ * escape is the only way to spell `url` without writing it.
  */
 const ADDRESS = /url\s*\(/i;
-const LOCAL = /^url\(\s*#[^()]*\)$/i;
+const LOCAL = /^url\(\s*(["']?)#[^()"']*\1\s*\)$/i;
+const ESCAPE = '\\';
 
 /**
  * An address that names a scheme at all, and the two schemes a sprite may come from. The
@@ -150,7 +154,10 @@ export class PctSvgAttributes {
           continue;
         }
         const text = String(value);
-        if (ADDRESS.test(text) && !LOCAL.test(text)) {
+        if (
+          text.includes(ESCAPE) ||
+          (ADDRESS.test(text) && !LOCAL.test(text))
+        ) {
           if (isDevMode() && !dropped.has(`${name}=url`)) {
             dropped.add(`${name}=url`);
             console.warn(
@@ -229,9 +236,10 @@ export class PctSvgIcon {
   });
   protected readonly viewBox = computed(() => this.data()?.viewBox ?? null);
   protected readonly attributes = computed(() => this.data()?.attributes ?? {});
-  protected readonly nodes = computed(() =>
-    (this.data()?.nodes ?? []).filter(isNode),
-  );
+  protected readonly nodes = computed(() => {
+    const nodes: unknown = this.data()?.nodes;
+    return Array.isArray(nodes) ? nodes.filter(isNode) : [];
+  });
 }
 
 /** The 24-grid and the stroke conventions the Tabler icons and their kin draw with. */
