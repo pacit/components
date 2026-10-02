@@ -41,6 +41,7 @@
     "theme/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
+    "svg-icon/**/*.ts",
     "testing/**/*.ts"
   ]
 }

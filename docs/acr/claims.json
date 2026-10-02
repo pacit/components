@@ -15,7 +15,7 @@
     {
       "id": "1.1.1",
       "conformance": "Supports",
-      "remarks": "The library draws no image that carries meaning on its own. Icons stand inside `<pct-icon>` with `aria-hidden` and take their meaning from the control that holds them; a control's accessible name is written on the tag the consumer types and forwarded to the element that carries the role, so a name is never written where nothing reads it. The words of a name are the consumer's.",
+      "remarks": "The library draws no image that carries meaning on its own. Icons stand inside `<pct-icon>` with `aria-hidden` and take their meaning from the control that holds them; a control's accessible name is written on the tag the consumer types and forwarded to the element that carries the role, so a name is never written where nothing reads it. The words of a name are the consumer's. An icon of the consumer's that IS the information takes a `label`, and is then `role=\"img\"` under that name — the two attributes move together, so a name never stands on a hidden element.",
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
@@ -27,7 +27,7 @@
         },
         {
           "source": "libs/components/icon/src/icon.ts",
-          "says": "'aria-hidden': 'true'"
+          "says": "'[attr.aria-hidden]': 'named() === null ? \"true\" : null'"
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",

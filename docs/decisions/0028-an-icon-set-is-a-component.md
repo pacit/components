@@ -70,6 +70,11 @@ The plan put it in the behaviour layer; the measurement moved it
 
 ## Consequences
 
+- **Since [0083](0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md) the set
+  is one source among others** (2026-10-02): `providePctIcons(…)` takes set components and
+  plain sources in order of precedence, and a set's template names are its roles and its ids
+  alike. Nothing here changes — the set is still a component, the box is still the contract —
+  and the layer now answers the consumer's own icons as well as the library's roles.
 - `PctIconName` is public API in the strong sense of
   [`req-api-parts`](../requirements/api.md#req-api-parts): a name cannot be renamed without a
   migration, and `check-icons` point 5 keeps the list and the drawings equal in both

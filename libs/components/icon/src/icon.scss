@@ -1,7 +1,7 @@
 /* The box an icon is drawn in. The size is the text's own (`1em`) until the component that
-   draws it says otherwise, and the colour is inherited — a drawing paints itself in
-   `currentColor`, so a swapped icon takes the colour of the state it stands in without
-   knowing anything about it (0011). */
+   draws it — or the `size` step — says otherwise, and the colour is inherited: a drawing
+   paints itself in `currentColor`, so a swapped icon takes the colour of the state it stands
+   in without knowing anything about it (0011). */
 :host {
   display: inline-flex;
   align-items: center;
@@ -9,4 +9,55 @@
   flex: none;
   width: 1em;
   height: 1em;
+}
+
+/* A glyph of an icon font fills the box the way an `<svg>` at 100% does. `font-size: 1em`
+   is not a default restated: Material's stylesheets set their glyphs to 24px outright, and
+   the box — not the font — decides how big an icon is. One class and the host's scope
+   outrank one class of the font's sheet, so no `!important` is needed. */
+.pct-icon__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1em;
+  line-height: 1;
+}
+
+/* A size step re-points the box off the icon's own scale (`req-api-attributes`). There is
+   no rule for the unstepped icon: with no `size` the host carries no `data-pct-size` and the
+   box stays `1em`, which is what an icon beside text wants. `md` is the base token with no
+   suffix, as everywhere in the skin (`req-api-size`). */
+:host([data-pct-size='sm']) {
+  font-size: var(--pct-icon-size-sm);
+}
+
+:host([data-pct-size='md']) {
+  font-size: var(--pct-icon-size);
+}
+
+:host([data-pct-size='lg']) {
+  font-size: var(--pct-icon-size-lg);
+}
+
+/* A tone paints the box in the skin's colour for it, and the drawing follows through
+   `currentColor`. The four are the library's four (0076), one list and not a second one.
+   No forced-colours block: the mode forces `color` itself, so a toned icon arrives at the
+   palette's word for the text around it with no rule here — and the SHAPE is what is left,
+   which is the whole reason an icon may wear a tone at all. */
+:host([data-pct-tone='success']) {
+  color: var(--pct-icon-fg-success);
+}
+
+:host([data-pct-tone='warning']) {
+  color: var(--pct-icon-fg-warning);
+}
+
+:host([data-pct-tone='danger']) {
+  color: var(--pct-icon-fg-danger);
+}
+
+:host([data-pct-tone='info']) {
+  color: var(--pct-icon-fg-info);
 }

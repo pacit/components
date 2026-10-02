@@ -101,3 +101,39 @@ body {
 code {
   font-family: ui-monospace, monospace;
 }
+
+/* The sandbox's icon FONT: six glyphs drawn by `::before`, standing in for the font file a
+   real icon font ships. The icon view registers it through `iconFont()` keyed on these
+   classes, so what the suite measures is the mechanism — the span the box holds, the
+   classes it wears, the roles map that dresses the library — and not somebody's font. Global
+   for the reason the demo layout is: the span is rendered inside `pct-icon`, where a view's
+   scoped styles do not reach. */
+.sbx-glyph {
+  font-family: 'Inter var', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sbx-glyph-check::before {
+  content: '✓';
+}
+
+.sbx-glyph-x::before {
+  content: '✕';
+}
+
+.sbx-glyph-chevron::before {
+  content: '▾';
+}
+
+.sbx-glyph-user::before {
+  content: '☻';
+}
+
+.sbx-glyph-dash::before {
+  content: '–';
+}
+
+.sbx-glyph-calendar::before {
+  content: '▦';
+}

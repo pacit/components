@@ -33,6 +33,7 @@ export const SBX_ROUTES = [
   '/chips',
   '/avatar',
   '/badge',
+  '/icon',
   '/breadcrumb',
   '/hero',
   '/stepper',

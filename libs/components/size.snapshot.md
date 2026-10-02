@@ -44,40 +44,41 @@ before an application ships them.
 
 ```
 . 3706 ./core @angular/core
-./accordion 11652 ./core,./icon @angular/common,@angular/core
-./avatar 8735 ./core,./icon @angular/common,@angular/core
+./accordion 15370 ./core,./icon @angular/common,@angular/core
+./avatar 12453 ./core,./icon @angular/common,@angular/core
 ./badge 2357 - @angular/core
-./breadcrumb 9312 ./core,./icon @angular/common,@angular/core
+./breadcrumb 13030 ./core,./icon @angular/common,@angular/core
 ./button 13391 ./core @angular/core
-./checkbox 15149 ./core,./icon @angular/common,@angular/core
-./chips 11464 ./core,./icon @angular/common,@angular/core
+./checkbox 18867 ./core,./icon @angular/common,@angular/core
+./chips 15182 ./core,./icon @angular/common,@angular/core
 ./container 725 - @angular/core
 ./core 8271 - @angular/core
-./date 40122 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 16542 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 15762 ./core,./icon @angular/common,@angular/core
+./date 43847 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 20260 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 19480 ./core,./icon @angular/common,@angular/core
 ./field 28504 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
-./icon 2552 - @angular/common,@angular/core
+./icon 8165 - @angular/common,@angular/core
 ./menu 20499 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./pagination 13909 ./core,./icon @angular/common,@angular/core
+./pagination 17627 ./core,./icon @angular/common,@angular/core
 ./popover 14783 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 11831 ./core,./icon @angular/common,@angular/core
+./progress 15549 ./core,./icon @angular/common,@angular/core
 ./radio 15724 ./core @angular/core
 ./regions 5482 ./core @angular/core
-./select 70649 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./select 74374 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3730 - @angular/core
 ./slider 17754 ./core @angular/core
 ./stack 891 - @angular/core
-./stepper 10832 ./core,./icon @angular/common,@angular/core
+./stepper 14550 ./core,./icon @angular/common,@angular/core
+./svg-icon 6097 - @angular/core
 ./switch 12726 ./core @angular/core
 ./tabs 16364 ./core @angular/core
-./testing 8129 - @angular/cdk/testing
+./testing 8218 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 20216 ./core,./icon @angular/common,@angular/core
+./toast 23932 ./core,./icon @angular/common,@angular/core
 ./tooltip 13381 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./tree 9220 ./icon @angular/common,@angular/core
+./tree 12928 ./icon @angular/common,@angular/core
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows
@@ -126,15 +127,15 @@ injector — the query IS the claim — and no component in this package declare
 is worth, and it is the largest single number this file has ever moved.
 
 ```
-./accordion PctAccordion 2 4225 11480
-./breadcrumb PctBreadcrumb 3 4327 9152
-./chips PctChip 2 11322 11325
-./date PctCalendar 2 22691 39675
+./accordion PctAccordion 2 4225 15198
+./breadcrumb PctBreadcrumb 3 4327 12868
+./chips PctChip 2 15040 15043
+./date PctCalendar 2 26412 43401
 ./field PctField 3 16337 25599
 ./menu PctMenu 2 19286 19289
 ./radio PctRadio 2 15554 15556
-./select PctMultiSelect 2 45658 70423
-./stepper PctStep 2 10689 10691
+./select PctMultiSelect 2 49380 74148
+./stepper PctStep 2 14407 14409
 ./tabs PctTab 2 16195 16198
-./tree PctTree 2 9081 9082
+./tree PctTree 2 12783 12786
 ```

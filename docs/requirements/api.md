@@ -602,7 +602,20 @@ exactly the half this requirement names as unbuyable, for the string being a val
 ### <a id="req-api-icons"></a>`req-api-icons` — Easy use of somebody else's icons
 
 **Promise.** The library makes it possible to use icons from the popular sets (FontAwesome,
-PrimeIcons, Material) and to supply your own (SVG / icon fonts).
+PrimeIcons, Material) and to supply your own (SVG / icon fonts) — and the library's own
+drawings follow the set a consumer registers, in the same line.
+
+**A consumer's icon is an id a SOURCE answers.** `providePctIcons(…)` takes any number of set
+components and plain sources, in order of precedence; a source answers an id with **data, never
+markup** — an icon font's classes (`fontAwesome()`, `primeIcons()`, `bootstrapIcons()`,
+`materialIcons()`, `materialSymbols()`, `iconFont()`), an SVG drawing as elements and
+attributes rendered through a list of tags and a list of attributes (`svgIcons()`,
+`svgSprite()` in `@pacit/components/svg-icon`), or a component. A source that knows the
+library's roles in its own vocabulary says so in `roles`, and then `providePctIcons(primeIcons())`
+dresses the select's arrow and the toast's marks too
+([0083](../decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
+The box takes `tone`, `size` and `label` besides; the renderer is an entrypoint of its own so
+that no component that draws an arrow pays for it ([`lesson-248`](../lessons.md#lesson-248)).
 
 An icon the library draws sits inside `<pct-icon>` under a **semantic name** — the role it
 plays, `chevron-down` and not `arrow-down-16`. The drawing written there is what a consumer
@@ -627,13 +640,17 @@ right name suggested.
 
 **Gate:** `tools/check-icons.mjs` (target `check-icons`) — six points over the library's
 templates: the denominator (every `<svg>` and every `<pct-icon>` the text holds is one the
-walk saw), a drawing stands inside a `pct-icon`, that icon carries a name, a named icon
-carries its own drawing, the published names and the drawn names are the same set both ways,
-and no `data-pct-part` sits below an icon; `tools/check-styles.mjs` point 8 — no SVG paint
-property in a component stylesheet; `libs/components/icon/src/icon.spec.ts` — the layer under
-its own name, including a partial set and a set nobody reads;
-`apps/sandbox-e2e/src/select.spec.ts` — a registered arrow in three engines, in the same box
-and turning with it
+walk saw), a drawing stands inside a `pct-icon` or is the SVG renderer's own, that icon
+carries a name, a named icon carries its own drawing, the published names and the drawn names
+are the same set both ways, and no `data-pct-part` sits below an icon; `tools/check-styles.mjs`
+point 8 — no SVG paint property in a component stylesheet; `libs/components/icon/src/icon.spec.ts`
+— the layer under its own name, including a partial set, a set nobody reads, the sources in
+order and the roles a source carries; `libs/components/icon/src/fonts.spec.ts` — every adapter's
+whole roles map; `libs/components/svg-icon/src/svg-icon.spec.ts` — every tag the renderer draws
+and every attribute it refuses; `apps/sandbox-e2e/src/select.spec.ts` — a registered arrow in
+three engines, in the same box and turning with it; `apps/sandbox-e2e/src/icon.spec.ts` — the
+box's size and tone, a drawing from data in the SVG namespace, and one line dressing the
+library inside a card and not outside it
 **Control:** `tools/check-icons.fixtures/` — six prepared inputs, each rejected on its own
 point, the first of them being the shape the library shipped until the icons (an `<svg>` written
 straight into the template); `tools/check-styles.fixtures/paint-inside-an-icon/` for point 8.
@@ -641,15 +658,20 @@ Above them a recorded run: the lookup in `PctIcon` returning `null` always leave
 green and turns 7 red, every one of them a replacement
 **Binds at:** closed with the icons
 **Decision:** [0011 — icons through a template and `PCT_ICONS`](../decisions/0011-icons.md),
-[0028 — an icon set is a component](../decisions/0028-an-icon-set-is-a-component.md)
-**Lessons:** [`lesson-85`](../lessons.md#lesson-85), [`lesson-86`](../lessons.md#lesson-86)
+[0028 — an icon set is a component](../decisions/0028-an-icon-set-is-a-component.md),
+[0083 — an icon source answers a name with data](../decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)
+**Lessons:** [`lesson-85`](../lessons.md#lesson-85), [`lesson-86`](../lessons.md#lesson-86),
+[`lesson-248`](../lessons.md#lesson-248)
 
 ---
 
 ### <a id="req-api-icons-custom"></a>`req-api-icons-custom` — The library ships no icon set of its own
 
 **Promise.** A non-goal. An icon set is a separate product with its own life cycle; the
-library ships **the swap mechanism**, not icons.
+library ships **the swap mechanism**, not icons. An adapter — `primeIcons()`, `fontAwesome()` —
+is knowledge of how a set spells its names, a pure function with no import of the set and no
+glyph of it; the stylesheet and the font are the consumer's to install
+([0083](../decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
 
 **Gate:** `libs/components/check-package.mjs` — the absence of icon files in the packed
 artifact would be detectable on the content listing. Since the icons the promise is literal in a

@@ -382,6 +382,18 @@ export class PctHeroHarness extends PctHarness<never> {
   static override readonly parts = [] as const;
 }
 
+// ── @pacit/components/icon ──────────────────────────────────────────────────────
+
+/**
+ * `pct-icon` — `PctIcon`.
+ *
+ * @since next
+ */
+export class PctIconHarness extends PctHarness<never> {
+  static override hostSelector = 'pct-icon';
+  static override readonly parts = [] as const;
+}
+
 // ── @pacit/components/menu ──────────────────────────────────────────────────────
 
 /**

@@ -294,6 +294,13 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-hero-text-via color semantic public
 --pct-hero-to color semantic public
 --pct-hero-via color semantic public
+--pct-icon-fg-danger color component public
+--pct-icon-fg-info color component public
+--pct-icon-fg-success color component public
+--pct-icon-fg-warning color component public
+--pct-icon-size dimension component public
+--pct-icon-size-lg dimension component public
+--pct-icon-size-sm dimension component public
 --pct-info color semantic public
 --pct-info-100 color semantic public
 --pct-info-200 color semantic public

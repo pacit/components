@@ -1895,6 +1895,35 @@
       "bg": "pct.tabs.list-bg",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "$comment": "A toned icon standing on its own — a status mark nobody wrote a word for — is a graphical object under SC 1.4.11, measured against the page the way the toast's marks are measured against the message (0083). Per tone, because a policy that measured \"the tone\" once would be measuring whichever tone somebody wrote first (0076). The partner is the page: an icon has no surface of its own, and the page is the ground it most often stands on; a consumer who paints one on a darker card is measuring their own pair.",
+      "name": "UI: icon tone (success)",
+      "fg": "pct.icon.fg-success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: icon tone (warning)",
+      "fg": "pct.icon.fg-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: icon tone (danger)",
+      "fg": "pct.icon.fg-danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: icon tone (info)",
+      "fg": "pct.icon.fg-info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

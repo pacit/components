@@ -1,0 +1,97 @@
+<h2 class="view__title">Icon</h2>
+<p class="muted view__intro">
+  A drawing in a box the text around it sizes and colours. <code>name</code> is
+  a role of the library and <code>icon</code> an id of yours; a source answers
+  either with data — a font's classes, an SVG drawing, a component — and one
+  that knows the library's roles dresses every component in one line. The box is
+  the contract: <code>1em</code> or a size step, the text's colour or a tone,
+  hidden until it is given a name.
+</p>
+
+<sbx-demo
+  heading="The box: the text's own size, and three steps"
+  summary="With no size the box is 1em — the line's own, which is what an icon beside text wants. The three steps are tokens of the icon's own scale, so a theme moves them; the drawing is data, rendered element by element and painted in currentColor."
+  [reqs]="['req-api-icons', 'req-api-attributes']"
+  data-testid="demo-sizes"
+>
+  <div class="view__row">
+    <span class="icon-view__text" data-testid="size-text"
+      >Inbox <pct-icon icon="bell" data-testid="size-none"
+    /></span>
+    <pct-icon icon="house" size="sm" data-testid="size-sm" />
+    <pct-icon icon="house" size="md" data-testid="size-md" />
+    <pct-icon icon="house" size="lg" data-testid="size-lg" />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Tones"
+  summary="An icon wearing a tone takes the skin's colour for it and nothing else changes: the glyph is the second channel a tone needs, so a toned icon never speaks by colour alone — and under forced colours the colour goes and the shape stays. The untoned icon carries no attribute at all."
+  [reqs]="['req-a11y-forced-colors', 'req-token-contrast']"
+  data-testid="demo-tones"
+>
+  <div class="view__row">
+    <pct-icon icon="star" size="lg" data-testid="tone-none" />
+    <pct-icon
+      icon="check"
+      size="lg"
+      tone="success"
+      data-testid="tone-success"
+    />
+    <pct-icon icon="bell" size="lg" tone="warning" data-testid="tone-warning" />
+    <pct-icon icon="trash" size="lg" tone="danger" data-testid="tone-danger" />
+    <pct-icon icon="info" size="lg" tone="info" data-testid="tone-info" />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Hidden until named"
+  summary="Beside text an icon is a second reading of the same thing, so it is out of the accessibility tree. An icon that IS the information takes a label, and is then an image under that name — the one thing a label may not do is name a control, which is named on the control."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-names"
+>
+  <div class="view__row">
+    <span class="icon-view__text"
+      ><pct-icon icon="search" data-testid="name-hidden" /> Search</span
+    >
+    <pct-icon
+      icon="bell"
+      size="lg"
+      tone="warning"
+      label="3 unread messages"
+      data-testid="name-given"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A font, by class"
+  summary="An icon font is a source keyed on a class per id: the box holds a span wearing the font's classes, and the font's stylesheet draws the glyph. The sandbox's font is six ::before rules in its own stylesheet, which is all the mechanism needs."
+  [reqs]="['req-api-icons']"
+  data-testid="demo-font"
+>
+  <div class="view__row">
+    <pct-icon icon="chevron" size="lg" data-testid="font-chevron" />
+    <pct-icon icon="user" size="lg" data-testid="font-user" />
+    <pct-icon icon="dash" size="lg" data-testid="font-dash" />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="One line dresses the library, and stops where its providers stop"
+  summary="A source that names the library's roles in its own vocabulary swaps the drawings every component ships with: in the card on the left an avatar's silhouette and a checkbox's tick are glyphs of the sandbox's font, because providePctIcons stands in that card's providers; on the right the same two components draw what they ship with."
+  [reqs]="['req-api-icons', 'req-api-icons-custom']"
+  data-testid="demo-dressed"
+>
+  <div class="view__row icon-view__pair">
+    <sbx-icon-dressed data-testid="dressed" />
+    <span class="icon-view__plain" data-testid="plain">
+      <pct-avatar data-testid="plain-avatar" />
+      <pct-checkbox
+        label="Done"
+        [checked]="true"
+        data-testid="plain-checkbox"
+      />
+    </span>
+  </div>
+</sbx-demo>

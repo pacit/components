@@ -36,6 +36,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back      |
 | [`PctAvatar`](avatar.md)         | `@pacit/components/avatar`     | the picture beside a name                 |
 | [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                     |
+| [`PctIcon`](icon.md)             | `@pacit/components/icon`       | a drawing in a box the text sizes         |
 | [`PctBreadcrumb`](breadcrumb.md) | `@pacit/components/breadcrumb` | the way here, told in links               |
 | [`PctStepper`](stepper.md)       | `@pacit/components/stepper`    | a map of a journey the application steers |
 | [`PctTree`](tree.md)             | `@pacit/components/tree`       | a walk the platform does not have         |

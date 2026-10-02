@@ -50,6 +50,11 @@ The mechanism, and what each channel costs at the element, is in the header of
 
 ## Consequences
 
+- **An icon wears a tone, and is itself the second channel** (2026-10-02,
+  [0083](0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)): `pct-icon`
+  takes `tone`, paints the box with `--pct-icon-fg-<tone>`, and writes no forced-colours rule —
+  the mode forces `color` itself and the shape is what is left. The one shape this decision
+  cannot see is one and the same glyph in two tones meaning two states.
 - **[0044](0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)'s "no tone" clause
   is spent.** It was a refusal with a named condition, the condition is met, and the toast
   carries tones today. The clause stays in that record as history, with a line saying so —

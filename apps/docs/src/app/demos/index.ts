@@ -22,6 +22,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   field: () => import('./field.demo').then((m) => m.FieldDemo),
   grid: () => import('./grid.demo').then((m) => m.GridDemo),
   hero: () => import('./hero.demo').then((m) => m.HeroDemo),
+  icon: () => import('./icon.demo').then((m) => m.IconDemo),
   menu: () => import('./menu.demo').then((m) => m.MenuDemo),
   number: () => import('./number.demo').then((m) => m.NumberDemo),
   pagination: () => import('./pagination.demo').then((m) => m.PaginationDemo),
@@ -155,6 +156,16 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       key: 'statuses',
       load: () =>
         import('./badge.statuses.demo').then((m) => m.BadgeStatusesDemo),
+    },
+  ],
+  icon: [
+    {
+      key: 'dressed',
+      load: () => import('./icon.dressed.demo').then((m) => m.IconDressedDemo),
+    },
+    {
+      key: 'tones',
+      load: () => import('./icon.tones.demo').then((m) => m.IconTonesDemo),
     },
   ],
   skeleton: [
