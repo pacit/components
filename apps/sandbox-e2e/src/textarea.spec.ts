@@ -9,9 +9,11 @@ import { boxOf, visit } from './support/dom';
  * never the geometry ([`autosize.spec.ts`](../../../libs/components/field/src/autosize.spec.ts)).
  *
  * The file is also **two implementations under one set of assertions**
- * ([0041](../../../docs/decisions/0041-a-height-the-platform-computes.md)): chromium and
- * webkit are laid out by `field-sizing: content`, firefox is measured in script, and the
- * point of asking the same questions of all three is that the answers have to agree.
+ * ([0041](../../../docs/decisions/0041-a-height-the-platform-computes.md)): a browser with
+ * `field-sizing: content` is laid out by it, one without is measured in script, and the
+ * same questions have to get the same answers on both roads. Since firefox 155 all three
+ * engines here are on the first road, so the second has no engine in this file — the last
+ * case below records that, and the plan holds the decision it leaves open.
  */
 
 /** A line of the field, read from the control rather than assumed. */
@@ -155,19 +157,19 @@ test.describe('PctAutosize — a textarea as tall as its text', () => {
   });
 
   /**
-   * Which road this engine is on — recorded rather than assumed, and it is the one assertion
-   * here written to **expire**. `field-sizing` is in chromium and webkit and not in firefox;
-   * the day firefox ships it this case fails, and the failure is the notice that the measured
-   * road in `autosize.ts` has lost its last consumer and can go.
+   * Which road this engine is on — recorded rather than assumed. It was written to **expire**,
+   * asserting firefox as the engine without `field-sizing`, and it did: firefox 155 (Playwright
+   * 1.63) ships it, so all three engines here are on the platform road. The measured road in
+   * `autosize.ts` is now exercised by the unit suite alone (jsdom has no `CSS.supports`); whether
+   * it stays for older engines is a decision of its own, not of the version bump that showed it.
    */
   test('the engine is on the road the decision says it is', async ({
     page,
-    browserName,
   }) => {
     const supported = await page.evaluate(() =>
       CSS.supports('field-sizing', 'content'),
     );
 
-    expect(supported).toBe(browserName !== 'firefox');
+    expect(supported).toBe(true);
   });
 });

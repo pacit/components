@@ -234,6 +234,16 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the reading raised 4.1.2 to Supports, and what it left open is 4.78. The say-all pass stays
     refused, as written
 
+- [ ] **4.79 — firefox 155 shipped two features a fallback was kept for, and one case noticed**
+  - the bump to Playwright 1.63 (PR #48) brought firefox 155, and with it `field-sizing: content`
+    and `Intl.Locale.prototype.getWeekInfo` — probed true in all three engines
+  - the textarea case written to expire did (0041); the measured road in `autosize.ts` now has
+    no engine in e2e, so the controls `api.md` records for it on firefox no longer bite
+  - the week-info fallback in `date/src/locale.ts` lost its last engine with no case to say so —
+    the gap the expiring case was built against
+  - binds at: **a decision per fallback** — removed, or kept for older engines with an e2e road
+    that forces it — and the firefox-151 sentences in docs and comments corrected with it
+
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
     2026-09-17, the runner on 2026-09-28, twice — with the browser's focus on the dialog's close

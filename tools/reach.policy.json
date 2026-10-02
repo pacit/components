@@ -59,6 +59,10 @@
       "reason": "GitHub reads it to disable blank issues and to show the contact links — Discussions for a question, the private channel for a vulnerability."
     },
     {
+      "path": ".github/dependabot.yml",
+      "reason": "GitHub reads it by name and opens the weekly update pull requests from it; nothing inside the repository runs it."
+    },
+    {
       "path": ".github/PULL_REQUEST_TEMPLATE.md",
       "reason": "GitHub reads it by name when a pull request is opened; it asks for the promise and the gates that ran."
     },

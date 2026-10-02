@@ -25,11 +25,12 @@ the answer to a drift of 35 bytes that cost an evening and was never explained, 
 nothing here recorded what the numbers had been produced BY
 ([`lesson-179`](../../docs/lessons.md#lesson-179)).
 
-- @angular/core 22.0.6
-- @angular/compiler-cli 22.0.6
-- @angular/build 22.0.6
-- ng-packagr 22.0.1
-- esbuild 0.27.7
+- @angular/core 22.2.1
+- @angular/compiler-cli 22.2.1
+- @babel/core 8.0.6
+- @angular/build 22.2.1
+- ng-packagr 22.2.4
+- esbuild 0.28.2
 
 Columns: entrypoint · size in bytes · other entrypoints brought in · external
 dependencies. The size is the raw size of a **production** bundle of an application
@@ -43,40 +44,40 @@ before an application ships them.
 
 ```
 . 3706 ./core @angular/core
-./accordion 11564 ./core,./icon @angular/common,@angular/core
-./avatar 8668 ./core,./icon @angular/common,@angular/core
-./badge 2229 - @angular/core
-./breadcrumb 9261 ./core,./icon @angular/common,@angular/core
-./button 12875 ./core @angular/core
-./checkbox 15023 ./core,./icon @angular/common,@angular/core
-./chips 11340 ./core,./icon @angular/common,@angular/core
-./container 717 - @angular/core
-./core 8265 - @angular/core
-./date 39732 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 16427 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 15620 ./core,./icon @angular/common,@angular/core
-./field 28242 ./core @angular/core,@angular/forms,@angular/forms/signals
-./grid 673 - @angular/core
-./hero 5845 - @angular/core
+./accordion 11652 ./core,./icon @angular/common,@angular/core
+./avatar 8735 ./core,./icon @angular/common,@angular/core
+./badge 2357 - @angular/core
+./breadcrumb 9312 ./core,./icon @angular/common,@angular/core
+./button 13391 ./core @angular/core
+./checkbox 15149 ./core,./icon @angular/common,@angular/core
+./chips 11464 ./core,./icon @angular/common,@angular/core
+./container 725 - @angular/core
+./core 8271 - @angular/core
+./date 40122 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 16542 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 15762 ./core,./icon @angular/common,@angular/core
+./field 28504 ./core @angular/core,@angular/forms,@angular/forms/signals
+./grid 681 - @angular/core
+./hero 6005 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
-./menu 20403 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./pagination 13768 ./core,./icon @angular/common,@angular/core
-./popover 14715 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 11718 ./core,./icon @angular/common,@angular/core
-./radio 15588 ./core @angular/core
-./regions 5486 ./core @angular/core
-./select 69892 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
-./skeleton 3690 - @angular/core
-./slider 17542 ./core @angular/core
-./stack 879 - @angular/core
-./stepper 10745 ./core,./icon @angular/common,@angular/core
-./switch 12562 ./core @angular/core
-./tabs 16232 ./core @angular/core
-./testing 8136 - @angular/cdk/testing
+./menu 20499 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./pagination 13909 ./core,./icon @angular/common,@angular/core
+./popover 14783 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./progress 11831 ./core,./icon @angular/common,@angular/core
+./radio 15724 ./core @angular/core
+./regions 5482 ./core @angular/core
+./select 70649 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./skeleton 3730 - @angular/core
+./slider 17754 ./core @angular/core
+./stack 891 - @angular/core
+./stepper 10832 ./core,./icon @angular/common,@angular/core
+./switch 12726 ./core @angular/core
+./tabs 16364 ./core @angular/core
+./testing 8129 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 20043 ./core,./icon @angular/common,@angular/core
-./tooltip 13333 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./tree 9158 ./icon @angular/common,@angular/core
+./toast 20216 ./core,./icon @angular/common,@angular/core
+./tooltip 13381 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./tree 9220 ./icon @angular/common,@angular/core
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows
@@ -125,15 +126,15 @@ injector — the query IS the claim — and no component in this package declare
 is worth, and it is the largest single number this file has ever moved.
 
 ```
-./accordion PctAccordion 2 4221 11392
-./breadcrumb PctBreadcrumb 3 4315 9102
-./chips PctChip 2 11199 11201
-./date PctCalendar 2 22511 39289
-./field PctField 3 16130 25349
-./menu PctMenu 2 19193 19195
-./radio PctRadio 2 15418 15420
-./select PctMultiSelect 2 45274 69666
-./stepper PctStep 2 10602 10604
-./tabs PctTab 2 16064 16066
-./tree PctTree 2 9020 9022
+./accordion PctAccordion 2 4225 11480
+./breadcrumb PctBreadcrumb 3 4327 9152
+./chips PctChip 2 11322 11325
+./date PctCalendar 2 22691 39675
+./field PctField 3 16337 25599
+./menu PctMenu 2 19286 19289
+./radio PctRadio 2 15554 15556
+./select PctMultiSelect 2 45658 70423
+./stepper PctStep 2 10689 10691
+./tabs PctTab 2 16195 16198
+./tree PctTree 2 9081 9082
 ```

@@ -1,0 +1,39 @@
+# Dependabot keeps the dependency drift visible: without it, 2026-10-02 found the tree two
+# Angular minors and 65 audit findings behind, and nothing had said so.
+#
+# Nx and everything it migrates are left out on purpose. `nx migrate` moves them together and
+# runs the code migrations that come with them; a Dependabot bump of `@nx/*` or Angular alone
+# would change the versions without the migrations, so they move with `nx migrate`.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    ignore:
+      - dependency-name: 'nx'
+      - dependency-name: '@nx/*'
+      - dependency-name: '@angular/*'
+      - dependency-name: '@angular-devkit/*'
+      - dependency-name: '@schematics/angular'
+      - dependency-name: 'angular-eslint'
+      - dependency-name: 'ng-packagr'
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directories: [/, /.github/actions/*]
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ['*']
