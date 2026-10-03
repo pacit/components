@@ -321,6 +321,24 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-toast-close-size',
     opens: 'raise-standing',
   },
+  {
+    // The icon-only button, and the one button with a floor of its own: a labelled button is
+    // as wide as its words, a square only as wide as the height a skin gives it — so the floor
+    // stands under both axes, and what is taken away here is that height at every size.
+    name: 'icon-only button',
+    applies:
+      'libs/components/button/src/button.scss :host([data-pct-icon-only])',
+    route: '/button',
+    selector: '[data-testid="icon-only-md"]',
+    axis: 'both',
+    zero: [
+      '--pct-button-height',
+      '--pct-button-height-sm',
+      '--pct-button-height-lg',
+    ],
+    ceiling: 24,
+    floor: '--pct-button-target-min',
+  },
 ];
 
 /** The floor every one of them claims (`--pct-target-min`). */

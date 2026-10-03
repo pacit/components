@@ -5,7 +5,8 @@ import { PctTooltip } from '@pacit/components/tooltip';
 /**
  * Placement, and what the sentence is
  *
- * `placement` asks for a side. `as="label"` makes the sentence the control's accessible
+ * `pctTooltipPlacement` asks for a side — logical, so `end` is the right in this page and the
+ * left in an Arabic one. `pctTooltipAs="name"` makes the sentence the control's accessible
  * name instead of its description — for an icon-only button that has no text of its own.
  */
 @Component({
@@ -17,7 +18,7 @@ import { PctTooltip } from '@pacit/components/tooltip';
       pctButton
       variant="outline"
       pctTooltip="Opens below"
-      placement="bottom"
+      pctTooltipPlacement="bottom"
     >
       Below
     </button>
@@ -25,15 +26,16 @@ import { PctTooltip } from '@pacit/components/tooltip';
       pctButton
       variant="outline"
       pctTooltip="Opens beside"
-      placement="right"
+      pctTooltipPlacement="end"
     >
       Beside
     </button>
     <button
       pctButton
+      iconOnly
       variant="outline"
       pctTooltip="Refresh the list"
-      as="label"
+      pctTooltipAs="name"
     >
       ↻
     </button>

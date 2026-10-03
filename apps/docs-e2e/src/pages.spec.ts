@@ -953,8 +953,9 @@ test.describe('The pages', () => {
     // The skin's own size, and it moves when the skin grows: 559 when the tone axis gave
     // `danger`, `warning`, `success` and `info` the family `primary` already had (0082),
     // 568 since the badge learned to wear all four and the skin grew nine dials for it; 575
-    // since the icon's box took three sizes and four tones of its own (0083).
-    await expect(count).toHaveText('575 of 575');
+    // since the icon's box took three sizes and four tones of its own (0083); 579 since the
+    // icon-only button took a glyph step per size and a floor of its own (0085).
+    await expect(count).toHaveText('579 of 579');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -962,7 +963,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 575$/);
+    await expect(count).toHaveText(/^\d+ of 579$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -978,7 +979,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('575 of 575');
+    await expect(count).toHaveText('579 of 579');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

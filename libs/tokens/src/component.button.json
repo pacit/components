@@ -96,6 +96,28 @@
         "$type": "dimension",
         "$value": "{pct.space.5}",
         "$description": "Horizontal padding at size lg."
+      },
+      "$comment-icon-size": "The glyph on the icon-only face (0085): the icon's own three steps, one per size, so the glyph takes the same share of the square at every size — 16 / 20 / 24 inside 28 / 36 / 44. Literals and not references, because the steps are the icon's tokens and a component token pointing at another component's is the sideways reference req-token-override forbids: overriding `--pct-icon-size` must not resize a button.",
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Glyph size on the icon-only face at size md."
+      },
+      "icon-size-sm": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Glyph size on the icon-only face at size sm."
+      },
+      "icon-size-lg": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Glyph size on the icon-only face at size lg."
+      },
+      "$comment-target-min": "The floor under both axes of the icon-only face (req-a11y-touch). A labelled button is as wide as its words; a square is as wide as its height, and a skin that shrinks the height would shrink the target with it. The heights clear it at every size and density today — this is what a theme that goes further runs into.",
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Smallest box the icon-only face draws, on both axes."
       }
     }
   }

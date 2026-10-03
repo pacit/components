@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { visit } from './support/dom';
+import { boxOf, visit } from './support/dom';
 
 test.describe('PctButton', () => {
   test.beforeEach(async ({ page }) => {
@@ -271,5 +271,142 @@ test.describe('PctButton — the same face on a link', () => {
 
     await page.getByTestId('link-solid').click();
     await expect(page).toHaveURL(/\/select$/);
+  });
+});
+
+/**
+ * The icon-only face ([0085](../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+ * Geometry and nothing else: the paint is the same button's and is measured above, so what is
+ * read here is the square, the glyph's step inside it, and the spinner standing in its place.
+ * The numbers are written out — the control axis and the icon's own scale — rather than read
+ * from the skin, which would agree with the stylesheet about anything.
+ */
+test.describe('PctButton — icon only', () => {
+  const SIZES = [
+    ['sm', 28, 16],
+    ['md', 36, 20],
+    ['lg', 44, 24],
+  ] as const;
+
+  /** How far one centre stands from another, on both axes at once. */
+  const offset = (
+    a: { x: number; y: number; width: number; height: number },
+    b: { x: number; y: number; width: number; height: number },
+  ) =>
+    Math.max(
+      Math.abs(a.x + a.width / 2 - (b.x + b.width / 2)),
+      Math.abs(a.y + a.height / 2 - (b.y + b.height / 2)),
+    );
+
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/button');
+  });
+
+  test('a square as tall as its size — the height of the labelled button beside it, and as wide', async ({
+    page,
+  }) => {
+    for (const [size, side] of SIZES) {
+      const square = await boxOf(page.getByTestId(`icon-only-${size}`));
+      const twin = await boxOf(page.getByTestId(`icon-only-twin-${size}`));
+      expect(square, `the ${size} square`).toMatchObject({
+        width: side,
+        height: side,
+      });
+      expect(twin.height, `the ${size} labelled button`).toBe(side);
+    }
+  });
+
+  test("the glyph is drawn on the icon's step for the size, in the middle of the square", async ({
+    page,
+  }) => {
+    for (const [size, side, glyph] of SIZES) {
+      const square = page.getByTestId(`icon-only-${size}`);
+      const drawn = await boxOf(square.locator('pct-icon'));
+      expect(drawn, `the ${size} glyph`).toMatchObject({
+        width: glyph,
+        height: glyph,
+      });
+      expect(
+        offset(drawn, await boxOf(square)),
+        `the ${size} glyph is off the centre of its ${side} px square`,
+      ).toBeLessThanOrEqual(0.5);
+    }
+  });
+
+  test('every face, the disabled state and the link are the same square', async ({
+    page,
+  }) => {
+    for (const id of [
+      'solid',
+      'outline',
+      'ghost',
+      'soft',
+      'hero',
+      'disabled',
+      'link',
+    ])
+      expect(
+        await boxOf(page.getByTestId(`icon-only-${id}`)),
+        `icon-only-${id}`,
+      ).toMatchObject({ width: 36, height: 36 });
+  });
+
+  test('while it works the spinner stands where the glyph stood, at its size — and the name stays', async ({
+    page,
+  }) => {
+    const square = page.getByTestId('icon-only-loading');
+    const spinner = square.locator('[data-pct-part="spinner"]');
+    await expect(spinner).toBeVisible();
+
+    // The layout size, not the rectangle: the ring turns, and a turning square's rectangle
+    // is up to √2 wider than the square. Its centre is the one thing the turn keeps.
+    expect(
+      await spinner.evaluate((el) => [
+        (el as HTMLElement).offsetWidth,
+        (el as HTMLElement).offsetHeight,
+      ]),
+    ).toEqual([20, 20]);
+    const box = await boxOf(square);
+    expect(box).toMatchObject({ width: 36, height: 36 });
+    expect(offset(await boxOf(spinner), box)).toBeLessThanOrEqual(0.5);
+
+    // The glyph is switched off and not taken out: opacity keeps it in the accessibility tree,
+    // where a button named by its content would otherwise lose the name while it works.
+    await expect(square.locator('[data-pct-part="label"]')).toHaveCSS(
+      'opacity',
+      '0',
+    );
+    await expect(square).toHaveAccessibleName('Search');
+  });
+
+  test('a row too narrow for it does not squeeze the square — a narrower square is a narrower target', async ({
+    page,
+  }) => {
+    await page.addStyleTag({
+      content:
+        '[data-testid="icon-only-faces"] { flex-wrap: nowrap; width: 60px; }',
+    });
+    await expect(page.getByTestId('icon-only-faces')).toHaveCSS(
+      'width',
+      '60px',
+    );
+    for (const id of ['solid', 'outline', 'ghost', 'soft', 'hero'])
+      expect(
+        (await boxOf(page.getByTestId(`icon-only-${id}`))).width,
+        `icon-only-${id}`,
+      ).toBe(36);
+  });
+
+  test("the name is the one written on the button — a tooltip's, with nothing open", async ({
+    page,
+  }) => {
+    await expect(page.getByTestId('icon-only-solid')).toHaveAccessibleName(
+      'Approve',
+    );
+    // `pctTooltipAs="name"` writes the name as an attribute, permanently (0030): read before
+    // anything has hovered, which is the state most readers meet the button in.
+    await expect(page.getByTestId('icon-only-ghost')).toHaveAccessibleName(
+      'Delete the draft',
+    );
   });
 });

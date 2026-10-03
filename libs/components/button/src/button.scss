@@ -283,12 +283,60 @@
   --pct-button-height: var(--pct-button-height-sm);
   --pct-button-font-size: var(--pct-button-font-size-sm);
   --pct-button-padding-x: var(--pct-button-padding-x-sm);
+  --pct-button-icon-size: var(--pct-button-icon-size-sm);
 }
 
 :host([data-pct-size='lg']) {
   --pct-button-height: var(--pct-button-height-lg);
   --pct-button-font-size: var(--pct-button-font-size-lg);
   --pct-button-padding-x: var(--pct-button-padding-x-lg);
+  --pct-button-icon-size: var(--pct-button-icon-size-lg);
+}
+
+/* ── The icon-only face ──────────────────────────────────────────────────────────────────
+   One glyph and no words ([0085](../../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+   Geometry and nothing else: the faces, the tones and the states above paint this button
+   exactly as they paint the one with a label, so no rule of theirs is repeated here.
+
+   The square is the size's own height across, and the floor stands under BOTH axes. A skin
+   that shrinks `--pct-button-height-sm` leaves a labelled button as wide as its words, but it
+   would take this one under a target a finger can hit (req-a11y-touch) — so the floor is the
+   token every other target reads, and `max()` keeps the height the answer whenever it clears
+   it. `flex-shrink: 0` because a square squeezed in a row of flex items is a narrower target.
+
+   The glyph is drawn on the icon's own step for the size — 16 / 20 / 24 inside 28 / 36 / 44,
+   the same share of the square at every size — and it gets there through `font-size`, because
+   `pct-icon` is `1em`: the consumer writes no size, and one who writes `size` on the icon still
+   wins. The spinner is `1em` too, so it stands at the glyph's size in the glyph's place. */
+:host([data-pct-icon-only]) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: max(var(--pct-button-height), var(--pct-button-target-min));
+  min-block-size: max(var(--pct-button-height), var(--pct-button-target-min));
+  padding-inline: 0;
+  flex-shrink: 0;
+  font-size: var(--pct-button-icon-size);
+}
+
+/* One cell for the glyph and the spinner. While the button works the spinner stands where
+   the glyph stood, and the glyph is switched off with `opacity: 0` — a visibility switch, the
+   one use of the property `req-token-no-opacity` leaves open — rather than `display: none` or
+   `visibility: hidden`, both of which take the content out of the accessibility tree: a button
+   named by its content would lose the name for exactly as long as it works. */
+:host([data-pct-icon-only]) .pct-button__spinner,
+:host([data-pct-icon-only]) .pct-button__label {
+  grid-area: 1 / 1;
+}
+
+/* The ring's edge inside its `1em` rather than around it: beside a label the spinner is 4 px
+   wider than the text is tall and nobody can tell, but in the glyph's place it would be a
+   circle 24 px across where a 20 px glyph stood — measured, before this rule. */
+:host([data-pct-icon-only]) .pct-button__spinner {
+  box-sizing: border-box;
+}
+
+:host([data-pct-icon-only][data-pct-loading]) .pct-button__label {
+  opacity: 0;
 }
 
 .pct-button__label {
