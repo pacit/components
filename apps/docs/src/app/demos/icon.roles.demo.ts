@@ -86,7 +86,7 @@ export class IconRolesTick {
  * the font has: the select's arrow becomes Font Awesome's caret in the second card, and
  * nothing else moves. The adapter's whole map with a role set to `undefined` is the mirror
  * image — Font Awesome's arrow and silhouette, and the checkbox's tick handed back to the
- * library. `primeIcons()`, `materialIcons()` and `svgIcons()` read `roles` the same way.
+ * library. `primeIcons()`, `materialIcons()` and `svgIcons()` take `roles` the same way.
  */
 @Component({
   selector: 'demo-icon-roles',

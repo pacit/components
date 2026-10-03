@@ -25,7 +25,7 @@ export class IconFontAwesomeRegular {}
  * `fontAwesome()` is the free solid style: `<pct-icon icon="heart">` holds a span wearing
  * `fa-solid fa-heart`, drawn by the stylesheet you include. `style` picks another of the
  * font's — `regular` in the second row, `brands` for the logos — and a version-5 sheet takes
- * its three-letter prefix in `prefix`. The roles map spells the names of version 6; a sheet
+ * its three-letter prefix in `prefix`. The roles map spells the names of versions 6 and 7; a sheet
  * that spells one differently corrects it in `roles`, which is what `{ close: 'times' }` is
  * for on version 5.
  */
