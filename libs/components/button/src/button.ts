@@ -12,16 +12,51 @@ import { PCT_CONFIG, PctTone } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
- * The words a reader would make a name of: an element's `aria-label` when it has one,
- * otherwise the text of its content, and nothing under `aria-hidden` — the spinner and every
- * unnamed `pct-icon` sit there. A named `pct-icon` answers with its label.
+ * The words a reader would make a name of: an element's `aria-label`, an image's `alt`, and
+ * otherwise the text of its content — nothing under `hidden` or `aria-hidden`, where the
+ * spinner and every unnamed `pct-icon` sit. A named `pct-icon` answers with its label.
+ *
+ * `nodeType` rather than `instanceof`: a node from another realm — an iframe's — is a `Text`
+ * that is not an instance of this window's `Text`.
  */
 function spoken(node: Node): string {
-  if (node instanceof Text) return node.data;
-  if (!(node instanceof Element) || node.getAttribute('aria-hidden') === 'true')
+  if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  const el = node as HTMLElement;
+  if (el.hidden || el.getAttribute('aria-hidden')?.toLowerCase() === 'true')
     return '';
-  const label = node.getAttribute('aria-label')?.trim();
-  return label || Array.from(node.childNodes, spoken).join('');
+  const alternative =
+    el.getAttribute('aria-label')?.trim() ||
+    (el as HTMLImageElement).alt?.trim();
+  return alternative || Array.from(el.childNodes, spoken).join('');
+}
+
+/**
+ * Whether anything names the button besides its glyph. A heuristic, as the tooltip's is: the
+ * real computation is the browser's, and the audit measures that one over a rendered page
+ * (`req-a11y-axe`). What this one has to be is free of false alarms — everything it counts
+ * really does name a button — so that a sentence it prints is never one to learn to ignore.
+ *
+ * An `aria-labelledby` counts when a reference resolves to something with words in it: a
+ * reference to nothing names nothing (measured in 0030), and neither does an empty element.
+ * The references are looked up in the button's own root, so a button in a shadow root finds
+ * its label there — and a button not in a document yet finds none rather than throwing.
+ */
+function named(el: HTMLElement): boolean {
+  const root = el.getRootNode() as Partial<Pick<Document, 'getElementById'>>;
+  const references = el.getAttribute('aria-labelledby')?.match(/\S+/g);
+  const labels = (el as HTMLButtonElement).labels;
+  return [
+    ...(references
+      ? references.flatMap((id) => {
+          const target = root.getElementById?.(id);
+          return [target?.getAttribute('aria-label'), target?.textContent];
+        })
+      : []),
+    ...(labels ? Array.from(labels, (label) => label.textContent) : []),
+    el.getAttribute('title'),
+    spoken(el),
+  ].some((words) => words?.trim());
 }
 
 /**
@@ -192,19 +227,11 @@ export class PctButton {
    * An icon-only button nothing names. The glyph is decoration — `pct-icon` stands outside the
    * accessibility tree until it is given a label — so a square holding one is announced as
    * "button" and nothing else, which axe reports at critical (`lesson-92`). Read after the
-   * first render, when a tooltip naming the button has already written its `aria-label`.
-   *
-   * What counts is what a browser builds the name from: the button's own `aria-label`, its
-   * `title`, an `aria-labelledby` pointing at something that is there — a reference to nothing
-   * names nothing, measured in 0030 — or words in the content outside `aria-hidden`.
+   * first render, when a tooltip naming the button has already written its `aria-label`; what
+   * counts as a name is `named()`'s, and it errs towards silence.
    */
   private warnOnIconOnlyWithNoName(): void {
-    if (!this.iconOnly()) return;
-    const el = this.host.nativeElement;
-    const references = el.getAttribute('aria-labelledby')?.match(/\S+/g);
-    if (references?.some((id) => el.ownerDocument.getElementById(id) !== null))
-      return;
-    if (el.getAttribute('title')?.trim() || spoken(el).trim()) return;
+    if (!this.iconOnly() || named(this.host.nativeElement)) return;
     console.warn(
       `[pctButton] An icon-only button with no name. The glyph is decoration, so a screen ` +
         `reader announces "button" and nothing more. Write the name on the button: ` +

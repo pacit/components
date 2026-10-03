@@ -9,3 +9,15 @@
   flex-direction: column;
   gap: var(--pct-space-3);
 }
+
+/* A name in the content that nobody sees — the other common way to name an icon-only button,
+   and the one the loading square wears: the glyph goes to `opacity: 0` while it works, so the
+   words stay in the accessibility tree, and the e2e reads the name there. */
+.hidden-name {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

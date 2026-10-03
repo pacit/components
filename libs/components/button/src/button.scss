@@ -15,8 +15,14 @@
   /* The height is a value outright, not the sum of padding and line height — only that way
      does the button match a field row of the same size to the pixel (req-api-size). The
      vertical axis carries `min-height`, so a label wrapped onto two lines still pushes the
-     button apart instead of being clipped. */
-  min-height: var(--pct-button-height);
+     button apart instead of being clipped.
+
+     The floor under both axes is the target every control here reads (req-a11y-touch). The
+     heights clear it at every size and density, and `max()` keeps them the answer; it is what
+     a skin that shrinks a height runs into — and the width, because a label can be one
+     character and a padding is a skin's to take away. */
+  min-height: max(var(--pct-button-height), var(--pct-button-target-min));
+  min-inline-size: var(--pct-button-target-min);
   padding-block: 0;
   padding-inline: var(--pct-button-padding-x);
   cursor: pointer;
@@ -298,21 +304,21 @@
    Geometry and nothing else: the faces, the tones and the states above paint this button
    exactly as they paint the one with a label, so no rule of theirs is repeated here.
 
-   The square is the size's own height across, and the floor stands under BOTH axes. A skin
-   that shrinks `--pct-button-height-sm` leaves a labelled button as wide as its words, but it
-   would take this one under a target a finger can hit (req-a11y-touch) — so the floor is the
-   token every other target reads, and `max()` keeps the height the answer whenever it clears
-   it. `flex-shrink: 0` because a square squeezed in a row of flex items is a narrower target.
+   The square is the size's own height across, held on both axes outright rather than as a
+   minimum: a row that stretches its items — the default of a flex row, a grid cell — would
+   otherwise hand it the height of its tallest neighbour, and a row that squeezes them would
+   hand it less width, which is what `flex-shrink: 0` refuses. A narrower square is a narrower
+   target. The floor is the one the labelled face stands on, through the same `max()`.
 
    The glyph is drawn on the icon's own step for the size — 16 / 20 / 24 inside 28 / 36 / 44,
-   the same share of the square at every size — and it gets there through `font-size`, because
+   57, 56 and 55 per cent of the square — and it gets there through `font-size`, because
    `pct-icon` is `1em`: the consumer writes no size, and one who writes `size` on the icon still
    wins. The spinner is `1em` too, so it stands at the glyph's size in the glyph's place. */
 :host([data-pct-icon-only]) {
   display: inline-grid;
   place-items: center;
   inline-size: max(var(--pct-button-height), var(--pct-button-target-min));
-  min-block-size: max(var(--pct-button-height), var(--pct-button-target-min));
+  block-size: max(var(--pct-button-height), var(--pct-button-target-min));
   padding-inline: 0;
   flex-shrink: 0;
   font-size: var(--pct-button-icon-size);

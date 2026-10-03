@@ -370,31 +370,84 @@ test.describe('PctButton — icon only', () => {
     expect(box).toMatchObject({ width: 36, height: 36 });
     expect(offset(await boxOf(spinner), box)).toBeLessThanOrEqual(0.5);
 
-    // The glyph is switched off and not taken out: opacity keeps it in the accessibility tree,
-    // where a button named by its content would otherwise lose the name while it works.
+    // The glyph is switched off and not taken out: opacity keeps the label's content in the
+    // accessibility tree. This square is named by words in that content and by nothing on the
+    // button itself, so the name read here is the one `display: none` would have taken away —
+    // read first, so that it is the name and not the property that a regression turns red.
+    await expect(square).not.toHaveAttribute('aria-label');
+    await expect(square).toHaveAccessibleName('Search');
     await expect(square.locator('[data-pct-part="label"]')).toHaveCSS(
       'opacity',
       '0',
     );
-    await expect(square).toHaveAccessibleName('Search');
   });
 
-  test('a row too narrow for it does not squeeze the square — a narrower square is a narrower target', async ({
+  test('a row that squeezes it or stretches it leaves it square — a narrower square is a narrower target', async ({
     page,
   }) => {
+    // Too narrow for five, and taller than any of them with its items stretched: the two
+    // ways a consumer's row hands an item another size than its own.
     await page.addStyleTag({
       content:
-        '[data-testid="icon-only-faces"] { flex-wrap: nowrap; width: 60px; }',
+        '[data-testid="icon-only-faces"] { flex-wrap: nowrap; width: 60px; height: 60px; align-items: stretch; }',
     });
     await expect(page.getByTestId('icon-only-faces')).toHaveCSS(
-      'width',
+      'height',
       '60px',
     );
     for (const id of ['solid', 'outline', 'ghost', 'soft', 'hero'])
       expect(
-        (await boxOf(page.getByTestId(`icon-only-${id}`))).width,
+        await boxOf(page.getByTestId(`icon-only-${id}`)),
         `icon-only-${id}`,
-      ).toBe(36);
+      ).toMatchObject({ width: 36, height: 36 });
+  });
+
+  test("the glyph's steps are the icon's own — the two sets of tokens agree in this skin", async ({
+    page,
+  }) => {
+    // Literals in two files, by the tier rule: the button may not point at the icon's tokens.
+    // This reading is what ties them, so the day one scale moves the other is told.
+    const steps = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      return ['-sm', '', '-lg'].map((step) => [
+        root.getPropertyValue(`--pct-button-icon-size${step}`).trim(),
+        root.getPropertyValue(`--pct-icon-size${step}`).trim(),
+      ]);
+    });
+    expect(steps).toEqual([
+      ['16px', '16px'],
+      ['20px', '20px'],
+      ['24px', '24px'],
+    ]);
+  });
+
+  test('no square on the page is reported as unnamed — the tooltip has written its name before the sentence reads it', async ({
+    page,
+  }) => {
+    const said: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'warning') said.push(message.text());
+    });
+    await page.reload();
+    await expect(page.getByTestId('icon-only-ghost')).toHaveAccessibleName(
+      'Delete the draft',
+    );
+    // The sentence is dev mode's, so its silence means something only where dev mode is on:
+    // `ng` is the global a development build installs and a production one does not.
+    expect(
+      await page.evaluate(
+        () =>
+          typeof (window as unknown as { ng?: { getComponent?: unknown } }).ng
+            ?.getComponent,
+      ),
+    ).toBe('function');
+    // After the first render, which is when the button reads its name.
+    await page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => done(null))),
+    );
+    expect(
+      said.filter((line) => line.includes('icon-only button with no name')),
+    ).toEqual([]);
   });
 
   test("the name is the one written on the button — a tooltip's, with nothing open", async ({

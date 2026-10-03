@@ -97,7 +97,7 @@
         "$value": "{pct.space.5}",
         "$description": "Horizontal padding at size lg."
       },
-      "$comment-icon-size": "The glyph on the icon-only face (0085): the icon's own three steps, one per size, so the glyph takes the same share of the square at every size — 16 / 20 / 24 inside 28 / 36 / 44. Literals and not references, because the steps are the icon's tokens and a component token pointing at another component's is the sideways reference req-token-override forbids: overriding `--pct-icon-size` must not resize a button.",
+      "$comment-icon-size": "The glyph on the icon-only face (0085): the icon's own three steps, one per size — 16 / 20 / 24 inside 28 / 36 / 44, 57, 56 and 55 per cent of the square. Literals and not references, because the steps are the icon's tokens and a component token pointing at another component's is the sideways reference req-token-override forbids: overriding `--pct-icon-size` must not resize a button. What holds the two equal in this skin is a reading, not a reference: `apps/sandbox-e2e/src/button.spec.ts` resolves both sets on the page and requires them to agree.",
       "icon-size": {
         "$type": "dimension",
         "$value": "20px",
@@ -113,11 +113,11 @@
         "$value": "24px",
         "$description": "Glyph size on the icon-only face at size lg."
       },
-      "$comment-target-min": "The floor under both axes of the icon-only face (req-a11y-touch). A labelled button is as wide as its words; a square is as wide as its height, and a skin that shrinks the height would shrink the target with it. The heights clear it at every size and density today — this is what a theme that goes further runs into.",
+      "$comment-target-min": "The floor under both axes of every face, the labelled one and the square (req-a11y-touch). The heights clear it at every size and density today, and a label is wider than it — this is what a theme that shrinks a height or a padding runs into, and the one thing that holds a square, which is only as wide as the height it was given.",
       "target-min": {
         "$type": "dimension",
         "$value": "{pct.target.min}",
-        "$description": "Smallest box the icon-only face draws, on both axes."
+        "$description": "Smallest box any face draws, on both axes."
       }
     }
   }

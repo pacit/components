@@ -322,9 +322,28 @@ const CONTROLS: readonly Control[] = [
     opens: 'raise-standing',
   },
   {
-    // The icon-only button, and the one button with a floor of its own: a labelled button is
-    // as wide as its words, a square only as wide as the height a skin gives it — so the floor
-    // stands under both axes, and what is taken away here is that height at every size.
+    // The labelled button. Its height has always cleared 24 px by itself (28 at the smallest
+    // size, 26 under compact density) and its width by its padding and its words, and neither
+    // is the button's to keep: a skin can take all three away. What is left is the floor.
+    name: 'button',
+    applies: 'libs/components/button/src/button.scss :host',
+    route: '/button',
+    selector: '[data-testid="btn-solid"]',
+    axis: 'both',
+    zero: [
+      '--pct-button-height',
+      '--pct-button-height-sm',
+      '--pct-button-height-lg',
+      '--pct-button-padding-x',
+      '--pct-button-padding-x-sm',
+      '--pct-button-padding-x-lg',
+    ],
+    ceiling: 24,
+    floor: '--pct-button-target-min',
+  },
+  {
+    // The icon-only button: a square only as wide as the height a skin gives it, so the floor
+    // stands under both axes here too, and what is taken away is that height at every size.
     name: 'icon-only button',
     applies:
       'libs/components/button/src/button.scss :host([data-pct-icon-only])',

@@ -46,26 +46,38 @@ the consumer's `pct-icon`, so the button imports nothing it did not import yeste
 **The name is written on the button.** `aria-label`, or a tooltip with `pctTooltipAs="name"`,
 which writes the same attribute permanently and shows it as well
 ([0030](0030-a-name-is-an-attribute-a-description-is-a-reference.md)). Dev mode reports, once
-after the first render, an icon-only button with no name at all — and "no name" is measured
-the way a browser builds one: its own `aria-label` or `title`, an `aria-labelledby` that points
-at something present, or words in the content outside `aria-hidden`. A visually hidden span is
-a common, valid way to name a button, and a sentence that fired on it would teach people to
-ignore the sentence.
+after the first render, an icon-only button with no name at all. What counts as a name is a
+heuristic, as the tooltip's is, and it is held to the same rule: **free of false alarms** —
+everything it counts really does name a button, because a sentence that fires on a valid page
+teaches people to ignore the sentence. It counts the button's own `aria-label` and `title`, an
+`aria-labelledby` whose target has words in it, a `<label for>` (the platform's `labels`), and
+words, an image's `alt` or an element's `aria-label` in the content — but nothing under
+`hidden` or `aria-hidden`. A visually hidden span is a common, valid way to name a button, and
+it counts. Where the heuristic is unsure it stays silent; the real computation is the
+browser's, and the axe audit measures that one.
 
 ## What the shape is
 
-- **A square as tall as the size**, `max(height, --pct-button-target-min)` on both axes. The
-  heights clear the floor at every size and density today; the floor is what a skin that goes
-  further runs into, because a labelled button is as wide as its words and a square only as
-  wide as the height it was given ([`req-a11y-touch`](../requirements/a11y.md#req-a11y-touch)).
-  `flex-shrink: 0`, because a square squeezed in a row of flex items is a narrower target.
-- **The glyph on the icon's own step for the size** — 16 / 20 / 24 inside 28 / 36 / 44, the
-  same share of the square at every size — reached through the host's `font-size`, because
+- **A square as tall as the size**, `max(height, --pct-button-target-min)` held on both axes
+  outright — `inline-size` and `block-size`, not minimums — because a row that stretches its
+  items (the default of a flex row, a grid cell) would otherwise hand it its tallest
+  neighbour's height, and `flex-shrink: 0`, because a row that squeezes would hand it less
+  width. The heights clear the floor at every size and density today; the floor is what a skin
+  that goes further runs into, and a square is only as wide as the height it was given
+  ([`req-a11y-touch`](../requirements/a11y.md#req-a11y-touch)).
+- **The floor under the labelled face too.** Reviewing this face found that the labelled one
+  had none: its height was `var(--pct-button-height)` and nothing else, and a skin setting the
+  small height to 20 px would have drawn a 20 px target with no gate red. It now stands on the
+  same token, `min-height: max(height, floor)` and `min-inline-size: floor`, and
+  `target-min.spec.ts` reads it with every height and padding zeroed.
+- **The glyph on the icon's own step for the size** — 16 / 20 / 24 inside 28 / 36 / 44, 57, 56
+  and 55 per cent of the square — reached through the host's `font-size`, because
   `pct-icon` is `1em`. A consumer writes no size; one who writes `size` on the icon still
   wins. The steps are the button's own tokens (`--pct-button-icon-size-{sm,md,lg}`) holding
   the icon's numbers as literals: pointing at `--pct-icon-size` would be the sideways
   reference `check-tokens` point 6 rejects, and rightly — resizing the icon box must not
-  resize a button.
+  resize a button. A reading holds the two equal in this skin instead: the e2e resolves both
+  sets on the page and requires them to agree.
 - **The spinner in the glyph's place.** One grid cell holds both; while the button works the
   glyph is `opacity: 0` — a switch, never a fade — and not `display: none`, which would take
   a content-named button's name away for exactly as long as it works. The ring is drawn
@@ -73,32 +85,50 @@ ignore the sentence.
   rule.
 
 Measured in chromium, firefox and webkit: the three squares read 28, 36 and 44 on both axes,
-each as tall as the labelled button beside it; the glyphs read 16, 20 and 24 with their
-centres on the square's to the pixel; the spinner reads 20 × 20 on the same centre. Deleting
-`flex-shrink`, the ring's `box-sizing` and the glyph's `font-size` turns exactly those three
-cases red.
+each as tall as the labelled button beside it, and stay 36 × 36 in a row that squeezes them to
+60 px and stretches them to 60 px tall; the glyphs read 16, 20 and 24 with their centres on the
+square's to the pixel; the spinner reads 20 × 20 on the same centre, and the loading square —
+named by words in its content and by nothing on the button — keeps that name. The negative
+controls, each run against the case it is for: deleting `flex-shrink`, the ring's `box-sizing`
+and the glyph's `font-size` together turned the narrow-row, spinner and glyph cases red (the
+`font-size` alone reddens the spinner too, which is `1em` of it); `min-block-size` in place of
+`block-size` reddened the stretched row; `display: none` in place of `opacity: 0` took the
+loading square's name from "Search" to nothing.
 
 ## Consequences
 
-- The limitation leaves the button's card, and its touch-target row stops being "the
-  smallest size is 28 px": the icon-only face carries a floor of its own, and
-  `target-min.spec.ts` reads it with every height zeroed.
-- 0067 said the button's icon-only face was one of the library's two literal `50%`. There was
-  no such face then, and this one draws the skin's own corner: the literal is the spinner's
-  ring. Its sentence is corrected to say so.
+- The limitation leaves the button's card, and its touch-target row stops resting on "the
+  smallest size is 28 px" — which compact density had already made 26: both faces stand on a
+  floor of their own, and `target-min.spec.ts` reads each with every height zeroed.
+- The tooltip's WCAG 2.5.3 check read every character of the control, including a ligature
+  font's glyph name under `aria-hidden` — so `pctTooltipAs="name"` over `materialIcons()`'s
+  `delete` was told its name did not contain "delete". It now reads the words the control shows
+  as words, outside `aria-hidden`, which is the recommended pattern here working as written.
+- 0067 said the button's icon-only face was one of the library's literal `50%`. There was no
+  such face then, and this one draws the skin's own corner: the literal is the spinner's ring,
+  beside the radio's two. Its sentence is corrected to say so.
 - A skin that wants round icon buttons sets `--pct-button-radius: 999px` on them, the same
   lever every button already has; the library does not decide that a square should be a
   circle.
+- **No pressed face.** An icon-only button is the most common toggle there is — mute,
+  favourite, bold — and `aria-pressed` on the native element is the platform's and is
+  announced, but no face here paints it. A pressed state belongs to every button, labelled or
+  not, and is its own decision.
+- **Two glyph scales in one toolbar.** A glyph beside words stays `1em` of the words — the icon
+  box's own rule — so a `pct-icon` in a labelled button draws at 13 / 14 / 16 px while the
+  square's draws at 16 / 20 / 24. A leading-icon button is the question that settles it, and
+  it is not this one.
 
 ## What this costs us
 
 Four tokens (`icon-size` ×3, `target-min`), one input and a dev-mode sentence on the most used
 component, and the bytes are recorded rather than estimated: the `./button` probe in
-`libs/components/size.snapshot.md` went from 13391 B to 15023 B — **909 for the face** (the
-stylesheet, the input, the host binding) and **723 for the sentence**, measured by building
-the probe once without it. The second number is the library's convention and not this face's:
-every developer warning here stands behind `isDevMode()`, which `check-texts` point 6 requires
-and a production build cannot fold, so the button's two older sentences ship the same way.
+`libs/components/size.snapshot.md` went from 13391 B to 15333 B — **992 for the geometry**
+(the square, the input, the host binding, and the floor the labelled face now stands on) and
+**950 for the sentence**, measured by building the probe once without it. The second number
+is the library's convention and not this face's: every developer warning here stands behind
+`isDevMode()`, which `check-texts` point 6 requires and a production build cannot fold,
+so the button's two older sentences ship the same way.
 
 The other cost is a name the compiler cannot demand. An attribute on an element is not
 something a type can require, and the input that could have been required collides with the

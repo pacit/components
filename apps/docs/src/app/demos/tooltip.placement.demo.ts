@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
+import { PctIcon, providePctIcons } from '@pacit/components/icon';
+import { svgIcons } from '@pacit/components/svg-icon';
 import { PctTooltip } from '@pacit/components/tooltip';
+import { RefreshCw } from 'lucide';
 
 /**
  * Placement, and what the sentence is
@@ -11,7 +14,8 @@ import { PctTooltip } from '@pacit/components/tooltip';
  */
 @Component({
   selector: 'demo-tooltip-placement',
-  imports: [PctButton, PctTooltip],
+  imports: [PctButton, PctIcon, PctTooltip],
+  providers: [providePctIcons(svgIcons({ refresh: RefreshCw }))],
   styles: ':host { display: flex; gap: 8px; flex-wrap: wrap; }',
   template: `
     <button
@@ -37,7 +41,7 @@ import { PctTooltip } from '@pacit/components/tooltip';
       pctTooltip="Refresh the list"
       pctTooltipAs="name"
     >
-      ↻
+      <pct-icon icon="refresh" />
     </button>
   `,
 })

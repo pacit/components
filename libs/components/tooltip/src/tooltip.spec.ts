@@ -96,6 +96,20 @@ class NamedHost {
 })
 class LabelledHost {}
 
+/**
+ * An icon-only button whose glyph is drawn by a ligature font: the span holds the glyph's NAME
+ * as text, and `pct-icon` hides it — so what the control shows as words is nothing at all.
+ */
+@Component({
+  imports: [PctTooltip],
+  template: `<button id="trigger" pctTooltip="Remove" pctTooltipAs="name">
+    <span [attr.aria-hidden]="hidden()">delete</span>
+  </button>`,
+})
+class LigatureHost {
+  readonly hidden = signal<string | null>('true');
+}
+
 describe('PctTooltip', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -571,6 +585,37 @@ describe('PctTooltip', () => {
       await fixture.whenStable();
 
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('WCAG 2.5.3'));
+    });
+
+    it("a glyph's name under aria-hidden is not what the control says — no 2.5.3 report over a ligature font", async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      // The attribute's value is what hides, in any case: `TRUE` is read as `true` by browsers.
+      for (const hidden of ['true', 'TRUE']) {
+        const fixture = TestBed.createComponent(LigatureHost);
+        fixture.componentInstance.hidden.set(hidden);
+        fixture.detectChanges();
+        await fixture.whenStable();
+      }
+      // This control's message and nobody else's: the case above leaves its own render hooks
+      // flushing into this spy, and its control does read "Delete" in plain sight.
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('already reads "delete"'),
+      );
+    });
+
+    it('the same word shown as a word is still reported — the reading hides only what is hidden', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(LigatureHost);
+      fixture.componentInstance.hidden.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('already reads "delete"'),
+      );
     });
   });
 });

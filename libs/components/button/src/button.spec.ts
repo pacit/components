@@ -4,6 +4,7 @@ import {
   input,
   provideZonelessChangeDetection,
   signal,
+  Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctConfig, PctTone } from '@pacit/components/core';
@@ -66,39 +67,64 @@ class LinkHost {
 /**
  * The icon-only face, with every source a browser builds a name from switchable — so each
  * case below turns on exactly one of them. The glyph is the shape a `pct-icon` renders to: a
- * box under `aria-hidden`, which may hold text of its own, as a ligature font's does.
+ * box under `aria-hidden`, which may hold text of its own, as a ligature font's does. The
+ * three spans after the button are what `aria-labelledby` can point at: words, a name given by
+ * `aria-label` alone, and nothing.
  */
 @Component({
   imports: [PctButton],
-  template: `<button
+  template: `<label [attr.for]="labelFor() === null ? null : 'square'">{{
+      labelFor() ?? ''
+    }}</label>
+    <button
+      id="square"
       pctButton
       [iconOnly]="iconOnly()"
-      [loading]="loading()"
       [attr.aria-label]="label()"
       [attr.aria-labelledby]="labelledBy()"
       [attr.title]="title()"
     >
       <span aria-hidden="true">{{ glyph() }}</span>
       @if (words() !== null) {
-        <span [attr.aria-hidden]="wordsHidden()">{{ words() }}</span>
+        <span [attr.aria-hidden]="wordsHidden()" [hidden]="wordsGone()">{{
+          words()
+        }}</span>
       }
       @if (image() !== null) {
         <span role="img" [attr.aria-label]="image()">{{ imageText() }}</span>
       }
+      @if (alt() !== null) {
+        <img [attr.alt]="alt()" src="data:," />
+      }
     </button>
-    <span id="the-name">Delete the project</span>`,
+    <span id="the-name">Delete the project</span>
+    <span id="the-label" aria-label="Delete the project"></span>
+    <span id="the-empty"> </span>`,
 })
 class IconOnlyHost {
   iconOnly = input(true);
-  loading = input(false);
   label = input<string | null>(null);
   labelledBy = input<string | null>(null);
+  labelFor = input<string | null>(null);
   title = input<string | null>(null);
   glyph = input('');
   words = input<string | null>(null);
   wordsHidden = input<string | null>(null);
+  wordsGone = input(false);
   image = input<string | null>(null);
   imageText = input('');
+  alt = input<string | null>(null);
+}
+
+/** The same square on a link: an `<a>` has no `labels`, and the reading must not need them. */
+@Component({
+  imports: [PctButton],
+  template: `<a pctButton iconOnly href="#" [attr.aria-label]="label()"
+    ><span aria-hidden="true"></span
+  ></a>`,
+})
+class IconOnlyLinkHost {
+  label = input<string | null>(null);
 }
 
 // The face as a template writes it — a bare attribute, which `booleanAttribute` reads as true.
@@ -271,13 +297,18 @@ describe('PctButton — icon only', () => {
   const warnings = () =>
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-  async function iconOnly(inputs: Record<string, unknown> = {}) {
-    const fixture = TestBed.createComponent(IconOnlyHost);
+  async function iconOnly(
+    inputs: Record<string, unknown> = {},
+    host: Type<unknown> = IconOnlyHost,
+    detached = false,
+  ) {
+    const fixture = TestBed.createComponent(host);
     for (const [k, v] of Object.entries(inputs))
       fixture.componentRef.setInput(k, v);
+    if (detached) (fixture.nativeElement as HTMLElement).remove();
     fixture.detectChanges();
     await TestBed.inject(ApplicationRef).whenStable();
-    return btnOf(fixture);
+    return fixture.nativeElement.querySelector('.pct-button') as HTMLElement;
   }
 
   /** The sentence, and only it — the button's two other sentences say other things. */
@@ -344,6 +375,33 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
+  it('a reference to an element named by its aria-label names it; one to an empty element does not', async () => {
+    const warn = warnings();
+    await iconOnly({ labelledBy: 'the-label' });
+    expect(named(warn)).toBe(true);
+    await iconOnly({ labelledBy: 'the-empty' });
+    expect(named(warn)).toBe(false);
+  });
+
+  it('a button not in a document yet looks its references up and finds none, rather than throwing', async () => {
+    // Its root is then the topmost element above it, which has no `getElementById` at all.
+    const warn = warnings();
+    await iconOnly({ labelledBy: 'the-name' }, IconOnlyHost, true);
+    expect(named(warn)).toBe(false);
+  });
+
+  it('a <label for> names it — the platform says so in `labels`, and no attribute on the button does', async () => {
+    const warn = warnings();
+    await iconOnly({ labelFor: 'Delete the project' });
+    expect(named(warn)).toBe(true);
+  });
+
+  it('a <label for> with no words in it does not', async () => {
+    const warn = warnings();
+    await iconOnly({ labelFor: '' });
+    expect(named(warn)).toBe(false);
+  });
+
   it('a title names it; a blank one does not', async () => {
     const warn = warnings();
     await iconOnly({ title: 'Delete the project' });
@@ -364,6 +422,15 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
+  it('but not words a browser leaves out — under `hidden`, or under aria-hidden in capitals', async () => {
+    const warn = warnings();
+    await iconOnly({ words: 'Delete the project', wordsGone: true });
+    expect(named(warn)).toBe(false);
+    const before = warn.mock.calls.length;
+    await iconOnly({ words: 'Delete the project', wordsHidden: 'TRUE' });
+    expect(warn.mock.calls.length).toBe(before + 1);
+  });
+
   it('but not words under aria-hidden — a ligature glyph spells its name and says nothing', async () => {
     const warn = warnings();
     await iconOnly({ glyph: 'delete' });
@@ -380,10 +447,19 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
-  it('the spinner, which stands where the glyph stood while it works, names nothing either', async () => {
+  it("an image's alt names it, and a blank alt does not", async () => {
     const warn = warnings();
-    const btn = await iconOnly({ loading: true });
-    expect(btn.querySelector('[data-pct-part="spinner"]')).toBeTruthy();
+    await iconOnly({ alt: 'Delete the project' });
+    expect(named(warn)).toBe(true);
+    await iconOnly({ alt: ' ' });
+    expect(named(warn)).toBe(false);
+  });
+
+  it('on a link, which has no `labels` to read: named by aria-label, and reported without one', async () => {
+    const warn = warnings();
+    await iconOnly({ label: 'Delete the project' }, IconOnlyLinkHost);
+    expect(named(warn)).toBe(true);
+    await iconOnly({}, IconOnlyLinkHost);
     expect(named(warn)).toBe(false);
   });
 });

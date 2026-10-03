@@ -85,7 +85,6 @@ import { Copy, Download, Pencil, Plus, RefreshCw, Trash2 } from 'lucide';
       variant="outline"
       aria-label="Refresh"
       [loading]="refreshing()"
-      [disabled]="refreshing()"
       (click)="refresh()"
     >
       <pct-icon icon="refresh" />
