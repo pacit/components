@@ -664,9 +664,14 @@ test.describe('The pages', () => {
     await expect(section).toHaveAttribute('open', '');
     expect(await box(heading), 'after opening the section').toEqual(closed);
 
-    await visit(page, '/components/skeleton');
+    // Under reduced motion, because this half measures inside the HERO stage: its child
+    // rises 8px on arrival (`.stage--hero > *`), a transform `getBoundingClientRect`
+    // includes, and nothing else here would wait for that rise to end before the first
+    // box is read — the two halves above measure in example stages, which have no
+    // entrance. The emulation goes before `goto`, the suite's own idiom (visual.spec).
+    await visit(page, '/components/skeleton', { reducedMotion: 'reduce' });
     // The swap of a skeleton for the text it stood for: the box keeps the skeleton's height,
-    // so the button under it stays put (it climbed 6px on every press).
+    // so the button under it stays put (it moved 6px on every press).
     const deliver = page
       .getByTestId('demo-panel')
       .locator('demo-skeleton button');
