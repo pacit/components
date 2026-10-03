@@ -7104,6 +7104,8 @@ the site's global sheet, because the host `ngComponentOutlet` creates carries no
 `_ngcontent` attribute: the emulated form of the rule matched nothing, measured on the first run.
 The component is not the place: a stable width there means measuring hidden panels or taking the
 text back out of the document, and both were refused once already. What stays centred is a row
-whose width is the content's own — the chips, a pagination: there the centring is the point, and
-what moves is what was removed. The press is the measurement — the control's box before and after
-it, equal to the pixel — and `docs-e2e` holds it.
+whose width is the content's own — the chips: there the centring is the point, and what moves is
+what was removed. A demo that swaps one box for another of a different height — the skeleton's —
+keeps its own height instead, in its own styles: the swap is the demo's, not a widget's state. The
+press is the measurement — the control's box before and after it, equal to the pixel — and
+`docs-e2e` holds it.

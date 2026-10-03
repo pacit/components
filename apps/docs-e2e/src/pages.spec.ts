@@ -614,7 +614,8 @@ test.describe('The pages', () => {
   /**
    * The control the reader presses stays where it was pressed (lesson-249). A demo the press
    * RESIZES — a strip whose host was as wide as the chosen panel, a stack that grows when a
-   * section opens — used to slide inside the centred stage: the box changed, the stage
+   * section opens, a skeleton swapped for a taller paragraph — used to slide inside the
+   * centred stage: the box changed, the stage
    * recentred it, and the pressed control moved under the pointer (under this runner's
    * fallback face: 7px sideways for a tab of the manual strip, 42px sideways and 16px up for
    * a heading; lesson-249 holds the live site's own numbers). The press is the measurement:
@@ -662,6 +663,18 @@ test.describe('The pages', () => {
     await heading.click();
     await expect(section).toHaveAttribute('open', '');
     expect(await box(heading), 'after opening the section').toEqual(closed);
+
+    await visit(page, '/components/skeleton');
+    // The swap of a skeleton for the text it stood for: the box keeps the skeleton's height,
+    // so the button under it stays put (it climbed 6px on every press).
+    const deliver = page
+      .getByTestId('demo-panel')
+      .locator('demo-skeleton button');
+    await expect(deliver).toHaveText('Deliver');
+    const pending = await box(deliver);
+    await deliver.click();
+    await expect(deliver).toHaveText('Reload');
+    expect(await box(deliver), 'after the article arrived').toEqual(pending);
   });
 
   test('the RTL row states the gate the repository really has', async ({

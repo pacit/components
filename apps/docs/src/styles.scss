@@ -374,24 +374,25 @@ body {
 }
 
 /* A demo the reader's press RESIZES — a strip whose panels differ in height, a stack that
-   folds, a tree that opens, a field that grows as you write — is pinned to the top edge of
-   the stage rather than centred in it. It reaches every stage that shares the class — the
-   hero, the examples, the theming island — on purpose: on those pages the hero's demo now
-   sits under the stage's top edge instead of centred in its floor.
-   Centred, the box recentres on every change of height, and the control just pressed
-   moves up by half of what opened: measured on the live accordion page, the heading under
-   the pointer climbed 16px as its section opened. Pinned, the growth goes down and the
-   pressed control stays where it was pressed. The width is the demo's own to fix, in its
-   host styles: a panel nobody chose is skipped for layout (0045), so a shrink-wrapped host
-   is exactly as wide as the chosen panel and slides sideways with every choice.
+   folds, a tree that opens, a field that grows as you write — is pinned to the top edge of the
+   stage rather than centred in it. Centred, the box recentres on every change of height, and
+   the control just pressed moves up by half of what opened: measured on the live accordion
+   page, the heading under the pointer climbed 16px as its section opened. Pinned, the growth
+   goes down and the pressed control stays where it was pressed. The rule reaches every stage
+   that shares the class — the hero, the examples, the theming island — on purpose: on those
+   pages the hero's demo now sits under the stage's top edge instead of centred in its floor.
+   The width is the demo's own to fix, in its host styles: a panel nobody chose is skipped for
+   layout (0045), so a shrink-wrapped host is exactly as wide as the chosen panel and slides
+   sideways with every choice.
 
    Here and not in the page's own sheet, where the stage is drawn: the host an
    `ngComponentOutlet` creates carries its own `_nghost` attribute and none of the page's
-   `_ngcontent`, so the emulated form of this rule — `[_ngcontent-…]:has(…)` — matched
-   nothing, measured on the first run. The child combinators keep it to the stage's own
-   demo: a strip inside a dialog a demo opens is deeper than one level. What stays centred
-   is a row whose width is the content's own — the chips, a pagination: there the centring
-   is the point, and what moves is what was removed (lesson-249). */
+   `_ngcontent`, so the emulated form of this rule — `[_ngcontent-…]:has(…)` — matched nothing,
+   measured on the first run. The child combinators keep it to the stage's own demo: a strip
+   inside a dialog a demo opens is deeper than one level. What stays centred is a row whose
+   width is the content's own — the chips: there the centring is the point, and what moves is
+   what was removed. A demo that swaps one box for another of a different height — the
+   skeleton's — keeps its own height instead, in its own styles (lesson-249). */
 .stage
   > :has(
     > pct-tabs,
