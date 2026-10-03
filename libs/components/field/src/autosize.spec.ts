@@ -256,8 +256,10 @@ describe('PctAutosize — a height that follows the text', () => {
       const height = vi.spyOn(area.style, 'height', 'set');
 
       // The width jsdom reports never changes, so this is the wake that follows our own
-      // write — and it must lead to nothing.
+      // write — and it must lead to nothing, read a frame later: the measurement waits for
+      // one, so an assertion made at once would pass with the guard taken out.
       wake();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
       expect(height).not.toHaveBeenCalled();
 
       Object.defineProperty(area, 'clientWidth', {
@@ -271,6 +273,48 @@ describe('PctAutosize — a height that follows the text', () => {
       expect(height).not.toHaveBeenCalled();
       await new Promise((resolve) => requestAnimationFrame(resolve));
       expect(height).toHaveBeenCalledTimes(2);
+      height.mockRestore();
+    } finally {
+      delete globals.ResizeObserver;
+    }
+  });
+
+  /**
+   * A measurement waiting for a frame is a write that can outlive the directive. Destroyed
+   * in between, the frame is cancelled and the observer let go — a box no longer ours is not
+   * measured, and nothing keeps watching it.
+   */
+  it('cancels a measurement still waiting for its frame when it is destroyed', async () => {
+    const globals = globalThis as { ResizeObserver?: unknown };
+    let wake = () => undefined as void;
+    let watching = false;
+    globals.ResizeObserver = class {
+      constructor(callback: () => void) {
+        wake = callback;
+      }
+      observe() {
+        watching = true;
+      }
+      disconnect() {
+        watching = false;
+      }
+    };
+    try {
+      const fixture = await render(Host);
+      const area = areaOf(fixture);
+      const height = vi.spyOn(area.style, 'height', 'set');
+      expect(watching).toBe(true);
+
+      Object.defineProperty(area, 'clientWidth', {
+        value: 123,
+        configurable: true,
+      });
+      wake();
+      fixture.destroy();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      expect(height).not.toHaveBeenCalled();
+      expect(watching).toBe(false);
       height.mockRestore();
     } finally {
       delete globals.ResizeObserver;
