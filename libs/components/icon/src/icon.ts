@@ -118,6 +118,11 @@ export const PCT_ICON_SOURCES = new InjectionToken<
  * providePctIcons(svgIcons({ logo: LOGO, house: House }), fontAwesome({ style: 'regular' }));
  *
  * @example
+ * // PrimeIcons for the application's ids and the select's arrow; every other component
+ * // keeps the drawing it ships with. `[]` keeps them all.
+ * providePctIcons(primeIcons({ roles: ['chevron-down'] }));
+ *
+ * @example
  * // A set component, as before: its templates replace the roles they name.
  * @Component({
  *   imports: [PctIconTemplate],

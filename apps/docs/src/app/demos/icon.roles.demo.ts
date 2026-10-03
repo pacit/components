@@ -2,8 +2,7 @@ import { Component } from '@angular/core';
 import { PctAvatar } from '@pacit/components/avatar';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import {
-  fontAwesome,
-  iconFont,
+  materialIcons,
   PctIcon,
   providePctIcons,
 } from '@pacit/components/icon';
@@ -17,7 +16,7 @@ const SCENE = `
   <span class="row">
     <pct-checkbox label="Ripe" [checked]="true" />
     <pct-avatar />
-    <pct-icon icon="bell" size="lg" />
+    <pct-icon icon="notifications" size="lg" />
   </span>
 `;
 const FRUIT: readonly PctSelectOption[] = [
@@ -29,13 +28,13 @@ const CARD = `
   .row { display: flex; align-items: center; gap: 12px; }
 `;
 
-// The font alone: Font Awesome's classes for your ids and not a word about the library's
-// roles, so every component keeps the drawing it ships with.
+// No roles at all: Material Icons for your ids, and every component keeps the drawing it
+// ships with.
 @Component({
   selector: 'demo-icon-roles-none',
   imports: [PctIcon, PctSelect, PctCheckbox, PctAvatar],
   providers: [
-    providePctIcons(iconFont({ class: (id) => `fa-solid fa-${id}` })),
+    providePctIcons(materialIcons({ variant: 'outlined', roles: [] })),
   ],
   styles: CARD,
   template: SCENE,
@@ -44,17 +43,14 @@ export class IconRolesNone {
   readonly fruit = FRUIT;
 }
 
-// One role, in the font's spelling: the select's arrow is Font Awesome's caret, and the
-// other nine drawings stay the library's.
+// One role, in the adapter's spelling: the select's arrow is Material's `expand_more`, and
+// the other nine drawings stay the library's.
 @Component({
   selector: 'demo-icon-roles-arrow',
   imports: [PctIcon, PctSelect, PctCheckbox, PctAvatar],
   providers: [
     providePctIcons(
-      iconFont({
-        class: (id) => `fa-solid fa-${id}`,
-        roles: { 'chevron-down': 'caret-down' },
-      }),
+      materialIcons({ variant: 'outlined', roles: ['chevron-down'] }),
     ),
   ],
   styles: CARD,
@@ -64,12 +60,16 @@ export class IconRolesArrow {
   readonly fruit = FRUIT;
 }
 
-// The adapter's whole map with one role handed back: Font Awesome's arrow and silhouette,
-// the library's tick.
+// The adapter's whole map with one role handed back: Material's arrow and silhouette, the
+// library's tick.
 @Component({
   selector: 'demo-icon-roles-tick',
   imports: [PctIcon, PctSelect, PctCheckbox, PctAvatar],
-  providers: [providePctIcons(fontAwesome({ roles: { check: undefined } }))],
+  providers: [
+    providePctIcons(
+      materialIcons({ variant: 'outlined', roles: { check: undefined } }),
+    ),
+  ],
   styles: CARD,
   template: SCENE,
 })
@@ -80,13 +80,13 @@ export class IconRolesTick {
 /**
  * Which roles a set dresses
  *
- * The `roles` of a source are what dresses the library, and the map is yours to shape. A
- * font with no roles — `iconFont()` and the font's class pattern — draws your ids and leaves
- * every component as it ships. One role in the map swaps that one drawing, in any spelling
- * the font has: the select's arrow becomes Font Awesome's caret in the second card, and
- * nothing else moves. The adapter's whole map with a role set to `undefined` is the mirror
- * image — Font Awesome's arrow and silhouette, and the checkbox's tick handed back to the
- * library. `primeIcons()`, `materialIcons()` and `svgIcons()` take `roles` the same way.
+ * The `roles` of a source are what dresses the library, and they are yours to choose. A
+ * list names the roles to dress and nothing else, each in the adapter's spelling: `[]` is a
+ * font that draws your ids and leaves every component as it ships, `['chevron-down']` is
+ * the select's arrow and nothing else. A map corrects the adapter's own, and a role set to
+ * `undefined` in it is handed back to the library — Material everywhere but the checkbox's
+ * tick. `primeIcons({ roles: [] })`, `fontAwesome()` and the others take `roles` the same
+ * way; `svgIcons()` takes the map.
  */
 @Component({
   selector: 'demo-icon-roles',
@@ -112,11 +112,11 @@ export class IconRolesTick {
   template: `
     <figure>
       <demo-icon-roles-none />
-      <figcaption>The font alone: nothing of the library's replaced</figcaption>
+      <figcaption>No roles: nothing of the library's replaced</figcaption>
     </figure>
     <figure>
       <demo-icon-roles-arrow />
-      <figcaption>One role: the arrow, as a caret</figcaption>
+      <figcaption>One role: the arrow, and nothing else</figcaption>
     </figure>
     <figure>
       <demo-icon-roles-tick />

@@ -59,7 +59,7 @@ before an application ships them.
 ./field 28587 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
-./icon 8165 - @angular/common,@angular/core
+./icon 8270 - @angular/common,@angular/core
 ./menu 20499 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 17627 ./core,./icon @angular/common,@angular/core
 ./popover 14783 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
