@@ -61,9 +61,11 @@ beside it with no layout of the consumer's, and a placeholder for it has to sit 
 
 **Half the box, as a literal.** `border-radius: 50%` is not the skin's corner and is not the
 token, because a circle is the one shape whose radius is its definition — any other value on a
-square is not a circle, and a skin that wanted a rounded square wants `block`. The two literal
-`50%` already in the library, the radio's dot and the button's icon-only face, are the same
-statement.
+square is not a circle, and a skin that wanted a rounded square wants `block`. The literal
+`50%` already in the library — the radio's, twice, and the button's spinner ring — is the same
+statement. (This sentence first named the button's "icon-only face": there was none, and
+the one [0085](0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md) built draws
+the skin's corner — the literal was always the spinner's.)
 
 ## What was measured
 

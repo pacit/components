@@ -96,6 +96,28 @@
         "$type": "dimension",
         "$value": "{pct.space.5}",
         "$description": "Horizontal padding at size lg."
+      },
+      "$comment-icon-size": "The glyph on the icon-only face (0085): the icon's own three steps, one per size — 16 / 20 / 24 inside 28 / 36 / 44, 57, 56 and 55 per cent of the square. Literals and not references, because the steps are the icon's tokens and a component token pointing at another component's is the sideways reference req-token-override forbids: overriding `--pct-icon-size` must not resize a button. What holds the two equal in this skin is a reading, not a reference: `apps/sandbox-e2e/src/button.spec.ts` resolves both sets on the page and requires them to agree.",
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Glyph size on the icon-only face at size md."
+      },
+      "icon-size-sm": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Glyph size on the icon-only face at size sm."
+      },
+      "icon-size-lg": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Glyph size on the icon-only face at size lg."
+      },
+      "$comment-target-min": "The touch floor (req-a11y-touch): under the height of every face, and under both axes of the square. The heights clear it at every size and density today — this is what a theme that shrinks them runs into. A labelled button's width is its words and its padding and stands on no floor, because a floor there replaced the automatic minimum a flex item keeps and let the button shrink past its label (measured, 0085); a square has no words, so it is only as wide as the height it was given.",
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Smallest height any face draws, and the smallest width of the square."
       }
     }
   }

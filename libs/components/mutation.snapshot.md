@@ -92,7 +92,7 @@ libs/components/accordion/src/accordion.ts 75.00 3(0) 1 0 0 1
 libs/components/avatar/src/avatar.ts 87.50 28(0) 3 0 1 0
 libs/components/badge/src/badge.ts 81.82 9(0) 2 0 0 0
 libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0 0
-libs/components/button/src/button.ts 84.62 44(0) 8 0 0 2
+libs/components/button/src/button.ts 92.54 124(0) 10 0 0 3
 libs/components/checkbox/src/checkbox.ts 92.73 51(0) 4 0 0 6
 libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
@@ -110,7 +110,7 @@ libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
 libs/components/core/src/texts.ts 97.30 36(0) 1 0 0 0
 libs/components/date/src/calendar.ts 74.16 132(0) 44 0 2 4
 libs/components/date/src/date.ts 66.83 139(0) 67 0 2 8
-libs/components/date/src/day.ts 97.52 157(0) 4 0 0 0
+libs/components/date/src/day.ts 97.52 157(2) 4 0 0 0
 libs/components/date/src/locale.ts 80.49 132(2) 27 0 5 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
@@ -152,7 +152,7 @@ libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
-libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
+libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 84.18 5039/5986
+TOTAL 84.40 5145/6096
 ```

@@ -321,6 +321,41 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-toast-close-size',
     opens: 'raise-standing',
   },
+  {
+    // The labelled button, on the block axis alone. Its height has always cleared 24 px by
+    // itself (28 at the smallest size, 26 under compact density) and is a skin's to take away;
+    // its width is its words and its padding, and a floor there was measured replacing the
+    // automatic minimum a flex item keeps (0085) — so the width carries none.
+    name: 'button',
+    applies: 'libs/components/button/src/button.scss :host',
+    route: '/button',
+    selector: '[data-testid="btn-solid"]',
+    axis: 'block',
+    zero: [
+      '--pct-button-height',
+      '--pct-button-height-sm',
+      '--pct-button-height-lg',
+    ],
+    ceiling: 24,
+    floor: '--pct-button-target-min',
+  },
+  {
+    // The icon-only button: a square only as wide as the height a skin gives it, so the floor
+    // stands under both axes here too, and what is taken away is that height at every size.
+    name: 'icon-only button',
+    applies:
+      'libs/components/button/src/button.scss :host([data-pct-icon-only])',
+    route: '/button',
+    selector: '[data-testid="icon-only-md"]',
+    axis: 'both',
+    zero: [
+      '--pct-button-height',
+      '--pct-button-height-sm',
+      '--pct-button-height-lg',
+    ],
+    ceiling: 24,
+    floor: '--pct-button-target-min',
+  },
 ];
 
 /** The floor every one of them claims (`--pct-target-min`). */
