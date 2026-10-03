@@ -16,10 +16,10 @@ export type PctIconRoles = Readonly<
  * Which of the library's roles a font dresses, said one of two ways. A **map** corrects an
  * adapter's own — `{ close: 'times' }` for a version that spells one differently, `undefined`
  * to keep the library's drawing for that one role — and the rest of the map stands; a font of
- * your own has no map of its own, and takes the map as it is. A **list**
- * names the roles to dress and nothing else, each in the adapter's spelling: `['chevron-down']`
- * dresses the select's arrow and leaves every other component as it ships, `[]` dresses none —
- * the font draws your ids, and the library draws its own.
+ * your own has no map of its own, and takes the map as it is. A **list** names the roles to
+ * dress and nothing else, each in the adapter's spelling: `['chevron-down']` dresses the
+ * select's arrow and leaves every other component as it ships, `[]` dresses none — the font
+ * draws your ids, and the library draws its own.
  *
  * @since next
  */
@@ -117,8 +117,8 @@ const rolesOf = (
 
 /**
  * An adapter's roles: a list picked out of its own map, or corrections over the whole of
- * it — the whole of it when there are none. Not copied here: `iconFont` copies what it is
- * handed.
+ * it — the whole of it when there are none. No copy of its own for that last case: the
+ * spread is a fresh object already, and `iconFont` copies once more what it is handed.
  */
 const adapterRoles = (
   defaults: Readonly<Record<PctIconName, string>>,
