@@ -615,9 +615,10 @@ test.describe('The pages', () => {
    * The control the reader presses stays where it was pressed (lesson-249). A demo the press
    * RESIZES — a strip whose host was as wide as the chosen panel, a stack that grows when a
    * section opens — used to slide inside the centred stage: the box changed, the stage
-   * recentred it, and the pressed control moved under the pointer (7px sideways for the
-   * manual strip, 42px sideways and 16px up for a heading). The press is the measurement: the
-   * control's box before and after it, equal to the pixel.
+   * recentred it, and the pressed control moved under the pointer (under this runner's
+   * fallback face: 7px sideways for a tab of the manual strip, 42px sideways and 16px up for
+   * a heading; lesson-249 holds the live site's own numbers). The press is the measurement:
+   * the control's box before and after it, equal to the pixel.
    *
    * The manual strip and not the side one, although the side one slid 45px in a browser
    * with the site's fonts: its old host was capped at 32rem, and under this runner's wider
@@ -640,15 +641,16 @@ test.describe('The pages', () => {
       });
 
     await visit(page, '/components/tabs');
-    // The strip: its host took the chosen panel's width, and the stage recentred it.
+    // A tab of the strip: the host took the chosen panel's width, the stage recentred it,
+    // and the tab just pressed moved with it.
     const strip = page.locator('#ex-manual [role="tablist"]');
     await expect(strip).toBeVisible();
-    const rest = await box(strip);
     for (const name of ['Weekly', 'Yearly', 'Daily']) {
       const tab = strip.getByRole('tab', { name });
+      const rest = await box(tab);
       await tab.click();
       await expect(tab).toHaveAttribute('aria-selected', 'true');
-      expect(await box(strip), `after choosing ${name}`).toEqual(rest);
+      expect(await box(tab), `after choosing ${name}`).toEqual(rest);
     }
 
     await visit(page, '/components/accordion');

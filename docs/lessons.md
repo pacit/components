@@ -7095,14 +7095,15 @@ takes its container's width and stands still, and 0046 had already refused the f
 on evidence — the stage was the defect: it centred boxes whose size the reader's press
 changes.
 
-The rule: a stage that centres what it holds gives such a demo a fixed width and a fixed top
-edge, each in the layer that owns it. The width is the demo's own host style —
-`inline-size: min(100%, 32rem)` — because it is what a consumer writes, and the Code tab
-shows it as such; the edge is the stage's, `align-self: start` for a demo holding a strip, a
-stack or a tree, because only the stage knows that it centres — and written in the site's
-global sheet, because the host `ngComponentOutlet` creates carries none of the page's
-`_ngcontent` attribute: the emulated form of the rule matched nothing, measured on the first
-run. The component is not the
-place: a stable width there means measuring hidden panels or taking the text back out of
-the document, and both were refused once already. The press is the measurement — the
-control's box before and after it, equal to the pixel — and `docs-e2e` holds it.
+The rule: a stage that centres what it holds gives such a demo a fixed width and a fixed top edge,
+each in the layer that owns it. The width is the demo's own host style —
+`inline-size: min(100%, 32rem)` — because it is what a consumer writes, and the Code tab shows it
+as such; the edge is the stage's, `align-self: start` for a demo holding a strip, a stack, a tree
+or a field that grows as you write, because only the stage knows that it centres — and written in
+the site's global sheet, because the host `ngComponentOutlet` creates carries none of the page's
+`_ngcontent` attribute: the emulated form of the rule matched nothing, measured on the first run.
+The component is not the place: a stable width there means measuring hidden panels or taking the
+text back out of the document, and both were refused once already. What stays centred is a row
+whose width is the content's own — the chips, a pagination: there the centring is the point, and
+what moves is what was removed. The press is the measurement — the control's box before and after
+it, equal to the pixel — and `docs-e2e` holds it.
