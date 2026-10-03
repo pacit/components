@@ -13,18 +13,31 @@ export type PctIconRoles = Readonly<
 >;
 
 /**
+ * Which of the library's roles a font dresses, said one of two ways. A **map** corrects the
+ * adapter's own — `{ close: 'times' }` for a version that spells one differently, `undefined`
+ * to keep the library's drawing for that one role — and the rest of the map stands. A **list**
+ * names the roles to dress and nothing else, each in the adapter's spelling: `['chevron-down']`
+ * dresses the select's arrow and leaves every other component as it ships, `[]` dresses none —
+ * the font draws your ids, and the library draws its own.
+ *
+ * @since next
+ */
+export type PctIconRoleSelection = PctIconRoles | readonly PctIconName[];
+
+/**
  * What every font adapter takes besides its own knobs.
  *
  * @since next
  */
 export interface PctIconFontRoles {
   /**
-   * Roles to spell differently, or to keep the library's drawing for (`undefined`). Merged
-   * over the adapter's own map.
+   * The roles this font dresses: a map of corrections over the adapter's own, or a list of
+   * the roles to dress and nothing else. Left out, an adapter dresses all ten and a font of
+   * your own dresses none.
    *
    * @since next
    */
-  readonly roles?: PctIconRoles;
+  readonly roles?: PctIconRoleSelection;
 }
 
 /**
@@ -61,6 +74,10 @@ export interface PctIconFontOptions extends PctIconFontRoles {
  * what the class names and nothing for a class the stylesheet does not know — so a font
  * stands last among the sources, after any that answer for a few ids and `null` for the rest.
  *
+ * A font of your own knows no spelling of the roles but the library's, so its `roles` are
+ * the map it is given — and a list names roles under their own names, for a font whose
+ * glyphs happen to carry them.
+ *
  * @example
  * providePctIcons(iconFont({ class: (id) => `acme acme-${id}`, roles: { close: 'cross' } }))
  *
@@ -75,15 +92,39 @@ export function iconFont(options: PctIconFontOptions): PctIconSource {
       ...(text === undefined ? {} : { text: text(id) }),
       ...(style === undefined ? {} : { style }),
     }),
-    roles: { ...roles },
+    roles: rolesOf(roles, (name) => name),
   };
 }
 
-/** The adapter's own map, with the consumer's corrections over it. */
+/** `Array.isArray` narrows a readonly array to nothing useful; this one narrows. */
+const isList = (
+  selection: PctIconRoleSelection,
+): selection is readonly PctIconName[] => Array.isArray(selection);
+
+/**
+ * The roles a source carries, from what it was told and how the source spells them: nothing
+ * when nothing was said, a list spelled by the source, a map as it was given.
+ */
 const rolesOf = (
+  selection: PctIconRoleSelection | undefined,
+  spell: (name: PctIconName) => string | undefined,
+): PctIconRoles =>
+  selection === undefined
+    ? {}
+    : isList(selection)
+      ? Object.fromEntries(selection.map((name) => [name, spell(name)]))
+      : { ...selection };
+
+/** An adapter's roles: its own map whole, a list picked out of it, or corrections over it. */
+const adapterRoles = (
   defaults: Readonly<Record<PctIconName, string>>,
-  overrides: PctIconRoles | undefined,
-): PctIconRoles => ({ ...defaults, ...overrides });
+  selection: PctIconRoleSelection | undefined,
+): PctIconRoles =>
+  selection === undefined
+    ? { ...defaults }
+    : isList(selection)
+      ? rolesOf(selection, (name) => defaults[name])
+      : { ...defaults, ...selection };
 
 /**
  * What FontAwesome's stylesheet is told, besides the roles.
@@ -136,7 +177,7 @@ export function fontAwesome(
   const first = options.prefix ?? `fa-${options.style ?? 'solid'}`;
   return iconFont({
     class: (id) => `${first} fa-${id}`,
-    roles: rolesOf(FONT_AWESOME_ROLES, options.roles),
+    roles: adapterRoles(FONT_AWESOME_ROLES, options.roles),
   });
 }
 
@@ -162,7 +203,7 @@ const PRIME_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
 export function primeIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
     class: (id) => `pi pi-${id}`,
-    roles: rolesOf(PRIME_ICONS_ROLES, options.roles),
+    roles: adapterRoles(PRIME_ICONS_ROLES, options.roles),
   });
 }
 
@@ -188,7 +229,7 @@ const BOOTSTRAP_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
 export function bootstrapIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
     class: (id) => `bi bi-${id}`,
-    roles: rolesOf(BOOTSTRAP_ICONS_ROLES, options.roles),
+    roles: adapterRoles(BOOTSTRAP_ICONS_ROLES, options.roles),
   });
 }
 
@@ -244,7 +285,7 @@ export function materialIcons(
   return iconFont({
     class: () => cls,
     text: (id) => id,
-    roles: rolesOf(MATERIAL_ROLES, options.roles),
+    roles: adapterRoles(MATERIAL_ROLES, options.roles),
   });
 }
 
@@ -301,6 +342,6 @@ export function materialSymbols(
     ...(axes.length
       ? { style: { 'font-variation-settings': axes.join(', ') } }
       : {}),
-    roles: rolesOf(MATERIAL_ROLES, options.roles),
+    roles: adapterRoles(MATERIAL_ROLES, options.roles),
   });
 }

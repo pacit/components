@@ -72,7 +72,12 @@ Five sentences, and each is a measurement or a refusal.
    avatar's silhouette and the toast's four marks all wear PrimeIcons. Knowledge, not glyphs:
    an adapter is a pure function with no import of the package, and `req-api-icons-custom`
    holds. A role spelled differently by a consumer's version is an override; a role set to
-   `undefined` keeps the library's drawing.
+   `undefined` keeps the library's drawing. A list in place of the map names the roles to
+   dress and nothing else, in the adapter's spelling — `['chevron-down']` for the arrow
+   alone, `[]` for a font that draws the application's ids and leaves every component as it
+   ships (added 2026-10-03: the first page of examples showed that "PrimeIcons for my icons,
+   the library's own drawings for its components" had no shorter spelling than rewriting the
+   adapter's class pattern in `iconFont()`).
 4. **The box learned four things and the renderer moved out.** `icon`, `tone`, `size` and
    `label` are inputs of `pct-icon`; the tone is `PctTone` and paints the box with
    `--pct-icon-fg-<tone>`, the size steps `--pct-icon-size(-sm|-lg)`, the label turns

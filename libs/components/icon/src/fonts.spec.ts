@@ -62,6 +62,15 @@ describe('@pacit/components/icon — fonts', () => {
       });
       expect(font.roles).toEqual({ close: 'cross' });
     });
+
+    it('a list names roles under their own names — the only spelling a font of yours has', () => {
+      const font = iconFont({
+        class: (id) => `acme acme-${id}`,
+        roles: ['check', 'close'],
+      });
+      expect(font.roles).toEqual({ check: 'check', close: 'close' });
+      expect(iconFont({ class: () => 'acme', roles: [] }).roles).toEqual({});
+    });
   });
 
   describe('fontAwesome', () => {
@@ -110,6 +119,30 @@ describe('@pacit/components/icon — fonts', () => {
       expect(roles?.calendar).toBeUndefined();
       expect(roles?.check).toBe('check');
       expect(roles?.warning).toBe('triangle-exclamation');
+    });
+
+    it("a list names the roles to dress and nothing else, in the adapter's spelling", () => {
+      expect(fontAwesome({ roles: ['chevron-down', 'close'] }).roles).toEqual({
+        'chevron-down': 'chevron-down',
+        close: 'xmark',
+      });
+      expect(
+        Object.keys(
+          fontAwesome({ roles: ['chevron-down', 'close'] }).roles ?? {},
+        ),
+      ).toEqual(['chevron-down', 'close']);
+    });
+
+    it('an empty list dresses nothing, and the font still answers for every id', () => {
+      const font = fontAwesome({ roles: [] });
+      expect(font.roles).toEqual({});
+      expect(glyph(font, 'house').class).toBe('fa-solid fa-house');
+    });
+
+    it('the roles are a copy: a consumer writing on them changes nothing it reads later', () => {
+      const first = fontAwesome().roles as Record<string, string>;
+      first['close'] = 'times';
+      expect(fontAwesome().roles?.close).toBe('xmark');
     });
   });
 
