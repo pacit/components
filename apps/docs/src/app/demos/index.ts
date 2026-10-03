@@ -160,8 +160,38 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
   ],
   icon: [
     {
+      key: 'prime',
+      load: () => import('./icon.prime.demo').then((m) => m.IconPrimeDemo),
+    },
+    {
+      key: 'material',
+      load: () =>
+        import('./icon.material.demo').then((m) => m.IconMaterialDemo),
+    },
+    {
+      key: 'fontawesome',
+      load: () =>
+        import('./icon.fontawesome.demo').then((m) => m.IconFontAwesomeDemo),
+    },
+    {
+      key: 'svg',
+      load: () => import('./icon.svg.demo').then((m) => m.IconSvgDemo),
+    },
+    {
+      key: 'webfont',
+      load: () => import('./icon.webfont.demo').then((m) => m.IconWebfontDemo),
+    },
+    {
+      key: 'mixed',
+      load: () => import('./icon.mixed.demo').then((m) => m.IconMixedDemo),
+    },
+    {
       key: 'dressed',
       load: () => import('./icon.dressed.demo').then((m) => m.IconDressedDemo),
+    },
+    {
+      key: 'roles',
+      load: () => import('./icon.roles.demo').then((m) => m.IconRolesDemo),
     },
     {
       key: 'tones',
