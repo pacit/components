@@ -11,7 +11,7 @@ import { PctAccordion, PctAccordionItem } from '@pacit/components/accordion';
 @Component({
   selector: 'demo-accordion-exclusive',
   imports: [PctAccordion, PctAccordionItem],
-  styles: ':host { display: block; max-inline-size: 36rem; }',
+  styles: ':host { display: block; inline-size: min(100%, 36rem); }',
   template: `
     <pct-accordion exclusive [headingLevel]="4">
       <pct-accordion-item label="Do I need zone.js?">

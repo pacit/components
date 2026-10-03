@@ -5,6 +5,7 @@ import { PctTab, PctTabs } from '@pacit/components/tabs';
 @Component({
   selector: 'demo-tabs',
   imports: [PctTab, PctTabs],
+  styles: ':host { display: block; inline-size: min(100%, 32rem); }',
   template: `
     <pct-tabs [(value)]="section" ariaLabel="Account settings">
       <pct-tab value="general" label="General">

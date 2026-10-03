@@ -7078,3 +7078,31 @@ component the box does not create belongs to the source that names it, in an ent
 that source imports — and the question is answered by `size.snapshot.md`, never by reading the
 import graph, because the graph said the renderer was reachable from one place and the bundle
 said fourteen.
+
+### <a id="lesson-249"></a>`lesson-249` — A centred stage that shrink-wraps its demo moves the control the reader just pressed
+
+On 2026-10-03 the owner used the tabs and accordion examples on the site and saw them jump.
+Measured on the live site at 1280px: no tabs demo changed height — every panel is one line —
+but the side strip slid 45px as the panels were chosen in turn, and the manual strip 11px. A
+panel nobody chose is skipped for layout (0045: `content-visibility: hidden` is how
+`until-found` hides it), so a host that shrinks to fit its content is exactly as wide as the
+chosen panel — and the stage held every demo as a flex item centred on both axes. The
+accordion did it on both: a section opened, the stack went from 257 to 548px wide because the
+sentence inside is longer than the heading above it, the heading slid 145px sideways, and in
+the example beside its prose it climbed 16px as the stage recentred the taller box. The tree
+moved the same two ways. Nothing in the library was wrong — in normal flow a block host
+takes its container's width and stands still, and 0046 had already refused the fold's motion
+on evidence — the stage was the defect: it centred boxes whose size the reader's press
+changes.
+
+The rule: a stage that centres what it holds gives such a demo a fixed width and a fixed top
+edge, each in the layer that owns it. The width is the demo's own host style —
+`inline-size: min(100%, 32rem)` — because it is what a consumer writes, and the Code tab
+shows it as such; the edge is the stage's, `align-self: start` for a demo holding a strip, a
+stack or a tree, because only the stage knows that it centres — and written in the site's
+global sheet, because the host `ngComponentOutlet` creates carries none of the page's
+`_ngcontent` attribute: the emulated form of the rule matched nothing, measured on the first
+run. The component is not the
+place: a stable width there means measuring hidden panels or taking the text back out of
+the document, and both were refused once already. The press is the measurement — the
+control's box before and after it, equal to the pixel — and `docs-e2e` holds it.

@@ -11,7 +11,7 @@ import { PctTab, PctTabs } from '@pacit/components/tabs';
 @Component({
   selector: 'demo-tabs-manual',
   imports: [PctTab, PctTabs],
-  styles: ':host { display: block; }',
+  styles: ':host { display: block; inline-size: min(100%, 32rem); }',
   template: `
     <pct-tabs [(value)]="report" activation="manual" ariaLabel="Reports">
       <pct-tab value="daily" label="Daily">

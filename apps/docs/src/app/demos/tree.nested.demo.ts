@@ -10,7 +10,7 @@ import { PctTree, PctTreeItem } from '@pacit/components/tree';
 @Component({
   selector: 'demo-tree-nested',
   imports: [PctTree, PctTreeItem],
-  styles: ':host { display: grid; gap: 12px; }',
+  styles: ':host { display: grid; gap: 12px; inline-size: min(100%, 20rem); }',
   template: `
     <pct-tree ariaLabel="Repository" [(selected)]="chosen">
       <pct-tree-item value="apps" [expanded]="true">
