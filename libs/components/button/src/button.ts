@@ -12,9 +12,10 @@ import { PCT_CONFIG, PctTone } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
- * The words a reader would make a name of: an element's `aria-label` or `alt`, otherwise the
- * text of its content, otherwise its `title` — and nothing under `hidden` (`until-found` is
- * still in the page) or `aria-hidden`, where the spinner and every unnamed `pct-icon` sit.
+ * The words a reader would make a name of: an element's `aria-label` or `alt` (a blank one is
+ * none), otherwise the text of its content, otherwise its `title` — and nothing under `hidden`
+ * (`until-found`, in any case, is still in the page) or `aria-hidden`, where the spinner and
+ * every unnamed `pct-icon` sit.
  * A named `pct-icon` answers with its label.
  *
  * Attributes rather than properties, and `nodeType` rather than `instanceof`: a custom
@@ -25,14 +26,15 @@ function spoken(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
   if (node.nodeType !== Node.ELEMENT_NODE) return '';
   const el = node as Element;
-  const hidden = el.getAttribute('hidden');
+  const hidden = el.getAttribute('hidden')?.toLowerCase();
   if (
-    (hidden !== null && hidden !== 'until-found') ||
+    (hidden !== undefined && hidden !== 'until-found') ||
     el.getAttribute('aria-hidden')?.trim().toLowerCase() === 'true'
   )
     return '';
-  const alternative = el.getAttribute('aria-label') || el.getAttribute('alt');
-  if (alternative?.trim()) return alternative;
+  const alternative =
+    el.getAttribute('aria-label')?.trim() || el.getAttribute('alt')?.trim();
+  if (alternative) return alternative;
   return (
     Array.from(el.childNodes, spoken).join('').trim() ||
     (el.getAttribute('title') ?? '')

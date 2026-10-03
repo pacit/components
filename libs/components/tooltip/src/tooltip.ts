@@ -121,9 +121,9 @@ function shownWords(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
   if (node.nodeType !== Node.ELEMENT_NODE) return '';
   const el = node as Element;
-  const hidden = el.getAttribute('hidden');
+  const hidden = el.getAttribute('hidden')?.toLowerCase();
   if (
-    (hidden !== null && hidden !== 'until-found') ||
+    (hidden !== undefined && hidden !== 'until-found') ||
     el.getAttribute('aria-hidden')?.trim().toLowerCase() === 'true'
   )
     return '';

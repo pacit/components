@@ -91,7 +91,9 @@ class LinkHost {
         }}</span>
       }
       @if (image() !== null) {
-        <span role="img" [attr.aria-label]="image()">{{ imageText() }}</span>
+        <span role="img" [attr.aria-label]="image()" [attr.alt]="imageAlt()">{{
+          imageText()
+        }}</span>
       }
       @if (alt() !== null || imgTitle() !== null) {
         <img [attr.alt]="alt()" [attr.title]="imgTitle()" src="data:," />
@@ -115,6 +117,7 @@ class IconOnlyHost {
   wordsGone = input<string | null>(null);
   image = input<string | null>(null);
   imageText = input('');
+  imageAlt = input<string | null>(null);
   alt = input<string | null>(null);
   imgTitle = input<string | null>(null);
 }
@@ -447,9 +450,10 @@ describe('PctButton — icon only', () => {
     }
   });
 
-  it('`hidden="until-found"` is still in the page, and its words name it', async () => {
+  it('`hidden="until-found"` is still in the page, in any case, and its words name it', async () => {
     const warn = warnings();
     await iconOnly({ words: 'Delete the project', wordsGone: 'until-found' });
+    await iconOnly({ words: 'Delete the project', wordsGone: 'UNTIL-FOUND' });
     expect(named(warn)).toBe(true);
   });
 
@@ -475,6 +479,18 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(true);
     await iconOnly({ image: ' ' });
     expect(named(warn)).toBe(false);
+  });
+
+  it('a blank aria-label is none: the alt beside it names it, and a blank alt falls through to the words', async () => {
+    const warn = warnings();
+    await iconOnly({ image: ' ', imageAlt: 'Delete the project' });
+    expect(named(warn)).toBe(true);
+    await iconOnly({
+      image: ' ',
+      imageAlt: ' ',
+      imageText: 'Delete the project',
+    });
+    expect(named(warn)).toBe(true);
   });
 
   it("an image's alt names it, and a blank alt does not", async () => {

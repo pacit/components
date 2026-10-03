@@ -52,11 +52,13 @@ counts a name, because a sentence that fires on a page that is fine teaches peop
 the sentence, and an unnamed button it misses is still the axe audit's to find. It counts the
 button's own `aria-label` and `title`, an `aria-labelledby` whose target has words in it (read
 whole, since a browser reads a hidden target it is pointed at), a `<label for>` — the
-platform's `labels` — and in the content: words, an element's `aria-label` or `alt`, an image's
-`title`, and nothing under `hidden` or `aria-hidden`. A visually hidden span is a common, valid
-way to name a button, and it counts. The shapes it still reads wrong were measured against
-Chromium's tree in review: text drawn by a stylesheet's `content` is invisible to it, and
-content hidden by a stylesheet rather than an attribute counts.
+platform's `labels` — and in the content: words, an element's `aria-label` or `alt`, the
+`title` of an element with no words, and nothing under `hidden` or `aria-hidden`. A visually hidden span is a common, valid
+way to name a button, and it counts. Among the shapes it still reads wrong, measured against
+Chromium's tree in review: text drawn by a stylesheet's `content` and a descendant's own
+`aria-labelledby` are invisible to it, so a button named only so is reported; content hidden
+by a stylesheet rather than an attribute, and `aria-hidden` words inside a labelledby target,
+are counted, so a button they fail to name is not.
 
 ## What the shape is
 
@@ -73,9 +75,11 @@ content hidden by a stylesheet rather than an attribute counts.
   stands on the same token, `min-height: max(height, floor)`, and `target-min.spec.ts` reads it
   with every height zeroed. **The height alone**, and that was measured too: a floor on the
   width, `min-inline-size`, replaced the automatic minimum a flex or grid item keeps, so in a
-  row too narrow for it a labelled button shrank past its own label — "Download report" went
-  to 65 px around 83 px of words. A labelled button's width is its words and its padding; an
-  e2e case squeezes the variants' row to 120 px and requires every button to keep its width.
+  row too narrow for them labelled buttons shrank past their own labels — the sandbox's five
+  faces, 69 to 85 px wide in chromium, all went to 34 px in a row of 120. A labelled button's
+  width is its words and its padding; an e2e case squeezes that row and requires every width
+  to hold. What that leaves is a gap the card names: a skin that zeroes the padding of a
+  one-character label draws a button narrower than 24 px, and no gate says so.
 - **The glyph on the icon's own step for the size** — 16 / 20 / 24 inside 28 / 36 / 44, 57, 56
   and 55 per cent of the square — reached through the host's `font-size`, because
   `pct-icon` is `1em`. A consumer writes no size; one who writes `size` on the icon still
@@ -131,9 +135,9 @@ loading square's name from "Search" to nothing.
 
 Four tokens (`icon-size` ×3, `target-min`), one input and a dev-mode sentence on the most used
 component, and the bytes are recorded rather than estimated: the `./button` probe in
-`libs/components/size.snapshot.md` went from 13391 B to 15412 B — **943 for the geometry**
+`libs/components/size.snapshot.md` went from 13391 B to 15436 B — **943 for the geometry**
 (the square, the input, the host binding, and the floor the labelled face's height now stands
-on) and **1078 for the sentence**, measured by building the probe once without it. The second number
+on) and **1102 for the sentence**, measured by building the probe once without it. The second number
 is the library's convention and not this face's: every developer warning here stands behind
 `isDevMode()`, which `check-texts` point 6 requires and a production build cannot fold,
 so the button's two older sentences ship the same way.

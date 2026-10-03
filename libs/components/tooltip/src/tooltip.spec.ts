@@ -617,7 +617,7 @@ describe('PctTooltip', () => {
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);
       // Shown outright, and under `hidden="until-found"`, which leaves it in the page.
-      for (const gone of [null, 'until-found']) {
+      for (const gone of [null, 'until-found', 'UNTIL-FOUND']) {
         warn.mockClear();
         const fixture = TestBed.createComponent(LigatureHost);
         fixture.componentInstance.hidden.set(null);

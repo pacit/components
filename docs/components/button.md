@@ -120,6 +120,11 @@ it is also why the two elements differ here rather than being made to agree.
   but no face paints it — and an icon-only button is the most common toggle there is. A pressed
   state belongs to every button and is its own decision
   ([0085](../decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+- **A labelled button's width stands on no floor.** Its height does; its width is its words and
+  its padding, because a width floor was measured letting buttons shrink past their labels in a
+  narrow row. A skin that zeroes `--pct-button-padding-x` around a one-character label draws a
+  target narrower than 24 px, and no gate says so — that is what `iconOnly` is for
+  ([0085](../decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
 - **A glyph beside words is not the square's glyph.** A `pct-icon` in a labelled button stays
   `1em` of the label (13 / 14 / 16 px); the square draws its glyph at 16 / 20 / 24. A toolbar
   that mixes the two shows two scales.
