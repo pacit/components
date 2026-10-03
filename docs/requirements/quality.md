@@ -507,7 +507,7 @@ a hand-written colour) — each on a different rule
 stay on one platform (linux/chromium) — rasterisation would scatter them anyway.
 
 **Gate:** `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, firefox,
-webkit), 2086 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
+webkit), 2189 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
 root project, in CI) — six points, 28 rules. The e2e run is blind to its own matrix:
 Playwright exits zero after three projects exactly as it does after one, and exactly as it
 does after **zero** collected tests. So the gate asks `playwright test --list --reporter=json`

@@ -1,6 +1,6 @@
 # 0041 — A height the platform computes, and a measurement only where it does not
 
-**Status:** accepted
+**Status:** accepted — the case written to expire (Consequences) superseded by 0084
 **Implements:** [`req-api-platform`](../requirements/api.md#req-api-platform),
 [`req-api-native-input`](../requirements/api.md#req-api-native-input),
 [`req-quality-browsers`](../requirements/quality.md#req-quality-browsers)

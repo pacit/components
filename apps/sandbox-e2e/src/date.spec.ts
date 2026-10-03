@@ -421,3 +421,83 @@ test.describe('Date — the bounds and the holes in them', () => {
     await expect(panelOf(page)).toBeVisible();
   });
 });
+
+/**
+ * Which day a week starts on, asked of the platform and of the table that stands in for it.
+ *
+ * `Intl.Locale.prototype.getWeekInfo` is in all three engines here since firefox 155, and the
+ * table in `date/src/locale.ts` stays for the older ones Angular still supports
+ * ([0084](../../../docs/decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
+ * The unit suite checks the table against CLDR for every region; this checks that a grid is
+ * really DRAWN from it when the platform is gone, so every case runs twice — once with the
+ * method, once with an init script deleting it before the application starts. The answer
+ * is not ours either way: the method is kept aside, and the expected first column is the
+ * platform's own `firstDay` named by the platform's own formatter.
+ */
+const WEEK_ROADS = ['platform', 'table'] as const;
+
+for (const road of WEEK_ROADS) {
+  test.describe(`Date — the first day of the week, ${road} road`, () => {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript((takeAway) => {
+        const proto = Intl.Locale.prototype as Intl.Locale & {
+          getWeekInfo?: () => { firstDay: number };
+        };
+        Object.defineProperty(window, '__pctWeekInfo', {
+          value: proto.getWeekInfo,
+        });
+        if (takeAway) delete proto.getWeekInfo;
+      }, road === 'table');
+      await visit(page, '/date');
+    });
+
+    /**
+     * Japanese is the field on this page whose week does NOT start on Monday — Japan is a
+     * row of the table — and Polish the one whose does. A table emptied draws Monday for
+     * both, which is red on the first; a table that answered for every region is red on the
+     * second.
+     */
+    for (const [id, locale] of [
+      ['date-ja', 'ja-JP'],
+      ['date-pl', 'pl-PL'],
+    ] as const) {
+      test(`the ${locale} grid starts on the day the platform names`, async ({
+        page,
+      }) => {
+        const expected = await page.evaluate((tag) => {
+          const real = (
+            window as unknown as {
+              __pctWeekInfo: (this: Intl.Locale) => { firstDay: number };
+            }
+          ).__pctWeekInfo;
+          const { firstDay } = real.call(new Intl.Locale(tag));
+          // 2026-01-04 is a Sunday, so the 4th + N is ISO weekday N.
+          return new Intl.DateTimeFormat(tag, {
+            weekday: 'long',
+            timeZone: 'UTC',
+          }).format(Date.UTC(2026, 0, 4 + firstDay));
+        }, locale);
+
+        await partOf(page.getByTestId(id), 'toggle').click();
+        await expect(
+          panelOf(page)
+            .locator('[data-pct-part="weekday"] .pct-calendar__sr')
+            .first(),
+        ).toHaveText(expected);
+      });
+    }
+
+    /** The witness that the init script is not a no-op, and which road the grid was on. */
+    test('the platform answers on the road the case says it does', async ({
+      page,
+    }) => {
+      expect(
+        await page.evaluate(
+          () =>
+            typeof (Intl.Locale.prototype as { getWeekInfo?: unknown })
+              .getWeekInfo,
+        ),
+      ).toBe(road === 'platform' ? 'function' : 'undefined');
+    });
+  });
+}

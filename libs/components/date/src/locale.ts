@@ -5,11 +5,15 @@ import { isPctDay, PctDay, pctDayAsUtc, pctToday } from './day';
  * with **one** exception, and the exception is the reason this file has a measurement in its
  * header rather than a link to one.
  *
- * `Intl.Locale.prototype.getWeekInfo()` is in chromium 149 and webkit 26.5 and **absent from
- * firefox 151**. A calendar that started the week on Monday in two engines and on Sunday in
- * the third would be [`req-axis`](../../../../docs/00-axis.md)'s own defect — the same page,
- * two drawings, no signal — so the answer the platform will not give everywhere is written
- * down here and **checked against the platform's own CLDR for every two-letter region code**
+ * `Intl.Locale.prototype.getWeekInfo()` is in all three engines this repository runs
+ * (chromium 153, firefox 155, webkit 26.6) and was **absent from firefox 151**, which Angular 22
+ * still supports with every version back to 112 — so the table stays, and e2e takes the
+ * platform away to draw a grid through it
+ * ([0084](../../../../docs/decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
+ * A calendar that started the week on Monday in one engine and on Sunday in another would be
+ * [`req-axis`](../../../../docs/00-axis.md)'s own defect — the same page, two drawings, no
+ * signal — so the answer the platform will not give everywhere is written down here and
+ * **checked against the platform's own CLDR for every two-letter region code**
  * (`locale.spec.ts`). 80 regions of the 676 disagree with Monday; those 80 are below
  * ([0043](../../../../docs/decisions/0043-a-day-is-not-an-instant.md)).
  */
@@ -88,7 +92,7 @@ const MONDAY = 1;
 
 /**
  * `Intl.Locale` with the two things this file asks of it, both optional on the platform:
- * `getWeekInfo` (absent in firefox) and `maximize` (present everywhere measured, but a
+ * `getWeekInfo` (absent from firefox 151) and `maximize` (present everywhere measured, but a
  * `Locale` built from a malformed tag throws before either can be called).
  */
 interface WeekAwareLocale extends Intl.Locale {

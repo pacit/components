@@ -30,13 +30,16 @@ keyboard mode are the platform's and untouched
 | **DI contract** | requires `PctText` on the same element (the selector says so): the rules that carry the feature live in `text.scss`, which is `PctText`'s stylesheet |
 | **Attributes**  | writes `data-pct-autosize` (the sheet's hook), `data-pct-capped` when there is a ceiling, `--_pct-text-rows` and `max-block-size` in `lh`            |
 
-**Where the height comes from.** In chromium and webkit, from `field-sizing: content` — the
-engine lays the box out against its own text and no script is involved at any point. In
-firefox, which does not have the property and does not degrade
-([0041](../decisions/0041-a-height-the-platform-computes.md)), from a measurement in script.
+**Where the height comes from.** Where the engine has `field-sizing: content` — chromium,
+webkit and, since 155, firefox — from the property: the engine lays the box out against its own
+text and no script is involved at any point. In an engine without it, which does not degrade
+([0041](../decisions/0041-a-height-the-platform-computes.md)) and which Angular still supports
+— firefox 151 and older — from a measurement in script
+([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
 The two are made to agree: the sheet gives the CSS road back the `rows` the property discards,
 and the measurement adds back the border `scrollHeight` leaves out. The e2e file asks the same
-questions of all three engines for exactly that reason.
+questions of both roads in all three engines for exactly that reason, the second forced by an
+init script.
 
 ## Parts
 
@@ -90,7 +93,7 @@ None of its own — fully native
 | SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — and the height at the first paint is a **measured difference between the roads**: right with no script where the property exists, the floor until hydration where it does not (0041)                                                                                                                                                                                                                                                                                              |
 | Forms                           | `libs/components/field/src/autosize.spec.ts` — signal forms through `PctText`'s model, and `[formControl]` through the form's own `valueChanges`, which is the case [`lesson-114`](../lessons.md#lesson-114) was written from                                                                                                                                                                                                                                                                                                |
 | Two roads agree                 | `apps/sandbox-e2e/src/textarea.spec.ts` — one set of assertions over two implementations, in three engines, within a pixel ([`lesson-111`](../lessons.md#lesson-111))                                                                                                                                                                                                                                                                                                                                                        |
-| The fallback expires            | `apps/sandbox-e2e/src/textarea.spec.ts` — a case asserting which engine has `field-sizing`, so the day firefox ships it the run says the measured road has lost its last consumer                                                                                                                                                                                                                                                                                                                                            |
+| The fallback is forced          | `apps/sandbox-e2e/src/textarea.spec.ts` — every case on both roads in every engine, the measured one by an init script that takes `field-sizing` away from the script and the sheet; a case per road says which road the box is on, and every case ends with no `error` event in the page (0084)                                                                                                                                                                                                                             |
 | Parts in the inventory          | `libs/components/parts.snapshot.md` — the directive exposes no parts of its own                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Tokens + `contrast.policy.json` | not applicable — no colour of its own                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — one dev-mode `console.warn` (a ceiling under a floor) and no user-facing string                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -112,9 +115,12 @@ field's height is a `min-height`, so taller content pushes the control out)
 - **No manual resize.** `resize: none` under autosize: a drag handle is a second author of the
   height and this feature is the first. A consumer who wants the handle wants a plain
   `<textarea pctText>`.
-- **On firefox, a server-rendered value is the floor until hydration.** The measured road
-  cannot run before there is a layout, and this is stated rather than hidden — where
-  `field-sizing` exists the first paint is already right.
+- **Without `field-sizing`, a server-rendered value is the floor until hydration.** The
+  measured road cannot run before there is a layout, and this is stated rather than hidden —
+  where `field-sizing` exists the first paint is already right.
+- **On firefox 112–119, `maxRows` has no effect.** Those versions have no `lh` unit, so the
+  ceiling and the sheet's floor are dropped; the box still follows its text by measurement, and
+  `rows` falls back to the platform's own sizing (0084).
 - **The two roads round differently**, by up to a pixel: `scrollHeight` is an integer. Nothing
   in a layout depends on it, but a gate comparing the roads compares with a tolerance.
 - **A bound `[rows]` is read by the directive**, which writes it back to the element so both

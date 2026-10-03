@@ -103,8 +103,8 @@ The order follows **architectural debt**, not popularity:
    ([0039](../decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md),
    [`lesson-112`](../lessons.md#lesson-112)). ARIA gives the role no third state and no audit
    says so, so the missing `indeterminate` input is the gate. The **textarea** is built too,
-   and its content was a height rather than a component: `field-sizing: content` is in two of
-   the three engines here and the third does not degrade, so the platform lays the box out
+   and its content was a height rather than a component: `field-sizing: content` was in two of
+   the three engines here and the third did not degrade, so the platform lays the box out
    where it can and a measurement fills in where it cannot — the two made to agree to within
    the pixel `scrollHeight` rounds away
    ([0041](../decisions/0041-a-height-the-platform-computes.md)). What the fallback has to be
@@ -130,8 +130,10 @@ The order follows **architectural debt**, not popularity:
    ([0043](../decisions/0043-a-day-is-not-an-instant.md)). Two things it found that nobody
    asks about until a user does: `Intl` resolves `th-TH` to the **buddhist** calendar in all
    three engines, so a field and its grid would disagree about the year unless the calendar is
-   pinned; and `getWeekInfo()` is absent from firefox, so the first day of the week is a table
-   of 80 regions with the platform's own CLDR as its gate.
+   pinned; and `getWeekInfo()` was absent from firefox, so the first day of the week is a table
+   of 80 regions with the platform's own CLDR as its gate. Firefox 155 brought both features,
+   and both fallbacks stay for the older engines Angular supports, forced in e2e
+   ([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
 6. **The rest** — toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
    avatar, badge, breadcrumb, stepper, tree. The **toast** is built, and it is the one that had
    to be argued down from the reflex twice: `role="status"` on the region publishes
