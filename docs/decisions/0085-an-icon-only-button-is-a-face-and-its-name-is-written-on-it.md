@@ -47,14 +47,16 @@ the consumer's `pct-icon`, so the button imports nothing it did not import yeste
 which writes the same attribute permanently and shows it as well
 ([0030](0030-a-name-is-an-attribute-a-description-is-a-reference.md)). Dev mode reports, once
 after the first render, an icon-only button with no name at all. What counts as a name is a
-heuristic, as the tooltip's is, and it is held to the same rule: **free of false alarms** —
-everything it counts really does name a button, because a sentence that fires on a valid page
-teaches people to ignore the sentence. It counts the button's own `aria-label` and `title`, an
-`aria-labelledby` whose target has words in it, a `<label for>` (the platform's `labels`), and
-words, an image's `alt` or an element's `aria-label` in the content — but nothing under
-`hidden` or `aria-hidden`. A visually hidden span is a common, valid way to name a button, and
-it counts. Where the heuristic is unsure it stays silent; the real computation is the
-browser's, and the axe audit measures that one.
+heuristic, as the tooltip's is, and it **errs towards silence**: where it cannot tell, it
+counts a name, because a sentence that fires on a page that is fine teaches people to ignore
+the sentence, and an unnamed button it misses is still the axe audit's to find. It counts the
+button's own `aria-label` and `title`, an `aria-labelledby` whose target has words in it (read
+whole, since a browser reads a hidden target it is pointed at), a `<label for>` — the
+platform's `labels` — and in the content: words, an element's `aria-label` or `alt`, an image's
+`title`, and nothing under `hidden` or `aria-hidden`. A visually hidden span is a common, valid
+way to name a button, and it counts. The shapes it still reads wrong were measured against
+Chromium's tree in review: text drawn by a stylesheet's `content` is invisible to it, and
+content hidden by a stylesheet rather than an attribute counts.
 
 ## What the shape is
 
@@ -65,11 +67,15 @@ browser's, and the axe audit measures that one.
   width. The heights clear the floor at every size and density today; the floor is what a skin
   that goes further runs into, and a square is only as wide as the height it was given
   ([`req-a11y-touch`](../requirements/a11y.md#req-a11y-touch)).
-- **The floor under the labelled face too.** Reviewing this face found that the labelled one
-  had none: its height was `var(--pct-button-height)` and nothing else, and a skin setting the
-  small height to 20 px would have drawn a 20 px target with no gate red. It now stands on the
-  same token, `min-height: max(height, floor)` and `min-inline-size: floor`, and
-  `target-min.spec.ts` reads it with every height and padding zeroed.
+- **The floor under the labelled face's height too.** Reviewing this face found that the
+  labelled one had none: its height was `var(--pct-button-height)` and nothing else, and a skin
+  setting the small height to 20 px would have drawn a 20 px target with no gate red. It now
+  stands on the same token, `min-height: max(height, floor)`, and `target-min.spec.ts` reads it
+  with every height zeroed. **The height alone**, and that was measured too: a floor on the
+  width, `min-inline-size`, replaced the automatic minimum a flex or grid item keeps, so in a
+  row too narrow for it a labelled button shrank past its own label — "Download report" went
+  to 65 px around 83 px of words. A labelled button's width is its words and its padding; an
+  e2e case squeezes the variants' row to 120 px and requires every button to keep its width.
 - **The glyph on the icon's own step for the size** — 16 / 20 / 24 inside 28 / 36 / 44, 57, 56
   and 55 per cent of the square — reached through the host's `font-size`, because
   `pct-icon` is `1em`. A consumer writes no size; one who writes `size` on the icon still
@@ -98,12 +104,14 @@ loading square's name from "Search" to nothing.
 ## Consequences
 
 - The limitation leaves the button's card, and its touch-target row stops resting on "the
-  smallest size is 28 px" — which compact density had already made 26: both faces stand on a
-  floor of their own, and `target-min.spec.ts` reads each with every height zeroed.
+  smallest size is 28 px" — which compact density had already made 26: the square stands on a
+  floor under both axes, the labelled face under its height, and `target-min.spec.ts` reads
+  each with every height zeroed.
 - The tooltip's WCAG 2.5.3 check read every character of the control, including a ligature
   font's glyph name under `aria-hidden` — so `pctTooltipAs="name"` over `materialIcons()`'s
   `delete` was told its name did not contain "delete". It now reads the words the control shows
-  as words, outside `aria-hidden`, which is the recommended pattern here working as written.
+  as words, outside `hidden` and `aria-hidden`, which is the recommended pattern here working
+  as written. A visually hidden span still reads as shown there: no attribute says otherwise.
 - 0067 said the button's icon-only face was one of the library's literal `50%`. There was no
   such face then, and this one draws the skin's own corner: the literal is the spinner's ring,
   beside the radio's two. Its sentence is corrected to say so.
@@ -123,9 +131,9 @@ loading square's name from "Search" to nothing.
 
 Four tokens (`icon-size` ×3, `target-min`), one input and a dev-mode sentence on the most used
 component, and the bytes are recorded rather than estimated: the `./button` probe in
-`libs/components/size.snapshot.md` went from 13391 B to 15333 B — **992 for the geometry**
-(the square, the input, the host binding, and the floor the labelled face now stands on) and
-**950 for the sentence**, measured by building the probe once without it. The second number
+`libs/components/size.snapshot.md` went from 13391 B to 15412 B — **943 for the geometry**
+(the square, the input, the host binding, and the floor the labelled face's height now stands
+on) and **1078 for the sentence**, measured by building the probe once without it. The second number
 is the library's convention and not this face's: every developer warning here stands behind
 `isDevMode()`, which `check-texts` point 6 requires and a production build cannot fold,
 so the button's two older sentences ship the same way.

@@ -65,11 +65,11 @@ class LinkHost {
 }
 
 /**
- * The icon-only face, with every source a browser builds a name from switchable — so each
- * case below turns on exactly one of them. The glyph is the shape a `pct-icon` renders to: a
+ * The icon-only face, with the sources of a name the warning reads switchable — so each case
+ * below turns on exactly one of them. The glyph is the shape a `pct-icon` renders to: a
  * box under `aria-hidden`, which may hold text of its own, as a ligature font's does. The
- * three spans after the button are what `aria-labelledby` can point at: words, a name given by
- * `aria-label` alone, and nothing.
+ * spans after the button are what `aria-labelledby` can point at: words, a name given by
+ * `aria-label` alone, nothing, an image's `alt`, and words under `hidden`.
  */
 @Component({
   imports: [PctButton],
@@ -86,20 +86,22 @@ class LinkHost {
     >
       <span aria-hidden="true">{{ glyph() }}</span>
       @if (words() !== null) {
-        <span [attr.aria-hidden]="wordsHidden()" [hidden]="wordsGone()">{{
+        <span [attr.aria-hidden]="wordsHidden()" [attr.hidden]="wordsGone()">{{
           words()
         }}</span>
       }
       @if (image() !== null) {
         <span role="img" [attr.aria-label]="image()">{{ imageText() }}</span>
       }
-      @if (alt() !== null) {
-        <img [attr.alt]="alt()" src="data:," />
+      @if (alt() !== null || imgTitle() !== null) {
+        <img [attr.alt]="alt()" [attr.title]="imgTitle()" src="data:," />
       }
     </button>
     <span id="the-name">Delete the project</span>
     <span id="the-label" aria-label="Delete the project"></span>
-    <span id="the-empty"> </span>`,
+    <span id="the-empty"> </span>
+    <span id="the-image"><img alt="Delete the project" src="data:," /></span>
+    <span id="the-hidden" hidden>Delete the project</span>`,
 })
 class IconOnlyHost {
   iconOnly = input(true);
@@ -110,10 +112,11 @@ class IconOnlyHost {
   glyph = input('');
   words = input<string | null>(null);
   wordsHidden = input<string | null>(null);
-  wordsGone = input(false);
+  wordsGone = input<string | null>(null);
   image = input<string | null>(null);
   imageText = input('');
   alt = input<string | null>(null);
+  imgTitle = input<string | null>(null);
 }
 
 /** The same square on a link: an `<a>` has no `labels`, and the reading must not need them. */
@@ -375,6 +378,14 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
+  it("a reference to an image names it by the image's alt, and one to a hidden element by its words — a browser reads a target it is pointed at", async () => {
+    const warn = warnings();
+    await iconOnly({ labelledBy: 'the-image' });
+    expect(named(warn)).toBe(true);
+    await iconOnly({ labelledBy: 'the-hidden' });
+    expect(named(warn)).toBe(true);
+  });
+
   it('a reference to an element named by its aria-label names it; one to an empty element does not', async () => {
     const warn = warnings();
     await iconOnly({ labelledBy: 'the-label' });
@@ -383,10 +394,13 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
-  it('a button not in a document yet looks its references up and finds none, rather than throwing', async () => {
-    // Its root is then the topmost element above it, which has no `getElementById` at all.
+  it('a button not in a document yet finds the label that travels with it — and one that is not there is still missing', async () => {
+    // Its root is then the topmost element above it rather than a document, and the label
+    // stands in the same subtree, so the reading finds it and stays silent.
     const warn = warnings();
     await iconOnly({ labelledBy: 'the-name' }, IconOnlyHost, true);
+    expect(named(warn)).toBe(true);
+    await iconOnly({ labelledBy: 'nowhere' }, IconOnlyHost, true);
     expect(named(warn)).toBe(false);
   });
 
@@ -422,13 +436,29 @@ describe('PctButton — icon only', () => {
     expect(named(warn)).toBe(false);
   });
 
-  it('but not words a browser leaves out — under `hidden`, or under aria-hidden in capitals', async () => {
+  it('but not words a browser leaves out — under `hidden`, or under aria-hidden in capitals or with blanks', async () => {
     const warn = warnings();
-    await iconOnly({ words: 'Delete the project', wordsGone: true });
+    await iconOnly({ words: 'Delete the project', wordsGone: '' });
     expect(named(warn)).toBe(false);
-    const before = warn.mock.calls.length;
-    await iconOnly({ words: 'Delete the project', wordsHidden: 'TRUE' });
-    expect(warn.mock.calls.length).toBe(before + 1);
+    for (const wordsHidden of ['TRUE', ' true ']) {
+      const before = warn.mock.calls.length;
+      await iconOnly({ words: 'Delete the project', wordsHidden });
+      expect(warn.mock.calls.length, wordsHidden).toBe(before + 1);
+    }
+  });
+
+  it('`hidden="until-found"` is still in the page, and its words name it', async () => {
+    const warn = warnings();
+    await iconOnly({ words: 'Delete the project', wordsGone: 'until-found' });
+    expect(named(warn)).toBe(true);
+  });
+
+  it("a title names it from the content as well — an image's — and the button's own outlasts content of blanks", async () => {
+    const warn = warnings();
+    await iconOnly({ imgTitle: 'Delete the project' });
+    expect(named(warn)).toBe(true);
+    await iconOnly({ words: '   ', title: 'Delete the project' });
+    expect(named(warn)).toBe(true);
   });
 
   it('but not words under aria-hidden — a ligature glyph spells its name and says nothing', async () => {

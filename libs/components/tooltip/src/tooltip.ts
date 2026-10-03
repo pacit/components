@@ -111,19 +111,23 @@ export class PctTooltipPanel {
 }
 
 /**
- * The words a control shows AS words: its text outside `aria-hidden`. An icon font that draws
- * by ligature keeps the glyph's name as the text of its span — `delete` under a trash can —
- * and that is a picture to the eye, not a word a speech-input user would say, so it is not
- * what WCAG 2.5.3 asks a name to contain. `pct-icon` hides its glyph exactly so.
+ * The words a control shows AS words: its text outside `hidden` and `aria-hidden`. An icon font
+ * that draws by ligature keeps the glyph's name as the text of its span — `delete` under a trash
+ * can — and that is a picture to the eye, not a word a speech-input user would say, so it is not
+ * what WCAG 2.5.3 asks a name to contain. `pct-icon` hides its glyph exactly so. Text a style
+ * hides — a visually hidden span — still reads as shown here; no attribute says otherwise.
  */
 function shownWords(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  const el = node as Element;
+  const hidden = el.getAttribute('hidden');
   if (
-    node.nodeType !== Node.ELEMENT_NODE ||
-    (node as Element).getAttribute('aria-hidden')?.toLowerCase() === 'true'
+    (hidden !== null && hidden !== 'until-found') ||
+    el.getAttribute('aria-hidden')?.trim().toLowerCase() === 'true'
   )
     return '';
-  return Array.from(node.childNodes, shownWords).join('');
+  return Array.from(el.childNodes, shownWords).join('');
 }
 
 /**

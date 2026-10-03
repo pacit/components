@@ -322,21 +322,19 @@ const CONTROLS: readonly Control[] = [
     opens: 'raise-standing',
   },
   {
-    // The labelled button. Its height has always cleared 24 px by itself (28 at the smallest
-    // size, 26 under compact density) and its width by its padding and its words, and neither
-    // is the button's to keep: a skin can take all three away. What is left is the floor.
+    // The labelled button, on the block axis alone. Its height has always cleared 24 px by
+    // itself (28 at the smallest size, 26 under compact density) and is a skin's to take away;
+    // its width is its words and its padding, and a floor there was measured replacing the
+    // automatic minimum a flex item keeps (0085) — so the width carries none.
     name: 'button',
     applies: 'libs/components/button/src/button.scss :host',
     route: '/button',
     selector: '[data-testid="btn-solid"]',
-    axis: 'both',
+    axis: 'block',
     zero: [
       '--pct-button-height',
       '--pct-button-height-sm',
       '--pct-button-height-lg',
-      '--pct-button-padding-x',
-      '--pct-button-padding-x-sm',
-      '--pct-button-padding-x-lg',
     ],
     ceiling: 24,
     floor: '--pct-button-target-min',

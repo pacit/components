@@ -17,12 +17,13 @@
      vertical axis carries `min-height`, so a label wrapped onto two lines still pushes the
      button apart instead of being clipped.
 
-     The floor under both axes is the target every control here reads (req-a11y-touch). The
-     heights clear it at every size and density, and `max()` keeps them the answer; it is what
-     a skin that shrinks a height runs into — and the width, because a label can be one
-     character and a padding is a skin's to take away. */
+     The floor under it is the target every control here reads (req-a11y-touch). The heights
+     clear it at every size and density, and `max()` keeps them the answer; it is what a skin
+     that shrinks a height runs into. The height alone, and that was measured: a floor on the
+     WIDTH as well replaced the automatic minimum a flex or grid item keeps, so in a row too
+     narrow for it a labelled button shrank past its own label — "Download report" to 65 px
+     around 83 px of words. The width is the words and the padding. */
   min-height: max(var(--pct-button-height), var(--pct-button-target-min));
-  min-inline-size: var(--pct-button-target-min);
   padding-block: 0;
   padding-inline: var(--pct-button-padding-x);
   cursor: pointer;
@@ -308,7 +309,8 @@
    minimum: a row that stretches its items — the default of a flex row, a grid cell — would
    otherwise hand it the height of its tallest neighbour, and a row that squeezes them would
    hand it less width, which is what `flex-shrink: 0` refuses. A narrower square is a narrower
-   target. The floor is the one the labelled face stands on, through the same `max()`.
+   target. The floor is the token the labelled face's height stands on, here under both axes,
+   because a square has no words to be as wide as.
 
    The glyph is drawn on the icon's own step for the size — 16 / 20 / 24 inside 28 / 36 / 44,
    57, 56 and 55 per cent of the square — and it gets there through `font-size`, because

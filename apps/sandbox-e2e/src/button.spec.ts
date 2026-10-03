@@ -33,6 +33,34 @@ test.describe('PctButton', () => {
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
 
+  test('a row too narrow for them leaves labelled buttons as wide as their words — the touch floor is on the height alone', async ({
+    page,
+  }) => {
+    const ids = [
+      'btn-solid',
+      'btn-outline',
+      'btn-ghost',
+      'btn-soft',
+      'btn-hero',
+    ];
+    const widths = () =>
+      Promise.all(
+        ids.map((id) => boxOf(page.getByTestId(id)).then((box) => box.width)),
+      );
+    const before = await widths();
+    // A width floor on the face was measured doing this: it replaced the automatic minimum a
+    // flex item keeps, and every button in the row shrank past its label (0085).
+    await page.addStyleTag({
+      content:
+        '[data-testid="demo-variants"] .row { flex-wrap: nowrap; width: 120px; }',
+    });
+    await expect(page.getByTestId('demo-variants').locator('.row')).toHaveCSS(
+      'width',
+      '120px',
+    );
+    expect(await widths()).toEqual(before);
+  });
+
   /**
    * The tone axis (0082). The values are written out rather than read from the skin: a case
    * that resolved `--pct-danger` at run time would agree with the stylesheet about anything,
@@ -421,33 +449,45 @@ test.describe('PctButton — icon only', () => {
     ]);
   });
 
-  test('no square on the page is reported as unnamed — the tooltip has written its name before the sentence reads it', async ({
+  test('the sentence fires on a square nothing names, and on none of the named ones — the tooltip-named among them', async ({
     page,
   }) => {
     const said: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'warning') said.push(message.text());
     });
-    await page.reload();
-    await expect(page.getByTestId('icon-only-ghost')).toHaveAccessibleName(
-      'Delete the draft',
+    // The defect, built here rather than borrowed: one square's `aria-label` is taken off as
+    // the document is parsed — before the application starts, so the button reads a page in
+    // which that square has no name, and every other square on the page has the one it wears.
+    await page.addInitScript(() => {
+      new MutationObserver(() =>
+        document
+          .querySelector('[data-testid="icon-only-solid"]')
+          ?.removeAttribute('aria-label'),
+      ).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['aria-label'],
+      });
+    });
+    await visit(page, '/button');
+    await expect(page.getByTestId('icon-only-solid')).not.toHaveAttribute(
+      'aria-label',
     );
-    // The sentence is dev mode's, so its silence means something only where dev mode is on:
-    // `ng` is the global a development build installs and a production one does not.
-    expect(
-      await page.evaluate(
+    // Exactly one: the unnamed square, and not the square a tooltip names, whose `aria-label`
+    // is written by a directive and has to be there by the time the button reads it.
+    await expect
+      .poll(
         () =>
-          typeof (window as unknown as { ng?: { getComponent?: unknown } }).ng
-            ?.getComponent,
-      ),
-    ).toBe('function');
-    // After the first render, which is when the button reads its name.
-    await page.evaluate(
-      () => new Promise((done) => requestAnimationFrame(() => done(null))),
-    );
+          said.filter((line) => line.includes('icon-only button with no name'))
+            .length,
+      )
+      .toBe(1);
+    await page.waitForTimeout(500);
     expect(
       said.filter((line) => line.includes('icon-only button with no name')),
-    ).toEqual([]);
+    ).toHaveLength(1);
   });
 
   test("the name is the one written on the button — a tooltip's, with nothing open", async ({

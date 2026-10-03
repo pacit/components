@@ -103,11 +103,12 @@ class LabelledHost {}
 @Component({
   imports: [PctTooltip],
   template: `<button id="trigger" pctTooltip="Remove" pctTooltipAs="name">
-    <span [attr.aria-hidden]="hidden()">delete</span>
+    <span [attr.aria-hidden]="hidden()" [attr.hidden]="gone()">delete</span>
   </button>`,
 })
 class LigatureHost {
   readonly hidden = signal<string | null>('true');
+  readonly gone = signal<string | null>(null);
 }
 
 describe('PctTooltip', () => {
@@ -592,12 +593,18 @@ describe('PctTooltip', () => {
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);
       // The attribute's value is what hides, in any case: `TRUE` is read as `true` by browsers.
-      for (const hidden of ['true', 'TRUE']) {
+      for (const hidden of ['true', 'TRUE', ' true ']) {
         const fixture = TestBed.createComponent(LigatureHost);
         fixture.componentInstance.hidden.set(hidden);
         fixture.detectChanges();
         await fixture.whenStable();
       }
+      // And under `hidden`, which takes the word off the screen altogether.
+      const gone = TestBed.createComponent(LigatureHost);
+      gone.componentInstance.hidden.set(null);
+      gone.componentInstance.gone.set('');
+      gone.detectChanges();
+      await gone.whenStable();
       // This control's message and nobody else's: the case above leaves its own render hooks
       // flushing into this spy, and its control does read "Delete" in plain sight.
       expect(warn).not.toHaveBeenCalledWith(
@@ -609,13 +616,18 @@ describe('PctTooltip', () => {
       const warn = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);
-      const fixture = TestBed.createComponent(LigatureHost);
-      fixture.componentInstance.hidden.set(null);
-      fixture.detectChanges();
-      await fixture.whenStable();
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('already reads "delete"'),
-      );
+      // Shown outright, and under `hidden="until-found"`, which leaves it in the page.
+      for (const gone of [null, 'until-found']) {
+        warn.mockClear();
+        const fixture = TestBed.createComponent(LigatureHost);
+        fixture.componentInstance.hidden.set(null);
+        fixture.componentInstance.gone.set(gone);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(warn, String(gone)).toHaveBeenCalledWith(
+          expect.stringContaining('already reads "delete"'),
+        );
+      }
     });
   });
 });

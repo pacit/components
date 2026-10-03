@@ -12,49 +12,63 @@ import { PCT_CONFIG, PctTone } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
- * The words a reader would make a name of: an element's `aria-label`, an image's `alt`, and
- * otherwise the text of its content — nothing under `hidden` or `aria-hidden`, where the
- * spinner and every unnamed `pct-icon` sit. A named `pct-icon` answers with its label.
+ * The words a reader would make a name of: an element's `aria-label` or `alt`, otherwise the
+ * text of its content, otherwise its `title` — and nothing under `hidden` (`until-found` is
+ * still in the page) or `aria-hidden`, where the spinner and every unnamed `pct-icon` sit.
+ * A named `pct-icon` answers with its label.
  *
- * `nodeType` rather than `instanceof`: a node from another realm — an iframe's — is a `Text`
- * that is not an instance of this window's `Text`.
+ * Attributes rather than properties, and `nodeType` rather than `instanceof`: a custom
+ * element's `alt` property can be anything, and a node from another realm — an iframe's — is
+ * a `Text` that is not an instance of this window's `Text`.
  */
 function spoken(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
   if (node.nodeType !== Node.ELEMENT_NODE) return '';
-  const el = node as HTMLElement;
-  if (el.hidden || el.getAttribute('aria-hidden')?.toLowerCase() === 'true')
+  const el = node as Element;
+  const hidden = el.getAttribute('hidden');
+  if (
+    (hidden !== null && hidden !== 'until-found') ||
+    el.getAttribute('aria-hidden')?.trim().toLowerCase() === 'true'
+  )
     return '';
-  const alternative =
-    el.getAttribute('aria-label')?.trim() ||
-    (el as HTMLImageElement).alt?.trim();
-  return alternative || Array.from(el.childNodes, spoken).join('');
+  const alternative = el.getAttribute('aria-label') || el.getAttribute('alt');
+  if (alternative?.trim()) return alternative;
+  return (
+    Array.from(el.childNodes, spoken).join('').trim() ||
+    (el.getAttribute('title') ?? '')
+  );
 }
+
+/** The element under `root` with this id — a document, a shadow root, or a detached subtree. */
+const byId = (root: ParentNode, id: string): Element | undefined =>
+  Array.from(root.querySelectorAll('[id]')).find((node) => node.id === id);
 
 /**
  * Whether anything names the button besides its glyph. A heuristic, as the tooltip's is: the
  * real computation is the browser's, and the audit measures that one over a rendered page
- * (`req-a11y-axe`). What this one has to be is free of false alarms — everything it counts
- * really does name a button — so that a sentence it prints is never one to learn to ignore.
+ * (`req-a11y-axe`). It errs towards silence — where it cannot tell, it counts a name — because
+ * a sentence that fires on a page that is fine teaches people to ignore the sentence, and an
+ * unnamed button it misses is still the audit's to find.
  *
  * An `aria-labelledby` counts when a reference resolves to something with words in it: a
  * reference to nothing names nothing (measured in 0030), and neither does an empty element.
- * The references are looked up in the button's own root, so a button in a shadow root finds
- * its label there — and a button not in a document yet finds none rather than throwing.
+ * The target's words are read whole as well as as spoken, because a browser reads a hidden
+ * target it is pointed at. References are looked up under the button's own root, so a button
+ * in a shadow root finds its label there, and one not in a document yet still finds the
+ * labels that travel with it.
  */
 function named(el: HTMLElement): boolean {
-  const root = el.getRootNode() as Partial<Pick<Document, 'getElementById'>>;
+  const root = el.getRootNode() as ParentNode;
   const references = el.getAttribute('aria-labelledby')?.match(/\S+/g);
   const labels = (el as HTMLButtonElement).labels;
   return [
     ...(references
       ? references.flatMap((id) => {
-          const target = root.getElementById?.(id);
-          return [target?.getAttribute('aria-label'), target?.textContent];
+          const target = byId(root, id);
+          return target ? [target.textContent, spoken(target)] : [];
         })
       : []),
     ...(labels ? Array.from(labels, (label) => label.textContent) : []),
-    el.getAttribute('title'),
     spoken(el),
   ].some((words) => words?.trim());
 }

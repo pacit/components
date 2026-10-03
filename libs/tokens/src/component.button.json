@@ -113,11 +113,11 @@
         "$value": "24px",
         "$description": "Glyph size on the icon-only face at size lg."
       },
-      "$comment-target-min": "The floor under both axes of every face, the labelled one and the square (req-a11y-touch). The heights clear it at every size and density today, and a label is wider than it — this is what a theme that shrinks a height or a padding runs into, and the one thing that holds a square, which is only as wide as the height it was given.",
+      "$comment-target-min": "The touch floor (req-a11y-touch): under the height of every face, and under both axes of the square. The heights clear it at every size and density today — this is what a theme that shrinks them runs into. A labelled button's width is its words and its padding and stands on no floor, because a floor there replaced the automatic minimum a flex item keeps and let the button shrink past its label (measured, 0085); a square has no words, so it is only as wide as the height it was given.",
       "target-min": {
         "$type": "dimension",
         "$value": "{pct.target.min}",
-        "$description": "Smallest box any face draws, on both axes."
+        "$description": "Smallest height any face draws, and the smallest width of the square."
       }
     }
   }
