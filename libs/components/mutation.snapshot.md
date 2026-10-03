@@ -120,7 +120,7 @@ libs/components/field/src/field.ts 72.81 83(0) 27 2 2 1
 libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
-libs/components/icon/src/fonts.ts 99.07 106(0) 1 0 0 0
+libs/components/icon/src/fonts.ts 99.12 112(0) 1 0 0 0
 libs/components/icon/src/icon.ts 91.60 109(0) 9 0 1 2
 libs/components/menu/src/menu-item.ts 78.79 26(0) 4 2 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 0 2
@@ -154,5 +154,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 84.16 5033/5980
+TOTAL 84.18 5039/5986
 ```
