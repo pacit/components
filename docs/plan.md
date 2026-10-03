@@ -242,7 +242,7 @@ and every one is held by a **binds at** rather than by anybody's mood.
     Each is forced in every engine by an init script — the textarea suite runs twice, the
     Japanese and Polish grids are drawn with `getWeekInfo` deleted — and the controls
     `req-api-platform` records bite again, per engine instead of on firefox alone
-  - the forced textarea road found what firefox 151 had hidden: a height written inside the
+  - the forced textarea road found what the suite never listened for: a height written inside the
     resize observer's callback, which every engine reports as an error event Playwright's
     `pageerror` does not hear. The measurement waits a frame now, and every case reads the
     page's own `error` events

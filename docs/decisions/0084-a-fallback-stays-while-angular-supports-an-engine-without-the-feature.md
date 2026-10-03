@@ -17,7 +17,7 @@ Two things in the library exist because an engine lacked a platform feature, and
 that engine on the same day. [0041](0041-a-height-the-platform-computes.md) measures a
 textarea's height in script where `field-sizing: content` is missing;
 [0043](0043-a-day-is-not-an-instant.md) reads the first day of the week from a table of 80
-regions where `Intl.Locale.prototype.getWeekInfo()` is. In both records the engine was
+regions where `Intl.Locale.prototype.getWeekInfo()` is missing. In both records the engine was
 firefox 151. Firefox 155 has both, so the e2e suite stopped running either fallback in any
 browser.
 
@@ -32,8 +32,8 @@ question the expiry was for answered: **is the fallback still owed to anyone?**
 declares no browser list of its own: its peer range admits one Angular major
 (`angular-majors` in [`docs/support.md`](../support.md)), and that major comes with Angular's
 browser policy — for 22, the browsers that were Baseline widely available on 2025-10-20. That
-set reaches firefox 112 and safari 16.4 and includes firefox 151, where both features were
-measured absent. An application built with Angular 22's defaults targets those engines, so the
+set reaches chromium 111, firefox 112 and safari 16.4 and includes firefox 151, where both
+features were measured absent — and the older ends of the other two lines predate them as well. An application built with Angular 22's defaults targets those engines, so the
 library has to work there; that the e2e run has newer ones is a fact about the e2e run.
 
 So both fallbacks stay, and **each is forced in every engine** rather than left to whichever
@@ -59,7 +59,7 @@ engine without the feature, which is a peer-range bump this repository makes on 
 
 ## Consequences
 
-- The first run of the forced textarea road found a defect firefox 151 had been hiding. The
+- The first run of the forced textarea road found a defect the suite had never listened for. The
   resize observer wrote the height inside its own callback, and every engine answers that with
   an error event — `ResizeObserver loop completed with undelivered notifications`, once per
   rewrap — while the heights stay right. Playwright's `pageerror` does not hear it, so every
@@ -82,6 +82,11 @@ engine without the feature, which is a peer-range bump this repository makes on 
   engine without the feature, even if no consumer of this library uses one. This trades bytes
   that may be paid for nothing against a promise the framework makes and this library would
   otherwise quietly break.
+- **The floor and the ceiling are `lh`, and firefox 112–119 have no `lh`.** The unit arrived in
+  120, so on the oldest engines of the set `min-block-size` and `max-block-size` are dropped:
+  the box still follows its text by measurement, but `rows` is the platform's own `rows` sizing
+  and `maxRows` does nothing. The init script cannot show this — the engines it runs in have
+  the unit — and it is named here rather than claimed away.
 - **One frame at the old height after a rewrap** on the measured road, which the frame-deferred
   measurement costs; the platform road has no script to wait for.
 

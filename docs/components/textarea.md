@@ -35,10 +35,11 @@ webkit and, since 155, firefox — from the property: the engine lays the box ou
 text and no script is involved at any point. In an engine without it, which does not degrade
 ([0041](../decisions/0041-a-height-the-platform-computes.md)) and which Angular still supports
 — firefox 151 and older — from a measurement in script
-([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)). The two are made to agree: the sheet gives the CSS road
-back the `rows` the property discards, and the measurement adds back the border `scrollHeight`
-leaves out. The e2e file asks the same questions of both roads in all three engines for exactly
-that reason, the second forced by an init script.
+([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
+The two are made to agree: the sheet gives the CSS road back the `rows` the property discards,
+and the measurement adds back the border `scrollHeight` leaves out. The e2e file asks the same
+questions of both roads in all three engines for exactly that reason, the second forced by an
+init script.
 
 ## Parts
 

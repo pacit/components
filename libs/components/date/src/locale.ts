@@ -10,9 +10,10 @@ import { isPctDay, PctDay, pctDayAsUtc, pctToday } from './day';
  * still supports with every version back to 112 — so the table stays, and e2e takes the
  * platform away to draw a grid through it
  * ([0084](../../../../docs/decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
- * A calendar that started the week on Monday in one engine and on Sunday in another would be [`req-axis`](../../../../docs/00-axis.md)'s own defect — the same page,
- * two drawings, no signal — so the answer the platform will not give everywhere is written
- * down here and **checked against the platform's own CLDR for every two-letter region code**
+ * A calendar that started the week on Monday in one engine and on Sunday in another would be
+ * [`req-axis`](../../../../docs/00-axis.md)'s own defect — the same page, two drawings, no
+ * signal — so the answer the platform will not give everywhere is written down here and
+ * **checked against the platform's own CLDR for every two-letter region code**
  * (`locale.spec.ts`). 80 regions of the 676 disagree with Monday; those 80 are below
  * ([0043](../../../../docs/decisions/0043-a-day-is-not-an-instant.md)).
  */
