@@ -13,9 +13,10 @@ export type PctIconRoles = Readonly<
 >;
 
 /**
- * Which of the library's roles a font dresses, said one of two ways. A **map** corrects the
+ * Which of the library's roles a font dresses, said one of two ways. A **map** corrects an
  * adapter's own — `{ close: 'times' }` for a version that spells one differently, `undefined`
- * to keep the library's drawing for that one role — and the rest of the map stands. A **list**
+ * to keep the library's drawing for that one role — and the rest of the map stands; a font of
+ * your own has no map of its own, and takes the map as it is. A **list**
  * names the roles to dress and nothing else, each in the adapter's spelling: `['chevron-down']`
  * dresses the select's arrow and leaves every other component as it ships, `[]` dresses none —
  * the font draws your ids, and the library draws its own.
@@ -98,33 +99,34 @@ export function iconFont(options: PctIconFontOptions): PctIconSource {
 
 /** `Array.isArray` narrows a readonly array to nothing useful; this one narrows. */
 const isList = (
-  selection: PctIconRoleSelection,
+  selection: PctIconRoleSelection | undefined,
 ): selection is readonly PctIconName[] => Array.isArray(selection);
 
 /**
- * The roles a source carries, from what it was told and how the source spells them: nothing
- * when nothing was said, a list spelled by the source, a map as it was given.
+ * The roles a source carries, from what it was told and how the source spells them: a list
+ * spelled by the source, a map as it was given — and nothing when nothing was said, which
+ * is what spreading `undefined` leaves.
  */
 const rolesOf = (
   selection: PctIconRoleSelection | undefined,
   spell: (name: PctIconName) => string | undefined,
 ): PctIconRoles =>
-  selection === undefined
-    ? {}
-    : isList(selection)
-      ? Object.fromEntries(selection.map((name) => [name, spell(name)]))
-      : { ...selection };
+  isList(selection)
+    ? Object.fromEntries(selection.map((name) => [name, spell(name)]))
+    : { ...selection };
 
-/** An adapter's roles: its own map whole, a list picked out of it, or corrections over it. */
+/**
+ * An adapter's roles: a list picked out of its own map, or corrections over the whole of
+ * it — the whole of it when there are none. Not copied here: `iconFont` copies what it is
+ * handed.
+ */
 const adapterRoles = (
   defaults: Readonly<Record<PctIconName, string>>,
   selection: PctIconRoleSelection | undefined,
 ): PctIconRoles =>
-  selection === undefined
-    ? { ...defaults }
-    : isList(selection)
-      ? rolesOf(selection, (name) => defaults[name])
-      : { ...defaults, ...selection };
+  isList(selection)
+    ? rolesOf(selection, (name) => defaults[name])
+    : { ...defaults, ...selection };
 
 /**
  * What FontAwesome's stylesheet is told, besides the roles.

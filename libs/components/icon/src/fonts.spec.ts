@@ -71,6 +71,14 @@ describe('@pacit/components/icon — fonts', () => {
       expect(font.roles).toEqual({ check: 'check', close: 'close' });
       expect(iconFont({ class: () => 'acme', roles: [] }).roles).toEqual({});
     });
+
+    it('the map it is given is copied, not kept', () => {
+      const given: Record<string, string> = { close: 'cross' };
+      const font = iconFont({ class: () => 'acme', roles: given });
+      given['close'] = 'x';
+      expect(font.roles).not.toBe(given);
+      expect(font.roles?.close).toBe('cross');
+    });
   });
 
   describe('fontAwesome', () => {
