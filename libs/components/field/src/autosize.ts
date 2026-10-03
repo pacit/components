@@ -17,9 +17,12 @@ import { PctText } from './text';
  * Which of the two roads is open here — and `none`, which is anywhere with no layout to ask:
  * a server, and a test runner.
  *
- * Measured rather than assumed: `field-sizing: content` is in chromium 149 and webkit 26.5
- * and **absent from firefox 151**, where the absence is silent and total — a `rows="2"` box
- * stays two lines tall whatever is typed into it.
+ * Measured rather than assumed: `field-sizing: content` is in all three engines this
+ * repository runs (chromium 153, firefox 155, webkit 26.6) and was **absent from firefox
+ * 151**, which Angular 22 still supports with every version back to 112. There the absence is
+ * silent and total: a `rows="2"` box stays two lines tall whatever is typed into it. So the
+ * measured road stays, and e2e forces it in every engine
+ * ([0084](../../../../docs/decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
  *
  * The third answer is deliberately not `isPlatformBrowser`: the question is not where the
  * code runs but whether there is an engine to ask, and where there is no `CSS` object there
@@ -172,19 +175,32 @@ export class PctAutosize {
       //    [`lesson-110`](../../../../docs/lessons.md#lesson-110)'s loop waiting to happen,
       //    so only a changed WIDTH is a reason to measure again.
       //
+      //    And the measurement waits for the next frame rather than happening in the
+      //    callback. A height written while the observer delivers is a size changed inside
+      //    the delivery, which every engine reports as an error event, `ResizeObserver loop
+      //    completed with undelivered notifications` — measured in all three on the road
+      //    forced in e2e (0084), once per rewrap. The guard keeps that from looping; only
+      //    the frame keeps it from being reported. Its cost is one frame drawn at the old
+      //    height after a rewrap, on an engine that has no `field-sizing` to start with.
+      //
       //    Last, and asked for rather than assumed: this is the one part of the road that
       //    needs an API outside the DOM core, and jsdom has none. Built first, its absence
       //    took the subscription and the first fit down with it; built here, an environment
       //    without it still follows every value and only misses a rewrap.
       if (typeof ResizeObserver === 'undefined') return;
+      let frame = 0;
       const observer = new ResizeObserver(() => {
         const width = this.el.nativeElement.clientWidth;
         if (width === this.width) return;
         this.width = width;
-        this.fit();
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => this.fit());
       });
       observer.observe(this.el.nativeElement);
-      destroyRef.onDestroy(() => observer.disconnect());
+      destroyRef.onDestroy(() => {
+        observer.disconnect();
+        cancelAnimationFrame(frame);
+      });
     });
   }
 

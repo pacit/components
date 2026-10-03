@@ -142,7 +142,9 @@ arrowed into another month says `27`, and `27` is not a date.
   needs one without a field beside it.
 - **The Gregorian calendar only** — see [`PctDate`](./date.md).
 - **The first day of the week is a table where the platform is silent.**
-  `Intl.Locale.prototype.getWeekInfo()` is absent from firefox 151, so 80 regions are written
-  down in `locale.ts` and checked against the platform's own CLDR for **every** two-letter
-  region code in `locale.spec.ts`. A consumer can override it outright with
+  `Intl.Locale.prototype.getWeekInfo()` was absent from firefox 151, which Angular still
+  supports, so 80 regions are written down in `locale.ts` and checked against the platform's
+  own CLDR for **every** two-letter region code in `locale.spec.ts`; `date.spec.ts` deletes the
+  method in every engine and draws the grid from the table
+  ([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)). A consumer can override it outright with
   `firstDayOfWeek`.

@@ -266,6 +266,10 @@ describe('PctAutosize — a height that follows the text', () => {
       });
       wake();
 
+      // Not inside the delivery: a height written there is the size change every engine
+      // reports as `ResizeObserver loop completed` (0084). The next frame measures.
+      expect(height).not.toHaveBeenCalled();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
       expect(height).toHaveBeenCalledTimes(2);
       height.mockRestore();
     } finally {

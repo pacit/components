@@ -301,13 +301,15 @@ of our own only where there is no native equivalent.
 
 **And it is not only behaviour.** A **layout** the platform computes is the platform's too:
 `pctAutosize` takes a textarea's height from `field-sizing: content` in the engines that have
-it, and measures one only in the engine that does not
+it, and measures one only in an engine that does not
 ([0041](../decisions/0041-a-height-the-platform-computes.md)). Two things follow, and both are
 gated rather than declared. Where a fallback exists it has to produce **the platform's own
 answer**, not a plausible one — so the floor is compared against a plain `<textarea rows="2">`
-on the same page rather than against a number of ours. And a fallback is written to **expire**:
-the case naming which engine lacks the property fails the day that engine ships it, which is
-the notice that the borrowed road has lost its last consumer.
+on the same page rather than against a number of ours. And a fallback **stays while Angular
+supports an engine without the feature**, and is forced in every engine the run has
+([0084](../decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)):
+the run's engines all have `field-sizing` and `getWeekInfo` since firefox 155, and Angular 22
+still supports firefox 151, which had neither.
 
 **Gate:** `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation;
 `apps/sandbox-e2e/src/menu.spec.ts` — `Enter` and `Space` on a command, in three engines. The
@@ -324,9 +326,14 @@ own clear does in all three engines;
 `apps/sandbox-e2e/src/textarea.spec.ts` — the layout half, and the only one of these with two
 implementations under one set of assertions: an empty autosizing textarea is exactly as tall as
 a plain `<textarea rows="2">` beside it, three lines are three and six are six, in three
-engines, of which two are laid out by `field-sizing: content` and one is measured in script.
-Plus `› "the engine is on the road the decision says it is"`, which exists to go red when the
-borrowed road stops being borrowed;
+engines, each case run twice — on `field-sizing: content` and on the measurement in script,
+forced by an init script that takes the property away from both the script and the sheet. Every
+case ends with no `error` event raised in the page. Plus `› "the box is on the road the case
+says it is"`, which goes red when the stub stops taking the property away or an engine loses it;
+`apps/sandbox-e2e/src/date.spec.ts › "the first day of the week"` — the same fallback rule for
+a value: the Japanese and the Polish grids start on the day the platform's own `getWeekInfo`
+names, with the method and with it deleted before the application starts, so the second run
+draws the grid from the table in `date/src/locale.ts`;
 `apps/sandbox-e2e/src/accordion.spec.ts` — the third kind of borrowing, and the widest: not a
 key and not a layout but a **relation between elements**. `<details name>` makes one section
 close its siblings, and `exclusive` is that attribute with no code behind it, so the case is the
@@ -345,11 +352,15 @@ no transform the panel spans the viewport and nothing is said. `libs/components/
 holds the sentence whole, over doctored answers ([`lesson-163`](../lessons.md#lesson-163))
 **Control:** the keyboard half has none — deliberately: a navigation test has no mode in which
 it passes without a working keyboard. The layout half does, and it is recorded rather than
-prepared, because the two roads fail in different engines: the `field-sizing` declaration
-removed leaves **10 of 21** cases red on chromium and webkit; the floor removed, 6; the
-measured road's reset removed, 2 on firefox; its resize observer removed, 1 there and 1 unit
-case; its subscription taken at construction instead of after the first render, again 1 and 1
-([`lesson-114`](../lessons.md#lesson-114))
+prepared, and every engine now runs both roads: the `field-sizing` declaration removed leaves
+**18 of 42** cases red, 6 per engine, all on the platform road; the floor removed, 3 per
+engine; the measured road's reset removed, 2 per engine; its `observe` call removed, 1 per
+engine and no unit case, since the unit suite wakes a lent observer by hand; its subscription
+taken at construction instead of after the first render, 1 per engine and 1 unit case
+([`lesson-114`](../lessons.md#lesson-114)); its height written inside the observer's callback,
+as it was until 0084, 1 per engine and 1 unit case. The week: Japan dropped from
+the table, 1 per engine; the table's default made Sunday, 1 per engine — both on the table road
+alone
 **Exceptions:** [`req-api-number`](#req-api-number) (native `type="number"` does not know the
 local separator), `PctSelect` (a native `<select>` gives no panel — and a filtering one borrows
 back what a real `<input>` answers on its own), `PctMenu` (a native menu is not a thing the

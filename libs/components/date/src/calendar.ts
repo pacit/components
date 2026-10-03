@@ -170,7 +170,7 @@ export class PctCalendar {
   /**
    * Which day the week starts on, `1` (Monday) … `7` (Sunday). Absent, the locale decides —
    * through the platform where it answers and through a table of regions where it does not
-   * (`locale.ts`, and firefox 151 is the engine that does not).
+   * (`locale.ts` — firefox 151 is one engine that does not, and Angular still supports it).
    *
    * @since 0.1.0
    */

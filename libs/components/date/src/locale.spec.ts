@@ -15,8 +15,9 @@ interface WeekAwareLocale extends Intl.Locale {
 }
 
 /**
- * Runs `read` in the world the table exists for: firefox 151, where
- * `Intl.Locale.prototype.getWeekInfo` is not there.
+ * Runs `read` in the world the table exists for: an engine where
+ * `Intl.Locale.prototype.getWeekInfo` is not there — firefox 151 and older, which Angular
+ * still supports.
  *
  * Every assertion about the FALLBACK has to go through here, and the reason is written twice
  * in this repository now: a check of a fallback that runs where the primary answers is a
@@ -54,7 +55,7 @@ describe('the first day of the week', () => {
    * twenty cases passing ([`lesson-120`](../../../../docs/lessons.md#lesson-120)).
    *
    * So the platform's answers are taken first, `getWeekInfo` is then taken AWAY — which is
-   * firefox 151 — and the fallback is asked the same 676 questions. No sample.
+   * firefox 151 and older — and the fallback is asked the same 676 questions. No sample.
    */
   it('agrees with the platform for EVERY two-letter region, with the platform gone', () => {
     const platform = new Map<string, number | undefined>(

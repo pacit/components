@@ -56,7 +56,7 @@ before an application ships them.
 ./date 43847 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 20260 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 19480 ./core,./icon @angular/common,@angular/core
-./field 28504 ./core @angular/core,@angular/forms,@angular/forms/signals
+./field 28587 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
 ./icon 8165 - @angular/common,@angular/core

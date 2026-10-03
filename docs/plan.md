@@ -234,15 +234,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the reading raised 4.1.2 to Supports, and what it left open is 4.78. The say-all pass stays
     refused, as written
 
-- [ ] **4.79 — firefox 155 shipped two features a fallback was kept for, and one case noticed**
+- [x] **4.79 — firefox 155 shipped two features a fallback was kept for, and one case noticed** — **closed 2026-10-03**
   - the bump to Playwright 1.63 (PR #48) brought firefox 155, and with it `field-sizing: content`
     and `Intl.Locale.prototype.getWeekInfo` — probed true in all three engines
-  - the textarea case written to expire did (0041); the measured road in `autosize.ts` now has
-    no engine in e2e, so the controls `api.md` records for it on firefox no longer bite
-  - the week-info fallback in `date/src/locale.ts` lost its last engine with no case to say so —
-    the gap the expiring case was built against
-  - binds at: **a decision per fallback** — removed, or kept for older engines with an e2e road
-    that forces it — and the firefox-151 sentences in docs and comments corrected with it
+  - both fallbacks stay: Angular 22 supports firefox 112–152, and 151 had neither feature
+    ([0084](decisions/0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)).
+    Each is forced in every engine by an init script — the textarea suite runs twice, the
+    Japanese and Polish grids are drawn with `getWeekInfo` deleted — and the controls
+    `req-api-platform` records bite again, per engine instead of on firefox alone
+  - the forced textarea road found what firefox 151 had hidden: a height written inside the
+    resize observer's callback, which every engine reports as an error event Playwright's
+    `pageerror` does not hear. The measurement waits a frame now, and every case reads the
+    page's own `error` events
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
