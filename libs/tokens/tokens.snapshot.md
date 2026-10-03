@@ -99,10 +99,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-button-height dimension component public
 --pct-button-height-lg dimension component public
 --pct-button-height-sm dimension component public
+--pct-button-icon-size dimension component public
+--pct-button-icon-size-lg dimension component public
+--pct-button-icon-size-sm dimension component public
 --pct-button-padding-x dimension component public
 --pct-button-padding-x-lg dimension component public
 --pct-button-padding-x-sm dimension component public
 --pct-button-radius dimension component public
+--pct-button-target-min dimension component public
 --pct-checkbox-bg color component public
 --pct-checkbox-bg-checked color component public
 --pct-checkbox-bg-disabled color component public

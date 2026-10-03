@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { visit } from './support/dom';
+import { boxOf, visit } from './support/dom';
 
 test.describe('PctButton', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,6 +31,34 @@ test.describe('PctButton', () => {
     // The states have colour tokens of their own — opacity would change the
     // contrast in a way the gate cannot see (req-token-no-opacity).
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
+  });
+
+  test('a row too narrow for them leaves labelled buttons as wide as their words — the touch floor is on the height alone', async ({
+    page,
+  }) => {
+    const ids = [
+      'btn-solid',
+      'btn-outline',
+      'btn-ghost',
+      'btn-soft',
+      'btn-hero',
+    ];
+    const widths = () =>
+      Promise.all(
+        ids.map((id) => boxOf(page.getByTestId(id)).then((box) => box.width)),
+      );
+    const before = await widths();
+    // A width floor on the face was measured doing this: it replaced the automatic minimum a
+    // flex item keeps, and every button in the row shrank past its label (0085).
+    await page.addStyleTag({
+      content:
+        '[data-testid="demo-variants"] .row { flex-wrap: nowrap; width: 120px; }',
+    });
+    await expect(page.getByTestId('demo-variants').locator('.row')).toHaveCSS(
+      'width',
+      '120px',
+    );
+    expect(await widths()).toEqual(before);
   });
 
   /**
@@ -271,5 +299,207 @@ test.describe('PctButton — the same face on a link', () => {
 
     await page.getByTestId('link-solid').click();
     await expect(page).toHaveURL(/\/select$/);
+  });
+});
+
+/**
+ * The icon-only face ([0085](../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+ * Geometry and nothing else: the paint is the same button's and is measured above, so what is
+ * read here is the square, the glyph's step inside it, and the spinner standing in its place.
+ * The numbers are written out — the control axis and the icon's own scale — rather than read
+ * from the skin, which would agree with the stylesheet about anything.
+ */
+test.describe('PctButton — icon only', () => {
+  const SIZES = [
+    ['sm', 28, 16],
+    ['md', 36, 20],
+    ['lg', 44, 24],
+  ] as const;
+
+  /** How far one centre stands from another, on both axes at once. */
+  const offset = (
+    a: { x: number; y: number; width: number; height: number },
+    b: { x: number; y: number; width: number; height: number },
+  ) =>
+    Math.max(
+      Math.abs(a.x + a.width / 2 - (b.x + b.width / 2)),
+      Math.abs(a.y + a.height / 2 - (b.y + b.height / 2)),
+    );
+
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/button');
+  });
+
+  test('a square as tall as its size — the height of the labelled button beside it, and as wide', async ({
+    page,
+  }) => {
+    for (const [size, side] of SIZES) {
+      const square = await boxOf(page.getByTestId(`icon-only-${size}`));
+      const twin = await boxOf(page.getByTestId(`icon-only-twin-${size}`));
+      expect(square, `the ${size} square`).toMatchObject({
+        width: side,
+        height: side,
+      });
+      expect(twin.height, `the ${size} labelled button`).toBe(side);
+    }
+  });
+
+  test("the glyph is drawn on the icon's step for the size, in the middle of the square", async ({
+    page,
+  }) => {
+    for (const [size, side, glyph] of SIZES) {
+      const square = page.getByTestId(`icon-only-${size}`);
+      const drawn = await boxOf(square.locator('pct-icon'));
+      expect(drawn, `the ${size} glyph`).toMatchObject({
+        width: glyph,
+        height: glyph,
+      });
+      expect(
+        offset(drawn, await boxOf(square)),
+        `the ${size} glyph is off the centre of its ${side} px square`,
+      ).toBeLessThanOrEqual(0.5);
+    }
+  });
+
+  test('every face, the disabled state and the link are the same square', async ({
+    page,
+  }) => {
+    for (const id of [
+      'solid',
+      'outline',
+      'ghost',
+      'soft',
+      'hero',
+      'disabled',
+      'link',
+    ])
+      expect(
+        await boxOf(page.getByTestId(`icon-only-${id}`)),
+        `icon-only-${id}`,
+      ).toMatchObject({ width: 36, height: 36 });
+  });
+
+  test('while it works the spinner stands where the glyph stood, at its size — and the name stays', async ({
+    page,
+  }) => {
+    const square = page.getByTestId('icon-only-loading');
+    const spinner = square.locator('[data-pct-part="spinner"]');
+    await expect(spinner).toBeVisible();
+
+    // The layout size, not the rectangle: the ring turns, and a turning square's rectangle
+    // is up to √2 wider than the square. Its centre is the one thing the turn keeps.
+    expect(
+      await spinner.evaluate((el) => [
+        (el as HTMLElement).offsetWidth,
+        (el as HTMLElement).offsetHeight,
+      ]),
+    ).toEqual([20, 20]);
+    const box = await boxOf(square);
+    expect(box).toMatchObject({ width: 36, height: 36 });
+    expect(offset(await boxOf(spinner), box)).toBeLessThanOrEqual(0.5);
+
+    // The glyph is switched off and not taken out: opacity keeps the label's content in the
+    // accessibility tree. This square is named by words in that content and by nothing on the
+    // button itself, so the name read here is the one `display: none` would have taken away —
+    // read first, so that it is the name and not the property that a regression turns red.
+    await expect(square).not.toHaveAttribute('aria-label');
+    await expect(square).toHaveAccessibleName('Search');
+    await expect(square.locator('[data-pct-part="label"]')).toHaveCSS(
+      'opacity',
+      '0',
+    );
+  });
+
+  test('a row that squeezes it or stretches it leaves it square — a narrower square is a narrower target', async ({
+    page,
+  }) => {
+    // Too narrow for five, and taller than any of them with its items stretched: the two
+    // ways a consumer's row hands an item another size than its own.
+    await page.addStyleTag({
+      content:
+        '[data-testid="icon-only-faces"] { flex-wrap: nowrap; width: 60px; height: 60px; align-items: stretch; }',
+    });
+    await expect(page.getByTestId('icon-only-faces')).toHaveCSS(
+      'height',
+      '60px',
+    );
+    for (const id of ['solid', 'outline', 'ghost', 'soft', 'hero'])
+      expect(
+        await boxOf(page.getByTestId(`icon-only-${id}`)),
+        `icon-only-${id}`,
+      ).toMatchObject({ width: 36, height: 36 });
+  });
+
+  test("the glyph's steps are the icon's own — the two sets of tokens agree in this skin", async ({
+    page,
+  }) => {
+    // Literals in two files, by the tier rule: the button may not point at the icon's tokens.
+    // This reading is what ties them, so the day one scale moves the other is told.
+    const steps = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      return ['-sm', '', '-lg'].map((step) => [
+        root.getPropertyValue(`--pct-button-icon-size${step}`).trim(),
+        root.getPropertyValue(`--pct-icon-size${step}`).trim(),
+      ]);
+    });
+    expect(steps).toEqual([
+      ['16px', '16px'],
+      ['20px', '20px'],
+      ['24px', '24px'],
+    ]);
+  });
+
+  test('the sentence fires on a square nothing names, and on none of the named ones — the tooltip-named among them', async ({
+    page,
+  }) => {
+    const said: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'warning') said.push(message.text());
+    });
+    // The defect, built here rather than borrowed: one square's `aria-label` is taken off as
+    // the document is parsed — before the application starts, so the button reads a page in
+    // which that square has no name, and every other square on the page has the one it wears.
+    await page.addInitScript(() => {
+      new MutationObserver(() =>
+        document
+          .querySelector('[data-testid="icon-only-solid"]')
+          ?.removeAttribute('aria-label'),
+      ).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['aria-label'],
+      });
+    });
+    await visit(page, '/button');
+    await expect(page.getByTestId('icon-only-solid')).not.toHaveAttribute(
+      'aria-label',
+    );
+    // Exactly one: the unnamed square, and not the square a tooltip names, whose `aria-label`
+    // is written by a directive and has to be there by the time the button reads it.
+    await expect
+      .poll(
+        () =>
+          said.filter((line) => line.includes('icon-only button with no name'))
+            .length,
+      )
+      .toBe(1);
+    await page.waitForTimeout(500);
+    expect(
+      said.filter((line) => line.includes('icon-only button with no name')),
+    ).toHaveLength(1);
+  });
+
+  test("the name is the one written on the button — a tooltip's, with nothing open", async ({
+    page,
+  }) => {
+    await expect(page.getByTestId('icon-only-solid')).toHaveAccessibleName(
+      'Approve',
+    );
+    // `pctTooltipAs="name"` writes the name as an attribute, permanently (0030): read before
+    // anything has hovered, which is the state most readers meet the button in.
+    await expect(page.getByTestId('icon-only-ghost')).toHaveAccessibleName(
+      'Delete the draft',
+    );
   });
 });

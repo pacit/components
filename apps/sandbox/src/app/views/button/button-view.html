@@ -176,6 +176,132 @@
   </div>
 </sbx-demo>
 
+<sbx-demo
+  #square
+  heading="Icon only"
+  summary="One glyph and no words: a square as tall as the size, with the glyph on the icon's own step for it. Every face, tone and state is the same button's. There is nothing on it to read, so the name is written on the button — aria-label, or a tooltip that shows the name as well as speaking it."
+  [reqs]="['req-a11y-touch', 'req-a11y-built-in', 'req-api-icons']"
+  data-testid="demo-icon-only"
+>
+  <div class="row" data-testid="icon-only-faces">
+    <button
+      pctButton
+      iconOnly
+      [size]="square.activeSize()"
+      aria-label="Approve"
+      data-testid="icon-only-solid"
+    >
+      <pct-icon icon="check" />
+    </button>
+    <button
+      pctButton
+      iconOnly
+      variant="outline"
+      [size]="square.activeSize()"
+      aria-label="Search"
+      data-testid="icon-only-outline"
+    >
+      <pct-icon icon="search" />
+    </button>
+    <button
+      pctButton
+      iconOnly
+      variant="ghost"
+      tone="danger"
+      [size]="square.activeSize()"
+      pctTooltip="Delete the draft"
+      pctTooltipAs="name"
+      data-testid="icon-only-ghost"
+    >
+      <pct-icon icon="trash" />
+    </button>
+    <button
+      pctButton
+      iconOnly
+      variant="soft"
+      [size]="square.activeSize()"
+      aria-label="Add to favourites"
+      data-testid="icon-only-soft"
+    >
+      <pct-icon icon="star" />
+    </button>
+    <button
+      pctButton
+      iconOnly
+      variant="hero"
+      [size]="square.activeSize()"
+      aria-label="Notifications"
+      data-testid="icon-only-hero"
+    >
+      <pct-icon icon="bell" />
+    </button>
+  </div>
+  <div class="row" data-testid="icon-only-states">
+    <button
+      pctButton
+      iconOnly
+      variant="outline"
+      [size]="square.activeSize()"
+      disabled
+      aria-label="Close"
+      data-testid="icon-only-disabled"
+    >
+      <pct-icon icon="x" />
+    </button>
+    <button
+      pctButton
+      iconOnly
+      variant="outline"
+      [size]="square.activeSize()"
+      loading
+      data-testid="icon-only-loading"
+    >
+      <pct-icon icon="search" />
+      <span class="hidden-name">Search</span>
+    </button>
+    <a
+      pctButton
+      iconOnly
+      variant="ghost"
+      href="/icon"
+      [size]="square.activeSize()"
+      aria-label="About icons"
+      data-testid="icon-only-link"
+    >
+      <pct-icon icon="info" />
+    </a>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Icon only, three sizes"
+  summary="Each square beside a labelled button of the same size: the height is the size's own, the width is the height, and the glyph grows a step of the icon's scale with it."
+  [reqs]="['req-api-size', 'req-a11y-touch']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-icon-only-sizes"
+>
+  <div class="row row--bottom">
+    @for (size of sizes; track size) {
+    <button
+      pctButton
+      iconOnly
+      [size]="size"
+      aria-label="Home"
+      [attr.data-testid]="'icon-only-' + size"
+    >
+      <pct-icon icon="house" />
+    </button>
+    <button
+      pctButton
+      [size]="size"
+      [attr.data-testid]="'icon-only-twin-' + size"
+    >
+      Home
+    </button>
+    }
+  </div>
+</sbx-demo>
+
 <h3 class="view__title">The same example in two themes</h3>
 <p class="muted view__intro">
   Cards with a fixed theme, independent of the global setting — a side-by-side

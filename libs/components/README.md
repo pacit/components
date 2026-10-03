@@ -101,11 +101,18 @@ role, its middle click and its place in a crawler's index.
 <button pctButton [loading]="saving()">Save</button>
 
 <a pctButton variant="hero" href="/start">Get started</a>
+
+<button pctButton iconOnly variant="ghost" aria-label="Delete the draft">
+  <pct-icon icon="trash" />
+</button>
 ```
 
-`variant` is `solid | outline`, `size` is `sm | md | lg`, and `disabled` / `loading` are boolean
-attributes. State is exposed as `data-pct-*` and the inner elements as `data-pct-part`, so an
-application can style them without reaching for a private class name.
+`variant` is `solid | outline | ghost | soft | hero`, `tone` is one of the skin's four, `size`
+is `sm | md | lg`, and `disabled` / `loading` / `iconOnly` are boolean attributes. `iconOnly`
+makes the face a square around one glyph — there is nothing on it to read, so the name goes on
+the button: `aria-label`, or a tooltip with `pctTooltipAs="name"`. State is exposed as
+`data-pct-*` and the inner elements as `data-pct-part`, so an application can style them
+without reaching for a private class name.
 
 ### Field
 

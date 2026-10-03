@@ -15,8 +15,15 @@
   /* The height is a value outright, not the sum of padding and line height — only that way
      does the button match a field row of the same size to the pixel (req-api-size). The
      vertical axis carries `min-height`, so a label wrapped onto two lines still pushes the
-     button apart instead of being clipped. */
-  min-height: var(--pct-button-height);
+     button apart instead of being clipped.
+
+     The floor under it is the target every control here reads (req-a11y-touch). The heights
+     clear it at every size and density, and `max()` keeps them the answer; it is what a skin
+     that shrinks a height runs into. The height alone, and that was measured: a floor on the
+     WIDTH as well replaced the automatic minimum a flex or grid item keeps, so in a row too
+     narrow for it a labelled button shrank past its own label — "Download report" to 65 px
+     around 83 px of words. The width is the words and the padding. */
+  min-height: max(var(--pct-button-height), var(--pct-button-target-min));
   padding-block: 0;
   padding-inline: var(--pct-button-padding-x);
   cursor: pointer;
@@ -283,12 +290,61 @@
   --pct-button-height: var(--pct-button-height-sm);
   --pct-button-font-size: var(--pct-button-font-size-sm);
   --pct-button-padding-x: var(--pct-button-padding-x-sm);
+  --pct-button-icon-size: var(--pct-button-icon-size-sm);
 }
 
 :host([data-pct-size='lg']) {
   --pct-button-height: var(--pct-button-height-lg);
   --pct-button-font-size: var(--pct-button-font-size-lg);
   --pct-button-padding-x: var(--pct-button-padding-x-lg);
+  --pct-button-icon-size: var(--pct-button-icon-size-lg);
+}
+
+/* ── The icon-only face ──────────────────────────────────────────────────────────────────
+   One glyph and no words ([0085](../../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+   Geometry and nothing else: the faces, the tones and the states above paint this button
+   exactly as they paint the one with a label, so no rule of theirs is repeated here.
+
+   The square is the size's own height across, held on both axes outright rather than as a
+   minimum: a row that stretches its items — the default of a flex row, a grid cell — would
+   otherwise hand it the height of its tallest neighbour, and a row that squeezes them would
+   hand it less width, which is what `flex-shrink: 0` refuses. A narrower square is a narrower
+   target. The floor is the token the labelled face's height stands on, here under both axes,
+   because a square has no words to be as wide as.
+
+   The glyph is drawn on the icon's own step for the size — 16 / 20 / 24 inside 28 / 36 / 44,
+   57, 56 and 55 per cent of the square — and it gets there through `font-size`, because
+   `pct-icon` is `1em`: the consumer writes no size, and one who writes `size` on the icon still
+   wins. The spinner is `1em` too, so it stands at the glyph's size in the glyph's place. */
+:host([data-pct-icon-only]) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: max(var(--pct-button-height), var(--pct-button-target-min));
+  block-size: max(var(--pct-button-height), var(--pct-button-target-min));
+  padding-inline: 0;
+  flex-shrink: 0;
+  font-size: var(--pct-button-icon-size);
+}
+
+/* One cell for the glyph and the spinner. While the button works the spinner stands where
+   the glyph stood, and the glyph is switched off with `opacity: 0` — a visibility switch, the
+   one use of the property `req-token-no-opacity` leaves open — rather than `display: none` or
+   `visibility: hidden`, both of which take the content out of the accessibility tree: a button
+   named by its content would lose the name for exactly as long as it works. */
+:host([data-pct-icon-only]) .pct-button__spinner,
+:host([data-pct-icon-only]) .pct-button__label {
+  grid-area: 1 / 1;
+}
+
+/* The ring's edge inside its `1em` rather than around it: beside a label the spinner is 4 px
+   wider than the text is tall and nobody can tell, but in the glyph's place it would be a
+   circle 24 px across where a 20 px glyph stood — measured, before this rule. */
+:host([data-pct-icon-only]) .pct-button__spinner {
+  box-sizing: border-box;
+}
+
+:host([data-pct-icon-only][data-pct-loading]) .pct-button__label {
+  opacity: 0;
 }
 
 .pct-button__label {

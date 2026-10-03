@@ -12,6 +12,68 @@ import { PCT_CONFIG, PctTone } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
+ * The words a reader would make a name of: an element's `aria-label` or `alt`, otherwise the
+ * text of its content, otherwise its `title` — and nothing under `hidden` (`until-found` is
+ * still in the page) or `aria-hidden`, where the spinner and every unnamed `pct-icon` sit.
+ * A named `pct-icon` answers with its label.
+ *
+ * Attributes rather than properties, and `nodeType` rather than `instanceof`: a custom
+ * element's `alt` property can be anything, and a node from another realm — an iframe's — is
+ * a `Text` that is not an instance of this window's `Text`.
+ */
+function spoken(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+  const el = node as Element;
+  const hidden = el.getAttribute('hidden');
+  if (
+    (hidden !== null && hidden !== 'until-found') ||
+    el.getAttribute('aria-hidden')?.trim().toLowerCase() === 'true'
+  )
+    return '';
+  const alternative = el.getAttribute('aria-label') || el.getAttribute('alt');
+  if (alternative?.trim()) return alternative;
+  return (
+    Array.from(el.childNodes, spoken).join('').trim() ||
+    (el.getAttribute('title') ?? '')
+  );
+}
+
+/** The element under `root` with this id — a document, a shadow root, or a detached subtree. */
+const byId = (root: ParentNode, id: string): Element | undefined =>
+  Array.from(root.querySelectorAll('[id]')).find((node) => node.id === id);
+
+/**
+ * Whether anything names the button besides its glyph. A heuristic, as the tooltip's is: the
+ * real computation is the browser's, and the audit measures that one over a rendered page
+ * (`req-a11y-axe`). It errs towards silence — where it cannot tell, it counts a name — because
+ * a sentence that fires on a page that is fine teaches people to ignore the sentence, and an
+ * unnamed button it misses is still the audit's to find.
+ *
+ * An `aria-labelledby` counts when a reference resolves to something with words in it: a
+ * reference to nothing names nothing (measured in 0030), and neither does an empty element.
+ * The target's words are read whole as well as as spoken, because a browser reads a hidden
+ * target it is pointed at. References are looked up under the button's own root, so a button
+ * in a shadow root finds its label there, and one not in a document yet still finds the
+ * labels that travel with it.
+ */
+function named(el: HTMLElement): boolean {
+  const root = el.getRootNode() as ParentNode;
+  const references = el.getAttribute('aria-labelledby')?.match(/\S+/g);
+  const labels = (el as HTMLButtonElement).labels;
+  return [
+    ...(references
+      ? references.flatMap((id) => {
+          const target = byId(root, id);
+          return target ? [target.textContent, spoken(target)] : [];
+        })
+      : []),
+    ...(labels ? Array.from(labels, (label) => label.textContent) : []),
+    spoken(el),
+  ].some((words) => words?.trim());
+}
+
+/**
  * Button. An attribute selector on a native `<button>` — or on a native `<a>`, when the
  * control navigates — so semantics, keyboard handling and focus work natively
  * (req-a11y-built-in). The paint is the same on both; what differs is the element, and the
@@ -20,6 +82,9 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
  * @example
  * <button pctButton variant="outline" size="lg">Save</button>
  * <a pctButton href="/start">Get started</a>
+ * <button pctButton iconOnly variant="ghost" aria-label="Delete the draft">
+ *   <pct-icon icon="trash" />
+ * </button>
  *
  * @since 0.1.0
  */
@@ -34,6 +99,7 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
     // attribute the stylesheet must not answer is better not written than written and ignored.
     '[attr.data-pct-tone]': 'appliedTone()',
     '[attr.data-pct-size]': 'size()',
+    '[attr.data-pct-icon-only]': 'iconOnly() ? "" : null',
     '[attr.data-pct-loading]': 'loading() ? "" : null',
     // The face's own hook, written on both elements, because only one of them has a
     // `disabled` attribute to key on and the stylesheet should not have to know which.
@@ -97,6 +163,20 @@ export class PctButton {
   readonly size = input<PctButtonSize>(this.config.defaultSize);
 
   /**
+   * The face for one glyph and no words: a square as tall as the size, the glyph drawn on the
+   * icon's own step for that size, and 24 px under both axes whatever a skin does to the
+   * height. Geometry only — every face, tone and state above is the same button.
+   *
+   * There is nothing on it to read, so **the name is written on the button**: `aria-label`,
+   * or a tooltip with `pctTooltipAs="name"`, which shows the name as well as speaking it. Dev
+   * mode says so once when nothing names it
+   * ([0085](../../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
+   *
+   * @since next
+   */
+  readonly iconOnly = input(false, { transform: booleanAttribute });
+
+  /**
    * Blocks the click and greys the face; the grey is written to survive forced colors. On a link it is `aria-disabled` and a refused navigation — the platform has no disabled link.
    *
    * @since 0.1.0
@@ -121,6 +201,7 @@ export class PctButton {
 
   constructor() {
     if (isDevMode()) afterNextRender(() => this.warnOnToneOnTheHeroFace());
+    if (isDevMode()) afterNextRender(() => this.warnOnIconOnlyWithNoName());
 
     // A `<button>` gets nothing here, and that is the point: the platform refuses a disabled
     // press by itself, so a listener on every button in an application would be a cost with
@@ -153,6 +234,22 @@ export class PctButton {
       `[pctButton] tone="${this.tone()}" on variant="hero" is ignored. The hero face is the ` +
         `brand gradient and paints from no other family — drop the tone, or ask for a face ` +
         `that wears one (solid, outline, ghost, soft).`,
+    );
+  }
+
+  /**
+   * An icon-only button nothing names. The glyph is decoration — `pct-icon` stands outside the
+   * accessibility tree until it is given a label — so a square holding one is announced as
+   * "button" and nothing else, which axe reports at critical (`lesson-92`). Read after the
+   * first render, when a tooltip naming the button has already written its `aria-label`; what
+   * counts as a name is `named()`'s, and it errs towards silence.
+   */
+  private warnOnIconOnlyWithNoName(): void {
+    if (!this.iconOnly() || named(this.host.nativeElement)) return;
+    console.warn(
+      `[pctButton] An icon-only button with no name. The glyph is decoration, so a screen ` +
+        `reader announces "button" and nothing more. Write the name on the button: ` +
+        `aria-label="…", or pctTooltip="…" with pctTooltipAs="name" to show it as well.`,
     );
   }
 

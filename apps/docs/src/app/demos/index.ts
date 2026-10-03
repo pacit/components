@@ -87,6 +87,11 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
         import('./button.states.demo').then((m) => m.ButtonStatesDemo),
     },
     {
+      key: 'icon-only',
+      load: () =>
+        import('./button.icon-only.demo').then((m) => m.ButtonIconOnlyDemo),
+    },
+    {
       key: 'toolbar',
       load: () =>
         import('./button.toolbar.demo').then((m) => m.ButtonToolbarDemo),
