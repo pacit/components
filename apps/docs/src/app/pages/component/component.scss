@@ -336,6 +336,10 @@
   color: var(--pct-text);
 }
 
+/* A demo the reader's press resizes is pinned to the top of the stage — in styles.scss and
+   not here: the host `ngComponentOutlet` creates carries none of this page's `_ngcontent`
+   attribute, so a rule in this emulated sheet cannot select it (lesson-249). */
+
 .stage--hero {
   /* The sketch's stage: room above, and room below for the file's name in the corner. A
      floor as well — the demo arrives through a lazy chunk on hydration, and an unreserved

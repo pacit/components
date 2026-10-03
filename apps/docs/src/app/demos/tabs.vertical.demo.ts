@@ -13,7 +13,7 @@ import { PctTab, PctTabs } from '@pacit/components/tabs';
 @Component({
   selector: 'demo-tabs-vertical',
   imports: [PctTab, PctTabs],
-  styles: ':host { display: block; max-inline-size: 32rem; }',
+  styles: ':host { display: block; inline-size: min(100%, 32rem); }',
   template: `
     <pct-tabs [(value)]="section" orientation="vertical" ariaLabel="Project">
       <pct-tab value="overview" label="Overview">

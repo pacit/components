@@ -197,3 +197,9 @@ never a base class),
   panel and does **not** write that value into the consumer's signal. The alternative is a
   component that repairs the consumer's state during a render, which finishes in one pass for
   one consumer and never for two ([`lesson-94`](../lessons.md#lesson-94)).
+- **A panel nobody chose contributes no width.** It is skipped for layout, not only for paint — that
+  is how `until-found` hides it — so in a box that shrinks to fit its content (a flex item, an
+  `inline-block`, a dialog sized by what it holds) the host is exactly as wide as the chosen
+  panel and changes width with every choice. In normal flow the host is a block and takes its
+  container's width; a shrink-wrapped one needs an `inline-size` of its own, which is what
+  the site's demos give it ([`lesson-249`](../lessons.md#lesson-249)).

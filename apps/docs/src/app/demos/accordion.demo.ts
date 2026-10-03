@@ -5,6 +5,7 @@ import { PctAccordion, PctAccordionItem } from '@pacit/components/accordion';
 @Component({
   selector: 'demo-accordion',
   imports: [PctAccordion, PctAccordionItem],
+  styles: ':host { display: block; inline-size: min(100%, 36rem); }',
   template: `
     <pct-accordion exclusive>
       <pct-accordion-item label="What ships in the package?">

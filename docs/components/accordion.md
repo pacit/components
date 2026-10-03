@@ -186,3 +186,9 @@ stays in the component)
   proliferation in the same paragraph. The platform already publishes each section as a
   `group`, so the offer is declined — a consumer who wants a landmark for one long section can
   put one inside their own content.
+- **A closed section's content contributes no width.** It is skipped for layout, not only for
+  paint — that is how the platform closes the section — so a stack in a box that shrinks to fit
+  its content (a flex item, an `inline-block`) is as wide as its headings while closed and as wide
+  as the widest open section after a press. In normal flow the host is a block and takes its
+  container's width; a shrink-wrapped one needs an `inline-size` of its own, which is what the
+  site's demos give it ([`lesson-249`](../lessons.md#lesson-249)).

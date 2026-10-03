@@ -5,6 +5,7 @@ import { PctTree, PctTreeItem } from '@pacit/components/tree';
 @Component({
   selector: 'demo-tree',
   imports: [PctTree, PctTreeItem],
+  styles: ':host { display: block; inline-size: min(100%, 20rem); }',
   template: `
     <pct-tree ariaLabel="Project files" [(selected)]="chosen">
       <pct-tree-item value="README.md">README.md</pct-tree-item>

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { visit } from './support/dom';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -609,6 +609,77 @@ test.describe('The pages', () => {
     await faces.getByRole('button', { name: 'Show code' }).click();
     await expect(faces.locator('.shiki')).toBeVisible();
     await expect(faces).toContainText('variant="hero"');
+  });
+
+  /**
+   * The control the reader presses stays where it was pressed (lesson-249). A demo the press
+   * RESIZES — a strip whose host was as wide as the chosen panel, a stack that grows when a
+   * section opens, a skeleton swapped for a taller paragraph — used to slide inside the
+   * centred stage: the box changed, the stage
+   * recentred it, and the pressed control moved under the pointer (under this runner's
+   * fallback face: 7px sideways for a tab of the manual strip, 42px sideways and 16px up for
+   * a heading; lesson-249 holds the live site's own numbers). The press is the measurement:
+   * the control's box before and after it, equal to the pixel.
+   *
+   * The manual strip and not the side one, although the side one slid 45px in a browser
+   * with the site's fonts: its old host was capped at 32rem, and under this runner's wider
+   * fallback face every panel of it reached the cap, so the old code passed here. The
+   * manual strip had no cap, and its shift is the difference between two sentences at
+   * whatever face draws them (measured: the negative control must fail on BOTH halves).
+   */
+  test('a press that resizes a demo does not move the control that was pressed', async ({
+    page,
+  }) => {
+    // In the document's coordinates, not the viewport's: a click scrolls its target into
+    // view first, and the scroll moved every `boundingBox` by 1900px while the layout
+    // stood still (measured on the first run — x, width and height equal, y not).
+    const box = (locator: Locator): Promise<number[]> =>
+      locator.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return [r.x + scrollX, r.y + scrollY, r.width, r.height].map(
+          Math.round,
+        );
+      });
+
+    await visit(page, '/components/tabs');
+    // A tab of the strip: the host took the chosen panel's width, the stage recentred it,
+    // and the tab just pressed moved with it.
+    const strip = page.locator('#ex-manual [role="tablist"]');
+    await expect(strip).toBeVisible();
+    for (const name of ['Weekly', 'Yearly', 'Daily']) {
+      const tab = strip.getByRole('tab', { name });
+      const rest = await box(tab);
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      expect(await box(tab), `after choosing ${name}`).toEqual(rest);
+    }
+
+    await visit(page, '/components/accordion');
+    // The heading that opens a section: the stage recentred the taller, wider stack.
+    const section = page.locator('#ex-exclusive details').first();
+    const heading = section.locator('summary');
+    await expect(heading).toBeVisible();
+    const closed = await box(heading);
+    await heading.click();
+    await expect(section).toHaveAttribute('open', '');
+    expect(await box(heading), 'after opening the section').toEqual(closed);
+
+    // Under reduced motion, because this half measures inside the HERO stage: its child
+    // rises 8px on arrival (`.stage--hero > *`), a transform `getBoundingClientRect`
+    // includes, and nothing else here would wait for that rise to end before the first
+    // box is read — the two halves above measure in example stages, which have no
+    // entrance. The emulation goes before `goto`, the suite's own idiom (visual.spec).
+    await visit(page, '/components/skeleton', { reducedMotion: 'reduce' });
+    // The swap of a skeleton for the text it stood for: the box keeps the skeleton's height,
+    // so the button under it stays put (it moved 6px on every press).
+    const deliver = page
+      .getByTestId('demo-panel')
+      .locator('demo-skeleton button');
+    await expect(deliver).toHaveText('Deliver');
+    const pending = await box(deliver);
+    await deliver.click();
+    await expect(deliver).toHaveText('Reload');
+    expect(await box(deliver), 'after the article arrived').toEqual(pending);
   });
 
   test('the RTL row states the gate the repository really has', async ({
