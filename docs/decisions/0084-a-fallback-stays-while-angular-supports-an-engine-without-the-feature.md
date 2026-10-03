@@ -33,8 +33,9 @@ declares no browser list of its own: its peer range admits one Angular major
 (`angular-majors` in [`docs/support.md`](../support.md)), and that major comes with Angular's
 browser policy — for 22, the browsers that were Baseline widely available on 2025-10-20. That
 set reaches chromium 111, firefox 112 and safari 16.4 and includes firefox 151, where both
-features were measured absent — and the older ends of the other two lines predate them as well. An application built with Angular 22's defaults targets those engines, so the
-library has to work there; that the e2e run has newer ones is a fact about the e2e run.
+features were measured absent — and the older ends of the other two lines predate them as
+well. An application built with Angular 22's defaults targets those engines, so the library has
+to work there; that the e2e run has newer ones is a fact about the e2e run.
 
 So both fallbacks stay, and **each is forced in every engine** rather than left to whichever
 engine still lacks the feature:

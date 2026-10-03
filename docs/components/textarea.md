@@ -115,9 +115,12 @@ field's height is a `min-height`, so taller content pushes the control out)
 - **No manual resize.** `resize: none` under autosize: a drag handle is a second author of the
   height and this feature is the first. A consumer who wants the handle wants a plain
   `<textarea pctText>`.
-- **Without `field-sizing`, a server-rendered value is the floor until hydration.** The measured road
-  cannot run before there is a layout, and this is stated rather than hidden — where
-  `field-sizing` exists the first paint is already right.
+- **Without `field-sizing`, a server-rendered value is the floor until hydration.** The
+  measured road cannot run before there is a layout, and this is stated rather than hidden —
+  where `field-sizing` exists the first paint is already right.
+- **On firefox 112–119, `maxRows` has no effect.** Those versions have no `lh` unit, so the
+  ceiling and the sheet's floor are dropped; the box still follows its text by measurement, and
+  `rows` falls back to the platform's own sizing (0084).
 - **The two roads round differently**, by up to a pixel: `scrollHeight` is an integer. Nothing
   in a layout depends on it, but a gate comparing the roads compares with a tolerance.
 - **A bound `[rows]` is read by the directive**, which writes it back to the element so both
