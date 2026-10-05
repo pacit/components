@@ -52,8 +52,8 @@ before an application ships them.
 ./checkbox 18867 ./core,./icon @angular/common,@angular/core
 ./chips 15182 ./core,./icon @angular/common,@angular/core
 ./container 725 - @angular/core
-./core 8904 - @angular/core
-./date 43921 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./core 8954 - @angular/core
+./date 43978 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 20260 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 19480 ./core,./icon @angular/common,@angular/core
 ./field 28587 ./core @angular/core,@angular/forms,@angular/forms/signals
@@ -76,7 +76,7 @@ before an application ships them.
 ./tabs 16364 ./core @angular/core
 ./testing 8218 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 8907 ./core @angular/core
+./time 9334 ./core @angular/core
 ./toast 23932 ./core,./icon @angular/common,@angular/core
 ./tooltip 13662 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 12928 ./icon @angular/common,@angular/core
@@ -131,7 +131,7 @@ is worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4225 15198
 ./breadcrumb PctBreadcrumb 3 4327 12868
 ./chips PctChip 2 15040 15043
-./date PctCalendar 2 26490 43474
+./date PctCalendar 2 26547 43531
 ./field PctField 3 16337 25599
 ./menu PctMenu 2 19286 19289
 ./radio PctRadio 2 15554 15556

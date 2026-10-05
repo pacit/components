@@ -85,6 +85,25 @@ describe('pctToLatinDigits', () => {
   });
 
   it('leaves the text as it was where there is nothing to translate', () => {
-    expect(pctToLatinDigits('١:٠٥', null)).toBe('١:٠٥');
+    expect(pctToLatinDigits('13:05', null)).toBe('13:05');
+    expect(pctToLatinDigits('1:05 PM', null)).toBe('1:05 PM');
+  });
+
+  it('refuses a text holding a digit of another numbering system', () => {
+    // Left in, it would read as a separator: an Arabic-Indic three among Persian digits, the
+    // Arabic-Indic digits in a field whose locale writes the ASCII ones, a full-width two.
+    expect(
+      pctToLatinDigits('۱٣:۳۰', pctDigitsOf('fa-IR', 'arabext')),
+    ).toBeNull();
+    expect(pctToLatinDigits('١:٠٥', null)).toBeNull();
+    expect(
+      pctToLatinDigits(`1${String.fromCodePoint(0xff12)}`, null),
+    ).toBeNull();
+  });
+
+  it('writes back digits outside the basic plane, one character each', () => {
+    const adlam = pctDigitsOf('en', 'adlm');
+    const written = pctNumberFormat('en', 'adlm').format(1305);
+    expect(pctToLatinDigits(`${written}:09`, adlam)).toBe('1305:09');
   });
 });

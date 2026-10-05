@@ -530,8 +530,7 @@ describe('pctClampDay', () => {
         )
           expect(held).toBe(subject);
 
-        // A bound the schema did not set is a bound the directive does not pass, and an
-        // absent bound holds nothing back.
+        // An absent bound holds nothing back.
         expect(pctClampDay(subject, undefined, undefined)).toBe(subject);
         expect(pctClampDay(subject, min, undefined)).toBe(
           chronological(subject, min) < 0 ? min : subject,

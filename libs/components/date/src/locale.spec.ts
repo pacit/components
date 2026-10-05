@@ -180,6 +180,13 @@ describe('reading a day back', () => {
     expect(pctDayFormat('ar-EG').parse('1/12/2026')).toBe('2026-12-01');
   });
 
+  it('refuses a digit of a numbering system the field does not write, rather than skip it', () => {
+    // An Arabic-Indic three among Persian digits looks like a Persian one, and read as a
+    // separator it turned the 13th into the 1st without a word.
+    expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱٣')).toBeNull();
+    expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱۳')).toBe('2026-12-13');
+  });
+
   it('accepts more widely than it writes', () => {
     const pl = pctDayFormat('pl-PL');
     expect(pl.parse('1.12.2026')).toBe('2026-12-01');

@@ -142,7 +142,9 @@ describe('the arithmetic comes round at midnight', () => {
     // integers outside this file. Added whole, `1 + 2^60` IS `2^60` in a double, and the one
     // second the case starts with would vanish without a word.
     expect(pctAddSeconds('00:00:01', 2 ** 60)).toBe('13:56:17');
-    expect(pctAddMinutes('00:00', 2 ** 60)).toBe('20:16');
+    // 2^60 minutes is 20:16 from midnight (2^60 mod 1440 is 1216), and the minute the case starts
+    // with is the one a product taken before the remainder would lose.
+    expect(pctAddMinutes('00:01', 2 ** 60)).toBe('20:17');
   });
 
   it('moves by whole units and refuses a fraction', () => {
@@ -182,6 +184,9 @@ describe('pctClampTime', () => {
     // Two shapes of one time are one bound, not a window across midnight.
     expect(pctClampTime('12:00', '09:00', '09:00:00')).toBe('09:00:00');
     expect(pctClampTime('08:00', '09:00:00', '09:00')).toBe('09:00:00');
+    // A time equal to a bound is inside it, and comes back as it was written.
+    expect(pctClampTime('09:00:00', '09:00', undefined)).toBe('09:00:00');
+    expect(pctClampTime('17:30:00', undefined, '17:30')).toBe('17:30:00');
   });
 
   it('reads min after max as the night shift, across midnight', () => {
@@ -192,6 +197,9 @@ describe('pctClampTime', () => {
     expect(night('05:00')).toBe('05:00');
     expect(night('22:00')).toBe('22:00');
     expect(night('06:00')).toBe('06:00');
+    // Equal to an end in the other shape is inside too, and comes back as it was written.
+    expect(night('22:00:00')).toBe('22:00:00');
+    expect(night('06:00:00')).toBe('06:00:00');
     expect(night('00:00')).toBe('00:00');
     // In the gap, the nearer bound — and halfway, the one the clock reaches next.
     expect(night('12:00')).toBe('06:00');
@@ -307,8 +315,9 @@ describe.skipIf(UNDER_MUTATION)('in a hostile timezone', () => {
     // The one local read: noon UTC is two in the morning of the next day where the user stands.
     expect(pctNow(new Date('2026-03-28T12:00:00Z'))).toBe('02:00');
     // And what the time built the old way does: 13:05 local, serialised, is 23:05 the day
-    // before — and 13:05 carried as an instant, the platform's own `valueAsDate`, reads back
-    // as three in the morning.
+    // before — and 13:05 carried as an instant in UTC, the way `valueAsDate` carries it, reads
+    // back as three in the morning (on a day of 2026: on `valueAsDate`'s own 1 January 1970 the
+    // island stood at UTC−10:40, and the reading is another hour of another day).
     expect(new Date(2026, 2, 29, 13, 5).toISOString()).toBe(
       '2026-03-28T23:05:00.000Z',
     );

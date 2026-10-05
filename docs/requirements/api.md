@@ -185,7 +185,9 @@ the minute a switch skips and the hour it repeats included. The arithmetic comes
 midnight, and `24:00`, a leap second and a fraction of one are not times. The one read of local
 time is "what time is it". How a language writes a time — the clock, the day-period words and
 where they stand, the separators, the digits — comes from one `Intl` formatter for the field's
-locale, and the parser reads back everything that formatter writes.
+locale, and the parser reads back what that formatter writes, in every language the platform
+knows and on every clock a tag can force; a word or a digit it does not know makes the text
+malformed, never another time.
 
 **Gate:** `libs/components/time/src/time.spec.ts › in a hostile timezone` — the clock pinned
 to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` across the 23-hour day of 29 March
@@ -196,19 +198,23 @@ that agrees with the seconds between two times, a clamp that holds what it held 
 gap of a window across midnight to its nearer end, a snap on the step and nearest to the time,
 every whole second up to a day held against the columns' own definition of a step, and the
 domain in both directions; and `libs/components/time/src/locale.spec.ts`, a round trip of the
-formatter and the parser over 0086's 38 locales and the four hour cycles and over every
-language node's ICU writes a time in, beside the loose forms the parser takes and the junk it
-refuses. The round trip runs in node; the three engines read it with the field, in the sandbox
+formatter and the parser over every two-letter language node's ICU knows and over 0086's 38
+locales, each on its own clock and on the four a `-u-hc-` tag can force, beside the loose forms
+the parser takes and the junk it refuses. The round trip runs in node only: the browsers'
+`Intl` is read when the field reaches the sandbox, in three engines, and plan 1.3 ends there
 **Control:** the same cases build the time the old way beside the new — in Warsaw
 `new Date(2026, 2, 29, 2, 30)` answers 03:30 and an hour after 01:30 reads 03:30 where
 `pctAddMinutes('01:30', 60)` is `02:30`, and in Kiritimati 13:05 carried as an instant reads
 back as three o'clock — so a `PctTime` that followed the zone would fail against a number the
-run itself produced. Two defects were found while the gate was built, and each is a case now:
-the sweep of every language found Ewe, which writes its morning and its word for the hour in
-one run (`ŋdi ga 12:00`) and read back as nothing until the parser learned to find a day period
-beside a separator; and reading the hint beside the field found node's `format()` writing
-U+0020 before `PM` where its own `formatToParts()` writes U+202F — two strings in the engine
-the suite runs in, until both were read off the parts
+run itself produced. And every defect found while the gate was built and reviewed is a case
+now: Ewe writes its morning and its word for the hour in one run (`ŋdi ga 12:00`), and on a
+forced twelve-hour clock Bulgarian and Canadian French write a separator and then the day period
+(`1:05 ч. pm`), all three read back as nothing; Cameroonian French on a forced twelve-hour clock
+writes no day period at all, so its afternoon read back as the morning — the field counts to
+twenty-four there; a digit of another numbering system read as a separator, `۱٣:۳۰` in a
+Persian field as `01:30` and the 13th of a Persian date as the 1st; and node's `format()`
+writes U+0020 before `PM` where its own `formatToParts()` writes U+202F, so the field and its
+hint were two strings until both were read off the parts
 **Decision:** [0086 — a time of day is a wall clock](../decisions/0086-a-time-of-day-is-a-wall-clock.md)
 
 ---

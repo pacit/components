@@ -72,21 +72,37 @@ export function pctNumberFormat(
 }
 
 /**
- * Text with a locale's own digits written back as the ASCII ones, and nothing else touched —
- * `digits` is what {@link pctDigitsOf} answered, and `null` leaves the text as it was.
+ * A decimal digit that is not an ASCII one — what is left of a text once the locale's own digits
+ * have been written back, if it holds a digit of another numbering system.
+ */
+const FOREIGN_DIGIT = /(?![0-9])\p{Nd}/u;
+
+/**
+ * Text with a locale's own digits written back as the ASCII ones and nothing else touched —
+ * `digits` is what {@link pctDigitsOf} answered, and `null` means there is nothing to translate.
  *
- * Nothing is removed, and a strip of the bidi marks that once stood beside this is gone because
- * a control proved it dead: `ar-EG` writes its date separator as `U+200F /`, and a parser that
- * splits on RUNS OF DIGITS already treats every character that is not one as a separator.
+ * **`null` where a digit of another numbering system is left over.** A parser that splits on
+ * runs of ASCII digits reads any other character as a separator, a digit included: `۱٣:۳۰` in a
+ * Persian field — a Persian one and an Arabic-Indic three, which look alike — read as `01:30`,
+ * and `1２:05` typed with a Japanese input method on read as `01:05`. Refused here, once, the
+ * text is reported as not a value instead of being read as the wrong one.
+ *
+ * Nothing else is removed. A strip of the bidi marks that once stood beside this went because a
+ * control proved it dead: `ar-EG` writes its date separator as `U+200F /`, and every character
+ * that is not a digit already separates.
  *
  * @since next
  */
 export function pctToLatinDigits(
   text: string,
   digits: readonly string[] | null,
-): string {
-  if (digits === null) return text;
-  let s = text;
-  for (let i = 0; i < 10; i++) s = s.split(digits[i]).join(String(i));
-  return s;
+): string | null {
+  const latin =
+    digits === null
+      ? text
+      : Array.from(text, (character) => {
+          const value = digits.indexOf(character);
+          return value === -1 ? character : String(value);
+        }).join('');
+  return FOREIGN_DIGIT.test(latin) ? null : latin;
 }

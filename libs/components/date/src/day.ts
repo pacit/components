@@ -218,8 +218,7 @@ export function pctWeekday(day: PctDay): number {
 
 /**
  * Held inside the bounds, either of which may be absent — and `undefined` is what absent is,
- * because that is what the `FormUiControl` contract's `min` / `max` are: a bound the schema
- * did not set is a bound the directive does not pass.
+ * because that is how the `FormUiControl` contract's `min` / `max` spell an absent bound.
  *
  * @since 0.1.0
  */

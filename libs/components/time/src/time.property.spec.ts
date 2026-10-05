@@ -180,24 +180,29 @@ describe('pctTime and pctTimeParts', () => {
 });
 
 /**
- * The strings `pctTime` writes, as a predicate — the independent half of `isPctTime`'s contract.
- * The parse is deliberately LOOSER than `time.ts`'s own (`\d+` in every field, no width), so a
- * candidate is refused for the reason a reader would name — that is not the string this library
- * writes for those fields — and not for failing the very regex under test.
+ * The strings the PLATFORM writes for a time of day, as a predicate — the independent half of
+ * `isPctTime`'s contract, with `toISOString` as the writer instead of the module. The parse is
+ * deliberately looser than `time.ts`'s own (`\d+` in every field, no width), and a field out of
+ * range needs no check of its own: `Date.UTC` carries `24:00` into the next day and `13:05:60`
+ * into the next minute, so what it writes back is not the candidate.
  */
 function writtenBack(candidate: unknown): boolean {
   if (typeof candidate !== 'string') return false;
   const fields = /^(\d+):(\d+)(?::(\d+))?$/.exec(candidate);
   if (fields === null) return false;
-  try {
-    const written =
-      fields[3] === undefined
-        ? pctTime(Number(fields[1]), Number(fields[2]))
-        : pctTime(Number(fields[1]), Number(fields[2]), Number(fields[3]));
-    return written === candidate;
-  } catch {
-    return false;
-  }
+  const iso = new Date(
+    Date.UTC(
+      2026,
+      0,
+      1,
+      Number(fields[1]),
+      Number(fields[2]),
+      Number(fields[3] ?? 0),
+    ),
+  )
+    .toISOString()
+    .slice(11, fields[3] === undefined ? 16 : 19);
+  return iso === candidate;
 }
 
 /**
@@ -389,7 +394,7 @@ describe('pctClampTime', () => {
         expect([time, min, max]).toContain(held);
         if (msOf(time) >= msOf(min) && msOf(time) <= msOf(max))
           expect(held).toBe(time);
-        // A bound the schema did not set is a bound the directive does not pass.
+        // An absent bound holds nothing back.
         expect(pctClampTime(time, undefined, undefined)).toBe(time);
         expect(pctClampTime(time, min, undefined)).toBe(
           msOf(time) < msOf(min) ? min : time,
@@ -415,10 +420,15 @@ describe('pctClampTime', () => {
         const held = pctClampTime(time, late, early);
         const inside = msOf(time) >= msOf(late) || msOf(time) <= msOf(early);
         if (inside) expect(held).toBe(time);
-        else
-          expect(held).toBe(
-            msOf(time) - msOf(early) < msOf(late) - msOf(time) ? early : late,
+        else {
+          // In the gap the answer is one of its two ends, and no farther than the other one —
+          // the tie between them is `time.spec.ts`'s, where a case can stand exactly on it.
+          expect([early, late]).toContain(held);
+          const distance = (end: PctTime) => Math.abs(msOf(time) - msOf(end));
+          expect(distance(held)).toBeLessThanOrEqual(
+            distance(held === early ? late : early),
           );
+        }
         // Wherever it started, the result is inside the window.
         expect(msOf(held) >= msOf(late) || msOf(held) <= msOf(early)).toBe(
           true,

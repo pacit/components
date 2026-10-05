@@ -71,8 +71,9 @@ const TIMES = [
 ];
 
 /**
- * Any run of spaces as one ASCII space. Node writes U+202F before a day period where the
- * browsers write U+0020 (0086, D4), and a case about the words is not a case about which space.
+ * Any run of spaces as one ASCII space. Node's `formatToParts` writes U+202F before a day period
+ * where all three browsers write U+0020 (0086, D4, read off the parts), and a case about the
+ * words is not a case about which space.
  */
 const spaced = (text: string): string => text.replace(/\s+/g, ' ');
 
@@ -199,15 +200,26 @@ describe('the day period', () => {
   });
 });
 
-/** Every language node's ICU knows, each in its likeliest region — read, not listed. */
-function everyLocale(): string[] {
+/**
+ * Every two-letter language node's ICU knows, each in its likeliest region and kept once per
+ * locale the platform resolves it to — read, not listed. A tag the platform does not know
+ * resolves to one it does, so the set is the languages the formatter really writes.
+ */
+function everyLanguage(): string[] {
   const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  const tags = new Set<string>();
+  const resolved = new Set<string>();
   for (const a of letters)
     for (const b of letters)
-      tags.add(new Intl.Locale(a + b).maximize().baseName);
-  return [...tags];
+      resolved.add(
+        new Intl.DateTimeFormat(
+          new Intl.Locale(a + b).maximize().baseName,
+        ).resolvedOptions().locale,
+      );
+  return [...resolved];
 }
+
+/** The four clocks a tag can force, and none — the locale's own. */
+const FORCED = ['', '-u-hc-h11', '-u-hc-h12', '-u-hc-h23', '-u-hc-h24'];
 
 describe('reading a time back', () => {
   it('reads what it writes, in all of 0086’s locales and on all four clocks', () => {
@@ -226,28 +238,47 @@ describe('reading a time back', () => {
     expect(wrong).toEqual([]);
   });
 
-  it('reads what it writes in every language the platform can write a time in', () => {
-    // No sample, for the reason the date's week table has none: the one language this sweep
-    // caught that the forty-three above did not was Ewe, which writes its word for the morning
-    // and its word for the hour in one run — `ŋdi ga 12:00` — and read nothing back until the
-    // parser learned to find a day period beside a separator.
-    const locales = everyLocale();
-    const resolved = new Set(locales.map((tag) => pctTimeFormat(tag).locale));
+  it('reads what it writes in every language the platform knows, on every clock it can force', () => {
+    // No sample, for the reason the date's week table has none. This sweep caught what the
+    // forty-three locales above did not: Ewe writes its word for the morning and its word for
+    // the hour in one run (`ŋdi ga 12:00`), and on a forced twelve-hour clock Bulgarian and
+    // Canadian French write a separator and then the day period in one run (`1:05 ч. pm`) —
+    // each read back as nothing until the parser learned to find a period beside a separator.
+    const languages = everyLanguage();
     // The denominator: the sweep is only worth what this says it reached.
-    expect(resolved.size).toBeGreaterThan(100);
-    expect(locales.some((tag) => pctTimeFormat(tag).hourCycle === 'h12')).toBe(
-      true,
-    );
+    expect(languages.length).toBeGreaterThan(100);
+    expect(
+      languages.filter((tag) => pctTimeFormat(tag).hourCycle === 'h12').length,
+    ).toBeGreaterThan(10);
     const wrong: string[] = [];
-    for (const locale of locales) {
-      const format = pctTimeFormat(locale);
-      for (const time of ['00:05', '12:05:30', '23:59']) {
-        const written = format.format(time);
-        if (format.parse(written) !== time)
-          wrong.push(`${locale}: ${time} → ${JSON.stringify(written)}`);
+    for (const locale of [...languages, ...LOCALES, 'fr-CM'])
+      for (const clock of FORCED) {
+        const format = pctTimeFormat(locale + clock);
+        for (const time of ['00:05', '12:05:30', '13:05', '23:59']) {
+          const written = format.format(time);
+          if (format.parse(written) !== time)
+            wrong.push(
+              `${locale + clock}: ${time} → ${JSON.stringify(written)}`,
+            );
+        }
       }
-    }
     expect(wrong).toEqual([]);
+  });
+
+  it('counts to twenty-four where a twelve-hour clock writes no day period to read back', () => {
+    // Node writes `fr-CM-u-hc-h12` as `1:05` for 01:05 and for 13:05 alike — a clock that cannot
+    // be read back, which the field does not use: the one place it overrides the formatter.
+    const forced = pctTimeFormat('fr-CM-u-hc-h12');
+    expect(forced.hourCycle).toBe('h23');
+    expect(forced.dayPeriods).toBeNull();
+    expect(forced.format('13:05')).toBe('13:05');
+    expect(forced.format('01:05')).toBe('01:05');
+    expect(pctTimeFormat('fr-CM-u-hc-h11').hourCycle).toBe('h23');
+    // A forced clock that does write its day period is honoured, separator first and all.
+    const bulgarian = pctTimeFormat('bg-BG-u-hc-h12');
+    expect(bulgarian.hourCycle).toBe('h12');
+    expect(spaced(bulgarian.format('13:05'))).toBe('1:05 ч. pm');
+    expect(bulgarian.parse(bulgarian.format('13:05'))).toBe('13:05');
   });
 
   it('reads a locale that writes its own digits, typed either way', () => {
@@ -257,6 +288,25 @@ describe('reading a time back', () => {
     expect(ar.parse('1:05 pm')).toBe('13:05');
     expect(pctTimeFormat('my-MM').parse('၁၃:၀၅')).toBe('13:05');
     expect(pctTimeFormat('fa-IR').parse('13:05')).toBe('13:05');
+    // Digits outside the basic plane are characters, not code units: an Adlam numbering system
+    // writes, hints and reads back like any other.
+    const adlam = pctTimeFormat('en-US-u-nu-adlm');
+    expect(adlam.parse(adlam.format('13:05:09'))).toBe('13:05:09');
+    expect(spaced(adlam.hint({ hour: 'h', minute: 'm', second: 's' }))).toBe(
+      'h:mm AM/PM',
+    );
+  });
+
+  it('refuses a digit of a numbering system the field does not write, rather than skip it', () => {
+    // An Arabic-Indic three among Persian digits, which look alike, and a full-width two typed
+    // with a Japanese input method on: read as separators they were 01:30, 01:05 and 13:30.
+    expect(pctTimeFormat('fa-IR').parse('۱٣:۳۰')).toBeNull();
+    expect(
+      pctTimeFormat('ja-JP').parse(`1${String.fromCodePoint(0xff12)}:05`),
+    ).toBeNull();
+    expect(
+      pctTimeFormat('en-US').parse(`1${String.fromCodePoint(0xff12)}:30 pm`),
+    ).toBeNull();
   });
 
   it('reads either space before a day period', () => {
@@ -298,6 +348,22 @@ describe('reading a time back', () => {
     expect(pctTimeFormat('ko-KR').parse('오전 12:30')).toBe('00:30');
     expect(pctTimeFormat('zh-TW').parse('下午2:30')).toBe('14:30');
     expect(pctTimeFormat('ja-JP-u-hc-h11').parse('午後0:30')).toBe('12:30');
+    // A twenty-four-hour field writes none, and reads the ones its language writes on a
+    // twelve-hour clock: a Japanese field takes `午後` as a British one takes `pm`.
+    expect(pctTimeFormat('ja-JP').parse('午後2:30')).toBe('14:30');
+    expect(pctTimeFormat('ja-JP').dayPeriods).toBeNull();
+  });
+
+  it('never reads an ASCII letter against the language’s own word for the other half', () => {
+    // Albanian writes the morning `p.d.` and the afternoon `m.d.`: a `p` read as the afternoon
+    // there would move a morning without a word, so the letter is not read at all.
+    const sq = pctTimeFormat('sq-AL');
+    expect(sq.parse('1:05 p.d.')).toBe('01:05');
+    expect(sq.parse('1:05 m.d.')).toBe('13:05');
+    expect(sq.parse('1:05 p')).toBeNull();
+    expect(sq.parse('1:05 pm')).toBe('13:05');
+    // Where no word of the language stands in its way, the letter is read.
+    expect(pctTimeFormat('en-US').parse('1:05 p')).toBe('13:05');
   });
 
   it('reads both twelve-hour clocks’ first hour, and a twenty-four-hour time in a twelve-hour field', () => {
@@ -322,6 +388,10 @@ describe('reading a time back', () => {
   it('reads the words the locale writes between the fields, and only there', () => {
     expect(pctTimeFormat('fr-CA').parse('13 h 05 min 09 s')).toBe('13:05:09');
     expect(pctTimeFormat('en-US').parse('13 h 05 min 09 s')).toBeNull();
+    // A separator after the day period is still a separator, and only a separator: the words
+    // a formatter writes as its day period do not become words it writes between the fields.
+    expect(pctTimeFormat('en-US').parse('pm 2 h 30')).toBe('14:30');
+    expect(pctTimeFormat('en-US').parse('1:05 pam')).toBeNull();
   });
 });
 

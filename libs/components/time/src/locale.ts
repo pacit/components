@@ -73,8 +73,11 @@ export interface PctTimeFormat {
    * A time out of what a user typed, or `null`. It accepts more widely than it writes: any run
    * of non-digits separates; the locale's own digits and the ASCII ones both count; a single
    * run of three to six digits is read by width (`905` is `09:05`, `1305` is `13:05`); a day
-   * period is the locale's own word or `a`, `p`, `am`, `pm`, and with one an hour may stand
-   * alone (`2 pm`); and a twenty-four-hour time is read in a twelve-hour field.
+   * period is the language's own word — on a twenty-four-hour clock, the one it writes on a
+   * twelve-hour clock — or `a`, `p`, `am`, `pm` where no word of the language contradicts them,
+   * and with one an hour may stand alone (`2 pm`); and a twenty-four-hour time is read in a
+   * twelve-hour field. A word or a digit it does not know makes the text malformed, never
+   * another time.
    */
   parse(text: string): PctTime | null;
   /**
@@ -133,7 +136,10 @@ type Half = 'am' | 'pm';
 
 /**
  * The day-period words every field reads whatever its locale — the four a keyboard anywhere can
- * type. They are set first, so a locale's own word wins where the two would collide.
+ * type. Each is dropped where one of the language's own words for the OTHER half begins with it:
+ * Albanian writes the morning `p.d.`, and a `p` read there as the afternoon would be a morning
+ * moved to the afternoon without a word. The language's own words are set after them, so where
+ * the two coincide the language's wins.
  */
 const ASCII_HALVES: readonly (readonly [string, Half])[] = [
   ['a', 'am'],
@@ -143,25 +149,43 @@ const ASCII_HALVES: readonly (readonly [string, Half])[] = [
 ];
 
 /**
- * The separators every field reads beyond the locale's own: the `h` of `14h30`, the way a time
- * is written in French and in half the timetables of Europe.
+ * The separator every field reads beyond the locale's own: the `h` of `14h30`, which French
+ * writes by hand and `fr-CA`'s formatter writes with a space either side.
  */
 const HOUR_LETTER = 'h';
 
-function build(locale: string): PctTimeFormat {
-  // The cycle first, off the formatter 0086 measured it with (C1) — then the formatter that
-  // writes everything the field shows is built FOR that cycle: two digits on a twenty-four-hour
-  // clock, where firefox alone would pad a numeric hour, and the locale's own on a twelve-hour
-  // one, `1:05 PM` and not `01:05 PM` (D6). `hour12` is never passed: it means `h11` in
-  // Japanese and overrides `hourCycle` when both are given (C6). A formatter asked for an hour
-  // always resolves a cycle, hence the cast.
-  const hourCycle = new Intl.DateTimeFormat(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'UTC',
-  }).resolvedOptions().hourCycle as PctHourCycle;
+/** Whether a cycle is a twelve-hour clock — the two that need a day period to be read. */
+function twelve(hourCycle: PctHourCycle): boolean {
+  return hourCycle === 'h11' || hourCycle === 'h12';
+}
+
+/** The word a formatter writes for the day period in these parts, if it writes one. */
+function periodIn(
+  parts: readonly Intl.DateTimeFormatPart[],
+): string | undefined {
+  return parts.find((part) => part.type === 'dayPeriod')?.value;
+}
+
+/** What one cycle writes: the two formatters, the parts the hint is read off, the two words. */
+interface Writer {
+  readonly hourCycle: PctHourCycle;
+  readonly short: Intl.DateTimeFormat;
+  readonly long: Intl.DateTimeFormat;
+  /** `MORNING` written without its seconds, and with them. */
+  readonly brief: readonly Intl.DateTimeFormatPart[];
+  readonly morning: readonly Intl.DateTimeFormatPart[];
+  readonly dayPeriods: readonly [string, string] | null;
+}
+
+/**
+ * The formatters a cycle writes with: two digits on a twenty-four-hour clock, where firefox alone
+ * would pad a numeric hour, and the locale's own on a twelve-hour one, `1:05 PM` and not
+ * `01:05 PM` (0086, D6). `hour12` is never passed: it means `h11` in Japanese and overrides
+ * `hourCycle` when both are given (C6).
+ */
+function writer(locale: string, hourCycle: PctHourCycle): Writer {
   const options: Intl.DateTimeFormatOptions = {
-    hour: hourCycle === 'h11' || hourCycle === 'h12' ? 'numeric' : '2-digit',
+    hour: twelve(hourCycle) ? 'numeric' : '2-digit',
     minute: '2-digit',
     hourCycle,
     timeZone: 'UTC',
@@ -171,33 +195,69 @@ function build(locale: string): PctTimeFormat {
     ...options,
     second: '2-digit',
   });
-  const resolved = short.resolvedOptions();
+  const morning = long.formatToParts(instant(MORNING));
+  const am = periodIn(morning);
+  return {
+    hourCycle,
+    short,
+    long,
+    brief: short.formatToParts(instant(MORNING)),
+    morning,
+    // A formatter that writes a day period before noon writes one after it.
+    dayPeriods:
+      am === undefined
+        ? null
+        : [am, periodIn(long.formatToParts(instant(AFTERNOON))) as string],
+  };
+}
+
+function build(locale: string): PctTimeFormat {
+  // The cycle first, off the formatter 0086 measured it with (C1); then the formatters that write
+  // everything the field shows are built FOR that cycle. A formatter asked for an hour always
+  // resolves a cycle, hence the cast.
+  const asked = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).resolvedOptions().hourCycle as PctHourCycle;
+  const first = writer(locale, asked);
+  // The one place the field overrides the formatter's clock: a twelve-hour clock that writes no
+  // day period cannot tell 01:05 from 13:05 — node writes `fr-CM-u-hc-h12` that way — and a
+  // field that reads back what it writes would move every afternoon into the morning. A clock
+  // that cannot be read back is not one, so there the field counts to twenty-four.
+  const clock =
+    first.dayPeriods === null && twelve(asked) ? writer(locale, 'h23') : first;
+  const resolved = clock.short.resolvedOptions();
   const digits = pctDigitsOf(locale, resolved.numberingSystem);
   const one = pctNumberFormat(locale, resolved.numberingSystem);
   const two = pctNumberFormat(locale, resolved.numberingSystem, 2);
-
-  const brief = short.formatToParts(instant(MORNING));
-  const morning = long.formatToParts(instant(MORNING));
-  const afternoon = long.formatToParts(instant(AFTERNOON));
-  const order = morning
+  const order = clock.morning
     .filter((part) => part.type !== 'literal')
     .map((part) => part.type as PctTimeField);
-  const am = morning.find((part) => part.type === 'dayPeriod')?.value;
-  const pm = afternoon.find((part) => part.type === 'dayPeriod')?.value;
-  const dayPeriods =
-    am !== undefined && pm !== undefined ? ([am, pm] as const) : null;
 
-  // The words the parser knows. A day period is the field's own two words, then the four
-  // ASCII ones; a separator is the `h` above, then every word the formatter itself writes
-  // between the fields — `fr-CA` writes `13 h 05 min 09 s` — so that what the field writes it
-  // reads back.
-  const halves = new Map<string, Half>(ASCII_HALVES);
-  if (dayPeriods) {
-    halves.set(wordOf(dayPeriods[0]), 'am');
-    halves.set(wordOf(dayPeriods[1]), 'pm');
-  }
+  // The words a day period is read by: the field's own two where it writes them, and on a clock
+  // that writes none the two its language writes on a twelve-hour one — `午後2:30` is a time in
+  // a Japanese field as `2:30 pm` is in a British one. Then the ASCII words, each where the
+  // language's own words leave room for it.
+  const words = clock.dayPeriods ?? writer(locale, 'h12').dayPeriods;
+  const own: readonly (readonly [string, Half])[] =
+    words === null
+      ? []
+      : [
+          [wordOf(words[0]), 'am'],
+          [wordOf(words[1]), 'pm'],
+        ];
+  const halves = new Map<string, Half>(
+    ASCII_HALVES.filter(
+      ([ascii, half]) =>
+        !own.some(([word, other]) => other !== half && word.startsWith(ascii)),
+    ),
+  );
+  for (const [word, half] of own) halves.set(word, half);
+  // A separator is the `h` above and every word the formatter itself writes between the fields
+  // — `fr-CA` writes `13 h 05 min 09 s` — so that what the field writes it reads back.
   const separators = new Set([HOUR_LETTER]);
-  for (const part of [...brief, ...morning])
+  for (const part of [...clock.brief, ...clock.morning])
     if (part.type === 'literal' && wordOf(part.value) !== '')
       separators.add(wordOf(part.value));
 
@@ -205,26 +265,27 @@ function build(locale: string): PctTimeFormat {
     latin: (text) => pctToLatinDigits(text, digits),
     halves,
     separators,
-    hourCycle,
+    hourCycle: clock.hourCycle,
   };
 
   return {
     locale: resolved.locale,
-    hourCycle,
+    hourCycle: clock.hourCycle,
     order,
-    dayPeriods,
+    dayPeriods: clock.dayPeriods,
     // Joined from the parts rather than taken from `format()`, and the difference is measured:
-    // node's `format()` writes U+0020 before `PM` where its own `formatToParts()` writes U+202F,
-    // so a field written one way beside a hint read the other would be two strings in the
-    // engine the unit suite runs in. Read off the parts, the two cannot part anywhere.
+    // node's `format()` writes U+0020 before `PM` where its own `formatToParts()` writes U+202F
+    // (the three browsers write U+0020 in both, 0086 D4), so a field written one way beside a
+    // hint read the other would be two strings in the engine the unit suite runs in. Read off
+    // the parts, the two cannot part anywhere.
     format: (time) =>
-      (time.length > 5 ? long : short)
+      (time.length > 5 ? clock.long : clock.short)
         .formatToParts(instant(time))
         .map((part) => part.value)
         .join(''),
     parse: (text) => parse(text, reader),
     hint: (letters, seconds = false) =>
-      hint(seconds ? morning : brief, letters, dayPeriods),
+      hint(seconds ? clock.morning : clock.brief, letters, clock.dayPeriods),
     number: (value, width = 1) => (width === 2 ? two : one).format(value),
   };
 }
@@ -257,7 +318,7 @@ function hint(
 
 /** What the parser needs from the locale, gathered once per formatter. */
 interface Reader {
-  readonly latin: (text: string) => string;
+  readonly latin: (text: string) => string | null;
   readonly halves: ReadonlyMap<string, Half>;
   readonly separators: ReadonlySet<string>;
   readonly hourCycle: PctHourCycle;
@@ -265,9 +326,10 @@ interface Reader {
 
 /**
  * The half of the day a run of letters names, `null` for a separator, and `undefined` for a word
- * this locale does not write. A day period may share its run with the separator after it: Ewe
- * writes `ŋdi ga 12:00`, its word for the morning and its word for the hour with no digit
- * between them. The other order is written by no language the platform has, so it is not read.
+ * this locale does not write. A day period may share its run with a separator, on either side:
+ * Ewe writes `ŋdi ga 12:00`, its word for the morning before its word for the hour, and on a
+ * forced twelve-hour clock Bulgarian writes `1:05 ч. pm` and Canadian French
+ * `1 h 05 min 09 s p.m.`, the separator first — each with no digit between the two.
  */
 function halfIn(word: string, reader: Reader): Half | null | undefined {
   const half = reader.halves.get(word);
@@ -275,8 +337,10 @@ function halfIn(word: string, reader: Reader): Half | null | undefined {
   if (reader.separators.has(word)) return null;
   for (const [period, side] of reader.halves)
     if (
-      word.startsWith(period) &&
-      reader.separators.has(word.slice(period.length))
+      (word.startsWith(period) &&
+        reader.separators.has(word.slice(period.length))) ||
+      (word.endsWith(period) &&
+        reader.separators.has(word.slice(0, -period.length)))
     )
       return side;
   return undefined;
@@ -304,6 +368,7 @@ function fieldsOf(
 
 function parse(text: string, reader: Reader): PctTime | null {
   const latin = reader.latin(text);
+  if (latin === null) return null;
 
   // Letters mean something here, where in a date they only separate: every word that stands
   // between the digits has to be a day period or one of the separators the locale writes.
@@ -324,9 +389,10 @@ function parse(text: string, reader: Reader): PctTime | null {
   if (groups === null) return null;
   const fields = fieldsOf(groups, half);
   if (fields === null) return null;
+  // The minute and the second go into the candidate as typed, so `isPctTime` below refuses one
+  // that is not two digits; the hour is a number by then, and its width is read here.
   const [h, minute, second] = fields;
-  if (h.length > 2 || minute.length !== 2) return null;
-  if (second !== undefined && second.length !== 2) return null;
+  if (h.length > 2) return null;
 
   let hour = Number(h);
   if (half !== null) {

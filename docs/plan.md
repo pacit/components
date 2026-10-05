@@ -120,16 +120,14 @@ argument to a first visitor.
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
 form exists and is a condition of entering a release. Thirty-five cards are filled in.
 
-- [~] **1.3 — time field** in `@pacit/components/time`: `PctTime`, `PctTimeColumns` and the
+- [~] **1.3 — time field** in `@pacit/components/time`: the field, `PctTimeColumns` and the
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
-  - the value module landed 2026-10-05: `PctTime` and its arithmetic, and `pctTimeFormat` —
-    the clock, the day-period words, the separators and the digits off one `formatToParts`, and
-    a parser that reads back what it writes in every language node's ICU has.
-    [`req-api-time`](requirements/api.md#req-api-time) is enforced by its three specs in node;
-    the three engines read the round trip with the field, in the sandbox
-  - `digitsOf` and `numberFormat` left `date/src/locale.ts` for `./core` with it, and
-    `check-bundle` said what the move cost; `[pctNumber]`'s own `digits` is their third reader
-    still to come
+  - the value module landed 2026-10-05: `PctTime`, its arithmetic and `pctTimeFormat`, enforced
+    in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to `./core`
+    with it — `./core` +683 B, `./date` +131 B, no other entrypoint moved, `./time` 9334 B of
+    which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader still to come
+  - the field cannot be called `PctTime`: 0086 gave the value that name too, and TS refuses the
+    two side by side (TS2300). One is renamed before the field lands and before a release dates it
   - whether `[formField]` fills a string bound is measured with the field, not inherited from
     the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTime`
     limit to `MIN`/`MAX` ships with a case or not at all
@@ -137,8 +135,8 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
     and the field: the tier `--pct-time-*`; the letters, the column names, the toggle's name
     and `timeMalformed` through `PCT_TEXTS`; a card for each — and `./time` leaves the list of
     entrypoints `check-bundle` holds without a component
-  - ends with: both cards filled in, and the sandbox carrying the field under a 12-hour and a
-    24-hour locale in three engines
+  - ends with: both cards filled in, the round trip over 0086's 38 locales read in three
+    engines, and the sandbox carrying the field under a 12-hour and a 24-hour locale in all three
 
 - [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
       `PctCalendar` and `PctTimeColumns`, after 1.3

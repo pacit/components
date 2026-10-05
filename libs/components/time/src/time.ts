@@ -19,8 +19,9 @@
  * Two digits each, a 24-hour clock, no fraction and no zone — the string
  * `<input type="time">.value`, `<time datetime>` and SQL `TIME` all carry. **The two shapes are
  * two spellings of one time**: `13:05` and `13:05:00` compare equal, and every function here
- * keeps the shape it was given, widening to seconds only where a result has seconds the shape
- * could not carry.
+ * that moves a time keeps the shape it was given, widening to seconds only where a result has
+ * seconds the shape could not carry. The clamp moves nothing: it hands back one of the times it
+ * was given, as it was written.
  *
  * @since next
  */
@@ -242,7 +243,8 @@ export function pctCompareTimes(a: PctTime, b: PctTime): number {
  * HTML specification gives a time input and all three engines implement (0086, A12), and the
  * only way a time without a date can say "the night shift". A time in the gap between the two
  * is pulled to the nearer bound, and one exactly halfway to `min`, the bound the clock reaches
- * next. A clamp invents no time: it hands back the one it was given or a bound it was told.
+ * next. A clamp invents no time: it hands back the one it was given or a bound it was told, as
+ * written — and a time equal to a bound in another shape is inside, so it comes back itself.
  *
  * @since next
  */
@@ -274,16 +276,23 @@ export function pctClampTime(
  *
  * Every step this answers `true` for divides a day, so the times on it are the same ones on
  * both sides of midnight — which is what lets the two functions below count on a ring. It is a
- * plain `boolean` and not a type guard on purpose: a guard would narrow a `number` that is not
- * a step to `never`, and a field that warns about its step has to be able to say which one.
+ * plain `boolean` where `isPctTime` is a guard, because the two read different things: a time
+ * arrives as anything at all, and a step is already a number — which a guard would narrow to
+ * `never` when it is not a step, in the very branch that warns about it.
  *
  * @since next
  */
 export function isPctTimeStep(step: number): boolean {
-  if (!Number.isInteger(step) || step <= 0) return false;
-  if (step <= 60) return 60 % step === 0;
-  if (step <= 3600) return step % 60 === 0 && 3600 % step === 0;
-  return step % 3600 === 0 && DAY % step === 0;
+  // One clause per kind of step and no range between them: a step past a minute never divides
+  // one, a step past an hour never divides one, so each clause holds only its own steps — and a
+  // boundary between clauses would be an edge a whole number can stand on either side of.
+  return (
+    Number.isInteger(step) &&
+    step >= 1 &&
+    (60 % step === 0 ||
+      (step % 60 === 0 && 3600 % step === 0) ||
+      (step % 3600 === 0 && DAY % step === 0))
+  );
 }
 
 /** A step this module cannot count with is refused here, before any arithmetic runs on it. */

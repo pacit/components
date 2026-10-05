@@ -215,8 +215,11 @@ function build(locale: string): PctDayFormat {
     .filter((p) => p.type === 'year' || p.type === 'month' || p.type === 'day')
     .map((p) => p.type as PctDayField);
 
-  /** The locale's own digits, translated back to the ASCII ones the parser reads. */
-  const latin = (text: string): string => pctToLatinDigits(text, digits);
+  /**
+   * The locale's own digits, translated back to the ASCII ones the parser reads — or `null` for
+   * a text holding a digit of another system, which would otherwise read as a separator.
+   */
+  const latin = (text: string): string | null => pctToLatinDigits(text, digits);
 
   return {
     locale: resolved.locale,
@@ -249,9 +252,9 @@ function hint(
 function parse(
   text: string,
   order: readonly PctDayField[],
-  latin: (text: string) => string,
+  latin: (text: string) => string | null,
 ): PctDay | null {
-  const groups = latin(text).match(/\d+/g);
+  const groups = latin(text)?.match(/\d+/g) ?? null;
   if (groups === null || groups.length !== 3) return null;
 
   const field: Record<PctDayField, string> = { day: '', month: '', year: '' };
