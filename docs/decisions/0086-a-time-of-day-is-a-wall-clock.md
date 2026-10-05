@@ -18,8 +18,8 @@ locale in webkit — in `lang` in none of them**, and so does the date input, wh
 0043's A1; a half-typed time reads `""` in two engines and **`"13:00"`** in the third; the same
 five keys are `01:30` or `13:30` in chromium **by the system's locale**, which also makes one
 control three tab stops there or four; `<input type="datetime-local">` repeats all of it, and
-types a day and a time read straight through into the year **202613**; `Temporal.PlainTime` is
-in all three engines and **absent from webkit 26.5**, which Angular 22 still supports; and
+in chromium carries digits typed on from a day into the year **202613**; `Temporal.PlainTime`
+is in all three engines and **absent from webkit 26.5**, which Angular 22 still supports; and
 chromium writes the language of **44** of the 280 regions `Intl` names in the browser's
 default locale
 
@@ -102,7 +102,7 @@ unless a row says otherwise.
 | F4  | `showPicker()`                                                                                                                                                                                                               | function                                                                                                                         | function                                 | function                                 |
 | F5  | `.value =` `'2026-12-01 13:05'` · `'2026-12-01T13:05:00'` · `'2026-12-01T24:00'`                                                                                                                                             | `…T13:05` · **`…T13:05`** · `""`                                                                                                 | same                                     | same                                     |
 | F6  | the day the same eight digits, `12012026`, are taken for                                                                                                                                                                     | `2026-01-12` under `pl_PL`, **`2026-12-01`** under `en_US`                                                                       | `2026-12-01`                             | `""`                                     |
-| F7  | a day and a time typed straight through, `12012026130505`                                                                                                                                                                    | **`202613-01-12T05:05`** under `pl_PL` — the year takes six digits                                                               | `2026-12-01T13:05`                       | `""`                                     |
+| F7  | a day and then more digits typed straight on, `12012026` and `130505`                                                                                                                                                        | **`202613-01-12T05:05`** under `pl_PL` — the year takes six digits                                                               | `2026-12-01T13:05`                       | `""`                                     |
 
 The engines 0043 measured went through every probe and answer every row the same but seven,
 each for one reason: firefox 151 is three tab stops where 155 is four (A8: 3 · 4 · 5); webkit
@@ -228,10 +228,10 @@ through `aria-invalid`, `data-pct-malformed` and the second channel
 `<input type="datetime-local">` takes its format from the same three places (F1); a whole day
 and half a time read `""`, with `badInput` false in webkit, and chromium reads `130` as
 `…T13:00` and `0130P` by the system's locale (F2); it is six or seven tab stops in chromium by
-the system's locale, seven in firefox and one in webkit (F3). It adds two of its own: the same
-eight digits are 12 January under a Polish system and 1 December under an English one (F6),
-and a day and a time typed straight through, the way they read, land in the year **202613**
-in chromium, whose year takes six digits (F7). It also normalises what it is given —
+the system's locale, seven in firefox and one in webkit (F3). It adds two of its own, both in
+chromium: the same eight digits are 12 January under a Polish system and 1 December under an
+English one (F6), and digits typed on from the day go into the year, whose field takes six —
+`12012026130505` is **`202613-01-12T05:05`** (F7). It also normalises what it is given —
 `2026-12-01T13:05:00` comes back without its seconds (F5) — which the time input does not
 (A16); the datetime field's own value has to answer that difference.
 
@@ -326,9 +326,10 @@ half that stepped under the caret would give one field two keyboards.
   `PctDay`s. That `[formField]` fills them from a schema is **not inherited**: Angular 22.2's
   `min()` and `max()` take numbers, and a string bound reaches a control only through a rule
   that binds a limit of the field's own type to `MIN` or `MAX`. Whether the module ships that
-  rule is for its own task to measure — the date's card says the directive fills its bounds and
-  has no case for it. The bounds clamp the panel's walk — an option outside them is disabled —
-  and **never rewrite what was typed**: a bound clamps a movement, and a sentence is not one.
+  rule is for its own task to measure — the date's card said the directive fills its bounds,
+  with no case behind it, and is hedged beside this record. The bounds clamp the panel's walk —
+  an option outside them is disabled — and **never rewrite what was typed**: a bound clamps a
+  movement, and a sentence is not one.
 - **`min` later than `max` is a window across midnight**, `22:00` to `06:00`. The HTML
   specification gives a time input that reading, and A12 says all three engines implement it —
   `12:00` is under **and** over. A time without a date has no other way to say "the night

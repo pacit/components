@@ -124,8 +124,8 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
   - the value module first, with its gate: `isPctTime`, the arithmetic that comes round at
     midnight, and a parser and a formatter read off one `formatToParts`, held by a round trip
     over 0086's 38 locales in node and in three engines — node's ICU writes U+202F where the
-    browsers write a space. The value's requirement is written with that gate and not before it, so the
-    registry never carries it as a gap
+    browsers write a space. The value's requirement is written with that gate and not before
+    it, so the registry never carries it as a gap
   - whether `[formField]` fills a string bound is measured there, not inherited from the date:
     Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTime` limit to
     `MIN`/`MAX` ships with a case or not at all
@@ -285,9 +285,10 @@ and every one is held by a **binds at** rather than by anybody's mood.
     superseded 0043's A1 and corrected the card and the index — and the class comment ships in
     the package's `.d.ts`
   - the same comment says `[formField]` fills `min` and `max` from the schema's validators —
-    the card's **Bounds** row said so too, and 0086's commit hedged it. Angular 22.2's `min()` and `max()` take numbers; a `PctDay` bound
-    would reach the control through a rule that binds a limit of the field's own type to `MIN`
-    or `MAX`, and no case shows that one does — so a case is written, or the sentence goes
+    the card's **Bounds** row said so too, and was hedged with 0086. Angular 22.2's `min()`
+    and `max()` take numbers; a `PctDay` bound would reach the control through a rule that
+    binds a limit of the field's own type to `MIN` or `MAX`, and no case shows that one does —
+    so a case is written, or the sentence goes
   - binds at: **the next commit into `libs/components/date/src`** — 1.3's move of the digits
     out of `locale.ts` is one — because either change moves the mutation snapshot anyway
 
