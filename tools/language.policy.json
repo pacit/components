@@ -234,10 +234,11 @@
       ]
     },
     "names": {
-      "reason": "Proper names: tools, fonts, packages, commands, an organisation and a person. A name is not translated in either direction.",
+      "reason": "Proper names: tools, fonts, packages, commands, an organisation, a person and a language — Dzongkha, whose word for the minute the time formatter's comments quote. A name is not translated in either direction.",
       "words": [
         "arial",
         "deja",
+        "dzongkha",
         "git",
         "glab",
         "lucide",

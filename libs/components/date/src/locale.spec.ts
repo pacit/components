@@ -190,6 +190,13 @@ describe('reading a day back', () => {
     expect(pctDayFormat('zh-CN').parse('2026/1〇/13')).toBeNull();
   });
 
+  it('reads its own digits where the platform writes words beside them', () => {
+    // Node's ICU writes Azerbaijani with Arabic-Indic digits behind the words `standart onluq
+    // kəsr`; the digits are read off the integer, so the field reads back what it wrote.
+    const az = pctDayFormat('az-AZ-u-nu-arab');
+    expect(az.parse(az.format('2026-12-01'))).toBe('2026-12-01');
+  });
+
   it('accepts more widely than it writes', () => {
     const pl = pctDayFormat('pl-PL');
     expect(pl.parse('1.12.2026')).toBe('2026-12-01');

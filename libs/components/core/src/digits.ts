@@ -26,16 +26,23 @@ export function pctDigitsOf(
   numberingSystem: string,
 ): readonly string[] | null {
   if (numberingSystem === 'latn') return null;
-  let written: string;
+  let parts: Intl.NumberFormatPart[];
   try {
-    written = new Intl.NumberFormat(locale, {
+    parts = new Intl.NumberFormat(locale, {
       numberingSystem,
       useGrouping: false,
-    }).format(1234567890);
+    }).formatToParts(1234567890);
   } catch {
     return null;
   }
-  const glyphs = Array.from(written);
+  // The digits are read off the integer and nothing beside it: node's ICU writes Azerbaijani with
+  // Arabic-Indic digits as `standart onluq kəsr١٢٣…` — the words a literal before the number.
+  const glyphs = Array.from(
+    parts
+      .filter((part) => part.type === 'integer')
+      .map((part) => part.value)
+      .join(''),
+  );
   // A numbering system that is not decimal-positional (an algorithmic one) writes this
   // number as something other than ten glyphs; there is then nothing to map back and the
   // ASCII digits are the whole of what a user can type.

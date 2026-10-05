@@ -10,7 +10,7 @@ import { pctDigitsOf, pctNumberFormat, pctToLatinDigits } from './digits';
 function withNumbersWritten<T>(written: string, read: () => T): T {
   const real = Intl.NumberFormat;
   const fake = function () {
-    return { format: () => written };
+    return { formatToParts: () => [{ type: 'integer', value: written }] };
   } as unknown as typeof Intl.NumberFormat;
   Intl.NumberFormat = fake;
   try {
@@ -35,6 +35,12 @@ describe('pctDigitsOf', () => {
     // A system whose digits stand outside the basic plane is ten glyphs and twenty code units:
     // the count is of characters, which is what a reader types.
     expect(pctDigitsOf('en', 'adlm')).toHaveLength(10);
+  });
+
+  it('reads the digits off the integer, whatever the platform writes beside it', () => {
+    // Node's ICU writes Azerbaijani with Arabic-Indic digits behind the words `standart onluq
+    // kəsr`, as a literal before every number: the ten digits are still the system's ten.
+    expect(pctDigitsOf('az-u-nu-arab', 'arab')?.join('')).toBe('٠١٢٣٤٥٦٧٨٩');
   });
 
   it('answers nothing for a system the platform will not take', () => {

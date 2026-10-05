@@ -284,17 +284,19 @@ this same fallback, seen through the numbering system.
   from `PCT_TEXTS`, as the date's navigation buttons do; the period column's two rows are the
   field's words, read off the formatter like the rest.
 
-_Amended 2026-10-05: **a twelve-hour clock that writes no day period is not the field's clock.**
-The value module's round trip over every two-letter language on every clock a `-u-hc-` tag can
-force found one formatter answer the field cannot take: node writes `fr-CM-u-hc-h12` as `1:05`
-at 01:05 and at 13:05 alike, so a field that reads back what it writes would move every
-afternoon into the morning. Where the cycle the formatter resolves is a twelve-hour one and it
-writes no day period, the field counts to twenty-four and `hourCycle` says `h23` — read off the
-same formatter, still no table, and the one place the formatter's clock is not the field's. The
-same round trip settled two smaller things this record left open: a twenty-four-hour field
-reads the day-period words its language writes on a twelve-hour clock, and the ASCII `a`, `p`,
-`am` and `pm` are read only where no word of the language for the other half begins with them
-(Albanian writes the morning `p.d.`)._
+_Amended 2026-10-05: **the field writes only what it reads back, and declines a formatter it
+cannot.** The value module's round trip over every two-letter language — on every clock a
+`-u-hc-` tag can force, and in every numbering system a `-u-nu-` tag can ask for — found two
+formatter answers the field cannot take, both in node: `fr-CM-u-hc-h12` writes no day period, so
+13:05 is `1:05` as 01:05 is, and Azerbaijani in Arabic-Indic digits writes the words
+`standart onluq kəsr` inside every number. So the field proves, before it is used, that it reads
+back what its formatter writes, and where it does not it writes the plainest clock its language
+has — twenty-four hours, ASCII digits — and says so in `hourCycle`. It never edits the
+formatter's text: it declines it, which is the one place the formatter's clock is not the
+field's. The same round trip settled two smaller things this record left open: a
+twenty-four-hour field reads the day-period words its language writes on a twelve-hour clock,
+and the ASCII `a`, `p`, `am` and `pm` are read only where no word of the language for the other
+half begins with them (Albanian writes the morning `p.d.`)._
 
 ### 4. The panel is a dialog of listbox columns, and the columns are a component of their own
 

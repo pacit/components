@@ -56,10 +56,10 @@ export interface PctTimeFormat {
   /** The locale the platform resolved, which may not be the one asked for. */
   readonly locale: string;
   /**
-   * The clock this language counts on — the formatter's own answer, with one exception: where a
-   * twelve-hour clock writes no day period (node's `fr-CM-u-hc-h12`), a time it writes could not
-   * be read back, and the field counts to twenty-four. A clock forced on a reader is a locale too
-   * (`en-US-u-hc-h23`), so there is no other input.
+   * The clock this language counts on — the formatter's own answer, unless the field cannot read
+   * back what that formatter writes (node's `fr-CM-u-hc-h12` writes no day period): then the
+   * field declines it and counts to twenty-four in ASCII digits. A clock forced on a reader is a
+   * locale too (`en-US-u-hc-h23`), so there is no other input.
    */
   readonly hourCycle: PctHourCycle;
   /** The parts in the order this language writes them, seconds and day period included. */
@@ -187,11 +187,17 @@ interface Writer {
  * `01:05 PM` (0086, D6). `hour12` is never passed: it means `h11` in Japanese and overrides
  * `hourCycle` when both are given (C6).
  */
-function writer(locale: string, hourCycle: PctHourCycle): Writer {
+function writer(
+  locale: string,
+  hourCycle: PctHourCycle,
+  numberingSystem?: string,
+): Writer {
   const options: Intl.DateTimeFormatOptions = {
     hour: twelve(hourCycle) ? 'numeric' : '2-digit',
     minute: '2-digit',
     hourCycle,
+    // Absent, the locale's own — the one place it is given is the field's last resort below.
+    numberingSystem,
     timeZone: 'UTC',
   };
   const short = new Intl.DateTimeFormat(locale, options);
@@ -228,6 +234,9 @@ function written(parts: readonly Intl.DateTimeFormatPart[]): string {
   return parts.map((part) => part.value).join('');
 }
 
+/** The times the field proves it reads back before it is used: both samples, in both shapes. */
+const PROOF: readonly PctTime[] = ['01:05', MORNING, '13:05', AFTERNOON];
+
 function build(locale: string): PctTimeFormat {
   // The cycle first, off the formatter 0086 measured it with (C1); then the formatters that write
   // everything the field shows are built FOR that cycle. A formatter asked for an hour always
@@ -237,13 +246,22 @@ function build(locale: string): PctTimeFormat {
     minute: '2-digit',
     timeZone: 'UTC',
   }).resolvedOptions().hourCycle as PctHourCycle;
-  const first = writer(locale, asked);
-  // The one place the field overrides the formatter's clock: a twelve-hour clock that writes no
-  // day period cannot tell 01:05 from 13:05 — node writes `fr-CM-u-hc-h12` that way — and a
-  // field that reads back what it writes would move every afternoon into the morning. A clock
-  // that cannot be read back is not one, so there the field counts to twenty-four.
-  const clock =
-    first.dayPeriods === null && twelve(asked) ? writer(locale, 'h23') : first;
+  // The field writes only what it reads back, and proves it before it is used. A formatter whose
+  // own text it cannot read is declined, not edited, and the field writes the plainest clock its
+  // language has instead: twenty-four hours in ASCII digits. Node declines two — `fr-CM-u-hc-h12`
+  // writes no day period, so 13:05 is `1:05` as 01:05 is; and Azerbaijani in Arabic-Indic digits
+  // writes the words `standart onluq kəsr` inside every number (0086, amended 2026-10-05).
+  const own = field(locale, asked);
+  return own.readsBack ? own.format : field(locale, 'h23', 'latn').format;
+}
+
+/** A field's format for one cycle and numbering system, and whether it reads back its own text. */
+function field(
+  locale: string,
+  hourCycle: PctHourCycle,
+  numberingSystem?: string,
+): { readonly format: PctTimeFormat; readonly readsBack: boolean } {
+  const clock = writer(locale, hourCycle, numberingSystem);
   const resolved = clock.short.resolvedOptions();
   const digits = pctDigitsOf(locale, resolved.numberingSystem);
   const one = pctNumberFormat(locale, resolved.numberingSystem);
@@ -256,7 +274,7 @@ function build(locale: string): PctTimeFormat {
   // the field's own on one, and on a twenty-four-hour clock the ones it would write there —
   // `午後2:30` is a time in a Japanese field as `2:30 pm` is in a British one. `h11` and `h12`
   // write the same words in every language the platform has, so one reading serves both.
-  const twelveHour = writer(locale, 'h12');
+  const twelveHour = writer(locale, 'h12', numberingSystem);
   const words = twelveHour.dayPeriods;
   // The ASCII words first, each where the language's own word for the other half does not begin
   // with it; then the language's two, so that where the two coincide the language's wins.
@@ -269,23 +287,26 @@ function build(locale: string): PctTimeFormat {
     halves.set(wordOf(words[0]), 'am');
     halves.set(wordOf(words[1]), 'pm');
   }
-  // A separator is the `h` above and every word the language writes between the fields, on the
-  // field's clock and on a twelve-hour one — `fr-CA` writes `13 h 05 min 09 s`, and Bulgarian
-  // writes `ч.` after a time on a twelve-hour clock only — so that what is written is read. (A
-  // literal with no letters adds the empty word, which the parser never looks up.)
+  // A separator is the `h` above and every word the language writes between the fields: on the
+  // field's clock, with seconds and without — `fr-CA` writes `13 h 05 min 09 s` — and on a
+  // twelve-hour one, where Bulgarian writes `ч.` after a time and Dzongkha its word for the
+  // minute, and neither does on a twenty-four-hour clock. (The twelve-hour clock with seconds
+  // writes no word the other three do not.) A run the language writes in the morning and the
+  // afternoon alike holds no day period, so it is one of these, and is asked as a separator before
+  // it could be read as a half. A literal with no letters adds the empty word, which the parser
+  // never looks up.
   const separators = new Set([HOUR_LETTER]);
-  for (const part of [...clock.brief, ...clock.morning, ...twelveHour.morning])
+  for (const part of [...clock.brief, ...clock.morning, ...twelveHour.brief])
     if (part.type === 'literal') separators.add(wordOf(part.value));
   // And every run of letters the language writes between digits on a twelve-hour clock is read
   // as the half of the day it was written in. Most are a day period alone; some hold a separator
   // too — Ewe writes `ŋdi ga 12:00`, its morning and its word for the hour, and Bulgarian
   // `1:05 ч. pm` — and those runs are read exactly as written, and no other combination of the
-  // two. The text is cut where the parser cuts it, so the words are the ones it will meet; the
-  // formatter writes only its own digits, which always translate, and never a time without a
-  // separator.
+  // two. The text is cut where the parser cuts it, so the words are the ones it will meet; a
+  // sample that does not translate gives none, and the proof below declines the field.
   const latin = (text: string) => pctToLatinDigits(text, digits);
   for (const [text, half] of twelveHour.samples)
-    for (const run of (latin(text) as string).match(/\D+/g) as string[])
+    for (const run of latin(text)?.match(/\D+/g) ?? [])
       halves.set(wordOf(run), half);
 
   const reader: Reader = {
@@ -295,7 +316,7 @@ function build(locale: string): PctTimeFormat {
     hourCycle: clock.hourCycle,
   };
 
-  return {
+  const format: PctTimeFormat = {
     locale: resolved.locale,
     hourCycle: clock.hourCycle,
     order,
@@ -314,6 +335,12 @@ function build(locale: string): PctTimeFormat {
     hint: (letters, seconds = false) =>
       hint(seconds ? clock.morning : clock.brief, letters, clock.dayPeriods),
     number: (value, width = 1) => (width === 2 ? two : one).format(value),
+  };
+  return {
+    format,
+    readsBack: PROOF.every(
+      (time) => format.parse(format.format(time)) === time,
+    ),
   };
 }
 

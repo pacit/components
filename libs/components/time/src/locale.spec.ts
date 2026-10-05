@@ -46,6 +46,12 @@ const LOCALES = [
   'ar-SA',
 ];
 
+/**
+ * The locales node writes a time in that the field cannot read back, and declines: a forced
+ * twelve-hour clock with no day period, and Arabic-Indic digits behind a phrase of words.
+ */
+const DECLINED = ['fr-CM', 'az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext'];
+
 /** The four clocks, each forced the one way the platform spells a forced clock: in the tag. */
 const CYCLES = [
   'ja-JP-u-hc-h11',
@@ -218,8 +224,36 @@ function everyLanguage(): string[] {
   return [...resolved];
 }
 
+/**
+ * Whether the field kept the formatter its tag asks for — that formatter's clock, and its digits
+ * read off the integer as the field reads them — rather than declining it.
+ */
+function kept(tag: string): boolean {
+  const own = new Intl.DateTimeFormat(tag, {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).resolvedOptions();
+  const five = new Intl.NumberFormat(tag, {
+    numberingSystem: own.numberingSystem,
+    useGrouping: false,
+  })
+    .formatToParts(5)
+    .filter((part) => part.type === 'integer')
+    .map((part) => part.value)
+    .join('');
+  const format = pctTimeFormat(tag);
+  return format.hourCycle === own.hourCycle && format.number(5) === five;
+}
+
 /** The four clocks a tag can force, and none — the locale's own. */
-const FORCED = ['', '-u-hc-h11', '-u-hc-h12', '-u-hc-h23', '-u-hc-h24'];
+const FORCED = [undefined, 'h11', 'h12', 'h23', 'h24'] as const;
+
+/** A tag with its clock forced the platform's way, beside any extension it already carries. */
+const forcing = (locale: string, clock: (typeof FORCED)[number]): string =>
+  clock === undefined
+    ? locale
+    : new Intl.Locale(locale, { hourCycle: clock }).toString();
 
 describe('reading a time back', () => {
   it('reads what it writes, in all of 0086’s locales and on all four clocks', () => {
@@ -251,23 +285,51 @@ describe('reading a time back', () => {
       languages.filter((tag) => pctTimeFormat(tag).hourCycle === 'h12').length,
     ).toBeGreaterThan(10);
     const wrong: string[] = [];
-    for (const locale of [...languages, ...LOCALES, 'fr-CM'])
+    const declined: string[] = [];
+    for (const locale of [...languages, ...LOCALES, ...DECLINED])
       for (const clock of FORCED) {
-        const format = pctTimeFormat(locale + clock);
+        const tag = forcing(locale, clock);
+        const format = pctTimeFormat(tag);
+        if (!kept(tag)) declined.push(tag);
         for (const time of ['00:05', '12:05:30', '13:05', '23:59']) {
           const written = format.format(time);
           if (format.parse(written) !== time)
-            wrong.push(
-              `${locale + clock}: ${time} → ${JSON.stringify(written)}`,
-            );
+            wrong.push(`${tag}: ${time} → ${JSON.stringify(written)}`);
         }
       }
     expect(wrong).toEqual([]);
+    // A field that declines its formatter round-trips by construction, so a parser that stopped
+    // reading some language would vanish into the declined ones and this sweep would stay green.
+    // Hence the list, exactly: every other formatter here is kept, its clock and its digits.
+    expect(declined).toEqual([
+      'fr-CM-u-hc-h11',
+      'fr-CM-u-hc-h12',
+      ...['arab', 'arabext'].flatMap((digits) =>
+        FORCED.map((clock) => forcing(`az-AZ-u-nu-${digits}`, clock)),
+      ),
+    ]);
   });
 
-  it('counts to twenty-four where a twelve-hour clock writes no day period to read back', () => {
+  it('reads, on a twenty-four-hour clock, what its language writes on a twelve-hour one', () => {
+    // The day-period words and the words between the fields both come from the twelve-hour
+    // writer, so a time typed the way the language writes it there — `1:05:09 ч. pm`,
+    // `ཆུ་ཚོད་ ༡ སྐར་མ་ ༠༥ …` — is the same time in a field that counts to twenty-four.
+    const wrong: string[] = [];
+    for (const language of everyLanguage()) {
+      const twentyFour = pctTimeFormat(forcing(language, 'h23'));
+      const twelveHour = pctTimeFormat(forcing(language, 'h12'));
+      for (const time of ['00:05', '12:05:30', '13:05:09']) {
+        const written = twelveHour.format(time);
+        if (twentyFour.parse(written) !== time)
+          wrong.push(`${language}: ${time} → ${JSON.stringify(written)}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it('declines a formatter whose text it cannot read back, and counts to twenty-four in ASCII', () => {
     // Node writes `fr-CM-u-hc-h12` as `1:05` for 01:05 and for 13:05 alike — a clock that cannot
-    // be read back, which the field does not use: the one place it overrides the formatter.
+    // be read back, which the field does not use.
     const forced = pctTimeFormat('fr-CM-u-hc-h12');
     expect(forced.hourCycle).toBe('h23');
     expect(forced.dayPeriods).toBeNull();
@@ -276,6 +338,14 @@ describe('reading a time back', () => {
     // The locale it reports is the one the platform resolved for the clock the field counts on.
     expect(forced.locale).toBe('fr-CM');
     expect(pctTimeFormat('fr-CM-u-hc-h11').hourCycle).toBe('h23');
+    // And Azerbaijani in Arabic-Indic digits, which node's ICU writes with the words `standart
+    // onluq kəsr` inside every number: the field builds — it once threw — and writes `13:05`.
+    for (const tag of ['az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext']) {
+      const azerbaijani = pctTimeFormat(tag);
+      expect(azerbaijani.hourCycle).toBe('h23');
+      expect(azerbaijani.format('13:05')).toBe('13:05');
+      expect(azerbaijani.parse('13:05')).toBe('13:05');
+    }
     // A forced clock that does write its day period is honoured, separator first and all.
     const bulgarian = pctTimeFormat('bg-BG-u-hc-h12');
     expect(bulgarian.hourCycle).toBe('h12');
@@ -401,6 +471,12 @@ describe('reading a time back', () => {
 
   it('reads the words the locale writes between the fields, and only there', () => {
     expect(pctTimeFormat('fr-CA').parse('13 h 05 min 09 s')).toBe('13:05:09');
+    // And punctuation anywhere, where the language writes a word: `fr-CA` writes no colon, and a
+    // colon typed there separates like any other mark.
+    expect(pctTimeFormat('fr-CA').parse('13:05')).toBe('13:05');
+    // Dzongkha writes its word for the minute on a twelve-hour clock only; typed on a
+    // twenty-four-hour one it is a separator still, and never a day period.
+    expect(pctTimeFormat('dz-BT-u-hc-h23').parse('1 སྐར་མ་ 05')).toBe('01:05');
     expect(pctTimeFormat('en-US').parse('13 h 05 min 09 s')).toBeNull();
     // A separator after the day period is still a separator, and only a separator: the words
     // a formatter writes as its day period do not become words it writes between the fields.
