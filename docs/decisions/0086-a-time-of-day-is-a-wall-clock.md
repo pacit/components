@@ -285,23 +285,25 @@ this same fallback, seen through the numbering system.
   field's words, read off the formatter like the rest.
 
 _Amended 2026-10-05: **the field writes only what it reads back, and declines a formatter it
-cannot.** This qualifies two sentences above — "the formatter wins, and it is the only source"
-and, under the costs, "the clock is the formatter's, also where the engine is wrong" — for one
-case the measurement before this record did not meet: a formatter whose text cannot be read back
-at all. The value module's round trip over every language node's ICU has a formatter for, on
-every clock a `-u-hc-` tag can force, found two, both on a forced twelve-hour clock:
-`fr-CM-u-hc-h12` writes no day period, so 13:05 is `1:05` as 01:05 is, and Anii writes its two
-with a digit in each, `1ka` and `2ja`, which no reader that splits on digits can tell from the
-time. So the field checks, before it is used, that it reads back what its formatter writes — at
-the first hour, at noon, at a two-digit twelve-hour hour and in the afternoon, both shapes, every
-digit — and where it does not, it writes the plainest clock its language has, twenty-four hours
-in ASCII digits, and says so in `hourCycle`. It never edits the formatter's text. A formatter
-that is merely wrong keeps the field: node writes Azerbaijani in Arabic-Indic digits with the
-words `standart onluq kəsr` inside every number, and the time field writes them, as the date
-field on the same page does, and reads them back. The same round trip settled two smaller
-things: a twenty-four-hour field reads the day-period words its language writes on a twelve-hour
-clock, Anii's apart, and the ASCII `a`, `p`, `am` and `pm` are read only where no word of the
-language for the other half begins with them (Albanian writes the morning `p.d.`)._
+cannot.** This qualifies two sentences of this record — "the formatter wins, and it is the only
+source" and, under the costs, "the clock is the formatter's, also where the engine is wrong" —
+for one case the measurement before this record did not meet: a formatter whose own text the
+field cannot read back. The value module's round trip over every language node's ICU has a
+formatter for, on every clock a `-u-hc-` tag can force, found two, both on a forced twelve-hour
+clock: `fr-CM-u-hc-h12` writes no day period, so 13:05 is `1:05` as 01:05 is, and Anii writes
+its two with a digit in each, `1ka` and `2ja`, which no reader that splits on digits can tell
+from the time. So the field checks, before it is used, that it reads back what its formatter
+writes — at the first hour, at noon, at a two-digit twelve-hour hour and in the afternoon, both
+shapes, every digit — and where it does not, it writes the plainest clock its language has,
+twenty-four hours in ASCII digits, and says so in `hourCycle`. That this plainest clock reads
+back is measured, not proven by the field: it does in every language node writes, and the sweep
+holds it. The field never edits the formatter's text. A formatter that is merely wrong keeps the
+field: node writes Azerbaijani in Arabic-Indic digits with the words `standart onluq kəsr`
+inside every number, and the time field writes them, as the date field on the same page does,
+and reads them back. The same round trip settled two smaller things: a twenty-four-hour field
+reads the day-period words its language writes on a twelve-hour clock, Anii's apart, and the
+ASCII `a`, `p`, `am` and `pm` are read only where no word of the language for the other half
+begins with them (Albanian writes the morning `p.d.`)._
 
 ### 4. The panel is a dialog of listbox columns, and the columns are a component of their own
 

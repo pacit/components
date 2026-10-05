@@ -186,8 +186,8 @@ midnight, and `24:00`, a leap second and a fraction of one are not times. The on
 time is "what time is it". How a language writes a time — the clock, the day-period words and
 where they stand, the separators, the digits — comes from one `Intl` formatter for the field's
 locale, and the parser reads back what that formatter writes — in every language the platform
-has a formatter for, on every clock a tag can force; a formatter whose text cannot be read back
-at all is declined for the plainest clock the language has, and a word or a number the parser
+has a formatter for, on every clock a tag can force; a formatter whose own text the field cannot
+read back is declined for the plainest clock the language has, and a word or a number the parser
 does not know makes the text malformed, never another time.
 
 **Gate:** `libs/components/time/src/time.spec.ts › in a hostile timezone` — the clock pinned
@@ -220,7 +220,7 @@ read back as the morning, and Anii writes its day periods with a digit in each �
 now, for twenty-four hours in ASCII digits; Azerbaijani in Arabic-Indic digits writes
 `standart onluq kəsr` inside every number, so the formatter threw as it was built — it builds,
 writes the platform's text and reads it back; Dzongkha's word for the minute, written on a
-twelve-hour clock only, read as the afternoon on a twenty-four-hour one, and the first repair
+twelve-hour clock only, read as the afternoon on a twenty-four-hour one, and a later repair
 dropped Low German's `Klock`, written on a twelve-hour clock with seconds only, so `Klock 9.30`
 read as 21:30 — a run written in the morning and the afternoon alike now separates; a number of another kind read as
 a separator, `۱٣:۳۰` in a Persian field as `01:30`, the `〇` a CJK input method types as

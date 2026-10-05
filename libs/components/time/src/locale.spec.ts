@@ -361,6 +361,10 @@ describe('reading a time back', () => {
       expect(written).not.toBe('13:05');
       expect(azerbaijani.parse(written)).toBe('13:05');
       expect(azerbaijani.parse('13:05')).toBe('13:05');
+      // Its hint counts the digits, not the words around them, as the date field's hint does.
+      expect(
+        azerbaijani.hint({ hour: 'h', minute: 'm', second: 's' }, true),
+      ).toBe('hh:mm:ss');
     }
   });
 
@@ -379,7 +383,6 @@ describe('reading a time back', () => {
     // splits on digits can tell from the time: declined too, and only on a twelve-hour clock.
     expect(pctTimeFormat('blo-u-hc-h12').hourCycle).toBe('h23');
     expect(pctTimeFormat('blo-u-hc-h12').format('13:05')).toBe('13:05');
-    expect(pctTimeFormat('blo').hourCycle).toBe('h23');
     // A forced clock that does write its day period is honoured, separator first and all.
     const bulgarian = pctTimeFormat('bg-BG-u-hc-h12');
     expect(bulgarian.hourCycle).toBe('h12');

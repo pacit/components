@@ -349,7 +349,12 @@ function field(
         .join(''),
     parse: (text) => parse(text, reader),
     hint: (letters, seconds = false) =>
-      hint(seconds ? clock.morning : clock.brief, letters, clock.dayPeriods),
+      hint(
+        seconds ? clock.morning : clock.brief,
+        letters,
+        clock.dayPeriods,
+        latin,
+      ),
     number: (value, width = 1) => (width === 2 ? two : one).format(value),
   };
   return {
@@ -370,6 +375,7 @@ function hint(
   parts: readonly Intl.DateTimeFormatPart[],
   letters: PctTimeLetters,
   dayPeriods: readonly [string, string] | null,
+  latin: (text: string) => string | null,
 ): string {
   return parts
     .map((part) => {
@@ -380,7 +386,14 @@ function hint(
         part.type === 'minute' ||
         part.type === 'second'
       )
-        return letters[part.type].repeat(Array.from(part.value).length);
+        // A letter per DIGIT, counted once the locale's digits are ASCII ones: node writes
+        // Azerbaijani in Arabic-Indic digits with words inside every number, and a letter per
+        // character gave its hour twenty-one. The field's own text always translates — the check
+        // before use reads it back — and a field of a time always holds a digit.
+        return letters[part.type].repeat(
+          ((latin(part.value) as string).match(/\d/g) as RegExpMatchArray)
+            .length,
+        );
       return part.value;
     })
     .join('');
