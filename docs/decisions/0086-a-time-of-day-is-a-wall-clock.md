@@ -231,9 +231,9 @@ and half a time read `""`, with `badInput` false in webkit, and chromium reads `
 the system's locale, seven in firefox and one in webkit (F3). It adds two of its own, both in
 chromium: the same eight digits are 12 January under a Polish system and 1 December under an
 English one (F6), and digits typed on from the day go into the year, whose field takes six —
-`12012026130505` is **`202613-01-12T05:05`** (F7). It also normalises what it is given —
-`2026-12-01T13:05:00` comes back without its seconds (F5) — which the time input does not
-(A16); the datetime field's own value has to answer that difference.
+under a Polish system `12012026130505` is **`202613-01-12T05:05`** (F7). It also normalises
+what it is given — `2026-12-01T13:05:00` comes back without its seconds (F5) — which the time
+input does not (A16); the datetime field's own value has to answer that difference.
 
 ### 3. The language decides the clock, and one formatter answers for all of it
 
