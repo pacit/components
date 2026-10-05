@@ -56,8 +56,10 @@ export interface PctTimeFormat {
   /** The locale the platform resolved, which may not be the one asked for. */
   readonly locale: string;
   /**
-   * The clock this language counts on — the formatter's own answer, and the only source: a
-   * clock forced on a reader is a locale too (`en-US-u-hc-h23`), so there is no other input.
+   * The clock this language counts on — the formatter's own answer, with one exception: where a
+   * twelve-hour clock writes no day period (node's `fr-CM-u-hc-h12`), a time it writes could not
+   * be read back, and the field counts to twenty-four. A clock forced on a reader is a locale too
+   * (`en-US-u-hc-h23`), so there is no other input.
    */
   readonly hourCycle: PctHourCycle;
   /** The parts in the order this language writes them, seconds and day period included. */
@@ -76,7 +78,7 @@ export interface PctTimeFormat {
    * period is the language's own word — on a twenty-four-hour clock, the one it writes on a
    * twelve-hour clock — or `a`, `p`, `am`, `pm` where no word of the language contradicts them,
    * and with one an hour may stand alone (`2 pm`); and a twenty-four-hour time is read in a
-   * twelve-hour field. A word or a digit it does not know makes the text malformed, never
+   * twelve-hour field. A word or a number it does not know makes the text malformed, never
    * another time.
    */
   parse(text: string): PctTime | null;
@@ -166,14 +168,16 @@ function periodIn(
   return parts.find((part) => part.type === 'dayPeriod')?.value;
 }
 
-/** What one cycle writes: the two formatters, the parts the hint is read off, the two words. */
+/** What one cycle writes: the two formatters, the samples it is read off, the two words. */
 interface Writer {
   readonly hourCycle: PctHourCycle;
   readonly short: Intl.DateTimeFormat;
   readonly long: Intl.DateTimeFormat;
-  /** `MORNING` written without its seconds, and with them. */
+  /** `MORNING` written without its seconds, and with them — what the hint is read off. */
   readonly brief: readonly Intl.DateTimeFormatPart[];
   readonly morning: readonly Intl.DateTimeFormatPart[];
+  /** The text of every sample, each with the half of the day it was written in. */
+  readonly samples: readonly (readonly [string, Half])[];
   readonly dayPeriods: readonly [string, string] | null;
 }
 
@@ -195,20 +199,33 @@ function writer(locale: string, hourCycle: PctHourCycle): Writer {
     ...options,
     second: '2-digit',
   });
+  const brief = short.formatToParts(instant(MORNING));
   const morning = long.formatToParts(instant(MORNING));
-  const am = periodIn(morning);
+  const afternoon = long.formatToParts(instant(AFTERNOON));
+  const periods = [periodIn(morning), periodIn(afternoon)];
   return {
     hourCycle,
     short,
     long,
-    brief: short.formatToParts(instant(MORNING)),
+    brief,
     morning,
-    // A formatter that writes a day period before noon writes one after it.
-    dayPeriods:
-      am === undefined
-        ? null
-        : [am, periodIn(long.formatToParts(instant(AFTERNOON))) as string],
+    samples: [
+      [written(brief), 'am'],
+      [written(morning), 'am'],
+      [written(short.formatToParts(instant(AFTERNOON))), 'pm'],
+      [written(afternoon), 'pm'],
+    ],
+    // Both words or neither: a clock that wrote one half of the day and not the other could not
+    // be read back any more than one that writes none.
+    dayPeriods: periods.includes(undefined)
+      ? null
+      : (periods as [string, string]),
   };
+}
+
+/** The text a formatter writes, joined from its parts as the field joins it. */
+function written(parts: readonly Intl.DateTimeFormatPart[]): string {
+  return parts.map((part) => part.value).join('');
 }
 
 function build(locale: string): PctTimeFormat {
@@ -235,34 +252,44 @@ function build(locale: string): PctTimeFormat {
     .filter((part) => part.type !== 'literal')
     .map((part) => part.type as PctTimeField);
 
-  // The words a day period is read by: the field's own two where it writes them, and on a clock
-  // that writes none the two its language writes on a twelve-hour one — `午後2:30` is a time in
-  // a Japanese field as `2:30 pm` is in a British one. Then the ASCII words, each where the
-  // language's own words leave room for it.
-  const words = clock.dayPeriods ?? writer(locale, 'h12').dayPeriods;
-  const own: readonly (readonly [string, Half])[] =
-    words === null
-      ? []
-      : [
-          [wordOf(words[0]), 'am'],
-          [wordOf(words[1]), 'pm'],
-        ];
+  // The words a day period is read by are the ones the language writes on a twelve-hour clock:
+  // the field's own on one, and on a twenty-four-hour clock the ones it would write there —
+  // `午後2:30` is a time in a Japanese field as `2:30 pm` is in a British one. `h11` and `h12`
+  // write the same words in every language the platform has, so one reading serves both.
+  const twelveHour = writer(locale, 'h12');
+  const words = twelveHour.dayPeriods;
+  // The ASCII words first, each where the language's own word for the other half does not begin
+  // with it; then the language's two, so that where the two coincide the language's wins.
+  const contradicts = (ascii: string, half: Half): boolean =>
+    words !== null && wordOf(words[half === 'am' ? 1 : 0]).startsWith(ascii);
   const halves = new Map<string, Half>(
-    ASCII_HALVES.filter(
-      ([ascii, half]) =>
-        !own.some(([word, other]) => other !== half && word.startsWith(ascii)),
-    ),
+    ASCII_HALVES.filter(([ascii, half]) => !contradicts(ascii, half)),
   );
-  for (const [word, half] of own) halves.set(word, half);
-  // A separator is the `h` above and every word the formatter itself writes between the fields
-  // — `fr-CA` writes `13 h 05 min 09 s` — so that what the field writes it reads back.
+  if (words !== null) {
+    halves.set(wordOf(words[0]), 'am');
+    halves.set(wordOf(words[1]), 'pm');
+  }
+  // A separator is the `h` above and every word the language writes between the fields, on the
+  // field's clock and on a twelve-hour one — `fr-CA` writes `13 h 05 min 09 s`, and Bulgarian
+  // writes `ч.` after a time on a twelve-hour clock only — so that what is written is read. (A
+  // literal with no letters adds the empty word, which the parser never looks up.)
   const separators = new Set([HOUR_LETTER]);
-  for (const part of [...clock.brief, ...clock.morning])
-    if (part.type === 'literal' && wordOf(part.value) !== '')
-      separators.add(wordOf(part.value));
+  for (const part of [...clock.brief, ...clock.morning, ...twelveHour.morning])
+    if (part.type === 'literal') separators.add(wordOf(part.value));
+  // And every run of letters the language writes between digits on a twelve-hour clock is read
+  // as the half of the day it was written in. Most are a day period alone; some hold a separator
+  // too — Ewe writes `ŋdi ga 12:00`, its morning and its word for the hour, and Bulgarian
+  // `1:05 ч. pm` — and those runs are read exactly as written, and no other combination of the
+  // two. The text is cut where the parser cuts it, so the words are the ones it will meet; the
+  // formatter writes only its own digits, which always translate, and never a time without a
+  // separator.
+  const latin = (text: string) => pctToLatinDigits(text, digits);
+  for (const [text, half] of twelveHour.samples)
+    for (const run of (latin(text) as string).match(/\D+/g) as string[])
+      halves.set(wordOf(run), half);
 
   const reader: Reader = {
-    latin: (text) => pctToLatinDigits(text, digits),
+    latin,
     halves,
     separators,
     hourCycle: clock.hourCycle,
@@ -326,24 +353,12 @@ interface Reader {
 
 /**
  * The half of the day a run of letters names, `null` for a separator, and `undefined` for a word
- * this locale does not write. A day period may share its run with a separator, on either side:
- * Ewe writes `ŋdi ga 12:00`, its word for the morning before its word for the hour, and on a
- * forced twelve-hour clock Bulgarian writes `1:05 ч. pm` and Canadian French
- * `1 h 05 min 09 s p.m.`, the separator first — each with no digit between the two.
+ * this locale does not write — a separator glued to a day period in a way the language does not
+ * write it among them: `1:05 hpm` is refused, where `1:05 ч. pm` is Bulgarian's own. A separator
+ * is asked first, so a word the language writes between the fields is never read as a period.
  */
 function halfIn(word: string, reader: Reader): Half | null | undefined {
-  const half = reader.halves.get(word);
-  if (half !== undefined) return half;
-  if (reader.separators.has(word)) return null;
-  for (const [period, side] of reader.halves)
-    if (
-      (word.startsWith(period) &&
-        reader.separators.has(word.slice(period.length))) ||
-      (word.endsWith(period) &&
-        reader.separators.has(word.slice(0, -period.length)))
-    )
-      return side;
-  return undefined;
+  return reader.separators.has(word) ? null : reader.halves.get(word);
 }
 
 /**
@@ -375,7 +390,7 @@ function parse(text: string, reader: Reader): PctTime | null {
   // Anything else is refused rather than read past — a mistyped `pmm` read as nothing would
   // turn an afternoon into a morning without a word.
   let half: Half | null = null;
-  for (const run of latin.split(/\d+/)) {
+  for (const run of latin.match(/\D+/g) ?? []) {
     const word = wordOf(run);
     if (word === '') continue;
     const named = halfIn(word, reader);

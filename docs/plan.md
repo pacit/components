@@ -124,10 +124,11 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
   - the value module landed 2026-10-05: `PctTime`, its arithmetic and `pctTimeFormat`, enforced
     in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to `./core`
-    with it — `./core` +683 B, `./date` +131 B, no other entrypoint moved, `./time` 9334 B of
+    with it — `./core` +682 B, `./date` +130 B, no other entrypoint moved, `./time` 9370 B of
     which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader still to come
   - the field cannot be called `PctTime`: 0086 gave the value that name too, and TS refuses the
-    two side by side (TS2300). One is renamed before the field lands and before a release dates it
+    two side by side (TS2300). One of the two is renamed — binds at: **the field's first commit,
+    or the next release, whichever comes first**, since a release dates the value's name
   - whether `[formField]` fills a string bound is measured with the field, not inherited from
     the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTime`
     limit to `MIN`/`MAX` ships with a case or not at all

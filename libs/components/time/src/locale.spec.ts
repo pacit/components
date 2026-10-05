@@ -273,6 +273,8 @@ describe('reading a time back', () => {
     expect(forced.dayPeriods).toBeNull();
     expect(forced.format('13:05')).toBe('13:05');
     expect(forced.format('01:05')).toBe('01:05');
+    // The locale it reports is the one the platform resolved for the clock the field counts on.
+    expect(forced.locale).toBe('fr-CM');
     expect(pctTimeFormat('fr-CM-u-hc-h11').hourCycle).toBe('h23');
     // A forced clock that does write its day period is honoured, separator first and all.
     const bulgarian = pctTimeFormat('bg-BG-u-hc-h12');
@@ -307,6 +309,13 @@ describe('reading a time back', () => {
     expect(
       pctTimeFormat('en-US').parse(`1${String.fromCodePoint(0xff12)}:30 pm`),
     ).toBeNull();
+    // Nor a number that is not a decimal digit at all: the `〇` a CJK input method types for
+    // zero, a superscript two.
+    expect(pctTimeFormat('zh-CN').parse('1〇:30')).toBeNull();
+    expect(pctTimeFormat('en-GB').parse('1²:30')).toBeNull();
+    // Where `〇` IS the locale's zero, it is a digit like the rest.
+    const hanidec = pctTimeFormat('zh-CN-u-nu-hanidec');
+    expect(hanidec.parse(hanidec.format('10:05:09'))).toBe('10:05:09');
   });
 
   it('reads either space before a day period', () => {
@@ -352,6 +361,11 @@ describe('reading a time back', () => {
     // twelve-hour clock: a Japanese field takes `午後` as a British one takes `pm`.
     expect(pctTimeFormat('ja-JP').parse('午後2:30')).toBe('14:30');
     expect(pctTimeFormat('ja-JP').dayPeriods).toBeNull();
+    // And the words the language writes between the fields on that clock: Bulgarian writes `ч.`
+    // after a time only on a twelve-hour clock, and a Bulgarian types it on any.
+    expect(pctTimeFormat('bg-BG').parse('13:05 ч.')).toBe('13:05');
+    // A day period the language writes glued to its word for the hour reads alone, too.
+    expect(pctTimeFormat('ee-GH').parse('ŋdi 1:05')).toBe('01:05');
   });
 
   it('never reads an ASCII letter against the language’s own word for the other half', () => {
@@ -432,6 +446,11 @@ describe('refusing what is not a time', () => {
     // Past twelve a day period contradicts the hour it stands beside.
     expect(en.parse('13:05 pm')).toBeNull();
     expect(en.parse('13 pm')).toBeNull();
+    // A separator glued to a day period is read only the way the language writes the two: no
+    // language writes `hpm`, and `fr-CA`'s `s` beside `a` is not its `s a.m.`.
+    expect(en.parse('1:05 hpm')).toBeNull();
+    expect(en.parse('2 ha')).toBeNull();
+    expect(pctTimeFormat('fr-CA').parse('2 sa')).toBeNull();
   });
 });
 

@@ -185,9 +185,9 @@ the minute a switch skips and the hour it repeats included. The arithmetic comes
 midnight, and `24:00`, a leap second and a fraction of one are not times. The one read of local
 time is "what time is it". How a language writes a time — the clock, the day-period words and
 where they stand, the separators, the digits — comes from one `Intl` formatter for the field's
-locale, and the parser reads back what that formatter writes, in every language the platform
-knows and on every clock a tag can force; a word or a digit it does not know makes the text
-malformed, never another time.
+locale, and the parser reads back what that formatter writes — in every two-letter language the
+platform knows, on every clock a tag can force; a word or a number it does not know makes the
+text malformed, never another time.
 
 **Gate:** `libs/components/time/src/time.spec.ts › in a hostile timezone` — the clock pinned
 to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` across the 23-hour day of 29 March
@@ -206,15 +206,17 @@ the parser takes and the junk it refuses. The round trip runs in node only: the 
 `new Date(2026, 2, 29, 2, 30)` answers 03:30 and an hour after 01:30 reads 03:30 where
 `pctAddMinutes('01:30', 60)` is `02:30`, and in Kiritimati 13:05 carried as an instant reads
 back as three o'clock — so a `PctTime` that followed the zone would fail against a number the
-run itself produced. And every defect found while the gate was built and reviewed is a case
-now: Ewe writes its morning and its word for the hour in one run (`ŋdi ga 12:00`), and on a
-forced twelve-hour clock Bulgarian and Canadian French write a separator and then the day period
-(`1:05 ч. pm`), all three read back as nothing; Cameroonian French on a forced twelve-hour clock
-writes no day period at all, so its afternoon read back as the morning — the field counts to
-twenty-four there; a digit of another numbering system read as a separator, `۱٣:۳۰` in a
-Persian field as `01:30` and the 13th of a Persian date as the 1st; and node's `format()`
-writes U+0020 before `PM` where its own `formatToParts()` writes U+202F, so the field and its
-hint were two strings until both were read off the parts
+run itself produced. The defects found while the gate was built and reviewed are cases now:
+Ewe writes its morning and its word for the hour in one run (`ŋdi ga 12:00`), and on a forced
+twelve-hour clock Bulgarian and Canadian French write a separator and then the day period
+(`1:05 ч. pm`), all three read back as nothing — and the first repair read any separator glued
+to any period, `1:05 hpm` among them, until the parser took only the runs the formatter writes;
+Cameroonian French on a forced twelve-hour clock writes no day period at all, so its afternoon
+read back as the morning — the field counts to twenty-four there; a number of another kind read
+as a separator, `۱٣:۳۰` in a Persian field as `01:30`, the `〇` a CJK input method types as
+nothing, and the 13th of a Persian date as the 1st; and node's `format()` writes U+0020 before
+`PM` where its own `formatToParts()` writes U+202F, so the field and its hint were two strings
+until both were read off the parts
 **Decision:** [0086 — a time of day is a wall clock](../decisions/0086-a-time-of-day-is-a-wall-clock.md)
 
 ---

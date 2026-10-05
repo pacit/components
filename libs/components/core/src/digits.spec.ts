@@ -89,7 +89,7 @@ describe('pctToLatinDigits', () => {
     expect(pctToLatinDigits('1:05 PM', null)).toBe('1:05 PM');
   });
 
-  it('refuses a text holding a digit of another numbering system', () => {
+  it('refuses a text holding a number of another kind', () => {
     // Left in, it would read as a separator: an Arabic-Indic three among Persian digits, the
     // Arabic-Indic digits in a field whose locale writes the ASCII ones, a full-width two.
     expect(
@@ -99,6 +99,13 @@ describe('pctToLatinDigits', () => {
     expect(
       pctToLatinDigits(`1${String.fromCodePoint(0xff12)}`, null),
     ).toBeNull();
+    // A number that is not a decimal digit reads as a separator just the same.
+    expect(pctToLatinDigits('1〇:30', null)).toBeNull();
+    expect(pctToLatinDigits('1²:30', null)).toBeNull();
+    // Unless it is the locale's own digit, written back before anything is refused.
+    expect(pctToLatinDigits('一三:〇五', pctDigitsOf('zh-CN', 'hanidec'))).toBe(
+      '13:05',
+    );
   });
 
   it('writes back digits outside the basic plane, one character each', () => {

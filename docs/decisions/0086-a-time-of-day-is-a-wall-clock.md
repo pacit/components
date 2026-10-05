@@ -284,6 +284,18 @@ this same fallback, seen through the numbering system.
   from `PCT_TEXTS`, as the date's navigation buttons do; the period column's two rows are the
   field's words, read off the formatter like the rest.
 
+_Amended 2026-10-05: **a twelve-hour clock that writes no day period is not the field's clock.**
+The value module's round trip over every two-letter language on every clock a `-u-hc-` tag can
+force found one formatter answer the field cannot take: node writes `fr-CM-u-hc-h12` as `1:05`
+at 01:05 and at 13:05 alike, so a field that reads back what it writes would move every
+afternoon into the morning. Where the cycle the formatter resolves is a twelve-hour one and it
+writes no day period, the field counts to twenty-four and `hourCycle` says `h23` — read off the
+same formatter, still no table, and the one place the formatter's clock is not the field's. The
+same round trip settled two smaller things this record left open: a twenty-four-hour field
+reads the day-period words its language writes on a twelve-hour clock, and the ASCII `a`, `p`,
+`am` and `pm` are read only where no word of the language for the other half begins with them
+(Albanian writes the morning `p.d.`)._
+
 ### 4. The panel is a dialog of listbox columns, and the columns are a component of their own
 
 E1 and E2 say both readings of a column pass, and E3 to E5 say what does not: a column of plain

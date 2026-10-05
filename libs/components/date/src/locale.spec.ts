@@ -185,6 +185,9 @@ describe('reading a day back', () => {
     // separator it turned the 13th into the 1st without a word.
     expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱٣')).toBeNull();
     expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱۳')).toBe('2026-12-13');
+    // The `〇` a CJK input method types for zero is a number and not a decimal digit: as a
+    // separator it turned October into January.
+    expect(pctDayFormat('zh-CN').parse('2026/1〇/13')).toBeNull();
   });
 
   it('accepts more widely than it writes', () => {

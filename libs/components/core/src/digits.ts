@@ -72,19 +72,20 @@ export function pctNumberFormat(
 }
 
 /**
- * A decimal digit that is not an ASCII one — what is left of a text once the locale's own digits
- * have been written back, if it holds a digit of another numbering system.
+ * A number that is not an ASCII digit — what is left of a text once the locale's own digits have
+ * been written back, if it holds a digit of another numbering system, the `〇` a CJK input method
+ * types for zero, or a superscript `²`. Any of them would otherwise read as a separator.
  */
-const FOREIGN_DIGIT = /(?![0-9])\p{Nd}/u;
+const FOREIGN_NUMBER = /(?![0-9])\p{N}/u;
 
 /**
  * Text with a locale's own digits written back as the ASCII ones and nothing else touched —
  * `digits` is what {@link pctDigitsOf} answered, and `null` means there is nothing to translate.
  *
- * **`null` where a digit of another numbering system is left over.** A parser that splits on
- * runs of ASCII digits reads any other character as a separator, a digit included: `۱٣:۳۰` in a
- * Persian field — a Persian one and an Arabic-Indic three, which look alike — read as `01:30`,
- * and `1２:05` typed with a Japanese input method on read as `01:05`. Refused here, once, the
+ * **`null` where a number of another kind is left over.** A parser that splits on runs of ASCII
+ * digits reads any other character as a separator, a number included: `۱٣:۳۰` in a Persian field
+ * — a Persian one and an Arabic-Indic three, which look alike — read as `01:30`, `1２:05` typed
+ * with a Japanese input method on as `01:05`, and `1〇:30` as `01:30`. Refused here, once, the
  * text is reported as not a value instead of being read as the wrong one.
  *
  * Nothing else is removed. A strip of the bidi marks that once stood beside this went because a
@@ -104,5 +105,5 @@ export function pctToLatinDigits(
           const value = digits.indexOf(character);
           return value === -1 ? character : String(value);
         }).join('');
-  return FOREIGN_DIGIT.test(latin) ? null : latin;
+  return FOREIGN_NUMBER.test(latin) ? null : latin;
 }
