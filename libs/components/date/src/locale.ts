@@ -1,3 +1,8 @@
+import {
+  pctDigitsOf,
+  pctNumberFormat,
+  pctToLatinDigits,
+} from '@pacit/components/core';
 import { isPctDay, PctDay, pctDayAsUtc, pctToday } from './day';
 
 /**
@@ -133,35 +138,6 @@ export function pctFirstDayOfWeek(locale: string): number {
 }
 
 /**
- * The digits of the locale's own numbering system, in the order `0`…`9`, or `null` where the
- * locale writes in the ASCII ones and nothing has to be translated back.
- *
- * Read from the platform rather than written down, and that is not caution: `my-MM` resolves
- * to `latn` in chromium 149 and to `mymr` in firefox 151 and webkit 26.5 — measured — so a
- * table of digits per locale would be wrong in one engine of three whichever way it was
- * filled in.
- */
-function digitsOf(locale: string, numberingSystem: string): string[] | null {
-  if (numberingSystem === 'latn') return null;
-  let written: string;
-  try {
-    written = new Intl.NumberFormat(locale, {
-      numberingSystem,
-      useGrouping: false,
-    }).format(1234567890);
-  } catch {
-    return null;
-  }
-  const glyphs = Array.from(written);
-  // A numbering system that is not decimal-positional (an algorithmic one) writes this
-  // number as something other than ten glyphs; there is then nothing to map back and the
-  // ASCII digits are the whole of what a user can type.
-  if (glyphs.length !== 10) return null;
-  const digits = [glyphs[9], ...glyphs.slice(0, 9)];
-  return new Set(digits).size === 10 ? digits : null;
-}
-
-/**
  * How wide the window for a year written in one or two digits is, and where it sits: from 80
  * years back to 19 forward, which is the convention every other date field a user has met
  * uses. It is written down here because it is a **guess about intent** — the only one this
@@ -229,8 +205,8 @@ function build(locale: string): PctDayFormat {
     dateStyle: 'full',
   });
   const resolved = numeric.resolvedOptions();
-  const digits = digitsOf(locale, resolved.numberingSystem);
-  const counter = numberFormat(locale, resolved.numberingSystem);
+  const digits = pctDigitsOf(locale, resolved.numberingSystem);
+  const counter = pctNumberFormat(locale, resolved.numberingSystem);
 
   // The order and the separators of this language, read off a date whose three fields cannot
   // be confused with one another.
@@ -239,19 +215,8 @@ function build(locale: string): PctDayFormat {
     .filter((p) => p.type === 'year' || p.type === 'month' || p.type === 'day')
     .map((p) => p.type as PctDayField);
 
-  /**
-   * The locale's own digits, translated back to the ASCII ones. Nothing else is removed —
-   * and the strip of the bidi marks that stood here is gone because a control proved it dead:
-   * `ar-EG` writes its separator as `U+200F /`, and the parser splits on RUNS OF DIGITS, so
-   * every character that is not one already separates. Taking the strip out left all 83 cases
-   * green, which is the only reason to believe it was doing nothing.
-   */
-  const latin = (text: string): string => {
-    if (!digits) return text;
-    let s = text;
-    for (let i = 0; i < 10; i++) s = s.split(digits[i]).join(String(i));
-    return s;
-  };
+  /** The locale's own digits, translated back to the ASCII ones the parser reads. */
+  const latin = (text: string): string => pctToLatinDigits(text, digits);
 
   return {
     locale: resolved.locale,
@@ -262,25 +227,6 @@ function build(locale: string): PctDayFormat {
     parse: (text) => parse(text, order, latin),
     hint: (letters) => hint(parts, letters),
   };
-}
-
-/**
- * A counter in the date formatter's own numbering system. The system is asked for by name,
- * and a platform that will not take it is not an error worth throwing over — the ASCII digits
- * are then what the grid is written in, which is what the field falls back to as well.
- */
-function numberFormat(
-  locale: string,
-  numberingSystem: string,
-): Intl.NumberFormat {
-  try {
-    return new Intl.NumberFormat(locale, {
-      numberingSystem,
-      useGrouping: false,
-    });
-  } catch {
-    return new Intl.NumberFormat(locale, { useGrouping: false });
-  }
 }
 
 /** The format hint: the language's own separators with the reader's own letters between them. */

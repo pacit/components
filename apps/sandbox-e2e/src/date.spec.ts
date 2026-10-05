@@ -66,9 +66,10 @@ test.describe('Date — the field', () => {
 
   /**
    * The case the whole decision rests on. `<input type="date">` takes the order it shows a
-   * date in from `lang` in chromium, from the browser's locale in webkit and from neither in
-   * firefox — so the one thing an application cannot do with it is decide. Here the
-   * application decides, and the proof is two fields on one page in two languages.
+   * date in from the browser's interface language in chromium, from its own in firefox and
+   * from the browser's locale in webkit — from `lang` in none of them (0086) — so the one thing
+   * an application cannot do with it is decide. Here the application decides, and the proof is
+   * two fields on one page in two languages.
    */
   test('shows the date in the language the FIELD is in, not the browser', async ({
     page,

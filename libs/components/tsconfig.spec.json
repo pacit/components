@@ -13,6 +13,7 @@
     "button/**/*.ts",
     "checkbox/**/*.ts",
     "date/**/*.ts",
+    "time/**/*.ts",
     "dialog/**/*.ts",
     "drawer/**/*.ts",
     "radio/**/*.ts",

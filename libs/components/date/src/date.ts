@@ -67,10 +67,12 @@ export type PctDatePanelAlign = 'start' | 'end';
  * is three measurements rather than a preference
  * ([0043](../../../../docs/decisions/0043-a-day-is-not-an-instant.md)):
  *
- * - **the order it shows the date in comes from a different place in each engine.** chromium
- *   149 reads `lang` on the element, webkit 26.5 reads the browser's locale and ignores
- *   `lang`, firefox 151 reads neither — so an application in Polish shows `12/01/2026` to two
- *   users out of three and has no way to say otherwise;
+ * - **the order it shows the date in comes from a different place in each engine** — the
+ *   browser's interface language in chromium, firefox's own interface language in firefox, the
+ *   browser's locale in webkit, and `lang` in none of them
+ *   ([0086](../../../../docs/decisions/0086-a-time-of-day-is-a-wall-clock.md) superseded the
+ *   reading that chromium follows `lang`) — so an application in Polish shows `12/01/2026` to
+ *   users it cannot pick out and has no way to say otherwise;
  * - **a half-typed date reads `value === ''`** in all three, and `validity.badInput` — the one
  *   flag that tells junk from empty — is `false` in webkit. That is the very complaint
  *   [`req-api-number`](../../../../docs/requirements/api.md#req-api-number) already refuses
@@ -174,8 +176,8 @@ export class PctDate
   readonly name = input<string>('');
 
   /**
-   * The earliest and latest day. They belong to the `FormUiControl` contract, so with
-   * `[formField]` the directive fills them from the schema's `min()` / `max()` validators.
+   * The earliest and latest day. They belong to the `FormUiControl` contract, which spells an
+   * absent bound `undefined`.
    *
    * **They clamp the calendar's walk and they do not rewrite what was typed**, which is the
    * one place this control parts company with `[pctNumber]`: a bound clamps a MOVEMENT, and a

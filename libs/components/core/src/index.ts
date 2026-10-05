@@ -1,5 +1,6 @@
 export * from './announce';
 export * from './config';
+export * from './digits';
 export * from './field';
 export * from './focus';
 export * from './id';
