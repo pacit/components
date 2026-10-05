@@ -1,6 +1,6 @@
 # 0043 — A day is not an instant, and the field that takes one is text the application formats
 
-**Status:** accepted
+**Status:** accepted — A1 (chromium reading `lang`) corrected by 0086
 **Implements:** [`req-api-platform`](../requirements/api.md#req-api-platform),
 [`req-api-number`](../requirements/api.md#req-api-number),
 [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),

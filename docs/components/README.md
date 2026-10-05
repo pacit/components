@@ -121,8 +121,11 @@ The order follows **architectural debt**, not popularity:
    reading the direction ([`lesson-118`](../lessons.md#lesson-118)). The **date picker** closes
    the item, and it is the one where the platform's own control was refused on three
    measurements rather than one: `<input type="date">` takes the order it shows a date in from
-   `lang` in chromium, from the browser's locale in webkit and from neither in firefox — three
-   engines, three sources, one of them settable — a half-typed date reads `value === ''` in all
+   the browser's interface language in chromium, from its own in firefox and from the
+   browser's locale in webkit — three engines, three sources, none of them `lang` and so none
+   of them the application's
+   ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md) corrected the first) — a
+   half-typed date reads `value === ''` in all
    three with `validity.badInput` false in webkit, and one such control is four tab stops in
    two engines and one in the third. So the field is text the library formats, and the value
    is a calendar DAY: `new Date(2026, 7, 27).toISOString()` is the 26th in Warsaw, and

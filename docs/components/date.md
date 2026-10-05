@@ -37,10 +37,12 @@ read backwards)
 [`req-api-platform`](../requirements/api.md#req-api-platform). Three measurements, three
 engines each:
 
-- **the order it shows a date in comes from a different place in each engine** — chromium 149
-  reads `lang` on the element, webkit 26.5 reads the browser's locale and ignores `lang`,
-  firefox 151 reads neither. An application in Polish therefore shows `12/01/2026` to two
-  users in three and has no way of saying otherwise;
+- **the order it shows a date in comes from a different place in each engine, and never from
+  `lang`** — chromium reads the language of the browser's own interface, firefox its own
+  (`en-US` in the build measured), webkit the browser's locale
+  ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md) corrects 0043's reading of
+  chromium). An application in Polish therefore shows `12/01/2026` to a reader whose browser
+  is set up in English and has no way of saying otherwise;
 - **a half-typed date reads `value === ''`** in all three, and `validity.badInput` — the one
   flag that would tell junk from empty — is `false` in webkit. That is the very complaint
   [`req-api-number`](../requirements/api.md#req-api-number) already refuses
