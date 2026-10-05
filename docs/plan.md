@@ -124,7 +124,7 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
   - the value module landed 2026-10-05: `PctTime`, its arithmetic and `pctTimeFormat`, enforced
     in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to `./core`
-    with it — `./core` +744 B, `./date` +192 B, no other entrypoint moved, `./time` 9596 B of
+    with it — `./core` +744 B, `./date` +192 B, no other entrypoint moved, `./time` 9735 B of
     which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader still to come
   - the field cannot be called `PctTime`: 0086 gave the value that name too, and TS refuses the
     two side by side (TS2300). One of the two is renamed — binds at: **the field's first commit,

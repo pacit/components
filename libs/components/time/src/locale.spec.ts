@@ -47,10 +47,11 @@ const LOCALES = [
 ];
 
 /**
- * The locales node writes a time in that the field cannot read back, and declines: a forced
- * twelve-hour clock with no day period, and Arabic-Indic digits behind a phrase of words.
+ * Locales node writes oddly, beyond the languages the sweep reads off the platform: one whose
+ * forced twelve-hour clock writes no day period, and Azerbaijani in Arabic-Indic digits, which it
+ * writes with the words `standart onluq kəsr` inside every number.
  */
-const DECLINED = ['fr-CM', 'az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext'];
+const EDGES = ['fr-CM', 'az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext'];
 
 /** The four clocks, each forced the one way the platform spells a forced clock: in the tag. */
 const CYCLES = [
@@ -207,26 +208,33 @@ describe('the day period', () => {
 });
 
 /**
- * Every two-letter language node's ICU knows, each in its likeliest region and kept once per
- * locale the platform resolves it to — read, not listed. A tag the platform does not know
- * resolves to one it does, so the set is the languages the formatter really writes.
+ * Every language node's ICU has a formatter for — two letters and three, each in its likeliest
+ * region, kept once per locale the platform resolves it to: read, not listed. The three-letter
+ * ones are where the fourth round of review found its edges: `nds`, `hsb`, `brx` and `blo`.
+ * Built once, for the two sweeps that read it.
  */
-function everyLanguage(): string[] {
+function everyLanguage(): readonly string[] {
+  if (LANGUAGES.length) return LANGUAGES;
   const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  const resolved = new Set<string>();
-  for (const a of letters)
-    for (const b of letters)
-      resolved.add(
+  const codes = letters.flatMap((a) =>
+    letters.flatMap((b) => [a + b, ...letters.map((c) => a + b + c)]),
+  );
+  const resolved = new Set(
+    Intl.DateTimeFormat.supportedLocalesOf(codes).map(
+      (code) =>
         new Intl.DateTimeFormat(
-          new Intl.Locale(a + b).maximize().baseName,
+          new Intl.Locale(code).maximize().baseName,
         ).resolvedOptions().locale,
-      );
-  return [...resolved];
+    ),
+  );
+  LANGUAGES.push(...resolved);
+  return LANGUAGES;
 }
+const LANGUAGES: string[] = [];
 
 /**
  * Whether the field kept the formatter its tag asks for — that formatter's clock, and its digits
- * read off the integer as the field reads them — rather than declining it.
+ * as the platform writes a number in them — rather than declining it.
  */
 function kept(tag: string): boolean {
   const own = new Intl.DateTimeFormat(tag, {
@@ -237,11 +245,7 @@ function kept(tag: string): boolean {
   const five = new Intl.NumberFormat(tag, {
     numberingSystem: own.numberingSystem,
     useGrouping: false,
-  })
-    .formatToParts(5)
-    .filter((part) => part.type === 'integer')
-    .map((part) => part.value)
-    .join('');
+  }).format(5);
   const format = pctTimeFormat(tag);
   return format.hourCycle === own.hourCycle && format.number(5) === five;
 }
@@ -272,22 +276,41 @@ describe('reading a time back', () => {
     expect(wrong).toEqual([]);
   });
 
-  it('reads what it writes in every language the platform knows, on every clock it can force', () => {
-    // No sample, for the reason the date's week table has none. This sweep caught what the
-    // forty-three locales above did not: Ewe writes its word for the morning and its word for
-    // the hour in one run (`ŋdi ga 12:00`), and on a forced twelve-hour clock Bulgarian and
-    // Canadian French write a separator and then the day period in one run (`1:05 ч. pm`) —
-    // each read back as nothing until the parser learned to find a period beside a separator.
+  it('sweeps every language the platform has a formatter for, and says how many', () => {
+    // The denominator: the sweeps below are only worth what this says they reached — two-letter
+    // languages and three-letter ones, twelve-hour clocks among them.
     const languages = everyLanguage();
-    // The denominator: the sweep is only worth what this says it reached.
-    expect(languages.length).toBeGreaterThan(100);
+    expect(languages.length).toBeGreaterThan(200);
+    expect(languages).toEqual(expect.arrayContaining(['nds', 'hsb', 'brx']));
     expect(
       languages.filter((tag) => pctTimeFormat(tag).hourCycle === 'h12').length,
     ).toBeGreaterThan(10);
-    const wrong: string[] = [];
-    const declined: string[] = [];
-    for (const locale of [...languages, ...LOCALES, ...DECLINED])
-      for (const clock of FORCED) {
+  });
+
+  /**
+   * A field that declines its formatter round-trips by construction, so a parser that stopped
+   * reading some language would vanish among the declined ones and the round trip would stay
+   * green. Hence the list per clock, exactly: every other formatter here is kept, its clock and
+   * its digits. Two languages are declined, both on a forced twelve-hour clock — `fr-CM` writes no
+   * day period, and Anii writes its two with a digit in each, `1ka` and `2ja`.
+   */
+  it.each([
+    ['its own', undefined, []],
+    ['h11', 'h11', ['blo-u-hc-h11', 'fr-CM-u-hc-h11']],
+    ['h12', 'h12', ['blo-u-hc-h12', 'fr-CM-u-hc-h12']],
+    ['h23', 'h23', []],
+    ['h24', 'h24', []],
+  ] as const)(
+    'reads what it writes in every language the platform knows, on %s clock',
+    (_name, clock, declinedHere) => {
+      // No sample, for the reason the date's week table has none. The sweeps caught what the
+      // forty-three locales above did not: Ewe writes its morning and its word for the hour in
+      // one run (`ŋdi ga 12:00`); on a forced twelve-hour clock Bulgarian and Canadian French
+      // write a separator and then the day period (`1:05 ч. pm`); Low German writes `Klock` on a
+      // twelve-hour clock with seconds only — each read back wrong until the parser learned it.
+      const wrong: string[] = [];
+      const declined: string[] = [];
+      for (const locale of [...everyLanguage(), ...LOCALES, ...EDGES]) {
         const tag = forcing(locale, clock);
         const format = pctTimeFormat(tag);
         if (!kept(tag)) declined.push(tag);
@@ -297,18 +320,10 @@ describe('reading a time back', () => {
             wrong.push(`${tag}: ${time} → ${JSON.stringify(written)}`);
         }
       }
-    expect(wrong).toEqual([]);
-    // A field that declines its formatter round-trips by construction, so a parser that stopped
-    // reading some language would vanish into the declined ones and this sweep would stay green.
-    // Hence the list, exactly: every other formatter here is kept, its clock and its digits.
-    expect(declined).toEqual([
-      'fr-CM-u-hc-h11',
-      'fr-CM-u-hc-h12',
-      ...['arab', 'arabext'].flatMap((digits) =>
-        FORCED.map((clock) => forcing(`az-AZ-u-nu-${digits}`, clock)),
-      ),
-    ]);
-  });
+      expect(wrong).toEqual([]);
+      expect(declined.sort()).toEqual(declinedHere);
+    },
+  );
 
   it('reads, on a twenty-four-hour clock, what its language writes on a twelve-hour one', () => {
     // The day-period words and the words between the fields both come from the twelve-hour
@@ -327,6 +342,28 @@ describe('reading a time back', () => {
     expect(wrong).toEqual([]);
   });
 
+  it('keeps a formatter that writes words inside its numbers, and reads them back', () => {
+    // Node's ICU writes Azerbaijani in Arabic-Indic digits with the words `standart onluq kəsr`
+    // before every number. The field built on it once threw; now it writes what the platform
+    // writes — as the date field on the same page does — and reads it back, the words being
+    // written in the morning and the afternoon alike and so a separator.
+    for (const tag of ['az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext']) {
+      const azerbaijani = pctTimeFormat(tag);
+      const written = azerbaijani.format('13:05');
+      expect(written).toBe(
+        new Intl.DateTimeFormat(tag, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23',
+          timeZone: 'UTC',
+        }).format(new Date(Date.UTC(2026, 0, 1, 13, 5))),
+      );
+      expect(written).not.toBe('13:05');
+      expect(azerbaijani.parse(written)).toBe('13:05');
+      expect(azerbaijani.parse('13:05')).toBe('13:05');
+    }
+  });
+
   it('declines a formatter whose text it cannot read back, and counts to twenty-four in ASCII', () => {
     // Node writes `fr-CM-u-hc-h12` as `1:05` for 01:05 and for 13:05 alike — a clock that cannot
     // be read back, which the field does not use.
@@ -338,14 +375,11 @@ describe('reading a time back', () => {
     // The locale it reports is the one the platform resolved for the clock the field counts on.
     expect(forced.locale).toBe('fr-CM');
     expect(pctTimeFormat('fr-CM-u-hc-h11').hourCycle).toBe('h23');
-    // And Azerbaijani in Arabic-Indic digits, which node's ICU writes with the words `standart
-    // onluq kəsr` inside every number: the field builds — it once threw — and writes `13:05`.
-    for (const tag of ['az-AZ-u-nu-arab', 'az-AZ-u-nu-arabext']) {
-      const azerbaijani = pctTimeFormat(tag);
-      expect(azerbaijani.hourCycle).toBe('h23');
-      expect(azerbaijani.format('13:05')).toBe('13:05');
-      expect(azerbaijani.parse('13:05')).toBe('13:05');
-    }
+    // Anii writes its day periods with a digit in each, `1ka` and `2ja`, which no parser that
+    // splits on digits can tell from the time: declined too, and only on a twelve-hour clock.
+    expect(pctTimeFormat('blo-u-hc-h12').hourCycle).toBe('h23');
+    expect(pctTimeFormat('blo-u-hc-h12').format('13:05')).toBe('13:05');
+    expect(pctTimeFormat('blo').hourCycle).toBe('h23');
     // A forced clock that does write its day period is honoured, separator first and all.
     const bulgarian = pctTimeFormat('bg-BG-u-hc-h12');
     expect(bulgarian.hourCycle).toBe('h12');
@@ -358,6 +392,7 @@ describe('reading a time back', () => {
     expect(ar.parse('١:٠٥ م')).toBe('13:05');
     expect(ar.parse('1:05 م')).toBe('13:05');
     expect(ar.parse('1:05 pm')).toBe('13:05');
+    expect(ar.parse('1:05 am')).toBe('01:05');
     expect(pctTimeFormat('my-MM').parse('၁၃:၀၅')).toBe('13:05');
     expect(pctTimeFormat('fa-IR').parse('13:05')).toBe('13:05');
     // Digits outside the basic plane are characters, not code units: an Adlam numbering system
@@ -477,6 +512,10 @@ describe('reading a time back', () => {
     // Dzongkha writes its word for the minute on a twelve-hour clock only; typed on a
     // twenty-four-hour one it is a separator still, and never a day period.
     expect(pctTimeFormat('dz-BT-u-hc-h23').parse('1 སྐར་མ་ 05')).toBe('01:05');
+    // Low German writes `Klock` before the hour, on a twelve-hour clock and with seconds only —
+    // in the morning and the afternoon alike, so it names neither: `Klock 9.30` is the morning.
+    expect(pctTimeFormat('nds-DE').parse('Klock 9.30')).toBe('09:30');
+    expect(pctTimeFormat('nds-DE').parse('Klock 13.05')).toBe('13:05');
     expect(pctTimeFormat('en-US').parse('13 h 05 min 09 s')).toBeNull();
     // A separator after the day period is still a separator, and only a separator: the words
     // a formatter writes as its day period do not become words it writes between the fields.
@@ -500,8 +539,9 @@ describe('refusing what is not a time', () => {
       '13:5',
       '13:05:9',
       '013:05',
-      // Too many fields, and a run of digits too long to read by width.
+      // Too many fields — a fourth is refused, not dropped — and a run too long to read by width.
       '1:2:3:4',
+      '1:05:09:07',
       '1234567',
       // Outside the clock.
       '24:00',

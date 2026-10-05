@@ -234,8 +234,12 @@ function written(parts: readonly Intl.DateTimeFormatPart[]): string {
   return parts.map((part) => part.value).join('');
 }
 
-/** The times the field proves it reads back before it is used: both samples, in both shapes. */
-const PROOF: readonly PctTime[] = ['01:05', MORNING, '13:05', AFTERNOON];
+/**
+ * The times the field checks it reads back before it is used: the first hour, which `h11`, `h12`
+ * and `h24` write `0`, `12` and `24`; noon; an hour of two digits on a twelve-hour clock; an
+ * afternoon — in both shapes, and with every digit there is.
+ */
+const PROOF: readonly PctTime[] = ['00:00', '12:00', '10:26:47', '19:58:39'];
 
 function build(locale: string): PctTimeFormat {
   // The cycle first, off the formatter 0086 measured it with (C1); then the formatters that write
@@ -246,11 +250,11 @@ function build(locale: string): PctTimeFormat {
     minute: '2-digit',
     timeZone: 'UTC',
   }).resolvedOptions().hourCycle as PctHourCycle;
-  // The field writes only what it reads back, and proves it before it is used. A formatter whose
+  // The field writes only what it reads back, and checks it before it is used. A formatter whose
   // own text it cannot read is declined, not edited, and the field writes the plainest clock its
-  // language has instead: twenty-four hours in ASCII digits. Node declines two — `fr-CM-u-hc-h12`
-  // writes no day period, so 13:05 is `1:05` as 01:05 is; and Azerbaijani in Arabic-Indic digits
-  // writes the words `standart onluq kəsr` inside every number (0086, amended 2026-10-05).
+  // language has instead: twenty-four hours in ASCII digits. Node writes two such clocks, both on
+  // a forced twelve-hour cycle — `fr-CM` writes no day period, so 13:05 is `1:05` as 01:05 is, and
+  // Anii writes its day periods with digits in them, `1ka` and `2ja` (0086, amended 2026-10-05).
   const own = field(locale, asked);
   return own.readsBack ? own.format : field(locale, 'h23', 'latn').format;
 }
@@ -287,27 +291,39 @@ function field(
     halves.set(wordOf(words[0]), 'am');
     halves.set(wordOf(words[1]), 'pm');
   }
-  // A separator is the `h` above and every word the language writes between the fields: on the
-  // field's clock, with seconds and without — `fr-CA` writes `13 h 05 min 09 s` — and on a
-  // twelve-hour one, where Bulgarian writes `ч.` after a time and Dzongkha its word for the
-  // minute, and neither does on a twenty-four-hour clock. (The twelve-hour clock with seconds
-  // writes no word the other three do not.) A run the language writes in the morning and the
-  // afternoon alike holds no day period, so it is one of these, and is asked as a separator before
-  // it could be read as a half. A literal with no letters adds the empty word, which the parser
-  // never looks up.
+  // A separator is the `h` above and every word the language writes between the fields, on the
+  // field's clock and on a twelve-hour one, with seconds and without — `fr-CA` writes
+  // `13 h 05 min 09 s`; Bulgarian writes `ч.` after a time, Dzongkha its word for the minute and
+  // Low German `Klock` before the hour, each on a twelve-hour clock only, the last with seconds
+  // only — so that what the language writes is read. A literal with no letters adds the empty
+  // word, which the parser never looks up.
   const separators = new Set([HOUR_LETTER]);
-  for (const part of [...clock.brief, ...clock.morning, ...twelveHour.brief])
+  for (const part of [
+    ...clock.brief,
+    ...clock.morning,
+    ...twelveHour.brief,
+    ...twelveHour.morning,
+  ])
     if (part.type === 'literal') separators.add(wordOf(part.value));
-  // And every run of letters the language writes between digits on a twelve-hour clock is read
-  // as the half of the day it was written in. Most are a day period alone; some hold a separator
-  // too — Ewe writes `ŋdi ga 12:00`, its morning and its word for the hour, and Bulgarian
-  // `1:05 ч. pm` — and those runs are read exactly as written, and no other combination of the
-  // two. The text is cut where the parser cuts it, so the words are the ones it will meet; a
-  // sample that does not translate gives none, and the proof below declines the field.
+  // And every run of letters the language writes between digits on a twelve-hour clock: a run it
+  // writes in one half of the day only is read as that half — most are a day period alone, some
+  // hold a separator too, Ewe's `ŋdi ga 12:00` and Bulgarian's `1:05 ч. pm`, and those are read
+  // exactly as written and no other combination of the two — and a run it writes in the morning
+  // and the afternoon alike names neither half, so it separates. (Node writes Azerbaijani in
+  // Arabic-Indic digits with `standart onluq kəsr` inside every number: words in both halves.)
+  // The text is cut where the parser cuts it, so the words are the ones it will meet; a sample
+  // that does not translate gives none, and the check below declines the field.
   const latin = (text: string) => pctToLatinDigits(text, digits);
+  const written = new Map<string, Half | null>();
   for (const [text, half] of twelveHour.samples)
-    for (const run of latin(text)?.match(/\D+/g) ?? [])
-      halves.set(wordOf(run), half);
+    for (const run of latin(text)?.match(/\D+/g) ?? []) {
+      const word = wordOf(run);
+      const before = written.get(word);
+      written.set(word, before === undefined || before === half ? half : null);
+    }
+  for (const [word, half] of written)
+    if (half === null) separators.add(word);
+    else halves.set(word, half);
 
   const reader: Reader = {
     latin,

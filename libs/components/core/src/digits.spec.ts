@@ -57,6 +57,9 @@ describe('pctDigitsOf', () => {
     expect(
       withNumbersWritten('1234567810', () => pctDigitsOf('en', 'mixed')),
     ).toBeNull();
+    expect(
+      withNumbersWritten('123456789', () => pctDigitsOf('en', 'short')),
+    ).toBeNull();
     // And the same platform with ten distinct glyphs is read — the replacement is not what
     // made the two above come back empty.
     expect(
