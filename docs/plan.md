@@ -74,7 +74,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.2 only, deferred by 0016 rather than scheduled
+1  components             1.3 time and 1.4 datetime, then 1.2 — last, by 0016
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -101,10 +101,11 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 ends at the table (**1.2**), deferred by
-[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds nothing
-since `0.2.0`. Section 4 holds four findings, each held by a **binds at** rather than by
-anybody's mood.
+**What is left.** Section 1 holds the time field (**1.3**) and the datetime field (**1.4**),
+decided in [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) and not built, and it
+still ends at the table (**1.2**), deferred by [0016](decisions/0016-mit-irreversibility.md)
+rather than scheduled. Section 3 holds nothing since `0.2.0`. Section 4 holds four findings,
+each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
@@ -116,6 +117,32 @@ argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
 form exists and is a condition of entering a release. Thirty-five cards are filled in.
+
+- [ ] **1.3 — time field** in `@pacit/components/time`: `PctTime`, `PctTimeColumns` and the
+      value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
+  - the value module first, with its gate: `isPctTime`, the arithmetic that comes round at
+    midnight, and a parser and a formatter read off one `formatToParts`, held by a round trip
+    over 0086's 38 locales in node and in three engines — the two ICUs write U+202F and a
+    space. The value's requirement is written with that gate and not before it, so the
+    registry never carries it as a gap
+  - in the same task `digitsOf` and `numberFormat` leave `date/src/locale.ts` for `./core`,
+    with `[pctNumber]`'s own `digits` as their third reader, and `check-bundle` saying what
+    every entrypoint pays for the move
+  - then the columns (`pctListNavigation`, `aria-activedescendant`, a name and one stop per
+    column, `wrap` on) and the field: the tier `--pct-time-*`, the letters, the toggle's name
+    and `timeMalformed` through `PCT_TEXTS`, and a card for each
+  - ends with: the value's requirement enforced in the registry, both cards filled in, and the
+    sandbox carrying the field under a 12-hour and a 24-hour locale in three engines
+
+- [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
+      `PctCalendar` and `PctTimeColumns`, after 1.3
+  - its value is a decision of its own before any code: a day and a time with no zone, written
+    the way `<input type="datetime-local">` and `Temporal.PlainDateTime` write one, with the
+    arithmetic on the pair, so the day carries where a time alone comes round (0086, B4)
+  - `datetime-local` is measured like the date and the time were, not assumed refused
+  - the predicate 0086 refused the time is asked here, where a slot has a day to be taken on
+  - ends with: that decision accepted, the value's requirement enforced, the card filled in,
+    and the field in the sandbox in three engines
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

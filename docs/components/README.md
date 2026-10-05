@@ -257,7 +257,17 @@ The order follows **architectural debt**, not popularity:
    in. Two lessons came out of its measurements: an until-found subtree's role-visibility
    differs by engine, and Playwright's visibility is not the platform's
    `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
-7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
+7. **Time field, then date and time.** Decided and not built. `<input type="time">` is refused
+   on the date's measurements and harder: each engine draws its clock from a different source
+   and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
+   chromium, and one control is three tab stops there or four, by the system's locale. So the
+   field is text the library formats; the value is a wall-clock `PctTime`, `HH:mm`, whose own
+   arithmetic comes round at midnight; the panel is a dialog of listbox columns exported as
+   `PctTimeColumns`; the entrypoint is `./time`
+   ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). The **datetime field**
+   follows in `./datetime`: one panel holding the calendar and the columns, and arithmetic on
+   the pair, so the day carries where a time alone comes round.
+8. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
 in `PctSelect` today), the overlay, focus, the live announcer, templates
