@@ -80,6 +80,8 @@ That is a rewrite of this file and not a silence — the gate fails on a walk th
 position, because a denominator that empties quietly is the defect it exists to catch.
 
 ```
+1.3 open 18 224
+1.4 open 9 124
 1.2 open 5 62
 3.1 closed 12 160
 3.2 closed 12 143
@@ -90,6 +92,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.58 closed 9 140
 4.71 closed 10 150
 4.79 closed 12 150
+4.80 open 13 169
 4.78 open 10 148
 4.75 open 13 191
 4.74 closed 12 196

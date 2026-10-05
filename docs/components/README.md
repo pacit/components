@@ -121,9 +121,11 @@ The order follows **architectural debt**, not popularity:
    reading the direction ([`lesson-118`](../lessons.md#lesson-118)). The **date picker** closes
    the item, and it is the one where the platform's own control was refused on three
    measurements rather than one: `<input type="date">` takes the order it shows a date in from
-   `lang` in chromium, from the browser's locale in webkit and from neither in firefox — three
-   engines, three sources, one of them settable — a half-typed date reads `value === ''` in all
-   three with `validity.badInput` false in webkit, and one such control is four tab stops in
+   the browser's interface language in chromium, from its own in firefox and from the
+   browser's locale in webkit — three engines, three sources, none of them `lang` and so none
+   of them the application's ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)
+   corrected the first) — a half-typed date reads `value === ''` in all three with
+   `validity.badInput` false in webkit, and one such control is four tab stops in
    two engines and one in the third. So the field is text the library formats, and the value
    is a calendar DAY: `new Date(2026, 7, 27).toISOString()` is the 26th in Warsaw, and
    `Temporal.PlainDate` — which is exactly the right type — is absent from webkit
@@ -254,7 +256,18 @@ The order follows **architectural debt**, not popularity:
    in. Two lessons came out of its measurements: an until-found subtree's role-visibility
    differs by engine, and Playwright's visibility is not the platform's
    `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
-7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
+7. **Time field, then date and time.** Decided and not built. `<input type="time">` is refused
+   on the date's measurements and harder: each engine draws its clock from a different source
+   and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
+   chromium, and one control is three tab stops there or four, by the system's locale. So the
+   field is text the library formats; the value is a wall-clock `PctTime`, `HH:mm`, whose own
+   arithmetic comes round at midnight; the panel is a dialog of listbox columns exported as
+   `PctTimeColumns`; the entrypoint is `./time`
+   ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). The **datetime field**
+   follows in `./datetime`, and `datetime-local` failed the same probes: one panel holding the
+   calendar and the columns, arithmetic on the pair so the day carries where a time alone
+   comes round, and a value that is still a decision of its own.
+8. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
 in `PctSelect` today), the overlay, focus, the live announcer, templates

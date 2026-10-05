@@ -364,7 +364,12 @@ alone
 **Exceptions:** [`req-api-number`](#req-api-number) (native `type="number"` does not know the
 local separator), `PctSelect` (a native `<select>` gives no panel — and a filtering one borrows
 back what a real `<input>` answers on its own), `PctMenu` (a native menu is not a thing the
-platform has at all — what it borrows is the row, which is a button)
+platform has at all — what it borrows is the row, which is a button), `PctDate` (a native date
+input draws its order in a language the application cannot set and reads a half-typed date as
+empty — [0043](../decisions/0043-a-day-is-not-an-instant.md)), and the time and datetime fields
+to come (the same, harder: each engine takes the clock from a different source, a half-typed
+time can read as a whole one, and the tab stops of one control depend on the engine and on the
+system's locale — [0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md))
 
 ---
 

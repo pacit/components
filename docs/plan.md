@@ -74,7 +74,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.2 only, deferred by 0016 rather than scheduled
+1  components             1.3 time and 1.4 datetime, then 1.2 — last, by 0016
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -101,10 +101,12 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 ends at the table (**1.2**), deferred by
-[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3 holds nothing
-since `0.2.0`. Section 4 holds four findings, each held by a **binds at** rather than by
-anybody's mood.
+**What is left.** Section 1 holds the time field (**1.3**) and the datetime field after it
+(**1.4**), decided in [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) and not built —
+the datetime's value still a decision of its own — and it still ends at the table (**1.2**),
+deferred by [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3
+holds nothing since `0.2.0`. Section 4 holds four open findings, each held by a **binds at**
+rather than by anybody's mood.
 
 ## 1. Components
 
@@ -116,6 +118,35 @@ argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
 form exists and is a condition of entering a release. Thirty-five cards are filled in.
+
+- [ ] **1.3 — time field** in `@pacit/components/time`: `PctTime`, `PctTimeColumns` and the
+      value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
+  - the value module first, with its gate: `isPctTime`, the arithmetic that comes round at
+    midnight, and a parser and a formatter read off one `formatToParts`, held by a round trip
+    over 0086's 38 locales in node and in three engines — node's ICU writes U+202F where the
+    browsers write a space. The value's requirement is written with that gate and not before
+    it, so the registry never carries it as a gap
+  - whether `[formField]` fills a string bound is measured there, not inherited from the date:
+    Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTime` limit to
+    `MIN`/`MAX` ships with a case or not at all
+  - in the same task `digitsOf` and `numberFormat` leave `date/src/locale.ts` for `./core`,
+    with `[pctNumber]`'s own `digits` as their third reader, and `check-bundle` saying what
+    every entrypoint pays for the move
+  - then the columns (`pctListNavigation`, `aria-activedescendant`, `wrap` on, one stop each)
+    and the field: the tier `--pct-time-*`; the letters, the column names, the toggle's name
+    and `timeMalformed` through `PCT_TEXTS`; a card for each
+  - ends with: the value's requirement enforced in the registry, both cards filled in, and the
+    sandbox carrying the field under a 12-hour and a 24-hour locale in three engines
+
+- [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
+      `PctCalendar` and `PctTimeColumns`, after 1.3
+  - its value is a decision of its own before any code — a day and a time with no zone, and
+    what a day with no time yet is — written as `<input type="datetime-local">` and
+    `Temporal.PlainDateTime` write one, which differ: the input drops `:00` (0086, F5). Its
+    arithmetic is on the pair, so the day carries where a time alone comes round (B4)
+  - the predicate 0086 refused the time is asked here, where a slot has a day to be taken on
+  - ends with: that decision accepted, the value's requirement enforced, the card filled in,
+    and the field in the sandbox in three engines
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -246,6 +277,20 @@ and every one is held by a **binds at** rather than by anybody's mood.
     resize observer's callback, which every engine reports as an error event Playwright's
     `pageerror` does not hear. The measurement waits a frame now, and every case reads the
     page's own `error` events
+
+- [ ] **4.80 — two sentences about `PctDate` that no measurement holds**
+  - the class comment of `libs/components/date/src/date.ts` and the comment over the first case
+    of `apps/sandbox-e2e/src/date.spec.ts` say chromium takes a date input's order from `lang`.
+    It does not, in 149 or in 153 — [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md)
+    superseded 0043's A1 and corrected the card and the index — and the class comment ships in
+    the package's `.d.ts`
+  - the same comment says `[formField]` fills `min` and `max` from the schema's validators —
+    the card's **Bounds** row said so too, and was hedged with 0086. Angular 22.2's `min()`
+    and `max()` take numbers; a `PctDay` bound would reach the control through a rule that
+    binds a limit of the field's own type to `MIN` or `MAX`, and no case shows that one does —
+    so a case is written, or the sentence goes
+  - binds at: **the next commit into `libs/components/date/src`** — 1.3's move of the digits
+    out of `locale.ts` is one — because either change moves the mutation snapshot anyway
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
