@@ -127,8 +127,9 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
     `./core` (+718 B; `./date` +166 B, no other entrypoint moved; `./time` 9636 B, ~3.3 KB of it
     core's), and `[pctNumber]`'s own `digits` is their third reader still to come
   - the names, settled 2026-10-06 (0086 amended): the value is `PctTimeOfDay`, with
-    `pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts`, and the field keeps `PctTime`, as
-    `PctDate` keeps its name beside `PctDay` — renamed before any release carried the value
+    `pctTimeOfDay`, `isPctTimeOfDay`, `PctTimeOfDayParts` and `pctTimeOfDayParts`, and the field
+    keeps `PctTime`, as `PctDate` keeps its name beside `PctDay` — renamed before any release
+    carried the value
   - whether `[formField]` fills a string bound is measured with the field, not inherited from
     the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTimeOfDay`
     limit to `MIN`/`MAX` ships with a case or not at all

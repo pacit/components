@@ -180,10 +180,10 @@ crosses midnight belongs to a day, and only the datetime value has one.
 
 _Amended 2026-10-06: **the value is `PctTimeOfDay`, and the field keeps `PctTime`.** This record
 gave both the one name — the value in this section, the field where §6 says what
-`@pacit/components/time` holds — and TS refuses the two in one entrypoint: its barrel's two
-`export *` lines would export one member twice (TS2308). The value is renamed, with
-`pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts` beside it, and every sentence of this
-record that means it says so: the field is `PctTime` as the date field is `PctDate` beside its
+`@pacit/components/time` holds — and TS refuses the two in one entrypoint: the value's and the
+field's `export *` lines in its barrel would export one member twice (TS2308). The value is
+renamed, with `pctTimeOfDay`, `isPctTimeOfDay`, `PctTimeOfDayParts` and `pctTimeOfDayParts`
+beside it, and every sentence of this record that means it says so: the field is `PctTime` as the date field is `PctDate` beside its
 `PctDay`, and the value had shipped in no release when its name changed._
 
 ### 2. The element is a text field the library formats and parses
