@@ -98,35 +98,39 @@ export function iconFont(options: PctIconFontOptions): PctIconSource {
 }
 
 /** `Array.isArray` narrows a readonly array to nothing useful; this one narrows. */
-const isList = (
+function isList(
   selection: PctIconRoleSelection | undefined,
-): selection is readonly PctIconName[] => Array.isArray(selection);
+): selection is readonly PctIconName[] {
+  return Array.isArray(selection);
+}
 
 /**
  * The roles a source carries, from what it was told and how the source spells them: a list
  * spelled by the source, a map as it was given — and nothing when nothing was said, which
  * is what spreading `undefined` leaves.
  */
-const rolesOf = (
+function rolesOf(
   selection: PctIconRoleSelection | undefined,
   spell: (name: PctIconName) => string | undefined,
-): PctIconRoles =>
-  isList(selection)
+): PctIconRoles {
+  return isList(selection)
     ? Object.fromEntries(selection.map((name) => [name, spell(name)]))
     : { ...selection };
+}
 
 /**
  * An adapter's roles: a list picked out of its own map, or corrections over the whole of
  * it — the whole of it when there are none. No copy of its own for that last case: the
  * spread is a fresh object already, and `iconFont` copies once more what it is handed.
  */
-const adapterRoles = (
+function adapterRoles(
   defaults: Readonly<Record<PctIconName, string>>,
   selection: PctIconRoleSelection | undefined,
-): PctIconRoles =>
-  isList(selection)
+): PctIconRoles {
+  return isList(selection)
     ? rolesOf(selection, (name) => defaults[name])
     : { ...defaults, ...selection };
+}
 
 /**
  * What FontAwesome's stylesheet is told, besides the roles.
@@ -150,20 +154,6 @@ export interface PctFontAwesomeOptions extends PctIconFontRoles {
   readonly prefix?: string;
 }
 
-/** FontAwesome 6, free: the roles under the names it gives them. */
-const FONT_AWESOME_ROLES: Readonly<Record<PctIconName, string>> = {
-  calendar: 'calendar',
-  check: 'check',
-  'chevron-down': 'chevron-down',
-  close: 'xmark',
-  danger: 'circle-exclamation',
-  indeterminate: 'minus',
-  info: 'circle-info',
-  success: 'circle-check',
-  user: 'user',
-  warning: 'triangle-exclamation',
-};
-
 /**
  * FontAwesome, as classes: `<pct-icon icon="house">` is `<i class="fa-solid fa-house">`.
  *
@@ -179,23 +169,24 @@ export function fontAwesome(
   const first = options.prefix ?? `fa-${options.style ?? 'solid'}`;
   return iconFont({
     class: (id) => `${first} fa-${id}`,
-    roles: adapterRoles(FONT_AWESOME_ROLES, options.roles),
+    // FontAwesome 6, free: the roles under the names it gives them.
+    roles: adapterRoles(
+      {
+        calendar: 'calendar',
+        check: 'check',
+        'chevron-down': 'chevron-down',
+        close: 'xmark',
+        danger: 'circle-exclamation',
+        indeterminate: 'minus',
+        info: 'circle-info',
+        success: 'circle-check',
+        user: 'user',
+        warning: 'triangle-exclamation',
+      },
+      options.roles,
+    ),
   });
 }
-
-/** PrimeIcons: the roles under the names it gives them. */
-const PRIME_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
-  calendar: 'calendar',
-  check: 'check',
-  'chevron-down': 'chevron-down',
-  close: 'times',
-  danger: 'exclamation-circle',
-  indeterminate: 'minus',
-  info: 'info-circle',
-  success: 'check-circle',
-  user: 'user',
-  warning: 'exclamation-triangle',
-};
 
 /**
  * PrimeIcons, as classes: `<pct-icon icon="bell">` is `<i class="pi pi-bell">`.
@@ -205,23 +196,24 @@ const PRIME_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
 export function primeIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
     class: (id) => `pi pi-${id}`,
-    roles: adapterRoles(PRIME_ICONS_ROLES, options.roles),
+    // PrimeIcons: the roles under the names it gives them.
+    roles: adapterRoles(
+      {
+        calendar: 'calendar',
+        check: 'check',
+        'chevron-down': 'chevron-down',
+        close: 'times',
+        danger: 'exclamation-circle',
+        indeterminate: 'minus',
+        info: 'info-circle',
+        success: 'check-circle',
+        user: 'user',
+        warning: 'exclamation-triangle',
+      },
+      options.roles,
+    ),
   });
 }
-
-/** Bootstrap Icons: the roles under the names it gives them. */
-const BOOTSTRAP_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
-  calendar: 'calendar',
-  check: 'check-lg',
-  'chevron-down': 'chevron-down',
-  close: 'x-lg',
-  danger: 'exclamation-circle-fill',
-  indeterminate: 'dash-lg',
-  info: 'info-circle-fill',
-  success: 'check-circle-fill',
-  user: 'person-fill',
-  warning: 'exclamation-triangle-fill',
-};
 
 /**
  * Bootstrap Icons, as classes: `<pct-icon icon="bell">` is `<i class="bi bi-bell">`.
@@ -231,23 +223,44 @@ const BOOTSTRAP_ICONS_ROLES: Readonly<Record<PctIconName, string>> = {
 export function bootstrapIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
     class: (id) => `bi bi-${id}`,
-    roles: adapterRoles(BOOTSTRAP_ICONS_ROLES, options.roles),
+    // Bootstrap Icons: the roles under the names it gives them.
+    roles: adapterRoles(
+      {
+        calendar: 'calendar',
+        check: 'check-lg',
+        'chevron-down': 'chevron-down',
+        close: 'x-lg',
+        danger: 'exclamation-circle-fill',
+        indeterminate: 'dash-lg',
+        info: 'info-circle-fill',
+        success: 'check-circle-fill',
+        user: 'person-fill',
+        warning: 'exclamation-triangle-fill',
+      },
+      options.roles,
+    ),
   });
 }
 
-/** Material's two fonts spell the roles the same way. */
-const MATERIAL_ROLES: Readonly<Record<PctIconName, string>> = {
-  calendar: 'calendar_today',
-  check: 'check',
-  'chevron-down': 'expand_more',
-  close: 'close',
-  danger: 'error',
-  indeterminate: 'remove',
-  info: 'info',
-  success: 'check_circle',
-  user: 'person',
-  warning: 'warning',
-};
+/**
+ * Material's two fonts spell the roles the same way. A function and not a constant, as the
+ * three tables above are written inside their adapters: a table at the top of the module is
+ * evaluated as it loads, where the mutation run cannot tell which cases read it (`lesson-250`).
+ */
+function materialRoles(): Readonly<Record<PctIconName, string>> {
+  return {
+    calendar: 'calendar_today',
+    check: 'check',
+    'chevron-down': 'expand_more',
+    close: 'close',
+    danger: 'error',
+    indeterminate: 'remove',
+    info: 'info',
+    success: 'check_circle',
+    user: 'person',
+    warning: 'warning',
+  };
+}
 
 /**
  * Which of the Material Icons fonts is loaded.
@@ -287,7 +300,7 @@ export function materialIcons(
   return iconFont({
     class: () => cls,
     text: (id) => id,
-    roles: adapterRoles(MATERIAL_ROLES, options.roles),
+    roles: adapterRoles(materialRoles(), options.roles),
   });
 }
 
@@ -344,6 +357,6 @@ export function materialSymbols(
     ...(axes.length
       ? { style: { 'font-variation-settings': axes.join(', ') } }
       : {}),
-    roles: adapterRoles(MATERIAL_ROLES, options.roles),
+    roles: adapterRoles(materialRoles(), options.roles),
   });
 }

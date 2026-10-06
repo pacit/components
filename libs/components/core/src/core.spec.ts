@@ -23,6 +23,7 @@ import { PctModalBackground } from './modal';
 import { pctAfterTransition } from './motion';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import { pctPlacementPositions } from './placement';
+import { PCT_REGIONS } from './regions';
 import { pctReportOrphanSlot } from './template';
 import { PCT_TEXTS } from './texts';
 
@@ -1487,6 +1488,7 @@ describe('@pacit/components/core', () => {
       ['PCT_FIELD', PCT_FIELD],
       ['PCT_CONFIG', PCT_CONFIG],
       ['PCT_TEXTS', PCT_TEXTS],
+      ['PCT_REGIONS', PCT_REGIONS],
     ])('%s', (name, token) => {
       // A token's description is the only thing the consumer gets in NG0201 — a
       // token without one gives a message about "InjectionToken" with no hint as to

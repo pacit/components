@@ -7109,3 +7109,65 @@ what was removed. A demo that swaps one box for another of a different height �
 keeps its own height instead, in its own styles: the swap is the demo's, not a widget's state. The
 press is the measurement — the control's box before and after it, equal to the pixel — and
 `docs-e2e` holds it.
+
+### <a id="lesson-250"></a>`lesson-250` — A static mutant is priced by the tests it runs, not by its count
+
+On 2026-10-06 Stryker closed the dry run of the library with "411 static mutants (6% of total)
+that are estimated to take 57% of the time". A static mutant sits in code that runs while a
+module loads — a constant at the top of a file, a pattern beside the function that reads it, an
+expression-bodied arrow at module scope (its mutant swaps the whole arrow where it is built), a
+decorator a spec evaluates while `describe` collects its cases — outside the
+`beforeEach`…`afterEach` window in which the runner records which case is running. Per-test
+coverage cannot credit that load to any case, and whatever cases also cover the mutant, Stryker
+runs every spec related to the file against it, the environment reloaded each time.
+
+The count was the wrong list to start from. The report holds `testsCompleted` for every static
+mutant, and summed per file it ranks them otherwise: the two files with the most of them,
+`svg-icon.ts` (58) and `testing/harnesses.ts` (53), cost 644 and 411 tests respectively, while
+`core/texts.ts` (28) cost 11 100, `core/placement.ts` (38) 8 758 and `core/regions.ts` — four
+mutants — 4 074. A static mutant in a file every component imports runs the specs of every
+component, and one that SURVIVES runs all of them to the end: the five most expensive mutants of
+the library were survivors, at 1 190 tests each. The warning's 57% prices every static mutant at
+the whole suite; the measured share was 42 340 of the 115 955 tests the report counts.
+
+A narrow run over seven `core` files said the same in minutes, 13:11 before and 9:03 after
+(92 static mutants to 36), and it explained an older puzzle on the way. Before the change that
+run TIMED OUT nine mutants and every one was static: six survivors of `motion.ts`, `regions.ts`
+and `texts.ts`, and three the full run kills only after more than a thousand tests — a related
+suite reloaded and run to its end, inside a timeout computed from one pass of it. `motion.ts`,
+`placement.ts` and `texts.ts` are the three files where
+[0077](decisions/0077-the-clock-is-evidence-and-the-workers-are-a-ceiling.md) records clock
+kills arriving over untouched code.
+
+What moved them, without a behaviour changing or a score falling: every string, list and pattern a
+function reads is written in that function; an expression-bodied arrow at module scope is a
+`function` declaration, so the mutant is its body and runs when it is called; a component a spec
+builds is declared inside the case that builds it. For a survivor that cannot move — a token's
+description is read by the constructor as the module loads — a case that reads it buys the kill,
+and buys time only when its file happens to run early. The order of the related specs changes
+from one mutant to the next, because Vitest runs first the files whose last run failed, then the
+slowest: one case of `core.spec.ts` killed `'PCT_CONFIG'` after 623, 241, 1 171 and 483 tests in
+four runs in which neither `config.ts` nor that case changed. `'PCT_REGIONS'` went from surviving
+after 1 103 tests to dying after 1 173 in a narrow run and after 174 in the full one — the case's
+own import made `core.spec.ts` one of the specs related to `regions.ts`, up to 88 tests more for
+each of its static mutants — and the two icon descriptions from 654 to 28 and 70 in a narrow run,
+591 and 624 in the full one. And one survivor was no test's fault: `providedIn: 'root'` on a
+token with a factory says what `InjectionToken` does anyway (`options.providedIn || 'root'`), so
+the line went with it.
+
+Three kinds stay static, each for a reason the run cannot see. A value a consumer imports:
+`PCT_DEFAULT_TEXTS` is the largest cost left — 9 906, 10 100 and 12 588 tests in the three runs
+that counted all of it, the order deciding — and lazy it would be 24 getters on a public object
+that two tools read by its literal shape. A member a consumer
+overrides: `PctHarness.hostSelector` is cheap, about eight tests a mutant, and a getter on the
+base breaks every consumer harness that overrides it as a property. A table behind a per-locale
+cache: moved into `date/src/locale.ts`'s builders, a literal would be credited to the first case
+that builds each locale — the trap the time entrypoint met first.
+
+The full run after the change, on the same desk with the same four workers and another session
+at work beside it: 77 min 17 s against 84 min 42 s, 155 static mutants (19 surviving) against 411
+(76), 18 651 of 94 364 counted tests against 42 340 of 115 955 — and no warning at all, the
+estimate under Stryker's own threshold. The time fell by less than the tests did, 9% against
+19% — a reading and not a measurement: every mutant, static or not, also pays for loading the
+spec files it runs (both dry runs spent 45 to 48 s in the tests and some 75 s around them), and
+the desk was shared. No file's score fell; five rose, and TOTAL went from 85.92% to 85.99%.

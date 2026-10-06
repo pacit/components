@@ -300,7 +300,7 @@ describe('isPctDay', () => {
         // Every other input this file hands `isPctDay` is a string it has just built, so the
         // whole refusal side was unreachable and six single edits survived the sweep:
         // deleting `if (month < 1 || month > 12) return false;`, relaxing `(\d{2})` to
-        // `(\d{1,2})` or `(\d{4,})` to `(\d{1,})`, dropping either anchor of `SHAPE`, and
+        // `(\d{1,2})` or `(\d{4,})` to `(\d{1,})`, dropping either anchor of `shapeOf`, and
         // deleting the `typeof value !== 'string'` guard. Each makes one candidate below read
         // as a day; the two calendar candidates catch `day >= 1` -> `day >= 0` and
         // `day <= pctDaysInMonth(...)` -> `day < pctDaysInMonth(...)` as well.

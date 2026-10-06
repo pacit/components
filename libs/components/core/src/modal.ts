@@ -1,22 +1,25 @@
 import { DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
 /**
- * The roles that ARE a live region, as opposed to the elements that carry one as an
- * attribute. The list is the specification's, and the reason it exists here is a measurement:
- * an element with `role="log"` publishes `live=polite` to the engine and carries **no**
- * `aria-live` attribute at all, so an exemption reading the attribute alone would have made
- * this library's own toast viewport go silent behind its own dialog
+ * Whether the element itself is a live region, by attribute or by role.
+ *
+ * The roles are the ones that ARE a live region, as opposed to the elements that carry one as
+ * an attribute. The list is the specification's, and the reason it exists here is a
+ * measurement: an element with `role="log"` publishes `live=polite` to the engine and carries
+ * **no** `aria-live` attribute at all, so an exemption reading the attribute alone would have
+ * made this library's own toast viewport go silent behind its own dialog
  * ([0044](../../../../docs/decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)).
  * `marquee` and `timer` are in it for completeness — nothing here draws either, and an
- * application's own is exactly what this loop must not silence.
+ * application's own is exactly what this loop must not silence. The list is written in the
+ * function and not as a constant of the module, so the mutation run reaches it through the
+ * cases that read it rather than through every spec that imports `core` (`lesson-250`).
  */
-const LIVE_ROLES = new Set(['alert', 'log', 'marquee', 'status', 'timer']);
-
-/** Whether the element itself is a live region, by attribute or by role. */
 function isLive(element: Element): boolean {
   return (
     element.hasAttribute('aria-live') ||
-    LIVE_ROLES.has(element.getAttribute('role') ?? '')
+    ['alert', 'log', 'marquee', 'status', 'timer'].includes(
+      element.getAttribute('role') ?? '',
+    )
   );
 }
 

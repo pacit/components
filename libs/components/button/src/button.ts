@@ -42,8 +42,11 @@ function spoken(node: Node): string {
 }
 
 /** The element under `root` with this id — a document, a shadow root, or a detached subtree. */
-const byId = (root: ParentNode, id: string): Element | undefined =>
-  Array.from(root.querySelectorAll('[id]')).find((node) => node.id === id);
+function byId(root: ParentNode, id: string): Element | undefined {
+  return Array.from(root.querySelectorAll('[id]')).find(
+    (node) => node.id === id,
+  );
+}
 
 /**
  * Whether anything names the button besides its glyph. A heuristic, as the tooltip's is: the

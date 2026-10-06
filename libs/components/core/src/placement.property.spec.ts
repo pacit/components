@@ -37,7 +37,7 @@ import {
  * monotone sign already fixed, a mirrored gap has nowhere left to go, and no single edit of
  * `placement.ts` can move a gap or a direction into a box that never mentions either. What
  * bought their place back is the ORDER of the last two fallbacks: swap the last two entries of
- * any `FALLBACKS` row and every other assertion here stays green.
+ * any row of `fallbacks` and every other assertion here stays green.
  */
 
 /** The four sides, plainest first: `pctOneOf` shrinks a failure towards the head of the list. */
@@ -145,7 +145,7 @@ describe('pctPlacementPositions', () => {
    * The third assertion is the one the rest of the suite cannot reach. Four distinct sides with
    * this axis's pair in front leaves positions 2 and 3 holding the other axis's pair in ONE of
    * two orders, and nothing above chooses between them: swap the last two entries of any
-   * `FALLBACKS` row and every other property here stays green. `core.spec.ts` pins the order
+   * row of `fallbacks` and every other property here stays green. `core.spec.ts` pins the order
    * for `top` alone, so three of those four rows answer to this line or to nothing.
    */
   it('opens on the side it was asked for, crosses the anchor, then changes axis the way it grows', () => {

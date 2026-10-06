@@ -1,10 +1,4 @@
 /**
- * A time in a computed style: `150ms`, `0.15s`, `0s`. `getComputedStyle` resolves every
- * duration to one of these two units, so nothing wider needs parsing here.
- */
-const TIME = /^\s*(-?[\d.]+)(ms|s)\s*$/;
-
-/**
  * The longest time in a comma-separated computed value. A transition may name several
  * properties with several durations, and what a leave has to wait for is the last of them,
  * not the first one the string happens to hold.
@@ -17,7 +11,11 @@ function longest(value: string | undefined): number {
   if (!value) return 0;
   let max = 0;
   for (const part of value.split(',')) {
-    const match = TIME.exec(part);
+    // A time in a computed style: `150ms`, `0.15s`, `0s`. `getComputedStyle` resolves every
+    // duration to one of these two units, so nothing wider needs parsing here. Written here
+    // and not as a constant of the module, so the mutation run reaches it through the cases
+    // that read it rather than through every spec that imports `core` (`lesson-250`).
+    const match = /^\s*(-?[\d.]+)(ms|s)\s*$/.exec(part);
     if (!match) continue;
     const time = Number(match[1]) * (match[2] === 's' ? 1000 : 1);
     if (Number.isFinite(time) && time > max) max = time;

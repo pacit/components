@@ -23,8 +23,15 @@
  */
 export type PctDay = string;
 
-/** `YYYY-MM-DD`, four or more year digits — the shape alone, before the calendar is asked. */
-const SHAPE = /^(\d{4,})-(\d{2})-(\d{2})$/;
+/**
+ * `YYYY-MM-DD`, four or more year digits — the shape alone, before the calendar is asked. A
+ * function and not a constant, the way `shapeOf` in `time.ts` is: a pattern at the top of a
+ * module is evaluated as it loads, where the mutation run cannot tell which cases read it
+ * (`lesson-250`).
+ */
+function shapeOf(value: string): RegExpExecArray | null {
+  return /^(\d{4,})-(\d{2})-(\d{2})$/.exec(value);
+}
 
 /**
  * The three fields of a day, as numbers. `month` is 1–12, the way a person says it.
@@ -78,7 +85,7 @@ export function pctDaysInMonth(year: number, month: number): number {
  */
 export function isPctDay(value: unknown): value is PctDay {
   if (typeof value !== 'string') return false;
-  const m = SHAPE.exec(value);
+  const m = shapeOf(value);
   if (m === null) return false;
   const year = Number(m[1]);
   const month = Number(m[2]);
@@ -142,7 +149,7 @@ export function pctDayAsUtc(day: PctDay): Date {
  * @since 0.1.0
  */
 export function pctDayParts(day: PctDay): PctDayParts {
-  const m = SHAPE.exec(day) as RegExpExecArray;
+  const m = shapeOf(day) as RegExpExecArray;
   return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
 }
 

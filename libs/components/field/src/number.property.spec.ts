@@ -320,8 +320,9 @@ const junkCase = pctRecord({
     '−',
     // The only entry whose answer `|| !/\d/.test(s)` decides. `.` and `−` reach that guard
     // too, but `Number` maps them to NaN and the line below rejects them anyway; a bidi mark
-    // survives `trim()`, `BLANK` strips it to the empty string, and `Number('')` is 0 — so
-    // without the guard the field would commit nought for it. Drawn 5 times of these 40.
+    // survives `trim()`, the blank pattern in `parse` strips it to the empty string, and
+    // `Number('')` is 0 — so without the guard the field would commit nought for it. Drawn 5
+    // times of these 40.
     '‏',
     // A magnitude no double holds, and the only road to `Number.isFinite(n) ? n : null`:
     // 'Infinity' as a word never gets past the character class. Drawn 6 times of the 40.
