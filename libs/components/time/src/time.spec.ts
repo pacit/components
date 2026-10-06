@@ -149,7 +149,12 @@ describe('the arithmetic comes round at midnight', () => {
 
   it('moves by whole units and refuses a fraction', () => {
     expect(() => pctAddMinutes('13:05', 0.5)).toThrow(RangeError);
-    expect(() => pctAddSeconds('13:05', 1.5)).toThrow(RangeError);
+    expect(() => pctAddSeconds('13:05', 1.5)).toThrow(
+      new RangeError(
+        '[PctTime] 1.5 is not a whole number of seconds — a time has no fraction of one to ' +
+          'move by.',
+      ),
+    );
     expect(() => pctAddSeconds('13:05', NaN)).toThrow(RangeError);
     expect(() => pctAddMinutes('13:05', Infinity)).toThrow(
       '[PctTime] Infinity is not a whole number of minutes',
@@ -264,7 +269,11 @@ describe('the step', () => {
 
   it('refuses a step it cannot count with', () => {
     expect(() => pctSnapToStep('13:05', 420)).toThrow(
-      '[PctTime] a step of 420 seconds is not one the columns can list',
+      new RangeError(
+        '[PctTime] a step of 420 seconds is not one the columns can list: a whole number of ' +
+          'seconds that divides a minute, of minutes that divides an hour, or of hours that ' +
+          'divides a day.',
+      ),
     );
     expect(() => pctTimeOnStep('13:05', 0)).toThrow(RangeError);
   });

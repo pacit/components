@@ -28,15 +28,15 @@ export function pctDigitsOf(
   if (numberingSystem === 'latn') return null;
   let parts: Intl.NumberFormatPart[];
   try {
-    parts = new Intl.NumberFormat(locale, {
-      numberingSystem,
-      useGrouping: false,
-    }).formatToParts(1234567890);
+    parts = new Intl.NumberFormat(locale, { numberingSystem }).formatToParts(
+      1234567890,
+    );
   } catch {
     return null;
   }
-  // The digits are read off the integer and nothing beside it: node's ICU writes Azerbaijani with
-  // Arabic-Indic digits as `standart onluq kəsr١٢٣…` — the words a literal before the number.
+  // The digits are read off the integer and nothing beside it: not the group separators between
+  // its parts, and not the words node's ICU writes before an Azerbaijani number in Arabic-Indic
+  // digits, `standart onluq kəsr١٬٢٣٤…` — a literal before the number.
   const glyphs = Array.from(
     parts
       .filter((part) => part.type === 'integer')
@@ -79,13 +79,6 @@ export function pctNumberFormat(
 }
 
 /**
- * A number that is not an ASCII digit — what is left of a text once the locale's own digits have
- * been written back, if it holds a digit of another numbering system, the `〇` a CJK input method
- * types for zero, or a superscript `²`. Any of them would otherwise read as a separator.
- */
-const FOREIGN_NUMBER = /(?![0-9])\p{N}/u;
-
-/**
  * Text with a locale's own digits written back as the ASCII ones and nothing else touched —
  * `digits` is what {@link pctDigitsOf} answered, and `null` means there is nothing to translate.
  *
@@ -112,5 +105,9 @@ export function pctToLatinDigits(
           const value = digits.indexOf(character);
           return value === -1 ? character : String(value);
         }).join('');
-  return FOREIGN_NUMBER.test(latin) ? null : latin;
+  // A number that is not an ASCII digit — a digit of another numbering system, the `〇` a CJK
+  // input method types for zero, a superscript `²` — would otherwise read as a separator. The
+  // pattern is written here and not as a constant beside the function, so that the mutation run
+  // reaches it through the cases that read it rather than through every spec of the library.
+  return /(?![0-9])\p{N}/u.test(latin) ? null : latin;
 }

@@ -1,4 +1,50 @@
-import { pctTimeFormat } from './locale';
+import type { pctTimeFormat as Format } from './locale';
+
+/**
+ * A fresh module for every case, so that each case builds the formatters it reads. The module
+ * keeps one formatter per locale for its lifetime, and a case reading a formatter an earlier case
+ * built never runs the code that built it — which the mutation run, crediting a mutant to the
+ * cases that executed it, then credits to the first case alone. Measured on this file's first
+ * narrow run: `number` replaced by `() => undefined` survived, because the case that reads
+ * `number(5)` met a cached formatter.
+ */
+let pctTimeFormat: typeof Format;
+beforeEach(async () => {
+  vi.resetModules();
+  ({ pctTimeFormat } = await import('./locale'));
+});
+
+/** The mutation run's own marker — `time.spec.ts` says why a skip keys on it and not on a probe. */
+const UNDER_MUTATION = '__stryker__' in globalThis;
+
+/**
+ * Runs `read` on a platform whose time formatter passes every part it writes through `edit` — the
+ * world a defensive branch of the reader exists for, which no language node writes reaches. A
+ * check of a fallback that runs where the primary answers is a check of the primary
+ * ([`lesson-120`](../../../../docs/lessons.md#lesson-120)), so the platform is replaced instead,
+ * as `core/src/digits.spec.ts` replaces the number formatter.
+ */
+function withPartsEdited<T>(
+  edit: (
+    part: Intl.DateTimeFormatPart,
+    hourCycle: string | undefined,
+  ) => Intl.DateTimeFormatPart,
+  read: () => T,
+): T {
+  const Real = Intl.DateTimeFormat;
+  class Edited extends Real {
+    override formatToParts(date?: Date | number): Intl.DateTimeFormatPart[] {
+      const { hourCycle } = this.resolvedOptions();
+      return super.formatToParts(date).map((part) => edit(part, hourCycle));
+    }
+  }
+  Intl.DateTimeFormat = Edited as typeof Intl.DateTimeFormat;
+  try {
+    return read();
+  } finally {
+    Intl.DateTimeFormat = Real;
+  }
+}
 
 /**
  * The locales 0086 measured the hour cycle over (C1): the fourteen asked for first, then the ones
@@ -276,70 +322,81 @@ describe('reading a time back', () => {
     expect(wrong).toEqual([]);
   });
 
-  it('sweeps every language the platform has a formatter for, and says how many', () => {
-    // The denominator: the sweeps below are only worth what this says they reached — two-letter
-    // languages and three-letter ones, twelve-hour clocks among them.
-    const languages = everyLanguage();
-    expect(languages.length).toBeGreaterThan(200);
-    expect(languages).toEqual(expect.arrayContaining(['nds', 'hsb', 'brx']));
-    expect(
-      languages.filter((tag) => pctTimeFormat(tag).hourCycle === 'h12').length,
-    ).toBeGreaterThan(10);
-  });
-
   /**
-   * A field that declines its formatter round-trips by construction, so a parser that stopped
-   * reading some language would vanish among the declined ones and the round trip would stay
-   * green. Hence the list per clock, exactly: every other formatter here is kept, its clock and
-   * its digits. Two languages are declined, both on a forced twelve-hour clock — `fr-CM` writes no
-   * day period, and Anii writes its two with a digit in each, `1ka` and `2ja`.
+   * The sweeps over every language, skipped under the MUTATION run and nowhere else. There each
+   * would run once per mutant of this entrypoint and once per static mutant of the library — some
+   * six seconds a time, an hour of the nightly measured on this entrypoint's first full run — and
+   * the mutants they kill are killed by the cases around them, measured by the same edits applied
+   * with the sweeps away. They run in `test`, which CI executes on every commit; the marker is
+   * Stryker's own, as in `time.spec.ts`, so a renamed namespace runs them rather than hiding them.
    */
-  it.each([
-    ['its own', undefined, []],
-    ['h11', 'h11', ['blo-u-hc-h11', 'fr-CM-u-hc-h11']],
-    ['h12', 'h12', ['blo-u-hc-h12', 'fr-CM-u-hc-h12']],
-    ['h23', 'h23', []],
-    ['h24', 'h24', []],
-  ] as const)(
-    'reads what it writes in every language the platform knows, on %s clock',
-    (_name, clock, declinedHere) => {
-      // No sample, for the reason the date's week table has none. The sweeps caught what the
-      // forty-three locales above did not: Ewe writes its morning and its word for the hour in
-      // one run (`ŋdi ga 12:00`); on a forced twelve-hour clock Bulgarian and Canadian French
-      // write a separator and then the day period (`1:05 ч. pm`); Low German writes `Klock` on a
-      // twelve-hour clock with seconds only — each read back wrong until the parser learned it.
+  describe.skipIf(UNDER_MUTATION)('every language the platform has', () => {
+    it('sweeps every language the platform has a formatter for, and says how many', () => {
+      // The denominator: the sweeps below are only worth what this says they reached — two-letter
+      // languages and three-letter ones, twelve-hour clocks among them.
+      const languages = everyLanguage();
+      expect(languages.length).toBeGreaterThan(200);
+      expect(languages).toEqual(expect.arrayContaining(['nds', 'hsb', 'brx']));
+      expect(
+        languages.filter((tag) => pctTimeFormat(tag).hourCycle === 'h12')
+          .length,
+      ).toBeGreaterThan(10);
+    });
+
+    /**
+     * A field that declines its formatter round-trips by construction, so a parser that stopped
+     * reading some language would vanish among the declined ones and the round trip would stay
+     * green. Hence the list per clock, exactly: every other formatter here is kept, its clock and
+     * its digits. Two languages are declined, both on a forced twelve-hour clock — `fr-CM` writes no
+     * day period, and Anii writes its two with a digit in each, `1ka` and `2ja`.
+     */
+    it.each([
+      ['its own', undefined, []],
+      ['h11', 'h11', ['blo-u-hc-h11', 'fr-CM-u-hc-h11']],
+      ['h12', 'h12', ['blo-u-hc-h12', 'fr-CM-u-hc-h12']],
+      ['h23', 'h23', []],
+      ['h24', 'h24', []],
+    ] as const)(
+      'reads what it writes in every language the platform knows, on %s clock',
+      (_name, clock, declinedHere) => {
+        // No sample, for the reason the date's week table has none. The sweeps caught what the
+        // forty-three locales above did not: Ewe writes its morning and its word for the hour in
+        // one run (`ŋdi ga 12:00`); on a forced twelve-hour clock Bulgarian and Canadian French
+        // write a separator and then the day period (`1:05 ч. pm`); Low German writes `Klock` on a
+        // twelve-hour clock with seconds only — each read back wrong until the parser learned it.
+        const wrong: string[] = [];
+        const declined: string[] = [];
+        for (const locale of [...everyLanguage(), ...LOCALES, ...EDGES]) {
+          const tag = forcing(locale, clock);
+          const format = pctTimeFormat(tag);
+          if (!kept(tag)) declined.push(tag);
+          for (const time of ['00:05', '12:05:30', '13:05', '23:59']) {
+            const written = format.format(time);
+            if (format.parse(written) !== time)
+              wrong.push(`${tag}: ${time} → ${JSON.stringify(written)}`);
+          }
+        }
+        expect(wrong).toEqual([]);
+        expect(declined.sort()).toEqual(declinedHere);
+      },
+    );
+
+    it('reads, on a twenty-four-hour clock, what its language writes on a twelve-hour one', () => {
+      // The day-period words and the words between the fields both come from the twelve-hour
+      // writer, so a time typed the way the language writes it there — `1:05:09 ч. pm`,
+      // `ཆུ་ཚོད་ ༡ སྐར་མ་ ༠༥ …` — is the same time in a field that counts to twenty-four.
       const wrong: string[] = [];
-      const declined: string[] = [];
-      for (const locale of [...everyLanguage(), ...LOCALES, ...EDGES]) {
-        const tag = forcing(locale, clock);
-        const format = pctTimeFormat(tag);
-        if (!kept(tag)) declined.push(tag);
-        for (const time of ['00:05', '12:05:30', '13:05', '23:59']) {
-          const written = format.format(time);
-          if (format.parse(written) !== time)
-            wrong.push(`${tag}: ${time} → ${JSON.stringify(written)}`);
+      for (const language of everyLanguage()) {
+        const twentyFour = pctTimeFormat(forcing(language, 'h23'));
+        const twelveHour = pctTimeFormat(forcing(language, 'h12'));
+        for (const time of ['00:05', '12:05:30', '13:05:09']) {
+          const written = twelveHour.format(time);
+          if (twentyFour.parse(written) !== time)
+            wrong.push(`${language}: ${time} → ${JSON.stringify(written)}`);
         }
       }
       expect(wrong).toEqual([]);
-      expect(declined.sort()).toEqual(declinedHere);
-    },
-  );
-
-  it('reads, on a twenty-four-hour clock, what its language writes on a twelve-hour one', () => {
-    // The day-period words and the words between the fields both come from the twelve-hour
-    // writer, so a time typed the way the language writes it there — `1:05:09 ч. pm`,
-    // `ཆུ་ཚོད་ ༡ སྐར་མ་ ༠༥ …` — is the same time in a field that counts to twenty-four.
-    const wrong: string[] = [];
-    for (const language of everyLanguage()) {
-      const twentyFour = pctTimeFormat(forcing(language, 'h23'));
-      const twelveHour = pctTimeFormat(forcing(language, 'h12'));
-      for (const time of ['00:05', '12:05:30', '13:05:09']) {
-        const written = twelveHour.format(time);
-        if (twentyFour.parse(written) !== time)
-          wrong.push(`${language}: ${time} → ${JSON.stringify(written)}`);
-      }
-    }
-    expect(wrong).toEqual([]);
+    });
   });
 
   it('keeps a formatter that writes words inside its numbers, and reads them back', () => {
@@ -474,6 +531,7 @@ describe('reading a time back', () => {
     expect(pctTimeFormat('bg-BG').parse('13:05 ч.')).toBe('13:05');
     // A day period the language writes glued to its word for the hour reads alone, too.
     expect(pctTimeFormat('ee-GH').parse('ŋdi 1:05')).toBe('01:05');
+    expect(pctTimeFormat('ee-GH').parse('ɣetrɔ 1:05')).toBe('13:05');
   });
 
   it('never reads an ASCII letter against the language’s own word for the other half', () => {
@@ -524,6 +582,34 @@ describe('reading a time back', () => {
     // a formatter writes as its day period do not become words it writes between the fields.
     expect(pctTimeFormat('en-US').parse('pm 2 h 30')).toBe('14:30');
     expect(pctTimeFormat('en-US').parse('1:05 pam')).toBeNull();
+  });
+
+  it('separates at a mark in every locale, whatever its formatter writes between the fields', () => {
+    // Every language node writes puts a mark with no letters between some two fields, and the
+    // mark is among its separators that way too; a platform that writes a letter wherever the
+    // language writes a mark is the one where only the rule reads `13:05`.
+    const lettered = withPartsEdited(
+      (part) => (part.type === 'literal' ? { ...part, value: 'h' } : part),
+      () => pctTimeFormat('en-GB'),
+    );
+    expect(lettered.format('13:05')).toBe('13h05');
+    expect(lettered.parse('13:05')).toBe('13:05');
+    expect(lettered.parse('13.05')).toBe('13:05');
+  });
+
+  it('learns nothing from a twelve-hour sample it cannot translate, and builds all the same', () => {
+    // A platform that writes a digit of another system into the hour on a twelve-hour clock: the
+    // British field writes twenty-four hours and reads them back, and reads its language's day
+    // periods and the ASCII ones, though no sample it was taught from could be read.
+    const foreign = withPartsEdited(
+      (part, hourCycle) =>
+        hourCycle === 'h12' && part.type === 'hour'
+          ? { ...part, value: '١' }
+          : part,
+      () => pctTimeFormat('en-GB'),
+    );
+    expect(foreign.parse('13:05')).toBe('13:05');
+    expect(foreign.parse('1:05 pm')).toBe('13:05');
   });
 });
 

@@ -27,14 +27,20 @@
  */
 export type PctTime = string;
 
-/** `HH:mm` or `HH:mm:ss` — the shape alone, before the clock is asked. */
-const SHAPE = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
+/**
+ * `HH:mm` or `HH:mm:ss` — the shape alone, before the clock is asked. A function and not a
+ * constant, as every literal in this entrypoint lives in the function that reads it: a constant
+ * at the top of a module is evaluated as the module loads, so the mutation run cannot tell which
+ * cases cover it and runs every spec of the library once per edit of it. On the first full run
+ * of this entrypoint Stryker counted 445 such mutants in the library, 7% of all, and estimated
+ * them at 59% of the run.
+ */
+function shapeOf(text: string): RegExpExecArray | null {
+  return /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(text);
+}
 
 /** The seconds in a day — the ring the arithmetic comes round on. */
 const DAY = 86_400;
-
-/** Where a step is counted from when the field has no `min`. */
-const MIDNIGHT: PctTime = '00:00';
 
 /**
  * The three fields of a time, as numbers on a 24-hour clock. `second` is `0` for a time written
@@ -66,7 +72,7 @@ export interface PctTimeParts {
  */
 export function isPctTime(value: unknown): value is PctTime {
   if (typeof value !== 'string') return false;
-  const m = SHAPE.exec(value);
+  const m = shapeOf(value);
   if (m === null) return false;
   return (
     Number(m[1]) <= 23 &&
@@ -121,7 +127,7 @@ export function pctTime(
  * @since next
  */
 export function pctTimeParts(time: PctTime): PctTimeParts {
-  const m = SHAPE.exec(time) as RegExpExecArray;
+  const m = shapeOf(time) as RegExpExecArray;
   return {
     hour: Number(m[1]),
     minute: Number(m[2]),
@@ -318,7 +324,7 @@ function stepOf(step: number): void {
 export function pctTimeOnStep(
   time: PctTime,
   step: number,
-  base: PctTime = MIDNIGHT,
+  base: PctTime = '00:00',
 ): boolean {
   stepOf(step);
   return ring(read(time).total - read(base).total) % step === 0;
@@ -337,7 +343,7 @@ export function pctTimeOnStep(
 export function pctSnapToStep(
   time: PctTime,
   step: number,
-  base: PctTime = MIDNIGHT,
+  base: PctTime = '00:00',
 ): PctTime {
   stepOf(step);
   const { total, seconds } = read(time);
