@@ -7118,8 +7118,8 @@ module loads — a constant at the top of a file, a pattern beside the function 
 expression-bodied arrow at module scope (its mutant swaps the whole arrow where it is built), a
 decorator a spec evaluates while `describe` collects its cases — outside the
 `beforeEach`…`afterEach` window in which the runner records which case is running. Per-test
-coverage then has no case to credit it to, and Stryker runs every spec related to the file
-against it, the environment reloaded each time.
+coverage cannot credit that load to any case, and whatever cases also cover the mutant, Stryker
+runs every spec related to the file against it, the environment reloaded each time.
 
 The count was the wrong list to start from. The report holds `testsCompleted` for every mutant,
 and summed per file it ranks them otherwise: `svg-icon.ts` (58 static) and `testing/harnesses.ts`
@@ -7144,15 +7144,18 @@ function reads is written in that function; an expression-bodied arrow at module
 `function` declaration, so the mutant is its body and runs when it is called; a component a spec
 builds is declared inside the case that builds it. For a survivor that cannot move — a token's
 description is read by the constructor as the module loads — a case that reads it buys the kill,
-and buys time only when its file happens to run early, because the order of the related specs
-changes from run to run: one case of `core.spec.ts` killed `'PCT_CONFIG'` after 623, 241 and
-1 171 tests in three runs of the same code. `'PCT_REGIONS'` went from surviving after 1 103 tests
-to dying after 1 173; the two icon descriptions from 654 to 28 and 70. And one survivor was no
-test's fault: `providedIn: 'root'` on a token with a factory says what `InjectionToken` does
-anyway (`options.providedIn || 'root'`), so the line went with it.
+and buys time only when its file happens to run early. The order of the related specs changes
+from one mutant to the next, because Vitest runs the files that failed last first: one case of
+`core.spec.ts` killed `'PCT_CONFIG'` after 623, 241 and 1 171 tests in three runs in which
+neither `config.ts` nor that case changed. `'PCT_REGIONS'` went from surviving after 1 103 tests
+to dying after 1 173 — the case's own import made `core.spec.ts` one of the specs related to
+`regions.ts`, 88 tests more for each of its static mutants — and the two icon descriptions from
+654 to 28 and 70. And one survivor was no test's fault: `providedIn: 'root'` on a token with a
+factory says what `InjectionToken` does anyway (`options.providedIn || 'root'`), so the line went
+with it.
 
 Three kinds stay static, each for a reason the run cannot see. A value a consumer imports:
-`PCT_DEFAULT_TEXTS` is the largest cost left, some 11 000 tests a run, and lazy it would be 24
+`PCT_DEFAULT_TEXTS` is the largest cost left, some 10 000 tests a run, and lazy it would be 24
 getters on a public object that two tools read by its literal shape. A member a consumer
 overrides: `PctHarness.hostSelector` is cheap, about eight tests a mutant, and a getter on the
 base breaks every consumer harness that overrides it as a property. A table behind a per-locale
