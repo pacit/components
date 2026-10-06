@@ -147,21 +147,21 @@ all three engines the run has, and absent from webkit 26.5. By
 [0084](0084-a-fallback-stays-while-angular-supports-an-engine-without-the-feature.md)'s rule
 the library may not require what an engine Angular 22 supports lacks, and Angular 22's policy
 reaches back to chromium 111, firefox 112 and safari 16.4, none of which has it. So the value
-is a string, and `PctTime` names it:
+is a string, and `PctTimeOfDay` names it:
 
 - **`HH:mm`, or `HH:mm:ss` when the field's step has seconds in it** — two digits each, a
   24-hour clock, no fraction, no zone. It is what `<input type="time">.value` carries (A16
   keeps both forms as written), what `<time datetime>` and SQL `TIME` take, and what
   `Temporal.PlainTime.from` reads. B2 corrects a common reading: `PlainTime.toString()` writes
   `13:05:00`, seconds always, and `HH:mm` is `toString({ smallestUnit: 'minute' })`. Both are
-  `PctTime`s, so the interop is one call each way, and the day `Temporal` is everywhere no
+  `PctTimeOfDay`s, so the interop is one call each way, and the day `Temporal` is everywhere no
   stored value changes.
 - **`null` is empty**, as `PctDay | null` is.
 - **The domain is `00:00` to `23:59:59`, and `24:00` is refused.** ISO 8601 allows it as the
   end of a day; the platform sanitises it to `""` and `PlainTime.from('24:00')` throws (A16,
   B3). B3 has a trap beside it: `PlainTime.from({ hour: 24 })` does not throw, it **constrains
   to `23:00`**, so a guard built on `from` and an object accepts the very value the string
-  refuses. `isPctTime` is the guard, as `isPctDay` is for the day, and it refuses `23:59:60`
+  refuses. `isPctTimeOfDay` is the guard, as `isPctDay` is for the day, and it refuses `23:59:60`
   too — the platform refuses it, `Temporal` quietly makes it `:59`.
 - **A fraction of a second is refused.** The native element carries one (`13:05:30.5`, A16)
   because its `step` may be `0.001`. A field a person types a time into is not a stopwatch, and
@@ -305,6 +305,13 @@ reads the day-period words its language writes on a twelve-hour clock, Anii's ap
 ASCII `a`, `p`, `am` and `pm` are read only where no word of the language for the other half
 begins with them (Albanian writes the morning `p.d.`)._
 
+_Amended 2026-10-06: **the value is `PctTimeOfDay`, and the field keeps `PctTime`.** This record
+gave both the one name — the value where it says the value is a string, the field where it says
+what `@pacit/components/time` holds — and TS refuses the two in one entrypoint (TS2300). The
+value is renamed, with `pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts` beside it, and
+the sentences above that mean it say so: the field is `PctTime` as the date field is `PctDate`
+beside its `PctDay`, and the value had shipped in no release when its name changed._
+
 ### 4. The panel is a dialog of listbox columns, and the columns are a component of their own
 
 E1 and E2 say both readings of a column pass, and E3 to E5 say what does not: a column of plain
@@ -343,7 +350,7 @@ half that stepped under the caret would give one field two keyboards.
 
 ### 5. The contract: bounds and a step, both in the value's own terms
 
-- **`min` and `max` are `PctTime`s**, on the `FormUiControl` contract as the date's are
+- **`min` and `max` are `PctTimeOfDay`s**, on the `FormUiControl` contract as the date's are
   `PctDay`s. That `[formField]` fills them from a schema is **not inherited**: Angular 22.2's
   `min()` and `max()` take numbers, and a string bound reaches a control only through a rule
   that binds a limit of the field's own type to `MIN` or `MAX`. Whether the module ships that
@@ -419,7 +426,7 @@ bare link; its columns are claimed where they live — `PctTimeColumns` carries
 ## What this costs us
 
 - **The value is a `string`,** so the compiler will not stop `'1:05 PM'` being passed to it.
-  `isPctTime` guards every read, as `isPctDay` does; the brand 0043 refused for the day is
+  `isPctTimeOfDay` guards every read, as `isPctDay` does; the brand 0043 refused for the day is
   refused here for the same reason.
 - **The clock is the formatter's, also where the engine is wrong.** In chromium a Burmese,
   Nepali, Icelandic or Armenian field is written in the browser's default locale — a 12-hour
@@ -436,7 +443,7 @@ bare link; its columns are claimed where they live — `PctTimeColumns` carries
   form says otherwise; an application with no validator for it keeps a value off its own step.
   And a step the columns cannot list is refused: seven-minute slots are a `PctSelect`, not a
   free time.
-- **`24:00` is not a `PctTime`.** A shift that runs to midnight is written `max="23:59"` or as
+- **`24:00` is not a `PctTimeOfDay`.** A shift that runs to midnight is written `max="23:59"` or as
   a window, and an end-of-day boundary in a server's data is translated on the way in.
 
 ## The road not taken

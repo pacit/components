@@ -76,7 +76,7 @@ before an application ships them.
 ./tabs 16364 ./core @angular/core
 ./testing 8218 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 9606 ./core @angular/core
+./time 9636 ./core @angular/core
 ./toast 23932 ./core,./icon @angular/common,@angular/core
 ./tooltip 13662 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 12928 ./icon @angular/common,@angular/core

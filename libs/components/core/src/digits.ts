@@ -35,8 +35,8 @@ export function pctDigitsOf(
     return null;
   }
   // The digits are read off the integer and nothing beside it: not the group separators between
-  // its parts, and not the words node's ICU writes before an Azerbaijani number in Arabic-Indic
-  // digits, `standart onluq kəsr١٬٢٣٤…` — a literal before the number.
+  // its parts, `١٬٢٣٤…` in `ar-EG`, and not the words node's ICU writes before an Azerbaijani
+  // number in Arabic-Indic digits, `standart onluq kəsr١٢٣…` — a literal before the number.
   const glyphs = Array.from(
     parts
       .filter((part) => part.type === 'integer')

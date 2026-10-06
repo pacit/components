@@ -1,5 +1,5 @@
 import {
-  isPctTime,
+  isPctTimeOfDay,
   isPctTimeStep,
   pctAddMinutes,
   pctAddSeconds,
@@ -7,12 +7,12 @@ import {
   pctCompareTimes,
   pctNow,
   pctSnapToStep,
-  pctTime,
+  pctTimeOfDay,
   pctTimeOnStep,
-  pctTimeParts,
+  pctTimeOfDayParts,
 } from './time';
 
-describe('PctTime — a wall-clock time, not an instant', () => {
+describe('PctTimeOfDay — a wall-clock time, not an instant', () => {
   it('is the same time whatever the offset it was written at', () => {
     // 13:05 two hours ahead of UTC is 11:05 in UTC — so a time carried as an instant reads back
     // as another time the moment anything serialises it. That is the whole reason a `Date`
@@ -21,18 +21,26 @@ describe('PctTime — a wall-clock time, not an instant', () => {
     expect(instant.toISOString().slice(11, 16)).toBe('11:05');
 
     // The same fields as a time never move: there is no offset in them to move by.
-    expect(pctTime(13, 5)).toBe('13:05');
-    expect(pctTimeParts('13:05')).toEqual({ hour: 13, minute: 5, second: 0 });
+    expect(pctTimeOfDay(13, 5)).toBe('13:05');
+    expect(pctTimeOfDayParts('13:05')).toEqual({
+      hour: 13,
+      minute: 5,
+      second: 0,
+    });
   });
 
   it('writes the shape the platform writes, two digits a field', () => {
-    expect(pctTime(9, 5)).toBe('09:05');
-    expect(pctTime(0, 0)).toBe('00:00');
-    expect(pctTime(23, 59, 59)).toBe('23:59:59');
+    expect(pctTimeOfDay(9, 5)).toBe('09:05');
+    expect(pctTimeOfDay(0, 0)).toBe('00:00');
+    expect(pctTimeOfDay(23, 59, 59)).toBe('23:59:59');
     // The shape is the caller's: a second of zero still writes the seconds when it is given.
-    expect(pctTime(9, 5, 0)).toBe('09:05:00');
-    expect(pctTimeParts('09:05:00')).toEqual({ hour: 9, minute: 5, second: 0 });
-    expect(pctTimeParts('23:59:59')).toEqual({
+    expect(pctTimeOfDay(9, 5, 0)).toBe('09:05:00');
+    expect(pctTimeOfDayParts('09:05:00')).toEqual({
+      hour: 9,
+      minute: 5,
+      second: 0,
+    });
+    expect(pctTimeOfDayParts('23:59:59')).toEqual({
       hour: 23,
       minute: 59,
       second: 59,
@@ -40,18 +48,18 @@ describe('PctTime — a wall-clock time, not an instant', () => {
   });
 });
 
-describe('isPctTime', () => {
+describe('isPctTimeOfDay', () => {
   it('takes both shapes, from the first second of a day to its last', () => {
     for (const time of ['00:00', '13:05', '23:59', '00:00:00', '23:59:59'])
-      expect(isPctTime(time)).toBe(true);
+      expect(isPctTimeOfDay(time)).toBe(true);
   });
 
   it('refuses the three strings 0086 refuses, and every near miss of the shape', () => {
     // The end of a day, the leap second `Temporal` quietly makes `:59`, and a fraction the
     // native element carries for a step of 0.001.
-    expect(isPctTime('24:00')).toBe(false);
-    expect(isPctTime('23:59:60')).toBe(false);
-    expect(isPctTime('13:05:30.5')).toBe(false);
+    expect(isPctTimeOfDay('24:00')).toBe(false);
+    expect(isPctTimeOfDay('23:59:60')).toBe(false);
+    expect(isPctTimeOfDay('13:05:30.5')).toBe(false);
     for (const miss of [
       '23:60',
       '1:05',
@@ -70,7 +78,7 @@ describe('isPctTime', () => {
       // stores, and the reader's digits are the formatter's business.
       '١٣:٠٥',
     ])
-      expect(isPctTime(miss)).toBe(false);
+      expect(isPctTimeOfDay(miss)).toBe(false);
   });
 
   it('refuses everything that is not a string', () => {
@@ -85,34 +93,34 @@ describe('isPctTime', () => {
       ['13:05'],
       new String('13:05'),
     ])
-      expect(isPctTime(value)).toBe(false);
+      expect(isPctTimeOfDay(value)).toBe(false);
   });
 });
 
-describe('pctTime', () => {
+describe('pctTimeOfDay', () => {
   it('refuses a field outside the clock, loudly', () => {
     // A field out of range is not normalised here, unlike a day's month 13: minute 60 is
     // nothing a clock shows, and the walk that comes round at midnight has its own names.
-    expect(() => pctTime(24, 0)).toThrow(RangeError);
-    expect(() => pctTime(-1, 0)).toThrow(RangeError);
-    expect(() => pctTime(0, 60)).toThrow(RangeError);
-    expect(() => pctTime(0, -1)).toThrow(RangeError);
-    expect(() => pctTime(0, 0, 60)).toThrow(RangeError);
-    expect(() => pctTime(0, 0, -1)).toThrow(RangeError);
-    expect(() => pctTime(1.5, 0)).toThrow(RangeError);
-    expect(() => pctTime(0, 0, 0.5)).toThrow(RangeError);
-    expect(() => pctTime(NaN, 0)).toThrow(RangeError);
-    expect(() => pctTime(0, Infinity)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(24, 0)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(-1, 0)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, 60)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, -1)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, 0, 60)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, 0, -1)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(1.5, 0)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, 0, 0.5)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(NaN, 0)).toThrow(RangeError);
+    expect(() => pctTimeOfDay(0, Infinity)).toThrow(RangeError);
   });
 
   it('says in the error what a time of day is', () => {
-    expect(() => pctTime(24, 0)).toThrow(
-      '[PctTime] hour 24, minute 0 is not a time of day: hours run 0 to 23 and minutes and ' +
+    expect(() => pctTimeOfDay(24, 0)).toThrow(
+      '[PctTimeOfDay] hour 24, minute 0 is not a time of day: hours run 0 to 23 and minutes and ' +
         'seconds 0 to 59, in whole numbers — and 24:00 is the end of a day, which a time of day ' +
         'is not.',
     );
-    expect(() => pctTime(1, 2, 60)).toThrow(
-      '[PctTime] hour 1, minute 2, second 60 is not a time of day',
+    expect(() => pctTimeOfDay(1, 2, 60)).toThrow(
+      '[PctTimeOfDay] hour 1, minute 2, second 60 is not a time of day',
     );
   });
 });
@@ -151,13 +159,13 @@ describe('the arithmetic comes round at midnight', () => {
     expect(() => pctAddMinutes('13:05', 0.5)).toThrow(RangeError);
     expect(() => pctAddSeconds('13:05', 1.5)).toThrow(
       new RangeError(
-        '[PctTime] 1.5 is not a whole number of seconds — a time has no fraction of one to ' +
+        '[PctTimeOfDay] 1.5 is not a whole number of seconds — a time has no fraction of one to ' +
           'move by.',
       ),
     );
     expect(() => pctAddSeconds('13:05', NaN)).toThrow(RangeError);
     expect(() => pctAddMinutes('13:05', Infinity)).toThrow(
-      '[PctTime] Infinity is not a whole number of minutes',
+      '[PctTimeOfDay] Infinity is not a whole number of minutes',
     );
   });
 });
@@ -270,7 +278,7 @@ describe('the step', () => {
   it('refuses a step it cannot count with', () => {
     expect(() => pctSnapToStep('13:05', 420)).toThrow(
       new RangeError(
-        '[PctTime] a step of 420 seconds is not one the columns can list: a whole number of ' +
+        '[PctTimeOfDay] a step of 420 seconds is not one the columns can list: a whole number of ' +
           'seconds that divides a minute, of minutes that divides an hour, or of hours that ' +
           'divides a day.',
       ),
@@ -350,8 +358,8 @@ describe.skipIf(UNDER_MUTATION)('in a hostile timezone', () => {
     // wall clock holds it, because it never asks what day it is.
     const gap = new Date(2026, 2, 29, 2, 30);
     expect([gap.getHours(), gap.getMinutes()]).toEqual([3, 30]);
-    expect(pctTime(2, 30)).toBe('02:30');
-    expect(isPctTime('02:30')).toBe(true);
+    expect(pctTimeOfDay(2, 30)).toBe('02:30');
+    expect(isPctTimeOfDay('02:30')).toBe(true);
     // An hour after 01:30 the local clock reads 03:30; on the wall clock an hour after 01:30 is
     // 02:30 — the time on the face, not the time elapsed in one zone.
     const later = new Date(new Date(2026, 2, 29, 1, 30).getTime() + 3_600_000);

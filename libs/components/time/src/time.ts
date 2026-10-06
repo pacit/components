@@ -25,15 +25,16 @@
  *
  * @since next
  */
-export type PctTime = string;
+export type PctTimeOfDay = string;
 
 /**
  * `HH:mm` or `HH:mm:ss` — the shape alone, before the clock is asked. A function and not a
- * constant, as every literal in this entrypoint lives in the function that reads it: a constant
- * at the top of a module is evaluated as the module loads, so the mutation run cannot tell which
- * cases cover it and runs every spec of the library once per edit of it. On the first full run
- * of this entrypoint Stryker counted 445 such mutants in the library, 7% of all, and estimated
- * them at 59% of the run.
+ * constant, as every string and pattern of this entrypoint lives in the function that reads it:
+ * a constant at the top of a module is evaluated as the module loads, so the mutation run cannot
+ * tell which cases cover it and runs every spec of the library once per edit of it. On the first
+ * full run of this entrypoint Stryker counted 445 such mutants in the library, 7% of all, and
+ * estimated them at 59% of the run. A number is no such edit — Stryker has no mutator for one —
+ * so `DAY` below stays a constant.
  */
 function shapeOf(text: string): RegExpExecArray | null {
   return /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(text);
@@ -48,7 +49,7 @@ const DAY = 86_400;
  *
  * @since next
  */
-export interface PctTimeParts {
+export interface PctTimeOfDayParts {
   readonly hour: number;
   readonly minute: number;
   readonly second: number;
@@ -70,7 +71,7 @@ export interface PctTimeParts {
  *
  * @since next
  */
-export function isPctTime(value: unknown): value is PctTime {
+export function isPctTimeOfDay(value: unknown): value is PctTimeOfDay {
   if (typeof value !== 'string') return false;
   const m = shapeOf(value);
   if (m === null) return false;
@@ -102,18 +103,18 @@ function within(value: number, max: number): boolean {
  *
  * @since next
  */
-export function pctTime(
+export function pctTimeOfDay(
   hour: number,
   minute: number,
   second?: number,
-): PctTime {
+): PctTimeOfDay {
   if (
     !within(hour, 23) ||
     !within(minute, 59) ||
     (second !== undefined && !within(second, 59))
   )
     throw new RangeError(
-      `[PctTime] hour ${hour}, minute ${minute}${second === undefined ? '' : `, second ${second}`} ` +
+      `[PctTimeOfDay] hour ${hour}, minute ${minute}${second === undefined ? '' : `, second ${second}`} ` +
         `is not a time of day: hours run 0 to 23 and minutes and seconds 0 to 59, in whole ` +
         `numbers — and 24:00 is the end of a day, which a time of day is not.`,
     );
@@ -126,7 +127,7 @@ export function pctTime(
  *
  * @since next
  */
-export function pctTimeParts(time: PctTime): PctTimeParts {
+export function pctTimeOfDayParts(time: PctTimeOfDay): PctTimeOfDayParts {
   const m = shapeOf(time) as RegExpExecArray;
   return {
     hour: Number(m[1]),
@@ -141,8 +142,8 @@ interface Reading {
   readonly seconds: boolean;
 }
 
-function read(time: PctTime): Reading {
-  const { hour, minute, second } = pctTimeParts(time);
+function read(time: PctTimeOfDay): Reading {
+  const { hour, minute, second } = pctTimeOfDayParts(time);
   return {
     total: (hour * 60 + minute) * 60 + second,
     seconds: time.length > 5,
@@ -154,9 +155,9 @@ function read(time: PctTime): Reading {
  * are not zero and the shape has nowhere to put them. Losing a second to keep a shape would be
  * a time nobody asked for, so the shape gives way and the second stays.
  */
-function write(total: number, seconds: boolean): PctTime {
+function write(total: number, seconds: boolean): PctTimeOfDay {
   const second = total % 60;
-  return pctTime(
+  return pctTimeOfDay(
     Math.floor(total / 3600),
     Math.floor(total / 60) % 60,
     seconds || second !== 0 ? second : undefined,
@@ -172,7 +173,7 @@ function ring(total: number): number {
 function whole(n: number, unit: string): void {
   if (!Number.isInteger(n))
     throw new RangeError(
-      `[PctTime] ${n} is not a whole number of ${unit} — a time has no fraction of one to ` +
+      `[PctTimeOfDay] ${n} is not a whole number of ${unit} — a time has no fraction of one to ` +
         `move by.`,
     );
 }
@@ -187,8 +188,8 @@ function whole(n: number, unit: string): void {
  *
  * @since next
  */
-export function pctNow(now: Date = new Date(), seconds = false): PctTime {
-  return pctTime(
+export function pctNow(now: Date = new Date(), seconds = false): PctTimeOfDay {
+  return pctTimeOfDay(
     now.getHours(),
     now.getMinutes(),
     seconds ? now.getSeconds() : undefined,
@@ -206,7 +207,7 @@ export function pctNow(now: Date = new Date(), seconds = false): PctTime {
  *
  * @since next
  */
-export function pctAddSeconds(time: PctTime, n: number): PctTime {
+export function pctAddSeconds(time: PctTimeOfDay, n: number): PctTimeOfDay {
   whole(n, 'seconds');
   const { total, seconds } = read(time);
   // The remainder first: it is exact for every integer a double holds, where `total + n` stops
@@ -220,7 +221,7 @@ export function pctAddSeconds(time: PctTime, n: number): PctTime {
  *
  * @since next
  */
-export function pctAddMinutes(time: PctTime, n: number): PctTime {
+export function pctAddMinutes(time: PctTimeOfDay, n: number): PctTimeOfDay {
   whole(n, 'minutes');
   const { total, seconds } = read(time);
   return write(ring(total + (n % 1440) * 60), seconds);
@@ -236,7 +237,7 @@ export function pctAddMinutes(time: PctTime, n: number): PctTime {
  *
  * @since next
  */
-export function pctCompareTimes(a: PctTime, b: PctTime): number {
+export function pctCompareTimes(a: PctTimeOfDay, b: PctTimeOfDay): number {
   const away = read(a).total - read(b).total;
   return away < 0 ? -1 : away > 0 ? 1 : 0;
 }
@@ -255,10 +256,10 @@ export function pctCompareTimes(a: PctTime, b: PctTime): number {
  * @since next
  */
 export function pctClampTime(
-  time: PctTime,
-  min: PctTime | undefined,
-  max: PctTime | undefined,
-): PctTime {
+  time: PctTimeOfDay,
+  min: PctTimeOfDay | undefined,
+  max: PctTimeOfDay | undefined,
+): PctTimeOfDay {
   if (min !== undefined && max !== undefined && pctCompareTimes(min, max) > 0) {
     const at = read(time).total;
     // How far past the window's end the time stands, and how far its start still lies ahead.
@@ -282,7 +283,7 @@ export function pctClampTime(
  *
  * Every step this answers `true` for divides a day, so the times on it are the same ones on
  * both sides of midnight — which is what lets the two functions below count on a ring. It is a
- * plain `boolean` where `isPctTime` is a guard, because the two read different things: a time
+ * plain `boolean` where `isPctTimeOfDay` is a guard, because the two read different things: a time
  * arrives as anything at all, and a step is already a number — which a guard would narrow to
  * `never` when it is not a step, in the very branch that warns about it.
  *
@@ -305,7 +306,7 @@ export function isPctTimeStep(step: number): boolean {
 function stepOf(step: number): void {
   if (!isPctTimeStep(step))
     throw new RangeError(
-      `[PctTime] a step of ${step} seconds is not one the columns can list: a whole number ` +
+      `[PctTimeOfDay] a step of ${step} seconds is not one the columns can list: a whole number ` +
         `of seconds that divides a minute, of minutes that divides an hour, or of hours that ` +
         `divides a day.`,
     );
@@ -322,9 +323,9 @@ function stepOf(step: number): void {
  * @since next
  */
 export function pctTimeOnStep(
-  time: PctTime,
+  time: PctTimeOfDay,
   step: number,
-  base: PctTime = '00:00',
+  base: PctTimeOfDay = '00:00',
 ): boolean {
   stepOf(step);
   return ring(read(time).total - read(base).total) % step === 0;
@@ -341,10 +342,10 @@ export function pctTimeOnStep(
  * @since next
  */
 export function pctSnapToStep(
-  time: PctTime,
+  time: PctTimeOfDay,
   step: number,
-  base: PctTime = '00:00',
-): PctTime {
+  base: PctTimeOfDay = '00:00',
+): PctTimeOfDay {
   stepOf(step);
   const { total, seconds } = read(time);
   const origin = read(base).total;

@@ -27,18 +27,18 @@ import {
   pctRecord,
 } from '../../testing/src/property.testkit';
 import {
-  isPctTime,
+  isPctTimeOfDay,
   isPctTimeStep,
-  PctTime,
+  PctTimeOfDay,
   pctAddMinutes,
   pctAddSeconds,
   pctClampTime,
   pctCompareTimes,
   pctNow,
   pctSnapToStep,
-  pctTime,
+  pctTimeOfDay,
   pctTimeOnStep,
-  pctTimeParts,
+  pctTimeOfDayParts,
 } from './time';
 
 const DAY = 86_400;
@@ -62,10 +62,10 @@ const anyClock: PctArbitrary<Clock> = pctRecord<Clock>({
 });
 
 /** A clock written without seconds drops them — the shape decides, as it does for a caller. */
-const timeOf = (clock: Clock): PctTime =>
+const timeOf = (clock: Clock): PctTimeOfDay =>
   clock.seconds
-    ? pctTime(clock.hour, clock.minute, clock.second)
-    : pctTime(clock.hour, clock.minute);
+    ? pctTimeOfDay(clock.hour, clock.minute, clock.second)
+    : pctTimeOfDay(clock.hour, clock.minute);
 
 /** Whether a string carries its seconds, read off the string rather than off the module. */
 const hasSeconds = (time: string): boolean => /^\d\d:\d\d:\d\d$/.test(time);
@@ -74,8 +74,8 @@ const hasSeconds = (time: string): boolean => /^\d\d:\d\d:\d\d$/.test(time);
  * The time as a platform instant: that wall-clock time on 1 January 2026, UTC — far from any
  * edge of the range a `Date` holds, so a walk of two days either way stays a plain instant.
  */
-const msOf = (time: PctTime): number => {
-  const { hour, minute, second } = pctTimeParts(time);
+const msOf = (time: PctTimeOfDay): number => {
+  const { hour, minute, second } = pctTimeOfDayParts(time);
   return Date.UTC(2026, 0, 1, hour, minute, second);
 };
 
@@ -114,7 +114,7 @@ const LISTABLE = Array.from({ length: DAY }, (_, i) => i + 1)
   .filter(listable)
   .sort((a, b) => (a === 60 ? -1 : b === 60 ? 1 : a - b));
 
-describe('pctTime and pctTimeParts', () => {
+describe('pctTimeOfDay and pctTimeOfDayParts', () => {
   it('writes the shape toISOString writes, and reads back the fields it was built from', () => {
     pctForAll(
       anyClock,
@@ -122,14 +122,14 @@ describe('pctTime and pctTimeParts', () => {
         const iso = new Date(Date.UTC(2026, 0, 1, hour, minute, second))
           .toISOString()
           .slice(11, 19);
-        expect(pctTime(hour, minute)).toBe(iso.slice(0, 5));
-        expect(pctTime(hour, minute, second)).toBe(iso);
-        expect(pctTimeParts(pctTime(hour, minute))).toEqual({
+        expect(pctTimeOfDay(hour, minute)).toBe(iso.slice(0, 5));
+        expect(pctTimeOfDay(hour, minute, second)).toBe(iso);
+        expect(pctTimeOfDayParts(pctTimeOfDay(hour, minute))).toEqual({
           hour,
           minute,
           second: 0,
         });
-        expect(pctTimeParts(pctTime(hour, minute, second))).toEqual({
+        expect(pctTimeOfDayParts(pctTimeOfDay(hour, minute, second))).toEqual({
           hour,
           minute,
           second,
@@ -142,8 +142,8 @@ describe('pctTime and pctTimeParts', () => {
   it('builds every time in the domain, and refuses every field outside it', () => {
     // The edges, once: the first and last second of a day are times, and one step past any
     // field's edge is a `RangeError` and not a string.
-    expect(pctTime(0, 0, 0)).toBe('00:00:00');
-    expect(pctTime(23, 59, 59)).toBe('23:59:59');
+    expect(pctTimeOfDay(0, 0, 0)).toBe('00:00:00');
+    expect(pctTimeOfDay(23, 59, 59)).toBe('23:59:59');
     for (const [hour, minute, second] of [
       [24, 0, 0],
       [-1, 0, 0],
@@ -152,13 +152,13 @@ describe('pctTime and pctTimeParts', () => {
       [0, 0, 60],
       [0, 0, -1],
     ])
-      expect(() => pctTime(hour, minute, second)).toThrow(RangeError);
+      expect(() => pctTimeOfDay(hour, minute, second)).toThrow(RangeError);
 
     pctForAll(
       pctRecord({ clock: anyClock, past: pctInt(1, 1_000) }),
       ({ clock, past }) => {
         const { hour, minute, second } = clock;
-        expect(isPctTime(timeOf(clock))).toBe(true);
+        expect(isPctTimeOfDay(timeOf(clock))).toBe(true);
         // Past each edge by any distance, in both directions, and off the whole numbers — one
         // field at a time, with the other two inside, so each refusal is that field's own.
         for (const [h, m, s] of [
@@ -172,7 +172,7 @@ describe('pctTime and pctTimeParts', () => {
           [hour, minute + 0.5, second],
           [hour, minute, second + 0.5],
         ])
-          expect(() => pctTime(h, m, s)).toThrow(RangeError);
+          expect(() => pctTimeOfDay(h, m, s)).toThrow(RangeError);
       },
       { runs: 150 },
     );
@@ -181,7 +181,7 @@ describe('pctTime and pctTimeParts', () => {
 
 /**
  * The strings the PLATFORM writes for a time of day, as a predicate — the independent half of
- * `isPctTime`'s contract, with `toISOString` as the writer instead of the module. The parse is
+ * `isPctTimeOfDay`'s contract, with `toISOString` as the writer instead of the module. The parse is
  * deliberately looser than `time.ts`'s own (`\d+` in every field, no width), and a field out of
  * range needs no check of its own: `Date.UTC` carries `24:00` into the next day and `13:05:60`
  * into the next minute, so what it writes back is not the candidate.
@@ -210,7 +210,7 @@ function writtenBack(candidate: unknown): boolean {
  * short and a digit long, the anchors tested at both ends, a separator that is not a colon, a
  * fraction, and values that are not strings at all.
  */
-function nearMissesOf(time: PctTime): readonly unknown[] {
+function nearMissesOf(time: PctTimeOfDay): readonly unknown[] {
   const [hh, mm, ss = '00'] = time.split(':');
   return [
     time,
@@ -240,8 +240,8 @@ function nearMissesOf(time: PctTime): readonly unknown[] {
 const reading = (candidate: unknown): string =>
   `${typeof candidate} ${String(candidate)}`;
 
-describe('isPctTime', () => {
-  it('accepts exactly the strings pctTime writes, and refuses every near miss', () => {
+describe('isPctTimeOfDay', () => {
+  it('accepts exactly the strings pctTimeOfDay writes, and refuses every near miss', () => {
     pctForAll(
       anyClock,
       (clock) => {
@@ -249,7 +249,9 @@ describe('isPctTime', () => {
         // One string of verdicts rather than an assertion each: the diff names the candidate
         // that disagreed, and a sweep pays for every `expect` once per mutant.
         expect(
-          candidates.map((c) => `${reading(c)}: ${isPctTime(c)}`).join('\n'),
+          candidates
+            .map((c) => `${reading(c)}: ${isPctTimeOfDay(c)}`)
+            .join('\n'),
         ).toBe(
           candidates.map((c) => `${reading(c)}: ${writtenBack(c)}`).join('\n'),
         );
@@ -269,11 +271,11 @@ describe('pctAddSeconds', () => {
       ({ clock, n }) => {
         const time = timeOf(clock);
         const moved = pctAddSeconds(time, n);
-        expect(isPctTime(moved)).toBe(true);
+        expect(isPctTimeOfDay(moved)).toBe(true);
         // The conservation law, against the platform: an instant `n` seconds on, read in UTC,
         // is on the clock face the result names — midnight crossed or not.
         const landed = new Date(msOf(time) + n * 1000);
-        expect(pctTimeParts(moved)).toEqual(clockOf(landed));
+        expect(pctTimeOfDayParts(moved)).toEqual(clockOf(landed));
         // The shape is the caller's, and it gives way only to keep a second.
         expect(hasSeconds(moved)).toBe(
           hasSeconds(time) || landed.getUTCSeconds() !== 0,
@@ -310,7 +312,7 @@ describe('pctAddMinutes', () => {
       ({ clock, n }) => {
         const time = timeOf(clock);
         const moved = pctAddMinutes(time, n);
-        expect(pctTimeParts(moved)).toEqual(
+        expect(pctTimeOfDayParts(moved)).toEqual(
           clockOf(new Date(msOf(time) + n * 60_000)),
         );
         expect(hasSeconds(moved)).toBe(hasSeconds(time));
@@ -371,7 +373,10 @@ describe('pctCompareTimes', () => {
         // One time in two shapes is one time.
         const { hour, minute } = x;
         expect(
-          pctCompareTimes(pctTime(hour, minute), pctTime(hour, minute, 0)),
+          pctCompareTimes(
+            pctTimeOfDay(hour, minute),
+            pctTimeOfDay(hour, minute, 0),
+          ),
         ).toBe(0);
       },
       { runs: 400 },
@@ -424,7 +429,8 @@ describe('pctClampTime', () => {
           // In the gap the answer is one of its two ends, and no farther than the other one —
           // the tie between them is `time.spec.ts`'s, where a case can stand exactly on it.
           expect([early, late]).toContain(held);
-          const distance = (end: PctTime) => Math.abs(msOf(time) - msOf(end));
+          const distance = (end: PctTimeOfDay) =>
+            Math.abs(msOf(time) - msOf(end));
           expect(distance(held)).toBeLessThanOrEqual(
             distance(held === early ? late : early),
           );
@@ -496,7 +502,7 @@ describe('the step', () => {
         const origin = timeOf(base);
         // The lattice built by the platform, not by the module: `k` steps on as an instant.
         const at = clockOf(new Date(msOf(origin) + k * step * 1000));
-        const on = pctTime(at.hour, at.minute, at.second);
+        const on = pctTimeOfDay(at.hour, at.minute, at.second);
         expect(pctTimeOnStep(on, step, origin)).toBe(true);
         if (step === 1) return;
         // Anywhere strictly between two times on the step is off it.
@@ -505,7 +511,7 @@ describe('the step', () => {
         );
         expect(
           pctTimeOnStep(
-            pctTime(aside.hour, aside.minute, aside.second),
+            pctTimeOfDay(aside.hour, aside.minute, aside.second),
             step,
             origin,
           ),
@@ -529,13 +535,13 @@ describe('the step', () => {
         expect(around).toBeLessThanOrEqual(step / 2);
         // Exactly halfway goes up: the snap is then half a step AHEAD of the time.
         if (around === step / 2)
-          expect(pctTimeParts(snapped)).toEqual(
+          expect(pctTimeOfDayParts(snapped)).toEqual(
             clockOf(new Date(msOf(time) + (step / 2) * 1000)),
           );
         expect(pctSnapToStep(snapped, step, origin)).toBe(snapped);
         if (pctTimeOnStep(time, step, origin)) expect(snapped).toBe(time);
         expect(hasSeconds(snapped)).toBe(
-          hasSeconds(time) || pctTimeParts(snapped).second !== 0,
+          hasSeconds(time) || pctTimeOfDayParts(snapped).second !== 0,
         );
       },
       { runs: 400 },

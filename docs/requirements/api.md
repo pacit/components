@@ -179,7 +179,7 @@ returned a string this module's own reader crashes on
 ### <a id="req-api-time"></a>`req-api-time` — A time of day is a wall clock, the same in every timezone
 
 **Promise.** The time field's value is a time of day written `HH:mm`, or `HH:mm:ss` where the
-step has seconds (`PctTime`), never a `Date`: the time a user picked is the time an application
+step has seconds (`PctTimeOfDay`), never a `Date`: the time a user picked is the time an application
 stores, serialises and reads back on any machine, on both sides of a daylight-saving switch —
 the minute a switch skips and the hour it repeats included. The arithmetic comes round at
 midnight, and `24:00`, a leap second and a fraction of one are not times. The one read of local
@@ -209,7 +209,7 @@ and plan 1.3 ends there
 **Control:** the same cases build the time the old way beside the new — in Warsaw
 `new Date(2026, 2, 29, 2, 30)` answers 03:30 and an hour after 01:30 reads 03:30 where
 `pctAddMinutes('01:30', 60)` is `02:30`, and in Kiritimati 13:05 carried as an instant reads
-back as three o'clock — so a `PctTime` that followed the zone would fail against a number the
+back as three o'clock — so a `PctTimeOfDay` that followed the zone would fail against a number the
 run itself produced. The defects found while the gate was built and reviewed are cases now:
 Ewe writes its morning and its word for the hour in one run (`ŋdi ga 12:00`), and on a forced
 twelve-hour clock Bulgarian and Canadian French write a separator and then the day period

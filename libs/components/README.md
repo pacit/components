@@ -65,7 +65,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/theme`      | `PctTheme`                                                                                                                                            |
 | `@pacit/components/regions`    | `providePctRegions`, `PctRegionDirective`, `PctRegionKey` — the keyboard's road to a place the reading order puts elsewhere                           |
 | `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                                                        |
-| `@pacit/components/time`       | the `PctTime` helpers — the value, its arithmetic and `pctTimeFormat`; the field follows                                                              |
+| `@pacit/components/time`       | the `PctTimeOfDay` helpers — the value, its arithmetic and `pctTimeFormat`; the field, `PctTime`, follows                                             |
 | `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                                                           |
 | `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                                                       |
 | `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                                                           |

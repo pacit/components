@@ -260,7 +260,7 @@ The order follows **architectural debt**, not popularity:
    on the date's measurements and harder: each engine draws its clock from a different source
    and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
    chromium, and one control is three tab stops there or four, by the system's locale. So the
-   field is text the library formats; the value is a wall-clock `PctTime`, `HH:mm`, whose own
+   field is text the library formats; the value is a wall-clock `PctTimeOfDay`, `HH:mm`, whose own
    arithmetic comes round at midnight; the panel is a dialog of listbox columns exported as
    `PctTimeColumns`; the entrypoint is `./time`
    ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). The **datetime field**

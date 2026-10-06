@@ -122,15 +122,15 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
 
 - [~] **1.3 — time field** in `@pacit/components/time`: the field, `PctTimeColumns` and the
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
-  - the value module landed 2026-10-05: `PctTime`, its arithmetic and `pctTimeFormat`, enforced
-    in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to `./core`
-    with it — `./core` +718 B, `./date` +166 B, no other entrypoint moved, `./time` 9606 B of
-    which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader still to come
-  - the field cannot be called `PctTime`: 0086 gave the value that name too, and TS refuses the
-    two side by side (TS2300). One of the two is renamed — binds at: **the field's first commit,
-    or the next release, whichever comes first**, since a release dates the value's name
+  - the value module landed 2026-10-05: `PctTimeOfDay`, its arithmetic and `pctTimeFormat`,
+    enforced in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to
+    `./core` with it — `./core` +718 B, `./date` +166 B, no other entrypoint moved, `./time`
+    9636 B of which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader
+  - the names, settled 2026-10-06 (0086 amended): the value is `PctTimeOfDay`, with
+    `pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts`, and the field keeps `PctTime`, as
+    `PctDate` keeps its name beside `PctDay` — renamed before any release carried the value
   - whether `[formField]` fills a string bound is measured with the field, not inherited from
-    the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTime`
+    the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTimeOfDay`
     limit to `MIN`/`MAX` ships with a case or not at all
   - then the columns (`pctListNavigation`, `aria-activedescendant`, `wrap` on, one stop each)
     and the field: the tier `--pct-time-*`; the letters, the column names, the toggle's name

@@ -3,7 +3,7 @@ import {
   pctNumberFormat,
   pctToLatinDigits,
 } from '@pacit/components/core';
-import { isPctTime, PctTime, pctTimeParts } from './time';
+import { isPctTimeOfDay, PctTimeOfDay, pctTimeOfDayParts } from './time';
 
 /**
  * How a language writes a time of day — the hour cycle, the day-period words and where they
@@ -70,7 +70,7 @@ export interface PctTimeFormat {
    */
   readonly dayPeriods: readonly [string, string] | null;
   /** The time as this language writes it — with seconds exactly when the value has them. */
-  format(time: PctTime): string;
+  format(time: PctTimeOfDay): string;
   /**
    * A time out of what a user typed, or `null`. It accepts more widely than it writes: any run
    * of non-digits separates; the locale's own digits and the ASCII ones both count; a single
@@ -81,7 +81,7 @@ export interface PctTimeFormat {
    * twelve-hour field. A word or a number it does not know makes the text malformed, never
    * another time.
    */
-  parse(text: string): PctTime | null;
+  parse(text: string): PctTimeOfDay | null;
   /**
    * `hh:mm` in this language's order, separators and day-period words, with the reader's own
    * letters — and the seconds when `seconds` asks for them.
@@ -115,8 +115,8 @@ export function pctTimeFormat(locale: string): PctTimeFormat {
  * in UTC, which a formatter told `timeZone: 'UTC'` reads back as the same three fields. No offset
  * is ever added, so no daylight-saving switch is ever crossed.
  */
-function instant(time: PctTime): Date {
-  const { hour, minute, second } = pctTimeParts(time);
+function instant(time: PctTimeOfDay): Date {
+  const { hour, minute, second } = pctTimeOfDayParts(time);
   return new Date(((hour * 60 + minute) * 60 + second) * 1000);
 }
 
@@ -180,9 +180,9 @@ function writer(
   // The times every reading is taken at: an hour that is one digit on a twelve-hour clock and
   // two on a twenty-four-hour one, a minute and a second that cannot be confused with it or with
   // each other, and the same three fields before noon and after it, for the two day-period words.
-  // Every literal of this entrypoint lives in the function that reads it — `time.ts` says why.
-  const morningAt: PctTime = '01:05:09';
-  const afternoonAt: PctTime = '13:05:09';
+  // Every string of this entrypoint lives in the function that reads it — `time.ts` says why.
+  const morningAt: PctTimeOfDay = '01:05:09';
+  const afternoonAt: PctTimeOfDay = '13:05:09';
   const brief = short.formatToParts(instant(morningAt));
   const morning = long.formatToParts(instant(morningAt));
   const afternoon = long.formatToParts(instant(afternoonAt));
@@ -342,7 +342,12 @@ function field(
   // The times the field checks it reads back before it is used: the first hour, which `h11`,
   // `h12` and `h24` write `0`, `12` and `24`; noon; an hour of two digits on a twelve-hour clock;
   // an afternoon — in both shapes, and with every digit there is.
-  const proof: readonly PctTime[] = ['00:00', '12:00', '10:26:47', '19:58:39'];
+  const proof: readonly PctTimeOfDay[] = [
+    '00:00',
+    '12:00',
+    '10:26:47',
+    '19:58:39',
+  ];
   return {
     format,
     readsBack: proof.every(
@@ -389,16 +394,20 @@ function hint(
 interface Reader {
   readonly latin: (text: string) => string | null;
   /**
-   * Every run of letters the locale writes and what it names: a half of the day, or `null` for a
-   * separator. A word missing here is one the locale does not write — a separator glued to a day
-   * period in a way the language does not write them: `1:05 hpm` is refused, where `1:05 ч. pm`
-   * is Bulgarian's own.
+   * Every word the field reads and what it names: a half of the day, or `null` for a separator —
+   * the runs of letters the locale writes, and the few every field reads whatever its language
+   * (`a`, `am`, `p`, `pm`, the `h` of `14h30`). A word missing here is one the locale does not
+   * write — a separator glued to a day period in a way the language does not write them:
+   * `1:05 hpm` is refused, where `1:05 ч. pm` is Bulgarian's own.
    */
   readonly words: ReadonlyMap<string, Half | null>;
   readonly hourCycle: PctHourCycle;
 }
 
-/** The words of a text with ASCII digits, one for each run between its digits, as `wordOf` cuts. */
+/**
+ * The words of a text with ASCII digits: one for each run that is not a digit — before the first,
+ * between two, after the last — as `wordOf` cuts it.
+ */
 function wordsIn(text: string): readonly string[] {
   return (text.match(/\D+/g) ?? []).map(wordOf);
 }
@@ -423,7 +432,7 @@ function fieldsOf(
   return [run.slice(0, -4), run.slice(-4, -2), run.slice(-2)];
 }
 
-function parse(text: string, reader: Reader): PctTime | null {
+function parse(text: string, reader: Reader): PctTimeOfDay | null {
   const latin = reader.latin(text);
   if (latin === null) return null;
 
@@ -445,7 +454,7 @@ function parse(text: string, reader: Reader): PctTime | null {
   if (groups === null) return null;
   const fields = fieldsOf(groups, half);
   if (fields === null) return null;
-  // The minute and the second go into the candidate as typed, so `isPctTime` below refuses one
+  // The minute and the second go into the candidate as typed, so `isPctTimeOfDay` below refuses one
   // that is not two digits; the hour is a number by then, and its width is read here.
   const [h, minute, second] = fields;
   if (h.length > 2) return null;
@@ -461,10 +470,10 @@ function parse(text: string, reader: Reader): PctTime | null {
     hour = 0;
   }
 
-  // Built by hand rather than through `pctTime`, which throws: a field out of range is a typing
-  // mistake to report, not an error.
+  // Built by hand rather than through `pctTimeOfDay`, which throws: a field out of range is a
+  // typing mistake to report, not an error.
   const candidate = `${String(hour).padStart(2, '0')}:${minute}${
     second === undefined ? '' : `:${second}`
   }`;
-  return isPctTime(candidate) ? candidate : null;
+  return isPctTimeOfDay(candidate) ? candidate : null;
 }
