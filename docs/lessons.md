@@ -7115,10 +7115,11 @@ press is the measurement — the control's box before and after it, equal to the
 On 2026-10-06 Stryker closed the dry run of the library with "411 static mutants (6% of total)
 that are estimated to take 57% of the time". A static mutant sits in code that runs while a
 module loads — a constant at the top of a file, a pattern beside the function that reads it, an
-arrow built at module scope, a decorator a spec evaluates while `describe` collects its cases —
-outside the `beforeEach`…`afterEach` window in which the runner records which case is running.
-Per-test coverage then has no case to credit it to, and Stryker runs every spec related to the
-file against it, the environment reloaded each time.
+expression-bodied arrow at module scope (its mutant swaps the whole arrow where it is built), a
+decorator a spec evaluates while `describe` collects its cases — outside the
+`beforeEach`…`afterEach` window in which the runner records which case is running. Per-test
+coverage then has no case to credit it to, and Stryker runs every spec related to the file
+against it, the environment reloaded each time.
 
 The count was the wrong list to start from. The report holds `testsCompleted` for every mutant,
 and summed per file it ranks them otherwise: `svg-icon.ts` (58 static) and `testing/harnesses.ts`
@@ -7142,10 +7143,13 @@ What moved them, without a behaviour or a score changing: every string, list and
 function reads is written in that function; an expression-bodied arrow at module scope is a
 `function` declaration, so the mutant is its body and runs when it is called; a component a spec
 builds is declared inside the case that builds it. For a survivor that cannot move — a token's
-description is read by the constructor as the module loads — the cheap move is the other one: a
-case that reads it turns a mutant that ran every spec to the end into one killed where that case
-stands. And one survivor was no test's fault: `providedIn: 'root'` on a token with a factory says
-what `InjectionToken` does anyway (`options.providedIn || 'root'`), so the line went with it.
+description is read by the constructor as the module loads — a case that reads it buys the kill,
+and buys time only when its file happens to run early, because the order of the related specs
+changes from run to run: one case of `core.spec.ts` killed `'PCT_CONFIG'` after 623, 241 and
+1 171 tests in three runs of the same code. `'PCT_REGIONS'` went from surviving after 1 103 tests
+to dying after 1 173; the two icon descriptions from 654 to 28 and 70. And one survivor was no
+test's fault: `providedIn: 'root'` on a token with a factory says what `InjectionToken` does
+anyway (`options.providedIn || 'root'`), so the line went with it.
 
 Three kinds stay static, each for a reason the run cannot see. A value a consumer imports:
 `PCT_DEFAULT_TEXTS` is the largest cost left, some 11 000 tests a run, and lazy it would be 24
