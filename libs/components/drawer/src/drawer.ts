@@ -301,7 +301,7 @@ export class PctDrawer {
    * nothing in the drawer is wrong. The consumer cannot diagnose that without knowing the
    * rule, and the platform knows which element it was: `offsetParent` of a fixed element is
    * `null` while it belongs to the window and the catching ancestor otherwise — measured in
-   * three engines, over every property in `CAPTURING` and a dozen that do not catch
+   * three engines, over every property `capturingProperty` lists and a dozen that do not catch
    * (`container-type` among them, whatever the first draft of the card said). So that is
    * what is asked, and the properties are read only to NAME the reason.
    */
@@ -345,28 +345,29 @@ export class PctDrawer {
 }
 
 /**
- * The properties that make an element the containing block of its fixed descendants, each
- * with the value that means "off" — measured in chromium, firefox and webkit on 2026-09-05.
- * `contain` and `will-change` are lists and are read below. `container-type`, `overflow`,
- * `isolation`, `opacity`, `zoom`, `position` and `contain: size | style` were measured too and
- * catch nothing.
+ * The property an ancestor caught the panel with, as `name: value`, or `null` when none is read.
+ *
+ * The list is of the properties that make an element the containing block of its fixed
+ * descendants, each with the value that means "off" — measured in chromium, firefox and webkit
+ * on 2026-09-05. `contain` and `will-change` are lists and are read below. `container-type`,
+ * `overflow`, `isolation`, `opacity`, `zoom`, `position` and `contain: size | style` were
+ * measured too and catch nothing. It is written in the function and not as a constant of the
+ * module, so the mutation run reaches it through the cases that read it (`lesson-250`).
  */
-const CAPTURING: ReadonlyArray<readonly [property: string, off: string]> = [
-  ['transform', 'none'],
-  ['translate', 'none'],
-  ['rotate', 'none'],
-  ['scale', 'none'],
-  ['perspective', 'none'],
-  ['filter', 'none'],
-  ['backdrop-filter', 'none'],
-  ['offset-path', 'none'],
-  ['transform-style', 'flat'],
-  ['content-visibility', 'visible'],
-];
-
-/** The property an ancestor caught the panel with, as `name: value`, or `null` when none is read. */
 function capturingProperty(style: CSSStyleDeclaration): string | null {
-  for (const [property, off] of CAPTURING) {
+  const capturing: ReadonlyArray<readonly [property: string, off: string]> = [
+    ['transform', 'none'],
+    ['translate', 'none'],
+    ['rotate', 'none'],
+    ['scale', 'none'],
+    ['perspective', 'none'],
+    ['filter', 'none'],
+    ['backdrop-filter', 'none'],
+    ['offset-path', 'none'],
+    ['transform-style', 'flat'],
+    ['content-visibility', 'visible'],
+  ];
+  for (const [property, off] of capturing) {
     const value = style.getPropertyValue(property);
     // jsdom answers '' for a property nobody set; an engine answers the "off" value.
     if (value !== '' && value !== off) return `${property}: ${value}`;

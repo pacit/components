@@ -22,11 +22,14 @@ import type {
  * `@switch` of `svg-icon.html` and nowhere else — a tag with no case draws nothing — so what
  * is checked here is only the SHAPE, for data that arrived as JSON rather than through a type.
  */
-const isNode = (node: unknown): node is PctSvgNode =>
-  Array.isArray(node) &&
-  typeof node[0] === 'string' &&
-  typeof node[1] === 'object' &&
-  node[1] !== null;
+function isNode(node: unknown): node is PctSvgNode {
+  return (
+    Array.isArray(node) &&
+    typeof node[0] === 'string' &&
+    typeof node[1] === 'object' &&
+    node[1] !== null
+  );
+}
 
 /**
  * The attributes the renderer paints: the geometry of each element and the paint an icon
@@ -34,61 +37,45 @@ const isNode = (node: unknown): node is PctSvgNode =>
  * `style`, `class`, `id` — so a drawing from anybody's data is as safe as a drawing from
  * nobody's. This is the whole sanitizer, and it is a list of geometry because Angular's
  * own has no SVG in it at all ([`lesson-85`](../../../../docs/lessons.md#lesson-85)).
+ *
+ * A function and not a constant, as is every list and pattern of this file: a literal
+ * evaluated as the module loads is one the mutation run cannot tell which cases read, so it
+ * runs every spec that imports the file against each edit of it (`lesson-250`).
  */
-const ATTRIBUTES = new Set([
-  'd',
-  'cx',
-  'cy',
-  'r',
-  'rx',
-  'ry',
-  'x',
-  'y',
-  'x1',
-  'x2',
-  'y1',
-  'y2',
-  'width',
-  'height',
-  'points',
-  'transform',
-  'fill',
-  'fill-rule',
-  'fill-opacity',
-  'clip-rule',
-  'stroke',
-  'stroke-width',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-dasharray',
-  'stroke-dashoffset',
-  'stroke-miterlimit',
-  'stroke-opacity',
-  'opacity',
-  'vector-effect',
-]);
-
-/**
- * A paint value that names an address: `fill="url(https://…)"` makes a browser fetch a paint
- * server from wherever the data says — Chromium across origins, measured — so a `url(` in a
- * value is refused unless it is a reference into the document itself, `url(#id)`, bare or
- * quoted. A value holding a backslash is refused outright: the CSS tokenizer unescapes
- * `u\72l(` to `url(` before it decides what the word is (measured in review), and an
- * escape is the only way to spell `url` without writing it.
- */
-const ADDRESS = /url\s*\(/i;
-const LOCAL = /^url\(\s*(["']?)#[^()"']*\1\s*\)$/i;
-const ESCAPE = '\\';
-
-/**
- * An address that names a scheme at all, and the two schemes a sprite may come from. The
- * address is read the way a URL parser reads it — tabs and newlines gone from anywhere, C0
- * controls and spaces gone from both ends — because `' javascript:'` IS `javascript:` to the
- * element, and a check on the raw string would be a check on nothing.
- */
-const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
-const HTTP = /^https?:/i;
-const STRIPPED = /[\t\n\r]/g;
+function paintedAttributes(): readonly string[] {
+  return [
+    'd',
+    'cx',
+    'cy',
+    'r',
+    'rx',
+    'ry',
+    'x',
+    'y',
+    'x1',
+    'x2',
+    'y1',
+    'y2',
+    'width',
+    'height',
+    'points',
+    'transform',
+    'fill',
+    'fill-rule',
+    'fill-opacity',
+    'clip-rule',
+    'stroke',
+    'stroke-width',
+    'stroke-linecap',
+    'stroke-linejoin',
+    'stroke-dasharray',
+    'stroke-dashoffset',
+    'stroke-miterlimit',
+    'stroke-opacity',
+    'opacity',
+    'vector-effect',
+  ];
+}
 
 /** `trim()` the way a URL parser trims: everything at or below U+0020, off both ends. */
 const trimControls = (text: string): string => {
@@ -139,24 +126,32 @@ export class PctSvgAttributes {
         if (next[name] === undefined)
           this.renderer.removeAttribute(element, name);
       painted = [];
+      const paints = paintedAttributes();
       for (const [name, value] of Object.entries(next)) {
         if (value === undefined) continue;
-        if (!ATTRIBUTES.has(name)) {
+        if (!paints.includes(name)) {
           if (isDevMode() && !dropped.has(name)) {
             dropped.add(name);
             console.warn(
               `[pct-svg-icon] \`${name}\` is not an attribute the renderer paints and was ` +
                 `dropped. A drawing from data carries geometry and paint — ` +
-                `${[...ATTRIBUTES].join(', ')} — and nothing that names a script, an ` +
+                `${paints.join(', ')} — and nothing that names a script, an ` +
                 `address or a stylesheet.`,
             );
           }
           continue;
         }
         const text = String(value);
+        // A paint value that names an address: `fill="url(https://…)"` makes a browser fetch
+        // a paint server from wherever the data says — Chromium across origins, measured — so
+        // a `url(` in a value is refused unless it is a reference into the document itself,
+        // `url(#id)`, bare or quoted. A value holding a backslash is refused outright: the CSS
+        // tokenizer unescapes `u\72l(` to `url(` before it decides what the word is (measured
+        // in review), and an escape is the only way to spell `url` without writing it.
         if (
-          text.includes(ESCAPE) ||
-          (ADDRESS.test(text) && !LOCAL.test(text))
+          text.includes('\\') ||
+          (/url\s*\(/i.test(text) &&
+            !/^url\(\s*(["']?)#[^()"']*\1\s*\)$/i.test(text))
         ) {
           if (isDevMode() && !dropped.has(`${name}=url`)) {
             dropped.add(`${name}=url`);
@@ -225,8 +220,13 @@ export class PctSvgIcon {
   protected readonly address = computed(() => {
     const href = this.href();
     if (href === null) return null;
-    const read = trimControls(href.replace(STRIPPED, ''));
-    if (!SCHEME.test(read) || HTTP.test(read)) return read;
+    // An address that names a scheme at all, and the two schemes a sprite may come from. The
+    // address is read the way a URL parser reads it — tabs and newlines gone from anywhere, C0
+    // controls and spaces gone from both ends — because `' javascript:'` IS `javascript:` to
+    // the element, and a check on the raw string would be a check on nothing.
+    const read = trimControls(href.replace(/[\t\n\r]/g, ''));
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(read) || /^https?:/i.test(read))
+      return read;
     if (isDevMode())
       console.warn(
         `[pct-svg-icon] \`${href}\` names a scheme a sprite cannot come from and was ` +
@@ -241,15 +241,6 @@ export class PctSvgIcon {
     return Array.isArray(nodes) ? nodes.filter(isNode) : [];
   });
 }
-
-/** The 24-grid and the stroke conventions the Tabler icons and their kin draw with. */
-const STROKED: PctSvgIconData['attributes'] = {
-  fill: 'none',
-  stroke: 'currentColor',
-  'stroke-width': 2,
-  'stroke-linecap': 'round',
-  'stroke-linejoin': 'round',
-};
 
 /**
  * What `svgIcons()` takes besides the drawings.
@@ -266,8 +257,9 @@ export interface PctSvgIconsOptions {
 }
 
 /** `Array.isArray` narrows a readonly array to nothing useful; this one narrows. */
-const isNodes = (icon: PctSvgIconInput): icon is readonly PctSvgNode[] =>
-  Array.isArray(icon);
+function isNodes(icon: PctSvgIconInput): icon is readonly PctSvgNode[] {
+  return Array.isArray(icon);
+}
 
 /**
  * One drawing in the shape the renderer takes, from any of the three a consumer may hold.
@@ -276,7 +268,18 @@ const isNodes = (icon: PctSvgIconInput): icon is readonly PctSvgNode[] =>
  */
 export function svgIconData(icon: PctSvgIconInput): PctSvgIconData {
   if (isNodes(icon))
-    return { viewBox: '0 0 24 24', attributes: STROKED, nodes: icon };
+    return {
+      viewBox: '0 0 24 24',
+      // The 24-grid and the stroke conventions the Tabler icons and their kin draw with.
+      attributes: {
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': 2,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+      },
+      nodes: icon,
+    };
   if ('icon' in icon) {
     const [width, height, , , pathData] = icon.icon;
     const paths = typeof pathData === 'string' ? [pathData] : pathData;

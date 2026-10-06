@@ -79,6 +79,14 @@ describe('PctToaster', () => {
       expect(viewport?.getAttribute('aria-relevant')).toBeNull();
     });
 
+    it('keeps its English name when nobody provides one', async () => {
+      await boot();
+
+      // The name a reader hears on arrival. The case that provides one says it follows the
+      // texts; this one says what it is before anybody has.
+      expect(region()?.getAttribute('aria-label')).toBe('Notifications');
+    });
+
     it('stands at the end of both axes where no configuration says otherwise', async () => {
       // The one case that boots with no `providePctToastConfig` at all: everywhere else
       // the host writes the placement, so the defaults the token carries are exercised

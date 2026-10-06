@@ -206,19 +206,21 @@ export class PctField implements PctFieldApi {
   /**
    * Whether the event hit an element the chrome does not reach into — it then keeps out of
    * the click.
+   *
+   * The control itself and interactive elements handle the click on their own. A `fill`
+   * decoration handles nothing, but it is a surface of its own: since it shows its own cursor,
+   * a click on it must not quietly do something else. The selector is written here and not as
+   * a static field, which is evaluated as the class is declared — where the mutation run cannot
+   * tell which cases read it (`lesson-250`).
    */
   private handledByTarget(event: MouseEvent): boolean {
     const target = event.target as HTMLElement | null;
-    return target?.closest(PctField.ownSurface) != null;
+    return (
+      target?.closest(
+        'button, a, input, textarea, select, [tabindex], [data-pct-fit="fill"]',
+      ) != null
+    );
   }
-
-  /**
-   * The control itself and interactive elements handle the click on their own. A `fill`
-   * decoration handles nothing, but it is a surface of its own: since it shows its own cursor,
-   * a click on it must not quietly do something else.
-   */
-  private static readonly ownSurface =
-    'button, a, input, textarea, select, [tabindex], [data-pct-fit="fill"]';
 
   /**
    * A click on the field area that is not the control (border padding, the gap between

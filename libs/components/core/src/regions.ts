@@ -51,5 +51,13 @@ export interface PctRegionsApi {
  */
 export const PCT_REGIONS = new InjectionToken<PctRegionsApi | null>(
   'PCT_REGIONS',
-  { providedIn: 'root', factory: () => null },
+  {
+    // No `providedIn`: a token with a factory goes to root unless it names another scope
+    // (`options.providedIn || 'root'` in the constructor), so `'root'` said nothing. A method
+    // and not an arrow: an arrow is built as the module loads, where the mutation run cannot
+    // tell which cases read it and runs every spec that imports `core` against it (`lesson-250`).
+    factory() {
+      return null;
+    },
+  },
 );

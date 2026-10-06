@@ -9,7 +9,13 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { iconFont } from './fonts';
-import { PCT_ICONS, PctIcon, PctIconTemplate, providePctIcons } from './icon';
+import {
+  PCT_ICON_SOURCES,
+  PCT_ICONS,
+  PctIcon,
+  PctIconTemplate,
+  providePctIcons,
+} from './icon';
 import type { PctIconSource } from './source.types';
 
 /**
@@ -66,31 +72,36 @@ describe('@pacit/components/icon', () => {
     return fixture;
   };
 
-  /** A component that provides a set, on a page that also draws an icon outside it. */
-  @Component({
-    selector: 'pct-probe-scope',
-    imports: [PctIcon],
-    template: `<pct-icon name="check"
-      ><svg data-built-in="check"></svg
-    ></pct-icon>`,
-    providers: [providePctIcons(ProbeSet)],
-  })
-  class Scoped {}
-
-  @Component({
-    imports: [PctIcon, Scoped],
-    template: `
-      @if (shown()) {
-        <pct-probe-scope />
-      }
-      <pct-icon name="check"><svg data-built-in="check"></svg></pct-icon>
-    `,
-  })
-  class Page {
-    readonly shown = signal(true);
-  }
-
+  /**
+   * A component that provides a set, on a page that also draws an icon outside it. Both are
+   * declared inside the call rather than beside it: a decorator runs as the class is declared,
+   * and one declared while `describe` collects its cases calls `providePctIcons` where the
+   * mutation run cannot tell which case it belongs to (`lesson-250`).
+   */
   const scoped = async () => {
+    @Component({
+      selector: 'pct-probe-scope',
+      imports: [PctIcon],
+      template: `<pct-icon name="check"
+        ><svg data-built-in="check"></svg
+      ></pct-icon>`,
+      providers: [providePctIcons(ProbeSet)],
+    })
+    class Scoped {}
+
+    @Component({
+      imports: [PctIcon, Scoped],
+      template: `
+        @if (shown()) {
+          <pct-probe-scope />
+        }
+        <pct-icon name="check"><svg data-built-in="check"></svg></pct-icon>
+      `,
+    })
+    class Page {
+      readonly shown = signal(true);
+    }
+
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -642,5 +653,16 @@ describe('@pacit/components/icon', () => {
     })
     class Host {}
     expect(await warned(Host, providePctIcons(probeFont()))).toEqual([]);
+  });
+
+  describe('tokens name themselves in the missing-provider message', () => {
+    it.each([
+      ['PCT_ICONS', PCT_ICONS],
+      ['PCT_ICON_SOURCES', PCT_ICON_SOURCES],
+    ])('%s', (name, token) => {
+      // The same reason as the tokens of `core`: the description is the only name a DI
+      // error has for the token, so without it a message cannot say WHICH one.
+      expect(String(token)).toContain(name);
+    });
   });
 });

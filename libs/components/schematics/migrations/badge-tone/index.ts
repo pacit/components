@@ -89,45 +89,11 @@ import type { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
  * executes a migration, so the cases are the only instrument there is. Since 2026-09-21 the
  * instrument is itself measured: this file stands in `mutate` (`stryker.config.json`), and
  * the reason is that the reviews above each found their defects by planting mutants by hand,
- * which is the same measurement done by an eye that gets tired.
+ * which is the same measurement done by an eye that gets tired. Every pattern and name this
+ * file compares against is written inside the function that reads it, never at the top of the
+ * module: a literal evaluated as the module loads is one the run cannot credit to any case, so
+ * it throws every case of the spec at each edit of it (`lesson-250`).
  */
-
-/** An `.html` file is a template whole. `.htm` is the same file with a shorter name. */
-const TEMPLATE_FILE = /\.html?$/i;
-
-/** Every spelling of a TypeScript file: read for the report, never written. */
-const SOURCE_FILE = /\.[cm]?tsx?$/i;
-
-/** Directories with no consumer source in them, and a great deal of everything else. */
-const SKIPPED = /(^|\/)(node_modules|dist|\.git|\.angular|\.nx|coverage)(\/|$)/;
-
-/** Anything still naming the deleted type, so the report can point at a line. */
-const DELETED_TYPE = /\bPctBadgeTone\b/;
-
-/** The attribute this release takes away, in the spellings a template may write it. */
-const NEUTRAL_TONE =
-  /(?<![-.\w])tone\s*=\s*(?:"\s*neutral\s*"|'\s*neutral\s*'|neutral\b)|(?:\[tone\]|(?<![-.\w])bind-tone)\s*=\s*(?:"\s*'neutral'\s*"|'\s*"neutral"\s*')/;
-
-/**
- * The element name this migration touches, compared the way Angular compares it before
- * matching a component selector: `createCssSelectorFromNode` calls `splitNsName` first, so
- * the NAMESPACE comes off and the local name is what the selector sees. A badge inside `<svg>`
- * or `<math>` is reported by the parser as `:svg:pct-badge` or `:math:pct-badge`, and both of
- * those ARE the component.
- *
- * Case is not stripped, and that is the one shape this leaves alone: Angular matches a
- * selector case-sensitively, so `<PCT-BADGE>` never bound the input and taking its attribute
- * off would change a template that renders plain text.
- *
- * Read twice, because the first reading of it was wrong in the expensive direction. An earlier
- * version of this file compared the name whole and skipped every badge inside `<svg>` — with a
- * comment claiming the selector does not match, "measured with Angular's own
- * `SelectorMatcher`". The measurement was an artefact: `CssSelector.parse(':svg:pct-badge')`
- * reads the leading colon as a PSEUDO-SELECTOR, so what it built matched nothing like an
- * element and the answer looked like a fact. A false measurement is worse than none — it
- * closes the question (`lesson-238`).
- */
-const BADGE = 'pct-badge';
 
 /**
  * `splitNsName`'s local half, transcribed rather than re-implemented: a name is namespaced
@@ -138,17 +104,9 @@ const BADGE = 'pct-badge';
  * and call the result this component. Angular does not: measured through
  * `findMatchingDirectivesAndPipes`, which matches nothing there.
  */
-const localName = (name: string): string => name.replace(/^:[^:]+:/, '');
-
-/**
- * Angular's whitespace, and not JavaScript's: its lexer asks
- * `code >= $TAB && code <= $SPACE || code == $NBSP`, which is 9 to 32 and U+00A0, where `\s`
- * is 9 to 13, 32, U+00A0 and eighteen further Unicode spaces. The two disagree on thirty-six
- * code points, eighteen each way (`lesson-236`). It is one decision now and a cosmetic one —
- * whether a single separator collapses with the attribute that needed it — because the
- * condition in `cutFor` is what keeps the edit safe, not this.
- */
-const ONE_SPACE = /^[\t-\x20\u00a0]$/;
+function localName(name: string): string {
+  return name.replace(/^:[^:]+:/, '');
+}
 
 interface Span {
   readonly start: number;
@@ -218,8 +176,11 @@ const isNeutralTone = (attribute: ParsedAttribute): boolean => {
  * An `i18n-tone` describes an attribute that is about to stop existing; left behind it is a
  * template error the consumer gets to debug on our behalf.
  */
-const isOrphanDescriptor = (attribute: ParsedAttribute): boolean =>
-  attribute.name === 'i18n-tone' || attribute.name.startsWith('i18n-tone.');
+function isOrphanDescriptor(attribute: ParsedAttribute): boolean {
+  return (
+    attribute.name === 'i18n-tone' || attribute.name.startsWith('i18n-tone.')
+  );
+}
 
 /**
  * The span to cut for one attribute: its own, and the whitespace before it when taking that
@@ -232,20 +193,31 @@ const isOrphanDescriptor = (attribute: ParsedAttribute): boolean =>
  * Measured before the condition existed: 335 of 2899 clean templates came out broken.
  */
 const cutFor = (template: string, attribute: ParsedAttribute): Span => {
+  // Angular's whitespace, and not JavaScript's: its lexer asks
+  // `code >= $TAB && code <= $SPACE || code == $NBSP`, which is 9 to 32 and U+00A0, where `\s`
+  // is 9 to 13, 32, U+00A0 and eighteen further Unicode spaces. The two disagree on thirty-six
+  // code points, eighteen each way (`lesson-236`). It is one decision now and a cosmetic one —
+  // whether a single separator collapses with the attribute that needed it — because the
+  // condition below is what keeps the edit safe, not this.
+  const oneSpace = /^[\t-\x20\u00a0]$/;
   const end = attribute.sourceSpan.end.offset;
   let start = attribute.sourceSpan.start.offset;
   const after = template[end];
   const separated =
     after === undefined ||
-    ONE_SPACE.test(after) ||
+    oneSpace.test(after) ||
     after === '>' ||
     after === '/';
   if (separated)
-    while (start > 0 && ONE_SPACE.test(template[start - 1] ?? '')) start--;
+    while (start > 0 && oneSpace.test(template[start - 1] ?? '')) start--;
   return { start, end };
 };
 
 /**
+ * Every named node of the tree, in the order the parser found them, minus everything under an
+ * `ngNonBindable`. The flag rides DOWN the walk rather than being asked of each node, because
+ * the property is inherited and a node does not know its parents.
+ *
  * `ngNonBindable` turns a subtree into markup: Angular emits `ɵɵdisableBindings()` around it,
  * so no directive is instantiated inside and every attribute stays in the DOM as it was
  * written. Measured by RENDERING, because the question cannot be answered anywhere earlier —
@@ -274,16 +246,6 @@ const cutFor = (template: string, attribute: ParsedAttribute): Span => {
  *   on `<div>` alone and generalised to "anything under an `ngNonBindable`" — the move
  *   `lesson-238` exists to forbid, made by the code that cites it.
  */
-const NON_BINDABLE = 'ngNonBindable';
-
-/** The one tag `ngNonBindable` does not disable through. */
-const TEMPLATE_TAG = 'ng-template';
-
-/**
- * Every named node of the tree, in the order the parser found them, minus everything under an
- * `ngNonBindable`. The flag rides DOWN the walk rather than being asked of each node, because
- * the property is inherited and a node does not know its parents.
- */
 const elementsOf = (
   nodes: readonly ParsedNode[],
   bound = true,
@@ -291,9 +253,10 @@ const elementsOf = (
 ): ParsedNode[] => {
   for (const node of nodes) {
     if (bound && typeof node?.name === 'string') found.push(node);
+    // `ng-template` is the one tag `ngNonBindable` does not disable through.
     const disables =
-      node?.name !== TEMPLATE_TAG &&
-      (node?.attrs ?? []).some((a) => a.name === NON_BINDABLE);
+      node?.name !== 'ng-template' &&
+      (node?.attrs ?? []).some((a) => a.name === 'ngNonBindable');
     const inside = bound && !disables;
     if (node?.children) elementsOf(node.children, inside, found);
   }
@@ -318,8 +281,9 @@ const withoutSpans = (template: string, cuts: Span[]): string => {
  * So the question at the end is not "did I rewrite it" but "does this file still look like it
  * holds one" — a question about what is there now, which catches the shapes nobody thought of.
  */
-const mayStillHoldATone = (source: string): boolean =>
-  source.includes('pct-badge') && /\bneutral\b/.test(source);
+function mayStillHoldATone(source: string): boolean {
+  return source.includes('pct-badge') && /\bneutral\b/.test(source);
+}
 
 /**
  * Every line of a source file worth a consumer's eye, with its number.
@@ -330,10 +294,15 @@ const mayStillHoldATone = (source: string): boolean =>
  * spread over lines — and that is what the whole-file fallback beside it is for.
  */
 const linesWorthReading = (source: string, shown: string): string[] => {
+  // The attribute this release takes away, in the spellings a template may write it.
+  const neutralTone =
+    /(?<![-.\w])tone\s*=\s*(?:"\s*neutral\s*"|'\s*neutral\s*'|neutral\b)|(?:\[tone\]|(?<![-.\w])bind-tone)\s*=\s*(?:"\s*'neutral'\s*"|'\s*"neutral"\s*')/;
+  // Anything still naming the deleted type, so the report can point at a line.
+  const deletedType = /\bPctBadgeTone\b/;
   const found: string[] = [];
   source.split('\n').forEach((line, index) => {
-    const wearsIt = line.includes('pct-badge') && NEUTRAL_TONE.test(line);
-    if (wearsIt || DELETED_TYPE.test(line)) found.push(`${shown}:${index + 1}`);
+    const wearsIt = line.includes('pct-badge') && neutralTone.test(line);
+    if (wearsIt || deletedType.test(line)) found.push(`${shown}:${index + 1}`);
   });
   return found;
 };
@@ -380,7 +349,24 @@ const rewriteTemplate = (
 
   const cuts: Span[] = [];
   for (const element of elementsOf(parsed.rootNodes)) {
-    if (localName(element.name ?? '') !== BADGE) continue;
+    // The element name this migration touches, compared the way Angular compares it before matching
+    // a component selector: `createCssSelectorFromNode` calls `splitNsName` first, so the NAMESPACE
+    // comes off and the local name is what the selector sees. A badge inside `<svg>` or `<math>` is
+    // reported by the parser as `:svg:pct-badge` or `:math:pct-badge`, and both of those ARE the
+    // component.
+    //
+    // Case is not stripped, and that is the one shape this leaves alone: Angular matches a selector
+    // case-sensitively, so `<PCT-BADGE>` never bound the input and taking its attribute off would
+    // change a template that renders plain text.
+    //
+    // Read twice, because the first reading of it was wrong in the expensive direction. An earlier
+    // version of this file compared the name whole and skipped every badge inside `<svg>` — with a
+    // comment claiming the selector does not match, "measured with Angular's own
+    // `SelectorMatcher`". The measurement was an artefact: `CssSelector.parse(':svg:pct-badge')`
+    // reads the leading colon as a PSEUDO-SELECTOR, so what it built matched nothing like an
+    // element and the answer looked like a fact. A false measurement is worse than none — it closes
+    // the question (`lesson-238`).
+    if (localName(element.name ?? '') !== 'pct-badge') continue;
     const attributes = element.attrs ?? [];
     const neutral = attributes.filter(isNeutralTone);
     if (!neutral.length) continue;
@@ -400,16 +386,24 @@ export function badgeTone(): Rule {
     const unread: string[] = [];
     const byHand: string[] = [];
 
+    // An `.html` file is a template whole. `.htm` is the same file with a shorter name.
+    const templateFile = /\.html?$/i;
+    // Every spelling of a TypeScript file: read for the report, never written.
+    const sourceFile = /\.[cm]?tsx?$/i;
+    // Directories with no consumer source in them, and a great deal of everything else.
+    const skipped =
+      /(^|\/)(node_modules|dist|\.git|\.angular|\.nx|coverage)(\/|$)/;
+
     // `visit` is synchronous and the work below is not, so the walk collects and the reading
     // happens after it: a callback that returned a promise would be a promise nobody awaits.
     const paths: string[] = [];
     tree.visit((path) => {
-      if (SKIPPED.test(path)) return;
-      if (TEMPLATE_FILE.test(path) || SOURCE_FILE.test(path)) paths.push(path);
+      if (skipped.test(path)) return;
+      if (templateFile.test(path) || sourceFile.test(path)) paths.push(path);
     });
 
     for (const path of paths) {
-      const template = TEMPLATE_FILE.test(path);
+      const template = templateFile.test(path);
 
       let before: string;
       try {

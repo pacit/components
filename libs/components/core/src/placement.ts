@@ -20,42 +20,6 @@ export type PctPlacement = 'top' | 'bottom' | 'start' | 'end';
  */
 export type PctDirection = 'ltr' | 'rtl';
 
-/** The four sides, as the CDK writes them, before an offset is put on them. */
-const SIDES: Record<PctPlacement, ConnectedPosition> = {
-  top: {
-    originX: 'center',
-    originY: 'top',
-    overlayX: 'center',
-    overlayY: 'bottom',
-  },
-  bottom: {
-    originX: 'center',
-    originY: 'bottom',
-    overlayX: 'center',
-    overlayY: 'top',
-  },
-  start: {
-    originX: 'start',
-    originY: 'center',
-    overlayX: 'end',
-    overlayY: 'center',
-  },
-  end: {
-    originX: 'end',
-    originY: 'center',
-    overlayX: 'start',
-    overlayY: 'center',
-  },
-};
-
-/** The side a panel falls back to first: the one across the anchor, then the other axis. */
-const FALLBACKS: Record<PctPlacement, readonly PctPlacement[]> = {
-  top: ['bottom', 'end', 'start'],
-  bottom: ['top', 'end', 'start'],
-  start: ['end', 'bottom', 'top'],
-  end: ['start', 'bottom', 'top'],
-};
-
 /**
  * The gap between the anchor and the panel, as a pair of CDK offsets.
  *
@@ -65,13 +29,44 @@ const FALLBACKS: Record<PctPlacement, readonly PctPlacement[]> = {
  * overlay) and then adds `offsetX` as plain pixels, so the same number that opens a gap in an
  * English page closes one — and lays the panel over the control it belongs to — in an Arabic
  * one. The sign is flipped here, once, rather than in every component that opens a panel.
+ *
+ * The four sides are written inside the function that reads them and not as a constant of the
+ * module: a literal evaluated at import is a mutant the mutation run cannot credit to any case,
+ * so it runs every spec that imports `core` against each of them (`lesson-250`).
  */
 function withOffset(
   side: PctPlacement,
   offset: number,
   direction: PctDirection,
 ): ConnectedPosition {
-  const position = SIDES[side];
+  // The four sides, as the CDK writes them, before an offset is put on them.
+  const sides: Record<PctPlacement, ConnectedPosition> = {
+    top: {
+      originX: 'center',
+      originY: 'top',
+      overlayX: 'center',
+      overlayY: 'bottom',
+    },
+    bottom: {
+      originX: 'center',
+      originY: 'bottom',
+      overlayX: 'center',
+      overlayY: 'top',
+    },
+    start: {
+      originX: 'start',
+      originY: 'center',
+      overlayX: 'end',
+      overlayY: 'center',
+    },
+    end: {
+      originX: 'end',
+      originY: 'center',
+      overlayX: 'start',
+      overlayY: 'center',
+    },
+  };
+  const position = sides[side];
   if (side === 'top') return { ...position, offsetY: -offset };
   if (side === 'bottom') return { ...position, offsetY: offset };
   const away = side === 'end' ? offset : -offset;
@@ -103,7 +98,14 @@ export function pctPlacementPositions(
   offset: number,
   direction: PctDirection = 'ltr',
 ): ConnectedPosition[] {
-  return [placement, ...FALLBACKS[placement]].map((side) =>
+  // The side a panel falls back to first: the one across the anchor, then the other axis.
+  const fallbacks: Record<PctPlacement, readonly PctPlacement[]> = {
+    top: ['bottom', 'end', 'start'],
+    bottom: ['top', 'end', 'start'],
+    start: ['end', 'bottom', 'top'],
+    end: ['start', 'bottom', 'top'],
+  };
+  return [placement, ...fallbacks[placement]].map((side) =>
     withOffset(side, offset, direction),
   );
 }

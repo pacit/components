@@ -14,13 +14,17 @@ import type { ComponentFixture } from '@angular/core/testing';
 /** A fixture or any node — a CDK panel renders outside the host tree. */
 type Root = ComponentFixture<unknown> | ParentNode;
 
-const nodeOf = (root: Root): ParentNode =>
-  'nativeElement' in root ? (root.nativeElement as ParentNode) : root;
+function nodeOf(root: Root): ParentNode {
+  return 'nativeElement' in root ? (root.nativeElement as ParentNode) : root;
+}
 
-const partsIn = (node: ParentNode): string =>
-  Array.from(node.querySelectorAll('[data-pct-part]'))
-    .map((el) => el.getAttribute('data-pct-part'))
-    .join(', ') || '(none)';
+function partsIn(node: ParentNode): string {
+  return (
+    Array.from(node.querySelectorAll('[data-pct-part]'))
+      .map((el) => el.getAttribute('data-pct-part'))
+      .join(', ') || '(none)'
+  );
+}
 
 /**
  * The element of a `data-pct-part`; throws when it is absent.

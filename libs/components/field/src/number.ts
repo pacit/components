@@ -43,14 +43,6 @@ function escapeRegExp(value: string): string {
 }
 
 /**
- * What a formatted number carries besides its digits and separators. `\s` already covers the
- * spaces locales group with — U+00A0 in `pl-PL`, U+202F in `fr-FR` — and covers no bidi mark
- * at all, which is the half that matters: `Intl` writes U+200E in front of the minus in
- * `he-IL`, so a parser blind to it reads the text this very control just formatted as junk.
- */
-const BLANK = /[\s\u200e\u200f\u061c\u2066-\u2069]/g;
-
-/**
  * Number field: a component on a native `<input type="text">` with the `spinbutton` role, a
  * value of type `number | null` and locale-aware formatting.
  *
@@ -440,7 +432,13 @@ export class PctNumber
     if (raw === '') return null;
 
     const { decimal, group } = this.separators();
-    let s = raw.replace(BLANK, '');
+    // What a formatted number carries besides its digits and separators. `\s` already covers
+    // the spaces locales group with — U+00A0 in `pl-PL`, U+202F in `fr-FR` — and covers no bidi
+    // mark at all, which is the half that matters: `Intl` writes U+200E in front of the minus in
+    // `he-IL`, so a parser blind to it reads the text this very control just formatted as junk.
+    // Written here and not as a constant of the module, so the mutation run reaches it through
+    // the cases that parse (`lesson-250`).
+    let s = raw.replace(/[\s\u200e\u200f\u061c\u2066-\u2069]/g, '');
 
     const digits = this.digits();
     if (digits !== null)
