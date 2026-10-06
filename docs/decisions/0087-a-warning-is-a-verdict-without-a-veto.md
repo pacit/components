@@ -83,8 +83,8 @@ grade.**
    On the bound element a control injects `FORM_FIELD` (`self`, optional) and reads
    `state().metadata(PCT_WARNINGS)` — through one helper in `core`, called in each control
    beside `errors` — and `warnings` is also an input, so an application with no signal form,
-   or with a sentence of its own, hands the list in the way it hands `errors`. The contract `PctFieldControl` gains
-   `warnings`, optional like `ownErrors`.
+   or with a sentence of its own, hands the list in the way it hands `errors`. The contract
+   `PctFieldControl` gains `warnings`, optional like `ownErrors`.
 
 **On the screen.** The one message line ([0022](0022-one-message-line.md)) ranks: the
 control's own error (0070), the form's error once touched, **the warning once touched**, the
@@ -123,8 +123,8 @@ asserted the other way in the first case:
    **no `min` on the real field** — while `min(p.start, 100)` writes `100` to its own; both
    clear with the value.
 4. Two `pctWarn` on one path both hold, each speaking for its own value (`['big']` at 20 000,
-   `['min']` at 50 — never both at once, which the spec adds); a logic warning on `end` reads `valueOf(p.start)` of the real form and
-   clears when `start` moves.
+   `['min']` at 50 — never both at once; a pair that can is for the landing spec); a logic
+   warning on `end` reads `valueOf(p.start)` of the real form and clears when `start` moves.
 5. `applyEach(p.items, (item) => pctWarn(item, schema(…max(i, 10)…)))`: `[1, 20]` gives `[]`
    and `['max']`; a third item gets a shadow of its own (`create` ran once more); removing two
    items destroyed two node injectors (`DestroyRef` fired twice) once the application was
