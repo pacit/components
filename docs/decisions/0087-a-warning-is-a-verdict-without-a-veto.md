@@ -8,10 +8,11 @@
 [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),
 [`req-api-texts`](../requirements/api.md#req-api-texts)
 **Evidence:** a probe of seven cases over the installed platform (`@angular/forms` 22.2.1,
-`@angular/core` 22.2.1, vitest 4.1.11), run through `components:test` on 2026-10-06 — the
-"Measurement" section below, including the one flipped expectation that made the run red —
-and four readings of the platform's own compiled code at that version, each named where it
-is used
+`@angular/core` 22.2.1, vitest 4.1.11), run through `components:test` on 2026-10-06 and not
+kept in the repository — its cases are written to land as the specs of the implementation —
+quoted in the "Measurement" section below with the one flipped expectation that made the run
+red; and four readings of the platform's own compiled code at that version, each named where
+it is used
 
 ## Context
 
@@ -35,9 +36,10 @@ how the platform's own `validateAsync` creates a `resource` per field. A `form()
 more than that injector.
 
 [0070](0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md) named the next
-channel without opening it: "nobody has asked for it". Somebody has. Design systems that have
-a warning — Carbon's `warn`, Ant Design's `warningOnly` — set a face by hand on the control;
-none ties it to a schema, and Angular's own forms have no such channel at all.
+channel without opening it: "nobody has asked for it". Somebody has. Carbon's `warn` sets a face
+by hand on the control; Ant Design's `warningOnly` is a severity on a rule, graded by that
+library's form as non-blocking — what this record would take from Angular if Angular had it,
+and Angular's own forms have no such channel at all.
 
 ## Decision
 
@@ -69,7 +71,9 @@ grade.**
    field's value.** `PCT_WARNINGS` is a managed key whose reducer concatenates results.
    `pctWarn(path, fn)` is `metadata(path, PCT_WARNINGS, fn)`, so `fn` runs in the real field's
    context and reads `valueOf(p.start)` like any validator. `pctWarn(path, schema)` writes the
-   schema to a second, private list key, and when the field's node is created `create` builds
+   schema to a second, private list key — and an empty rule to `PCT_WARNINGS`, because a
+   managed key is created only on a node that has a rule for it — and when the field's node
+   is created `create` builds
    `form(linkedSignal(() => state.value()), schema)` for each — in the node's own injection
    context, so the platform grades the shadow and the shadow's `errorSummary()` is read into
    the same list. A field nobody warned has no key and no shadow. The shadow dies with the
@@ -77,9 +81,9 @@ grade.**
 
 3. **Reading it is the platform's reading.** `f.amount().metadata(PCT_WARNINGS)()` anywhere.
    On the bound element a control injects `FORM_FIELD` (`self`, optional) and reads
-   `state().metadata(PCT_WARNINGS)` — once, in the base class the state block comes from — and
-   `warnings` is also an input, so an application with no signal form, or with a sentence of
-   its own, hands the list in the way it hands `errors`. The contract `PctFieldControl` gains
+   `state().metadata(PCT_WARNINGS)` — through one helper in `core`, called in each control
+   beside `errors` — and `warnings` is also an input, so an application with no signal form,
+   or with a sentence of its own, hands the list in the way it hands `errors`. The contract `PctFieldControl` gains
    `warnings`, optional like `ownErrors`.
 
 **On the screen.** The one message line ([0022](0022-one-message-line.md)) ranks: the
@@ -103,23 +107,23 @@ vetoed it.
 ## Measurement
 
 Seven cases, built from the public API only — two keys, a reducer, `form()` inside `create`,
-a directive beside `[formField]` — on `@angular/forms` 22.2.1. Each sentence is one `expect`
-that passed, and the run went red (1 failed, 6 passed) when `invalid()` was asserted the other
-way in the first case:
+a directive beside `[formField]` — on `@angular/forms` 22.2.1. Each sentence is a set of
+`expect`s that passed, and the run went red (1 failed, 6 passed) when `invalid()` was
+asserted the other way in the first case:
 
 1. One validator, `validate(p.start, big)` and `pctWarn(p.amount, big)`: `start` has `errors`
    `['big']` and is `invalid`; `amount` has `errors` `[]`, `invalid` `false`, `valid` `true`
    and `metadata(PCT_WARNINGS)` `['big']`; the root's `errorSummary()` is `['big']` — the
    warning is not in it; a field nobody warned has no key (`undefined`); the warning leaves
-   when the value does.
+   when the value moves to 5.
 2. `submit()` ran its action over a warning (`true`, once) and withheld it over a `required`
    error (`false`, still once).
 3. `pctWarn(p.phone, schema(required))` gives `['required']` with `valid()` true and no
    `REQUIRED` metadata on the real field; the `min` schema gives `['min']`, `valid()` true and
    **no `min` on the real field** — while `min(p.start, 100)` writes `100` to its own; both
    clear with the value.
-4. Two `pctWarn` on one path accumulate, each speaking for its own value (`['big']` at 20 000,
-   `['min']` at 50); a logic warning on `end` reads `valueOf(p.start)` of the real form and
+4. Two `pctWarn` on one path both hold, each speaking for its own value (`['big']` at 20 000,
+   `['min']` at 50 — never both at once, which the spec adds); a logic warning on `end` reads `valueOf(p.start)` of the real form and
    clears when `start` moves.
 5. `applyEach(p.items, (item) => pctWarn(item, schema(…max(i, 10)…)))`: `[1, 20]` gives `[]`
    and `['max']`; a third item gets a shadow of its own (`create` ran once more); removing two
@@ -167,15 +171,19 @@ schema(required))` for a warning, and a validator of its own is one function eit
   tree nobody binds. The chrome reads `kind` and `message` and follows nothing.
 - **A schema sees its own subtree.** `valueOf` inside `pctWarn(p.end, schema(…))` cannot reach
   `p.start`; the sentence that needs both is a logic warning.
+- **A predicate around a schema warning is read once.** `applyWhen` wraps every rule, but
+  the list of schemas is read untracked when the node is made: a predicate that moves later
+  adds no shadow and removes none. A condition that moves goes inside the schema, where
+  `applyWhen` is the platform's and live, or on the logic form, which is live too.
 - **Pending is not surfaced.** An async warning is simply absent until it settles; the
   shadow's `pending()` is readable and nothing in the chrome reads it.
 - **`touched` gates a warning as it gates an error.** A record loaded with a suspicious amount
   is quiet until the user leaves the field or submits; an application that wants the sentence
   sooner reads `metadata(PCT_WARNINGS)` itself.
 - **Two pairs close to the line.** `--pct-warning` is amber-700 on the light theme and
-  amber-400 on the dark; the nearest reading is 0082's 4.51:1 on the dark soft face. The
-  line's and the border's pairs are measured at landing, and the token moves before the line
-  ships below AA.
+  amber-400 on the dark; the nearest reading is 0082's 4.51:1 on the dark soft face's hover
+  tint. The line's and the border's pairs are measured at landing, and the token moves before
+  the line ships below AA.
 
 ## What it does not decide
 

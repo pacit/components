@@ -63,4 +63,4 @@ reading of the same three moments. Both sentences are `PctTexts` keys (`dateMalf
 _Amended 2026-10-06: somebody has asked — for a different third thing. A **warning**, the
 form's own verdict without a veto, is
 [0087](0087-a-warning-is-a-verdict-without-a-veto.md); the validator reading the control's
-rejection, refused above, stays refused._
+rejection, set aside above, is still set aside._

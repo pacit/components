@@ -295,8 +295,9 @@ knocks over the control's entire test suite
 ### <a id="req-api-message"></a>`req-api-message` — One message line, and the error takes it
 
 **Promise.** Below a control there is **one** message at a time: the error while it is lit, the
-hint otherwise. The rule is the same for the chrome's footer and for a control drawing its own
-messages, so wrapping a control in `pct-field` does not change what it shows. The message that
+hint otherwise — and, once [`req-api-warning`](#req-api-warning) is enforced, a warning
+between the two. The rule is the same for the chrome's footer and for a control drawing its
+own messages, so wrapping a control in `pct-field` does not change what it shows. The message that
 gives way **leaves the DOM** rather than being hidden, and `aria-describedby` names exactly the
 one on the screen. What a control knows and the form cannot — text that is not a date, not a
 number — goes **first** on that line and waits for no touch, through the contract's second
@@ -332,8 +333,9 @@ while it shows and announced as `status`
 ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)).
 
 **Gate:** none — gap: the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the branch in the
-chrome and in the three footers, and the cases that hold them — the seven of 0087's probe as
-the specs of `core`, and `field-controls.spec.ts` for every control in both modes
+chrome and in the three footers, `check-aria` point 6 taught the warning part, and the cases
+that hold them — the seven of 0087's probe as the specs of `core`, and
+`field-controls.spec.ts` for every control in both modes
 **Control:** none — gap: the probe's flipped expectation, kept as the first case
 **Binds at:** the first control that warns — the number field's "unusually large" is the
 candidate, and nothing ships `pctWarn` before the line exists
