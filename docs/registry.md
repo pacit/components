@@ -11,15 +11,16 @@ There is no "built, just unverified" state — see
 | ----------- | ------------------------------------------------------------- | -----: |
 | ✅ enforced | gate and control exist and run in CI                          |     81 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
-| **total**   |                                                               | **96** |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      1 |
+| **total**   |                                                               | **97** |
 
 ## Gaps by urgency
 
 The order comes from the **Binds at** field, not from a requirement number.
 
-| requirement | what is missing | binds at |
-| ----------- | --------------- | -------- |
+| requirement                                              | what is missing                                                        | binds at                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`req-api-warning`](requirements/api.md#req-api-warning) | the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the branch in the … | the first control that warns — the number field's "unusuall… |
 
 ## axis
 
@@ -55,6 +56,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ enforced | `libs/components/field/src/field.spec.ts` — the chrome's own cases pl… | `field-hitarea.spec.ts` — a cursor map over a grid of points (`elemen… |
 | [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — every control is… | none — deliberately: the standalone mode is **the default**, so its f… |
 | [`req-api-message`](requirements/api.md#req-api-message)           | ✅ enforced | `libs/components/field/src/field-controls.spec.ts` — the three contro… | `tools/check-aria.fixtures/hint-beside-error` — the same two messages… |
+| [`req-api-warning`](requirements/api.md#req-api-warning)           | ⛔ gap      | none — gap: the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the br… | none — gap: the probe's flipped expectation, kept as the first case    |
 | [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
 | [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
 | [`req-api-platform`](requirements/api.md#req-api-platform)         | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | the keyboard half has none — deliberately: a navigation test has no m… |

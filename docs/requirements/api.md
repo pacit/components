@@ -320,6 +320,27 @@ repository as it stood (`expected [ 'error', 'hint' ] to deeply equal [ StringMa
 
 ---
 
+### <a id="req-api-warning"></a>`req-api-warning` — A warning stands where an error would, and vetoes nothing
+
+**Promise.** A form can warn where it does not forbid: `pctWarn(path, …)` takes what
+`validate()` takes or what `apply()` takes — the application's own validator unchanged, or the
+platform's validators as a schema — and writes metadata the form does not grade, so `valid()`,
+`invalid()`, `aria-invalid` and `submit()` do not move. On the screen a warning takes the one
+message line after the error and before the hint, under the same `touched` gate, in the
+`warning` tone's two channels and with a hidden word for a reader, named in `aria-describedby`
+while it shows and announced as `status`
+([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)).
+
+**Gate:** none — gap: the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the branch in the
+chrome and in the three footers, and the cases that hold them — the seven of 0087's probe as
+the specs of `core`, and `field-controls.spec.ts` for every control in both modes
+**Control:** none — gap: the probe's flipped expectation, kept as the first case
+**Binds at:** the first control that warns — the number field's "unusually large" is the
+candidate, and nothing ships `pctWarn` before the line exists
+**Decision:** [0087 — a warning is a verdict without a veto](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)
+
+---
+
 ### <a id="req-api-frame"></a>`req-api-frame` — The control tells the wrapper whether it wants a frame
 
 **Promise.** `fieldAppearance`: `boxed` for text fields, the select and the date field; `bare`

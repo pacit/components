@@ -59,3 +59,8 @@ reading of the same three moments. Both sentences are `PctTexts` keys (`dateMalf
   channel, and nobody has asked for it.
 - The other controls. A text field, a select and a checkbox know nothing the form does not;
   the channel is optional so that they say so by leaving it out.
+
+_Amended 2026-10-06: somebody has asked — for a different third thing. A **warning**, the
+form's own verdict without a veto, is
+[0087](0087-a-warning-is-a-verdict-without-a-veto.md); the validator reading the control's
+rejection, refused above, stays refused._
