@@ -623,6 +623,7 @@ describe('reading a time back', () => {
       );
     const ukrainian = foreign('uk-UA');
     expect(ukrainian.parse('13:05')).toBe('13:05');
+    expect(ukrainian.parse('1:05 дп')).toBe('01:05');
     expect(ukrainian.parse('1:05 пп')).toBe('13:05');
     // What only a sample teaches is not learned there: Bulgarian writes `1:05 ч. pm` as one run,
     // which its field reads on the platform as it is (`reads the locale’s own day-period words`).

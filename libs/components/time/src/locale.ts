@@ -395,10 +395,10 @@ interface Reader {
   readonly latin: (text: string) => string | null;
   /**
    * Every word the field reads and what it names: a half of the day, or `null` for a separator —
-   * the runs of letters the locale writes, and the few every field reads whatever its language
-   * (`a`, `am`, `p`, `pm`, the `h` of `14h30`). A word missing here is one the locale does not
-   * write — a separator glued to a day period in a way the language does not write them:
-   * `1:05 hpm` is refused, where `1:05 ч. pm` is Bulgarian's own.
+   * the runs of letters the locale writes, the `h` of `14h30`, and the ASCII `a`, `am`, `p` and
+   * `pm` wherever no word of the language for the other half begins with them. A word missing
+   * here is one the locale does not write — a separator glued to a day period in a way the
+   * language does not write them: `1:05 hpm` is refused, where `1:05 ч. pm` is Bulgarian's own.
    */
   readonly words: ReadonlyMap<string, Half | null>;
   readonly hourCycle: PctHourCycle;

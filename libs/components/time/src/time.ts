@@ -231,7 +231,7 @@ export function pctAddMinutes(time: PctTimeOfDay, n: number): PctTimeOfDay {
  * `-1`, `0` or `1`, read as seconds since midnight — so `13:05` and `13:05:00`, one time in two
  * shapes, compare equal.
  *
- * **It does not come round**, where the arithmetic does: `23:00` is before `01:00`. A span that
+ * **It does not come round**, where the arithmetic does: `23:00` is after `01:00`. A span that
  * crosses midnight belongs to a day, and only a datetime has one — `PlainTime` says `23:00`
  * until `01:00` is `-PT22H` (0086, B4).
  *

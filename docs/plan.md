@@ -122,10 +122,10 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
 
 - [~] **1.3 — time field** in `@pacit/components/time`: the field, `PctTimeColumns` and the
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
-  - the value module landed 2026-10-05: `PctTimeOfDay`, its arithmetic and `pctTimeFormat`,
-    enforced in node as [`req-api-time`](requirements/api.md#req-api-time). The digits went to
-    `./core` with it — `./core` +718 B, `./date` +166 B, no other entrypoint moved, `./time`
-    9636 B of which ~3.3 KB is core's; `[pctNumber]`'s own `digits` is their third reader
+  - the value module landed 2026-10-06: `PctTimeOfDay`, its arithmetic and `pctTimeFormat`,
+    enforced in node as [`req-api-time`](requirements/api.md#req-api-time); the digits moved to
+    `./core` (+718 B; `./date` +166 B, no other entrypoint moved; `./time` 9636 B, ~3.3 KB of it
+    core's), and `[pctNumber]`'s own `digits` is their third reader still to come
   - the names, settled 2026-10-06 (0086 amended): the value is `PctTimeOfDay`, with
     `pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts`, and the field keeps `PctTime`, as
     `PctDate` keeps its name beside `PctDay` — renamed before any release carried the value

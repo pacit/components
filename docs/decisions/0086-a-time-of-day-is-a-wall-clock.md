@@ -178,6 +178,14 @@ it adds on the pair, so the day carries, which is `PlainDateTime`'s answer in th
 does a difference wrap — `PlainTime` says `23:00` to `01:00` is `-PT22H` — because a span that
 crosses midnight belongs to a day, and only the datetime value has one.
 
+_Amended 2026-10-06: **the value is `PctTimeOfDay`, and the field keeps `PctTime`.** This record
+gave both the one name — the value in this section, the field where §6 says what
+`@pacit/components/time` holds — and TS refuses the two in one entrypoint: its barrel's two
+`export *` lines would export one member twice (TS2308). The value is renamed, with
+`pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts` beside it, and every sentence of this
+record that means it says so: the field is `PctTime` as the date field is `PctDate` beside its
+`PctDay`, and the value had shipped in no release when its name changed._
+
 ### 2. The element is a text field the library formats and parses
 
 [`req-api-platform`](../requirements/api.md#req-api-platform) says a native element wherever
@@ -304,13 +312,6 @@ and reads them back. The same round trip settled two smaller things: a twenty-fo
 reads the day-period words its language writes on a twelve-hour clock, Anii's apart, and the
 ASCII `a`, `p`, `am` and `pm` are read only where no word of the language for the other half
 begins with them (Albanian writes the morning `p.d.`)._
-
-_Amended 2026-10-06: **the value is `PctTimeOfDay`, and the field keeps `PctTime`.** This record
-gave both the one name — the value where it says the value is a string, the field where it says
-what `@pacit/components/time` holds — and TS refuses the two in one entrypoint (TS2300). The
-value is renamed, with `pctTimeOfDay`, `isPctTimeOfDay` and `PctTimeOfDayParts` beside it, and
-the sentences above that mean it say so: the field is `PctTime` as the date field is `PctDate`
-beside its `PctDay`, and the value had shipped in no release when its name changed._
 
 ### 4. The panel is a dialog of listbox columns, and the columns are a component of their own
 
