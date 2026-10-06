@@ -106,12 +106,12 @@ libs/components/core/src/modal.ts 80.00 48(0) 8 0 4 0
 libs/components/core/src/motion.ts 86.21 50(0) 8 0 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 0 2
 libs/components/core/src/placement.ts 98.46 64(0) 1 0 0 0
-libs/components/core/src/regions.ts 50.00 2(0) 2 0 0 0
+libs/components/core/src/regions.ts 100.00 3(0) 0 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
-libs/components/core/src/texts.ts 97.30 36(0) 1 0 0 0
+libs/components/core/src/texts.ts 100.00 37(0) 0 0 0 0
 libs/components/date/src/calendar.ts 74.16 132(0) 44 0 2 4
 libs/components/date/src/date.ts 66.83 139(0) 67 0 2 8
-libs/components/date/src/day.ts 97.52 157(1) 4 0 0 0
+libs/components/date/src/day.ts 97.53 158(1) 4 0 0 0
 libs/components/date/src/locale.ts 90.37 122(1) 12 0 1 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
@@ -121,8 +121,8 @@ libs/components/field/src/field.ts 72.81 83(0) 27 2 2 1
 libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
-libs/components/icon/src/fonts.ts 99.12 112(0) 1 0 0 0
-libs/components/icon/src/icon.ts 91.60 109(0) 9 0 1 2
+libs/components/icon/src/fonts.ts 99.12 113(0) 1 0 0 0
+libs/components/icon/src/icon.ts 93.28 111(0) 7 0 1 2
 libs/components/menu/src/menu-item.ts 78.79 26(0) 4 2 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 0 2
 libs/components/menu/src/menu.ts 81.16 280(0) 56 1 8 3
@@ -157,5 +157,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 85.92 5686/6618
+TOTAL 85.99 5692/6619
 ```
