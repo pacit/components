@@ -180,6 +180,23 @@ describe('reading a day back', () => {
     expect(pctDayFormat('ar-EG').parse('1/12/2026')).toBe('2026-12-01');
   });
 
+  it('refuses a digit of a numbering system the field does not write, rather than skip it', () => {
+    // An Arabic-Indic three among Persian digits looks like a Persian one, and read as a
+    // separator it turned the 13th into the 1st without a word.
+    expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱٣')).toBeNull();
+    expect(pctDayFormat('fa-IR').parse('۲۰۲۶/۱۲/۱۳')).toBe('2026-12-13');
+    // The `〇` a CJK input method types for zero is a number and not a decimal digit: as a
+    // separator it turned October into January.
+    expect(pctDayFormat('zh-CN').parse('2026/1〇/13')).toBeNull();
+  });
+
+  it('reads its own digits where the platform writes words beside them', () => {
+    // Node's ICU writes Azerbaijani with Arabic-Indic digits behind the words `standart onluq
+    // kəsr`; the digits are read off the integer, so the field reads back what it wrote.
+    const az = pctDayFormat('az-AZ-u-nu-arab');
+    expect(az.parse(az.format('2026-12-01'))).toBe('2026-12-01');
+  });
+
   it('accepts more widely than it writes', () => {
     const pl = pctDayFormat('pl-PL');
     expect(pl.parse('1.12.2026')).toBe('2026-12-01');

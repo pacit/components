@@ -176,6 +176,61 @@ returned a string this module's own reader crashes on
 
 ---
 
+### <a id="req-api-time"></a>`req-api-time` — A time of day is a wall clock, the same in every timezone
+
+**Promise.** The time field's value is a time of day written `HH:mm`, or `HH:mm:ss` where the
+step has seconds (`PctTimeOfDay`), never a `Date`: the time a user picked is the time an application
+stores, serialises and reads back on any machine, on both sides of a daylight-saving switch —
+the minute a switch skips and the hour it repeats included. The arithmetic comes round at
+midnight, and `24:00`, a leap second and a fraction of one are not times. The one read of local
+time is "what time is it". How a language writes a time — the clock, the day-period words and
+where they stand, the separators, the digits — comes from one `Intl` formatter for the field's
+locale, and the parser reads back what that formatter writes — in every language the platform
+has a formatter for, on every clock a tag can force; a formatter whose own text the field cannot
+read back is declined for the plainest clock the language has, and a word or a number the parser
+does not know makes the text malformed, never another time.
+
+**Gate:** `libs/components/time/src/time.spec.ts › in a hostile timezone` — the clock pinned
+to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` across the 23-hour day of 29 March
+2026 and the 25-hour day of 25 October 2026, with the local-time `Date` measured beside the
+time; and `libs/components/time/src/time.property.spec.ts`, which holds the arithmetic as laws
+against the platform's own millisecond count in UTC — a step invertible and composing, an order
+that agrees with the seconds between two times, a clamp that holds what it held and pulls the
+gap of a window across midnight to its nearer end, a snap on the step and nearest to the time,
+every whole second up to a day held against the columns' own definition of a step, and the
+domain in both directions; and `libs/components/time/src/locale.spec.ts`, a round trip of the
+formatter and the parser over every language node's ICU has a formatter for, two letters and
+three, over 0086's 38 locales and over the oddities node writes, each on its own clock and on
+the four a `-u-hc-` tag can force, with the formatters the field declines pinned by name and
+what each language writes on a twelve-hour clock read in its twenty-four-hour field — beside
+the loose forms the parser takes and the junk it refuses. The round trip runs in
+node only: the browsers' `Intl` is read when the field reaches the sandbox, in three engines,
+and plan 1.3 ends there
+**Control:** the same cases build the time the old way beside the new — in Warsaw
+`new Date(2026, 2, 29, 2, 30)` answers 03:30 and an hour after 01:30 reads 03:30 where
+`pctAddMinutes('01:30', 60)` is `02:30`, and in Kiritimati 13:05 carried as an instant reads
+back as three o'clock — so a `PctTimeOfDay` that followed the zone would fail against a number the
+run itself produced. The defects found while the gate was built and reviewed are cases now:
+Ewe writes its morning and its word for the hour in one run (`ŋdi ga 12:00`), and on a forced
+twelve-hour clock Bulgarian and Canadian French write a separator and then the day period
+(`1:05 ч. pm`), all three read back as nothing — and the first repair read any separator glued
+to any period, `1:05 hpm` among them, until the parser took only the runs the formatter writes;
+Cameroonian French on a forced twelve-hour clock writes no day period at all, so its afternoon
+read back as the morning, and Anii writes its day periods with a digit in each — both declined
+now, for twenty-four hours in ASCII digits; Azerbaijani in Arabic-Indic digits writes
+`standart onluq kəsr` inside every number, so the formatter threw as it was built — it builds,
+writes the platform's text and reads it back; Dzongkha's word for the minute, written on a
+twelve-hour clock only, read as the afternoon on a twenty-four-hour one, and a later repair
+dropped Low German's `Klock`, written on a twelve-hour clock with seconds only, so `Klock 9.30`
+read as 21:30 — a run written in the morning and the afternoon alike now separates; a number of another kind read as
+a separator, `۱٣:۳۰` in a Persian field as `01:30`, the `〇` a CJK input method types as
+nothing, and the 13th of a Persian date as the 1st; and node's `format()` writes U+0020 before
+`PM` where its own `formatToParts()` writes U+202F, so the field and its hint were two strings
+until both were read off the parts
+**Decision:** [0086 — a time of day is a wall clock](../decisions/0086-a-time-of-day-is-a-wall-clock.md)
+
+---
+
 ### <a id="req-api-container"></a>`req-api-container` — In a composite component the control is the container
 
 **Promise.** In a group (`pct-radio-group` + `pct-radio`) only the container implements the

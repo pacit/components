@@ -65,6 +65,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/theme`      | `PctTheme`                                                                                                                                            |
 | `@pacit/components/regions`    | `providePctRegions`, `PctRegionDirective`, `PctRegionKey` — the keyboard's road to a place the reading order puts elsewhere                           |
 | `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                                                        |
+| `@pacit/components/time`       | the `PctTimeOfDay` helpers — the value, its arithmetic and `pctTimeFormat`; the field, `PctTime`, follows                                             |
 | `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                                                           |
 | `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                                                       |
 | `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                                                           |
@@ -83,7 +84,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                                                             |
 | `@pacit/components/tooltip`    | `PctTooltip`                                                                                                                                          |
 | `@pacit/components/testing`    | `PctButtonHarness` and its fifty siblings on the CDK's `ComponentHarness`, `part`, `allParts`, `query` — for tests only                               |
-| `@pacit/components/core`       | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers                                                                      |
+| `@pacit/components/core`       | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers, the reader's digits                                                 |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
 

@@ -129,8 +129,16 @@ const PRIMARY = '.';
  *              metafile read (points 6 and 8) is the one that holds it.
  * A plain entrypoint not declared here fires point 4 — which is the friction intended: the
  * package cannot grow a componentless entrypoint without a sentence here saying why.
+ *
+ * `./time` is silent for a reason with an end: the value module ships ahead of the field it
+ * belongs to (plan 1.3), so for now the entrypoint is functions and types. The first component
+ * it exports makes this line stale, and point 4 says so — the declaration cannot outlive it.
  */
-const PLAIN = { [PRIMARY]: 'silent', './testing': 'quotes' };
+const PLAIN = {
+  [PRIMARY]: 'silent',
+  './testing': 'quotes',
+  './time': 'silent',
+};
 
 /**
  * A violation of one of the twelve checks. It carries the check's identifier, not just the
