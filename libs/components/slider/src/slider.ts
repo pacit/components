@@ -17,13 +17,16 @@ import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_FIELD,
+  PCT_TEXTS,
   pctAttachToField,
+  pctFieldWarnings,
   pctDescribedBy,
   pctFieldMessages,
   PctFieldAppearance,
   PctFieldControl,
   PctLabelStrategy,
 } from '@pacit/components/core';
+import { PctIcon } from '@pacit/components/icon';
 
 /**
  * Bounds are part of the `FormUiControl` contract and that contract allows them to be
@@ -91,12 +94,14 @@ const MARKS_LEGIBLE_MAX = 50;
  */
 @Component({
   selector: 'pct-slider',
+  imports: [PctIcon],
   templateUrl: './slider.html',
   styleUrl: './slider.scss',
   host: {
     class: 'pct-slider',
     '[attr.data-pct-orientation]': 'orientation()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-warning]': 'warningLit() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
     '[attr.data-pct-in-field]': 'inField ? "" : null',
     '[style.--_pct-slider-fraction]': 'fraction()',
@@ -156,6 +161,22 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
    * @since 0.1.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /**
+   * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
+   *
+   * @since next
+   */
+  readonly warnings = input<
+    readonly ValidationError.WithOptionalFieldTree[] | undefined
+  >(undefined);
+
+  /**
+   * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
+   *
+   * @since next
+   */
+  readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value.
@@ -306,11 +327,13 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
+  protected readonly warningId = `${this.uid}-warning`;
 
   // --- working with the chrome (req-api-no-wrapper) ---
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
   protected readonly inField = this.fieldApi !== null;
+  protected readonly texts = inject(PCT_TEXTS);
 
   /**
    * `for`: the chrome's label points at the input above.
@@ -340,13 +363,20 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
     invalid: this.invalid,
     touched: this.touched,
     errors: this.errors,
+    warnings: this.fieldWarnings,
   });
   protected readonly errorText = this.messages.errorText;
   protected readonly showInvalid = this.messages.showInvalid;
+  protected readonly warningText = this.messages.warningText;
+  /** The warning is lit, whichever owner draws the line — the host says so in both modes (0087). */
+  protected readonly warningLit = this.messages.showWarning;
 
   /** Inside the chrome, the chrome renders the message. */
   protected readonly showError = computed(
     () => !this.inField && this.messages.showError(),
+  );
+  protected readonly showWarning = computed(
+    () => !this.inField && this.warningLit(),
   );
 
   protected readonly describedBy = computed(() =>
@@ -354,7 +384,11 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
       ? this.fieldDescribedBy()
       : pctDescribedBy([
           [this.errorId, this.showError()],
-          [this.hintId, !this.showError() && this.hint() !== ''],
+          [this.warningId, this.showWarning()],
+          [
+            this.hintId,
+            !this.showError() && !this.showWarning() && this.hint() !== '',
+          ],
         ]),
   );
 

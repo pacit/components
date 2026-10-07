@@ -220,6 +220,33 @@
   font-size: var(--pct-font-size-sm);
 }
 
+/* The warning line (0087): the tone's colour and its glyph before the text — the same third
+   branch the chrome draws, and the glyph is the channel that survives the palette's absence
+   (`req-a11y-forced-colors`). An inline flex, so the glyph sits on the first line of a
+   sentence that may wrap; the icon takes the text's own size, `pct-icon` being `1em`. */
+.pct-slider__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-slider-fg-warning);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-slider__warning-icon {
+  align-self: center;
+}
+
+/* The word a reader hears before the warning, kept in the accessibility tree by a clipped
+   1px box — `display: none` would take it out of the tree. */
+.pct-slider__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Forced-colors mode — the mapping is written down in `field.scss`. `appearance: none` took
    the platform's own high-contrast rendering away with it, so every shape has to be
    repainted here. Each rule is repeated at its OWN specificity, because `@media` adds none

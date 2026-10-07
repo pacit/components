@@ -7,6 +7,7 @@
   "tags": ["type:app"],
   "// typecheck": "Overrides the target inferred by `@nx/vite/plugin`, because that one runs `tsconfig.app.json` ONLY — and that config excludes `**/*.spec.ts`. The specs therefore went through vitest, which transpiles them without checking types, and no compiler ever looked at them (`lesson-42`, second edition). `inputs` take `default`, not `production`: `production` subtracts exactly those files, so a change to them would not invalidate the cache — the same namedInput from `nx.json` and the same mechanism measured on `components` (`lesson-47`). No `dependsOn` on `tokens:build` — checked with `--listFilesOnly`: neither of the two programs pulls in the generated `@pacit/tokens`, only `sandbox-e2e` reaches for it.",
   "// conventions": "What the builder finds by its own convention rather than by a line here: apps/sandbox/src/index.html (the document), and the assets glob carrying apps/sandbox/public/favicon.ico, apps/sandbox/public/InterVariable.woff2 and apps/sandbox/public/InterVariable-LICENSE.txt into dist. Named in full because a bare file name stopped choosing between the two apps the day apps/docs copied this one's (req-project-reach).",
+  "// build budgets": "The component-style error moved from 8 to 9 kB on 2026-10-07, when the select's sheet crossed it at 8.31 kB with the warning line of 0087 — a third message branch, its glyph and the clipped box that carries the word for a reader, on the one sheet that already draws two triggers, a panel, a cross and an arrow. The floor is the sheet, not bloat: the next sheet that crosses it argues first, as the docs application's note says of its own 12 kB. The 4 kB warning stays where it was, so the seven sheets above it keep saying so in every build.",
   "// implicitDependencies": "`styles` reaches for libs/tokens/dist/pct.css — a generated, gitignored artefact. Without that edge the build walks into an empty directory and ends in SUCCESS, only with not one token definition.",
   "implicitDependencies": ["tokens"],
   "targets": {
@@ -47,7 +48,7 @@
             {
               "type": "anyComponentStyle",
               "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumError": "9kb"
             }
           ],
           "outputHashing": "all"

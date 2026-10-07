@@ -51,10 +51,11 @@
 </div>
 
 <!--
-  One message line, and the error takes it (`req-api-message`). At the end of that same line
-  stands an optional add-on (a character counter, say), independent of which message is lit.
+  One message line, and the error takes it (`req-api-message`): the error, else the warning,
+  else the hint. At the end of that same line stands an optional add-on (a character counter,
+  say), independent of which message is lit.
 -->
-@if (showError() || hint() || messageAux()) {
+@if (showError() || showWarning() || hint() || messageAux()) {
 <div class="pct-field__footer" data-pct-part="field-footer">
   <span class="pct-field__message">
     @if (showError()) {
@@ -65,6 +66,38 @@
       role="alert"
     >
       {{ errorText() }}
+    </span>
+    } @else if (showWarning()) {
+    <!-- A verdict without a veto (0087): the warning tone's two channels — the colour, and the
+         glyph before the text — and a hidden word for a reader, because ARIA has no property
+         for a warning and `aria-invalid` stays off. `status`, not `alert`: polite, where an
+         error is urgent (0026). The drawing is the element's content, so a consumer's own set
+         replaces it (0011). -->
+    <span
+      class="pct-field__warning"
+      data-pct-part="field-warning"
+      [id]="warningId"
+      role="status"
+    >
+      <pct-icon class="pct-field__warning-icon" name="warning">
+        <svg
+          viewBox="0 0 16 16"
+          width="100%"
+          height="100%"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          focusable="false"
+        >
+          <path d="M8 2.6L14.5 13.4h-13z" />
+          <path d="M8 6.6v2.6" />
+          <path d="M8 11.4h.01" />
+        </svg>
+      </pct-icon>
+      <span class="pct-field__sr">{{ texts().fieldWarning }}</span>
+      {{ warningText() }}
     </span>
     } @else if (hint()) {
     <span class="pct-field__hint" data-pct-part="field-hint" [id]="hintId">

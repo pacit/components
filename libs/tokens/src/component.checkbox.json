@@ -56,6 +56,11 @@
         "$value": "{pct.danger}",
         "$description": "Colour of the check mark when invalid."
       },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087); the mark keeps its colour, a warning being no fault of the control."
+      },
       "bg-disabled": {
         "$type": "color",
         "$value": "{pct.surface-disabled}",

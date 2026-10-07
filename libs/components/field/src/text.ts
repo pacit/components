@@ -17,6 +17,7 @@ import {
   nextPctId,
   PCT_FIELD,
   pctAttachToField,
+  pctFieldWarnings,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
@@ -110,6 +111,22 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
    * @since 0.1.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /**
+   * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
+   *
+   * @since next
+   */
+  readonly warnings = input<
+    readonly ValidationError.WithOptionalFieldTree[] | undefined
+  >(undefined);
+
+  /**
+   * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
+   *
+   * @since next
+   */
+  readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value.
