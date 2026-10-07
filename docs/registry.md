@@ -9,18 +9,17 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     81 |
+| ✅ enforced | gate and control exist and run in CI                          |     82 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      1 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
 | **total**   |                                                               | **97** |
 
 ## Gaps by urgency
 
 The order comes from the **Binds at** field, not from a requirement number.
 
-| requirement                                              | what is missing                                                        | binds at                                                     |
-| -------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-api-warning`](requirements/api.md#req-api-warning) | the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the branch in the … | the first control that warns — the number field's "unusuall… |
+| requirement | what is missing | binds at |
+| ----------- | --------------- | -------- |
 
 ## axis
 
@@ -55,8 +54,8 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-container`](requirements/api.md#req-api-container)       | 🟡 partial  | `libs/components/radio/src/radio.spec.ts`                              | none — deliberately: the violation would be a second `FormValueContro… |
 | [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ enforced | `libs/components/field/src/field.spec.ts` — the chrome's own cases pl… | `field-hitarea.spec.ts` — a cursor map over a grid of points (`elemen… |
 | [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — every control is… | none — deliberately: the standalone mode is **the default**, so its f… |
-| [`req-api-message`](requirements/api.md#req-api-message)           | ✅ enforced | `libs/components/field/src/field-controls.spec.ts` — the three contro… | `tools/check-aria.fixtures/hint-beside-error` — the same two messages… |
-| [`req-api-warning`](requirements/api.md#req-api-warning)           | ⛔ gap      | none — gap: the channel in `core` (`pctWarn`, `PCT_WARNINGS`), the br… | none — gap: the probe's flipped expectation, kept as the first case    |
+| [`req-api-message`](requirements/api.md#req-api-message)           | ✅ enforced | `libs/components/field/src/field-controls.spec.ts` — the controls tha… | `tools/check-aria.fixtures/hint-beside-error` — the same two messages… |
+| [`req-api-warning`](requirements/api.md#req-api-warning)           | ✅ enforced | `libs/components/core/src/warnings.spec.ts` — the seven cases of 0087… | `libs/components/core/src/warnings.spec.ts` › "one validator, as an e… |
 | [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
 | [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
 | [`req-api-platform`](requirements/api.md#req-api-platform)         | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | the keyboard half has none — deliberately: a navigation test has no m… |
@@ -411,3 +410,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-249`](lessons.md#lesson-249) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-250`](lessons.md#lesson-250) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-251`](lessons.md#lesson-251) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-252`](lessons.md#lesson-252) | — _(not cited)_                                                                                                                                                   |

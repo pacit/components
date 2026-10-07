@@ -28,22 +28,23 @@ The library's first composite component. **The form control is the group**, not 
 | **Group inputs**  | `value` (`model`), `label`, `hint`, `orientation`, `compareWith`, `emptyValue`, plus `FormUiControl`                                                                                                                                                                                                                                                                             |
 | **Options**       | are **projected content**; they have no form state of their own. **The values are unique** under `compareWith` — and here the arbiter is the browser, not the code: the natives share a `name`, so of two options with one value only the **last** stays checked while both paint themselves chosen. Reported in dev mode, not repaired ([`lesson-66`](../lessons.md#lesson-66)) |
 | **Option inputs** | `value` (required), `disabled`, `ariaLabel`, `ariaLabelledby` — the last two are **inputs and not attributes on the tag**: `role="radio"` sits on the `<input>` inside `pct-radio`, the host carries no role, and an ARIA name there is ignored. They are the name of an option whose projected content is not text (`tools/check-aria.mjs`)                                     |
-| **Parts**         | the group: `group-label`, `group-hint`, `group-error`, `group-options`; an option: `control`, `circle`, `dot`, `label`                                                                                                                                                                                                                                                           |
+| **Parts**         | the group: `group-label`, `group-hint`, `group-warning`, `group-error`, `group-options`; an option: `control`, `circle`, `dot`, `label`                                                                                                                                                                                                                                          |
 | **Harness**       | `PctRadioGroupHarness`, `PctRadioHarness`                                                                                                                                                                                                                                                                                                                                        |
 | **DI contract**   | `PCT_FIELD`; `fieldAppearance: 'bare'`. Outwards: `PCT_RADIO_OPTION`, the token `pct-radio` provides so that the group can read what its options carry without importing the class                                                                                                                                                                                               |
 
 ## Parts
 
-| part            | what it is                            |
-| --------------- | ------------------------------------- |
-| `group-label`   | the label of the whole group          |
-| `group-options` | the list of options                   |
-| `control`       | the native input of an option         |
-| `circle`        | the ring drawn over it                |
-| `dot`           | the mark inside the chosen ring       |
-| `label`         | the text of an option                 |
-| `group-hint`    | the hint under the group              |
-| `group-error`   | the message when the group is invalid |
+| part            | what it is                                                                                                                                                 |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `group-label`   | the label of the whole group                                                                                                                               |
+| `group-options` | the list of options                                                                                                                                        |
+| `control`       | the native input of an option                                                                                                                              |
+| `circle`        | the ring drawn over it                                                                                                                                     |
+| `dot`           | the mark inside the chosen ring                                                                                                                            |
+| `label`         | the text of an option                                                                                                                                      |
+| `group-hint`    | the hint under the group                                                                                                                                   |
+| `group-error`   | the message when the group is invalid                                                                                                                      |
+| `group-warning` | the message when the choice is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
 
 ## Theming
 

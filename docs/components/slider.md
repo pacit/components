@@ -17,15 +17,15 @@ role, the value, both bounds and the whole keyboard without a line from us
 
 ## Contract
 
-|                 |                                                                                                                                                                                                                        |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value**       | `number` through `value` (`model`) — never a `T`: a slider is a place on a numeric continuum, so [`req-api-generic`](../requirements/api.md#req-api-generic) is met by **not** being generic                           |
-| **Inputs**      | `value` (`model`), `min`, `max`, `step`, `marks`, `orientation`, `format`, `labels`, `locale`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, plus `FormUiControl`                                                    |
-| **Bounds**      | `min` / `max` belong to the `FormUiControl` contract, so `[formField]` fills them from the schema's `min()` / `max()` validators — and they are the **native attributes** at the same time. Absent, they are `0`–`100` |
-| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored                        |
-| **Parts**       | `control`, `track`, `fill`, `mark`, `thumb`, `bubble`, `label`, `hint`, `error`                                                                                                                                        |
-| **Harness**     | `PctSliderHarness`                                                                                                                                                                                                     |
-| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a slider looks foreign, the same call the switch made                                                                                                          |
+|                 |                                                                                                                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `number` through `value` (`model`) — never a `T`: a slider is a place on a numeric continuum, so [`req-api-generic`](../requirements/api.md#req-api-generic) is met by **not** being generic                                                         |
+| **Inputs**      | `value` (`model`), `min`, `max`, `step`, `marks`, `orientation`, `format`, `labels`, `locale`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl` |
+| **Bounds**      | `min` / `max` belong to the `FormUiControl` contract, so `[formField]` fills them from the schema's `min()` / `max()` validators — and they are the **native attributes** at the same time. Absent, they are `0`–`100`                               |
+| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored                                                      |
+| **Parts**       | `control`, `track`, `fill`, `mark`, `thumb`, `bubble`, `label`, `hint`, `warning`, `error`                                                                                                                                                           |
+| **Harness**     | `PctSliderHarness`                                                                                                                                                                                                                                   |
+| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a slider looks foreign, the same call the switch made                                                                                                                                        |
 
 **What it does not write, and why.** No `role`, no `aria-valuenow` / `aria-valuemin` /
 `aria-valuemax` — the native range publishes all four off its own `min` / `max` / `value`.
@@ -39,17 +39,18 @@ reach a range's accessibility node at all, where the very same attribute on a te
 
 ## Parts
 
-| part      | what it is                     |
-| --------- | ------------------------------ |
-| `label`   | the label of the control       |
-| `control` | the native range input         |
-| `track`   | the full length                |
-| `fill`    | the part up to the thumb       |
-| `thumb`   | the handle                     |
-| `mark`    | one tick along the track       |
-| `bubble`  | the value shown while dragging |
-| `hint`    | the hint under the control     |
-| `error`   | the message when invalid       |
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`   | the label of the control                                                                                                                                  |
+| `control` | the native range input                                                                                                                                    |
+| `track`   | the full length                                                                                                                                           |
+| `fill`    | the part up to the thumb                                                                                                                                  |
+| `thumb`   | the handle                                                                                                                                                |
+| `mark`    | one tick along the track                                                                                                                                  |
+| `bubble`  | the value shown while dragging                                                                                                                            |
+| `hint`    | the hint under the control                                                                                                                                |
+| `error`   | the message when invalid                                                                                                                                  |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
 
 ## Theming
 

@@ -23,11 +23,11 @@ read backwards)
 |                 |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Value**       | `PctDay \| null` through `value` (`model`) — a calendar day written `YYYY-MM-DD`, never a `Date` ([0043](../decisions/0043-a-day-is-not-an-instant.md))                                                                                                                                                                                                                                                                      |
-| **Inputs**      | `value` (`model`), `min`, `max`, `dateDisabled`, `locale`, `firstDayOfWeek`, `showFormat`, `size`, `panelAlign`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, plus `FormUiControl`                                                                                                                                                                                                                                        |
+| **Inputs**      | `value` (`model`), `min`, `max`, `dateDisabled`, `locale`, `firstDayOfWeek`, `showFormat`, `size`, `panelAlign`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl`                                                                                                                                                       |
 | **Outputs**     | `touch`                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | **Bounds**      | `min` / `max` belong to the `FormUiControl` contract; Angular 22.2's own `min()` / `max()` take numbers, so a `PctDay` bound reaches them from a schema only through a rule of its own, which the library does not ship today ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). They clamp the calendar's **walk** and never rewrite a date typed in full — a bound clamps a movement, and a sentence is not one |
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the textbox sits inside this template, the host carries no role, and an ARIA name on a roleless element is ignored                                                                                                                                                                                                                              |
-| **Parts**       | `control`, `toggle`, `panel`, `label`, `hint`, `error`                                                                                                                                                                                                                                                                                                                                                                       |
+| **Parts**       | `control`, `toggle`, `panel`, `label`, `hint`, `warning`, `error`                                                                                                                                                                                                                                                                                                                                                            |
 | **Harness**     | `PctDateHarness`                                                                                                                                                                                                                                                                                                                                                                                                             |
 | **Tokens**      | `--pct-date-*` — one tier for the field **and** the calendar, because the name carries the ENTRYPOINT and `PctCalendar` ships inside this one                                                                                                                                                                                                                                                                                |
 | **Strings**     | `dateOpen`, `datePreviousMonth`, `dateNextMonth`, `dateDayLetter`, `dateMonthLetter`, `dateYearLetter` — through `PCT_TEXTS`                                                                                                                                                                                                                                                                                                 |
@@ -52,20 +52,21 @@ engines each:
 
 ## Parts
 
-| part      | what it is                                |
-| --------- | ----------------------------------------- |
-| `label`   | the label of the typed input              |
-| `control` | the typed input                           |
-| `toggle`  | the button that opens the calendar        |
-| `hint`    | the hint under the input                  |
-| `error`   | the message when the value is invalid     |
-| `panel`   | the calendar, floating or inline          |
-| `caption` | the month and the year over the grid      |
-| `nav`     | the previous-month and next-month buttons |
-| `grid`    | the grid of days                          |
-| `week`    | one row of the grid                       |
-| `weekday` | a heading over a column of days           |
-| `day`     | one day cell                              |
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`   | the label of the typed input                                                                                                                              |
+| `control` | the typed input                                                                                                                                           |
+| `toggle`  | the button that opens the calendar                                                                                                                        |
+| `hint`    | the hint under the input                                                                                                                                  |
+| `error`   | the message when the value is invalid                                                                                                                     |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+| `panel`   | the calendar, floating or inline                                                                                                                          |
+| `caption` | the month and the year over the grid                                                                                                                      |
+| `nav`     | the previous-month and next-month buttons                                                                                                                 |
+| `grid`    | the grid of days                                                                                                                                          |
+| `week`    | one row of the grid                                                                                                                                       |
+| `weekday` | a heading over a column of days                                                                                                                           |
+| `day`     | one day cell                                                                                                                                              |
 
 ## Theming
 

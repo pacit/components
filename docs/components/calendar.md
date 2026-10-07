@@ -46,20 +46,21 @@ mid-walk.
 
 ## Parts
 
-| part      | what it is                                |
-| --------- | ----------------------------------------- |
-| `label`   | the label of the typed input              |
-| `control` | the typed input                           |
-| `toggle`  | the button that opens the calendar        |
-| `hint`    | the hint under the input                  |
-| `error`   | the message when the value is invalid     |
-| `panel`   | the calendar, floating or inline          |
-| `caption` | the month and the year over the grid      |
-| `nav`     | the previous-month and next-month buttons |
-| `grid`    | the grid of days                          |
-| `week`    | one row of the grid                       |
-| `weekday` | a heading over a column of days           |
-| `day`     | one day cell                              |
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`   | the label of the typed input                                                                                                                              |
+| `control` | the typed input                                                                                                                                           |
+| `toggle`  | the button that opens the calendar                                                                                                                        |
+| `hint`    | the hint under the input                                                                                                                                  |
+| `error`   | the message when the value is invalid                                                                                                                     |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+| `panel`   | the calendar, floating or inline                                                                                                                          |
+| `caption` | the month and the year over the grid                                                                                                                      |
+| `nav`     | the previous-month and next-month buttons                                                                                                                 |
+| `grid`    | the grid of days                                                                                                                                          |
+| `week`    | one row of the grid                                                                                                                                       |
+| `weekday` | a heading over a column of days                                                                                                                           |
+| `day`     | one day cell                                                                                                                                              |
 
 ## Theming
 
