@@ -2,7 +2,7 @@ name: Workspace
 description: >-
   Everything a job needs after the checkout and before it can run one nx task: Node, the
   dependencies, the shas `nx affected` compares against, and the caches the jobs of a run
-  share. In ONE file because the workflow now has seven jobs that need exactly the same
+  share. In ONE file because the workflow now has nine jobs that need exactly the same
   steps, and two copies of a step are a drift waiting for the first edit of either — the
   same reason `CLAUDE.md` is three sentences and an import of `AGENTS.md`.
 
@@ -11,21 +11,22 @@ description: >-
   repository is. So every job checks out first, in the same three lines, and the reason
   those lines say what they say is written where the first of them stands.
 
-  What deliberately does NOT live here are the two `playwright install` steps. They stay in
-  `ci.yml`, in every job that needs a browser, because `check-browsers` (point 5) reads THAT
-  file for them: the gate's rule is that every install step names all three engines, and a
-  gate that reads the wrong file answers about nothing. Duplication a gate counts is not the
-  kind that drifts.
+  What does NOT live here is the browsers, and since 2026-10-07 there are no steps for them
+  at all: every job that needs one runs in Playwright's own image, named by `container:` in
+  the workflow, because a composite action cannot choose the machine its job runs on (0081,
+  amended). The image is also why this file meets a machine without `zstd`, if the first
+  run in it measures that: see the cache steps below.
 
 inputs:
   nx-cache:
     description: >-
       `save` for the one job that writes the nx task cache back, `restore` for every job
       that only reads it. Exactly one job may save, and that is arithmetic rather than
-      taste: the entry measured 121 MB, the browsers beside it 456 MB, and a repository's
-      whole cache budget is 10 GB. Seven jobs saving an entry each, on a key that carries
-      the commit, would evict the browsers within a working day — the cache that costs the
-      most to miss.
+      taste: the entry measured 121 MB, `node_modules` beside it 192 MB, and a repository's
+      whole cache budget is 10 GB. Nine jobs saving an entry each, on a key that carries
+      the commit, would evict `node_modules` within a working day — and its miss is an
+      `npm ci` in every job of the run. (The browsers, 456 MB, were the entry this sentence
+      first protected; they come in the image now.)
     required: false
     default: restore
 
@@ -42,7 +43,7 @@ runs:
         cache: 'npm'
 
     # `node_modules` itself, keyed by the lockfile that produced it. `npm ci` took 66
-    # seconds of every run measured, and it is the same 66 seconds in each of the seven jobs
+    # seconds of every run measured, and it is the same 66 seconds in each of the nine jobs
     # this workflow now has. Measured across the two runs that straddle the entry's birth:
     # this whole action took 63 seconds on the miss, where `npm ci` ran, and 19 on the hit —
     # a 1.1 GB tree stored as 192 MB. The key carries the Node version because a native
