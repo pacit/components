@@ -194,7 +194,7 @@ schema(required))` for a warning, and a validator of its own is one function eit
   bundler drops it, because the two keys are created under `@__PURE__` and nothing else in
   `./core` reads the module. Without those two comments the key, its builder and `form()`
   behind it were kept in a button-only application: 456 B of this library and the platform's
-  form machinery, on every entrypoint ([`lesson-252`](../lessons.md#lesson-252)).
+  form machinery, on every entrypoint ([`lesson-253`](../lessons.md#lesson-253)).
 - **A shadow is a second field tree.** `pctWarn(path, schema)` builds a form per schema per
   field instance — per array item under `applyEach` — over the same value. For a leaf that is
   one node; for an object path it is the subtree. The logic form costs a computed and nothing
