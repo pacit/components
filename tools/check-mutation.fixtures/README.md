@@ -175,12 +175,12 @@ scope out.
 `--write` has had a second writer since
 [0088](../../docs/decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md):
 a narrow run (`--mutate`, so its `config.mutate` is not the policy's `patterns`) rewrites the
-rows of the files it measured, keeps every other row, and adds TOTAL up from the rows. The eight
+rows of the files it measured, keeps every other row, and adds TOTAL up from the rows. The nine
 cases of `check: write` go through `writeSnapshot`, the one door to the record, instead of
 the checks; six carry a `narrow` list — the files the report is cut down to, as `--mutate`
-would leave it — and two are about the door itself: a `mutate` nobody can read
-(`mutateAs: null`, so the report says nothing about what it measured) and a full run that
-lost a file of the inventory. The narrow six: no record to merge
+would leave it — and three are about the door itself: a `mutate` nobody can read
+(`mutateAs: null`, so the report says nothing about what it measured), a full run that lost
+a file of the inventory, and a full run that gained one outside it. The narrow six: no record to merge
 into, a slice of a file, a pattern that reaches no file, a file outside `files`, a text that
 is not the one on disk, and `ignoreStatic` — point 5's own rule, reached through the merge,
 because a narrow run is held to the same configuration as a full one.

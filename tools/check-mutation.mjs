@@ -573,8 +573,9 @@ const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
 /**
  * The one door to the record. A full run renders it whole — after a look at the inventory,
  * because a full run that lost a file would write a record without its row and say
- * nothing — and a narrow run is merged; a report whose `mutate` cannot be read is neither,
- * and is refused before a byte is written. Returns what `mergeSnapshot` returns, and `mode`.
+ * nothing, and one that gained a file nobody decided on would write a row for it — and a
+ * narrow run is merged; a report whose `mutate` cannot be read is neither, and is refused
+ * before a byte is written. Returns what `mergeSnapshot` returns, and `mode`.
  */
 const writeSnapshot = (input) => {
   const { report, policy } = input;
@@ -603,6 +604,20 @@ const writeSnapshot = (input) => {
         list(missing) +
         `\n    A record rendered from it would lose their rows and say nothing. The run ` +
         `is to be looked at, not written down.`,
+    );
+  const outside = Object.keys(report?.files ?? {}).filter(
+    (f) => !(policy?.files ?? []).includes(f),
+  );
+  if (outside.length)
+    throw new MutationError(
+      'write',
+      'file-outside-inventory',
+      `${outside.length} files of this full run stand outside \`files\` in ${POLICY}:
+` +
+        list(outside) +
+        `
+    A row for a file the policy does not list is a row nobody decided on — ` +
+        `point 2 holds the inventory, and a new file enters it there first.`,
     );
   const text = renderSnapshot(report, policy.tolerance);
   return {

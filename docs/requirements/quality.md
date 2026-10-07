@@ -212,7 +212,7 @@ run rewrites it whole, and a narrow run (`--mutate`) handed to `--write` rewrite
 the files it measured and nothing else, TOTAL added up from the rows — refused where a row
 would be false (`write/narrow-without-record`, `write/partial-file`, `write/nothing-measured`,
 `write/file-outside-inventory`, `write/stale-measurement`; a `mutate` nobody can read and a full
-run that lost a file write nothing either, `write/patterns-unreadable` and
+run that lost a file, or gained one outside the inventory, write nothing either, `write/patterns-unreadable` and
 `write/full-run-incomplete`) and held to the renderer by the gate's own control; the whole stays the nightly's. A row of that snapshot also has to **add
 up** (`score/columns-adrift`): it states a score and the counts behind it, so
 `killed / (killed + surviving + errored + not covered)` has to give the score printed beside
@@ -230,7 +230,7 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 65 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 66 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires

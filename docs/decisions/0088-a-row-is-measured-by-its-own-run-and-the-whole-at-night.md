@@ -69,7 +69,7 @@ lives in the editor's scope.
    inventory, a text that is not the one on disk, and every narrowing of the denominator
    point 5 reads off the configuration. The door is one function for both writers: a full run is looked at before
    it is rendered — one that lost a file of the inventory writes nothing
-   (`write/full-run-incomplete`) — and a report whose `mutate` cannot be read is neither
+   (`write/full-run-incomplete`), as does one that gained a file outside it — and a report whose `mutate` cannot be read is neither
    kind (`write/patterns-unreadable`). A full run is for a record that is not there yet.
 3. **The nightly holds the whole, and keeps its report.** `nightly.yml` runs the full set
    over `main` every night and holds every row to the tolerance, as before; it now uploads
@@ -98,7 +98,7 @@ lives in the editor's scope.
 
 ## What this costs us
 
-Eight cases and sixty rules where there were fifty-three; a second writer of the record,
+Nine cases and sixty rules where there were fifty-three; a second writer of the record,
 held to the first by a control rather than by an eye; and the morning red named above, the
 day after a merge. Measured against 52 hours in fourteen days, and a killed editor.
 
