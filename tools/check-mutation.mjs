@@ -612,11 +612,9 @@ const writeSnapshot = (input) => {
     throw new MutationError(
       'write',
       'file-outside-inventory',
-      `${outside.length} files of this full run stand outside \`files\` in ${POLICY}:
-` +
+      `${outside.length} files of this full run stand outside \`files\` in ${POLICY}:\n` +
         list(outside) +
-        `
-    A row for a file the policy does not list is a row nobody decided on — ` +
+        `\n    A row for a file the policy does not list is a row nobody decided on — ` +
         `point 2 holds the inventory, and a new file enters it there first.`,
     );
   const text = renderSnapshot(report, policy.tolerance);
