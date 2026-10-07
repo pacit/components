@@ -26,12 +26,19 @@ builds it from two layers:
 1. a copy of `_reference.json` — the picture of the repository on the day the gate was
    written, which **must pass**;
 2. the changes from the case file (`dropEngines`, `addExclusions`, `dropCollected`, `ci`,
-   `facts`, …).
+   `ciText`, `workflows`, `playwright`, `facts`, …).
 
 That way the case file holds **nothing but its own defect** and the diff shows exactly
 the one thing at issue. The reference input is checked separately and first: were it
 defective itself, every case would fire because of it rather than because of its own —
 that is, this whole control would become what it stands against.
+
+The workflows are the exception to "data": the reference carries `ci.yml`, `nightly.yml`
+and `e2e-probe.yml` in miniature as TEXT, and every case goes through the same readers the
+files on disk go through — `ciText` replaces `ci.yml`, `workflows` replaces any file by
+path. A reader that mis-reads a spelling then fails a case, or the reference itself: the
+reference names Playwright's image only under `container:` and installs nothing, so a
+reader that stopped seeing that form leaves the reference with no installation at all.
 
 ## What these cases do NOT exercise
 
@@ -42,7 +49,7 @@ Three readings arrive here as data rather than from a real run:
 - `facts` — instead of probes in live browsers.
 
 This is the same choice as in `check-parts` and `check-zoneless` and for the same reason:
-three browsers and the Nx graph for each of the twenty-five cases would cost minutes, and
+three browsers and the Nx graph for each of the thirty-three cases would cost minutes, and
 the gate runs on every commit. The price is written down outright — the code reading the
 Playwright report, the graph and the probes is not exercised here once. It is exercised
 instead by **every** run against the real repository.
@@ -57,3 +64,16 @@ the gate stays green, because in a healthy repository that path is never taken.
 It is verified instead by a run against the real repository: an unclosed bracket in
 `playwright.config.mts` fires it with the parser's message. That is the only route to
 this rule and therefore the only proof it has.
+
+## Two readings held by the real repository alone
+
+Point 5 reads every workflow in `.github/workflows/` and the `@playwright/test` version out
+of `package-lock.json`. The cases hand the rule both — the texts and the version — so the
+directory listing and the lockfile lookup are, like `--list` above, exercised only by the run
+against the repository. A mutant that read `ci.yml` alone from the directory passed every
+case. What holds it is two runs against the real tree, each with one defect planted:
+
+- `nightly.yml`'s first image moved to `v1.62.0-noble` — `ci-image-not-the-lockfile`, naming
+  that one line of `nightly.yml` and nothing else; the mutant passed the same tree;
+- `@playwright/test` moved to `1.64.0` in the lockfile alone — the same rule, naming all five
+  mentions in three files, which is what a dependency bump without the tag looks like.

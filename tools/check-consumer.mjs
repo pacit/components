@@ -438,12 +438,23 @@ const readJson = (path) => {
   }
 };
 
+/**
+ * The address the registry listens on and is asked at — an ADDRESS, not `localhost`, and the
+ * difference was measured. In Playwright's image (ci.yml, since 2026-10-07) Docker's
+ * `/etc/hosts` gives `localhost` to `::1` as well, and Node resolves it there first:
+ * Verdaccio, told `--listen <port>`, bound `localhost:<port>` on `::1` alone, while `fetch`
+ * asked `127.0.0.1` and was refused for the whole wait — and `[::1]` answered 200 from the
+ * same run. A runner whose `/etc/hosts` keeps `localhost` for IPv4 never showed it. One
+ * literal on both ends takes the machine's resolver out of the measurement.
+ */
+const LOOPBACK = '127.0.0.1';
+
 /** A free port. This gate runs in CI beside other things, and 4873 is often taken. */
 const freePort = () =>
   new Promise((res, rej) => {
     const s = createServer();
     s.on('error', rej);
-    s.listen(0, '127.0.0.1', () => {
+    s.listen(0, LOOPBACK, () => {
       const { port } = s.address();
       s.close(() => res(port));
     });
@@ -722,7 +733,7 @@ const startRegistry = async (storage, port) => {
       '--config',
       join(ROOT, '.verdaccio/config.yml'),
       '--listen',
-      String(port),
+      `${LOOPBACK}:${port}`,
     ],
     {
       cwd: ROOT,
@@ -737,7 +748,7 @@ const startRegistry = async (storage, port) => {
   let log = '';
   proc.stdout.on('data', (d) => (log += d));
   proc.stderr.on('data', (d) => (log += d));
-  const started = await waitForHttp(`http://localhost:${port}/-/ping`, 30);
+  const started = await waitForHttp(`http://${LOOPBACK}:${port}/-/ping`, 30);
   return { proc, started, log: () => log };
 };
 
@@ -801,7 +812,7 @@ const measureRepository = async () => {
   const { app, registry: registryDir } = prepareDirectory();
   const port = await freePort();
   const portApp = await freePort();
-  const url = `http://localhost:${port}`;
+  const url = `http://${LOOPBACK}:${port}`;
 
   // An npm configuration per run. The registry demands a token even under `publish: $all`
   // (without one npm ends in ENEEDAUTH), and writing it into `~/.npmrc` would change the
@@ -810,7 +821,7 @@ const measureRepository = async () => {
   const npmrc = join(WORKDIR, 'npmrc');
   writeFileSync(
     npmrc,
-    `registry=${url}/\n//localhost:${port}/:_authToken=pct-check-consumer\n`,
+    `registry=${url}/\n//${LOOPBACK}:${port}/:_authToken=pct-check-consumer\n`,
   );
   const npmEnv = { ...process.env, npm_config_userconfig: npmrc };
 

@@ -515,23 +515,25 @@ stay on one platform (linux/chromium) — rasterisation would scatter them anywa
 
 **Gate:** `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, firefox,
 webkit), 2189 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
-root project, in CI) — six points, 28 rules. The e2e run is blind to its own matrix:
+root project, in CI) — six points, 29 rules. The e2e run is blind to its own matrix:
 Playwright exits zero after three projects exactly as it does after one, and exactly as it
 does after **zero** collected tests. So the gate asks `playwright test --list --reporter=json`
 what the engines REALLY collect and compares that with the
 `apps/sandbox-e2e/browsers.policy.json` policy: every file runs on every engine unless it
 has an entry there with a reason. Point 5 reads the `e2e` target's command from the Nx graph
-and the install steps from `.github/workflows/ci.yml` — `--project=chromium` in the command is
-one narrowing invisible in the Playwright configuration, and a sharded run is the other: the six
-browser jobs are the whole suite only while their shard count is the size of their own matrix
-rather than a number typed beside it
-**Control:** `tools/check-browsers.fixtures/` — 27 doctored inputs, each rejected on its own
-**rule**; plus nine runs against the real repository (webkit struck from `projects`; a file
+and the installation from `.github/workflows/ci.yml` — an install step, or a job in Playwright's
+image — and holds the image's tag in every workflow to the `@playwright/test` version in
+`package-lock.json`. `--project=chromium` in the command is one narrowing invisible in the
+Playwright configuration, and a sharded run is the other: the browser jobs are the whole suite
+only while their shard count is the size of their own matrix rather than a number typed beside it
+**Control:** `tools/check-browsers.fixtures/` — 33 doctored inputs, each rejected on its own
+**rule**; plus eleven runs against the real repository (webkit struck from `projects`; a file
 added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; an
 engine removed from the install step in CI; `--project=chromium` in the target; an exclusion
 removed from the policy with `testIgnore` left in place; `testIgnore` removed with the entry
 left in place; a new spec excluded on every engine at once; an unclosed bracket in the
-configuration) — each on a different rule
+configuration; a stale image tag in `nightly.yml`; the lockfile bumped without the tags) — the
+last two on one rule, every other pair on different ones
 **Lessons:** [`lesson-56`](../lessons.md#lesson-56)
 
 > There are two exclusions and they are **of different kinds**. `visual.spec.ts` outside

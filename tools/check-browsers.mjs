@@ -8,8 +8,7 @@
  *  2. the collected projects are exactly the policy's engines, each with tests,
  *  3. COVERAGE: every spec file runs on every engine — or carries an entry,
  *  4. the register of exclusions is alive and justified,
- *  5. CI installs every engine — by a step, or in Playwright's image at the lockfile's
- *     version — and does not narrow the run,
+ *  5. CI installs every engine (a step, or the image at the lockfile's tag), unnarrowed,
  *  6. FACT: a `measurement` exclusion's justification is measured, not remembered.
  *
  * What "really runs" comes from `playwright test --list`, not from the configuration —

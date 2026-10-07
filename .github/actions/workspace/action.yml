@@ -14,8 +14,11 @@ description: >-
   What does NOT live here is the browsers, and since 2026-10-07 there are no steps for them
   at all: every job that needs one runs in Playwright's own image, named by `container:` in
   the workflow, because a composite action cannot choose the machine its job runs on (0081,
-  amended). The image is also why this file meets a machine without `zstd`, if the first
-  run in it measures that: see the cache steps below.
+  amended). The image has no `zstd`, so every cache below is written there as a gzip
+  archive — and the compression is part of an entry's version, so the bare runner's entries
+  and the image's are strangers under one key. Measured on the run that moved: `Cache not
+  found` for the nx entries main had written outside the image, and the same
+  `node_modules` key stored twice, 178 MB from the runner and 204 MB from the image.
 
 inputs:
   nx-cache:
