@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The probe names the image with no tag at all, which Docker reads as `latest`: whatever the registry calls latest on the morning the probe runs, moved by nobody's commit. It is the only mention in the middle file of three. The edge is the reader's: a pattern that wanted a `:` after the repository would not see this mention, and a mention it does not see carries no version to refuse.",
+  "workflows": {
+    ".github/workflows/e2e-probe.yml": "jobs:\n  probe:\n    container:\n      image: mcr.microsoft.com/playwright\n      options: --user 1001\n    steps:\n      - run: npx playwright test \"$@\"\n"
+  }
+}

@@ -86,14 +86,40 @@ jobs:
         shell: bash
         run: |
           set +e
-          id; echo "HOME=$HOME shell=$BASH_VERSION"; head -2 /etc/os-release
-          echo "context=${{ github.workspace }} env=$GITHUB_WORKSPACE pwd=$(pwd)"
-          node -v; npm -v; git --version; command -v zstd || echo 'no zstd'
-          date; ls -l /etc/localtime; cat /etc/timezone 2>/dev/null || echo 'no /etc/timezone'
-          df -h /dev/shm /tmp; nproc; head -2 /proc/meminfo
-          git rev-parse --is-shallow-repository; git rev-list --count HEAD
-          echo "NX_BASE=$NX_BASE NX_HEAD=$NX_HEAD"; git merge-base --is-ancestor "$NX_BASE" HEAD && echo 'base is an ancestor'
-          ls /ms-playwright; fc-list | grep -c . ; fc-match 'Liberation Sans'; fc-match system-ui
+          id; echo "HOME=$HOME"; cat /etc/hosts; cat /etc/resolv.conf | grep -v '^#'
+          cat /proc/sys/net/ipv6/conf/lo/disable_ipv6; cat /proc/sys/net/ipv6/conf/all/disable_ipv6
+          getent ahosts localhost; env | grep -i -E 'proxy|^NODE_|^npm_config' | sed 's/=.*/=…/'
+          cat > "$RUNNER_TEMP/registry.mjs" <<'JS'
+          import { spawn } from 'node:child_process';
+          import { lookup } from 'node:dns/promises';
+          import { mkdtempSync } from 'node:fs';
+          import { tmpdir } from 'node:os';
+          import { join } from 'node:path';
+          console.log('lookup', JSON.stringify(await lookup('localhost', { all: true })));
+          const port = 45729;
+          const storage = mkdtempSync(join(tmpdir(), 'v-'));
+          const proc = spawn(process.execPath, ['node_modules/verdaccio/bin/verdaccio', '--config', '.verdaccio/config.yml', '--listen', String(port)], { env: { ...process.env, VERDACCIO_STORAGE_PATH: storage }, stdio: ['ignore', 'pipe', 'pipe'] });
+          let log = '';
+          proc.stdout.on('data', (d) => (log += d));
+          proc.stderr.on('data', (d) => (log += d));
+          proc.on('exit', (code, signal) => console.log('verdaccio exited', code, signal));
+          const seen = new Map();
+          let ok = false;
+          for (let i = 0; i < 80 && !ok; i++) {
+            for (const host of ['localhost', '127.0.0.1', '[::1]']) {
+              let r;
+              try { const res = await fetch(`http://${host}:${port}/-/ping`, { signal: AbortSignal.timeout(2000) }); r = `status ${res.status}`; if (host === 'localhost') ok = res.status < 500; }
+              catch (e) { r = `${e.name} ${e.cause?.code ?? ''} ${e.cause?.message ?? e.message}`; }
+              const key = `${host}: ${r}`;
+              if (!seen.has(key)) { seen.set(key, i); console.log(`#${i} ${key}`); }
+            }
+            if (!ok) await new Promise((res) => setTimeout(res, 250));
+          }
+          console.log('ready', ok);
+          console.log(log.slice(0, 3000));
+          proc.kill();
+          JS
+          timeout 120 node "$RUNNER_TEMP/registry.mjs"
 
       - run: npx nx format:check
 
@@ -183,7 +209,7 @@ jobs:
           df -h /dev/shm /tmp; nproc; head -2 /proc/meminfo
           git rev-parse --is-shallow-repository; git rev-list --count HEAD
           echo "NX_BASE=$NX_BASE NX_HEAD=$NX_HEAD"; git merge-base --is-ancestor "$NX_BASE" HEAD && echo 'base is an ancestor'
-          ls /ms-playwright; fc-list | grep -c . ; fc-match 'Liberation Sans'; fc-match system-ui
+          ls /ms-playwright
 
       # `--shard` stands BEFORE `-t`, and the target list is the last thing on the line.
       # That is a convention five readers depend on — `scripts/before-push` and the four

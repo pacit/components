@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The nightly's full run is in a canary, `v1.63.0-next-canary-20260708115118-noble` — a tag the registry really carries, for a build from before 1.63.0 shipped, and it begins with exactly the release's tag. A reader that took the version off the front, or compared with `startsWith`, would read 1.63.0 here and pass. It is the FIRST mention in the LAST file, the flake job below it at the right tag, so a reader that stopped at the first file or took the last mention of each would pass it too.",
+  "workflows": {
+    ".github/workflows/nightly.yml": "jobs:\n  full:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-next-canary-20260708115118-noble\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx run-many -t e2e\n  flake:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n  mutation:\n    runs-on: ubuntu-latest\n"
+  }
+}

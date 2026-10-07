@@ -8,7 +8,8 @@
  *  2. the collected projects are exactly the policy's engines, each with tests,
  *  3. COVERAGE: every spec file runs on every engine — or carries an entry,
  *  4. the register of exclusions is alive and justified,
- *  5. CI installs every engine and does not narrow the run,
+ *  5. CI installs every engine — by a step, or in Playwright's image at the lockfile's
+ *     version — and does not narrow the run,
  *  6. FACT: a `measurement` exclusion's justification is measured, not remembered.
  *
  * What "really runs" comes from `playwright test --list`, not from the configuration —
@@ -30,7 +31,33 @@ const REFERENCE = '_reference.json';
 const E2E = 'apps/sandbox-e2e';
 const TESTDIR = `${E2E}/src`;
 const POLICY = `${E2E}/browsers.policy.json`;
-const CI = '.github/workflows/ci.yml';
+const WORKFLOWS = '.github/workflows';
+const CI = `${WORKFLOWS}/ci.yml`;
+const LOCKFILE = 'package-lock.json';
+
+/**
+ * Playwright's image, as a workflow names it: the repository and nothing after it but a tag
+ * or a digest. The lookahead is the edge: `mcr.microsoft.com/playwright/python` is another
+ * image (Python's Playwright on the same browsers) and not the one this gate rules on.
+ */
+const IMAGE = /mcr\.microsoft\.com\/playwright(?=[:@'"\s]|$)(?::([^\s'"@]+))?/g;
+
+/**
+ * The version a RELEASE tag of that image carries — `v1.63.0`, optionally a distribution
+ * (`-noble`, `-jammy`, `-resolute`) and an architecture after it — and null for every other
+ * tag the repository publishes. The anchor at the end is not tidiness: the canaries are
+ * tagged `v1.63.0-next-canary-20260708115118-noble`, a build from BEFORE 1.63.0 that begins
+ * with exactly the release's tag, so a reader that stopped at the version would take one for
+ * the other (read off the registry's tag list, 2026-10-07: 18 582 tags).
+ */
+const TAG = /^v(\d+\.\d+\.\d+)(?:-[a-z]+)?(?:-(?:amd64|arm64))?$/;
+
+/**
+ * What the image carries, read off its build history (v1.63.0-noble): three layers, one
+ * `playwright-core install` each, for chromium, firefox and webkit. Nothing else — a branded
+ * channel such as `chrome` installs from its vendor's repository, which the image never did.
+ */
+const IMAGE_ENGINES = ['chromium', 'firefox', 'webkit'];
 
 /**
  * What Playwright takes for a test file. A repetition of its default `testMatch`
@@ -101,12 +128,24 @@ const list = (items) => items.map((i) => `      ${i}`).join('\n');
  *   `collected`  — `{ [engine]: [files] }`, measured by `playwright test --list`,
  *   `files`    — spec files from the git index, relative to `testDir`,
  *   `e2e`      — `{ command }` from the `sandbox-e2e:e2e` target in the Nx graph,
- *   `ci`       — `{ installs: [[engine]], runsE2E }` from the workflow,
+ *   `ci`       — `{ installs: [[engine]], images, runsE2E, … }` from the workflow,
+ *   `tags`     — `[{ file, line, written, version }]`, every mention of Playwright's image
+ *                in every workflow,
+ *   `playwright` — the `@playwright/test` version the lockfile pins,
  *   `facts`    — `{ [fact]: { [engine]: boolean } }`, the probes' results.
  * Throws `BrowsersError` on the first violation — the checks start from the
  * denominator, so the later ones would have nothing to examine anyway.
  */
-export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
+export const checkBrowsers = ({
+  policy,
+  collected,
+  files,
+  e2e,
+  ci,
+  tags,
+  playwright,
+  facts,
+}) => {
   const engines = Object.keys(policy?.engines ?? {});
   const exclusions = policy?.exclusions ?? [];
 
@@ -326,28 +365,70 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
         `one runs. The only narrowing invisible in \`playwright.config.mts\`.`,
     );
 
-  if (!ci?.installs?.length)
+  // Two ways in for a browser, and either one is an installation: a `playwright install`
+  // step, or a job whose machine is Playwright's image (0081, amended 2026-10-07).
+  const installs = ci?.installs ?? [];
+  const images = ci?.images ?? [];
+  if (!installs.length && !images.length)
     throw new BrowsersError(
       'ci',
       'ci-without-install',
-      `\`${CI}\` has no \`playwright install\` step at all — browsers do not come from ` +
-        `nowhere, so either the run fails or (worse) somebody fixed it by narrowing the ` +
-        `matrix`,
+      `\`${CI}\` neither has a \`playwright install\` step nor runs a job in Playwright's ` +
+        `image (\`container:\` with \`image: mcr.microsoft.com/playwright:v…\`) — browsers ` +
+        `do not come from nowhere, so either the run fails or (worse) somebody fixed it by ` +
+        `narrowing the matrix`,
     );
-  const ciGaps = ci.installs.flatMap((step, i) =>
-    engines
-      .filter((s) => !step.includes(s))
-      .map((s) => `step #${i + 1}: no \`${s}\``),
-  );
+  const ciGaps = [
+    ...installs.flatMap((step, i) =>
+      engines
+        .filter((s) => !step.includes(s))
+        .map((s) => `step #${i + 1}: no \`${s}\``),
+    ),
+    ...(images.length
+      ? engines
+          .filter((s) => !IMAGE_ENGINES.includes(s))
+          .map((s) => `the image: no \`${s}\``)
+      : []),
+  ];
   if (ciGaps.length)
     throw new BrowsersError(
       'ci',
       'ci-without-engine',
-      `${ciGaps.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
+      `${ciGaps.length} browser installations in \`${CI}\` do not carry an engine from the policy:\n` +
         list(ciGaps) +
-        `\n    The steps come in pairs (a cache miss and a cache hit), one pair in every job ` +
-        `that needs a browser, and all of them have to name the same set: an engine ` +
-        `installed only on a miss disappears at the first hit.`,
+        `\n    A step installs what it names, so every step has to name every engine. The ` +
+        `image carries what it was built with — ${IMAGE_ENGINES.join(', ')} — and nothing ` +
+        `else, so an engine outside that list needs a step of its own in every job that runs ` +
+        `in it.`,
+    );
+
+  // The image's version. Its browsers are the builds the tag's Playwright downloaded, and the
+  // Playwright in the lockfile looks for the builds of ITS version: where those differ every
+  // launch fails, and where they happen not to the tag stays behind unnoticed until the bump
+  // where they do. Every workflow is read, not `ci.yml` alone: the nightly and the probe run
+  // in the same image, and a bump that moved one file would leave the others on the old one.
+  const stale = (tags ?? []).filter((t) => t.version !== playwright);
+  if (stale.length)
+    throw new BrowsersError(
+      'ci',
+      'ci-image-not-the-lockfile',
+      `${stale.length} of the ${(tags ?? []).length} mentions of Playwright's image in the workflows ` +
+        `${stale.length === 1 ? 'is' : 'are'} not the version \`${LOCKFILE}\` pins for ` +
+        `\`@playwright/test\` ` +
+        `(${playwright ? `\`${playwright}\`` : 'none — the lockfile names no such package'}):\n` +
+        list(
+          stale.map(
+            (t) =>
+              `${t.file}:${t.line}: \`${t.written}\` — ` +
+              (t.version ? `version ${t.version}` : 'not a release tag'),
+          ),
+        ) +
+        `\n    The tag is the installation: the image carries the browsers its own version ` +
+        `downloaded. No tag, or \`latest\`, is whatever the registry calls latest on the ` +
+        `day, moved by nobody's commit; a canary is a build from before its release; and a ` +
+        `release of another version is the old browsers kept past a bump. Remedy: ` +
+        `\`${playwright ? `v${playwright}-noble` : 'v<version>-noble'}\` on every line ` +
+        `above, in the commit that moves the lockfile.`,
     );
   if (!ci.runsE2E)
     throw new BrowsersError(
@@ -458,7 +539,8 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
     `${files.length} spec files on ${engines.length} engines ` +
     `(${engines.map((s) => `${s}: ${collected[s].length}`).join(', ')}), ` +
     `${excluded} ${excluded === 1 ? 'exclusion' : 'exclusions'} — ` +
-    `${fromMeasurement.length} of them confirmed by a probe`
+    `${fromMeasurement.length} of them confirmed by a probe; ` +
+    `${(tags ?? []).length} mentions of Playwright's image, every one at ${playwright}`
   );
 };
 
@@ -648,10 +730,63 @@ const coverOf = (lines) => {
   return read.find((one) => coverFault(one)) ?? read[0];
 };
 
-const ciStepsOf = (text, engines) => {
-  const lines = String(text ?? '')
+/** A workflow's lines with the comments taken off — the strip every reading here starts from. */
+const linesOf = (text) =>
+  String(text ?? '')
     .split('\n')
     .map((l) => l.replace(/#.*$/m, ''));
+
+/**
+ * The Playwright images a workflow runs a JOB in: the `image:` under a `container:` key, two
+ * spaces in, which is the form Playwright's CI documentation gives and the one prettier keeps.
+ * Any other spelling — the one-line `container: <image>`, a flow map, an expression — is not
+ * read as an installation, and a workflow that leans on one alone meets `ci-without-install`:
+ * a reading this gate cannot do is answered with red, not with a pass. The version is not
+ * this reader's question; `mentionsOf` asks it of every spelling at once.
+ */
+const containersOf = (lines) => {
+  const found = [];
+  for (let i = 0; i < lines.length; i++) {
+    const opening = lines[i].match(/^(\s*)container:\s*$/);
+    if (!opening) continue;
+    const depth = opening[1].length;
+    for (let j = i + 1; j < lines.length; j++) {
+      if (!lines[j].trim()) continue;
+      const indent = lines[j].match(/^\s*/)[0].length;
+      if (indent <= depth) break;
+      const image =
+        indent === depth + 2 && lines[j].match(/^\s*image:\s*(\S.*?)\s*$/);
+      if (image) found.push(image[1].replace(/^(['"])(.*)\1$/, '$2'));
+    }
+  }
+  return found.filter((image) => image.search(IMAGE) === 0);
+};
+
+/**
+ * Every mention of Playwright's image on a line that is not a comment, with the version its
+ * tag carries (null where the tag is no release, or there is no tag). Wider than the reading
+ * above on purpose: a stale tag is the same drift in a step's `docker://`, in a flow map or
+ * in a service as under `container:`, and a reading wider than the defect costs a false alarm
+ * where a narrower one costs silence.
+ */
+const mentionsOf = (lines) =>
+  lines.flatMap((line, i) =>
+    [...line.matchAll(IMAGE)].map((m) => ({
+      line: i + 1,
+      written: m[0],
+      version: m[1]?.match(TAG)?.[1] ?? null,
+    })),
+  );
+
+/** `mentionsOf` over every workflow, each mention carrying its file. */
+const tagsOf = (workflows) =>
+  Object.entries(workflows ?? {}).flatMap(([file, text]) =>
+    mentionsOf(linesOf(text)).map((mention) => ({ file, ...mention })),
+  );
+
+const ciStepsOf = (text, engines) => {
+  const lines = linesOf(text);
+  const images = containersOf(lines);
   const installs = lines
     .filter((l) => /playwright\s+install/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
@@ -698,11 +833,25 @@ const ciStepsOf = (text, engines) => {
   const shardCover = sharded.length
     ? (coverOf(lines) ?? { unreadable: true })
     : null;
-  return { installs, runsE2E, shardsNotFromMatrix, shardCover };
+  return { installs, images, runsE2E, shardsNotFromMatrix, shardCover };
 };
 
-/** The workflow on disk, read by the rule above. */
-const ciSteps = (engines) => ciStepsOf(read(CI), engines);
+/**
+ * Every workflow on disk, by path. The directory and not the git index, as for `ci.yml`
+ * before it: what is read is what the next push sends.
+ */
+const workflowsFromDisk = () =>
+  Object.fromEntries(
+    readdirSync(join(ROOT, WORKFLOWS))
+      .filter((name) => /\.ya?ml$/.test(name))
+      .sort()
+      .map((name) => [`${WORKFLOWS}/${name}`, read(`${WORKFLOWS}/${name}`)]),
+  );
+
+/** The `@playwright/test` version the lockfile pins — null when it pins none. */
+const lockedPlaywright = () =>
+  JSON.parse(read(LOCKFILE)).packages?.['node_modules/@playwright/test']
+    ?.version ?? null;
 
 /**
  * Probes in real browsers — one page per engine, with no server and no application. What
@@ -785,14 +934,20 @@ const buildFixture = (fx) => {
 
   if (fx.e2e) w.e2e = { ...w.e2e, ...fx.e2e };
   /*
-   * `ciText` runs a case's own miniature workflow through the READER, where `ci` hands the
-   * rule a state and leaves the reader unexercised. The distinction is not academic: the
-   * shard reader passed a quoted list in silence while the fixture beside it, which supplied
-   * the parsed state, went on being rejected exactly as declared.
+   * The workflows are TEXT, read by the same functions as the files on disk, where a `ci`
+   * state handed to the rule would leave the readers unexercised. The distinction is not
+   * academic: the shard reader passed a quoted list in silence while the fixture beside it,
+   * which supplied the parsed state, went on being rejected exactly as declared. `ciText`
+   * replaces `ci.yml`, `workflows` replaces any file by path, and `ci` patches the reading
+   * afterwards for a case whose defect is a state rather than a spelling.
    */
-  if (fx.ciText)
-    w.ci = ciStepsOf(fx.ciText, Object.keys(w.policy.engines ?? {}));
+  if (fx.ciText) w.workflows[CI] = fx.ciText;
+  for (const [file, text] of Object.entries(fx.workflows ?? {}))
+    w.workflows[file] = text;
+  w.ci = ciStepsOf(w.workflows[CI], Object.keys(w.policy.engines ?? {}));
+  w.tags = tagsOf(w.workflows);
   if (fx.ci) w.ci = { ...w.ci, ...fx.ci };
+  if (Object.hasOwn(fx, 'playwright')) w.playwright = fx.playwright;
   for (const [fact, results] of Object.entries(fx.facts ?? {}))
     w.facts[fact] = { ...w.facts[fact], ...results };
 
@@ -806,12 +961,15 @@ let summary = null;
 
 try {
   const policy = policyFromDisk();
+  const workflows = workflowsFromDisk();
   summary = checkBrowsers({
     policy,
     collected: collectedByPlaywright(),
     files: specFiles(),
     e2e: await targetE2E(),
-    ci: ciSteps(Object.keys(policy.engines ?? {})),
+    ci: ciStepsOf(workflows[CI], Object.keys(policy.engines ?? {})),
+    tags: tagsOf(workflows),
+    playwright: lockedPlaywright(),
     facts: await measureFacts(policy),
   });
 } catch (error) {

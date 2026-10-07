@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The browser job's image is `v1.63.1-noble` and the lockfile pins 1.63.0 — the two differ in the patch number alone, so a comparison of major and minor would pass it. It is the SECOND mention in the FIRST file, the gates job above it at the right tag: a reader that took one mention per file, or the last file only, would pass it as well. Everything else is the reference.",
+  "ciText": "jobs:\n  # Playwright's image, mcr.microsoft.com/playwright:v<version>-noble, at the lockfile's version.\n  gates:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.1-noble\n      options: --user 1001\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}
