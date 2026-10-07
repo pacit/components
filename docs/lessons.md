@@ -7200,3 +7200,58 @@ process out of the editor's scope and systemd tore the scope down, 14 GB at its 
 says — the browsers and the Vitest workers of a run live in that scope too.
 [0088](decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md) moves the
 whole off the desk and leaves it the files a change touches.
+
+### <a id="lesson-252"></a>`lesson-252` — A mutant that stops a module from loading is recorded as a survivor that ran nothing
+
+The review of `lesson-250`'s change read the full report of that branch and found two survivors
+in `date/src/locale.ts` with `testsCompleted: 0` — across the report's 70 files, the only
+survivors no test had run against. Both were `() => undefined` in the unpacking of the week-start
+table, a `new Map` built at module scope from the packed rows through two arrows. Either
+replacement hands `new Map` an `undefined` entry, which throws as the module loads, so every
+spec that imports the file fails before it has collected a case. Run plainly, that is a red file.
+Under Stryker it was a mutant nobody opposed.
+
+The cause is in `@stryker-mutator/vitest-runner` 9.6.1 and not in the specs. Its `run()` builds
+the result from the TEST tasks of every file, and a file that throws at import has none: Vitest
+records it as a file task in state `fail`, with no tasks and the error on its own result, and
+the runner's other way out — `errorsSet`, the unhandled errors — stays empty. What it returns
+is a complete run of zero tests, and zero failed tests is `Survived`. Measured by driving the
+runner's own `VitestTestRunner` over a one-spec probe: the mutant that throws at import came
+back `survived` after zero tests, beside a file with `state: fail`, `tasks: 0` and
+`Iterator value undefined is not an entry object`; a control mutant that changed a value came
+back killed. Upstream has it as
+[stryker-js#6150](https://github.com/stryker-mutator/stryker-js/issues/6150), open, reproduced
+there on 10.0.0 as well.
+
+So the record was wrong twice. The file's score was lower than its specs earn, and the table's
+construction looked untested when it was the most loudly tested code in the file — by a failure
+the runner threw away. The same expression held a third survivor, `packed.length / 2` →
+`* 2`, and that one was honest: the extra entries are keyed by an empty string, which no
+lookup asks for. `lesson-250` had left the file's tables static as "a table behind a per-locale
+cache", which holds where a cached builder reads one and never held for the week table:
+`pctFirstDayOfWeek` caches nothing.
+
+What moved them is `lesson-250`'s rule again, and one step past it: the rows are written inside
+the function that reads them, and read two characters at a time by a loop over
+`matchAll(/../g)`, so that no equivalent comes with them — the pattern has no mutants, Stryker
+swaps no method the loop calls, and every mutant the loop brings changes an answer. A narrow run of the
+file went from 122 of 135 detected to 127 of 135, static mutants from 14 (three surviving) to 4
+(none). The denominator is the same by count and not by content: six mutants left with the
+`Map`, its `??` and an assignment of `undefined` to a variable already `undefined`, in a `catch`
+no case had entered — the one mutant there had no coverage at all; six came with the function,
+and all six are killed by an assertion. The run before the change found one more survivor in
+`pctFirstDayOfWeek`, on the platform's road: `if (info)` → `if (false)` had lived under the case
+written to prove that the platform answers first, because the case asked about Egypt, where
+the table says what the platform says — its comment claimed a proof its code never made. A
+platform answering Wednesday, a day no row holds, kills it.
+
+The wider reading: in a report from this runner, a survivor with `testsCompleted: 0` is not a
+survivor. Either the specs related to the mutant failed to load and the runner lost the failure,
+or nothing ran at all; both are a measurement missing, not a test missing. The zero is the sign
+only because every spec Stryker ran for these mutants reaches the module: it drives Vitest in
+related mode, which selects exactly the specs whose imports lead to the file, and each of them
+fails to load with it. A run that also holds specs NOT leading to the file runs their cases and
+hides the lost verdict behind them — the issue reports the same defect coming back a survivor
+after 212 tests. So the zero finds the defect where the run is related, and the shape is where to
+look for it in any run: a module-level expression that can throw — a table built at import,
+mutated into something it cannot be built from.

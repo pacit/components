@@ -60,38 +60,6 @@ const GREGORIAN: Intl.DateTimeFormatOptions = {
   timeZone: 'UTC',
 };
 
-/**
- * The regions whose week does not start on Monday, as CLDR has them — everything not named
- * here starts on Monday, which is what the platform answers for a region it does not know.
- *
- * Written as three unbroken strings read two characters at a time, and the packing is not
- * compression. A region code is DATA and not a word, and separating them with spaces makes
- * every one of them a word to anything reading this file as text — three of the eighty are
- * also words of another language, and the public artifact has no register of exceptions to be
- * told about them in. Packed, each row is one token and stays one thing: a list of codes.
- *
- * The spec beside this file compares it to `getWeekInfo()` over the entire two-letter space,
- * so a stale row is a red test and not a difference somebody notices in Cairo.
- */
-const WEEK_STARTS: Readonly<Record<number, string>> = {
-  5: 'MV',
-  6: 'AFBHDJDZEGIQIRJOKWLYOMQASDSY',
-  7:
-    'AGASBDBRBSBTBUBWBZCACODMDOETGTGUHKHNIDILINISJMJPJTKEKHKR' +
-    'LAMHMIMMMOMTMXMZNINPNTPAPEPHPKPRPTPUPYPZRHSASGSVTHTTTWUM' +
-    'USVEVIWKWSYDYEZAZW',
-};
-
-/** The lookup the table above is read through, built once. */
-const WEEK_START_BY_REGION: ReadonlyMap<string, number> = new Map(
-  Object.entries(WEEK_STARTS).flatMap(([day, packed]) =>
-    Array.from(
-      { length: packed.length / 2 },
-      (_, i) => [packed.slice(i * 2, i * 2 + 2), Number(day)] as const,
-    ),
-  ),
-);
-
 /** The default the table is the exception list of — and CLDR's own for an unknown region. */
 const MONDAY = 1;
 
@@ -130,11 +98,49 @@ export function pctFirstDayOfWeek(locale: string): number {
     try {
       region = parsed.maximize().region;
     } catch {
-      region = undefined;
+      // No region to be had: the default answers, as it does for a region nobody lists.
     }
   }
-  const known = region ? WEEK_START_BY_REGION.get(region) : undefined;
-  return known ?? MONDAY;
+  return region ? weekStartOf(region) : MONDAY;
+}
+
+/**
+ * The day a region's week starts on, from the regions whose week does not start on Monday as
+ * CLDR has them — everything not named here starts on Monday, which is what the platform
+ * answers for a region it does not know.
+ *
+ * Written as three unbroken strings read two characters at a time, and the packing is not
+ * compression. A region code is DATA and not a word, and separating them with spaces makes
+ * every one of them a word to anything reading this file as text — three of the eighty are
+ * also words of another language, and the public artifact has no register of exceptions to be
+ * told about them in. Packed, each row is one token and stays one thing: a list of codes.
+ *
+ * The table is written inside the function that reads it, not beside it, and is read where it
+ * is written: a mutant of a table unpacked while the module loads throws BEFORE any case runs,
+ * and the mutation run records an import that throws as a mutant that survived
+ * ([`lesson-252`](../../../../docs/lessons.md#lesson-252)). Built per call: three short scans,
+ * paid only where the platform is silent, and the calendar asks once per locale it is given.
+ *
+ * The spec beside this file compares it to `getWeekInfo()` over the entire two-letter space,
+ * so a stale row is a red test and not a difference somebody notices in Cairo.
+ */
+function weekStartOf(region: string): number {
+  const rows: Readonly<Record<number, string>> = {
+    5: 'MV',
+    6: 'AFBHDJDZEGIQIRJOKWLYOMQASDSY',
+    7:
+      'AGASBDBRBSBTBUBWBZCACODMDOETGTGUHKHNIDILINISJMJPJTKEKHKR' +
+      'LAMHMIMMMOMTMXMZNINPNTPAPEPHPKPRPTPUPYPZRHSASGSVTHTTTWUM' +
+      'USVEVIWKWSYDYEZAZW',
+  };
+  for (const [day, packed] of Object.entries(rows)) {
+    // Two characters at a time from the start of the row, so that no code is read across
+    // the boundary between two of them.
+    for (const [code] of packed.matchAll(/../g)) {
+      if (code === region) return Number(day);
+    }
+  }
+  return MONDAY;
 }
 
 /**

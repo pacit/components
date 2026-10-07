@@ -15,6 +15,39 @@ interface WeekAwareLocale extends Intl.Locale {
 }
 
 /**
+ * Runs `read` with one method of `Intl.Locale.prototype` replaced by `value` — or taken away,
+ * for `undefined` — and then puts the platform's own property back as it was, attributes
+ * included. Assigning a method back after `delete` makes it ENUMERABLE, and every case after
+ * the first would then run on a prototype no engine has.
+ */
+function withLocaleMethod<T>(
+  name: 'getWeekInfo' | 'maximize',
+  value: unknown,
+  read: () => T,
+): T {
+  const proto = Intl.Locale.prototype as unknown as Record<string, unknown>;
+  const real = Object.getOwnPropertyDescriptor(proto, name);
+  if (value === undefined) {
+    delete proto[name];
+  } else {
+    // A method the engine lacks is added as one it can delete again: a bare `{ value }` is
+    // permanent, and the `delete` below would throw over the stub it left behind.
+    Object.defineProperty(proto, name, {
+      writable: true,
+      configurable: true,
+      ...real,
+      value,
+    });
+  }
+  try {
+    return read();
+  } finally {
+    if (real) Object.defineProperty(proto, name, real);
+    else delete proto[name];
+  }
+}
+
+/**
  * Runs `read` in the world the table exists for: an engine where
  * `Intl.Locale.prototype.getWeekInfo` is not there — firefox 151 and older, which Angular
  * still supports.
@@ -25,14 +58,12 @@ interface WeekAwareLocale extends Intl.Locale {
  * run found the second instance — the `maximize()` road, which no case had ever entered.
  */
 function withoutWeekInfo<T>(read: () => T): T {
-  const proto = Intl.Locale.prototype as WeekAwareLocale;
-  const real = proto.getWeekInfo;
-  delete proto.getWeekInfo;
-  try {
-    return read();
-  } finally {
-    proto.getWeekInfo = real;
-  }
+  return withLocaleMethod('getWeekInfo', undefined, read);
+}
+
+/** Runs `read` with a platform that answers `firstDay` for every locale. */
+function withWeekInfo<T>(firstDay: number, read: () => T): T {
+  return withLocaleMethod('getWeekInfo', () => ({ firstDay }), read);
 }
 
 describe('the first day of the week', () => {
@@ -81,10 +112,12 @@ describe('the first day of the week', () => {
 
   it('reads the platform where the platform has an answer', () => {
     // The other half: the table is the FALLBACK and not the source. With `getWeekInfo`
-    // present the walk must not reach the table at all — proved by taking the table's own
-    // answer away from a region and finding the reading unchanged.
-    const proto = Intl.Locale.prototype as WeekAwareLocale;
-    expect(typeof proto.getWeekInfo).toBe('function');
+    // present the walk must not reach the table at all — proved by a platform answering
+    // Wednesday, which the table says of no region. Asked of the real platform alone, Egypt
+    // reads 6 whichever of the two answered, and the mutation run kept `if (info)` →
+    // `if (false)` alive under exactly that case.
+    expect(withWeekInfo(3, () => pctFirstDayOfWeek('und-EG'))).toBe(3);
+    expect(withWeekInfo(3, () => pctFirstDayOfWeek('pl'))).toBe(3);
     expect(pctFirstDayOfWeek('und-EG')).toBe(6);
   });
 
@@ -103,6 +136,23 @@ describe('the first day of the week', () => {
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('en'))).toBe(7);
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('ar'))).toBe(6);
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('he'))).toBe(7);
+  });
+
+  it('answers Monday when `maximize()` gives no region', () => {
+    // The defence on that road, which no case had entered: the mutation run reported its
+    // `catch` as covered by nothing. `en` alone would maximise to the United States and read
+    // Sunday, so Monday here is the default answering and not the table. A tag the platform
+    // has no likely region for — `zxx`, no linguistic content — takes the same road without
+    // throwing.
+    const thrown = (): never => {
+      throw new RangeError('no likely subtags');
+    };
+    expect(
+      withLocaleMethod('maximize', thrown, () =>
+        withoutWeekInfo(() => pctFirstDayOfWeek('en')),
+      ),
+    ).toBe(1);
+    expect(withoutWeekInfo(() => pctFirstDayOfWeek('zxx'))).toBe(1);
   });
 
   it('answers Monday for a tag the platform will not parse', () => {
