@@ -17,7 +17,7 @@
  * configuration: the file plus whatever the command line added. Point 3 has a Vitest
  * configuration of its own; point 7 keys on the mutant, so an excuse dies with its line.
  *
- * Usage: node tools/check-mutation.mjs [--write]  (--write: rewrite the result snapshot)
+ * Usage: node tools/check-mutation.mjs [--write]  (--write: rewrite the snapshot; a narrow run its rows alone)
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -255,30 +255,35 @@ covered)\` — and the gate checks that it does. Tolerance: ±%TOLERANCE% of a p
 two-sided, over the assertion reading of the same row.
 `;
 
-const renderSnapshot = (report, tolerance) => {
-  const rows = Object.entries(report.files)
-    .map(([file, data]) => {
-      const s = scoreFrom(data.mutants);
-      const count = (st) => data.mutants.filter((m) => m.status === st).length;
-      return (
-        `${file} ${s.score.toFixed(2)} ${count('Killed') + count('Timeout')}` +
-        `(${count('Timeout')}) ${count('Survived')} ${count('RuntimeError')} ` +
-        `${count('NoCoverage')} ${count('Ignored')}`
-      );
-    })
-    .sort();
-
-  const all = Object.values(report.files).flatMap((d) => d.mutants);
-  const total = scoreFrom(all);
-
+/** One file's row: `path score killed(timeout) surviving errored notCovered ignored`. */
+const renderRow = (file, data) => {
+  const s = scoreFrom(data.mutants);
+  const count = (st) => data.mutants.filter((m) => m.status === st).length;
   return (
-    HEADER.replace('%TOLERANCE%', String(tolerance)) +
-    '\n```\n' +
-    rows.join('\n') +
-    `\nTOTAL ${total.score.toFixed(2)} ${total.detected}/${total.denominator}\n` +
-    '```\n'
+    `${file} ${s.score.toFixed(2)} ${count('Killed') + count('Timeout')}` +
+    `(${count('Timeout')}) ${count('Survived')} ${count('RuntimeError')} ` +
+    `${count('NoCoverage')} ${count('Ignored')}`
   );
 };
+
+/**
+ * The file around the rows: the prose, the rows sorted, the total. Both writers go through
+ * here — a full run with every row, a narrow one with the rows it moved among the rows it
+ * kept — so the two cannot write two shapes of the same record.
+ */
+const composeSnapshot = (rows, total, tolerance) =>
+  HEADER.replace('%TOLERANCE%', String(tolerance)) +
+  '\n```\n' +
+  [...rows].sort().join('\n') +
+  `\nTOTAL ${total.score.toFixed(2)} ${total.detected}/${total.denominator}\n` +
+  '```\n';
+
+const renderSnapshot = (report, tolerance) =>
+  composeSnapshot(
+    Object.entries(report.files).map(([file, data]) => renderRow(file, data)),
+    scoreFrom(Object.values(report.files).flatMap((d) => d.mutants)),
+    tolerance,
+  );
 
 /** The rows from the snapshot's code block — the rest of the file is prose. */
 const snapshotRows = (text) =>
@@ -309,6 +314,9 @@ const rowArithmetic = (row) => {
       row,
       name,
       score: Number(score),
+      // The two counts a TOTAL is added up from, when the rows are what there is to add.
+      detected: Number(killed),
+      denominator,
       computed: denominator === 0 ? 100 : (Number(killed) / denominator) * 100,
       // The same row read without the clock: what assertions alone caught. It is this
       // number the drift is measured on, and the reason is 0077.
@@ -329,6 +337,292 @@ const rowArithmetic = (row) => {
       Number(denominator) === 0
         ? 100
         : (Number(detected) / Number(denominator)) * 100,
+  };
+};
+
+/**
+ * Whether a report is a FULL run: its `config.mutate` is the policy's `patterns`, word for
+ * word. Anything else is a NARROW run — `--mutate` on the command line — which measures
+ * its files exactly as the full one does (the same mutants, the same related specs) and
+ * nothing else (0088). Spelled positively on purpose: a `mutate` that is not an array is
+ * not a full run either, and read the other way round it was — a report with no `mutate`
+ * reached the full writer and wrote its one file as the whole record.
+ */
+const isFull = (report, policy) =>
+  Array.isArray(report?.config?.mutate) &&
+  JSON.stringify(report.config.mutate) ===
+    JSON.stringify(policy?.patterns ?? []);
+
+/** Stryker's own syntax for a slice of a file: `path:line[:col]-line[:col]`. */
+const LINE_RANGE = /:\d+(?::\d+)?-\d+(?::\d+)?$/;
+
+/**
+ * Point 5 read off the configuration and the sources: the ways a run narrows its
+ * denominator that a NARROW run can narrow too, so `mergeSnapshot` holds it to them as
+ * well. What stays behind in `checkMutation` is the clock's share — a number about the
+ * whole run, which over one file says nothing.
+ */
+const denominatorNarrowed = (reportConfig, policy, allMutants, sources) => {
+  const ignorers = policy.ignorers ?? {};
+  const used = reportConfig.ignorers ?? [];
+  const unjustified = used.filter((i) => !ignorers[i]);
+  if (unjustified.length)
+    throw new MutationError(
+      'narrowing',
+      'unjustified-ignorer',
+      `the run used ignorers from outside the policy: ${unjustified.join(', ')}.\n` +
+        `    An ignorer strikes mutants from the denominator. With no entry in ${POLICY} ` +
+        `there is no place where anybody explains why those need not be killed.`,
+    );
+  const deadIgnorers = Object.keys(ignorers).filter((i) => !used.includes(i));
+  if (deadIgnorers.length)
+    throw new MutationError(
+      'narrowing',
+      'dead-ignorer',
+      `the policy justifies ignorers the run did not use: ${deadIgnorers.join(', ')}.\n` +
+        `    An entry with no effect outlives a problem that is gone, and reads ` +
+        `as a description of today's measurement.`,
+    );
+
+  // `mutantReasons` is a LIST because one ignorer is not one sentence: the Angular plugin
+  // strikes the configuration object of `input()`/`model()`/`output()` and the options object
+  // of a signal QUERY, and says so in two different texts. Written as a single string, the
+  // second text looked exactly like a `// Stryker disable` comment somebody had smuggled in —
+  // the register has to be able to describe an ignorer with more than one reason, or it
+  // reports the first `contentChildren()` in a measured file as a defect.
+  const allowedReasons = new Set(
+    Object.values(ignorers).flatMap((w) => w?.mutantReasons ?? []),
+  );
+  const alien = allMutants.filter(
+    (m) => m.status === 'Ignored' && !allowedReasons.has(m.statusReason),
+  );
+  if (alien.length)
+    throw new MutationError(
+      'narrowing',
+      'mutant-ignored-for-alien-reason',
+      `${alien.length} mutants were ignored for a reason outside the policy, e.g.:\n` +
+        list(
+          [...new Set(alien.map((m) => `"${m.statusReason}"`))].slice(0, 3),
+        ) +
+        `\n    This is how a \`// Stryker disable\` comment enters the repository: it ` +
+        `leaves no trace in the configuration, and the mutants leave the denominator.`,
+    );
+
+  const inSource = Object.entries(sources ?? {})
+    .filter(([, content]) => DISABLE_IN_SOURCE.test(content ?? ''))
+    .map(([file]) => file);
+  if (inSource.length)
+    throw new MutationError(
+      'narrowing',
+      'disable-in-source',
+      `${inSource.length} measured files carry a comment that switches Stryker off:\n` +
+        list(inSource) +
+        `\n    An unkillable mutant is an entry in \`equivalent\` in ${POLICY} — keyed on ` +
+        `the mutant, held to being alive, and read by point 7 — not a comment in code ` +
+        `that nobody else reads and no gate ever looks at.`,
+    );
+
+  if (reportConfig.ignoreStatic)
+    throw new MutationError(
+      'narrowing',
+      'statics-skipped',
+      `the run went with \`ignoreStatic: true\`.\n` +
+        `    Static mutants — those in field initialisers and at module scope — then leave ` +
+        `the denominator entirely. In a component library that is where an input, a ` +
+        `default value and an identifier sit: its public contract.`,
+    );
+  const excluded = reportConfig.mutator?.excludedMutations ?? [];
+  if (excluded.length)
+    throw new MutationError(
+      'narrowing',
+      'excluded-mutators',
+      `the run excludes whole families of mutations: ${excluded.join(', ')}.\n` +
+        `    An excluded family leaves the denominator with no trace in the score — and ` +
+        `each of them stands for a real mistake (an inverted condition, a moved boundary, ` +
+        `a swapped string).`,
+    );
+
+  const clock = policy.clock ?? {};
+  if ((reportConfig.timeoutMS ?? 0) < (clock.minimumMS ?? 0))
+    throw new MutationError(
+      'narrowing',
+      'clock-shortened',
+      `the run's \`timeoutMS\` (${reportConfig.timeoutMS}) is lower than the policy's ` +
+        `\`clock.minimumMS\` (${clock.minimumMS}).\n` +
+        `    A mutant killed by elapsed time counts towards the score exactly like one ` +
+        `killed by an assertion, so shortening the limit raises the percentage without ` +
+        `adding tests.`,
+    );
+  if ((reportConfig.timeoutFactor ?? 0) < (clock.minimumFactor ?? 0))
+    throw new MutationError(
+      'narrowing',
+      'factor-shortened',
+      `the run's \`timeoutFactor\` (${reportConfig.timeoutFactor}) is lower than the ` +
+        `policy's \`clock.minimumFactor\` (${clock.minimumFactor}).\n` +
+        `    The same lever as \`timeoutMS\`, only measured against the time of ` +
+        `a normal run.`,
+    );
+};
+
+/**
+ * A narrow run merged into the record: the rows of the files it measured are rewritten,
+ * every other row stays, and TOTAL is added up from the rows — the arithmetic point 6 holds
+ * every row to (`columns-adrift`), so the file a full run would write and this one are the
+ * same file. Refused is whatever would make a row FALSE rather than merely narrow: no record
+ * to merge into, a run that measured nothing, a slice of a file, a file outside the
+ * inventory, a text that is not the one on disk, and each narrowing of the denominator
+ * point 5 reads off the configuration. The whole is still measured at night: `nightly.yml`
+ * runs the full set and holds every row, these included, to the tolerance.
+ * Returns `{ text, changed, total }`; throws `MutationError` as the checks do.
+ */
+const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
+  const rows =
+    snapshot === null || snapshot === undefined
+      ? []
+      : snapshotRows(snapshot).map((row) => rowArithmetic(row) ?? { row });
+  const unreadable = rows.find((r) => !r.name);
+  const total = rows.find((r) => r.name === 'TOTAL');
+  if (!total || unreadable)
+    throw new MutationError(
+      'write',
+      'narrow-without-record',
+      (unreadable
+        ? `a row of \`${SNAPSHOT}\` cannot be read:\n      ${unreadable.row}\n`
+        : `no \`${SNAPSHOT}\` with a TOTAL row to merge into.\n`) +
+        `    A narrow run rewrites the rows of the files it measured and leaves the ` +
+        `rest standing, so a record it can stand on has to be there first — a FULL run ` +
+        `writes it (\`nx run components:mutation\`, then \`--write\`).`,
+    );
+  const sliced = (report?.config?.mutate ?? []).filter(
+    (m) => typeof m === 'string' && LINE_RANGE.test(m),
+  );
+  if (sliced.length)
+    throw new MutationError(
+      'write',
+      'partial-file',
+      `the run measured a slice of a file: ${sliced.join(', ')}.\n` +
+        `    A row stands for a whole file, and a slice's mutants are a whole file's ` +
+        `numerator over a slice's denominator.`,
+    );
+  const measured = Object.keys(report?.files ?? {});
+  if (!measured.length)
+    throw new MutationError(
+      'write',
+      'nothing-measured',
+      `the run holds no file at all (\`mutate\`: ${JSON.stringify(report?.config?.mutate)}).\n` +
+        `    Stryker lists a file through its mutants, so this is a pattern that reaches no ` +
+        `file OR a file with no mutant to throw (a \`noMutants\` entry) — no row either way, ` +
+        `and a record unchanged under a command that says it wrote is the quiet case.`,
+    );
+  const outside = measured.filter((f) => !(policy?.files ?? []).includes(f));
+  if (outside.length)
+    throw new MutationError(
+      'write',
+      'file-outside-inventory',
+      `${outside.length} measured files stand outside \`files\` in ${POLICY}:\n` +
+        list(outside) +
+        `\n    A row for a file the policy does not list is a row nobody decided on — ` +
+        `point 2 holds the inventory, and a new file enters it there first.`,
+    );
+  for (const file of measured) {
+    const onDisk = sources?.[file];
+    if (onDisk === undefined || onDisk !== report.files[file]?.source)
+      throw new MutationError(
+        'write',
+        'stale-measurement',
+        `\`${file}\` ${onDisk === undefined ? 'is not on disk' : 'differs from the text the score was computed on'}.\n` +
+          `    A row merged from it would describe code that is gone.`,
+      );
+  }
+  denominatorNarrowed(
+    report?.config ?? {},
+    policy ?? {},
+    measured.flatMap((f) => report.files[f]?.mutants ?? []),
+    Object.fromEntries(measured.map((f) => [f, sources?.[f]])),
+  );
+  const byName = new Map(
+    rows.filter((r) => r.name !== 'TOTAL').map((r) => [r.name, r.row]),
+  );
+  const changed = [];
+  for (const file of measured) {
+    const after = renderRow(file, report.files[file]);
+    const before = byName.get(file) ?? null;
+    if (before !== after) changed.push({ file, before, after });
+    byName.set(file, after);
+  }
+  const merged = [...byName.values()].map(rowArithmetic);
+  const detected = merged.reduce((n, r) => n + r.detected, 0);
+  const denominator = merged.reduce((n, r) => n + r.denominator, 0);
+  const sum = {
+    detected,
+    denominator,
+    score: denominator === 0 ? 100 : (detected / denominator) * 100,
+  };
+  const text = composeSnapshot(
+    merged.map((r) => r.row),
+    sum,
+    policy?.tolerance,
+  );
+  return {
+    text,
+    changed,
+    total: { before: total.row, after: text.match(/^TOTAL .*$/m)?.[0] ?? '' },
+  };
+};
+
+/**
+ * The one door to the record. A full run renders it whole — after a look at the inventory,
+ * because a full run that lost a file would write a record without its row and say
+ * nothing, and one that gained a file nobody decided on would write a row for it — and a
+ * narrow run is merged; a report whose `mutate` cannot be read is neither, and is refused
+ * before a byte is written. Returns what `mergeSnapshot` returns, and `mode`.
+ */
+const writeSnapshot = (input) => {
+  const { report, policy } = input;
+  const mutate = report?.config?.mutate;
+  if (!Array.isArray(mutate))
+    throw new MutationError(
+      'write',
+      'patterns-unreadable',
+      `the report's \`config.mutate\` is ${JSON.stringify(mutate)}, not a list of patterns.\n` +
+        `    Whether this run was the whole or a part of it is read there and nowhere ` +
+        `else; without it the record cannot be written either way.`,
+    );
+  if (!isFull(report, policy))
+    return { mode: 'narrow', ...mergeSnapshot(input) };
+  const excused = new Set(
+    (policy?.noMutants ?? []).map((e) => (typeof e === 'string' ? e : e?.file)),
+  );
+  const missing = (policy?.files ?? []).filter(
+    (f) => !excused.has(f) && !(f in (report?.files ?? {})),
+  );
+  if (missing.length)
+    throw new MutationError(
+      'write',
+      'full-run-incomplete',
+      `${missing.length} files of the inventory are not in this full run:\n` +
+        list(missing) +
+        `\n    A record rendered from it would lose their rows and say nothing. The run ` +
+        `is to be looked at, not written down.`,
+    );
+  const outside = Object.keys(report?.files ?? {}).filter(
+    (f) => !(policy?.files ?? []).includes(f),
+  );
+  if (outside.length)
+    throw new MutationError(
+      'write',
+      'file-outside-inventory',
+      `${outside.length} files of this full run stand outside \`files\` in ${POLICY}:\n` +
+        list(outside) +
+        `\n    A row for a file the policy does not list is a row nobody decided on — ` +
+        `point 2 holds the inventory, and a new file enters it there first.`,
+    );
+  const text = renderSnapshot(report, policy.tolerance);
+  return {
+    mode: 'full',
+    text,
+    changed: [],
+    total: { before: '', after: text.match(/^TOTAL .*$/m)?.[0] ?? '' },
   };
 };
 
@@ -733,105 +1027,8 @@ export const checkMutation = (input) => {
 
   // 5. NARROWING THE DENOMINATOR. An `Ignored` mutant counts towards neither the
   // numerator nor the denominator — every ignore raises the score, adding no test.
-  const ignorers = policy.ignorers ?? {};
-  const used = reportConfig.ignorers ?? [];
-  const unjustified = used.filter((i) => !ignorers[i]);
-  if (unjustified.length)
-    throw new MutationError(
-      'narrowing',
-      'unjustified-ignorer',
-      `the run used ignorers from outside the policy: ${unjustified.join(', ')}.\n` +
-        `    An ignorer strikes mutants from the denominator. With no entry in ${POLICY} ` +
-        `there is no place where anybody explains why those need not be killed.`,
-    );
-  const deadIgnorers = Object.keys(ignorers).filter((i) => !used.includes(i));
-  if (deadIgnorers.length)
-    throw new MutationError(
-      'narrowing',
-      'dead-ignorer',
-      `the policy justifies ignorers the run did not use: ${deadIgnorers.join(', ')}.\n` +
-        `    An entry with no effect outlives a problem that is gone, and reads ` +
-        `as a description of today's measurement.`,
-    );
-
-  // `mutantReasons` is a LIST because one ignorer is not one sentence: the Angular plugin
-  // strikes the configuration object of `input()`/`model()`/`output()` and the options object
-  // of a signal QUERY, and says so in two different texts. Written as a single string, the
-  // second text looked exactly like a `// Stryker disable` comment somebody had smuggled in —
-  // the register has to be able to describe an ignorer with more than one reason, or it
-  // reports the first `contentChildren()` in a measured file as a defect.
-  const allowedReasons = new Set(
-    Object.values(ignorers).flatMap((w) => w?.mutantReasons ?? []),
-  );
-  const alien = allMutants.filter(
-    (m) => m.status === 'Ignored' && !allowedReasons.has(m.statusReason),
-  );
-  if (alien.length)
-    throw new MutationError(
-      'narrowing',
-      'mutant-ignored-for-alien-reason',
-      `${alien.length} mutants were ignored for a reason outside the policy, e.g.:\n` +
-        list(
-          [...new Set(alien.map((m) => `"${m.statusReason}"`))].slice(0, 3),
-        ) +
-        `\n    This is how a \`// Stryker disable\` comment enters the repository: it ` +
-        `leaves no trace in the configuration, and the mutants leave the denominator.`,
-    );
-
-  const inSource = Object.entries(input.sources ?? {})
-    .filter(([, content]) => DISABLE_IN_SOURCE.test(content ?? ''))
-    .map(([file]) => file);
-  if (inSource.length)
-    throw new MutationError(
-      'narrowing',
-      'disable-in-source',
-      `${inSource.length} measured files carry a comment that switches Stryker off:\n` +
-        list(inSource) +
-        `\n    An unkillable mutant is an entry in \`equivalent\` in ${POLICY} — keyed on ` +
-        `the mutant, held to being alive, and read by point 7 — not a comment in code ` +
-        `that nobody else reads and no gate ever looks at.`,
-    );
-
-  if (reportConfig.ignoreStatic)
-    throw new MutationError(
-      'narrowing',
-      'statics-skipped',
-      `the run went with \`ignoreStatic: true\`.\n` +
-        `    Static mutants — those in field initialisers and at module scope — then leave ` +
-        `the denominator entirely. In a component library that is where an input, a ` +
-        `default value and an identifier sit: its public contract.`,
-    );
-  const excluded = reportConfig.mutator?.excludedMutations ?? [];
-  if (excluded.length)
-    throw new MutationError(
-      'narrowing',
-      'excluded-mutators',
-      `the run excludes whole families of mutations: ${excluded.join(', ')}.\n` +
-        `    An excluded family leaves the denominator with no trace in the score — and ` +
-        `each of them stands for a real mistake (an inverted condition, a moved boundary, ` +
-        `a swapped string).`,
-    );
-
+  denominatorNarrowed(reportConfig, policy, allMutants, input.sources);
   const clock = policy.clock ?? {};
-  if ((reportConfig.timeoutMS ?? 0) < (clock.minimumMS ?? 0))
-    throw new MutationError(
-      'narrowing',
-      'clock-shortened',
-      `the run's \`timeoutMS\` (${reportConfig.timeoutMS}) is lower than the policy's ` +
-        `\`clock.minimumMS\` (${clock.minimumMS}).\n` +
-        `    A mutant killed by elapsed time counts towards the score exactly like one ` +
-        `killed by an assertion, so shortening the limit raises the percentage without ` +
-        `adding tests.`,
-    );
-  if ((reportConfig.timeoutFactor ?? 0) < (clock.minimumFactor ?? 0))
-    throw new MutationError(
-      'narrowing',
-      'factor-shortened',
-      `the run's \`timeoutFactor\` (${reportConfig.timeoutFactor}) is lower than the ` +
-        `policy's \`clock.minimumFactor\` (${clock.minimumFactor}).\n` +
-        `    The same lever as \`timeoutMS\`, only measured against the time of ` +
-        `a normal run.`,
-    );
   const total = scoreFrom(allMutants);
   const fromClock = allMutants.filter((m) => m.status === 'Timeout').length;
   const share = total.detected === 0 ? 0 : (fromClock / total.detected) * 100;
@@ -1253,9 +1450,23 @@ const buildFixture = (fx) => {
   for (const row of fx.addSnapshotRow ?? [])
     snapshot = snapshot.replace('TOTAL', `${row}\nTOTAL`);
 
+  // A case about the merge: the report is a narrow run over the files it names, as
+  // `--mutate` would leave it — those files, and the patterns in `config.mutate`.
+  const report = fx.noReport === true ? null : buildReport(w);
+  if (report && Array.isArray(fx.narrow)) {
+    const named = fx.narrow.map((m) => m.replace(LINE_RANGE, ''));
+    report.files = Object.fromEntries(
+      Object.entries(report.files).filter(([file]) => named.includes(file)),
+    );
+    // `mutateAs` is what the report SAYS it measured, when that is not the list itself.
+    report.config = {
+      ...report.config,
+      mutate: 'mutateAs' in fx ? fx.mutateAs : fx.narrow,
+    };
+  }
   return {
     policy: w.policy,
-    report: fx.noReport === true ? null : buildReport(w),
+    report,
     sources: w.sources,
     inRepo: w.inRepo,
     specs: w.specs,
@@ -1286,11 +1497,42 @@ if (WRITE) {
   const report = json(REPORT);
   const policy = json(POLICY) ?? {};
   if (report?.files && typeof policy.tolerance === 'number') {
-    writeFileSync(
-      join(ROOT, SNAPSHOT),
-      renderSnapshot(report, policy.tolerance),
+    // One door (`writeSnapshot`): a full run rewrites the record whole, a narrow run
+    // (`--mutate`) rewrites the rows of the files it measured and nothing else. Before
+    // 0088 there was no narrow branch, and `--write` after a narrow run wrote that run's
+    // files AS the record — 120 rows to 4, with no word said.
+    const sources = Object.fromEntries(
+      Object.keys(report.files).map((f) => [f, read(f) ?? undefined]),
     );
-    console.log(`✓ Rewrote ${SNAPSHOT}`);
+    let written;
+    try {
+      written = writeSnapshot({
+        snapshot: read(SNAPSHOT),
+        report,
+        policy,
+        sources,
+      });
+    } catch (error) {
+      if (!(error instanceof MutationError)) throw error;
+      console.error(`X ${error.check}/${error.rule}: ${error.message}`);
+      process.exit(1);
+    }
+    writeFileSync(join(ROOT, SNAPSHOT), written.text);
+    if (written.mode === 'full') {
+      console.log(`✓ Rewrote ${SNAPSHOT}`);
+      process.exit(0);
+    }
+    const files = Object.keys(report.files).length;
+    console.log(
+      `✓ Merged a narrow run into ${SNAPSHOT}: ${files} files measured, ` +
+        `${written.changed.length} rows moved.`,
+    );
+    for (const c of written.changed)
+      console.log(`    ${c.before ?? '(no row)'}\n  → ${c.after}`);
+    console.log(`    ${written.total.before}\n  → ${written.total.after}`);
+    console.log(
+      `  The whole is measured at night (nightly.yml), where every row is held to the tolerance.`,
+    );
     process.exit(0);
   }
   console.error(`X Nothing to rewrite the snapshot from — no ${REPORT}.`);
@@ -1328,11 +1570,82 @@ if (cases.length) {
     );
   }
 }
+// The merge is held to the RENDERER, not to a case: a narrow run of one file merged into
+// the record has to give, byte for byte, the file a full run would write — with the file
+// unchanged (nothing moves), with its statuses changed (its row and TOTAL move), and with a
+// file the record has never seen (a row appears). Compared with itself the merge would
+// prove that it agrees with itself, which every merge does.
+if (cases.length) {
+  const beta = 'libs/fake/beta.ts';
+  const gamma = 'libs/fake/gamma.ts';
+  const known = readFixture(REFERENCE).input.policy.files;
+  // Every column a row has: a Timeout (the clock's kill, counted as detected), a
+  // RuntimeError (errored, in the denominator), an Ignored one with the policy's own reason
+  // (out of the denominator). The first control carried Killed and Survived alone, and a
+  // merge that dropped the clock from TOTAL stayed green under it.
+  const ignored = readFixture(REFERENCE).input.fileDigest[
+    'libs/fake/alpha.ts'
+  ].statuses.find((s) => typeof s === 'object');
+  const every = [
+    'Killed',
+    'Timeout',
+    'Survived',
+    'RuntimeError',
+    'NoCoverage',
+    ignored,
+  ];
+  const probes = [
+    ['unchanged', {}, [beta]],
+    [
+      'moved',
+      { replaceStatuses: { [beta]: ['Killed', 'Killed', ...every] } },
+      [beta],
+    ],
+    [
+      'new file',
+      {
+        addFiles: { [gamma]: { statuses: ['Killed', ...every] } },
+        replaceSource: { [gamma]: 'export const gamma = 1;\n' },
+        policy: { files: [...known, gamma] },
+      },
+      [gamma],
+    ],
+  ];
+  for (const [what, fx, narrow] of probes) {
+    const full = buildFixture(fx);
+    let merged;
+    try {
+      merged = writeSnapshot(buildFixture({ ...fx, narrow }));
+    } catch (error) {
+      if (!(error instanceof MutationError)) throw error;
+      problems.push(
+        `merge (${what}): the narrow run was refused on \`${error.check}/${error.rule}\` ` +
+          `where the full one is written — ${error.message}`,
+      );
+      continue;
+    }
+    if (merged.mode !== 'narrow')
+      problems.push(
+        `merge (${what}): the narrow run went through the full writer — the door ` +
+          `read a narrow run as the whole`,
+      );
+    else if (merged.text !== renderSnapshot(full.report, full.policy.tolerance))
+      problems.push(
+        `merge (${what}): the rows of a narrow run merged into the record differ from ` +
+          `the file a full run writes — the two writers of ${SNAPSHOT} disagree`,
+      );
+  }
+}
 
 for (const name of cases) {
   const fx = readFixture(name);
+  // A case about the record goes through its door, every other one through the checks.
+  const exercise =
+    fx.check === 'write' || Array.isArray(fx.narrow)
+      ? writeSnapshot
+      : checkMutation;
   try {
-    checkMutation(buildFixture(fx));
+    exercise(buildFixture(fx));
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `rule \`${fx.check}/${fx.rule}\` stopped examining anything`,

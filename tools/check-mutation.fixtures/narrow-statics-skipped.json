@@ -1,0 +1,7 @@
+{
+  "check": "narrowing",
+  "rule": "statics-skipped",
+  "// defect": "A narrow run with `ignoreStatic: true`. The static mutants of the file leave its denominator and its row rises with no test added — point 5's rule, reached through the merge, which holds a narrow run to the same configuration as a full one.",
+  "runConfig": { "ignoreStatic": true },
+  "narrow": ["libs/fake/beta.ts"]
+}

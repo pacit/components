@@ -94,6 +94,12 @@ publisher and approved by hand with 2FA, the first `@since next` dated on the re
 from npm and the tarball the same day
 ([0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md)).
 
+**The whole left the desk on 2026-10-07**
+([0088](decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md)): the
+battery runs without the browsers, a change measures its own files with a narrow run and
+merges their rows, and CI measures the whole — eight shards on a push, the full set at night,
+its report kept.
+
 **The decisions the premiere was waiting for fell on 2026-09-16**, and they stand where
 decisions live: the site's address, host and deploy trigger in
 [0078](decisions/0078-the-site-has-an-address-and-deploys-behind-a-green-ci.md); the first

@@ -1,0 +1,9 @@
+{
+  "check": "write",
+  "rule": "file-outside-inventory",
+  "// defect": "A full run — the policy's own patterns — whose report holds a file `files` does not list. Rendered as the record it would carry a row nobody decided on; the narrow writer refuses the same file on the same rule, and the full one did not until this case.",
+  "addFiles": {
+    "libs/fake/gamma.ts": { "statuses": ["Killed", "Killed", "Survived"] }
+  },
+  "replaceSource": { "libs/fake/gamma.ts": "export const gamma = 1;\n" }
+}

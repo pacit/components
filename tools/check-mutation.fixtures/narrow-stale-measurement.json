@@ -1,0 +1,9 @@
+{
+  "check": "write",
+  "rule": "stale-measurement",
+  "// defect": "The file on disk is not the text the narrow run measured. The row merged from it would describe code that is gone — the same rule as point 1's, held here because the merge writes without the checks running first.",
+  "driftSource": {
+    "libs/fake/beta.ts": "export const beta = (n: number) => n;\n"
+  },
+  "narrow": ["libs/fake/beta.ts"]
+}

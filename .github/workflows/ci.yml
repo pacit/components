@@ -124,16 +124,19 @@ jobs:
           if-no-files-found: ignore
 
   # The browsers. Every job here runs `nx affected -t e2e` over a SHARD of the suites, and
-  # the six of them together run each affected suite exactly once.
+  # the eight of them together run each affected suite exactly once. Eight since 2026-10-07
+  # (0088), six before: the tail shard measured 23 minutes at six (37537775744) once this
+  # job became the push's whole e2e verdict, and a job is free on a public repository. The
+  # first run at eight: 7.6 to 11.4 minutes per shard, 13.1 for the run (37655766884).
   #
   # The denominator is `strategy.job-total` and never a number typed beside it. That is the
-  # whole guard against the failure this arrangement could have: a matrix of six with
-  # `--shard=N/8` would run three quarters of the tests and report green on the rest, which
+  # whole guard against the failure this arrangement could have: a matrix of eight with
+  # `--shard=N/10` would run four fifths of the tests and report green on the rest, which
   # is the worst thing a test suite can do. Written this way the two cannot disagree — the
   # denominator IS the number of jobs. `check-browsers` (point 5) refuses a literal one.
   #
   # `fail-fast: false` because a red shard is not a reason to cancel the evidence in the
-  # other five: the question after a failure is always which tests failed, and a cancelled
+  # other seven: the question after a failure is always which tests failed, and a cancelled
   # shard answers nothing.
   e2e:
     runs-on: ubuntu-latest
@@ -145,7 +148,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v7
         with:

@@ -1,0 +1,10 @@
+{
+  "check": "write",
+  "rule": "file-outside-inventory",
+  "// defect": "The run measured a file the policy's `files` does not list. Point 2 holds the inventory, and a row merged for a file nobody decided on is a row that bypassed it — a new file enters `files` first, then the record.",
+  "addFiles": {
+    "libs/fake/gamma.ts": { "statuses": ["Killed", "Killed", "Survived"] }
+  },
+  "replaceSource": { "libs/fake/gamma.ts": "export const gamma = 1;\n" },
+  "narrow": ["libs/fake/gamma.ts"]
+}
