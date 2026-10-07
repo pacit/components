@@ -27,8 +27,18 @@ function withLocaleMethod<T>(
 ): T {
   const proto = Intl.Locale.prototype as unknown as Record<string, unknown>;
   const real = Object.getOwnPropertyDescriptor(proto, name);
-  if (value === undefined) delete proto[name];
-  else Object.defineProperty(proto, name, { ...real, value });
+  if (value === undefined) {
+    delete proto[name];
+  } else {
+    // A method the engine lacks is added as one it can delete again: a bare `{ value }` is
+    // permanent, and the `delete` below would throw over the stub it left behind.
+    Object.defineProperty(proto, name, {
+      writable: true,
+      configurable: true,
+      ...real,
+      value,
+    });
+  }
   try {
     return read();
   } finally {

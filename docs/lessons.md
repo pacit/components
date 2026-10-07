@@ -7240,7 +7240,7 @@ file went from 122 of 135 detected to 127 of 135, static mutants from 14 (three 
 `Map`, its `??` and an assignment of `undefined` to a variable already `undefined`, in a `catch`
 no case had entered — the one mutant there had no coverage at all; six came with the function,
 and all six are killed by an assertion. The run before the change found one more survivor in
-the same function, on the platform's road: `if (info)` → `if (false)` had lived under the case
+`pctFirstDayOfWeek`, on the platform's road: `if (info)` → `if (false)` had lived under the case
 written to prove that the platform answers first, because the case asked about Egypt, where
 the table says what the platform says — its comment claimed a proof its code never made. A
 platform answering Wednesday, a day no row holds, kills it.
