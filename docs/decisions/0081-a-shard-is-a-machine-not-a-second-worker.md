@@ -41,7 +41,9 @@ MACHINES rather than across workers on one.**
    it is the one job that WRITES the nx cache. That is arithmetic, not preference: the entry
    measured 121 MB, the browser cache beside it 456 MB, and a repository gets 10 GB. Seven
    jobs saving an entry each under a key that carries the commit would evict the browsers
-   within a working day. The other jobs restore and do not save.
+   within a working day. The other jobs restore and do not save. _(The browsers left the
+   cache on 2026-10-07 — they come in the machine now, see the amendment at the end — and
+   the arithmetic holds for `node_modules`, 192 MB, in their place.)_
 2. **`e2e` is a matrix of six, each running `nx affected --shard=N/… -t e2e`.** Every shard
    is a runner to itself, so `workers: 1` stands and every test meets the same idle machine
    it met before. What changed is how many machines, not what happens on one — the one
@@ -101,7 +103,8 @@ MACHINES rather than across workers on one.**
   assembled out of six logs. The nightly, which runs everything unsharded, stays the place
   where the suite speaks with one voice.
 - **Setup is paid seven times**: a checkout, a Node, a restore and an apt install of the
-  browser libraries in every job — a minute and a half to two minutes each, measured from the
+  browser libraries in every job (the apt install is gone since 2026-10-07 — the amendment at
+  the end) — a minute and a half to two minutes each, measured from the
   start of a job to the start of its nx step on the run above, where the `node_modules` entry
   was still a miss and `npm ci` ran in all seven. The job's whole non-test time is a little
   more, 2.1 minutes on average, the rest of it two dev servers and nx's own. The run as a
@@ -171,3 +174,104 @@ MACHINES rather than across workers on one.**
   the measurement above says the cache was never the cost.
 - **One job per suite, unsharded.** The same arithmetic gives 47 minutes — the longer suite
   plus its setup. It is the shards that make it 17.
+
+## Amended 2026-10-07: the browsers come with the machine
+
+**Every job that needs a browser runs in Playwright's own image,
+`mcr.microsoft.com/playwright:v1.63.0-noble`, whose tag is exactly the `@playwright/test`
+version in `package-lock.json` — and `check-browsers` (point 5) refuses any other tag in any
+workflow.** That is `gates` and the eight shards here, the full run and the repetition run of
+`nightly.yml`, and the probe. The cache of `~/.cache/ms-playwright` and both install steps are
+gone, because the image is the installation: Playwright builds it with `install-deps` and with
+`install chromium`, `firefox` and `webkit`, one layer each (read off its build history). The
+option is the one Playwright's CI page gives for GitHub Actions, `--user 1001` — the uid the
+runner runs as, owning the workspace and the `$HOME` it mounts in.
+
+**Why.** The setup this record paid seven times had one step that was not ours to bound: the
+apt install of the browsers' system libraries, off `azure.archive.ubuntu.com`, on every run,
+cache hit or not. On 2026-10-07 it hung a shard in three consecutive runs of one pull request
+— 37666438813 (shard 4, the mirror at about 80 kB/s, 13.6 MB of `libflite1` in some three
+minutes, cancelled after 31), 37670285011 (shard 5, `apt-get update` silent for 24 minutes
+right after skipping the mirror's `noble InRelease`) and 37673446107 (shard
+5, 37 minutes in the step, cancelled and re-run) — and a fourth time on `main` (37663309919,
+the push of a0df9a2e), where shard 8 spent 3520 seconds in the step and ran out of its hour.
+The step had no ceiling of its own; the job's 60 minutes were the only one.
+
+**What it measured, before and after.** Before: 26 runs of this workflow from 2026-10-05
+04:38 to 2026-10-07 19:57 UTC, 199 browser jobs, 194 of which finished the step — 41 seconds
+at the median, 291 at the 90th percentile, 3520 at worst, behind a cache restore of 8 seconds
+at the median. The 118 jobs before 2026-10-07 had a 90th percentile of 56 seconds and three
+over five minutes; the 76 of 2026-10-07 had 508 and fourteen. After: the image is 956 MB
+compressed in seven layers, and `Initialize containers`, the step that pulls it, took 26 to 43
+seconds, 27 at the median, over the 31 container jobs of this change's first five runs
+(37681764776, 37684639047 and 37686780190 of this workflow, the dispatched probe 37681766570
+and nightly 37681770983). So the median moves from 49 seconds to 27 and the worst seen from
+58 minutes to 43 seconds — the second figure from five runs, which is not yet a tail.
+
+**What was verified in the image, not assumed** — by a probe step in the first two runs, taken
+out before merge:
+
+- **The composite action runs there unchanged.** `setup-node` puts Node 24.21.0 on the path, and
+  the action took 12 to 23 seconds on a `node_modules` hit, against 13 to 25 on the bare runner
+  (37660677351). Git is 2.43.0.
+- **`nx affected` keeps its history.** The checkout is not shallow — 558 commits — and
+  `NX_BASE` is an ancestor of `HEAD`.
+- **Both web servers start.** `sandbox:serve` answered after 14 seconds and `docs:serve:e2e`
+  after 13 and 14; every shard's suites ran, which neither can without its server.
+- **Firefox runs as uid 1001.** The probe dispatched on firefox passed 724 of 724 in 17.2
+  minutes (37681766570).
+- **The rest of the machine:** `Etc/UTC`, as on the runner; 4 CPUs and 16 GB; `/dev/shm` at
+  Docker's 64 MB, which Chromium does not use — Playwright starts it with
+  `--disable-dev-shm-usage`. `--ipc=host`, which Playwright's Docker page recommends for
+  Chromium, is therefore not taken until a crash is measured that it would have prevented.
+
+**What the image changed, each repaired at its cause rather than around it:**
+
+- **`localhost` is `::1` first.** Docker's `/etc/hosts` gives the name to `::1` as well, Node
+  resolves it there first, and Verdaccio, told a bare port, bound `::1` alone — while
+  `check-consumer`'s `fetch` asked `127.0.0.1` and was refused for the whole of its wait; `[::1]`
+  answered 200 in the same run. The gate now names `127.0.0.1` on both ends.
+- **`${{ github.workspace }}` is the runner's path, not the job's.** It reads
+  `/home/runner/work/components/components` inside a container whose workspace is
+  `/__w/components/components`; the repetition run builds its report's path in the shell.
+- **There is no `zstd`.** `actions/cache` then writes gzip, and the compression is part of an
+  entry's version: the image's first runs found none of the nx entries `main` had written
+  outside it, and one `node_modules` key now holds two entries, 178 MB from the runner and
+  204 MB from the image. Every job that shares the nx cache runs in the image, so CI loses
+  nothing after its first run; `pages.yml`, which builds on the runner, could never restore
+  again, and its restore step is removed rather than left to miss in silence — `nx build docs`
+  took 23 seconds restored (37579021492).
+- **The generic `monospace` is another face.** Liberation Mono in the image, DejaVu Sans Mono
+  on the desk and on the runner — and all eight of the site's baselines moved, by 3122 to
+  30402 pixels. The pictures were right to move: 3610 code and `pre` elements on the 42 routes
+  of the sitemap named no face, so the site drew them in whatever the machine had, which is what its vendored
+  faces exist to prevent. Every code seat now reads `--docs-font-mono`; measured on all 42
+  routes before and after, the size and line height of all 8375 code, `kbd`, `samp` and `pre`
+  elements are unchanged — the 66 that sat at the browser's 13px for the generic family alone
+  are given that 13px. Six baselines were recorded again on the desk — the theming page's two
+  came out as they were — and the image then drew all eight as the desk had (37686780190),
+  though the two machines' own `monospace` still differ. The sandbox's moved by nothing: they pin Liberation Sans and Liberation Mono, which the image
+  carries.
+
+**Alternatives considered.**
+
+- **An image of our own on ghcr.io.** Taken only if the official image lacked something
+  measured, and it did not: what it lacks — `zstd`, the DejaVu fonts — cost nothing once the
+  site read its own face and the dead restore went. Our own image would be a build workflow, a
+  registry entry and a second version to keep in step with the lockfile, for no reading.
+- **A tag derived from the lockfile by a job in front** (`needs.<job>.outputs.image`). No
+  literal to drift, but a serial job before every run and a tag nobody can read in the file.
+  The literal costs one line per workflow at a bump, and the bump's pull request goes red
+  naming each.
+- **A step timeout and a retry around apt.** It bounds the hang and not the mirror: the step
+  was 41 seconds at its best-behaved median, and the pull is 27.
+- **`at-pass.yml` stays on apt.** Windows and macOS have no such image, and its Linux job is a
+  desktop session with Orca that installs from apt for the reader anyway. It names no image, so
+  the tag rule has nothing to hold there.
+
+**What this costs.** The pull is a network step too, and it is bounded by the job's timeout
+alone, as apt was: 31 pulls of 31 finished inside 45 seconds, and no hang has been seen — five
+runs say nothing about one. A Playwright bump now moves five lines in three workflows, which
+`check-browsers` names. And the desk does not run the image — it has no Docker — so a picture
+the image draws differently from the desk is found on CI; the site's pictures now draw only
+vendored faces, and the sandbox's pin faces the image carries.

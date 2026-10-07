@@ -36,7 +36,7 @@ that is, this whole control would become what it stands against.
 The workflows are the exception to "data": the reference carries `ci.yml`, `nightly.yml`
 and `e2e-probe.yml` in miniature as TEXT, and every case goes through the same readers the
 files on disk go through — `ciText` replaces `ci.yml`, `workflows` replaces any file by
-path. A reader that mis-reads a spelling then fails a case, or the reference itself: the
+path. A reader that reads a spelling wrong then fails a case, or the reference itself: the
 reference names Playwright's image only under `container:` and installs nothing, so a
 reader that stopped seeing that form leaves the reference with no installation at all.
 

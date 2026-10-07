@@ -26,8 +26,8 @@ const VIEWPORT = { width: 1280, height: 900 };
  * Sets the stage so that a screenshot depends on the components, not on the machine.
  *
  * The typeface matters most here: the sandbox uses `system-ui`, which resolves to
- * something different on every system (Noto Sans on the desk, WenQuanYi Zen Hei in
- * the Playwright image CI runs in — both measured). A difference in font metrics shifts
+ * something different on every system (Noto Sans on the desk, a CJK face in the
+ * Playwright image CI runs in — both measured). A difference in font metrics shifts
  * the layout enough for the baselines to stop matching because of the machine rather
  * than the code — and the test turns into a generator of false alarms. So we pin a
  * typeface that exists in both places: the image's `install-deps` layer carries

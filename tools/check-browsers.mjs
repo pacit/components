@@ -393,7 +393,8 @@ export const checkBrowsers = ({
     throw new BrowsersError(
       'ci',
       'ci-without-engine',
-      `${ciGaps.length} browser installations in \`${CI}\` do not carry an engine from the policy:\n` +
+      `the browser installations in \`${CI}\` miss an engine from the policy ` +
+        `${ciGaps.length === 1 ? 'once' : `${ciGaps.length} times`}:\n` +
         list(ciGaps) +
         `\n    A step installs what it names, so every step has to name every engine. The ` +
         `image carries what it was built with — ${IMAGE_ENGINES.join(', ')} — and nothing ` +

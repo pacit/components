@@ -528,12 +528,12 @@ Playwright configuration, and a sharded run is the other: the browser jobs are t
 only while their shard count is the size of their own matrix rather than a number typed beside it
 **Control:** `tools/check-browsers.fixtures/` — 33 doctored inputs, each rejected on its own
 **rule**; plus eleven runs against the real repository (webkit struck from `projects`; a file
-added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; an
-engine removed from the install step in CI; `--project=chromium` in the target; an exclusion
-removed from the policy with `testIgnore` left in place; `testIgnore` removed with the entry
-left in place; a new spec excluded on every engine at once; an unclosed bracket in the
-configuration; a stale image tag in `nightly.yml`; the lockfile bumped without the tags) — the
-last two on one rule, every other pair on different ones
+added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; a
+project on an engine the image does not carry (`channel: 'chrome'`); `--project=chromium` in
+the target; an exclusion removed from the policy with `testIgnore` left in place;
+`testIgnore` removed with the entry left in place; a new spec excluded on every engine at
+once; an unclosed bracket in the configuration; a stale image tag in `nightly.yml`; the
+lockfile bumped without the tags — those last two both on `ci-image-not-the-lockfile`)
 **Lessons:** [`lesson-56`](../lessons.md#lesson-56)
 
 > There are two exclusions and they are **of different kinds**. `visual.spec.ts` outside
