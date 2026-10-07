@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are eight points and
-fifty-eight rules, and that is where all the content sits. The readings are guarded by runs against
+sixty rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -175,9 +175,12 @@ scope out.
 `--write` has had a second writer since
 [0088](../../docs/decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md):
 a narrow run (`--mutate`, so its `config.mutate` is not the policy's `patterns`) rewrites the
-rows of the files it measured, keeps every other row, and adds TOTAL up from the rows. The six
-`narrow-*` cases carry a `narrow` list — the files the report is cut down to, as `--mutate`
-would leave it — and go through `mergeSnapshot` instead of the checks: no record to merge
+rows of the files it measured, keeps every other row, and adds TOTAL up from the rows. The eight
+cases of `check: write` go through `writeSnapshot`, the one door to the record, instead of
+the checks; six carry a `narrow` list — the files the report is cut down to, as `--mutate`
+would leave it — and two are about the door itself: a `mutate` nobody can read
+(`mutateAs: null`, so the report says nothing about what it measured) and a full run that
+lost a file of the inventory. The narrow six: no record to merge
 into, a slice of a file, a pattern that reaches no file, a file outside `files`, a text that
 is not the one on disk, and `ignoreStatic` — point 5's own rule, reached through the merge,
 because a narrow run is held to the same configuration as a full one.

@@ -72,9 +72,9 @@ first ([`lesson-113`](docs/lessons.md#lesson-113)).
 
 ## Heavy runs stay off the desk
 
-Measured over the seventeen days to 2026-10-07: the two Playwright suites and the mutation
+Measured over the fourteen days to 2026-10-03: the two Playwright suites and the mutation
 run took 52 hours of the desk this repository is developed on, 15 of them in runs stopped or
-red, while CI answers a push in fifteen minutes on nine machines and the nightly measures the
+red, while CI answers a push in thirteen minutes on nine machines (37655766884) and the nightly measures the
 mutants in seventy on one
 ([0088](docs/decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md)).
 So, before a push:
@@ -100,8 +100,8 @@ So, before a push:
   ```
 
 - Anything heavier than a gate runs inside a memory ceiling, so that the kernel kills the run
-  and not the editor (2026-10-06, 10:56: the whole editor's scope, 2.6 GB, killed by
-  `systemd-oomd`):
+  and not the editor (2026-10-06, 10:56: the kernel's OOM killer took a 2.6 GB process out of the editor's
+  scope and systemd tore the scope down, 14 GB at its peak):
 
   ```bash
   systemd-run --user --scope -p MemoryMax=6G -- scripts/with-node npx stryker run libs/components/stryker.config.json --mutate libs/components/slider/src/slider.ts

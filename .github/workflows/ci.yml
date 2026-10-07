@@ -126,7 +126,8 @@ jobs:
   # The browsers. Every job here runs `nx affected -t e2e` over a SHARD of the suites, and
   # the eight of them together run each affected suite exactly once. Eight since 2026-10-07
   # (0088), six before: the tail shard measured 23 minutes at six (37537775744) once this
-  # job became the push's whole e2e verdict, and a job is free on a public repository.
+  # job became the push's whole e2e verdict, and a job is free on a public repository. The
+  # first run at eight: 7.6 to 11.4 minutes per shard, 13.1 for the run (37655766884).
   #
   # The denominator is `strategy.job-total` and never a number typed beside it. That is the
   # whole guard against the failure this arrangement could have: a matrix of eight with

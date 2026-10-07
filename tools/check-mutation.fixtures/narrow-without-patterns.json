@@ -1,0 +1,7 @@
+{
+  "check": "write",
+  "rule": "patterns-unreadable",
+  "// defect": "A report with no `config.mutate` to read — a hand-made or foreign one; Stryker always writes the field. Whether the run was the whole or a part of it is read there and nowhere else, and read as \"not narrow, so full\" it rendered one file as the whole record.",
+  "narrow": ["libs/fake/beta.ts"],
+  "mutateAs": null
+}

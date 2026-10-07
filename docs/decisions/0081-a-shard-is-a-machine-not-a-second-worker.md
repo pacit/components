@@ -50,7 +50,8 @@ MACHINES rather than across workers on one.**
    (37537775744) once this job became the push's whole e2e verdict
    ([0088](0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md)); the property
    is the count of MACHINES and the denominator is still `job-total`, so nothing here
-   depends on the number.
+   depends on the number. The first run at eight: 7.6 to 11.4 minutes per shard, 13.1 for
+   the run (37655766884).
 3. **The denominator is `${{ strategy.job-total }}` and never a number typed beside the
    matrix**, and point 5 of `check-browsers` refuses a literal one
    (`ci-shard-not-from-matrix`). This is the failure the arrangement makes possible and

@@ -1,0 +1,6 @@
+{
+  "check": "write",
+  "rule": "full-run-incomplete",
+  "// defect": "A run whose `mutate` is the policy's own patterns and whose report lacks a file of the inventory. Rendered as the record it would lose that file's row and say nothing; point 2 would notice on the next check, which is one check too late for a writer.",
+  "dropFiles": ["libs/fake/beta.ts"]
+}

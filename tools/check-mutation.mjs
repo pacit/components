@@ -341,13 +341,16 @@ const rowArithmetic = (row) => {
 };
 
 /**
- * Whether a report is a NARROW run: `--mutate` on the command line, so its `config.mutate`
- * is not the policy's `patterns`. Such a run measures its files exactly as the full one
- * does — the same mutants, the same related specs — and measures nothing else (0088).
+ * Whether a report is a FULL run: its `config.mutate` is the policy's `patterns`, word for
+ * word. Anything else is a NARROW run — `--mutate` on the command line — which measures
+ * its files exactly as the full one does (the same mutants, the same related specs) and
+ * nothing else (0088). Spelled positively on purpose: a `mutate` that is not an array is
+ * not a full run either, and read the other way round it was — a report with no `mutate`
+ * reached the full writer and wrote its one file as the whole record.
  */
-const isNarrow = (report, policy) =>
+const isFull = (report, policy) =>
   Array.isArray(report?.config?.mutate) &&
-  JSON.stringify(report.config.mutate) !==
+  JSON.stringify(report.config.mutate) ===
     JSON.stringify(policy?.patterns ?? []);
 
 /** Stryker's own syntax for a slice of a file: `path:line[:col]-line[:col]`. */
@@ -507,8 +510,9 @@ const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
       'write',
       'nothing-measured',
       `the run holds no file at all (\`mutate\`: ${JSON.stringify(report?.config?.mutate)}).\n` +
-        `    A pattern that reaches no file is a merge of nothing into the record, and a ` +
-        `record unchanged under a command that says it wrote is the quiet case.`,
+        `    Stryker lists a file through its mutants, so this is a pattern that reaches no ` +
+        `file OR a file with no mutant to throw (a \`noMutants\` entry) — no row either way, ` +
+        `and a record unchanged under a command that says it wrote is the quiet case.`,
     );
   const outside = measured.filter((f) => !(policy?.files ?? []).includes(f));
   if (outside.length)
@@ -563,6 +567,49 @@ const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
     text,
     changed,
     total: { before: total.row, after: text.match(/^TOTAL .*$/m)?.[0] ?? '' },
+  };
+};
+
+/**
+ * The one door to the record. A full run renders it whole — after a look at the inventory,
+ * because a full run that lost a file would write a record without its row and say
+ * nothing — and a narrow run is merged; a report whose `mutate` cannot be read is neither,
+ * and is refused before a byte is written. Returns what `mergeSnapshot` returns, and `mode`.
+ */
+const writeSnapshot = (input) => {
+  const { report, policy } = input;
+  const mutate = report?.config?.mutate;
+  if (!Array.isArray(mutate))
+    throw new MutationError(
+      'write',
+      'patterns-unreadable',
+      `the report's \`config.mutate\` is ${JSON.stringify(mutate)}, not a list of patterns.\n` +
+        `    Whether this run was the whole or a part of it is read there and nowhere ` +
+        `else; without it the record cannot be written either way.`,
+    );
+  if (!isFull(report, policy))
+    return { mode: 'narrow', ...mergeSnapshot(input) };
+  const excused = new Set(
+    (policy?.noMutants ?? []).map((e) => (typeof e === 'string' ? e : e?.file)),
+  );
+  const missing = (policy?.files ?? []).filter(
+    (f) => !excused.has(f) && !(f in (report?.files ?? {})),
+  );
+  if (missing.length)
+    throw new MutationError(
+      'write',
+      'full-run-incomplete',
+      `${missing.length} files of the inventory are not in this full run:\n` +
+        list(missing) +
+        `\n    A record rendered from it would lose their rows and say nothing. The run ` +
+        `is to be looked at, not written down.`,
+    );
+  const text = renderSnapshot(report, policy.tolerance);
+  return {
+    mode: 'full',
+    text,
+    changed: [],
+    total: { before: '', after: text.match(/^TOTAL .*$/m)?.[0] ?? '' },
   };
 };
 
@@ -1398,7 +1445,11 @@ const buildFixture = (fx) => {
     report.files = Object.fromEntries(
       Object.entries(report.files).filter(([file]) => named.includes(file)),
     );
-    report.config = { ...report.config, mutate: fx.narrow };
+    // `mutateAs` is what the report SAYS it measured, when that is not the list itself.
+    report.config = {
+      ...report.config,
+      mutate: 'mutateAs' in fx ? fx.mutateAs : fx.narrow,
+    };
   }
   return {
     policy: w.policy,
@@ -1433,46 +1484,42 @@ if (WRITE) {
   const report = json(REPORT);
   const policy = json(POLICY) ?? {};
   if (report?.files && typeof policy.tolerance === 'number') {
-    // A narrow run (`--mutate`) rewrites the rows of the files it measured and nothing
-    // else; the whole record is a full run's to write. Before 0088 this branch did not
-    // exist, and `--write` after a narrow run wrote that run's files AS the record —
-    // 120 rows to 4, with no word said.
-    if (isNarrow(report, policy)) {
-      const sources = Object.fromEntries(
-        Object.keys(report.files).map((f) => [f, read(f) ?? undefined]),
-      );
-      let merged;
-      try {
-        merged = mergeSnapshot({
-          snapshot: read(SNAPSHOT),
-          report,
-          policy,
-          sources,
-        });
-      } catch (error) {
-        if (!(error instanceof MutationError)) throw error;
-        console.error(`X ${error.check}/${error.rule}: ${error.message}`);
-        process.exit(1);
-      }
-      writeFileSync(join(ROOT, SNAPSHOT), merged.text);
-      const files = Object.keys(report.files).length;
-      console.log(
-        `✓ Merged a narrow run into ${SNAPSHOT}: ${files} files measured, ` +
-          `${merged.changed.length} rows moved.`,
-      );
-      for (const c of merged.changed)
-        console.log(`    ${c.before ?? '(no row)'}\n  → ${c.after}`);
-      console.log(`    ${merged.total.before}\n  → ${merged.total.after}`);
-      console.log(
-        `  The whole is measured at night (nightly.yml), where every row is held to the tolerance.`,
-      );
+    // One door (`writeSnapshot`): a full run rewrites the record whole, a narrow run
+    // (`--mutate`) rewrites the rows of the files it measured and nothing else. Before
+    // 0088 there was no narrow branch, and `--write` after a narrow run wrote that run's
+    // files AS the record — 120 rows to 4, with no word said.
+    const sources = Object.fromEntries(
+      Object.keys(report.files).map((f) => [f, read(f) ?? undefined]),
+    );
+    let written;
+    try {
+      written = writeSnapshot({
+        snapshot: read(SNAPSHOT),
+        report,
+        policy,
+        sources,
+      });
+    } catch (error) {
+      if (!(error instanceof MutationError)) throw error;
+      console.error(`X ${error.check}/${error.rule}: ${error.message}`);
+      process.exit(1);
+    }
+    writeFileSync(join(ROOT, SNAPSHOT), written.text);
+    if (written.mode === 'full') {
+      console.log(`✓ Rewrote ${SNAPSHOT}`);
       process.exit(0);
     }
-    writeFileSync(
-      join(ROOT, SNAPSHOT),
-      renderSnapshot(report, policy.tolerance),
+    const files = Object.keys(report.files).length;
+    console.log(
+      `✓ Merged a narrow run into ${SNAPSHOT}: ${files} files measured, ` +
+        `${written.changed.length} rows moved.`,
     );
-    console.log(`✓ Rewrote ${SNAPSHOT}`);
+    for (const c of written.changed)
+      console.log(`    ${c.before ?? '(no row)'}\n  → ${c.after}`);
+    console.log(`    ${written.total.before}\n  → ${written.total.after}`);
+    console.log(
+      `  The whole is measured at night (nightly.yml), where every row is held to the tolerance.`,
+    );
     process.exit(0);
   }
   console.error(`X Nothing to rewrite the snapshot from — no ${REPORT}.`);
@@ -1519,21 +1566,32 @@ if (cases.length) {
   const beta = 'libs/fake/beta.ts';
   const gamma = 'libs/fake/gamma.ts';
   const known = readFixture(REFERENCE).input.policy.files;
+  // Every column a row has: a Timeout (the clock's kill, counted as detected), a
+  // RuntimeError (errored, in the denominator), an Ignored one with the policy's own reason
+  // (out of the denominator). The first control carried Killed and Survived alone, and a
+  // merge that dropped the clock from TOTAL stayed green under it.
+  const ignored = readFixture(REFERENCE).input.fileDigest[
+    'libs/fake/alpha.ts'
+  ].statuses.find((s) => typeof s === 'object');
+  const every = [
+    'Killed',
+    'Timeout',
+    'Survived',
+    'RuntimeError',
+    'NoCoverage',
+    ignored,
+  ];
   const probes = [
     ['unchanged', {}, [beta]],
     [
       'moved',
-      {
-        replaceStatuses: {
-          [beta]: ['Killed', 'Killed', 'Survived', 'Survived'],
-        },
-      },
+      { replaceStatuses: { [beta]: ['Killed', 'Killed', ...every] } },
       [beta],
     ],
     [
       'new file',
       {
-        addFiles: { [gamma]: { statuses: ['Killed', 'Killed', 'Survived'] } },
+        addFiles: { [gamma]: { statuses: ['Killed', ...every] } },
         replaceSource: { [gamma]: 'export const gamma = 1;\n' },
         policy: { files: [...known, gamma] },
       },
@@ -1544,7 +1602,7 @@ if (cases.length) {
     const full = buildFixture(fx);
     let merged;
     try {
-      merged = mergeSnapshot(buildFixture({ ...fx, narrow }));
+      merged = writeSnapshot(buildFixture({ ...fx, narrow }));
     } catch (error) {
       if (!(error instanceof MutationError)) throw error;
       problems.push(
@@ -1553,7 +1611,12 @@ if (cases.length) {
       );
       continue;
     }
-    if (merged.text !== renderSnapshot(full.report, full.policy.tolerance))
+    if (merged.mode !== 'narrow')
+      problems.push(
+        `merge (${what}): the narrow run went through the full writer — the door ` +
+          `read a narrow run as the whole`,
+      );
+    else if (merged.text !== renderSnapshot(full.report, full.policy.tolerance))
       problems.push(
         `merge (${what}): the rows of a narrow run merged into the record differ from ` +
           `the file a full run writes — the two writers of ${SNAPSHOT} disagree`,
@@ -1563,8 +1626,11 @@ if (cases.length) {
 
 for (const name of cases) {
   const fx = readFixture(name);
-  // A case with `narrow` exercises the merge, every other one the checks.
-  const exercise = Array.isArray(fx.narrow) ? mergeSnapshot : checkMutation;
+  // A case about the record goes through its door, every other one through the checks.
+  const exercise =
+    fx.check === 'write' || Array.isArray(fx.narrow)
+      ? writeSnapshot
+      : checkMutation;
   try {
     exercise(buildFixture(fx));
     problems.push(
