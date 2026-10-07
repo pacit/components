@@ -29,6 +29,45 @@
 </sbx-demo>
 
 <sbx-demo
+  #warn
+  heading="A warning: allowed, and said"
+  summary="A verdict without a veto (0087): pctWarn() takes what validate() takes, or what apply() takes, and writes metadata the form does not grade — the field stays valid, aria-invalid stays off, submit() runs. Once the field is left, the warning takes the one line after the error and before the hint, in the warning tone, with a glyph and a hidden word for a reader, announced politely as a status."
+  [reqs]="['req-api-warning', 'req-api-message']"
+  data-testid="demo-warning"
+>
+  <div class="stack">
+    <pct-field
+      label="Amount"
+      hint="Transfers above 10 000 are reviewed by hand"
+      [size]="warn.activeSize()"
+      data-testid="field-amount"
+    >
+      <span pctPrefix aria-hidden="true">EUR</span>
+      <input
+        pctNumber
+        [useGrouping]="true"
+        [formField]="paymentForm.amount"
+        data-testid="number-amount"
+      />
+    </pct-field>
+
+    <pct-field
+      label="Phone"
+      hint="Optional — the form would rather have it"
+      [size]="warn.activeSize()"
+      data-testid="field-phone"
+    >
+      <input
+        pctText
+        type="tel"
+        [formField]="paymentForm.phone"
+        data-testid="text-phone"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   #aux
   heading="A label aux and a character counter"
   summary="The slots outside the border carry side content: [pctLabelAux] beside the label (an 'i' icon, say) and [pctMessageAux] in the message row (a character counter, say). The counter stands there whether the line below the field lights up a hint or an error."

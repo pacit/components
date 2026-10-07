@@ -954,8 +954,10 @@ test.describe('The pages', () => {
     // `danger`, `warning`, `success` and `info` the family `primary` already had (0082),
     // 568 since the badge learned to wear all four and the skin grew nine dials for it; 575
     // since the icon's box took three sizes and four tones of its own (0083); 579 since the
-    // icon-only button took a glyph step per size and a floor of its own (0085).
-    await expect(count).toHaveText('579 of 579');
+    // icon-only button took a glyph step per size and a floor of its own (0085); 589 since
+    // the field and the six footers learned the warning tone — a line colour each, and a
+    // border colour where the control draws a surface (0087).
+    await expect(count).toHaveText('589 of 589');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );

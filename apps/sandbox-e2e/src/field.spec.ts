@@ -136,6 +136,95 @@ test.describe('PctField — the field wrapper', () => {
     );
   });
 
+  /**
+   * A verdict without a veto ([0087](../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)):
+   * the one message line after the error and before the hint, under the error's own
+   * `touched` gate, in the warning tone — the border and the line in `--pct-warning`, which is
+   * amber.700 on the light theme — with the glyph before the text and a hidden word for a
+   * reader, announced as `status`; and the control is NOT invalid.
+   */
+  test('a warning takes the line once the field is left, and the field stays valid', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('field-amount');
+    const input = field.getByTestId('number-amount');
+    const hint = field.locator('[data-pct-part="field-hint"]');
+    const warning = field.locator('[data-pct-part="field-warning"]');
+    const row = field.locator('[data-pct-part="field-row"]');
+
+    // The model holds a suspect amount already, and the line says nothing until the field
+    // is left — the same gate as the error's.
+    await expect(hint).toBeVisible();
+    await expect(warning).toHaveCount(0);
+    await expect(field).not.toHaveAttribute('data-pct-warning');
+
+    await input.click();
+    await input.press('Tab');
+
+    await expect(warning).toBeVisible();
+    await expect(warning).toHaveAttribute('role', 'status');
+    await expect(warning).toContainText('Unusually large');
+    await expect(hint).toHaveCount(0);
+    await expect(input).toHaveAttribute(
+      'aria-describedby',
+      await attrOf(warning, 'id'),
+    );
+    // A verdict without a veto: nothing about the control says invalid.
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(field).toHaveAttribute('data-pct-warning', '');
+    await expect(field).not.toHaveAttribute('data-pct-invalid');
+
+    // The tone's two channels: the colour on the border and on the line, and the glyph —
+    // `--pct-warning` is amber.700 on the light theme (0082).
+    await expect(row).toHaveCSS('border-color', 'rgb(180, 83, 9)');
+    await expect(warning).toHaveCSS('color', 'rgb(180, 83, 9)');
+    await expect(warning.locator('pct-icon svg')).toHaveCount(1);
+    await expect(warning.locator('pct-icon')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    // The hidden word opens the sentence for a reader — in the accessible name of the line.
+    expect(
+      await warning.evaluate((el) =>
+        el.textContent?.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toBe('Warning: Unusually large — it will be reviewed by hand');
+
+    // A value under the line takes the warning away, and the hint is back.
+    await input.fill('500');
+    await input.press('Tab');
+    await expect(warning).toHaveCount(0);
+    await expect(hint).toBeVisible();
+    await expect(input).toHaveAttribute(
+      'aria-describedby',
+      await attrOf(hint, 'id'),
+    );
+  });
+
+  test("the platform's own validator as a warning: required, with the field still valid", async ({
+    page,
+  }) => {
+    const field = page.getByTestId('field-phone');
+    const input = field.getByTestId('text-phone');
+    const warning = field.locator('[data-pct-part="field-warning"]');
+
+    await expect(warning).toHaveCount(0);
+    await input.click();
+    await input.press('Tab');
+
+    // `schema(required)` as a warning: the sentence, and no `required` on the control.
+    await expect(warning).toBeVisible();
+    await expect(warning).toContainText(
+      'Without a number we cannot call you back',
+    );
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(input).not.toHaveAttribute('required');
+
+    await input.fill('+48 600 000 000');
+    await input.press('Tab');
+    await expect(warning).toHaveCount(0);
+  });
+
   test('the aux slots: an icon beside the label and a character counter', async ({
     page,
   }) => {
