@@ -5,6 +5,7 @@ import {
   DestroyRef,
   Directive,
   inject,
+  model,
   provideZonelessChangeDetection,
   resource,
   signal,
@@ -17,6 +18,7 @@ import {
   form,
   FORM_FIELD,
   FormField,
+  FormValueControl,
   LogicFn,
   max,
   min,
@@ -269,7 +271,8 @@ describe('pctWarn — a verdict without a veto', () => {
     await TestBed.inject(ApplicationRef).whenStable();
     expect(kinds(f.items[0]().metadata(PCT_WARNINGS))).toEqual([]);
     expect(created).toBe(3);
-    // The measured cost (0087): the shadow's own injector outlives the item.
+    // The measured cost (0087): the shadow's own injector outlives the item. A red here means
+    // the platform closed the leak, and the cost paragraph of 0087 is to be rewritten.
     expect(destroyed).toBe(0);
   });
 
@@ -323,12 +326,26 @@ class ProbeReader {
   );
 }
 
+/** A custom control that projects content — a form field can stand ABOVE an element. */
 @Component({
-  imports: [FormField, ProbeReader],
+  selector: 'pct-probe-box',
+  template: '<ng-content />',
+})
+class ProbeBox implements FormValueControl<string> {
+  readonly value = model<string>('');
+}
+
+@Component({
+  imports: [FormField, ProbeReader, ProbeBox],
   template: `
     <input [formField]="f.phone" pctProbeReader />
     <input [formField]="f.note" pctProbeReader />
     <input pctProbeReader />
+    <!-- A form field ABOVE the reader, not on it: a parent's binding says nothing about
+         this element, which is what injecting with self buys (0087). -->
+    <pct-probe-box [formField]="f.phone"
+      ><input pctProbeReader
+    /></pct-probe-box>
   `,
 })
 class Host {
@@ -350,10 +367,10 @@ describe('pctFieldWarnings — the bound element reads its warnings through FORM
   const readers = () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
-    const [warned, quiet, alone] = fixture.debugElement
+    const [warned, quiet, alone, below] = fixture.debugElement
       .queryAll(By.directive(ProbeReader))
       .map((el) => el.injector.get(ProbeReader));
-    return { fixture, warned, quiet, alone };
+    return { fixture, warned, quiet, alone, below };
   };
 
   it('a directive beside [formField] sees the list, live', () => {
@@ -374,6 +391,15 @@ describe('pctFieldWarnings — the bound element reads its warnings through FORM
     expect(quiet.platform()).toEqual([]);
     expect(quiet.warnings()).toEqual([]);
     expect(alone.warnings()).toEqual([]);
+  });
+
+  it("a form field on a parent element is not this element's", () => {
+    const { warned, below } = readers();
+    // The same path warns above the reader — and the reader, injecting with `self`, does
+    // not see it, exactly as the platform's own reading beside it does not.
+    expect(warned.warnings().map((e) => e.kind)).toEqual(['taken']);
+    expect(below.platform()).toEqual([]);
+    expect(below.warnings()).toEqual([]);
   });
 
   it('a bound list stands in for the form — an empty one included', () => {

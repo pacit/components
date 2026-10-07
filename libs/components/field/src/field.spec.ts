@@ -1,5 +1,7 @@
 import {
   Component,
+  Directive,
+  inject,
   provideZonelessChangeDetection,
   signal,
   Type,
@@ -9,6 +11,10 @@ import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import {
+  PCT_FIELD,
+  pctAttachToField,
+  PctFieldControl,
+  PctLabelStrategy,
   pctWarn,
   providePctConfig,
   providePctTexts,
@@ -147,6 +153,37 @@ class SignalWarningHost {
     );
   });
 }
+
+/**
+ * A control written before either optional channel existed: the contract's required members
+ * and nothing else — no `ownErrors`, no `fieldWarnings`. The chrome has to read it as a
+ * control with nothing to say on either channel, not as a defect.
+ */
+@Directive({ selector: 'input[pctBareControl]' })
+class BareControl implements PctFieldControl {
+  readonly controlId = 'bare-control';
+  readonly labelStrategy: PctLabelStrategy = 'for';
+  readonly invalid = signal(false);
+  readonly touched = signal(true);
+  readonly required = signal(false);
+  readonly disabled = signal(false);
+  readonly errors = signal<readonly { message?: string }[]>([]);
+  readonly describedBy = signal<string | null>(null);
+  setDescribedBy(ids: string | null): void {
+    this.describedBy.set(ids);
+  }
+  constructor() {
+    pctAttachToField(inject(PCT_FIELD, { optional: true }), this);
+  }
+}
+
+@Component({
+  imports: [PctField, BareControl],
+  template: `<pct-field label="Bare" hint="A hint">
+    <input pctBareControl id="bare-control" />
+  </pct-field>`,
+})
+class BareControlHost {}
 
 @Component({
   imports: [PctField, PctText, FormField],
@@ -823,6 +860,28 @@ describe('PctField + PctText', () => {
       expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
         'Three letters',
       );
+    });
+  });
+
+  /**
+   * The two optional channels of the contract — `ownErrors` (0070) and `fieldWarnings`
+   * (0087) — are optional for a reason: a control that declares neither is a control.
+   */
+  describe('a control with neither optional channel', () => {
+    it('is read as having nothing to say on either, and keeps its hint', async () => {
+      const fixture = await render(BareControlHost);
+      const control = fixture.debugElement
+        .query(By.directive(BareControl))
+        .injector.get(BareControl);
+
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe('A hint');
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+      expect(control.describedBy()).toBe(part(fixture, 'field-hint').id);
+      const field: HTMLElement =
+        fixture.nativeElement.querySelector('pct-field');
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+      expect(field.hasAttribute('data-pct-invalid')).toBe(false);
     });
   });
 

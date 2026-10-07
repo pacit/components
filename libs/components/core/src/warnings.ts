@@ -49,12 +49,6 @@ const WARNING_SCHEMAS = /* @__PURE__ */ createMetadataKey(
   /* @__PURE__ */ MetadataReducer.list<Schema<unknown>>(),
 );
 
-/** What a validator returns, as a list: nothing, one error, or many. */
-function toList(result: ValidationResult): readonly ValidationError[] {
-  if (result == null) return [];
-  return 'kind' in result ? [result] : result;
-}
-
 /**
  * Every warning on a field, as one list the form does not grade: what the logic form
  * computed on the real field, and what the shadow forms — one per warning schema, over the
@@ -62,8 +56,10 @@ function toList(result: ValidationResult): readonly ValidationError[] {
  *
  * A managed key, so that the platform runs `create` once per field node, inside that node's
  * injection context — which is what `form()` needs, and what `validateAsync` uses for its
- * resource. The shadow dies with the node: an array item removed destroys the node's
- * injector, and the shadow's effects with it. A field nobody warned has no rule for this key,
+ * resource. An array item removed destroys the real node's injector and the shadow's
+ * management effect with it; the shadow's own node injectors are children an `R3Injector`
+ * does not destroy, so an async rule's resource inside a shadow stays registered — the
+ * measured cost of 0087, pinned in the spec. A field nobody warned has no rule for this key,
  * so the platform creates no reader and no shadow for it, and `metadata(PCT_WARNINGS)` on it
  * is `undefined` ([0087](../../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)).
  *
@@ -94,7 +90,10 @@ export const PCT_WARNINGS = /* @__PURE__ */ createManagedMetadataKey(
   },
   {
     getInitial: (): readonly ValidationError[] => [],
-    reduce: (acc, item: ValidationResult) => acc.concat(toList(item)),
+    // A validator returns nothing, one error or a list; `concat` takes the last two as they
+    // are, so the one case to tell apart is nothing.
+    reduce: (acc, item: ValidationResult) =>
+      item == null ? acc : acc.concat(item),
   },
 );
 

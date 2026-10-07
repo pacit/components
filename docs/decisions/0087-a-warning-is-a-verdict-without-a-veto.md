@@ -79,6 +79,10 @@ grade.**
    the same list. A field nobody warned has no key and no shadow. The shadow dies with the
    node: an array item removed destroys the node's injector, and the shadow's effects with it.
 
+   _Amended 2026-10-07: the last sentence is half true, and the measured half stands under
+   "What this costs us" — the node's injector and the shadow's management effect go, the
+   shadow's own node injectors do not._
+
 3. **Reading it is the platform's reading.** `f.amount().metadata(PCT_WARNINGS)()` anywhere.
    On the bound element a control injects `FORM_FIELD` (`self`, optional) and reads
    `state().metadata(PCT_WARNINGS)` — through one helper in `core`, called in each control
@@ -169,8 +173,8 @@ schema(required))` for a warning, and a validator of its own is one function eit
   `required` attribute, no `min`, no `REQUIRED` metadata, measured — which is right: a value
   under a warning is allowed.
 - `pctFieldMessages` grows `warningText` and `showWarning`; the chrome and three footers grow
-  a branch. `check-aria` point 6 keeps holding hint and error as alternatives, and the warning
-  joins the same conditional.
+  a branch — six, by the amendment under "On the screen". `check-aria` point 6 keeps holding
+  hint and error as alternatives, and the warning joins the same conditional.
 - A warning is announced from where it is drawn (0026), politely.
 
 ## What this costs us
@@ -185,8 +189,8 @@ schema(required))` for a warning, and a validator of its own is one function eit
   28524 → 36698 B, ~8 KB of it the icon chunk and `@angular/common` behind it; the same
   chunk is new to `./radio`, `./slider` and `./switch`, which grow by the same ~8 KB each
   for a glyph in a footer, while `./checkbox`, `./select` and `./date`, which had it, grow by
-  2.3, 3.9 and 2.6 KB; and every entrypoint carries ~200 B more in the probe, which is the
-  import statement of `@angular/forms/signals` kept as an external — in an application the
+  2.3, 3.9 and 2.6 KB; and every entrypoint that takes `./core` carries ~200 B more in the
+  probe, which is the import statement of `@angular/forms/signals` kept as an external — in an application the
   bundler drops it, because the two keys are created under `@__PURE__` and nothing else in
   `./core` reads the module. Without those two comments the key, its builder and `form()`
   behind it were kept in a button-only application: 456 B of this library and the platform's
