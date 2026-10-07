@@ -98,6 +98,14 @@ export interface PctTexts {
    */
   readonly numberMalformed: string;
   /**
+   * Field: the word a reader hears before a warning's sentence, hidden from the eye. ARIA
+   * has no property for a warning — `aria-invalid` stays off, because the value is allowed
+   * — so the glyph beside the line is a drawing and this word is what says "warning" to
+   * someone who cannot see it. It ends in a colon because it OPENS the sentence: `Warning:
+   * Unusually large` ([0087](../../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)).
+   */
+  readonly fieldWarning: string;
+  /**
    * Toast: the accessible name of the cross that takes a message down. The button draws
    * nothing but the cross, so this string is the only name it has — the dialog's `dialogClose`
    * one component over, and deliberately a second key rather than a shared one: "close" is
@@ -193,6 +201,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateYearLetter: 'y',
   dateMalformed: 'Not a date',
   numberMalformed: 'Not a number',
+  fieldWarning: 'Warning:',
   toastDismiss: 'Dismiss',
   toastRegion: 'Notifications',
   drawerClose: 'Close',

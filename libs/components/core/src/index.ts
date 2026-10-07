@@ -14,3 +14,4 @@ export * from './template';
 export * from './texts';
 export * from './tone';
 export * from './value';
+export * from './warnings';
