@@ -199,14 +199,20 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: eight points and 53 rules for the measurement being current, covering the
+denominator: eight points and 58 rules for the measurement being current, covering the
 declared file inventory **and every source file of the library** — the candidate set is read
 off the git index and not off `mutate`, so a file nobody decided about is a violation
 (`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`
 target**, having a binding
 and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
 comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutation.snapshot.md`
-snapshot with a **two-sided** per-file tolerance. A row of that snapshot also has to **add
+snapshot with a **two-sided** per-file tolerance. The snapshot has two writers since
+[0088](../decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md): a full
+run rewrites it whole, and a narrow run (`--mutate`) handed to `--write` rewrites the rows of
+the files it measured and nothing else, TOTAL added up from the rows — refused where a row
+would be false (`write/narrow-without-record`, `write/partial-file`, `write/nothing-measured`,
+`write/file-outside-inventory`, `write/stale-measurement`) and held to the renderer by the
+gate's own control; the whole stays the nightly's. A row of that snapshot also has to **add
 up** (`score/columns-adrift`): it states a score and the counts behind it, so
 `killed / (killed + surviving + errored + not covered)` has to give the score printed beside
 them — which is why the errored mutants have a column of their own. Before they did,
@@ -223,7 +229,7 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 57 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 63 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires

@@ -1,0 +1,6 @@
+{
+  "check": "write",
+  "rule": "partial-file",
+  "// defect": "The run measured a slice of a file, in Stryker's own `path:line-line` syntax. A row stands for a whole file; a slice gives a whole file's numerator over a slice's denominator.",
+  "narrow": ["libs/fake/beta.ts:1-1"]
+}

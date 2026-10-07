@@ -7171,3 +7171,32 @@ estimate under Stryker's own threshold. The time fell by less than the tests did
 19% — a reading and not a measurement: every mutant, static or not, also pays for loading the
 spec files it runs (both dry runs spent 45 to 48 s in the tests and some 75 s around them), and
 the desk was shared. No file's score fell; five rose, and TOTAL went from 85.92% to 85.99%.
+
+---
+
+### <a id="lesson-251"></a>`lesson-251` — A narrow run measures a file as the full one does, and the desk paid for the whole
+
+Read on 2026-10-07 off the `task_history` of every checkout on the desk, over the seventeen
+days since 2026-09-20: `sandbox-e2e:e2e` ran 57 times at a median of 29 minutes, 23.9 hours in
+all and 11.8 of them in runs stopped or red; `docs-e2e:e2e` 47 times at 17 minutes, 12.9
+hours; `components:mutation` 17 times at 78 minutes, 15.6 hours. 52.4 hours of an eight-core
+laptop in seventeen days — three a day — against a CI run that answers in fifteen minutes on
+seven runners (37537775744: gates 3.5, shards 9 to 23) and a nightly that measures the mutants
+in 68 to 72 on one (four runs, 2026-10-04 to 07). Every one of the 44 other tasks of the
+battery has a median under a minute.
+
+The mutation run was paid in full because the record demanded it: `--write` rendered
+`mutation.snapshot.md` from the whole report, and a narrow run handed to it wrote its files AS
+the record. What a narrow run measures had never been compared with the full one. Compared on
+`date/src/locale.ts`, the same 359 lines, two runs a day apart — the full one of 2026-10-06
+(70 files, 55 spec files in its dry run) and a `--mutate` run of 2026-10-07 (one file, three
+spec files): 121 killed, 12 surviving, 1 uncovered, 1 timeout, in both. Stryker drives Vitest
+in related mode, so a file's mutants meet the specs that reach the file whichever run throws
+them; what the narrow run does not have is the whole — the clock's share, the inventory, a
+spec the run never selects — and those stay the full run's to say.
+
+The memory is the other number. On 2026-10-06 at 10:56 `systemd-oomd` killed the editor's
+scope at 2.6 GB of anonymous memory, the kernel's log says, with the browsers and the Vitest
+workers of a run beside it.
+[0088](decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md) moves the
+whole off the desk and leaves it the files a change touches.

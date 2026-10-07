@@ -262,3 +262,15 @@ jobs:
 
       - shell: bash # the runner (plan 4.72, lesson-228)
         run: scripts/nx-verdict npx nx run-many -t mutation check-mutation
+
+      # The report the record is rewritten from, kept whether the gate above was red or
+      # green (0088). A red morning is then a rewrite off THIS run — `gh run download`,
+      # `node tools/check-mutation.mjs --write`, a commit — and not seventy minutes of a
+      # desk; a green one is the reading a narrow run on a branch is held to next.
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: tmp/mutation/mutation.json
+          retention-days: 30
+          if-no-files-found: error

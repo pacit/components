@@ -1,0 +1,7 @@
+{
+  "check": "write",
+  "rule": "narrow-without-record",
+  "// defect": "A narrow run with no record to merge into. It rewrites the rows of the files it measured and leaves the rest standing — with nothing standing, the files it measured would become the whole record, 120 rows to 4, which is exactly what `--write` after a narrow run did before the merge existed.",
+  "noSnapshot": true,
+  "narrow": ["libs/fake/beta.ts"]
+}

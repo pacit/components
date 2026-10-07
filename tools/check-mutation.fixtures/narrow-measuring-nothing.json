@@ -1,0 +1,6 @@
+{
+  "check": "write",
+  "rule": "nothing-measured",
+  "// defect": "The narrow pattern reaches no file, so the run holds none. A merge of nothing leaves the record exactly as it was, under a command that says it wrote.",
+  "narrow": ["libs/fake/omega.ts"]
+}

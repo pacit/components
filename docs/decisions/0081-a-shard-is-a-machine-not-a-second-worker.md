@@ -46,6 +46,11 @@ MACHINES rather than across workers on one.**
    is a runner to itself, so `workers: 1` stands and every test meets the same idle machine
    it met before. What changed is how many machines, not what happens on one — the one
    property [`lesson-214`](../lessons.md#lesson-214) would have made expensive to change.
+   **Amended 2026-10-07: eight, not six.** The tail shard measured 23 minutes at six
+   (37537775744) once this job became the push's whole e2e verdict
+   ([0088](0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md)); the property
+   is the count of MACHINES and the denominator is still `job-total`, so nothing here
+   depends on the number.
 3. **The denominator is `${{ strategy.job-total }}` and never a number typed beside the
    matrix**, and point 5 of `check-browsers` refuses a literal one
    (`ci-shard-not-from-matrix`). This is the failure the arrangement makes possible and
