@@ -7255,6 +7255,7 @@ hides the lost verdict behind them — the issue reports the same defect coming 
 after 212 tests. So the zero finds the defect where the run is related, and the shape is where to
 look for it in any run: a module-level expression that can throw — a table built at import,
 mutated into something it cannot be built from.
+
 ---
 
 ### <a id="lesson-253"></a>`lesson-253` — A factory call at the top of the shared chunk is paid by every entrypoint, until it is marked pure

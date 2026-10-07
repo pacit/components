@@ -49,14 +49,14 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 13200 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 15618 ./core @angular/core,@angular/forms/signals
-./checkbox 21189 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./checkbox 21141 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 15352 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
-./core 9754 - @angular/core,@angular/forms/signals
-./date 46644 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./core 9706 - @angular/core,@angular/forms/signals
+./date 46572 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 20430 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 19637 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./field 36698 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./field 36650 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
 ./icon 8303 - @angular/common,@angular/core
@@ -64,15 +64,15 @@ before an application ships them.
 ./pagination 17797 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./popover 14935 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./progress 15719 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./radio 23734 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./radio 23686 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./regions 5654 ./core @angular/core,@angular/forms/signals
-./select 78227 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./select 78179 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./skeleton 3730 - @angular/core
-./slider 25694 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./slider 25646 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./stack 891 - @angular/core
 ./stepper 14720 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
-./switch 20669 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./switch 20621 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tabs 16534 ./core @angular/core,@angular/forms/signals
 ./testing 8337 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -131,11 +131,11 @@ is worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4392 15368
 ./breadcrumb PctBreadcrumb 3 4492 13038
 ./chips PctChip 2 15210 15213
-./date PctCalendar 2 26764 46197
-./field PctField 3 23927 33709
+./date PctCalendar 2 26738 46125
+./field PctField 3 23927 33661
 ./menu PctMenu 2 19438 19441
-./radio PctRadio 2 23564 23566
-./select PctMultiSelect 2 51814 78001
+./radio PctRadio 2 23516 23518
+./select PctMultiSelect 2 51766 77953
 ./stepper PctStep 2 14577 14579
 ./tabs PctTab 2 16365 16368
 ./tree PctTree 2 12783 12786

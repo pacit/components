@@ -185,11 +185,11 @@ schema(required))` for a warning, and a validator of its own is one function eit
   already;
   every control for the input and the read; and one `PctTexts` key on every entrypoint, ~29 B
   each by 0070's measurement.
-  _Amended 2026-10-07, read off `size.snapshot.md`:_ `./core` 8945 → 9754 B; `./field`
-  28524 → 36698 B, ~8 KB of it the icon chunk and `@angular/common` behind it; the same
+  _Amended 2026-10-07, read off `size.snapshot.md`:_ `./core` 8945 → 9706 B; `./field`
+  28524 → 36650 B, ~8 KB of it the icon chunk and `@angular/common` behind it; the same
   chunk is new to `./radio`, `./slider` and `./switch`, which grow by the same ~8 KB each
   for a glyph in a footer, while `./checkbox`, `./select` and `./date`, which had it, grow by
-  2.3, 3.9 and 2.6 KB; and every entrypoint that takes `./core` carries ~200 B more in the
+  2.3, 3.8 and 2.6 KB; and every entrypoint that takes `./core` carries ~200 B more in the
   probe, which is the import statement of `@angular/forms/signals` kept as an external — in an application the
   bundler drops it, because the two keys are created under `@__PURE__` and nothing else in
   `./core` reads the module. Without those two comments the key, its builder and `form()`

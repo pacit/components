@@ -164,7 +164,7 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
       the chrome and in six footers, `warnings` on every control
   - the probe's seven cases are `core/src/warnings.spec.ts`, and one of them turned out to
     measure the platform rather than the record: a shadow's injector outlives its item
-  - ten tokens, each in the contrast policy; `./field` +8.2 KB, `./radio`, `./slider` and
+  - ten tokens, each in the contrast policy; `./field` +8.1 KB, `./radio`, `./slider` and
     `./switch` the same for the icon chunk; the two keys under `@__PURE__`, or every
     entrypoint carried `form()` ([`lesson-253`](lessons.md#lesson-253))
   - the AT walk on `/field` is dispatched after the merge, and its record lands with the
