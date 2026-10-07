@@ -1,0 +1,23 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "// defect": "A survivor whose report says nothing about how many tests ran. Stryker writes the count for every survivor, so a missing one is a report the rule was never measured against, and it is read as none rather than as enough. `alpha`'s survivor is written out in full with no count and moved to the end of the list, behind the ignored mutant: the first file, the last mutant.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      {
+        "status": "Ignored",
+        "reason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+      },
+      { "status": "Survived" }
+    ]
+  }
+}

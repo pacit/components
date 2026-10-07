@@ -1,6 +1,64 @@
 /// <reference types='vitest' />
 import angular from '@analogjs/vite-plugin-angular';
 import { defineConfig } from 'vite';
+import type { RunnerTask, RunnerTestCase } from 'vitest';
+import type { Reporter, Vitest } from 'vitest/node';
+
+/**
+ * A spec file Vitest failed is one failed test here, whatever failed it: an import that
+ * threw, a `describe` body that threw, a hook of the file.
+ *
+ * `@stryker-mutator/vitest-runner` (9.6.1, and 10.0.0 has the same `run()`) builds a
+ * mutant's verdict from the file's TEST tasks, and a file that fails before it holds any has
+ * none — Vitest keeps the error on the file's own result. So a static mutant that stops a
+ * module from loading came back `Survived` after zero tests, where a plain run shows a red
+ * file ([`lesson-252`](../../docs/lessons.md#lesson-252), stryker-js#6150). The upstream fix
+ * (stryker-js#6217) reads such a file as an ERROR, and an errored mutant counts against the
+ * score here: a different wrong answer. A failed test is the right one, and with it both
+ * versions agree.
+ *
+ * It reads `vitest.state` because that is what the runner reads once `start()` returns,
+ * and adds a test only where no test of the file failed: one failed test is all a verdict
+ * needs, and a red test already carries the error the file does. The test is shaped as a
+ * top-level one is (no `suite`, the next `<file id>_<index>`), so the runner names it
+ * `<spec>#the file failed outside its tests` in `killedBy`.
+ */
+export class FailedFileFails implements Reporter {
+  private vitest: Vitest | undefined;
+
+  onInit(vitest: Vitest): void {
+    this.vitest = vitest;
+  }
+
+  onTestRunEnd(): void {
+    for (const file of this.vitest?.state.getFiles() ?? []) {
+      if (file.result?.state !== 'fail' || failedIn(file.tasks)) continue;
+      const name = 'the file failed outside its tests';
+      file.tasks.push({
+        type: 'test',
+        id: `${file.id}_${file.tasks.length}`,
+        name,
+        fullName: `${file.name} > ${name}`,
+        fullTestName: name,
+        mode: 'run',
+        meta: {},
+        file,
+        timeout: 0,
+        annotations: [],
+        artifacts: [],
+        result: { state: 'fail', errors: file.result.errors ?? [] },
+      } as unknown as RunnerTestCase);
+    }
+  }
+}
+
+function failedIn(tasks: readonly RunnerTask[]): boolean {
+  return tasks.some((task) =>
+    task.type === 'suite'
+      ? failedIn(task.tasks)
+      : task.type === 'test' && task.result?.state === 'fail',
+  );
+}
 
 /**
  * Vitest configuration USED BY THE MUTATION RUN ALONE (`nx run components:mutation`).
@@ -55,6 +113,6 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['**/*.spec.ts'],
     setupFiles: ['./mutation.setup.ts'],
-    reporters: ['default'],
+    reporters: ['default', new FailedFileFails()],
   },
 }));

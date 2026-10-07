@@ -1,0 +1,29 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "// defect": "A survivor after zero tests: what `@stryker-mutator/vitest-runner` 9.6.1 records when every spec it selected fails outside its tests (`lesson-252`). `beta`'s distribution is the reference's — 17 killed, 2 surviving, 1 not covered — with the first survivor moved to the head of the list and its count at zero, so no score moves and the rule is read on the second file and the first mutant.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  }
+}

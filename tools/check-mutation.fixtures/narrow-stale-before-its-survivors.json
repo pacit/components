@@ -1,0 +1,33 @@
+{
+  "check": "write",
+  "rule": "stale-measurement",
+  "// defect": "The narrow door's half of `a-stale-report-before-its-survivors`: `beta` on disk is not the text the narrow run measured, and the run holds a survivor after zero tests. The merge refuses the stale text first, as the checks do for a full run.",
+  "driftSource": {
+    "libs/fake/beta.ts": "export const beta = (n: number) => n;\n"
+  },
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  },
+  "narrow": ["libs/fake/beta.ts"]
+}

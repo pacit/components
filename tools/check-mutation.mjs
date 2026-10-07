@@ -4,7 +4,7 @@
  * that and can fail on it, but by DEFAULT does neither: `thresholds.break` is `null`, so a
  * run ends zero at 4% as at 94%.
  *
- *  1. DENOMINATOR: the measurement exists, is not empty and is CURRENT with the sources,
+ *  1. DENOMINATOR: the measurement exists, is not empty, is CURRENT, every survivor ran a test,
  *  2. the inventory matches the policy both ways, every source file in it or excused,
  *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
@@ -104,7 +104,15 @@ const librarySources = (inRepo) =>
  * point 5 asks separately how large the clock's share is.
  */
 const DETECTED = ['Killed', 'Timeout'];
-/** The statuses counted into the denominator. `Ignored` is NOT one — hence point 5. */
+/**
+ * The statuses counted into the denominator. `Ignored` is NOT one — hence point 5.
+ * `RuntimeError` IS, and as undetected, which is stricter than Stryker (it leaves it out of
+ * both): the run broke outside every test, and no test owns that. A spec file that failed
+ * outside its tests is not one of these: the run's Vitest configuration makes it a failed
+ * test (`FailedFileFails`), so it is `Killed` whether the runner reads a failed file as an
+ * error (stryker-js#6217) or misses it (9.6.1, `lesson-253`). The column means the same
+ * before that change and after it, and both writers fill it through `renderRow`.
+ */
 const DENOMINATOR = [...DETECTED, 'Survived', 'NoCoverage', 'RuntimeError'];
 
 /**
@@ -187,9 +195,12 @@ like, upwards, because a floor ten points below the measurement stops measuring.
 An **errored** mutant is one after which the test worker DIED rather than a test failing —
 \`if (row === null) return;\` removed, and the next line dereferences \`null\` inside a DOM
 listener. It counts towards the denominator here, which is stricter than Stryker's own
-score: a mutant that took the run down with it stated nothing about the tests. It has a
-column because without one the arithmetic of a row that has any does not work, and a reader
-checking it finds a mistake that is not one.
+score: a mutant that took the run down with it stated nothing about the tests. A spec file
+that fails outside its tests — its import, a \`describe\` body, a hook — is neither errored nor
+surviving: the run counts it a failed test, so its mutant is killed, as a plain run shows the
+file red ([\`lesson-253\`](../../docs/lessons.md#lesson-253)). The column is there because
+without one the arithmetic of a row that has any does not work, and a reader checking it
+finds a mistake that is not one.
 
 **What a score is a true statement about.** This file measures \`.ts\`, and only \`.ts\`. A
 component that borrows more from the platform than it writes has most of itself in a template
@@ -465,6 +476,38 @@ const denominatorNarrowed = (reportConfig, policy, allMutants, sources) => {
 };
 
 /**
+ * A survivor says tests RAN and none failed, so one with no test behind it says nothing.
+ * Two roads lead there: every spec the run selected failed outside its tests and the runner
+ * built the verdict from tests nobody collected (`lesson-252`, stryker-js#6150), or the
+ * related filter selected no spec at all. The first is closed in the run's Vitest
+ * configuration (`FailedFileFails`); this is what notices the day it opens again. A missing
+ * count is read as none — Stryker writes one for every survivor, and a report without it is
+ * one this rule never saw. Both doors hold it, as they hold `denominatorNarrowed` (0088).
+ */
+const survivorsWithoutATest = (files) => {
+  const vacuous = Object.entries(files ?? {}).flatMap(([file, data]) =>
+    (data?.mutants ?? [])
+      .filter((m) => m?.status === 'Survived' && !(m.testsCompleted > 0))
+      .map(
+        (m) =>
+          `${file}:${m.location?.start?.line} ${m.mutatorName} → ` +
+          `${JSON.stringify(m.replacement)} (tests: ${m.testsCompleted ?? 'no count'})`,
+      ),
+  );
+  if (vacuous.length)
+    throw new MutationError(
+      'measurement',
+      'survivor-without-a-test',
+      `${vacuous.length} mutants are recorded as surviving after no test at all:\n` +
+        list(vacuous) +
+        `\n    A verdict nobody tested. Either the specs the run selected failed outside ` +
+        `their tests — an import, a \`describe\` body, a hook — and the run lost the ` +
+        `failure, which \`FailedFileFails\` in \`mutation.vitest.config.mts\` exists to ` +
+        `prevent; or no spec reaches the file. A plain run of its specs tells which.`,
+    );
+};
+
+/**
  * A narrow run merged into the record: the rows of the files it measured are rewritten,
  * every other row stays, and TOTAL is added up from the rows — the arithmetic point 6 holds
  * every row to (`columns-adrift`), so the file a full run would write and this one are the
@@ -534,6 +577,7 @@ const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
           `    A row merged from it would describe code that is gone.`,
       );
   }
+  survivorsWithoutATest(report.files);
   denominatorNarrowed(
     report?.config ?? {},
     policy ?? {},
@@ -732,6 +776,7 @@ export const checkMutation = (input) => {
           `that are gone, and the new ones were never measured.`,
       );
   }
+  survivorsWithoutATest(report?.files);
 
   // 2. INVENTORY. Three questions, because there are three different ways a file can drop
   // out of the measurement, and only one of them touches the configuration.
@@ -1385,6 +1430,9 @@ const expandFiles = (digest) =>
           mutatorName: 'ConditionalExpression',
           status: typeof s === 'string' ? s : s.status,
           statusReason: typeof s === 'string' ? undefined : s.reason,
+          // Stryker writes a survivor's test count and point 1 reads it. A status written
+          // out in full carries exactly what it says, so a case can leave the count out.
+          ...(s === 'Survived' ? { testsCompleted: 1 } : {}),
           // A case about point 7 needs a mutant with coordinates, not just a status.
           ...(typeof s === 'string' ? {} : (s.mutant ?? {})),
         })),

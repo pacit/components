@@ -19,9 +19,12 @@ like, upwards, because a floor ten points below the measurement stops measuring.
 An **errored** mutant is one after which the test worker DIED rather than a test failing —
 `if (row === null) return;` removed, and the next line dereferences `null` inside a DOM
 listener. It counts towards the denominator here, which is stricter than Stryker's own
-score: a mutant that took the run down with it stated nothing about the tests. It has a
-column because without one the arithmetic of a row that has any does not work, and a reader
-checking it finds a mistake that is not one.
+score: a mutant that took the run down with it stated nothing about the tests. A spec file
+that fails outside its tests — its import, a `describe` body, a hook — is neither errored nor
+surviving: the run counts it a failed test, so its mutant is killed, as a plain run shows the
+file red ([`lesson-253`](../../docs/lessons.md#lesson-253)). The column is there because
+without one the arithmetic of a row that has any does not work, and a reader checking it
+finds a mistake that is not one.
 
 **What a score is a true statement about.** This file measures `.ts`, and only `.ts`. A
 component that borrows more from the platform than it writes has most of itself in a template

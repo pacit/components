@@ -1,0 +1,30 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "// defect": "The same survivor after zero tests, handed to `--write` by a narrow run of `beta`. The merge would write it into the row as a mutant no test catches; it is held to the rule a full run meets in the checks, and the survivor stands in the middle of the list, so neither end of it carries the case.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  },
+  "narrow": ["libs/fake/beta.ts"]
+}

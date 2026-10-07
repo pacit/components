@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are eight points and
-sixty rules, and that is where all the content sits. The readings are guarded by runs against
+sixty-one rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -183,10 +183,28 @@ would leave it — and three are about the door itself: a `mutate` nobody can re
 a file of the inventory, and a full run that gained one outside it. The narrow six: no record to merge
 into, a slice of a file, a pattern that reaches no file, a file outside `files`, a text that
 is not the one on disk, and `ignoreStatic` — point 5's own rule, reached through the merge,
-because a narrow run is held to the same configuration as a full one.
+because a narrow run is held to the same configuration as a full one. Three more come through the
+door for `survivor-without-a-test`, below.
 
 What no case can show is that the merge WRITES the right file, so the gate holds it to the
 renderer instead of to a case: a narrow run of `beta.ts` merged into the reference record has
 to equal, byte for byte, what `renderSnapshot` writes from the full report — with the file
 unchanged, with its statuses moved, and with `gamma.ts`, a file the record never had a row
 for. Compared with itself the merge would only prove that it agrees with itself.
+
+## The survivor that ran nothing
+
+`survivor-without-a-test` refuses a `Survived` mutant whose report counts no test behind it —
+what `@stryker-mutator/vitest-runner` 9.6.1 records when every spec it selected failed outside
+its tests ([`lesson-252`](../../docs/lessons.md#lesson-252)). The run's Vitest configuration
+closes that road (`FailedFileFails`); the rule is what notices the day it opens again
+([`lesson-253`](../../docs/lessons.md#lesson-253)). A survivor written in shorthand carries a
+count of one, as Stryker writes one; a status written out in full carries exactly what it
+says, which is how `a-survivor-with-no-count` leaves the count out.
+
+Seven cases, because the rule has two doors and a place in each. Three put the survivor where
+an edge is: zero tests in the second file's first mutant, no count in the first file's last,
+and zero in the middle of a narrow run's file. Four pin the order — the stale text before the
+survivor, the survivor before the inventory (and so before every later point), and the same
+two in the merge, where the second is the narrowing — so that one input gives the same first
+refusal through either door.
