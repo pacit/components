@@ -42,6 +42,7 @@ export type PctReqId =
   | 'req-api-templates'
   | 'req-api-texts'
   | 'req-api-time'
+  | 'req-api-warning'
   | 'req-api-wrapper'
   | 'req-axis'
   | 'req-project-angular'
