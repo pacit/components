@@ -53,7 +53,7 @@ before an application ships them.
 ./chips 15156 ./core,./icon @angular/common,@angular/core
 ./container 725 - @angular/core
 ./core 8945 - @angular/core
-./date 43999 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./date 43965 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 20234 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 19441 ./core,./icon @angular/common,@angular/core
 ./field 28524 ./core @angular/core,@angular/forms,@angular/forms/signals
@@ -131,7 +131,7 @@ is worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4201 15172
 ./breadcrumb PctBreadcrumb 3 4303 12842
 ./chips PctChip 2 15014 15017
-./date PctCalendar 2 26568 43552
+./date PctCalendar 2 26532 43518
 ./field PctField 3 16282 25536
 ./menu PctMenu 2 19242 19245
 ./radio PctRadio 2 15528 15530

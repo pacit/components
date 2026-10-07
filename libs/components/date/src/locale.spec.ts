@@ -35,6 +35,21 @@ function withoutWeekInfo<T>(read: () => T): T {
   }
 }
 
+/**
+ * Runs `read` with a platform that answers `firstDay` for every locale — a day no row of the
+ * table holds, so a reading that came from the table could not produce it.
+ */
+function withWeekInfo<T>(firstDay: number, read: () => T): T {
+  const proto = Intl.Locale.prototype as WeekAwareLocale;
+  const real = proto.getWeekInfo;
+  proto.getWeekInfo = () => ({ firstDay });
+  try {
+    return read();
+  } finally {
+    proto.getWeekInfo = real;
+  }
+}
+
 describe('the first day of the week', () => {
   it('has a platform to be checked against — and says so out loud when it has not', () => {
     // The gate below is only worth what this line is: if the runtime ever loses
@@ -81,10 +96,12 @@ describe('the first day of the week', () => {
 
   it('reads the platform where the platform has an answer', () => {
     // The other half: the table is the FALLBACK and not the source. With `getWeekInfo`
-    // present the walk must not reach the table at all — proved by taking the table's own
-    // answer away from a region and finding the reading unchanged.
-    const proto = Intl.Locale.prototype as WeekAwareLocale;
-    expect(typeof proto.getWeekInfo).toBe('function');
+    // present the walk must not reach the table at all — proved by a platform answering
+    // Wednesday, which the table says of no region. Asked of the real platform alone, Egypt
+    // reads 6 whichever of the two answered, and the mutation run kept `if (info)` →
+    // `if (false)` alive under exactly that case.
+    expect(withWeekInfo(3, () => pctFirstDayOfWeek('und-EG'))).toBe(3);
+    expect(withWeekInfo(3, () => pctFirstDayOfWeek('pl'))).toBe(3);
     expect(pctFirstDayOfWeek('und-EG')).toBe(6);
   });
 
@@ -103,6 +120,22 @@ describe('the first day of the week', () => {
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('en'))).toBe(7);
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('ar'))).toBe(6);
     expect(withoutWeekInfo(() => pctFirstDayOfWeek('he'))).toBe(7);
+  });
+
+  it('answers Monday when `maximize()` gives no region', () => {
+    // The defence on that road, which no case had entered: the mutation run reported its
+    // `catch` as covered by nothing. `en` alone would maximise to the United States and read
+    // Sunday, so Monday here is the default answering and not the table.
+    const proto = Intl.Locale.prototype;
+    const real = proto.maximize;
+    proto.maximize = () => {
+      throw new RangeError('no likely subtags');
+    };
+    try {
+      expect(withoutWeekInfo(() => pctFirstDayOfWeek('en'))).toBe(1);
+    } finally {
+      proto.maximize = real;
+    }
   });
 
   it('answers Monday for a tag the platform will not parse', () => {
