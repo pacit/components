@@ -112,7 +112,7 @@ libs/components/core/src/texts.ts 100.00 37(0) 0 0 0 0
 libs/components/date/src/calendar.ts 74.16 132(0) 44 0 2 4
 libs/components/date/src/date.ts 66.83 139(0) 67 0 2 8
 libs/components/date/src/day.ts 97.53 158(1) 4 0 0 0
-libs/components/date/src/locale.ts 93.98 125(1) 8 0 0 0
+libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
@@ -157,5 +157,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.07 5695/6617
+TOTAL 86.07 5697/6619
 ```

@@ -15,6 +15,29 @@ interface WeekAwareLocale extends Intl.Locale {
 }
 
 /**
+ * Runs `read` with one method of `Intl.Locale.prototype` replaced by `value` — or taken away,
+ * for `undefined` — and then puts the platform's own property back as it was, attributes
+ * included. Assigning a method back after `delete` makes it ENUMERABLE, and every case after
+ * the first would then run on a prototype no engine has.
+ */
+function withLocaleMethod<T>(
+  name: 'getWeekInfo' | 'maximize',
+  value: unknown,
+  read: () => T,
+): T {
+  const proto = Intl.Locale.prototype as unknown as Record<string, unknown>;
+  const real = Object.getOwnPropertyDescriptor(proto, name);
+  if (value === undefined) delete proto[name];
+  else Object.defineProperty(proto, name, { ...real, value });
+  try {
+    return read();
+  } finally {
+    if (real) Object.defineProperty(proto, name, real);
+    else delete proto[name];
+  }
+}
+
+/**
  * Runs `read` in the world the table exists for: an engine where
  * `Intl.Locale.prototype.getWeekInfo` is not there — firefox 151 and older, which Angular
  * still supports.
@@ -25,29 +48,12 @@ interface WeekAwareLocale extends Intl.Locale {
  * run found the second instance — the `maximize()` road, which no case had ever entered.
  */
 function withoutWeekInfo<T>(read: () => T): T {
-  const proto = Intl.Locale.prototype as WeekAwareLocale;
-  const real = proto.getWeekInfo;
-  delete proto.getWeekInfo;
-  try {
-    return read();
-  } finally {
-    proto.getWeekInfo = real;
-  }
+  return withLocaleMethod('getWeekInfo', undefined, read);
 }
 
-/**
- * Runs `read` with a platform that answers `firstDay` for every locale — a day no row of the
- * table holds, so a reading that came from the table could not produce it.
- */
+/** Runs `read` with a platform that answers `firstDay` for every locale. */
 function withWeekInfo<T>(firstDay: number, read: () => T): T {
-  const proto = Intl.Locale.prototype as WeekAwareLocale;
-  const real = proto.getWeekInfo;
-  proto.getWeekInfo = () => ({ firstDay });
-  try {
-    return read();
-  } finally {
-    proto.getWeekInfo = real;
-  }
+  return withLocaleMethod('getWeekInfo', () => ({ firstDay }), read);
 }
 
 describe('the first day of the week', () => {
@@ -125,17 +131,18 @@ describe('the first day of the week', () => {
   it('answers Monday when `maximize()` gives no region', () => {
     // The defence on that road, which no case had entered: the mutation run reported its
     // `catch` as covered by nothing. `en` alone would maximise to the United States and read
-    // Sunday, so Monday here is the default answering and not the table.
-    const proto = Intl.Locale.prototype;
-    const real = proto.maximize;
-    proto.maximize = () => {
+    // Sunday, so Monday here is the default answering and not the table. A tag the platform
+    // has no likely region for — `zxx`, no linguistic content — takes the same road without
+    // throwing.
+    const thrown = (): never => {
       throw new RangeError('no likely subtags');
     };
-    try {
-      expect(withoutWeekInfo(() => pctFirstDayOfWeek('en'))).toBe(1);
-    } finally {
-      proto.maximize = real;
-    }
+    expect(
+      withLocaleMethod('maximize', thrown, () =>
+        withoutWeekInfo(() => pctFirstDayOfWeek('en')),
+      ),
+    ).toBe(1);
+    expect(withoutWeekInfo(() => pctFirstDayOfWeek('zxx'))).toBe(1);
   });
 
   it('answers Monday for a tag the platform will not parse', () => {

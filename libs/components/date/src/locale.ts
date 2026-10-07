@@ -118,8 +118,8 @@ export function pctFirstDayOfWeek(locale: string): number {
  * The table is written inside the function that reads it, not beside it, and is read where it
  * is written: a mutant of a table unpacked while the module loads throws BEFORE any case runs,
  * and the mutation run records an import that throws as a mutant that survived
- * ([`lesson-252`](../../../../docs/lessons.md#lesson-252)). Built per call, because the call is
- * rare — only where the platform is silent, once per locale the grid is drawn in.
+ * ([`lesson-252`](../../../../docs/lessons.md#lesson-252)). Built per call: three short scans,
+ * paid only where the platform is silent, and the calendar asks once per locale it is given.
  *
  * The spec beside this file compares it to `getWeekInfo()` over the entire two-letter space,
  * so a stale row is a red test and not a difference somebody notices in Cairo.
@@ -136,7 +136,9 @@ function weekStartOf(region: string): number {
   for (const [day, packed] of Object.entries(rows)) {
     // Two characters at a time from the start of the row, so that no code is read across
     // the boundary between two of them.
-    if (packed.match(/../g)!.includes(region)) return Number(day);
+    for (const [code] of packed.matchAll(/../g)) {
+      if (code === region) return Number(day);
+    }
   }
   return MONDAY;
 }

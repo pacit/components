@@ -7232,20 +7232,26 @@ cache", which holds where a cached builder reads one and never held for the week
 `pctFirstDayOfWeek` caches nothing.
 
 What moved them is `lesson-250`'s rule again, and one step past it: the rows are written inside
-the function that reads them, and read by `match(/../g)` and `includes` so that no equivalent
-comes with them — the pattern has no mutants and Stryker swaps neither method. A narrow run of
-the file went from 122 of 135 detected to 125 of 133, static mutants from 14 (three surviving)
-to 4 (none). The denominator is two smaller because code went, not mutants: six left with the
+the function that reads them, and read two characters at a time by a loop over
+`matchAll(/../g)`, so that no equivalent comes with them — the pattern has no mutants, Stryker
+swaps no method the loop calls, and every mutant the loop brings changes an answer. A narrow run of the
+file went from 122 of 135 detected to 127 of 135, static mutants from 14 (three surviving) to 4
+(none). The denominator is the same by count and not by content: six mutants left with the
 `Map`, its `??` and an assignment of `undefined` to a variable already `undefined`, in a `catch`
-no case had entered — the one mutant there had no coverage at all; four came with the function,
-and all four are killed. The run before the change found one more survivor on that road:
-`if (info)` → `if (false)` had lived under the case written to prove that the platform answers
-first, because the case asked about Egypt, where the table says what the platform says — its
-comment claimed a proof its code never made. A platform answering Wednesday, a day no row
-holds, kills it.
+no case had entered — the one mutant there had no coverage at all; six came with the function,
+and all six are killed by an assertion. The run before the change found one more survivor in
+the same function, on the platform's road: `if (info)` → `if (false)` had lived under the case
+written to prove that the platform answers first, because the case asked about Egypt, where
+the table says what the platform says — its comment claimed a proof its code never made. A
+platform answering Wednesday, a day no row holds, kills it.
 
 The wider reading: in a report from this runner, a survivor with `testsCompleted: 0` is not a
 survivor. Either the specs related to the mutant failed to load and the runner lost the failure,
-or nothing ran at all; both are a measurement missing, not a test missing. The shape that
-produces the first is a module-level expression that can throw — a table built at import,
+or nothing ran at all; both are a measurement missing, not a test missing. The zero is the sign
+only because every spec Stryker ran for these mutants reaches the module: it drives Vitest in
+related mode, which selects exactly the specs whose imports lead to the file, and each of them
+fails to load with it. A run that also holds specs NOT leading to the file runs their cases and
+hides the lost verdict behind them — the issue reports the same defect coming back a survivor
+after 212 tests. So the zero finds the defect where the run is related, and the shape is where to
+look for it in any run: a module-level expression that can throw — a table built at import,
 mutated into something it cannot be built from.
