@@ -516,15 +516,16 @@ const survivorsWithoutATest = (files) => {
 };
 
 /**
- * Six spec files as Vitest leaves them after a run — every task pointing at its file, a test in
- * a `describe` at its suite — each beside the failures the runner has to read off it once the
+ * Seven spec files as Vitest 4 leaves them after a run — every task pointing at its file, a test
+ * in a `describe` at its suite — each beside the failures the runner has to read off it once the
  * reporters are done, as `<spec>: <reason>`: the spec `killedBy` names and the reason Stryker
  * records. A file Vitest failed outside its tests holds no failed test of its own: an import that
- * threw (no tasks, the error on the file), a hook of the file (tests passed, one with no result
- * as a bail leaves it, the error on the file), a hook of a suite two levels down (tests passed,
- * the error on the inner suite). The other three are read as they are: a test that failed, a
- * suite whose setup threw (its test skipped, which the runner reads as failed with the suite's
- * error), and a file that passed, with none.
+ * threw (no tasks, the error on the file), a teardown of the file (tests passed, one with no
+ * result as a bail leaves it, the error on the file), a setup of the file (its test skipped with
+ * no suite above it, which the runner reads as skipped), a hook of a suite two levels down (tests
+ * passed, the error on the inner suite). The other three are read as they are: a test that
+ * failed, a suite whose setup threw two levels up (its tests skipped, which the runner reads as
+ * failed with the suite's error), and a file that passed, with none.
  */
 const failedFileShapes = () => {
   const result = (state, message) => ({
@@ -583,6 +584,16 @@ const failedFileShapes = () => {
       ['file-hook.spec.ts: file hook threw'],
     ],
     [
+      file(
+        'file-setup.spec.ts',
+        'a file setup that threw',
+        'fail',
+        [test('skip')],
+        'file setup threw',
+      ),
+      ['file-setup.spec.ts: file setup threw'],
+    ],
+    [
       file('suite-hook.spec.ts', 'a suite hook that threw', 'fail', [
         suite('fail', [suite('fail', [test('pass')], 'suite hook threw')]),
       ]),
@@ -596,7 +607,7 @@ const failedFileShapes = () => {
     ],
     [
       file('suite-setup.spec.ts', 'a suite setup that threw', 'fail', [
-        suite('fail', [test('skip')], 'suite setup threw'),
+        suite('fail', [suite('skip', [test('skip')])], 'suite setup threw'),
       ]),
       ['suite-setup.spec.ts: suite setup threw'],
     ],
@@ -1629,17 +1640,18 @@ const buildReport = (w) => ({
 
 /**
  * The reporters a case names, in place of the run's own. `fails-files` does the job as
- * `FailedFileFails` does it; every other one breaks it in one way, and most break exactly one
- * shape of `failedFileShapes`, so that each shape has the case that only it catches: blind to an
- * import (acts on a file with tasks only), to a file's hook (acts on a file with no tasks or a
- * failed suite only), to a suite's hook (carries the file's own errors only), a second failure
- * beside a test's own, a pass read as a failure, and blind to either road by which the runner
- * reads a test as failed (`state-only`: its own state; `suite-failures-only`: a failed suite
- * above a skipped one) — each adds a second failure where that road gave the first. `inert` does
- * nothing, `empty-files-only` sees
- * the import of `lesson-252` and nothing else, `skipped-test` adds a test the runner reads as
- * skipped, `without-file` one `killedBy` cannot name a spec for, and `throws` breaks the run. A
- * name nobody prepared stays a string, as `default` does in Vitest's list.
+ * `FailedFileFails` does it. Seven break exactly one shape of `failedFileShapes`, so that each
+ * shape has the case only it catches: blind to an import (acts on a file with tasks only), to a
+ * file's teardown (acts on a file with no tasks, a failed suite or a skipped test only), to a
+ * file's setup (counts the file as a failed suite, though the runner looks for one from the
+ * test's own suite up), to a suite's hook (carries the file's own errors only), blind to either
+ * road by which the runner reads a test as failed — its own state (`state-only`), a failed suite
+ * above a skipped one (`suite-failures-only`) — and so adding a second failure where that road
+ * gave the first, and a pass read as a failure. The others: `every-failed-file` adds a second
+ * failure to every failed file, `inert` does nothing, `empty-files-only` sees the import of
+ * `lesson-252` and nothing else, `skipped-test` adds a test the runner reads as skipped,
+ * `without-file` one `killedBy` cannot name a spec for, and `throws` breaks the run. A name
+ * nobody prepared stays a string, as `default` does in Vitest's list.
  */
 const preparedReporter = (name) => {
   if (name === 'inert') return { onTestRunEnd: () => undefined };
@@ -1656,21 +1668,33 @@ const preparedReporter = (name) => {
     const failed = file.result?.state === 'fail';
     const tests = testsIn(file.tasks).filter((t) => t.result);
     const testFailed =
-      name === 'state-only'
-        ? tests.some((t) => t.result.state === 'fail')
-        : name === 'suite-failures-only'
-          ? tests
-              .filter((t) => t.result.state !== 'fail')
-              .some((t) => 'failureMessage' in convertTestToTestResult(t))
-          : failuresIn(file).length > 0;
+      name === 'file-as-suite'
+        ? failuresIn(file).length > 0 ||
+          tests.some(
+            (t) =>
+              t.mode === 'skip' ||
+              t.result.state === 'skip' ||
+              t.result.state === 'todo',
+          )
+        : name === 'state-only'
+          ? tests.some((t) => t.result.state === 'fail')
+          : name === 'suite-failures-only'
+            ? tests
+                .filter((t) => t.result.state !== 'fail')
+                .some((t) => 'failureMessage' in convertTestToTestResult(t))
+            : failuresIn(file).length > 0;
     if (name === 'every-failed-file') return failed;
     if (name === 'passed-files-too' && file.result?.state === 'pass')
       return true;
     if (!failed || testFailed) return false;
     if (name === 'empty-files-only') return !file.tasks.length;
     if (name === 'files-with-tasks-only') return file.tasks.length > 0;
-    if (name === 'collection-and-suites-only')
-      return !file.tasks.length || suiteErrors(file.tasks).length > 0;
+    if (name === 'all-but-teardowns')
+      return (
+        !file.tasks.length ||
+        suiteErrors(file.tasks).length > 0 ||
+        tests.some((t) => t.mode === 'skip' || t.result.state === 'skip')
+      );
     return true;
   };
   let vitest;
@@ -1704,11 +1728,12 @@ const PREPARED_REPORTERS = [
   'inert',
   'empty-files-only',
   'files-with-tasks-only',
-  'collection-and-suites-only',
+  'all-but-teardowns',
   'file-errors-only',
   'every-failed-file',
   'state-only',
   'suite-failures-only',
+  'file-as-suite',
   'passed-files-too',
   'skipped-test',
   'without-file',

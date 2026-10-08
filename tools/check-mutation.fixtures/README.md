@@ -58,8 +58,8 @@ Five readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: five readings from disk
 and from the graph are five functions of a dozen lines each, while the checks are eight points
-and sixty-two rules, and that is where all the content sits. The readings are guarded by runs against
-the real repository, recorded in the **Control** of
+and sixty-two rules, and that is where all the content sits. The readings are guarded by runs
+against the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
 ## The two cases on one rule, and why they are two
@@ -216,21 +216,23 @@ checks stop at that tripwire first, so the case passes its rule only through `wr
 ## The file that fails outside its tests
 
 `failed-file-not-a-failure` reads what the run's Vitest reporters DO to a spec file that fails
-outside its tests: the gate calls them as Vitest does over six files shaped as Vitest leaves
-them — an import, a file's hook and a suite's hook that threw, a test that failed, a suite whose
-setup threw, a file that passed — and reads the failures with the runner's own functions (`collectTestsFromSuite`,
+outside its tests: the gate calls them as Vitest does over seven files shaped as Vitest 4 leaves
+them — an import, a file's teardown, a file's setup and a suite's hook that threw, a test that
+failed, a suite whose setup threw, a file that passed — and reads the failures with the runner's
+own functions (`collectTestsFromSuite`,
 `convertTestToTestResult`), as `<spec>: <reason>`. It reads the configuration and no report,
 so every door asks it first. The reference names `fails-files`, a prepared reporter that does
 the job as `FailedFileFails` does; the live run is held by production, which calls the real
 configuration.
 
-Fifteen cases, each naming the reporters it runs instead. Six break exactly one shape, so that
-each shape has the case only it catches: blind to an import, to a file's hook, to a suite's hook
-(the reason lost), a pass read as a failure, and blind to either road by which the runner reads
-a test as failed — its own state, a failed suite above a skipped one — so that a second failure
-is added beside a test's own or a suite setup's. Seven break the job some other way: a second
-failure in every failed file, no reporter but `default`, one that does nothing (the list is not
-the job), one that sees the import of `lesson-252` and nothing else, one whose test says
+Sixteen cases, each naming the reporters it runs instead. Seven break exactly one shape, so
+that each shape has the case only it catches: blind to an import, to a file's teardown, to a
+file's setup (the file counted as a failed suite, which the runner never does), to a suite's
+hook (the reason lost), a pass read as a failure, and blind to either road by which the runner
+reads a test as failed — its own state, a failed suite above a skipped one — so that a second
+failure is added beside a test's own or a suite setup's. Seven break the job some other way: a
+second failure in every failed file, no reporter but `default`, one that does nothing (the list
+is not the job), one that sees the import of `lesson-252` and nothing else, one whose test says
 `mode: 'skip'` (the runner reads it skipped whatever its state), one whose test names no file
 (`killedBy` says `unknown.js`), and one that throws — read as a reporter that did not do the job
 rather than an error that names no rule. Two pin the place: before `unreadable-measurement` in

@@ -7288,12 +7288,12 @@ verdicts in all four runs.
 So both candidates went in, each for what the other cannot do. `FailedFileFails` in
 `mutation.vitest.config.mts` makes the measurement right whichever runner reads it, and with it
 #6217 changes nothing here. `check-mutation` holds it twice. It calls that configuration as Vite
-does, runs its reporters over six files shaped as Vitest leaves them — an import, a file's hook
-and a suite's hook that threw, a test that failed, a suite whose setup threw, a file that passed
-— and reads the failures
+does, runs its reporters over seven files shaped as Vitest leaves them — an import, a file's
+teardown, a file's setup and a suite's hook that threw, a test that failed, a suite whose setup
+threw, a file that passed — and reads the failures
 with the runner's own `collectTestsFromSuite` and `convertTestToTestResult`
 (`tests/failed-file-not-a-failure`). It reads no report, so every door asks it first, and a
-narrow run merged on the desk is held as the nightly is. On the live configuration each of 13
+narrow run merged on the desk is held as the nightly is. On the live configuration each of 15
 planted defects fired it, with a narrow run's report on the disk — among them the reporter taken
 out of the list, blind to hooks, without a suite's errors, a second failure beside a test's own
 or a suite setup's, a failure added to a file that passed, a test added that passes, one the
