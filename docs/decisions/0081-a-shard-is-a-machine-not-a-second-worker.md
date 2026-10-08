@@ -242,7 +242,10 @@ out before merge:
   the `.nx/cache` the action saves, and every run since restored an entry and then read
   `Cache: 0/… hit` — `gates` 0/51 on 37303382522, `pages.yml` 0/5 on 37579021492. The restore
   in `pages.yml`, on the runner, is removed: it could never again find an entry, and the one
-  it found had held nothing for five days. Repairing the cache is its own change.
+  it found had held nothing for five days. Repairing the cache was its own change, on
+  2026-10-08 (`lesson-255`): the action names the cache's place to nx and asks nx where it is,
+  and `pages.yml` stays without a restore — now because the image would cost more than a hit
+  saves, not because none could happen.
 - **The generic `monospace` is another face.** Liberation Mono in the image, DejaVu Sans Mono
   on the desk and on the runner — and all eight of the site's baselines moved, by 3122 to
   30402 pixels. The pictures were right to move: 3610 code and `pre` elements on the 42 routes
