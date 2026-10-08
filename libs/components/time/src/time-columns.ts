@@ -331,7 +331,12 @@ export class PctTimeColumns {
    * What has been typed into one column so far, and which column: `1` then `3` within half a
    * second is thirteen, the way a person types a number, and `p` then `m` is `PM`.
    */
-  private typed = { field: null as PctTimeField | null, keys: '' };
+  private typed = {
+    field: null as PctTimeField | null,
+    keys: '',
+    /** Whether the run so far names a row — drawn, refused or not. */
+    named: true,
+  };
   private typedTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -434,7 +439,7 @@ export class PctTimeColumns {
   /** Ends what is being typed. */
   private forget(): void {
     clearTimeout(this.typedTimer);
-    this.typed = { field: null, keys: '' };
+    this.typed = { field: null, keys: '', named: true };
   }
 
   /**
@@ -455,14 +460,15 @@ export class PctTimeColumns {
         : undefined) ??
       rows.find((row) => row.key.toLowerCase().startsWith(keys));
     const alone = key.toLowerCase();
-    let keys =
-      (this.typed.field === column.field ? this.typed.keys : '') + alone;
-    // A run that names no row at all — a stray `x` and then `9`, or `7` then `4` in a column of
-    // quarters — starts afresh from this key, as a select's typeahead does, rather than holding
-    // the column deaf until it goes quiet. A run that names a row the bounds refuse is not that:
-    // `1` then `6` under `max="15:00"` means sixteen, and the column stays where it is.
-    if (answer(column.rows, keys) === undefined) keys = alone;
-    this.typed = { field: column.field, keys };
+    const before = this.typed.field === column.field ? this.typed : null;
+    // A run that already named nothing — a stray `x`, or `7` in a column of quarters — is dropped,
+    // and this key starts afresh: `x` then `9` is nine. A run that named a row keeps its meaning
+    // when this key takes it past every row: `2` then `5` in a column of hours is twenty-five,
+    // which no row holds, and the column stays where it is rather than jumping to five; so does
+    // `1` then `6` under `max="15:00"`, where sixteen is a row the bounds refuse.
+    const keys = (before?.named ? before.keys : '') + alone;
+    const named = answer(column.rows, keys) !== undefined;
+    this.typed = { field: column.field, keys, named };
     const found = answer(open, keys);
     return found === undefined ? -1 : column.rows.indexOf(found);
   }

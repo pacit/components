@@ -510,21 +510,52 @@ describe('PctTimeColumns — the walk', () => {
     expect(m.defaultPrevented).toBe(true);
   });
 
-  it('starts afresh from a key the run before it cannot answer', async () => {
+  it('drops a run that named nothing, and starts afresh from the next key', async () => {
     const stray = await render();
     await press(stray, column(stray, 'hour'), 'x');
     await press(stray, column(stray, 'hour'), '9');
     expect(stray.componentInstance.value()).toBe('09:05');
+    // A run started afresh names a row again, so a key that takes it past every row keeps it.
+    const again = await render();
+    for (const key of ['x', '2', '5'])
+      await press(again, column(again, 'hour'), key);
+    expect(again.componentInstance.value()).toBe('02:05');
+
+    const quarter = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    // `7` begins no quarter; the `4` after it is read on its own.
+    await press(quarter, column(quarter, 'minute'), '7');
+    expect(quarter.componentInstance.value()).toBe('13:15');
+    await press(quarter, column(quarter, 'minute'), '4');
+    expect(quarter.componentInstance.value()).toBe('13:45');
+  });
+
+  it('stays put on a number the column cannot hold, rather than jumping to its last digit', async () => {
+    const hours = await render();
+    await press(hours, column(hours, 'hour'), '2');
+    expect(hours.componentInstance.value()).toBe('02:05');
+    const past = await press(hours, column(hours, 'hour'), '5');
+    expect(hours.componentInstance.value()).toBe('02:05');
+    expect(past.defaultPrevented).toBe(false);
 
     const quarter = await render((h) => {
       h.step.set(900);
       h.value.set('13:15');
     });
     await press(quarter, column(quarter, 'minute'), '3');
-    expect(quarter.componentInstance.value()).toBe('13:30');
-    // `34` is no row and begins none: the `4` is read on its own.
     await press(quarter, column(quarter, 'minute'), '4');
-    expect(quarter.componentInstance.value()).toBe('13:45');
+    expect(quarter.componentInstance.value()).toBe('13:30');
+
+    // Thirteen is no row of a twelve-hour column: one o'clock stays one o'clock.
+    const twelve = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('15:05');
+    });
+    await press(twelve, column(twelve, 'hour'), '1');
+    await press(twelve, column(twelve, 'hour'), '3');
+    expect(twelve.componentInstance.value()).toBe('13:05');
   });
 
   it('ends the number being typed on any key that is neither printable nor a modifier', async () => {
