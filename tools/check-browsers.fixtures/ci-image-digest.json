@@ -1,8 +1,8 @@
 {
   "check": "ci",
   "rule": "ci-image-not-the-lockfile",
-  "description": "The probe's image is the right tag pinned by a digest, `v1.63.0-noble@sha256:…`. Docker pulls the digest and ignores the tag beside it, and a digest names bytes, not a version: these could be 1.62.0's. A reader that took the tag and dropped what follows it would pass whatever the digest pulls.",
+  "description": "The probe's image is the right tag pinned by a digest, `v1.63.0-noble@sha512:…`. Docker pulls the digest and ignores the tag beside it, and a digest names bytes, not a version: these could be 1.62.0's. A reader that took the tag and dropped what follows it would pass whatever the digest pulls — and so would one that knew `sha256` alone, which is why this case uses the other algorithm.",
   "workflows": {
-    ".github/workflows/e2e-probe.yml": "jobs:\n  probe:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f\n      options: --user 1001\n    steps:\n      - run: npx playwright test \"$@\"\n"
+    ".github/workflows/e2e-probe.yml": "jobs:\n  probe:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha512:4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f\n      options: --user 1001\n    steps:\n      - run: npx playwright test \"$@\"\n"
   }
 }

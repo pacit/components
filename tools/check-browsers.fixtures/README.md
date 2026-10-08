@@ -49,7 +49,7 @@ Three readings arrive here as data rather than from a real run:
 - `facts` — instead of probes in live browsers.
 
 This is the same choice as in `check-parts` and `check-zoneless` and for the same reason:
-three browsers and the Nx graph for each of the forty cases would cost minutes, and
+three browsers and the Nx graph for each of the forty-one cases would cost minutes, and
 the gate runs on every commit. The price is written down outright — the code reading the
 Playwright report, the graph and the probes is not exercised here once. It is exercised
 instead by **every** run against the real repository.

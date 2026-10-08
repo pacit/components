@@ -21,7 +21,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { runsTarget } from './workflow-targets.mjs';
+import { runsTarget, withoutComment } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-browsers.fixtures');
@@ -36,14 +36,16 @@ const LOCKFILE = 'package-lock.json';
 
 /**
  * Playwright's image, as a workflow names it: the repository, then a tag, a digest, or
- * nothing. The lookahead is the edge on both sides. `mcr.microsoft.com/playwright/python` is
- * another image (Python's Playwright on the same browsers) and not the one this gate rules
- * on; and a flow map or a list ends the name at `,`, `}` or `]` — the first version of this
- * pattern stopped only at quotes and spaces, and an untagged image inside
- * `{ image: …, options: … }` went unread.
+ * nothing. The name ends at any character that cannot continue it, and that is the edge on
+ * both sides. `mcr.microsoft.com/playwright/python` continues it — another image, Python's
+ * Playwright on the same browsers, not the one this gate rules on. Everything else ends it:
+ * the two versions before this one listed what may follow (quotes and spaces, then `,` `}`
+ * `]` too), and each list missed a spelling — `{ image: … }`, `[…, mcr.…/playwright]`,
+ * `pull mcr.…/playwright&&…` — where an untagged image, Docker's `latest`, went unread. The
+ * tag takes the characters Docker allows in one; a digest is any `@algorithm:hex`.
  */
 const IMAGE =
-  /mcr\.microsoft\.com\/playwright(?=[:@'"\s,}\]]|$)(?::([^\s'"@,}\]]+))?(@sha256:[0-9a-f]+)?/g;
+  /mcr\.microsoft\.com\/playwright(?![\w./-])(?::(\w[\w.-]*))?(@[\w.+-]+:[\w=-]+)?/g;
 
 /**
  * The version a RELEASE tag of that image carries, and null for every other tag the
@@ -750,14 +752,13 @@ const coverOf = (lines) => {
 };
 
 /**
- * A workflow's lines with the comments taken off — the strip every reading here starts from.
- * A comment is a `#` at the start or after white space, as YAML has it: `echo "#1"` in a
- * `run:` line is no comment, and a strip that took it for one hid what followed it.
+ * A workflow's lines with the comments taken off — the strip every reading here starts from,
+ * and the same one `workflow-targets.mjs` reads the `-t` lines with.
  */
 const linesOf = (text) =>
   String(text ?? '')
     .split('\n')
-    .map((l) => l.replace(/(^|\s)#.*$/, '$1'));
+    .map(withoutComment);
 
 /**
  * The Playwright images a workflow runs a JOB in: the `image:` directly under a job's own
@@ -817,7 +818,7 @@ const ciStepsOf = (text, engines) => {
   const lines = linesOf(text);
   const images = containersOf(lines);
   const installs = lines
-    .filter((l) => /playwright\s+install/.test(l))
+    .filter((l) => /playwright\s+install(?!-deps)\b/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
   /*
    * Whether the `e2e` TARGET runs, asked of the target list rather than of the line's words.

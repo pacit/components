@@ -526,7 +526,7 @@ image — and holds the image's tag in every workflow to the `@playwright/test` 
 `package-lock.json`. `--project=chromium` in the command is one narrowing invisible in the
 Playwright configuration, and a sharded run is the other: the browser jobs are the whole suite
 only while their shard count is the size of their own matrix rather than a number typed beside it
-**Control:** `tools/check-browsers.fixtures/` — 40 doctored inputs, each rejected on its own
+**Control:** `tools/check-browsers.fixtures/` — 41 doctored inputs, each rejected on its own
 **rule**; plus twelve runs against the real repository (webkit struck from `projects`; a file
 added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; a
 project on an engine the image does not carry (`channel: 'chrome'`); `--project=chromium` in

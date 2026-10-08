@@ -1,0 +1,33 @@
+{
+  "check": "ci",
+  "rule": "ci-without-engine",
+  "description": "The fourth engine again, `chrome`, and beside the image a step that names it — `npx playwright install-deps chrome chromium firefox webkit`. That installs the engines' system libraries and no browser at all, so chrome is still missing. A reader that took `install-deps` for `install` would count the step and let the case through to point 6.",
+  "addEngines": {
+    "chrome": {
+      "$why": "A branded channel of blink, with only its libraries installed."
+    }
+  },
+  "addCollected": {
+    "chrome": [
+      "a11y.spec.ts",
+      "button.spec.ts",
+      "checkbox.spec.ts",
+      "field-hitarea.spec.ts",
+      "field.spec.ts",
+      "forced-colors.spec.ts",
+      "forms.spec.ts",
+      "hydration.spec.ts",
+      "number.spec.ts",
+      "preferences.spec.ts",
+      "radio.spec.ts",
+      "rtl.spec.ts",
+      "select.spec.ts",
+      "shell.spec.ts",
+      "size.spec.ts",
+      "states.spec.ts",
+      "theme.spec.ts",
+      "visual.spec.ts"
+    ]
+  },
+  "ciText": "jobs:\n  # Playwright's image, mcr.microsoft.com/playwright:v<version>-noble, at the lockfile's version.\n  gates:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble # the tag before the bump: mcr.microsoft.com/playwright:v1.62.0-noble\n      options: --user 1001\n    steps:\n      - run: npx playwright install-deps chrome chromium firefox webkit\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}
