@@ -176,6 +176,12 @@ schema(required))` for a warning, and a validator of its own is one function eit
   a branch — six, by the amendment under "On the screen". `check-aria` point 6 keeps holding
   hint and error as alternatives, and the warning joins the same conditional.
 - A warning is announced from where it is drawn (0026), politely.
+  _Amended 2026-10-08: the first reading says less. On the pass dispatched after landing,
+  NVDA and VoiceOver read the warned fields with label, role, hint and value, and neither heard
+  the `status` line at the stop after it entered the DOM, where VoiceOver had heard the error's
+  `alert` on the same view; Orca never reaches the stop. A region that appears with its text
+  is announced as an arrival by `alert` and by nothing for `status` on the stacks that read it
+  so far — one reading, held open as a finding until the weekly pass reads it again._
 
 ## What this costs us
 

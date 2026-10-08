@@ -310,6 +310,21 @@ and every one is held by a **binds at** rather than by anybody's mood.
     Angular 22.2's `min()` and `max()` take numbers, and the rule a string bound would need is
     measured with the time field, which ships it with a case or not at all
 
+- [ ] **4.81 — the warning line is heard on the stop it is read from, not on the stop it appears**
+  - the dispatched pass on `/field` (2026-10-08, run 37733848017, the first reading of 0087's
+    line): NVDA and VoiceOver reach the amount at stop 21 and the phone at 22, each with its
+    label, role, hint and value — and the `status` line that enters the DOM on leaving the
+    amount is in neither reader's stop 22, where VoiceOver's 09-16 reading of the same view
+    heard the `alert` that enters on leaving the e-mail. NVDA's log carries no inserted alert
+    either, so it says nothing about the warning; Orca leaves `main` at stop 1 of this view in
+    both readings and never arrives
+  - one reading of one stack, and VoiceOver wavers between runs; a `status` region inserted
+    with its text is a known silence for readers that announce a change, not an arrival, where
+    an `alert` is an event. Two roads if the weekly pass confirms it: a region standing before
+    the text, which `check-aria` point 6 refuses as a second row, or the polite channel of
+    `PctAnnouncer` carrying the sentence the line already shows (0026)
+  - binds at: **the weekly pass of 2026-10-12** — read again, and a decision if it holds
+
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
     2026-09-17, the runner on 2026-09-28, twice — with the browser's focus on the dialog's close
