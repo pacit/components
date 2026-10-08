@@ -351,8 +351,8 @@ half that stepped under the caret would give one field two keyboards.
 
 _Amended 2026-10-08: **the shape of a column is the consumer's.** [0089](0089-one-value-more-than-one-control-and-the-consumer-chooses.md) keeps the listbox and gives it a
 second shape, `picker="wheel"`, in which the row under the centre line is the value and a
-scroll that settles writes it — this section's own rule, every movement writes the value,
-extended to the pointer. The `list` shape stays the default, and the wheel is a component
+scroll that settles writes it — the rule of the columns themselves, the row the walk stands
+on is that field of the value, extended to the pointer. The `list` shape stays the default, and the wheel is a component
 of its own that the columns compose, for the reason the columns are one._
 
 ### 5. The contract: bounds and a step, both in the value's own terms

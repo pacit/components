@@ -3,7 +3,7 @@
 **Status:** accepted
 **Implements:** [`req-api-generic`](../requirements/api.md#req-api-generic),
 [`req-api-platform`](../requirements/api.md#req-api-platform),
-[`req-api-time`](../requirements/api.md#req-api-time),
+[`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),
 [`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)
 **Evidence:** the author's word of 2026-10-08, written down outright as this file's own rule
 asks; the time panel of `dd0f02fa` read in chromium the same day (six rows of 32 px in a column
@@ -18,15 +18,15 @@ scroll browses and a click or the walk picks
 ([0086](0086-a-time-of-day-is-a-wall-clock.md) §4). Read on `main` that evening, the shape
 had three defects that are one: the column holds an even number of rows, so there is no
 middle row for the chosen one to stand on; the chosen row is centred when the panel opens and
-only kept in view after that, so five arrows put it on the column's edge; and a wheel tick
+only kept in view after that, so three arrows put it on the column's edge; and a wheel tick
 scrolls the rows freely under a selection that does not move. The panel looks like a list
 because it is drawn as one.
 
 The question that came with the reading was larger than the defects: should the chosen row
 stand on a centre line, should a scroll snap by rows, should the column be a wheel, should the
 wheel be a ring — and should the consumer choose between those shapes? The library's practice
-up to this record was one measured shape per value: 0086 measured seven readings of a column
-and chose the listbox. The first answer given here was that practice — one shape, no option,
+up to this record was one measured shape per component: 0086 measured seven readings, E1 to
+E7, five of them of a column, and chose the listbox. The first answer given here was that practice — one shape, no option,
 no wheel of its own — on the cost of measuring three shapes in three engines and three readers.
 
 The author refused it. **The library should give the choice: for a field with an enum of ten
@@ -74,49 +74,63 @@ the line itself.
    is an input, `picker`, on `PctTime` and `PctTimeColumns`, because its columns are the same
    fields either way and what differs is what a scroll means: in a `list` it browses, and a
    click or the walk picks; in a `wheel` the row under the centre line is the value, and a
-   scroll that settles writes it — the walk's own rule of 0086, every movement writes the
-   value, extended to the pointer. The union is open: a third shape, a dial, adds a value to
-   it and nothing to the field. The default is `list`: it is the shape that shipped, and a
-   scroll that writes a form value is a gesture a consumer opts into.
+   scroll that settles writes it — the columns' own rule, the row the walk stands on is that
+   field of the value, extended to the pointer. The settle that writes is one a gesture
+   started — a pointer, a wheel, a finger or a key: the centring a panel does when it opens
+   writes nothing, and with no value the line holds the first row, or `now` as the columns
+   open today, active and not chosen until a gesture. The union is open: a third shape, a
+   dial, adds a value to it and nothing to the field. The default is `list`: it is the shape
+   that shipped, and a scroll that writes a form value is a gesture a consumer opts into.
 
 3. **The wheel is a listbox on the platform's scroll.** The role and the walk are the
    column's — `role="listbox"`, `aria-activedescendant`, one tab stop, `pctListNavigation`
-   with `wrap` — so the reading 0086 measured (E1, E2) holds and the readers' walk is not
-   measured again for the role. The rows snap to the centre under a mandatory snap, the band
-   is drawn by the wheel and not by the row, the row count is odd and comes from the
-   row-height token, the bar is hidden by `scrollbar-width`, and the centring the walk asks
-   for is smooth under the motion tokens and still under reduced motion
+   with `wrap` — so the reading 0086 measured (E1, E2) holds
+   ([`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in)) and the readers' walk
+   is not measured again for the role. The rows snap to the centre under a mandatory snap,
+   the band is drawn by the wheel and not by the row and the rows fade towards its edges, the
+   row count is odd and comes from the row-height token, the bar is hidden by
+   `scrollbar-width`, and the centring the walk asks for is scripted, smooth or not as the
+   motion duration says, read the way `core/src/motion.ts` reads it — so reduced motion
+   reaches it with no rule in a stylesheet
    ([`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)). There is no scroll panel
    component: the platform scrolls, snaps, settles and paints the bar
    ([`req-api-platform`](../requirements/api.md#req-api-platform)).
 
 4. **The ring is a runway, and the runway is measured before it is written.** `wrap` on a
    wheel rings on scroll as it rings on keys: the rows are a window over a runway of many
-   cycles, `scrollend` moves the scroll to the same row in the middle cycle — a change no pixel
-   shows — and the rows outside the canonical cycle carry no id and `aria-hidden`, with
-   `aria-setsize` and `aria-posinset` saying the cycle's count. Whether the runway is the CDK's
-   viewport (`@angular/cdk/scrolling`, a third CDK entrypoint under the dependency policy) or
-   a hundred lines of the wheel's own is not decided here: it is measured by the bytes on
-   `./wheel`, by a fling across the re-centring in three engines and by three readers on a
-   listbox whose rows are a window, and written as a record of its own before the wheel's
-   code — 0086's order.
+   cycles, and `scrollend` moves the scroll to the same row in the middle cycle — a change no
+   pixel shows. Whether the runway is the CDK's viewport (`@angular/cdk/scrolling`, a third
+   CDK entrypoint under the dependency policy) or a hundred lines of the wheel's own is not
+   decided here: it is measured by the bytes on `./wheel`, by a fling across the re-centring
+   in three engines and by three readers on a listbox whose rows are a window, and written as
+   a record of its own before the wheel's code — 0086's order. What that record owes is what
+   a reader is told of the rows the window does not hold — whether the copies carry no id and
+   `aria-hidden`, whether `aria-setsize` and `aria-posinset` say the cycle's count, and where
+   `End`, `Home` and a typed digit land when the row they want is not in the tree — per
+   runway, since a window that holds the cycle whole owes none of it.
 
 5. **The wheel comes first, and the time columns compose it.** `PctWheel` lands before the
    time panel takes `picker`, and the `wheel` shape of a column is a `PctWheel` per field with
    `wrap` on and the bounds as disabled rows — one mechanism, for 0086's reason: a wheel that
-   lived only inside the time columns would be built twice. The datetime field composes the
-   columns with the same input. The `list` shape is polished in the same pull request: an odd
-   row count, a snap to the row's start, the walk kept centred.
+   lived only inside the time columns would be built twice. The datetime field does not wait:
+   it composes the columns with `list` alone and takes `picker` when 1.7 lands. The `list`
+   shape is polished in the same pull request as `picker`: an odd row count at every size,
+   derived from the row-height token — which retires `--pct-time-column-height`, shipped in
+   no release, and the columns card's sentence that the window is a height and not a count
+   — a snap to the row's start, and the walk kept centred.
 
 ## Consequences
 
 - Two plan items: **1.6**, the wheel, with the runway's record as its first step; **1.7**, the
-  time panel's `picker`, after it. **1.4** composes the columns with the input.
+  time panel's `picker`, after it. **1.4** composes the columns with `list` alone and takes
+  `picker` when 1.7 lands.
 - A card for the wheel under Choices on the APG listbox, the tier `--pct-wheel-*`, its keys in
   `PCT_TEXTS`, and the readers' walk on its view; a row on the time card and on the columns
   card for `picker`.
 - `scroll-snap-stop: always` — one row per tick of a wheel and per flick of a finger — is in
-  all three engines and is decided by feel, with a case either way.
+  all three engines, and the measure that decides it is rows per flick on a column of sixty:
+  under `always` a flick is one row and the minutes are sixty flicks, and that number is the
+  case, either way.
 - The drum look is a later variant of the wheel, measured where scroll-driven animations are
   and scripted where they are not — or not shipped in firefox; the card says which.
 - The select's long list is the runway's second consumer or it is not; 1.6 ends by saying
@@ -131,13 +145,15 @@ the line itself.
 - **A value can change under a scroll.** In the `wheel` shape a tick over an open panel writes
   the time. That is the shape's meaning and the consumer's choice, and the default keeps the
   form that did not ask for it safe.
-- **A ring shows a reader a window.** A listbox whose rows are rendered around the line is
-  walked by a reader's virtual cursor only as far as the window reaches; `aria-setsize` says the
-  count, and the three readers say whether that is enough — before the runway is chosen.
+- **A ring may show a reader a window.** A listbox whose rows are rendered around the line is
+  walked by a reader's virtual cursor only as far as the window reaches, unless the window
+  holds the cycle whole; which it is, and what `aria-setsize` has to say then, is the runway's
+  record's to measure in three readers before the runway is chosen.
 - **A public union to keep.** `picker` is API, `@since next`, and a third shape adds to it
   under the same `@since`; nothing is renamed.
-- **The datetime field waits** if it wants both shapes at birth: 1.4 after 1.7, or 1.4 with
-  `list` alone and `wheel` when the columns have it.
+- **The datetime field ships with one shape first.** 1.4 composes the columns with `list`
+  alone, and its card grows the `picker` row when 1.7 lands — a second pass of its readers'
+  walk on the `wheel` shape, paid then.
 
 ## Alternatives considered
 
@@ -146,7 +162,7 @@ the line itself.
   what point 1 pays.
 - **A wheel of spinbuttons.** The role has one number to say and a wheel of labels has a text;
   `aria-valuetext` would carry it, but the listbox is the reading 0086 measured in three readers
-  and axe, and a spinbutton per column is the tab stop per segment 0086 refused.
+  and axe.
 - **A scroller of the library's own — transforms and hand-written momentum.** It owns the
   ring and the drum outright, and it pays with `touch-action: none` against the page's own
   scroll, with physics tuned by hand in three engines, and with no scrollable region for a
@@ -157,5 +173,5 @@ the line itself.
   ([`req-api-platform`](../requirements/api.md#req-api-platform)); a themed bar is two tokens.
 - **The ring as three copies of the rows in the DOM.** The simplest runway, and the one that
   puts every row in the tree three times; the window of point 4 renders what the line can
-  reach and hides the rest from the reader, and whether that is the CDK's window or the
-  wheel's own is the runway's record.
+  reach, and what the reader is told of the rest, like whether the window is the CDK's or
+  the wheel's own, is the runway's record.
