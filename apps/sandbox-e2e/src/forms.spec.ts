@@ -37,6 +37,21 @@ test.describe('A form — controls under one schema', () => {
     await page
       .locator('[data-pct-part="option"]', { hasText: 'Poland' })
       .click();
+    await expect(submit).toBeDisabled(); // no time and no consent
+
+    // A time is text until it is left: junk is `null` to the schema, so the form stays
+    // invalid with something typed in the field, and the control says why.
+    const callAt = page.getByTestId('time-call-at');
+    const time = callAt.locator('input').first();
+    await time.fill('teatime');
+    await time.blur();
+    await expect(callAt).toHaveAttribute('data-pct-malformed', '');
+    await expect(submit).toBeDisabled(); // a time that is not one, and no consent
+
+    // The page runs under fr-FR, so the field writes back what it read on a 24-hour clock.
+    await time.fill('930');
+    await time.blur();
+    await expect(time).toHaveValue('09:30');
     await expect(submit).toBeDisabled(); // no consent
 
     await page.getByTestId('checkbox-terms').locator('input').check();

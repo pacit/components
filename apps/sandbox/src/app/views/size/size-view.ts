@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctDate, PctDay } from '@pacit/components/date';
+import { PctTime, PctTimeOfDay } from '@pacit/components/time';
 import {
   PctField,
   PctNumber,
@@ -29,6 +30,7 @@ import { SbxDemo } from '../../ui/demo';
     PctSuffix,
     PctSelect,
     PctDate,
+    PctTime,
     PctButton,
     PctCheckbox,
     PctRadioGroup,
@@ -41,6 +43,7 @@ export class SizeView {
   protected readonly sizes: readonly PctSize[] = ['sm', 'md', 'lg'];
   protected readonly countries = COUNTRIES;
   protected readonly startsOn = signal<PctDay | null>('2026-08-27');
+  protected readonly startsAt = signal<PctTimeOfDay | null>('13:05');
 
   protected readonly text = signal('Text');
   protected readonly amount = signal<number | null>(1499.9);

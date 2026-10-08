@@ -1,0 +1,158 @@
+@if (label() && !inField) {
+<label class="pct-time__label" data-pct-part="label" [attr.for]="controlId">
+  {{ label() }} @if (required()) {
+  <span class="pct-time__required" aria-hidden="true">*</span>
+  }
+</label>
+}
+
+<!--
+  The row the control stands in, and the panel's ORIGIN outside the chrome: the CDK reads
+  "outside the panel" as "outside the origin", so with the input alone as origin a press on
+  the toggle button would be an outside click that closes the panel the same press reopens
+  (`lesson-93`, met here as the select met it).
+-->
+<div class="pct-time__row" cdkOverlayOrigin #box="cdkOverlayOrigin">
+  <!--
+    A plain textbox. It carries no `role="combobox"` and no `aria-expanded`, and that is the
+    reading of 0035 backwards: a combobox promises a popup that helps COMPLETE what is being
+    typed, and a column of hours narrows nothing — it is a second road to the same value. What
+    has a popup is the button beside it, and that is where the state says so (0086, E7).
+  -->
+  <input
+    #control
+    class="pct-time__control"
+    data-pct-part="control"
+    type="text"
+    autocomplete="off"
+    inputmode="numeric"
+    [id]="controlId"
+    [disabled]="disabled()"
+    [readOnly]="readonly()"
+    [attr.name]="name() || null"
+    [attr.placeholder]="formatHint()"
+    [attr.required]="required() || null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-invalid]="showInvalid() ? 'true' : null"
+    [attr.aria-describedby]="describedBy()"
+    (input)="onInput()"
+    (blur)="onBlur()"
+  />
+
+  <button
+    #trigger
+    type="button"
+    class="pct-time__toggle"
+    data-pct-part="toggle"
+    aria-haspopup="dialog"
+    [attr.aria-label]="texts().timeOpen"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? panelId : null"
+    [disabled]="disabled() || readonly()"
+    (click)="toggle()"
+  >
+    <pct-icon name="clock">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <circle cx="8" cy="8" r="6.25" />
+        <path d="M8 4.5V8l2.5 1.5" />
+      </svg>
+    </pct-icon>
+  </button>
+</div>
+
+<!--
+  `disableClose` leaves Escape with ONE owner, the panel's own key map — the CDK closes an
+  overlay on Escape by itself, and a second owner is a close nobody can predict the order of
+  (0024, and the select's reading of the same line).
+-->
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="anchor() ?? box"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="panelPositions()"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayDisableClose]="true"
+  cdkConnectedOverlayPanelClass="pct-time__overlay"
+  (overlayOutsideClick)="close(false)"
+>
+  <!--
+    A panel of the kind that TAKES focus (0025), and `tabindex="-1"` is how it holds it for
+    the moment between opening and the hour column getting it. It carries the role and the name,
+    because that is what a screen reader announces before the user is anywhere inside.
+  -->
+  <div
+    #panel
+    class="pct-time__panel"
+    data-pct-part="panel"
+    role="dialog"
+    tabindex="-1"
+    [id]="panelId"
+    [pctOverlayPanel]="inherited()"
+    [attr.aria-label]="texts().timeOpen"
+    (keydown)="onPanelKeydown($event)"
+  >
+    <pct-time-columns
+      [value]="value()"
+      (valueChange)="value.set($event)"
+      (timePicked)="onPicked()"
+      [min]="min()"
+      [max]="max()"
+      [step]="validStep()"
+      [locale]="locale()"
+      [size]="size()"
+      [disabled]="disabled() || readonly()"
+    />
+  </div>
+</ng-template>
+
+<!-- One message line, and the error takes it (`req-api-message`). The sentence announces
+     from where it is drawn — `role="alert"`, which is `check-aria` point 7. -->
+@if (showError() && !inField) {
+<span class="pct-time__error" data-pct-part="error" [id]="errorId" role="alert">
+  {{ errorText() }}
+</span>
+} @else if (showWarning() && !inField) {
+<!-- A verdict without a veto (0087): the same third branch the chrome draws — the tone's glyph
+     before the text, a hidden word for a reader, `status` where the error is `alert` (0026). -->
+<span
+  class="pct-time__warning"
+  data-pct-part="warning"
+  [id]="warningId"
+  role="status"
+>
+  <pct-icon class="pct-time__warning-icon" name="warning">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M8 2.6L14.5 13.4h-13z" />
+      <path d="M8 6.6v2.6" />
+      <path d="M8 11.4h.01" />
+    </svg>
+  </pct-icon>
+  <span class="pct-time__sr">{{ texts().fieldWarning }}</span>
+  {{ warningText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-time__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+}

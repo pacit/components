@@ -755,6 +755,38 @@ export class PctThemeHarness extends PctHarness<never> {
   static override readonly parts = [] as const;
 }
 
+// ── @pacit/components/time ──────────────────────────────────────────────────────
+
+/**
+ * `pct-time` — `PctTime`.
+ *
+ * @since next
+ */
+export class PctTimeHarness extends PctHarness<
+  'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle' | 'warning'
+> {
+  static override hostSelector = 'pct-time';
+  static override readonly parts = [
+    'control',
+    'error',
+    'hint',
+    'label',
+    'panel',
+    'toggle',
+    'warning',
+  ] as const;
+}
+
+/**
+ * `pct-time-columns` — `PctTimeColumns`.
+ *
+ * @since next
+ */
+export class PctTimeColumnsHarness extends PctHarness<'column' | 'option'> {
+  static override hostSelector = 'pct-time-columns';
+  static override readonly parts = ['column', 'option'] as const;
+}
+
 // ── @pacit/components/toast ─────────────────────────────────────────────────────
 
 /**

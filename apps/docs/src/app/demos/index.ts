@@ -14,6 +14,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),
+  columns: () => import('./columns.demo').then((m) => m.TimeColumnsDemo),
   chips: () => import('./chips.demo').then((m) => m.ChipsDemo),
   container: () => import('./container.demo').then((m) => m.ContainerDemo),
   date: () => import('./date.demo').then((m) => m.DateDemo),
@@ -39,6 +40,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   text: () => import('./text.demo').then((m) => m.TextDemo),
   textarea: () => import('./textarea.demo').then((m) => m.TextareaDemo),
   theme: () => import('./theme.demo').then((m) => m.ThemeDemo),
+  time: () => import('./time.demo').then((m) => m.TimeDemo),
   toast: () => import('./toast.demo').then((m) => m.ToastDemo),
   tooltip: () => import('./tooltip.demo').then((m) => m.TooltipDemo),
   tree: () => import('./tree.demo').then((m) => m.TreeDemo),
@@ -357,6 +359,27 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./date.bounds.demo').then((m) => m.DateBoundsDemo),
     },
   ],
+  columns: [
+    {
+      key: 'clock',
+      load: () =>
+        import('./columns.clock.demo').then((m) => m.ColumnsClockDemo),
+    },
+  ],
+  time: [
+    {
+      key: 'locales',
+      load: () => import('./time.locales.demo').then((m) => m.TimeLocalesDemo),
+    },
+    {
+      key: 'step',
+      load: () => import('./time.step.demo').then((m) => m.TimeStepDemo),
+    },
+    {
+      key: 'bounds',
+      load: () => import('./time.bounds.demo').then((m) => m.TimeBoundsDemo),
+    },
+  ],
   calendar: [
     {
       key: 'locale',
@@ -419,6 +442,8 @@ export const CARD_DEMOS: Readonly<
   calendar: () =>
     import('./cards/calendar.card').then((m) => m.CalendarCardScene),
   chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
+  columns: () =>
+    import('./cards/columns.card').then((m) => m.TimeColumnsCardScene),
   container: () =>
     import('./cards/container.card').then((m) => m.ContainerCardScene),
   dialog: () => import('./cards/dialog.card').then((m) => m.DialogCardScene),

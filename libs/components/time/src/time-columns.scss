@@ -1,0 +1,141 @@
+/* The columns stand side by side along the INLINE axis, so a page written right to left draws
+   the first field on the right without a rule of its own (`req-token-logical`). */
+:host {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--pct-time-panel-gap);
+  font-family: inherit;
+  color: var(--pct-time-fg);
+}
+
+/* A column is the listbox and the element that scrolls. `position: relative` makes it the
+   rows' offset parent, which is what the walk measures a row against to keep it in view;
+   `overscroll-behavior` keeps a wheel that reaches the end of a column from scrolling the
+   page under the panel. */
+.pct-time-columns__column {
+  position: relative;
+  box-sizing: border-box;
+  min-inline-size: var(--pct-time-column-min-width);
+  block-size: var(--pct-time-column-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border-radius: var(--pct-time-option-radius);
+}
+
+/* The focus sits on the column, and the row it points at carries the ring: a ring around the
+   whole column would say which field and not which row. */
+.pct-time-columns__column:focus {
+  outline: none;
+}
+
+.pct-time-columns__option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  block-size: var(--pct-time-option-height);
+  padding-inline: var(--pct-time-option-padding-x);
+  border-radius: var(--pct-time-option-radius);
+  font-size: var(--pct-time-option-font-size);
+  /* The digits of a column line up with the rows above and below them. */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+}
+
+/* Hover paints a row the pointer can take and has not — the chosen row keeps its own surface
+   under the pointer, and a refused one has nothing to offer it. */
+.pct-time-columns__option:hover:not([data-pct-disabled], [data-pct-chosen]) {
+  background: var(--pct-time-option-bg-hover);
+}
+
+.pct-time-columns__option[data-pct-chosen] {
+  background: var(--pct-time-option-bg-selected);
+  color: var(--pct-time-option-fg-selected);
+  font-weight: var(--pct-time-option-font-weight-selected);
+}
+
+/* The keyboard's row, in the column that has the focus — the ring the column would otherwise
+   draw, put on the row it points at. Inset, so it neither pushes the rows apart nor runs past
+   the column's edge. */
+.pct-time-columns__column:focus-visible
+  .pct-time-columns__option[data-pct-active] {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* The keyboard's row is the chosen one nearly always — every movement writes the value — and
+   the focus ring's blue on the selection's blue is a ring nobody sees (about 1.4:1). On the
+   chosen row the ring takes the selection's own text colour, a pair the contrast policy holds,
+   and sits a pixel further in so the surface frames it. */
+.pct-time-columns__column:focus-visible
+  .pct-time-columns__option[data-pct-active][data-pct-chosen] {
+  outline-color: var(--pct-time-option-fg-selected);
+  outline-offset: -3px;
+}
+
+/* A refused row that is also the chosen one — a value the bounds do not allow, written in the
+   field — keeps the chosen pair: a quiet colour on the selection's surface is a contrast the
+   policy cannot promise, and `aria-disabled` still says it. */
+.pct-time-columns__option[data-pct-disabled] {
+  cursor: not-allowed;
+}
+
+.pct-time-columns__option[data-pct-disabled]:not([data-pct-chosen]) {
+  color: var(--pct-time-option-fg-disabled);
+}
+
+:host([data-pct-disabled]) .pct-time-columns__option {
+  cursor: not-allowed;
+}
+
+/* Sizes: the rows scale with the field they open from (req-api-size). */
+:host([data-pct-size='sm']) .pct-time-columns__option {
+  block-size: var(--pct-time-option-height-sm);
+  font-size: var(--pct-time-option-font-size-sm);
+}
+
+:host([data-pct-size='lg']) .pct-time-columns__option {
+  block-size: var(--pct-time-option-height-lg);
+  font-size: var(--pct-time-option-font-size-lg);
+}
+
+/* Forced-colors mode — every base rule with a colour repeated at its own specificity, because
+   `@media` adds none (lesson-70). The chosen row takes the mode's own pair for a selection,
+   the keyboard's row keeps its ring in `Highlight`, and a refused row takes `GrayText`: three
+   facts, none of them carried by a theme colour. */
+@media (forced-colors: active) {
+  .pct-time-columns__option,
+  .pct-time-columns__option:hover:not([data-pct-disabled], [data-pct-chosen]) {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .pct-time-columns__option[data-pct-chosen] {
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+
+  .pct-time-columns__column:focus-visible
+    .pct-time-columns__option[data-pct-active] {
+    outline-color: Highlight;
+  }
+
+  /* The ring on the selection's own surface takes the selection's text colour — `Highlight`
+     on `SelectedItem` may be one colour in a palette the user chose, as the menu learned. */
+  .pct-time-columns__column:focus-visible
+    .pct-time-columns__option[data-pct-active][data-pct-chosen] {
+    outline-color: SelectedItemText;
+  }
+
+  .pct-time-columns__option[data-pct-disabled]:not([data-pct-chosen]) {
+    color: GrayText;
+  }
+}

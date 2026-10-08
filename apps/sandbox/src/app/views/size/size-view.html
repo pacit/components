@@ -66,6 +66,14 @@
 
     <pct-field
       [size]="size"
+      [label]="'Time ' + size"
+      [attr.data-testid]="'size-time-' + size"
+    >
+      <pct-time [(value)]="startsAt" />
+    </pct-field>
+
+    <pct-field
+      [size]="size"
       [label]="'Disabled ' + size"
       [attr.data-testid]="'size-disabled-' + size"
     >

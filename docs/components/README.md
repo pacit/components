@@ -21,6 +21,8 @@ a machine; prose with a missing paragraph is not.
 | [`PctSlider`](slider.md)         | `@pacit/components/slider`     | a position on a numeric continuum         |
 | [`PctDate`](date.md)             | `@pacit/components/date`       | a calendar day, typed or picked           |
 | [`PctCalendar`](calendar.md)     | `@pacit/components/date`       | one month of days as a grid               |
+| [`PctTime`](time.md)             | `@pacit/components/time`       | a wall-clock time, typed or picked        |
+| [`PctTimeColumns`](columns.md)   | `@pacit/components/time`       | a time as columns of hours and minutes    |
 | [`PctSelect`](select.md)         | `@pacit/components/select`     | choice list with a panel of its own       |
 | [`PctMultiSelect`](select.md)    | `@pacit/components/select`     | the same list, holding many answers       |
 | [`PctDialog`](dialog.md)         | `@pacit/components/dialog`     | modal dialog                              |
@@ -256,7 +258,8 @@ The order follows **architectural debt**, not popularity:
    in. Two lessons came out of its measurements: an until-found subtree's role-visibility
    differs by engine, and Playwright's visibility is not the platform's
    `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
-7. **Time field, then date and time.** Decided and not built. `<input type="time">` is refused
+7. **Time field, then date and time.** The time field is built ([`PctTime`](time.md),
+   [`PctTimeColumns`](columns.md)); the datetime field is decided and not built. `<input type="time">` is refused
    on the date's measurements and harder: each engine draws its clock from a different source
    and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
    chromium, and one control is three tab stops there or four, by the system's locale. So the

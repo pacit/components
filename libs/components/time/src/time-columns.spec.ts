@@ -1,0 +1,951 @@
+import {
+  Component,
+  provideZonelessChangeDetection,
+  signal,
+} from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { providePctTexts } from '@pacit/components/core';
+
+import { PctTimeOfDay } from './time';
+import { PctTimeColumns } from './time-columns';
+
+@Component({
+  imports: [PctTimeColumns],
+  template: `<pct-time-columns
+    [(value)]="value"
+    [locale]="locale()"
+    [step]="step()"
+    [min]="min()"
+    [max]="max()"
+    [disabled]="disabled()"
+    [ariaLabel]="ariaLabel()"
+    (timePicked)="picked.push($event)"
+  />`,
+})
+class Host {
+  readonly value = signal<PctTimeOfDay | null>('13:05');
+  readonly locale = signal('en-GB');
+  readonly step = signal(60);
+  readonly min = signal<string | undefined>(undefined);
+  readonly max = signal<string | undefined>(undefined);
+  readonly disabled = signal(false);
+  readonly ariaLabel = signal('');
+  readonly picked: PctTimeOfDay[] = [];
+}
+
+async function render(setup: (host: Host) => void = () => undefined) {
+  const f = TestBed.createComponent(Host);
+  setup(f.componentInstance);
+  f.detectChanges();
+  await f.whenStable();
+  return f;
+}
+
+async function settle(f: ComponentFixture<Host>) {
+  f.detectChanges();
+  await f.whenStable();
+}
+
+const columnsOf = (f: ComponentFixture<unknown>) =>
+  Array.from(
+    (f.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+      '[data-pct-part="column"]',
+    ),
+  );
+
+const column = (f: ComponentFixture<unknown>, field: string) =>
+  (f.nativeElement as HTMLElement).querySelector<HTMLElement>(
+    `[data-pct-part="column"][data-pct-field="${field}"]`,
+  ) as HTMLElement;
+
+const rowsOf = (list: HTMLElement) =>
+  Array.from(list.querySelectorAll<HTMLElement>('[data-pct-part="option"]'));
+
+const labels = (list: HTMLElement) =>
+  rowsOf(list).map((row) => row.textContent?.trim());
+
+const enabled = (list: HTMLElement) =>
+  rowsOf(list)
+    .filter((row) => row.getAttribute('aria-disabled') !== 'true')
+    .map((row) => row.textContent?.trim());
+
+const active = (list: HTMLElement) =>
+  list
+    .querySelector(`#${list.getAttribute('aria-activedescendant')}`)
+    ?.textContent?.trim();
+
+const chosen = (list: HTMLElement) =>
+  rowsOf(list)
+    .filter((row) => row.getAttribute('aria-selected') === 'true')
+    .map((row) => row.textContent?.trim());
+
+async function press(
+  f: ComponentFixture<Host>,
+  list: HTMLElement,
+  key: string,
+  init: KeyboardEventInit = {},
+) {
+  const event = new KeyboardEvent('keydown', {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  list.dispatchEvent(event);
+  await settle(f);
+  return event;
+}
+
+beforeEach(() => {
+  TestBed.configureTestingModule({
+    providers: [provideZonelessChangeDetection()],
+  });
+});
+
+describe('PctTimeColumns — the columns there are', () => {
+  it('lists hours and minutes on a twenty-four-hour clock, two digits each', async () => {
+    const f = await render();
+    expect(columnsOf(f).map((c) => c.dataset['pctField'])).toEqual([
+      'hour',
+      'minute',
+    ]);
+    const hours = labels(column(f, 'hour'));
+    expect(hours).toHaveLength(24);
+    expect(hours[0]).toBe('00');
+    expect(hours[23]).toBe('23');
+    const minutes = labels(column(f, 'minute'));
+    expect(minutes).toHaveLength(60);
+    expect(minutes[0]).toBe('00');
+    expect(minutes[59]).toBe('59');
+  });
+
+  it('adds the two halves of the day on a twelve-hour clock, where the language writes them', async () => {
+    const f = await render((h) => h.locale.set('en-US'));
+    expect(columnsOf(f).map((c) => c.dataset['pctField'])).toEqual([
+      'hour',
+      'minute',
+      'dayPeriod',
+    ]);
+    // `h12` writes the first hour `12`, and the locale's own width: `1`, not `01`.
+    expect(labels(column(f, 'hour'))).toEqual([
+      '12',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+    ]);
+    expect(labels(column(f, 'dayPeriod'))).toEqual(['AM', 'PM']);
+  });
+
+  it('stands the day period where the language does — before the hour in Korean', async () => {
+    const f = await render((h) => h.locale.set('ko-KR'));
+    expect(columnsOf(f).map((c) => c.dataset['pctField'])).toEqual([
+      'dayPeriod',
+      'hour',
+      'minute',
+    ]);
+    expect(labels(column(f, 'dayPeriod'))).toEqual(['오전', '오후']);
+  });
+
+  it('writes the hour as wide as the field writes it', async () => {
+    // Most twelve-hour clocks write `1:05 PM`; the ones that pad write `01:05 AM`, and the
+    // column follows the field rather than a rule about twelve-hour clocks.
+    const padded = await render((h) => h.locale.set('hr-HR-u-hc-h12'));
+    expect(labels(column(padded, 'hour'))[1]).toBe('01');
+    const plain = await render((h) => h.locale.set('en-US'));
+    expect(labels(column(plain, 'hour'))[1]).toBe('1');
+  });
+
+  it('writes each cycle’s first hour as that cycle writes it', async () => {
+    const h11 = await render((h) => h.locale.set('ja-JP-u-hc-h11'));
+    expect(labels(column(h11, 'hour'))[0]).toBe('0');
+    const h24 = await render((h) => h.locale.set('en-US-u-hc-h24'));
+    expect(labels(column(h24, 'hour'))[0]).toBe('24');
+    expect(labels(column(h24, 'hour'))[1]).toBe('01');
+  });
+
+  it('writes the rows in the digits the field is written in', async () => {
+    const f = await render((h) => h.locale.set('ar-EG'));
+    expect(labels(column(f, 'minute'))[5]).toBe('٠٥');
+    expect(labels(column(f, 'hour'))[1]).toBe('١');
+    expect(labels(column(f, 'dayPeriod'))).toEqual(['ص', 'م']);
+  });
+
+  it('adds seconds where the step has them, and only there', async () => {
+    const f = await render((h) => h.step.set(15));
+    expect(columnsOf(f).map((c) => c.dataset['pctField'])).toEqual([
+      'hour',
+      'minute',
+      'second',
+    ]);
+    expect(labels(column(f, 'second'))).toEqual(['00', '15', '30', '45']);
+  });
+
+  it('lists the minutes the step reaches, counted from min', async () => {
+    const quarter = await render((h) => h.step.set(900));
+    expect(labels(column(quarter, 'minute'))).toEqual(['00', '15', '30', '45']);
+    const offset = await render((h) => {
+      h.step.set(900);
+      h.min.set('09:05');
+    });
+    expect(labels(column(offset, 'minute'))).toEqual(['05', '20', '35', '50']);
+  });
+
+  it('lists the hours an hour step reaches, and the one minute it stands on', async () => {
+    const f = await render((h) => {
+      h.step.set(3 * 3600);
+      h.value.set('03:00');
+    });
+    expect(labels(column(f, 'hour'))).toEqual([
+      '00',
+      '03',
+      '06',
+      '09',
+      '12',
+      '15',
+      '18',
+      '21',
+    ]);
+    expect(labels(column(f, 'minute'))).toEqual(['00']);
+  });
+
+  it('reads a step it cannot list as 60, and says so in dev mode', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const f = await render((h) => h.step.set(420));
+    expect(labels(column(f, 'minute'))).toHaveLength(60);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('[pct-time-columns] step=420'),
+    );
+    warn.mockClear();
+    f.componentInstance.step.set(300);
+    await settle(f);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+describe('PctTimeColumns — the roles and the names', () => {
+  it('makes every column a named listbox and one tab stop', async () => {
+    const f = await render((h) => h.locale.set('en-US'));
+    for (const list of columnsOf(f)) {
+      expect(list.getAttribute('role')).toBe('listbox');
+      expect(list.getAttribute('tabindex')).toBe('0');
+    }
+    expect(columnsOf(f).map((c) => c.getAttribute('aria-label'))).toEqual([
+      'Hours',
+      'Minutes',
+      'AM/PM',
+    ]);
+    // The rows are options, and none of them is a tab stop: the column points at them.
+    const rows = rowsOf(column(f, 'minute'));
+    expect(rows.every((row) => row.getAttribute('role') === 'option')).toBe(
+      true,
+    );
+    expect(rows.every((row) => !row.hasAttribute('tabindex'))).toBe(true);
+  });
+
+  it('names the seconds column too', async () => {
+    const f = await render((h) => h.step.set(1));
+    expect(column(f, 'second').getAttribute('aria-label')).toBe('Seconds');
+  });
+
+  it('takes the names from the texts channel', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        providePctTexts({
+          timeHours: 'Heures',
+          timeMinutes: 'Minutes',
+          timeSeconds: 'Secondes',
+          timePeriod: 'Période',
+        }),
+      ],
+    });
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.step.set(1);
+    });
+    expect(columnsOf(f).map((c) => c.getAttribute('aria-label'))).toEqual([
+      'Heures',
+      'Minutes',
+      'Secondes',
+      'Période',
+    ]);
+  });
+
+  it('names the group it stands in only when told to', async () => {
+    const f = await render();
+    const host = f.nativeElement.querySelector(
+      'pct-time-columns',
+    ) as HTMLElement;
+    expect(host.getAttribute('role')).toBe('group');
+    expect(host.hasAttribute('aria-label')).toBe(false);
+    expect(host.hasAttribute('aria-labelledby')).toBe(false);
+    f.componentInstance.ariaLabel.set('Start time');
+    await settle(f);
+    expect(host.getAttribute('aria-label')).toBe('Start time');
+  });
+
+  it('names the group by a heading on the page', async () => {
+    @Component({
+      imports: [PctTimeColumns],
+      template: `<h3 id="when">When</h3>
+        <pct-time-columns ariaLabelledby="when" />`,
+    })
+    class Labelled {}
+    const f = TestBed.createComponent(Labelled);
+    f.detectChanges();
+    await f.whenStable();
+    const host = f.nativeElement.querySelector(
+      'pct-time-columns',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-labelledby')).toBe('when');
+    expect(host.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('carries its size to the rows, and the configured one by default', async () => {
+    @Component({
+      imports: [PctTimeColumns],
+      template: `<pct-time-columns size="sm" /><pct-time-columns />`,
+    })
+    class Sized {}
+    const f = TestBed.createComponent(Sized);
+    f.detectChanges();
+    await f.whenStable();
+    const [small, plain] = Array.from(
+      f.nativeElement.querySelectorAll('pct-time-columns'),
+    ) as HTMLElement[];
+    expect(small.getAttribute('data-pct-size')).toBe('sm');
+    expect(plain.getAttribute('data-pct-size')).toBe('md');
+  });
+
+  it('marks the row the walk stands on in every column, and only that one', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:05');
+    });
+    const marked = (list: HTMLElement) =>
+      rowsOf(list)
+        .filter((row) => row.hasAttribute('data-pct-active'))
+        .map((row) => row.textContent?.trim());
+    expect(marked(column(f, 'hour'))).toEqual(['13']);
+    // The value is off the step: no minute row is the value's, and the walk stands on `00`.
+    expect(marked(column(f, 'minute'))).toEqual(['00']);
+    expect(
+      rowsOf(column(f, 'minute')).filter((row) =>
+        row.hasAttribute('data-pct-chosen'),
+      ),
+    ).toHaveLength(0);
+  });
+
+  it('points every column at the row of the value, and marks it chosen', async () => {
+    const f = await render((h) => h.locale.set('en-US'));
+    expect(active(column(f, 'hour'))).toBe('1');
+    expect(active(column(f, 'minute'))).toBe('05');
+    expect(active(column(f, 'dayPeriod'))).toBe('PM');
+    expect(chosen(column(f, 'hour'))).toEqual(['1']);
+    expect(chosen(column(f, 'minute'))).toEqual(['05']);
+    expect(chosen(column(f, 'dayPeriod'))).toEqual(['PM']);
+    // Every other row says it is not selected — `false`, not absent.
+    expect(
+      rowsOf(column(f, 'minute')).filter(
+        (row) => row.getAttribute('aria-selected') === 'false',
+      ),
+    ).toHaveLength(59);
+  });
+
+  it('marks nothing chosen with no value, and still has a row to start from', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 37));
+    try {
+      const f = await render((h) => h.value.set(null));
+      expect(chosen(column(f, 'hour'))).toEqual([]);
+      expect(chosen(column(f, 'minute'))).toEqual([]);
+      // Now, as a wall clock shows it: 14:22 until it ticks, never rounded up to 14:23.
+      expect(active(column(f, 'hour'))).toBe('14');
+      expect(active(column(f, 'minute'))).toBe('22');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('marks the row of a value that is not a time as nothing at all', async () => {
+    const f = await render();
+    // What `[(ngModel)]` writes first, and what no type here refuses (`lesson-117`).
+    f.componentInstance.value.set('half past one' as PctTimeOfDay);
+    await settle(f);
+    expect(chosen(column(f, 'hour'))).toEqual([]);
+  });
+});
+
+describe('PctTimeColumns — the walk', () => {
+  it('moves the value with the row: a column is a field', async () => {
+    const f = await render();
+    await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:06');
+    expect(active(column(f, 'minute'))).toBe('06');
+    await press(f, column(f, 'hour'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('12:06');
+    // A movement is not a pick: nothing closes on it.
+    expect(f.componentInstance.picked).toEqual([]);
+  });
+
+  it('comes round at the end and leaves the hour where it was (0086 §4)', async () => {
+    const f = await render((h) => h.value.set('13:59'));
+    const down = await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:00');
+    expect(down.defaultPrevented).toBe(true);
+    await press(f, column(f, 'minute'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('13:59');
+    f.componentInstance.value.set('23:30');
+    await settle(f);
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('00:30');
+  });
+
+  it('goes to the first and the last row with Home and End', async () => {
+    const f = await render();
+    await press(f, column(f, 'minute'), 'End');
+    expect(f.componentInstance.value()).toBe('13:59');
+    await press(f, column(f, 'minute'), 'Home');
+    expect(f.componentInstance.value()).toBe('13:00');
+  });
+
+  it('reads typed digits as a number, the way a person types one', async () => {
+    const f = await render();
+    await press(f, column(f, 'minute'), '4');
+    expect(f.componentInstance.value()).toBe('13:04');
+    await press(f, column(f, 'minute'), '5');
+    expect(f.componentInstance.value()).toBe('13:45');
+  });
+
+  it('reaches every hour of a twelve-hour clock by typing it', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('15:05');
+    });
+    // Rows `12, 1, 2 … 11`: a prefix would take `1` to twelve and never reach one.
+    await press(f, column(f, 'hour'), '1');
+    expect(f.componentInstance.value()).toBe('13:05');
+    await press(f, column(f, 'hour'), '2');
+    expect(f.componentInstance.value()).toBe('12:05');
+  });
+
+  it('answers a digit the padded rows do not begin with', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '9');
+    expect(f.componentInstance.value()).toBe('09:05');
+  });
+
+  it('falls back to the start of a row where no row writes the number', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    await press(f, column(f, 'minute'), '4');
+    expect(f.componentInstance.value()).toBe('13:45');
+  });
+
+  it('starts a new number once the typed digits have gone quiet', async () => {
+    const timers = vi.spyOn(globalThis, 'setTimeout');
+    try {
+      const f = await render();
+      await press(f, column(f, 'hour'), '1');
+      expect(f.componentInstance.value()).toBe('01:05');
+      // The half second the typeahead waits, run now rather than waited for: what it clears is
+      // the number being typed, so the next digit is a number of its own.
+      const quiet = timers.mock.calls.filter((call) => call[1] === 500).at(-1);
+      (quiet?.[0] as () => void)();
+      await press(f, column(f, 'hour'), '3');
+      expect(f.componentInstance.value()).toBe('03:05');
+    } finally {
+      timers.mockRestore();
+    }
+  });
+
+  it('reads two keys that arrive before a render from where the first one left', async () => {
+    // A busy page queues input ahead of change detection: the second key must start from the
+    // row the first one wrote, not from the row the last render drew.
+    const f = await render((h) => h.value.set('09:05'));
+    const hour = column(f, 'hour');
+    const send = (key: string) =>
+      hour.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+    send('1');
+    send('3');
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:05');
+    send('ArrowDown');
+    send('ArrowDown');
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('15:05');
+  });
+
+  it('keeps the number being typed across a modifier — AZERTY reaches digits through Shift', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    await press(f, column(f, 'hour'), 'Shift');
+    await press(f, column(f, 'hour'), '3', { shiftKey: true });
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('reads a word typed letter by letter, and keeps every letter it answers', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('09:05');
+    });
+    const p = await press(f, column(f, 'dayPeriod'), 'p');
+    expect(f.componentInstance.value()).toBe('21:05');
+    const m = await press(f, column(f, 'dayPeriod'), 'm');
+    expect(f.componentInstance.value()).toBe('21:05');
+    expect(p.defaultPrevented).toBe(true);
+    expect(m.defaultPrevented).toBe(true);
+  });
+
+  it('drops a run that named nothing, and starts afresh from the next key', async () => {
+    const stray = await render();
+    await press(stray, column(stray, 'hour'), 'x');
+    await press(stray, column(stray, 'hour'), '9');
+    expect(stray.componentInstance.value()).toBe('09:05');
+    // A run started afresh names a row again, so a key that takes it past every row keeps it.
+    const again = await render();
+    for (const key of ['x', '2', '5'])
+      await press(again, column(again, 'hour'), key);
+    expect(again.componentInstance.value()).toBe('02:05');
+
+    const quarter = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    // `7` begins no quarter; the `4` after it is read on its own.
+    await press(quarter, column(quarter, 'minute'), '7');
+    expect(quarter.componentInstance.value()).toBe('13:15');
+    await press(quarter, column(quarter, 'minute'), '4');
+    expect(quarter.componentInstance.value()).toBe('13:45');
+  });
+
+  it('stays put on a number the column cannot hold, rather than jumping to its last digit', async () => {
+    const hours = await render();
+    await press(hours, column(hours, 'hour'), '2');
+    expect(hours.componentInstance.value()).toBe('02:05');
+    const past = await press(hours, column(hours, 'hour'), '5');
+    expect(hours.componentInstance.value()).toBe('02:05');
+    expect(past.defaultPrevented).toBe(false);
+
+    const quarter = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    await press(quarter, column(quarter, 'minute'), '3');
+    await press(quarter, column(quarter, 'minute'), '4');
+    expect(quarter.componentInstance.value()).toBe('13:30');
+
+    // Thirteen is no row of a twelve-hour column: one o'clock stays one o'clock.
+    const twelve = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('15:05');
+    });
+    await press(twelve, column(twelve, 'hour'), '1');
+    await press(twelve, column(twelve, 'hour'), '3');
+    expect(twelve.componentInstance.value()).toBe('13:05');
+  });
+
+  it('ends the number being typed on any key that is neither printable nor a modifier', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('02:05');
+    await press(f, column(f, 'hour'), '3');
+    expect(f.componentInstance.value()).toBe('03:05');
+  });
+
+  it('keeps a digit it answers with the row it stands on', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    const same = await press(f, column(f, 'minute'), '1');
+    expect(same.defaultPrevented).toBe(true);
+    expect(f.componentInstance.value()).toBe('13:15');
+  });
+
+  it('lets go of the number being typed when the column goes', async () => {
+    const timers = vi.spyOn(globalThis, 'setTimeout');
+    const cleared = vi.spyOn(globalThis, 'clearTimeout');
+    try {
+      const f = await render();
+      await press(f, column(f, 'hour'), '1');
+      const first = timers.mock.results
+        .filter((_, i) => timers.mock.calls[i][1] === 500)
+        .at(-1)?.value;
+      await press(f, column(f, 'hour'), '3');
+      // The second digit restarts the half second rather than racing the first one's.
+      expect(cleared).toHaveBeenCalledWith(first);
+      const second = timers.mock.results
+        .filter((_, i) => timers.mock.calls[i][1] === 500)
+        .at(-1)?.value;
+      f.destroy();
+      expect(cleared).toHaveBeenCalledWith(second);
+    } finally {
+      timers.mockRestore();
+      cleared.mockRestore();
+    }
+  });
+
+  it('keeps one column’s digits out of the next column', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    expect(f.componentInstance.value()).toBe('01:05');
+    await press(f, column(f, 'minute'), '3');
+    // Three, not thirteen: the `1` was the hour's.
+    expect(f.componentInstance.value()).toBe('01:03');
+  });
+
+  it('never types its way onto a row the bounds refuse', async () => {
+    const f = await render((h) => h.max.set('15:00'));
+    const list = column(f, 'hour');
+    await press(f, list, '1');
+    expect(f.componentInstance.value()).toBe('01:05');
+    const refused = await press(f, list, '6');
+    expect(f.componentInstance.value()).toBe('01:05');
+    expect(refused.defaultPrevented).toBe(false);
+  });
+
+  it('writes nothing for a key that matches no row — a miss is not an instruction', async () => {
+    const off = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:05');
+    });
+    const miss = await press(off, column(off, 'minute'), 'x');
+    expect(off.componentInstance.value()).toBe('13:05');
+    expect(miss.defaultPrevented).toBe(false);
+    await press(off, column(off, 'minute'), '7');
+    expect(off.componentInstance.value()).toBe('13:05');
+
+    const empty = await render((h) => h.value.set(null));
+    await press(empty, column(empty, 'minute'), 'x');
+    expect(empty.componentInstance.value()).toBeNull();
+
+    const refused = await render((h) => {
+      h.max.set('17:00');
+      h.value.set('18:30');
+    });
+    await press(refused, column(refused, 'hour'), 'x');
+    expect(refused.componentInstance.value()).toBe('18:30');
+  });
+
+  it('writes nothing for an arrow at a row with nowhere else to go', async () => {
+    const f = await render((h) => {
+      h.min.set('13:05');
+      h.max.set('13:05');
+      h.value.set(null);
+    });
+    const down = await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBeNull();
+    // The key is still the column's — a listbox's arrows are not the page's to scroll with.
+    expect(down.defaultPrevented).toBe(true);
+  });
+
+  it('jumps to a day period by its first letter', async () => {
+    const f = await render((h) => h.locale.set('en-US'));
+    await press(f, column(f, 'dayPeriod'), 'a');
+    expect(f.componentInstance.value()).toBe('01:05');
+  });
+
+  it('leaves a modified key, and a key it has no use for, to whoever owns it', async () => {
+    const f = await render();
+    const list = column(f, 'minute');
+    for (const [key, init] of [
+      ['4', { ctrlKey: true }],
+      ['4', { metaKey: true }],
+      ['4', { altKey: true }],
+      ['Tab', {}],
+      ['ArrowLeft', {}],
+    ] as const) {
+      const event = await press(f, list, key, init);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('switches the half of the day and keeps the hour of it', async () => {
+    const f = await render((h) => h.locale.set('en-US'));
+    await press(f, column(f, 'dayPeriod'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('01:05');
+    await press(f, column(f, 'dayPeriod'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('walks the hours of the half it stands in on a twelve-hour clock', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('23:05');
+    });
+    expect(active(column(f, 'hour'))).toBe('11');
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    // From 11 PM the next row is 12, the first hour of the column — and of the same half.
+    expect(f.componentInstance.value()).toBe('12:05');
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('starts from the step now is IN, never the next one', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 23, 0));
+    try {
+      const quarter = await render((h) => {
+        h.value.set(null);
+        h.step.set(900);
+      });
+      // 14:23 is nearer 14:30 and stands in the quarter that began at 14:15.
+      expect(active(column(quarter, 'minute'))).toBe('15');
+      // Before `min`, no time on the step is at or before now: the walk starts at `min`.
+      const early = await render((h) => {
+        h.value.set(null);
+        h.min.set('15:00');
+      });
+      expect(active(column(early, 'hour'))).toBe('15');
+      expect(active(column(early, 'minute'))).toBe('00');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads now to the second where the step counts seconds', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 40));
+    try {
+      const f = await render((h) => {
+        h.value.set(null);
+        h.step.set(30);
+      });
+      expect(active(column(f, 'second'))).toBe('30');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('starts a walk from now when there is no value, and the first move writes one', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 0));
+    try {
+      const f = await render((h) => h.value.set(null));
+      await press(f, column(f, 'minute'), 'ArrowDown');
+      expect(f.componentInstance.value()).toBe('14:23');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('walks a value off the step from where the step stands nearest', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:05');
+    });
+    // 13:05 is no quarter, so no minute row is the value's — and the walk starts at 13:00.
+    expect(chosen(column(f, 'minute'))).toEqual([]);
+    expect(active(column(f, 'minute'))).toBe('00');
+    await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:15');
+  });
+
+  it('writes seconds into the value where the step has them', async () => {
+    const f = await render((h) => {
+      h.step.set(30);
+      h.value.set('13:05');
+    });
+    expect(chosen(column(f, 'second'))).toEqual(['00']);
+    await press(f, column(f, 'second'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:05:30');
+    await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:06:30');
+  });
+});
+
+describe('PctTimeColumns — the bounds', () => {
+  it('disables the rows no time inside the bounds has, and keeps drawing them', async () => {
+    const f = await render((h) => {
+      h.min.set('09:30');
+      h.max.set('17:00');
+      h.value.set('09:45');
+    });
+    expect(labels(column(f, 'hour'))).toHaveLength(24);
+    expect(enabled(column(f, 'hour'))).toEqual([
+      '09',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+      '17',
+    ]);
+    // The minutes follow the hour the value stands in: nothing before half past nine.
+    expect(enabled(column(f, 'minute'))[0]).toBe('30');
+    expect(enabled(column(f, 'minute'))).toHaveLength(30);
+    const refused = rowsOf(column(f, 'hour'))[8];
+    expect(refused.getAttribute('aria-disabled')).toBe('true');
+    expect(refused.hasAttribute('data-pct-disabled')).toBe(true);
+  });
+
+  it('skips a refused row, and comes round past the refused ones at the end', async () => {
+    const f = await render((h) => {
+      h.min.set('09:00');
+      h.max.set('17:00');
+      h.value.set('17:00');
+    });
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('09:00');
+    await press(f, column(f, 'hour'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('17:00');
+  });
+
+  it('takes the other columns to meet a bound the moved one runs into', async () => {
+    const f = await render((h) => {
+      h.min.set('09:30');
+      h.value.set('10:15');
+    });
+    await press(f, column(f, 'hour'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('09:30');
+  });
+
+  it('lands on the step under a max that is not on it', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.max.set('17:50');
+      h.value.set('16:50');
+    });
+    // 16:50 is off the step: the walk starts at 16:45. A step up the hour aims at 17:45.
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('17:45');
+  });
+
+  it('reads min later than max as the night between them', async () => {
+    const f = await render((h) => {
+      h.min.set('22:00');
+      h.max.set('06:00');
+      h.value.set('23:00');
+    });
+    expect(enabled(column(f, 'hour'))).toEqual([
+      '00',
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+      '06',
+      '22',
+      '23',
+    ]);
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('00:00');
+    f.componentInstance.value.set('06:00');
+    await settle(f);
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('22:00');
+  });
+
+  it('refuses the half of the day the bounds leave nothing in', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.min.set('13:00');
+      h.max.set('18:00');
+      h.value.set('14:00');
+    });
+    expect(enabled(column(f, 'dayPeriod'))).toEqual(['PM']);
+    await press(f, column(f, 'dayPeriod'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('14:00');
+  });
+
+  it('marks no row of an hour a refused value is not in', async () => {
+    const f = await render((h) => {
+      h.max.set('17:00');
+      h.value.set('18:30');
+    });
+    // The walk starts at 17:00; the value is 18:30, so no minute of 17 is the value's.
+    expect(active(column(f, 'hour'))).toBe('17');
+    expect(chosen(column(f, 'hour'))).toEqual(['18']);
+    expect(chosen(column(f, 'minute'))).toEqual([]);
+  });
+});
+
+describe('PctTimeColumns — taking a time', () => {
+  it('takes the time with Enter and Space, and says it was picked', async () => {
+    const f = await render();
+    const enter = await press(f, column(f, 'minute'), 'Enter');
+    expect(enter.defaultPrevented).toBe(true);
+    expect(f.componentInstance.picked).toEqual(['13:05']);
+    await press(f, column(f, 'minute'), ' ');
+    expect(f.componentInstance.picked).toEqual(['13:05', '13:05']);
+  });
+
+  it('takes the time the walk stands on, in the field’s shape, when there is no value', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 0));
+    try {
+      const f = await render((h) => {
+        h.value.set(null);
+        h.step.set(30);
+      });
+      await press(f, column(f, 'hour'), 'Enter');
+      expect(f.componentInstance.value()).toBe('14:22:00');
+      expect(f.componentInstance.picked).toEqual(['14:22:00']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('moves the value on a press, and does not say it was picked', async () => {
+    const f = await render();
+    rowsOf(column(f, 'minute'))[30].click();
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:30');
+    expect(f.componentInstance.picked).toEqual([]);
+  });
+
+  it('ignores a press on a refused row', async () => {
+    const f = await render((h) => h.max.set('15:00'));
+    rowsOf(column(f, 'hour'))[16].click();
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('freezes when disabled: no walk, no press, no pick — and says so', async () => {
+    const f = await render((h) => h.disabled.set(true));
+    const host = f.nativeElement.querySelector(
+      'pct-time-columns',
+    ) as HTMLElement;
+    expect(host.hasAttribute('data-pct-disabled')).toBe(true);
+    for (const list of columnsOf(f))
+      expect(list.getAttribute('aria-disabled')).toBe('true');
+    const down = await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(down.defaultPrevented).toBe(false);
+    await press(f, column(f, 'minute'), 'Enter');
+    rowsOf(column(f, 'minute'))[30].click();
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:05');
+    expect(f.componentInstance.picked).toEqual([]);
+  });
+});
+
+describe('PctTimeColumns — focus', () => {
+  it('hands the focus to the hour column, wherever the language puts it', async () => {
+    const f = TestBed.createComponent(PctTimeColumns);
+    f.componentRef.setInput('locale', 'ko-KR');
+    document.body.append(f.nativeElement);
+    f.detectChanges();
+    await f.whenStable();
+    f.componentInstance.focusCursor();
+    expect(document.activeElement?.getAttribute('data-pct-field')).toBe('hour');
+    f.nativeElement.remove();
+  });
+});

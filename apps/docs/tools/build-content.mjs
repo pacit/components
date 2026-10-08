@@ -115,6 +115,7 @@ const CARD_ORDER = [
   'textarea',
   'number',
   'date',
+  'time',
   // Choices
   'select',
   'checkbox',
@@ -123,6 +124,7 @@ const CARD_ORDER = [
   'chips',
   'slider',
   'calendar',
+  'columns',
   // Overlays
   'dialog',
   'drawer',
@@ -1178,6 +1180,7 @@ const baselineFiles = existsSync(join(E2E_DIR, '__screenshots__/linux'))
 // A card whose cases live in a shared spec names it here; a card with neither shows none.
 const SPEC_ALIAS = {
   calendar: 'date',
+  columns: 'time',
   text: 'field',
   container: 'layout',
   stack: 'layout',

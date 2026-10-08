@@ -1,0 +1,268 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-time__label {
+  color: var(--pct-time-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-time__required {
+  color: var(--pct-time-fg-invalid);
+  margin-inline-start: 2px;
+}
+
+/* The row the field and its button stand in. It carries the border standalone and hands it
+   to the chrome inside a field — the same split the select makes, and for the same reason:
+   two borders around one control is what a wrapper costs when nobody hands anything over
+   (req-api-wrapper). */
+.pct-time__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+  box-sizing: border-box;
+  inline-size: 100%;
+  background: var(--pct-time-bg);
+  color: var(--pct-time-fg);
+  border: 1px solid var(--pct-time-border);
+  border-radius: var(--pct-time-radius);
+  padding: var(--pct-time-padding-y) var(--pct-time-padding-x);
+  font-size: var(--pct-time-font-size);
+  transition: border-color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+.pct-time__row:hover:not(:has(.pct-time__control:disabled)) {
+  border-color: var(--pct-time-border-hover);
+}
+
+/* The ring goes on the ROW and not on the input, because the button is inside the same
+   border: a ring around the input alone would draw a box through the middle of the control.
+   `:focus-within` is what makes one border answer for two elements. */
+.pct-time__row:focus-within {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--pct-time-border-focus);
+}
+
+/* The warning tone on the row's border (0087), before `invalid` so that an error outranks a
+   warning on the one field that carries both. */
+:host([data-pct-warning]) .pct-time__row {
+  border-color: var(--pct-time-border-warning);
+}
+
+:host([data-pct-invalid]) .pct-time__row,
+:host([data-pct-malformed]) .pct-time__row {
+  border-color: var(--pct-time-border-invalid);
+}
+
+:host([data-pct-disabled]) .pct-time__row {
+  background: var(--pct-time-bg-disabled);
+  color: var(--pct-time-fg-disabled);
+  border-color: var(--pct-time-border-disabled);
+}
+
+.pct-time__control {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+.pct-time__control:focus {
+  /* The row draws the ring for the whole control. */
+  outline: none;
+}
+
+.pct-time__control:disabled {
+  color: var(--pct-time-fg-disabled);
+  cursor: not-allowed;
+}
+
+.pct-time__control::placeholder {
+  color: var(--pct-time-placeholder-fg);
+}
+
+.pct-time__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* The button is the one thing in this row a finger aims at, so the touch floor is a floor
+     on the DRAWING and not a zone laid over it — the switch's reading of SC 2.5.8, met
+     again. */
+  inline-size: max(var(--pct-time-toggle-size), var(--pct-time-target-min));
+  block-size: max(var(--pct-time-toggle-size), var(--pct-time-target-min));
+  padding: 0;
+  border: none;
+  border-radius: var(--pct-time-toggle-radius);
+  background: none;
+  color: var(--pct-time-toggle-fg);
+  cursor: pointer;
+}
+
+.pct-time__toggle:hover:not(:disabled) {
+  background: var(--pct-time-toggle-bg-hover);
+}
+
+.pct-time__toggle:disabled {
+  color: var(--pct-time-fg-disabled);
+  cursor: not-allowed;
+}
+
+.pct-time__toggle:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+.pct-time__toggle pct-icon {
+  inline-size: var(--pct-time-icon-size);
+  block-size: var(--pct-time-icon-size);
+}
+
+/* Inside the chrome `pct-field` draws the border, the background and the padding — the row
+   hands them over. */
+:host([data-pct-in-field]) {
+  display: contents;
+}
+
+:host([data-pct-in-field]) .pct-time__row {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  align-self: stretch;
+  /* Inside the chrome the size belongs to it (`pct-field[size]`) — the row takes the text
+     size from the field instead of keeping a token of its own. */
+  font-size: inherit;
+}
+
+:host([data-pct-in-field]) .pct-time__row:focus-within {
+  /* The chrome draws the ring around the whole row. */
+  outline: none;
+}
+
+.pct-time__panel {
+  box-sizing: border-box;
+  background: var(--pct-time-panel-bg);
+  border: 1px solid var(--pct-time-panel-border);
+  border-radius: var(--pct-time-panel-radius);
+  box-shadow: var(--pct-time-panel-shadow);
+  padding: var(--pct-time-panel-padding-y) var(--pct-time-panel-padding-x);
+}
+
+.pct-time__panel:focus {
+  outline: none;
+}
+
+.pct-time__hint {
+  color: var(--pct-time-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-time__error {
+  color: var(--pct-time-fg-invalid);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* The warning line (0087): the tone's colour and its glyph before the text — the same third
+   branch the chrome draws, and the glyph is the channel that survives the palette's absence
+   (`req-a11y-forced-colors`). An inline flex, so the glyph sits on the first line of a
+   sentence that may wrap; the icon takes the text's own size, `pct-icon` being `1em`. */
+.pct-time__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-time-fg-warning);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-time__warning-icon {
+  align-self: center;
+}
+
+/* The word a reader hears before the warning, kept in the accessibility tree by a clipped
+   1px box — `display: none` would take it out of the tree. */
+.pct-time__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Sizes: the row's padding and type, and the button with them (req-api-size). */
+:host([data-pct-size='sm']) .pct-time__row {
+  padding: var(--pct-time-padding-y-sm) var(--pct-time-padding-x-sm);
+  font-size: var(--pct-time-font-size-sm);
+}
+
+:host([data-pct-size='lg']) .pct-time__row {
+  padding: var(--pct-time-padding-y-lg) var(--pct-time-padding-x-lg);
+  font-size: var(--pct-time-font-size-lg);
+}
+
+/* Forced-colors mode — the mapping is written down in `field.scss`. Every base rule with a
+   colour is repeated at its own specificity: `@media` adds none (lesson-70). */
+@media (forced-colors: active) {
+  /* Every selector the base sheet paints this box with is repeated here, at its own
+     specificity: the hover rule, the focus rule and the in-field rule each beat a bare
+     `.pct-time__row` inside a media block, because `@media` adds none of its own
+     (`lesson-70`). Written the short way, the mode looked handled in chromium and firefox —
+     which substitute the palette anyway — and painted nothing in webkit, which does not
+     (`lesson-119`). */
+  .pct-time__row,
+  .pct-time__row:hover:not(:has(.pct-time__control:disabled)),
+  .pct-time__row:focus-within,
+  :host([data-pct-warning]) .pct-time__row,
+  :host([data-pct-in-field]) .pct-time__row {
+    background: Field;
+    color: FieldText;
+    border-color: FieldText;
+  }
+
+  /* Inside the chrome the row hands its border over, so it has none to repaint — the field
+     draws it — and the declaration above must not put one back. */
+  :host([data-pct-in-field]) .pct-time__row {
+    background: none;
+    border-color: transparent;
+  }
+
+  .pct-time__row:focus-within,
+  :host([data-pct-in-field]) .pct-time__row:focus-within {
+    outline-color: Highlight;
+  }
+
+  :host([data-pct-invalid]) .pct-time__row,
+  :host([data-pct-malformed]) .pct-time__row {
+    /* The invalid state is a COLOUR in the palette and colour is what this mode takes away,
+       so the edge is drawn twice as thick instead — a shape the substitution keeps
+       (req-a11y-forced-colors, lesson-40). */
+    border-color: FieldText;
+    border-width: 2px;
+  }
+
+  :host([data-pct-disabled]) .pct-time__row {
+    background: Field;
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  .pct-time__control:disabled,
+  .pct-time__toggle:disabled {
+    color: GrayText;
+  }
+
+  .pct-time__panel {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}

@@ -284,6 +284,25 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
         },
       },
     ],
+    PctTime: [
+      /**
+       * An open panel of columns, and the field it belongs to: a dialog holding one named
+       * listbox per field, each pointing at its row with `aria-activedescendant` — the reading
+       * 0086's E1 measured clean on a page of its own, asked again of the panel as built, with
+       * the relation across trees (the toggle's `aria-controls`) in the same audit.
+       */
+      {
+        title: 'an open panel of time columns and the field it belongs to',
+        route: '/time',
+        open: async (page) => {
+          await page
+            .getByTestId('time-standalone')
+            .locator('[data-pct-part="toggle"]')
+            .click();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+      },
+    ],
     PctDialog: [
       /**
        * An open modal is the one state the walk over the routes cannot reach: every dialog

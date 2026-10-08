@@ -161,7 +161,7 @@
     {
       "id": "1.3.5",
       "conformance": "Supports",
-      "remarks": "The text and date fields are the native `<input>` the consumer writes, so an `autocomplete` purpose written on the tag stays on the element. The number field writes `autocomplete=\"off\"` by default — a browser's formatted string is a value its parser refuses — and takes an `autocomplete` input typed as the platform's own `AutoFill`, so the three numeric purposes on the criterion's list (`bday-day`, `bday-month`, `bday-year`) can be declared on it.",
+      "remarks": "The text and date fields are the native `<input>` the consumer writes, so an `autocomplete` purpose written on the tag stays on the element. The number field writes `autocomplete=\"off\"` by default — a browser's formatted string is a value its parser refuses — and takes an `autocomplete` input typed as the platform's own `AutoFill`, so the three numeric purposes on the criterion's list (`bday-day`, `bday-month`, `bday-year`) can be declared on it. The time field writes `autocomplete=\"off\"` on the input inside it: what a browser remembers is a string its parser would have to guess at, and a time of day is no purpose on the criterion's list.",
       "evidence": [
         {
           "spec": "libs/components/field/src/number.spec.ts",
@@ -173,6 +173,12 @@
         {
           "source": "libs/components/field/src/number.ts",
           "says": "readonly autocomplete = input<AutoFill>('off');"
+        },
+        {
+          "spec": "libs/components/time/src/time-field.spec.ts",
+          "titles": [
+            "is a plain textbox for a numeric keypad, with nothing the browser fills in"
+          ]
         }
       ]
     },
@@ -330,7 +336,7 @@
     {
       "id": "2.1.2",
       "conformance": "Supports",
-      "remarks": "The modal dialog is the one deliberate trap, and Escape leaves it; a menu, a popover, a tooltip, the date panel and the select close on Escape and hand focus back to their trigger.",
+      "remarks": "The modal dialog is the one deliberate trap, and Escape leaves it; a menu, a popover, a tooltip, the date panel, the time panel and the select close on Escape and hand focus back to their trigger.",
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/dialog.spec.ts",
@@ -346,6 +352,13 @@
         {
           "spec": "apps/sandbox-e2e/src/popover.spec.ts",
           "titles": ["Escape closes it and gives focus back to the trigger"]
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/time.spec.ts",
+          "titles": [
+            "Escape closes it and hands focus back to the field",
+            "Tab walks the columns, one stop each, and then comes back to the field"
+          ]
         }
       ]
     },
@@ -844,7 +857,7 @@
     {
       "id": "4.1.3",
       "conformance": "Supports",
-      "remarks": "A status is announced from where it happens: the toast stack is a `role=\"log\"` and an urgent message a `role=\"alert\"`, the field's error an alert and its warning a polite `status` — a value allowed and suspect waits its turn where an error interrupts — the select's empty panel a polite announcement, a refused day is said out loud — each measured. The announcer's assertive channel has no caller yet (4.15 in the plan), so nothing rides it.",
+      "remarks": "A status is announced from where it happens: the toast stack is a `role=\"log\"` and an urgent message a `role=\"alert\"`, the field's error an alert and its warning a polite `status` — a value allowed and suspect waits its turn where an error interrupts — the select's empty panel a polite announcement, a refused day is said out loud, and so is text in the time field that is not a time — each measured. The announcer's assertive channel has no caller yet (4.15 in the plan), so nothing rides it.",
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/toast.spec.ts",
@@ -857,6 +870,12 @@
         {
           "spec": "apps/sandbox-e2e/src/date.spec.ts",
           "titles": ["a refused day is reached, announced and not takeable"]
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/time.spec.ts",
+          "titles": [
+            "keeps junk in the field and reports it, where a native time input loses it"
+          ]
         },
         {
           "spec": "apps/sandbox-e2e/src/field.spec.ts",

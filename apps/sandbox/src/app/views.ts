@@ -78,6 +78,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/date/date-view').then((m) => m.DateView),
   },
   {
+    path: 'time',
+    title: 'Time',
+    summary:
+      'A wall-clock time — the text a locale writes, and the columns beside it.',
+    group: 'components',
+    load: () => import('./views/time/time-view').then((m) => m.TimeView),
+  },
+  {
     path: 'checkbox',
     title: 'Checkbox',
     summary: 'The checked state, the indeterminate one and the touch area.',

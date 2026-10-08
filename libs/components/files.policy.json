@@ -21,6 +21,16 @@
       "file": "libs/components/testing/src/property.testkit.ts",
       "type": "PctArbitrary",
       "reason": "What a property sweep draws from. `testing/src/index.ts` publishes none of the testkit on purpose: what `@pacit/components/testing` offers a consumer is the harnesses and the DOM helpers, while `property.testkit.ts` is this repository's own instrument, imported by four specs over a relative path and never through the package. Publishing the interface publishes the sweep around it — `pctForAll`, the shrink, the seed — and turns a thing we change whenever a law needs a new generator into somebody else's contract. The entry retires if the testkit is ever published, and nothing has decided that it will be."
+    },
+    {
+      "file": "libs/components/time/src/lattice.ts",
+      "type": "PctLattice",
+      "reason": "The step, its base, the value's shape and the bounds of one time field, as the arithmetic the field and its columns share so that the text the field writes and the rows the panel lists cannot disagree about which times exist (0086 §5). No public signature carries it: `PctTime` and `PctTimeColumns` take `step`, `min` and `max` as inputs and build the lattice inside, and a consumer who wants the same answers has `isPctTimeStep`, `pctTimeOnStep` and `pctClampTime`, which are published. Publishing it would turn a representation the columns will change with the datetime field into a contract. The entry retires if a public API ever takes or returns one."
+    },
+    {
+      "file": "libs/components/time/src/lattice.ts",
+      "type": "PctSpan",
+      "reason": "An interval of seconds since midnight, both ends included — the bounds of a lattice cut into one piece, or two for a window across midnight. It is a field type of `PctLattice` and nothing else, so it is internal for the same reason and retires with it."
     }
   ]
 }

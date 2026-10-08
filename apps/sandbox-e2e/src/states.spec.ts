@@ -17,6 +17,7 @@ const CONTROLS = [
   'switch',
   'slider',
   'date',
+  'time',
 ] as const;
 
 /**
@@ -29,9 +30,9 @@ function focusTarget(card: Locator, state: string, control: string): Locator {
   const host = card.getByTestId(`${state}-${control}`);
   if (control === 'text' || control === 'number') return host;
   if (control === 'select') return host.locator('[data-pct-part="trigger"]');
-  // The date field is a text control the library formats itself, so the element that takes
-  // focus is the `<input>` inside — and it is the FIRST one, the calendar button standing
-  // beside it in the same row.
+  // The date and time fields are text controls the library formats itself, so the element that
+  // takes focus is the `<input>` inside — and it is the FIRST one, the button that opens the
+  // calendar or the columns standing beside it in the same row.
   return host.locator('input').first();
 }
 
@@ -127,8 +128,9 @@ test.describe('States — a cross-section through every control', () => {
     const card = page.getByTestId('states-required');
     const labels = card.locator('[data-pct-part="field-label"]');
 
-    await expect(labels).toHaveCount(4);
-    for (let i = 0; i < 4; i++) {
+    // Text, list, date, time and the consent box — five controls that say they are required.
+    await expect(labels).toHaveCount(5);
+    for (let i = 0; i < 5; i++) {
       await expect(labels.nth(i)).toContainText('*');
     }
   });

@@ -1,0 +1,50 @@
+<!--
+  One listbox per field, in the order the language writes the fields. Each is ONE tab stop and
+  holds the focus itself: the row the walk stands on is pointed at by `aria-activedescendant`
+  (0032 — a listbox points at its option), and the rows are not focusable. 0086's E1 and E2
+  say axe passes both readings; E3 to E5 say what does not — a column of plain buttons, the
+  selected state on a button inside the option, and a column with no name.
+
+  The list is also the element that SCROLLS, and it is focusable, so axe's
+  `scrollable-region-focusable` has nothing to say about it.
+-->
+@for (column of columns(); track column.field) {
+<div
+  #column
+  class="pct-time-columns__column"
+  data-pct-part="column"
+  role="listbox"
+  tabindex="0"
+  [id]="columnId(column.field)"
+  [attr.data-pct-field]="column.field"
+  [attr.aria-label]="column.name"
+  [attr.aria-activedescendant]="activeId(column)"
+  [attr.aria-disabled]="disabled() ? 'true' : null"
+  (keydown)="onKeydown(column, $event)"
+>
+  @for (row of column.rows; track row.value) {
+  <!--
+    The ARIA listbox pattern: the keyboard lives on the column, so a row has no key handling of
+    its own and is never a tab stop — both template rules below are the pattern's false
+    positives. The STATE attribute is `data-pct-chosen` and not `data-pct-selected` for the
+    calendar's reason: `pct-selected` contains `pct-select`, the marker `check-bundle` reads the
+    select's presence in a bundle by.
+  -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+  <div
+    class="pct-time-columns__option"
+    data-pct-part="option"
+    role="option"
+    [id]="rowId(column.field, row)"
+    [attr.aria-selected]="row.chosen ? 'true' : 'false'"
+    [attr.aria-disabled]="row.disabled ? 'true' : null"
+    [attr.data-pct-chosen]="row.chosen ? '' : null"
+    [attr.data-pct-active]="$index === column.active ? '' : null"
+    [attr.data-pct-disabled]="row.disabled ? '' : null"
+    (click)="pick(column, row)"
+  >
+    {{ row.label }}
+  </div>
+  }
+</div>
+}

@@ -15,7 +15,7 @@ const glyph = (source: PctIconSource, id: string) =>
 
 /**
  * The font adapters: what classes an id becomes, what the span reads, which axes it carries
- * — and the library's ten roles in each font's own spelling, the whole map, because a map
+ * — and the library's eleven roles in each font's own spelling, the whole map, because a map
  * is read by a component the consumer never looks at and a wrong entry there is a wrong
  * arrow on every select (`req-api-icons`).
  */
@@ -24,6 +24,7 @@ describe('@pacit/components/icon — fonts', () => {
     'calendar',
     'check',
     'chevron-down',
+    'clock',
     'close',
     'danger',
     'indeterminate',
@@ -104,11 +105,12 @@ describe('@pacit/components/icon — fonts', () => {
       ).toEqual({ kind: 'font', class: 'far fa-x' });
     });
 
-    it("carries the library's ten roles in version 6's names", () => {
+    it("carries the library's eleven roles in version 6's names", () => {
       expect(fontAwesome().roles).toEqual({
         calendar: 'calendar',
         check: 'check',
         'chevron-down': 'chevron-down',
+        clock: 'clock',
         close: 'xmark',
         danger: 'circle-exclamation',
         indeterminate: 'minus',
@@ -162,11 +164,12 @@ describe('@pacit/components/icon — fonts', () => {
       });
     });
 
-    it("carries the library's ten roles in PrimeIcons' names", () => {
+    it("carries the library's eleven roles in PrimeIcons' names", () => {
       expect(primeIcons().roles).toEqual({
         calendar: 'calendar',
         check: 'check',
         'chevron-down': 'chevron-down',
+        clock: 'clock',
         close: 'times',
         danger: 'exclamation-circle',
         indeterminate: 'minus',
@@ -189,11 +192,12 @@ describe('@pacit/components/icon — fonts', () => {
       });
     });
 
-    it("carries the library's ten roles in Bootstrap Icons' names", () => {
+    it("carries the library's eleven roles in Bootstrap Icons' names", () => {
       expect(bootstrapIcons().roles).toEqual({
         calendar: 'calendar',
         check: 'check-lg',
         'chevron-down': 'chevron-down',
+        clock: 'clock',
         close: 'x-lg',
         danger: 'exclamation-circle-fill',
         indeterminate: 'dash-lg',
@@ -230,11 +234,12 @@ describe('@pacit/components/icon — fonts', () => {
       );
     });
 
-    it("carries the library's ten roles in Material's names", () => {
+    it("carries the library's eleven roles in Material's names", () => {
       expect(materialIcons().roles).toEqual({
         calendar: 'calendar_today',
         check: 'check',
         'chevron-down': 'expand_more',
+        clock: 'schedule',
         close: 'close',
         danger: 'error',
         indeterminate: 'remove',
@@ -282,7 +287,7 @@ describe('@pacit/components/icon — fonts', () => {
       );
     });
 
-    it('carries the same ten roles as the Icons font', () => {
+    it('carries the same eleven roles as the Icons font', () => {
       expect(materialSymbols().roles).toEqual(materialIcons().roles);
       expect(materialSymbols({ roles: { close: 'cancel' } }).roles?.close).toBe(
         'cancel',

@@ -155,12 +155,15 @@ libs/components/testing/src/dom.ts 100.00 26(0) 0 0 0 0
 libs/components/testing/src/harness.ts 90.70 39(0) 3 0 1 0
 libs/components/testing/src/harnesses.ts 100.00 53(0) 0 0 0 0
 libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
+libs/components/time/src/lattice.ts 98.85 86(0) 1 0 0 0
 libs/components/time/src/locale.ts 100.00 277(0) 0 0 0 0
+libs/components/time/src/time-columns.ts 77.34 297(0) 84 0 3 4
+libs/components/time/src/time-field.ts 79.30 180(0) 47 0 0 9
 libs/components/time/src/time.ts 100.00 230(0) 0 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.34 5814/6734
+TOTAL 85.80 6377/7432
 ```

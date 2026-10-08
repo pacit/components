@@ -1,0 +1,191 @@
+<h2 class="view__title">Time</h2>
+<p class="muted view__intro">
+  A wall-clock time — <code>HH:mm</code>, not a <code>Date</code>. The field is
+  a text control the library formats and parses per locale, because
+  <code>&lt;input type="time"&gt;</code> draws its clock in a language each of
+  the three engines takes from a different place.
+</p>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="The label, the hint and the message line are drawn by pct-field, and the value is a signal form's; the panel lines up with the field's border rather than with the input."
+  [reqs]="['req-api-frame', 'req-api-no-wrapper', 'req-api-signal-forms']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Starts at"
+      hint="Type it, or pick it from the columns"
+      data-testid="field-starts-at"
+    >
+      <pct-time
+        [formField]="meetingForm.startsAt"
+        data-testid="time-starts-at"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws its own label. The empty field shows the FORMAT — the order, the separators and the day-period words come from Intl, the letters from the texts channel."
+  [reqs]="['req-api-no-wrapper', 'req-a11y-touch', 'req-api-texts']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-time
+      label="Time"
+      hint="The sandbox runs under fr-FR, so the clock counts to 24"
+      [(value)]="time"
+      data-testid="time-standalone"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The clock is the language's"
+  summary="Twelve hours or twenty-four, the words of the day period and where they stand all come from Intl for the field's locale — never from an input. The period column of the panel stands where the language writes it: before the hour in Korean."
+  [reqs]="['req-api-time', 'req-api-texts']"
+  data-testid="demo-locale"
+>
+  <div class="time-view__row">
+    <pct-time
+      label="American English"
+      locale="en-US"
+      [(value)]="american"
+      data-testid="time-en"
+    />
+    <pct-time
+      label="Polish"
+      locale="pl-PL"
+      [(value)]="polish"
+      data-testid="time-pl"
+    />
+    <pct-time
+      label="Korean"
+      locale="ko-KR"
+      [(value)]="korean"
+      data-testid="time-ko"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The step, and seconds"
+  summary="The step is in seconds, as the native attribute's: 900 lists the quarters, and a step under a minute adds a column of seconds and puts them in the value. Neither rewrites what was typed."
+  [reqs]="['req-api-time', 'req-api-signal-forms']"
+  data-testid="demo-step"
+>
+  <div class="time-view__row">
+    <pct-time
+      label="Quarter hours"
+      step="900"
+      [(value)]="quarter"
+      data-testid="time-quarter"
+    />
+    <pct-time
+      label="To the second"
+      step="1"
+      [(value)]="precise"
+      data-testid="time-seconds"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bounds"
+  summary="min and max disable the rows of the panel no time between them has; min later than max is a window across midnight. Neither rewrites a time typed in full — that is the form's to report."
+  [reqs]="['req-api-time', 'req-a11y-built-in']"
+  data-testid="demo-bounds"
+>
+  <div class="time-view__row">
+    <pct-time
+      label="Office hours, by the quarter"
+      min="09:00"
+      max="17:00"
+      step="900"
+      [(value)]="office"
+      data-testid="time-bounded"
+    />
+    <pct-time
+      label="The night shift"
+      min="22:00"
+      max="06:00"
+      step="1800"
+      [(value)]="night"
+      data-testid="time-night"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="States"
+  summary="Disabled leaves the tab order and the button with it; read-only keeps the field focusable and the button shut; invalid shows once touched."
+  [reqs]="['req-api-signal-forms', 'req-api-message']"
+  data-testid="demo-states"
+>
+  <div class="time-view__row">
+    <pct-time
+      label="Disabled"
+      value="13:05"
+      disabled
+      data-testid="time-disabled"
+    />
+    <pct-time
+      label="Read-only"
+      value="13:05"
+      readonly
+      data-testid="time-readonly"
+    />
+    <pct-time
+      label="Invalid"
+      value="18:30"
+      [invalid]="true"
+      [touched]="true"
+      [errors]="errors"
+      data-testid="time-invalid"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Every language the decision measured"
+  summary="One field, the locale picked from the thirty-eight 0086 read the hour cycle over. The field writes only what it reads back, in the engine's own Intl — the end-to-end suite types a time in every one of them and reads it back."
+  [reqs]="['req-api-time', 'req-api-number']"
+  data-testid="demo-sweep"
+>
+  <div class="time-view__row">
+    <label class="time-view__locale">
+      Locale
+      <select data-testid="time-sweep-locale" (change)="pickLocale($event)">
+        @for (tag of sweepLocales; track tag) {
+        <option [value]="tag" [selected]="tag === sweepLocale()">
+          {{ tag }}
+        </option>
+        }
+      </select>
+    </label>
+    <pct-time
+      label="In that language"
+      step="1"
+      [locale]="sweepLocale()"
+      [(value)]="sweep"
+      data-testid="time-sweep"
+    />
+    <output data-testid="time-sweep-value">{{ sweep() ?? 'empty' }}</output>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The columns on their own"
+  summary="One listbox per field, each one tab stop pointing at its active row — a component of their own, because the datetime field's panel is a calendar and these columns side by side."
+  [reqs]="['req-a11y-built-in', 'req-api-parts']"
+  data-testid="demo-inline"
+>
+  <pct-time-columns
+    [(value)]="inline"
+    locale="en-US"
+    ariaLabel="Meeting time"
+    data-testid="time-columns-inline"
+  />
+</sbx-demo>

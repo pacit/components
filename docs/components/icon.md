@@ -54,7 +54,7 @@ document, and a drawing from anybody's data is as safe as one from nobody's.
 **Sources, and where each lives.** `@pacit/components/icon` carries the box, the set component
 of 0028 and the font adapters — `fontAwesome()`, `primeIcons()`, `bootstrapIcons()`,
 `materialIcons()`, `materialSymbols()`, and `iconFont()` for any other — each a pure function
-with the library's ten roles in that font's spelling, and `roles` to say which it dresses: a
+with the library's eleven roles in that font's spelling, and `roles` to say which it dresses: a
 map of corrections for a version that spells one differently, or a list of the roles to dress
 and nothing else — `['chevron-down']` for the select's arrow alone, `[]` for a font that draws
 the application's ids and leaves every component as it ships. `@pacit/components/svg-icon` carries the renderer and `svgIcons()` (a lucide or
