@@ -17,7 +17,8 @@ import type { Reporter, Vitest } from 'vitest/node';
  * versions agree.
  *
  * It reads `vitest.state` because that is what the runner reads once `start()` returns, and
- * adds a test only where no test of the file failed — one failed test is all a verdict needs.
+ * adds a test only where the runner reads no failure in the file — one is all a verdict needs,
+ * and a second would name this test in `killedBy` beside the one that failed.
  * The test carries the errors of the file and of every failed suite in it, because a suite's
  * hook leaves its error on the suite. It is shaped as a top-level test is (no `suite`, the next
  * `<file id>_<index>`), so the runner names it `<spec>#the file failed outside its tests` in
@@ -55,12 +56,29 @@ export class FailedFileFails implements Reporter {
   }
 }
 
-function failedIn(tasks: readonly RunnerTask[]): boolean {
-  return tasks.some((task) =>
-    task.type === 'suite'
-      ? failedIn(task.tasks)
-      : task.type === 'test' && task.result?.state === 'fail',
-  );
+/**
+ * Whether the runner already reads a failure in these tasks, as its `convertTestToTestResult`
+ * does: a test with a result that is not a pass, or one skipped — by its mode or its state —
+ * under a suite that failed, which it reads as failed with the suite's error. A test with no
+ * result it drops, so that is no failure.
+ */
+function failedIn(
+  tasks: readonly RunnerTask[],
+  underFailedSuite = false,
+): boolean {
+  return tasks.some((task) => {
+    if (task.type === 'suite')
+      return failedIn(
+        task.tasks,
+        underFailedSuite || task.result?.state === 'fail',
+      );
+    if (task.type !== 'test' || !task.result) return false;
+    const skipped =
+      task.mode === 'skip' ||
+      task.result.state === 'skip' ||
+      task.result.state === 'todo';
+    return skipped ? underFailedSuite : task.result.state !== 'pass';
+  });
 }
 
 function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {

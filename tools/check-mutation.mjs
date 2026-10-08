@@ -516,13 +516,15 @@ const survivorsWithoutATest = (files) => {
 };
 
 /**
- * Five spec files as Vitest leaves them after a run — every task pointing at its file, a test in
+ * Six spec files as Vitest leaves them after a run — every task pointing at its file, a test in
  * a `describe` at its suite — each beside the failures the runner has to read off it once the
  * reporters are done, as `<spec>: <reason>`: the spec `killedBy` names and the reason Stryker
  * records. A file Vitest failed outside its tests holds no failed test of its own: an import that
- * threw (no tasks, the error on the file), a hook of the file (tests passed, the error on the
- * file), a hook of a suite (tests passed, the error on the suite). The other two are the
- * controls: a test that failed is read as it is, and a file that passed has none.
+ * threw (no tasks, the error on the file), a hook of the file (tests passed, one with no result
+ * as a bail leaves it, the error on the file), a hook of a suite two levels down (tests passed,
+ * the error on the inner suite). The other three are read as they are: a test that failed, a
+ * suite whose setup threw (its test skipped, which the runner reads as failed with the suite's
+ * error), and a file that passed, with none.
  */
 const failedFileShapes = () => {
   const result = (state, message) => ({
@@ -532,8 +534,8 @@ const failedFileShapes = () => {
   const test = (state, message) => ({
     type: 'test',
     name: state === 'fail' ? 'fails' : 'passes',
-    mode: 'run',
-    result: result(state, message),
+    mode: state === 'skip' ? 'skip' : 'run',
+    ...(state ? { result: result(state, message) } : {}),
   });
   const suite = (state, tasks, message) => ({
     type: 'suite',
@@ -575,14 +577,14 @@ const failedFileShapes = () => {
         'file-hook.spec.ts',
         'a file hook that threw',
         'fail',
-        [test('pass')],
+        [test('pass'), test()],
         'file hook threw',
       ),
       ['file-hook.spec.ts: file hook threw'],
     ],
     [
       file('suite-hook.spec.ts', 'a suite hook that threw', 'fail', [
-        suite('fail', [test('pass')], 'suite hook threw'),
+        suite('fail', [suite('fail', [test('pass')], 'suite hook threw')]),
       ]),
       ['suite-hook.spec.ts: suite hook threw'],
     ],
@@ -591,6 +593,12 @@ const failedFileShapes = () => {
         suite('fail', [test('fail', 'assertion failed')]),
       ]),
       ['failed-test.spec.ts: assertion failed'],
+    ],
+    [
+      file('suite-setup.spec.ts', 'a suite setup that threw', 'fail', [
+        suite('fail', [test('skip')], 'suite setup threw'),
+      ]),
+      ['suite-setup.spec.ts: suite setup threw'],
     ],
     [file('passed.spec.ts', 'a file that passed', 'pass', [test('pass')]), []],
   ];
@@ -834,9 +842,11 @@ const writeSnapshot = (input) => {
  *   `snapshot`  — the contents of `mutation.snapshot.md`, or `null`,
  *   `config`    — the contents of `stryker.config.json`,
  *   `targets`   — `{ mutation: { command }, check: { command } }` from the Nx graph,
- *   `ci`        — `{ targets: [...] }` from the workflow.
- * Throws `MutationError` on the first violation — the checks start from the denominator, so
- * the later ones would have nothing to examine anyway. Returns `{ description, snapshot }`.
+ *   `ci`        — `{ targets: [...] }` from the workflow,
+ *   `reporters` — the reporters of the mutation run's Vitest configuration (`vitestReporters`).
+ * Throws `MutationError` on the first violation — the checks start from the reporters, which
+ * need no report, and then from the denominator, so the later ones would have nothing to
+ * examine anyway. Returns `{ description, snapshot }`.
  */
 export const checkMutation = (input) => {
   // Point 3's rule on the Vitest configuration, asked first: it needs no report.
@@ -1623,7 +1633,10 @@ const buildReport = (w) => ({
  * shape of `failedFileShapes`, so that each shape has the case that only it catches: blind to an
  * import (acts on a file with tasks only), to a file's hook (acts on a file with no tasks or a
  * failed suite only), to a suite's hook (carries the file's own errors only), a second failure
- * beside a test's own, a pass read as a failure. `inert` does nothing, `empty-files-only` sees
+ * beside a test's own, a pass read as a failure, and blind to either road by which the runner
+ * reads a test as failed (`state-only`: its own state; `suite-failures-only`: a failed suite
+ * above a skipped one) — each adds a second failure where that road gave the first. `inert` does
+ * nothing, `empty-files-only` sees
  * the import of `lesson-252` and nothing else, `skipped-test` adds a test the runner reads as
  * skipped, `without-file` one `killedBy` cannot name a spec for, and `throws` breaks the run. A
  * name nobody prepared stays a string, as `default` does in Vitest's list.
@@ -1641,9 +1654,15 @@ const preparedReporter = (name) => {
     );
   const acts = (file) => {
     const failed = file.result?.state === 'fail';
-    const testFailed = testsIn(file.tasks).some(
-      (t) => t.result?.state === 'fail',
-    );
+    const tests = testsIn(file.tasks).filter((t) => t.result);
+    const testFailed =
+      name === 'state-only'
+        ? tests.some((t) => t.result.state === 'fail')
+        : name === 'suite-failures-only'
+          ? tests
+              .filter((t) => t.result.state !== 'fail')
+              .some((t) => 'failureMessage' in convertTestToTestResult(t))
+          : failuresIn(file).length > 0;
     if (name === 'every-failed-file') return failed;
     if (name === 'passed-files-too' && file.result?.state === 'pass')
       return true;
@@ -1688,6 +1707,8 @@ const PREPARED_REPORTERS = [
   'collection-and-suites-only',
   'file-errors-only',
   'every-failed-file',
+  'state-only',
+  'suite-failures-only',
   'passed-files-too',
   'skipped-test',
   'without-file',

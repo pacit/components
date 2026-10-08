@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that counts a test as failed by its own state alone. A suite whose setup threw leaves its test skipped, and the runner reads that test as failed with the suite's error \u2014 so the reporter adds a second failure where the runner already had one, and `killedBy` names the file as failing outside its tests when it did not.",
+  "reporters": ["default", "state-only"]
+}

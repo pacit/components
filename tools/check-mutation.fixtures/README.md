@@ -48,16 +48,17 @@ case's defect.
 
 ## What these cases do NOT exercise
 
-Four readings arrive here as data rather than from a real run:
+Five readings arrive here as data rather than from a real run:
 
 - `report` — instead of a Stryker run (~6 minutes for the full set),
 - `sources` — instead of the files on disk,
 - `targets` — instead of the commands from the Nx graph,
-- `ci` — instead of the workflow text.
+- `ci` — instead of the workflow text,
+- `reporters` — prepared ones instead of the run's Vitest configuration.
 
-This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
-from the graph are four functions of a dozen lines each, while the checks are eight points and
-sixty-two rules, and that is where all the content sits. The readings are guarded by runs against
+This is the same choice as in `check-browsers` and for the same reason: five readings from disk
+and from the graph are five functions of a dozen lines each, while the checks are eight points
+and sixty-two rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -215,18 +216,20 @@ checks stop at that tripwire first, so the case passes its rule only through `wr
 ## The file that fails outside its tests
 
 `failed-file-not-a-failure` reads what the run's Vitest reporters DO to a spec file that fails
-outside its tests: the gate calls them as Vitest does over five files shaped as Vitest leaves
-them — an import, a file's hook and a suite's hook that threw, a test that failed, a file that
-passed — and reads the failures with the runner's own functions (`collectTestsFromSuite`,
+outside its tests: the gate calls them as Vitest does over six files shaped as Vitest leaves
+them — an import, a file's hook and a suite's hook that threw, a test that failed, a suite whose
+setup threw, a file that passed — and reads the failures with the runner's own functions (`collectTestsFromSuite`,
 `convertTestToTestResult`), as `<spec>: <reason>`. It reads the configuration and no report,
 so every door asks it first. The reference names `fails-files`, a prepared reporter that does
 the job as `FailedFileFails` does; the live run is held by production, which calls the real
 configuration.
 
-Thirteen cases, each naming the reporters it runs instead. Five break exactly one shape, so
-that each shape has the case only it catches: blind to an import, to a file's hook, to a suite's
-hook (the reason lost), a second failure beside a test's own, a pass read as a failure. Six
-break the job some other way: no reporter but `default`, one that does nothing (the list is not
+Fifteen cases, each naming the reporters it runs instead. Six break exactly one shape, so that
+each shape has the case only it catches: blind to an import, to a file's hook, to a suite's hook
+(the reason lost), a pass read as a failure, and blind to either road by which the runner reads
+a test as failed — its own state, a failed suite above a skipped one — so that a second failure
+is added beside a test's own or a suite setup's. Seven break the job some other way: a second
+failure in every failed file, no reporter but `default`, one that does nothing (the list is not
 the job), one that sees the import of `lesson-252` and nothing else, one whose test says
 `mode: 'skip'` (the runner reads it skipped whatever its state), one whose test names no file
 (`killedBy` says `unknown.js`), and one that throws — read as a reporter that did not do the job
