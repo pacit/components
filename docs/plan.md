@@ -114,7 +114,7 @@ it still ends at the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
 (**1.5**) landed on 2026-10-07, as
 [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. Section 3
-holds nothing since `0.2.0`. Section 4 holds three open findings, each held by a **binds at**
+holds nothing since `0.2.0`. Section 4 holds four open findings, each held by a **binds at**
 rather than by anybody's mood.
 
 ## 1. Components
@@ -309,6 +309,22 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the sentence that `[formField]` fills `min` and `max` went rather than wait for a case:
     Angular 22.2's `min()` and `max()` take numbers, and the rule a string bound would need is
     measured with the time field, which ships it with a case or not at all
+
+- [ ] **4.81 — the warning line is not heard on the stop it appears**
+  - the dispatched pass on `/field` (2026-10-08, run 37733848017, the first reading of 0087's
+    line): NVDA and VoiceOver reach the amount at stop 21 and the phone at 22, each with its
+    label, role and hint, the amount with its value — and the `status` line that enters the
+    DOM on leaving the amount is in neither reader's stop 22, nor the phone's in stop 23. The
+    `alert` that enters on leaving the e-mail: Orca heard it at stop 1 in both readings and
+    leaves `main` there, so it never arrives at the warned stops; VoiceOver heard it on 09-16
+    and not on 10-08; NVDA's log carries it in neither — so the one stable datum is Orca's
+    alert, and the `status` line has not been heard by any yet
+  - one reading each of two stacks, and VoiceOver wavers between runs; a `status` region inserted
+    with its text is a known silence for readers that announce a change, not an arrival, where
+    an `alert` is an event. Two roads if the weekly pass confirms it: a region standing before
+    the text, which `check-aria` point 6 refuses as a second row, or the polite channel of
+    `PctAnnouncer` carrying the sentence the line already shows (0026)
+  - binds at: **the weekly pass of 2026-10-12** — read again, and a decision if it holds
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
