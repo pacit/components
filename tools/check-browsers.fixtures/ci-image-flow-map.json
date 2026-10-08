@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The nightly's full run names its container as a flow map written tight, `{image: mcr.microsoft.com/playwright}`, with no tag — Docker's `latest`. The name ends at the brace. Two earlier versions of the pattern listed what may end a name — quotes and spaces, then `,` `}` `]` as well — and the first of them did not see this mention at all; a mention it does not see carries no version to refuse. The pattern now ends the name at anything that cannot continue it.",
+  "workflows": {
+    ".github/workflows/nightly.yml": "jobs:\n  full:\n    container: {image: mcr.microsoft.com/playwright}\n    steps:\n      - run: scripts/nx-verdict npx nx run-many -t e2e\n  flake:\n    container: { image: mcr.microsoft.com/playwright:v1.63.0-resolute, options: --user 1001 }\n  mutation:\n    runs-on: ubuntu-latest\n"
+  }
+}

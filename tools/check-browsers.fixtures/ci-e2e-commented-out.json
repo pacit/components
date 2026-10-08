@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-without-e2e",
+  "description": "The browser job's `e2e` line has been commented out — `# - run: … -t e2e` — and nothing else in the workflow runs the target. The installation, the matrix and every other line are the reference's, read as text. The `ci-without-e2e` case beside this one hands the rule a state; this one hands the target reader a comment, so a reader that stopped stripping them would find `e2e` in it and pass a workflow that runs no suite.",
+  "ciText": "# Playwright's image, mcr.microsoft.com/playwright:v<version>-noble, at the lockfile's version.\njobs:\n  gates:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble # the tag before the bump: mcr.microsoft.com/playwright:v1.62.0-noble\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      # - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}

@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "A step of the probe prints a marker and pulls an old image on one line: `echo \"#1\" && docker pull mcr.microsoft.com/playwright:v1.62.0-noble`. The `#` stands inside quotes, so YAML reads no comment there. A strip that cut every line at its first `#` hid the pull behind it.",
+  "workflows": {
+    ".github/workflows/e2e-probe.yml": "jobs:\n  probe:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    steps:\n      - run: npx playwright test \"$@\"\n      - run: echo \"#1\" && docker pull mcr.microsoft.com/playwright:v1.62.0-noble\n"
+  }
+}

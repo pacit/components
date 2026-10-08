@@ -32,7 +32,7 @@ check-acr.mjs 8 20 218
 check-aria.mjs 9 21 253
 check-bench.mjs 6 18 191
 check-bridge.mjs 7 19 200
-check-browsers.mjs 6 18 168
+check-browsers.mjs 6 18 172
 check-bundle.mjs 13 25 269
 check-consumer.mjs 7 19 197
 check-coverage.mjs 6 18 183

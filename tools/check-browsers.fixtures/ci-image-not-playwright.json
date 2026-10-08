@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-without-install",
+  "description": "Both jobs run in a container, and the container is `mcr.microsoft.com/playwright/python` — Python's Playwright, one path segment past the image this gate reads. It is a real image with real browsers, and it is not the one whose tag the lockfile can hold: its version follows the Python package, which this repository does not have. So it is no installation here, and with no step beside it the workflow installs nothing. The edge is the character after `playwright`: a reader that matched the repository as a prefix would take this for the image and pass.",
+  "ciText": "jobs:\n  gates:\n    container:\n      image: mcr.microsoft.com/playwright/python:v1.63.0-noble\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: mcr.microsoft.com/playwright/python:v1.63.0-noble\n      options: --user 1001\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}

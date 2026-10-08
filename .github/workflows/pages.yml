@@ -49,16 +49,14 @@ jobs:
 
       - run: npm ci
 
-      # Restore only, never save: the entry for this commit is written by the CI run that
-      # just went green, and a second writer under the same key would race it for nothing.
-      - uses: actions/cache/restore@v6
-        with:
-          path: |
-            .nx/cache
-            .nx/workspace-data
-            !.nx/workspace-data/d
-          key: nx-${{ runner.os }}-${{ github.event.workflow_run.head_sha || github.sha }}
-          restore-keys: nx-${{ runner.os }}-
+      # No restore of the nx cache, and it is two measurements rather than a saving. The step
+      # that stood here restored an entry and then read `Cache: 0/5 hit` (37579021492): since
+      # Nx 23.2.1 (#48) the task cache lives in `~/.nx/<id>` and not in the `.nx/cache` that CI
+      # saves, so the entry held nothing this build could use. And since 2026-10-07 the entry
+      # is written in Playwright's image, which has no `zstd`, so it is a gzip archive — and a
+      # runner with `zstd` asks for another version of the key and finds nothing at all (0081,
+      # amended). A restore that cannot hit is a step that says it caches; the build runs cold,
+      # as it has since 2026-10-02.
 
       - uses: actions/configure-pages@v6
 

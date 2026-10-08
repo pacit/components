@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "A fourth workflow, `release.yml`, runs a job in `v1.62.0-noble` while the lockfile pins 1.63.0 and the three files of the reference are right. The rule reads every workflow there is; one that read the three it was written against would pass a fourth.",
+  "workflows": {
+    ".github/workflows/release.yml": "jobs:\n  release:\n    container:\n      image: mcr.microsoft.com/playwright:v1.62.0-noble\n      options: --user 1001\n"
+  }
+}

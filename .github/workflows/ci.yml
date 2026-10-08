@@ -48,6 +48,24 @@ jobs:
     # The battery has measured 2.5 minutes of work and 4.2 of job; this is a ceiling for a
     # task that hangs, not a budget for a slow one.
     timeout-minutes: 30
+    # The browsers come with the machine and not off a mirror (0081, amended 2026-10-07).
+    # This job needs them for a gate rather than for a suite: `check-browsers` point 6 probes
+    # every engine for the facts its exclusions appeal to, and `check-consumer` renders the
+    # packed library in chromium. The image is Playwright's own, built by its `install-deps`
+    # and `install chromium firefox webkit`, so it carries all three engines and every library
+    # they link — what the four steps that stood here installed on every run, off
+    # azure.archive.ubuntu.com: 41 seconds at the median, and one run in 58 minutes.
+    #
+    # The tag is EXACTLY the `@playwright/test` version in package-lock.json, and
+    # `check-browsers` (point 5) refuses any other — in this file and in every other workflow —
+    # so the bump that moves the lockfile is the commit that has to move this line. `--user
+    # 1001` is the option Playwright's CI documentation gives for GitHub Actions: the uid the
+    # runner itself runs as, which owns the workspace and the `$HOME` it mounts in. As root the
+    # job would own neither, and Firefox is the engine reported to refuse a home somebody
+    # else owns.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v7
         with:
@@ -61,33 +79,6 @@ jobs:
       - uses: ./.github/actions/workspace
         with:
           nx-cache: save
-
-      # The cache key is the Playwright version, so it is invalidated when the package
-      # moves rather than on every package-lock.json change. All three engines
-      # (`req-quality-browsers`) must be listed in BOTH install steps below: the
-      # cache-hit one installs system libraries only, so an engine named in the miss
-      # branch alone silently disappears on the first hit. `check-browsers` (point 5)
-      # is what notices — and it reads THIS file, which is why these four steps stand in
-      # the workflow twice instead of moving into the composite action with the rest of
-      # the setup. This job needs the browsers for a gate rather than for a suite:
-      # `check-browsers` point 6 probes every engine for the facts its exclusions appeal to.
-      - name: Resolve the Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-      # System libraries are installed on every run: they live outside the browser
-      # directory, so the cache never covers them. The browsers themselves only on a miss.
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
 
       - run: npx nx format:check
 
@@ -145,6 +136,12 @@ jobs:
     # the worst of them is a ceiling for a browser that hangs; what bounds a merely slow one
     # is Playwright's own per-test timeout.
     timeout-minutes: 60
+    # The same image as the gates job, for the reason given there. Here it is the suite's own
+    # machine: every engine the configuration declares, the fonts the visual baselines pin
+    # (`fonts-liberation`, in the image's `install-deps` layer), and no apt on the way in.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     strategy:
       fail-fast: false
       matrix:
@@ -157,23 +154,6 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/workspace
-
-      - name: Resolve the Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-      # Both steps name all three engines, for the reason the gates job gives above.
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
 
       # `--shard` stands BEFORE `-t`, and the target list is the last thing on the line.
       # That is a convention five readers depend on — `scripts/before-push` and the four

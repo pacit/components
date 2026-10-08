@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "A step of the probe pulls the image with no tag and runs on in the same word: `docker pull mcr.microsoft.com/playwright&&docker images` — Docker's `latest`, pulled at whatever it is that morning. The name ends at the `&`, which no list of endings this pattern ever had contained: the version that listed quotes, spaces, `,`, `}` and `]` did not see this mention, and neither would any list a reader could write down. Only a name that ends where it cannot continue reads it.",
+  "workflows": {
+    ".github/workflows/e2e-probe.yml": "jobs:\n  probe:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    steps:\n      - run: npx playwright test \"$@\"\n      - run: docker pull mcr.microsoft.com/playwright&&docker images\n"
+  }
+}
