@@ -7370,7 +7370,7 @@ checkout keeps them when one of three variables is set or `nx.json` names a `cac
 and otherwise only when nx can find no identity for the workspace or is refused `~/.nx`
 (`computeSharedDataLocation` in `cache-directory.js`). CI's composite action went on saving the
 two old paths. From the bump's own merge to 2026-10-08, all 72 green runs of `gates` read
-`Cache: 0/37`, `0/51` or `0/52 hit`, a battery of about two minutes; 70 of them had restored an
+`Cache: 0/37`, `0/51` or `0/52 hit`, a battery of about two minutes at the median; 70 of them had restored an
 entry, and the two that found none were the first in Playwright's image. On 2026-10-01 the same
 job had read 8 to 21 of 31, in 5 to 57 seconds. Nothing went red. `lesson-172` wrote down that a
 cache which restores nothing looks exactly like one that works, and nx printed the counter that
@@ -7405,17 +7405,16 @@ What went in, and what was weighed against it:
 - **A question to nx, in a step of its own.** It has no `env:` of its own, so it sees what every
   later step sees, and it compares each half with the path the cache step saves: the cache
   through `cacheDir`, public in `@nx/devkit`, the database through `sharedDataDirectory`, the
-  internal function nx's own connection calls. A typo in the line that sets a variable, nx
+  internal function nx's own connection calls. A typo in both lines that set the variables, nx
   loaded blind to the variables, the database alone sent elsewhere — each failed the job with
   the half named; live it passes in half a second. A bump that stops honouring the variables,
   or moves a half out from under them, is a red pull request.
 - **The machine id in the key.** A Playwright bump that changes the id then starts a new chain,
   instead of handing on a database nx would not open and the artifacts it indexed.
 - **The e2e shards stop restoring.** Over the 68 green runs from 2026-09-28 to the bump, the
-  entry — 148 to 180 MB — took 4.4 seconds to restore at the median and 5.9 at the 90th
+  entry — 141 to 172 MB — took 4.4 seconds to restore at the median and 5.9 at the 90th
   percentile, in each of 408 shard jobs, and saved their one cacheable task, `docs:content`, in
-  107 of them. That task ran in 1.7 seconds at the median, 2.0 at most, in the 298 shard jobs of
-  the 46 green runs after the bump, where it never hit. It missed mostly because the shards start
+  107 of them. That task ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard jobs of the 46 green runs after the bump, where it never hit. It missed mostly because the shards start
   beside `gates` and get the previous run's entry, and it reads every lesson, decision and
   component source: a restore that loses even when it hits.
 - **`pages.yml` stays cold.** A restore there needs the image. Measured on 37740388032, the

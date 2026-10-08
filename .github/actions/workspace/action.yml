@@ -34,10 +34,9 @@ inputs:
       they come in the image now.) And no job only restores it any more. The e2e shards did
       until 2026-10-08, for the one cacheable task they run, `docs:content`, and the restore
       cost more than the task even when it hit. Over the 68 green runs from 2026-09-28 to the
-      bump, the entry — 148 to 180 MB — took 4.4 seconds to restore at the median and 5.9 at
+      bump, the entry — 141 to 172 MB — took 4.4 seconds to restore at the median and 5.9 at
       the 90th percentile, in each of 408 shard jobs, and spared `docs:content` in 107 of
-      them; the task itself ran in 1.7 seconds at the median, 2.0 at most, in the 298 shard
-      jobs after the bump, where it never hit. It mostly missed because the shards start
+      them; the task itself ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard jobs after the bump, where it never hit. It mostly missed because the shards start
       beside `gates`, not after it, so they get the PREVIOUS run's entry, and `docs:content`
       reads every lesson, decision and component source.
     required: false
@@ -93,7 +92,7 @@ runs:
     # saves. Nx 23.2.1 (#48, 2026-10-02) moved both to `~/.nx/<id>/`, one directory per user
     # that every checkout of the workspace shares — and this action went on saving the old
     # two. From the bump's own merge to 2026-10-08 all 72 green runs of `gates` read 0 of 37
-    # to 52 hits, about two minutes of battery each; on 2026-10-01 the job had read 8 to 21
+    # to 52 hits, about two minutes of battery at the median; on 2026-10-01 the job had read 8 to 21
     # of 31 in 5 to 57 seconds. Nothing went red: a cache that restores nothing looks
     # exactly like one that works (lesson-172), and this one did for six days (lesson-255).
     #
@@ -105,15 +104,17 @@ runs:
     # one day cannot restore one path while its nx reads another. The desk keeps nx's
     # default, and its worktrees keep one shared cache (lesson-240).
     #
-    # The step also names the machine, for the key of the cache step: the id nx names its
-    # database by, read where nx reads it — `/var/lib/dbus/machine-id`, then
-    # `/etc/machine-id`, else nx's own fallback name.
+    # The step also names the machine, for the key of the cache step: a value that stands for
+    # the id nx names its database by — `/var/lib/dbus/machine-id`, then `/etc/machine-id`,
+    # trimmed, else a fallback. It only has to be the same in every container of one image
+    # and change with the image, and in the image both files hold one id.
     - id: nx
       shell: bash
       run: |
         echo "NX_CACHE_DIRECTORY=.nx/cache" >> "$GITHUB_ENV"
         echo "NX_WORKSPACE_DATA_DIRECTORY=.nx/workspace-data" >> "$GITHUB_ENV"
         machine=$(cat /var/lib/dbus/machine-id 2>/dev/null || cat /etc/machine-id 2>/dev/null || true)
+        machine=$(printf '%s' "$machine" | tr -d '[:space:]')
         echo "machine=${machine:-machine}" >> "$GITHUB_OUTPUT"
 
     # Then nx is asked where it will keep each half, by a step with no `env:` of its own, so
