@@ -101,6 +101,22 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  test('a field in the warning state has no violations', async ({ page }) => {
+    // Provoke the warning (0087): a suspect amount is in the model already, leaving the
+    // field is what lights the line — polite, described, and with no `aria-invalid`.
+    await visit(page, '/field');
+    const field = page.getByTestId('field-amount');
+    const input = field.getByTestId('number-amount');
+    await input.click();
+    await input.press('Tab');
+    await expect(
+      field.locator('[data-pct-part="field-warning"]'),
+    ).toBeVisible();
+
+    const violations = await audit(page, '[data-testid="demo-warning"]');
+    expect(report(violations)).toBe('');
+  });
+
   test('a checkbox in the indeterminate state has no violations', async ({
     page,
   }) => {

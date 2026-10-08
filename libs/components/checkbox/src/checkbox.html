@@ -73,6 +73,35 @@
 >
   {{ errorText() }}
 </span>
+} @else if (showWarning()) {
+<!-- A verdict without a veto (0087): the same third branch the chrome draws — the tone's glyph
+     before the text, a hidden word for a reader, `status` where the error is `alert` (0026). -->
+<span
+  class="pct-checkbox__warning"
+  data-pct-part="warning"
+  [id]="warningId"
+  role="status"
+>
+  <pct-icon class="pct-checkbox__warning-icon" name="warning">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M8 2.6L14.5 13.4h-13z" />
+      <path d="M8 6.6v2.6" />
+      <path d="M8 11.4h.01" />
+    </svg>
+  </pct-icon>
+  <span class="pct-checkbox__sr">{{ texts().fieldWarning }}</span>
+  {{ warningText() }}
+</span>
 } @else if (hint() && !inField) {
 <span class="pct-checkbox__hint" data-pct-part="hint" [id]="hintId">
   {{ hint() }}

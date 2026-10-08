@@ -21,23 +21,24 @@ as `mixed`; no `aria-checked` is written
 |                 |                                                                                                                                                                                                                                                 |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Value**       | `boolean` through `checked` — the `FormCheckboxControl` contract **forbids defining `value`** ([`lesson-12`](../lessons.md#lesson-12))                                                                                                          |
-| **Inputs**      | `checked` (`model`), `indeterminate`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, plus `FormUiControl`                                                                                                                                      |
+| **Inputs**      | `checked` (`model`), `indeterminate`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl`                                                     |
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored. Both win over `label` (`tools/check-aria.mjs`) |
 | **Binding**     | `model()` does not accept `booleanAttribute`, so `[checked]="true"` in brackets — a bare attribute does not compile                                                                                                                             |
-| **Parts**       | `control`, `box`, `mark`, `label`, `hint`, `error`                                                                                                                                                                                              |
+| **Parts**       | `control`, `box`, `mark`, `label`, `hint`, `warning`, `error`                                                                                                                                                                                   |
 | **Harness**     | `PctCheckboxHarness`                                                                                                                                                                                                                            |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a checkbox looks alien                                                                                                                                                                  |
 
 ## Parts
 
-| part      | what it is               |
-| --------- | ------------------------ |
-| `control` | the native input         |
-| `box`     | the square drawn over it |
-| `mark`    | the check inside the box |
-| `label`   | the label beside the box |
-| `hint`    | the hint under the label |
-| `error`   | the message when invalid |
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `control` | the native input                                                                                                                                          |
+| `box`     | the square drawn over it                                                                                                                                  |
+| `mark`    | the check inside the box                                                                                                                                  |
+| `label`   | the label beside the box                                                                                                                                  |
+| `hint`    | the hint under the label                                                                                                                                  |
+| `error`   | the message when invalid                                                                                                                                  |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
 
 ## Theming
 

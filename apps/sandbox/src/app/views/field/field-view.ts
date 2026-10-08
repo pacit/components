@@ -5,9 +5,11 @@ import {
   FormField,
   minLength,
   required,
+  schema,
 } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
+import { pctWarn } from '@pacit/components/core';
 import {
   PctField,
   PctLabelAux,
@@ -57,6 +59,31 @@ export class FieldView {
     email(p.email, {
       message: 'That does not look like a valid e-mail address',
     });
+  });
+
+  /**
+   * A verdict without a veto (0087): the amount is allowed at any size and suspect above
+   * ten thousand; the phone is optional and the form would rather have it. Neither rule
+   * makes the form invalid — `submit()` runs over both.
+   */
+  protected readonly paymentModel = signal({ amount: 25_000, phone: '' });
+  protected readonly paymentForm = form(this.paymentModel, (p) => {
+    pctWarn(p.amount, ({ value }) =>
+      (value() ?? 0) > 10_000
+        ? {
+            kind: 'big',
+            message: 'Unusually large — it will be reviewed by hand',
+          }
+        : undefined,
+    );
+    pctWarn(
+      p.phone,
+      schema((phone) => {
+        required(phone, {
+          message: 'Without a number we cannot call you back',
+        });
+      }),
+    );
   });
 
   /** The "description" field shows the counter and the hint-to-error swap at once. */

@@ -25,6 +25,7 @@ import {
   PCT_FIELD,
   PCT_TEXTS,
   pctAttachToField,
+  pctFieldWarnings,
   pctDescribedBy,
   pctFieldMessages,
   pctOverlay,
@@ -103,6 +104,7 @@ export type PctDatePanelAlign = 'start' | 'end';
     '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-open]': 'open() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-warning]': 'showWarning() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
     // What the control knows and the form cannot: there is text in the field and it is not a
     // date. See `malformed` below.
@@ -167,6 +169,22 @@ export class PctDate
    * @since 0.1.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /**
+   * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
+   *
+   * @since next
+   */
+  readonly warnings = input<
+    readonly ValidationError.WithOptionalFieldTree[] | undefined
+  >(undefined);
+
+  /**
+   * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
+   *
+   * @since next
+   */
+  readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value.
@@ -294,6 +312,7 @@ export class PctDate
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
+  protected readonly warningId = `${this.uid}-warning`;
 
   // --- working with the chrome (req-api-no-wrapper) ---
 
@@ -347,10 +366,13 @@ export class PctDate
     touched: this.touched,
     errors: this.errors,
     own: this.ownErrors,
+    warnings: this.fieldWarnings,
   });
   protected readonly errorText = this.messages.errorText;
   protected readonly showInvalid = this.messages.showInvalid;
   protected readonly showError = this.messages.showError;
+  protected readonly warningText = this.messages.warningText;
+  protected readonly showWarning = this.messages.showWarning;
 
   // --- the language the field is written in ---
 
@@ -440,7 +462,11 @@ export class PctDate
       ? this.fieldDescribedBy()
       : pctDescribedBy([
           [this.errorId, this.showError()],
-          [this.hintId, !this.showError() && this.hint() !== ''],
+          [this.warningId, this.showWarning()],
+          [
+            this.hintId,
+            !this.showError() && !this.showWarning() && this.hint() !== '',
+          ],
         ]),
   );
 

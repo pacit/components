@@ -78,6 +78,12 @@
   cursor: not-allowed;
 }
 
+/* The warning tone on the trigger's border (0087), before `invalid` so that an error outranks
+   a warning on the one control that carries both. */
+:host([data-pct-warning]) .pct-select__trigger {
+  border-color: var(--pct-select-border-warning);
+}
+
 :host([data-pct-invalid]) .pct-select__trigger {
   border-color: var(--pct-select-border-invalid);
 }
@@ -426,6 +432,33 @@ input.pct-select__trigger::placeholder {
 .pct-select__error {
   color: var(--pct-select-fg-invalid);
   font-size: var(--pct-font-size-sm);
+}
+
+/* The warning line (0087): the tone's colour and its glyph before the text — the same third
+   branch the chrome draws, and the glyph is the channel that survives the palette's absence
+   (`req-a11y-forced-colors`). An inline flex, so the glyph sits on the first line of a
+   sentence that may wrap; the icon takes the text's own size, `pct-icon` being `1em`. */
+.pct-select__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-select-fg-warning);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-select__warning-icon {
+  align-self: center;
+}
+
+/* The word a reader hears before the warning, kept in the accessibility tree by a clipped
+   1px box — `display: none` would take it out of the tree. */
+.pct-select__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Forced-colors mode — the mapping is written down in `field.scss`.

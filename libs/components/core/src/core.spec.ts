@@ -118,6 +118,84 @@ describe('@pacit/components/core', () => {
       expect(showError()).toBe(true);
     });
 
+    /**
+     * A verdict without a veto (0087): the warning takes the line after the error and before
+     * the hint, under the error's own gate — `touched` — and moves `showInvalid` not at all.
+     */
+    describe('a warning', () => {
+      it('is the message of the FIRST warning, and empty text when there is none', () => {
+        const warnings = signal<readonly { message?: string }[]>([]);
+        const { warningText } = pctFieldMessages({ ...source(), warnings });
+
+        expect(warningText()).toBe('');
+
+        warnings.set([{ message: 'Unusually large' }, { message: 'And odd' }]);
+        expect(warningText()).toBe('Unusually large');
+
+        warnings.set([{}]);
+        expect(warningText()).toBe('');
+      });
+
+      it('without the channel the text is empty and nothing shows', () => {
+        const src = source({ touched: true });
+        const { warningText, showWarning } = pctFieldMessages(src);
+
+        expect(warningText()).toBe('');
+        expect(showWarning()).toBe(false);
+      });
+
+      it('shows once touched, and leaves the field valid', () => {
+        const src = source();
+        const { showWarning, showInvalid, showError } = pctFieldMessages({
+          ...src,
+          warnings: signal([{ message: 'Unusually large' }]),
+        });
+
+        expect(showWarning()).toBe(false);
+        expect(showInvalid()).toBe(false);
+
+        src.touched.set(true);
+        expect(showWarning()).toBe(true);
+        expect(showInvalid()).toBe(false);
+        expect(showError()).toBe(false);
+      });
+
+      it("gives way to the error, and to the control's own error", () => {
+        const src = source({
+          invalid: true,
+          touched: true,
+          errors: [{ message: 'Required' }],
+        });
+        const own = signal<readonly { message?: string }[]>([]);
+        const { showWarning, showError } = pctFieldMessages({
+          ...src,
+          own,
+          warnings: signal([{ message: 'Unusually large' }]),
+        });
+
+        expect(showError()).toBe(true);
+        expect(showWarning()).toBe(false);
+
+        // The error takes the line as long as it has a sentence to put there.
+        src.errors.set([{}]);
+        expect(showError()).toBe(false);
+        expect(showWarning()).toBe(true);
+
+        own.set([{ message: 'Not a number' }]);
+        expect(showError()).toBe(true);
+        expect(showWarning()).toBe(false);
+      });
+
+      it('a warning with no sentence lights nothing', () => {
+        const { showWarning } = pctFieldMessages({
+          ...source({ touched: true }),
+          warnings: signal([{}]),
+        });
+
+        expect(showWarning()).toBe(false);
+      });
+    });
+
     it('an error with no sentence paints the control but writes no empty message', () => {
       const { showInvalid, showError } = pctFieldMessages(
         source({ invalid: true, touched: true, errors: [{}] }),

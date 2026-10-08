@@ -9,8 +9,8 @@
  *  3. INPUTS: a widget inside the template means `ariaLabel` and `ariaLabelledby` are declared,
  *  4. FORWARDED: both are bound on ONE element, counted per DOM state and not per file,
  *  5. SURFACE: the card that names the selector names both inputs,
- *  6. DESCRIPTION: hint and error parts are ALTERNATIVES of one conditional (`req-api-message`),
- *  7. ANNOUNCEMENT: an error part IS the live region ([0026](../docs/decisions/0026-one-channel-per-politeness.md)),
+ *  6. DESCRIPTION: hint, warning and error parts are ALTERNATIVES of one conditional (`req-api-message`),
+ *  7. ANNOUNCEMENT: an error part IS the live region, and a warning part the polite one ([0026](../docs/decisions/0026-one-channel-per-politeness.md)),
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
@@ -63,15 +63,23 @@ const HOST_NAME_KEYS = [
 ];
 
 /**
- * The two message parts, whatever a component prefixes them with (`hint`, `group-hint`).
+ * The three message parts, whatever a component prefixes them with (`hint`, `group-hint`).
  * Their names are never bound by an expression — `check-parts` point 3 is what holds that —
- * so reading the static attributes here reads all of them.
+ * so reading the static attributes here reads all of them. The warning joined the error and
+ * the hint with [0087](../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md): the
+ * same line, the same conditional, one more branch.
  */
-const MESSAGE_PART = /(^|-)(hint|error)$/;
+const MESSAGE_KINDS = ['hint', 'warning', 'error'];
+const MESSAGE_PART = new RegExp(`(^|-)(${MESSAGE_KINDS.join('|')})$`);
 const PART_ATTRIBUTE = 'data-pct-part';
-/** The attribute point 7 reads, and the value it requires of an error part. */
+/** The attribute point 7 reads, and the value it requires of each part that announces. */
 const LIVE_ATTRIBUTE = 'role';
-const LIVE_ROLE = 'alert';
+/**
+ * One politeness per message (0026): an error interrupts, a warning waits its turn — the
+ * value is allowed, so nothing about it is urgent — and a hint announces nothing, being read
+ * as the control's description. A kind absent here is a kind point 7 does not examine.
+ */
+const LIVE_ROLES = { error: 'alert', warning: 'status' };
 /**
  * The same name written as a binding, in either of the two forms Angular gives it. A role
  * arriving from an expression is a value the template does not hold, so point 7 reports it
@@ -86,7 +94,10 @@ const BOUND_LIVE = new Set([
 /** A role arriving from an expression — for point 9 a path the template cannot decide. */
 const BOUND_ROLE = new Set(['role', 'attr.role']);
 /** The same parts counted without parsing, as the denominator of the walk. */
-const MESSAGE_COUNTER = /data-pct-part="(?:[a-z-]*-)?(?:hint|error)"/g;
+const MESSAGE_COUNTER = new RegExp(
+  `data-pct-part="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
+  'g',
+);
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 const sorted = (set) => [...set].sort();
@@ -810,38 +821,47 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   }
 
   // ── 6. one message line ──────────────────────────────────────────────────────
+  // Every pair of kinds, not only hint against error: a warning beside an error is a second
+  // row exactly as a hint beside one is, and the three are branches of ONE conditional.
   let pairs = 0;
   for (const template of templates) {
     const said = byPath.get(template.file).said;
-    const hints = said.filter((m) => m.part.endsWith('hint'));
-    const errors = said.filter((m) => m.part.endsWith('error'));
-    for (const hint of hints)
-      for (const error of errors) {
-        pairs++;
-        if (exclusive(hint, error)) continue;
-        throw new AriaError(
-          'description',
-          `${template.file}: \`${hint.part}\` and \`${error.part}\` can be in the DOM at ` +
-            `the same time — they are not two branches of one conditional. Then the control ` +
-            `grows by a row on an error and \`aria-describedby\` names a message the wrapped ` +
-            `same control never shows (req-api-message)`,
-        );
-      }
+    const byKind = MESSAGE_KINDS.map((kind) =>
+      said.filter((m) => m.part.endsWith(kind)),
+    );
+    for (let a = 0; a < byKind.length; a++)
+      for (let b = a + 1; b < byKind.length; b++)
+        for (const one of byKind[a])
+          for (const other of byKind[b]) {
+            pairs++;
+            if (exclusive(one, other)) continue;
+            throw new AriaError(
+              'description',
+              `${template.file}: \`${one.part}\` and \`${other.part}\` can be in the DOM at ` +
+                `the same time — they are not two branches of one conditional. Then the ` +
+                `control grows by a row on a message and \`aria-describedby\` names one the ` +
+                `wrapped same control never shows (req-api-message)`,
+            );
+          }
   }
 
   // ── 7. the message announces itself ─────────────────────────────────────────
   // A validation message appears without anybody being pointed at it, so the text the user
   // can read has to BE the live region — one owner for one sentence, rather than the shared
   // channel repeating what is already on the screen (0026). The rule is the narrow one:
-  // `role="alert"` on the error part itself, which is what every template here already does
-  // and what `req-a11y-built-in` promises in those words. `aria-live` on a wrapper would
-  // satisfy a reader and move the owner off the sentence, and then two components would
-  // announce the same fact in two shapes.
+  // `role="alert"` on the error part itself and `role="status"` on the warning part (0087),
+  // which is what every template here already does and what `req-a11y-built-in` promises in
+  // those words. `aria-live` on a wrapper would satisfy a reader and move the owner off the
+  // sentence, and then two components would announce the same fact in two shapes.
   let announced = 0;
   for (const template of templates)
     for (const message of byPath.get(template.file).said) {
-      if (!message.part.endsWith('error')) continue;
-      if (message.role === LIVE_ROLE) {
+      const kind = Object.keys(LIVE_ROLES).find((k) =>
+        message.part.endsWith(k),
+      );
+      if (!kind) continue;
+      const liveRole = LIVE_ROLES[kind];
+      if (message.role === liveRole) {
         announced++;
         continue;
       }
@@ -854,8 +874,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
               ? `no \`role\``
               : `\`role="${message.role}"\``) +
           ` — a validation message enters the DOM with nobody pointed at it, so the text the ` +
-          `user reads has to be the live region that speaks it: \`role="${LIVE_ROLE}"\`, ` +
-          `written as a plain attribute (req-a11y-built-in)`,
+          `user reads has to be the live region that speaks it: \`role="${liveRole}"\` on ` +
+          `a ${kind}, written as a plain attribute (req-a11y-built-in)`,
       );
     }
 
@@ -996,8 +1016,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
-      `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} hint/error pair(s) ` +
-      `on separate branches, ${announced} error part(s) announcing themselves, ` +
+      `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} message pair(s) ` +
+      `on separate branches, ${announced} error/warning part(s) announcing themselves, ` +
       `${hidden.length} hidden from the tree with nothing to land on; ${examined} role(s) ` +
       `requiring a context — ${ownedHere} owned in their own template, ${leftToHost} by ` +
       `the host, ${leftToConsumer} left to the consumer's template`,

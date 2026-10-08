@@ -7,12 +7,15 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { requiredError, ValidationError } from '@angular/forms/signals';
 import { PctCheckbox } from '@pacit/components/checkbox';
+import { PctDate } from '@pacit/components/date';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
 import { PctSlider } from '@pacit/components/slider';
 import { PctSwitch } from '@pacit/components/switch';
 import { allParts, part } from '../../testing/src/dom';
 import { PctField } from './field';
+import { PctNumber } from './number';
+import { PctText } from './text';
 
 async function render<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
@@ -359,7 +362,7 @@ describe('Controls inside the pct-field wrapper', () => {
 /** Whatever the component prefixes them with: `hint` / `error`, `group-hint` / `group-error`. */
 const messagesIn = (root: HTMLElement) =>
   Array.from(root.querySelectorAll<HTMLElement>('[data-pct-part]')).filter(
-    (el) => /(^|-)(hint|error)$/.test(el.dataset['pctPart'] ?? ''),
+    (el) => /(^|-)(hint|error|warning)$/.test(el.dataset['pctPart'] ?? ''),
   );
 
 /** Every `aria-describedby` in the tree, resolved to the parts it points at. */
@@ -422,6 +425,302 @@ describe('Controls outside the wrapper: one message line', () => {
         expect.stringMatching(/error$/),
       ]);
       expect(describedParts(root)).toEqual([expect.stringMatching(/error$/)]);
+    });
+  }
+});
+
+/**
+ * A verdict without a veto ([0087](../../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)):
+ * every control takes `warnings`, and the line under it — the chrome's inside `pct-field`, its
+ * own outside — draws the warning after the error and before the hint, once touched, with
+ * `aria-invalid` untouched. Eight controls, two modes, one loop each; a ninth control is a
+ * row in each table.
+ */
+class WarningHost {
+  touched = signal(false);
+  invalid = signal(false);
+  errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
+  warnings = signal<readonly ValidationError.WithOptionalFieldTree[]>([
+    { kind: 'big', message: 'Unusually large' },
+  ]);
+}
+
+const WARNING_BINDINGS = `[touched]="touched()"
+    [invalid]="invalid()"
+    [errors]="errors()"
+    [warnings]="warnings()"`;
+
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="Amount" hint="Gross">
+    <input pctText ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class TextWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctText],
+  template: `<input pctText ${WARNING_BINDINGS} />`,
+})
+class TextWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctNumber],
+  template: `<pct-field label="Amount" hint="Gross">
+    <input pctNumber ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class NumberWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctNumber],
+  template: `<input pctNumber ${WARNING_BINDINGS} />`,
+})
+class NumberWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctDate],
+  template: `<pct-field label="Due" hint="Any day">
+    <pct-date ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class DateWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctDate],
+  template: `<pct-date label="Due" hint="Any day" ${WARNING_BINDINGS} />`,
+})
+class DateWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctSelect],
+  template: `<pct-field label="Country" hint="Pick one">
+    <pct-select [options]="options" ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class SelectWarnsInField extends WarningHost {
+  options = OPTIONS;
+}
+
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select
+    label="Country"
+    hint="Pick one"
+    [options]="options"
+    ${WARNING_BINDINGS}
+  />`,
+})
+class SelectWarnsAlone extends WarningHost {
+  options = OPTIONS;
+}
+
+@Component({
+  imports: [PctField, PctCheckbox],
+  template: `<pct-field label="Terms" hint="Read them first">
+    <pct-checkbox ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class CheckboxWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctCheckbox],
+  template: `<pct-checkbox
+    label="Terms"
+    hint="Read them first"
+    ${WARNING_BINDINGS}
+  />`,
+})
+class CheckboxWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctSwitch],
+  template: `<pct-field label="Notifications" hint="Two a week">
+    <pct-switch ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class SwitchWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctSwitch],
+  template: `<pct-switch
+    label="Notifications"
+    hint="Two a week"
+    ${WARNING_BINDINGS}
+  />`,
+})
+class SwitchWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctRadioGroup, PctRadio],
+  template: `<pct-field label="Plan" hint="Pick one">
+    <pct-radio-group ${WARNING_BINDINGS}>
+      <pct-radio value="free">Free</pct-radio>
+      <pct-radio value="pro">Pro</pct-radio>
+    </pct-radio-group>
+  </pct-field>`,
+})
+class GroupWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group label="Plan" hint="Pick one" ${WARNING_BINDINGS}>
+    <pct-radio value="free">Free</pct-radio>
+    <pct-radio value="pro">Pro</pct-radio>
+  </pct-radio-group>`,
+})
+class GroupWarnsAlone extends WarningHost {}
+
+@Component({
+  imports: [PctField, PctSlider],
+  template: `<pct-field label="Volume" hint="Loud after seven">
+    <pct-slider ${WARNING_BINDINGS} />
+  </pct-field>`,
+})
+class SliderWarnsInField extends WarningHost {}
+
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider
+    label="Volume"
+    hint="Loud after seven"
+    ${WARNING_BINDINGS}
+  />`,
+})
+class SliderWarnsAlone extends WarningHost {}
+
+/** The element that carries `aria-describedby` and `aria-invalid` — the control's own. */
+const describedElement = (root: HTMLElement) =>
+  root.querySelector<HTMLElement>('[aria-describedby], [role="radiogroup"]');
+
+describe('Every control warns, in both modes (0087)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  /** The eight controls inside the chrome: the chrome draws the warning. */
+  const inField: [string, Type<WarningHost>][] = [
+    ['input[pctText]', TextWarnsInField],
+    ['input[pctNumber]', NumberWarnsInField],
+    ['pct-date', DateWarnsInField],
+    ['pct-select', SelectWarnsInField],
+    ['pct-checkbox', CheckboxWarnsInField],
+    ['pct-switch', SwitchWarnsInField],
+    ['pct-radio-group', GroupWarnsInField],
+    ['pct-slider', SliderWarnsInField],
+  ];
+
+  for (const [name, host] of inField) {
+    it(`${name} inside pct-field: the chrome draws the warning once touched, after the error, before the hint`, async () => {
+      const fixture = await render(host);
+      const root = fixture.nativeElement as HTMLElement;
+      const field = root.querySelector('pct-field') as HTMLElement;
+
+      // Untouched: the hint alone, and no warning anywhere.
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        'field-hint',
+      ]);
+
+      fixture.componentInstance.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Touched: the chrome's warning, and nobody else's — the control draws none of its own.
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        'field-warning',
+      ]);
+      expect(part(fixture, 'field-warning').textContent).toContain(
+        'Unusually large',
+      );
+      expect(describedParts(root)).toEqual(['field-warning']);
+      expect(field.hasAttribute('data-pct-warning')).toBe(true);
+      expect(field.hasAttribute('data-pct-invalid')).toBe(false);
+      expect(root.querySelectorAll('[aria-invalid="true"]').length).toBe(0);
+
+      // The error outranks it.
+      fixture.componentInstance.invalid.set(true);
+      fixture.componentInstance.errors.set([
+        requiredError({ message: 'This one is required' }),
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        'field-error',
+      ]);
+      expect(describedParts(root)).toEqual(['field-error']);
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+    });
+  }
+
+  /** The six controls that draw their own footer, standing alone. */
+  const footers: [string, Type<WarningHost>][] = [
+    ['pct-date', DateWarnsAlone],
+    ['pct-select', SelectWarnsAlone],
+    ['pct-checkbox', CheckboxWarnsAlone],
+    ['pct-switch', SwitchWarnsAlone],
+    ['pct-radio-group', GroupWarnsAlone],
+    ['pct-slider', SliderWarnsAlone],
+  ];
+
+  for (const [name, host] of footers) {
+    it(`${name} alone: its own footer draws the same third branch`, async () => {
+      const fixture = await render(host);
+      const root = fixture.nativeElement as HTMLElement;
+      const control = root.querySelector(name) as HTMLElement;
+
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        expect.stringMatching(/hint$/),
+      ]);
+
+      fixture.componentInstance.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const [warning] = messagesIn(root);
+      expect(warning.dataset['pctPart']).toMatch(/warning$/);
+      expect(messagesIn(root)).toHaveLength(1);
+      expect(warning.getAttribute('role')).toBe('status');
+      expect(warning.textContent).toContain('Unusually large');
+      expect(warning.textContent).toContain('Warning:');
+      expect(warning.querySelector('pct-icon svg')).not.toBeNull();
+      expect(describedParts(root)).toEqual([expect.stringMatching(/warning$/)]);
+      expect(control.hasAttribute('data-pct-warning')).toBe(true);
+      expect(control.hasAttribute('data-pct-invalid')).toBe(false);
+      expect(describedElement(root)?.getAttribute('aria-invalid')).toBeNull();
+
+      fixture.componentInstance.invalid.set(true);
+      fixture.componentInstance.errors.set([
+        requiredError({ message: 'This one is required' }),
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        expect.stringMatching(/error$/),
+      ]);
+      expect(control.hasAttribute('data-pct-warning')).toBe(false);
+    });
+  }
+
+  /** The two controls that draw nothing of their own: alone, a warning is a fact and no line. */
+  const bare: [string, Type<WarningHost>][] = [
+    ['input[pctText]', TextWarnsAlone],
+    ['input[pctNumber]', NumberWarnsAlone],
+  ];
+
+  for (const [name, host] of bare) {
+    it(`${name} alone: no line to draw, and nothing described`, async () => {
+      const fixture = await render(host);
+      const root = fixture.nativeElement as HTMLElement;
+      fixture.componentInstance.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const input = root.querySelector('input') as HTMLInputElement;
+      expect(messagesIn(root)).toHaveLength(0);
+      expect(input.getAttribute('aria-describedby')).toBeNull();
+      expect(input.getAttribute('aria-invalid')).toBeNull();
     });
   }
 });

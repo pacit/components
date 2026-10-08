@@ -1,5 +1,7 @@
 import {
   Component,
+  Directive,
+  inject,
   provideZonelessChangeDetection,
   signal,
   Type,
@@ -8,7 +10,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { email, form, FormField, required } from '@angular/forms/signals';
-import { providePctConfig } from '@pacit/components/core';
+import {
+  PCT_FIELD,
+  pctAttachToField,
+  PctFieldControl,
+  PctLabelStrategy,
+  pctWarn,
+  providePctConfig,
+  providePctTexts,
+} from '@pacit/components/core';
 import { allParts, part, query } from '../../testing/src/dom';
 import { PctPrefix, PctSuffix } from './affix';
 import { PctLabelAux, PctMessageAux } from './auxiliary';
@@ -100,6 +110,80 @@ class AuxHost {
   errors = signal<readonly { kind: string; message?: string }[]>([]);
   value = signal('');
 }
+
+/** A control handed its warnings outright, beside its errors (0087). */
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="Amount" [hint]="hint()">
+    <input
+      pctText
+      [invalid]="invalid()"
+      [touched]="touched()"
+      [errors]="errors()"
+      [warnings]="warnings()"
+      [(value)]="value"
+    />
+  </pct-field>`,
+})
+class WarningHost {
+  hint = signal('Transfers above ten thousand are reviewed');
+  invalid = signal(false);
+  touched = signal(false);
+  errors = signal<readonly { kind: string; message?: string }[]>([]);
+  warnings = signal<readonly { kind: string; message?: string }[] | undefined>([
+    { kind: 'big', message: 'Unusually large' },
+  ]);
+  value = signal('');
+}
+
+/** A signal form that warns: the control reads `pctWarn()`'s list off its own `[formField]`. */
+@Component({
+  imports: [PctField, PctText, FormField],
+  template: `<pct-field label="Code" hint="Three letters">
+    <input pctText [formField]="f.code" />
+  </pct-field>`,
+})
+class SignalWarningHost {
+  model = signal({ code: 'ABCD' });
+  f = form(this.model, (p) => {
+    pctWarn(p.code, ({ value }) =>
+      value().length > 3
+        ? { kind: 'long', message: 'Longer than the usual three' }
+        : undefined,
+    );
+  });
+}
+
+/**
+ * A control written before either optional channel existed: the contract's required members
+ * and nothing else — no `ownErrors`, no `fieldWarnings`. The chrome has to read it as a
+ * control with nothing to say on either channel, not as a defect.
+ */
+@Directive({ selector: 'input[pctBareControl]' })
+class BareControl implements PctFieldControl {
+  readonly controlId = 'bare-control';
+  readonly labelStrategy: PctLabelStrategy = 'for';
+  readonly invalid = signal(false);
+  readonly touched = signal(true);
+  readonly required = signal(false);
+  readonly disabled = signal(false);
+  readonly errors = signal<readonly { message?: string }[]>([]);
+  readonly describedBy = signal<string | null>(null);
+  setDescribedBy(ids: string | null): void {
+    this.describedBy.set(ids);
+  }
+  constructor() {
+    pctAttachToField(inject(PCT_FIELD, { optional: true }), this);
+  }
+}
+
+@Component({
+  imports: [PctField, BareControl],
+  template: `<pct-field label="Bare" hint="A hint">
+    <input pctBareControl id="bare-control" />
+  </pct-field>`,
+})
+class BareControlHost {}
 
 @Component({
   imports: [PctField, PctText, FormField],
@@ -624,6 +708,180 @@ describe('PctField + PctText', () => {
       // The error takes the line -> describedby is the error id, with no dangling hint id.
       const errorId = part(fixture, 'field-error').id;
       expect(input.getAttribute('aria-describedby')).toBe(errorId);
+    });
+  });
+
+  /**
+   * A verdict without a veto ([0087](../../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)):
+   * the third branch of the one message line — after the error, before the hint, under the
+   * error's own `touched` gate — drawn in the warning tone with a glyph and a hidden word,
+   * announced as `status`, and leaving `aria-invalid` exactly where it was.
+   */
+  describe('one line below the field: the warning', () => {
+    it("waits for a touch, then takes the hint's place — and the field stays valid", async () => {
+      const fixture = await render(WarningHost);
+      const host = fixture.componentInstance;
+      const input = inputOf(fixture);
+      const field: HTMLElement =
+        fixture.nativeElement.querySelector('pct-field');
+
+      // Untouched: the hint, and nothing of the warning.
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
+        'Transfers above ten thousand are reviewed',
+      );
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+
+      host.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Touched: the warning alone is lit, polite, and the control is NOT invalid.
+      const warning = part(fixture, 'field-warning');
+      expect(warning.textContent).toContain('Unusually large');
+      expect(warning.getAttribute('role')).toBe('status');
+      expect(allParts(fixture, 'field-hint')).toHaveLength(0);
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+      expect(input.getAttribute('aria-describedby')).toBe(warning.id);
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+      expect(field.hasAttribute('data-pct-warning')).toBe(true);
+      expect(field.hasAttribute('data-pct-invalid')).toBe(false);
+
+      // The warning leaves, the hint is back, and so is its id.
+      host.warnings.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(input.getAttribute('aria-describedby')).toBe(
+        part(fixture, 'field-hint').id,
+      );
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+    });
+
+    it('gives way to the error, and stands again when the error goes', async () => {
+      const fixture = await render(WarningHost);
+      const host = fixture.componentInstance;
+      const input = inputOf(fixture);
+      const field: HTMLElement =
+        fixture.nativeElement.querySelector('pct-field');
+
+      host.touched.set(true);
+      host.invalid.set(true);
+      host.errors.set([{ kind: 'required', message: 'Required' }]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // One line: the error, with its own role and attribute; the warning is out of the DOM.
+      expect(part(fixture, 'field-error').textContent?.trim()).toBe('Required');
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(input.getAttribute('aria-describedby')).toBe(
+        part(fixture, 'field-error').id,
+      );
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(field.hasAttribute('data-pct-invalid')).toBe(true);
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+
+      host.invalid.set(false);
+      host.errors.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+      expect(part(fixture, 'field-warning').textContent).toContain(
+        'Unusually large',
+      );
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it("the tone's two channels: the glyph before the text, and a word for a reader", async () => {
+      const fixture = await render(WarningHost);
+      fixture.componentInstance.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const warning = part(fixture, 'field-warning');
+      const icon = warning.querySelector('pct-icon');
+      expect(icon).not.toBeNull();
+      // A decoration: the drawing repeats what the word says.
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
+      expect(icon?.querySelector('svg')).not.toBeNull();
+      // The glyph comes first, then the hidden word, then the sentence.
+      expect(warning.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Warning: Unusually large',
+      );
+      const word = warning.querySelector('.pct-field__sr');
+      expect(word?.textContent?.trim()).toBe('Warning:');
+      expect(icon?.compareDocumentPosition(word as Node)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+
+    it('the word comes from PCT_TEXTS', async () => {
+      TestBed.configureTestingModule({
+        providers: [providePctTexts({ fieldWarning: 'Caution:' })],
+      });
+      const fixture = await render(WarningHost);
+      fixture.componentInstance.touched.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        part(fixture, 'field-warning').querySelector('.pct-field__sr')
+          ?.textContent,
+      ).toBe('Caution:');
+    });
+
+    it("a signal form's warning reaches the chrome through the control's own [formField]", async () => {
+      const fixture = await render(SignalWarningHost);
+      const input = inputOf(fixture);
+
+      // Untouched: the hint; the form holds the warning already and says nothing yet.
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
+        'Three letters',
+      );
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(fixture.componentInstance.f.code().valid()).toBe(true);
+
+      input.dispatchEvent(new Event('blur'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(part(fixture, 'field-warning').textContent).toContain(
+        'Longer than the usual three',
+      );
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+      expect(fixture.componentInstance.f.code().valid()).toBe(true);
+
+      fixture.componentInstance.model.set({ code: 'ABC' });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
+        'Three letters',
+      );
+    });
+  });
+
+  /**
+   * The two optional channels of the contract — `ownErrors` (0070) and `fieldWarnings`
+   * (0087) — are optional for a reason: a control that declares neither is a control.
+   */
+  describe('a control with neither optional channel', () => {
+    it('is read as having nothing to say on either, and keeps its hint', async () => {
+      const fixture = await render(BareControlHost);
+      const control = fixture.debugElement
+        .query(By.directive(BareControl))
+        .injector.get(BareControl);
+
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe('A hint');
+      expect(allParts(fixture, 'field-warning')).toHaveLength(0);
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+      expect(control.describedBy()).toBe(part(fixture, 'field-hint').id);
+      const field: HTMLElement =
+        fixture.nativeElement.querySelector('pct-field');
+      expect(field.hasAttribute('data-pct-warning')).toBe(false);
+      expect(field.hasAttribute('data-pct-invalid')).toBe(false);
     });
   });
 

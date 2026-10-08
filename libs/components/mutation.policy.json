@@ -36,6 +36,7 @@
     "libs/components/core/src/texts.ts",
     "libs/components/core/src/tone.ts",
     "libs/components/core/src/value.ts",
+    "libs/components/core/src/warnings.ts",
     "libs/components/date/src/calendar.ts",
     "libs/components/date/src/date.ts",
     "libs/components/date/src/day.ts",

@@ -63,19 +63,18 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    97 |
-| ✅ enforced                                 |    81 |
+| ✅ enforced                                 |    82 |
 | 🟡 partial (deliberately without a control) |    15 |
-| ⛔ gap                                      |     1 |
+| ⛔ gap                                      |     0 |
 
-One gap stands, and **1.5** is its task. If adding a requirement raises the gap count and no
-task changes, this list has stopped being complete, and that is a fault of this list, not of
-the registry.
+No gap stands. If adding a requirement raises the gap count and no task changes, this list
+has stopped being complete, and that is a fault of this list, not of the registry.
 
 ## Order
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.3 time, 1.4 datetime and 1.5 warnings, then 1.2 — last, by 0016
+1  components             1.3 time and 1.4 datetime, then 1.2 — last, by 0016
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -110,11 +109,11 @@ holds only the order.
 
 **What is left.** Section 1 holds the time field (**1.3**) and the datetime field after it
 (**1.4**), decided in [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) — the time's
-value module built, neither field yet, the datetime's value still a decision of its own — then
-the warnings on a field (**1.5**), decided in
-[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) with the measurement already
-taken — and it still ends at the table (**1.2**),
-deferred by [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. Section 3
+value module built, neither field yet, the datetime's value still a decision of its own — and
+it still ends at the table (**1.2**), deferred by
+[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
+(**1.5**) landed on 2026-10-07, as
+[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. Section 3
 holds nothing since `0.2.0`. Section 4 holds three open findings, each held by a **binds at**
 rather than by anybody's mood.
 
@@ -159,21 +158,17 @@ form exists and is a condition of entering a release. Thirty-five cards are fill
   - ends with: that decision accepted, the value's requirement enforced, the card filled in,
     and the field in the sandbox in three engines
 
-- [ ] **1.5 — warnings on a field: `req-api-warning`**, as
-      [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them —
-      `pctWarn(path, validator | schema)` and `PCT_WARNINGS` in `./core`, the third branch of
-      the message line in the chrome and the three footers, `warnings` on every control
-  - the decision was measured before the code: seven probe cases on `@angular/forms` 22.2.1 —
-    one function as an error and as a warning, `schema(required)` and the `min` schema as
-    warnings with nothing written to the native control, `submit()` running over a warning, a
-    shadow per array item that dies with it, an async rule settling into the list, and a
-    directive beside `[formField]` reading it — land as the specs of `core` and `field`
-  - the two tones: `--pct-field-fg-warning` and `--pct-field-border-warning` measured against
-    the surface in both themes before the line ships; `fieldWarning` through `PCT_TEXTS`;
-    `pct-icon name="warning"` makes `./icon` the chrome's dependency — `check-bundle` says
-    what that costs on `./field`, and what the key costs on every entrypoint
-  - ends with: the requirement enforced, the field and number cards carrying the row, a demo
-    under `/field` in the sandbox read by the three engines, and the AT walk re-run on that view
+- [x] **1.5 — warnings on a field: `req-api-warning`**, landed 2026-10-07 as
+      [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, amended
+      four times on the way — `pctWarn` and `PCT_WARNINGS` in `./core`, the third branch in
+      the chrome and in six footers, `warnings` on every control
+  - the probe's seven cases are `core/src/warnings.spec.ts`, and one of them turned out to
+    measure the platform rather than the record: a shadow's injector outlives its item
+  - ten tokens, each in the contrast policy; `./field` +8.1 KB, `./radio`, `./slider` and
+    `./switch` the same for the icon chunk; the two keys under `@__PURE__`, or every
+    entrypoint carried `form()` ([`lesson-253`](lessons.md#lesson-253))
+  - the AT walk on `/field` is dispatched after the merge, and its record lands with the
+    next pass
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

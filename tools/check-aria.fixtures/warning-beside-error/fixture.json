@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "description",
+  "$reason": "The warning drawn in a block of its own beside the one the error and the hint share (0087). Then a field with a warning grows by a row — the warning stays on the screen under the hint or the error — and `aria-describedby` names both, while the same control inside `pct-field` shows one line. The two existing kinds are still alternatives of one conditional, so a gate that paired the hint with the error alone would pass this template; the gate pairs every two of the three kinds, and the first pair to fire here is the hint with the warning."
+}

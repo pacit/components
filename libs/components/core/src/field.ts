@@ -76,7 +76,15 @@ export interface PctFieldControl {
    * nothing the form does not see.
    */
   readonly ownErrors?: Signal<readonly PctValidationError[]>;
-  /** The chrome passes the hint and error ids; the control exposes them on itself. */
+  /**
+   * A verdict without a veto (0087): what `pctWarn()` wrote for the field, or what the
+   * template bound to the control's `warnings` input — the control resolves the two
+   * (`pctFieldWarnings`) and the chrome reads one list. Drawn after the error and before the
+   * hint, under the same `touched` gate, with `aria-invalid` untouched. Optional like
+   * `ownErrors`: a control written before the channel existed is still a control.
+   */
+  readonly fieldWarnings?: Signal<readonly PctValidationError[]>;
+  /** The chrome passes the hint, warning and error ids; the control exposes them on itself. */
   setDescribedBy(ids: string | null): void;
   /**
    * Focuses the control. The chrome calls this when the user clicks the field area outside
@@ -164,6 +172,11 @@ export function pctAttachToField(
  * Extracted because it was being copied into every control separately — a fix then had to be
  * repeated N times (req-api-wrapper).
  *
+ * The one message line ranks (`req-api-message`): the control's own error, the form's error
+ * once touched, the warning once touched, the hint. `showWarning` is therefore a statement
+ * about the LINE — it is free of an error — and not about the field's validity: a field
+ * invalid under an error with no sentence shows its warning, as it shows its hint today.
+ *
  * @since 0.1.0
  */
 export function pctFieldMessages(src: {
@@ -172,6 +185,8 @@ export function pctFieldMessages(src: {
   errors: Signal<readonly PctValidationError[]>;
   /** The control's own channel (0070): ahead of the form's verdict, and gated by nothing. */
   own?: Signal<readonly PctValidationError[]>;
+  /** A verdict without a veto (0087): after the error, before the hint, once touched. */
+  warnings?: Signal<readonly PctValidationError[]>;
 }) {
   const own = computed(() => src.own?.() ?? []);
   const errorText = computed(
@@ -185,7 +200,12 @@ export function pctFieldMessages(src: {
     () => (src.invalid() && src.touched()) || own().length > 0,
   );
   const showError = computed(() => showInvalid() && errorText() !== '');
-  return { errorText, showInvalid, showError };
+  const warningText = computed(() => src.warnings?.()[0]?.message ?? '');
+  /** The same gate as the form's error: `submit()` marks the form touched and lights both. */
+  const showWarning = computed(
+    () => !showError() && src.touched() && warningText() !== '',
+  );
+  return { errorText, showInvalid, showError, warningText, showWarning };
 }
 
 /**

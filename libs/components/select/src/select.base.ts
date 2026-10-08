@@ -27,6 +27,7 @@ import {
   PCT_TEXTS,
   pctDescribedBy,
   pctAttachToField,
+  pctFieldWarnings,
   pctFieldMessages,
   pctListNavigation,
   pctOverlay,
@@ -185,6 +186,7 @@ function isGroup<T>(item: PctSelectItem<T>): item is PctSelectOptionGroup<T> {
     '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-open]': 'open() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-warning]': 'warningLit() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
     // The one state a consumer's stylesheet cannot derive from the parts: both controls draw
     // the same DOM, so the tag is what tells them apart, and a tag is not a selector the
@@ -290,6 +292,22 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * @since 0.1.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /**
+   * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
+   *
+   * @since next
+   */
+  readonly warnings = input<
+    readonly ValidationError.WithOptionalFieldTree[] | undefined
+  >(undefined);
+
+  /**
+   * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
+   *
+   * @since next
+   */
+  readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value.
@@ -548,6 +566,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   protected readonly listboxId: string;
   protected readonly hintId: string;
   protected readonly errorId: string;
+  protected readonly warningId: string;
 
   // --- working with the chrome (req-api-wrapper) ---
 
@@ -1022,6 +1041,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     invalid: this.invalid,
     touched: this.touched,
     errors: this.errors,
+    warnings: this.fieldWarnings,
   });
   protected readonly errorText = this.messages.errorText;
   /**
@@ -1030,10 +1050,16 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * @since 0.1.0
    */
   readonly showInvalid = this.messages.showInvalid;
+  protected readonly warningText = this.messages.warningText;
+  /** The warning is lit, whichever owner draws the line — the host says so in both modes (0087). */
+  protected readonly warningLit = this.messages.showWarning;
 
   /** Inside the chrome the chrome renders the message, not the control. */
   protected readonly showError = computed(
     () => !this.inField && this.messages.showError(),
+  );
+  protected readonly showWarning = computed(
+    () => !this.inField && this.warningLit(),
   );
 
   protected readonly describedBy = computed(() =>
@@ -1041,7 +1067,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
       ? this.fieldDescribedBy()
       : pctDescribedBy([
           [this.errorId, this.showError()],
-          [this.hintId, !this.showError() && this.hint() !== ''],
+          [this.warningId, this.showWarning()],
+          [
+            this.hintId,
+            !this.showError() && !this.showWarning() && this.hint() !== '',
+          ],
         ]),
   );
 
@@ -1136,6 +1166,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     this.listboxId = `${this.uid}-listbox`;
     this.hintId = `${this.uid}-hint`;
     this.errorId = `${this.uid}-error`;
+    this.warningId = `${this.uid}-warning`;
     this.controlId = this.triggerId;
 
     pctAttachToField(this.fieldApi, this);

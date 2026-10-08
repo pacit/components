@@ -33,6 +33,7 @@ from what the browser really gets.
 ./checkbox PctCheckbox hint
 ./checkbox PctCheckbox label
 ./checkbox PctCheckbox mark
+./checkbox PctCheckbox warning
 ./chips PctChip label
 ./chips PctChip remove
 ./date PctCalendar caption
@@ -47,6 +48,7 @@ from what the browser really gets.
 ./date PctDate label
 ./date PctDate panel
 ./date PctDate toggle
+./date PctDate warning
 ./dialog PctDialog backdrop
 ./dialog PctDialog close
 ./dialog PctDialog content
@@ -68,6 +70,7 @@ from what the browser really gets.
 ./field PctField field-prefix
 ./field PctField field-row
 ./field PctField field-suffix
+./field PctField field-warning
 ./field PctLabelAux field-label-aux-item
 ./field PctMessageAux field-message-aux-item
 ./field PctPrefix field-prefix-item
@@ -94,6 +97,7 @@ from what the browser really gets.
 ./radio PctRadioGroup group-hint
 ./radio PctRadioGroup group-label
 ./radio PctRadioGroup group-options
+./radio PctRadioGroup group-warning
 ./select PctMultiSelect arrow
 ./select PctMultiSelect clear
 ./select PctMultiSelect empty
@@ -109,6 +113,7 @@ from what the browser really gets.
 ./select PctMultiSelect placeholder
 ./select PctMultiSelect trigger
 ./select PctMultiSelect value
+./select PctMultiSelect warning
 ./select PctSelect arrow
 ./select PctSelect clear
 ./select PctSelect empty
@@ -124,6 +129,7 @@ from what the browser really gets.
 ./select PctSelect placeholder
 ./select PctSelect trigger
 ./select PctSelect value
+./select PctSelect warning
 ./skeleton PctSkeleton fill
 ./skeleton PctSkeleton track
 ./slider PctSlider bubble
@@ -135,6 +141,7 @@ from what the browser really gets.
 ./slider PctSlider mark
 ./slider PctSlider thumb
 ./slider PctSlider track
+./slider PctSlider warning
 ./stepper PctStep marker
 ./stepper PctStep track
 ./switch PctSwitch control
@@ -143,6 +150,7 @@ from what the browser really gets.
 ./switch PctSwitch label
 ./switch PctSwitch thumb
 ./switch PctSwitch track
+./switch PctSwitch warning
 ./tabs PctTab panel
 ./tabs PctTabs list
 ./tabs PctTabs tab

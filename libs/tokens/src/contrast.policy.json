@@ -449,6 +449,13 @@
       "severity": "error"
     },
     {
+      "name": "checkbox — warning message",
+      "fg": "pct.checkbox.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "checkbox/disabled — label",
       "fg": "pct.checkbox.fg-disabled",
       "bg": "pct.surface",
@@ -486,6 +493,13 @@
     {
       "name": "switch — error message",
       "fg": "pct.switch.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "switch — warning message",
+      "fg": "pct.switch.fg-warning",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
@@ -589,6 +603,13 @@
       "severity": "error"
     },
     {
+      "name": "date — warning message",
+      "fg": "pct.date.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "date — the format hint standing in the empty field",
       "fg": "pct.date.placeholder-fg",
       "bg": "pct.date.bg",
@@ -626,6 +647,13 @@
     {
       "name": "UI: date field border (invalid)",
       "fg": "pct.date.border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: date field border (warning)",
+      "fg": "pct.date.border-warning",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
@@ -738,6 +766,13 @@
     {
       "name": "slider — error message",
       "fg": "pct.slider.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "slider — warning message",
+      "fg": "pct.slider.fg-warning",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
@@ -890,6 +925,13 @@
       "severity": "error"
     },
     {
+      "name": "radio — warning message",
+      "fg": "pct.radio.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "radio/disabled — label",
       "fg": "pct.radio.fg-disabled",
       "bg": "pct.surface",
@@ -1009,6 +1051,13 @@
       "severity": "error"
     },
     {
+      "name": "select — warning message",
+      "fg": "pct.select.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "select/disabled — text",
       "fg": "pct.select.fg-disabled",
       "bg": "pct.select.bg-disabled",
@@ -1032,6 +1081,13 @@
     {
       "name": "UI: select border (error)",
       "fg": "pct.select.border-invalid",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: select border (warning)",
+      "fg": "pct.select.border-warning",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
@@ -1079,6 +1135,13 @@
       "severity": "error"
     },
     {
+      "name": "field — warning message",
+      "fg": "pct.field.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "field — prefix/suffix decoration",
       "fg": "pct.field.affix-fg",
       "bg": "pct.field.bg",
@@ -1109,6 +1172,13 @@
     {
       "name": "UI: field border (error)",
       "fg": "pct.field.border-invalid",
+      "bg": "pct.field.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: field border (warning)",
+      "fg": "pct.field.border-warning",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"

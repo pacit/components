@@ -79,12 +79,25 @@ grade.**
    the same list. A field nobody warned has no key and no shadow. The shadow dies with the
    node: an array item removed destroys the node's injector, and the shadow's effects with it.
 
+   _Amended 2026-10-07: the last sentence is half true, and the measured half stands under
+   "What this costs us" — the node's injector and the shadow's management effect go, the
+   shadow's own node injectors do not._
+
 3. **Reading it is the platform's reading.** `f.amount().metadata(PCT_WARNINGS)()` anywhere.
    On the bound element a control injects `FORM_FIELD` (`self`, optional) and reads
    `state().metadata(PCT_WARNINGS)` — through one helper in `core`, called in each control
    beside `errors` — and `warnings` is also an input, so an application with no signal form,
    or with a sentence of its own, hands the list in the way it hands `errors`. The contract
    `PctFieldControl` gains `warnings`, optional like `ownErrors`.
+
+   _Amended 2026-10-07: **the input is `warnings`, the contract member is `fieldWarnings`, and
+   the helper is `pctFieldWarnings`.** One name cannot be both: the input has to be able to
+   say nothing — it is `undefined` until a template binds it, and `undefined` is what sends the
+   control to its own `[formField]` — while the member the chrome reads has to be the list
+   itself, resolved. So a control declares `warnings = input(undefined)` and
+   `fieldWarnings = pctFieldWarnings(this.warnings)`, and the chrome reads `fieldWarnings`.
+   A bound `[]` is an answer and not an absence: an application with a sentence of its own, or
+   none, says so and the form's list is not read behind it._
 
 **On the screen.** The one message line ([0022](0022-one-message-line.md)) ranks: the
 control's own error (0070), the form's error once touched, **the warning once touched**, the
@@ -99,6 +112,16 @@ has no property for a warning and `aria-invalid` stays where it is: `null`. The 
 while it is on the screen. The host carries `data-pct-warning`; `data-pct-invalid` is
 untouched. The three controls that draw their own footers — checkbox, radio group, select —
 draw the same third branch of the same conditional.
+
+_Amended 2026-10-07: **six footers, not three, and the tone paints the surface, never the
+mark.** The switch, the slider and the date field draw a footer of their own too — counted in
+the templates, not remembered — and `req-api-message` holds every one of them to the same
+line, so all six take the branch, each with its own `fg-warning` token as each has its
+`fg-invalid`. Where the control standing alone draws a field surface — the select's trigger,
+the date's row — that border takes `border-warning` as the chrome's does. A checkbox's box, a
+radio's ring, a switch's track and a slider's thumb are marks and keep their colour: a warning
+is no fault of the control, and the line with its glyph and its word is the tone's whole say
+there. Ten tokens in all, each measured against its surface in the contrast policy._
 
 **The gate is the same.** `touched`, like the form's error. `submit()` marks the form touched,
 so an attempt lights every warning along with every error — and then runs, because nothing
@@ -150,8 +173,8 @@ schema(required))` for a warning, and a validator of its own is one function eit
   `required` attribute, no `min`, no `REQUIRED` metadata, measured — which is right: a value
   under a warning is allowed.
 - `pctFieldMessages` grows `warningText` and `showWarning`; the chrome and three footers grow
-  a branch. `check-aria` point 6 keeps holding hint and error as alternatives, and the warning
-  joins the same conditional.
+  a branch — six, by the amendment under "On the screen". `check-aria` point 6 keeps holding
+  hint and error as alternatives, and the warning joins the same conditional.
 - A warning is announced from where it is drawn (0026), politely.
 
 ## What this costs us
@@ -162,10 +185,29 @@ schema(required))` for a warning, and a validator of its own is one function eit
   already;
   every control for the input and the read; and one `PctTexts` key on every entrypoint, ~29 B
   each by 0070's measurement.
+  _Amended 2026-10-07, read off `size.snapshot.md`:_ `./core` 8945 → 9706 B; `./field`
+  28524 → 36650 B, ~8 KB of it the icon chunk and `@angular/common` behind it; the same
+  chunk is new to `./radio`, `./slider` and `./switch`, which grow by the same ~8 KB each
+  for a glyph in a footer, while `./checkbox`, `./select` and `./date`, which had it, grow by
+  2.3, 3.8 and 2.6 KB; and every entrypoint that takes `./core` carries ~200 B more in the
+  probe, which is the import statement of `@angular/forms/signals` kept as an external — in an application the
+  bundler drops it, because the two keys are created under `@__PURE__` and nothing else in
+  `./core` reads the module. Without those two comments the key, its builder and `form()`
+  behind it were kept in a button-only application: 456 B of this library and the platform's
+  form machinery, on every entrypoint ([`lesson-253`](../lessons.md#lesson-253)).
 - **A shadow is a second field tree.** `pctWarn(path, schema)` builds a form per schema per
   field instance — per array item under `applyEach` — over the same value. For a leaf that is
   one node; for an object path it is the subtree. The logic form costs a computed and nothing
   else.
+- **A shadow's own injector outlives the item — measured, not what this record first wrote.**
+  _Amended 2026-10-07._ The real node's injector is destroyed with the item, and with it the
+  shadow's management effect; but a shadow node's injector is `Injector.create({ parent })`
+  in the compiled chunk and an `R3Injector` does not destroy its children, so an async rule's
+  resource inside a shadow stays registered until the page goes
+  (`warnings.spec.ts › an item of a list gets a shadow of its own`, `destroyed` 0 where the
+  probe's `create` counted the real nodes). The platform's own `validateAsync` on a form
+  whose component is destroyed behaves the same way. Sync rules are computeds nobody reads
+  any more; an async warning under `applyEach` is a dormant resource per removed item.
 - **A shadow's errors point at the shadow.** `errorSummary()` carries `fieldTree`, and that is
   the shadow's field, not the form's; a consumer following it lands on the same value in a
   tree nobody binds. The chrome reads `kind` and `message` and follows nothing.

@@ -115,7 +115,7 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
  * @since 0.1.0
  */
 export class PctCheckboxHarness extends PctHarness<
-  'box' | 'control' | 'error' | 'hint' | 'label' | 'mark'
+  'box' | 'control' | 'error' | 'hint' | 'label' | 'mark' | 'warning'
 > {
   static override hostSelector = 'pct-checkbox';
   static override readonly parts = [
@@ -125,6 +125,7 @@ export class PctCheckboxHarness extends PctHarness<
     'hint',
     'label',
     'mark',
+    'warning',
   ] as const;
 }
 
@@ -189,7 +190,7 @@ export class PctCalendarHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctDateHarness extends PctHarness<
-  'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle'
+  'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle' | 'warning'
 > {
   static override hostSelector = 'pct-date';
   static override readonly parts = [
@@ -199,6 +200,7 @@ export class PctDateHarness extends PctHarness<
     'label',
     'panel',
     'toggle',
+    'warning',
   ] as const;
 }
 
@@ -281,6 +283,7 @@ export class PctFieldHarness extends PctHarness<
   | 'field-prefix'
   | 'field-row'
   | 'field-suffix'
+  | 'field-warning'
 > {
   static override hostSelector = 'pct-field';
   static override readonly parts = [
@@ -295,6 +298,7 @@ export class PctFieldHarness extends PctHarness<
     'field-prefix',
     'field-row',
     'field-suffix',
+    'field-warning',
   ] as const;
 }
 
@@ -509,7 +513,11 @@ export class PctRadioHarness extends PctHarness<
  * @since 0.1.0
  */
 export class PctRadioGroupHarness extends PctHarness<
-  'group-error' | 'group-hint' | 'group-label' | 'group-options'
+  | 'group-error'
+  | 'group-hint'
+  | 'group-label'
+  | 'group-options'
+  | 'group-warning'
 > {
   static override hostSelector = 'pct-radio-group';
   static override readonly parts = [
@@ -517,6 +525,7 @@ export class PctRadioGroupHarness extends PctHarness<
     'group-hint',
     'group-label',
     'group-options',
+    'group-warning',
   ] as const;
 }
 
@@ -543,6 +552,7 @@ export class PctMultiSelectHarness extends PctHarness<
   | 'placeholder'
   | 'trigger'
   | 'value'
+  | 'warning'
 > {
   static override hostSelector = 'pct-multi-select';
   static override readonly parts = [
@@ -561,6 +571,7 @@ export class PctMultiSelectHarness extends PctHarness<
     'placeholder',
     'trigger',
     'value',
+    'warning',
   ] as const;
 }
 
@@ -585,6 +596,7 @@ export class PctSelectHarness extends PctHarness<
   | 'placeholder'
   | 'trigger'
   | 'value'
+  | 'warning'
 > {
   static override hostSelector = 'pct-select';
   static override readonly parts = [
@@ -603,6 +615,7 @@ export class PctSelectHarness extends PctHarness<
     'placeholder',
     'trigger',
     'value',
+    'warning',
   ] as const;
 }
 
@@ -635,6 +648,7 @@ export class PctSliderHarness extends PctHarness<
   | 'mark'
   | 'thumb'
   | 'track'
+  | 'warning'
 > {
   static override hostSelector = 'pct-slider';
   static override readonly parts = [
@@ -647,6 +661,7 @@ export class PctSliderHarness extends PctHarness<
     'mark',
     'thumb',
     'track',
+    'warning',
   ] as const;
 }
 
@@ -692,7 +707,7 @@ export class PctStepperHarness extends PctHarness<never> {
  * @since 0.1.0
  */
 export class PctSwitchHarness extends PctHarness<
-  'control' | 'error' | 'hint' | 'label' | 'thumb' | 'track'
+  'control' | 'error' | 'hint' | 'label' | 'thumb' | 'track' | 'warning'
 > {
   static override hostSelector = 'pct-switch';
   static override readonly parts = [
@@ -702,6 +717,7 @@ export class PctSwitchHarness extends PctHarness<
     'label',
     'thumb',
     'track',
+    'warning',
   ] as const;
 }
 

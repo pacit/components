@@ -131,6 +131,11 @@
         "$value": "{pct.danger}",
         "$description": "Text colour of the slider when invalid."
       },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087); the thumb keeps its colour, a warning being no fault of the control."
+      },
       "fg-disabled": {
         "$type": "color",
         "$value": "{pct.text-disabled}",
