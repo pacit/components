@@ -318,7 +318,7 @@ and every one is held by a **binds at** rather than by anybody's mood.
     `alert` that enters on leaving the e-mail: Orca heard it at stop 1 in both readings and
     leaves `main` there, so it never arrives at the warned stops; VoiceOver heard it on 09-16
     and not on 10-08; NVDA's log carries it in neither — so the one stable datum is Orca's
-    alert, and the `status` line has no reading at all yet
+    alert, and the `status` line has not been heard by any yet
   - one reading each of two stacks, and VoiceOver wavers between runs; a `status` region inserted
     with its text is a known silence for readers that announce a change, not an arrival, where
     an `alert` is an event. Two roads if the weekly pass confirms it: a region standing before
