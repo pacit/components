@@ -217,13 +217,18 @@ checks stop at that tripwire first, so the case passes its rule only through `wr
 `failed-file-not-a-failure` reads what the run's Vitest reporters DO to a spec file that fails
 outside its tests: the gate calls them as Vitest does over five files shaped as Vitest leaves
 them — an import, a file's hook and a suite's hook that threw, a test that failed, a file that
-passed — and reads the failures as the runner would, one per failed test. The reference names
-`fails-files`, a prepared reporter that does the job as `FailedFileFails` does; the live run is
-held by production, which calls the real configuration.
+passed — and reads the failures with the runner's own functions (`collectTestsFromSuite`,
+`convertTestToTestResult`), as `<spec>: <reason>`. It reads the configuration and no report,
+so every door asks it first. The reference names `fails-files`, a prepared reporter that does
+the job as `FailedFileFails` does; the live run is held by production, which calls the real
+configuration.
 
-Nine cases, each naming the reporters it runs instead. Five break exactly one shape, so that each
-shape has the case only it catches: blind to an import, to a file's hook, to a suite's hook (the
-reason lost), a second failure beside a test's own, a pass read as a failure. The other four:
-no reporter but `default`, one that does nothing (the list is not the job), one that sees the
-import of `lesson-252` and nothing else, and one that throws — read as a reporter that did not do
-the job rather than an error that names no rule.
+Thirteen cases, each naming the reporters it runs instead. Five break exactly one shape, so
+that each shape has the case only it catches: blind to an import, to a file's hook, to a suite's
+hook (the reason lost), a second failure beside a test's own, a pass read as a failure. Six
+break the job some other way: no reporter but `default`, one that does nothing (the list is not
+the job), one that sees the import of `lesson-252` and nothing else, one whose test says
+`mode: 'skip'` (the runner reads it skipped whatever its state), one whose test names no file
+(`killedBy` says `unknown.js`), and one that throws — read as a reporter that did not do the job
+rather than an error that names no rule. Two pin the place: before `unreadable-measurement` in
+the checks, and before `patterns-unreadable` in the writer.

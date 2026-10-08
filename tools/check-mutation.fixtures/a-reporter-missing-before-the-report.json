@@ -1,0 +1,7 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "No reporter but `default`, and no report either. The rule reads the configuration and no report, so the checks ask it first: it fires before `unreadable-measurement`, and a narrow run's report \u2014 which stops at point 2 \u2014 cannot hide it.",
+  "noReport": true,
+  "reporters": ["default"]
+}

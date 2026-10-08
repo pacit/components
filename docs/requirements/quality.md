@@ -217,7 +217,8 @@ run that lost a file, or gained one outside the inventory, write nothing either,
 Vitest configuration makes a spec file that fails outside its tests one failed test, so a
 mutant that breaks its import, a `describe` body or a hook is killed under the runner as it is
 and as stryker-js#6217 would make it — held by running the configuration's own reporters over
-five shaped files (`tests/failed-file-not-a-failure`) — and a survivor has to have run a test,
+five shaped files and reading them with the runner's functions, first in every door
+(`tests/failed-file-not-a-failure`) — and a survivor has to have run a test,
 in every door, the full writer included (`measurement/survivor-without-a-test`)
 ([`lesson-253`](../lessons.md#lesson-253)). A row of that snapshot also has to **add
 up** (`score/columns-adrift`): it states a score and the counts behind it, so
@@ -236,7 +237,7 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 84 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 88 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires

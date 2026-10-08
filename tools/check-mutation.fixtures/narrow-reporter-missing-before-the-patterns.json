@@ -1,0 +1,8 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "No reporter but `default`, handed to `--write` with a report whose `mutate` nobody can read. The writer asks the rule first, before `patterns-unreadable` and before it splits a full run from a narrow one \u2014 so a narrow run merged on the desk is held to the configuration as the nightly is.",
+  "narrow": ["libs/fake/beta.ts"],
+  "mutateAs": null,
+  "reporters": ["default"]
+}

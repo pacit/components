@@ -23,6 +23,12 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+// The runner's own reading of a Vitest run. The package exports none of it, so it is taken from
+// the file — an upgrade that moves it fails here, and loudly, rather than drifting from a copy.
+import {
+  collectTestsFromSuite,
+  convertTestToTestResult,
+} from '../node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-helpers.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-mutation.fixtures');
@@ -510,13 +516,13 @@ const survivorsWithoutATest = (files) => {
 };
 
 /**
- * Five spec files as Vitest leaves them after a run, each beside the failures the runner has
- * to read off it once the reporters are done: one per failed test, its first error — what
- * Stryker records as `killedBy` and as the reason. A file Vitest failed outside its tests
- * holds no failed test of its own:
- * an import that threw (no tasks, the error on the file), a hook of the file (tests passed,
- * the error on the file), a hook of a suite (tests passed, the error on the suite). The other
- * two are the controls: a test that failed is read as it is, and a file that passed has none.
+ * Five spec files as Vitest leaves them after a run — every task pointing at its file, a test in
+ * a `describe` at its suite — each beside the failures the runner has to read off it once the
+ * reporters are done, as `<spec>: <reason>`: the spec `killedBy` names and the reason Stryker
+ * records. A file Vitest failed outside its tests holds no failed test of its own: an import that
+ * threw (no tasks, the error on the file), a hook of the file (tests passed, the error on the
+ * file), a hook of a suite (tests passed, the error on the suite). The other two are the
+ * controls: a test that failed is read as it is, and a file that passed has none.
  */
 const failedFileShapes = () => {
   const result = (state, message) => ({
@@ -529,57 +535,126 @@ const failedFileShapes = () => {
     mode: 'run',
     result: result(state, message),
   });
-  const suite = (name, state, tasks, message) => ({
+  const suite = (state, tasks, message) => ({
     type: 'suite',
-    id: name,
-    name,
+    name: 'suite',
     mode: 'run',
     tasks,
     result: result(state, message),
   });
+  const file = (filepath, name, state, tasks, message) => {
+    const spec = {
+      ...suite(state, tasks, message),
+      id: filepath,
+      name,
+      filepath,
+    };
+    const adopt = (children, parent) => {
+      for (const child of children) {
+        child.file = spec;
+        child.suite = parent;
+        if (child.type === 'suite') adopt(child.tasks, child);
+      }
+    };
+    adopt(tasks, undefined);
+    return spec;
+  };
   return [
     [
-      suite('an import that threw', 'fail', [], 'import threw'),
-      ['import threw'],
+      file(
+        'import.spec.ts',
+        'an import that threw',
+        'fail',
+        [],
+        'import threw',
+      ),
+      ['import.spec.ts: import threw'],
     ],
     [
-      suite(
+      file(
+        'file-hook.spec.ts',
         'a file hook that threw',
         'fail',
         [test('pass')],
         'file hook threw',
       ),
-      ['file hook threw'],
+      ['file-hook.spec.ts: file hook threw'],
     ],
     [
-      suite('a suite hook that threw', 'fail', [
-        suite('suite', 'fail', [test('pass')], 'suite hook threw'),
+      file('suite-hook.spec.ts', 'a suite hook that threw', 'fail', [
+        suite('fail', [test('pass')], 'suite hook threw'),
       ]),
-      ['suite hook threw'],
+      ['suite-hook.spec.ts: suite hook threw'],
     ],
     [
-      suite('a test that failed', 'fail', [
-        suite('suite', 'fail', [test('fail', 'assertion failed')]),
+      file('failed-test.spec.ts', 'a test that failed', 'fail', [
+        suite('fail', [test('fail', 'assertion failed')]),
       ]),
-      ['assertion failed'],
+      ['failed-test.spec.ts: assertion failed'],
     ],
-    [suite('a file that passed', 'pass', [test('pass')]), []],
+    [file('passed.spec.ts', 'a file that passed', 'pass', [test('pass')]), []],
   ];
 };
 
-/** The tests of a task tree, as the runner collects them (`collectTestsFromSuite`). */
+/** The tests of a task tree, as the runner collects them. */
 const testsIn = (tasks) =>
-  (Array.isArray(tasks) ? tasks : []).flatMap((t) =>
-    t?.type === 'suite' ? testsIn(t.tasks) : t?.type === 'test' ? [t] : [],
-  );
+  collectTestsFromSuite({ tasks: Array.isArray(tasks) ? tasks : [] });
 
-/** The failures the runner reads off a file: each failed test's first error, in order. */
+/**
+ * The failures the runner reads off a file, with its own functions: the tests it collects, those
+ * with a result (`run()` drops the rest), each converted as it converts one — `mode: 'skip'`
+ * read as skipped, a skipped test under a failed suite read as failed — and of those the failed
+ * ones, the only results it gives a `failureMessage`.
+ */
 const failuresIn = (file) =>
   testsIn(file.tasks)
-    .filter((t) => t.result?.state === 'fail')
-    .map(
-      (t) => t.result.errors?.[0]?.message ?? 'StrykerJS: Unknown test failure',
+    .filter((t) => t.result)
+    .map((t) => convertTestToTestResult(t))
+    .filter((r) => 'failureMessage' in r)
+    .map((r) => `${r.id.split('#')[0]}: ${r.failureMessage}`);
+
+/**
+ * Whether the run's Vitest reporters make a spec file that fails outside its tests one failed
+ * test (`lesson-253`). The runner builds a verdict from failed tests, so such a file is a failure
+ * only if a reporter of the run turns it into one (`FailedFileFails`) — under 9.6.1 it is
+ * otherwise a survivor, and after stryker-js#6217 an errored mutant, both without a word. The
+ * reporters are the objects the run gets, called the way Vitest calls them, on files shaped as
+ * Vitest leaves them, and the verdict is read with the runner's functions. It reads the
+ * configuration and no report, so every door asks it first: the checks, and the writer a narrow
+ * run on the desk goes through as a red nightly does.
+ */
+const failedFileNotAFailure = (reporters) => {
+  const shapes = failedFileShapes();
+  const wrong = [];
+  try {
+    const vitest = { state: { getFiles: () => shapes.map(([file]) => file) } };
+    for (const reporter of reporters ?? []) reporter?.onInit?.(vitest);
+    for (const reporter of reporters ?? [])
+      reporter?.onTestRunEnd?.([], [], 'passed');
+  } catch (error) {
+    wrong.push(`a reporter threw: ${error?.message ?? error}`);
+  }
+  for (const [file, wanted] of shapes) {
+    const read = failuresIn(file);
+    if (JSON.stringify(read) !== JSON.stringify(wanted))
+      wrong.push(
+        `${file.name}: the runner reads ${JSON.stringify(read)}, and should read ` +
+          `${JSON.stringify(wanted)}`,
+      );
+  }
+  if (wrong.length)
+    throw new MutationError(
+      'tests',
+      'failed-file-not-a-failure',
+      `the mutation run's Vitest configuration does not make a spec file that fails outside ` +
+        `its tests one failed test:\n` +
+        list(wrong) +
+        `\n    \`@stryker-mutator/vitest-runner\` reads failed TESTS, so a mutant that breaks a ` +
+        `file before or after its cases is recorded as a survivor (9.6.1) or errored ` +
+        `(stryker-js#6217) where a plain run is red. \`FailedFileFails\` in ` +
+        `\`mutation.vitest.config.mts\` is what makes it a kill (\`lesson-253\`).`,
     );
+};
 
 /**
  * A narrow run merged into the record: the rows of the files it measured are rewritten,
@@ -696,6 +771,7 @@ const mergeSnapshot = ({ snapshot, report, policy, sources }) => {
  * before a byte is written. Returns what `mergeSnapshot` returns, and `mode`.
  */
 const writeSnapshot = (input) => {
+  failedFileNotAFailure(input?.reporters);
   const { report, policy } = input;
   const mutate = report?.config?.mutate;
   if (!Array.isArray(mutate))
@@ -763,6 +839,8 @@ const writeSnapshot = (input) => {
  * the later ones would have nothing to examine anyway. Returns `{ description, snapshot }`.
  */
 export const checkMutation = (input) => {
+  // Point 3's rule on the Vitest configuration, asked first: it needs no report.
+  failedFileNotAFailure(input?.reporters);
   const policy = input?.policy ?? {};
   const tolerance = policy.tolerance;
   const report = input?.report;
@@ -1084,44 +1162,6 @@ export const checkMutation = (input) => {
         list(specOutsideRepo) +
         `\n    Point 3's denominator comes from git, so such a file kills mutants and ` +
         `the gate has no way of asking whether it kills them everywhere.`,
-    );
-
-  // The same configuration, read for what it makes of a spec file that fails outside its
-  // tests. The runner builds a verdict from failed tests, so such a file is a failure only if
-  // a reporter of the run turns it into one (`FailedFileFails`, `lesson-253`) — under 9.6.1 it
-  // is otherwise a survivor, and after stryker-js#6217 an errored mutant, both without a word.
-  // The reporters are the objects the run gets, called the way Vitest calls them, on files
-  // shaped as Vitest leaves them; the verdict is read the way the runner reads it.
-  const reporters = Array.isArray(input.reporters) ? input.reporters : [];
-  const shapes = failedFileShapes();
-  const wrong = [];
-  try {
-    const vitest = { state: { getFiles: () => shapes.map(([file]) => file) } };
-    for (const reporter of reporters) reporter?.onInit?.(vitest);
-    for (const reporter of reporters)
-      reporter?.onTestRunEnd?.([], [], 'passed');
-  } catch (error) {
-    wrong.push(`a reporter threw: ${error?.message ?? error}`);
-  }
-  for (const [file, wanted] of shapes) {
-    const read = failuresIn(file);
-    if (JSON.stringify(read) !== JSON.stringify(wanted))
-      wrong.push(
-        `${file.name}: the runner reads ${JSON.stringify(read)}, and should read ` +
-          `${JSON.stringify(wanted)}`,
-      );
-  }
-  if (wrong.length)
-    throw new MutationError(
-      'tests',
-      'failed-file-not-a-failure',
-      `the mutation run's Vitest configuration does not make a spec file that fails outside ` +
-        `its tests one failed test:\n` +
-        list(wrong) +
-        `\n    \`@stryker-mutator/vitest-runner\` reads failed TESTS, so a mutant that breaks a ` +
-        `file before or after its cases is recorded as a survivor (9.6.1) or errored ` +
-        `(stryker-js#6217) where a plain run is red. \`FailedFileFails\` in ` +
-        `\`mutation.vitest.config.mts\` is what makes it a kill (\`lesson-253\`).`,
     );
 
   // 4. THRESHOLD. Stryker's default `break` is `null` — the run then exits zero whatever
@@ -1584,11 +1624,12 @@ const buildReport = (w) => ({
  * import (acts on a file with tasks only), to a file's hook (acts on a file with no tasks or a
  * failed suite only), to a suite's hook (carries the file's own errors only), a second failure
  * beside a test's own, a pass read as a failure. `inert` does nothing, `empty-files-only` sees
- * the import of `lesson-252` and nothing else, and `throws` breaks the run. A name nobody
- * prepared stays a string, as `default` does in Vitest's list.
+ * the import of `lesson-252` and nothing else, `skipped-test` adds a test the runner reads as
+ * skipped, `without-file` one `killedBy` cannot name a spec for, and `throws` breaks the run. A
+ * name nobody prepared stays a string, as `default` does in Vitest's list.
  */
 const preparedReporter = (name) => {
-  if (name === 'inert') return { onTestRunEnd() {} };
+  if (name === 'inert') return { onTestRunEnd: () => undefined };
   const suiteErrors = (tasks) =>
     tasks.flatMap((t) =>
       t.type === 'suite'
@@ -1625,6 +1666,8 @@ const preparedReporter = (name) => {
         file.tasks.push({
           type: 'test',
           name: 'failed',
+          mode: name === 'skipped-test' ? 'skip' : 'run',
+          ...(name === 'without-file' ? {} : { file }),
           result: {
             state: 'fail',
             errors: [
@@ -1646,6 +1689,8 @@ const PREPARED_REPORTERS = [
   'file-errors-only',
   'every-failed-file',
   'passed-files-too',
+  'skipped-test',
+  'without-file',
   'throws',
 ];
 
@@ -1764,6 +1809,7 @@ if (WRITE) {
         report,
         policy,
         sources,
+        reporters: await vitestReporters(),
       });
     } catch (error) {
       if (!(error instanceof MutationError)) throw error;
