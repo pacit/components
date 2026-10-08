@@ -510,6 +510,23 @@ describe('PctTimeColumns — the walk', () => {
     expect(m.defaultPrevented).toBe(true);
   });
 
+  it('starts afresh from a key the run before it cannot answer', async () => {
+    const stray = await render();
+    await press(stray, column(stray, 'hour'), 'x');
+    await press(stray, column(stray, 'hour'), '9');
+    expect(stray.componentInstance.value()).toBe('09:05');
+
+    const quarter = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    await press(quarter, column(quarter, 'minute'), '3');
+    expect(quarter.componentInstance.value()).toBe('13:30');
+    // `34` is no row and begins none: the `4` is read on its own.
+    await press(quarter, column(quarter, 'minute'), '4');
+    expect(quarter.componentInstance.value()).toBe('13:45');
+  });
+
   it('ends the number being typed on any key that is neither printable nor a modifier', async () => {
     const f = await render();
     await press(f, column(f, 'hour'), '1');

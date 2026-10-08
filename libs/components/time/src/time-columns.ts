@@ -447,17 +447,23 @@ export class PctTimeColumns {
    */
   private seek(column: PctTimeColumn, key: string): number {
     clearTimeout(this.typedTimer);
-    const keys =
-      (this.typed.field === column.field ? this.typed.keys : '') +
-      key.toLowerCase();
-    this.typed = { field: column.field, keys };
     this.typedTimer = setTimeout(() => this.forget(), 500);
     const open = column.rows.filter((row) => !row.disabled);
-    const found =
+    const answer = (rows: readonly PctTimeRow[], keys: string) =>
       (/^\d+$/.test(keys)
-        ? open.find((row) => row.shown === Number(keys))
+        ? rows.find((row) => row.shown === Number(keys))
         : undefined) ??
-      open.find((row) => row.key.toLowerCase().startsWith(keys));
+      rows.find((row) => row.key.toLowerCase().startsWith(keys));
+    const alone = key.toLowerCase();
+    let keys =
+      (this.typed.field === column.field ? this.typed.keys : '') + alone;
+    // A run that names no row at all — a stray `x` and then `9`, or `7` then `4` in a column of
+    // quarters — starts afresh from this key, as a select's typeahead does, rather than holding
+    // the column deaf until it goes quiet. A run that names a row the bounds refuse is not that:
+    // `1` then `6` under `max="15:00"` means sixteen, and the column stays where it is.
+    if (answer(column.rows, keys) === undefined) keys = alone;
+    this.typed = { field: column.field, keys };
+    const found = answer(open, keys);
     return found === undefined ? -1 : column.rows.indexOf(found);
   }
 
