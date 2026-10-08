@@ -276,6 +276,13 @@ test.describe('forced-colors: active', () => {
     await visit(page, '/time', { media: FORCED });
     const sys = await systemColors(page);
 
+    // 13:05 is off the quarter-hour step: the hour column's chosen row is the one the walk
+    // stands on, and the minute column's walk stands on `00`, which nothing chose — the two
+    // states the ring has to be seen in.
+    const input = page.getByTestId('time-bounded').locator('input').first();
+    await input.fill('13:05');
+    await input.blur();
+
     // Opened from the keyboard, so the column that takes the focus shows it as `:focus-visible`
     // — the ring is drawn for a keyboard, and a press would not ask for it.
     const toggle = page
@@ -289,14 +296,28 @@ test.describe('forced-colors: active', () => {
     );
     await expect(hour).toBeFocused();
 
+    // The chosen row takes the mode's own pair for a selection, and the keyboard's ring on it
+    // takes the pair's text colour — `Highlight` on `SelectedItem` may be one colour.
     const chosen = hour.locator('[data-pct-part="option"][data-pct-chosen]');
-    await expect(chosen).toHaveCount(1);
+    await expect(chosen).toHaveAttribute('data-pct-active', '');
     expect(await styleOf(chosen, 'background-color')).toBe(sys.SelectedItem);
     expect(await styleOf(chosen, 'color')).toBe(sys.SelectedItemText);
+    expect(await styleOf(chosen, 'outline-style')).toBe('solid');
+    expect(await styleOf(chosen, 'outline-color')).toBe(sys.SelectedItemText);
+    expect(sys.SelectedItemText).not.toBe(sys.SelectedItem);
 
-    const cursor = hour.locator('[data-pct-part="option"][data-pct-active]');
+    // The keyboard's row that nothing chose: the panel's own surface, and a ring in Highlight.
+    await page.keyboard.press('Tab');
+    const minute = panel.locator(
+      '[data-pct-part="column"][data-pct-field="minute"]',
+    );
+    await expect(minute).toBeFocused();
+    const cursor = minute.locator('[data-pct-part="option"][data-pct-active]');
+    await expect(cursor).not.toHaveAttribute('data-pct-chosen', '');
+    expect(await styleOf(cursor, 'background-color')).toBe(sys.Canvas);
     expect(await styleOf(cursor, 'outline-style')).toBe('solid');
     expect(await styleOf(cursor, 'outline-color')).toBe(sys.Highlight);
+    expect(sys.Highlight).not.toBe(sys.Canvas);
 
     const refused = hour
       .locator('[data-pct-part="option"][data-pct-disabled]')

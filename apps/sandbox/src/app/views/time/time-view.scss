@@ -7,3 +7,10 @@
   flex-wrap: wrap;
   gap: var(--pct-space-5);
 }
+
+.time-view__locale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-size: var(--pct-font-size-sm);
+}

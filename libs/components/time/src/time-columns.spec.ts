@@ -154,6 +154,15 @@ describe('PctTimeColumns — the columns there are', () => {
     expect(labels(column(f, 'dayPeriod'))).toEqual(['오전', '오후']);
   });
 
+  it('writes the hour as wide as the field writes it', async () => {
+    // Most twelve-hour clocks write `1:05 PM`; the ones that pad write `01:05 AM`, and the
+    // column follows the field rather than a rule about twelve-hour clocks.
+    const padded = await render((h) => h.locale.set('hr-HR-u-hc-h12'));
+    expect(labels(column(padded, 'hour'))[1]).toBe('01');
+    const plain = await render((h) => h.locale.set('en-US'));
+    expect(labels(column(plain, 'hour'))[1]).toBe('1');
+  });
+
   it('writes each cycle’s first hour as that cycle writes it', async () => {
     const h11 = await render((h) => h.locale.set('ja-JP-u-hc-h11'));
     expect(labels(column(h11, 'hour'))[0]).toBe('0');
@@ -278,9 +287,62 @@ describe('PctTimeColumns — the roles and the names', () => {
     ) as HTMLElement;
     expect(host.getAttribute('role')).toBe('group');
     expect(host.hasAttribute('aria-label')).toBe(false);
+    expect(host.hasAttribute('aria-labelledby')).toBe(false);
     f.componentInstance.ariaLabel.set('Start time');
     await settle(f);
     expect(host.getAttribute('aria-label')).toBe('Start time');
+  });
+
+  it('names the group by a heading on the page', async () => {
+    @Component({
+      imports: [PctTimeColumns],
+      template: `<h3 id="when">When</h3>
+        <pct-time-columns ariaLabelledby="when" />`,
+    })
+    class Labelled {}
+    const f = TestBed.createComponent(Labelled);
+    f.detectChanges();
+    await f.whenStable();
+    const host = f.nativeElement.querySelector(
+      'pct-time-columns',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-labelledby')).toBe('when');
+    expect(host.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('carries its size to the rows, and the configured one by default', async () => {
+    @Component({
+      imports: [PctTimeColumns],
+      template: `<pct-time-columns size="sm" /><pct-time-columns />`,
+    })
+    class Sized {}
+    const f = TestBed.createComponent(Sized);
+    f.detectChanges();
+    await f.whenStable();
+    const [small, plain] = Array.from(
+      f.nativeElement.querySelectorAll('pct-time-columns'),
+    ) as HTMLElement[];
+    expect(small.getAttribute('data-pct-size')).toBe('sm');
+    expect(plain.getAttribute('data-pct-size')).toBe('md');
+  });
+
+  it('marks the row the walk stands on in every column, and only that one', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:05');
+    });
+    const marked = (list: HTMLElement) =>
+      rowsOf(list)
+        .filter((row) => row.hasAttribute('data-pct-active'))
+        .map((row) => row.textContent?.trim());
+    expect(marked(column(f, 'hour'))).toEqual(['13']);
+    // The value is off the step: no minute row is the value's, and the walk stands on `00`.
+    expect(marked(column(f, 'minute'))).toEqual(['00']);
+    expect(
+      rowsOf(column(f, 'minute')).filter((row) =>
+        row.hasAttribute('data-pct-chosen'),
+      ),
+    ).toHaveLength(0);
   });
 
   it('points every column at the row of the value, and marks it chosen', async () => {
@@ -306,9 +368,9 @@ describe('PctTimeColumns — the roles and the names', () => {
       const f = await render((h) => h.value.set(null));
       expect(chosen(column(f, 'hour'))).toEqual([]);
       expect(chosen(column(f, 'minute'))).toEqual([]);
-      // Now, held on the step: 14:22:37 is nearer 14:23 than 14:22.
+      // Now, as a wall clock shows it: 14:22 until it ticks, never rounded up to 14:23.
       expect(active(column(f, 'hour'))).toBe('14');
-      expect(active(column(f, 'minute'))).toBe('23');
+      expect(active(column(f, 'minute'))).toBe('22');
     } finally {
       vi.useRealTimers();
     }
@@ -356,10 +418,110 @@ describe('PctTimeColumns — the walk', () => {
     expect(f.componentInstance.value()).toBe('13:00');
   });
 
-  it('jumps to the row a typed digit begins', async () => {
+  it('reads typed digits as a number, the way a person types one', async () => {
     const f = await render();
     await press(f, column(f, 'minute'), '4');
-    expect(f.componentInstance.value()).toBe('13:40');
+    expect(f.componentInstance.value()).toBe('13:04');
+    await press(f, column(f, 'minute'), '5');
+    expect(f.componentInstance.value()).toBe('13:45');
+  });
+
+  it('reaches every hour of a twelve-hour clock by typing it', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('15:05');
+    });
+    // Rows `12, 1, 2 … 11`: a prefix would take `1` to twelve and never reach one.
+    await press(f, column(f, 'hour'), '1');
+    expect(f.componentInstance.value()).toBe('13:05');
+    await press(f, column(f, 'hour'), '2');
+    expect(f.componentInstance.value()).toBe('12:05');
+  });
+
+  it('answers a digit the padded rows do not begin with', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '9');
+    expect(f.componentInstance.value()).toBe('09:05');
+  });
+
+  it('falls back to the start of a row where no row writes the number', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    await press(f, column(f, 'minute'), '4');
+    expect(f.componentInstance.value()).toBe('13:45');
+  });
+
+  it('starts a new number once the typed digits have gone quiet', async () => {
+    const timers = vi.spyOn(globalThis, 'setTimeout');
+    try {
+      const f = await render();
+      await press(f, column(f, 'hour'), '1');
+      expect(f.componentInstance.value()).toBe('01:05');
+      // The half second the typeahead waits, run now rather than waited for: what it clears is
+      // the number being typed, so the next digit is a number of its own.
+      const quiet = timers.mock.calls.filter((call) => call[1] === 500).at(-1);
+      (quiet?.[0] as () => void)();
+      await press(f, column(f, 'hour'), '3');
+      expect(f.componentInstance.value()).toBe('03:05');
+    } finally {
+      timers.mockRestore();
+    }
+  });
+
+  it('keeps one column’s digits out of the next column', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    expect(f.componentInstance.value()).toBe('01:05');
+    await press(f, column(f, 'minute'), '3');
+    // Three, not thirteen: the `1` was the hour's.
+    expect(f.componentInstance.value()).toBe('01:03');
+  });
+
+  it('never types its way onto a row the bounds refuse', async () => {
+    const f = await render((h) => h.max.set('15:00'));
+    const list = column(f, 'hour');
+    await press(f, list, '1');
+    expect(f.componentInstance.value()).toBe('01:05');
+    const refused = await press(f, list, '6');
+    expect(f.componentInstance.value()).toBe('01:05');
+    expect(refused.defaultPrevented).toBe(false);
+  });
+
+  it('writes nothing for a key that matches no row — a miss is not an instruction', async () => {
+    const off = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:05');
+    });
+    const miss = await press(off, column(off, 'minute'), 'x');
+    expect(off.componentInstance.value()).toBe('13:05');
+    expect(miss.defaultPrevented).toBe(false);
+    await press(off, column(off, 'minute'), '7');
+    expect(off.componentInstance.value()).toBe('13:05');
+
+    const empty = await render((h) => h.value.set(null));
+    await press(empty, column(empty, 'minute'), 'x');
+    expect(empty.componentInstance.value()).toBeNull();
+
+    const refused = await render((h) => {
+      h.max.set('17:00');
+      h.value.set('18:30');
+    });
+    await press(refused, column(refused, 'hour'), 'x');
+    expect(refused.componentInstance.value()).toBe('18:30');
+  });
+
+  it('writes nothing for an arrow at a row with nowhere else to go', async () => {
+    const f = await render((h) => {
+      h.min.set('13:05');
+      h.max.set('13:05');
+      h.value.set(null);
+    });
+    const down = await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBeNull();
+    // The key is still the column's — a listbox's arrows are not the page's to scroll with.
+    expect(down.defaultPrevented).toBe(true);
   });
 
   it('jumps to a day period by its first letter', async () => {

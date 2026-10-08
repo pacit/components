@@ -74,7 +74,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.3 time and 1.4 datetime, then 1.2 — last, by 0016
+1  components             1.4 datetime, then 1.2 — last, by 0016
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -107,14 +107,14 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 holds the time field (**1.3**) and the datetime field after it
-(**1.4**), decided in [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) — the time's
-value module built, neither field yet, the datetime's value still a decision of its own — and
-it still ends at the table (**1.2**), deferred by
+**What is left.** Section 1 holds the datetime field (**1.4**), decided in
+[0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) after the time field it composes
+(**1.3**, closed 2026-10-08) — its value still a decision of its own — and it still ends at
+the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
 (**1.5**) landed on 2026-10-07, as
 [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. Section 3
-holds nothing since `0.2.0`. Section 4 holds four open findings, each held by a **binds at**
+holds nothing since `0.2.0`. Section 4 holds five open findings, each held by a **binds at**
 rather than by anybody's mood.
 
 ## 1. Components
@@ -128,25 +128,16 @@ argument to a first visitor.
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
 form exists and is a condition of entering a release. Thirty-seven cards are filled in.
 
-- [~] **1.3 — time field** in `@pacit/components/time`: the field, `PctTimeColumns` and the
-  value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
-  - the value module landed 2026-10-06: `PctTimeOfDay`, its arithmetic and `pctTimeFormat`,
-    enforced in node as [`req-api-time`](requirements/api.md#req-api-time); the digits moved to
-    `./core` (+718 B; `./date` +166 B, no other entrypoint moved; `./time` 9636 B, ~3.3 KB of it
-    core's), and `[pctNumber]`'s own `digits` is their third reader still to come
-  - the names, settled 2026-10-06 (0086 amended): the value is `PctTimeOfDay`, with
-    `pctTimeOfDay`, `isPctTimeOfDay`, `PctTimeOfDayParts` and `pctTimeOfDayParts`, and the field
-    keeps `PctTime`, as `PctDate` keeps its name beside `PctDay` — renamed before any release
-    carried the value
-  - whether `[formField]` fills a string bound is measured with the field, not inherited from
-    the date: Angular 22.2's `min()` and `max()` take numbers, so a rule binding a `PctTimeOfDay`
-    limit to `MIN`/`MAX` ships with a case or not at all
-  - then the columns (`pctListNavigation`, `aria-activedescendant`, `wrap` on, one stop each)
-    and the field: the tier `--pct-time-*`; the letters, the column names, the toggle's name
-    and `timeMalformed` through `PCT_TEXTS`; a card for each — and `./time` leaves the list of
-    entrypoints `check-bundle` holds without a component
-  - ends with: both cards filled in, the round trip over 0086's 38 locales read in three
-    engines, and the sandbox carrying the field under a 12-hour and a 24-hour locale in all three
+- [x] **1.3 — time field** in `@pacit/components/time` — **closed 2026-10-08**
+  - the value module landed 2026-10-06, enforced as
+    [`req-api-time`](requirements/api.md#req-api-time); the field `PctTime` and the columns
+    `PctTimeColumns` on 2026-10-08, with the tier `--pct-time-*`, nine `PCT_TEXTS` keys and the
+    icon role `clock` — and `./time` left `check-bundle`'s list of componentless entrypoints
+  - a signal form gives the field no bounds: Angular 22.2's `min()` and `max()` take numbers,
+    no rule ships, and the compiler refuses `min` beside `[formField]` (`NG8022`) — the card says so
+  - the round trip over 0086's 38 locales is read in three engines
+    (`apps/sandbox-e2e/src/time.spec.ts`), and `/time` carries 12-hour and 24-hour fields
+  - both cards filled in, the readers' log among their rows
 
 - [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
       `PctCalendar` and `PctTimeColumns`, after 1.3
@@ -325,6 +316,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
     the text, which `check-aria` point 6 refuses as a second row, or the polite channel of
     `PctAnnouncer` carrying the sentence the line already shows (0026)
   - binds at: **the weekly pass of 2026-10-12** — read again, and a decision if it holds
+
+- [ ] **4.82 — the time panel takes two Escapes under NVDA**
+  - the pass of 2026-10-08 (run 37795534533): on `/time` the act opens the columns and NVDA
+    says `Choisir une heure, dialog`; its Escape left the panel open, where the same walk closed
+    the date's panel, the menu and the popover. A `role="listbox"` puts NVDA in focus mode, and
+    focus mode keeps the first Escape for itself — so a person presses it twice
+  - the columns follow 0086's E1 reading, focus on the listbox; E2 — the option focused by a
+    roving `tabindex` — is the other reading axe passed, and whether NVDA keeps Escape there too
+    is unmeasured. VoiceOver closed no panel in that pass at all, so it says nothing here
+  - binds at: **the datetime field (1.4)**, whose panel holds these columns beside a grid that
+    NVDA lets Escape through — one panel cannot close one way from one half and another from
+    the other
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on

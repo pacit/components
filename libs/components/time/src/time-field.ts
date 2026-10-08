@@ -39,7 +39,12 @@ import { PctIcon } from '@pacit/components/icon';
 
 import { pctLattice } from './lattice';
 import { pctTimeFormat } from './locale';
-import { isPctTimeOfDay, isPctTimeStep, PctTimeOfDay } from './time';
+import {
+  isPctTimeOfDay,
+  isPctTimeStep,
+  pctCompareTimes,
+  PctTimeOfDay,
+} from './time';
 import { PctTimeColumns } from './time-columns';
 
 /**
@@ -569,6 +574,17 @@ export class PctTime
       return;
     }
     this.rejected.set(null);
+    // The time the field already holds, read back from its own text, is not an edit: focus in
+    // and out again must not hand the form a change nobody made. Without this a field of
+    // seconds given `13:05` from outside wrote `13:05:00` back on a bare blur — one time, a new
+    // string, and a `valueChange` the form counted as the user's.
+    const held = this.value();
+    if (
+      held !== null &&
+      isPctTimeOfDay(held) &&
+      pctCompareTimes(held, parsed) === 0
+    )
+      return;
     this.value.set(parsed);
   }
 

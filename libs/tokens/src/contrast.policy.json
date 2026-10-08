@@ -890,6 +890,13 @@
       "severity": "error"
     },
     {
+      "name": "UI: the keyboard's ring on the chosen row",
+      "fg": "pct.time.option-fg-selected",
+      "bg": "pct.time.option-bg-selected",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "time — a row outside the bounds",
       "fg": "pct.time.option-fg-disabled",
       "bg": "pct.time.panel-bg",

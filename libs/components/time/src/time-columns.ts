@@ -3,6 +3,7 @@ import {
   booleanAttribute,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -12,7 +13,6 @@ import {
   model,
   numberAttribute,
   output,
-  signal,
   untracked,
   viewChildren,
 } from '@angular/core';
@@ -50,6 +50,11 @@ export interface PctTimeRow {
   readonly label: string;
   /** What typeahead matches — the label with ASCII digits, so a keyboard anywhere reaches it. */
   readonly key: string;
+  /**
+   * The number the row writes — `12` for the first hour on `h12`, `24` on `h24` — which a typed
+   * number is read against; `null` for a half of the day, which is a word.
+   */
+  readonly shown: number | null;
   /** No time on the step inside the bounds has this row's value, given the other columns. */
   readonly disabled: boolean;
   /** The value's own field is this row. */
@@ -223,10 +228,10 @@ export class PctTimeColumns {
   );
 
   /**
-   * The time on the clock as the user's own has it, read once — a column left open across a
-   * minute does not move under the user, which is the calendar's reading of today.
+   * The moment the columns were made, read once — a column left open across a minute does not
+   * move under the user, which is the calendar's reading of today.
    */
-  private readonly now = signal(pctSecondsOf(pctNow(new Date(), true)));
+  private readonly madeAt = new Date();
 
   /**
    * Where the walk stands, in seconds since midnight: the value, or — while there is none — the
@@ -236,10 +241,13 @@ export class PctTimeColumns {
    */
   protected readonly cursor = computed(() => {
     const value = this.value();
-    const at =
+    // Now, as a wall clock shows it — the minute it is until it ticks, never rounded up — and to
+    // the second only where the step counts seconds.
+    const at = pctSecondsOf(
       value !== null && isPctTimeOfDay(value)
-        ? pctSecondsOf(value)
-        : this.now();
+        ? value
+        : pctNow(this.madeAt, this.lattice().seconds),
+    );
     // Some time is always inside: the base is `min`, which the bounds always let through, or
     // midnight, which a lone `max` does too.
     return pctNearest(this.lattice(), at, 0, HALF * 2 - 1) as number;
@@ -253,6 +261,18 @@ export class PctTimeColumns {
 
   /** Whether this language counts twelve hours and names the two halves of the day. */
   private readonly twelve = computed(() => this.format().dayPeriods !== null);
+
+  /**
+   * How many digits the field writes the hour in — read off the field's own format hint, so the
+   * column and the field cannot part: one on most twelve-hour clocks (`1:05 PM`), two on a
+   * twenty-four-hour one and on the twelve-hour clocks that pad (`hr-HR-u-hc-h12` writes
+   * `01:05 AM`). The hint has a mark per digit of the hour and nothing else carries that mark.
+   */
+  private readonly hourWidth = computed(
+    () =>
+      this.format().hint({ hour: '#', minute: '', second: '' }).split('#')
+        .length - 1,
+  );
 
   /**
    * The columns in the order this language writes the fields — the period before the hour in
@@ -290,6 +310,13 @@ export class PctTimeColumns {
   /** Whether the next scroll is the first one — the panel opening centres the rows it opens on. */
   private placed = false;
 
+  /**
+   * The digits typed into one column so far, and which column: `1` then `3` within the
+   * typeahead's half a second is thirteen, the way a person types a number.
+   */
+  private typed = { field: null as PctTimeField | null, digits: '' };
+  private typedTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
     // The active row is kept in view after the render that moved it, because the walk REWRITES
     // the rows (their disabled state follows the other columns) and a hook running before the
@@ -298,6 +325,8 @@ export class PctTimeColumns {
       this.columns();
       untracked(() => this.keepInView());
     });
+
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.typedTimer));
 
     if (isDevMode()) this.warnOnUnsupportedStep();
   }
@@ -327,6 +356,11 @@ export class PctTimeColumns {
     return row === undefined ? null : this.rowId(column.field, row);
   }
 
+  /**
+   * The column's key map. A key MOVES the value only when it moves the walk: an arrow at a row
+   * with nowhere else to go, or a key that matches no row, leaves the value as it was — a miss is
+   * not an instruction (`pctListNavigation`'s reading of typeahead).
+   */
   protected onKeydown(column: PctTimeColumn, event: KeyboardEvent): void {
     if (this.disabled()) return;
     const walk = this.walks.get(column.field) as PctListNavigation;
@@ -356,11 +390,41 @@ export class PctTimeColumns {
           event.altKey
         )
           return;
-        walk.typeahead(event.key);
+        // A number is read as a number: the core walk matches a label's PREFIX, which in a
+        // column of hours written `12, 1, 2 … 11` takes `1` to twelve and never reaches one,
+        // and in one written `09` never answers `9` at all. A word — the day period — is the
+        // walk's own typeahead.
+        if (/^[0-9]$/.test(event.key))
+          walk.setActive(this.seek(column, event.key));
+        else walk.typeahead(event.key);
+        if (walk.activeIndex() === column.active) return;
     }
     event.preventDefault();
     const row = column.rows[walk.activeIndex()];
-    if (row !== undefined) this.moveTo(column.field, row);
+    if (row !== undefined && walk.activeIndex() !== column.active)
+      this.moveTo(column.field, row);
+  }
+
+  /**
+   * The row a typed digit takes the column to: the digits typed into it so far read as a number
+   * and matched against the number each row writes, then — where none writes it — against the
+   * start of a row's text, so `4` in a column of quarter hours is `45`. A row the bounds refuse is
+   * never the answer; with none, the column stays where it was.
+   */
+  private seek(column: PctTimeColumn, digit: string): number {
+    clearTimeout(this.typedTimer);
+    const digits =
+      (this.typed.field === column.field ? this.typed.digits : '') + digit;
+    this.typed = { field: column.field, digits };
+    this.typedTimer = setTimeout(
+      () => (this.typed = { field: null, digits: '' }),
+      500,
+    );
+    const open = column.rows.filter((row) => !row.disabled);
+    const found =
+      open.find((row) => row.shown === Number(digits)) ??
+      open.find((row) => row.key.startsWith(digits));
+    return found === undefined ? column.active : column.rows.indexOf(found);
   }
 
   /** A press lands on a ROW, and a row is a field: the value moves and the panel stays. */
@@ -437,6 +501,7 @@ export class PctTimeColumns {
         value,
         label: this.labelOf(field, value),
         key: this.keyOf(field, value),
+        shown: field === 'dayPeriod' ? null : this.shownOf(field, value),
         disabled: pctNearest(lattice, from, from, to) === null,
         chosen: chosen !== null && from <= chosen && chosen <= to,
       });
@@ -459,22 +524,32 @@ export class PctTimeColumns {
 
   /**
    * How the row is written: the hour as the clock writes its first one — `12` on `h12`, `24` on
-   * `h24` — two digits on a twenty-four-hour clock and the locale's own on a twelve-hour one,
-   * as the field writes it (0086 §3); minutes and seconds always two; the halves of the day in
-   * the field's own words.
+   * `h24` — as wide as the field writes it (0086 §3); minutes and seconds always two; the halves
+   * of the day in the field's own words.
    */
   private labelOf(field: PctTimeField, value: number): string {
     const format = this.format();
     if (field === 'dayPeriod')
       return (format.dayPeriods as readonly [string, string])[value];
-    if (field !== 'hour') return format.number(value, 2);
-    return format.number(this.hourShown(value), this.twelve() ? 1 : 2);
+    return format.number(this.shownOf(field, value), this.widthOf(field));
   }
 
   private keyOf(field: PctTimeField, value: number): string {
     if (field === 'dayPeriod') return this.labelOf(field, value);
-    if (field !== 'hour') return String(value).padStart(2, '0');
-    return String(this.hourShown(value)).padStart(this.twelve() ? 1 : 2, '0');
+    return String(this.shownOf(field, value)).padStart(
+      this.widthOf(field),
+      '0',
+    );
+  }
+
+  /** The digits a column writes its numbers in: the field's own for the hour, two for the rest. */
+  private widthOf(field: PctTimeField): 1 | 2 {
+    return field === 'hour' && this.hourWidth() === 1 ? 1 : 2;
+  }
+
+  /** The number a row writes — the hour as its cycle writes it, a minute or a second as itself. */
+  private shownOf(field: PctTimeField, value: number): number {
+    return field === 'hour' ? this.hourShown(value) : value;
   }
 
   /** The number a cycle writes for an hour — the first one is `0`, `12` or `24`. */

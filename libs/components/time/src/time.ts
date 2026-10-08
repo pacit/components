@@ -336,8 +336,11 @@ export function pctTimeOnStep(
  * at an hour step `23:40` is `00:00`. Exactly halfway goes up, as `Math.round` does. The
  * shape is kept unless the step puts seconds where it had none.
  *
- * The field never snaps what was typed (0086 §5) — this is for a walk that has to start
- * somewhere, a column opening on a time the step does not list.
+ * The field never snaps what was typed (0086 §5), and its columns do not use this either: a
+ * column is a field of one day, so it opens a time the step does not list on the nearest time
+ * on the step INSIDE the day — `23:40` at an hour step opens on `23:00`, where this comes round
+ * to `00:00`. This is the ring's answer, for an application's own walk or a suggestion beside a
+ * validator's message.
  *
  * @since next
  */

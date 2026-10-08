@@ -59,7 +59,7 @@ test.describe('The pages', () => {
     // By the tile's own link and not by every `<a>` under the gallery: the cards run real
     // components now, and breadcrumb's scene brings links of its own.
     const tiles = page.getByTestId('card-link');
-    await expect(tiles).toHaveCount(35);
+    await expect(tiles).toHaveCount(37);
 
     await tiles.filter({ hasText: 'Button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
@@ -84,9 +84,9 @@ test.describe('The pages', () => {
     await visit(page, '/components');
 
     const stages = page.getByTestId('gallery').locator('.card__stage');
-    await expect(stages).toHaveCount(35);
+    await expect(stages).toHaveCount(37);
 
-    // Each scene against its own stage, in one evaluation — 35 round trips would be a
+    // Each scene against its own stage, in one evaluation — 37 round trips would be a
     // minute of wall clock to learn the same thing.
     const overflowing = await page.evaluate(() => {
       const bad: {
@@ -125,7 +125,7 @@ test.describe('The pages', () => {
       .evaluateAll(
         (nodes) => nodes.filter((n) => !n.closest('[inert]')).length,
       );
-    expect(stops).toBe(35);
+    expect(stops).toBe(37);
   });
 
   /**
@@ -169,27 +169,27 @@ test.describe('The pages', () => {
     const gallery = page.getByTestId('gallery');
     const count = page.getByTestId('gallery-count');
     const filter = page.getByTestId('gallery-filter');
-    await expect(count).toHaveText('35 of 35');
+    await expect(count).toHaveText('37 of 37');
 
     await filter.fill('date');
-    await expect(count).toHaveText('1 of 35');
+    await expect(count).toHaveText('1 of 37');
     await expect(gallery.locator('.card__name')).toHaveText(['Date']);
     // A bucket with nothing to show goes with its header, rather than standing empty.
     await expect(gallery.locator('.bucket')).toHaveCount(1);
 
     await filter.fill('nothing answers to this');
-    await expect(count).toHaveText('0 of 35');
+    await expect(count).toHaveText('0 of 37');
     await expect(gallery.locator('.card')).toHaveCount(0);
     await expect(page.getByTestId('gallery-empty')).toHaveText(
       'No component answers to that.',
     );
 
     await filter.fill('');
-    await expect(count).toHaveText('35 of 35');
-    await expect(gallery.locator('.card')).toHaveCount(35);
+    await expect(count).toHaveText('37 of 37');
+    await expect(gallery.locator('.card')).toHaveCount(37);
     // The half that costs something: thirty-four stages, each with its component back in it.
-    await expect(gallery.locator('.card__stage')).toHaveCount(35);
-    await expect(gallery.locator('.card__scene > *')).toHaveCount(35);
+    await expect(gallery.locator('.card__stage')).toHaveCount(37);
+    await expect(gallery.locator('.card__scene > *')).toHaveCount(37);
   });
 
   /**
@@ -932,10 +932,10 @@ test.describe('The pages', () => {
       '--pct-surface',
     );
 
-    // The component tier is 29 groups and not one alphabetical run of 502 rows. The
+    // The component tier is 30 groups and not one alphabetical run of 569 rows. The
     // inventory is all still here: opening a group shows the dials it counts.
     const groups = page.getByTestId('token-groups').locator('details');
-    await expect(groups).toHaveCount(29);
+    await expect(groups).toHaveCount(30);
     const button = page.getByTestId('group-button');
     await button.locator('summary').click();
     await expect(button).toContainText('--pct-button-height-sm');
@@ -956,8 +956,9 @@ test.describe('The pages', () => {
     // since the icon's box took three sizes and four tones of its own (0083); 579 since the
     // icon-only button took a glyph step per size and a floor of its own (0085); 589 since
     // the field and the six footers learned the warning tone — a line colour each, and a
-    // border colour where the control draws a surface (0087).
-    await expect(count).toHaveText('589 of 589');
+    // border colour where the control draws a surface (0087); 642 since the time field and its
+    // columns took a tier of their own (0086).
+    await expect(count).toHaveText('642 of 642');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -965,7 +966,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 589$/);
+    await expect(count).toHaveText(/^\d+ of 642$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -981,7 +982,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('589 of 589');
+    await expect(count).toHaveText('642 of 642');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

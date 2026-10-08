@@ -76,7 +76,7 @@ before an application ships them.
 ./tabs 16726 ./core @angular/core,@angular/forms/signals
 ./testing 8606 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 47085 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./time 48328 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 24296 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 14006 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./tree 12928 ./icon @angular/common,@angular/core
@@ -138,6 +138,6 @@ is worth, and it is the largest single number this file has ever moved.
 ./select PctMultiSelect 2 51958 78145
 ./stepper PctStep 2 14769 14771
 ./tabs PctTab 2 16557 16560
-./time PctTime 2 45450 45451
+./time PctTime 2 46861 46862
 ./tree PctTree 2 12783 12786
 ```

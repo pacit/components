@@ -71,6 +71,16 @@
   outline-offset: -2px;
 }
 
+/* The keyboard's row is the chosen one nearly always — every movement writes the value — and
+   the focus ring's blue on the selection's blue is a ring nobody sees (about 1.4:1). On the
+   chosen row the ring takes the selection's own text colour, a pair the contrast policy holds,
+   and sits a pixel further in so the surface frames it. */
+.pct-time-columns__column:focus-visible
+  .pct-time-columns__option[data-pct-active][data-pct-chosen] {
+  outline-color: var(--pct-time-option-fg-selected);
+  outline-offset: -3px;
+}
+
 /* A refused row that is also the chosen one — a value the bounds do not allow, written in the
    field — keeps the chosen pair: a quiet colour on the selection's surface is a contrast the
    policy cannot promise, and `aria-disabled` still says it. */
@@ -116,6 +126,13 @@
   .pct-time-columns__column:focus-visible
     .pct-time-columns__option[data-pct-active] {
     outline-color: Highlight;
+  }
+
+  /* The ring on the selection's own surface takes the selection's text colour — `Highlight`
+     on `SelectedItem` may be one colour in a palette the user chose, as the menu learned. */
+  .pct-time-columns__column:focus-visible
+    .pct-time-columns__option[data-pct-active][data-pct-chosen] {
+    outline-color: SelectedItemText;
   }
 
   .pct-time-columns__option[data-pct-disabled]:not([data-pct-chosen]) {

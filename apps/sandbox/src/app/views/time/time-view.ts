@@ -33,6 +33,58 @@ export class TimeView {
   protected readonly night = signal<PctTimeOfDay | null>('23:30');
   protected readonly inline = signal<PctTimeOfDay | null>('13:05');
 
+  /**
+   * The thirty-eight locales 0086 measured the hour cycle over (C1), for the round trip the e2e
+   * suite reads in each engine's own `Intl` — node's is not the browsers' (0086, D4 and C5).
+   */
+  protected readonly sweepLocales = [
+    'en-US',
+    'en-GB',
+    'pl-PL',
+    'de-DE',
+    'fr-FR',
+    'fi-FI',
+    'da-DK',
+    'ja-JP',
+    'ko-KR',
+    'zh-CN',
+    'ar-EG',
+    'hi-IN',
+    'th-TH',
+    'my-MM',
+    'fa-IR',
+    'he-IL',
+    'zh-TW',
+    'en-IN',
+    'en-CA',
+    'fr-CA',
+    'es-ES',
+    'es-MX',
+    'pt-BR',
+    'ru-RU',
+    'tr-TR',
+    'vi-VN',
+    'bn-BD',
+    'mr-IN',
+    'ta-IN',
+    'ur-PK',
+    'nb-NO',
+    'sv-SE',
+    'it-IT',
+    'nl-NL',
+    'el-GR',
+    'en-AU',
+    'ne-NP',
+    'ar-SA',
+  ];
+
+  protected readonly sweepLocale = signal('en-US');
+  protected readonly sweep = signal<PctTimeOfDay | null>('19:58:39');
+
+  protected pickLocale(event: Event): void {
+    this.sweepLocale.set((event.target as HTMLSelectElement).value);
+  }
+
   protected readonly errors = [
     { kind: 'demo', message: 'Not inside office hours' },
   ];

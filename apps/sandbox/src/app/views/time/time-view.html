@@ -149,6 +149,34 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Every language the decision measured"
+  summary="One field, the locale picked from the thirty-eight 0086 read the hour cycle over. The field writes only what it reads back, in the engine's own Intl — the end-to-end suite types a time in every one of them and reads it back."
+  [reqs]="['req-api-time', 'req-api-number']"
+  data-testid="demo-sweep"
+>
+  <div class="time-view__row">
+    <label class="time-view__locale">
+      Locale
+      <select data-testid="time-sweep-locale" (change)="pickLocale($event)">
+        @for (tag of sweepLocales; track tag) {
+        <option [value]="tag" [selected]="tag === sweepLocale()">
+          {{ tag }}
+        </option>
+        }
+      </select>
+    </label>
+    <pct-time
+      label="In that language"
+      step="1"
+      [locale]="sweepLocale()"
+      [(value)]="sweep"
+      data-testid="time-sweep"
+    />
+    <output data-testid="time-sweep-value">{{ sweep() ?? 'empty' }}</output>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="The columns on their own"
   summary="One listbox per field, each one tab stop pointing at its active row — a component of their own, because the datetime field's panel is a calendar and these columns side by side."
   [reqs]="['req-a11y-built-in', 'req-api-parts']"

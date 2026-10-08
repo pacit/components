@@ -197,20 +197,36 @@ test.describe('Time — the panel', () => {
    * A column opens with its chosen row in view — centred, the first time — and not at the top
    * of a list of sixty where the eye would have to go looking for it.
    */
-  test('opens with the chosen rows in view', async ({ page }) => {
+  test('opens with the chosen rows in view, centred, and keeps the walk in view', async ({
+    page,
+  }) => {
     await partOf(page.getByTestId('time-standalone'), 'toggle').click();
     // Hour `13` is the fourteenth row, twice the column's window down: a column that did not
-    // scroll would open with it out of sight.
+    // scroll would open with it out of sight, and one that scrolled the least it could would
+    // open with it on the bottom edge.
     const column = columnOf(panelOf(page), 'hour');
     await expect(column).toBeFocused();
-    const row = column.locator('[aria-selected="true"]');
-    const inside = await row.evaluate((el) => {
-      const list = el.parentElement as HTMLElement;
-      const a = el.getBoundingClientRect();
-      const b = list.getBoundingClientRect();
-      return a.top >= b.top && a.bottom <= b.bottom;
-    });
-    expect(inside).toBe(true);
+    const placed = (selector: string) =>
+      column.evaluate((list, sel) => {
+        const row = list.querySelector(sel) as HTMLElement;
+        const a = row.getBoundingClientRect();
+        const b = list.getBoundingClientRect();
+        return {
+          inside: a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5,
+          offCentre: Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)),
+          height: a.height,
+        };
+      }, selector);
+    const opened = await placed('[aria-selected="true"]');
+    expect(opened.inside).toBe(true);
+    expect(opened.offCentre).toBeLessThanOrEqual(opened.height);
+
+    // The last hour is ten rows on: the walk takes the column with it.
+    await page.keyboard.press('End');
+    await expect(inputOf(page, 'time-standalone')).toHaveValue('23:05');
+    await expect
+      .poll(async () => (await placed('[data-pct-active]')).inside)
+      .toBe(true);
   });
 
   test('says on the button that the panel is open, and takes it back', async ({
@@ -441,6 +457,99 @@ test.describe('Time — the bounds and the step', () => {
       'data-pct-malformed',
       '',
     );
+  });
+});
+
+/**
+ * The round trip over the thirty-eight locales 0086 measured the hour cycle over (C1), read in
+ * THIS engine's `Intl`. The unit suite runs the same sweep in node, whose ICU is not the
+ * browsers' — node writes a narrow space before a day period where all three write a plain one
+ * (D4), chromium writes Burmese and Nepali in the browser's default locale (C5), webkit writes
+ * Korean's day periods `AM` and `PM` (D2) — so a field that reads back node's text proves
+ * nothing about the text a reader is shown. The four times are the field's own check before
+ * use: the first hour, noon, a two-digit hour on a twelve-hour clock and an afternoon, with
+ * seconds (`locale.ts`). The list is the unit suite's, written out again because the e2e
+ * project compiles none of the library's sources.
+ */
+const SWEEP = [
+  'en-US',
+  'en-GB',
+  'pl-PL',
+  'de-DE',
+  'fr-FR',
+  'fi-FI',
+  'da-DK',
+  'ja-JP',
+  'ko-KR',
+  'zh-CN',
+  'ar-EG',
+  'hi-IN',
+  'th-TH',
+  'my-MM',
+  'fa-IR',
+  'he-IL',
+  'zh-TW',
+  'en-IN',
+  'en-CA',
+  'fr-CA',
+  'es-ES',
+  'es-MX',
+  'pt-BR',
+  'ru-RU',
+  'tr-TR',
+  'vi-VN',
+  'bn-BD',
+  'mr-IN',
+  'ta-IN',
+  'ur-PK',
+  'nb-NO',
+  'sv-SE',
+  'it-IT',
+  'nl-NL',
+  'el-GR',
+  'en-AU',
+  'ne-NP',
+  'ar-SA',
+] as const;
+
+test.describe('Time — the round trip in this engine', () => {
+  test('every language 0086 measured reads back what it writes', async ({
+    page,
+  }) => {
+    // Three hundred and four fills and blurs, each a round trip to the page: about twenty
+    // seconds on a quiet desk, and past the default thirty in firefox beside other work. The
+    // limit is the case's size, not a wait for anything to settle.
+    test.setTimeout(180_000);
+    await visit(page, '/time');
+    const select = page.getByTestId('time-sweep-locale');
+    const input = inputOf(page, 'time-sweep');
+    const value = page.getByTestId('time-sweep-value');
+    // Every language of the sweep is in the select, and nothing else: the page's list and this
+    // one are two copies, and a copy that drifted would sweep a set nobody chose.
+    expect(
+      await select
+        .locator('option')
+        .evaluateAll((options) =>
+          options.map((option) => (option as HTMLOptionElement).value),
+        ),
+    ).toEqual([...SWEEP]);
+
+    const misses: string[] = [];
+    for (const locale of SWEEP) {
+      await select.selectOption(locale);
+      for (const time of ['00:00:00', '12:00:00', '10:26:47', '19:58:39']) {
+        await input.fill(time);
+        await input.blur();
+        await expect(value).toHaveText(time);
+        const written = await input.inputValue();
+        await input.fill(written);
+        await input.blur();
+        const read = await value.textContent();
+        if (read !== time || (await input.inputValue()) !== written)
+          misses.push(`${locale} ${time}: wrote "${written}", read "${read}"`);
+      }
+    }
+    expect(misses).toEqual([]);
   });
 });
 

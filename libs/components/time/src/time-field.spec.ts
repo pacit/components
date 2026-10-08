@@ -238,6 +238,34 @@ describe('PctTime — the text the field shows', () => {
     expect(shown(f)).toBe('2:30:00 PM');
   });
 
+  it('changes nothing when it is focused and left without an edit', async () => {
+    @Component({
+      imports: [PctTime],
+      template: `<pct-time
+        step="30"
+        [(value)]="value"
+        (valueChange)="writes = writes + 1"
+      />`,
+    })
+    class Seconds {
+      readonly value = signal<PctTimeOfDay | null>('13:05');
+      writes = 0;
+    }
+    const f = await render(Seconds);
+    controlOf(f).dispatchEvent(new Event('focus'));
+    await blur(f);
+    // The field holds seconds and the value given it has none: read back from the field's own
+    // text it is the same time, and a blur is not an edit.
+    expect(f.componentInstance.value()).toBe('13:05');
+    expect(f.componentInstance.writes).toBe(0);
+  });
+
+  it('empties the value while the text is being emptied, before it is left', async () => {
+    const f = await render(Host);
+    await type(f, '');
+    expect(f.componentInstance.value()).toBeNull();
+  });
+
   it('keeps seconds typed into a field of minutes — a time off its step, not junk', async () => {
     const f = await render(Host);
     await type(f, '14:30:15');
@@ -519,19 +547,58 @@ describe('PctTime — the panel', () => {
     expect(document.activeElement).toBe(controlOf(f));
   });
 
-  it('closes on Escape', async () => {
+  it('closes on Escape, and the Escape goes no further', async () => {
     const f = await render(Host);
     await open(f);
+    // A dialog holding the field listens above it; the panel's Escape must not reach it (0024).
+    let heard = 0;
+    const listener = () => (heard += 1);
+    document.addEventListener('keydown', listener);
     const escape = new KeyboardEvent('keydown', {
       key: 'Escape',
       bubbles: true,
       cancelable: true,
     });
     columnIn('hour').dispatchEvent(escape);
+    document.removeEventListener('keydown', listener);
     await settle(f);
     expect(panel()).toBeNull();
     expect(escape.defaultPrevented).toBe(true);
+    expect(heard).toBe(0);
     expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('keeps on Escape the time the columns walked to — a column is a field', async () => {
+    const f = await render(Host);
+    await open(f);
+    columnIn('minute').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    await settle(f);
+    columnIn('minute').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await settle(f);
+    expect(panel()).toBeNull();
+    expect(f.componentInstance.value()).toBe('13:06');
+  });
+
+  it('freezes an open panel when the field turns read-only or disabled', async () => {
+    const f = await render(Host);
+    await open(f);
+    f.componentInstance.readonly.set(true);
+    await settle(f);
+    columnIn('hour').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:05');
+    expect(columnIn('hour').getAttribute('aria-disabled')).toBe('true');
+
+    f.componentInstance.readonly.set(false);
+    f.componentInstance.disabled.set(true);
+    await settle(f);
+    expect(columnIn('hour').getAttribute('aria-disabled')).toBe('true');
   });
 
   /**
