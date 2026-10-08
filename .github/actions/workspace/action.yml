@@ -151,7 +151,10 @@ runs:
     # key. The database is named by the machine id, `<id>-v3.db` with the id read off
     # `/etc/machine-id`, so even a database that arrived would be another machine's file and
     # nx would open an empty one beside it. That is why `pages.yml`, on the bare runner,
-    # restores nothing.
+    # restores nothing. In the image the id is part of the image, the same file in every
+    # container of one tag (read in this change's first run, 37762132363), so the name holds
+    # from job to job, and a Playwright bump starts the cache over — as the lockfile it
+    # moves already does.
     #
     # What it buys, measured over the fourteen gates of the root project on a developer
     # machine: a push that touches documentation alone restored 12 of 17 tasks and took
@@ -178,11 +181,3 @@ runs:
           !.nx/workspace-data/d
         key: nx-${{ runner.os }}-${{ github.sha }}
         restore-keys: nx-${{ runner.os }}-
-
-    # PROBE, out before merge: which database the restored entry holds, and the machine ids
-    # nx could have named it by.
-    - if: inputs.nx-cache == 'save'
-      shell: bash
-      run: |
-        ls -la .nx/workspace-data/ .nx/cache 2>&1 | head -40 || true
-        for f in /etc/machine-id /var/lib/dbus/machine-id; do echo "$f: $(cat $f 2>&1)"; done
