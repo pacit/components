@@ -1,7 +1,9 @@
 import angular from '@analogjs/vite-plugin-angular';
+import { posix } from 'node:path';
 import { defineConfig } from 'vite';
 import type { RunnerTask, RunnerTestCase } from 'vitest';
-import type { Reporter, Vitest } from 'vitest/node';
+import { BaseSequencer } from 'vitest/node';
+import type { Reporter, TestSpecification, Vitest } from 'vitest/node';
 
 /**
  * A spec file Vitest failed is one failed test here, whatever failed it: an import that
@@ -93,6 +95,66 @@ function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {
 }
 
 /**
+ * The specs beside the mutated file run first.
+ *
+ * `@stryker-mutator/vitest-runner` (9.6.1) names the mutated file to Vitest before every run
+ * — `ctx.config.related = [its path in the sandbox]` — and starts the run over the specs that
+ * covered the mutant, or over every spec whose imports reach the file when the mutant is
+ * STATIC: code that runs as the module loads (a constant, a token's description, a table),
+ * which per-test coverage can credit to no case. One worker and `bail: 1`, so the run ends at
+ * the first failed test, and the ORDER of the files decides how many run before it. That
+ * order is the sequencer's alone, and Vitest's own (`BaseSequencer`) is the file that failed
+ * last time first, then the longest — right after a kill, where the killer goes first for the
+ * next mutant, and wrong after a survivor, where every file passed and the longest spec of
+ * the library opens the next mutant of `core`. Read off the full run of 2026-10-06, 94 364
+ * tests: 96% of the kills came from a spec in the directory of the mutated file, and 20 656
+ * tests ran in OTHER files before that kill, 16 850 of them for static mutants
+ * ([`lesson-250`](../../docs/lessons.md#lesson-250)). Writing a literal into the function
+ * that reads it was one answer, paid in the code (PR #61); this one is paid here.
+ *
+ * It reads `related` inside `sort()` because that is where it can: Vitest builds the
+ * sequencer once, in `createPool`, sorts on every `start()`, and clears `related` only in the
+ * `finally` after the run. With ONE related file — a mutant, or the dry run of a `--mutate`
+ * of one file — the specs of its directory go first, those sharing its basename
+ * (`texts.spec.ts` for `texts.ts`, `placement.property.spec.ts` for `placement.ts`) ahead of
+ * the others, and inside each group Vitest's own order stands: a stable sort over
+ * `super.sort()`. With none or several — a direct run of this file; the dry run of the full
+ * measurement, where `related` is the whole inventory — it IS Vitest's order.
+ *
+ * What it cannot do is kill anything. A survivor runs every related spec whatever their order
+ * (27 589 of those 94 364 tests), and a file whose sibling kills nothing gains nothing from
+ * seeing it first: `core/src/texts.ts` was 13 469 of the 20 656 — 37 mutants, 34 of them
+ * killed by the spec of some component and 3 by `core.spec.ts` — which is what
+ * `texts.spec.ts` is for. Nor is it a Stryker option: the runner's schema holds `configFile`,
+ * `dir` and `related`, and the order is Vitest's.
+ *
+ * Measured on this desk (2026-10-08), four workers, three pairs of narrow runs on the same
+ * code otherwise: the seven `core` files of `lesson-250` took 9 min 42 s and 19 267 tests
+ * before, 9 min 1 s and 18 661 with this class alone, 4 min 34 s and 2 669 with
+ * `texts.spec.ts` beside `texts.ts` as well; `texts.ts` alone 6 min 5 s, 5 min 59 s and
+ * 1 min 51 s. No mutant changed its status; `killedBy` did.
+ */
+export class SiblingsFirst extends BaseSequencer {
+  override async sort(
+    files: TestSpecification[],
+  ): Promise<TestSpecification[]> {
+    const related = this.ctx.config.related;
+    const sorted = await super.sort(files);
+    if (related?.length !== 1) return sorted;
+    const mutated = related[0];
+    const directory = posix.dirname(mutated);
+    const stem = `${posix.basename(mutated, posix.extname(mutated))}.`;
+    const rank = ({ moduleId }: TestSpecification): number =>
+      posix.dirname(moduleId) !== directory
+        ? 2
+        : posix.basename(moduleId).startsWith(stem)
+          ? 0
+          : 1;
+    return sorted.sort((a, b) => rank(a) - rank(b));
+  }
+}
+
+/**
  * Vitest configuration USED BY THE MUTATION RUN ALONE (`nx run components:mutation`).
  *
  * Why a separate file when the library already has a `test` target: that one goes through
@@ -146,5 +208,7 @@ export default defineConfig(() => ({
     include: ['**/*.spec.ts'],
     setupFiles: ['./mutation.setup.ts'],
     reporters: ['default', new FailedFileFails()],
+    /** The specs beside the mutated file first — `SiblingsFirst` says why, and what it cannot do. */
+    sequence: { sequencer: SiblingsFirst },
   },
 }));

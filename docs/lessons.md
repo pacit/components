@@ -7172,6 +7172,32 @@ estimate under Stryker's own threshold. The time fell by less than the tests did
 spec files it runs (both dry runs spent 45 to 48 s in the tests and some 75 s around them), and
 the desk was shared. No file's score fell; five rose, and TOTAL went from 85.92% to 85.99%.
 
+**Amended 2026-10-08.** "What moved them" above is a price paid in the code for the
+instrument's sake — a list or a table written into the function that reads it, where a
+reader looks for it at the top of the file — and the rule it was read as is the wrong half of
+the finding. The finding is the sentence before it: a static mutant's cost is made of the
+ORDER of the related specs, and that order was Vitest's. It is now the configuration's.
+`SiblingsFirst` in `mutation.vitest.config.mts` reads the mutated file the runner names to
+Vitest before every run (`config.related`) and puts the specs of that file's directory first,
+those sharing its basename ahead of the rest, leaving Vitest's own order inside each group and
+whole wherever there is no single such file: a direct run, the dry run of the full
+measurement. Measured on this desk, four workers, the same seven `core` files as above and
+then `texts.ts` alone — three pairs of narrow runs within forty minutes, on the same code
+otherwise. The sequencer alone took the seven files from 9 min 42 s and 19 267 tests to 9 min
+1 s and 18 661, and the kills by a spec of the file's own directory from 166 to 225 of 269:
+`field.ts` from 1 308 tests to 371, `placement.ts` 639 to 178, `config.ts` 1 180 to 440,
+`modal.ts` 794 to 441 — and `texts.ts` from 13 071 UP to 15 907, because the spec beside it,
+`core.spec.ts`, kills 5 of its 38 mutants when it goes first, and the other 33 now paid its 93
+cases before the component spec that does. Alone, `texts.ts` went from 14 514 tests to 15 247
+and 6 min 5 s to 5 min 59 s. That is the other half of the rule, and it is a test rather than
+a move: `texts.spec.ts`, four cases on the defaults and on `providePctTexts` — a function
+twelve component specs call and none had asserted — takes `texts.ts` to 129 tests, 37 of its
+38 mutants killed by the first or second case of the spec beside it, the seven files to 4 min
+34 s and 2 669 tests, and `texts.ts` alone to 1 min 51 s. Across the six runs no mutant
+changed its status; only `killedBy` moved. So the rule reads: a spec beside the file that
+kills, run first. A literal stays where the code is clearest, and `PCT_DEFAULT_TEXTS` stays a
+public object.
+
 ---
 
 ### <a id="lesson-251"></a>`lesson-251` — A narrow run measures a file as the full one does, and the desk paid for the whole
