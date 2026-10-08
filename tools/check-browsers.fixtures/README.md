@@ -49,7 +49,7 @@ Three readings arrive here as data rather than from a real run:
 - `facts` — instead of probes in live browsers.
 
 This is the same choice as in `check-parts` and `check-zoneless` and for the same reason:
-three browsers and the Nx graph for each of the forty-one cases would cost minutes, and
+three browsers and the Nx graph for each of the forty-four cases would cost minutes, and
 the gate runs on every commit. The price is written down outright — the code reading the
 Playwright report, the graph and the probes is not exercised here once. It is exercised
 instead by **every** run against the real repository.
@@ -80,3 +80,13 @@ the real tree, each with one defect planted:
   mentions in three files, which is what a dependency bump without the tag looks like;
 - a workflow added as `zz-control.yaml`, its image at `v1.62.0-noble` — the same rule, naming
   that file; the `.yml`-only mutant passed the same tree.
+
+## Spellings no case holds
+
+Two names of the image Docker would accept are not read at all — the registry host in
+capitals (`MCR.microsoft.com/playwright:…`) and with its port (`mcr.microsoft.com:443/…`) —
+so a stale tag spelt either way passes. Neither form stands anywhere in this repository's
+workflows, and a reading that chased every spelling a registry tolerates would be a parser of
+image references, which this gate does not carry. In the other direction a correct tag
+followed by a full stop in prose, as in a `name:` value, is taken with the stop and refused:
+red, not silence.

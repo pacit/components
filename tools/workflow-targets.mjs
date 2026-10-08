@@ -110,7 +110,7 @@ if (
     // it does not understand cannot pass as a line with nothing to run.
     const mute = text
       .split('\n')
-      .map((line) => line.replace(/#.*$/m, ''))
+      .map(withoutComment)
       .filter(
         (line) =>
           /nx\s+(?:affected|run-many)/.test(line) && !targetsIn(line).size,
