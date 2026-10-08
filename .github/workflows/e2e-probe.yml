@@ -81,6 +81,13 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # The machine ci.yml's e2e shards run on. A probe exists to ask a question about THAT
+    # machine, so a probe on the bare runner beside it would answer about another one. The
+    # tag is the lockfile's `@playwright/test` version; `check-browsers` (point 5) refuses
+    # another here as in ci.yml.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v7
         with:
@@ -93,25 +100,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      # The same two-step Playwright arrangement as ci.yml and nightly.yml, and every engine
-      # named in BOTH branches for the same reason: the cache never covers the system
-      # libraries, and an engine missing from one branch disappears on the first cache hit.
-      - name: Resolve the Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
 
       # Playwright is called directly and not through `nx`, because `nx run` reads `--project`
       # as its own project selector and answers `Cannot find project 'chromium'`. The suite's

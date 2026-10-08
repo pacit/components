@@ -1,0 +1,32 @@
+{
+  "check": "ci",
+  "rule": "ci-without-engine",
+  "description": "A fourth engine — `chrome`, a project on `channel: 'chrome'` — with every spec collected on it and a line in the policy, so points 1–4 have nothing to say. The workflow still runs in Playwright's image and installs nothing else, and the image was built with chromium, firefox and webkit alone: Google Chrome comes from Google's repository through `playwright install chrome`, which the image never ran. The run would fail at the first launch of that project; the gate says so before it, by name. The engine stands last in the policy, so a reader that looked at the first engine only would pass.",
+  "addEngines": {
+    "chrome": {
+      "$why": "A branded channel of blink, added to see what the image does not carry."
+    }
+  },
+  "addCollected": {
+    "chrome": [
+      "a11y.spec.ts",
+      "button.spec.ts",
+      "checkbox.spec.ts",
+      "field-hitarea.spec.ts",
+      "field.spec.ts",
+      "forced-colors.spec.ts",
+      "forms.spec.ts",
+      "hydration.spec.ts",
+      "number.spec.ts",
+      "preferences.spec.ts",
+      "radio.spec.ts",
+      "rtl.spec.ts",
+      "select.spec.ts",
+      "shell.spec.ts",
+      "size.spec.ts",
+      "states.spec.ts",
+      "theme.spec.ts",
+      "visual.spec.ts"
+    ]
+  }
+}

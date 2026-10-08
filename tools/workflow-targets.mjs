@@ -35,13 +35,23 @@ const targetsAfterT = (tail) => {
   return targets;
 };
 
+/**
+ * A line without its comment — one home, so the readers of one workflow cannot strip it two
+ * ways. A comment is a `#` at the start of a line or after white space, as YAML has it:
+ * `echo "#1" && …` in a `run:` line is no comment, and cutting at the first `#` hid what
+ * followed it (the review of 0081's amendment, 2026-10-08). One gap is left knowingly: inside
+ * a `run: |` block YAML has no comments at all, so a quoted `"step #1"` there still cuts the
+ * line — reading the shell's quoting is a parser this module does not have.
+ */
+export const withoutComment = (line) => line.replace(/(^|\s)#.*$/, '$1');
+
 /** Every target the `nx affected` / `nx run-many` lines of a workflow name, as a Set. */
 export const targetsIn = (text) =>
   new Set(
     [
       ...String(text ?? '')
         .split('\n')
-        .map((line) => line.replace(/#.*$/m, ''))
+        .map(withoutComment)
         .join('\n')
         .matchAll(
           /nx\s+(?:affected|run-many)[^\n]*?\s(?:-t|--targets)[= ]\s*['"]?([a-z0-9:,\- \t]+)/g,
@@ -100,7 +110,7 @@ if (
     // it does not understand cannot pass as a line with nothing to run.
     const mute = text
       .split('\n')
-      .map((line) => line.replace(/#.*$/m, ''))
+      .map(withoutComment)
       .filter(
         (line) =>
           /nx\s+(?:affected|run-many)/.test(line) && !targetsIn(line).size,

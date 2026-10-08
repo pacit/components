@@ -41,6 +41,16 @@
         "$value": "{pct.danger}",
         "$description": "Text colour of the select when invalid."
       },
+      "border-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Edge colour of the select under a warning (0087)."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087)."
+      },
       "bg-disabled": {
         "$type": "color",
         "$value": "{pct.surface-disabled}",

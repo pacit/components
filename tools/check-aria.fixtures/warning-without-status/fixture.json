@@ -1,0 +1,5 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "$reason": "A warning drawn as a branch of the one message line, with the error's own `alert` on it (0087). A warning is a value that is ALLOWED — nothing about it interrupts — so the polite channel is its own: `role=\"status\"`, which waits its turn where an alert takes it. The hint and the error are exactly as the reference has them, so a gate that read the error's role alone would pass this template."
+}

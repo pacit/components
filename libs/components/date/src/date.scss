@@ -49,6 +49,12 @@
   border-color: var(--pct-date-border-focus);
 }
 
+/* The warning tone on the row's border (0087), before `invalid` so that an error outranks a
+   warning on the one field that carries both. */
+:host([data-pct-warning]) .pct-date__row {
+  border-color: var(--pct-date-border-warning);
+}
+
 :host([data-pct-invalid]) .pct-date__row,
 :host([data-pct-malformed]) .pct-date__row {
   border-color: var(--pct-date-border-invalid);
@@ -166,6 +172,33 @@
   font-size: var(--pct-font-size-sm);
 }
 
+/* The warning line (0087): the tone's colour and its glyph before the text — the same third
+   branch the chrome draws, and the glyph is the channel that survives the palette's absence
+   (`req-a11y-forced-colors`). An inline flex, so the glyph sits on the first line of a
+   sentence that may wrap; the icon takes the text's own size, `pct-icon` being `1em`. */
+.pct-date__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-date-fg-warning);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-date__warning-icon {
+  align-self: center;
+}
+
+/* The word a reader hears before the warning, kept in the accessibility tree by a clipped
+   1px box — `display: none` would take it out of the tree. */
+.pct-date__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Sizes: the row's padding and type, and the button with them (req-api-size). */
 :host([data-pct-size='sm']) .pct-date__row {
   padding: var(--pct-date-padding-y-sm) var(--pct-date-padding-x-sm);
@@ -189,6 +222,7 @@
   .pct-date__row,
   .pct-date__row:hover:not(:has(.pct-date__control:disabled)),
   .pct-date__row:focus-within,
+  :host([data-pct-warning]) .pct-date__row,
   :host([data-pct-in-field]) .pct-date__row {
     background: Field;
     color: FieldText;

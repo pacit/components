@@ -116,7 +116,7 @@ const DETECTED = ['Killed', 'Timeout'];
  * both): the run broke outside every test, and no test owns that. A spec file that failed
  * outside its tests is not one of these: the run's Vitest configuration makes it a failed
  * test (`FailedFileFails`), so it is `Killed` whether the runner reads a failed file as an
- * error (stryker-js#6217) or misses it (9.6.1, `lesson-253`). The column means the same
+ * error (stryker-js#6217) or misses it (9.6.1, `lesson-254`). The column means the same
  * before that change and after it, and both writers fill it through `renderRow`.
  */
 const DENOMINATOR = [...DETECTED, 'Survived', 'NoCoverage', 'RuntimeError'];
@@ -205,7 +205,7 @@ counts towards the denominator here, which is stricter than Stryker's own score:
 took the run down with it stated nothing about the tests. A spec file that fails outside its
 tests — its import, a \`describe\` body, a hook — is neither errored nor surviving: the run
 makes it a failed test of that file, so its mutant is killed
-([\`lesson-253\`](../../docs/lessons.md#lesson-253)). The column is there because without one
+([\`lesson-254\`](../../docs/lessons.md#lesson-254)). The column is there because without one
 the arithmetic of a row that has any does not work, and a reader checking it finds a mistake
 that is not one.
 
@@ -634,7 +634,7 @@ const failuresIn = (file) =>
 
 /**
  * Whether the run's Vitest reporters make a spec file that fails outside its tests one failed
- * test (`lesson-253`). The runner builds a verdict from failed tests, so such a file is a failure
+ * test (`lesson-254`). The runner builds a verdict from failed tests, so such a file is a failure
  * only if a reporter of the run turns it into one (`FailedFileFails`) — under 9.6.1 it is
  * otherwise a survivor, and after stryker-js#6217 an errored mutant, both without a word. The
  * reporters are the objects the run gets, called the way Vitest calls them, on files shaped as
@@ -671,7 +671,7 @@ const failedFileNotAFailure = (reporters) => {
         `\n    \`@stryker-mutator/vitest-runner\` reads failed TESTS, so a mutant that breaks a ` +
         `file before or after its cases is recorded as a survivor (9.6.1) or errored ` +
         `(stryker-js#6217) where a plain run is red. \`FailedFileFails\` in ` +
-        `\`mutation.vitest.config.mts\` is what makes it a kill (\`lesson-253\`).`,
+        `\`mutation.vitest.config.mts\` is what makes it a kill (\`lesson-254\`).`,
     );
 };
 

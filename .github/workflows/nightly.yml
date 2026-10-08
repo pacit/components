@@ -14,8 +14,8 @@
 # is doing.
 #
 # The price is one more `npm ci` per night — ~58 s, on a runner nothing else is waiting for.
-# It is NOT a second Playwright restore: the mutation job is vitest and needs no browser, so
-# it takes the shorter setup and the browsers stay in the job that uses them.
+# It is NOT a second browser machine: the mutation job is vitest and needs no browser, so it
+# runs on the plain runner and the Playwright image stays with the jobs that use it.
 #
 # A MATRIX JOB was the shape first drawn, and it is refused on a measurement rather than on
 # taste: with one templated `run` line the targets stand behind `${{ matrix.… }}`, and point 7
@@ -74,6 +74,13 @@ jobs:
   full:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    # The machine ci.yml's browser jobs run on, and for the same reason: Playwright's image
+    # carries the three engines and every library they link, so no step here goes to an apt
+    # mirror (0081, amended 2026-10-07). The tag is the lockfile's `@playwright/test`
+    # version, and `check-browsers` (point 5) refuses another in this file too.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v7
         with:
@@ -86,25 +93,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      # The same two-step Playwright arrangement as ci.yml, and for the same reason: the
-      # cache never covers the system libraries, and every engine must be named in BOTH
-      # branches or it silently disappears on the first cache hit.
-      - name: Resolve the Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
 
       # The same pinned word lists as ci.yml: the gate restores and verifies them out of
       # `tools/dictionaries.lock.json` itself, the cache only spares the download.
@@ -144,6 +132,11 @@ jobs:
   flake:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    # The image of the job above. A repetition run measures how the suite behaves on the
+    # machine the push's verdict comes from, so it runs on that machine and not a near one.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     strategy:
       # Neither suite's verdict is a reason to stop reading the other: the whole point of the
       # job is the report, and half a report is what this run already proved is worthless.
@@ -163,33 +156,21 @@ jobs:
 
       - run: npm ci
 
-      # The same two-step Playwright arrangement as the job above, and every engine named in
-      # BOTH branches for the same reason.
-      - name: Resolve the Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
-
       # `--repeat-each` is the operational number and lives here; the FLOOR under it is
       # `minimumRepetitions` in `tools/flake.policy.json`, which is what refuses a run that
       # could not have found anything. `continue-on-error`, because a red suite is a reading
       # and not an accident here — the gate below is what rules on it.
+      #
+      # The report's path is built in the shell from `$GITHUB_WORKSPACE`, and not in an
+      # expression from `github.workspace`: inside a container the context still names the
+      # HOST's directory (/home/runner/work/…), while the job's workspace is mounted at
+      # /__w/…, so the report would have gone where the upload below never looks.
       - name: Repeat the suite
         continue-on-error: true
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/tmp/flake/${{ matrix.suite }}.json
-        run: npx nx run ${{ matrix.suite }}:e2e --repeat-each=3 --retries=0 --reporter=json
+        shell: bash
+        run: |
+          export PLAYWRIGHT_JSON_OUTPUT_NAME="$GITHUB_WORKSPACE/tmp/flake/${{ matrix.suite }}.json"
+          npx nx run ${{ matrix.suite }}:e2e --repeat-each=3 --retries=0 --reporter=json
 
       - if: always()
         uses: actions/upload-artifact@v7

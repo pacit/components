@@ -744,7 +744,7 @@
     {
       "id": "3.3.1",
       "conformance": "Supports",
-      "remarks": "An error is a sentence: the field's alert region speaks the schema's message, the control says `aria-invalid`, and the message replaces the hint below the field — one line, never two.",
+      "remarks": "An error is a sentence: the field's alert region speaks the schema's message, the control says `aria-invalid`, and the message replaces the hint below the field — one line, never two. A warning is the same sentence without the verdict: it takes the same line after the error, in its own tone with a glyph and a word for a reader, and leaves `aria-invalid` off, because the value is allowed.",
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
@@ -754,11 +754,15 @@
           "spec": "apps/sandbox-e2e/src/field.spec.ts",
           "titles": [
             "the wrapper renders the validation error and binds it to the control",
-            "there is one line below the field: the error replaces the hint"
+            "there is one line below the field: the error replaces the hint",
+            "a warning takes the line once the field is left, and the field stays valid"
           ]
         },
         {
           "req": "req-api-message"
+        },
+        {
+          "req": "req-api-warning"
         }
       ]
     },
@@ -840,7 +844,7 @@
     {
       "id": "4.1.3",
       "conformance": "Supports",
-      "remarks": "A status is announced from where it happens: the toast stack is a `role=\"log\"` and an urgent message a `role=\"alert\"`, the field's error an alert, the select's empty panel a polite announcement, a refused day is said out loud — each measured. The announcer's assertive channel has no caller yet (4.15 in the plan), so nothing rides it.",
+      "remarks": "A status is announced from where it happens: the toast stack is a `role=\"log\"` and an urgent message a `role=\"alert\"`, the field's error an alert and its warning a polite `status` — a value allowed and suspect waits its turn where an error interrupts — the select's empty panel a polite announcement, a refused day is said out loud — each measured. The announcer's assertive channel has no caller yet (4.15 in the plan), so nothing rides it.",
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/toast.spec.ts",
@@ -853,6 +857,12 @@
         {
           "spec": "apps/sandbox-e2e/src/date.spec.ts",
           "titles": ["a refused day is reached, announced and not takeable"]
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/field.spec.ts",
+          "titles": [
+            "a warning takes the line once the field is left, and the field stays valid"
+          ]
         },
         {
           "gate": "tools/check-aria.mjs",

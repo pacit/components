@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The nightly's full run is in `v1.63.0-next` — the shape of the registry's channel tags (`v1.44.0-next` is one of them), a word after the version as the codename of a release is. A reader that took any lowercase word for a distribution would read 1.63.0 and pass. The release tags carry one of five Ubuntu codenames, and a word that is none of them is no release.",
+  "workflows": {
+    ".github/workflows/nightly.yml": "jobs:\n  full:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-next\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx run-many -t e2e\n  flake:\n    container: { image: mcr.microsoft.com/playwright:v1.63.0-resolute, options: --user 1001 }\n  mutation:\n    runs-on: ubuntu-latest\n"
+  }
+}

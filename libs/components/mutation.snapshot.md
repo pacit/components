@@ -23,7 +23,7 @@ counts towards the denominator here, which is stricter than Stryker's own score:
 took the run down with it stated nothing about the tests. A spec file that fails outside its
 tests — its import, a `describe` body, a hook — is neither errored nor surviving: the run
 makes it a failed test of that file, so its mutant is killed
-([`lesson-253`](../../docs/lessons.md#lesson-253)). The column is there because without one
+([`lesson-254`](../../docs/lessons.md#lesson-254)). The column is there because without one
 the arithmetic of a row that has any does not work, and a reader checking it finds a mistake
 that is not one.
 
@@ -102,7 +102,7 @@ libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0 0
 libs/components/core/src/digits.ts 100.00 44(0) 0 0 0 0
-libs/components/core/src/field.ts 97.73 43(0) 1 0 0 0
+libs/components/core/src/field.ts 98.31 58(0) 1 0 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0 0
 libs/components/core/src/list.ts 99.07 107(0) 1 0 0 0
@@ -113,6 +113,7 @@ libs/components/core/src/placement.ts 98.46 64(0) 1 0 0 0
 libs/components/core/src/regions.ts 100.00 3(0) 0 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
 libs/components/core/src/texts.ts 100.00 37(0) 0 0 0 0
+libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
 libs/components/date/src/calendar.ts 74.16 132(0) 44 0 2 4
 libs/components/date/src/date.ts 66.83 139(0) 67 0 2 8
 libs/components/date/src/day.ts 97.53 158(1) 4 0 0 0
@@ -121,7 +122,7 @@ libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
 libs/components/field/src/autosize.ts 77.03 57(0) 16 0 1 2
-libs/components/field/src/field.ts 72.81 83(0) 27 2 2 1
+libs/components/field/src/field.ts 77.42 96(3) 25 2 1 1
 libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
@@ -161,5 +162,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.07 5697/6619
+TOTAL 86.22 5758/6678
 ```

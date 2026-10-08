@@ -43,23 +43,24 @@ init script.
 
 ## Parts
 
-| part                     | what it is                                                     |
-| ------------------------ | -------------------------------------------------------------- |
-| `field-header`           | the row above the control: the label and what stands beside it |
-| `field-label`            | the label, tied to the control by id                           |
-| `field-label-aux`        | the slot beside the label — a counter, a link                  |
-| `field-label-aux-item`   | one projected item inside the label slot                       |
-| `field-row`              | the control's row, with its prefix and suffix                  |
-| `field-prefix`           | what sits before the control inside the row                    |
-| `field-prefix-item`      | one projected item inside the prefix                           |
-| `field-control`          | the wrapped control itself                                     |
-| `field-suffix`           | what sits after the control inside the row                     |
-| `field-suffix-item`      | one projected item inside the suffix                           |
-| `field-footer`           | the row under the control: the hint or the error               |
-| `field-hint`             | the hint, read as the description of the control               |
-| `field-error`            | the message when the control is invalid                        |
-| `field-message-aux`      | the slot beside the hint or error                              |
-| `field-message-aux-item` | one projected item inside the message slot                     |
+| part                     | what it is                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `field-header`           | the row above the control: the label and what stands beside it                                                                                                                                                |
+| `field-label`            | the label, tied to the control by id                                                                                                                                                                          |
+| `field-label-aux`        | the slot beside the label — a counter, a link                                                                                                                                                                 |
+| `field-label-aux-item`   | one projected item inside the label slot                                                                                                                                                                      |
+| `field-row`              | the control's row, with its prefix and suffix                                                                                                                                                                 |
+| `field-prefix`           | what sits before the control inside the row                                                                                                                                                                   |
+| `field-prefix-item`      | one projected item inside the prefix                                                                                                                                                                          |
+| `field-control`          | the wrapped control itself                                                                                                                                                                                    |
+| `field-suffix`           | what sits after the control inside the row                                                                                                                                                                    |
+| `field-suffix-item`      | one projected item inside the suffix                                                                                                                                                                          |
+| `field-footer`           | the row under the control: the hint, the warning or the error                                                                                                                                                 |
+| `field-hint`             | the hint, read as the description of the control                                                                                                                                                              |
+| `field-error`            | the message when the control is invalid                                                                                                                                                                       |
+| `field-warning`          | the message when the value is allowed and suspect — after the error, before the hint, in the warning tone with a glyph and a hidden word ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+| `field-message-aux`      | the slot beside the hint, the warning or the error                                                                                                                                                            |
+| `field-message-aux-item` | one projected item inside the message slot                                                                                                                                                                    |
 
 ## Theming
 

@@ -29,10 +29,10 @@ the points, and a number copied here would be a second home for a number 0017 al
 at-pass.mjs 2 14 175
 changelog-renderer.mjs 4 16 157
 check-acr.mjs 8 20 218
-check-aria.mjs 9 21 245
+check-aria.mjs 9 21 253
 check-bench.mjs 6 18 191
 check-bridge.mjs 7 19 200
-check-browsers.mjs 6 18 168
+check-browsers.mjs 6 18 172
 check-bundle.mjs 13 25 269
 check-consumer.mjs 7 19 197
 check-coverage.mjs 6 18 183
@@ -82,7 +82,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 ```
 1.3 open 19 226
 1.4 open 9 124
-1.5 open 15 194
+1.5 closed 11 119
 1.2 open 5 62
 3.1 closed 12 160
 3.2 closed 12 143
@@ -94,6 +94,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.71 closed 10 150
 4.79 closed 12 150
 4.80 closed 9 118
+4.81 open 15 238
 4.78 open 10 148
 4.75 open 13 191
 4.74 closed 12 196

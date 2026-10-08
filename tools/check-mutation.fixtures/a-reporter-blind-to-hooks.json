@@ -1,6 +1,6 @@
 {
   "check": "tests",
   "rule": "failed-file-not-a-failure",
-  "// defect": "A reporter that acts only on a failed file holding no tasks — the import of `lesson-252` and nothing else. A hook that throws after its file collected passing cases leaves the file failed with tests in it, and the probe of `lesson-253` read those as survivors with 2 and 1 tests.",
+  "// defect": "A reporter that acts only on a failed file holding no tasks — the import of `lesson-252` and nothing else. A hook that throws after its file collected passing cases leaves the file failed with tests in it, and the probe of `lesson-254` read those as survivors with 2 and 1 tests.",
   "reporters": ["default", "empty-files-only"]
 }

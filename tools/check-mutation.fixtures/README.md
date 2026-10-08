@@ -199,7 +199,7 @@ for. Compared with itself the merge would only prove that it agrees with itself.
 what `@stryker-mutator/vitest-runner` 9.6.1 records when every spec it selected failed outside
 its tests ([`lesson-252`](../../docs/lessons.md#lesson-252)). The run's Vitest configuration
 closes that road (`FailedFileFails`, held by the rule below); this one notices the day it opens
-again ([`lesson-253`](../../docs/lessons.md#lesson-253)). A survivor written in shorthand
+again ([`lesson-254`](../../docs/lessons.md#lesson-254)). A survivor written in shorthand
 carries a count of one, as Stryker writes one; a status written out in full carries exactly
 what it says, which is how `a-survivor-with-no-count` leaves the count out.
 

@@ -118,6 +118,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-checkbox-fg-checked color component public
 --pct-checkbox-fg-disabled color component public
 --pct-checkbox-fg-invalid color component public
+--pct-checkbox-fg-warning color component public
 --pct-checkbox-gap dimension component public
 --pct-checkbox-hint-fg color component public
 --pct-checkbox-label-fg color component public
@@ -163,6 +164,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-date-border-focus color component public
 --pct-date-border-hover color component public
 --pct-date-border-invalid color component public
+--pct-date-border-warning color component public
 --pct-date-caption-font-size dimension component public
 --pct-date-caption-font-weight fontWeight component public
 --pct-date-day-bg-hover color component public
@@ -182,6 +184,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-date-fg color component public
 --pct-date-fg-disabled color component public
 --pct-date-fg-invalid color component public
+--pct-date-fg-warning color component public
 --pct-date-font-size dimension component public
 --pct-date-font-size-lg dimension component public
 --pct-date-font-size-sm dimension component public
@@ -260,9 +263,11 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-field-border-focus color component public
 --pct-field-border-hover color component public
 --pct-field-border-invalid color component public
+--pct-field-border-warning color component public
 --pct-field-fg color component public
 --pct-field-fg-disabled color component public
 --pct-field-fg-invalid color component public
+--pct-field-fg-warning color component public
 --pct-field-font-size dimension component public
 --pct-field-font-size-lg dimension component public
 --pct-field-font-size-sm dimension component public
@@ -405,6 +410,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-radio-dot-size dimension component public
 --pct-radio-fg-disabled color component public
 --pct-radio-fg-invalid color component public
+--pct-radio-fg-warning color component public
 --pct-radio-gap dimension component public
 --pct-radio-group-label-fg color component public
 --pct-radio-hint-fg color component public
@@ -429,9 +435,11 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-select-border-focus color component public
 --pct-select-border-hover color component public
 --pct-select-border-invalid color component public
+--pct-select-border-warning color component public
 --pct-select-fg color component public
 --pct-select-fg-disabled color component public
 --pct-select-fg-invalid color component public
+--pct-select-fg-warning color component public
 --pct-select-font-size dimension component public
 --pct-select-group-label-fg color component public
 --pct-select-group-label-font-size dimension component public
@@ -481,6 +489,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-slider-bubble-radius dimension component public
 --pct-slider-fg-disabled color component public
 --pct-slider-fg-invalid color component public
+--pct-slider-fg-warning color component public
 --pct-slider-fill-bg color component public
 --pct-slider-fill-bg-disabled color component public
 --pct-slider-gap dimension component public
@@ -537,6 +546,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-surface-inverse color semantic public
 --pct-switch-fg-disabled color component public
 --pct-switch-fg-invalid color component public
+--pct-switch-fg-warning color component public
 --pct-switch-gap dimension component public
 --pct-switch-height dimension component public
 --pct-switch-hint-fg color component public

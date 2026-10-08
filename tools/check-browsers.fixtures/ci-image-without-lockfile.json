@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-image-not-the-lockfile",
+  "description": "The lockfile pins no `@playwright/test` at all, and every image tag is the reference's. There is then nothing the tags can be held to, and a rule that answered \"nothing to compare\" with a pass would hold them to nothing on the one day the reading broke. Every one of the five mentions is refused instead, and the message says the lockfile names no such package.",
+  "playwright": null
+}

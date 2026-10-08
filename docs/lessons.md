@@ -7256,7 +7256,41 @@ after 212 tests. So the zero finds the defect where the run is related, and the 
 look for it in any run: a module-level expression that can throw — a table built at import,
 mutated into something it cannot be built from.
 
-### <a id="lesson-253"></a>`lesson-253` — A spec file that fails outside its tests is one failed test, under either runner
+---
+
+### <a id="lesson-253"></a>`lesson-253` — A factory call at the top of the shared chunk is paid by every entrypoint, until it is marked pure
+
+Measured on 2026-10-07 by `check-bundle`, landing the warning channel of
+[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md). `PCT_WARNINGS` is a
+metadata key the platform makes: `createManagedMetadataKey(create, reducer)`, written as a
+module constant of `core/src/warnings.ts`, which `./core` re-exports and every entrypoint
+imports for its ids and its texts. The first measurement put 456 B more on EVERY row of
+`size.snapshot.md` — `./button`, `./tabs`, `./tooltip`, which read no form — and a new external,
+`@angular/forms/signals`, on all of them. The probe had kept the call: a bundler cannot know
+that the platform's factory has no side effect, and `sideEffects: false` on the package says
+only that a module nobody imports may go, not that a statement in a module somebody imports
+may. Behind the kept key stood `create`, and behind `create` the platform's `form()` — the
+field-tree machinery of signal forms, in an application that had a button in it.
+
+`/* @__PURE__ */` before the call is the whole of the fix, and it has to stand before the
+INNER call too: `createMetadataKey(MetadataReducer.list())` dropped its outer call and kept
+`MetadataReducer.list()`, because an argument is evaluated for its side effects even when the
+result it feeds is thrown away. With both comments the rows return to within ~200 B of where
+they stood, and that remainder is the `import` statement of an external the probe has to keep
+and an application's bundler does not: `@angular/forms` declares `sideEffects: false` and
+nothing else in `./core` reads the module.
+
+The import graph said none of this. `./button` imports `./core` before and after, and the
+reader who checks what a module imports sees the same list; what moved is what a bundler can
+PROVE about a statement, and only the size gate reads that
+([`lesson-248`](#lesson-248) learned the same thing about a renderer in a barrel). The shape
+to carry forward: a value the platform builds at module scope — a key, a token with a factory
+argument, a registry — is written under `@__PURE__` in `./core`, and the measurement that
+says whether it was enough is the row of the entrypoint that uses it least.
+
+---
+
+### <a id="lesson-254"></a>`lesson-254` — A spec file that fails outside its tests is one failed test, under either runner
 
 `lesson-252` found `@stryker-mutator/vitest-runner` losing a module that failed to load, and
 the fix waiting upstream ([stryker-js#6217](https://github.com/stryker-mutator/stryker-js/pull/6217),

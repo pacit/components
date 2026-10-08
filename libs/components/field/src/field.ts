@@ -15,21 +15,25 @@ import {
   nextPctId,
   PCT_CONFIG,
   PCT_FIELD,
+  PCT_TEXTS,
   pctDescribedBy,
   pctFieldMessages,
   PctFieldApi,
   PctFieldControl,
 } from '@pacit/components/core';
+import { PctIcon } from '@pacit/components/icon';
 import { PctLabelAux, PctMessageAux } from './auxiliary';
 import { PctFieldSize } from './field.types';
 
 /**
- * The chrome of a form field: label, hint, error message, the required marker and the
- * `[pctPrefix]` / `[pctSuffix]` slots inside the field.
+ * The chrome of a form field: label, hint, warning, error message, the required marker and
+ * the `[pctPrefix]` / `[pctSuffix]` slots inside the field.
  *
- * Below the field there is **one line**: the hint or the error (the error wins). Two further
- * slots aligned to the end carry side content: `[pctLabelAux]` in the label row (an "i" icon,
- * say) and `[pctMessageAux]` in the message row (a character counter).
+ * Below the field there is **one line**: the error, else the warning, else the hint — the
+ * control's own error first and gated by nothing (0070), the form's error and the warning once
+ * the field is touched (0087). Two further slots aligned to the end carry side content:
+ * `[pctLabelAux]` in the label row (an "i" icon, say) and `[pctMessageAux]` in the message row
+ * (a character counter).
  *
  * The chrome is **presentational** — the form contract is implemented not by it but by the
  * control inside (`req-api-wrapper`). Value typing therefore stays with the kind of field
@@ -47,6 +51,7 @@ import { PctFieldSize } from './field.types';
  */
 @Component({
   selector: 'pct-field',
+  imports: [PctIcon],
   templateUrl: './field.html',
   styleUrl: './field.scss',
   providers: [{ provide: PCT_FIELD, useExisting: PctField }],
@@ -56,11 +61,13 @@ import { PctFieldSize } from './field.types';
     '[attr.data-pct-appearance]': 'appearance()',
     '[attr.data-pct-cursor]': 'cursor()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-warning]': 'showWarning() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
   },
 })
 export class PctField implements PctFieldApi {
   private readonly config = inject(PCT_CONFIG);
+  protected readonly texts = inject(PCT_TEXTS);
 
   /**
    * The visible `<label>` of the row, wired to the control by `for` or by `aria-labelledby` — whichever the control's `labelStrategy` asks for.
@@ -70,7 +77,7 @@ export class PctField implements PctFieldApi {
   readonly label = input<string>('');
 
   /**
-   * A line of help under the row; the error message takes its place while one shows (one message at a time, req-api-message).
+   * A line of help under the row; an error or a warning takes its place while one shows (one message at a time, req-api-message).
    *
    * @since 0.1.0
    */
@@ -104,6 +111,7 @@ export class PctField implements PctFieldApi {
   protected readonly labelId = `${this.uid}-label`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
+  protected readonly warningId = `${this.uid}-warning`;
 
   // The state comes from the registered control; without one the chrome is neutral.
   private readonly invalid = computed(() => this.control()?.invalid() ?? false);
@@ -114,16 +122,23 @@ export class PctField implements PctFieldApi {
   private readonly errors = computed(() => this.control()?.errors() ?? []);
   /** What the control knows and the form cannot — ahead of the form's verdict (0070). */
   private readonly own = computed(() => this.control()?.ownErrors?.() ?? []);
+  /** A verdict without a veto — the control resolved its input and its form into one (0087). */
+  private readonly warnings = computed(
+    () => this.control()?.fieldWarnings?.() ?? [],
+  );
 
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
     touched: this.touched,
     errors: this.errors,
     own: this.own,
+    warnings: this.warnings,
   });
   protected readonly errorText = this.messages.errorText;
   protected readonly showInvalid = this.messages.showInvalid;
   protected readonly showError = this.messages.showError;
+  protected readonly warningText = this.messages.warningText;
+  protected readonly showWarning = this.messages.showWarning;
 
   /** Requiredness: this input, or the one the control reports. */
   protected readonly isRequired = computed(
@@ -248,12 +263,16 @@ export class PctField implements PctFieldApi {
     // one carrying `aria-describedby`). This is a write into the control, not a derived value
     // — hence effect, not computed.
     // One message is lit at a time (`req-api-message`), so this points at exactly the one in
-    // the DOM: the error, or the hint when there is none.
+    // the DOM: the error, else the warning, else the hint when there is one.
     effect(() => {
       this.control()?.setDescribedBy(
         pctDescribedBy([
           [this.errorId, this.showError()],
-          [this.hintId, !this.showError() && this.hint() !== ''],
+          [this.warningId, this.showWarning()],
+          [
+            this.hintId,
+            !this.showError() && !this.showWarning() && this.hint() !== '',
+          ],
         ]),
       );
     });

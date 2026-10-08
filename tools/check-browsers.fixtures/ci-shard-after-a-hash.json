@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-shard-not-from-matrix",
+  "description": "The browser job's one `e2e` line begins with an echo of a `#` — `echo \"#\" && scripts/nx-verdict npx nx affected --shard=3/8 -t e2e` — and takes its shard count from a literal 8 instead of the matrix. The defect this case declares is the literal; what it holds is the reading on the way there. `#` inside quotes is no comment, so the line runs `e2e`, and the target reader and this gate's own lines strip comments the same way: a reader that cut at the first `#` would see no `e2e` anywhere and fire `ci-without-e2e` before the shard rule could speak.",
+  "ciText": "# Playwright's image, mcr.microsoft.com/playwright:v<version>-noble, at the lockfile's version.\njobs:\n  gates:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble # the tag before the bump: mcr.microsoft.com/playwright:v1.62.0-noble\n      options: --user 1001\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n      options: --user 1001\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: echo \"#\" && scripts/nx-verdict npx nx affected --shard=3/8 -t e2e\n"
+}

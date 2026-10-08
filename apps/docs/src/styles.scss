@@ -42,6 +42,30 @@ html {
   scroll-padding-block-start: var(--docs-anchor-offset);
 }
 
+/* EVERY code seat, and not only the ones a rule names the face for. The rest took the
+   machine's own `monospace` until 2026-10-07 — DejaVu Sans Mono on a desk and on the bare
+   runner, Liberation Mono in Playwright's image — and the docs baselines moved by 3122 to
+   30402 pixels the day CI moved into that image (0081, amended): a picture of the site that
+   was a fact about the machine, which is what the vendored faces above exist to prevent.
+   `:where` keeps the rule at zero specificity, so a seat that names a face still wins. */
+:where(code, kbd, samp, pre) {
+  font-family: var(--docs-font-mono);
+}
+
+/* The six seats that stood in 16px text with no size of their own. The browser draws the
+   generic `monospace` at its own 13px default, and only that generic alone: naming a face
+   takes the 13px away and leaves 16. 0.8125em is the same 13px — measured on all 42 routes
+   of the sitemap before and after, where these six were the only code whose size moved
+   (66 elements, 57 of them the index of /trust). */
+.block__lead code,
+.block__head p code,
+.facts__list dd code,
+.note code,
+.check__list code,
+.index__title code {
+  font-size: 0.8125em;
+}
+
 body {
   margin: 0;
   font-family: 'Inter var', system-ui, sans-serif;

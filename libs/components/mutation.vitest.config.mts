@@ -22,7 +22,7 @@ import type { Reporter, Vitest } from 'vitest/node';
  * The test carries the errors of the file and of every failed suite in it, because a suite's
  * hook leaves its error on the suite. It is shaped as a top-level test is (no `suite`, the next
  * `<file id>_<index>`), so the runner names it `<spec>#the file failed outside its tests` in
- * `killedBy`. `check-mutation` holds this configuration to it ([`lesson-253`](../../docs/lessons.md#lesson-253)).
+ * `killedBy`. `check-mutation` holds this configuration to it ([`lesson-254`](../../docs/lessons.md#lesson-254)).
  */
 export class FailedFileFails implements Reporter {
   private vitest: Vitest | undefined;

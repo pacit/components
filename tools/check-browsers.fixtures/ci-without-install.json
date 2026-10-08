@@ -1,8 +1,6 @@
 {
   "check": "ci",
   "rule": "ci-without-install",
-  "description": "The workflow installs no browser. Either the run falls over, or — worse — somebody has already fixed that by narrowing the matrix down to whatever happens to be in the runner image.",
-  "ci": {
-    "installs": []
-  }
+  "description": "The workflow installs no browser: no `playwright install` step, and the jobs run on the bare runner rather than in Playwright's image. Either the run falls over, or — worse — somebody has already fixed that by narrowing the matrix down to whatever happens to be on the runner. The input is the reference's `ci.yml` with its two `container:` blocks taken out and nothing put in their place.",
+  "ciText": "jobs:\n  gates:\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
 }
