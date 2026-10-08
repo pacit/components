@@ -7363,23 +7363,23 @@ record is read.
 
 ### <a id="lesson-255"></a>`lesson-255` — A cache step that repeats the tool's default path keeps saving it after the tool moves
 
-Nx 23.2.1 arrived on 2026-10-02 (#48) and moved its task cache and the database that indexes
-it out of the checkout: from `.nx/cache` and `.nx/workspace-data` to one directory per user,
+Nx 23.2.1 arrived on 2026-10-02 (#48) and moved its task cache and the database that indexes it
+out of the checkout: from `.nx/cache` and `.nx/workspace-data` to one directory per user,
 `~/.nx/<id>/cache` and `~/.nx/<id>/databases`, shared by every checkout of the workspace. The
 checkout keeps them when one of three variables is set or `nx.json` names a `cacheDirectory`,
 and otherwise only when nx can find no identity for the workspace or is refused `~/.nx`
 (`computeSharedDataLocation` in `cache-directory.js`). CI's composite action went on saving the
 two old paths. From the bump's own merge to 2026-10-08, all 72 green runs of `gates` read
-`Cache: 0/37`, `0/51` or `0/52 hit`, a battery of about two minutes at the median; 70 of them had restored an
-entry, and the two that found none were the first in Playwright's image. On 2026-10-01 the same
-job had read 8 to 21 of 31, in 5 to 57 seconds. Nothing went red. `lesson-172` wrote down that a
-cache which restores nothing looks exactly like one that works, and nx printed the counter that
-says which in every one of those logs.
+`Cache: 0/37`, `0/51` or `0/52 hit`, a battery of about two minutes at the median; 70 of them
+had restored an entry, and the two that found none were the first in Playwright's image. On
+2026-10-01 the same job had read 8 to 21 of 31, in 5 to 57 seconds. Nothing went red.
+`lesson-172` wrote down that a cache which restores nothing looks exactly like one that works,
+and nx printed the counter that says which in every one of those logs.
 
 The entry said it too. The runner's entries still weighed 174 MB after the bump, and that could
 only be 23.1's cache handed on from run to run, since nothing wrote into `.nx/cache` any more.
 When the jobs moved into the image (2026-10-07) the chain started over under gzip, and the
-image's entries came out at 617 KB — the project graph and an empty database.
+image's entries came out at 602 KB — the project graph and an empty database.
 
 Measured on 23.2.1, in fresh clones each given a `HOME` of its own, `tokens:build` once per
 state. With no variable the result went to `~/.nx/<id>/cache` and the checkout's `.nx/cache`
@@ -7414,18 +7414,19 @@ What went in, and what was weighed against it:
 - **The e2e shards stop restoring.** Over the 68 green runs from 2026-09-28 to the bump, the
   entry — 141 to 172 MB — took 4.4 seconds to restore at the median and 5.9 at the 90th
   percentile, in each of 408 shard jobs, and saved their one cacheable task, `docs:content`, in
-  107 of them. That task ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard jobs of the 46 green runs after the bump, where it never hit. It missed mostly because the shards start
-  beside `gates` and get the previous run's entry, and it reads every lesson, decision and
-  component source: a restore that loses even when it hits.
+  107 of them. That task ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard
+  jobs of the 46 green runs after the bump, where it never hit. It missed mostly because the
+  shards start beside `gates` and get the previous run's entry, and it reads every lesson,
+  decision and component source: a restore that loses even when it hits.
 - **`pages.yml` stays cold.** A restore there needs the image. Measured on 37740388032, the
   whole cold `nx build docs` took 17.5 seconds and `npm ci` 24, against a pull of 27 seconds at
   the median and about 8 to restore `node_modules`: about even at best, for a deploy that would
   then hang on a 956 MB image and on the cache's chain.
 
 After, on the pull request's own runs, in the image. The first restored `main`'s entry, which
-held nothing nx could use, read 0/37 in 82 seconds and saved 7.6 MB; the first version of the
+held nothing nx could use, read 0/37 in 82 seconds and saved 7.3 MB; the first version of the
 guard printed `nx caches in /__w/components/components/.nx/cache` (37762132363). The second, a
-change to the action alone, restored those 7.6 MB in 0.8 seconds and read 32/37 in 8.4 seconds
+change to the action alone, restored those 7.3 MB in 0.8 seconds and read 32/37 in 8.4 seconds
 (37762575083). The five that ran are three gates nx never caches — `check-reach`,
 `check-distance`, `check-support` — and two whose inputs are every file, `check-docs` and
 `check-language`: of these 37 tasks, 32 is the most that a change to any tracked file can hit.

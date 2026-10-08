@@ -33,12 +33,13 @@ inputs:
       job of the run. (The browsers, 456 MB, were the entry this sentence first protected;
       they come in the image now.) And no job only restores it any more. The e2e shards did
       until 2026-10-08, for the one cacheable task they run, `docs:content`, and the restore
-      cost more than the task even when it hit. Over the 68 green runs from 2026-09-28 to the
-      bump, the entry — 141 to 172 MB — took 4.4 seconds to restore at the median and 5.9 at
-      the 90th percentile, in each of 408 shard jobs, and spared `docs:content` in 107 of
-      them; the task itself ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard jobs after the bump, where it never hit. It mostly missed because the shards start
-      beside `gates`, not after it, so they get the PREVIOUS run's entry, and `docs:content`
-      reads every lesson, decision and component source.
+      cost more than the task even when it hit. Over the 68 green runs from 2026-09-28 to
+      the bump, the entry — 141 to 172 MB — took 4.4 seconds to restore at the median and
+      5.9 at the 90th percentile, in each of 408 shard jobs, and spared `docs:content` in
+      107 of them; the task itself ran in 1.7 seconds at the median, 2.0 at most, in 298 of
+      the 300 shard jobs after the bump, where it never hit. It mostly missed because the
+      shards start beside `gates`, not after it, so they get the PREVIOUS run's entry, and
+      `docs:content` reads every lesson, decision and component source.
     required: false
     default: none
 
