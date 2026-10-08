@@ -81,6 +81,16 @@ function optionalTime(value: unknown): PctTimeOfDay | undefined {
   return isPctTimeOfDay(value) ? value : undefined;
 }
 
+/**
+ * A key that changes another key rather than being one — pressed on its own between two digits
+ * on a keyboard that reaches digits through Shift.
+ */
+function modifier(key: string): boolean {
+  return ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta', 'CapsLock'].includes(
+    key,
+  );
+}
+
 /** The seconds in half a day, an hour and a minute — the widths of the four kinds of row. */
 const HALF = 43_200;
 const HOUR = 3600;
@@ -305,7 +315,8 @@ export class PctTimeColumns {
             this.columns().find((column) => column.field === field)?.rows ?? [],
         ),
         isDisabled: (row) => row.disabled,
-        label: (row) => row.key,
+        // No `label`: what a column's typed keys mean is a number or a word read whole, which
+        // `seek` below answers — the walk's own typeahead stays off rather than half used.
         sameItem: (a, b) => a.value === b.value,
         // A column is a ring: `ArrowDown` from the last row is the first (0086 §4).
         wrap: true,
@@ -317,10 +328,10 @@ export class PctTimeColumns {
   private placed = false;
 
   /**
-   * The digits typed into one column so far, and which column: `1` then `3` within the
-   * typeahead's half a second is thirteen, the way a person types a number.
+   * What has been typed into one column so far, and which column: `1` then `3` within half a
+   * second is thirteen, the way a person types a number, and `p` then `m` is `PM`.
    */
-  private typed = { field: null as PctTimeField | null, digits: '' };
+  private typed = { field: null as PctTimeField | null, keys: '' };
   private typedTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -377,9 +388,9 @@ export class PctTimeColumns {
       this.columns().find((live) => live.field === drawn.field) ?? drawn;
     const walk = this.walks.get(column.field) as PctListNavigation;
     walk.setActive(column.active);
-    const digit = /^[0-9]$/.test(event.key);
-    // Any key but a digit ends the number being typed — `1`, an arrow, `3` is three.
-    if (!digit) this.forget();
+    // Any key but a printable one or a modifier ends what is being typed — `1`, an arrow, `3` is
+    // three — and a modifier does not: AZERTY reaches every digit through Shift.
+    if (event.key.length !== 1 && !modifier(event.key)) this.forget();
     let answered = true;
     switch (event.key) {
       case 'ArrowDown':
@@ -398,7 +409,7 @@ export class PctTimeColumns {
       case ' ':
         event.preventDefault();
         return this.take();
-      default:
+      default: {
         if (
           event.key.length !== 1 ||
           event.ctrlKey ||
@@ -406,21 +417,10 @@ export class PctTimeColumns {
           event.altKey
         )
           return;
-        // A number is read as a number: the core walk matches a label's PREFIX, which in a
-        // column of hours written `12, 1, 2 … 11` takes `1` to twelve and never reaches one,
-        // and in one written `09` never answers `9` at all. A word — the day period — is the
-        // walk's own typeahead.
-        if (digit) {
-          const found = this.seek(column, event.key);
-          answered = found !== -1;
-          if (answered) walk.setActive(found);
-        } else {
-          walk.typeahead(event.key);
-          const here = column.rows[walk.activeIndex()];
-          answered =
-            here !== undefined &&
-            here.key.toLowerCase().startsWith(event.key.toLowerCase());
-        }
+        const found = this.seek(column, event.key);
+        answered = found !== -1;
+        if (answered) walk.setActive(found);
+      }
     }
     // A key the column answered is the column's, even when the answer is the row it stands on;
     // one it did not answer — a letter or a digit no row begins with — is left to the page.
@@ -431,28 +431,33 @@ export class PctTimeColumns {
       this.moveTo(column.field, row);
   }
 
-  /** Ends the number being typed. */
+  /** Ends what is being typed. */
   private forget(): void {
     clearTimeout(this.typedTimer);
-    this.typed = { field: null, digits: '' };
+    this.typed = { field: null, keys: '' };
   }
 
   /**
-   * The row a typed digit takes the column to: the digits typed into it so far read as a number
-   * and matched against the number each row writes, then — where none writes it — against the
-   * start of a row's text, so `4` in a column of quarter hours is `45`. A row the bounds refuse is
-   * never the answer; with none, `-1`.
+   * The row what has been typed into a column takes it to, or `-1`. A NUMBER is read as one and
+   * matched against the number each row writes — the walk's prefix match takes `1` to twelve in a
+   * column written `12, 1, 2 … 11` and never reaches one, and never answers `9` in one written
+   * `09` — and where no row writes it, against the start of a row's text, so `4` in a column of
+   * quarter hours is `45`. A WORD is matched against the start of a row's text, as a select's
+   * typeahead matches, so `p` then `m` is `PM`. A row the bounds refuse is never the answer.
    */
-  private seek(column: PctTimeColumn, digit: string): number {
+  private seek(column: PctTimeColumn, key: string): number {
     clearTimeout(this.typedTimer);
-    const digits =
-      (this.typed.field === column.field ? this.typed.digits : '') + digit;
-    this.typed = { field: column.field, digits };
+    const keys =
+      (this.typed.field === column.field ? this.typed.keys : '') +
+      key.toLowerCase();
+    this.typed = { field: column.field, keys };
     this.typedTimer = setTimeout(() => this.forget(), 500);
     const open = column.rows.filter((row) => !row.disabled);
     const found =
-      open.find((row) => row.shown === Number(digits)) ??
-      open.find((row) => row.key.startsWith(digits));
+      (/^\d+$/.test(keys)
+        ? open.find((row) => row.shown === Number(keys))
+        : undefined) ??
+      open.find((row) => row.key.toLowerCase().startsWith(keys));
     return found === undefined ? -1 : column.rows.indexOf(found);
   }
 

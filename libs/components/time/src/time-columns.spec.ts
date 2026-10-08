@@ -489,7 +489,28 @@ describe('PctTimeColumns — the walk', () => {
     expect(f.componentInstance.value()).toBe('15:05');
   });
 
-  it('ends the number being typed on any key but a digit', async () => {
+  it('keeps the number being typed across a modifier — AZERTY reaches digits through Shift', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    await press(f, column(f, 'hour'), 'Shift');
+    await press(f, column(f, 'hour'), '3', { shiftKey: true });
+    expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('reads a word typed letter by letter, and keeps every letter it answers', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('09:05');
+    });
+    const p = await press(f, column(f, 'dayPeriod'), 'p');
+    expect(f.componentInstance.value()).toBe('21:05');
+    const m = await press(f, column(f, 'dayPeriod'), 'm');
+    expect(f.componentInstance.value()).toBe('21:05');
+    expect(p.defaultPrevented).toBe(true);
+    expect(m.defaultPrevented).toBe(true);
+  });
+
+  it('ends the number being typed on any key that is neither printable nor a modifier', async () => {
     const f = await render();
     await press(f, column(f, 'hour'), '1');
     await press(f, column(f, 'hour'), 'ArrowDown');
