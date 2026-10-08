@@ -55,6 +55,7 @@ export type PctIconName =
   | 'calendar'
   | 'check'
   | 'chevron-down'
+  | 'clock'
   | 'close'
   | 'danger'
   | 'indeterminate'

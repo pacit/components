@@ -128,6 +128,15 @@
       <span pctSuffix aria-hidden="true">pcs</span>
     </pct-field>
 
+    <!-- A time inside the wrapper, from the form: text the locale writes, columns beside it -->
+    <pct-field
+      label="Call me at"
+      hint="Any time of day, typed or picked"
+      data-testid="field-call-at"
+    >
+      <pct-time [formField]="userForm.callAt" data-testid="time-call-at" />
+    </pct-field>
+
     <!-- A checkbox inside the wrapper: the wrapper label, no border -->
     <pct-field
       label="Consents"
@@ -240,6 +249,13 @@
       hint="Typed in the language of the page, or picked from the grid"
       [(value)]="startsOn"
       data-testid="date-starts-on"
+    />
+
+    <pct-time
+      label="Starts at (with no wrapper)"
+      hint="Typed in the language of the page, or picked from the columns"
+      [(value)]="startsAt"
+      data-testid="time-starts-at"
     />
   </div>
 </section>

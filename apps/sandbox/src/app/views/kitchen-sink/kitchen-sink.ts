@@ -25,6 +25,7 @@ import {
   PctSelectOption,
 } from '@pacit/components/select';
 import { PctDate, PctDay } from '@pacit/components/date';
+import { PctTime, PctTimeOfDay } from '@pacit/components/time';
 import { PctSlider } from '@pacit/components/slider';
 import { PctSwitch } from '@pacit/components/switch';
 
@@ -42,6 +43,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctRadioGroup,
     PctRadio,
     PctDate,
+    PctTime,
     PctSlider,
     PctSwitch,
     PctMultiSelect,
@@ -65,6 +67,9 @@ export class KitchenSink {
   /** A calendar day: the value crosses a form boundary as the string it is. */
   protected readonly startsOn = signal<PctDay | null>('2026-08-27');
 
+  /** A wall-clock time: the same, with no day and no zone to shift it. */
+  protected readonly startsAt = signal<PctTimeOfDay | null>('09:30');
+
   /** The form model — signal forms (req-api-signal-forms). */
   protected readonly countries: readonly PctSelectOption[] = [
     { value: 'pl', label: 'Poland' },
@@ -82,6 +87,7 @@ export class KitchenSink {
     country: string;
     regions: string[];
     seats: number | null;
+    callAt: PctTimeOfDay | null;
   }>({
     email: '',
     terms: false,
@@ -89,6 +95,7 @@ export class KitchenSink {
     country: '',
     regions: [],
     seats: 1,
+    callAt: null,
   });
 
   protected readonly userForm = form(this.model, (p) => {
@@ -100,6 +107,7 @@ export class KitchenSink {
     required(p.plan, { message: 'Pick a plan' });
     required(p.country, { message: 'Pick a country' });
     required(p.seats, { message: 'Give the number of seats' });
+    required(p.callAt, { message: 'Pick a time to call' });
     min(p.seats, 1, { message: 'At least one seat' });
     max(p.seats, 500, {
       message: 'Above 500 seats, get in touch with us',

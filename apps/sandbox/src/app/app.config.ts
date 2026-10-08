@@ -46,6 +46,17 @@ export const appConfig: ApplicationConfig = {
       dateMonthLetter: 'm',
       dateYearLetter: 'a',
       dateMalformed: 'Pas une date',
+      // The time field's: the letters of `hh:mm` are French ones that happen to be the
+      // English letters too, so the columns' names and the sentences carry the proof.
+      timeOpen: 'Choisir une heure',
+      timeHourLetter: 'h',
+      timeMinuteLetter: 'm',
+      timeSecondLetter: 's',
+      timeMalformed: 'Pas une heure',
+      timeHours: 'Heures',
+      timeMinutes: 'Minutes',
+      timeSeconds: 'Secondes',
+      timePeriod: 'Période',
       numberMalformed: 'Pas un nombre',
     }),
     // The number field formats by LOCALE_ID — here that gives a decimal comma and a

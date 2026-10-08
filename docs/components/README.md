@@ -8,43 +8,45 @@ from the same person having built it in the same mode of attention. That scales 
 a second person nor to a twentieth component. A form with an empty row is a gap visible to
 a machine; prose with a missing paragraph is not.
 
-| component                        | entrypoint                     | role                                      |
-| -------------------------------- | ------------------------------ | ----------------------------------------- |
-| [`PctButton`](button.md)         | `@pacit/components/button`     | button, or a link wearing its face        |
-| [`PctField`](field.md)           | `@pacit/components/field`      | form control wrapper                      |
-| [`PctText`](text.md)             | `@pacit/components/field`      | text field on a native `<input>`          |
-| [`PctAutosize`](textarea.md)     | `@pacit/components/field`      | a textarea as tall as its text            |
-| [`PctNumber`](number.md)         | `@pacit/components/field`      | number field                              |
-| [`PctCheckbox`](checkbox.md)     | `@pacit/components/checkbox`   | checkbox                                  |
-| [`PctRadioGroup`](radio.md)      | `@pacit/components/radio`      | group of mutually exclusive options       |
-| [`PctSwitch`](switch.md)         | `@pacit/components/switch`     | a setting that takes effect at once       |
-| [`PctSlider`](slider.md)         | `@pacit/components/slider`     | a position on a numeric continuum         |
-| [`PctDate`](date.md)             | `@pacit/components/date`       | a calendar day, typed or picked           |
-| [`PctCalendar`](calendar.md)     | `@pacit/components/date`       | one month of days as a grid               |
-| [`PctSelect`](select.md)         | `@pacit/components/select`     | choice list with a panel of its own       |
-| [`PctMultiSelect`](select.md)    | `@pacit/components/select`     | the same list, holding many answers       |
-| [`PctDialog`](dialog.md)         | `@pacit/components/dialog`     | modal dialog                              |
-| [`PctTooltip`](tooltip.md)       | `@pacit/components/tooltip`    | a sentence about a control                |
-| [`PctPopover`](popover.md)       | `@pacit/components/popover`    | a panel of content on a live page         |
-| [`PctMenu`](menu.md)             | `@pacit/components/menu`       | a list of commands to choose from         |
-| [`PctTabs`](tabs.md)             | `@pacit/components/tabs`       | one section of a page at a time           |
-| [`PctToaster`](toast.md)         | `@pacit/components/toast`      | a message on top of the page              |
-| [`PctAccordion`](accordion.md)   | `@pacit/components/accordion`  | a stack of sections, opened and closed    |
-| [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page      |
-| [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                   |
-| [`PctSkeleton`](skeleton.md)     | `@pacit/components/skeleton`   | the shape of content still coming         |
-| [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back      |
-| [`PctAvatar`](avatar.md)         | `@pacit/components/avatar`     | the picture beside a name                 |
-| [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                     |
-| [`PctIcon`](icon.md)             | `@pacit/components/icon`       | a drawing in a box the text sizes         |
-| [`PctBreadcrumb`](breadcrumb.md) | `@pacit/components/breadcrumb` | the way here, told in links               |
-| [`PctStepper`](stepper.md)       | `@pacit/components/stepper`    | a map of a journey the application steers |
-| [`PctTree`](tree.md)             | `@pacit/components/tree`       | a walk the platform does not have         |
-| [`PctContainer`](container.md)   | `@pacit/components/container`  | a reading column capped by a token        |
-| [`PctStack`](stack.md)           | `@pacit/components/stack`      | the space between blocks, from the scale  |
-| [`PctGrid`](grid.md)             | `@pacit/components/grid`       | a grid that finds its own column count    |
-| [`PctHero`](hero.md)             | `@pacit/components/hero`       | the brand gradient as equipment           |
-| [`PctTheme`](theme.md)           | `@pacit/components/theme`      | the theme, spelled from a template        |
+| component                           | entrypoint                     | role                                      |
+| ----------------------------------- | ------------------------------ | ----------------------------------------- |
+| [`PctButton`](button.md)            | `@pacit/components/button`     | button, or a link wearing its face        |
+| [`PctField`](field.md)              | `@pacit/components/field`      | form control wrapper                      |
+| [`PctText`](text.md)                | `@pacit/components/field`      | text field on a native `<input>`          |
+| [`PctAutosize`](textarea.md)        | `@pacit/components/field`      | a textarea as tall as its text            |
+| [`PctNumber`](number.md)            | `@pacit/components/field`      | number field                              |
+| [`PctCheckbox`](checkbox.md)        | `@pacit/components/checkbox`   | checkbox                                  |
+| [`PctRadioGroup`](radio.md)         | `@pacit/components/radio`      | group of mutually exclusive options       |
+| [`PctSwitch`](switch.md)            | `@pacit/components/switch`     | a setting that takes effect at once       |
+| [`PctSlider`](slider.md)            | `@pacit/components/slider`     | a position on a numeric continuum         |
+| [`PctDate`](date.md)                | `@pacit/components/date`       | a calendar day, typed or picked           |
+| [`PctCalendar`](calendar.md)        | `@pacit/components/date`       | one month of days as a grid               |
+| [`PctTime`](time.md)                | `@pacit/components/time`       | a wall-clock time, typed or picked        |
+| [`PctTimeColumns`](time-columns.md) | `@pacit/components/time`       | a time as columns of hours and minutes    |
+| [`PctSelect`](select.md)            | `@pacit/components/select`     | choice list with a panel of its own       |
+| [`PctMultiSelect`](select.md)       | `@pacit/components/select`     | the same list, holding many answers       |
+| [`PctDialog`](dialog.md)            | `@pacit/components/dialog`     | modal dialog                              |
+| [`PctTooltip`](tooltip.md)          | `@pacit/components/tooltip`    | a sentence about a control                |
+| [`PctPopover`](popover.md)          | `@pacit/components/popover`    | a panel of content on a live page         |
+| [`PctMenu`](menu.md)                | `@pacit/components/menu`       | a list of commands to choose from         |
+| [`PctTabs`](tabs.md)                | `@pacit/components/tabs`       | one section of a page at a time           |
+| [`PctToaster`](toast.md)            | `@pacit/components/toast`      | a message on top of the page              |
+| [`PctAccordion`](accordion.md)      | `@pacit/components/accordion`  | a stack of sections, opened and closed    |
+| [`PctPagination`](pagination.md)    | `@pacit/components/pagination` | a control that owns the current page      |
+| [`PctProgress`](progress.md)        | `@pacit/components/progress`   | how far along a task is                   |
+| [`PctSkeleton`](skeleton.md)        | `@pacit/components/skeleton`   | the shape of content still coming         |
+| [`PctChips`](chips.md)              | `@pacit/components/chips`      | chosen values the user can take back      |
+| [`PctAvatar`](avatar.md)            | `@pacit/components/avatar`     | the picture beside a name                 |
+| [`PctBadge`](badge.md)              | `@pacit/components/badge`      | a word wearing a tone                     |
+| [`PctIcon`](icon.md)                | `@pacit/components/icon`       | a drawing in a box the text sizes         |
+| [`PctBreadcrumb`](breadcrumb.md)    | `@pacit/components/breadcrumb` | the way here, told in links               |
+| [`PctStepper`](stepper.md)          | `@pacit/components/stepper`    | a map of a journey the application steers |
+| [`PctTree`](tree.md)                | `@pacit/components/tree`       | a walk the platform does not have         |
+| [`PctContainer`](container.md)      | `@pacit/components/container`  | a reading column capped by a token        |
+| [`PctStack`](stack.md)              | `@pacit/components/stack`      | the space between blocks, from the scale  |
+| [`PctGrid`](grid.md)                | `@pacit/components/grid`       | a grid that finds its own column count    |
+| [`PctHero`](hero.md)                | `@pacit/components/hero`       | the brand gradient as equipment           |
+| [`PctTheme`](theme.md)              | `@pacit/components/theme`      | the theme, spelled from a template        |
 
 ## The order of the components to come
 
@@ -256,7 +258,8 @@ The order follows **architectural debt**, not popularity:
    in. Two lessons came out of its measurements: an until-found subtree's role-visibility
    differs by engine, and Playwright's visibility is not the platform's
    `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
-7. **Time field, then date and time.** Decided and not built. `<input type="time">` is refused
+7. **Time field, then date and time.** The time field is built ([`PctTime`](time.md),
+   [`PctTimeColumns`](time-columns.md)); the datetime field is decided and not built. `<input type="time">` is refused
    on the date's measurements and harder: each engine draws its clock from a different source
    and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
    chromium, and one control is three tab stops there or four, by the system's locale. So the

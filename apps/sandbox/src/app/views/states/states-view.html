@@ -57,6 +57,10 @@
       <pct-date [(value)]="startsOn" data-testid="idle-date" />
     </pct-field>
 
+    <pct-field label="Starts at">
+      <pct-time [(value)]="startsAt" data-testid="idle-time" />
+    </pct-field>
+
     <div class="states__cell">
       <button pctButton [size]="idle.activeSize()" data-testid="idle-button">
         Button
@@ -118,6 +122,10 @@
 
     <pct-field label="Starts on">
       <pct-date value="2026-08-27" disabled data-testid="disabled-date" />
+    </pct-field>
+
+    <pct-field label="Starts at">
+      <pct-time value="13:05" disabled data-testid="disabled-time" />
     </pct-field>
 
     <div class="states__cell">
@@ -186,6 +194,10 @@
 
     <pct-field label="Starts on">
       <pct-date value="2026-08-27" readonly data-testid="readonly-date" />
+    </pct-field>
+
+    <pct-field label="Starts at">
+      <pct-time value="13:05" readonly data-testid="readonly-time" />
     </pct-field>
 
     <p class="muted states__note">
@@ -289,6 +301,16 @@
         data-testid="invalid-date"
       />
     </pct-field>
+
+    <pct-field label="Starts at">
+      <pct-time
+        value="13:05"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-time"
+      />
+    </pct-field>
   </div>
 </sbx-demo>
 
@@ -325,6 +347,10 @@
         [required]="true"
         data-testid="required-date"
       />
+    </pct-field>
+
+    <pct-field label="Starts at" [size]="required.activeSize()">
+      <pct-time value="13:05" [required]="true" data-testid="required-time" />
     </pct-field>
 
     <pct-field label="Consent">

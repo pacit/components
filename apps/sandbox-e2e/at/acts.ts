@@ -4,9 +4,10 @@ import { SBX_ROUTES } from '../src/support/views';
  * The one gesture per view that OPENS something, for the half of the reading a Tab walk
  * cannot reach (position 4.71).
  *
- * Nine component cards end their reading with the same question — what a reader announces
- * when a section, a drawer, a modal, a menu, a popover, a toast, a month grid, a tab panel or
- * a listbox appears — and until this table the answer for all nine was the same: the walk pressed Tab and nothing else, so nothing in any of the three
+ * Ten component cards end their reading with the same question — what a reader announces
+ * when a section, a drawer, a modal, a menu, a popover, a toast, a month grid, the columns of a
+ * time, a tab panel or a listbox appears — and until this table the answer for the first nine
+ * was the same: the walk pressed Tab and nothing else, so nothing in any of the three
  * logs had ever been opened. For a tree, arrival is most of the story. For a dialog it is
  * none of it — opening IS the component.
  *
@@ -35,7 +36,7 @@ export interface Act {
   readonly key: string;
   /**
    * Whether that key is the control's DEFAULT ACTION, which is not a keystroke on every
-   * reader. Asked with a literal `Enter`, VoiceOver answered eight of these nine with
+   * reader. Asked with a literal `Enter`, VoiceOver answered eight of the first nine with
    * "You are currently on a button. To click this button, press Control-Option-Space" and
    * opened nothing; NVDA answered `pressed` and opened nothing either — for a reason found
    * later and elsewhere: its Enter had followed the window's focus out of the page
@@ -49,7 +50,7 @@ export interface Act {
 }
 
 /**
- * Nine views, nine acts — every card that ends its reading with an opening question, counted
+ * Ten views, ten acts — every card that ends its reading with an opening question, counted
  * by grepping them rather than by remembering. A view absent from here is walked and not acted
  * on, which is the ordinary case: most components have nothing to open.
  */
@@ -102,6 +103,13 @@ export const ACTS: Readonly<Record<string, Act>> = {
     key: 'Enter',
     acts: true,
     owner: 'apps/sandbox-e2e/src/date.spec.ts',
+  },
+  '/time': {
+    what: 'columns of a time',
+    on: '[data-testid="time-standalone"] [data-pct-part="toggle"]',
+    key: 'Enter',
+    acts: true,
+    owner: 'apps/sandbox-e2e/src/time.spec.ts',
   },
   '/tabs': {
     // The odd one out, and it is the pattern's doing rather than this table's: nothing pops

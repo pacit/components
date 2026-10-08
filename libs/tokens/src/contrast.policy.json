@@ -750,6 +750,153 @@
       "severity": "error"
     },
     {
+      "name": "time — the value in the field",
+      "fg": "pct.time.fg",
+      "bg": "pct.time.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — label",
+      "fg": "pct.time.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — hint",
+      "fg": "pct.time.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — error message",
+      "fg": "pct.time.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — warning message",
+      "fg": "pct.time.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — the format hint standing in the empty field",
+      "fg": "pct.time.placeholder-fg",
+      "bg": "pct.time.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — the value in a disabled field",
+      "fg": "pct.time.fg-disabled",
+      "bg": "pct.time.bg-disabled",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: time field border",
+      "fg": "pct.time.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: time field border (hover)",
+      "fg": "pct.time.border-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: time field border (focus)",
+      "fg": "pct.time.border-focus",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: time field border (invalid)",
+      "fg": "pct.time.border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: time field border (warning)",
+      "fg": "pct.time.border-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: time field border (disabled)",
+      "fg": "pct.time.border-disabled",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "time — the clock button's drawing",
+      "fg": "pct.time.toggle-fg",
+      "bg": "pct.time.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — the clock button under the pointer",
+      "fg": "pct.time.toggle-fg",
+      "bg": "pct.time.toggle-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the columns panel's edge against the page",
+      "fg": "pct.time.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "time — a row of a column",
+      "fg": "pct.time.fg",
+      "bg": "pct.time.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — a row under the pointer",
+      "fg": "pct.time.fg",
+      "bg": "pct.time.option-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "time — the chosen row",
+      "fg": "pct.time.option-fg-selected",
+      "bg": "pct.time.option-bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the chosen row against the panel",
+      "fg": "pct.time.option-bg-selected",
+      "bg": "pct.time.panel-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "time — a row outside the bounds",
+      "fg": "pct.time.option-fg-disabled",
+      "bg": "pct.time.panel-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
       "name": "slider — label",
       "fg": "pct.slider.label-fg",
       "bg": "pct.surface",

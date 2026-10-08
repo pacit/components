@@ -14,6 +14,7 @@ export const SBX_ROUTES = [
   '/textarea',
   '/number',
   '/date',
+  '/time',
   '/checkbox',
   '/radio',
   '/slider',

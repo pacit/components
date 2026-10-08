@@ -131,6 +131,12 @@ const TARGETS: readonly Target[] = [
     axis: 'both',
   },
   {
+    name: 'time toggle',
+    route: '/time',
+    selector: '[data-testid="time-standalone"] [data-pct-part="toggle"]',
+    axis: 'both',
+  },
+  {
     name: 'field control',
     route: '/field',
     selector: '[data-testid="field-email"] [data-pct-part="field-control"]',

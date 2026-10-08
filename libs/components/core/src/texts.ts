@@ -93,6 +93,42 @@ export interface PctTexts {
    */
   readonly dateMalformed: string;
   /**
+   * Time: the accessible name of the button that opens the columns, and the name of the panel
+   * it opens — one string in both places, for the reason `dateOpen` gives.
+   */
+  readonly timeOpen: string;
+  /**
+   * Time: the letters a format hint is written with — `h`, `m`, `s` in English, `g`, `m`, `s`
+   * in Polish. Words and not constants, as the date's are; the ORDER, the separators and the
+   * day-period words are not here — those come from `Intl`, and the period slot is written with
+   * the field's own two words, which are what it shows and reads back
+   * ([0086](../../../../docs/decisions/0086-a-time-of-day-is-a-wall-clock.md) §3).
+   */
+  readonly timeHourLetter: string;
+  readonly timeMinuteLetter: string;
+  readonly timeSecondLetter: string;
+  /**
+   * Time: the sentence the field says about text that is not a time — the control's own error,
+   * first in the message line ahead of the form's, which sees `null` (0070).
+   */
+  readonly timeMalformed: string;
+  /**
+   * Time: the accessible name of the column of hours. Each column of the panel is a listbox
+   * of its own and needs a name of its own — a column with none is a serious axe finding
+   * (0086, E5) — and the name is a word of the application's language, not of the locale's.
+   */
+  readonly timeHours: string;
+  /** Time: the accessible name of the column of minutes. */
+  readonly timeMinutes: string;
+  /** Time: the accessible name of the column of seconds, which stands where the step has them. */
+  readonly timeSeconds: string;
+  /**
+   * Time: the accessible name of the column of the two halves of the day, on a twelve-hour
+   * clock. The column's two rows are the locale's own words, read off the formatter; the name
+   * of the column is the application's.
+   */
+  readonly timePeriod: string;
+  /**
    * Number: the same sentence for text that is not a number, which the field now keeps
    * instead of clearing — a user is shown what they typed, and told what it is not (0070).
    */
@@ -200,6 +236,15 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateMonthLetter: 'm',
   dateYearLetter: 'y',
   dateMalformed: 'Not a date',
+  timeOpen: 'Choose time',
+  timeHourLetter: 'h',
+  timeMinuteLetter: 'm',
+  timeSecondLetter: 's',
+  timeMalformed: 'Not a time',
+  timeHours: 'Hours',
+  timeMinutes: 'Minutes',
+  timeSeconds: 'Seconds',
+  timePeriod: 'AM/PM',
   numberMalformed: 'Not a number',
   fieldWarning: 'Warning:',
   toastDismiss: 'Dismiss',

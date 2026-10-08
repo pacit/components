@@ -39,6 +39,9 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   text: () => import('./text.demo').then((m) => m.TextDemo),
   textarea: () => import('./textarea.demo').then((m) => m.TextareaDemo),
   theme: () => import('./theme.demo').then((m) => m.ThemeDemo),
+  time: () => import('./time.demo').then((m) => m.TimeDemo),
+  'time-columns': () =>
+    import('./time-columns.demo').then((m) => m.TimeColumnsDemo),
   toast: () => import('./toast.demo').then((m) => m.ToastDemo),
   tooltip: () => import('./tooltip.demo').then((m) => m.TooltipDemo),
   tree: () => import('./tree.demo').then((m) => m.TreeDemo),
@@ -357,6 +360,20 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./date.bounds.demo').then((m) => m.DateBoundsDemo),
     },
   ],
+  time: [
+    {
+      key: 'locales',
+      load: () => import('./time.locales.demo').then((m) => m.TimeLocalesDemo),
+    },
+    {
+      key: 'step',
+      load: () => import('./time.step.demo').then((m) => m.TimeStepDemo),
+    },
+    {
+      key: 'bounds',
+      load: () => import('./time.bounds.demo').then((m) => m.TimeBoundsDemo),
+    },
+  ],
   calendar: [
     {
       key: 'locale',
@@ -428,6 +445,8 @@ export const CARD_DEMOS: Readonly<
   popover: () => import('./cards/popover.card').then((m) => m.PopoverCardScene),
   stepper: () => import('./cards/stepper.card').then((m) => m.StepperCardScene),
   theme: () => import('./cards/theme.card').then((m) => m.ThemeCardScene),
+  'time-columns': () =>
+    import('./cards/time-columns.card').then((m) => m.TimeColumnsCardScene),
   toast: () => import('./cards/toast.card').then((m) => m.ToastCardScene),
   tooltip: () => import('./cards/tooltip.card').then((m) => m.TooltipCardScene),
 };

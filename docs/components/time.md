@@ -1,0 +1,176 @@
+# `PctTime` — time field
+
+**Summary:** A time of day typed into a field or picked from columns the field opens.
+**Entrypoint:** `@pacit/components/time`
+**Selector:** `pct-time`
+**Status:** released
+**Category:** Text & numbers
+**ARIA APG pattern:** the textbox and dialog of [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
+a plain textbox with a button beside it that opens a `role="dialog"` holding one named
+[`role="listbox"`](./time-columns.md) per field of the time. The APG has no time picker, and
+the example it borrows from is built around a grid this field does not have, so the claim is
+the part implemented and no more ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)
+§7). The textbox is deliberately **not** a `combobox`: a column of hours narrows nothing — it
+is a second road to the same value ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md)
+read backwards)
+
+## Usage
+
+```html
+<pct-time label="Starts at" [(value)]="startsAt" />
+```
+
+## Contract
+
+|                 |                                                                                                                                                                                                                                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Value**       | `PctTimeOfDay \| null` through `value` (`model`) — a wall-clock time written `HH:mm`, or `HH:mm:ss` where the step has seconds, never a `Date` ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md))                                                                                                                                |
+| **Inputs**      | `value` (`model`), `min`, `max`, `step`, `locale`, `showFormat`, `size`, `panelAlign`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl`                                                                                               |
+| **Outputs**     | `touch`                                                                                                                                                                                                                                                                                                                                    |
+| **Bounds**      | `min` / `max` belong to the `FormUiControl` contract; Angular 22.2's own `min()` / `max()` take numbers, so a schema does not fill them and the library ships no rule that would. They disable the panel's rows and never rewrite a time typed in full. `min` later than `max` is a window across midnight, `22:00` to `06:00` (0086, A12) |
+| **Step**        | in seconds, counted from `min`, 60 by default — what the columns list and whether the value carries `:ss`, and nothing about typed text: a time off the step is a time, and the form's to refuse. A step the columns cannot list (`420`) is read as 60, with a dev-mode warning                                                            |
+| **Clock**       | the field's `locale`, read off one formatter — twelve hours or twenty-four, the day-period words and where they stand. A forced clock is a locale too (`en-US-u-hc-h23`), so there is no `hourCycle` input                                                                                                                                 |
+| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the textbox sits inside this template, the host carries no role, and an ARIA name on a roleless element is ignored                                                                                                                                            |
+| **Parts**       | `control`, `toggle`, `panel`, `label`, `hint`, `warning`, `error`                                                                                                                                                                                                                                                                          |
+| **Harness**     | `PctTimeHarness`                                                                                                                                                                                                                                                                                                                           |
+| **Tokens**      | `--pct-time-*` — one tier for the field **and** its columns, because the name carries the ENTRYPOINT and `PctTimeColumns` ships inside this one                                                                                                                                                                                            |
+| **Strings**     | `timeOpen`, `timeMalformed`, `timeHourLetter`, `timeMinuteLetter`, `timeSecondLetter`, and the columns' `timeHours`, `timeMinutes`, `timeSeconds`, `timePeriod` — through `PCT_TEXTS`                                                                                                                                                      |
+| **DI contract** | `PCT_FIELD`, `PCT_CONFIG`, `PCT_TEXTS`, `LOCALE_ID`; `fieldCursor: 'text'` — the control is typed into, so a click anywhere on the field places the caret                                                                                                                                                                                  |
+
+**Why not `<input type="time">`,** despite
+[`req-api-platform`](../requirements/api.md#req-api-platform). The date's three measurements,
+met again and harder ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)):
+
+- **the clock it draws comes from a different place in each engine, and never from `lang`** —
+  chromium reads the language of the browser's own interface, firefox its own, webkit the
+  browser's locale. A Polish application shows `01:05 PM` to a Polish reader of an
+  English-language Firefox and has no way of saying otherwise;
+- **what was typed is not what is read** — a half-typed time reads `""` in firefox and webkit,
+  and chromium reads `130`, a minute half typed, as **`13:00`**, a valid time nobody entered;
+- **one control is three tab stops, or four, or one** — by engine and, in chromium, by the
+  system's locale, which decides whether the day period is a stop of its own.
+
+## Parts
+
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`   | the label of the typed input                                                                                                                              |
+| `control` | the typed input                                                                                                                                           |
+| `toggle`  | the button that opens the columns                                                                                                                         |
+| `hint`    | the hint under the input                                                                                                                                  |
+| `error`   | the message when the value is invalid                                                                                                                     |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+| `panel`   | the dialog the columns stand in                                                                                                                           |
+
+The columns' own parts are on [`PctTimeColumns`](./time-columns.md).
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-time-border-focus: #0f766e;
+  --pct-time-option-bg-selected: #0f766e;
+  --pct-time-option-fg-selected: #ffffff;
+}
+```
+
+## Keyboard map
+
+| key                    | effect                                                            | test                                |
+| ---------------------- | ----------------------------------------------------------------- | ----------------------------------- |
+| any text               | typed into the field, parsed on commit                            | `apps/sandbox-e2e/src/time.spec.ts` |
+| `Tab`                  | field → clock button → out                                        | native                              |
+| `Enter` on the button  | opens the panel, focus lands on the hour column at the held time  | `apps/sandbox-e2e/src/time.spec.ts` |
+| `Tab` in the panel     | the next column — one stop each — and off the last, out           | `apps/sandbox-e2e/src/time.spec.ts` |
+| `Enter` in a column    | takes the time and closes the panel, focus back to the field      | `apps/sandbox-e2e/src/time.spec.ts` |
+| `Escape` in the panel  | closes it, focus back to the field, the value as the columns left | `apps/sandbox-e2e/src/time.spec.ts` |
+| `Tab` out of the panel | closes it, focus **spliced back** onto the field                  | `apps/sandbox-e2e/src/time.spec.ts` |
+
+The columns' own map is on [`PctTimeColumns`](./time-columns.md). The field itself adds **no**
+key of its own: what a user types is text, and the platform's own editing keys are the whole
+of it — the arrows do not step the segment under the caret, because the engines step it three
+ways (0086, A13 and A14) and a reader is never told a textbox has a value to step.
+
+## Checks
+
+| criterion                       | evidence                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | `libs/components/time/src/time-field.ts` — the field's reasons and the decision behind them in the class comment; the columns name their listbox in theirs                                                                                                                                                                                                                                                                      |
+| Keyboard map                    | `apps/sandbox-e2e/src/time.spec.ts` — the panel's map in three engines; `libs/components/time/src/time-field.spec.ts` — Escape, Tab off either end and Tab inside, key by key                                                                                                                                                                                                                                                   |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` — the `/time` view and `/all`, in both directions, and separately **the open panel with the field it belongs to**, whole-page: the toggle's `aria-controls` into the overlay container and the three named listboxes pointing at their rows                                                                                                                                                 |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts` — `time-field`, `time-columns` and `time-columns-rtl`                                                                                                                                                                                                                                                                                                                                     |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — the chosen row takes the mode's `SelectedItem` pair, the keyboard's row keeps a ring in `Highlight`, a refused row says `GrayText`; the field's invalid edge is drawn twice as thick, a shape the substitution keeps                                                                                                                                                             |
+| `prefers-reduced-motion`        | `tools/check-styles.mjs` point 9 — the row's and the field's transitions take `--pct-motion-transition-duration`, which the token build switches off                                                                                                                                                                                                                                                                            |
+| Touch target ≥ 24×24 px         | `apps/sandbox-e2e/src/target-min.spec.ts` — the clock button is `max(--pct-time-toggle-size, --pct-time-target-min)`, measured with the drawing disarmed; a row is 28 px at `sm` and taller above                                                                                                                                                                                                                               |
+| Size axis                       | `apps/sandbox/src/app/views/size/size-view.html` — the `/size` view puts the field on the shared `sm`/`md`/`lg` axis beside the date field, and the rows follow the field into the panel                                                                                                                                                                                                                                        |
+| Density axis                    | none — gap ([`req-token-density`](../requirements/tokens.md#req-token-density) has not one token in the sources; the row height is the number a density axis would move)                                                                                                                                                                                                                                                        |
+| RTL                             | `apps/sandbox-e2e/src/rtl.spec.ts` — the button changes sides and the hour column is drawn on the right; `apps/sandbox-e2e/src/time.spec.ts` — the same in the panel, and the keys, which are about the row above and below, unchanged                                                                                                                                                                                          |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/time` view is in `SBX_ROUTES`                                                                                                                                                                                                                                                                                                                                                  |
+| Forms                           | `libs/components/time/src/time-field.spec.ts › the forms that bind it` — `[formField]`, `[formControl]` and `[(ngModel)]`, each from a non-empty value ([`lesson-26`](../lessons.md#lesson-26)); `apps/sandbox-e2e/src/forms.spec.ts` — the field in a signal form whose validity waits for it                                                                                                                                  |
+| Message announced               | `tools/check-aria.mjs` (point 7, target `check-aria`) — the error part carries `role="alert"`, the warning part `role="status"`                                                                                                                                                                                                                                                                                                 |
+| Time arithmetic as laws         | `libs/components/time/src/time.property.spec.ts` — the value module's laws; `libs/components/time/src/lattice.spec.ts` — the rows a step lists and where a walk lands, under bounds, a window and a base off the hour                                                                                                                                                                                                           |
+| Parts in the inventory          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                                                                                                                                                                                                                                                             |
+| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json` — 21 pairs for the field and its columns together                                                                                                                                                                                                                                                                                                                                        |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — nine keys; the three letters are texts because they are **words**, and the clock's own words — `AM`, `오후` — are the formatter's, because they are what the field shows and reads back                                                                                                                                                                                                               |
+| Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                                                                                                                                                                                                                            |
+| Not a time, said                | `libs/components/time/src/time-field.spec.ts › junk in the field` — the sentence in the message line ahead of the form's, in the default wording and in the application's; `apps/sandbox-e2e/src/time.spec.ts › keeps junk in the field and reports it` — the same in three engines, in French, with `aria-describedby` naming it ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)) |
+| Screen-reader log               | none — gap: the pass of the three readers over `/time` is the next thing this card takes                                                                                                                                                                                                                                                                                                                                        |
+| docs page                       | `/components/time` on the published site — prerendered, the demo's own source is the code tab                                                                                                                                                                                                                                                                                                                                   |
+
+## What the control knows, and says
+
+Type `teatime` into the field and leave it. The value goes `null`, the text **stays**, and the
+control reports `aria-invalid="true"` with a `data-pct-malformed` state — the opposite of what
+`<input type="time">` does, and the whole reason this control is not one.
+
+And it says so: **`Not a time`** in the message line, ahead of whatever the form has to say,
+because the form sees `null` and would call a required field empty while the user looks at
+four digits they typed. The sentence travels through the contract's second channel,
+`ownErrors` ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)),
+so a `pct-field` around the control shows it in the same place; it is the `timeMalformed`
+text, so an application that translates the library is not told in English; and it exists only
+once the field was left — a keystroke or a value from outside takes it back.
+
+**A time off the step is not junk.** `13:05` in a field of quarter hours is a time, and the
+field writes it, as the native element keeps the value and flags `stepMismatch` beside it;
+nothing goes on the second channel, which is for text that is **not a value at all**. The
+value module exports `pctTimeOnStep` so that a validator and the columns agree about what "on
+the step" means.
+
+## Decisions
+
+[0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md) (a time of day is a wall clock, and
+the field that takes one is text the application formats),
+[0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md),
+[0035](../decisions/0035-a-filter-is-a-question-not-a-value.md) (read backwards, for why the
+textbox is not a combobox),
+[0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md),
+[0025](../decisions/0025-a-panel-says-whether-it-takes-focus.md),
+[0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md) (Escape has one owner, and the panel stops it there),
+[0022](../decisions/0022-one-message-line.md),
+[0005](../decisions/0005-signal-forms-without-cva.md),
+[0003](../decisions/0003-wrapper-and-control.md)
+
+## Known limitations
+
+- **No zone, and no day.** The value is what a clock on the wall shows. Turning it into an
+  instant needs a day and a zone the field does not have, and belongs to the application — or
+  to the datetime field, which has the day and still leaves the zone to whoever knows where the
+  event is.
+- **One time, not a range.** A shift's two ends are two fields with `min` / `max` bound to each
+  other, by [0034](../decisions/0034-multiplicity-is-a-tag.md)'s reading of multiplicity. A
+  shift that runs to midnight ends at `23:59`, because `24:00` is the end of a day and not a
+  time of it.
+- **The step is not snapped.** A typed `13:05` in a quarter-hour field stands until the form
+  says otherwise, and an application with no validator for it keeps a value off its own step.
+  A step the columns cannot list — seven-minute slots — is refused: that is a `PctSelect` of
+  times, not a free one.
+- **No predicate on a time.** `dateDisabled` has no counterpart here: an hour row would be
+  sixty questions, and the cases split between the bounds, a slot taken on a **day** — the
+  datetime field's question — and a break a form validator already answers (0086 §5).
+- **The clock is the engine's.** In chromium a Burmese or Icelandic field is written in the
+  browser's default locale where the engine does not carry the language, and in webkit a
+  Korean one says `AM` and `PM` — what the same engine's own `Intl` writes on the same page
+  (0086, C5 and D2).
+- **The sentence comes first.** A control's own error stands ahead of the form's, always —
+  there is no knob to let "required" win over "not a time" (0070).

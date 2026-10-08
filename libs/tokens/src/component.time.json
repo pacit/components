@@ -1,0 +1,276 @@
+{
+  "pct": {
+    "time": {
+      "$comment": "The time field AND the columns it opens. One component tier for both, because `--pct-{component}-…` names the ENTRYPOINT and `PctTimeColumns` ships inside `@pacit/components/time` — the date's tier and its calendar, one entrypoint over (req-token-names, check-tokens point 3; 0086 §6).",
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the time field."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the time field."
+      },
+      "placeholder-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the placeholder."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the time field."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the time field on hover."
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the time field when focused."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the time field when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the time field when invalid."
+      },
+      "border-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Edge colour of the time field under a warning (0087)."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087)."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the time field while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the time field while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the time field while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the time field."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the time field."
+      },
+      "font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the time field at size sm."
+      },
+      "font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the time field at size lg."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the time field."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the time field."
+      },
+      "padding-y-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the time field at size sm."
+      },
+      "padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the time field at size sm."
+      },
+      "padding-y-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the time field at size lg."
+      },
+      "padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the time field at size lg."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the time field."
+      },
+      "$comment-toggle": "The button that opens the columns. It is the one thing in the row a finger aims at, so its size is a floor rather than a fixed number — `max()` against `target-min` in the sheet.",
+      "toggle-size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Size of the clock toggle."
+      },
+      "$comment-icon": "The box the toggle's clock sits in. One number, because `req-api-icons` makes the box the component's and the drawing the consumer's.",
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Size of the icon."
+      },
+      "toggle-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the clock toggle."
+      },
+      "toggle-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the clock toggle."
+      },
+      "toggle-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the clock toggle on hover."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the panel."
+      },
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between the columns of the panel."
+      },
+      "$comment-column": "One column — a listbox of one field of the time, which scrolls. Its height is a window of about seven rows at size md; the rows scale with the field's size and the window does not, so a smaller field shows a row more and a larger one a row less.",
+      "column-height": {
+        "$type": "dimension",
+        "$value": "224px",
+        "$description": "Height of a column."
+      },
+      "column-min-width": {
+        "$type": "dimension",
+        "$value": "56px",
+        "$description": "Minimum width of a column — a day-period word wider than two digits widens its own column."
+      },
+      "$comment-option": "One row of a column. Everything a column draws is this row, so a theme that resizes it resizes the whole panel (req-api-size).",
+      "option-height": {
+        "$type": "dimension",
+        "$value": "32px",
+        "$description": "Height of a row."
+      },
+      "option-height-sm": {
+        "$type": "dimension",
+        "$value": "28px",
+        "$description": "Height of a row at size sm."
+      },
+      "option-height-lg": {
+        "$type": "dimension",
+        "$value": "36px",
+        "$description": "Height of a row at size lg."
+      },
+      "option-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of a row."
+      },
+      "option-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of a row."
+      },
+      "option-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of a row."
+      },
+      "option-font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of a row at size sm."
+      },
+      "option-font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of a row at size lg."
+      },
+      "option-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a row on hover."
+      },
+      "option-bg-selected": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of a row when selected."
+      },
+      "option-fg-selected": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Text colour of a row when selected."
+      },
+      "option-font-weight-selected": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of a row when selected."
+      },
+      "option-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of a row while disabled."
+      }
+    }
+  }
+}

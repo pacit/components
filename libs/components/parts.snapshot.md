@@ -154,6 +154,15 @@ from what the browser really gets.
 ./tabs PctTab panel
 ./tabs PctTabs list
 ./tabs PctTabs tab
+./time PctTime control
+./time PctTime error
+./time PctTime hint
+./time PctTime label
+./time PctTime panel
+./time PctTime toggle
+./time PctTime warning
+./time PctTimeColumns column
+./time PctTimeColumns option
 ./toast PctToastViewport action
 ./toast PctToastViewport close
 ./toast PctToastViewport icon

@@ -7,7 +7,7 @@ import { PctIcon, primeIcons, providePctIcons } from '@pacit/components/icon';
  * `primeIcons()` is the adapter: `<pct-icon icon="bell">` holds a span wearing `pi pi-bell`,
  * and PrimeIcons' own stylesheet — yours to include, in the `styles` of `angular.json` —
  * draws the glyph. The library brings no font and no list of names: whatever the stylesheet
- * knows is an id here. The same line carries the library's ten roles in PrimeIcons'
+ * knows is an id here. The same line carries the library's eleven roles in PrimeIcons'
  * spelling, so the select's arrow and the toast's marks wear the set too — the example
  * "One line dresses the library" shows that side, and "Which roles a set dresses" how to
  * keep some of them.

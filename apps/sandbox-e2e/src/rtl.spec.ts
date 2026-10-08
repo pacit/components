@@ -303,6 +303,33 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
   });
 
   /**
+   * The time field mirrors as the date field does — the clock's button stands at the END of
+   * the row, which is the left in RTL — and its panel stands its columns along the inline axis,
+   * so the hour, written first, is drawn on the right. No rule says `rtl` anywhere: a flex row
+   * and logical properties, and the geometry is the only witness.
+   */
+  test('the time field’s button and its columns change sides', async ({
+    page,
+  }) => {
+    await visit(page, '/time');
+    const host = page.getByTestId('time-standalone');
+    const input = host.locator('[data-pct-part="control"]');
+    const toggle = host.locator('[data-pct-part="toggle"]');
+    expect((await boxOf(toggle)).x).toBeGreaterThan((await boxOf(input)).x);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-time')).toBe('rtl');
+    expect((await boxOf(toggle)).x).toBeLessThan((await boxOf(input)).x);
+
+    const columns = page
+      .getByTestId('time-columns-inline')
+      .locator('[data-pct-part="column"]');
+    const hour = await boxOf(columns.first());
+    const minute = await boxOf(columns.nth(1));
+    expect(hour.x).toBeGreaterThan(minute.x);
+  });
+
+  /**
    * A tree mirrors twice: the depth indents the other way (a logical padding on the
    * group), and the WALK swaps its inline pair — 0056 reads the computed direction at
    * the keypress, and only a real engine under a real `dir` can prove that. The gesture

@@ -264,6 +264,47 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The time columns draw three facts on one row — the chosen row, the row the keyboard stands
+   * on in the focused column, and a row the bounds refuse — and in the light theme the first is
+   * colour and the third is a quieter colour. After the swap the chosen row takes the mode's
+   * own pair for a selection, the keyboard's row keeps a RING (a shape the substitution keeps),
+   * and a refused row says `GrayText`.
+   */
+  test('the time columns keep the chosen row, the keyboard’s row and a refused row apart', async ({
+    page,
+  }) => {
+    await visit(page, '/time', { media: FORCED });
+    const sys = await systemColors(page);
+
+    // Opened from the keyboard, so the column that takes the focus shows it as `:focus-visible`
+    // — the ring is drawn for a keyboard, and a press would not ask for it.
+    const toggle = page
+      .getByTestId('time-bounded')
+      .locator('[data-pct-part="toggle"]');
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    const panel = page.locator('[data-pct-part="panel"]');
+    const hour = panel.locator(
+      '[data-pct-part="column"][data-pct-field="hour"]',
+    );
+    await expect(hour).toBeFocused();
+
+    const chosen = hour.locator('[data-pct-part="option"][data-pct-chosen]');
+    await expect(chosen).toHaveCount(1);
+    expect(await styleOf(chosen, 'background-color')).toBe(sys.SelectedItem);
+    expect(await styleOf(chosen, 'color')).toBe(sys.SelectedItemText);
+
+    const cursor = hour.locator('[data-pct-part="option"][data-pct-active]');
+    expect(await styleOf(cursor, 'outline-style')).toBe('solid');
+    expect(await styleOf(cursor, 'outline-color')).toBe(sys.Highlight);
+
+    const refused = hour
+      .locator('[data-pct-part="option"][data-pct-disabled]')
+      .first();
+    expect(await styleOf(refused, 'color')).toBe(sys.GrayText);
+  });
+
+  /**
    * The hardest case: in a list panel an ordinary option, a selected one and the one
    * active from the keyboard differ by background ALONE. After the palette swap all
    * three would be the same rectangle, so the selection was split into two

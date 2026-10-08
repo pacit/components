@@ -126,7 +126,7 @@ in hand. A library is allowed to grow in public, and a repository that moves is 
 argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
-form exists and is a condition of entering a release. Thirty-five cards are filled in.
+form exists and is a condition of entering a release. Thirty-seven cards are filled in.
 
 - [~] **1.3 — time field** in `@pacit/components/time`: the field, `PctTimeColumns` and the
   value module, as [0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) decided them
