@@ -26,8 +26,9 @@ The question that came with the reading was larger than the defects: should the 
 stand on a centre line, should a scroll snap by rows, should the column be a wheel, should the
 wheel be a ring — and should the consumer choose between those shapes? The library's practice
 up to this record was one measured shape per component: 0086 measured seven readings, E1 to
-E7, five of them of a column, and chose the listbox. The first answer given here was that practice — one shape, no option,
-no wheel of its own — on the cost of measuring three shapes in three engines and three readers.
+E7, five of them of a column, and chose the listbox. The first answer given here was that
+practice — one shape, no option, no wheel of its own — on the cost of measuring three shapes
+in three engines and three readers.
 
 The author refused it. **The library should give the choice: for a field with an enum of ten
 values, a select, a wheel picker, or something not yet invented — that other libraries do not
@@ -90,8 +91,9 @@ the line itself.
    the band is drawn by the wheel and not by the row and the rows fade towards its edges, the
    row count is odd and comes from the row-height token, the bar is hidden by
    `scrollbar-width`, and the centring the walk asks for is scripted, smooth or not as the
-   motion duration says, read the way `core/src/motion.ts` reads it — so reduced motion
-   reaches it with no rule in a stylesheet
+   motion duration says, through a reader `core/src/motion.ts` exports beside
+   `pctAfterTransition` (`@since next`) — so reduced motion reaches it with no rule in a
+   stylesheet
    ([`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)). There is no scroll panel
    component: the platform scrolls, snaps, settles and paints the bar
    ([`req-api-platform`](../requirements/api.md#req-api-platform)).

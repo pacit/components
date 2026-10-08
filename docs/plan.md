@@ -166,17 +166,17 @@ form exists and is a condition of entering a release. Thirty-seven cards are fil
 - [ ] **1.6 — the wheel** `PctWheel<T>` in `@pacit/components/wheel`, as
       [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) decided it:
       a listbox on the platform's scroll, and the row under the line is the value
-  - first the runway's own record: whether the ring is `@angular/cdk/scrolling` (a third CDK
-    entrypoint under the dependency policy) or a window of the wheel's own, measured by bytes on
-    `./wheel`, by a fling across the re-centring in three engines and by three readers on a
-    listbox whose rows are a window, told what of the rows outside it — 0086's order, the
-    probes before the code
+  - first the runway's own record: `@angular/cdk/scrolling` (a third CDK entrypoint under the
+    dependency policy) or a window of the wheel's own, measured by bytes on `./wheel`, by a
+    fling across the re-centring in three engines and by three readers on a listbox whose rows
+    are a window, told what of the rows outside it — 0086's order, the probes before the code
   - then the component: options of the select's item shape, `compareWith`, `T | null`,
     `[formField]` and `warnings`, a label and a hint without a wrapper; a settle a gesture
     started writes, the opening and `null` write nothing; `wrap` ringing on keys and on
-    scroll; the band, the fade, an odd row count from the row-height token, the bar hidden,
-    the centring read off the motion duration; the tier `--pct-wheel-*`, its texts, a card
-    under Choices on the APG listbox
+    scroll; the band, the fade, an odd row count from the row-height token, the bar hidden;
+    the centring read off the motion duration by a reader `./core` exports beside
+    `pctAfterTransition`; the tier `--pct-wheel-*`, its texts, a card under Choices on the
+    APG listbox
   - `scroll-snap-stop: always` — one row per tick and per flick — is in three engines, and
     rows per flick on the sixty-row minutes column is the measure that decides it, either way
   - the drum (rows turned by their distance to the line) comes after, by scroll-driven
