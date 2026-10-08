@@ -7358,3 +7358,80 @@ The wider reading: a verdict is built from what its reader can see. This runner 
 a failure that is not one is invisible to it, and the cheapest fix is not a rule about the
 verdict but a test for the failure — made where the run is configured, and checked where its
 record is read.
+
+---
+
+### <a id="lesson-255"></a>`lesson-255` — A cache step that repeats the tool's default path keeps saving it after the tool moves
+
+Nx 23.2.1 arrived on 2026-10-02 (#48) and moved its task cache and the database that indexes it
+out of the checkout: from `.nx/cache` and `.nx/workspace-data` to one directory per user,
+`~/.nx/<id>/cache` and `~/.nx/<id>/databases`, shared by every checkout of the workspace. The
+checkout keeps them when one of three variables is set or `nx.json` names a `cacheDirectory`,
+and otherwise only when nx can find no identity for the workspace or is refused `~/.nx`
+(`computeSharedDataLocation` in `cache-directory.js`). CI's composite action went on saving the
+two old paths. From the bump's own merge to 2026-10-08, all 72 green runs of `gates` read
+`Cache: 0/37`, `0/51` or `0/52 hit`, a battery of about two minutes at the median; 70 of them
+had restored an entry, and the two that found none were the first in Playwright's image. On
+2026-10-01 the same job had read 8 to 21 of 31, in 5 to 57 seconds. Nothing went red.
+`lesson-172` wrote down that a cache which restores nothing looks exactly like one that works,
+and nx printed the counter that says which in every one of those logs.
+
+The entry said it too. The runner's entries still weighed 174 MB after the bump, and that could
+only be 23.1's cache handed on from run to run, since nothing wrote into `.nx/cache` any more.
+When the jobs moved into the image (2026-10-07) the chain started over under gzip, and the
+image's entries came out at 602 KB — the project graph and an empty database.
+
+Measured on 23.2.1, in fresh clones each given a `HOME` of its own, `tokens:build` once per
+state. With no variable the result went to `~/.nx/<id>/cache` and the checkout's `.nx/cache`
+was never created, and a fresh clone handed that checkout's `.nx` read 0/1: CI's state. With
+`NX_CACHE_DIRECTORY` and `NX_WORKSPACE_DATA_DIRECTORY` naming the in-checkout paths, the pair
+handed on read 1/1 with `libs/tokens/dist` present; `.nx/cache` alone 0/1; the database alone
+1/1 with `libs/tokens/dist` absent — `lesson-172` holds on the new version unchanged. Either
+variable alone moved both halves. The database showed one more dependency the cache always had
+and never named: its file is `<machine id>-v3.db`, the id read from `/var/lib/dbus/machine-id`
+or `/etc/machine-id`, and the same database renamed for another machine read 0/1 while nx
+opened an empty one beside it. An entry belongs to the machine that wrote it — on CI, to the
+image, whose two files hold one id baked into the image.
+
+What went in, and what was weighed against it:
+
+- **The variables, set by the composite action itself, in every job.** Then CI names the paths
+  it saves to the tool instead of repeating the tool's default, and every job of a run has one
+  layout. `cacheDirectory` in `nx.json` would have moved the desk as well: a cache per
+  worktree, each new one cold, where every worktree has shared one cache since 23.1 and
+  `lesson-240` made that safe. Saving `~/.nx` instead keeps the dependency on a layout one
+  minor version old, through a hashed id and directories nx refuses unless each level is `0700`
+  and its own — the silent fallback, one permission away.
+- **A question to nx, in a step of its own.** It has no `env:` of its own, so it sees what every
+  later step sees, and it compares each half with the path the cache step saves: the cache
+  through `cacheDir`, public in `@nx/devkit`, the database through `sharedDataDirectory`, the
+  internal function nx's own connection calls. A typo in both lines that set the variables, nx
+  loaded blind to the variables, the database alone sent elsewhere — each failed the job with
+  the half named; live it passes in half a second. A bump that stops honouring the variables,
+  or moves a half out from under them, is a red pull request.
+- **The machine id in the key.** A Playwright bump that changes the id then starts a new chain,
+  instead of handing on a database nx would not open and the artifacts it indexed.
+- **The e2e shards stop restoring.** Over the 68 green runs from 2026-09-28 to the bump, the
+  entry — 141 to 172 MB — took 4.4 seconds to restore at the median and 5.9 at the 90th
+  percentile, in each of 408 shard jobs, and saved their one cacheable task, `docs:content`, in
+  107 of them. That task ran in 1.7 seconds at the median, 2.0 at most, in 298 of the 300 shard
+  jobs of the 46 green runs after the bump, where it never hit. It missed mostly because the
+  shards start beside `gates` and get the previous run's entry, and it reads every lesson,
+  decision and component source: a restore that loses even when it hits.
+- **`pages.yml` stays cold.** A restore there needs the image. Measured on 37740388032, the
+  whole cold `nx build docs` took 17.5 seconds and `npm ci` 24, against a pull of 27 seconds at
+  the median and about 8 to restore `node_modules`: about even at best, for a deploy that would
+  then hang on a 956 MB image and on the cache's chain.
+
+After, on the pull request's own runs, in the image. The first restored `main`'s entry, which
+held nothing nx could use, read 0/37 in 82 seconds and saved 7.3 MB; the first version of the
+guard printed `nx caches in /__w/components/components/.nx/cache` (37762132363). The second, a
+change to the action alone, restored those 7.3 MB in 0.8 seconds and read 32/37 in 8.4 seconds
+(37762575083). The five that ran are three gates nx never caches — `check-reach`,
+`check-distance`, `check-support` — and two whose inputs are every file, `check-docs` and
+`check-language`: of these 37 tasks, 32 is the most that a change to any tracked file can hit.
+
+The wider reading: a path that a workflow caches for a tool is a claim about the tool's
+default, and a default is the tool's to move. The step names the place to the tool instead,
+and asks it, in the same job, where it will write — a counter printed in every log is not a
+check while nothing reads it.

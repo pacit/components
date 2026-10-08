@@ -19,23 +19,29 @@ description: >-
   and the image's are strangers under one key. Measured on the run that moved: `Cache not
   found` for the nx entries main had written outside the image, and the same
   `node_modules` key stored twice, 178 MB from the runner and 204 MB from the image. The nx
-  entries lost nothing by it: since Nx 23.2.1 (#48) the task cache lives in `~/.nx/<id>`,
-  not in the `.nx/cache` saved below, and every run since has restored an entry and read
-  `Cache: 0/… hit`. What the nx steps below say they buy is a reading from before that
-  bump, and repairing them is a change of its own.
+  entry belongs to the image alone: the one job that reads and writes it runs there, and
+  the step that saves it says why no job outside could read it anyway.
 
 inputs:
   nx-cache:
     description: >-
-      `save` for the one job that writes the nx task cache back, `restore` for every job
-      that only reads it. Exactly one job may save, and that is arithmetic rather than
-      taste: the entry measured 121 MB, `node_modules` beside it 192 MB, and a repository's
-      whole cache budget is 10 GB. Nine jobs saving an entry each, on a key that carries
-      the commit, would evict `node_modules` within a working day — and its miss is an
-      `npm ci` in every job of the run. (The browsers, 456 MB, were the entry this sentence
-      first protected; they come in the image now.)
+      `save` for the one job that restores the nx task cache and writes it back, `none` for
+      every other. Exactly one job may save, and that is arithmetic rather than taste: the
+      entry measured 121 MB, `node_modules` beside it 192 MB, and a repository's whole cache
+      budget is 10 GB. Nine jobs saving an entry each, on a key that carries the commit,
+      would evict `node_modules` within a working day — and its miss is an `npm ci` in every
+      job of the run. (The browsers, 456 MB, were the entry this sentence first protected;
+      they come in the image now.) And no job only restores it any more. The e2e shards did
+      until 2026-10-08, for the one cacheable task they run, `docs:content`, and the restore
+      cost more than the task even when it hit. Over the 68 green runs from 2026-09-28 to
+      the bump, the entry — 141 to 172 MB — took 4.4 seconds to restore at the median and
+      5.9 at the 90th percentile, in each of 408 shard jobs, and spared `docs:content` in
+      107 of them; the task itself ran in 1.7 seconds at the median, 2.0 at most, in 298 of
+      the 300 shard jobs after the bump, where it never hit. It mostly missed because the
+      shards start beside `gates`, not after it, so they get the PREVIOUS run's entry, and
+      `docs:content` reads every lesson, decision and component source.
     required: false
-    default: restore
+    default: none
 
 runs:
   using: composite
@@ -82,23 +88,108 @@ runs:
         path: tools/.dictionaries
         key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
 
+    # Where nx keeps its task cache is said here and not left to nx. Until 23.1 its default
+    # WAS `.nx/cache` and `.nx/workspace-data` in the checkout, the two paths the step below
+    # saves. Nx 23.2.1 (#48, 2026-10-02) moved both to `~/.nx/<id>/`, one directory per user
+    # that every checkout of the workspace shares — and this action went on saving the old
+    # two. From the bump's own merge to 2026-10-08 all 72 green runs of `gates` read 0 of 37
+    # to 52 hits, about two minutes of battery at the median; on 2026-10-01 the job had read 8 to 21
+    # of 31 in 5 to 57 seconds. Nothing went red: a cache that restores nothing looks
+    # exactly like one that works (lesson-172), and this one did for six days (lesson-255).
+    #
+    # Either variable alone brings both halves back into the checkout — nx takes one
+    # decision for the cache and its database, so that they cannot land apart — and both
+    # are set, so that this step does not lean on that. Through `$GITHUB_ENV`, so every
+    # later step and every nx in it reads them; and in EVERY job, the ones that cache
+    # nothing included: one layout per run, so that a job that starts restoring the cache
+    # one day cannot restore one path while its nx reads another. The desk keeps nx's
+    # default, and its worktrees keep one shared cache (lesson-240).
+    #
+    # The step also names the machine, for the key of the cache step: a value that stands for
+    # the id nx names its database by — `/var/lib/dbus/machine-id`, then `/etc/machine-id`,
+    # trimmed, else a fallback. It only has to be the same in every container of one image
+    # and change with the image, and in the image both files hold one id.
+    - id: nx
+      shell: bash
+      run: |
+        echo "NX_CACHE_DIRECTORY=.nx/cache" >> "$GITHUB_ENV"
+        echo "NX_WORKSPACE_DATA_DIRECTORY=.nx/workspace-data" >> "$GITHUB_ENV"
+        machine=$(cat /var/lib/dbus/machine-id 2>/dev/null || cat /etc/machine-id 2>/dev/null || true)
+        machine=$(printf '%s' "$machine" | tr -d '[:space:]')
+        echo "machine=${machine:-machine}" >> "$GITHUB_OUTPUT"
+
+    # Then nx is asked where it will keep each half, by a step with no `env:` of its own, so
+    # that it sees exactly what every later step sees: the cache through `cacheDir`, a public
+    # export of `@nx/devkit`, and the database through the function nx's own connection
+    # calls, an internal one. Each answer is compared with the path the cache step saves, and
+    # either one elsewhere fails the job. A bump that stops honouring the variables, or moves
+    # a half out from under them, is then a red pull request and not a week of misses — and
+    # so is a bump that renames the internal function, whose stack will say so. Measured with
+    # nx loaded blind to the variables, and with the database alone sent elsewhere: each
+    # half named, exit 1. Half a second.
+    - shell: bash
+      run: |
+        node -e '
+          const { join } = require("node:path");
+          const { cacheDir, workspaceRoot } = require("@nx/devkit");
+          const { sharedDataDirectory } = require("nx/src/utils/cache-directory");
+          const saved = (path) => join(process.env.GITHUB_WORKSPACE, path);
+          const halves = [
+            ["cache", cacheDir, saved(".nx/cache")],
+            ["database", sharedDataDirectory(workspaceRoot, "workspace-data"), saved(".nx/workspace-data")],
+          ];
+          let elsewhere = false;
+          for (const [half, found, path] of halves) {
+            if (found === path) {
+              console.log(`nx keeps its ${half} in ${found}`);
+            } else {
+              console.log(`::error::nx keeps its ${half} in ${found}, and this action saves ${path}`);
+              elsewhere = true;
+            }
+          }
+          process.exit(elsewhere ? 1 : 0);
+        '
+
+    # A value this action does not know would read as `none`, and a cache step that says
+    # it caches and does not is the failure the step above exists for.
+    - if: inputs.nx-cache != 'save' && inputs.nx-cache != 'none'
+      shell: bash
+      env:
+        NX_CACHE: ${{ inputs.nx-cache }}
+      run: |
+        echo "::error::nx-cache is '$NX_CACHE'; it takes save or none"
+        exit 1
+
     # The nx task cache, and it names TWO directories because it IS two halves. The
     # artifacts of a cached task live in `.nx/cache/<hash>/`; the index that says such a
     # hash exists at all — its exit code, its terminal output — lives in the database
-    # under `.nx/workspace-data`. Measured on nx 23.1, each half restored on its own:
-    # `.nx/cache` alone reads 0/1 hit and reruns the task (that is the snippet copied all
-    # over the internet, and it was written for the nx that kept its index beside the
-    # artifacts); the database alone reads 1/1 hit for `tokens:build` — and leaves
-    # `libs/tokens/dist` NOT EXISTING, a green build with no artifact for every gate
-    # downstream to read. So they are one entry under one key: restored together or
-    # missed together, never one without the other.
+    # under `.nx/workspace-data`. Measured on nx 23.1, and again on 23.2.1 with the
+    # variables above, each half restored on its own: `.nx/cache` alone reads 0/1 hit and
+    # reruns the task (that is the snippet copied all over the internet, and it was written
+    # for the nx that kept its index beside the artifacts); the database alone reads 1/1 hit
+    # for `tokens:build` — and leaves `libs/tokens/dist` NOT EXISTING, a green build with no
+    # artifact for every gate downstream to read. So they are one entry under one key:
+    # restored together or missed together, never one without the other.
+    #
+    # And the entry belongs to the machine that wrote it, twice over. The archive is gzip,
+    # because the image has no `zstd`, and a runner with it asks for another version of the
+    # key. The database is named by the machine id, `<id>-v3.db`, so a database that
+    # arrived from another machine would be another machine's file, and nx would open an
+    # empty one beside it. That is why `pages.yml`, on the bare runner, restores nothing —
+    # and why the key carries the id. In the image the id is part of the image, the same in
+    # every container of one tag (37762132363), so the key holds from job to job; a
+    # Playwright bump that changes it starts a new chain, instead of handing on the old
+    # image's database and the artifacts it indexed, which nx can no longer use.
     #
     # What it buys, measured over the fourteen gates of the root project on a developer
     # machine: a push that touches documentation alone restored 12 of 17 tasks and took
-    # 11.2 s instead of 50.8 s. What it does NOT buy is the case that reads worst: a
-    # dependency bump still reruns every gate, because `package-lock.json` is in
-    # `sharedGlobals` and every task's hash carries it. That is deliberate — a gate
-    # answered from a run taken before the bump is exactly what nobody here wants.
+    # 11.2 s instead of 50.8 s. On CI, on the runs of the change that wrote this: 0/37 in 82
+    # seconds cold, then 32/37 in 8.4 seconds on the next push, which touched this file alone
+    # (37762132363, 37762575083) — the five that ran are the three gates nx never caches and
+    # the two whose inputs are every file. What it does NOT buy is the case that reads worst:
+    # a dependency bump still reruns every gate, because `package-lock.json` is in
+    # `sharedGlobals` and every task's hash carries it. That is deliberate — a gate answered
+    # from a run taken before the bump is exactly what nobody here wants.
     #
     # The nightly has no step like this, and that is a decision rather than an omission:
     # it exists to re-measure everything from nothing, and a restored result is a reading
@@ -114,15 +205,5 @@ runs:
           .nx/cache
           .nx/workspace-data
           !.nx/workspace-data/d
-        key: nx-${{ runner.os }}-${{ github.sha }}
-        restore-keys: nx-${{ runner.os }}-
-
-    - if: inputs.nx-cache != 'save'
-      uses: actions/cache/restore@v6
-      with:
-        path: |
-          .nx/cache
-          .nx/workspace-data
-          !.nx/workspace-data/d
-        key: nx-${{ runner.os }}-${{ github.sha }}
-        restore-keys: nx-${{ runner.os }}-
+        key: nx-${{ runner.os }}-${{ steps.nx.outputs.machine }}-${{ github.sha }}
+        restore-keys: nx-${{ runner.os }}-${{ steps.nx.outputs.machine }}-

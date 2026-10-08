@@ -43,7 +43,9 @@ MACHINES rather than across workers on one.**
    jobs saving an entry each under a key that carries the commit would evict the browsers
    within a working day. The other jobs restore and do not save. _(The browsers left the
    cache on 2026-10-07 — they come in the machine now, see the amendment at the end — and
-   the arithmetic holds for `node_modules`, 192 MB, in their place.)_
+   the arithmetic holds for `node_modules`, 192 MB, in their place. Since 2026-10-08 the
+   other jobs do not restore the nx entry either: it cost the shards more than the one task
+   it could spare them, `lesson-255`.)_
 2. **`e2e` is a matrix of six, each running `nx affected --shard=N/… -t e2e`.** Every shard
    is a runner to itself, so `workers: 1` stands and every test meets the same idle machine
    it met before. What changed is how many machines, not what happens on one — the one
@@ -242,7 +244,10 @@ out before merge:
   the `.nx/cache` the action saves, and every run since restored an entry and then read
   `Cache: 0/… hit` — `gates` 0/51 on 37303382522, `pages.yml` 0/5 on 37579021492. The restore
   in `pages.yml`, on the runner, is removed: it could never again find an entry, and the one
-  it found had held nothing for five days. Repairing the cache is its own change.
+  it found had held nothing for five days. Repairing the cache was its own change, on
+  2026-10-08 (`lesson-255`): the action names the cache's place to nx and asks nx where it is,
+  and `pages.yml` stays without a restore — now because the image would cost about what a hit
+  saves, not because none could happen.
 - **The generic `monospace` is another face.** Liberation Mono in the image, DejaVu Sans Mono
   on the desk and on the runner — and all eight of the site's baselines moved, by 3122 to
   30402 pixels. The pictures were right to move: 3610 code and `pre` elements on the 42 routes

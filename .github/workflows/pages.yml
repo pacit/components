@@ -49,14 +49,19 @@ jobs:
 
       - run: npm ci
 
-      # No restore of the nx cache, and it is two measurements rather than a saving. The step
-      # that stood here restored an entry and then read `Cache: 0/5 hit` (37579021492): since
-      # Nx 23.2.1 (#48) the task cache lives in `~/.nx/<id>` and not in the `.nx/cache` that CI
-      # saves, so the entry held nothing this build could use. And since 2026-10-07 the entry
-      # is written in Playwright's image, which has no `zstd`, so it is a gzip archive — and a
-      # runner with `zstd` asks for another version of the key and finds nothing at all (0081,
-      # amended). A restore that cannot hit is a step that says it caches; the build runs cold,
-      # as it has since 2026-10-02.
+      # No restore of the nx cache, and since CI caches again (2026-10-08, lesson-255) that is
+      # a measurement of what it would buy rather than of a step that could not work. The
+      # entry CI saves is written in Playwright's image and belongs to that machine twice
+      # over, as the composite action says: a gzip archive, which a runner with `zstd` asks
+      # another version for, and a database named by the image's machine id. So restoring
+      # here means building in the image, and the image does not pay for itself. Measured on
+      # 37740388032, a 58-second job: `npm ci` took 24 seconds and `nx build docs` ran its
+      # five tasks cold in 17.5. In the image `node_modules` restores in about 8 and a full
+      # hit would leave little of the build, but the pull alone takes 27 seconds at the
+      # median (0081, amended) — about even at best, for a deploy that would then hang on a
+      # 956 MB image and on the cache's chain. The step that stood here until 2026-10-08
+      # read `Cache: 0/5 hit` on every run after Nx 23.2.1 (37579021492); the build runs cold,
+      # as it has since.
 
       - uses: actions/configure-pages@v6
 
