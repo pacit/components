@@ -470,6 +470,67 @@ describe('PctTimeColumns — the walk', () => {
     }
   });
 
+  it('reads two keys that arrive before a render from where the first one left', async () => {
+    // A busy page queues input ahead of change detection: the second key must start from the
+    // row the first one wrote, not from the row the last render drew.
+    const f = await render((h) => h.value.set('09:05'));
+    const hour = column(f, 'hour');
+    const send = (key: string) =>
+      hour.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+    send('1');
+    send('3');
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('13:05');
+    send('ArrowDown');
+    send('ArrowDown');
+    await settle(f);
+    expect(f.componentInstance.value()).toBe('15:05');
+  });
+
+  it('ends the number being typed on any key but a digit', async () => {
+    const f = await render();
+    await press(f, column(f, 'hour'), '1');
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('02:05');
+    await press(f, column(f, 'hour'), '3');
+    expect(f.componentInstance.value()).toBe('03:05');
+  });
+
+  it('keeps a digit it answers with the row it stands on', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('13:15');
+    });
+    const same = await press(f, column(f, 'minute'), '1');
+    expect(same.defaultPrevented).toBe(true);
+    expect(f.componentInstance.value()).toBe('13:15');
+  });
+
+  it('lets go of the number being typed when the column goes', async () => {
+    const timers = vi.spyOn(globalThis, 'setTimeout');
+    const cleared = vi.spyOn(globalThis, 'clearTimeout');
+    try {
+      const f = await render();
+      await press(f, column(f, 'hour'), '1');
+      const first = timers.mock.results
+        .filter((_, i) => timers.mock.calls[i][1] === 500)
+        .at(-1)?.value;
+      await press(f, column(f, 'hour'), '3');
+      // The second digit restarts the half second rather than racing the first one's.
+      expect(cleared).toHaveBeenCalledWith(first);
+      const second = timers.mock.results
+        .filter((_, i) => timers.mock.calls[i][1] === 500)
+        .at(-1)?.value;
+      f.destroy();
+      expect(cleared).toHaveBeenCalledWith(second);
+    } finally {
+      timers.mockRestore();
+      cleared.mockRestore();
+    }
+  });
+
   it('keeps one column’s digits out of the next column', async () => {
     const f = await render();
     await press(f, column(f, 'hour'), '1');
@@ -565,6 +626,42 @@ describe('PctTimeColumns — the walk', () => {
     expect(f.componentInstance.value()).toBe('12:05');
     await press(f, column(f, 'hour'), 'ArrowDown');
     expect(f.componentInstance.value()).toBe('13:05');
+  });
+
+  it('starts from the step now is IN, never the next one', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 23, 0));
+    try {
+      const quarter = await render((h) => {
+        h.value.set(null);
+        h.step.set(900);
+      });
+      // 14:23 is nearer 14:30 and stands in the quarter that began at 14:15.
+      expect(active(column(quarter, 'minute'))).toBe('15');
+      // Before `min`, no time on the step is at or before now: the walk starts at `min`.
+      const early = await render((h) => {
+        h.value.set(null);
+        h.min.set('15:00');
+      });
+      expect(active(column(early, 'hour'))).toBe('15');
+      expect(active(column(early, 'minute'))).toBe('00');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads now to the second where the step counts seconds', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 40));
+    try {
+      const f = await render((h) => {
+        h.value.set(null);
+        h.step.set(30);
+      });
+      expect(active(column(f, 'second'))).toBe('30');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('starts a walk from now when there is no value, and the first move writes one', async () => {

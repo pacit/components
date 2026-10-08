@@ -114,6 +114,8 @@ test.describe('Time — the field', () => {
     await expect(host).toHaveAttribute('data-pct-malformed', '');
     const error = partOf(host, 'error');
     await expect(error).toHaveText('Pas une heure');
+    // Said from where it is drawn: the line is an alert, so a reader hears it as it arrives.
+    await expect(error).toHaveAttribute('role', 'alert');
     await expect(input).toHaveAttribute(
       'aria-describedby',
       await attrOf(error, 'id'),
@@ -227,6 +229,35 @@ test.describe('Time — the panel', () => {
     await expect
       .poll(async () => (await placed('[data-pct-active]')).inside)
       .toBe(true);
+  });
+
+  /**
+   * The keyboard's ring and the chosen row are nearly always one row — every movement writes the
+   * value — so the ring there is drawn in the selection's own text colour: the focus ring's blue
+   * on the selection's blue is a ring nobody sees. Opened from the keyboard, for `:focus-visible`.
+   */
+  test('the keyboard’s ring on the chosen row stands out from the row', async ({
+    page,
+  }) => {
+    const toggle = partOf(page.getByTestId('time-standalone'), 'toggle');
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    const hour = columnOf(panelOf(page), 'hour');
+    await expect(hour).toBeFocused();
+    const row = hour.locator('[data-pct-chosen][data-pct-active]');
+    await expect(row).toHaveCount(1);
+    const paint = await row.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        outline: style.outlineStyle,
+        ring: style.outlineColor,
+        text: style.color,
+        surface: style.backgroundColor,
+      };
+    });
+    expect(paint.outline).toBe('solid');
+    expect(paint.ring).toBe(paint.text);
+    expect(paint.ring).not.toBe(paint.surface);
   });
 
   test('says on the button that the panel is open, and takes it back', async ({

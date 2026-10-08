@@ -241,16 +241,22 @@ export class PctTimeColumns {
    */
   protected readonly cursor = computed(() => {
     const value = this.value();
-    // Now, as a wall clock shows it — the minute it is until it ticks, never rounded up — and to
-    // the second only where the step counts seconds.
-    const at = pctSecondsOf(
-      value !== null && isPctTimeOfDay(value)
-        ? value
-        : pctNow(this.madeAt, this.lattice().seconds),
-    );
+    const lattice = this.lattice();
     // Some time is always inside: the base is `min`, which the bounds always let through, or
     // midnight, which a lone `max` does too.
-    return pctNearest(this.lattice(), at, 0, HALF * 2 - 1) as number;
+    if (value !== null && isPctTimeOfDay(value))
+      return pctNearest(
+        lattice,
+        pctSecondsOf(value),
+        0,
+        HALF * 2 - 1,
+      ) as number;
+    // Now, as a wall clock shows it — the minute it is until it ticks, to the second only where
+    // the step counts seconds — and on the step it is IN: the last time on the step at or before
+    // now, never the next one. Where the bounds leave none before now, the nearest after.
+    const now = pctSecondsOf(pctNow(this.madeAt, lattice.seconds));
+    return (pctNearest(lattice, now, 0, now) ??
+      pctNearest(lattice, now, 0, HALF * 2 - 1)) as number;
   });
 
   /** The value's own fields in seconds, or `null` — what `aria-selected` reads. */
@@ -326,7 +332,7 @@ export class PctTimeColumns {
       untracked(() => this.keepInView());
     });
 
-    inject(DestroyRef).onDestroy(() => clearTimeout(this.typedTimer));
+    inject(DestroyRef).onDestroy(() => this.forget());
 
     if (isDevMode()) this.warnOnUnsupportedStep();
   }
@@ -361,10 +367,20 @@ export class PctTimeColumns {
    * with nowhere else to go, or a key that matches no row, leaves the value as it was — a miss is
    * not an instruction (`pctListNavigation`'s reading of typeahead).
    */
-  protected onKeydown(column: PctTimeColumn, event: KeyboardEvent): void {
+  protected onKeydown(drawn: PctTimeColumn, event: KeyboardEvent): void {
     if (this.disabled()) return;
+    // The column as it stands NOW, not as the last render drew it: two keys can arrive before a
+    // render — a busy page queues input ahead of change detection — and a walk that started the
+    // second from the row the first one left would lose a row, or read a digit that moved the
+    // column as one that did not.
+    const column =
+      this.columns().find((live) => live.field === drawn.field) ?? drawn;
     const walk = this.walks.get(column.field) as PctListNavigation;
     walk.setActive(column.active);
+    const digit = /^[0-9]$/.test(event.key);
+    // Any key but a digit ends the number being typed — `1`, an arrow, `3` is three.
+    if (!digit) this.forget();
+    let answered = true;
     switch (event.key) {
       case 'ArrowDown':
         walk.move(1);
@@ -394,37 +410,50 @@ export class PctTimeColumns {
         // column of hours written `12, 1, 2 … 11` takes `1` to twelve and never reaches one,
         // and in one written `09` never answers `9` at all. A word — the day period — is the
         // walk's own typeahead.
-        if (/^[0-9]$/.test(event.key))
-          walk.setActive(this.seek(column, event.key));
-        else walk.typeahead(event.key);
-        if (walk.activeIndex() === column.active) return;
+        if (digit) {
+          const found = this.seek(column, event.key);
+          answered = found !== -1;
+          if (answered) walk.setActive(found);
+        } else {
+          walk.typeahead(event.key);
+          const here = column.rows[walk.activeIndex()];
+          answered =
+            here !== undefined &&
+            here.key.toLowerCase().startsWith(event.key.toLowerCase());
+        }
     }
+    // A key the column answered is the column's, even when the answer is the row it stands on;
+    // one it did not answer — a letter or a digit no row begins with — is left to the page.
+    if (!answered) return;
     event.preventDefault();
     const row = column.rows[walk.activeIndex()];
     if (row !== undefined && walk.activeIndex() !== column.active)
       this.moveTo(column.field, row);
   }
 
+  /** Ends the number being typed. */
+  private forget(): void {
+    clearTimeout(this.typedTimer);
+    this.typed = { field: null, digits: '' };
+  }
+
   /**
    * The row a typed digit takes the column to: the digits typed into it so far read as a number
    * and matched against the number each row writes, then — where none writes it — against the
    * start of a row's text, so `4` in a column of quarter hours is `45`. A row the bounds refuse is
-   * never the answer; with none, the column stays where it was.
+   * never the answer; with none, `-1`.
    */
   private seek(column: PctTimeColumn, digit: string): number {
     clearTimeout(this.typedTimer);
     const digits =
       (this.typed.field === column.field ? this.typed.digits : '') + digit;
     this.typed = { field: column.field, digits };
-    this.typedTimer = setTimeout(
-      () => (this.typed = { field: null, digits: '' }),
-      500,
-    );
+    this.typedTimer = setTimeout(() => this.forget(), 500);
     const open = column.rows.filter((row) => !row.disabled);
     const found =
       open.find((row) => row.shown === Number(digits)) ??
       open.find((row) => row.key.startsWith(digits));
-    return found === undefined ? column.active : column.rows.indexOf(found);
+    return found === undefined ? -1 : column.rows.indexOf(found);
   }
 
   /** A press lands on a ROW, and a row is a field: the value moves and the panel stays. */

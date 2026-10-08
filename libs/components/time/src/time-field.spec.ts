@@ -260,6 +260,19 @@ describe('PctTime — the text the field shows', () => {
     expect(f.componentInstance.writes).toBe(0);
   });
 
+  it('writes what was typed over a value that arrived while it was being typed', async () => {
+    // Typing writes as it goes, so a blur meets the value it wrote — unless one came from
+    // outside meanwhile. Later and earlier both, so neither half of the comparison is free.
+    for (const outside of ['18:00', '09:00'] as const) {
+      const f = await render(Host);
+      await type(f, '14:15');
+      f.componentInstance.value.set(outside);
+      await settle(f);
+      await blur(f);
+      expect(f.componentInstance.value()).toBe('14:15');
+    }
+  });
+
   it('empties the value while the text is being emptied, before it is left', async () => {
     const f = await render(Host);
     await type(f, '');
