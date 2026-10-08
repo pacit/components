@@ -5,7 +5,7 @@ import type { Reporter, Vitest } from 'vitest/node';
 
 /**
  * A spec file Vitest failed is one failed test here, whatever failed it: an import that
- * threw, a `describe` body that threw, a hook of the file.
+ * threw, a `describe` body that threw, a hook of the file or of a suite in it.
  *
  * `@stryker-mutator/vitest-runner` (9.6.1, and 10.0.0 has the same `run()`) builds a
  * mutant's verdict from the file's TEST tasks, and a file that fails before it holds any has
@@ -16,11 +16,12 @@ import type { Reporter, Vitest } from 'vitest/node';
  * score here: a different wrong answer. A failed test is the right one, and with it both
  * versions agree.
  *
- * It reads `vitest.state` because that is what the runner reads once `start()` returns,
- * and adds a test only where no test of the file failed: one failed test is all a verdict
- * needs, and a red test already carries the error the file does. The test is shaped as a
- * top-level one is (no `suite`, the next `<file id>_<index>`), so the runner names it
- * `<spec>#the file failed outside its tests` in `killedBy`.
+ * It reads `vitest.state` because that is what the runner reads once `start()` returns, and
+ * adds a test only where no test of the file failed — one failed test is all a verdict needs.
+ * The test carries the errors of the file and of every failed suite in it, because a suite's
+ * hook leaves its error on the suite. It is shaped as a top-level test is (no `suite`, the next
+ * `<file id>_<index>`), so the runner names it `<spec>#the file failed outside its tests` in
+ * `killedBy`. `check-mutation` holds this configuration to it ([`lesson-253`](../../docs/lessons.md#lesson-253)).
  */
 export class FailedFileFails implements Reporter {
   private vitest: Vitest | undefined;
@@ -45,7 +46,10 @@ export class FailedFileFails implements Reporter {
         timeout: 0,
         annotations: [],
         artifacts: [],
-        result: { state: 'fail', errors: file.result.errors ?? [] },
+        result: {
+          state: 'fail',
+          errors: [...(file.result.errors ?? []), ...suiteErrors(file.tasks)],
+        },
       } as unknown as RunnerTestCase);
     }
   }
@@ -56,6 +60,17 @@ function failedIn(tasks: readonly RunnerTask[]): boolean {
     task.type === 'suite'
       ? failedIn(task.tasks)
       : task.type === 'test' && task.result?.state === 'fail',
+  );
+}
+
+function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {
+  return tasks.flatMap((task) =>
+    task.type === 'suite'
+      ? [
+          ...(task.result?.state === 'fail' ? (task.result.errors ?? []) : []),
+          ...suiteErrors(task.tasks),
+        ]
+      : [],
   );
 }
 
@@ -82,7 +97,7 @@ function failedIn(tasks: readonly RunnerTask[]): boolean {
  * would be a test whose mutants nobody kills.
  */
 export default defineConfig(() => ({
-  root: __dirname,
+  root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/libs/components-mutation',
   // Paths resolved by Vite itself, for the reason `apps/sandbox/vite.config.mts` gives.
   resolve: { tsconfigPaths: true },

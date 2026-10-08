@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that acts only on a failed file holding tasks: every hook is caught, and the import of `lesson-252` \u2014 a file with no tasks at all \u2014 is not.",
+  "reporters": ["default", "files-with-tasks-only"]
+}

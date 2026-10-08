@@ -199,7 +199,7 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: eight points and 61 rules for the measurement being current, covering the
+denominator: eight points and 62 rules for the measurement being current, covering the
 declared file inventory **and every source file of the library** — the candidate set is read
 off the git index and not off `mutate`, so a file nobody decided about is a violation
 (`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`
@@ -213,12 +213,13 @@ the files it measured and nothing else, TOTAL added up from the rows — refused
 would be false (`write/narrow-without-record`, `write/partial-file`, `write/nothing-measured`,
 `write/file-outside-inventory`, `write/stale-measurement`; a `mutate` nobody can read and a full
 run that lost a file, or gained one outside the inventory, write nothing either, `write/patterns-unreadable` and
-`write/full-run-incomplete`) and held to the renderer by the gate's own control; the whole stays the nightly's. A survivor
-has to have run a test, in either door (`measurement/survivor-without-a-test`): the run's
-Vitest configuration makes a spec file that failed outside its tests one failed test, so a
-mutant that stops a module from loading is killed under the runner as it is and as
-stryker-js#6217 would make it, and a survivor after zero tests means that has stopped
-holding ([`lesson-253`](../lessons.md#lesson-253)). A row of that snapshot also has to **add
+`write/full-run-incomplete`) and held to the renderer by the gate's own control; the whole stays the nightly's. The run's
+Vitest configuration makes a spec file that fails outside its tests one failed test, so a
+mutant that breaks its import, a `describe` body or a hook is killed under the runner as it is
+and as stryker-js#6217 would make it — held by running the configuration's own reporters over
+five shaped files (`tests/failed-file-not-a-failure`) — and a survivor has to have run a test,
+in every door, the full writer included (`measurement/survivor-without-a-test`)
+([`lesson-253`](../lessons.md#lesson-253)). A row of that snapshot also has to **add
 up** (`score/columns-adrift`): it states a score and the counts behind it, so
 `killed / (killed + surviving + errored + not covered)` has to give the score printed beside
 them — which is why the errored mutants have a column of their own. Before they did,
@@ -235,13 +236,15 @@ about a MUTANT rather than a file: a survivor no test can tell from the original
 replacement, and the gate holds the entry to being resolvable, still alive and reasoned — so
 an excuse dies with the line it excuses rather than drifting onto the next mutant to take
 that place. It excuses no score: a registered mutant is still counted as surviving
-**Control:** `tools/check-mutation.fixtures/` — 73 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 84 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
 `threshold/threshold-unset`, a file struck from `mutate` fires `inventory/patterns-changed`,
 the full report of 2026-10-06 against the `locale.ts` it measured fires
-`measurement/survivor-without-a-test` on exactly the two mutants of `lesson-252`).
+`measurement/survivor-without-a-test` on exactly the two mutants of `lesson-252`, and
+`FailedFileFails` taken out of the configuration's reporters fires
+`tests/failed-file-not-a-failure`).
 `inventory/source-unaccounted` was run against the real repository before the widening and
 named exactly the 17 sources that stood outside the measurement — `slider.ts`, `field.ts`,
 `date.ts` and fourteen more — while `affix.ts`, put into `mutate` by hand, brought the initial

@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "The mutation run's Vitest reporters are `default` alone. A spec file that fails at its import, in a hook or in a suite's hook holds no failed test, so the runner reads no failure — the survivor of `lesson-252`, or after stryker-js#6217 an errored mutant.",
+  "reporters": ["default"]
+}

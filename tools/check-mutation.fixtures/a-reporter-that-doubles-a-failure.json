@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that adds its failed test to every file Vitest failed, one whose own test failed included. The verdict is right and the record is not: `killedBy` then names `the file failed outside its tests` for a file that failed inside them, so the rule reads every failure the runner would record, not only the first.",
+  "reporters": ["default", "every-failed-file"]
+}

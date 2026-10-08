@@ -6,7 +6,7 @@
  *
  *  1. DENOMINATOR: the measurement exists, is not empty, is CURRENT, every survivor ran a test,
  *  2. the inventory matches the policy both ways, every source file in it or excused,
- *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
+ *  3. TEST DENOMINATOR: the `test` target's specs ran, and a failed file is a failed test,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
  *  6. the result: a hard floor, a TWO-SIDED tolerance on what assertions caught, the prose,
@@ -192,15 +192,16 @@ twenty points while the rest make up for it. The snapshot watches every file sep
 and watches it **both ways**: downwards, because that is what a deleted assertion looks
 like, upwards, because a floor ten points below the measurement stops measuring.
 
-An **errored** mutant is one after which the test worker DIED rather than a test failing —
-\`if (row === null) return;\` removed, and the next line dereferences \`null\` inside a DOM
-listener. It counts towards the denominator here, which is stricter than Stryker's own
-score: a mutant that took the run down with it stated nothing about the tests. A spec file
-that fails outside its tests — its import, a \`describe\` body, a hook — is neither errored nor
-surviving: the run counts it a failed test, so its mutant is killed, as a plain run shows the
-file red ([\`lesson-253\`](../../docs/lessons.md#lesson-253)). The column is there because
-without one the arithmetic of a row that has any does not work, and a reader checking it
-finds a mistake that is not one.
+An **errored** mutant is one after which an error escaped every test and the runner broke on
+it rather than a test failing — \`if (row === null) return;\` removed, the next line
+dereferences \`null\` inside a DOM listener, and Stryker reports \`Test runner crashed\`. It
+counts towards the denominator here, which is stricter than Stryker's own score: a mutant that
+took the run down with it stated nothing about the tests. A spec file that fails outside its
+tests — its import, a \`describe\` body, a hook — is neither errored nor surviving: the run
+makes it a failed test of that file, so its mutant is killed
+([\`lesson-253\`](../../docs/lessons.md#lesson-253)). The column is there because without one
+the arithmetic of a row that has any does not work, and a reader checking it finds a mistake
+that is not one.
 
 **What a score is a true statement about.** This file measures \`.ts\`, and only \`.ts\`. A
 component that borrows more from the platform than it writes has most of itself in a template
@@ -482,7 +483,8 @@ const denominatorNarrowed = (reportConfig, policy, allMutants, sources) => {
  * related filter selected no spec at all. The first is closed in the run's Vitest
  * configuration (`FailedFileFails`); this is what notices the day it opens again. A missing
  * count is read as none — Stryker writes one for every survivor, and a report without it is
- * one this rule never saw. Both doors hold it, as they hold `denominatorNarrowed` (0088).
+ * one this rule never saw. Every door holds it: the checks, the merge of a narrow run and the
+ * full writer, which 0088 sends a red nightly's report through (0088).
  */
 const survivorsWithoutATest = (files) => {
   const vacuous = Object.entries(files ?? {}).flatMap(([file, data]) =>
@@ -498,7 +500,7 @@ const survivorsWithoutATest = (files) => {
     throw new MutationError(
       'measurement',
       'survivor-without-a-test',
-      `${vacuous.length} mutants are recorded as surviving after no test at all:\n` +
+      `${vacuous.length} mutant(s) recorded as surviving after no test at all:\n` +
         list(vacuous) +
         `\n    A verdict nobody tested. Either the specs the run selected failed outside ` +
         `their tests — an import, a \`describe\` body, a hook — and the run lost the ` +
@@ -506,6 +508,78 @@ const survivorsWithoutATest = (files) => {
         `prevent; or no spec reaches the file. A plain run of its specs tells which.`,
     );
 };
+
+/**
+ * Five spec files as Vitest leaves them after a run, each beside the failures the runner has
+ * to read off it once the reporters are done: one per failed test, its first error — what
+ * Stryker records as `killedBy` and as the reason. A file Vitest failed outside its tests
+ * holds no failed test of its own:
+ * an import that threw (no tasks, the error on the file), a hook of the file (tests passed,
+ * the error on the file), a hook of a suite (tests passed, the error on the suite). The other
+ * two are the controls: a test that failed is read as it is, and a file that passed has none.
+ */
+const failedFileShapes = () => {
+  const result = (state, message) => ({
+    state,
+    ...(message ? { errors: [{ message }] } : {}),
+  });
+  const test = (state, message) => ({
+    type: 'test',
+    name: state === 'fail' ? 'fails' : 'passes',
+    mode: 'run',
+    result: result(state, message),
+  });
+  const suite = (name, state, tasks, message) => ({
+    type: 'suite',
+    id: name,
+    name,
+    mode: 'run',
+    tasks,
+    result: result(state, message),
+  });
+  return [
+    [
+      suite('an import that threw', 'fail', [], 'import threw'),
+      ['import threw'],
+    ],
+    [
+      suite(
+        'a file hook that threw',
+        'fail',
+        [test('pass')],
+        'file hook threw',
+      ),
+      ['file hook threw'],
+    ],
+    [
+      suite('a suite hook that threw', 'fail', [
+        suite('suite', 'fail', [test('pass')], 'suite hook threw'),
+      ]),
+      ['suite hook threw'],
+    ],
+    [
+      suite('a test that failed', 'fail', [
+        suite('suite', 'fail', [test('fail', 'assertion failed')]),
+      ]),
+      ['assertion failed'],
+    ],
+    [suite('a file that passed', 'pass', [test('pass')]), []],
+  ];
+};
+
+/** The tests of a task tree, as the runner collects them (`collectTestsFromSuite`). */
+const testsIn = (tasks) =>
+  (Array.isArray(tasks) ? tasks : []).flatMap((t) =>
+    t?.type === 'suite' ? testsIn(t.tasks) : t?.type === 'test' ? [t] : [],
+  );
+
+/** The failures the runner reads off a file: each failed test's first error, in order. */
+const failuresIn = (file) =>
+  testsIn(file.tasks)
+    .filter((t) => t.result?.state === 'fail')
+    .map(
+      (t) => t.result.errors?.[0]?.message ?? 'StrykerJS: Unknown test failure',
+    );
 
 /**
  * A narrow run merged into the record: the rows of the files it measured are rewritten,
@@ -661,6 +735,7 @@ const writeSnapshot = (input) => {
         `\n    A row for a file the policy does not list is a row nobody decided on — ` +
         `point 2 holds the inventory, and a new file enters it there first.`,
     );
+  survivorsWithoutATest(report.files);
   const text = renderSnapshot(report, policy.tolerance);
   return {
     mode: 'full',
@@ -1009,6 +1084,44 @@ export const checkMutation = (input) => {
         list(specOutsideRepo) +
         `\n    Point 3's denominator comes from git, so such a file kills mutants and ` +
         `the gate has no way of asking whether it kills them everywhere.`,
+    );
+
+  // The same configuration, read for what it makes of a spec file that fails outside its
+  // tests. The runner builds a verdict from failed tests, so such a file is a failure only if
+  // a reporter of the run turns it into one (`FailedFileFails`, `lesson-253`) — under 9.6.1 it
+  // is otherwise a survivor, and after stryker-js#6217 an errored mutant, both without a word.
+  // The reporters are the objects the run gets, called the way Vitest calls them, on files
+  // shaped as Vitest leaves them; the verdict is read the way the runner reads it.
+  const reporters = Array.isArray(input.reporters) ? input.reporters : [];
+  const shapes = failedFileShapes();
+  const wrong = [];
+  try {
+    const vitest = { state: { getFiles: () => shapes.map(([file]) => file) } };
+    for (const reporter of reporters) reporter?.onInit?.(vitest);
+    for (const reporter of reporters)
+      reporter?.onTestRunEnd?.([], [], 'passed');
+  } catch (error) {
+    wrong.push(`a reporter threw: ${error?.message ?? error}`);
+  }
+  for (const [file, wanted] of shapes) {
+    const read = failuresIn(file);
+    if (JSON.stringify(read) !== JSON.stringify(wanted))
+      wrong.push(
+        `${file.name}: the runner reads ${JSON.stringify(read)}, and should read ` +
+          `${JSON.stringify(wanted)}`,
+      );
+  }
+  if (wrong.length)
+    throw new MutationError(
+      'tests',
+      'failed-file-not-a-failure',
+      `the mutation run's Vitest configuration does not make a spec file that fails outside ` +
+        `its tests one failed test:\n` +
+        list(wrong) +
+        `\n    \`@stryker-mutator/vitest-runner\` reads failed TESTS, so a mutant that breaks a ` +
+        `file before or after its cases is recorded as a survivor (9.6.1) or errored ` +
+        `(stryker-js#6217) where a plain run is red. \`FailedFileFails\` in ` +
+        `\`mutation.vitest.config.mts\` is what makes it a kill (\`lesson-253\`).`,
     );
 
   // 4. THRESHOLD. Stryker's default `break` is `null` — the run then exits zero whatever
@@ -1386,6 +1499,21 @@ const ciTargets = () => {
   return { targets };
 };
 
+/**
+ * The reporters of the mutation run's Vitest configuration: the objects the run itself gets,
+ * from the configuration called as Vite calls it. A file that cannot be read throws here, and
+ * that is the loudest answer there is.
+ */
+const vitestReporters = async () => {
+  const { default: declared } =
+    await import('../libs/components/mutation.vitest.config.mts');
+  const config =
+    typeof declared === 'function'
+      ? await declared({ mode: 'test', command: 'serve' })
+      : declared;
+  return config?.test?.reporters ?? [];
+};
+
 const inputFromDisk = async () => {
   const policy = json(POLICY) ?? {};
   const report = json(REPORT);
@@ -1406,6 +1534,7 @@ const inputFromDisk = async () => {
     config: json(CONFIG) ?? {},
     targets: await graphTargets(),
     ci: ciTargets(),
+    reporters: await vitestReporters(),
   };
 };
 
@@ -1449,6 +1578,78 @@ const buildReport = (w) => ({
 });
 
 /**
+ * The reporters a case names, in place of the run's own. `fails-files` does the job as
+ * `FailedFileFails` does it; every other one breaks it in one way, and most break exactly one
+ * shape of `failedFileShapes`, so that each shape has the case that only it catches: blind to an
+ * import (acts on a file with tasks only), to a file's hook (acts on a file with no tasks or a
+ * failed suite only), to a suite's hook (carries the file's own errors only), a second failure
+ * beside a test's own, a pass read as a failure. `inert` does nothing, `empty-files-only` sees
+ * the import of `lesson-252` and nothing else, and `throws` breaks the run. A name nobody
+ * prepared stays a string, as `default` does in Vitest's list.
+ */
+const preparedReporter = (name) => {
+  if (name === 'inert') return { onTestRunEnd() {} };
+  const suiteErrors = (tasks) =>
+    tasks.flatMap((t) =>
+      t.type === 'suite'
+        ? [
+            ...(t.result?.state === 'fail' ? (t.result.errors ?? []) : []),
+            ...suiteErrors(t.tasks),
+          ]
+        : [],
+    );
+  const acts = (file) => {
+    const failed = file.result?.state === 'fail';
+    const testFailed = testsIn(file.tasks).some(
+      (t) => t.result?.state === 'fail',
+    );
+    if (name === 'every-failed-file') return failed;
+    if (name === 'passed-files-too' && file.result?.state === 'pass')
+      return true;
+    if (!failed || testFailed) return false;
+    if (name === 'empty-files-only') return !file.tasks.length;
+    if (name === 'files-with-tasks-only') return file.tasks.length > 0;
+    if (name === 'collection-and-suites-only')
+      return !file.tasks.length || suiteErrors(file.tasks).length > 0;
+    return true;
+  };
+  let vitest;
+  return {
+    onInit(v) {
+      vitest = v;
+    },
+    onTestRunEnd() {
+      if (name === 'throws') throw new Error('the reporter broke');
+      for (const file of vitest.state.getFiles()) {
+        if (!acts(file)) continue;
+        file.tasks.push({
+          type: 'test',
+          name: 'failed',
+          result: {
+            state: 'fail',
+            errors: [
+              ...(file.result?.errors ?? []),
+              ...(name === 'file-errors-only' ? [] : suiteErrors(file.tasks)),
+            ],
+          },
+        });
+      }
+    },
+  };
+};
+const PREPARED_REPORTERS = [
+  'fails-files',
+  'inert',
+  'empty-files-only',
+  'files-with-tasks-only',
+  'collection-and-suites-only',
+  'file-errors-only',
+  'every-failed-file',
+  'passed-files-too',
+  'throws',
+];
+
+/**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  *
@@ -1488,6 +1689,7 @@ const buildFixture = (fx) => {
   if (fx.specs) w.specs = fx.specs;
   if (fx.testFiles) w.testFiles = fx.testFiles;
   if (fx.inRepo) w.inRepo = fx.inRepo;
+  if (fx.reporters) w.reporters = fx.reporters;
 
   let snapshot = fx.noSnapshot === true ? null : baselineSnapshot;
   for (const file of fx.dropSnapshotRow ?? [])
@@ -1522,6 +1724,9 @@ const buildFixture = (fx) => {
     config: w.config,
     targets: w.targets,
     ci: w.ci,
+    reporters: (w.reporters ?? []).map((r) =>
+      PREPARED_REPORTERS.includes(r) ? preparedReporter(r) : r,
+    ),
   };
 };
 
@@ -1687,9 +1892,10 @@ if (cases.length) {
 
 for (const name of cases) {
   const fx = readFixture(name);
-  // A case about the record goes through its door, every other one through the checks.
+  // A case about the record goes through its door, every other one through the checks; a
+  // case about a check's rule that the full writer holds too names the door (`door`).
   const exercise =
-    fx.check === 'write' || Array.isArray(fx.narrow)
+    fx.check === 'write' || Array.isArray(fx.narrow) || fx.door === 'write'
       ? writeSnapshot
       : checkMutation;
   try {

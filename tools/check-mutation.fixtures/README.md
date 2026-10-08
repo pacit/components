@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are eight points and
-sixty-one rules, and that is where all the content sits. The readings are guarded by runs against
+sixty-two rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -183,7 +183,7 @@ would leave it — and three are about the door itself: a `mutate` nobody can re
 a file of the inventory, and a full run that gained one outside it. The narrow six: no record to merge
 into, a slice of a file, a pattern that reaches no file, a file outside `files`, a text that
 is not the one on disk, and `ignoreStatic` — point 5's own rule, reached through the merge,
-because a narrow run is held to the same configuration as a full one. Three more come through the
+because a narrow run is held to the same configuration as a full one. Five more come through the
 door for `survivor-without-a-test`, below.
 
 What no case can show is that the merge WRITES the right file, so the gate holds it to the
@@ -197,14 +197,33 @@ for. Compared with itself the merge would only prove that it agrees with itself.
 `survivor-without-a-test` refuses a `Survived` mutant whose report counts no test behind it —
 what `@stryker-mutator/vitest-runner` 9.6.1 records when every spec it selected failed outside
 its tests ([`lesson-252`](../../docs/lessons.md#lesson-252)). The run's Vitest configuration
-closes that road (`FailedFileFails`); the rule is what notices the day it opens again
-([`lesson-253`](../../docs/lessons.md#lesson-253)). A survivor written in shorthand carries a
-count of one, as Stryker writes one; a status written out in full carries exactly what it
-says, which is how `a-survivor-with-no-count` leaves the count out.
+closes that road (`FailedFileFails`, held by the rule below); this one notices the day it opens
+again ([`lesson-253`](../../docs/lessons.md#lesson-253)). A survivor written in shorthand
+carries a count of one, as Stryker writes one; a status written out in full carries exactly
+what it says, which is how `a-survivor-with-no-count` leaves the count out.
 
-Seven cases, because the rule has two doors and a place in each. Three put the survivor where
+Nine cases, because the rule has three doors and a place in each. Three put the survivor where
 an edge is: zero tests in the second file's first mutant, no count in the first file's last,
 and zero in the middle of a narrow run's file. Four pin the order — the stale text before the
-survivor, the survivor before the inventory (and so before every later point), and the same
-two in the merge, where the second is the narrowing — so that one input gives the same first
-refusal through either door.
+survivor, the survivor before the inventory (and so before every later point), and the same two
+in the merge, where the second is the narrowing — so that one input gives the same first
+refusal through either door. Two are the full writer's, which 0088 sends a red nightly's report
+through: the survivor refused there, and the writer's own inventory refusal before it. The first
+names its door (`door: write`) and declares the default dry-run ceiling beside its defect: the
+checks stop at that tripwire first, so the case passes its rule only through `writeSnapshot`.
+
+## The file that fails outside its tests
+
+`failed-file-not-a-failure` reads what the run's Vitest reporters DO to a spec file that fails
+outside its tests: the gate calls them as Vitest does over five files shaped as Vitest leaves
+them — an import, a file's hook and a suite's hook that threw, a test that failed, a file that
+passed — and reads the failures as the runner would, one per failed test. The reference names
+`fails-files`, a prepared reporter that does the job as `FailedFileFails` does; the live run is
+held by production, which calls the real configuration.
+
+Nine cases, each naming the reporters it runs instead. Five break exactly one shape, so that each
+shape has the case only it catches: blind to an import, to a file's hook, to a suite's hook (the
+reason lost), a second failure beside a test's own, a pass read as a failure. The other four:
+no reporter but `default`, one that does nothing (the list is not the job), one that sees the
+import of `lesson-252` and nothing else, and one that throws — read as a reporter that did not do
+the job rather than an error that names no rule.

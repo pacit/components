@@ -7285,23 +7285,32 @@ verdicts in all four runs.
 
 So both candidates went in, each for what the other cannot do. `FailedFileFails` in
 `mutation.vitest.config.mts` makes the measurement right whichever runner reads it, and with it
-#6217 changes nothing here. A rule in `check-mutation` refuses a survivor with no test behind
-it, in the checks and in the merge alike (`measurement/survivor-without-a-test`): the reporter
-lives in a configuration only the mutation run executes, and if it goes, the commonest shape of
-the loss comes back as exactly that zero. The rule alone was the weaker answer — it cannot see
-a hook, nor anything after #6217. Read on the full report of 2026-10-06 against the `locale.ts` it
-measured, it names the two mutants of `lesson-252` and nothing else: 846 of 848 survivors there
-carry a count of at least one.
+#6217 changes nothing here. `check-mutation` holds it twice. Point 3 calls that configuration as
+Vite does, runs its reporters over five files shaped as Vitest leaves them — an import, a file's
+hook and a suite's hook that threw, a test that failed, a file that passed — and reads the
+failures as the runner would (`tests/failed-file-not-a-failure`). On the live configuration
+each of six planted defects fired it: the reporter taken out of the list, blind to hooks,
+without a suite's errors, a second failure beside a test's own, a failure added to a file that
+passed, a test added that passes. And a survivor with no test behind it is refused in every
+door — the checks, the merge, and the full writer a red nightly's report goes through
+(`measurement/survivor-without-a-test`). Read on the full report of 2026-10-06 against the
+`locale.ts` it measured, that rule names the two mutants of `lesson-252` and nothing else: 846 of
+848 survivors there carry a count of at least one. It alone was the weaker answer — it cannot
+see a hook, nor anything after #6217.
 
-The errored column keeps its reading. Its 13 mutants in that report are all `Test runner
-crashed`, Stryker's word after the runner rejected twice, here on a `TypeError: Cannot convert
-object to primitive value` — the run broke outside every test. The two in `menu-item.ts` read
-the same with the reporter and without it. One edge stays unheld: past #6217 with the reporter
-removed, a failed file lands in that column without a word — counted against the score, so the
-record errs low, never high. The reporter also closes a quieter hole: as installed, a spec that
-fails before any mutant simply left the initial run, which reported the other files' tests as
-complete; with the reporter the run holds a failed test, which Stryker's core refuses outright
-(`There were failed tests in the initial test run.`).
+The errored column keeps its reading: an error escaped every test and the runner broke on it.
+Its 13 mutants in that report are all `Test runner crashed`, Stryker's word after the runner
+rejected twice, here on `TypeError: Cannot convert object to primitive value` — `String()` in
+the runner's `errorToString`, on Vitest's serialized error. An error thrown from a timer after
+its test has ended gives exactly that in the probe, under both runners, with the reporter and
+without it, and the two in `menu-item.ts` read the same both ways. What stays unheld is the
+order: the gate runs the reporter on files it shapes itself, so that Vitest calls it before the
+runner reads `vitest.state` is the probe's measurement, for the versions installed. The reporter
+also changes the initial run. As installed, a spec that fails before any mutant dropped out of
+it, and only a full run's point 3 noticed, as a spec with no tests in `testFiles`; a narrow run
+did not, nor a hook whose file kept its cases. With the reporter the initial run holds a failed
+test, which Stryker's core refuses outright (`There were failed tests in the initial test
+run.`).
 
 The wider reading: a verdict is built from what its reader can see. This runner reads tests, so
 a failure that is not one is invisible to it, and the cheapest fix is not a rule about the

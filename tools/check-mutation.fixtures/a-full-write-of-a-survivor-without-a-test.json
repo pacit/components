@@ -1,0 +1,38 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "door": "write",
+  "// defect": "A FULL run handed to `--write` with a survivor after zero tests in `beta` — what 0088 does with a red nightly's report. The checks refuse it, and so does the full writer, or the record would carry the verdict nobody tested as a mutant no test catches. The run also declares the default dry-run ceiling, and that is what pins the door: the checks stop at that tripwire first (point 1), while the writer has a report and no business with the next run's ceiling — so the case passes its rule only through `writeSnapshot`.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      {
+        "status": "Survived",
+        "mutant": {
+          "testsCompleted": 0
+        }
+      },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  },
+  "runConfig": {
+    "dryRunTimeoutMinutes": 5
+  }
+}

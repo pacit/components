@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter stands in the list and does nothing with the run: the list is not the job, so the rule reads what the reporters DO to the files, not that one is there.",
+  "reporters": ["default", "inert"]
+}

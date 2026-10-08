@@ -163,6 +163,8 @@
         "mutation",
         "check-mutation"
       ]
-    }
+    },
+    "// reporters": "The mutation run's Vitest reporters, by name: `default` stays a string, as Vitest's built-in does, and `fails-files` is a prepared reporter that makes a spec file failing outside its tests one failed test, as `FailedFileFails` does (`preparedReporter` in the gate). The cases of `failed-file-not-a-failure` swap it for one that breaks the job.",
+    "reporters": ["default", "fails-files"]
   }
 }
