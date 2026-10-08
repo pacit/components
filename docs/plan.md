@@ -113,9 +113,11 @@ holds only the order.
 the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
 (**1.5**) landed on 2026-10-07, as
-[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. Section 3
-holds nothing since `0.2.0`. Section 4 holds five open findings, each held by a **binds at**
-rather than by anybody's mood.
+[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. The wheel
+(**1.6**) and the time panel's shape (**1.7**) follow
+[0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) of
+2026-10-08, the wheel first. Section 3 holds nothing since `0.2.0`. Section 4 holds five open
+findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
@@ -140,7 +142,7 @@ form exists and is a condition of entering a release. Thirty-seven cards are fil
   - both cards filled in, the readers' log among their rows
 
 - [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
-      `PctCalendar` and `PctTimeColumns`, after 1.3
+      `PctCalendar` and `PctTimeColumns` — `list` alone, `picker` when 1.7 lands — after 1.3
   - its value is a decision of its own before any code — a day and a time with no zone, and
     what a day with no time yet is — written as `<input type="datetime-local">` and
     `Temporal.PlainDateTime` write one, which differ: the input drops `:00` (0086, F5). Its
@@ -160,6 +162,41 @@ form exists and is a condition of entering a release. Thirty-seven cards are fil
     entrypoint carried `form()` ([`lesson-253`](lessons.md#lesson-253))
   - the AT walk on `/field` is dispatched after the merge, and its record lands with the
     next pass
+
+- [ ] **1.6 — the wheel** `PctWheel<T>` in `@pacit/components/wheel`, as
+      [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) decided it:
+      a listbox on the platform's scroll, and the row under the line is the value
+  - first the runway's own record: `@angular/cdk/scrolling` (a third CDK entrypoint under the
+    dependency policy) or a window of the wheel's own, measured by bytes on `./wheel`, by a
+    fling across the re-centring in three engines and by three readers on a listbox whose rows
+    are a window, told what of the rows outside it — 0086's order, the probes before the code
+  - then the component: options of the select's item shape, `compareWith`, `T | null`,
+    `[formField]` and `warnings`, a label and a hint without a wrapper; a settle a gesture
+    started writes, the opening and `null` write nothing; `wrap` ringing on keys and on
+    scroll; the band, the fade, an odd row count from the row-height token, the bar hidden;
+    the centring read off the motion duration by a reader `./core` exports beside
+    `pctAfterTransition`; the tier `--pct-wheel-*`, its texts, a card under Choices on the
+    APG listbox
+  - `scroll-snap-stop: always` — one row per tick and per flick — is in three engines, and
+    rows per flick on the sixty-row minutes column is the measure that decides it, either way
+  - the drum (rows turned by their distance to the line) comes after, by scroll-driven
+    animations where they are (chromium, webkit) — a variant measured, not promised
+  - ends with: the card filled in, the wheel in the sandbox in three engines, the readers'
+    walk recorded, and the select's long list named as the runway's second consumer or not
+
+- [ ] **1.7 — the time panel's shape** — `picker` (`'list' | 'wheel'`, default `'list'`) on
+      `PctTime` and `PctTimeColumns`, after 1.6: the `wheel` shape composes `PctWheel` per
+      field, `wrap` on, the bounds as disabled rows
+  - the `list` shape polished in the same pull request: an odd row count at every size from
+    the row-height token (192 px holds six rows of 32 today, so the centre is between two),
+    which retires `--pct-time-column-height` (in no release) and the columns card's sentence
+    that the window is a height and not a count; a snap to the row's start; the walk kept
+    centred — `time.spec`'s case "opens with the chosen rows in view, centred, and keeps the
+    walk in view" rewritten
+  - the datetime field (1.4) takes the same input when it lands, `list` alone before
+  - ends with: both time cards with their new row, the `time-field` and `time-columns`
+    baselines of `/time` moved, `time-columns.ts` mutated narrowly, and the three readers on
+    the `wheel` shape
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
