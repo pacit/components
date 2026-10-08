@@ -14,20 +14,21 @@ import {
 
 /**
  * The texts token and its provider, under their own name. Until 2026-10-08 `providePctTexts`
- * had no case here: twelve component specs call it and each reads back the one key it needs,
- * so the contract — the keys named override, the rest stay, a signal is merged on every read,
- * a subtree starts from the defaults and not from its parent — was asserted by nobody and
- * held by accident. The mutation run priced that: every mutant of this file ran the specs of
- * those twelve components before one of them noticed, 13 469 tests of the full run of
- * 2026-10-06 for 37 mutants ([`lesson-250`](../../../../docs/lessons.md#lesson-250)).
+ * had no case here: twelve component specs call it, and what they assert they assert through
+ * the DOM, one key at a time — `select.spec.ts` reads an override with the rest left default
+ * and a switch of language at runtime. The whole default set and the subtree clause (a
+ * subtree starts from the defaults, not from its parent) had no case anywhere. The mutation
+ * run priced that: a mutant of this file ran the specs of those components until one of them
+ * noticed, 13 480 tests of the full run of 2026-10-06 for 37 mutants
+ * ([`lesson-250`](../../../../docs/lessons.md#lesson-250)).
  */
 
 /**
  * The English the components speak until an application provides its own — written out in
  * full, because this IS the contract: a translation is a copy of this object with the values
- * replaced, and `providePctTexts` fills every key it is not given from here. Compared with
- * `toEqual`, so that a key added to the interface without a default, or a default without a
- * key, fails here before a component meets an `undefined` where a sentence should be.
+ * replaced, `providePctTexts` fills every key it is not given from here, and the words are
+ * published (`@since 0.1.0`). Compared with `toEqual`, for the exact values: a key missing or
+ * surplus is the compiler's to refuse (`PCT_DEFAULT_TEXTS: PctTexts`), a word changed is not.
  */
 const ENGLISH: PctTexts = {
   selectPlaceholder: 'Select…',

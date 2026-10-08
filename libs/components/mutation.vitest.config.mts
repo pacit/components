@@ -106,11 +106,13 @@ function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {
  * order is the sequencer's alone, and Vitest's own (`BaseSequencer`) is the file that failed
  * last time first, then the longest — right after a kill, where the killer goes first for the
  * next mutant, and wrong after a survivor, where every file passed and the longest spec of
- * the library opens the next mutant of `core`. Read off the full run of 2026-10-06, 94 364
- * tests: 96% of the kills came from a spec in the directory of the mutated file, and 20 656
- * tests ran in OTHER files before that kill, 16 850 of them for static mutants
- * ([`lesson-250`](../../docs/lessons.md#lesson-250)). Writing a literal into the function
- * that reads it was one answer, paid in the code (PR #61); this one is paid here.
+ * the library opens the next mutant of `core`. Read off the report of the full run of
+ * 2026-10-06 that [`lesson-250`](../../docs/lessons.md#lesson-250) records (94 364 tests):
+ * 96% of the kills (5 456 of 5 685) came from a spec in the directory of the mutated file,
+ * 27 589 of the tests were survivors', and `core/src/texts.ts` alone ran 13 480 of them — 37
+ * mutants, 34 killed by the spec of some component and 3 by `core.spec.ts`. Writing a literal
+ * into the function that reads it was one answer, paid in the code (PR #61); this one is
+ * paid here.
  *
  * It reads `related` inside `sort()` because that is where it can: Vitest builds the
  * sequencer once, in `createPool`, sorts on every `start()`, and clears `related` only in the
@@ -122,11 +124,10 @@ function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {
  * measurement, where `related` is the whole inventory — it IS Vitest's order.
  *
  * What it cannot do is kill anything. A survivor runs every related spec whatever their order
- * (27 589 of those 94 364 tests), and a file whose sibling kills nothing gains nothing from
- * seeing it first: `core/src/texts.ts` was 13 469 of the 20 656 — 37 mutants, 34 of them
- * killed by the spec of some component and 3 by `core.spec.ts` — which is what
- * `texts.spec.ts` is for. Nor is it a Stryker option: the runner's schema holds `configFile`,
- * `dir` and `related`, and the order is Vitest's.
+ * (those 27 589 tests), and a file whose sibling kills nothing gains nothing from seeing it
+ * first — `core.spec.ts` and `texts.ts` above — which is what `texts.spec.ts` is for. Nor is
+ * it a Stryker option: the runner's schema holds `configFile`, `dir` and `related`, and the
+ * order is Vitest's.
  *
  * Measured on this desk (2026-10-08), four workers, three pairs of narrow runs on the same
  * code otherwise: the seven `core` files of `lesson-250` took 9 min 42 s and 19 267 tests
@@ -208,7 +209,7 @@ export default defineConfig(() => ({
     include: ['**/*.spec.ts'],
     setupFiles: ['./mutation.setup.ts'],
     reporters: ['default', new FailedFileFails()],
-    /** The specs beside the mutated file first — `SiblingsFirst` says why, and what it cannot do. */
+    /** Siblings of the mutated file first — `SiblingsFirst` says why, and what it cannot do. */
     sequence: { sequencer: SiblingsFirst },
   },
 }));
