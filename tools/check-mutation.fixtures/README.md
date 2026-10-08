@@ -48,17 +48,18 @@ case's defect.
 
 ## What these cases do NOT exercise
 
-Four readings arrive here as data rather than from a real run:
+Five readings arrive here as data rather than from a real run:
 
 - `report` — instead of a Stryker run (~6 minutes for the full set),
 - `sources` — instead of the files on disk,
 - `targets` — instead of the commands from the Nx graph,
-- `ci` — instead of the workflow text.
+- `ci` — instead of the workflow text,
+- `reporters` — prepared ones instead of the run's Vitest configuration.
 
-This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
-from the graph are four functions of a dozen lines each, while the checks are eight points and
-sixty rules, and that is where all the content sits. The readings are guarded by runs against
-the real repository, recorded in the **Control** of
+This is the same choice as in `check-browsers` and for the same reason: five readings from disk
+and from the graph are five functions of a dozen lines each, while the checks are eight points
+and sixty-two rules, and that is where all the content sits. The readings are guarded by runs
+against the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
 ## The two cases on one rule, and why they are two
@@ -183,10 +184,56 @@ would leave it — and three are about the door itself: a `mutate` nobody can re
 a file of the inventory, and a full run that gained one outside it. The narrow six: no record to merge
 into, a slice of a file, a pattern that reaches no file, a file outside `files`, a text that
 is not the one on disk, and `ignoreStatic` — point 5's own rule, reached through the merge,
-because a narrow run is held to the same configuration as a full one.
+because a narrow run is held to the same configuration as a full one. Five more come through the
+door for `survivor-without-a-test`, below.
 
 What no case can show is that the merge WRITES the right file, so the gate holds it to the
 renderer instead of to a case: a narrow run of `beta.ts` merged into the reference record has
 to equal, byte for byte, what `renderSnapshot` writes from the full report — with the file
 unchanged, with its statuses moved, and with `gamma.ts`, a file the record never had a row
 for. Compared with itself the merge would only prove that it agrees with itself.
+
+## The survivor that ran nothing
+
+`survivor-without-a-test` refuses a `Survived` mutant whose report counts no test behind it —
+what `@stryker-mutator/vitest-runner` 9.6.1 records when every spec it selected failed outside
+its tests ([`lesson-252`](../../docs/lessons.md#lesson-252)). The run's Vitest configuration
+closes that road (`FailedFileFails`, held by the rule below); this one notices the day it opens
+again ([`lesson-254`](../../docs/lessons.md#lesson-254)). A survivor written in shorthand
+carries a count of one, as Stryker writes one; a status written out in full carries exactly
+what it says, which is how `a-survivor-with-no-count` leaves the count out.
+
+Nine cases, because the rule has three doors and a place in each. Three put the survivor where
+an edge is: zero tests in the second file's first mutant, no count in the first file's last,
+and zero in the middle of a narrow run's file. Four pin the order — the stale text before the
+survivor, the survivor before the inventory (and so before every later point), and the same two
+in the merge, where the second is the narrowing — so that one input gives the same first
+refusal through either door. Two are the full writer's, which 0088 sends a red nightly's report
+through: the survivor refused there, and the writer's own inventory refusal before it. The first
+names its door (`door: write`) and declares the default dry-run ceiling beside its defect: the
+checks stop at that tripwire first, so the case passes its rule only through `writeSnapshot`.
+
+## The file that fails outside its tests
+
+`failed-file-not-a-failure` reads what the run's Vitest reporters DO to a spec file that fails
+outside its tests: the gate calls them as Vitest does over seven files shaped as Vitest 4 leaves
+them — an import, a file's teardown, a file's setup and a suite's hook that threw, a test that
+failed, a suite whose setup threw, a file that passed — and reads the failures with the runner's
+own functions (`collectTestsFromSuite`,
+`convertTestToTestResult`), as `<spec>: <reason>`. It reads the configuration and no report,
+so every door asks it first. The reference names `fails-files`, a prepared reporter that does
+the job as `FailedFileFails` does; the live run is held by production, which calls the real
+configuration.
+
+Sixteen cases, each naming the reporters it runs instead. Seven break exactly one shape, so
+that each shape has the case only it catches: blind to an import, to a file's teardown, to a
+file's setup (the file counted as a failed suite, which the runner never does), to a suite's
+hook (the reason lost), a pass read as a failure, and blind to either road by which the runner
+reads a test as failed — its own state, a failed suite above a skipped one — so that a second
+failure is added beside a test's own or a suite setup's. Seven break the job some other way: a
+second failure in every failed file, no reporter but `default`, one that does nothing (the list
+is not the job), one that sees the import of `lesson-252` and nothing else, one whose test says
+`mode: 'skip'` (the runner reads it skipped whatever its state), one whose test names no file
+(`killedBy` says `unknown.js`), and one that throws — read as a reporter that did not do the job
+rather than an error that names no rule. Two pin the place: before `unreadable-measurement` in
+the checks, and before `patterns-unreadable` in the writer.

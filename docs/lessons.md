@@ -7287,3 +7287,74 @@ PROVE about a statement, and only the size gate reads that
 to carry forward: a value the platform builds at module scope — a key, a token with a factory
 argument, a registry — is written under `@__PURE__` in `./core`, and the measurement that
 says whether it was enough is the row of the entrypoint that uses it least.
+
+---
+
+### <a id="lesson-254"></a>`lesson-254` — A spec file that fails outside its tests is one failed test, under either runner
+
+`lesson-252` found `@stryker-mutator/vitest-runner` losing a module that failed to load, and
+the fix waiting upstream ([stryker-js#6217](https://github.com/stryker-mutator/stryker-js/pull/6217),
+open) reads such a file as an ERROR. This gate counts an errored mutant against the score, as
+undetected, so the upgrade would trade one wrong answer for another and say nothing. Both
+states were measured before choosing, on the runner's own `VitestTestRunner` with 9.6.1 as
+installed and with the one source hunk of #6217 applied to it — `run()` is the same in 10.0.0,
+diffed from the tags. Four specs fail outside their tests under one mutant each: an import that
+throws, a `describe` body that throws, a file-level `afterAll`, a file-level `beforeAll`.
+
+As installed, all four came back `survived`, and the zero `lesson-252` read is only half the
+sign: in a related run the import and the `describe` ran 0 tests, the two hooks 2 and 1 — a
+hook breaks after its file has collected, and the cases that did run passed. In an unrelated
+run all four had other specs' passing cases in front of them, the shape #6150 reports after 212.
+With #6217 all four came back `error`.
+With a reporter in the run's Vitest configuration that gives a failed file none of whose tests
+failed one failed test carrying the file's errors, all four came back `killed` under both
+runners, related and unrelated, while a mutant changing a value stayed killed by its own test,
+one changing nothing stayed a survivor, one breaking a `describe`'s `beforeAll` — which the
+runner already reads as failed, through the test it skipped — stayed killed by that test alone,
+and every initial run held the same tests. Then the
+real thing, a narrow run of `lesson-252`'s `locale.ts` and its spec restored from before #64:
+135 mutants, and its two `() => undefined` read `Survived` after 0 tests as installed,
+`RuntimeError` with #6217, and `Killed` with the reporter under both — by
+`locale.spec.ts`, `date.spec.ts` and `calendar.spec.ts`, each `#the file failed outside its
+tests` with `Iterator value undefined is not an entry object`. The other 133 kept their
+verdicts in all four runs.
+
+So both candidates went in, each for what the other cannot do. `FailedFileFails` in
+`mutation.vitest.config.mts` makes the measurement right whichever runner reads it, and with it
+#6217 changes nothing here. `check-mutation` holds it twice. It calls that configuration as Vite
+does, runs its reporters over seven files shaped as Vitest leaves them — an import, a file's
+teardown, a file's setup and a suite's hook that threw, a test that failed, a suite whose setup
+threw, a file that passed — and reads the failures
+with the runner's own `collectTestsFromSuite` and `convertTestToTestResult`
+(`tests/failed-file-not-a-failure`). It reads no report, so every door asks it first, and a
+narrow run merged on the desk is held as the nightly is. On the live configuration each of 17
+planted defects fired it, with a narrow run's report on the disk — among them the reporter taken
+out of the list, blind to hooks, without a suite's errors, a second failure beside a test's own
+or a suite setup's, a failure added to a file that passed, a test added that passes, one the
+runner reads as skipped for its `mode`, one that names no spec for `killedBy`. And a survivor
+with no test behind it is refused in every door — the checks, the merge, and the full writer a
+red nightly's report goes through
+(`measurement/survivor-without-a-test`). Read on the full report of 2026-10-06 against the
+`locale.ts` it measured, that rule names the two mutants of `lesson-252` and nothing else: 846 of
+848 survivors there carry a count of at least one. It alone was the weaker answer — it cannot
+see a hook, nor anything after #6217.
+
+The errored column keeps its reading: an error escaped every test and the runner broke on it.
+Its 13 mutants in that report are all `Test runner crashed`, Stryker's word after the runner
+rejected twice, here on `TypeError: Cannot convert object to primitive value` — `String()` in
+the runner's `errorToString`, on Vitest's serialized error. An error thrown from a timer
+callback, with no test's own code on the stack, gives exactly that in the probe, under both
+runners, with the reporter and without it, and the two in `menu-item.ts` read the same both
+ways. What stays unheld is the
+order: the gate runs the reporter on files it shapes itself, so that Vitest calls it before the
+runner reads `vitest.state` is the probe's measurement, for the versions installed. The reporter
+also changes the initial run. As installed, a spec that fails before any mutant dropped out of
+it, and only a full run's point 3 noticed, as a spec with no tests in `testFiles`; a narrow run
+did not, nor a hook whose file kept its cases. With the reporter the initial run holds a failed
+test, which Stryker's core refuses outright (`There were failed tests in the initial test
+run.`).
+
+The wider reading: a verdict is built from what its reader can see. This runner reads tests, so
+a failure that is not one is invisible to it, and the cheapest fix is not a rule about the
+verdict but a test for the failure — made where the run is configured, and checked where its
+record is read.

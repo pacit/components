@@ -1,0 +1,31 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "// defect": "The narrow door's half of `a-survivor-without-a-test-before-the-inventory`: a survivor after zero tests in a narrow run that also went with `ignoreStatic: true`. The checks refuse the survivor in point 1, long before point 5 reads the configuration, so the merge refuses it before `denominatorNarrowed` too — the same input gives the same first refusal through either door.",
+  "runConfig": { "ignoreStatic": true },
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  },
+  "narrow": ["libs/fake/beta.ts"]
+}

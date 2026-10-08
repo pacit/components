@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that reads a skipped test in a failed file as a failure already there, as if the file were a suite above it. The runner looks for a failed suite from the test's own suite upwards and a top-level test has none, so a file whose `beforeAll` threw \u2014 its test skipped \u2014 is read as no failure at all: the survivor `lesson-254` found with 1 test, back with the reporter in the list.",
+  "reporters": ["default", "file-as-suite"]
+}

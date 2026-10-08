@@ -1,0 +1,32 @@
+{
+  "check": "measurement",
+  "rule": "survivor-without-a-test",
+  "// defect": "Two defects, and the order is the case. `beta` holds a survivor after zero tests, and the policy's patterns no longer match the run's (point 2). A verdict nobody tested is not a measurement, so it is refused in point 1, before anything reads the run as one — which pins the rule ahead of every later point, the score's among them.",
+  "policy": {
+    "patterns": ["libs/fake/alpha.ts"]
+  },
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  }
+}

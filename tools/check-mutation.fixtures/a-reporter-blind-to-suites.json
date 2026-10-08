@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that makes the failure but carries the file's own errors only. A suite's hook leaves its error on the suite, so the runner reads `StrykerJS: Unknown test failure` as the reason: the kill is recorded, and why it happened is not.",
+  "reporters": ["default", "file-errors-only"]
+}

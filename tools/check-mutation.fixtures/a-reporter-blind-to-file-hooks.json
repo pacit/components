@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that acts on a file with no tasks, a failed suite or a skipped test in it, and so misses the teardown of the file itself: its tests passed, one never ran, its error is on the file, and no suite failed.",
+  "reporters": ["default", "all-but-teardowns"]
+}

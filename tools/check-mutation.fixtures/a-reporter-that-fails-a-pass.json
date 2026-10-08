@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that adds a failed test to a file that passed as well. Every mutant its specs reach would then be killed \u2014 a score bought by the reporter, the opposite defect, and the reason the rule reads a passing file too.",
+  "reporters": ["default", "passed-files-too"]
+}

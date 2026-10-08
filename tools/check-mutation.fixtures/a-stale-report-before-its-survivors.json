@@ -1,0 +1,32 @@
+{
+  "check": "measurement",
+  "rule": "stale-measurement",
+  "// defect": "Two defects, and the order is the case. `alpha` on disk is not the text the run measured, and `beta` holds a survivor after zero tests. A stale report's verdicts are about code that is gone, so the remedy is another run, not a look at the specs: the stale text is refused first.",
+  "driftSource": {
+    "libs/fake/alpha.ts": "export const alpha = (n: number) => Math.max(n, 0);\n"
+  },
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      { "status": "Survived", "mutant": { "testsCompleted": 0 } },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  }
+}

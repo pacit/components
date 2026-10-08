@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that throws at the end of the run. The rule reports it as a reporter that did not do the job, rather than taking the gate down with an error that names no rule.",
+  "reporters": ["default", "throws"]
+}

@@ -1,0 +1,42 @@
+{
+  "check": "write",
+  "rule": "file-outside-inventory",
+  "// defect": "Two defects through the full writer, and the order is the case: a file outside `files`, and a survivor after zero tests in `beta`. The writer's own refusals come first, as the merge's do (`narrow-stale-before-its-survivors`), so the survivor is read last before the record is rendered.",
+  "addFiles": {
+    "libs/fake/gamma.ts": {
+      "statuses": ["Killed", "Killed", "Survived"]
+    }
+  },
+  "replaceSource": {
+    "libs/fake/gamma.ts": "export const gamma = 1;\n"
+  },
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      {
+        "status": "Survived",
+        "mutant": {
+          "testsCompleted": 0
+        }
+      },
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "NoCoverage"
+    ]
+  }
+}

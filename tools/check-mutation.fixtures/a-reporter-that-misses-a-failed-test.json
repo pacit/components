@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter that counts only the runner's other road to a failure \u2014 a test skipped under a failed suite \u2014 and not a test that failed on its own. Beside a real failure it adds a second, and `killedBy` names a test that did not catch anything.",
+  "reporters": ["default", "suite-failures-only"]
+}

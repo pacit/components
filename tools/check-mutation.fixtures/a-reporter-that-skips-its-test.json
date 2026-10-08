@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter whose failed test says `mode: 'skip'`. The runner converts a test by its mode before its state and reads this one as skipped, so the failure is gone \u2014 the reason the rule reads the run with the runner's own functions and not by `result.state`.",
+  "reporters": ["default", "skipped-test"]
+}

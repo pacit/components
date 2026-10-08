@@ -16,6 +16,7 @@
       {
         "status": "Survived",
         "mutant": {
+          "testsCompleted": 1,
           "mutatorName": "ConditionalExpression",
           "replacement": "false",
           "location": {

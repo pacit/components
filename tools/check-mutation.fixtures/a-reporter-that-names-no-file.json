@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "failed-file-not-a-failure",
+  "// defect": "A reporter whose failed test points at no file. The verdict is a kill, and `killedBy` names `unknown.js` for it: the record cannot say which spec caught the mutant.",
+  "reporters": ["default", "without-file"]
+}
