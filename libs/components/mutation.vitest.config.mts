@@ -124,10 +124,10 @@ function suiteErrors(tasks: readonly RunnerTask[]): unknown[] {
  * measurement, where `related` is the whole inventory — it IS Vitest's order.
  *
  * What it cannot do is kill anything. A survivor runs every related spec whatever their order
- * (those 27 589 tests), and a file whose sibling kills nothing gains nothing from seeing it
- * first — `core.spec.ts` and `texts.ts` above — which is what `texts.spec.ts` is for. Nor is
- * it a Stryker option: the runner's schema holds `configFile`, `dir` and `related`, and the
- * order is Vitest's.
+ * (those 27 589 tests), and a file whose sibling kills next to nothing gains next to nothing
+ * from seeing it first — `core.spec.ts` and `texts.ts` above — which is what `texts.spec.ts`
+ * is for. Nor is it a Stryker option: the runner's schema holds `configFile`, `dir` and
+ * `related`, and the order is Vitest's.
  *
  * Measured on this desk (2026-10-08), four workers, three pairs of narrow runs on the same
  * code otherwise: the seven `core` files of `lesson-250` took 9 min 42 s and 19 267 tests

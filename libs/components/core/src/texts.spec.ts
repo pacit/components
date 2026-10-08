@@ -19,8 +19,8 @@ import {
  * and a switch of language at runtime. The whole default set and the subtree clause (a
  * subtree starts from the defaults, not from its parent) had no case anywhere. The mutation
  * run priced that: a mutant of this file ran the specs of those components until one of them
- * noticed, 13 480 tests of the full run of 2026-10-06 for 37 mutants
- * ([`lesson-250`](../../../../docs/lessons.md#lesson-250)).
+ * noticed — 13 480 tests for 37 mutants in the report of the full run of 2026-10-06 that
+ * [`lesson-250`](../../../../docs/lessons.md#lesson-250) records.
  */
 
 /**
