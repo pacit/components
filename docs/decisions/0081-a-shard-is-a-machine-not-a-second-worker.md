@@ -103,8 +103,8 @@ MACHINES rather than across workers on one.**
   assembled out of six logs. The nightly, which runs everything unsharded, stays the place
   where the suite speaks with one voice.
 - **Setup is paid seven times**: a checkout, a Node, a restore and an apt install of the
-  browser libraries in every job (the apt install is gone since 2026-10-07 — the amendment at
-  the end) — a minute and a half to two minutes each, measured from the
+  browser libraries in every job (nine jobs since 0088, and the apt install gone since 2026-10-07
+  — the amendment at the end) — a minute and a half to two minutes each, measured from the
   start of a job to the start of its nx step on the run above, where the `node_modules` entry
   was still a miss and `npm ci` ran in all seven. The job's whole non-test time is a little
   more, 2.1 minutes on average, the rest of it two dev servers and nx's own. The run as a
@@ -187,21 +187,21 @@ gone, because the image is the installation: Playwright builds it with `install-
 option is the one Playwright's CI page gives for GitHub Actions, `--user 1001` — the uid the
 runner runs as, owning the workspace and the `$HOME` it mounts in.
 
-**Why.** The setup this record paid seven times had one step that was not ours to bound: the
+**Why.** The setup this record pays in every job had one step that was not ours to bound: the
 apt install of the browsers' system libraries, off `azure.archive.ubuntu.com`, on every run,
 cache hit or not. On 2026-10-07 it hung a shard in three consecutive runs of one pull request
 — 37666438813 (shard 4, the mirror at about 80 kB/s, 13.6 MB of `libflite1` in some three
-minutes, cancelled after 31), 37670285011 (shard 5, `apt-get update` silent for 24 minutes
-right after skipping the mirror's `noble InRelease`) and 37673446107 (shard
-5, 37 minutes in the step, cancelled and re-run) — and a fourth time on `main` (37663309919,
+minutes, cancelled after 31), 37670285011 (shard 5, `apt-get update` silent for 23 minutes
+right after skipping the mirror's `noble InRelease`) and 37673446107 (shard 5, 37 minutes in
+the step, cancelled and re-run) — and a fourth time on `main` (37663309919,
 the push of a0df9a2e), where shard 8 spent 3520 seconds in the step and ran out of its hour.
 The step had no ceiling of its own; the job's 60 minutes were the only one.
 
-**What it measured, before and after.** Before: 26 runs of this workflow from 2026-10-05
-04:38 to 2026-10-07 19:57 UTC, 199 browser jobs, 194 of which finished the step — 41 seconds
-at the median, 291 at the 90th percentile, 3520 at worst, behind a cache restore of 8 seconds
-at the median. The 118 jobs before 2026-10-07 had a 90th percentile of 56 seconds and three
-over five minutes; the 76 of 2026-10-07 had 508 and fourteen. After: the image is 956 MB
+**What it measured, before and after.** Before: every run of this workflow from 2026-10-05
+04:38 to 2026-10-07 19:57 UTC — 28 runs, 213 browser jobs, 208 of which finished the step: 41
+seconds at the median, 273 at the 90th percentile, 3520 at worst, behind a cache restore of 8
+seconds at the median. The 132 jobs before 2026-10-07 had a 90th percentile of 56 seconds and
+three over five minutes; the 76 of 2026-10-07 had 508 and fourteen. After: the image is 956 MB
 compressed in seven layers, and `Initialize containers`, the step that pulls it, took 26 to 43
 seconds, 27 at the median, over the 31 container jobs of this change's first five runs
 (37681764776, 37684639047 and 37686780190 of this workflow, the dispatched probe 37681766570
@@ -237,21 +237,26 @@ out before merge:
 - **There is no `zstd`.** `actions/cache` then writes gzip, and the compression is part of an
   entry's version: the image's first runs found none of the nx entries `main` had written
   outside it, and one `node_modules` key now holds two entries, 178 MB from the runner and
-  204 MB from the image. Every job that shares the nx cache runs in the image, so CI loses
-  nothing after its first run; `pages.yml`, which builds on the runner, could never restore
-  again, and its restore step is removed rather than left to miss in silence — `nx build docs`
-  took 23 seconds restored (37579021492).
+  204 MB from the image. For the nx entries that costs nothing, and the reason is older than
+  this change: since Nx 23.2.1 (#48, 2026-10-02) the task cache lives in `~/.nx/<id>`, not in
+  the `.nx/cache` the action saves, and every run since restored an entry and then read
+  `Cache: 0/… hit` — `gates` 0/51 on 37303382522, `pages.yml` 0/5 on 37579021492. The restore
+  in `pages.yml`, on the runner, is removed: it could never again find an entry, and the one
+  it found had held nothing for five days. Repairing the cache is its own change.
 - **The generic `monospace` is another face.** Liberation Mono in the image, DejaVu Sans Mono
   on the desk and on the runner — and all eight of the site's baselines moved, by 3122 to
   30402 pixels. The pictures were right to move: 3610 code and `pre` elements on the 42 routes
-  of the sitemap named no face, so the site drew them in whatever the machine had, which is what its vendored
-  faces exist to prevent. Every code seat now reads `--docs-font-mono`; measured on all 42
-  routes before and after, the size and line height of all 8375 code, `kbd`, `samp` and `pre`
-  elements are unchanged — the 66 that sat at the browser's 13px for the generic family alone
-  are given that 13px. Six baselines were recorded again on the desk — the theming page's two
-  came out as they were — and the image then drew all eight as the desk had (37686780190),
-  though the two machines' own `monospace` still differ. The sandbox's moved by nothing: they pin Liberation Sans and Liberation Mono, which the image
-  carries.
+  of the sitemap named no face, so the site drew them in whatever the machine had, which is
+  what its vendored faces exist to prevent. Every code seat now reads `--docs-font-mono`;
+  measured on all 42 routes before and after, the COMPUTED size and line height of all 8375
+  code, `kbd`, `samp` and `pre` elements are unchanged — the 66 that sat at the browser's 13px
+  for the generic family alone are given that 13px. What does move is a box whose line height
+  is `normal`, which is the face's own metric: the review measured 3462 rendered heights
+  changed, a block on /components from 15 to 17 pixels — the site's code now has the vertical
+  rhythm of the face it names. Six baselines were recorded again on the desk — the theming
+  page's two came out as they were — and the image then drew all eight as the desk had
+  (37686780190), though the two machines' own `monospace` still differ. The sandbox's moved by
+  nothing: they pin Liberation Sans and Liberation Mono, which the image carries.
 
 **Alternatives considered.**
 
@@ -264,7 +269,7 @@ out before merge:
   The literal costs one line per workflow at a bump, and the bump's pull request goes red
   naming each.
 - **A step timeout and a retry around apt.** It bounds the hang and not the mirror: the step
-  was 41 seconds at its best-behaved median, and the pull is 27.
+  was 41 seconds at its median, and the pull is 27.
 - **`at-pass.yml` stays on apt.** Windows and macOS have no such image, and its Linux job is a
   desktop session with Orca that installs from apt for the reader anyway. It names no image, so
   the tag rule has nothing to hold there.

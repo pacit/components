@@ -526,14 +526,15 @@ image — and holds the image's tag in every workflow to the `@playwright/test` 
 `package-lock.json`. `--project=chromium` in the command is one narrowing invisible in the
 Playwright configuration, and a sharded run is the other: the browser jobs are the whole suite
 only while their shard count is the size of their own matrix rather than a number typed beside it
-**Control:** `tools/check-browsers.fixtures/` — 33 doctored inputs, each rejected on its own
-**rule**; plus eleven runs against the real repository (webkit struck from `projects`; a file
+**Control:** `tools/check-browsers.fixtures/` — 40 doctored inputs, each rejected on its own
+**rule**; plus twelve runs against the real repository (webkit struck from `projects`; a file
 added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; a
 project on an engine the image does not carry (`channel: 'chrome'`); `--project=chromium` in
 the target; an exclusion removed from the policy with `testIgnore` left in place;
 `testIgnore` removed with the entry left in place; a new spec excluded on every engine at
 once; an unclosed bracket in the configuration; a stale image tag in `nightly.yml`; the
-lockfile bumped without the tags — those last two both on `ci-image-not-the-lockfile`)
+lockfile bumped without the tags; a workflow added under `.yaml` with a stale tag — those last
+three all on `ci-image-not-the-lockfile`)
 **Lessons:** [`lesson-56`](../lessons.md#lesson-56)
 
 > There are two exclusions and they are **of different kinds**. `visual.spec.ts` outside

@@ -49,16 +49,14 @@ jobs:
 
       - run: npm ci
 
-      # No restore of the nx cache, and that is a measurement rather than a saving. The entry
-      # is written by CI's `gates` job, which runs in Playwright's image since 2026-10-07, and
-      # the image has no `zstd`: `actions/cache` then writes a gzip archive, and the
-      # compression is part of an entry's version. A runner WITH `zstd` asks for another
-      # version under the same key and finds nothing — measured on the PR that moved CI:
-      # `Cache not found` in the image for every key main had written outside it (0081,
-      # amended). The restore that stood here would have done the same, every deploy, in
-      # silence. The build runs cold instead: `nx build docs` took 23 seconds restored
-      # (37579021492), and the same build finished 79 seconds into a `gates` run that had no
-      # cache and three workers' worth of other tasks beside it (37684639047).
+      # No restore of the nx cache, and it is two measurements rather than a saving. The step
+      # that stood here restored an entry and then read `Cache: 0/5 hit` (37579021492): since
+      # Nx 23.2.1 (#48) the task cache lives in `~/.nx/<id>` and not in the `.nx/cache` that CI
+      # saves, so the entry held nothing this build could use. And since 2026-10-07 the entry
+      # is written in Playwright's image, which has no `zstd`, so it is a gzip archive — and a
+      # runner with `zstd` asks for another version of the key and finds nothing at all (0081,
+      # amended). A restore that cannot hit is a step that says it caches; the build runs cold,
+      # as it has since 2026-10-02.
 
       - uses: actions/configure-pages@v6
 

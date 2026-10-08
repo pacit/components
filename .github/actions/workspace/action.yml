@@ -18,7 +18,11 @@ description: >-
   archive — and the compression is part of an entry's version, so the bare runner's entries
   and the image's are strangers under one key. Measured on the run that moved: `Cache not
   found` for the nx entries main had written outside the image, and the same
-  `node_modules` key stored twice, 178 MB from the runner and 204 MB from the image.
+  `node_modules` key stored twice, 178 MB from the runner and 204 MB from the image. The nx
+  entries lost nothing by it: since Nx 23.2.1 (#48) the task cache lives in `~/.nx/<id>`,
+  not in the `.nx/cache` saved below, and every run since has restored an entry and read
+  `Cache: 0/… hit`. What the nx steps below say they buy is a reading from before that
+  bump, and repairing them is a change of its own.
 
 inputs:
   nx-cache:

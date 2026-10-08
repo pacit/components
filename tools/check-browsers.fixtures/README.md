@@ -49,7 +49,7 @@ Three readings arrive here as data rather than from a real run:
 - `facts` — instead of probes in live browsers.
 
 This is the same choice as in `check-parts` and `check-zoneless` and for the same reason:
-three browsers and the Nx graph for each of the thirty-three cases would cost minutes, and
+three browsers and the Nx graph for each of the forty cases would cost minutes, and
 the gate runs on every commit. The price is written down outright — the code reading the
 Playwright report, the graph and the probes is not exercised here once. It is exercised
 instead by **every** run against the real repository.
@@ -71,9 +71,12 @@ Point 5 reads every workflow in `.github/workflows/` and the `@playwright/test` 
 of `package-lock.json`. The cases hand the rule both — the texts and the version — so the
 directory listing and the lockfile lookup are, like `--list` above, exercised only by the run
 against the repository. A mutant that read `ci.yml` alone from the directory passed every
-case. What holds it is two runs against the real tree, each with one defect planted:
+case, and so did one that read `.yml` and not `.yaml`. What holds them is three runs against
+the real tree, each with one defect planted:
 
 - `nightly.yml`'s first image moved to `v1.62.0-noble` — `ci-image-not-the-lockfile`, naming
   that one line of `nightly.yml` and nothing else; the mutant passed the same tree;
 - `@playwright/test` moved to `1.64.0` in the lockfile alone — the same rule, naming all five
-  mentions in three files, which is what a dependency bump without the tag looks like.
+  mentions in three files, which is what a dependency bump without the tag looks like;
+- a workflow added as `zz-control.yaml`, its image at `v1.62.0-noble` — the same rule, naming
+  that file; the `.yml`-only mutant passed the same tree.

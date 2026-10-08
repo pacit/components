@@ -1,0 +1,6 @@
+{
+  "check": "ci",
+  "rule": "ci-without-install",
+  "description": "Playwright's image is named three times in `ci.yml`, and in none of them is it a job's machine: an `env:` value called `image` under a `container:` whose image is `node:24`, a job-level `env:` beside that block, and a service called `container`. The jobs run on `node:24` and install nothing. A reader that took an `image:` at any depth under `container:`, that read past the block into its sibling, or that took a `container:` key at any depth for the job's own, would count one of them as the installation and pass.",
+  "ciText": "jobs:\n  gates:\n    container:\n      image: node:24\n      env:\n        image: mcr.microsoft.com/playwright:v1.63.0-noble\n    steps:\n      - run: scripts/nx-verdict npx nx affected -t lint test build check-browsers\n  e2e:\n    container:\n      image: node:24\n    env:\n      image: mcr.microsoft.com/playwright:v1.63.0-noble\n    services:\n      container:\n        image: mcr.microsoft.com/playwright:v1.63.0-noble\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4, 5, 6, 7, 8]\n    steps:\n      - run: scripts/nx-verdict npx nx affected --shard=${{ matrix.shard }}/${{ strategy.job-total }} -t e2e\n"
+}

@@ -35,21 +35,28 @@ const CI = `${WORKFLOWS}/ci.yml`;
 const LOCKFILE = 'package-lock.json';
 
 /**
- * Playwright's image, as a workflow names it: the repository and nothing after it but a tag
- * or a digest. The lookahead is the edge: `mcr.microsoft.com/playwright/python` is another
- * image (Python's Playwright on the same browsers) and not the one this gate rules on.
+ * Playwright's image, as a workflow names it: the repository, then a tag, a digest, or
+ * nothing. The lookahead is the edge on both sides. `mcr.microsoft.com/playwright/python` is
+ * another image (Python's Playwright on the same browsers) and not the one this gate rules
+ * on; and a flow map or a list ends the name at `,`, `}` or `]` — the first version of this
+ * pattern stopped only at quotes and spaces, and an untagged image inside
+ * `{ image: …, options: … }` went unread.
  */
-const IMAGE = /mcr\.microsoft\.com\/playwright(?=[:@'"\s]|$)(?::([^\s'"@]+))?/g;
+const IMAGE =
+  /mcr\.microsoft\.com\/playwright(?=[:@'"\s,}\]]|$)(?::([^\s'"@,}\]]+))?(@sha256:[0-9a-f]+)?/g;
 
 /**
- * The version a RELEASE tag of that image carries — `v1.63.0`, optionally a distribution
- * (`-noble`, `-jammy`, `-resolute`) and an architecture after it — and null for every other
- * tag the repository publishes. The anchor at the end is not tidiness: the canaries are
- * tagged `v1.63.0-next-canary-20260708115118-noble`, a build from BEFORE 1.63.0 that begins
- * with exactly the release's tag, so a reader that stopped at the version would take one for
- * the other (read off the registry's tag list, 2026-10-07: 18 582 tags).
+ * The version a RELEASE tag of that image carries, and null for every other tag the
+ * registry publishes. A release is `v1.63.0`, optionally one Ubuntu codename the registry
+ * has used and an architecture after it. Read off the tag list (2026-10-08, 18 582 tags),
+ * the other words after a version are channels: `-next`, `-vrt`, and the canaries, which
+ * carry the version they lead up to — `v1.62.0-next-canary-20260709180306-noble` was built
+ * on 2026-07-09, eighteen days before the image of 1.62.0. A reader that took any word, or
+ * stopped at the version, would take each of them for the release. A codename not listed
+ * here is refused until it is, which is red, not silence.
  */
-const TAG = /^v(\d+\.\d+\.\d+)(?:-[a-z]+)?(?:-(?:amd64|arm64))?$/;
+const TAG =
+  /^v(\d+\.\d+\.\d+)(?:-(?:bionic|focal|jammy|noble|resolute))?(?:-(?:amd64|arm64))?$/;
 
 /**
  * What the image carries, read off its build history (v1.63.0-noble): three layers, one
@@ -383,10 +390,16 @@ export const checkBrowsers = ({
         .filter((s) => !step.includes(s))
         .map((s) => `step #${i + 1}: no \`${s}\``),
     ),
+    // An engine the image lacks is installed if a step names it — the step rule above holds
+    // every step to every engine, so such a step names the image's three beside it.
     ...(images.length
       ? engines
-          .filter((s) => !IMAGE_ENGINES.includes(s))
-          .map((s) => `the image: no \`${s}\``)
+          .filter(
+            (s) =>
+              !IMAGE_ENGINES.includes(s) &&
+              !installs.some((step) => step.includes(s)),
+          )
+          .map((s) => `the image: no \`${s}\`, and no step installs it`)
       : []),
   ];
   if (ciGaps.length)
@@ -398,8 +411,8 @@ export const checkBrowsers = ({
         list(ciGaps) +
         `\n    A step installs what it names, so every step has to name every engine. The ` +
         `image carries what it was built with — ${IMAGE_ENGINES.join(', ')} — and nothing ` +
-        `else, so an engine outside that list needs a step of its own in every job that runs ` +
-        `in it.`,
+        `else, so an engine outside that list needs a \`playwright install\` step that names ` +
+        `it, beside the other engines every step names.`,
     );
 
   // The image's version. Its browsers are the builds the tag's Playwright downloaded, and the
@@ -420,7 +433,11 @@ export const checkBrowsers = ({
           stale.map(
             (t) =>
               `${t.file}:${t.line}: \`${t.written}\` — ` +
-              (t.version ? `version ${t.version}` : 'not a release tag'),
+              (t.digest
+                ? 'pinned by digest, which names no version'
+                : t.version
+                  ? `version ${t.version}`
+                  : 'not a release tag'),
           ),
         ) +
         `\n    The tag is the installation: the image carries the browsers its own version ` +
@@ -540,7 +557,9 @@ export const checkBrowsers = ({
     `(${engines.map((s) => `${s}: ${collected[s].length}`).join(', ')}), ` +
     `${excluded} ${excluded === 1 ? 'exclusion' : 'exclusions'} — ` +
     `${fromMeasurement.length} of them confirmed by a probe; ` +
-    `${(tags ?? []).length} mentions of Playwright's image, every one at ${playwright}`
+    ((tags ?? []).length
+      ? `${tags.length} mentions of Playwright's image, every one at ${playwright}`
+      : `no workflow names Playwright's image`)
   );
 };
 
@@ -730,15 +749,22 @@ const coverOf = (lines) => {
   return read.find((one) => coverFault(one)) ?? read[0];
 };
 
-/** A workflow's lines with the comments taken off — the strip every reading here starts from. */
+/**
+ * A workflow's lines with the comments taken off — the strip every reading here starts from.
+ * A comment is a `#` at the start or after white space, as YAML has it: `echo "#1"` in a
+ * `run:` line is no comment, and a strip that took it for one hid what followed it.
+ */
 const linesOf = (text) =>
   String(text ?? '')
     .split('\n')
-    .map((l) => l.replace(/#.*$/m, ''));
+    .map((l) => l.replace(/(^|\s)#.*$/, '$1'));
 
 /**
- * The Playwright images a workflow runs a JOB in: the `image:` under a `container:` key, two
- * spaces in, which is the form Playwright's CI documentation gives and the one prettier keeps.
+ * The Playwright images a workflow runs a JOB in: the `image:` directly under a job's own
+ * `container:` key — four spaces in, `jobs` → the job → the key, as prettier keeps it — which
+ * is the form Playwright's CI documentation gives. A key of that name anywhere else is not the
+ * job's machine: a service called `container`, an `env:` value called `image`, a sibling of
+ * the block, each read once as an installation by a looser version of this reader.
  * Any other spelling — the one-line `container: <image>`, a flow map, an expression — is not
  * read as an installation, and a workflow that leans on one alone meets `ci-without-install`:
  * a reading this gate cannot do is answered with red, not with a pass. The version is not
@@ -747,7 +773,7 @@ const linesOf = (text) =>
 const containersOf = (lines) => {
   const found = [];
   for (let i = 0; i < lines.length; i++) {
-    const opening = lines[i].match(/^(\s*)container:\s*$/);
+    const opening = lines[i].match(/^( {4})container:\s*$/);
     if (!opening) continue;
     const depth = opening[1].length;
     for (let j = i + 1; j < lines.length; j++) {
@@ -774,7 +800,10 @@ const mentionsOf = (lines) =>
     [...line.matchAll(IMAGE)].map((m) => ({
       line: i + 1,
       written: m[0],
-      version: m[1]?.match(TAG)?.[1] ?? null,
+      // A digest is what Docker pulls, whatever tag stands beside it, and a digest names
+      // bytes, not a version — so an image pinned by one is a version this gate cannot read.
+      digest: Boolean(m[2]),
+      version: m[2] ? null : (m[1]?.match(TAG)?.[1] ?? null),
     })),
   );
 
