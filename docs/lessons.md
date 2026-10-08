@@ -7327,7 +7327,7 @@ teardown, a file's setup and a suite's hook that threw, a test that failed, a su
 threw, a file that passed — and reads the failures
 with the runner's own `collectTestsFromSuite` and `convertTestToTestResult`
 (`tests/failed-file-not-a-failure`). It reads no report, so every door asks it first, and a
-narrow run merged on the desk is held as the nightly is. On the live configuration each of 15
+narrow run merged on the desk is held as the nightly is. On the live configuration each of 17
 planted defects fired it, with a narrow run's report on the disk — among them the reporter taken
 out of the list, blind to hooks, without a suite's errors, a second failure beside a test's own
 or a suite setup's, a failure added to a file that passed, a test added that passes, one the

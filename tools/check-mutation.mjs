@@ -521,11 +521,12 @@ const survivorsWithoutATest = (files) => {
  * reporters are done, as `<spec>: <reason>`: the spec `killedBy` names and the reason Stryker
  * records. A file Vitest failed outside its tests holds no failed test of its own: an import that
  * threw (no tasks, the error on the file), a teardown of the file (tests passed, one with no
- * result as a bail leaves it, the error on the file), a setup of the file (its test skipped with
- * no suite above it, which the runner reads as skipped), a hook of a suite two levels down (tests
- * passed, the error on the inner suite). The other three are read as they are: a test that
- * failed, a suite whose setup threw two levels up (its tests skipped, which the runner reads as
- * failed with the suite's error), and a file that passed, with none.
+ * result as a bail leaves it, the error on the file), a setup of the file (its tests skipped, one
+ * at the top and one in a `describe` that is skipped too, with no failed suite above either —
+ * the layout of this library's specs — which the runner reads as skipped), a hook of a suite two
+ * levels down (tests passed, the error on the inner suite). The other three are read as they
+ * are: a test that failed, a suite whose setup threw two levels up (its tests skipped, which the
+ * runner reads as failed with the suite's error), and a file that passed, with none.
  */
 const failedFileShapes = () => {
   const result = (state, message) => ({
@@ -588,7 +589,7 @@ const failedFileShapes = () => {
         'file-setup.spec.ts',
         'a file setup that threw',
         'fail',
-        [test('skip')],
+        [test('skip'), suite('skip', [test('skip')])],
         'file setup threw',
       ),
       ['file-setup.spec.ts: file setup threw'],
