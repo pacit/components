@@ -74,7 +74,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.4 datetime, then 1.2 — last, by 0016
+1  components             1.6 wheel, 1.7 time panel, then 1.2 — last, by 0016
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -107,14 +107,14 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 holds the datetime field (**1.4**), decided whole in
-[0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) on 2026-10-12 after
-the time field it composes (**1.3**, closed 2026-10-08), and it still ends at
-the table (**1.2**), deferred by
+**What is left.** Section 1 holds the wheel (**1.6**) and the time panel's shape (**1.7**),
+and it still ends at the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
 (**1.5**) landed on 2026-10-07, as
-[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them. The wheel
-(**1.6**) and the time panel's shape (**1.7**) follow
+[0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, and the datetime
+field (**1.4**) on 2026-10-12, as
+[0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) decided it. The wheel
+and the time panel's shape follow
 [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) of
 2026-10-08, the wheel first. Section 3 holds nothing since `0.2.0`. Section 4 holds five open
 findings, each held by a **binds at** rather than by anybody's mood.
@@ -141,24 +141,15 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     (`apps/sandbox-e2e/src/time.spec.ts`), and `/time` carries 12-hour and 24-hour fields
   - both cards filled in, the readers' log among their rows
 
-- [ ] **1.4 — datetime field** in `@pacit/components/datetime`, as
-      [0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) decided it on
-      2026-10-12: one dialog holding `PctCalendar` and `PctTimeColumns` — `list` alone,
-      `picker` when 1.7 lands — after 1.3
-  - the value `PctDateTime` is a day and a time with no zone, `YYYY-MM-DDTHH:mm`, seconds where
-    the step has them — the two shapes one value, as the time's are; its arithmetic is on the
-    pair and carries the day; the minute a switch skips and the hour it repeats are accepted,
-    as the native input accepts them, and the instant is the application's. Its requirement
-    is written with the module, and it is `null` until both halves hold a value
-  - two texts under one label, each named by the label and a word of its own, one button, one
-    panel: a pick in the grid moves on to the hours, a pick in the columns closes; a half
-    left empty is a sentence on the second channel
-  - bounds on the pair, cast to the calendar's days and, on the bound's own day, to the
-    columns' hours; the time's step; `dateDisabled` handed to the calendar and
-    `datetimeDisabled` asked per row on the chosen day — the predicate 0086 deferred, which
-    gives `PctTimeColumns` a `timeDisabled` of its own
-  - ends with: the value's requirement enforced, the card filled in, the field in the sandbox
-    in three engines, and the three readers on both halves of the panel — 4.82 binds here
+- [x] **1.4 — datetime field** in `@pacit/components/datetime` — **closed 2026-10-12**
+  - the value `PctDateTime` with its arithmetic on the pair, enforced as
+    [`req-api-datetime`](requirements/api.md#req-api-datetime); the field `PctDatetime` with the
+    tier `--pct-datetime-*` and four `PCT_TEXTS` keys; `./datetime` is 78 KB, the date's and the
+    time's barrels inside it
+  - `PctTimeColumns` took `timeDisabled` and `PctCalendar` `startAt`, the two inputs 0090 named;
+    the chrome hands its label's id to a control the label points at, for the two texts' names
+  - the panel in three engines and the three readers on it — the grid's Escape on `/datetime`,
+    a column's on `/time`, the same listbox (4.82)
 
 - [x] **1.5 — warnings on a field: `req-api-warning`**, landed 2026-10-07 as
       [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, amended
