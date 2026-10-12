@@ -349,6 +349,13 @@ spinbutton has no one number to put in `aria-valuenow`. And the datetime field n
 for its day in any case: the date field adds no key to its text (its card says so), so a time
 half that stepped under the caret would give one field two keyboards.
 
+_Amended 2026-10-08: **the shape of a column is the consumer's.** [0089](0089-one-value-more-than-one-control-and-the-consumer-chooses.md) keeps the listbox and gives it a
+second shape, `picker="wheel"`, in which the row under the centre line is the value and a
+scroll that settles writes it — the rule of the columns themselves, the row the walk stands
+on is that field of the value, extended to the pointer. The `list` shape stays the default,
+and the wheel is a component of its own that the columns compose, for the reason the columns
+are one._
+
 ### 5. The contract: bounds and a step, both in the value's own terms
 
 - **`min` and `max` are `PctTimeOfDay`s**, on the `FormUiControl` contract as the date's are
