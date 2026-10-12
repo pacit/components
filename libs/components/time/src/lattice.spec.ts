@@ -178,7 +178,7 @@ describe('pctNearest past refused times — the columns’ timeDisabled (0090 §
   });
 
   it('never answers a refused time, at the very end of the span either', () => {
-    // From 01:50 the time above is 02:00, the span's own last second's minute, and refused:
+    // From 01:59:50 the time above is 02:00, the span's own end, and refused:
     // the answer is the open time below, not the refused one beside it.
     const refused = new Set([at('02:00')]);
     expect(pctNearest(minutes, at('01:59:50'), 0, at('02:00'), refused)).toBe(
