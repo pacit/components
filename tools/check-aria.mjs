@@ -431,8 +431,9 @@ const readTemplate = (content, tables) => {
  * rule. An `<ng-template>` stands once per place that stamps it, and is not read as repeating,
  * though the select stamps its option rows once per section: how many places is a question
  * about outlets, overlays and directives the walk does not answer, and reading every template
- * as repeated would refuse an `@if` in the dialog's, the menu's or the popover's panel — each
- * stamped once, each carrying the name inside.
+ * as repeated would refuse an `@if` whose two branches each carry the name in the dialog's, the
+ * menu's or the popover's panel — each stamped once, each carrying the name inside. A `*ngFor`
+ * parses as a template too and passes for the same reason; nothing here uses one.
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
