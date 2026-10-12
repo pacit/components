@@ -798,7 +798,7 @@ export class PctDatetime
     // phase: a key that moved the grid's cursor and `Enter` on it can arrive before one render,
     // and the calendar then asks for focus on its new cell in the same render this hands it to
     // the hours. Its own hook runs in the default phase, so the hand-off runs after it, and the
-    // pick wins over the walk that led to it.
+    // pick wins over the walk that led to it ([`lesson-256`](../../../../docs/lessons.md#lesson-256)).
     afterRenderEffect({
       read: () => {
         const wanted = this.focusWanted();

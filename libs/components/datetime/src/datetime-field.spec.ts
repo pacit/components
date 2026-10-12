@@ -37,7 +37,7 @@ const textsOf = (f: ComponentFixture<unknown>) =>
   ) as HTMLInputElement[];
 
 /** Node writes U+202F before a day period where every browser writes a space (0086, D4). */
-const shown = (input: HTMLInputElement) => input.value.replace(/ /g, ' ');
+const shown = (input: HTMLInputElement) => input.value.replace(/\u202f/g, ' ');
 
 const toggleOf = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector(
