@@ -1,0 +1,197 @@
+{
+  "pct": {
+    "datetime": {
+      "$comment": "The datetime field: its two texts, its button and its dialog. The calendar and the columns inside the dialog keep their own tiers, `--pct-date-*` and `--pct-time-*`, so a theme that restyles them restyles them here too — the point of borrowing them; `--pct-{component}-…` names the ENTRYPOINT (req-token-names, check-tokens point 3; 0090 §6).",
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the datetime field."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the datetime field."
+      },
+      "placeholder-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the placeholder."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the datetime field."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the datetime field on hover."
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the datetime field when focused."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the datetime field when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the datetime field when invalid."
+      },
+      "border-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Edge colour of the datetime field under a warning (0087)."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087)."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the datetime field while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the datetime field while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the datetime field while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the datetime field."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the datetime field."
+      },
+      "font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the datetime field at size sm."
+      },
+      "font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the datetime field at size lg."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the datetime field."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the datetime field."
+      },
+      "padding-y-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the datetime field at size sm."
+      },
+      "padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the datetime field at size sm."
+      },
+      "padding-y-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the datetime field at size lg."
+      },
+      "padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the datetime field at size lg."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the datetime field."
+      },
+      "toggle-size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Size of the button that opens the panel."
+      },
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Size of the icon."
+      },
+      "toggle-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the button that opens the panel."
+      },
+      "toggle-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the button that opens the panel."
+      },
+      "toggle-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the button that opens the panel on hover."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the panel."
+      },
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between the calendar and the columns in the panel."
+      }
+    }
+  }
+}

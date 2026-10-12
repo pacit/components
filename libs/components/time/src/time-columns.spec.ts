@@ -7,7 +7,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctTexts } from '@pacit/components/core';
 
 import { PctTimeOfDay } from './time';
-import { PctTimeColumns } from './time-columns';
+import { PctTimeColumns, PctTimePredicate } from './time-columns';
 
 @Component({
   imports: [PctTimeColumns],
@@ -18,6 +18,7 @@ import { PctTimeColumns } from './time-columns';
     [min]="min()"
     [max]="max()"
     [disabled]="disabled()"
+    [timeDisabled]="timeDisabled()"
     [ariaLabel]="ariaLabel()"
     (timePicked)="picked.push($event)"
   />`,
@@ -29,6 +30,7 @@ class Host {
   readonly min = signal<string | undefined>(undefined);
   readonly max = signal<string | undefined>(undefined);
   readonly disabled = signal(false);
+  readonly timeDisabled = signal<PctTimePredicate | null>(null);
   readonly ariaLabel = signal('');
   readonly picked: PctTimeOfDay[] = [];
 }
@@ -875,6 +877,140 @@ describe('PctTimeColumns — the bounds', () => {
     expect(active(column(f, 'hour'))).toBe('17');
     expect(chosen(column(f, 'hour'))).toEqual(['18']);
     expect(chosen(column(f, 'minute'))).toEqual([]);
+  });
+});
+
+describe('PctTimeColumns — the predicate (0090 §5)', () => {
+  /** Booked: 10:00 to 10:59 whole, and the quarter past eleven. */
+  const booked: PctTimePredicate = (time) =>
+    time.startsWith('10:') || time === '11:15';
+
+  it('asks every time on the step once, in the value’s shape, and draws a refused one disabled', async () => {
+    const asked: string[] = [];
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('11:00');
+      h.timeDisabled.set((time) => {
+        asked.push(time);
+        return booked(time);
+      });
+    });
+    // 96 quarter hours, each asked once, in `HH:mm` — the shape a minute step writes.
+    expect(asked).toHaveLength(96);
+    expect(new Set(asked).size).toBe(96);
+    expect(asked[0]).toBe('00:00');
+    expect(asked).toContain('23:45');
+    expect(labels(column(f, 'minute'))).toEqual(['00', '15', '30', '45']);
+    expect(enabled(column(f, 'minute'))).toEqual(['00', '30', '45']);
+    const refused = rowsOf(column(f, 'minute'))[1];
+    expect(refused.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('asks in the seconds shape where the step has seconds', async () => {
+    const asked: string[] = [];
+    await render((h) => {
+      h.step.set(1800);
+      h.min.set('00:00:30');
+      h.timeDisabled.set((time) => {
+        asked.push(time);
+        return false;
+      });
+    });
+    expect(asked).toHaveLength(48);
+    expect(asked[0]).toBe('00:00:30');
+  });
+
+  it('refuses an hour every time of which is refused, and only that one', async () => {
+    const f = await render((h) => {
+      h.value.set('11:00');
+      h.timeDisabled.set(booked);
+    });
+    const hours = enabled(column(f, 'hour'));
+    expect(hours).toHaveLength(23);
+    expect(hours).not.toContain('10');
+    expect(hours).toContain('11');
+  });
+
+  it('refuses a half of the day every time of which is refused', async () => {
+    const f = await render((h) => {
+      h.locale.set('en-US');
+      h.value.set('14:00');
+      h.timeDisabled.set((time) => Number(time.slice(0, 2)) < 12);
+    });
+    expect(enabled(column(f, 'dayPeriod'))).toEqual(['PM']);
+    await press(f, column(f, 'dayPeriod'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('14:00');
+  });
+
+  it('walks past a refused hour, and lands a move on the nearest time it lets through', async () => {
+    const f = await render((h) => {
+      h.value.set('09:20');
+      h.timeDisabled.set(booked);
+    });
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('11:20');
+    // Onto 11:15, refused: the minute walk steps over it, both ways.
+    f.componentInstance.value.set('11:14');
+    await settle(f);
+    await press(f, column(f, 'minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('11:16');
+    await press(f, column(f, 'minute'), 'ArrowUp');
+    expect(f.componentInstance.value()).toBe('11:14');
+  });
+
+  it('keeps a refused value, and starts the walk from the nearest time it lets through', async () => {
+    const f = await render((h) => {
+      h.step.set(900);
+      h.value.set('11:15');
+      h.timeDisabled.set(booked);
+    });
+    expect(f.componentInstance.value()).toBe('11:15');
+    // Halfway between 11:00 and 11:30 goes to the later of the two.
+    expect(active(column(f, 'minute'))).toBe('30');
+    expect(chosen(column(f, 'minute'))).toEqual(['15']);
+  });
+
+  it('starts from the time now is in, stepping back past a refused one', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 5, 11, 20));
+    try {
+      const f = await render((h) => {
+        h.step.set(900);
+        h.value.set(null);
+        h.timeDisabled.set(booked);
+      });
+      // Now is 11:20, IN the quarter of 11:15, which is booked: the walk stands on 11:00.
+      expect(active(column(f, 'hour'))).toBe('11');
+      expect(active(column(f, 'minute'))).toBe('00');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('takes nothing where it refuses every time, and stands where the bounds alone would', async () => {
+    const f = await render((h) => {
+      h.min.set('09:00');
+      h.value.set('08:00');
+      h.timeDisabled.set(() => true);
+    });
+    expect(enabled(column(f, 'hour'))).toEqual([]);
+    expect(enabled(column(f, 'minute'))).toEqual([]);
+    expect(active(column(f, 'hour'))).toBe('09');
+    await press(f, column(f, 'hour'), 'Enter');
+    await press(f, column(f, 'hour'), 'ArrowDown');
+    expect(f.componentInstance.picked).toEqual([]);
+    expect(f.componentInstance.value()).toBe('08:00');
+  });
+
+  it('is whole again when the predicate goes', async () => {
+    const f = await render((h) => {
+      h.value.set('11:00');
+      h.timeDisabled.set(booked);
+    });
+    expect(enabled(column(f, 'hour'))).toHaveLength(23);
+    f.componentInstance.timeDisabled.set(null);
+    await settle(f);
+    expect(enabled(column(f, 'hour'))).toHaveLength(24);
   });
 });
 

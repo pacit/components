@@ -57,6 +57,12 @@ export const appConfig: ApplicationConfig = {
       timeMinutes: 'Minutes',
       timeSeconds: 'Secondes',
       timePeriod: 'Période',
+      // The datetime field's: the two words each half is named by after the label, the
+      // button's name and the sentence about a half left empty.
+      datetimeOpen: 'Choisir une date et une heure',
+      datetimeDay: 'Jour',
+      datetimeTime: 'Heure',
+      datetimeIncomplete: 'Saisir une date et une heure',
       numberMalformed: 'Pas un nombre',
     }),
     // The number field formats by LOCALE_ID — here that gives a decimal comma and a

@@ -80,20 +80,28 @@ function floorTo(lattice: PctLattice, at: number): number {
  * One question answers three: whether a row has a time at all (`at` its own start), where a
  * movement onto a row lands (`at` the time composed from the row and the other columns), and
  * where a walk starts from a time the step does not list or the bounds refuse.
+ *
+ * `refused` holds the times on the step a predicate turned down — the columns' `timeDisabled`
+ * (0090 §5) — and the answer steps past them, outward from the two times either side of `at`, so
+ * an hour every minute of which is refused has no time at all, which is what refuses its row.
  */
 export function pctNearest(
   lattice: PctLattice,
   at: number,
   from: number,
   to: number,
+  refused?: ReadonlySet<number>,
 ): number | null {
   let best: number | null = null;
   for (const [low, high] of lattice.bounds) {
     const start = Math.max(from, low);
     const end = Math.min(to, high);
     const held = Math.min(Math.max(at, start), end);
-    const below = floorTo(lattice, held);
-    for (const time of [below, below + lattice.step]) {
+    let below = floorTo(lattice, held);
+    let above = below + lattice.step;
+    while (below >= start && refused?.has(below)) below -= lattice.step;
+    while (above <= end && refused?.has(above)) above += lattice.step;
+    for (const time of [below, above]) {
       if (time < start || time > end) continue;
       const away = Math.abs(time - at);
       if (
@@ -105,6 +113,21 @@ export function pctNearest(
     }
   }
   return best;
+}
+
+/**
+ * Every time on the step a predicate turns down, as seconds since midnight — asked once for each
+ * time of the day, in the lattice's shape, the bounds aside: 1 440 questions on the default step,
+ * which a `Set` answers in under half a millisecond (0090, F1).
+ */
+export function pctRefused(
+  lattice: PctLattice,
+  refuses: (time: PctTimeOfDay) => boolean,
+): ReadonlySet<number> {
+  const refused = new Set<number>();
+  for (let at = lattice.base % lattice.step; at < DAY; at += lattice.step)
+    if (refuses(pctWrite(lattice, at))) refused.add(at);
+  return refused;
 }
 
 /** Seconds since midnight written in the lattice's shape. */

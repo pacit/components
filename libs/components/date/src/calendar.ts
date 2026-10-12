@@ -154,6 +154,16 @@ export class PctCalendar {
   readonly dateDisabled = input<PctDayPredicate | null>(null);
 
   /**
+   * The day the grid opens on while there is no value — absent, today. It is where the walk
+   * STARTS and nothing more: no day is marked chosen by it, and the bounds still hold it. The
+   * datetime field hands it the month a half that is not a date names, so `31.02.2026` opens on
+   * February (0090 §2).
+   *
+   * @since next
+   */
+  readonly startAt = input(undefined, { transform: optionalDay });
+
+  /**
    * Freezes the grid: no day can be picked, the walk and the month buttons stop, and `aria-disabled` says so.
    *
    * @since 0.1.0
@@ -240,7 +250,9 @@ export class PctCalendar {
     if (held !== null) return held;
     const value = this.value();
     return pctClampDay(
-      value !== null && isPctDay(value) ? value : this.today(),
+      value !== null && isPctDay(value)
+        ? value
+        : (this.startAt() ?? this.today()),
       this.min(),
       this.max(),
     );
