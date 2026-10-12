@@ -362,9 +362,12 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the columns follow 0086's E1 reading, focus on the listbox; E2 — the option focused by a
     roving `tabindex` — is the other reading axe passed, and whether NVDA keeps Escape there too
     is unmeasured. VoiceOver closed no panel in that pass at all, so it says nothing here
-  - binds at: **the datetime field (1.4)**, whose panel holds these columns beside a grid that
-    NVDA lets Escape through — one panel cannot close one way from one half and another from
-    the other
+  - measured on the datetime field's panel on 2026-10-12 (run 38261445493): its grid's Escape
+    closes it under all three readers, while the same pass left NVDA's `/time` panel open on a
+    column's — so under NVDA one panel now closes one way from one half and another from the
+    other, as 0090 §4 foresaw
+  - binds at: **the time panel's shape (1.7)**, which rebuilds the columns' list — E2, the option
+    focused by a roving `tabindex`, measured there under NVDA
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
