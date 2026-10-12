@@ -962,7 +962,11 @@ export class PctDatetime
    * user typed and reports that it is not one.
    */
   protected onBlur(half: PctDateTimeHalf, event: Event): void {
-    const text = (event.target as HTMLInputElement).value;
+    this.commit(half, (event.target as HTMLInputElement).value);
+  }
+
+  /** Settles one half from its text — on its blur, and before the panel opens over it. */
+  private commit(half: PctDateTimeHalf, text: string): void {
     if (half === 'day') {
       this.dayTyping.set(false);
       const parsed = text.trim() === '' ? null : this.dayFormat().parse(text);
@@ -1042,6 +1046,13 @@ export class PctDatetime
   }
 
   private openPanel(): void {
+    // A press on the button keeps focus in the text it was typed into (the template says why),
+    // so that text has not been left yet: it is settled here, or the panel would open on the
+    // day the half held before and be redrawn under the grid's focus by the blur that follows.
+    if (this.dayTyping())
+      this.commit('day', this.dayControl()?.nativeElement.value ?? '');
+    if (this.timeTyping())
+      this.commit('time', this.timeControl()?.nativeElement.value ?? '');
     this.panelOverlay.show();
     this.focusWanted.set({ where: 'grid' });
   }

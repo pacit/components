@@ -798,14 +798,15 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
   //
-  // A group may carry it too: one name for a set of texts, each of which is named by it and a
-  // word of its own. Two textboxes each carrying the consumer's name would be the two names
-  // the rule below refuses; a group carrying it is one name, and it is no stop a user lands on.
-  // It carries it only when it holds focusable elements and each of them names itself — an
-  // `aria-labelledby` or an `aria-label` of its own, written or bound — because a named group
-  // around unnamed texts is 0090's E3, a critical finding in three engines, and a group's role
-  // on a wrapper is not a way to forward the name one element too high
-  // (`name-on-non-focusable`).
+  // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
+  // consumer's name would be the two names the rule below refuses; a group carrying it is one
+  // name, and it is no stop a user lands on. It carries it only when it holds focusable
+  // elements and each of them names itself — an `aria-labelledby` or an `aria-label` of its
+  // own, written or bound — because a named group around unnamed texts is 0090's E3, a
+  // critical finding in three engines, and a group's role on a wrapper is not a way to
+  // forward the name one element too high (`name-on-non-focusable`). What the gate does NOT
+  // read is whether those names include the group's: the datetime field names each text by
+  // the label and a word of its own, and its own spec holds that, not this.
   for (const component of naming) {
     const namedGroups = component.groups.filter(
       (group) =>

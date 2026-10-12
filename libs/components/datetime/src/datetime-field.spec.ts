@@ -448,6 +448,8 @@ describe('PctDatetime — typing', () => {
     sub.unsubscribe();
     expect(changes).toEqual([]);
     expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+    // Nor its text: a seconds field given `13:05` does not write it back as `13:05:00`.
+    expect(timeText(f).value).toBe('13:05');
   });
 
   it('keeps the shape a value from outside was given', async () => {
@@ -678,8 +680,9 @@ describe('PctDatetime — the panel', () => {
     await key(f, gridIn(), 'Enter');
     expect(f.componentInstance.value()).toBe('2026-12-02T09:07');
     expect(shown(dayText(f))).toBe('02/12/2026');
-    // The time's text is as the user left it — not rewritten by a pick of the day.
-    expect(timeText(f).value).toBe('9:07');
+    // The time's text is as the user left it — settled when the panel opened, as leaving it
+    // would have settled it, and not rewritten by a pick of the day.
+    expect(timeText(f).value).toBe('09:07');
     expect(panel()).not.toBeNull();
     expect(document.activeElement).toBe(columnIn('hour'));
   });
@@ -1277,6 +1280,27 @@ describe('PctDatetime — the review’s cases', () => {
     await settle(f);
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+
+  it('settles a half still being typed before the panel opens over it, and keeps focus in the grid', async () => {
+    const f = await render(Host);
+    dayText(f).focus();
+    await type(f, dayText(f), '31/02/2026');
+    // The button's press keeps focus in the text; the click opens the panel.
+    toggleOf(f).dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+    );
+    await open(f);
+    expect(captionIn()).toBe('February 2026');
+    expect(document.activeElement).toBe(cursorIn());
+    expect(errorOf(f)).toBe('Not a date');
+    // The same with a half typed and not junk: the panel opens on the day typed.
+    await key(f, gridIn(), 'Escape');
+    dayText(f).focus();
+    await type(f, dayText(f), '15/03/2027');
+    await open(f);
+    expect(captionIn()).toBe('March 2027');
+    expect(document.activeElement).toBe(cursorIn());
   });
 
   it('keeps focus where it is on a press of the button — Safari focuses no button', async () => {
