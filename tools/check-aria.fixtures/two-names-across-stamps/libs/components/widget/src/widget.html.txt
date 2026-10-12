@@ -1,0 +1,35 @@
+<!-- The reference's two triggers on the two branches of one `@if`, inside an `<ng-template>`
+     stamped twice: each stamp takes a branch of its own, so the `<input>` of one stands beside
+     the `<button>` of the other, and the name a consumer wrote is announced twice. -->
+<ng-template #trigger let-editable>
+  @if (editable) {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+</ng-template>
+<span class="pct-widget__box">
+  <ng-container [ngTemplateOutlet]="trigger" [ngTemplateOutletContext]="{ $implicit: true }" />
+  <ng-container [ngTemplateOutlet]="trigger" [ngTemplateOutletContext]="{ $implicit: false }" />
+</span>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

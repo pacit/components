@@ -20,7 +20,11 @@
  *
  * Usage: node tools/check-aria.mjs
  */
-import { parseTemplate } from '@angular/compiler';
+import {
+  parseTemplate,
+  TmplAstForLoopBlock,
+  TmplAstTemplate,
+} from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
 import {
@@ -426,14 +430,25 @@ const readTemplate = (content, tables) => {
 };
 
 /**
+ * The kinds whose body can stand in the DOM more than once: an `@for` once per item, and an
+ * `<ng-template>` once per place that stamps it — an outlet, an overlay, a structural
+ * directive — which the template itself does not count. Asked of the compiler's own classes
+ * and not of a property's name, so a kind renamed upstream fails the import, not the rule.
+ */
+const REPEATING = [TmplAstForLoopBlock, TmplAstTemplate];
+const repeats = (node) => REPEATING.some((kind) => node instanceof kind);
+
+/**
  * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
- * `<block>#<branch>`. Two nodes are alternatives when one block holds them both and their
- * branches differ — "the error takes the line" as a fact about the tree rather than about
- * a page somebody rendered.
+ * `{ block, branch, repeats }`. Two nodes are alternatives when one block holds them both and
+ * their branches differ — "the error takes the line" as a fact about the tree rather than
+ * about a page somebody rendered.
  *
  * `@if`/`@switch` branch through `branches`/`cases`; `@for` and `@defer` branch through a
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
- * the body is branch 0 and each side block one after it.
+ * the body is branch 0 and each side block one after it. A repeating body is an entry with
+ * no side block too, marked `repeats` — an `@for` with no `@empty` and an `<ng-template>`
+ * once left no trace in the path, and what they repeat is what `exclusive` has to know.
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
@@ -447,7 +462,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       branches.forEach((branch, i) =>
         walkTemplate(
           branch.children ?? [],
-          [...path, `${block}#${i}`],
+          [...path, { block, branch: i, repeats: false }],
           state,
           ancestors,
         ),
@@ -460,18 +475,18 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       node.loading,
       node.error,
     ].filter(Boolean);
-    if (sides.length) {
+    if (sides.length || repeats(node)) {
       const block = state.blocks++;
       walkTemplate(
         node.children ?? [],
-        [...path, `${block}#0`],
+        [...path, { block, branch: 0, repeats: repeats(node) }],
         state,
         ancestors,
       );
       sides.forEach((side, i) =>
         walkTemplate(
           side.children ?? [],
-          [...path, `${block}#${i + 1}`],
+          [...path, { block, branch: i + 1, repeats: false }],
           state,
           ancestors,
         ),
@@ -538,15 +553,20 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
   }
 };
 
-/** A block that holds both, on different branches — then they are never in the DOM together. */
+/**
+ * A block that holds both, on different branches — then they are never in the DOM together.
+ * Unless a repeating body stands above that block: each copy of the body takes a branch of
+ * its own, and the `@else` of one item stands beside the `@if` of the next. A path lists the
+ * blocks around a node outermost first, and whatever stands above a block holding both
+ * stands above both, so the entries before it in either path are the ones to ask.
+ */
 const exclusive = (a, b) =>
-  a.path.some((entry) => {
-    const [block, branch] = entry.split('#');
-    return b.path.some((other) => {
-      const [otherBlock, otherBranch] = other.split('#');
-      return block === otherBlock && branch !== otherBranch;
-    });
-  });
+  a.path.some(
+    (entry, depth) =>
+      b.path.some(
+        (other) => other.block === entry.block && other.branch !== entry.branch,
+      ) && !a.path.slice(0, depth).some((above) => above.repeats),
+  );
 
 /**
  * One template read through the compiler's own parser: the message parts with the conditional
@@ -797,6 +817,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+  // Under an `@for` or in an `<ng-template>` they can: the conditional is stamped once per
+  // copy, each copy takes a branch of its own, and the two stand at once.
   //
   // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
@@ -850,7 +872,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `element(s) bind both ${NAME_ATTRIBUTES.join(' and ')} to the inputs and ` +
           `${together.length + 1} of them can be in the DOM at the same time — two named ` +
           `elements are two names for one control. Two branches of one conditional are not ` +
-          `that; two elements standing side by side are`,
+          `that; two elements standing side by side are, and so are two branches under an ` +
+          `\`@for\` or in an \`<ng-template>\`, which stamp the conditional more than once`,
       );
   }
 
@@ -893,7 +916,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
             throw new AriaError(
               'description',
               `${template.file}: \`${one.part}\` and \`${other.part}\` can be in the DOM at ` +
-                `the same time — they are not two branches of one conditional. Then the ` +
+                `the same time — they are not two branches of one conditional, or the ` +
+                `conditional stands under an \`@for\` or in an \`<ng-template>\`, which stamp ` +
+                `it more than once. Then the ` +
                 `control grows by a row on a message and \`aria-describedby\` names one the ` +
                 `wrapped same control never shows (req-api-message)`,
             );

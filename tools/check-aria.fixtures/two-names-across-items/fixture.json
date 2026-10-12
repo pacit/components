@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "The reference's two triggers on the two branches of one `@if`, and an `@for` around the conditional — the shape the datetime field draws its two texts in. Two branches are alternatives only when one copy of the conditional stands in the tree; an `@for` stamps it once per item and each item takes its own branch, so both triggers stand at once. Before this case the walk read the two branches as alternatives under any `@for`, and one with no `@empty` left no trace in the path at all."
+}
