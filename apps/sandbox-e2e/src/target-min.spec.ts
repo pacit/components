@@ -241,6 +241,17 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-time-target-min',
   },
   {
+    name: 'datetime toggle',
+    applies:
+      'libs/components/datetime/src/datetime-field.scss .pct-datetime__toggle',
+    route: '/datetime',
+    selector: '[data-testid="datetime-standalone"] [data-pct-part="toggle"]',
+    axis: 'both',
+    zero: ['--pct-datetime-toggle-size', '--pct-datetime-icon-size'],
+    ceiling: 24,
+    floor: '--pct-datetime-target-min',
+  },
+  {
     name: 'field control',
     applies: 'libs/components/field/src/field.scss .pct-field__control',
     route: '/field',

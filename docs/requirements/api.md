@@ -231,6 +231,38 @@ until both were read off the parts
 
 ---
 
+### <a id="req-api-datetime"></a>`req-api-datetime` — A day with a time is a wall clock with a date, the same in every timezone
+
+**Promise.** The datetime field's value is a day and a time of it written `YYYY-MM-DDTHH:mm`, or
+`…THH:mm:ss` where the step has seconds (`PctDateTime`), never a `Date` and never a string with a
+zone: the pair a user picked is the pair an application stores, serialises and reads back on any
+machine. The minute a daylight-saving switch skips and the hour it repeats are values, as they
+are values of the platform's own input, because the control cannot know where the event is; the
+instant is the application's. The arithmetic is on the pair and the day carries — `23:30` plus
+45 minutes is `00:15` the next day — and the domain is the day's, refused loudly at both ends.
+The guard is a parser: a `Z`, an offset, a space and a lower-case `t` are not values, and
+neither is anything either half refuses. The value is `null` until both halves hold one. The
+one read of local time is "what day and what time is it".
+
+**Gate:** `libs/components/datetime/src/datetime.spec.ts › in a hostile timezone` — the clock
+pinned to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` on 29 March 2026, where 02:30
+does not exist, and on 25 October 2026, where it exists twice, with the local-time `Date`
+measured beside the pair; and `libs/components/datetime/src/datetime.property.spec.ts`, which
+holds the arithmetic as laws against the platform's own millisecond count in UTC — a step that
+carries the day exactly, invertible and composing, an order that agrees with the seconds
+between two values over the whole domain, a clamp that holds what it held and holds nothing
+with a reversed pair, every near miss of an accepted value refused, and the domain stated in
+both directions at year zero and at the last day the ECMAScript range holds
+**Control:** the same cases build the pair the old way beside the new — in Warsaw
+`new Date(2026, 2, 29, 2, 30)` answers 03:30 and an hour after 01:30 reads 03:30 where
+`pctAddDateTimeMinutes('2026-03-29T01:30', 60)` is `02:30`, and in Kiritimati 13:05 on
+1 December serialises as 23:05 on 30 November — so a `PctDateTime` that followed the zone would
+fail against a number the run itself produced. A mutant that dropped the carry turned seven
+cases red, three of them laws
+**Decision:** [0090 — a day with a time is a wall clock with a date](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md)
+
+---
+
 ### <a id="req-api-container"></a>`req-api-container` — In a composite component the control is the container
 
 **Promise.** In a group (`pct-radio-group` + `pct-radio`) only the container implements the

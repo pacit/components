@@ -129,6 +129,29 @@ export interface PctTexts {
    */
   readonly timePeriod: string;
   /**
+   * Datetime: the accessible name of the button that opens the panel of a calendar and columns,
+   * and the name of the panel — one string in both places, for the reason `dateOpen` gives.
+   */
+  readonly datetimeOpen: string;
+  /**
+   * Datetime: the word each of the field's two texts is named by after the field's label —
+   * "Starts, Day" and then "Starts, Time". Two textboxes under a named group with no name of
+   * their own are a critical axe finding in all three engines, and two named by the label alone
+   * pass axe and leave a reader on the second one not told it is the time
+   * ([0090](../../../../docs/decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md),
+   * E2 and E3) — so the word is the record's rule, not the gate's.
+   */
+  readonly datetimeDay: string;
+  readonly datetimeTime: string;
+  /**
+   * Datetime: the sentence the field says when focus leaves it with one half holding a value and
+   * the other empty — the value is `null` until both do, and a required field would otherwise
+   * say "required" over a day the user can see. The control's own error, first in the message
+   * line, gated by no touch (0070); the two halves' junk keeps the date's and the time's own
+   * sentences.
+   */
+  readonly datetimeIncomplete: string;
+  /**
    * Number: the same sentence for text that is not a number, which the field now keeps
    * instead of clearing — a user is shown what they typed, and told what it is not (0070).
    */
@@ -245,6 +268,10 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   timeMinutes: 'Minutes',
   timeSeconds: 'Seconds',
   timePeriod: 'AM/PM',
+  datetimeOpen: 'Choose date and time',
+  datetimeDay: 'Day',
+  datetimeTime: 'Time',
+  datetimeIncomplete: 'Enter both a date and a time',
   numberMalformed: 'Not a number',
   fieldWarning: 'Warning:',
   toastDismiss: 'Dismiss',

@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctDate, PctDay } from '@pacit/components/date';
+import { PctDatetime, PctDateTime } from '@pacit/components/datetime';
 import { PctTime, PctTimeOfDay } from '@pacit/components/time';
 import { PctField, PctNumber, PctText } from '@pacit/components/field';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
@@ -30,6 +31,7 @@ import { SbxDemo } from '../../ui/demo';
     PctSlider,
     PctDate,
     PctTime,
+    PctDatetime,
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
@@ -59,4 +61,7 @@ export class StatesView {
   protected readonly budget = signal(40);
   protected readonly startsOn = signal<PctDay | null>('2026-08-27');
   protected readonly startsAt = signal<PctTimeOfDay | null>('13:05');
+  protected readonly startsAtDay = signal<PctDateTime | null>(
+    '2026-12-01T13:05',
+  );
 }

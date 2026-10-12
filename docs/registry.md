@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     82 |
+| ✅ enforced | gate and control exist and run in CI                          |     83 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      0 |
-| **total**   |                                                               | **97** |
+| **total**   |                                                               | **98** |
 
 ## Gaps by urgency
 
@@ -51,6 +51,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-signal-forms`](requirements/api.md#req-api-signal-forms) | ✅ enforced | `tools/check-forms.mjs` (target `check-forms` in the root project, in… | the tests start from a **non-empty** initial value — with an empty mo… |
 | [`req-api-day`](requirements/api.md#req-api-day)                   | ✅ enforced | `libs/components/date/src/day.spec.ts › in a hostile timezone` — the … | the same cases build the day the old way beside the new — `new Date(2… |
 | [`req-api-time`](requirements/api.md#req-api-time)                 | ✅ enforced | `libs/components/time/src/time.spec.ts › in a hostile timezone` — the… | the same cases build the time the old way beside the new — in Warsaw … |
+| [`req-api-datetime`](requirements/api.md#req-api-datetime)         | ✅ enforced | `libs/components/datetime/src/datetime.spec.ts › in a hostile timezon… | the same cases build the pair the old way beside the new — in Warsaw … |
 | [`req-api-container`](requirements/api.md#req-api-container)       | 🟡 partial  | `libs/components/radio/src/radio.spec.ts`                              | none — deliberately: the violation would be a second `FormValueContro… |
 | [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ enforced | `libs/components/field/src/field.spec.ts` — the chrome's own cases pl… | `field-hitarea.spec.ts` — a cursor map over a grid of points (`elemen… |
 | [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — every control is… | none — deliberately: the standalone mode is **the default**, so its f… |
@@ -414,3 +415,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-253`](lessons.md#lesson-253) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-254`](lessons.md#lesson-254) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-255`](lessons.md#lesson-255) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-256`](lessons.md#lesson-256) | — _(not cited)_                                                                                                                                                   |

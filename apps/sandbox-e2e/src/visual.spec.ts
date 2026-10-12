@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { setRtl, visit } from './support/dom';
+import { setRtl, settled, visit } from './support/dom';
 
 /**
  * The visual tests (req-quality-e2e).
@@ -112,6 +112,7 @@ const CARDS: ReadonlyArray<
   ['/date', 'demo-inline', 'date-calendar'],
   ['/time', 'demo-standalone', 'time-field'],
   ['/time', 'demo-inline', 'time-columns'],
+  ['/datetime', 'demo-standalone', 'datetime-field'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/pagination', 'demo-many', 'pagination-fold'],
   ['/progress', 'demo-sizes', 'progress-sizes'],
@@ -274,6 +275,24 @@ test.describe('Appearance — compared with the baseline', () => {
     await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
 
     await expect(page).toHaveScreenshot('dialog-open.png');
+  });
+
+  /**
+   * The datetime field's panel, which has no inline variant to stand on a card: the grid and
+   * the columns side by side in one dialog, the field's own tier around them and the two
+   * borrowed tiers inside (0090 §6). The shot is of the panel alone, after its fade.
+   */
+  test('datetime-panel', async ({ page }) => {
+    await stage(page, '/datetime');
+    await page
+      .getByTestId('datetime-standalone')
+      .locator('[data-pct-part="toggle"]')
+      .click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await settled(page);
+
+    await expect(panel).toHaveScreenshot('datetime-panel.png');
   });
 
   /**
@@ -552,6 +571,20 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
    * its `direction` measurement; this screenshot also shows which side the panel is
    * anchored to and how the option content is laid out.
    */
+  test('datetime-panel-rtl', async ({ page }) => {
+    await stage(page, '/datetime');
+    await setRtl(page);
+    await page
+      .getByTestId('datetime-standalone')
+      .locator('[data-pct-part="toggle"]')
+      .click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await settled(page);
+
+    await expect(panel).toHaveScreenshot('datetime-panel-rtl.png');
+  });
+
   test('dialog-open-rtl', async ({ page }) => {
     await stage(page, '/dialog');
     await setRtl(page);

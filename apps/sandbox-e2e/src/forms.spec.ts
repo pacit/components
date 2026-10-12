@@ -52,6 +52,28 @@ test.describe('A form — controls under one schema', () => {
     await time.fill('930');
     await time.blur();
     await expect(time).toHaveValue('09:30');
+    await expect(submit).toBeDisabled(); // no meeting and no consent
+
+    // A day with no time is no value — the platform's own reading (0090, A2) — so the form
+    // stays invalid with a day on the screen, and the field says what is missing ahead of the
+    // form's "required": the sentence a form cannot write, since it sees `null` either way.
+    const meetsAt = page.getByTestId('datetime-meets-at');
+    const day = meetsAt.locator('[data-pct-part="date-control"]');
+    const hour = meetsAt.locator('[data-pct-part="time-control"]');
+    await day.fill('24/12/2026');
+    // Left for the page, not for the other half — moving within the field is staying in it.
+    await day.blur();
+    await expect(
+      page
+        .getByTestId('field-meets-at')
+        .locator('[data-pct-part="field-error"]'),
+    ).toHaveText('Saisir une date et une heure');
+    await expect(submit).toBeDisabled(); // half a meeting, and no consent
+
+    await hour.fill('930');
+    await hour.blur();
+    await expect(hour).toHaveValue('09:30');
+    await expect(day).toHaveValue('24/12/2026');
     await expect(submit).toBeDisabled(); // no consent
 
     await page.getByTestId('checkbox-terms').locator('input').check();

@@ -204,6 +204,36 @@ export class PctDateHarness extends PctHarness<
   ] as const;
 }
 
+// ── @pacit/components/datetime ──────────────────────────────────────────────────
+
+/**
+ * `pct-datetime` — `PctDatetime`.
+ *
+ * @since next
+ */
+export class PctDatetimeHarness extends PctHarness<
+  | 'date-control'
+  | 'error'
+  | 'hint'
+  | 'label'
+  | 'panel'
+  | 'time-control'
+  | 'toggle'
+  | 'warning'
+> {
+  static override hostSelector = 'pct-datetime';
+  static override readonly parts = [
+    'date-control',
+    'error',
+    'hint',
+    'label',
+    'panel',
+    'time-control',
+    'toggle',
+    'warning',
+  ] as const;
+}
+
 // ── @pacit/components/dialog ────────────────────────────────────────────────────
 
 /**

@@ -1,0 +1,11 @@
+<!-- 0090's E3: a group named by the consumer around two texts with no name of their own —
+     a critical `label` finding in all three engines, whatever the group is called. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" />
+  <input class="pct-pair__second" type="text" />
+</div>

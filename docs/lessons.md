@@ -7462,3 +7462,23 @@ The wider reading: a path that a workflow caches for a tool is a claim about the
 default, and a default is the tool's to move. The step names the place to the tool instead,
 and asks it, in the same job, where it will write — a counter printed in every log is not a
 check while nothing reads it.
+
+### <a id="lesson-256"></a>`lesson-256` — Two hooks that place focus in one render: the later one wins, and a unit suite renders between keys
+
+The datetime field hands focus to the hour column when a day is picked in its grid, once the
+overlay has drawn — an `afterRenderEffect`, the same hook the calendar inside it uses to take
+focus along with its cursor. Every unit case passed: the suite settles a render after each key.
+In chromium the e2e case pressed `ArrowRight` and `Enter` back to back, both arrived before one
+render, and the calendar's request for its new cell and the field's hand-off ran in that same
+render, the calendar's last — so it put focus back on the grid, and the hour column read
+"inactive" through every poll of the assertion. A probe that waited between the two
+keys logged `out day`, `in column`, and passed.
+
+The fix is the phase, not a delay. `afterRenderEffect` runs every hook phase by phase —
+`earlyRead`, `write`, `mixedReadWrite`, `read` — and the calendar's, like every hook given a
+bare callback, runs in `mixedReadWrite`; the hand-off moved to `read` runs after all of them,
+so the pick wins over the walk that led to it, however many keys share a render.
+
+The wider reading: a focus move scheduled after a render is a claim about every other component
+that may schedule one in the same render, and a spec that renders between keys cannot see the
+race — only keys pressed the way a person presses them can.

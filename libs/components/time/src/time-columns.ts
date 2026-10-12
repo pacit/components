@@ -28,6 +28,7 @@ import {
 import {
   pctLattice,
   pctNearest,
+  pctRefused,
   pctSecondsOf,
   pctUnbounded,
   pctWrite,
@@ -75,6 +76,14 @@ export interface PctTimeColumn {
   /** Where the walk stands in this column — the row `aria-activedescendant` names. */
   readonly active: number;
 }
+
+/**
+ * A predicate on a time of day: `true` refuses it. The columns ask it of every time on the step,
+ * once per change of the step, the bounds or the predicate itself.
+ *
+ * @since next
+ */
+export type PctTimePredicate = (time: PctTimeOfDay) => boolean;
 
 /** A time input written as an attribute is a string; one bound from a model may be anything. */
 function optionalTime(value: unknown): PctTimeOfDay | undefined {
@@ -176,6 +185,17 @@ export class PctTimeColumns {
   readonly step = input(60, { transform: numberAttribute });
 
   /**
+   * Times inside the bounds that still cannot be taken — the slots already booked on the day a
+   * datetime field's panel stands on, which is the control that asks (0090 §5). It is asked of
+   * every time on the step, in the value's shape, and a refused time is a row drawn disabled and
+   * skipped by the walk; an hour or a half of the day is refused when every time in it is. A
+   * value it refuses is kept: the walk starts from the nearest time it lets through.
+   *
+   * @since next
+   */
+  readonly timeDisabled = input<PctTimePredicate | null>(null);
+
+  /**
    * Freezes the columns: no row can be taken, the walk stops, and `aria-disabled` says so.
    *
    * @since next
@@ -237,6 +257,12 @@ export class PctTimeColumns {
     pctLattice(this.validStep(), this.min(), this.max()),
   );
 
+  /** The times on the step `timeDisabled` refuses, or nothing to step past without one. */
+  private readonly refused = computed(() => {
+    const refuses = this.timeDisabled();
+    return refuses === null ? undefined : pctRefused(this.lattice(), refuses);
+  });
+
   /**
    * The moment the columns were made, read once — a column left open across a minute does not
    * move under the user, which is the calendar's reading of today.
@@ -252,21 +278,22 @@ export class PctTimeColumns {
   protected readonly cursor = computed(() => {
     const value = this.value();
     const lattice = this.lattice();
-    // Some time is always inside: the base is `min`, which the bounds always let through, or
-    // midnight, which a lone `max` does too.
+    const refused = this.refused();
+    // Some time is always inside the bounds: the base is `min`, which they always let through,
+    // or midnight, which a lone `max` does too. A predicate can refuse every one of them — the
+    // datetime field hands one that does, for a day whose window holds no time on the step — and
+    // then the walk stands where the bounds alone would put it, on a row it cannot take.
+    const from = (at: number, to: number) =>
+      pctNearest(lattice, at, 0, to, refused) ??
+      (pctNearest(lattice, at, 0, to) as number);
     if (value !== null && isPctTimeOfDay(value))
-      return pctNearest(
-        lattice,
-        pctSecondsOf(value),
-        0,
-        HALF * 2 - 1,
-      ) as number;
+      return from(pctSecondsOf(value), HALF * 2 - 1);
     // Now, as a wall clock shows it — the minute it is until it ticks, to the second only where
     // the step counts seconds — and on the step it is IN: the last time on the step at or before
     // now, never the next one. Where the bounds leave none before now, the nearest after.
     const now = pctSecondsOf(pctNow(this.madeAt, lattice.seconds));
-    return (pctNearest(lattice, now, 0, now) ??
-      pctNearest(lattice, now, 0, HALF * 2 - 1)) as number;
+    return (pctNearest(lattice, now, 0, now, refused) ??
+      from(now, HALF * 2 - 1)) as number;
   });
 
   /** The value's own fields in seconds, or `null` — what `aria-selected` reads. */
@@ -481,6 +508,9 @@ export class PctTimeColumns {
 
   /** The cursor's time taken as the value, and said to be the one wanted. */
   private take(): void {
+    // The walk stands on a refused time only when every time is refused, and then there is
+    // nothing to take — `Enter` on a disabled option.
+    if (this.refused()?.has(this.cursor())) return;
     const time = pctWrite(this.lattice(), this.cursor());
     this.value.set(time);
     this.timePicked.emit(time);
@@ -489,7 +519,7 @@ export class PctTimeColumns {
   /** One field set to a row, the rest held where they were — and the whole kept on the step. */
   private moveTo(field: PctTimeField, row: PctTimeRow): void {
     const [from, to, at] = this.spanOf(field, row.value, this.cursor());
-    const landed = pctNearest(this.lattice(), at, from, to);
+    const landed = pctNearest(this.lattice(), at, from, to, this.refused());
     if (landed === null) return;
     this.value.set(pctWrite(this.lattice(), landed));
   }
@@ -530,6 +560,7 @@ export class PctTimeColumns {
 
   private columnOf(field: PctTimeField): PctTimeColumn {
     const lattice = this.lattice();
+    const refused = this.refused();
     const all = pctUnbounded(lattice);
     const cursor = this.cursor();
     const chosen = this.chosenAt();
@@ -548,7 +579,7 @@ export class PctTimeColumns {
         label: this.labelOf(field, value),
         key: this.keyOf(field, value),
         shown: field === 'dayPeriod' ? null : this.shownOf(field, value),
-        disabled: pctNearest(lattice, from, from, to) === null,
+        disabled: pctNearest(lattice, from, from, to, refused) === null,
         chosen: chosen !== null && from <= chosen && chosen <= to,
       });
     }

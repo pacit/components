@@ -278,10 +278,12 @@ export class PctField implements PctFieldApi {
     });
 
     // Groups (labelStrategy: 'labelledby') are named through aria-labelledby, because
-    // `<label for>` does not name a set of elements.
+    // `<label for>` does not name a set of elements. A control the label points at (`for`) is
+    // handed the id too when it asks for it: the datetime field's label points at its first
+    // text, and names each of its two texts together with a word of its own (0090 §2).
     effect(() => {
       const c = this.control();
-      if (!c || c.labelStrategy !== 'labelledby') return;
+      if (!c) return;
       c.setLabelledBy?.(this.label() ? this.labelId : null);
     });
   }

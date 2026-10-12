@@ -53,6 +53,7 @@ async function press(
     [firstDayOfWeek]="firstDayOfWeek()"
     [dateDisabled]="dateDisabled()"
     [disabled]="disabled()"
+    [startAt]="startAt()"
     (dayPicked)="picked.set($event)"
   />`,
 })
@@ -64,6 +65,7 @@ class Host {
   readonly firstDayOfWeek = signal(0);
   readonly dateDisabled = signal<((day: PctDay) => boolean) | null>(null);
   readonly disabled = signal(false);
+  readonly startAt = signal<string | undefined>(undefined);
   readonly picked = signal<PctDay | null>(null);
 }
 
@@ -404,6 +406,37 @@ describe('PctCalendar — the nav and the disabled state', () => {
     f.detectChanges();
     await f.whenStable();
     expect(partOf(f, 'caption').textContent?.trim()).toBe('May 2030');
+  });
+
+  it('starts where it is told to when there is no value, marks nothing, and keeps the bounds', async () => {
+    const f = await render(Host);
+    f.componentInstance.value.set(null);
+    f.componentInstance.startAt.set('2026-02-01');
+    f.detectChanges();
+    await f.whenStable();
+    expect(partOf(f, 'caption').textContent?.trim()).toBe('February 2026');
+    expect(cursorOf(f).getAttribute('aria-label')).toContain('1 February 2026');
+    expect(
+      partsOf(f, 'day').filter((d) => d.hasAttribute('data-pct-chosen')),
+    ).toHaveLength(0);
+
+    // A value outranks it, and a bound holds it as it holds today.
+    f.componentInstance.value.set('2026-08-27');
+    f.detectChanges();
+    await f.whenStable();
+    expect(partOf(f, 'caption').textContent?.trim()).toBe('August 2026');
+    f.componentInstance.value.set(null);
+    f.componentInstance.min.set('2026-03-10');
+    f.detectChanges();
+    await f.whenStable();
+    expect(partOf(f, 'caption').textContent?.trim()).toBe('March 2026');
+
+    // Something that is not a day is no start at all.
+    f.componentInstance.min.set(undefined);
+    f.componentInstance.startAt.set('2026-02-30');
+    f.detectChanges();
+    await f.whenStable();
+    expect(partOf(f, 'caption').textContent?.trim()).not.toBe('February 2026');
   });
 
   it('ignores a value the interop wrote that is not a day', async () => {

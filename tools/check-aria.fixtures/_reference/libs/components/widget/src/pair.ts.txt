@@ -1,0 +1,19 @@
+import { Component, input } from '@angular/core';
+
+/**
+ * Two texts under one name: the GROUP carries the consumer's name, and each text is named by
+ * the group's name and a word of its own — the datetime field's shape (0090, E1 to E3).
+ */
+@Component({
+  selector: 'pct-pair',
+  templateUrl: './pair.html',
+  host: {
+    class: 'pct-pair',
+  },
+})
+export class PctPair {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly firstNamedBy = input<string>('');
+  protected readonly secondNamedBy = input<string>('');
+}

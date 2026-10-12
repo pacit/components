@@ -20,6 +20,7 @@ export type PctReqId =
   | 'req-api-catalogue'
   | 'req-api-config'
   | 'req-api-container'
+  | 'req-api-datetime'
   | 'req-api-day'
   | 'req-api-foundation'
   | 'req-api-frame'
@@ -362,7 +363,8 @@ export type PctLessonId =
   | 'lesson-252'
   | 'lesson-253'
   | 'lesson-254'
-  | 'lesson-255';
+  | 'lesson-255'
+  | 'lesson-256';
 
 /** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;

@@ -46,6 +46,13 @@ const REFERENCE = '_reference';
 const NAME_INPUTS = ['ariaLabel', 'ariaLabelledby'];
 /** The attributes they are forwarded through. */
 const NAME_ATTRIBUTES = ['[attr.aria-label]', '[attr.aria-labelledby]'];
+/** How an element inside a named group names itself — written or bound, either attribute. */
+const SELF_NAMES = [
+  'aria-label',
+  'aria-labelledby',
+  '[attr.aria-label]',
+  '[attr.aria-labelledby]',
+];
 /**
  * How a component takes ITSELF out of the accessibility tree. Written as a plain attribute in
  * the host block, or bound — a bound one is not read here, and it does not have to be: the
@@ -406,6 +413,11 @@ const readTemplate = (content, tables) => {
     widgets: tags
       .filter((t) => isWidget(t.tag, t.attrs, tables))
       .map((t) => ({ ...t })),
+    // A `role="group"` names a SET of controls, and ARIA asks it for no name — so it is no
+    // widget of the tables above. It may still be the element a consumer's name is handed to:
+    // the datetime field's two texts stand in one, and each takes the group's name with a word
+    // of its own (0090, E1 to E3). Point 4 reads these as carriers beside the widgets.
+    groups: tags.filter((t) => t.attrs.get('role') === 'group'),
     parsed: tags.filter(
       (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
     ).length,
@@ -468,8 +480,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     }
     // An element — the only kind of node with a tag name of its own. Where it stands in the
     // conditional structure is what point 4 asks of it; the offset is how it is found again.
-    if (typeof node.name === 'string' && node.sourceSpan)
+    if (typeof node.name === 'string' && node.sourceSpan) {
       state.paths.set(node.sourceSpan.start.offset, path);
+      // And the elements standing above it, by the offset each starts at — what point 4 asks
+      // of a group carrying a name: which focusable elements stand inside it.
+      state.within.set(
+        node.sourceSpan.start.offset,
+        ancestors.map((a) => a.offset),
+      );
+    }
     const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
     if (part && MESSAGE_PART.test(part))
       state.messages.push({
@@ -490,6 +509,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       typeof node.name === 'string'
         ? {
             tag: node.name.toLowerCase(),
+            offset: node.sourceSpan?.start.offset,
             role:
               node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
               null,
@@ -537,11 +557,18 @@ const exclusive = (a, b) =>
 const readMessages = (file, content) => {
   const text = content.replace(COMMENT, '');
   const parsed = parseTemplate(text, file, { preserveWhitespaces: false });
-  const state = { blocks: 0, messages: [], paths: new Map(), roles: [] };
+  const state = {
+    blocks: 0,
+    messages: [],
+    paths: new Map(),
+    within: new Map(),
+    roles: [],
+  };
   if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
   return {
     messages: state.messages,
     paths: state.paths,
+    within: state.within,
     roles: state.roles,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -680,6 +707,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       );
     byPath.get(template.file).said = said.messages;
     byPath.get(template.file).paths = said.paths;
+    byPath.get(template.file).within = said.within;
     byPath.get(template.file).roles = said.roles;
     const contextual = said.roles.filter((r) => tables.contexts.has(r.role));
     const contextsCounted = countOf(
@@ -709,6 +737,15 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       ? byPath.get(component.templatePath)
       : null;
     component.widgets = template?.read?.widgets ?? [];
+    // Each group with the focusable widgets standing inside it, read off the parsed tree.
+    component.groups = (template?.read?.groups ?? []).map((group) => ({
+      ...group,
+      inside: component.widgets.filter(
+        (widget) =>
+          isFocusable(widget.tag, widget.attrs) &&
+          (template.within?.get(widget.offset) ?? []).includes(group.offset),
+      ),
+    }));
     // Where each of them stands in the conditional structure, joined to the tag scan by the
     // offset both readings report. A focusable element the walk never reached would be one
     // point 4 could say nothing about — and it would say it by passing, so it is a
@@ -760,8 +797,25 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+  //
+  // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
+  // consumer's name would be the two names the rule below refuses; a group carrying it is one
+  // name, and it is no stop a user lands on. It carries it only when it holds focusable
+  // elements and each of them names itself — an `aria-labelledby` or an `aria-label` of its
+  // own, written or bound — because a named group around unnamed texts is 0090's E3, a
+  // critical finding in three engines, and a group's role on a wrapper is not a way to
+  // forward the name one element too high (`name-on-non-focusable`). What the gate does NOT
+  // read is whether those names include the group's: the datetime field names each text by
+  // the label and a word of its own, and its own spec holds that, not this.
   for (const component of naming) {
-    const carriers = component.widgets.filter((widget) =>
+    const namedGroups = component.groups.filter(
+      (group) =>
+        group.inside.length > 0 &&
+        group.inside.every((widget) =>
+          SELF_NAMES.some((key) => (widget.attrs.get(key) ?? '').trim()),
+        ),
+    );
+    const carriers = [...component.widgets, ...namedGroups].filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
@@ -770,7 +824,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       throw new AriaError(
         'forwarded',
         `${component.className} (${component.templatePath}): none of the ` +
-          `${component.widgets.length} element(s) that carry a name bind both ` +
+          `${component.widgets.length} element(s) that carry a name, nor any of the ` +
+          `${component.groups.length} group(s) around them, bind both ` +
           `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and one has to — an input read ` +
           `by nobody names nothing`,
       );

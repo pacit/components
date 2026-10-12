@@ -1,0 +1,113 @@
+<h2 class="view__title">Datetime</h2>
+<p class="muted view__intro">
+  A day and a time of it — <code>YYYY-MM-DDTHH:mm</code>, a wall clock with a
+  date and no zone. The field is two texts under one label, the day's and the
+  time's, because <code>&lt;input type="datetime-local"&gt;</code> reads a whole
+  day with no time as no value at all, and draws its clock in a language each of
+  the three engines takes from a different place.
+</p>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="The label, the hint and the message line are drawn by pct-field, and the value is a signal form's. A day with no time is no value — and the field says so when it is left, ahead of the form's own required."
+  [reqs]="['req-api-frame', 'req-api-no-wrapper', 'req-api-signal-forms', 'req-api-datetime']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Starts"
+      hint="Type it, or pick it in the panel"
+      data-testid="field-starts-at"
+    >
+      <pct-datetime
+        [formField]="meetingForm.startsAt"
+        data-testid="datetime-starts-at"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws its own label, and each text is named by it and a word of its own. The empty texts show the two FORMATS — the order and the separators from Intl, the letters from the texts channel."
+  [reqs]="['req-api-no-wrapper', 'req-a11y-touch', 'req-api-texts']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-datetime
+      label="Starts"
+      hint="The sandbox runs under fr-FR, so the clock counts to 24"
+      [(value)]="standalone"
+      data-testid="datetime-standalone"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The order is the language's"
+  summary="Which half stands first, the day's order and the clock all come from Intl for the field's locale — the time first in Vietnamese, the one language of the 52 measured that writes it so."
+  [reqs]="['req-api-datetime', 'req-api-texts']"
+  data-testid="demo-locale"
+>
+  <div class="datetime-view__row">
+    <pct-datetime
+      label="American English"
+      locale="en-US"
+      [(value)]="american"
+      data-testid="datetime-en"
+    />
+    <pct-datetime
+      label="Polish"
+      locale="pl-PL"
+      [(value)]="polish"
+      data-testid="datetime-pl"
+    />
+    <pct-datetime
+      label="Vietnamese"
+      locale="vi-VN"
+      [(value)]="vietnamese"
+      data-testid="datetime-vi"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bounds and the step"
+  summary="The calendar gets the day of each bound, and the columns the time of a bound only on the bound's own day. The step counts from midnight on every day, so 09:05 at a quarter-hour step opens at 09:15. Weekends are refused whole."
+  [reqs]="['req-api-datetime', 'req-a11y-built-in']"
+  data-testid="demo-bounds"
+>
+  <div class="datetime-view__row">
+    <pct-datetime
+      label="Three days, by the quarter"
+      min="2026-12-01T09:05"
+      max="2026-12-03T17:50"
+      step="900"
+      [dateDisabled]="weekend"
+      [(value)]="window"
+      data-testid="datetime-bounded"
+    />
+    <pct-datetime
+      label="To the second"
+      step="1"
+      [(value)]="precise"
+      data-testid="datetime-seconds"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Taken slots"
+  summary="datetimeDisabled is asked of every time of the chosen day: on 2 December ten o'clock is booked whole, so its hour is refused, and half past twelve alone. The day itself stays a day the calendar offers."
+  [reqs]="['req-api-datetime']"
+  data-testid="demo-taken"
+>
+  <div class="datetime-view__row">
+    <pct-datetime
+      label="Meeting room"
+      [datetimeDisabled]="taken"
+      [(value)]="booked"
+      data-testid="datetime-booked"
+    />
+  </div>
+</sbx-demo>

@@ -904,6 +904,132 @@
       "severity": "warn"
     },
     {
+      "name": "datetime — the value in the field",
+      "fg": "pct.datetime.fg",
+      "bg": "pct.datetime.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — label",
+      "fg": "pct.datetime.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — hint",
+      "fg": "pct.datetime.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — error message",
+      "fg": "pct.datetime.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — warning message",
+      "fg": "pct.datetime.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the format hint standing in the empty field",
+      "fg": "pct.datetime.placeholder-fg",
+      "bg": "pct.datetime.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the value in a disabled field",
+      "fg": "pct.datetime.fg-disabled",
+      "bg": "pct.datetime.bg-disabled",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: datetime field border",
+      "fg": "pct.datetime.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: datetime field border (hover)",
+      "fg": "pct.datetime.border-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: datetime field border (focus)",
+      "fg": "pct.datetime.border-focus",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: datetime field border (invalid)",
+      "fg": "pct.datetime.border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: datetime field border (warning)",
+      "fg": "pct.datetime.border-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: datetime field border (disabled)",
+      "fg": "pct.datetime.border-disabled",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "datetime — the button's drawing",
+      "fg": "pct.datetime.toggle-fg",
+      "bg": "pct.datetime.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the button under the pointer",
+      "fg": "pct.datetime.toggle-fg",
+      "bg": "pct.datetime.toggle-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the datetime panel's edge against the page",
+      "fg": "pct.datetime.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the calendar's days on the panel",
+      "fg": "pct.date.fg",
+      "bg": "pct.datetime.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the columns' rows on the panel",
+      "fg": "pct.time.fg",
+      "bg": "pct.datetime.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "slider — label",
       "fg": "pct.slider.label-fg",
       "bg": "pct.surface",

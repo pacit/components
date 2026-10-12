@@ -303,6 +303,26 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
         },
       },
     ],
+    PctDatetime: [
+      /**
+       * The open panel of the datetime field and the field it belongs to: one dialog holding a
+       * grid and a named listbox per field of the time, beside a group of two textboxes named by
+       * the label and a word each — the shape 0090's E1 measured clean on a page of its own,
+       * asked again of the panel as built.
+       */
+      {
+        title:
+          'an open panel of a calendar and time columns, and the field it belongs to',
+        route: '/datetime',
+        open: async (page) => {
+          await page
+            .getByTestId('datetime-standalone')
+            .locator('[data-pct-part="toggle"]')
+            .click();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+      },
+    ],
     PctDialog: [
       /**
        * An open modal is the one state the walk over the routes cannot reach: every dialog

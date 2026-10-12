@@ -100,9 +100,10 @@ export interface PctFieldControl {
    */
   activate?(): void;
   /**
-   * For `labelStrategy: 'labelledby'` the chrome passes the id of its label — a container
+   * The chrome passes the id of its label to a control that implements this — a container
    * control (a radio group, say) exposes it as `aria-labelledby`, because `<label for>` does
-   * not name a group of elements.
+   * not name a group of elements; a control of two texts the label points at (the datetime
+   * field) names each of them by it and a word of its own.
    */
   setLabelledBy?(id: string | null): void;
 }

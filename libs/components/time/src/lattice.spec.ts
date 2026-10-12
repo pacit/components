@@ -1,6 +1,7 @@
 import {
   pctLattice,
   pctNearest,
+  pctRefused,
   pctSecondsOf,
   pctUnbounded,
   pctWrite,
@@ -155,6 +156,49 @@ describe('pctNearest — where a walk lands', () => {
     expect(pctNearest(q, at('08:59'), at('08:00'), at('09:00'))).toBe(
       at('09:00'),
     );
+  });
+});
+
+describe('pctNearest past refused times — the columns’ timeDisabled (0090 §5)', () => {
+  const minutes = pctLattice(60, undefined, undefined);
+  const quarters = pctLattice(900, undefined, undefined);
+
+  it('steps past refused times on both sides, and the nearer open one wins', () => {
+    // 10:45 and 11:00 refused; from 10:58 the walk down reaches 10:30, 28 minutes away, and
+    // the walk up 11:15, 17 minutes away.
+    const refused = new Set([at('10:45'), at('11:00')]);
+    expect(pctNearest(quarters, at('10:58'), 0, at('23:59:59'), refused)).toBe(
+      at('11:15'),
+    );
+    // And the mirror: 11:00 and 11:15 refused, from 11:02 the walk down wins.
+    const mirror = new Set([at('11:00'), at('11:15')]);
+    expect(pctNearest(quarters, at('11:02'), 0, at('23:59:59'), mirror)).toBe(
+      at('10:45'),
+    );
+  });
+
+  it('never answers a refused time, at the very end of the span either', () => {
+    // From 01:59:50 the time above is 02:00, the span's own end, and refused:
+    // the answer is the open time below, not the refused one beside it.
+    const refused = new Set([at('02:00')]);
+    expect(pctNearest(minutes, at('01:59:50'), 0, at('02:00'), refused)).toBe(
+      at('01:59'),
+    );
+    // A span every time of which is refused has none.
+    expect(
+      pctNearest(minutes, at('02:00'), at('02:00'), at('02:00'), refused),
+    ).toBeNull();
+  });
+
+  it('asks the predicate once per time on the step, in the lattice’s shape', () => {
+    const asked: string[] = [];
+    const refused = pctRefused(pctLattice(1800, '00:00:30', undefined), (t) => {
+      asked.push(t);
+      return t === '12:00:30';
+    });
+    expect(asked).toHaveLength(48);
+    expect(asked[0]).toBe('00:00:30');
+    expect([...refused]).toEqual([at('12:00:30')]);
   });
 });
 
