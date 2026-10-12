@@ -15,9 +15,10 @@
 (chromium 153.0.8010.12, firefox 155.0, webkit 26.6 — Playwright 1.63.0), each on a page the
 engine really parsed and every reading written down with the conditions it was taken under,
 plus node's own ICU (78.3, CLDR 48) — the "Measurement" section below. In short:
-`<input type="datetime-local">` takes a whole day with no time for **no value at all** in all
-three engines; it accepts **02:30 on 29 March 2026** and **02:30 on 25 October** in Warsaw, a
-minute that does not exist and one that exists twice, and its `valueAsNumber` is the fields
+`<input type="datetime-local">` takes a whole day with no time for **no value at all** in the
+two engines that took the keys, and in the third no typed digit reached it; it accepts
+**02:30 on 29 March 2026** and **02:30 on 25 October** in Warsaw, a minute that does not
+exist and one that exists twice, and its `valueAsNumber` is the fields
 read in UTC — the input knows no zone; its own `stepUp()` at `23:59` **carries the day** in all
 three where the time input's stops or wraps; a reversed pair of bounds is **no window** on a
 datetime where it is one on a time; a local `Date` answers 02:30 on 29 March with **03:30**
@@ -66,7 +67,7 @@ so where it moved one of them. "System locale" is the browser process's `LANGUAG
 | #   | probe                                                                                                                                                                                                                | chromium 153                                                                                                                                             | firefox 155                                                                      | webkit 26.6                                                                                                            |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | A1  | `<input type="datetime-local" value="2026-12-01T13:05">` under `lang` · a browser locale · a system locale of `pl` against `en-US`                                                                                   | identical · identical · **differs** (`12/01/2026, 01:05 PM` / `01.12.2026, 13:05`)                                                                       | identical · identical · identical                                                | identical · **differs** (`…, 1:05:00 PM` / `…, 13:05:00`) · identical                                                  |
-| A2  | a whole day typed and nothing of the time: `.value` · `badInput` — the keys shown to land by the pixels moving, in all three                                                                                         | `""` · `true`                                                                                                                                            | `""` · `true`                                                                    | `""` · **`false`**                                                                                                     |
+| A2  | a whole day typed and nothing of the time: `.value` · `badInput` · whether the keys drew anything, by the pixels against the focused empty input                                                                     | `""` · `true` · the day drawn                                                                                                                            | `""` · `true` · the day drawn                                                    | `""` · **`false`** · **nothing drawn**                                                                                 |
 | A3  | the day, a Tab onto the hour, then `1305` · `0105P` · `130` · `0130P`                                                                                                                                                | `…T13:05` · `…T13:05` · **`…T13:00`** · `…T13:30`; under `pl_PL` **`2026-01-12T13:05`** · **`…T01:05`** · `…T13:00` · `…T01:30`                          | `""` — the Tab does not land on the hour                                         | `""` — the Tab leaves the control                                                                                      |
 | A4  | `1305` · `0130P` · `130505` typed straight on from the day's eight digits                                                                                                                                            | `""` · `""` · `""`; under `pl_PL` `""` · **`202601-01-12T03:00`** · **`202613-01-12T05:05`**                                                             | `…T13:05` · `…T13:30` · `…T13:05`                                                | `""` · `""` · `""`                                                                                                     |
 | A5  | tab stops between two buttons with one input between them: default · `step="1"` · `step="0.001"`                                                                                                                     | **7** · 8 · 9; **6** under `pl_PL`                                                                                                                       | 7 · 8 · 9                                                                        | **1** · 1 · 1                                                                                                          |
@@ -94,14 +95,17 @@ so where it moved one of them. "System locale" is the browser process's `LANGUAG
 | E3  | the two textboxes with no name of their own, the group named                                                                                                                                                         | **`label` (critical)** on both                                                                                                                           | same                                                                             | same                                                                                                                   |
 | E4  | one textbox for the pair, the button and the same dialog                                                                                                                                                             | clean — 5 stops with the panel open, one fewer than E1                                                                                                   | clean                                                                            | clean                                                                                                                  |
 | E5  | E1 with `<fieldset>` and `<legend>` for the group · with `aria-modal="true"` on the dialog                                                                                                                           | clean · clean                                                                                                                                            | same                                                                             | same                                                                                                                   |
-| F1  | node: a predicate over a `Set` of taken slots asked for every minute of one day on the default step, every question counted, the hour rows derived afterwards                                                        | 1 440 questions, answered in **0.4 ms** on the first run and 0.1 on the next four                                                                        | —                                                                                | —                                                                                                                      |
+| F1  | node: a predicate over a `Set` of taken slots asked for every minute of one day on the default step, every question counted, the hour rows derived afterwards                                                        | 1 440 questions, answered in **0.4 ms** on the first run, then 0.2 and 0.1                                                                               | —                                                                                | —                                                                                                                      |
 
 A3 and A4 are 0086's F2, F6 and F7 met again under one harness: in chromium the same eight
 digits are 1 December under an English system and 12 January under a Polish one, a Tab after
 the year is the only way onto the hour, `130` is `13:00`, and without the Tab the year takes the
 digits, six of them. They stand here because the row that this record needs is A2, and A2 is
-only readable beside them: a whole day with no time is **no value**, in all three engines, and
-in webkit it is no value with `badInput` false.
+only readable beside them: a whole day with no time is **no value** in chromium and firefox,
+where the keys drew the day. Webkit's input took no typed digit in this harness at all — not
+in A2, where no pixel moved against the focused empty box, nor in A3 or A4 — so its `""` with
+`badInput` false is the control's silence and not a half-typed day; it is one stop that a Tab
+leaves (A3, A5), and 0043's A3 and 0086's F2 read the same `""` off it.
 
 ## The decisions
 
@@ -186,9 +190,9 @@ second of them, and it is the time field's case met a third time:
 - **A1: three engines, three sources, and the application owns none.** The clock and the order
   move with the browser's interface language in chromium, with the browser locale in webkit and
   with neither in firefox — `lang` moves none of them.
-- **A2 to A4: what is typed is not what is read.** A whole day with no time is `""` with
-  `badInput` false in webkit; `130` is `13:00` in chromium; the same eight digits are two days
-  by the system's locale; and the year takes six digits in chromium, so a day and a time typed
+- **A2 to A4: what is typed is not what is read.** A whole day with no time is `""` in the two
+  engines that took the keys, and webkit took none; `130` is `13:00` in chromium; the same
+  eight digits are two days by the system's locale; and the year takes six digits in chromium, so a day and a time typed
   in one run are the year 202613.
 - **A5: one control is seven stops, or nine, or six, or one.**
 
@@ -231,15 +235,16 @@ cursor; the sentences that need the whole — the incomplete one of §3 — wait
 be left. Both texts are `<input type="text" inputmode="numeric" autocomplete="off">`, the shape
 the two fields have, and they stand **in the formatter's order**: the day first in 51 of the 52
 locales and the time first in Vietnamese (C1), read off a `formatToParts` of the pair beside
-the two formatters that write the halves, so the field agrees with what its language writes. The toggle is one
-button, `aria-haspopup="dialog"`, named by a key of its own (`datetimeOpen`), and E1 is the
+the two formatters that write the halves, so the field agrees with what its language writes.
+The toggle is one button, `aria-haspopup="dialog"`, named by a key of its own
+(`datetimeOpen`), and E1 is the
 whole shape clean in all three engines: three tab stops with the panel closed, against the
 native element's seven, nine, six or one (A5).
 
 ### 3. A day without a time is no value yet, and the field says so
 
 A2 is the platform's own reading and this record keeps it: a whole day with nothing of the
-time is `""` — no value — in all three engines. The pair's value is `null` until both halves
+time is `""` — no value — in both engines that took the keys. The pair's value is `null` until both halves
 hold one, and nothing is filled in on the user's behalf: a `T00:00` nobody entered would be
 chromium's `13:00` (A3) rebuilt on purpose.
 
@@ -295,8 +300,9 @@ entrypoint, and the datetime card says what was found either way.
 ### 5. The contract: bounds on the pair, the time's step, the day's predicate — and the one 0086 deferred
 
 - **`min` and `max` are `PctDateTime`s**, on the `FormUiControl` contract as the day's and the
-  time's are, with the caveat the time card carries, and the date card in part: Angular 22.2's `min()` and `max()` take
-  numbers, no rule binds a limit of this type, and the compiler refuses the attribute beside
+  time's are, with the caveat the time card carries, and the date card in part: Angular
+  22.2's `min()` and `max()` take numbers, no rule binds a limit of this type, and the
+  compiler refuses the attribute beside
   `[formField]`. They **clamp the walk and never rewrite what was typed** — a bound clamps a
   movement, and a sentence is not one. Their **cast** is what is new: the calendar gets the day
   of each bound, and the columns get the time of a bound **only on the bound's own day** — on
@@ -319,10 +325,14 @@ entrypoint, and the datetime card says what was found either way.
   that is not on it is moved **inward** onto it before the columns see it — the first on-step
   time at or after `min`'s, the last at or before `max`'s — so that the columns, which count
   from the bound they are handed, list the same rows on the bound's day as on every other with
-  the ones outside the bound removed. A9's `step="86400"`, one valid minute a day, is a lattice
-  over days and a different control; the time's refusal of a step the columns cannot list
-  covers it. A value off the step is kept and the form's to refuse, with `pctTimeOnStep` on the
-  time half.
+  the ones outside the bound removed. When the move crosses — the window on that day holds no
+  on-step time, as `min` 09:05 with `max` 09:10 at a quarter-hour step, or a `min` at 23:50 —
+  the columns are handed no pair at all but every row refused, never a reversed pair, which
+  they read as a window across midnight; that day has no row to pick, and the typed text,
+  which no bound rewrites, is the way to a time there, for the form to judge. A9's
+  `step="86400"`, one valid minute a day, is a lattice over days and a different control; the
+  time's refusal of a step the columns cannot list covers it. A value off the step is kept and
+  the form's to refuse, with `pctTimeOnStep` on the time half, counted from `00:00`.
 - **`dateDisabled` is the day's predicate, handed to the calendar as it is.** A day it refuses
   is refused whole, hours included.
 - **`datetimeDisabled` is the predicate 0086 deferred, and this is the control that needed it.**
@@ -333,9 +343,9 @@ entrypoint, and the datetime card says what was found either way.
   per day, every one asked, and a `Set` answers them in under half a millisecond. A typed value
   the predicate refuses is kept and the form's to refuse, the bounds' own rule. The predicate
   never reaches the calendar: a day whose every slot it refuses is still a day the grid offers,
-  and a consumer who wants that day greyed says so through `dateDisabled`. This gives `PctTimeColumns` the input 0086 said it
-  would get once a consumer had said what it needs — `timeDisabled`, a predicate on a
-  `PctTimeOfDay`, with the hour rule above — and gives `PctTime` nothing: its three reasons
+  and a consumer who wants that day greyed says so through `dateDisabled`. This gives
+  `PctTimeColumns` the input 0086 said it would get once a consumer had said what it needs —
+  `timeDisabled`, a predicate on a `PctTimeOfDay`, with the hour rule above — and gives `PctTime` nothing: its three reasons
   stand, and its card's limitation with them.
 
 ### 6. The entrypoint is `./datetime`, and the field is painted `--pct-datetime-*`
