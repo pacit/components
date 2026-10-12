@@ -244,9 +244,9 @@ native element's seven, nine, six or one (A5).
 ### 3. A day without a time is no value yet, and the field says so
 
 A2 is the platform's own reading and this record keeps it: a whole day with nothing of the
-time is `""` — no value — in both engines that took the keys. The pair's value is `null` until both halves
-hold one, and nothing is filled in on the user's behalf: a `T00:00` nobody entered would be
-chromium's `13:00` (A3) rebuilt on purpose.
+time is `""` — no value — in both engines that took the keys. The pair's value is `null` until
+both halves hold one, and nothing is filled in on the user's behalf: a `T00:00` nobody entered
+would be chromium's `13:00` (A3) rebuilt on purpose.
 
 What the platform does not do is **say so**. A required field with a day in it and no time
 has a `null` value, and the form says "required" over a date the user can see — the sentence
@@ -327,8 +327,9 @@ entrypoint, and the datetime card says what was found either way.
   from the bound they are handed, list the same rows on the bound's day as on every other with
   the ones outside the bound removed. When the move crosses — the window on that day holds no
   on-step time, as `min` 09:05 with `max` 09:10 at a quarter-hour step, or a `min` at 23:50 —
-  the columns are handed no pair at all but every row refused, never a reversed pair, which
-  they read as a window across midnight; that day has no row to pick, and the typed text,
+  the columns are handed no pair at all but every row refused through `timeDisabled`, never a
+  reversed pair, which they read as a window across midnight; that day has no row to pick, and
+  the typed text,
   which no bound rewrites, is the way to a time there, for the form to judge. A9's
   `step="86400"`, one valid minute a day, is a lattice over days and a different control; the
   time's refusal of a step the columns cannot list covers it. A value off the step is kept and
