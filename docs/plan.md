@@ -107,9 +107,9 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 holds the datetime field (**1.4**), decided in
-[0086](decisions/0086-a-time-of-day-is-a-wall-clock.md) after the time field it composes
-(**1.3**, closed 2026-10-08) — its value still a decision of its own — and it still ends at
+**What is left.** Section 1 holds the datetime field (**1.4**), decided whole in
+[0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) on 2026-10-12 after
+the time field it composes (**1.3**, closed 2026-10-08), and it still ends at
 the table (**1.2**), deferred by
 [0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
 (**1.5**) landed on 2026-10-07, as
@@ -141,15 +141,24 @@ form exists and is a condition of entering a release. Thirty-seven cards are fil
     (`apps/sandbox-e2e/src/time.spec.ts`), and `/time` carries 12-hour and 24-hour fields
   - both cards filled in, the readers' log among their rows
 
-- [ ] **1.4 — datetime field** in `@pacit/components/datetime`: one dialog holding
-      `PctCalendar` and `PctTimeColumns` — `list` alone, `picker` when 1.7 lands — after 1.3
-  - its value is a decision of its own before any code — a day and a time with no zone, and
-    what a day with no time yet is — written as `<input type="datetime-local">` and
-    `Temporal.PlainDateTime` write one, which differ: the input drops `:00` (0086, F5). Its
-    arithmetic is on the pair, so the day carries where a time alone comes round (B4)
-  - the predicate 0086 refused the time is asked here, where a slot has a day to be taken on
-  - ends with: that decision accepted, the value's requirement enforced, the card filled in,
-    and the field in the sandbox in three engines
+- [ ] **1.4 — datetime field** in `@pacit/components/datetime`, as
+      [0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) decided it on
+      2026-10-12: one dialog holding `PctCalendar` and `PctTimeColumns` — `list` alone,
+      `picker` when 1.7 lands — after 1.3
+  - the value `PctDateTime` is a day and a time with no zone, `YYYY-MM-DDTHH:mm`, seconds where
+    the step has them — the two shapes one value, as the time's are; its arithmetic is on the
+    pair and carries the day; the minute a switch skips and the hour it repeats are accepted,
+    as the native input accepts them, and the instant is the application's. Its requirement
+    is written with the module, and it is `null` until both halves hold a value
+  - two texts under one label, each named by the label and a word of its own, one button, one
+    panel: a pick in the grid moves on to the hours, a pick in the columns closes; a half
+    left empty is a sentence on the second channel
+  - bounds on the pair, cast to the calendar's days and, on the bound's own day, to the
+    columns' hours; the time's step; `dateDisabled` handed to the calendar and
+    `datetimeDisabled` asked per row on the chosen day — the predicate 0086 deferred, which
+    gives `PctTimeColumns` a `timeDisabled` of its own
+  - ends with: the value's requirement enforced, the card filled in, the field in the sandbox
+    in three engines, and the three readers on both halves of the panel — 4.82 binds here
 
 - [x] **1.5 — warnings on a field: `req-api-warning`**, landed 2026-10-07 as
       [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, amended
