@@ -116,6 +116,7 @@ const CARD_ORDER = [
   'number',
   'date',
   'time',
+  'datetime',
   // Choices
   'select',
   'checkbox',

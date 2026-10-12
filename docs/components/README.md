@@ -23,6 +23,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctCalendar`](calendar.md)     | `@pacit/components/date`       | one month of days as a grid               |
 | [`PctTime`](time.md)             | `@pacit/components/time`       | a wall-clock time, typed or picked        |
 | [`PctTimeColumns`](columns.md)   | `@pacit/components/time`       | a time as columns of hours and minutes    |
+| [`PctDatetime`](datetime.md)     | `@pacit/components/datetime`   | a day and a time of it, typed or picked   |
 | [`PctSelect`](select.md)         | `@pacit/components/select`     | choice list with a panel of its own       |
 | [`PctMultiSelect`](select.md)    | `@pacit/components/select`     | the same list, holding many answers       |
 | [`PctDialog`](dialog.md)         | `@pacit/components/dialog`     | modal dialog                              |
@@ -258,8 +259,8 @@ The order follows **architectural debt**, not popularity:
    in. Two lessons came out of its measurements: an until-found subtree's role-visibility
    differs by engine, and Playwright's visibility is not the platform's
    `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
-7. **Time field, then date and time.** The time field is built ([`PctTime`](time.md),
-   [`PctTimeColumns`](columns.md)); the datetime field is decided and not built. `<input type="time">` is refused
+7. **Time field, then date and time.** Both are built — the time field ([`PctTime`](time.md),
+   [`PctTimeColumns`](columns.md)) and the datetime field ([`PctDatetime`](datetime.md)). `<input type="time">` is refused
    on the date's measurements and harder: each engine draws its clock from a different source
    and none of them is `lang`, `130` — a minute half typed — reads as a valid `13:00` in
    chromium, and one control is three tab stops there or four, by the system's locale. So the
@@ -267,7 +268,7 @@ The order follows **architectural debt**, not popularity:
    arithmetic comes round at midnight; the panel is a dialog of listbox columns exported as
    `PctTimeColumns`; the entrypoint is `./time`
    ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). The **datetime field**
-   follows in `./datetime`, decided and not built: `datetime-local` failed the same probes and
+   stands in `./datetime`: `datetime-local` failed the same probes and
    two of its own — a whole day with no time reads as no value, and a reversed pair of bounds
    is a contradiction rather than a night shift. So the value is a `PctDateTime`,
    `YYYY-MM-DDTHH:mm`, a wall clock with a date and no zone, whose arithmetic is on the pair

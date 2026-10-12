@@ -18,6 +18,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   chips: () => import('./chips.demo').then((m) => m.ChipsDemo),
   container: () => import('./container.demo').then((m) => m.ContainerDemo),
   date: () => import('./date.demo').then((m) => m.DateDemo),
+  datetime: () => import('./datetime.demo').then((m) => m.DatetimeDemo),
   dialog: () => import('./dialog.demo').then((m) => m.DialogDemo),
   drawer: () => import('./drawer.demo').then((m) => m.DrawerDemo),
   field: () => import('./field.demo').then((m) => m.FieldDemo),
@@ -378,6 +379,18 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'bounds',
       load: () => import('./time.bounds.demo').then((m) => m.TimeBoundsDemo),
+    },
+  ],
+  datetime: [
+    {
+      key: 'locales',
+      load: () =>
+        import('./datetime.locales.demo').then((m) => m.DatetimeLocalesDemo),
+    },
+    {
+      key: 'bounds',
+      load: () =>
+        import('./datetime.bounds.demo').then((m) => m.DatetimeBoundsDemo),
     },
   ],
   calendar: [
