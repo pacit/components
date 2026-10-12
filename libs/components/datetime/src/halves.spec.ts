@@ -27,6 +27,21 @@ describe('pctDateTimeHalves — the order a language writes a day with a time in
     expect(pctDateTimeHalves('vi')).toEqual(['time', 'day']);
   });
 
+  it('stands the time first where the day period opens the pair — Ewe, outside the 52', () => {
+    // A scan of node's 250 languages found one more that writes the time first, and it opens
+    // on the day period rather than the hour.
+    expect(pctDateTimeHalves('ee')).toEqual(['time', 'day']);
+  });
+
+  it('reads the first field of every kind — the day, the month, the year — as the day’s half', () => {
+    // Polish writes the day first, American English the month, Japanese and Hungarian the year.
+    expect(pctDateTimeHalves('pl-PL')).toEqual(['day', 'time']);
+    expect(pctDateTimeHalves('en-US')).toEqual(['day', 'time']);
+    expect(pctDateTimeHalves('ja-JP')).toEqual(['day', 'time']);
+    // And a literal before the first field — Arabic's marks, Hebrew's — is passed over.
+    expect(pctDateTimeHalves('ar-EG-u-nu-arab')).toEqual(['day', 'time']);
+  });
+
   it('reads the order off the formatter, not off the language’s name', () => {
     // A forced twelve-hour clock moves no half.
     expect(pctDateTimeHalves('vi-VN-u-hc-h12')).toEqual(['time', 'day']);

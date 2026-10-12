@@ -112,17 +112,20 @@ libs/components/core/src/overlay.ts 100.00 15(0) 0 0 0 2
 libs/components/core/src/placement.ts 98.46 64(0) 1 0 0 0
 libs/components/core/src/regions.ts 100.00 3(0) 0 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
-libs/components/core/src/texts.ts 100.00 38(0) 0 0 0 0
+libs/components/core/src/texts.ts 100.00 51(0) 0 0 0 0
 libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
-libs/components/date/src/calendar.ts 74.16 132(0) 44 0 2 4
+libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
 libs/components/date/src/date.ts 67.61 144(0) 67 0 2 8
 libs/components/date/src/day.ts 97.53 158(2) 4 0 0 0
 libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
+libs/components/datetime/src/datetime-field.ts 83.45 605(0) 116 0 4 10
+libs/components/datetime/src/datetime.ts 100.00 99(0) 0 0 0 0
+libs/components/datetime/src/halves.ts 91.67 33(0) 3 0 0 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
 libs/components/field/src/autosize.ts 77.03 57(0) 16 0 1 2
-libs/components/field/src/field.ts 75.00 93(0) 28 2 1 1
+libs/components/field/src/field.ts 75.83 91(0) 26 2 1 1
 libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
@@ -155,9 +158,9 @@ libs/components/testing/src/dom.ts 100.00 26(0) 0 0 0 0
 libs/components/testing/src/harness.ts 90.70 39(0) 3 0 1 0
 libs/components/testing/src/harnesses.ts 100.00 53(0) 0 0 0 0
 libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
-libs/components/time/src/lattice.ts 98.85 86(0) 1 0 0 0
+libs/components/time/src/lattice.ts 97.25 106(0) 3 0 0 0
 libs/components/time/src/locale.ts 100.00 277(0) 0 0 0 0
-libs/components/time/src/time-columns.ts 77.34 297(0) 84 0 3 4
+libs/components/time/src/time-columns.ts 77.97 308(0) 84 0 3 4
 libs/components/time/src/time-field.ts 79.30 180(0) 47 0 0 9
 libs/components/time/src/time.ts 100.00 230(0) 0 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
@@ -165,5 +168,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 85.80 6377/7432
+TOTAL 85.90 7160/8335
 ```

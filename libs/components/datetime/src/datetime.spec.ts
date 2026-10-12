@@ -88,7 +88,8 @@ describe('pctDateTime and pctDateTimeParts', () => {
 
   it('refuses a half that is not one, either half, with the two it was given in the message', () => {
     expect(() => pctDateTime('01.12.2026', '13:05')).toThrow(
-      /'01\.12\.2026' and '13:05' are not a day and a time/,
+      "[PctDateTime] '01.12.2026' and '13:05' are not a day and a time: a day is " +
+        'YYYY-MM-DD and a time HH:mm or HH:mm:ss.',
     );
     expect(() => pctDateTime('2026-12-01', '1:05 PM')).toThrow(RangeError);
     expect(() => pctDateTime('2026-02-30', '13:05')).toThrow(RangeError);
@@ -120,7 +121,8 @@ describe('pctDateTimeAsUtc', () => {
   it('holds the last midnight a Date can, and refuses every minute after it', () => {
     expect(pctDateTimeAsUtc('275760-09-13T00:00').getTime()).toBe(8.64e15);
     expect(() => pctDateTimeAsUtc('275760-09-13T00:01')).toThrow(
-      /275760-09-13T00:01 is past the last instant a Date can hold/,
+      '[PctDateTime] 275760-09-13T00:01 is past the last instant a Date can hold, ' +
+        '275760-09-13T00:00 in UTC.',
     );
   });
 });
@@ -241,7 +243,8 @@ describe('pctAddDateTimeMinutes', () => {
 
   it('refuses a fraction of a minute, and a walk off either end of the day’s domain', () => {
     expect(() => pctAddDateTimeMinutes('2026-12-01T13:05', 0.5)).toThrow(
-      /0\.5 is not a whole number of minutes/,
+      '[PctDateTime] 0.5 is not a whole number of minutes — a datetime has no fraction of ' +
+        'one to move by.',
     );
     expect(() => pctAddDateTimeMinutes('2026-12-01T13:05', NaN)).toThrow(
       RangeError,

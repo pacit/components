@@ -26,10 +26,14 @@ export function pctDateTimeHalves(
     hour: '2-digit',
     minute: '2-digit',
   }).formatToParts(pctDateTimeAsUtc('2026-12-01T13:05'));
-  const time = parts.findIndex((part) => part.type === 'hour');
-  const day = parts.findIndex(
-    (part) =>
-      part.type === 'day' || part.type === 'month' || part.type === 'year',
-  );
-  return time < day ? ['time', 'day'] : ['day', 'time'];
+  // The question is only which half the FIRST field belongs to: no language measured writes a
+  // half inside the other, so the first field that is not a literal decides — a day, a month
+  // or a year opens the day's half; anything else, the hour or a day period, the time's. Of the
+  // 250 languages node's ICU formats, Vietnamese opens on the hour and Ewe on its day period,
+  // and none opens on a literal; the literal is passed over all the same, because the
+  // browsers' ICU is another build and a mark before the first field would read as the time.
+  const first = parts.find((part) => part.type !== 'literal')?.type;
+  return first === 'day' || first === 'month' || first === 'year'
+    ? ['day', 'time']
+    : ['time', 'day'];
 }
