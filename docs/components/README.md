@@ -267,9 +267,15 @@ The order follows **architectural debt**, not popularity:
    arithmetic comes round at midnight; the panel is a dialog of listbox columns exported as
    `PctTimeColumns`; the entrypoint is `./time`
    ([0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md)). The **datetime field**
-   follows in `./datetime`, and `datetime-local` failed the same probes: one panel holding the
-   calendar and the columns, arithmetic on the pair so the day carries where a time alone
-   comes round, and a value that is still a decision of its own.
+   follows in `./datetime`, decided and not built: `datetime-local` failed the same probes and
+   two of its own — a whole day with no time reads as no value, and a reversed pair of bounds
+   is a contradiction rather than a night shift. So the value is a `PctDateTime`,
+   `YYYY-MM-DDTHH:mm`, a wall clock with a date and no zone, whose arithmetic is on the pair
+   so the day carries where a time alone comes round; the field is two texts under one label,
+   each named by the label and a word of its own, one button and one panel holding the
+   calendar and the columns; a day without a time is `null` and a sentence on the second
+   channel; and the slot predicate 0086 deferred is asked here, per row of the chosen day
+   ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md)).
 8. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
