@@ -64,7 +64,9 @@ test.describe('A form — controls under one schema', () => {
     // Left for the page, not for the other half — moving within the field is staying in it.
     await day.blur();
     await expect(
-      page.getByTestId('field-meets-at').locator('[data-pct-part="field-error"]'),
+      page
+        .getByTestId('field-meets-at')
+        .locator('[data-pct-part="field-error"]'),
     ).toHaveText('Saisir une date et une heure');
     await expect(submit).toBeDisabled(); // half a meeting, and no consent
 

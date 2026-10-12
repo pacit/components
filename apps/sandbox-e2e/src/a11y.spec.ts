@@ -311,7 +311,8 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
        * asked again of the panel as built.
        */
       {
-        title: 'an open panel of a calendar and time columns, and the field it belongs to',
+        title:
+          'an open panel of a calendar and time columns, and the field it belongs to',
         route: '/datetime',
         open: async (page) => {
           await page

@@ -242,7 +242,8 @@ const CONTROLS: readonly Control[] = [
   },
   {
     name: 'datetime toggle',
-    applies: 'libs/components/datetime/src/datetime-field.scss .pct-datetime__toggle',
+    applies:
+      'libs/components/datetime/src/datetime-field.scss .pct-datetime__toggle',
     route: '/datetime',
     selector: '[data-testid="datetime-standalone"] [data-pct-part="toggle"]',
     axis: 'both',

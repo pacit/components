@@ -432,8 +432,10 @@ export class PctDatetime
   private readonly timeTyping = signal(false);
 
   /**
-   * Whether focus has left the whole since the last keystroke in an empty half — the moment
-   * the incomplete sentence is written (0070's first moment), taken back by the next two.
+   * Whether focus left the whole with one half held and the other empty — the moment the
+   * incomplete sentence is written (0070's first moment). A keystroke in the empty half or a
+   * value from outside takes it back, and so does the pair becoming whole or empty again: what
+   * a later edit leaves half filled is said on the next leaving, never in the middle of it.
    */
   private readonly left = signal(false);
 
@@ -525,11 +527,19 @@ export class PctDatetime
     pctDateTimeHalves(this.activeLocale()),
   );
 
-  /** A step the columns can list, or the default one in its place — what the panel is handed. */
+  /**
+   * A step the columns can list, or the default one in its place — what the panel is handed. A
+   * whole day is refused here as well, though the columns list it: one time a day is a lattice
+   * over days and a different control (0090 §5, A9) — a date field.
+   */
   protected readonly validStep = computed(() => {
     const step = this.step();
-    return isPctTimeStep(step) ? step : 60;
+    return this.listable(step) ? step : 60;
   });
+
+  private listable(step: number): boolean {
+    return isPctTimeStep(step) && step < DAY;
+  }
 
   /** Whether a time on this field's step has seconds — counted from midnight, on every day. */
   private readonly seconds = computed(() => this.validStep() % 60 !== 0);
@@ -587,6 +597,12 @@ export class PctDatetime
   protected readonly labelOwner = computed(() => {
     if (this.inField) return this.fieldLabelledBy();
     return this.label() !== '' ? this.labelId : null;
+  });
+
+  /** What the hidden input submits: the value as the platform writes it, or nothing. */
+  protected readonly submitted = computed(() => {
+    const value = this.value();
+    return value !== null && isPctDateTime(value) ? value : '';
   });
 
   /** The ids every text is named by, ahead of its own word — or nothing to name it by. */
@@ -745,10 +761,12 @@ export class PctDatetime
   constructor() {
     pctAttachToField(this.fieldApi, this);
 
-    // A value from outside — a model, a form, a reset — is split into the two halves, and
-    // whatever the user left behind goes with it. A value this field wrote itself is the pair
-    // its halves make, and is let through: the comparison is the compare, so the pair written
-    // in the other shape is the same value.
+    // A value from outside — a model or a form writing another pair — is split into the two
+    // halves, and whatever the user left behind goes with it. A value this field wrote itself
+    // is the pair its halves make, and is let through: the comparison is the compare, so the
+    // pair written in the other shape is the same value. A `null` written over a half-filled
+    // field moves nothing this effect can see — the model held `null` already — so the half
+    // stays on the screen; `reset()` is what empties both.
     effect(() => {
       const value = this.value();
       untracked(() => {
@@ -889,6 +907,9 @@ export class PctDatetime
    * shape is not an edit, and handing the form a new string for it would be a change nobody made.
    */
   private compose(): void {
+    // Whole or empty, the pair owes no sentence, and a half emptied after it waits for the
+    // next leaving rather than speaking up mid-edit.
+    if ((this.day() === null) === (this.time() === null)) this.left.set(false);
     const composed = this.composed();
     const held = this.value();
     if (composed === null) {
@@ -946,20 +967,18 @@ export class PctDatetime
       this.dayTyping.set(false);
       const parsed = text.trim() === '' ? null : this.dayFormat().parse(text);
       this.dayRejected.set(text.trim() !== '' && parsed === null ? text : null);
-      const held = this.day();
-      // The day the half already holds, read back from its own text, is not an edit.
-      if (
-        parsed === null ||
-        held === null ||
-        pctCompareDays(held, parsed) !== 0
-      )
-        this.day.set(parsed);
+      // The day the half already holds, read back from its own text, is the same string — a
+      // parsed day has one spelling — so the signal does not move, and `compose` lets a value
+      // held in another spelling stand.
+      this.day.set(parsed);
     } else {
       this.timeTyping.set(false);
       const parsed = text.trim() === '' ? null : this.parseTime(text);
       this.timeRejected.set(
         text.trim() !== '' && parsed === null ? text : null,
       );
+      // A time read back in the field's shape — `13:05:00` in a field of seconds given `13:05`
+      // — is not an edit, and rewriting the half would rewrite its text.
       const held = this.time();
       if (
         parsed === null ||
@@ -984,7 +1003,9 @@ export class PctDatetime
         (this.panel()?.nativeElement.contains(next) ?? false))
     )
       return;
-    this.left.set(true);
+    // Only a pair left half filled owes the sentence; a whole one, or an empty one, does not —
+    // and a half that is junk has its own, which `incomplete` gives way to.
+    this.left.set((this.day() === null) !== (this.time() === null));
     this.touch.emit();
   }
 
@@ -992,7 +1013,6 @@ export class PctDatetime
   protected onDay(day: PctDay | null): void {
     this.dayTyping.set(false);
     this.dayRejected.set(null);
-    this.left.set(false);
     this.day.set(day);
     this.compose();
   }
@@ -1001,7 +1021,6 @@ export class PctDatetime
   protected onTime(time: PctTimeOfDay | null): void {
     this.timeTyping.set(false);
     this.timeRejected.set(null);
-    this.left.set(false);
     this.time.set(time);
     this.compose();
   }
@@ -1078,11 +1097,11 @@ export class PctDatetime
   private warnOnUnsupportedStep(): void {
     effect(() => {
       const step = this.step();
-      if (isPctTimeStep(step)) return;
+      if (this.listable(step)) return;
       console.warn(
-        `[pct-datetime] step=${step} is not a step the columns can list — a whole number of ` +
+        `[pct-datetime] step=${step} is not a step this field lists — a whole number of ` +
           `seconds that divides a minute, of minutes that divides an hour, or of hours that ` +
-          `divides a day. It is read as 60.`,
+          `divides a day, short of a whole day, which is a date field's. It is read as 60.`,
       );
     });
   }

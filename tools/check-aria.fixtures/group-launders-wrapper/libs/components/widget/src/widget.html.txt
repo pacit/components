@@ -1,0 +1,12 @@
+<!-- The wrapper of `name-on-non-focusable`, given a group's role: the name still stops one
+     element too high, and the trigger with the role stays unnamed. -->
+<span
+  class="pct-widget__box"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <button class="pct-widget__trigger" type="button" role="combobox">
+    {{ label() }}
+  </button>
+</span>

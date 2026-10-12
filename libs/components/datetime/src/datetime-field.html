@@ -84,6 +84,12 @@
   />
   } }
 
+  <!--
+    A press on the button does not take focus from the text it leaves: Safari focuses no button
+    on a click, so the text would blur toward nothing — which reads as leaving the whole field,
+    and would say "touched" and a half left empty as the panel opens. Prevented here, every
+    engine keeps focus in the field until the panel takes it.
+  -->
   <button
     type="button"
     class="pct-datetime__toggle"
@@ -93,6 +99,7 @@
     [attr.aria-expanded]="open()"
     [attr.aria-controls]="open() ? panelId : null"
     [disabled]="disabled() || readonly()"
+    (mousedown)="$event.preventDefault()"
     (click)="toggle()"
   >
     <pct-icon name="calendar">
@@ -119,7 +126,7 @@
 <input
   type="hidden"
   [attr.name]="name()"
-  [value]="value() ?? ''"
+  [value]="submitted()"
   [disabled]="disabled()"
 />
 }

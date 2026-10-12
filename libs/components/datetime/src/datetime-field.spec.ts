@@ -1176,6 +1176,175 @@ describe('PctDatetime — inside the chrome', () => {
   });
 });
 
+describe('PctDatetime — the review’s cases', () => {
+  it('says nothing about a half emptied mid-edit, after a whole pair was left — only on the next leaving', async () => {
+    const f = await render(Host);
+    await leave(f, timeText(f), null);
+    expect(errorOf(f)).toBeNull();
+    // Back in the field, the time emptied: the pair is half filled, and nobody has left yet.
+    await type(f, timeText(f), '');
+    expect(errorOf(f)).toBeNull();
+    expect(timeText(f).hasAttribute('aria-invalid')).toBe(false);
+    await leave(f, timeText(f), null);
+    expect(errorOf(f)).toBe('Enter both a date and a time');
+  });
+
+  it('does not speak up again when a pair made whole is emptied by half once more', async () => {
+    const f = await render(Host);
+    f.componentInstance.value.set(null);
+    await settle(f);
+    await type(f, dayText(f), '24/12/2026');
+    await leave(f, dayText(f), null);
+    expect(errorOf(f)).toBe('Enter both a date and a time');
+    // The panel completes the pair, and the sentence goes with it ...
+    await open(f);
+    await key(f, columnIn('hour'), 'Enter');
+    expect(f.componentInstance.value()).not.toBeNull();
+    expect(errorOf(f)).toBeNull();
+    // ... and a half emptied afterwards waits for the next leaving.
+    await type(f, timeText(f), '');
+    expect(errorOf(f)).toBeNull();
+  });
+
+  it('takes the time’s report back on the first keystroke in the time', async () => {
+    const f = await render(Host);
+    await type(f, timeText(f), '25:99');
+    await leave(f, timeText(f), dayText(f));
+    expect(errorOf(f)).toBe('Not a time');
+    await type(f, timeText(f), '25:9');
+    expect(errorOf(f)).toBeNull();
+    expect(hostOf(f).hasAttribute('data-pct-malformed')).toBe(false);
+  });
+
+  it('opens on the month the junk names in a language that writes the month first', async () => {
+    const f = await render(Host);
+    f.componentInstance.locale.set('en-US');
+    await settle(f);
+    await type(f, dayText(f), '02/31/2026');
+    await leave(f, dayText(f), timeText(f));
+    await open(f);
+    expect(captionIn()).toBe('February 2026');
+  });
+
+  it('lists the one time a window of one on-step time holds — not a crossing', async () => {
+    const f = await render(Host);
+    f.componentInstance.step.set(900);
+    f.componentInstance.min.set('2026-12-02T09:00');
+    f.componentInstance.max.set('2026-12-02T09:00');
+    f.componentInstance.value.set('2026-12-02T09:00');
+    await settle(f);
+    await open(f);
+    expect(takeable(columnIn('hour'))).toEqual(['09']);
+    expect(takeable(columnIn('minute'))).toEqual(['00']);
+  });
+
+  it('reads min equal to max as a window, with no warning', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const f = await render(Host);
+    f.componentInstance.min.set('2026-12-02T12:00');
+    f.componentInstance.max.set('2026-12-02T12:00:00');
+    f.componentInstance.value.set('2026-12-02T12:00');
+    await settle(f);
+    await open(f);
+    expect(warn).not.toHaveBeenCalled();
+    expect(dayIn('1 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    expect(dayIn('3 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    expect(takeable(columnIn('hour'))).toEqual(['12']);
+    warn.mockRestore();
+  });
+
+  it('refuses a step of a whole day, and says so in dev mode — one time a day is a date field', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const f = await render(Host);
+    f.componentInstance.step.set(86_400);
+    await settle(f);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '[pct-datetime] step=86400 is not a step this field lists',
+      ),
+    );
+    await open(f);
+    expect(columnIn('minute').querySelectorAll('[role="option"]')).toHaveLength(
+      60,
+    );
+    // Half a day is still a step it lists.
+    warn.mockClear();
+    f.componentInstance.step.set(43_200);
+    await settle(f);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('keeps focus where it is on a press of the button — Safari focuses no button', async () => {
+    const f = await render(Host);
+    const press = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+    });
+    toggleOf(f).dispatchEvent(press);
+    expect(press.defaultPrevented).toBe(true);
+  });
+
+  it('submits nothing from a disabled field, and nothing for a value that is not a datetime', async () => {
+    @Component({
+      imports: [PctDatetime],
+      template: `<pct-datetime
+        name="startsAt"
+        [(value)]="value"
+        [disabled]="disabled()"
+      />`,
+    })
+    class Named {
+      readonly value = signal<PctDateTime | null>('2026-12-01T13:05');
+      readonly disabled = signal(false);
+    }
+
+    const f = await render(Named);
+    const hidden = () =>
+      f.nativeElement.querySelector('input[type="hidden"]') as HTMLInputElement;
+    expect(hidden().disabled).toBe(false);
+    f.componentInstance.disabled.set(true);
+    await settle(f);
+    expect(hidden().disabled).toBe(true);
+    f.componentInstance.disabled.set(false);
+    f.componentInstance.value.set('2026-12-01T13:05+01:00');
+    await settle(f);
+    expect(hidden().value).toBe('');
+  });
+
+  it('empties a half being typed into on reset', async () => {
+    const f = await render(Host);
+    await type(f, dayText(f), '2/1/20');
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+    field.reset();
+    await settle(f);
+    expect(dayText(f).value).toBe('');
+    expect(timeText(f).value).toBe('');
+  });
+
+  it('keeps a half-filled field under a null from outside — the model held null already — and reset empties it', async () => {
+    const f = await render(Host);
+    f.componentInstance.value.set(null);
+    await settle(f);
+    await type(f, dayText(f), '24/12/2026');
+    await leave(f, dayText(f), null);
+    f.componentInstance.value.set(null);
+    await settle(f);
+    expect(shown(dayText(f))).toBe('24/12/2026');
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+    field.reset();
+    await settle(f);
+    expect(dayText(f).value).toBe('');
+    expect(errorOf(f)).toBeNull();
+  });
+});
+
 /**
  * Forms, each from a NON-EMPTY value: a field that only ever started empty is a field whose
  * first write nobody watched (`lesson-26`).
@@ -1211,6 +1380,13 @@ describe('PctDatetime — the forms that bind it', () => {
     expect(f.componentInstance.model().startsAt).toBeNull();
     expect(shown(dayText(f))).toBe('01/12/2026');
     expect(errorOf(f)).toBe('Enter both a date and a time');
+
+    // The form's own reset reaches the control's: a half-filled field the model's `null` could
+    // not clear is emptied by it.
+    f.componentInstance.f.startsAt().reset(null);
+    await settle(f);
+    expect(dayText(f).value).toBe('');
+    expect(errorOf(f)).toBeNull();
   });
 
   it('works with [formControl]', async () => {

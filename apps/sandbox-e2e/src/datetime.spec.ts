@@ -161,7 +161,9 @@ test.describe('Datetime — the two texts', () => {
     );
 
     await toggleOf(page, 'datetime-standalone').click();
-    await expect(partOf(panelOf(page), 'caption')).toContainText('février 2026');
+    await expect(partOf(panelOf(page), 'caption')).toContainText(
+      'février 2026',
+    );
   });
 
   /**
@@ -208,7 +210,9 @@ test.describe('Datetime — the panel', () => {
   test('opens on the day and the time the field holds, with focus in the grid', async ({
     page,
   }) => {
-    await toggleOf(page, 'datetime-standalone').click();
+    // From the keyboard: the button reached as a Tab stop and pressed with Enter.
+    await toggleOf(page, 'datetime-standalone').focus();
+    await page.keyboard.press('Enter');
     const panel = panelOf(page);
     await expect(panel).toBeVisible();
     await expect(panel).toHaveAttribute('role', 'dialog');
@@ -216,9 +220,7 @@ test.describe('Datetime — the panel', () => {
       'aria-expanded',
       'true',
     );
-    await expect
-      .poll(() => focusedName(page))
-      .toContain('1 décembre 2026');
+    await expect.poll(() => focusedName(page)).toContain('1 décembre 2026');
     expect(await activeIn(columnOf(panel, 'hour'))).toBe('13');
     expect(await activeIn(columnOf(panel, 'minute'))).toBe('05');
   });
@@ -307,6 +309,11 @@ test.describe('Datetime — the panel', () => {
 
     await page.keyboard.press('Tab');
     await expect(columnOf(panel, 'hour')).toBeFocused();
+    // Shift+Tab from the hours is the way back to a day picked wrong.
+    await page.keyboard.press('Shift+Tab');
+    await expect.poll(() => focusedName(page)).toContain('1 décembre 2026');
+    await page.keyboard.press('Tab');
+    await expect(columnOf(panel, 'hour')).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(columnOf(panel, 'minute')).toBeFocused();
     await page.keyboard.press('Shift+Tab');
@@ -352,11 +359,9 @@ test.describe('Datetime — the bounds and the slots', () => {
     await expect
       .poll(async () => (await takeable(columnOf(panel, 'hour')))[0])
       .toBe('09');
-    await expect.poll(() => takeable(columnOf(panel, 'minute'))).toEqual([
-      '15',
-      '30',
-      '45',
-    ]);
+    await expect
+      .poll(() => takeable(columnOf(panel, 'minute')))
+      .toEqual(['15', '30', '45']);
     await expect(cellOf(page, '30 novembre 2026')).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -371,12 +376,9 @@ test.describe('Datetime — the bounds and the slots', () => {
     await page.keyboard.press('Enter');
     await expect(columnOf(panel, 'hour')).toBeFocused();
     await expect.poll(() => takeable(columnOf(panel, 'hour'))).toHaveLength(24);
-    await expect.poll(() => takeable(columnOf(panel, 'minute'))).toEqual([
-      '00',
-      '15',
-      '30',
-      '45',
-    ]);
+    await expect
+      .poll(() => takeable(columnOf(panel, 'minute')))
+      .toEqual(['00', '15', '30', '45']);
   });
 
   /**
@@ -390,7 +392,9 @@ test.describe('Datetime — the bounds and the slots', () => {
     await toggleOf(page, 'datetime-booked').click();
     const panel = panelOf(page);
     await expect(panel).toBeVisible();
-    await expect.poll(() => takeable(columnOf(panel, 'hour'))).not.toContain('10');
+    await expect
+      .poll(() => takeable(columnOf(panel, 'hour')))
+      .not.toContain('10');
     await expect.poll(() => takeable(columnOf(panel, 'hour'))).toHaveLength(23);
     await expect(cellOf(page, '2 décembre 2026')).not.toHaveAttribute(
       'aria-disabled',
@@ -400,8 +404,12 @@ test.describe('Datetime — the bounds and the slots', () => {
     await page.keyboard.press('Tab');
     await expect(columnOf(panel, 'hour')).toBeFocused();
     await page.keyboard.type('12');
-    await expect.poll(() => takeable(columnOf(panel, 'minute'))).not.toContain('30');
-    await expect.poll(() => takeable(columnOf(panel, 'minute'))).toHaveLength(59);
+    await expect
+      .poll(() => takeable(columnOf(panel, 'minute')))
+      .not.toContain('30');
+    await expect
+      .poll(() => takeable(columnOf(panel, 'minute')))
+      .toHaveLength(59);
   });
 
   test('a value typed outside the bounds is kept as typed — the form’s to refuse', async ({

@@ -35,7 +35,9 @@ export class DatetimeView {
   );
   protected readonly window = signal<PctDateTime | null>('2026-12-01T09:15');
   protected readonly booked = signal<PctDateTime | null>('2026-12-02T09:00');
-  protected readonly precise = signal<PctDateTime | null>('2026-12-01T13:05:30');
+  protected readonly precise = signal<PctDateTime | null>(
+    '2026-12-01T13:05:30',
+  );
 
   /** Saturdays and Sundays — refused whole, hours included. */
   protected readonly weekend = (day: PctDay): boolean => pctWeekday(day) >= 6;

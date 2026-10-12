@@ -174,7 +174,10 @@ test.describe('The pages', () => {
     await filter.fill('date');
     // The date field and the datetime field, both in one bucket.
     await expect(count).toHaveText('2 of 38');
-    await expect(gallery.locator('.card__name')).toHaveText(['Date', 'Datetime']);
+    await expect(gallery.locator('.card__name')).toHaveText([
+      'Date',
+      'Datetime',
+    ]);
     // A bucket with nothing to show goes with its header, rather than standing empty.
     await expect(gallery.locator('.bucket')).toHaveCount(1);
 
