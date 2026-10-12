@@ -49,7 +49,7 @@ describe('isPctDateTime', () => {
     // The input reads a space and writes a `T`; the value is the `T` alone.
     expect(isPctDateTime('2026-12-01 13:05')).toBe(false);
     expect(isPctDateTime('2026-12-01t13:05')).toBe(false);
-    expect(isPctDateTime('2026-12-01TT13:05')).toBe(false);
+    expect(isPctDateTime('2026-12-01T13:05T00')).toBe(false);
     expect(isPctDateTime('2026-12-01T')).toBe(false);
     expect(isPctDateTime('T13:05')).toBe(false);
     // A half alone is not the pair.

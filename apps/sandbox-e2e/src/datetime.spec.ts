@@ -101,9 +101,8 @@ test.describe('Datetime — the two texts', () => {
     await expect(vietnamese.nth(1)).toHaveValue('01/12/2026');
     // The label points at the text that stands first, whichever half it is.
     const label = partOf(page.getByTestId('datetime-vi'), 'label');
-    expect(await label.getAttribute('for')).toBe(
-      await vietnamese.first().getAttribute('id'),
-    );
+    const first = await vietnamese.first().getAttribute('id');
+    await expect(label).toHaveAttribute('for', first ?? '');
   });
 
   /**

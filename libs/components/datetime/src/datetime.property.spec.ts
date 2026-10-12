@@ -118,7 +118,7 @@ describe('pctDateTime, pctDateTimeParts and isPctDateTime', () => {
         `${day}T${time.length > 5 ? time : `${time}:00`}.5`,
         `${day}T24${time.slice(2)}`,
         `${day}T${time.slice(0, 3)}60`,
-        `${day}TT${time}`,
+        `${day}T${time}T`,
         `${day}`,
         `T${time}`,
         `${day.slice(0, -2)}32T${time}`,
