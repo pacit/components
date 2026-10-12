@@ -20,11 +20,7 @@
  *
  * Usage: node tools/check-aria.mjs
  */
-import {
-  parseTemplate,
-  TmplAstForLoopBlock,
-  TmplAstTemplate,
-} from '@angular/compiler';
+import { parseTemplate, TmplAstForLoopBlock } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
 import {
@@ -430,13 +426,15 @@ const readTemplate = (content, tables) => {
 };
 
 /**
- * The kinds whose body can stand in the DOM more than once: an `@for` once per item, and an
- * `<ng-template>` once per place that stamps it — an outlet, an overlay, a structural
- * directive — which the template itself does not count. Asked of the compiler's own classes
- * and not of a property's name, so a kind renamed upstream fails the import, not the rule.
+ * A block whose body stands in the DOM once per item: `@for`. Asked of the compiler's own
+ * class and not of a property's name, so a kind renamed upstream fails the import, not the
+ * rule. An `<ng-template>` stands once per place that stamps it, and is not read as repeating,
+ * though the select stamps its option rows once per section: how many places is a question
+ * about outlets, overlays and directives the walk does not answer, and reading every template
+ * as repeated would refuse an `@if` in the dialog's, the menu's or the popover's panel — each
+ * stamped once, each carrying the name inside.
  */
-const REPEATING = [TmplAstForLoopBlock, TmplAstTemplate];
-const repeats = (node) => REPEATING.some((kind) => node instanceof kind);
+const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
 /**
  * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
@@ -446,9 +444,9 @@ const repeats = (node) => REPEATING.some((kind) => node instanceof kind);
  *
  * `@if`/`@switch` branch through `branches`/`cases`; `@for` and `@defer` branch through a
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
- * the body is branch 0 and each side block one after it. A repeating body is an entry with
- * no side block too, marked `repeats` — an `@for` with no `@empty` and an `<ng-template>`
- * once left no trace in the path, and what they repeat is what `exclusive` has to know.
+ * the body is branch 0 and each side block one after it. An `@for` with no `@empty` is an
+ * entry too, its body marked `repeats` either way — it once left no trace in the path, and
+ * what it repeats is what `exclusive` has to know.
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
@@ -817,8 +815,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
-  // Under an `@for` or in an `<ng-template>` they can: the conditional is stamped once per
-  // copy, each copy takes a branch of its own, and the two stand at once.
+  // Under an `@for` they can: the conditional is stamped once per item, each item takes a
+  // branch of its own, and the two stand at once.
   //
   // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
@@ -873,7 +871,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${together.length + 1} of them can be in the DOM at the same time — two named ` +
           `elements are two names for one control. Two branches of one conditional are not ` +
           `that; two elements standing side by side are, and so are two branches under an ` +
-          `\`@for\` or in an \`<ng-template>\`, which stamp the conditional more than once`,
+          `\`@for\`, which stamps the conditional once per item`,
       );
   }
 
@@ -917,8 +915,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
               'description',
               `${template.file}: \`${one.part}\` and \`${other.part}\` can be in the DOM at ` +
                 `the same time — they are not two branches of one conditional, or the ` +
-                `conditional stands under an \`@for\` or in an \`<ng-template>\`, which stamp ` +
-                `it more than once. Then the ` +
+                `conditional stands under an \`@for\`, which stamps it once per item. Then the ` +
                 `control grows by a row on a message and \`aria-describedby\` names one the ` +
                 `wrapped same control never shows (req-api-message)`,
             );

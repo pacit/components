@@ -1,5 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "$reason": "The same conditional inside an `<ng-template>` that two outlets stamp, one branch each — the way the select stamps its option rows once per section. A template's body stands in the DOM once per place that stamps it, and the file does not count those places, so the walk reads it as a repeating body like the one of an `@for`: two branches under it are not alternatives."
-}

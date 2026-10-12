@@ -1,8 +1,12 @@
-<!-- The reference's two triggers on the two branches of one `@if`, inside an `<ng-template>`
-     stamped twice: each stamp takes a branch of its own, so the `<input>` of one stands beside
-     the `<button>` of the other, and the name a consumer wrote is announced twice. -->
-<ng-template #trigger let-editable>
-  @if (editable) {
+<!-- `two-names-across-items` with a block above the `@for`, as the slider draws its marks, and
+     one between the `@for` and the conditional: the repeat need be neither the outermost block
+     nor the nearest to stamp the conditional once per item, and the two triggers stand at once
+     all the same. -->
+<span class="pct-widget__box">
+  @if (open()) {
+  @for (half of halves(); track half) {
+  @if (editable()) {
+  @if (half === 'day') {
   <input
     class="pct-widget__trigger"
     type="text"
@@ -21,10 +25,9 @@
     {{ label() }}
   </button>
   }
-</ng-template>
-<span class="pct-widget__box">
-  <ng-container [ngTemplateOutlet]="trigger" [ngTemplateOutletContext]="{ $implicit: true }" />
-  <ng-container [ngTemplateOutlet]="trigger" [ngTemplateOutletContext]="{ $implicit: false }" />
+  }
+  }
+  }
 </span>
 
 <!-- One message line: the error takes it, the hint gives way (req-api-message). -->
