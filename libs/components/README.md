@@ -3,9 +3,9 @@
 Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token
 theming.
 
-> **Status: early, and the API still moves.** Thirty entrypoints ship today: the form
+> **Status: early, and the API still moves.** Thirty-one entrypoints ship today: the form
 > controls (a field wrapper with text, textarea, number, prefix/suffix affixes; checkbox,
-> radio group, select and multi-select, switch, slider, date, time), the overlays (dialog, tooltip,
+> radio group, select and multi-select, switch, slider, date, time, datetime), the overlays (dialog, tooltip,
 > popover, menu, toast), the page's own structures (tabs, accordion, drawer, pagination,
 > progress, skeleton, chips, avatar, badge, breadcrumb, stepper, tree), the layout
 > primitives (container, stack, grid), the brand face (hero) and the theme directive. What is already decided, and what is still missing, is written down
@@ -66,6 +66,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/regions`    | `providePctRegions`, `PctRegionDirective`, `PctRegionKey` — the keyboard's road to a place the reading order puts elsewhere                           |
 | `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                                                        |
 | `@pacit/components/time`       | `PctTime`, `PctTimeColumns`, the `PctTimeOfDay` helpers — the value, its arithmetic and `pctTimeFormat`                                               |
+| `@pacit/components/datetime`   | `PctDatetime`, the `PctDateTime` helpers — a day and a time of it, two texts under one label, the calendar and the columns in one panel               |
 | `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                                                           |
 | `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                                                       |
 | `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                                                           |
@@ -331,6 +332,18 @@ columns' rows, and `min` and `max` the ones that can be taken.
 
 ```html
 <pct-time [(value)]="startsAt" label="Starts at" step="900" min="09:00" max="17:00" />
+```
+
+### Datetime
+
+A day and a time of it, as two texts under one label with one panel holding a calendar and
+columns of hours and minutes. The value is a `PctDateTime` — a plain `'2026-12-01T13:05'`
+string with **no zone**: a wall clock with a date, so no timezone can shift it, and the minute a
+daylight-saving switch skips is a value as it is on the platform's own input. It is `null` until
+both halves hold one, and a half left empty says so.
+
+```html
+<pct-datetime [(value)]="startsAt" label="Starts" step="900" min="2026-12-01T09:00" />
 ```
 
 ### Dialog

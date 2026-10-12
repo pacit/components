@@ -34,7 +34,8 @@
   role="group"
   cdkOverlayOrigin
   #box="cdkOverlayOrigin"
-  [attr.aria-labelledby]="nameIds()"
+  [attr.aria-labelledby]="labelOwner() ?? (ariaLabelledby() || null)"
+  [attr.aria-label]="labelOwner() === null && !ariaLabelledby() ? ariaLabel() || null : null"
   (focusout)="onFocusOut($event)"
 >
   <!--
@@ -115,7 +116,12 @@
 
 <!-- The value as the platform writes it, under the native `name`: neither text is it. -->
 @if (name()) {
-<input type="hidden" [attr.name]="name()" [value]="value() ?? ''" [disabled]="disabled()" />
+<input
+  type="hidden"
+  [attr.name]="name()"
+  [value]="value() ?? ''"
+  [disabled]="disabled()"
+/>
 }
 
 <!--
@@ -182,7 +188,12 @@
 <!-- One message line, and the error takes it (`req-api-message`). The sentence announces
      from where it is drawn — `role="alert"`, which is `check-aria` point 7. -->
 @if (showError() && !inField) {
-<span class="pct-datetime__error" data-pct-part="error" [id]="errorId" role="alert">
+<span
+  class="pct-datetime__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
   {{ errorText() }}
 </span>
 } @else if (showWarning() && !inField) {

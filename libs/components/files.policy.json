@@ -28,6 +28,11 @@
       "reason": "The step, its base, the value's shape and the bounds of one time field, as the arithmetic the field and its columns share so that the text the field writes and the rows the panel lists cannot disagree about which times exist (0086 §5). No public signature carries it: `PctTime` and `PctTimeColumns` take `step`, `min` and `max` as inputs and build the lattice inside, and a consumer who wants the same answers has `isPctTimeStep`, `pctTimeOnStep` and `pctClampTime`, which are published. Publishing it would turn a representation the columns will change with the datetime field into a contract. The entry retires if a public API ever takes or returns one."
     },
     {
+      "file": "libs/components/datetime/src/halves.ts",
+      "type": "PctDateTimeHalf",
+      "reason": "Which of the datetime field's two texts — the day's or the time's — as the order a language writes a day with a time is read into (0090 §2). No public signature carries it: the field reads the order off its own `locale` and draws the texts in it, and a consumer has no reason to name a half. Publishing it would publish the order's reading with it, which the field owns. The entry retires if a public API ever takes or returns one."
+    },
+    {
       "file": "libs/components/time/src/lattice.ts",
       "type": "PctSpan",
       "reason": "An interval of seconds since midnight, both ends included — the bounds of a lattice cut into one piece, or two for a window across midnight. It is a field type of `PctLattice` and nothing else, so it is internal for the same reason and retires with it."

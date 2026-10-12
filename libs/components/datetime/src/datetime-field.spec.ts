@@ -77,8 +77,7 @@ const dayIn = (name: string) =>
       '[data-pct-part="panel"] [data-pct-part="day"]',
     ),
   ).find((cell) => cell.getAttribute('aria-label')?.includes(name)) as
-    | HTMLElement
-    | undefined;
+    HTMLElement | undefined;
 
 const columnIn = (field: string) =>
   document.querySelector(
@@ -313,7 +312,9 @@ describe('PctDatetime — the two texts', () => {
   it('names each text by the label and a word of its own, and the group by the label (0090, E1–E3)', async () => {
     const f = await render(Host);
     const label = part(f, 'label') as HTMLElement;
-    const group = f.nativeElement.querySelector('[role="group"]') as HTMLElement;
+    const group = f.nativeElement.querySelector(
+      '[role="group"]',
+    ) as HTMLElement;
     expect(group.getAttribute('aria-labelledby')).toBe(label.id);
 
     const [labelId, dayWord] = (
@@ -369,19 +370,22 @@ describe('PctDatetime — the two texts', () => {
     const groups = Array.from(
       f.nativeElement.querySelectorAll('[role="group"]'),
     ) as HTMLElement[];
-    const [nameId, word] = (days[0].getAttribute('aria-labelledby') as string).split(
-      ' ',
-    );
+    const [nameId, word] = (
+      days[0].getAttribute('aria-labelledby') as string
+    ).split(' ');
     expect(f.nativeElement.querySelector(`#${nameId}`).textContent.trim()).toBe(
       'Start',
     );
-    expect(groups[0].getAttribute('aria-labelledby')).toBe(nameId);
+    expect(groups[0].getAttribute('aria-label')).toBe('Start');
+    expect(groups[0].hasAttribute('aria-labelledby')).toBe(false);
     expect(word).toMatch(/day-word$/);
     expect(days[1].getAttribute('aria-labelledby')?.split(' ')[0]).toBe('slot');
     expect(groups[1].getAttribute('aria-labelledby')).toBe('slot');
+    expect(groups[1].hasAttribute('aria-label')).toBe(false);
     // With no name at all, each text is still told which half it is.
     expect(days[2].getAttribute('aria-labelledby')).toMatch(/^\S+day-word$/);
     expect(groups[2].hasAttribute('aria-labelledby')).toBe(false);
+    expect(groups[2].hasAttribute('aria-label')).toBe(false);
     expect(f.nativeElement.querySelector('[data-pct-part="label"]')).toBeNull();
   });
 
@@ -625,7 +629,10 @@ describe('PctDatetime — a half left empty (0090 §3)', () => {
     await open(f);
     const cell = cursorIn();
     cell.dispatchEvent(
-      new FocusEvent('focusout', { bubbles: true, relatedTarget: columnIn('hour') }),
+      new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: columnIn('hour'),
+      }),
     );
     await settle(f);
     expect(f.componentInstance.touches).toBe(0);
@@ -834,10 +841,14 @@ describe('PctDatetime — the bounds (0090 §5)', () => {
     f.componentInstance.value.set('2026-12-03T12:00');
     await settle(f);
     await open(f);
-    expect(dayIn('1 December 2026')?.getAttribute('aria-disabled')).toBe('true');
+    expect(dayIn('1 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
     expect(dayIn('2 December 2026')?.hasAttribute('aria-disabled')).toBe(false);
     expect(dayIn('4 December 2026')?.hasAttribute('aria-disabled')).toBe(false);
-    expect(dayIn('5 December 2026')?.getAttribute('aria-disabled')).toBe('true');
+    expect(dayIn('5 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
   });
 
   it('casts a bound’s time on the columns only on the bound’s own day', async () => {
@@ -914,7 +925,9 @@ describe('PctDatetime — the bounds (0090 §5)', () => {
     f.componentInstance.value.set('2026-12-02T12:00');
     await settle(f);
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('[pct-datetime] min=2026-12-02T22:00 is later than max='),
+      expect.stringContaining(
+        '[pct-datetime] min=2026-12-02T22:00 is later than max=',
+      ),
     );
     await open(f);
     expect(takeable(columnIn('hour'))).toHaveLength(24);
@@ -950,7 +963,9 @@ describe('PctDatetime — the predicates', () => {
     f.componentInstance.dateDisabled.set((day) => day === '2026-12-25');
     await settle(f);
     await open(f);
-    expect(dayIn('25 December 2026')?.getAttribute('aria-disabled')).toBe('true');
+    expect(dayIn('25 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
   });
 
   it('asks datetimeDisabled of every time of the chosen day, with the day in it, and never of the grid', async () => {
@@ -1007,7 +1022,9 @@ describe('PctDatetime — the step', () => {
       expect.stringContaining('[pct-datetime] step=420'),
     );
     expect(columnIn('second')).toBeNull();
-    expect(columnIn('minute').querySelectorAll('[role="option"]')).toHaveLength(60);
+    expect(columnIn('minute').querySelectorAll('[role="option"]')).toHaveLength(
+      60,
+    );
     warn.mockRestore();
   });
 });
@@ -1020,7 +1037,9 @@ describe('PctDatetime — the chrome it draws when there is none around it', () 
     await settle(f);
     const label = part(f, 'label') as HTMLLabelElement;
     expect(label.textContent).toContain('Starts');
-    expect(label.querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
+    expect(label.querySelector('span')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
     const hint = part(f, 'hint') as HTMLElement;
     expect(hint.textContent?.trim()).toBe('When it begins');
     for (const control of textsOf(f)) {
@@ -1083,7 +1102,11 @@ describe('PctDatetime — the chrome it draws when there is none around it', () 
   it('carries the value as the platform writes it under the native name, and no name by default', async () => {
     @Component({
       imports: [PctDatetime],
-      template: `<pct-datetime name="startsAt" [(value)]="value" locale="en-GB" /><pct-datetime />`,
+      template: `<pct-datetime
+          name="startsAt"
+          [(value)]="value"
+          locale="en-GB"
+        /><pct-datetime />`,
     })
     class Named {
       readonly value = signal<PctDateTime | null>('2026-12-01T13:05');
@@ -1096,7 +1119,8 @@ describe('PctDatetime — the chrome it draws when there is none around it', () 
     expect(hidden).toHaveLength(1);
     expect(hidden[0].name).toBe('startsAt');
     expect(hidden[0].value).toBe('2026-12-01T13:05');
-    for (const control of textsOf(f)) expect(control.hasAttribute('name')).toBe(false);
+    for (const control of textsOf(f))
+      expect(control.hasAttribute('name')).toBe(false);
   });
 
   it('empties the field, both texts and the value alike, on reset — junk included', async () => {

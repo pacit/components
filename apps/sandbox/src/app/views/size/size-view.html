@@ -74,6 +74,14 @@
 
     <pct-field
       [size]="size"
+      [label]="'Datetime ' + size"
+      [attr.data-testid]="'size-datetime-' + size"
+    >
+      <pct-datetime [(value)]="startsAtDay" />
+    </pct-field>
+
+    <pct-field
+      [size]="size"
       [label]="'Disabled ' + size"
       [attr.data-testid]="'size-disabled-' + size"
     >

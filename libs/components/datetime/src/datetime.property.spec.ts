@@ -222,9 +222,9 @@ describe('pctAddDateTimeMinutes', () => {
 
   it('refuses every movement that is not a whole number of minutes', () => {
     pctForAll(pctInt(-1000, 1000), (n) => {
-      expect(() =>
-        pctAddDateTimeMinutes('2026-12-01T13:05', n + 0.5),
-      ).toThrow(RangeError);
+      expect(() => pctAddDateTimeMinutes('2026-12-01T13:05', n + 0.5)).toThrow(
+        RangeError,
+      );
     });
     for (const n of [NaN, Infinity, -Infinity])
       expect(() => pctAddDateTimeMinutes('2026-12-01T13:05', n)).toThrow(

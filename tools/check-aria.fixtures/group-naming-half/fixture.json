@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "A group carries the consumer's name only when it binds BOTH inputs, as any other carrier must: the widening that lets a group carry the name for a set of texts is not a way round the pair. Here it binds `ariaLabel` alone, and nothing else binds `ariaLabelledby`."
+}

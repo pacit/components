@@ -105,8 +105,14 @@
   /* The button is the one thing in this row a finger aims at, so the touch floor is a floor
      on the DRAWING and not a zone laid over it — the switch's reading of SC 2.5.8, met
      again. */
-  inline-size: max(var(--pct-datetime-toggle-size), var(--pct-datetime-target-min));
-  block-size: max(var(--pct-datetime-toggle-size), var(--pct-datetime-target-min));
+  inline-size: max(
+    var(--pct-datetime-toggle-size),
+    var(--pct-datetime-target-min)
+  );
+  block-size: max(
+    var(--pct-datetime-toggle-size),
+    var(--pct-datetime-target-min)
+  );
   padding: 0;
   border: none;
   border-radius: var(--pct-datetime-toggle-radius);
@@ -169,7 +175,8 @@
   border: 1px solid var(--pct-datetime-panel-border);
   border-radius: var(--pct-datetime-panel-radius);
   box-shadow: var(--pct-datetime-panel-shadow);
-  padding: var(--pct-datetime-panel-padding-y) var(--pct-datetime-panel-padding-x);
+  padding: var(--pct-datetime-panel-padding-y)
+    var(--pct-datetime-panel-padding-x);
 }
 
 .pct-datetime__panel:focus {

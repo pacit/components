@@ -1,0 +1,196 @@
+# `PctDatetime` — datetime field
+
+**Summary:** A day and a time of it, typed into two texts under one label or picked in one panel holding a calendar and columns of hours and minutes.
+**Entrypoint:** `@pacit/components/datetime`
+**Selector:** `pct-datetime`
+**Status:** released
+**Category:** Text & numbers
+**ARIA APG pattern:** [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
+held whole, through [`PctCalendar`](./calendar.md) as the date field holds it: a button beside
+the field opens a `role="dialog"` holding a [`role="grid"`](./calendar.md), and beside the grid
+one named [`role="listbox"`](./columns.md) per field of the time, claimed on their own card
+([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) §7). The two texts
+stand in a `role="group"` named by the label, and each is a plain textbox named by the label and
+a word of its own — deliberately **not** a `combobox`, for the date's reason
+([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md) read backwards)
+
+## Usage
+
+```html
+<pct-datetime label="Starts" [(value)]="startsAt" />
+```
+
+## Contract
+
+|                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `PctDateTime \| null` through `value` (`model`) — a day and a time of it written `YYYY-MM-DDTHH:mm`, or `…THH:mm:ss` where the step has seconds, never a `Date` and never a zone ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) §1). It is `null` until **both** halves hold one                                                                                                                                       |
+| **Inputs**      | `value` (`model`), `min`, `max`, `step`, `dateDisabled`, `datetimeDisabled`, `locale`, `firstDayOfWeek`, `showFormat`, `size`, `panelAlign`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl`                                                                                                                                                  |
+| **Outputs**     | `touch` — when focus leaves the **whole** field: both texts, the button and the panel. Moving between them is staying                                                                                                                                                                                                                                                                                                                              |
+| **Bounds**      | `min` / `max` are `PctDateTime`s: the calendar gets the day of each, the columns the time of a bound **only on the bound's own day**, moved inward onto the step. They clamp the panel's walk and never rewrite what was typed; `min` later than `max` is **no window** — a dev-mode warning, and no bounds. Under a signal form they are the form's validator alone: Angular 22.2's `min()` / `max()` take numbers, and the compiler refuses `min` beside `[formField]` (`NG8022`) |
+| **Step**        | the time's, in seconds, 60 by default — the columns' rows and whether the value carries `:ss`. **It counts from midnight on every day**, not from `min`: `min` at 09:05 at a quarter-hour step opens that day at 09:15 and leaves every other day's quarters whole. A step the columns cannot list (`420`) is read as 60, with a dev-mode warning                                                                                                     |
+| **Predicates**  | `dateDisabled` is the day's, handed to the calendar as it is — a refused day is refused whole. `datetimeDisabled` is the pair's, closed over the chosen day and asked of every time on the step in the columns' rows; an hour is refused when every time in it is. It never reaches the calendar                                                                                                                                                    |
+| **Order**       | the field's `locale`, read off `formatToParts` of a pair: the day's text first in 51 of 52 languages, the time's first in Vietnamese ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md), C1). The label points at whichever stands first                                                                                                                                                                                  |
+| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: they name the group, and each text takes the same name with a word of its own (`datetimeDay`, `datetimeTime`) through `aria-labelledby` — two textboxes with no name of their own are a critical axe finding (0090, E3)                                                                                                                                                |
+| **Submission**  | `name` names a hidden input carrying the value as the platform writes one, `2026-12-01T13:05` — neither text, which are written in the user's language                                                                                                                                                                                                                                                                                             |
+| **Parts**       | `date-control`, `time-control`, `toggle`, `panel`, `label`, `hint`, `warning`, `error`                                                                                                                                                                                                                                                                                                                                                             |
+| **Harness**     | `PctDatetimeHarness`                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Tokens**      | `--pct-datetime-*` for the field's own boxes — the two texts, the button, the dialog. The calendar and the columns inside keep `--pct-date-*` and `--pct-time-*`, so a theme that restyles them restyles them here too (0090 §6)                                                                                                                                                                                                                   |
+| **Strings**     | `datetimeOpen`, `datetimeDay`, `datetimeTime`, `datetimeIncomplete` — and the halves' own: `dateMalformed`, `timeMalformed`, the hints' letters — through `PCT_TEXTS`                                                                                                                                                                                                                                                                              |
+| **DI contract** | `PCT_FIELD`, `PCT_CONFIG`, `PCT_TEXTS`, `LOCALE_ID`; `labelStrategy: 'for'` with `setLabelledBy` — the chrome's label points at the first text and its id names both; `fieldCursor: 'text'`                                                                                                                                                                                                                                                       |
+
+**Why not `<input type="datetime-local">`,** despite
+[`req-api-platform`](../requirements/api.md#req-api-platform) — the time field's case met a
+third time, measured over three engines
+([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md), A1 to A5):
+
+- **its clock and its order come from three sources in three engines**, and `lang` from none;
+- **a whole day typed with no time is no value at all** — `""` in the two engines that took the
+  keys — the same eight digits are two days by the system's locale, and in chromium the year
+  takes the time's digits, six of them;
+- **one control is seven tab stops, or nine, or six, or one.**
+
+**Why two texts and not one.** One text is clean in axe and one stop fewer (E4), but it would
+need a third parser and a third hint over the literal between the halves — a comma in Berlin, a
+space in Paris, the **word** `klo` in Helsinki already in the numeric form (C2); a day picked
+in the panel would reformat the time the user typed; and a half that is junk would be junk
+whole.
+
+## Parts
+
+| part           | what it is                                                                                                                                                |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`        | the label of the field, pointing at the text that stands first                                                                                            |
+| `date-control` | the day's text                                                                                                                                            |
+| `time-control` | the time's text                                                                                                                                           |
+| `toggle`       | the button that opens the panel                                                                                                                           |
+| `hint`         | the hint under the field                                                                                                                                  |
+| `error`        | the message when the value is invalid, or a half is not one, or one is missing                                                                            |
+| `warning`      | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+| `panel`        | the dialog the calendar and the columns stand in                                                                                                          |
+
+Inside the panel stand [`PctCalendar`](./calendar.md) and [`PctTimeColumns`](./columns.md), with
+their own parts — `grid`, `day`, `caption`, `nav`, `week`, `weekday`, `column`, `option` — which
+are their entrypoints' and never one of this field's names
+([`req-api-parts-unique`](../requirements/api.md#req-api-parts-unique)).
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-datetime-border-focus: #0f766e;
+  --pct-date-day-bg-selected: #0f766e;
+  --pct-time-option-bg-selected: #0f766e;
+}
+```
+
+## Keyboard map
+
+| key                         | effect                                                                                 | test                                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| any text                    | typed into a half, parsed when that half is left                                       | `apps/sandbox-e2e/src/datetime.spec.ts › junk in one half keeps the other`                                                 |
+| `Tab`                       | the first text → the second → the button → out; leaving the whole is `touch`            | `apps/sandbox-e2e/src/datetime.spec.ts › a day with no time is no value`                                                   |
+| `Enter` on the button       | opens the panel, focus on the grid's cell — the held day, or today                      | `apps/sandbox-e2e/src/datetime.spec.ts › opens on the day and the time the field holds`                                    |
+| arrows in the grid          | walk the days, as on [`PctCalendar`](./calendar.md)                                    | `apps/sandbox-e2e/src/datetime.spec.ts › a day picked moves on to the hours`                                               |
+| `Enter` in the grid         | writes the day's text, leaves the time's as typed, and hands focus to the hour column  | `apps/sandbox-e2e/src/datetime.spec.ts › a day picked moves on to the hours`, `libs/components/datetime/src/datetime-field.spec.ts` |
+| `Tab` in the panel          | the month buttons, the grid's cell, then the columns one stop each — the grid first     | `apps/sandbox-e2e/src/datetime.spec.ts › Tab walks the grid, then the columns`                                            |
+| `Shift+Tab` from the hours  | back to the grid — the way to a day picked wrong                                       | `apps/sandbox-e2e/src/datetime.spec.ts › Tab walks the grid, then the columns`                                            |
+| arrows in a column          | write the time as they walk, as on [`PctTimeColumns`](./columns.md)                    | `apps/sandbox-e2e/src/datetime.spec.ts › a day picked moves on to the hours`                                               |
+| `Enter` in a column         | takes the time and closes the panel, focus back on the first text                      | `apps/sandbox-e2e/src/datetime.spec.ts › a day picked moves on to the hours`                                               |
+| `Escape` in the panel       | closes it with the value as the halves left it, focus back on the first text            | `apps/sandbox-e2e/src/datetime.spec.ts › Escape closes it`, `libs/components/datetime/src/datetime-field.spec.ts`          |
+| `Tab` out of the panel      | closes it, focus **spliced back** onto the first text                                  | `apps/sandbox-e2e/src/datetime.spec.ts › Tab walks the grid, then the columns`                                            |
+
+The grid's and the columns' own maps are on their cards. The field adds no key of its own: what
+a user types is text, and the arrows do not step the segment under the caret, because the
+engines step the native element's segments three ways (0090, A10) and a reader is never told a
+textbox has a value to step.
+
+## Checks
+
+| criterion                       | evidence                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | `libs/components/datetime/src/datetime-field.ts` — the pattern, the reasons and the decision behind them in the class comment                                                                                                                                                                                                                                  |
+| Keyboard map                    | `apps/sandbox-e2e/src/datetime.spec.ts` — the panel's map in three engines; `libs/components/datetime/src/datetime-field.spec.ts` — Escape, Tab off either end and inside, a pick in the grid and in a column, key by key                                                                                                                                       |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` — the `/datetime` view and `/all`, and separately **the open panel with the field it belongs to**: the group, the two named textboxes, the toggle's `aria-controls` into the overlay, the grid and the named listboxes                                                                                                       |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts` — `datetime-field`, `datetime-panel` and `datetime-panel-rtl`                                                                                                                                                                                                                                                             |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — a half that is not one draws the row's edge twice as thick, a shape the substitution keeps, and the panel keeps an edge in `CanvasText`; the grid's and the columns' own readings are on their cards                                                                                                              |
+| `prefers-reduced-motion`        | `tools/check-styles.mjs` point 9 — the row's transition takes `--pct-motion-transition-duration`, which the token build switches off                                                                                                                                                                                                                             |
+| Touch target ≥ 24×24 px         | `apps/sandbox-e2e/src/target-min.spec.ts` — the button is `max(--pct-datetime-toggle-size, --pct-datetime-target-min)`, measured with the drawing disarmed                                                                                                                                                                                                       |
+| Size axis                       | `apps/sandbox/src/app/views/size/size-view.html` — the `/size` view puts the field on the shared `sm`/`md`/`lg` axis beside the date and the time fields, and the grid and the rows follow it into the panel                                                                                                                                                     |
+| Density axis                    | none — gap ([`req-token-density`](../requirements/tokens.md#req-token-density) has not one token in the sources)                                                                                                                                                                                                                                                |
+| RTL                             | `apps/sandbox-e2e/src/datetime.spec.ts › right to left` — the two texts and the button change sides and the columns stand after the grid on the left; `apps/sandbox-e2e/src/visual.spec.ts` — `datetime-panel-rtl`                                                                                                                                            |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/datetime` view is in `SBX_ROUTES`                                                                                                                                                                                                                                                                              |
+| Forms                           | `libs/components/datetime/src/datetime-field.spec.ts › the forms that bind it` — `[formField]`, `[formControl]` and `[(ngModel)]`, each from a non-empty value ([`lesson-26`](../lessons.md#lesson-26)); `apps/sandbox-e2e/src/forms.spec.ts` — the field in a signal form that stays invalid with a day and no time on the screen                              |
+| Message announced               | `tools/check-aria.mjs` (point 7, target `check-aria`) — the error part carries `role="alert"`, the warning part `role="status"`                                                                                                                                                                                                                                 |
+| Value as laws                   | `libs/components/datetime/src/datetime.property.spec.ts` — the arithmetic against the platform's millisecond count over the whole domain, both ends; `libs/components/datetime/src/datetime.spec.ts › in a hostile timezone` ([`req-api-datetime`](../requirements/api.md#req-api-datetime))                                                                   |
+| Parts in the inventory          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                                                                                                                                                                                           |
+| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json` — 18 pairs for the field's own tier, the calendar's days and the columns' rows on its panel among them                                                                                                                                                                                                                   |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — four keys of its own; the two halves' sentences and letters are the date's and the time's, so no key is added for them                                                                                                                                                                                                               |
+| Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`) — 78 137 B, the date's and the time's entrypoints included                                                                                                                                                                                                                |
+| Not a value, said               | `libs/components/datetime/src/datetime-field.spec.ts › junk in a half` and `› a half left empty` — three sentences on the second channel, one at a time; `apps/sandbox-e2e/src/datetime.spec.ts` — the same in three engines, in French ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md))                       |
+| Screen-reader log               | none — gap: the readers' pass on `/datetime` runs on the branch and its record lands with it                                                                                                                                                                                                                                                                  |
+| docs page                       | `/components/datetime` on the published site — prerendered, the demo's own source is the code tab                                                                                                                                                                                                                                                              |
+
+## One message line for two texts
+
+Type `31/02/2026` into the day's text and leave it. The day's half goes `null`, the text
+**stays**, the time's half keeps what it held, and the field says **`Not a date`** — the date
+field's own sentence, because it is the date field's half; `25:99` in the time's text says
+**`Not a time`**. Junk in both is the day's sentence, and `aria-invalid` stands on each half
+that is junk. Each half commits on its own blur, so a day typed and left for the time already
+moves the calendar's cursor — and a day that is junk opens the calendar on the month it names.
+
+A day with **no** time is not junk, and it is not a value either: the platform's own input reads
+it as nothing (0090, A2), and so does this field. The form sees `null` and would say "required"
+over a day the user can see, so when focus leaves the whole field with one half held and the
+other empty, the field says **`Enter both a date and a time`** (`datetimeIncomplete`), ahead
+of the form, gated by no touch, with `aria-invalid` on the empty half — required or not, because
+a day alone is not a value of this field. A keystroke in the empty half or a value from outside
+takes it back. All three sentences travel on one channel, `ownErrors`
+([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)),
+one at a time into one message line ([0022](../decisions/0022-one-message-line.md)).
+
+## Decisions
+
+[0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) (a day with a time is
+a wall clock with a date, and the field is two texts under one label),
+[0086](../decisions/0086-a-time-of-day-is-a-wall-clock.md),
+[0089](../decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) (the
+columns in their `list` shape),
+[0043](../decisions/0043-a-day-is-not-an-instant.md),
+[0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md),
+[0035](../decisions/0035-a-filter-is-a-question-not-a-value.md) (read backwards, for why the
+texts are not comboboxes),
+[0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md),
+[0025](../decisions/0025-a-panel-says-whether-it-takes-focus.md),
+[0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md) (Escape has one owner, and the panel stops it there),
+[0022](../decisions/0022-one-message-line.md),
+[0005](../decisions/0005-signal-forms-without-cva.md),
+[0003](../decisions/0003-wrapper-and-control.md)
+
+## Known limitations
+
+- **No zone, so neither the gap nor the overlap is refused.** 02:30 on 29 March 2026 is a value
+  of this field and does not exist on a wall in Warsaw; 02:30 on 25 October happens there twice.
+  The control cannot know where the event is — in Lisbon both minutes are ordinary — so turning
+  the pair into an instant, and choosing what the skipped and the repeated minute mean, is the
+  application's: `Temporal.PlainDateTime.from(value).toZonedDateTime(zone, { disambiguation })`
+  where the engine has it.
+- **One day and time, not a range.** A meeting's two ends are two fields with `min` / `max`
+  bound to each other ([0034](../decisions/0034-multiplicity-is-a-tag.md)). A reversed pair is
+  no window: the night shift is two datetimes on two days, and a time field's `22:00`–`06:00`
+  ported here gets a warning and no bounds.
+- **No day without a time.** A half-filled field says so, always, and there is no knob to let
+  "required" win over it; a form that wants a day with an optional time is a date field and a
+  time field.
+- **Gregorian only.** The calendar and both parsers read the Gregorian calendar, as the date
+  field does; a `-u-ca-` extension changes nothing the field writes.
+- **`datetimeDisabled` is asked per row, per day.** 1 440 questions on the default step every
+  time the chosen day changes — cheap for a `Set`, and the consumer's problem for a predicate
+  that fetches.
+- **The clock is the engine's.** In chromium a Burmese, Nepali, Georgian, Armenian, Icelandic or
+  Albanian field is written in the browser's default locale — the same engine's own `Intl` on
+  the same page (0090, C4).
+- **`list` columns only.** The wheel shape the time panel will offer
+  ([0089](../decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md), plan
+  1.7) reaches this field when it lands.

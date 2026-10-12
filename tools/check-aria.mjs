@@ -406,6 +406,11 @@ const readTemplate = (content, tables) => {
     widgets: tags
       .filter((t) => isWidget(t.tag, t.attrs, tables))
       .map((t) => ({ ...t })),
+    // A `role="group"` names a SET of controls, and ARIA asks it for no name — so it is no
+    // widget of the tables above. It may still be the element a consumer's name is handed to:
+    // the datetime field's two texts stand in one, and each takes the group's name with a word
+    // of its own (0090, E1 to E3). Point 4 reads these as carriers beside the widgets.
+    groups: tags.filter((t) => t.attrs.get('role') === 'group'),
     parsed: tags.filter(
       (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
     ).length,
@@ -709,6 +714,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       ? byPath.get(component.templatePath)
       : null;
     component.widgets = template?.read?.widgets ?? [];
+    component.groups = template?.read?.groups ?? [];
     // Where each of them stands in the conditional structure, joined to the tag scan by the
     // offset both readings report. A focusable element the walk never reached would be one
     // point 4 could say nothing about — and it would say it by passing, so it is a
@@ -760,8 +766,12 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+  //
+  // A group may carry it too: one name for a set of texts, each of which is named by it and a
+  // word of its own. Two textboxes each carrying the consumer's name would be the two names
+  // the rule below refuses; a group carrying it is one name, and it is no stop a user lands on.
   for (const component of naming) {
-    const carriers = component.widgets.filter((widget) =>
+    const carriers = [...component.widgets, ...component.groups].filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),

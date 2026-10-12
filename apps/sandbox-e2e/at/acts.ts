@@ -111,6 +111,15 @@ export const ACTS: Readonly<Record<string, Act>> = {
     acts: true,
     owner: 'apps/sandbox-e2e/src/time.spec.ts',
   },
+  '/datetime': {
+    // The panel opens on the grid — the day is the first half (0090 §4) — so the Escape the
+    // walk presses after it is the grid's; a column's is `/time`'s act, the same listbox.
+    what: 'a calendar and the columns of a time',
+    on: '[data-testid="datetime-standalone"] [data-pct-part="toggle"]',
+    key: 'Enter',
+    acts: true,
+    owner: 'apps/sandbox-e2e/src/datetime.spec.ts',
+  },
   '/tabs': {
     // The odd one out, and it is the pattern's doing rather than this table's: nothing pops
     // up over a tab strip. What "opens" is the panel the arrow key reveals, so the act starts

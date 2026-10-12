@@ -326,6 +326,33 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The datetime field says a half is not one by a SHAPE — the row's edge drawn twice as thick,
+   * the date and the time fields' own answer — because the error's colour is exactly what this
+   * mode takes away; and its panel, a dialog over the page, keeps an edge of the system's own
+   * colours once its shadow is gone.
+   */
+  test('the datetime field marks junk with a shape, and its panel keeps an edge', async ({
+    page,
+  }) => {
+    await visit(page, '/datetime', { media: FORCED });
+    const sys = await systemColors(page);
+    const host = page.getByTestId('datetime-standalone');
+    const day = host.locator('[data-pct-part="date-control"]');
+    await day.fill('31/02/2026');
+    await day.blur();
+    await expect(host).toHaveAttribute('data-pct-malformed', '');
+    const row = host.locator('[role="group"]');
+    expect(await styleOf(row, 'border-top-width')).toBe('2px');
+    expect(await styleOf(row, 'border-top-color')).toBe(sys.FieldText);
+
+    await host.locator('[data-pct-part="toggle"]').click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await settled(page);
+    expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
+  });
+
+  /**
    * The hardest case: in a list panel an ordinary option, a selected one and the one
    * active from the keyboard differ by background ALONE. After the palette swap all
    * three would be the same rectangle, so the selection was split into two

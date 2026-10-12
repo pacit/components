@@ -138,7 +138,13 @@ export type PctDatetimePanelAlign = 'start' | 'end';
  */
 @Component({
   selector: 'pct-datetime',
-  imports: [OverlayModule, PctCalendar, PctTimeColumns, PctIcon, PctOverlayPanel],
+  imports: [
+    OverlayModule,
+    PctCalendar,
+    PctTimeColumns,
+    PctIcon,
+    PctOverlayPanel,
+  ],
   templateUrl: './datetime-field.html',
   styleUrl: './datetime-field.scss',
   host: {
@@ -577,10 +583,16 @@ export class PctDatetime
     );
   });
 
+  /** The label that names the field — the chrome's, or the one it draws itself — or none. */
+  protected readonly labelOwner = computed(() => {
+    if (this.inField) return this.fieldLabelledBy();
+    return this.label() !== '' ? this.labelId : null;
+  });
+
   /** The ids every text is named by, ahead of its own word — or nothing to name it by. */
   protected readonly nameIds = computed(() => {
-    if (this.inField) return this.fieldLabelledBy();
-    if (this.label() !== '') return this.labelId;
+    const owner = this.labelOwner();
+    if (owner !== null) return owner;
     if (this.ariaLabelledby() !== '') return this.ariaLabelledby();
     return this.ariaLabel() !== '' ? this.nameId : null;
   });
@@ -782,14 +794,20 @@ export class PctDatetime
     });
 
     // The grid and the columns do not exist until the overlay has drawn them, so the focus
-    // follows the render rather than the signal that asked for it.
-    afterRenderEffect(() => {
-      const wanted = this.focusWanted();
-      if (wanted === null) return;
-      untracked(() => {
-        if (wanted.where === 'grid') this.calendar()?.focusCursor();
-        else this.columns()?.focusCursor();
-      });
+    // follows the render rather than the signal that asked for it — and in the render's LAST
+    // phase: a key that moved the grid's cursor and `Enter` on it can arrive before one render,
+    // and the calendar then asks for focus on its new cell in the same render this hands it to
+    // the hours. Its own hook runs in the default phase, so the hand-off runs after it, and the
+    // pick wins over the walk that led to it.
+    afterRenderEffect({
+      read: () => {
+        const wanted = this.focusWanted();
+        if (wanted === null) return;
+        untracked(() => {
+          if (wanted.where === 'grid') this.calendar()?.focusCursor();
+          else this.columns()?.focusCursor();
+        });
+      },
     });
 
     if (isDevMode()) this.warnOnUnsupportedStep();
@@ -927,9 +945,7 @@ export class PctDatetime
     if (half === 'day') {
       this.dayTyping.set(false);
       const parsed = text.trim() === '' ? null : this.dayFormat().parse(text);
-      this.dayRejected.set(
-        text.trim() !== '' && parsed === null ? text : null,
-      );
+      this.dayRejected.set(text.trim() !== '' && parsed === null ? text : null);
       const held = this.day();
       // The day the half already holds, read back from its own text, is not an edit.
       if (

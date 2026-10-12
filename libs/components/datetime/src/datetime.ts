@@ -126,7 +126,10 @@ function clockOf(time: PctTimeOfDay): {
   readonly seconds: boolean;
 } {
   const { hour, minute, second } = pctTimeOfDayParts(time);
-  return { total: (hour * 60 + minute) * 60 + second, seconds: time.length > 5 };
+  return {
+    total: (hour * 60 + minute) * 60 + second,
+    seconds: time.length > 5,
+  };
 }
 
 /**
@@ -194,7 +197,11 @@ export function pctClampDateTime(
   min: PctDateTime | undefined,
   max: PctDateTime | undefined,
 ): PctDateTime {
-  if (min !== undefined && max !== undefined && pctCompareDateTimes(min, max) > 0)
+  if (
+    min !== undefined &&
+    max !== undefined &&
+    pctCompareDateTimes(min, max) > 0
+  )
     return value;
   if (min !== undefined && pctCompareDateTimes(value, min) < 0) return min;
   if (max !== undefined && pctCompareDateTimes(value, max) > 0) return max;
@@ -232,7 +239,8 @@ export function pctAddDateTimeMinutes(
   // a day is never more than a few hundred million days from another, and the rest is less than
   // two days of minutes.
   const rest = Math.floor(total / 60) + (n % DAY_MINUTES);
-  const days = (n - (n % DAY_MINUTES)) / DAY_MINUTES + Math.floor(rest / DAY_MINUTES);
+  const days =
+    (n - (n % DAY_MINUTES)) / DAY_MINUTES + Math.floor(rest / DAY_MINUTES);
   const minute = ((rest % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
   return pctDateTime(
     pctAddDays(day, days),

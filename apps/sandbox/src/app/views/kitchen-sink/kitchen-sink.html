@@ -137,6 +137,18 @@
       <pct-time [formField]="userForm.callAt" data-testid="time-call-at" />
     </pct-field>
 
+    <!-- A day and a time of it inside the wrapper, from the form: two texts, one panel -->
+    <pct-field
+      label="Meet on"
+      hint="A day and a time of it, typed or picked in one panel"
+      data-testid="field-meets-at"
+    >
+      <pct-datetime
+        [formField]="userForm.meetsAt"
+        data-testid="datetime-meets-at"
+      />
+    </pct-field>
+
     <!-- A checkbox inside the wrapper: the wrapper label, no border -->
     <pct-field
       label="Consents"

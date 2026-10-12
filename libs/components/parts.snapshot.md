@@ -49,6 +49,14 @@ from what the browser really gets.
 ./date PctDate panel
 ./date PctDate toggle
 ./date PctDate warning
+./datetime PctDatetime date-control
+./datetime PctDatetime error
+./datetime PctDatetime hint
+./datetime PctDatetime label
+./datetime PctDatetime panel
+./datetime PctDatetime time-control
+./datetime PctDatetime toggle
+./datetime PctDatetime warning
 ./dialog PctDialog backdrop
 ./dialog PctDialog close
 ./dialog PctDialog content

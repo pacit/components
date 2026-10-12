@@ -25,9 +25,10 @@ booking screen puts it in a column.
 |                 |                                                                                                                                                                                    |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Value**       | `PctDay \| null` through `value` (`model`) — `YYYY-MM-DD` ([0043](../decisions/0043-a-day-is-not-an-instant.md))                                                                   |
-| **Inputs**      | `value` (`model`), `min`, `max`, `dateDisabled`, `disabled`, `locale`, `firstDayOfWeek`, `size`, `ariaLabel`, `ariaLabelledby`                                                     |
+| **Inputs**      | `value` (`model`), `min`, `max`, `dateDisabled`, `startAt`, `disabled`, `locale`, `firstDayOfWeek`, `size`, `ariaLabel`, `ariaLabelledby`                                          |
 | **Outputs**     | `dayPicked` — a day chosen **by the user**, which is not the same event as `value` changing. That difference is what closes a panel: a value written from outside must not         |
 | **Bounds**      | `min` / `max` clamp where the keyboard can GO; `dateDisabled` marks days inside them that still cannot be taken. **The bounds are the range and the predicate is the holes in it** |
+| **Start**       | `startAt` is the day the grid opens on while there is no value — absent, today. It marks nothing chosen and the bounds still hold it; the datetime field hands it the month a junk day names ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) §2) |
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are inputs, bound on the grid. With neither, the grid is named by the month caption above it                                                        |
 | **Parts**       | `nav`, `caption`, `grid`, `weekday`, `week`, `day`                                                                                                                                 |
 | **Harness**     | `PctCalendarHarness`                                                                                                                                                               |

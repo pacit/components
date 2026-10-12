@@ -25,6 +25,7 @@ import {
   PctSelectOption,
 } from '@pacit/components/select';
 import { PctDate, PctDay } from '@pacit/components/date';
+import { PctDatetime, PctDateTime } from '@pacit/components/datetime';
 import { PctTime, PctTimeOfDay } from '@pacit/components/time';
 import { PctSlider } from '@pacit/components/slider';
 import { PctSwitch } from '@pacit/components/switch';
@@ -44,6 +45,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctRadio,
     PctDate,
     PctTime,
+    PctDatetime,
     PctSlider,
     PctSwitch,
     PctMultiSelect,
@@ -88,6 +90,8 @@ export class KitchenSink {
     regions: string[];
     seats: number | null;
     callAt: PctTimeOfDay | null;
+    /** A day and a time of it: a wall clock with a date, and no zone to shift either. */
+    meetsAt: PctDateTime | null;
   }>({
     email: '',
     terms: false,
@@ -96,6 +100,7 @@ export class KitchenSink {
     regions: [],
     seats: 1,
     callAt: null,
+    meetsAt: null,
   });
 
   protected readonly userForm = form(this.model, (p) => {
@@ -108,6 +113,7 @@ export class KitchenSink {
     required(p.country, { message: 'Pick a country' });
     required(p.seats, { message: 'Give the number of seats' });
     required(p.callAt, { message: 'Pick a time to call' });
+    required(p.meetsAt, { message: 'Pick a day and a time to meet' });
     min(p.seats, 1, { message: 'At least one seat' });
     max(p.seats, 500, {
       message: 'Above 500 seats, get in touch with us',

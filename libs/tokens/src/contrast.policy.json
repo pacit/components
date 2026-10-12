@@ -1009,6 +1009,27 @@
       "severity": "error"
     },
     {
+      "name": "UI: the datetime panel's edge against the page",
+      "fg": "pct.datetime.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the calendar's days on the panel",
+      "fg": "pct.date.fg",
+      "bg": "pct.datetime.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "datetime — the columns' rows on the panel",
+      "fg": "pct.time.fg",
+      "bg": "pct.datetime.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "slider — label",
       "fg": "pct.slider.label-fg",
       "bg": "pct.surface",

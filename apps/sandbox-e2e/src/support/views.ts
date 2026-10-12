@@ -15,6 +15,7 @@ export const SBX_ROUTES = [
   '/number',
   '/date',
   '/time',
+  '/datetime',
   '/checkbox',
   '/radio',
   '/slider',
