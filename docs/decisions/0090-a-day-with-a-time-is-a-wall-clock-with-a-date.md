@@ -192,8 +192,8 @@ second of them, and it is the time field's case met a third time:
   with neither in firefox — `lang` moves none of them.
 - **A2 to A4: what is typed is not what is read.** A whole day with no time is `""` in the two
   engines that took the keys, and webkit took none; `130` is `13:00` in chromium; the same
-  eight digits are two days by the system's locale; and the year takes six digits in chromium, so a day and a time typed
-  in one run are the year 202613.
+  eight digits are two days by the system's locale; and the year takes six digits in
+  chromium, so a day and a time typed in one run are the year 202613.
 - **A5: one control is seven stops, or nine, or six, or one.**
 
 So the field is text the library formats and parses, and the question the first two fields
@@ -345,8 +345,8 @@ entrypoint, and the datetime card says what was found either way.
   never reaches the calendar: a day whose every slot it refuses is still a day the grid offers,
   and a consumer who wants that day greyed says so through `dateDisabled`. This gives
   `PctTimeColumns` the input 0086 said it would get once a consumer had said what it needs —
-  `timeDisabled`, a predicate on a `PctTimeOfDay`, with the hour rule above — and gives `PctTime` nothing: its three reasons
-  stand, and its card's limitation with them.
+  `timeDisabled`, a predicate on a `PctTimeOfDay`, with the hour rule above — and gives
+  `PctTime` nothing: its three reasons stand, and its card's limitation with them.
 
 ### 6. The entrypoint is `./datetime`, and the field is painted `--pct-datetime-*`
 
