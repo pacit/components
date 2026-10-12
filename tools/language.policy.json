@@ -326,7 +326,7 @@
       ]
     },
     "quotations": {
-      "reason": "Words of a third language, neither English nor Polish, quoted exactly as a platform formatter wrote them — the evidence a decision's measurement row holds, which a translation would destroy. Each is named singly with the formatter that wrote it: `klo` is what ICU puts between a day and a time in Finnish, in the plainest numeric form already, and `kl` what it puts there in Danish, Norwegian, Swedish and Icelandic in the long style (0090, C2 and C3).",
+      "reason": "Words of a third language, neither English nor Polish, quoted exactly as a platform formatter wrote them — the evidence a decision's measurement row holds, which a translation would destroy. Each is named singly with the formatter that wrote it: `klo` is what ICU puts between a day and a time in Finnish, in the plainest numeric form already, and `kl` what it puts there in Danish, Norwegian and Swedish in the long style, and in Icelandic where the engine carries the language (0090, C2 to C4).",
       "words": ["kl", "klo"]
     }
   }
