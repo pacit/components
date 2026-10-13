@@ -1,0 +1,38 @@
+<!-- `two-names-across-items` with a block above the `@for`, as the slider draws its marks, and
+     one between the `@for` and the conditional: the repeat need be neither the outermost block
+     nor the nearest to stamp the conditional once per item, and the two triggers stand at once
+     all the same. -->
+<span class="pct-widget__box">
+  @if (open()) {
+  @for (half of halves(); track half) {
+  @if (editable()) {
+  @if (half === 'day') {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+  }
+  }
+  }
+</span>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

@@ -1,0 +1,33 @@
+<!-- The reference's two triggers on the two branches of one `@if`, with an `@for` around it:
+     each half takes a branch of its own, so the `<input>` of one stands beside the `<button>`
+     of the next, and the name a consumer wrote is announced twice. -->
+<span class="pct-widget__box">
+  @for (half of halves(); track half) {
+  @if (half === 'day') {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+  }
+</span>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}
