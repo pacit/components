@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). Its tags meet the scan's by offset: one only the tree holds, or
- * one only the scan finds inside an ICU case, fails point 1.
+ * syntax tree (`parseTemplate`). Its tags meet the scan's by offset: one only the tree holds, one
+ * only the scan finds inside an ICU, and one the scan reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -300,7 +300,7 @@ const contextsWritten = (text, tables) =>
 
 /**
  * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
- * link, `type` on an input, `tabindex` on anything — as the walk reads them off the parsed
+ * link, `type` on an input, `tabindex` on anything — as the tag reader takes them off the parsed
  * tree, a written value decoded and a bound one keyed `[href]`, `[tabindex]` whatever the
  * syntax (`[tabIndex]`, `bind-attr.tabindex`, `tabindex="{{ … }}"`). A bound attribute stands
  * for a present one, with the value that keeps the element focusable, over a written one of
@@ -493,13 +493,13 @@ const holdsPresentation = (t) =>
  * the attribute.
  */
 const EDITING_HOST = ['contenteditable', '[contenteditable]'];
-/** Every attribute `virtual` and `isFocusable` read, as the walk collects them off the tree. */
+/** Every attribute `virtual` and `isFocusable` read, as the tag reader collects them. */
 const FOCUS_ATTRIBUTES = [...Object.keys(DECIDING), EDITING_HOST[0]];
 const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
-/** What a tag in an ICU case is read as (`readTemplate`): a stop. */
+/** What a tag inside an ICU is read as (`readTemplate`): a stop. */
 const UNREAD = new Map([['[tabindex]', '']]);
 
 /**
@@ -522,7 +522,8 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * scan reads where the parser sees an expression. Its attributes make no stop, though its tag
  * or its written role can still make it a widget, which fails point 1 (`@let mark =
  * '<button>'`). A real tag such a false one swallows is the tree's alone, and an ICU it runs
- * into is one whose tags the scan never reads (`end`): both fail point 1.
+ * into is one the scan does not read whole (`end`): both fail point 1. A tag the tag reader holds
+ * and the walk never reached (`held`, in a block kind the walk does not know) fails it too.
  */
 const readTemplate = (content, tables, elements, attributes, icus) => {
   const text = content.replace(COMMENT, '');
@@ -533,6 +534,7 @@ const readTemplate = (content, tables, elements, attributes, icus) => {
       tag: m[1].toLowerCase(),
       attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
       unread,
+      held: attributes.has(m.index),
       // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
       end: m.index + m[0].length,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
@@ -623,13 +625,18 @@ const focusAttributes = (node) =>
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
+  names = new Map();
   icus = [];
-  visitElement(node) {
+  record(node, name) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.names.set(node.sourceSpan.start.offset, name);
+  }
+  visitElement(node) {
+    this.record(node, node.name);
     super.visitElement(node);
   }
   visitTemplate(node) {
-    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.record(node, node.tagName ?? 'ng-template');
     super.visitTemplate(node);
   }
   visitIcu(node) {
@@ -821,6 +828,7 @@ const readMessages = (file, content) => {
     roles: state.roles,
     elements: state.elements,
     attributes: tags.attributes,
+    names: tags.names,
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1057,7 +1065,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       throw new AriaError(
         'denominator',
         `${template.file}: the parsed tree holds ` +
-          `<${said.elements.get(unscanned[0])?.tag ?? 'ng-template'}> at offset ` +
+          `<${said.names.get(unscanned[0])}> at offset ` +
           `${unscanned[0]}, and the tag scan never found it — a \`<\` before it, in an ` +
           `expression, a string or a text, reads to the scan as a tag that swallows this one, ` +
           `and points 4 and 8, which start from the scan, would not examine it`,
@@ -1070,8 +1078,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         'denominator',
         `${template.file}: the tag scan reads a tag that runs on into the ICU at offset ` +
           `${runInto[0]} — a \`<\` before it, in a text or a string, opens a tag to the scan ` +
-          `that ends past the ICU's start, and the tags its cases draw, which the tree does ` +
-          `not hold, are ones the scan never reads`,
+          `that ends past the ICU's start, and what its cases draw, if anything, is markup the ` +
+          `scan does not read whole and the tree does not hold`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
@@ -1132,10 +1140,13 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         throw new AriaError(
           'denominator',
           `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
-            `is in the tag scan and not in the parsed tree — ` +
+            (element.held
+              ? `is in the parsed tree, and the walk never reached it — a block kind it does ` +
+                `not descend into; `
+              : `is in the tag scan and not in the parsed tree — `) +
             (element.unread
-              ? `it stands inside an ICU, whose cases Angular renders and the tree does not ` +
-                `hold, so nothing here reads what it is`
+              ? `it stands inside an ICU, which the tree holds as no elements, so nothing here ` +
+                `reads what it is`
               : `point 4 asks which elements can stand in the DOM together, and about this ` +
                 `one it would have nothing to ask`),
         );

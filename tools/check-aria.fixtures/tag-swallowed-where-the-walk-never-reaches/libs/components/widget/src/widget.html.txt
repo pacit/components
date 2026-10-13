@@ -1,6 +1,7 @@
-<!-- The reference's trigger, and a retry beside it under a block whose condition holds a `<`:
-     the tag scan reads `<limit())` as a tag that runs on to the next `>`, swallowing the span,
-     which the parsed tree holds as it is. -->
+<!-- The reference's trigger in an error boundary, and in its `@error` block a retry under a
+     condition holding a `<`: the tag scan reads `<limit())` as a tag that swallows the span, and
+     the walk never descends into the block at all. -->
+@boundary {
 <span class="pct-widget__box">
   <button
     class="pct-widget__trigger"
@@ -12,6 +13,8 @@
     {{ label() }}
   </button>
 </span>
+} @error {
 @if (count() <limit()) {
 <span class="pct-widget__retry" role="button" [attr.tabindex]="0">Retry</span>
+}
 }

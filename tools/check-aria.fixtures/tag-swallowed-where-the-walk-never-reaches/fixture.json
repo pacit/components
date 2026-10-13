@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the parsed tree holds <span>",
+  "$reason": "A `<` in a block's condition, `@if (count() <limit())`: the tag scan reads `<limit())` as a tag running on to the next `>`, and the retry `<span>` after it, a stop a user lands on, vanishes into its attributes, while the parsed tree holds it as it is. A tag the tree holds nothing for outside an ICU makes no stop, so the false tag passes; the span is the tree's alone, and the tree's count of its tags against the scan's fails point 1. It stands in the `@error` block of `stop-the-walk-never-reaches`, where the walk never goes, so the refusal names the tag the compiler's visitor recorded — named off the walk's elements, which never held it, it was an `<ng-template>`. The tag scan refused the false tag for the `[attr.tabindex]` it swallowed; prettier refuses the template as well, and this is the gate's own reason."
+}
