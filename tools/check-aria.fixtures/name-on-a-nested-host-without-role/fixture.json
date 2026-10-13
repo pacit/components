@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The switcher draws the reference's chrome instead of the toggle and binds both names by property — but the chrome declares `ariaLabelledby` alone. `[ariaLabel]` is no input of it, so the name lands on the chrome's host, which has no role: a generic with a name, `generic` in Chromium 153 and Firefox 157, and axe says nothing, sparing a custom element. axe's element table knows no `pct-` tag, so a rule that read the tag passes it; so does one that took any `[ariaLabel]` for an input whatever the component declares, one that read only the components asked for a name (the chrome is not), and one that asked only whether every binding, or the last, lands on the host."
+}

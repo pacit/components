@@ -19,4 +19,6 @@ export class PctToggle {
   protected readonly on = input(false);
   protected readonly busy = input(false);
   protected readonly iconLabel = input<string>('');
+  /** Where the toggle leads, when it is a link instead. */
+  protected readonly href = input<string>('');
 }

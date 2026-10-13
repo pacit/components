@@ -1,0 +1,19 @@
+<!-- A region takes a name, where an element with no role does not. Spelled both ways the
+     platform has: its own `<section>`, which a name makes a region, and the role written onto a
+     `<div>` — the tag alone would forbid the name, the role allows it. -->
+@if (sectioned()) {
+<section
+  class="pct-chrome__surface"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <ng-content></ng-content>
+</section>
+} @else {
+<div
+  class="pct-chrome__surface"
+  [attr.aria-label]="ariaLabel() || null"
+>
+  <ng-content></ng-content>
+</div>
+}

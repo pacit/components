@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The reference's group drawn with `role=\"generic\"` written on its tag. The template's attribute replaces the host block's `radiogroup` in the DOM, and the tag then reads `generic` with the name in Chromium 153 and Firefox 157, axe reporting only `aria-roles` — a name the role forbids. axe's reader knows no `generic`, so the written role reads as none, and a rule that then fell back to the host block's role passes it, the radiogroup carrying the name."
+}

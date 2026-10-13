@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "A role-less `<span>` handed the consumer's name around a button of its own, beside the triggers that carry it — the shape the review of #78 built. ARIA forbids a name on a generic; both engines compute one anyway, which nothing has to say, and axe only asks for a review, the button inside reading as text. Being neither a widget nor a group, it was invisible to a rule that read the carriers, and a refusal asked only where no element carries the name passes it."
+}

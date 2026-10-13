@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The reference's group drawn with `role=\"none\"` written on its tag and both names bound onto its host. Angular sets the template's attributes after the host block's, so the element ends with `none`, not the block's `radiogroup` — and a name on it is a generic's to Chromium 153 and Firefox 157, with only a review asked by axe. A rule that read the host block alone passes it, the radiogroup carrying the name."
+}

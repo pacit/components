@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "the role is BOUND",
+  "$reason": "`role-bound-on-a-carrier` with one of the two names bound: the panel takes the consumer's `aria-labelledby`, interpolated, and its role is still an expression's. Whether that role may carry a name is the question the template cannot answer, so the refusal is the bound role's, as it is with both names — a gate that asked it of carriers alone would hand the panel to the prohibited-role rule, which reads it as the `<div>` it is without a role."
+}

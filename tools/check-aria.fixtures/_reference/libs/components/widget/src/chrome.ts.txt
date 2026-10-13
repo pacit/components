@@ -1,6 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
-/** Chrome around somebody else's control: no role, no widget of its own, nothing to name. */
+/**
+ * Chrome around somebody else's control: no role on the host and no widget of its own, so the
+ * component is asked for no name — and a landmark the consumer may name all the same.
+ */
 @Component({
   selector: 'pct-chrome',
   templateUrl: './chrome.html',
@@ -8,4 +11,9 @@ import { Component } from '@angular/core';
     class: 'pct-chrome',
   },
 })
-export class PctChrome {}
+export class PctChrome {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  /** Which of the two spellings is standing — the template's `@if`, and nothing else. */
+  protected readonly sectioned = input(true);
+}

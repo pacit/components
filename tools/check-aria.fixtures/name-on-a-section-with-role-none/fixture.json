@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The reference's `<section>` with `role=\"none\"` written on it, still handed the name. ARIA forbids a name on `none` and `presentation`; the engines settle the conflict by dropping the written role (Chromium 153 and Firefox 157 show a named region, axe adds `presentation-role-conflict`), so the template says one thing and the page another. A rule that read only the tag's own role passes it: the section, named, is a region."
+}
