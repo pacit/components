@@ -3,7 +3,9 @@ import { Component, input } from '@angular/core';
 /**
  * A native button that becomes a switch when it toggles, holding an icon, inside a frame that
  * takes focus back: what point 4 must pass around a control — an image and a busy bar inside
- * it, a role an expression decides on it, and a stop around it that takes no name.
+ * it, a role an expression decides on it, and a stop around it that takes no name. Drawn on a
+ * stop, it is a `role="button"` holding the same icon: a written role is a control as the
+ * tag's own is, its children presentational alike.
  */
 @Component({
   selector: 'pct-toggle',
@@ -19,6 +21,8 @@ export class PctToggle {
   protected readonly on = input(false);
   protected readonly busy = input(false);
   protected readonly iconLabel = input<string>('');
+  /** Whether the toggle is drawn on a stop instead of a native button. */
+  protected readonly stop = input(false);
   /** Where the toggle leads, when it is a link instead. */
   protected readonly href = input<string>('');
 }
