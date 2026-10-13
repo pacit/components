@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "runs on into the ICU",
+  "$reason": "`stop-in-an-icu` behind a false tag: the text of a `<textarea>` holds `<b's`, which the tag scan reads as a tag whose quote runs on past the ICU right after it, so the stop the ICU draws is never a tag to the scan, and the tree holds no element in an ICU to count it by. The false tag is no element and reads as nothing; what fails point 1 is the scan's reading of it running past the ICU's start, which no real opening tag can do. A reading that only refused a tag found inside an ICU passed it; the tag scan refused it for the `tabindex` it read in the false tag's text."
+}

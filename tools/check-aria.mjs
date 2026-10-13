@@ -24,7 +24,8 @@ import {
   BindingType,
   parseTemplate,
   TmplAstForLoopBlock,
-  TmplAstIcu,
+  TmplAstRecursiveVisitor,
+  tmplAstVisitAll,
 } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
@@ -511,15 +512,17 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
  * role, so that a group there still fails point 1, and binds nothing.
  *
- * A tag the tree holds nothing for at all is one of two things, and the tree tells which
- * (`icus`). Inside an ICU case it is markup Angular renders and the tree does not hold —
- * nothing here can read it, and reading the scan's text instead would make the scan a lexer
- * again — so it is read as a stop (`UNREAD`), the worst case, and fails point 1 as a widget the
- * walk never reached does. Anywhere else it is no element of the DOM: a `<style>`, a stylesheet
- * `<link>` or a `<script>` the compiler takes out, a tag in the text of a `<textarea>` or in a
- * string (`@let mark = '<b>'`), one the scan reads where the parser sees an expression; it binds
- * nothing and lands nowhere. A real element such a false tag swallows is the tree's alone, and
- * fails point 1 by the tree's own count.
+ * A tag the tag reader holds nothing for is one of two things, and the tree tells which
+ * (`icus`). Inside an ICU it is markup Angular renders and the tree does not hold — nothing here
+ * can read it, and reading the scan's text instead would make the scan a lexer again — so it is
+ * read as a stop (`UNREAD`), the worst case, and fails point 1 as a widget the walk never
+ * reached does. Anywhere else it is no element of the DOM: an `<ng-content>`, which projects and
+ * draws nothing of its own, a `<style>`, a stylesheet `<link>` or a `<script>` the compiler
+ * takes out, a tag in the text of a `<textarea>` or in a string (`@let mark = '<b>'`), one the
+ * scan reads where the parser sees an expression. Its attributes make no stop, though its tag
+ * or its written role can still make it a widget, which fails point 1 (`@let mark =
+ * '<button>'`). A real tag such a false one swallows is the tree's alone, and an ICU it runs
+ * into is one whose tags the scan never reads (`end`): both fail point 1.
  */
 const readTemplate = (content, tables, elements, attributes, icus) => {
   const text = content.replace(COMMENT, '');
@@ -530,6 +533,8 @@ const readTemplate = (content, tables, elements, attributes, icus) => {
       tag: m[1].toLowerCase(),
       attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
       unread,
+      // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
+      end: m.index + m[0].length,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
       // element.
@@ -575,6 +580,62 @@ const readTemplate = (content, tables, elements, attributes, icus) => {
  * template too and passes for the same reason; nothing here uses one.
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
+
+/**
+ * An attribute written on a node, by the name the DOM gives it and with the value the parser
+ * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
+ * of that name, in whatever syntax. One reading for the walk and the tag reader below.
+ */
+const writtenOn = (node, name) =>
+  (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
+const boundOn = (node, name) =>
+  (node.inputs ?? []).filter(
+    (i) => nameOf(i.name, i.type === BindingType.Property) === name,
+  );
+/**
+ * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
+ * and `isFocusable` read it: a written attribute by its name, with its value, and a bound one as
+ * `[name]`, whatever syntax binds it. A class, a style or an animation binding of the same name
+ * (`[class.tabindex]`) reads as one as well, as it does for a role or a name, and so does a
+ * property binding a component of the library takes as its input (`[tabIndex]` on a tag whose
+ * component declared one): neither reaches the attribute, and nothing here writes either.
+ */
+const focusAttributes = (node) =>
+  new Map(
+    FOCUS_ATTRIBUTES.flatMap((name) => [
+      ...(writtenOn(node, name) === undefined
+        ? []
+        : [[name, writtenOn(node, name)]]),
+      ...(boundOn(node, name).length ? [[`[${name}]`, '']] : []),
+    ]),
+  );
+
+/**
+ * The tags of a template as the compiler's own visitor reaches them: each element and template
+ * with its `focusAttributes`, by the offset it starts at, and the span of each ICU, whose cases
+ * Angular renders and the tree does not hold (`readTemplate`). The visitor and not the walk,
+ * because it knows every kind of node Angular has: a kind the walk does not descend into
+ * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
+ * template is read too, though the tree holds it as no element: a stop written on one fails
+ * point 1, as a group does. A tag is recorded before the visitor descends into it, so of two at
+ * one offset — an inline template and the element or the `<ng-template>` it wraps — the inner
+ * one, which carries the attributes, is the one kept.
+ */
+class TagReader extends TmplAstRecursiveVisitor {
+  attributes = new Map();
+  icus = [];
+  visitElement(node) {
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    super.visitElement(node);
+  }
+  visitTemplate(node) {
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    super.visitTemplate(node);
+  }
+  visitIcu(node) {
+    this.icus.push([node.sourceSpan.start.offset, node.sourceSpan.end.offset]);
+  }
+}
 
 /**
  * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
@@ -658,46 +719,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       });
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
-    // Point 4 takes from the same element what the tag scan cannot read for itself. Of an
-    // attribute written twice the DOM keeps the last: Angular sets each in turn.
-    const written = (name) =>
-      (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
-    const bindings = (name) =>
-      (node.inputs ?? []).filter(
-        (i) => nameOf(i.name, i.type === BindingType.Property) === name,
-      );
+    // Point 4 takes from the same element what the tag scan cannot read for itself.
+    const written = (name) => writtenOn(node, name);
+    const bindings = (name) => boundOn(node, name);
     // Each name attribute bound to its input, in whatever syntax.
     const taking = NAME_TARGETS.map((name, i) =>
       bindings(name).filter((b) =>
         (b.value?.source ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
     );
-    // What decides whether a user can land on it (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
-    // and `isFocusable` read it: a written attribute by its name, with the value the DOM gets,
-    // and a bound one as `[name]`, whatever syntax binds it. Kept for an `<ng-template>` too,
-    // which the tree holds as no element: a stop written on one fails point 1, as a group does.
-    // Only a tag carries attributes — an element, a template, an `<ng-content>` — and only a tag
-    // is recorded: what point 1 counts against the scan. Of two nodes at one offset — an
-    // inline template around the element or the `<ng-template>` it wraps — the inner, walked
-    // last, is the one that carries the attributes. A class, a style or an animation binding of
-    // the same name (`[class.tabindex]`) reads as one as well, as it does for a role or a name,
-    // and so does a property binding a component of the library takes as its input
-    // (`[tabIndex]` on a tag whose component declared one): neither reaches the attribute, and
-    // nothing here writes either.
-    const attrs = new Map(
-      FOCUS_ATTRIBUTES.flatMap((name) => [
-        ...(written(name) === undefined ? [] : [[name, written(name)]]),
-        ...(bindings(name).length ? [[`[${name}]`, '']] : []),
-      ]),
-    );
-    if (node.attributes)
-      state.attributes.set(node.sourceSpan.start.offset, attrs);
-    // Where an ICU stands: what its cases draw, the tree does not hold.
-    if (node instanceof TmplAstIcu)
-      state.icus.push([
-        node.sourceSpan.start.offset,
-        node.sourceSpan.end.offset,
-      ]);
     const element =
       typeof node.name === 'string'
         ? {
@@ -729,7 +759,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             aria:
               (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
               (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
-            tabindex: attrs.has('tabindex') || attrs.has('[tabindex]'),
+            tabindex: ['tabindex', '[tabindex]'].some((key) =>
+              focusAttributes(node).has(key),
+            ),
           }
         : null;
     if (element?.role !== null && element?.role !== undefined)
@@ -776,18 +808,20 @@ const readMessages = (file, content) => {
     within: new Map(),
     roles: [],
     elements: new Map(),
-    attributes: new Map(),
-    icus: [],
   };
-  if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
+  const tags = new TagReader();
+  if (!parsed.errors?.length) {
+    walkTemplate(parsed.nodes, [], state);
+    tmplAstVisitAll(tags, parsed.nodes);
+  }
   return {
     messages: state.messages,
     paths: state.paths,
     within: state.within,
     roles: state.roles,
     elements: state.elements,
-    attributes: state.attributes,
-    icus: state.icus,
+    attributes: tags.attributes,
+    icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -1024,9 +1058,20 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         'denominator',
         `${template.file}: the parsed tree holds ` +
           `<${said.elements.get(unscanned[0])?.tag ?? 'ng-template'}> at offset ` +
-          `${unscanned[0]}, and the tag scan never found it — a \`<\` in an expression ` +
-          `before it reads to the scan as a tag that swallows this one, and points 4 and 8, ` +
-          `which start from the scan, would not examine it`,
+          `${unscanned[0]}, and the tag scan never found it — a \`<\` before it, in an ` +
+          `expression, a string or a text, reads to the scan as a tag that swallows this one, ` +
+          `and points 4 and 8, which start from the scan, would not examine it`,
+      );
+    const runInto = said.icus.find(([from]) =>
+      read.tags.some((t) => t.offset < from && from < t.end),
+    );
+    if (runInto)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the tag scan reads a tag that runs on into the ICU at offset ` +
+          `${runInto[0]} — a \`<\` before it, in a text or a string, opens a tag to the scan ` +
+          `that ends past the ICU's start, and the tags its cases draw, which the tree does ` +
+          `not hold, are ones the scan never reads`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
@@ -1089,7 +1134,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
             `is in the tag scan and not in the parsed tree — ` +
             (element.unread
-              ? `it stands in an ICU case, whose markup Angular renders and the tree does not ` +
+              ? `it stands inside an ICU, whose cases Angular renders and the tree does not ` +
                 `hold, so nothing here reads what it is`
               : `point 4 asks which elements can stand in the DOM together, and about this ` +
                 `one it would have nothing to ask`),
