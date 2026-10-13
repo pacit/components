@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag only the tree holds, a stop it holds and the walk never
- * reaches, and a tag the scan finds inside or reads into an ICU fail point 1.
+ * syntax tree (`parseTemplate`). A tag only the tree holds, a stop or group it holds and the walk
+ * gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -1052,6 +1052,15 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
           `a message-free template and pass it`,
       );
+    // The opening tag at an offset of the text both readings take, on one line and cut short:
+    // what a refusal shows a reader of the tag it means.
+    const opening = (offset) =>
+      template.content
+        .replace(COMMENT, '')
+        .slice(offset)
+        .match(/^<[^>]*>?/)[0]
+        .replace(/\s+/g, ' ')
+        .slice(0, 120);
     const scanned = new Set(read.tags.map((t) => t.offset));
     const unscanned = [...said.attributes.keys()].filter(
       (offset) => !scanned.has(offset),
@@ -1060,10 +1069,26 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       throw new AriaError(
         'denominator',
         `${template.file}: the parsed tree holds a tag at offset ${unscanned[0]} ` +
-          `(\`${template.content.replace(COMMENT, '').slice(unscanned[0]).split('\n')[0]}\`), ` +
-          `and the tag scan never found it — a \`<\` before it, in an ` +
-          `expression, a string or a text, reads to the scan as a tag that swallows this one, ` +
-          `and points 4 and 8, which start from the scan, would not examine it`,
+          `(\`${opening(unscanned[0])}\`), and the tag scan never found it — a \`<\` before ` +
+          `it, in an expression, a string or a text, reads to the scan as a tag that swallows ` +
+          `this one, and points 4 and 8, which start from the scan, would not examine it`,
+      );
+    // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
+    // read — an `<ng-content>` aside, which it leaves unread as no element. On a reader that
+    // reaches every kind of node this never fires; it is what holds that reach, on the library
+    // and the reference, the day a block kind goes unread.
+    const unreadByTheReader = read.tags.filter(
+      (t) =>
+        said.paths.has(t.offset) &&
+        !said.attributes.has(t.offset) &&
+        t.tag !== 'ng-content',
+    );
+    if (unreadByTheReader.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the walk reached a tag at offset ${unreadByTheReader[0].offset} ` +
+          `(\`${opening(unreadByTheReader[0].offset)}\`) and the tag reader did not — what ` +
+          `makes it a stop would go unread`,
       );
     const runInto = said.icus.find(([from]) =>
       read.tags.some((t) => t.offset < from && from < t.end),
@@ -1072,7 +1097,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       throw new AriaError(
         'denominator',
         `${template.file}: the tag scan reads a tag that runs on into the ICU at offset ` +
-          `${runInto[0]} — a \`<\` before it, in a text or a string, opens a tag to the scan ` +
+          `${runInto[0]} — a \`<\` before it, in an expression, a string or a text, opens a ` +
+          `tag to the scan ` +
           `that ends past the ICU's start, and what its cases draw, if anything, is markup the ` +
           `scan does not read whole and the tree does not hold`,
       );
