@@ -1,5 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "$reason": "The reference's group with a `tabindex`, inside an `@for`. A group a user can land on is a widget as well as a group, and point 4 once listed it twice, the group's copy with no conditional path: the rule for carriers inside an `@for` read nothing there and threw a `TypeError` instead of a verdict. It counts once now, as the group it is, with the path every element has, and is refused like any other focusable carrier inside the loop. The `@if` above the loop keeps its path apart from `a-name-per-item`'s, so each of the two holds a reading the other does not."
-}
