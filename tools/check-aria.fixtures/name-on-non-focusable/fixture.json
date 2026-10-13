@@ -1,6 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
-  "message": "none of the",
-  "$reason": "Forwarded one element too high: the wrapper takes the name, the button that carries the role stays unnamed. It reads as done in a diff and changes nothing in the accessibility tree."
+  "message": "its role prohibits a name",
+  "$reason": "Forwarded one element too high: the wrapper takes the name, the button that carries the role stays unnamed. It reads as done in a diff and changes nothing in the accessibility tree. The wrapper is a role-less `<span>`, which ARIA forbids a name, and that is the refusal — asked before the carriers are counted, so the reason given is the wrapper's role rather than the missing carrier alone."
 }
