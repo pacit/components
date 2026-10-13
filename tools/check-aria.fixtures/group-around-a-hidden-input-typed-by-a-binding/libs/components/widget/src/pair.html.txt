@@ -1,0 +1,12 @@
+<!-- The reference's group around its two self-named texts, and the hidden input beside them
+     turned into a text by a binding of its type, named by nothing. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <input class="pct-pair__when" type="hidden" [type]="editing() ? 'text' : 'hidden'" />
+</div>

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a way to land on it",
+  "$reason": "`wrapper-with-a-bound-stop-and-no-role` with the stop written, `tabindex=\"-1\"`: the half of point 9's reading its bound twin does not hold. axe looks through a role-less element unless it carries a global ARIA attribute or takes focus, so the wrapper owns the option and a listbox may not own it. The tag scan's literal key read this one too; a point 9 that asked for the bound key alone would pass it."
+}

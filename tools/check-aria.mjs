@@ -14,9 +14,9 @@
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
- * Points 4, 6, 7, 8 and 9 read the template's real syntax tree (`parseTemplate`): which block
- * excludes which is a question no pattern over `@if` can answer. The two readings are joined
- * by the tag's offset, so an element only one of them found fails point 1.
+ * What an element is, whether a user lands on it and which block excludes which come off the
+ * template's syntax tree (`parseTemplate`), the last a question no pattern over `@if` answers.
+ * The two readings are joined by the tag's offset, so an element one of them misses fails point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -301,8 +301,9 @@ const contextsWritten = (text, tables) =>
  * link, `type` on an input, `tabindex` on anything — as the walk reads them off the parsed
  * tree, a written value decoded and a bound one keyed `[href]`, `[tabindex]` whatever the
  * syntax (`[tabIndex]`, `bind-attr.tabindex`, `tabindex="{{ … }}"`). A bound attribute stands
- * for a present one, with the value that keeps the element focusable — the WORST case, which
- * is the one a name has to be able to reach. A `disabled` binding is not passed on: axe would
+ * for a present one, with the value that keeps the element focusable, over a written one of
+ * the same name, which Angular sets first — the WORST case, which is the one a name has to be
+ * able to reach. A `disabled` binding is not passed on: axe would
  * read it as "takes no focus", and a control that is sometimes disabled still has to be
  * namable. A `<details>` gets a summary child, because the element a user lands on is the
  * summary — the platform's own when the template draws none — so the tag itself is never the
@@ -312,8 +313,7 @@ const DECIDING = { href: '', type: '', tabindex: '-1' };
 const virtual = (tag, attrs) => {
   const attributes = {};
   for (const [name, fallback] of Object.entries(DECIDING)) {
-    const value =
-      attrs.get(name) ?? (attrs.has(`[${name}]`) ? fallback : undefined);
+    const value = attrs.has(`[${name}]`) ? fallback : attrs.get(name);
     if (value !== undefined) attributes[name] = value;
   }
   const node = new axe.SerialVirtualNode({ nodeName: tag, attributes });
@@ -463,10 +463,11 @@ const isWidget = (tag, attrs, role, tables) =>
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
 const roleOf = (t) => {
   if (t.role !== null) return t.role;
-  if (t.tag === 'input' && t.attrs.get('type')?.toLowerCase() === 'hidden')
+  const node = virtual(t.tag, t.attrs);
+  if (t.tag === 'input' && node.attr('type')?.toLowerCase() === 'hidden')
     return null;
   try {
-    return axe.commons.aria.implicitRole(virtual(t.tag, t.attrs));
+    return axe.commons.aria.implicitRole(node);
   } catch {
     return null;
   }
@@ -504,24 +505,26 @@ const isFocusable = (tag, attrs) =>
  * (`attributes`). The parser has decoded the markup, ignores the case of a name and knows
  * every syntax Angular has for a binding, which a pattern over the text does not
  * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
- * role, so that a group there still fails point 1, and binds nothing. Every tag of a template
- * that parses has a node in the tree, so only one that does not has no attributes here, and
- * point 1 refuses that template before anything reads them.
+ * role, so that a group there still fails point 1, and binds nothing. One it holds nothing for
+ * — the content of an ICU case, which Angular renders all the same, or a tag in the text of a
+ * `<textarea>` — keeps what the scan reads on it, its names folded as the DOM folds them, so
+ * that a stop there fails point 1 as an element the walk never reached does.
  */
 const readTemplate = (content, tables, elements, attributes) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
     const element = elements.get(m.index);
+    const scanned = attributesOf(m[2]);
     return {
       tag: m[1].toLowerCase(),
-      attrs: attributes.get(m.index) ?? new Map(),
+      attrs:
+        attributes.get(m.index) ??
+        new Map([...scanned].map(([name, value]) => [nameOf(name), value])),
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
       // element.
       offset: m.index,
-      role: element
-        ? element.role
-        : readRole(attributesOf(m[2]).get(LIVE_ATTRIBUTE)),
+      role: element ? element.role : readRole(scanned.get(LIVE_ATTRIBUTE)),
       boundRole: element?.boundRole ?? false,
       roleWritten: element?.roleWritten ?? false,
       forwards: element?.forwards ?? false,
@@ -643,9 +646,10 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       });
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
-    // Point 4 takes from the same element what the tag scan cannot read for itself.
+    // Point 4 takes from the same element what the tag scan cannot read for itself. Of an
+    // attribute written twice the DOM keeps the last: Angular sets each in turn.
     const written = (name) =>
-      (node.attributes ?? []).find((a) => nameOf(a.name) === name)?.value;
+      (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
     const bindings = (name) =>
       (node.inputs ?? []).filter(
         (i) => nameOf(i.name, i.type === BindingType.Property) === name,
@@ -660,15 +664,18 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // and `isFocusable` read it: a written attribute by its name, with the value the DOM gets,
     // and a bound one as `[name]`, whatever syntax binds it. Kept for an `<ng-template>` too,
     // which the tree holds as no element: a stop written on one fails point 1, as a group does.
-    // A class, a style or an animation binding of the same name (`[class.tabindex]`) reads as
-    // one as well, as it does for a role or a name: it sets no attribute, and nobody writes it.
+    // A text holds none, and none is kept for it: a `<textarea>`'s starts where the scan finds a
+    // tag in it. A class, a style or an animation binding of the same name (`[class.tabindex]`)
+    // reads as one as well, as it does for a role or a name, and so does a property binding a
+    // component of the library takes as its input (`[tabIndex]` on a tag whose component
+    // declared one): neither reaches the attribute, and nothing here writes either.
     const attrs = new Map(
       FOCUS_ATTRIBUTES.flatMap((name) => [
         ...(written(name) === undefined ? [] : [[name, written(name)]]),
         ...(bindings(name).length ? [[`[${name}]`, '']] : []),
       ]),
     );
-    if (node.sourceSpan && node.attributes)
+    if (node.attributes)
       state.attributes.set(node.sourceSpan.start.offset, attrs);
     const element =
       typeof node.name === 'string'

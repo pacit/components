@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A link written in the text of a `<textarea>`: the tag scan finds it, and the parsed tree holds text, starting at the very offset where the link's `<` stands. The text holds no attributes and none is kept for it, so the tag keeps what the scan reads on it and fails point 1 as `stop-in-an-icu` does. Kept for the text as well, an empty reading takes the link's offset and the `<a>`, with no address, passes."
+}
