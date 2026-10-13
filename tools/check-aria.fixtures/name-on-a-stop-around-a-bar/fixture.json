@@ -1,6 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
-  "message": "Hand the name to the control",
+  "message": "and it is no container ARIA names as a whole",
   "$reason": "A stop handed the name around a `<progress>` with no role written on it. The bar is a control by the platform's own role for its tag, a progressbar; reading the written role alone, it is nothing, and the stop a carrier with nothing inside. axe reports `aria-prohibited-attr` on the stop in three engines."
 }

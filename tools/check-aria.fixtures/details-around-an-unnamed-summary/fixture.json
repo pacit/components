@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "A disclosure handed the name on its `<details>`, around a summary that holds an icon and names nothing. The platform's own role for `<details>` is a group, and Chromium reads it as one, named; the summary is the control a user lands on, and axe reports `summary-name` (serious) on it in three engines. Asked the group's question, the details is refused for an unnamed control inside; reading the written role alone, it is no group and no widget, and the case is refused for another reason — none of the elements carries the name."
+}

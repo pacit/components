@@ -1,6 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
-  "message": "Hand the name to the control",
+  "message": "its children are presentational",
   "$reason": "A native button handed the name, with a `<textarea>` inside it. The button is a control by its own tag, and the text is another one a user lands on: one control holds another, and the text names nothing. axe reports `nested-interactive` on the button and `label` (critical) on the text in three engines. A control's kind is no licence for what stands inside it — only a container ARIA names as a whole owns its items — and the `button`'s presentational children spare only what no user lands on."
 }

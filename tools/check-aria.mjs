@@ -444,9 +444,10 @@ const isWidget = (tag, attrs, role, tables) =>
  * (`href`, `type`): a link is one with an address, an `<input>` follows its type. The rest of
  * what can move a tag's role does not reach it — `multiple` and `size` on a `<select>`, `alt`
  * on an `<img>` — and changes no verdict here: a select is a combobox or a listbox, both named
- * as a whole, and an image either way a structure. A cell, whose role axe reads off its table,
- * has none here, and a hidden `<input>` none at all: it is in no tree, though axe's table
- * gives the tag a textbox (the datetime field keeps one beside its group).
+ * as a whole, and an image either way a structure. A data cell, whose role axe reads off its
+ * table, has none here (axe throws on a `<td>` with no table around it, and on a `<header>` or
+ * a `<footer>` with nothing above), and a hidden `<input>` none at all: it is in no tree,
+ * though axe's table gives the tag a textbox (the datetime field keeps one beside its group).
  */
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
 const roleOf = (t) => {
@@ -515,7 +516,8 @@ const readTemplate = (content, tables, elements) => {
     widgets: tags
       .filter((t) => isWidget(t.tag, t.attrs, t.role, tables))
       .map((t) => ({ ...t })),
-    // A group — `role="group"`, or the platform's own for a `<fieldset>` — names a SET of
+    // A group — `role="group"`, or the platform's own for a `<fieldset>`, a `<details>` or an
+    // `<optgroup>` — names a SET of
     // controls, and ARIA asks it for no name — so it is no widget of the tables above. It may
     // still be the element a consumer's name is handed to: the datetime field's two texts
     // stand in one, and each takes the group's name with a word of its own (0090, E1 to E3).
@@ -1088,7 +1090,10 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
                 `not read)`
               : `around ${described(unnamed)}, which name(s) nothing of their own — a ` +
                 `named group around unnamed controls is 0090's E3, and the name stops above ` +
-                `them`),
+                `them` +
+                (unnamed.some((t) => t.boundRole)
+                  ? ` (an element whose role is bound is read as the control it may be)`
+                  : '')),
         );
     }
     // A `role="group"` with a `tabindex` is a widget as well, and it counts as the group it

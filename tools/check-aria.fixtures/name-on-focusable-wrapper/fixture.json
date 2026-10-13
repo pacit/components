@@ -1,6 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
-  "message": "Hand the name to the control",
+  "message": "and it is no container ARIA names as a whole",
   "$reason": "`name-on-non-focusable` with a `tabindex` on the wrapper, around the field a user types into — an editing host — instead of the trigger: the label on the wrapper and the field inside unnamed. A user can land on the wrapper now, so it is a widget, and the widget test alone made it a carrier; axe reports `aria-prohibited-attr` on it in three engines, and Chromium 153 and Firefox 157 read both elements as generic. The field is a control because a user lands on it and for no other reason the tables know — no role written, none of the platform's for a `<div>` — which makes this the case that holds focusability, by itself, to counting as a control inside."
 }

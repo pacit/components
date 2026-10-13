@@ -18,4 +18,5 @@ export class PctToggle {
   protected readonly toggles = input(false);
   protected readonly on = input(false);
   protected readonly busy = input(false);
+  protected readonly iconLabel = input<string>('');
 }

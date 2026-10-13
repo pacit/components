@@ -1,0 +1,9 @@
+<!-- A disclosure handed the name, around a summary that holds an icon and names nothing. -->
+<details
+  class="pct-pair__more"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <summary class="pct-pair__toggle"><svg aria-hidden="true"></svg></summary>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+</details>
