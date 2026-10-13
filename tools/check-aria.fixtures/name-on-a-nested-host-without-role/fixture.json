@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The reference's toggle drawn inside the switcher, one of its two names bound as an attribute: `[ariaLabel]` still feeds the toggle's input, `[attr.aria-labelledby]` lands on the toggle's host, which has no role — a generic with a name, `generic` in Chromium 153 and Firefox 157, and axe says nothing, sparing a custom element. axe's element table knows no `pct-` tag, so a rule that read the tag passes it, and so does one that asked whether ANY of the bindings is an input rather than whether each is."
+}

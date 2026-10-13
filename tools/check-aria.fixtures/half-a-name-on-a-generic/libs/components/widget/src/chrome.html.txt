@@ -12,7 +12,7 @@
 } @else {
 <div
   class="pct-chrome__surface"
-  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-label]="ariaLabel() || null"
 >
   <ng-content></ng-content>
 </div>

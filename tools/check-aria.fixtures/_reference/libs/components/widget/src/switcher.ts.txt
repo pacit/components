@@ -1,0 +1,20 @@
+import { Component, input } from '@angular/core';
+
+/**
+ * A choice drawn by the library's own components: a group of options, or a single toggle. The
+ * consumer's name reaches the group's host as an attribute, its role carrying it, and the
+ * toggle through its inputs — the two ways point 4 must accept for a component drawn inside.
+ */
+@Component({
+  selector: 'pct-switcher',
+  templateUrl: './switcher.html',
+  host: {
+    class: 'pct-switcher',
+  },
+})
+export class PctSwitcher {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  /** Whether there is more than one option — the template's `@if`, and nothing else. */
+  protected readonly several = input(false);
+}

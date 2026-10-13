@@ -2,5 +2,5 @@
   "point": 4,
   "check": "forwarded",
   "message": "its role prohibits a name",
-  "$reason": "The reference's named landmark with its role taken off and half the name left on it: a `<div>`, generic, taking only `aria-labelledby`, in a component whose host has no role and whose template draws no widget, so no other rule asks it anything. A refusal that read only the elements binding both attributes — what point 4 calls a carrier — passes it."
+  "$reason": "The reference's named landmark with its role taken off and half the name left on it: a `<div>`, generic, taking only `aria-label`, in a component whose host has no role and whose template draws no widget, so no other rule asks it anything. A refusal that read only the elements binding both attributes — what point 4 calls a carrier — passes it."
 }
