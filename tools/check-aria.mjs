@@ -507,6 +507,7 @@ const readTemplate = (content, tables, elements) => {
       offset: m.index,
       role: element ? element.role : readRole(attrs.get('role')),
       boundRole: element?.boundRole ?? false,
+      roleWritten: element?.roleWritten ?? false,
       forwards: element?.forwards ?? false,
       takesName: element?.takesName ?? false,
       takenAs: element?.takenAs ?? [],
@@ -645,6 +646,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             tag: node.name.toLowerCase(),
             offset: node.sourceSpan?.start.offset,
             role: readRole(written(LIVE_ATTRIBUTE)),
+            // Whether a `role` is written at all, read or not: on a component's tag it
+            // replaces the host block's, whatever the engines make of it.
+            roleWritten: written(LIVE_ATTRIBUTE) !== undefined,
             boundRole: bindings(LIVE_ATTRIBUTE).length > 0,
             // Both of them: what point 4 calls a carrier. Either: the consumer's name lands
             // here, and point 4 asks whether the element's role lets it carry one.
@@ -1179,10 +1183,11 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // A component of the library drawn by a custom tag its selector names takes the name through
   // the inputs it declares, bound to them by property. Bound any other way, or to an input it
   // does not declare, the name lands on its host. A role the host block binds carries it, as
-  // point 2 has it, the binding landing after any attribute; otherwise the role is the one
-  // written on the tag — Angular sets the template's attributes after the host block's
-  // (`mergeHostAttribute`) — or else the host block's, and none, or one that forbids a name,
-  // refuses. A custom element the library does not define is not read.
+  // point 2 has it, the binding landing after any attribute; otherwise a `role` written on the
+  // tag replaces the host block's — Angular sets the template's attributes after the host
+  // block's (`mergeHostAttribute`) — even one no reader knows (`generic`, `""`), and only a tag
+  // with none keeps the block's. No role, or one that forbids a name, refuses. A selector is
+  // read by its tag (`hostTags`); a custom element the library does not define is not read.
   const drawnBy = new Map(
     components.flatMap((c) =>
       hostTags(c.selector)
@@ -1196,7 +1201,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     if (t.takenAs.every((name) => drawn.inputs.has(name))) return false;
     const host = hostRoleOf(drawn);
     if (host.bound) return false;
-    const role = t.role ?? host.role;
+    const role = t.roleWritten ? t.role : host.role;
     return role === null || forbids(role);
   };
   for (const component of components) {

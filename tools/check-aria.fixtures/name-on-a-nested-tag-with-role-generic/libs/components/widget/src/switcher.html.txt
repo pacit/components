@@ -1,0 +1,11 @@
+<!-- The group's host is a radiogroup and carries the name bound onto it; the toggle's host has
+     no role, and the toggle takes the name through its inputs and forwards it itself. -->
+@if (several()) {
+<pct-group
+  role="generic"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+><ng-content></ng-content></pct-group>
+} @else {
+<pct-toggle [ariaLabel]="ariaLabel()" [ariaLabelledby]="ariaLabelledby()"></pct-toggle>
+}
