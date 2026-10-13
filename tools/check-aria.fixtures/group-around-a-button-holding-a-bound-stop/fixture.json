@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "`group-around-a-button-holding-a-text` with a stop for the text: a `<span>` inside the self-named button, its `tabindex` bound as `bind-attr.tabindex` — the attribute binding `[attr.tabindex]` in Angular's other syntax, one input to the parser. A button owns what stands in it only where no user lands, so the stop is a control of the group's and names nothing. The tag scan knew the bracketed spelling alone, read no stop, and let the button own the span; the group passed."
+}

@@ -14,7 +14,7 @@
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
- * Points 4, 6, 7 and 9 read the template's real syntax tree (`parseTemplate`): which block
+ * Points 4, 6, 7, 8 and 9 read the template's real syntax tree (`parseTemplate`): which block
  * excludes which is a question no pattern over `@if` can answer. The two readings are joined
  * by the tag's offset, so an element only one of them found fails point 1.
  *
@@ -298,20 +298,22 @@ const contextsWritten = (text, tables) =>
 
 /**
  * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
- * link, `type` on an input, `tabindex` on anything. A bound attribute (`[attr.href]`,
- * `[tabindex]`) stands for a present one, with the value that keeps the element focusable —
- * the WORST case, which is the one a name has to be able to reach. A `disabled` binding is
- * not passed on: axe would read it as "takes no focus", and a control that is sometimes
- * disabled still has to be namable. A `<details>` gets a summary child, because the element
- * a user lands on is the summary — the platform's own when the template draws none — so the
- * tag itself is never the widget.
+ * link, `type` on an input, `tabindex` on anything — as the walk reads them off the parsed
+ * tree, a written value decoded and a bound one keyed `[href]`, `[tabindex]` whatever the
+ * syntax (`[tabIndex]`, `bind-attr.tabindex`, `tabindex="{{ … }}"`). A bound attribute stands
+ * for a present one, with the value that keeps the element focusable — the WORST case, which
+ * is the one a name has to be able to reach. A `disabled` binding is not passed on: axe would
+ * read it as "takes no focus", and a control that is sometimes disabled still has to be
+ * namable. A `<details>` gets a summary child, because the element a user lands on is the
+ * summary — the platform's own when the template draws none — so the tag itself is never the
+ * widget.
  */
 const DECIDING = { href: '', type: '', tabindex: '-1' };
 const virtual = (tag, attrs) => {
   const attributes = {};
   for (const [name, fallback] of Object.entries(DECIDING)) {
-    const bound = attrs.has(`[${name}]`) || attrs.has(`[attr.${name}]`);
-    const value = attrs.get(name) ?? (bound ? fallback : undefined);
+    const value =
+      attrs.get(name) ?? (attrs.has(`[${name}]`) ? fallback : undefined);
     if (value !== undefined) attributes[name] = value;
   }
   const node = new axe.SerialVirtualNode({ nodeName: tag, attributes });
@@ -482,13 +484,14 @@ const holdsPresentation = (t) =>
  * that is the intent, while a `<button>` there is a control the keyboard reaches and the
  * reader cannot describe. axe answers for the tag and its deciding attributes; an editing
  * host is the one thing the gate answers for itself, because the platform focuses it and
- * axe's table does not know (see the tables above).
+ * axe's table does not know (see the tables above). Bound, it is one key whatever the syntax:
+ * the property is `[contentEditable]` — the compiler maps no `[contenteditable]` onto it, and
+ * its DOM schema knows no property of that name on a `<div>` — and `[attr.contenteditable]`
+ * the attribute.
  */
-const EDITING_HOST = [
-  'contenteditable',
-  '[contenteditable]',
-  '[attr.contenteditable]',
-];
+const EDITING_HOST = ['contenteditable', '[contenteditable]'];
+/** Every attribute `virtual` and `isFocusable` read, as the walk collects them off the tree. */
+const FOCUS_ATTRIBUTES = [...Object.keys(DECIDING), EDITING_HOST[0]];
 const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
@@ -497,24 +500,28 @@ const isFocusable = (tag, attrs) =>
  * The tag scan of one template, each tag joined by its offset to the element the parsed tree
  * holds there (`elements`). What the tree can read, the scan takes from it: the role, whether
  * an expression decides it, whether the element binds both name attributes to the inputs or
- * either, and whether it names itself. The parser has decoded the markup, ignores the case of
- * a name and knows every syntax Angular has for a binding, which a pattern over the text does
- * not (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
- * role, so that a group there still fails point 1, and binds nothing.
+ * either, whether it names itself, and the attributes that decide whether a user lands on it
+ * (`attributes`). The parser has decoded the markup, ignores the case of a name and knows
+ * every syntax Angular has for a binding, which a pattern over the text does not
+ * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
+ * role, so that a group there still fails point 1, and binds nothing. Every tag of a template
+ * that parses has a node in the tree, so only one that does not has no attributes here, and
+ * point 1 refuses that template before anything reads them.
  */
-const readTemplate = (content, tables, elements) => {
+const readTemplate = (content, tables, elements, attributes) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
-    const attrs = attributesOf(m[2]);
     const element = elements.get(m.index);
     return {
       tag: m[1].toLowerCase(),
-      attrs,
+      attrs: attributes.get(m.index) ?? new Map(),
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
       // element.
       offset: m.index,
-      role: element ? element.role : readRole(attrs.get('role')),
+      role: element
+        ? element.role
+        : readRole(attributesOf(m[2]).get(LIVE_ATTRIBUTE)),
       boundRole: element?.boundRole ?? false,
       roleWritten: element?.roleWritten ?? false,
       forwards: element?.forwards ?? false,
@@ -649,6 +656,20 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         (b.value?.source ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
     );
+    // What decides whether a user can land on it (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
+    // and `isFocusable` read it: a written attribute by its name, with the value the DOM gets,
+    // and a bound one as `[name]`, whatever syntax binds it. Kept for an `<ng-template>` too,
+    // which the tree holds as no element: a stop written on one fails point 1, as a group does.
+    // A class, a style or an animation binding of the same name (`[class.tabindex]`) reads as
+    // one as well, as it does for a role or a name: it sets no attribute, and nobody writes it.
+    const attrs = new Map(
+      FOCUS_ATTRIBUTES.flatMap((name) => [
+        ...(written(name) === undefined ? [] : [[name, written(name)]]),
+        ...(bindings(name).length ? [[`[${name}]`, '']] : []),
+      ]),
+    );
+    if (node.sourceSpan && node.attributes)
+      state.attributes.set(node.sourceSpan.start.offset, attrs);
     const element =
       typeof node.name === 'string'
         ? {
@@ -680,11 +701,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             aria:
               (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
               (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
-            tabindex:
-              (node.attributes ?? []).some((a) => a.name === 'tabindex') ||
-              (node.inputs ?? []).some((i) =>
-                /^(attr\.)?tabindex$/.test(i.name),
-              ),
+            tabindex: attrs.has('tabindex') || attrs.has('[tabindex]'),
           }
         : null;
     if (element?.role !== null && element?.role !== undefined)
@@ -731,6 +748,7 @@ const readMessages = (file, content) => {
     within: new Map(),
     roles: [],
     elements: new Map(),
+    attributes: new Map(),
   };
   if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
   return {
@@ -739,6 +757,7 @@ const readMessages = (file, content) => {
     within: state.within,
     roles: state.roles,
     elements: state.elements,
+    attributes: state.attributes,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -838,9 +857,9 @@ const insideOf = (template, element, tables) => {
  * comes first, because that table read alone forbids a name on an `<a href>`: its `[href]`
  * variant is silent and the default fills in, which axe's own check never reaches, the link
  * being a widget. An address is read as `virtual` reads it, so one an expression may drop
- * counts as there, and one given by a directive (`routerLink`) or a spelling the tag scan does
- * not read counts as absent, which refuses. A written `role="generic"` is no role to `readRole`
- * (axe's `aria-roles` reports it on the page).
+ * counts as there, and one given by a directive (`routerLink`) counts as absent, which
+ * refuses. A written `role="generic"` is no role to `readRole` (axe's `aria-roles` reports it
+ * on the page).
  */
 const forbids = (role) =>
   NAME_TARGETS.some((name) =>
@@ -940,10 +959,16 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     );
 
   for (const template of templates) {
-    // Parsed first, judged second: the scan below takes from the tree which roles are bound,
-    // and the order of the two verdicts on a broken template stays what it was.
+    // Parsed first, judged second: the scan below takes from the tree which roles are bound
+    // and what makes a stop, and the order of the two verdicts on a broken template stays what
+    // it was.
     const said = readMessages(template.file, template.content);
-    const read = readTemplate(template.content, tables, said.elements);
+    const read = readTemplate(
+      template.content,
+      tables,
+      said.elements,
+      said.attributes,
+    );
     if (read.parsed !== read.counted)
       throw new AriaError(
         'denominator',

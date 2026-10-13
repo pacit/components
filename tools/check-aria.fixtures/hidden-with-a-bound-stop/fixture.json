@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "message": "a user can land on",
+  "$reason": "`hidden-with-a-way-in` with the control drawn on a stop: a `role=\"button\"` written on a `<span>` that `[tabIndex]` puts in the tab order — the DOM property, the way Angular code binds it, and the compiler maps `[tabindex]` onto the same one. The tag scan knew `[tabindex]` and `[attr.tabindex]` and nothing else, so the span was no stop to it and the component fell to the point's other refusal: a name declared under a hidden host. The refusal this case pins is the one that tells the truth, a control the keyboard reaches and a reader is never told about (`aria-hidden-focus`)."
+}

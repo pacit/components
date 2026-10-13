@@ -1,0 +1,19 @@
+<!-- A landmark a user can land on, its stop written in capitals, handed the name around a
+     trigger that carries it as well. -->
+<div
+  class="pct-widget__box"
+  role="region"
+  TABINDEX="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</div>

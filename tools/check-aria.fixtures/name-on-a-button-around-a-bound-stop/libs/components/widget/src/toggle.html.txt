@@ -1,0 +1,11 @@
+<!-- The reference's native button, and a stop inside it: a clear mark the keyboard reaches,
+     its `tabindex` interpolated. -->
+<button
+  class="pct-toggle__control"
+  type="button"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  {{ label() }}
+  <span class="pct-toggle__clear" tabindex="{{ on() ? 0 : -1 }}">Clear</span>
+</button>

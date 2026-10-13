@@ -1,0 +1,14 @@
+<!-- The reference's group, and a self-named button holding a stop that names nothing, its
+     `tabindex` bound by Angular's `bind-` prefix. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <button class="pct-pair__now" type="button" [attr.aria-labelledby]="nowNamedBy()">
+    <span class="pct-pair__undo" bind-attr.tabindex="busy() ? -1 : 0"></span>
+  </button>
+</div>

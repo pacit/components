@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "`group-not-in-the-tree` with a stop for the role: a `tabindex` on an `<ng-template>`, which the parsed tree holds as a template and not as an element, so the walk gives it no path. The tag scan read the stop off the text and failed point 1 on it; the attributes that decide focusability are read off the tree now, and the elements' alone would leave the template's tag with none — no stop, no widget, nothing for point 1 to notice. They are read off the template node too, by the same offset, and the stop still fails point 1 as the group does."
+}

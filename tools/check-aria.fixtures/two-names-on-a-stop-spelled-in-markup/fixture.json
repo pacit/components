@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "can be in the DOM at the same time",
+  "$reason": "`two-names-at-once` with the second trigger a `role=\"combobox\"` on a `<div>`, its stop written `tabindex=\"&#48;\"`: a character reference the parser decodes to `0`, and the DOM gets a stop. The tag scan handed axe the text `&#48;`, no number, so the `<div>` was a carrier no user lands on — a combobox is named as a whole, a widget either way — and the rule about two names for one control, which counts only what a user can land on, saw one. The walk reads the value the DOM gets."
+}
