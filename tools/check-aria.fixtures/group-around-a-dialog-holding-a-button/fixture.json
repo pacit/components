@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's named group around two texts that name themselves, and a picker dialog drawn inside it that names itself, around a button with nothing but a hidden icon in it, which names nothing. A dialog is a control of the group's and a container, but of a window type, not a composite or a widget one: what stands in it is not its items, and the button is the group's, unnamed. Read as owning whatever stands in it, the dialog's name would stand for the button's. axe reports `button-name` (critical) in three engines."
+}

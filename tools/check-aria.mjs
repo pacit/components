@@ -445,9 +445,9 @@ const isWidget = (tag, attrs, role, tables) =>
  * `graphics-symbol` — and the landmarks, `application` among them, are left to the type, and no
  * input holds them one by one: counting any one of them, or the `landmark` type, leaves the
  * gate green (measured on a copy, 2026-10-13). Counted, a toolbar would only be asked a name of
- * its own, which axe's table asks of it anyway; the rest are shapes nothing here draws or
- * documents — a meter in a link, a landmark in a group, an `application` anywhere. Toolbars the
- * docs do hand to the consumer (`button.md`), so a case holds what a focusable one owns.
+ * its own, which axe's table asks of it and no rule of axe reports missing; the rest are shapes
+ * nothing here draws — a meter in a link, a landmark in a group, an `application` anywhere.
+ * What a toolbar with a stop on it owns is another question, and a case holds it (`owns`).
  *
  * The platform's own role is axe's, worked out from the attributes `virtual` passes on
  * (`href`, `type`): a link is one with an address, an `<input>` follows its type. The rest of
@@ -774,20 +774,24 @@ const hostRoleOf = (component) => ({
 });
 
 /**
- * A container ARIA names as a whole whose items are its own: the role is named as a whole (the
- * calendar's `grid`, a `listbox`, a `dialog`, a native `<select>`) and its children are not
- * presentational — a `slider` or an `img` is named as a whole and owns no control.
+ * A container ARIA names as a whole: the role is named as a whole (the calendar's `grid`, a
+ * `listbox`, a `dialog`, a native `<select>`) and its children are not presentational — a name
+ * on it is the container's, whatever stands inside, while a `slider` or an `img` is named as a
+ * whole and holds no control. Which of what stands inside is its own is `owns`'s question.
  */
 const isContainer = (t, tables) =>
   tables.named.has(roleOf(t)) && !holdsPresentation(t);
 /**
- * What a control standing inside an element takes as its own: a container of an interactive
- * type takes its items (a listbox, a dialog), a role whose children are presentational what no
- * user lands on. A `toolbar` is a container too, a structure, and a `tabindex` makes one a
- * control without making its buttons its own: each still names itself.
+ * What a control standing inside an element takes as its own: a container of a composite or a
+ * widget type its items (a `<select>` or a listbox its options, a radiogroup its radios, a grid
+ * its cells), a role whose children are presentational what no user lands on. A `dialog`, a `toolbar`, an
+ * `application` or a `graphics-document` is a container too, and a control when it stands in a
+ * group (a `tabindex` makes the last three one), but what stands in it is not its own: each
+ * control there is asked a name of its own.
  */
+const ITEM_TYPES = new Set(['widget', 'composite']);
 const owns = (owner, t, tables) =>
-  (isContainer(owner, tables) && INTERACTIVE_TYPES.has(roleTypeOf(owner))) ||
+  (isContainer(owner, tables) && ITEM_TYPES.has(roleTypeOf(owner))) ||
   (holdsPresentation(owner) && !isFocusable(t.tag, t.attrs));
 
 /**
@@ -1061,19 +1065,20 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // An element handed the name carries it for itself, and for nothing else a reader meets on
   // its own. So when a control stands inside it — anything a user lands on, or a role of a
   // widget, a composite or a window, the first one on the way down (`insideOf`) — it carries
-  // the name only as a container ARIA names as a whole, whose items are its own: the
-  // calendar's `grid`, the dialog, a `listbox`, a `toolbar`, a native `<select>`. Anything else
-  // is refused, whatever its kind. A stop a `tabindex` puts on a wrapper is no carrier (the
-  // wrapper of `name-on-non-focusable` with a `tabindex`, which the widget test alone let
-  // through), and nor is a `region` or a `<button>` around an `<input>`: the name stops one
-  // element above a control, or one control holds another. Nor is a role named as a whole
-  // whose children are presentational (`slider`, `progressbar`, `img`) holding what a user
-  // lands on: that is the button around a text again. axe, run in three engines (2026-10-13),
-  // reports the wrapper with a `combobox` inside as `aria-prohibited-attr` and `button-name`,
-  // the button around a text as `nested-interactive` and `label`, and a wrapper around a plain
-  // button or a `region` around one as nothing at all — there this is the one reader that
-  // refuses it. What is not a control of its own passes: an icon (`img` is a structure)
-  // anywhere, and inside a role whose children are presentational, whatever no user lands on.
+  // the name only as a container ARIA names as a whole, the name being the container's
+  // whatever stands inside: the calendar's `grid`, the dialog, a `listbox`, a `toolbar`, a
+  // native `<select>`. Anything else is refused, whatever its kind. A stop a `tabindex` puts on
+  // a wrapper is no carrier (the wrapper of `name-on-non-focusable` with a `tabindex`, which
+  // the widget test alone let through), and nor is a `region` or a `<button>` around an
+  // `<input>`: the name stops one element above a control, or one control holds another. Nor is
+  // a role named as a whole whose children are presentational (`slider`, `progressbar`, `img`)
+  // holding what a user lands on: that is the button around a text again. axe, run in three
+  // engines (2026-10-13), reports the wrapper with a `combobox` inside as
+  // `aria-prohibited-attr` and `button-name`, the button around a text as `nested-interactive`
+  // and `label`, and a wrapper around a plain button or a `region` around one as nothing at all
+  // — there this is the one reader that refuses it. What is not a control of its own passes: an
+  // icon (`img` is a structure) anywhere, and inside a role whose children are presentational,
+  // whatever no user lands on.
   //
   // Not read: whether the items of a container name themselves (a `toolbar` around an unnamed
   // combobox passes here and fails `button-name` on the page, and so does ARIA 1.1's

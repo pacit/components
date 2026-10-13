@@ -7,7 +7,8 @@ import { Component, input } from '@angular/core';
  * stop, it is a `role="button"` holding the same icon: a written role is a control as the
  * tag's own is, its children presentational alike. Drawn as a link, it holds a named icon
  * whose role is written, or a native `<img>` in its place: a link's children are not
- * presentational, and an image is still no control inside it, by a written role or the tag's.
+ * presentational, and an image — or decoration, with an empty `alt` — is still no control
+ * inside it, by a written role or the tag's.
  */
 @Component({
   selector: 'pct-toggle',
