@@ -2,7 +2,9 @@ import { Component, input } from '@angular/core';
 
 /**
  * Two texts under one name: the GROUP carries the consumer's name, and each text is named by
- * the group's name and a word of its own — the datetime field's shape (0090, E1 to E3).
+ * the group's name and a word of its own — the datetime field's shape (0090, E1 to E3). Where
+ * the group is a stop, a `role="button"` written on a `<span>` beside the texts names itself
+ * and owns its busy bar.
  */
 @Component({
   selector: 'pct-pair',
@@ -17,6 +19,8 @@ export class PctPair {
   protected readonly firstNamedBy = input<string>('');
   protected readonly secondNamedBy = input<string>('');
   protected readonly periodNamedBy = input<string>('');
+  protected readonly nowNamedBy = input<string>('');
+  protected readonly busy = input(false);
   /** Which of the two groups is standing — the template's `@if`, and nothing else. */
   protected readonly inline = input(true);
 }
