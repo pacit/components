@@ -784,10 +784,12 @@ const isContainer = (t, tables) =>
 /**
  * What a control standing inside an element takes as its own: a container of a composite or a
  * widget type its items (a `<select>` or a listbox its options, a radiogroup its radios, a grid
- * its cells), a role whose children are presentational what no user lands on. A `dialog`, a `toolbar`, an
- * `application` or a `graphics-document` is a container too, and a control when it stands in a
- * group (a `tabindex` makes the last three one), but what stands in it is not its own: each
- * control there is asked a name of its own.
+ * its cells), a role whose children are presentational what no user lands on. A `dialog`, an
+ * `alertdialog`, a `toolbar`, an `application` or a `graphics-document` is a container too, and
+ * a control when it stands in a group (a `tabindex` makes the last three one), but what stands
+ * in it is not its own: each control there is asked a name of its own. Adding the `landmark`
+ * type to the set leaves the gate green (measured on a copy, 2026-10-13): its one role named as
+ * a whole is `application`, a shape nothing here draws (`INTERACTIVE_TYPES`).
  */
 const ITEM_TYPES = new Set(['widget', 'composite']);
 const owns = (owner, t, tables) =>
@@ -1080,13 +1082,15 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // icon (`img` is a structure) anywhere, and inside a role whose children are presentational,
   // whatever no user lands on.
   //
-  // Not read: whether the items of a container name themselves (a `toolbar` around an unnamed
-  // combobox passes here and fails `button-name` on the page, and so does ARIA 1.1's
-  // `combobox` around its text, which fails `label`), what a nested component, a directive (a
-  // `routerLink` giving an `<a>` its address) or a template outlet adds inside the element, and
-  // what the consumer projects. An `<ng-template>` declared inside the element is read as
-  // standing there, wherever an overlay stamps it (plan 4.83). A named scroll region around a
-  // table's sort buttons is refused; the table's own item decides where its name goes.
+  // Not read: whether the items of a container that carries the name, or of a composite or a
+  // widget standing in a group (a grid's cells, a radiogroup's radios), name themselves (a
+  // `toolbar` around an unnamed combobox passes here and fails `button-name` on the page, and
+  // so does ARIA 1.1's `combobox` around its text, which fails `label`), what a nested
+  // component, a directive (a `routerLink` giving an `<a>` its address) or a template outlet
+  // adds inside the element, and what the consumer projects. An `<ng-template>` declared inside
+  // the element is read as standing there, wherever an overlay stamps it (plan 4.83). A named
+  // scroll region around a table's sort buttons is refused; the table's own item decides where
+  // its name goes.
   //
   // A group may carry it too: one name for a set of controls. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
