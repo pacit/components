@@ -1,5 +1,5 @@
 {
   "point": 1,
   "check": "denominator",
-  "$reason": "A link inside an ICU case, its address written `HREF`. The template parses, and the tree holds the case as an ICU with no element in it, while Angular renders the link all the same. Nothing in the tree stands at the link's offset, so the tag keeps what the scan reads on it — its names folded as the DOM folds them, so `HREF` is an address — and a link the walk never reached fails point 1. Read as empty, as the first reading off the tree had it, the `<a>` had no address, was no widget and passed; read without the fold, it still does."
+  "$reason": "A stop inside an ICU case: a `<span>` whose `tabindex` is interpolated, which Angular compiles to a binding and renders. The template parses, and the tree holds the case as an ICU with no element in it, so nothing here can read the span: it is read as a stop, the worst case, and fails point 1 as a widget the walk never reached does. Read as empty, as the first reading off the tree had it, the span passed; read off the scan's text, as the second did, its `tabindex` is the text `{{ limit() }}`, no number, and it passes again — as it did on the tag scan before either."
 }

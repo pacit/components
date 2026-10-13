@@ -1,0 +1,11 @@
+<!-- The reference's group, its first text named by a label written twice, the second time
+     empty: a text that names nothing of its own. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" aria-label="Hours" aria-label="" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+</div>

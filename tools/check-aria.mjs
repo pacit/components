@@ -16,7 +16,7 @@
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
  * template's syntax tree (`parseTemplate`), the last a question no pattern over `@if` answers.
- * The two readings are joined by the tag's offset, so an element one of them misses fails point 1.
+ * The readings are joined by the tag's offset, and a tag the tree holds nothing for fails point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -497,6 +497,9 @@ const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
+/** What a tag the tree holds nothing for is read as (`readTemplate`): a stop. */
+const UNREAD = new Map([['[tabindex]', '']]);
+
 /**
  * The tag scan of one template, each tag joined by its offset to the element the parsed tree
  * holds there (`elements`). What the tree can read, the scan takes from it: the role, whether
@@ -506,25 +509,25 @@ const isFocusable = (tag, attrs) =>
  * every syntax Angular has for a binding, which a pattern over the text does not
  * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
  * role, so that a group there still fails point 1, and binds nothing. One it holds nothing for
- * — the content of an ICU case, which Angular renders all the same, or a tag in the text of a
- * `<textarea>` — keeps what the scan reads on it, its names folded as the DOM folds them, so
- * that a stop there fails point 1 as an element the walk never reached does.
+ * — the content of an ICU case, which Angular renders all the same, a tag in the text of a
+ * `<textarea>`, one the scan reads where the parser sees an expression — nothing here can read,
+ * and reading the scan's text instead would make the scan a lexer again: it is read as a stop
+ * (`UNREAD`), the worst case, and fails point 1 as a widget the walk never reached does.
  */
 const readTemplate = (content, tables, elements, attributes) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
     const element = elements.get(m.index);
-    const scanned = attributesOf(m[2]);
     return {
       tag: m[1].toLowerCase(),
-      attrs:
-        attributes.get(m.index) ??
-        new Map([...scanned].map(([name, value]) => [nameOf(name), value])),
+      attrs: attributes.get(m.index) ?? UNREAD,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
       // element.
       offset: m.index,
-      role: element ? element.role : readRole(scanned.get(LIVE_ATTRIBUTE)),
+      role: element
+        ? element.role
+        : readRole(attributesOf(m[2]).get(LIVE_ATTRIBUTE)),
       boundRole: element?.boundRole ?? false,
       roleWritten: element?.roleWritten ?? false,
       forwards: element?.forwards ?? false,
@@ -665,7 +668,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // and a bound one as `[name]`, whatever syntax binds it. Kept for an `<ng-template>` too,
     // which the tree holds as no element: a stop written on one fails point 1, as a group does.
     // A text holds none, and none is kept for it: a `<textarea>`'s starts where the scan finds a
-    // tag in it. A class, a style or an animation binding of the same name (`[class.tabindex]`)
+    // tag in it, and that tag is `UNREAD`. A class, a style or an animation binding of the same name (`[class.tabindex]`)
     // reads as one as well, as it does for a role or a name, and so does a property binding a
     // component of the library takes as its input (`[tabIndex]` on a tag whose component
     // declared one): neither reaches the attribute, and nothing here writes either.
