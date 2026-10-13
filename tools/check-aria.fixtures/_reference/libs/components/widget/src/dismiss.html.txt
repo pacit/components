@@ -1,0 +1,22 @@
+<!-- Two controls on the branches of one `@if`, each holding an image with a role: a control's
+     own tag, and a widget's role on a stop. The name is handed to the control in both. -->
+@if (native()) {
+<button
+  class="pct-dismiss__control"
+  type="button"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <svg class="pct-dismiss__icon" role="img" aria-label="Close"></svg>
+</button>
+} @else {
+<span
+  class="pct-dismiss__control"
+  role="button"
+  tabindex="0"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <svg class="pct-dismiss__icon" role="img" aria-label="Close"></svg>
+</span>
+}

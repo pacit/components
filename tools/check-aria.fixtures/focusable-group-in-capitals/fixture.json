@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "The review's `role=\"Group\"` case at its tightest point. With two unnamed texts inside it is now refused twice over, by the group rule and by the wrapper rule, so the texts are gone: a group a user can land on with nothing in it to group, which carries no name by the group rule. Read as written, `Group` is no role at all and the element a plain focusable widget with nothing inside — a carrier, and the case passed. The case of a role is no part of it to Chromium and Firefox (`Group`, `GROUP` and `Listbox` measured) or to WebKit's source, so the group test reads it as they do."
+}

@@ -1,0 +1,21 @@
+import { Component, input } from '@angular/core';
+
+/**
+ * A control holding an image: the image is a widget of the tables (`img` is named as a whole),
+ * and the control around it is the element the consumer's name is for — a native button, or
+ * an element a `tabindex` makes a stop and a written role makes a button. Neither is a
+ * wrapper, and point 4 must pass both.
+ */
+@Component({
+  selector: 'pct-dismiss',
+  templateUrl: './dismiss.html',
+  host: {
+    class: 'pct-dismiss',
+  },
+})
+export class PctDismiss {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  /** Which of the two controls is standing — the template's `@if`, and nothing else. */
+  protected readonly native = input(true);
+}

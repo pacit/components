@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "`name-on-non-focusable` with a `tabindex` on the wrapper. A user can land on it now, so it is a widget, and the widget test alone made it a carrier — while the trigger inside, the element the reader announces, names nothing the consumer wrote. The trigger is a plain button, announced by its text: the narrowest case, because nothing inside wears a role ARIA names as a whole, and the one the audit is silent on — axe reports nothing here in Chromium, Firefox or WebKit, while the same wrapper around a `combobox` draws `aria-prohibited-attr` and `button-name`. A widget with widgets inside carries the name by its kind, never by a way to land on it."
+}

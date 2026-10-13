@@ -98,7 +98,11 @@ const BOUND_LIVE = new Set([
   'aria-live',
   'attr.aria-live',
 ]);
-/** A role arriving from an expression — for point 9 a path the template cannot decide. */
+/**
+ * A role arriving from an expression — for point 9 a path the template cannot decide, and for
+ * point 4 an element it cannot judge. Every syntax Angular has for it (`[attr.role]`, `[role]`,
+ * `role="{{ … }}"`, `bind-`) parses to an input named `role`.
+ */
 const BOUND_ROLE = new Set(['role', 'attr.role']);
 /** The same parts counted without parsing, as the denominator of the walk. */
 const MESSAGE_COUNTER = new RegExp(
@@ -272,9 +276,16 @@ const ANCHORS = {
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /** Angular's own tags, which never reach the DOM and never stand between two roles. */
 const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
-/** The same roles counted without parsing, as the denominator of the walk of point 9. */
-const contextCounter = (tables) =>
-  new RegExp(`\\srole="(${[...tables.contexts.keys()].join('|')})"`, 'g');
+/**
+ * The same roles counted without parsing, as the denominator of the walk of point 9: every
+ * written `role`, its value read by `readRole` exactly as the walk reads it, so that the two
+ * counts part only where the walk missed an element and never over a spelling.
+ */
+const ROLE_WRITTEN = /\srole="([^"]*)"/g;
+const contextsWritten = (text, tables) =>
+  [...text.matchAll(ROLE_WRITTEN)].filter((m) =>
+    tables.contexts.has(readRole(m[1])),
+  ).length;
 
 /**
  * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
@@ -371,6 +382,32 @@ const attributesOf = (text) => {
 };
 
 /**
+ * The role a written `role` attribute gives an element, read the way the engines read it: the
+ * value split on whitespace, case ignored, and the first token naming a role ARIA defines and
+ * does not mark abstract. Measured on 2026-10-13: Chromium 153 (`computedRole`) and Firefox 157
+ * (WebDriver's computed role) read `Group`, `GROUP`, ` group `, `group region`, `bogus group`
+ * and `widget group` as a group and `region group` as a region, and WebKit's source reads
+ * the same way (`ariaRoleToWebCoreRole`: a case-insensitive map, token by token). That is axe's
+ * own reader with `fallback`, which its default leaves off — taking `group region` whole, as
+ * no role at all — and with `dpub`, because the engines know the `doc-` roles: a
+ * `doc-chapter` above an `option` is in the tree, not looked through.
+ *
+ * One reading wherever the gate asks what an element is: the widget test, the group test, and
+ * point 9's walk with its counter. Point 7 alone compares the literal `role="alert"`, which
+ * refuses a spelling the engines would accept and passes none they would not.
+ */
+const readRole = (value) =>
+  value === undefined
+    ? null
+    : axe.commons.aria.getExplicitRole(
+        new axe.SerialVirtualNode({
+          nodeName: 'div',
+          attributes: { role: value },
+        }),
+        { fallback: true, dpub: true },
+      );
+
+/**
  * A widget — that is, an element whose accessible name is announced, so that a name the
  * consumer supplies has somewhere to land. Three ways in: the user can focus it, it carries a
  * role ARIA names as a whole (a composite whose children are what the user focuses, a
@@ -378,10 +415,27 @@ const attributesOf = (text) => {
  * A link without an address is not focusable, nor is a hidden input; a `tabindex` makes
  * anything focusable, which is how a role written onto a `div` becomes a widget.
  */
-const isWidget = (tag, attrs, tables) =>
-  tables.named.has(attrs.get('role')) ||
-  tables.namedTags.has(tag) ||
-  isFocusable(tag, attrs);
+const namedAsAWhole = (tag, role, tables) =>
+  tables.named.has(role) || tables.namedTags.has(tag);
+const isWidget = (tag, attrs, role, tables) =>
+  namedAsAWhole(tag, role, tables) || isFocusable(tag, attrs);
+
+/**
+ * A control by what it IS rather than by a stop put on it: a role ARIA names as a whole, a
+ * widget's role written on it (`button`, `tab`, `option` — axe's `widget` type), or a control's
+ * own tag (`button`, `a[href]`, `summary` — axe's natively focusable). What this leaves out is
+ * an element only a `tabindex` or an editing host makes a widget, which point 4 asks more of.
+ */
+const isControl = (tag, attrs, role, tables) =>
+  namedAsAWhole(tag, role, tables) ||
+  axe._audit.standards.ariaRoles[role]?.type === 'widget' ||
+  axe.commons.dom.isNativelyFocusable(virtual(tag, attrs));
+
+/** An element that binds both name attributes to the inputs: what point 4 calls a carrier. */
+const forwards = (attrs) =>
+  NAME_ATTRIBUTES.every((attribute, i) =>
+    (attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
+  );
 
 /**
  * The narrower question inside the one above: can a user LAND on this element. It is the whole
@@ -400,24 +454,39 @@ const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
-const readTemplate = (content, tables) => {
+/**
+ * The tag scan of one template. `bound` holds the offsets of the elements whose role the parsed
+ * tree saw arrive from an expression: such a role is read as none here — the toast's urgent
+ * `alert` is not made a widget by it — and point 4 refuses it on an element that takes the
+ * consumer's name. The written value is read by `readRole`, once per tag, and every test
+ * below asks that one reading.
+ */
+const readTemplate = (content, tables, bound) => {
   const text = content.replace(COMMENT, '');
-  const tags = [...text.matchAll(OPENING_TAG)].map((m) => ({
-    tag: m[1].toLowerCase(),
-    attrs: attributesOf(m[2]),
-    // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the same
-    // string — the one key by which the two readings of one template name the same element.
-    offset: m.index,
-  }));
+  const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
+    const attrs = attributesOf(m[2]);
+    const boundRole = bound.has(m.index);
+    return {
+      tag: m[1].toLowerCase(),
+      attrs,
+      // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
+      // same string — the one key by which the two readings of one template name the same
+      // element.
+      offset: m.index,
+      boundRole,
+      role: boundRole ? null : readRole(attrs.get('role')),
+    };
+  });
   return {
     widgets: tags
-      .filter((t) => isWidget(t.tag, t.attrs, tables))
+      .filter((t) => isWidget(t.tag, t.attrs, t.role, tables))
       .map((t) => ({ ...t })),
     // A `role="group"` names a SET of controls, and ARIA asks it for no name — so it is no
     // widget of the tables above. It may still be the element a consumer's name is handed to:
     // the datetime field's two texts stand in one, and each takes the group's name with a word
     // of its own (0090, E1 to E3). Point 4 reads these as carriers beside the widgets.
-    groups: tags.filter((t) => t.attrs.get('role') === 'group'),
+    groups: tags.filter((t) => t.role === 'group'),
+    forwarding: tags.filter((t) => forwards(t.attrs)),
     parsed: tags.filter(
       (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
     ).length,
@@ -524,9 +593,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ? {
             tag: node.name.toLowerCase(),
             offset: node.sourceSpan?.start.offset,
-            role:
-              node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
-              null,
+            role: readRole(
+              node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value,
+            ),
             boundRole: (node.inputs ?? []).some((i) => BOUND_ROLE.has(i.name)),
             // What keeps a role-less element from being looked through, in axe's own
             // reading of `aria-required-children`: a global ARIA attribute, or a way to land
@@ -543,6 +612,8 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         : null;
     if (element?.role !== null && element?.role !== undefined)
       state.roles.push({ ...element, ancestors });
+    // And, for the tag scan, which elements take their role from an expression.
+    if (element?.boundRole) state.bound.add(element.offset);
     walkTemplate(
       node.children ?? [],
       path,
@@ -582,6 +653,7 @@ const readMessages = (file, content) => {
     paths: new Map(),
     within: new Map(),
     roles: [],
+    bound: new Set(),
   };
   if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
   return {
@@ -589,6 +661,7 @@ const readMessages = (file, content) => {
     paths: state.paths,
     within: state.within,
     roles: state.roles,
+    bound: state.bound,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -700,7 +773,10 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     );
 
   for (const template of templates) {
-    const read = readTemplate(template.content, tables);
+    // Parsed first, judged second: the scan below takes from the tree which roles are bound,
+    // and the order of the two verdicts on a broken template stays what it was.
+    const said = readMessages(template.file, template.content);
+    const read = readTemplate(template.content, tables, said.bound);
     if (read.parsed !== read.counted)
       throw new AriaError(
         'denominator',
@@ -710,7 +786,6 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       );
     byPath.get(template.file).read = read;
 
-    const said = readMessages(template.file, template.content);
     if (said.errors.length)
       throw new AriaError(
         'denominator',
@@ -729,9 +804,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     byPath.get(template.file).within = said.within;
     byPath.get(template.file).roles = said.roles;
     const contextual = said.roles.filter((r) => tables.contexts.has(r.role));
-    const contextsCounted = countOf(
+    const contextsCounted = contextsWritten(
       template.content.replace(COMMENT, ''),
-      contextCounter(tables),
+      tables,
     );
     if (contextual.length !== contextsCounted)
       throw new AriaError(
@@ -831,7 +906,78 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // forward the name one element too high (`name-on-non-focusable`). What the gate does NOT
   // read is whether those names include the group's: the datetime field names each text by
   // the label and a word of its own, and its own spec holds that, not this.
+  //
+  // A `tabindex` is no way round either, which is what the widget test alone let through: it
+  // makes any element a widget, and a wrapper with one was a carrier although the control
+  // inside it named nothing. So a widget that has other widgets inside it carries the name
+  // only by its KIND — a control's own tag, a widget's role, a role ARIA names as a whole (the
+  // calendar's `grid`, the dialog), or a group by the rule above — and never by a stop a
+  // `tabindex` puts on it: a `<button>` holding an icon is the control, a `<span tabindex>`
+  // holding one is a wrapper (the reference's `pct-dismiss` holds both kinds of control).
+  // Inside means any widget, a `role="listbox"` no user lands on as much as a trigger: either
+  // is what the reader names, and the name stops above it. axe, run in three engines over a
+  // wrapper with a
+  // `combobox` inside, reports `aria-prohibited-attr` on it and `button-name` (critical) on
+  // the trigger; around a plain button it reports nothing, and this is the one reader that
+  // refuses it. Not read: whether the widgets inside a container named as a whole name
+  // themselves — a `toolbar` around an unnamed combobox passes here and fails `button-name` on
+  // the page, because a toolbar's own buttons are not the control.
+  //
+  // What an element IS is read once, by `readRole`, the way the engines read a role: `Group`
+  // and `group region` are groups to all three engines, and to this rule. A role an expression
+  // decides — any of Angular's syntaxes for it — on an element the name is handed to makes it
+  // the control, a group, a wrapper or nothing at all, and the gate cannot tell which: it says
+  // so instead of guessing — in every template, because a component whose one such element
+  // reads as no widget is not among the components asked for a name at all.
+  for (const component of components) {
+    if (!component.templatePath) continue;
+    const unjudged = byPath
+      .get(component.templatePath)
+      .read.forwarding.filter((t) => t.boundRole);
+    if (unjudged.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ` +
+          unjudged.map((t) => `<${t.tag}>`).join(', ') +
+          ` bind(s) both ${NAME_ATTRIBUTES.join(' and ')} to the inputs, and the role is ` +
+          `BOUND — an expression decides whether the element is the control, a group of ` +
+          `texts, a wrapper or nothing, and a reader of the source cannot judge which. ` +
+          `Write the role, or hand the name to an element whose role is written`,
+      );
+  }
   for (const component of naming) {
+    const template = byPath.get(component.templatePath);
+    const insideOf = (element) =>
+      component.widgets.filter(
+        (widget) =>
+          widget.offset !== element.offset &&
+          (template.within.get(widget.offset) ?? []).includes(element.offset),
+      );
+    const grouped = new Set(component.groups.map((group) => group.offset));
+    const wrappers = component.widgets.filter(
+      (widget) =>
+        !grouped.has(widget.offset) &&
+        forwards(widget.attrs) &&
+        !isControl(widget.tag, widget.attrs, widget.role, tables) &&
+        insideOf(widget).length > 0,
+    );
+    if (wrappers.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): <${wrappers[0].tag}> binds ` +
+          `both ${NAME_ATTRIBUTES.join(' and ')} to the inputs with ` +
+          insideOf(wrappers[0])
+            .map(
+              (widget) =>
+                `<${widget.tag}${widget.role ? ` role="${widget.role}"` : ''}>`,
+            )
+            .join(', ') +
+          ` inside it, and only a stop put on it makes it a widget — no control's tag, and ` +
+          `its role (${wrappers[0].role ?? 'none'}) is neither a widget's, nor one ARIA ` +
+          `names as a whole, nor a group. The name stops one element above what the reader ` +
+          `announces ` +
+          `(\`name-on-non-focusable\`, with a \`tabindex\`): hand it to the control`,
+      );
     const namedGroups = component.groups.filter(
       (group) =>
         group.inside.length > 0 &&
@@ -842,15 +988,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // A `role="group"` with a `tabindex` is a widget as well, and it counts as the group it
     // is: once, and only where every text inside names itself — a `tabindex` is no way round.
     const carriers = [
-      ...component.widgets.filter(
-        (widget) => widget.attrs.get('role') !== 'group',
-      ),
+      ...component.widgets.filter((widget) => !grouped.has(widget.offset)),
       ...namedGroups,
-    ].filter((widget) =>
-      NAME_ATTRIBUTES.every((attribute, i) =>
-        (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
-      ),
-    );
+    ].filter((widget) => forwards(widget.attrs));
     if (carriers.length === 0)
       throw new AriaError(
         'forwarded',

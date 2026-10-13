@@ -1,0 +1,12 @@
+<!-- A landmark a user can land on, handed the name, and the trigger inside it unnamed. -->
+<div
+  class="pct-widget__box"
+  role="region"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <button class="pct-widget__trigger" type="button" role="combobox">
+    {{ label() }}
+  </button>
+</div>

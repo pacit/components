@@ -1,0 +1,8 @@
+<!-- A panel handed the consumer's name, its role decided by an input, and nothing else in the
+     template: read as no role, it is no widget, and the component is asked for no name. -->
+<div
+  class="pct-widget__panel"
+  [attr.role]="multiple() ? 'listbox' : 'radiogroup'"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+></div>

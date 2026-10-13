@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "A focusable wrapper with a role of its own, around the `combobox` trigger. A written role is not what makes a control — a widget's role or one ARIA names as a whole is: a `region` is a landmark, not the control, and the trigger inside names nothing. Reading any written role as a control's passes this one, while the reference's `pct-dismiss` holds the two kinds that are controls: a native button and a `role=\"button\"` on a stop, each with an icon inside."
+}

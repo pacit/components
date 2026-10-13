@@ -1,0 +1,5 @@
+{
+  "point": 9,
+  "check": "context",
+  "$reason": "A `doc-chapter` between the listbox and its options. The engines know the `doc-` roles: the chapter is in the tree, and Chromium turns the option under it into a generic element. axe's reader leaves them out unless asked (`dpub`), so the audit reads the chapter as no role, looks through it and reports nothing in three engines. The gate reads it as the engines do."
+}

@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "The same strip with a fallback list, `role=\"tablist list\"`. The three engines take the first token that names a role, so it is a `tablist`; axe's own reader takes the value whole unless asked for its fallback, and reads no role at all. The gate takes the engines' side, because the question is what the reader announces."
+}

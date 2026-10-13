@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "A panel handed the consumer's name whose role an expression decides — a list named as a whole, a radiogroup, or, had the expression said so, a wrapper with no role. That is not in the template, so the gate cannot judge it, and it refuses rather than guesses. The panel is the only element in the template and no widget: its role reads as none and no user lands on it, so the component is not among those asked for a name. A refusal that read the widgets and groups only, or the components that need a name only, would pass it unseen."
+}

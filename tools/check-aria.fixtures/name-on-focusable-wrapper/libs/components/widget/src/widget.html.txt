@@ -1,0 +1,12 @@
+<!-- `name-on-non-focusable` with a `tabindex` on the wrapper: a user can land on it
+     now, and the trigger inside, announced by its text, names nothing the consumer wrote. -->
+<span
+  class="pct-widget__box"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <button class="pct-widget__trigger" type="button">
+    {{ label() }}
+  </button>
+</span>
