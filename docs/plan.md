@@ -371,21 +371,22 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [ ] **4.83 — an `<ng-template>` stamped in two places is read as standing in one**
   - `check-aria` points 4 and 6 read an `@for` body as repeating and a template as standing
-    once. Five are named by two outlets: the calendar's and the pagination's chevron and the
-    select's arrow side by side, the select's option rows under an `@for`, and the dialog's
-    body below. The first four hold no carrier of the consumer's name and no message part,
-    which is why nothing reads wrong yet (2026-10-13)
-  - the reading this was opened with — count the outlets naming the `#ref` — misjudges the three
-    templates that DO carry the name: the dialog's, the menu's and the popover's panel are
-    stamped by an outlet under `@if (inline() && open())` AND by the class, `viewChild` into a
-    `TemplatePortal`, which no reading of the template sees. Counted, the menu and the popover
-    stand once and the dialog's body twice, where only the class keeps the two apart; a sound
-    reading says "cannot judge" of all three and goes red on correct components until a list of
+    once. Five are named by two outlets: the calendar's and the pagination's chevron side by
+    side, the select's arrow on two branches of one `@if`, the select's option rows under an
+    `@for`, and the dialog's body below. The first four hold no carrier of the consumer's name
+    and no message part, which is why nothing reads wrong yet (2026-10-13)
+  - the reading this was opened with — count the outlets naming the `#ref` — misjudges the
+    three templates that carry the name in two places: the dialog's, the menu's and the
+    popover's panel, stamped by an outlet under `@if (inline() && open())` AND by the class
+    (`viewChild` into a `TemplatePortal`), which no reading of the template sees. Counted, the
+    menu and the popover stand once and the dialog's body twice, apart by the class alone; a
+    sound reading says "cannot judge" of all three, red on correct components until a list of
     exceptions stands — and that list is where the defect would pass
-  - the one sound piece is narrower — an outlet under an `@for` stamps per item — and guards
-    nothing the library has; an outlet through an expression (`slot.template`) stays unread
-  - binds at: **the first carrier or message part inside a template stamped in more than one
-    place** — a case to measure the reading on, the class's stamping with it
+  - the sound piece — an outlet under an `@for` stamps per item — guards nothing the library
+    has: in the select's shape a carrier or a message added to the rows is refused already,
+    against the trigger or the lines outside. An outlet through `slot.template` stays unread
+  - binds at: **the first carrier or message part in a template two outlets can stamp at once —
+    under an `@for`, or side by side** — beyond the three panels measured here
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on

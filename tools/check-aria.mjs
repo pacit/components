@@ -447,7 +447,7 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
  * the body is branch 0 and each side block one after it. An `@for` with no `@empty` is an
  * entry too, its body marked `repeats` either way — it once left no trace in the path, and
- * what it repeats is what `exclusive` has to know.
+ * what it repeats is what point 4 and `exclusive` have to know.
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
@@ -816,8 +816,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
-  // Under an `@for` nothing is one: the body is stamped once per item, so a carrier there is
-  // as many carriers as there are items — the two names below without a second element to
+  // Under an `@for` nothing is one: the body is stamped once per item, so a focusable carrier
+  // there is as many as there are items — the two names below without a second element to
   // compare, and two branches there are a pair as well. Refused before the pairs are counted,
   // which leaves `exclusive`'s repeat clause to point 6 (`hint-beside-error-across-items`).
   //
@@ -838,7 +838,14 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           SELF_NAMES.some((key) => (widget.attrs.get(key) ?? '').trim()),
         ),
     );
-    const carriers = [...component.widgets, ...namedGroups].filter((widget) =>
+    // A group with a `tabindex` is a widget as well, and one element is one carrier: listed
+    // twice it was two names for itself, and its copy as a group has no path to read.
+    const carriers = [
+      ...component.widgets,
+      ...namedGroups.filter(
+        (group) => !component.widgets.some((w) => w.offset === group.offset),
+      ),
+    ].filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
@@ -872,8 +879,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         `${component.className} (${component.templatePath}): ` +
           repeated.map((widget) => `<${widget.tag}>`).join(', ') +
           ` inside an \`@for\` bind(s) both ${NAME_ATTRIBUTES.join(' and ')} to the inputs, ` +
-          `and the loop stamps each once per item — one element in the template, as many ` +
-          `names for one control as there are items. The name belongs outside the loop`,
+          `and the loop stamps each once per item — one element in the template, and on ` +
+          `every copy a name for the one control. The name belongs outside the loop`,
       );
     const together = landable.flatMap((widget, i) =>
       landable.slice(i + 1).filter((other) => !exclusive(widget, other)),
