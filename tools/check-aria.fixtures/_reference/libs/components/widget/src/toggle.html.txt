@@ -8,10 +8,10 @@
      part of it there too. The frame is a stop around the control and takes no name, so point 4
      asks nothing of it. A toggle that leads somewhere is a link: an `<a>` with an address
      takes the name by the platform's own role, where axe's element table read alone would
-     forbid one on the tag. A link's children are not presentational, so its icon is drawn
-     only when it is named, with the role written: an image is a structure, named and never
-     operated, and no control of its own there either — a role an expression decides could be
-     any control. -->
+     forbid one on the tag. A link's children are not presentational, so its icon cannot take
+     the role an expression decides — that could be any control, and a control inside the
+     link is one the reader meets on its own. It is drawn only when it is named, with the role
+     written: an image is a structure, named and never operated, and no control there either. -->
 <span class="pct-toggle__frame" tabindex="-1">
   @if (href()) {
   <a

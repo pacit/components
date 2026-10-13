@@ -2,9 +2,9 @@ import { Component, input } from '@angular/core';
 
 /**
  * Two texts under one name: the GROUP carries the consumer's name, and each text is named by
- * the group's name and a word of its own — the datetime field's shape (0090, E1 to E3). Where
- * the group is a stop, a `role="button"` written on a `<span>` beside the texts names itself
- * and owns its busy bar.
+ * the group's name and a word of its own — the datetime field's shape (0090, E1 to E3).
+ * Beside the texts, a button names itself and owns its busy bar: a native one, or, where the
+ * group is a stop, a `role="button"` written on a `<span>`.
  */
 @Component({
   selector: 'pct-pair',
