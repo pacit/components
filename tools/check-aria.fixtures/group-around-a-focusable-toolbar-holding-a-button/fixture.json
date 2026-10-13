@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's named group around two texts that name themselves, and a toolbar with a stop on it that names itself, around a button with nothing but a hidden icon in it, which names nothing. The `tabindex` makes the toolbar a control of the group's, and the role table a container — but a structure, not a container of a composite or a widget type, so the button is not its own: it is the group's, unnamed. Read as a container alone, the toolbar would own the button and its name would stand for the button's. axe reports `button-name` (critical) in three engines."
+}

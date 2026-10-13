@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's named group around two texts that name themselves, and a link that names itself with a `<progress>` inside it, which names nothing. The bar's own children are presentational, the link's are not: what decides whether the link owns the bar is the role of the element around it, not the bar's — read off the bar, the link would own it and the group would pass. The bar is a control of the group's, unnamed, and a progressbar requires a name in axe's own role table; axe reports nothing in three engines, because its `aria-progressbar-name` reads a written role alone, and Chromium's tree holds the progressbar under the link with an empty name."
+}
