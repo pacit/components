@@ -1,0 +1,15 @@
+<!-- The reference's group, and a self-named toolbar holding a button that names nothing. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <div class="pct-pair__tools" role="toolbar" aria-label="Format">
+    <button class="pct-pair__now" type="button">
+      <svg class="pct-pair__icon" aria-hidden="true"></svg>
+    </button>
+  </div>
+</div>

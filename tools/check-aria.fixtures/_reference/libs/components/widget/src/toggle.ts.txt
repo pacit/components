@@ -6,8 +6,8 @@ import { Component, input } from '@angular/core';
  * it, a role an expression decides on it, and a stop around it that takes no name. Drawn on a
  * stop, it is a `role="button"` holding the same icon: a written role is a control as the
  * tag's own is, its children presentational alike. Drawn as a link, it holds a named icon
- * whose role is written: a link's children are not presentational, and an image is still no
- * control inside it.
+ * whose role is written, or a native `<img>` in its place: a link's children are not
+ * presentational, and an image is still no control inside it, by a written role or the tag's.
  */
 @Component({
   selector: 'pct-toggle',
@@ -27,4 +27,6 @@ export class PctToggle {
   protected readonly stop = input(false);
   /** Where the toggle leads, when it is a link instead. */
   protected readonly href = input<string>('');
+  /** A picture the link shows in place of its icon. */
+  protected readonly picture = input<string>('');
 }

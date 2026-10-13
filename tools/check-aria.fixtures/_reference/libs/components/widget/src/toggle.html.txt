@@ -11,7 +11,9 @@
      forbid one on the tag. A link's children are not presentational, so its icon cannot take
      the role an expression decides — that could be any control, and a control inside the
      link is one the reader meets on its own. It is drawn only when it is named, with the role
-     written: an image is a structure, named and never operated, and no control there either. -->
+     written: an image is a structure, named and never operated, and no control there either.
+     A picture given instead is a native `<img>`, an image by its tag's own role, no role
+     written: no control inside the link either, read off the tag as a written role is. -->
 <span class="pct-toggle__frame" tabindex="-1">
   @if (href()) {
   <a
@@ -20,7 +22,9 @@
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || null"
   >
-    @if (iconLabel()) {
+    @if (picture()) {
+    <img class="pct-toggle__icon" [attr.src]="picture()" [attr.alt]="iconLabel()" />
+    } @else if (iconLabel()) {
     <svg class="pct-toggle__icon" role="img" [attr.aria-label]="iconLabel()"></svg>
     }
   </a>

@@ -436,9 +436,18 @@ const isWidget = (tag, attrs, role, tables) =>
  * a user can land on, or a role of axe's `widget`, `composite` or `window` type — written, or
  * the platform's own for the tag (a `<progress>` is a progressbar, a `<select>` a combobox).
  * An image is none of these: `img` is a structure, named and never operated, which is why a
- * button holding an icon is still one control. A `<progress>` inside a link or a menu item is
- * counted, as strict as the type: only inside a role whose children are presentational is it
- * spared (`insideOf`).
+ * button holding an icon is still one control. Nor is a `toolbar`, which the keyboard passes
+ * through to its buttons: counted, it would own them as a container does, and its name would
+ * stand for theirs. A `<progress>` inside a link or a menu item is counted, as strict as the
+ * type: only inside a role whose children are presentational is it spared (`insideOf`).
+ *
+ * The other structures named as a whole — `meter`, `graphics-document`, `graphics-symbol` —
+ * and the landmarks, `application` among them, are read the same way, and no input holds them
+ * one by one: counting any one of them, or the `landmark` type, leaves the gate green
+ * (measured on a copy, 2026-10-13). A meter in a link, a landmark in a group, an `application`
+ * anywhere are shapes no template here draws; the reference and the cases hold the shapes a
+ * template draws — the image in the reference, the toolbar in a case — not every row of axe's
+ * table.
  *
  * The platform's own role is axe's, worked out from the attributes `virtual` passes on
  * (`href`, `type`): a link is one with an address, an `<input>` follows its type. The rest of

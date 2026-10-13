@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's named group around two texts that name themselves, and a toolbar that names itself around a button with nothing but a hidden icon in it, which names nothing. A toolbar is a structure the keyboard passes through to its buttons, no control a user lands on: counted as one, it would own its buttons as a container does, and its name would stand for theirs. The button is a control of the group's, unnamed, and axe reports `button-name` (critical) in three engines."
+}
