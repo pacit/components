@@ -1,0 +1,9 @@
+<!-- A native button handed the name, and a text inside it that names nothing. -->
+<button
+  class="pct-widget__trigger"
+  type="button"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <textarea class="pct-widget__field"></textarea>
+</button>

@@ -1,7 +1,7 @@
-# `PctDismiss` — a control holding an image
+# `PctToggle` — a button that can be a switch
 
 **Entrypoint:** `@pacit/components/widget`
-**Selector:** `pct-dismiss`
+**Selector:** `pct-toggle`
 **Status:** released
 
 ## Contract

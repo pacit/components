@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
+  "message": "which name(s) nothing of their own",
   "$reason": "A group's role is not a way round `name-on-non-focusable`: the trigger inside names nothing of its own, so the group carries a name nobody lands on. The widening for the datetime field's two texts holds only where every focusable element in the group names itself."
 }

@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "host",
+  "$reason": "A host block that writes a name and a role no engine knows, `role: 'chrome'`. Chromium 153 and Firefox 157 read the element as `generic` (2026-10-13) and axe reports `aria-roles` (critical): it is the host with no role that point 2 refuses. Taking any written role for one that carries a name, without reading it, passes it."
+}

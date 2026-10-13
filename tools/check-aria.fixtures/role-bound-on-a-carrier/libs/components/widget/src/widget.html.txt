@@ -3,6 +3,6 @@
 <div
   class="pct-widget__panel"
   [attr.role]="multiple() ? 'listbox' : 'radiogroup'"
-  [attr.aria-label]="ariaLabel() || null"
-  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [ariaLabel]="ariaLabel() || null"
+  attr.aria-labelledby="{{ ariaLabelledby() }}"
 ></div>

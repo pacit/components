@@ -1,0 +1,9 @@
+<!-- A stop handed the name, around a bar whose role is the platform's own. -->
+<span
+  class="pct-widget__box"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <progress class="pct-widget__bar"></progress>
+</span>

@@ -1,0 +1,21 @@
+import { Component, input } from '@angular/core';
+
+/**
+ * A native button that becomes a switch when it toggles, holding an icon, inside a frame that
+ * takes focus back: what point 4 must pass around a control — an image and a busy bar inside
+ * it, a role an expression decides on it, and a stop around it that takes no name.
+ */
+@Component({
+  selector: 'pct-toggle',
+  templateUrl: './toggle.html',
+  host: {
+    class: 'pct-toggle',
+  },
+})
+export class PctToggle {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly toggles = input(false);
+  protected readonly on = input(false);
+  protected readonly busy = input(false);
+}

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "is no container ARIA names as a whole",
+  "$reason": "A stop handed the name around the `role=\"dialog\"` it opens. The dialog takes no focus in the template and is a control of its own — a window, which `insideOf` counts beside the widgets and the composites — and the name stops above it. axe reports `aria-prohibited-attr` on the stop and `aria-dialog-name` on the dialog in three engines."
+}

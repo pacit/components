@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
+  "message": "the loop stamps each once per item",
   "$reason": "One trigger carrying the consumer's name, inside an `@for`. The template holds one element, so the pairwise rule has nothing to compare it with, and the page holds one per item — as many names for one control as there are items. The `@for` is the outermost block here and the only one: a reading that skips the first entry of the path passes this case."
 }

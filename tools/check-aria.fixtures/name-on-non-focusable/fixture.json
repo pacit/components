@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
+  "message": "none of the",
   "$reason": "Forwarded one element too high: the wrapper takes the name, the button that carries the role stays unnamed. It reads as done in a diff and changes nothing in the accessibility tree."
 }

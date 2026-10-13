@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "is no container ARIA names as a whole",
+  "$reason": "The wrapper of `name-on-focusable-wrapper` around a `role=\"switch\"` with no `tabindex` of its own — g08 with a switch for the combobox. The switch is no widget of the tables (it takes its name from its content and no user lands on it), and it is a control all the same: a widget's role. axe reports `aria-prohibited-attr` on the wrapper and `aria-toggle-field-name` on the switch in three engines. Reading only the widgets of the tables inside passes it."
+}

@@ -1,5 +1,6 @@
 {
   "point": 9,
   "check": "context",
+  "message": "reaches the root of its template and the host",
   "$reason": "`role-without-its-context` with the role written `\" option \"`. The engines trim it, and it is an `option` under a `radiogroup` host all the same. Point 9's walk read the literal, found no role requiring a context and examined nothing, and its counter, matching the literal as well, agreed — both now read the value through `readRole`, and the walk reading it otherwise parts the two."
 }

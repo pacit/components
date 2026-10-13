@@ -1,5 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "$reason": "The focusable wrapper around a `role=\"listbox\"` no user lands on. What stands inside is any widget and not only a focusable one: the list is named as a whole, so it is the element the reader announces, and the name stops one element above it all the same. Reading only the focusable elements inside, as the group test does for its texts, passes this wrapper; axe reports `aria-prohibited-attr` on it and `aria-input-field-name` on the list in three engines."
-}
