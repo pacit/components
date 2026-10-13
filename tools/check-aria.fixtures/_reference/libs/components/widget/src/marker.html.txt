@@ -2,8 +2,9 @@
      which the compiler takes out: a tag the tag scan finds and the tree holds nothing for,
      outside any ICU — no element of the DOM, and nothing a user lands on. A count's ICU draws no
      tag, and the second style block stands right where it ends, outside it. The projection holds
-     a fallback and the badge a deferred block: the walk and the tag reader both reach what they
-     draw. -->
+     a fallback, the badge a deferred block with every side block, the dots a loop with an
+     `@empty`: the walk and the tag reader both reach what they draw. The icon projects through an
+     `<svg:ng-content>`, an `<ng-content>` the tree knows by its local name. -->
 @let emphasis = 'bold';
 <style>
   .pct-marker__text {
@@ -17,5 +18,17 @@
 <span class="pct-marker__badge">New</span>
 } @placeholder {
 <span class="pct-marker__badge"></span>
+} @loading {
+<span class="pct-marker__badge">…</span>
+} @error {
+<span class="pct-marker__badge">!</span>
 }
+@for (dot of dots(); track dot) {
+<span class="pct-marker__dot"></span>
+} @empty {
+<span class="pct-marker__dot"></span>
+}
+<svg class="pct-marker__icon" viewBox="0 0 8 8" aria-hidden="true">
+  <svg:ng-content select="[pctMarkerIcon]"></svg:ng-content>
+</svg>
 {count(), plural, =1 {one} other {many}}<style></style>

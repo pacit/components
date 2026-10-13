@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is a template, which the tree holds as no element",
+  "$reason": "`stop-on-a-wrapped-template` inside an icon: a stop on an `<svg:ng-template>`, which the parser holds as a template by its local name and the tag scan reads as a tag named `svg`. A template is no element and the walk gives it no path, so the stop fails point 1, and the refusal says it is a template because the tag reader recorded one there. Asked of the scan's tag name, the refusal took it for a tag in a block the walk does not descend into."
+}

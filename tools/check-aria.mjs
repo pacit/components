@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag only the tree holds, a stop or group it holds and the walk
- * gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
+ * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a stop or
+ * group the walk gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -526,7 +526,7 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * reader holds (`held`) and the walk gives no path fails it too: a template, which the tree holds
  * as no element, or a tag in a block kind the walk does not descend into.
  */
-const readTemplate = (content, tables, elements, attributes, icus) => {
+const readTemplate = (content, tables, elements, attributes, icus, kinds) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
     const element = elements.get(m.index);
@@ -536,6 +536,7 @@ const readTemplate = (content, tables, elements, attributes, icus) => {
       attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
       unread,
       held: attributes.has(m.index),
+      template: kinds.get(m.index) === 'template',
       // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
       end: m.index + m[0].length,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
@@ -620,20 +621,28 @@ const focusAttributes = (node) =>
  * because it knows every kind of node Angular has: a kind the walk does not descend into
  * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
  * template is read too, though the tree holds it as no element: a stop written on one fails
- * point 1, as a group does. A tag is recorded before the visitor descends into it, so of two at
- * one offset — an inline template and the element or the `<ng-template>` it wraps — the inner
- * one, which carries the attributes, is the one kept.
+ * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
+ * whose attributes are not read, as it draws no element (`kinds`). A tag is recorded before the
+ * visitor descends into it, so of two at one offset — an inline template and the element, the
+ * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
+  kinds = new Map();
   icus = [];
   visitElement(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.kinds.set(node.sourceSpan.start.offset, 'element');
     super.visitElement(node);
   }
   visitTemplate(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.kinds.set(node.sourceSpan.start.offset, 'template');
     super.visitTemplate(node);
+  }
+  visitContent(node) {
+    this.kinds.set(node.sourceSpan.start.offset, 'content');
+    super.visitContent(node);
   }
   visitIcu(node) {
     this.icus.push([node.sourceSpan.start.offset, node.sourceSpan.end.offset]);
@@ -824,6 +833,7 @@ const readMessages = (file, content) => {
     roles: state.roles,
     elements: state.elements,
     attributes: tags.attributes,
+    kinds: tags.kinds,
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1036,6 +1046,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       said.elements,
       said.attributes,
       said.icus,
+      said.kinds,
     );
     if (read.parsed !== read.counted)
       throw new AriaError(
@@ -1054,13 +1065,14 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       );
     // The opening tag at an offset of the text both readings take, on one line and cut short:
     // what a refusal shows a reader of the tag it means.
-    const opening = (offset) =>
-      template.content
-        .replace(COMMENT, '')
-        .slice(offset)
-        .match(/^<[^>]*>?/)[0]
+    const text = template.content.replace(COMMENT, '');
+    const opening = (offset) => {
+      const tag = new RegExp(OPENING_TAG.source, 'y');
+      tag.lastIndex = offset;
+      return (tag.exec(text)?.[0] ?? text.slice(offset).split('\n')[0])
         .replace(/\s+/g, ' ')
         .slice(0, 120);
+    };
     const scanned = new Set(read.tags.map((t) => t.offset));
     const unscanned = [...said.attributes.keys()].filter(
       (offset) => !scanned.has(offset),
@@ -1074,14 +1086,11 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `this one, and points 4 and 8, which start from the scan, would not examine it`,
       );
     // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
-    // read — an `<ng-content>` aside, which it leaves unread as no element. On a reader that
-    // reaches every kind of node this never fires; it is what holds that reach, on the library
-    // and the reference, the day a block kind goes unread.
+    // met. On a reader that reaches every kind of node this never fires; it is what holds that
+    // reach — `@for` and its `@empty`, `@switch`, `@defer` and its side blocks, a plain
+    // `<ng-template>`, a projection's fallback — on the library and the reference.
     const unreadByTheReader = read.tags.filter(
-      (t) =>
-        said.paths.has(t.offset) &&
-        !said.attributes.has(t.offset) &&
-        t.tag !== 'ng-content',
+      (t) => said.paths.has(t.offset) && !said.kinds.has(t.offset),
     );
     if (unreadByTheReader.length)
       throw new AriaError(
@@ -1163,7 +1172,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
             (!element.held
               ? `is in the tag scan and not in the parsed tree — `
-              : element.tag === 'ng-template'
+              : element.template
                 ? `is a template, which the tree holds as no element, so the walk gives it no ` +
                   `path — `
                 : `is in the parsed tree, and the walk never reached it — a block kind it does ` +
