@@ -20,7 +20,11 @@
  *
  * Usage: node tools/check-aria.mjs
  */
-import { parseTemplate, TmplAstForLoopBlock } from '@angular/compiler';
+import {
+  BindingType,
+  parseTemplate,
+  TmplAstForLoopBlock,
+} from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
 import {
@@ -95,13 +99,18 @@ const BOUND_LIVE = new Set([
 ]);
 /**
  * An attribute's name as the DOM takes it from the parsed tree: HTML ignores the case of a name
- * (`ROLE`, `[attr.ARIA-LABEL]`), and a property binding names the reflected ARIA attribute in
- * camel case (`[ariaLabel]`). Every syntax Angular has for a binding (`[attr.x]`, `[x]`,
- * `x="{{ … }}"`, `attr.x="{{ … }}"`, `bind-`) parses to an input of that name — so a role
- * arriving from an expression, for point 9 a path the template cannot decide and for point 4
- * an element it cannot judge, is an input named `role`.
+ * (`ROLE`, `[attr.ARIA-LABEL]`), and only a PROPERTY binding reaches an ARIA attribute through
+ * its camel-case reflection (`[ariaLabel]`) — a written attribute or an `attr.` binding goes
+ * through `setAttribute`, which makes `ariaLabel` the attribute `arialabel`, no ARIA at all.
+ * Every syntax Angular has for a binding (`[attr.x]`, `[x]`, `x="{{ … }}"`, `attr.x="{{ … }}"`,
+ * `bind-`) parses to an input of that name — so a role arriving from an expression, for point
+ * 9 a path the template cannot decide and for point 4 an element it cannot judge, is an input
+ * named `role`.
  */
-const nameOf = (name) => name.toLowerCase().replace(/^aria(?!-)/, 'aria-');
+const nameOf = (name, property = false) =>
+  property
+    ? name.toLowerCase().replace(/^aria(?!-)/, 'aria-')
+    : name.toLowerCase();
 /** The same parts counted without parsing, as the denominator of the walk. */
 const MESSAGE_COUNTER = new RegExp(
   `data-pct-part="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
@@ -425,16 +434,31 @@ const isWidget = (tag, attrs, role, tables) =>
 /**
  * What a reader meets as a control of its own when it stands inside another element: anything
  * a user can land on, or a role of axe's `widget`, `composite` or `window` type — written, or
- * the platform's own for the tag (a `<progress>` is a progressbar). An image is none of these:
- * `img` is a structure, named and never operated, which is why a button holding an icon is
- * still one control.
+ * the platform's own for the tag (a `<progress>` is a progressbar, a `<select>` a combobox).
+ * An image is none of these: `img` is a structure, named and never operated, which is why a
+ * button holding an icon is still one control. A `<progress>` inside a link or a menu item is
+ * counted, as strict as the type: only inside a role whose children are presentational is it
+ * spared (`insideOf`).
+ *
+ * The platform's own role is axe's, worked out from the deciding attributes where the tag has
+ * more than one (`select`, `a`, `input`, `img`); a cell, whose role axe reads off its table,
+ * has none here.
  */
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
-const roleTypeOf = (t, tables) =>
-  axe._audit.standards.ariaRoles[t.role ?? tables.implicitRoles.get(t.tag)]
-    ?.type;
-const isInteractive = (t, tables) =>
-  isFocusable(t.tag, t.attrs) || INTERACTIVE_TYPES.has(roleTypeOf(t, tables));
+const roleOf = (t) => {
+  if (t.role !== null) return t.role;
+  try {
+    return axe.commons.aria.implicitRole(virtual(t.tag, t.attrs));
+  } catch {
+    return null;
+  }
+};
+const roleTypeOf = (t) => axe._audit.standards.ariaRoles[roleOf(t)]?.type;
+const isInteractive = (t) =>
+  isFocusable(t.tag, t.attrs) || INTERACTIVE_TYPES.has(roleTypeOf(t));
+/** A role whose children are presentational: `button`, `tab`, `switch`, `slider`, `img`. */
+const holdsPresentation = (t) =>
+  axe._audit.standards.ariaRoles[roleOf(t)]?.childrenPresentational === true;
 
 /**
  * The narrower question inside the one above: can a user LAND on this element. It is the whole
@@ -595,7 +619,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     const written = (name) =>
       (node.attributes ?? []).find((a) => nameOf(a.name) === name)?.value;
     const bindings = (name) =>
-      (node.inputs ?? []).filter((i) => nameOf(i.name) === name);
+      (node.inputs ?? []).filter(
+        (i) => nameOf(i.name, i.type === BindingType.Property) === name,
+      );
     const element =
       typeof node.name === 'string'
         ? {
@@ -722,17 +748,20 @@ const hostRoleOf = (component) => ({
  * `<button>` and `<summary>` included), only what a user can land on is a control of its own:
  * the rest is part of the one control, which is why a button may hold a `<progress>` (axe,
  * three engines, 2026-10-13: nothing to report) and may not hold an `<input>` (`label` and
- * `nested-interactive`).
+ * `nested-interactive`). And it stops at the first control on the way down: the options of a
+ * `<select>` and a button's busy bar are that control's own, not the element's.
  */
-const insideOf = (template, element, tables) => {
-  const presentational =
-    axe._audit.standards.ariaRoles[
-      element.role ?? tables.implicitRoles.get(element.tag)
-    ]?.childrenPresentational === true;
-  return template.read.tags.filter(
+const insideOf = (template, element) => {
+  const within = (t) => template.within.get(t.offset) ?? [];
+  const controls = template.read.tags.filter(
     (t) =>
-      (template.within.get(t.offset) ?? []).includes(element.offset) &&
-      (presentational ? isFocusable(t.tag, t.attrs) : isInteractive(t, tables)),
+      within(t).includes(element.offset) &&
+      (holdsPresentation(element)
+        ? isFocusable(t.tag, t.attrs)
+        : isInteractive(t)),
+  );
+  return controls.filter(
+    (t) => !controls.some((other) => within(t).includes(other.offset)),
   );
 };
 
@@ -887,7 +916,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // Each group with the controls standing inside it, read off the parsed tree.
     component.groups = (template?.read?.groups ?? []).map((group) => ({
       ...group,
-      inside: insideOf(template, group, tables),
+      inside: insideOf(template, group),
     }));
     // Where each of them stands in the conditional structure, joined to the tag scan by the
     // offset both readings report. A focusable element the walk never reached would be one
@@ -949,23 +978,28 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   //
   // An element handed the name carries it for itself, and for nothing else a reader meets on
   // its own. So when a control stands inside it — anything a user lands on, or a role of a
-  // widget, a composite or a window (`insideOf`) — it carries the name only as a container
-  // ARIA names as a whole, whose items are its own: the calendar's `grid`, the dialog, a
-  // `listbox`, a `toolbar`. Anything else is refused, whatever its kind. A stop a `tabindex`
-  // puts on a wrapper is no carrier (the wrapper of `name-on-non-focusable` with a `tabindex`,
-  // which the widget test alone let through), and nor is a `region` or a `<button>` around an
-  // `<input>`: the name stops one element above a control, or one control holds another. axe, run in three engines (2026-10-13), reports the
-  // wrapper with a `combobox` inside as `aria-prohibited-attr` and `button-name`, the button
-  // around a text as `nested-interactive` and `label`, and a wrapper around a plain button or a
-  // `region` around one as nothing at all — there this is the one reader that refuses it. What
-  // is not a control of its own passes: an icon (`img` is a structure) anywhere, and inside a
-  // role whose children are presentational, whatever no user lands on. Not read: whether the
-  // items of a container name themselves (a `toolbar` around an unnamed combobox passes here
-  // and fails `button-name` on the page, and so does ARIA 1.1's `combobox` around its text,
-  // which fails `label`: every role ARIA names as a whole is trusted with what it holds, the
-  // leaf ones too), what a nested component or a template outlet draws
-  // inside the element, and what the consumer projects. A named scroll region around a
-  // table's sort buttons is refused too; the table's own item decides where its name goes.
+  // widget, a composite or a window, the first one on the way down (`insideOf`) — it carries
+  // the name only as a container ARIA names as a whole, whose items are its own: the
+  // calendar's `grid`, the dialog, a `listbox`, a `toolbar`, a native `<select>`. Anything else
+  // is refused, whatever its kind. A stop a `tabindex` puts on a wrapper is no carrier (the
+  // wrapper of `name-on-non-focusable` with a `tabindex`, which the widget test alone let
+  // through), and nor is a `region` or a `<button>` around an `<input>`: the name stops one
+  // element above a control, or one control holds another. Nor is a role named as a whole
+  // whose children are presentational (`slider`, `progressbar`, `img`) holding what a user
+  // lands on: that is the button around a text again. axe, run in three engines (2026-10-13),
+  // reports the wrapper with a `combobox` inside as `aria-prohibited-attr` and `button-name`,
+  // the button around a text as `nested-interactive` and `label`, and a wrapper around a plain
+  // button or a `region` around one as nothing at all — there this is the one reader that
+  // refuses it. What is not a control of its own passes: an icon (`img` is a structure)
+  // anywhere, and inside a role whose children are presentational, whatever no user lands on.
+  //
+  // Not read: whether the items of a container name themselves (a `toolbar` around an unnamed
+  // combobox passes here and fails `button-name` on the page, and so does ARIA 1.1's
+  // `combobox` around its text, which fails `label`), what a nested component, a directive (a
+  // `routerLink` giving an `<a>` its address) or a template outlet adds inside the element, and
+  // what the consumer projects. An `<ng-template>` declared inside the element is read as
+  // standing there, wherever an overlay stamps it (plan 4.83). A named scroll region around a
+  // table's sort buttons is refused; the table's own item decides where its name goes.
   //
   // A group may carry it too: one name for a set of controls. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
@@ -1020,8 +1054,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${component.className} (${component.templatePath}): <${group.tag} ` +
             `role="group"> binds both ${NAME_ATTRIBUTES.join(' and ')} to the inputs ` +
             (group.inside.length === 0
-              ? `and holds no control — a group carries the name for a set of controls, ` +
-                `and this one names nothing but itself`
+              ? `and holds no control the template draws — a group carries the name for ` +
+                `a set of controls, and what a consumer projects into it is not read`
               : `around ${described(unnamed)}, which name(s) nothing of their own — a ` +
                 `named group around unnamed controls is 0090's E3, and the name stops above ` +
                 `them`),
@@ -1034,8 +1068,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       (widget) => !grouped.has(widget.offset) && widget.forwards,
     );
     for (const widget of candidates) {
-      if (namedAsAWhole(widget.tag, widget.role, tables)) continue;
-      const inside = insideOf(template, widget, tables);
+      if (tables.named.has(roleOf(widget)) && !holdsPresentation(widget))
+        continue;
+      const inside = insideOf(template, widget);
       if (inside.length)
         throw new AriaError(
           'forwarded',
@@ -1470,7 +1505,7 @@ for (const name of cases) {
         `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
-    // One check, several refusals: point 4 throws five ways, all of them `forwarded`. A case
+    // One check, several refusals: point 4 throws six ways, all of them `forwarded`. A case
     // that names a fragment of its refusal holds it to that one, so a change that moves it to a
     // neighbouring throw is a failure here and not a pass.
     else if (fx.message !== undefined && !error.message.includes(fx.message))

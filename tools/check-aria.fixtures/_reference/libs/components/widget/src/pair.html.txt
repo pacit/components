@@ -1,7 +1,8 @@
 <!-- The group takes the consumer's name; the two texts take it through ids, each with a word
      of its own. One name, handed over once — on an element no user lands on, or, where focus
      is sent back to the field as a whole, on the same group with a stop on it: a group is
-     asked the group's question whatever stop it carries. -->
+     asked the group's question whatever stop it carries. A select of the period beside the
+     texts names itself as they do, and its options are its own, not the group's. -->
 @if (inline()) {
 <div
   class="pct-pair__row"
@@ -11,6 +12,10 @@
 >
   <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
   <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <select class="pct-pair__period" [attr.aria-labelledby]="periodNamedBy()">
+    <option>AM</option>
+    <option>PM</option>
+  </select>
 </div>
 } @else {
 <div

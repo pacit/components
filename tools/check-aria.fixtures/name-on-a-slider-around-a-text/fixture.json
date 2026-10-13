@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "is no container ARIA names as a whole",
+  "$reason": "A `role=\"slider\"` handed the name, with a text inside it. A slider is named as a whole, and it is a leaf: its children are presentational, so a control a user lands on inside it is one control holding another — axe reports `nested-interactive` on the slider and `label` (critical) on the text in three engines. A role named as a whole is trusted with what it holds only where its children are not presentational."
+}

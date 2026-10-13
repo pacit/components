@@ -5,5 +5,5 @@
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 >
-  <div class="pct-widget__menu" role="menu"><ng-content></ng-content></div>
+  <ul class="pct-widget__menu" role="menu"><ng-content></ng-content></ul>
 </span>

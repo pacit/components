@@ -1,0 +1,10 @@
+<!-- The trigger, its names bound as attributes spelled in camel case. -->
+<button
+  class="pct-widget__trigger"
+  type="button"
+  role="combobox"
+  [attr.ariaLabel]="ariaLabel() || null"
+  [attr.ariaLabelledby]="ariaLabelledby() || null"
+>
+  {{ label() }}
+</button>

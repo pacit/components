@@ -1,9 +1,9 @@
-<!-- The wrapper of `name-on-non-focusable` with a `tabindex`, around a text that names nothing. -->
+<!-- The wrapper of `name-on-non-focusable` with a `tabindex`, around an editing host that names nothing. -->
 <span
   class="pct-widget__box"
   tabindex="-1"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 >
-  <input class="pct-widget__field" type="text" />
+  <div class="pct-widget__field" contenteditable="true"></div>
 </span>

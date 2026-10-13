@@ -1,0 +1,10 @@
+<!-- A slider handed the name, and a text inside it that names nothing. -->
+<div
+  class="pct-widget__track"
+  role="slider"
+  tabindex="0"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-widget__field" type="text" />
+</div>

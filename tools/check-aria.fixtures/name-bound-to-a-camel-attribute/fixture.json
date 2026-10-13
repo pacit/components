@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "none of the",
+  "$reason": "The trigger binds the two names as attributes spelled in camel case, `[attr.ariaLabel]` and `[attr.ariaLabelledby]`. An attribute binding goes through `setAttribute`, which makes them `arialabel` and `arialabelledby` — no ARIA at all: axe reports `button-name` (critical) in three engines and Firefox 157 computes an empty label. Only a PROPERTY binding, `[ariaLabel]`, reaches `aria-label` through its reflection; mapping every spelling to the ARIA name passes this as a carrier."
+}

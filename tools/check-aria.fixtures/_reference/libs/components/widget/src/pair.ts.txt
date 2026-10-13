@@ -16,6 +16,7 @@ export class PctPair {
   readonly ariaLabelledby = input<string>('');
   protected readonly firstNamedBy = input<string>('');
   protected readonly secondNamedBy = input<string>('');
+  protected readonly periodNamedBy = input<string>('');
   /** Which of the two groups is standing — the template's `@if`, and nothing else. */
   protected readonly inline = input(true);
 }

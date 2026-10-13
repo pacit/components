@@ -1,1 +1,2 @@
-<div class="pct-widget__strip" role="tablist	list"><ng-content></ng-content></div>
+<div class="pct-widget__strip" role="bogus	tablist
+list"><ng-content></ng-content></div>
