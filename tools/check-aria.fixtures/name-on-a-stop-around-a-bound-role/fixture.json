@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "Hand the name to the control",
+  "$reason": "A stop handed the name around an element whose role an expression decides — a listbox or a radiogroup here. On the element handed the name a bound role is refused as one the gate cannot judge; one element lower it is the same question, and reading it as a plain element with no role passes the stop as a carrier with nothing inside."
+}

@@ -2,7 +2,8 @@
      of its own. One name, handed over once — on an element no user lands on, or, where focus
      is sent back to the field as a whole, on the same group with a stop on it: a group is
      asked the group's question whatever stop it carries. A select of the period beside the
-     texts names itself as they do, and its options are its own, not the group's. -->
+     texts names itself as they do, and its options are its own, not the group's; the hidden
+     input that carries the value is in no tree at all. -->
 @if (inline()) {
 <div
   class="pct-pair__row"
@@ -16,6 +17,7 @@
     <option>AM</option>
     <option>PM</option>
   </select>
+  <input type="hidden" name="when" />
 </div>
 } @else {
 <div

@@ -440,13 +440,19 @@ const isWidget = (tag, attrs, role, tables) =>
  * counted, as strict as the type: only inside a role whose children are presentational is it
  * spared (`insideOf`).
  *
- * The platform's own role is axe's, worked out from the deciding attributes where the tag has
- * more than one (`select`, `a`, `input`, `img`); a cell, whose role axe reads off its table,
- * has none here.
+ * The platform's own role is axe's, worked out from the attributes `virtual` passes on
+ * (`href`, `type`): a link is one with an address, an `<input>` follows its type. The rest of
+ * what can move a tag's role does not reach it — `multiple` and `size` on a `<select>`, `alt`
+ * on an `<img>` — and changes no verdict here: a select is a combobox or a listbox, both named
+ * as a whole, and an image either way a structure. A cell, whose role axe reads off its table,
+ * has none here, and a hidden `<input>` none at all: it is in no tree, though axe's table
+ * gives the tag a textbox (the datetime field keeps one beside its group).
  */
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
 const roleOf = (t) => {
   if (t.role !== null) return t.role;
+  if (t.tag === 'input' && t.attrs.get('type')?.toLowerCase() === 'hidden')
+    return null;
   try {
     return axe.commons.aria.implicitRole(virtual(t.tag, t.attrs));
   } catch {
@@ -509,11 +515,12 @@ const readTemplate = (content, tables, elements) => {
     widgets: tags
       .filter((t) => isWidget(t.tag, t.attrs, t.role, tables))
       .map((t) => ({ ...t })),
-    // A `role="group"` names a SET of controls, and ARIA asks it for no name — so it is no
-    // widget of the tables above. It may still be the element a consumer's name is handed to:
-    // the datetime field's two texts stand in one, and each takes the group's name with a word
-    // of its own (0090, E1 to E3). Point 4 reads these as carriers beside the widgets.
-    groups: tags.filter((t) => t.role === 'group'),
+    // A group — `role="group"`, or the platform's own for a `<fieldset>` — names a SET of
+    // controls, and ARIA asks it for no name — so it is no widget of the tables above. It may
+    // still be the element a consumer's name is handed to: the datetime field's two texts
+    // stand in one, and each takes the group's name with a word of its own (0090, E1 to E3).
+    // Point 4 reads these as carriers beside the widgets.
+    groups: tags.filter((t) => roleOf(t) === 'group'),
     parsed: tags.filter(
       (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
     ).length,
@@ -743,25 +750,43 @@ const hostRoleOf = (component) => ({
 });
 
 /**
+ * A container ARIA names as a whole whose items are its own: the role is named as a whole (the
+ * calendar's `grid`, a `listbox`, a `dialog`, a native `<select>`) and its children are not
+ * presentational — a `slider` or an `img` is named as a whole and owns no control.
+ */
+const isContainer = (t, tables) =>
+  tables.named.has(roleOf(t)) && !holdsPresentation(t);
+/** What a control standing inside an element takes as its own. */
+const owns = (owner, t, tables) =>
+  isContainer(owner, tables) ||
+  (holdsPresentation(owner) && !isFocusable(t.tag, t.attrs));
+
+/**
  * The controls standing inside an element of a template, read off the parsed tree. Where the
  * element's role makes its children presentational (`button`, `tab`, `switch` — a native
  * `<button>` and `<summary>` included), only what a user can land on is a control of its own:
  * the rest is part of the one control, which is why a button may hold a `<progress>` (axe,
  * three engines, 2026-10-13: nothing to report) and may not hold an `<input>` (`label` and
- * `nested-interactive`). And it stops at the first control on the way down: the options of a
- * `<select>` and a button's busy bar are that control's own, not the element's.
+ * `nested-interactive`). What a control inside owns is its own and not the element's: the
+ * options of a `<select>` or a `listbox` (a container), a button's busy bar (presentational
+ * children no user lands on) — but not a text inside a button, nor anything inside a link,
+ * which are controls of their own wherever they stand. An element whose role an expression
+ * decides is counted too, outside presentational children: it may be any of them.
  */
-const insideOf = (template, element) => {
+const insideOf = (template, element, tables) => {
   const within = (t) => template.within.get(t.offset) ?? [];
   const controls = template.read.tags.filter(
     (t) =>
       within(t).includes(element.offset) &&
       (holdsPresentation(element)
         ? isFocusable(t.tag, t.attrs)
-        : isInteractive(t)),
+        : isInteractive(t) || t.boundRole),
   );
   return controls.filter(
-    (t) => !controls.some((other) => within(t).includes(other.offset)),
+    (t) =>
+      !controls.some(
+        (owner) => within(t).includes(owner.offset) && owns(owner, t, tables),
+      ),
   );
 };
 
@@ -916,7 +941,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // Each group with the controls standing inside it, read off the parsed tree.
     component.groups = (template?.read?.groups ?? []).map((group) => ({
       ...group,
-      inside: insideOf(template, group),
+      inside: insideOf(template, group, tables),
     }));
     // Where each of them stands in the conditional structure, joined to the tag scan by the
     // offset both readings report. A focusable element the walk never reached would be one
@@ -1042,7 +1067,11 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   }
   const described = (elements) =>
     elements
-      .map((t) => `<${t.tag}${t.role ? ` role="${t.role}"` : ''}>`)
+      .map(
+        (t) =>
+          `<${t.tag}${t.role ? ` role="${t.role}"` : ''}>` +
+          (t.boundRole ? ' (role bound)' : ''),
+      )
       .join(', ');
   for (const component of naming) {
     const template = byPath.get(component.templatePath);
@@ -1051,11 +1080,12 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       if (group.inside.length === 0 || unnamed.length)
         throw new AriaError(
           'forwarded',
-          `${component.className} (${component.templatePath}): <${group.tag} ` +
-            `role="group"> binds both ${NAME_ATTRIBUTES.join(' and ')} to the inputs ` +
+          `${component.className} (${component.templatePath}): ${described([group])}, ` +
+            `a group, binds both ${NAME_ATTRIBUTES.join(' and ')} to the inputs ` +
             (group.inside.length === 0
               ? `and holds no control the template draws — a group carries the name for ` +
-                `a set of controls, and what a consumer projects into it is not read`
+                `a set of controls it can show to name themselves (projected content is ` +
+                `not read)`
               : `around ${described(unnamed)}, which name(s) nothing of their own — a ` +
                 `named group around unnamed controls is 0090's E3, and the name stops above ` +
                 `them`),
@@ -1068,17 +1098,20 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       (widget) => !grouped.has(widget.offset) && widget.forwards,
     );
     for (const widget of candidates) {
-      if (tables.named.has(roleOf(widget)) && !holdsPresentation(widget))
-        continue;
-      const inside = insideOf(template, widget);
+      if (isContainer(widget, tables)) continue;
+      const inside = insideOf(template, widget, tables);
       if (inside.length)
         throw new AriaError(
           'forwarded',
           `${component.className} (${component.templatePath}): ${described([widget])} ` +
             `binds both ${NAME_ATTRIBUTES.join(' and ')} to the inputs with ` +
-            `${described(inside)} inside it, and it is no container ARIA names as a whole — ` +
-            `the name stops one element above a control the reader meets on its own, or one ` +
-            `control holds another. Hand the name to the control`,
+            `${described(inside)} inside it — ` +
+            (holdsPresentation(widget)
+              ? `its children are presentational, so what a user lands on inside it is a ` +
+                `second control, one control holding another`
+              : `and it is no container ARIA names as a whole: the name stops one element ` +
+                `above a control the reader meets on its own, or one control holds another`) +
+            `. Hand the name to the control`,
         );
     }
     const carriers = [
