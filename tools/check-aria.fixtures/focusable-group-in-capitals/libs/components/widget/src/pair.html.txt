@@ -1,0 +1,9 @@
+<!-- A group a user can land on, its role spelled with a capital, handed the name with no text
+     inside it to name: to the engines a group with nothing to group. -->
+<div
+  class="pct-pair__row"
+  role="Group"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+></div>

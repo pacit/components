@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "The strip with a fallback list: `role=\"bogus<TAB>tablist<LF>list\"`, a tab and a line break between the tokens. The three engines take the first token that names a role, on any ASCII whitespace, so it is a `tablist`; axe's own reader takes the value whole unless asked for its fallback, and even then splits on a space alone, and reads no role at all. The gate takes the engines' side, because the question is what the reader announces; a reading that collapsed the tab and not the line break would find no role, and one that collapsed the line break and not the tab would find a `list`."
+}

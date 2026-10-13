@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "and it is no container ARIA names as a whole",
+  "$reason": "A stop handed the name around a `<ul role=\"menu\">` whose items are projected — `pct-menu`'s panel, one element too low. The menu takes no focus and is a control all the same: a composite, which `insideOf` counts beside the widgets and the windows, by the role written on it and not by the list its tag would be. axe reports `aria-prohibited-attr` on the stop in three engines."
+}

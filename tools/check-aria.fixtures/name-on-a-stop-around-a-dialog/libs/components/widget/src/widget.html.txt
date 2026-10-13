@@ -1,0 +1,9 @@
+<!-- A stop handed the name, around the dialog it opens. -->
+<span
+  class="pct-widget__box"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <div class="pct-widget__panel" role="dialog"></div>
+</span>

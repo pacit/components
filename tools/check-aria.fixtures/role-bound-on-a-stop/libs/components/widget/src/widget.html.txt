@@ -1,0 +1,8 @@
+<!-- A stop handed the name, its role decided by an input. -->
+<div
+  class="pct-widget__box"
+  tabindex="0"
+  [attr.role]="multiple() ? 'listbox' : 'radiogroup'"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+></div>

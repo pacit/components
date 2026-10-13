@@ -1,0 +1,9 @@
+<!-- A stop handed the name, and a switch inside it that names nothing. -->
+<span
+  class="pct-widget__box"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <span class="pct-widget__switch" role="switch" aria-checked="false"></span>
+</span>

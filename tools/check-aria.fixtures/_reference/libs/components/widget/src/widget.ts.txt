@@ -16,6 +16,8 @@ export class PctWidget extends PctWidgetBase {
   protected readonly open = input(false);
   /** Which of the two triggers is standing — the template's `@if`, and nothing else. */
   protected readonly editable = input(false);
+  /** Whether the platform's own control stands instead: nothing of ours to draw. */
+  protected readonly native = input(false);
   protected readonly hint = input<string>('');
   protected readonly error = input<string>('');
   protected readonly showError = input(false);

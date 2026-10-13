@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "the role is BOUND",
+  "$reason": "A stop handed the name, its role decided by an expression. A user lands on it, which is not what exempts an element from the bound refusal: a native control is the control whatever role it wears, and a `<div>` with a `tabindex` is whatever the expression makes it — a container, a group, a wrapper. Exempting anything focusable passes it."
+}

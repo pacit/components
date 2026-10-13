@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
+  "message": "the loop stamps each once per item",
   "$reason": "The same trigger with a block above the `@for` and one between the `@for` and the trigger. `a-name-per-item` has the repeat as the first entry of the path, this one as neither the first nor the last, and only the two together hold the rule that ANY repeat above the carrier stamps it per item: a reading of the first entry alone, of the nearest alone, or of every entry passes this case, and a reading that skips the first passes the other."
 }

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "holds no control",
+  "$reason": "`focusable-group-in-capitals` with the role written as markup: an attribute name in capitals, which HTML does not tell from `role`, and a character reference for its first letter, which the parser decodes. The DOM gets `role=\"group\"`. Read off the text, the element has no role and is a plain focusable widget with nothing inside — a carrier, and the case passed; read off the parsed tree, as the rest of the template is, it is a group holding nothing."
+}

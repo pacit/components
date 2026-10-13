@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "host",
+  "$reason": "A host block that writes a name and `role: 'presentation'` beside it. A name is a global ARIA attribute, which turns a presentational role back into a generic element: Chromium 153 and Firefox 157 both read such an element as `generic` (2026-10-13), and axe reports nothing. Counting any written role as one that carries a name passes it; it is the host with no role that point 2 refuses."
+}

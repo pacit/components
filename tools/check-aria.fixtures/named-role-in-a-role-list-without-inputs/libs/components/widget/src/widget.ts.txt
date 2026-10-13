@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** A strip named as a whole, its role written as a fallback list, and no way to name it. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {}

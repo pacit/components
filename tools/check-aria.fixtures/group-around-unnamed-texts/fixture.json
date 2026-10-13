@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
+  "message": "which name(s) nothing of their own",
   "$reason": "The datetime field's E3 (0090): the group carries the consumer's name and neither text names itself, so a reader on either is told nothing. A group carries the name for a set only when each text in it is named — by the group's name and a word of its own."
 }

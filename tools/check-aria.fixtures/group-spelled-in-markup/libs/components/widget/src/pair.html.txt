@@ -1,0 +1,9 @@
+<!-- A group a user can land on, its role written as markup the parser decodes, handed the
+     name with nothing inside it to name. -->
+<div
+  class="pct-pair__row"
+  ROLE="&#103;roup"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+></div>

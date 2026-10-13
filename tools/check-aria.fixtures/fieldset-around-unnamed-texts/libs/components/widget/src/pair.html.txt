@@ -1,0 +1,9 @@
+<!-- The group as a fieldset, around two texts that name nothing. -->
+<fieldset
+  class="pct-pair__row"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" />
+  <input class="pct-pair__second" type="text" />
+</fieldset>

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "binds its role",
+  "$reason": "`role-without-its-context` with the host's role bound as an attribute, `'[attr.role]'`. What owns the option is not in the source; the companion of `option-under-a-host-role-property`, so that each of the two host bindings is read."
+}

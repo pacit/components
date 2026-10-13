@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "binds its role",
+  "$reason": "`role-without-its-context` with the host's role bound as a property, `'[role]'`, instead of written. Angular sets the role from the expression either way, so what owns the option is not in the source; the host was read as bound only through `'[attr.role]'`, and this one passed as a host with no role, the option left to the consumer's template."
+}

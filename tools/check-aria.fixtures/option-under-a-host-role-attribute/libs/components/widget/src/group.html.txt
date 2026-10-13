@@ -1,0 +1,4 @@
+<div class="pct-group__options">
+  <div role="option">Anywhere</div>
+  <ng-content></ng-content>
+</div>

@@ -1,0 +1,25 @@
+<!-- The icon is an image when it is named and decoration when it is not, as `pct-icon` is,
+     and the bar a control no user lands on — inside a role whose children are presentational
+     neither is a control of its own, whatever role an expression gives the icon: the button
+     around both is still one control. The role an expression decides on the button sits on a
+     native control, which is the control a user lands on whatever role it wears. The frame is
+     a stop around the control and takes no name, so point 4 asks nothing of it. -->
+<span class="pct-toggle__frame" tabindex="-1">
+  <button
+    class="pct-toggle__control"
+    type="button"
+    [attr.role]="toggles() ? 'switch' : null"
+    [attr.aria-checked]="toggles() ? on() : null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    <svg
+      class="pct-toggle__icon"
+      [attr.role]="iconLabel() ? 'img' : null"
+      [attr.aria-label]="iconLabel() || null"
+    ></svg>
+    @if (busy()) {
+    <progress class="pct-toggle__busy"></progress>
+    }
+  </button>
+</span>

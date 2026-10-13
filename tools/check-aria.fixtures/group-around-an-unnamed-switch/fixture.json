@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's named group around two texts that name themselves, and a `role=\"switch\"` beside them that takes no focus and whose `aria-label` is blank. A group carries the name for the controls inside it, and a switch is one whether or not a user lands on it; counting the focusable elements only, as the group rule first did, passes a named group around an unnamed control — 0090's E3 with a switch — and so does taking a name of spaces for a name."
+}

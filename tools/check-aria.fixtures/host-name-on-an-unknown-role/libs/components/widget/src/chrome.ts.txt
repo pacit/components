@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+/** A surface whose host wears a role of its own invention, and a name. */
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    role: 'chrome',
+    'aria-label': 'Surface',
+  },
+})
+export class PctChrome {}
