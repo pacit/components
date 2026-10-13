@@ -1185,9 +1185,10 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // does not declare, the name lands on its host. A role the host block binds carries it, as
   // point 2 has it, the binding landing after any attribute; otherwise a `role` written on the
   // tag replaces the host block's — Angular sets the template's attributes after the host
-  // block's (`mergeHostAttribute`) — even one no reader knows (`generic`, `""`), and only a tag
-  // with none keeps the block's. No role, or one that forbids a name, refuses. A selector is
-  // read by its tag (`hostTags`); a custom element the library does not define is not read.
+  // block's (`mergeHostAttribute`) — even one `readRole` does not read (`generic`, which the
+  // engines take, or `""`), and only a tag with none keeps the block's. No role, or one that
+  // forbids a name, refuses. A selector is read by its tag (`hostTags`); a custom element the
+  // library does not define is not read.
   const drawnBy = new Map(
     components.flatMap((c) =>
       hostTags(c.selector)
