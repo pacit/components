@@ -12,8 +12,9 @@
      the role an expression decides — that could be any control, and a control inside the
      link is one the reader meets on its own. It is drawn only when it is named, with the role
      written: an image is a structure, named and never operated, and no control there either.
-     A picture given instead is a native `<img>`, an image by its tag's own role, no role
-     written: no control inside the link either, read off the tag as a written role is. -->
+     A picture given instead is a native `<img>`, no role written: an image named by its `alt`,
+     or decoration when the `alt` is empty — a structure either way, read off the tag as a
+     written role is, and no control inside the link. -->
 <span class="pct-toggle__frame" tabindex="-1">
   @if (href()) {
   <a
@@ -23,7 +24,7 @@
     [attr.aria-labelledby]="ariaLabelledby() || null"
   >
     @if (picture()) {
-    <img class="pct-toggle__icon" [attr.src]="picture()" [attr.alt]="iconLabel()" />
+    <img class="pct-toggle__icon" [src]="picture()" [alt]="iconLabel()" />
     } @else if (iconLabel()) {
     <svg class="pct-toggle__icon" role="img" [attr.aria-label]="iconLabel()"></svg>
     }

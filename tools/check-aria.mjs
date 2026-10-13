@@ -437,17 +437,17 @@ const isWidget = (tag, attrs, role, tables) =>
  * the platform's own for the tag (a `<progress>` is a progressbar, a `<select>` a combobox).
  * An image is none of these: `img` is a structure, named and never operated, which is why a
  * button holding an icon is still one control. Nor is a `toolbar`, which the keyboard passes
- * through to its buttons: counted, it would own them as a container does, and its name would
- * stand for theirs. A `<progress>` inside a link or a menu item is counted, as strict as the
- * type: only inside a role whose children are presentational is it spared (`insideOf`).
+ * through to its buttons, unless a `tabindex` makes it one — and even then its name does not
+ * stand for theirs (`owns`). A `<progress>` inside a link or a menu item is counted, as strict
+ * as the type: only inside a role whose children are presentational is it spared (`insideOf`).
  *
- * The other structures named as a whole — `meter`, `graphics-document`, `graphics-symbol` —
- * and the landmarks, `application` among them, are read the same way, and no input holds them
- * one by one: counting any one of them, or the `landmark` type, leaves the gate green
- * (measured on a copy, 2026-10-13). A meter in a link, a landmark in a group, an `application`
- * anywhere are shapes no template here draws; the reference and the cases hold the shapes a
- * template draws — the image in the reference, the toolbar in a case — not every row of axe's
- * table.
+ * The structures named as a whole — `toolbar`, `image`, `meter`, `graphics-document`,
+ * `graphics-symbol` — and the landmarks, `application` among them, are left to the type, and no
+ * input holds them one by one: counting any one of them, or the `landmark` type, leaves the
+ * gate green (measured on a copy, 2026-10-13). Counted, a toolbar would only be asked a name of
+ * its own, which axe's table asks of it anyway; the rest are shapes nothing here draws or
+ * documents — a meter in a link, a landmark in a group, an `application` anywhere. Toolbars the
+ * docs do hand to the consumer (`button.md`), so a case holds what a focusable one owns.
  *
  * The platform's own role is axe's, worked out from the attributes `virtual` passes on
  * (`href`, `type`): a link is one with an address, an `<input>` follows its type. The rest of
@@ -780,9 +780,14 @@ const hostRoleOf = (component) => ({
  */
 const isContainer = (t, tables) =>
   tables.named.has(roleOf(t)) && !holdsPresentation(t);
-/** What a control standing inside an element takes as its own. */
+/**
+ * What a control standing inside an element takes as its own: a container of an interactive
+ * type takes its items (a listbox, a dialog), a role whose children are presentational what no
+ * user lands on. A `toolbar` is a container too, a structure, and a `tabindex` makes one a
+ * control without making its buttons its own: each still names itself.
+ */
 const owns = (owner, t, tables) =>
-  isContainer(owner, tables) ||
+  (isContainer(owner, tables) && INTERACTIVE_TYPES.has(roleTypeOf(owner))) ||
   (holdsPresentation(owner) && !isFocusable(t.tag, t.attrs));
 
 /**
