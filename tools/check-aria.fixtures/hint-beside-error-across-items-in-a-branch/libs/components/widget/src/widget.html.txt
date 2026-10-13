@@ -1,0 +1,27 @@
+<!-- The role sits here and not on the host, so the name has to be handed over. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+<!-- `hint-beside-error-across-items` with a block above the `@for` and one between the `@for`
+     and the conditional: the repeat need be neither the outermost block nor the nearest to
+     stamp the conditional once per item. -->
+@if (open()) {
+@for (half of halves(); track half) {
+@if (editable()) {
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}
+}
+}
+}

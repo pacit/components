@@ -1,5 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "$reason": "The same two triggers with a block above the `@for` — `@if (showMarks()) { @for … }` is how the slider draws its marks — and one between the `@for` and the conditional. `two-names-across-items` has the repeat as the outermost and the nearest block, this one as neither, and only the two together hold the rule that ANY repeat above the conditional makes its branches a pair: a reading of the first entry alone, or of the nearest alone, passes this case, and a reading that skips the first passes the other."
-}

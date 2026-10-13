@@ -430,10 +430,10 @@ const readTemplate = (content, tables) => {
  * class and not of a property's name, so a kind renamed upstream fails the import, not the
  * rule. An `<ng-template>` stands once per place that stamps it, and is not read as repeating,
  * though the select stamps its option rows once per section: how many places is a question
- * about outlets, overlays and directives the walk does not answer, and reading every template
- * as repeated would refuse an `@if` whose two branches each carry the name in the dialog's, the
- * menu's or the popover's panel — each stamped once, each carrying the name inside. A `*ngFor`
- * parses as a template too and passes for the same reason; nothing here uses one.
+ * about outlets, overlays and the class's own `viewChild` the walk does not answer (plan 4.83),
+ * and reading every template as repeated would refuse the dialog's, the menu's and the
+ * popover's panel — each standing once, each carrying the name inside. A `*ngFor` parses as a
+ * template too and passes for the same reason; nothing here uses one.
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
@@ -447,7 +447,7 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
  * the body is branch 0 and each side block one after it. An `@for` with no `@empty` is an
  * entry too, its body marked `repeats` either way — it once left no trace in the path, and
- * what it repeats is what `exclusive` has to know.
+ * what it repeats is what point 4 and `exclusive` have to know.
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
@@ -769,16 +769,17 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // offset both readings report. A focusable element the walk never reached would be one
     // point 4 could say nothing about — and it would say it by passing, so it is a
     // denominator failure like every other half-read template above.
-    for (const widget of component.widgets) {
-      const path = template.paths.get(widget.offset);
+    // A group is asked the same: one with a `tabindex` is a stop a user lands on.
+    for (const element of [...component.widgets, ...component.groups]) {
+      const path = template.paths.get(element.offset);
       if (path === undefined)
         throw new AriaError(
           'denominator',
-          `${component.templatePath}: a widget <${widget.tag}> at offset ${widget.offset} ` +
+          `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
             `is in the tag scan and not in the parsed tree — point 4 asks which elements can ` +
             `stand in the DOM together, and about this one it would have nothing to ask`,
         );
-      widget.path = path;
+      element.path = path;
     }
     component.needsName =
       !component.hostIsWidget && component.widgets.length > 0;
@@ -816,8 +817,10 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
-  // Under an `@for` they can: the conditional is stamped once per item, each item takes a
-  // branch of its own, and the two stand at once.
+  // Under an `@for` nothing is one: the body is stamped once per item, so a focusable carrier
+  // there is as many as there are items — the two names below without a second element to
+  // compare, and two branches there are a pair as well. Refused before the pairs are counted,
+  // which leaves `exclusive`'s repeat clause to point 6 (`hint-beside-error-across-items`).
   //
   // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
@@ -836,7 +839,14 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           SELF_NAMES.some((key) => (widget.attrs.get(key) ?? '').trim()),
         ),
     );
-    const carriers = [...component.widgets, ...namedGroups].filter((widget) =>
+    // A `role="group"` with a `tabindex` is a widget as well, and it counts as the group it
+    // is: once, and only where every text inside names itself — a `tabindex` is no way round.
+    const carriers = [
+      ...component.widgets.filter(
+        (widget) => widget.attrs.get('role') !== 'group',
+      ),
+      ...namedGroups,
+    ].filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
@@ -850,7 +860,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and one has to — an input read ` +
           `by nobody names nothing`,
       );
-    // The pairwise rule is about the FOCUSABLE carriers, because that is what "two names for
+    // Both rules below are about the FOCUSABLE carriers, because that is what "two names for
     // one control" means: two things a user can land on, each announcing the same name. A
     // container named alongside the control that owns it is not that — it is the APG's own
     // arrangement, and `pct-select` is the case: the combobox trigger and the `role="listbox"`
@@ -861,6 +871,18 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     const landable = carriers.filter((widget) =>
       isFocusable(widget.tag, widget.attrs),
     );
+    const repeated = landable.filter((widget) =>
+      widget.path.some((entry) => entry.repeats),
+    );
+    if (repeated.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ` +
+          repeated.map((widget) => `<${widget.tag}>`).join(', ') +
+          ` inside an \`@for\` bind(s) both ${NAME_ATTRIBUTES.join(' and ')} to the inputs, ` +
+          `and the loop stamps each once per item — one element in the template, and on ` +
+          `every copy a name for the one control. The name belongs outside the loop`,
+      );
     const together = landable.flatMap((widget, i) =>
       landable.slice(i + 1).filter((other) => !exclusive(widget, other)),
     );
@@ -871,8 +893,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `element(s) bind both ${NAME_ATTRIBUTES.join(' and ')} to the inputs and ` +
           `${together.length + 1} of them can be in the DOM at the same time — two named ` +
           `elements are two names for one control. Two branches of one conditional are not ` +
-          `that; two elements standing side by side are, and so are two branches under an ` +
-          `\`@for\`, which stamps the conditional once per item`,
+          `that; two elements standing side by side are`,
       );
   }
 

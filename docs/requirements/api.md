@@ -347,7 +347,10 @@ covered from its first commit
 independent blocks, rejected on point 6; the unit case was written first and fired on the
 repository as it stood (`expected [ 'error', 'hint' ] to deeply equal [ StringMatching
 /error$/ ]`); `tools/check-aria.fixtures/warning-beside-error` — the third kind in a block of
-its own beside the other two, rejected on the same point
+its own beside the other two, rejected on the same point; `hint-beside-error-across-items` and
+`hint-beside-error-across-items-in-a-branch` — the one line under an `@for`, outermost and below
+other blocks, where each item takes a branch of its own and the hint of one stands beside the
+error of the next
 **Decision:** [0022 — one message line](../decisions/0022-one-message-line.md)
 **Lessons:** [`lesson-76`](../lessons.md#lesson-76)
 

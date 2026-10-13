@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A group's role on an `<ng-template>`, beside the reference's pair. The tag scan reads it as a group and the parsed tree holds no element at its offset, so the walk gives it no conditional path. Groups are asked for one like the widgets, because point 4 reads the path of any group a user can land on; a group the walk never reached is one it could say nothing about, and the gate says so instead of carrying an `undefined` on. Before this case no input reached that throw, for widgets either."
+}

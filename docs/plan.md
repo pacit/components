@@ -369,6 +369,25 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the time panel's shape (1.7)**, which rebuilds the columns' list — E2, the option
     focused by a roving `tabindex`, measured there under NVDA
 
+- [ ] **4.83 — an `<ng-template>` stamped in two places is read as standing in one**
+  - `check-aria` points 4 and 6 read an `@for` body as repeating and a template as standing
+    once. Five are named by two outlets: the calendar's and the pagination's chevron side by
+    side, the select's arrow on two branches of one `@if`, the select's option rows under an
+    `@for`, and the dialog's body below. The first four hold no carrier of the consumer's name
+    and no message part, which is why nothing reads wrong yet (2026-10-13)
+  - the reading this was opened with — count the outlets naming the `#ref` — misjudges the
+    three templates that carry the name in two places: the dialog's, the menu's and the
+    popover's panel, stamped by an outlet under `@if (inline() && open())` AND by the class,
+    directly or through `#panel`, which no reading of the template sees. Counted, the menu and
+    the popover stand once and the dialog's body twice, apart by the class alone; a sound
+    reading says "cannot judge" of all three, red on correct components until a list of
+    exceptions stands — and that list is where the defect would pass
+  - the sound piece — an outlet under an `@for` stamps per item — guards nothing the library
+    has: in the select's shape a focusable carrier or a message added to the rows is refused
+    already, against the trigger or the lines outside. `slot.template` stays unread
+  - binds at: **the first carrier or message part in a template stamped more than once at a
+    time** — by an outlet under an `@for`, or by two side by side — beyond the three panels
+
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
     2026-09-17, the runner on 2026-09-28, twice — with the browser's focus on the dialog's close
