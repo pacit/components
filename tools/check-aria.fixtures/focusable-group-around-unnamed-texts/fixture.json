@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "`group-around-unnamed-texts` with a `tabindex` on the group. A group a user can land on is a widget as well, and as a widget it carried the consumer's name with nothing asked of the texts inside: the `tabindex` was a way round 0090's E3, two texts that name nothing. The widget copy of a group counts only where the group copy would."
+}

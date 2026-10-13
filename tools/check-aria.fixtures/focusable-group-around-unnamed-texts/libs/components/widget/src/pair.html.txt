@@ -1,0 +1,12 @@
+<!-- `group-around-unnamed-texts` with a `tabindex` on the group: a user can land on it now, and
+     on each text inside, which still names nothing of its own — 0090's E3 all the same. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" />
+  <input class="pct-pair__second" type="text" />
+</div>

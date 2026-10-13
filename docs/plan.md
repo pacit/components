@@ -377,16 +377,16 @@ and every one is held by a **binds at** rather than by anybody's mood.
     and no message part, which is why nothing reads wrong yet (2026-10-13)
   - the reading this was opened with — count the outlets naming the `#ref` — misjudges the
     three templates that carry the name in two places: the dialog's, the menu's and the
-    popover's panel, stamped by an outlet under `@if (inline() && open())` AND by the class
-    (`viewChild` into a `TemplatePortal`), which no reading of the template sees. Counted, the
-    menu and the popover stand once and the dialog's body twice, apart by the class alone; a
-    sound reading says "cannot judge" of all three, red on correct components until a list of
+    popover's panel, stamped by an outlet under `@if (inline() && open())` AND by the class,
+    directly or through `#panel`, which no reading of the template sees. Counted, the menu and
+    the popover stand once and the dialog's body twice, apart by the class alone; a sound
+    reading says "cannot judge" of all three, red on correct components until a list of
     exceptions stands — and that list is where the defect would pass
   - the sound piece — an outlet under an `@for` stamps per item — guards nothing the library
-    has: in the select's shape a carrier or a message added to the rows is refused already,
-    against the trigger or the lines outside. An outlet through `slot.template` stays unread
-  - binds at: **the first carrier or message part in a template two outlets can stamp at once —
-    under an `@for`, or side by side** — beyond the three panels measured here
+    has: in the select's shape a focusable carrier or a message added to the rows is refused
+    already, against the trigger or the lines outside. `slot.template` stays unread
+  - binds at: **the first carrier or message part in a template stamped more than once at a
+    time** — by an outlet under an `@for`, or by two side by side — beyond the three panels
 
 - [ ] **4.78 — Orca says nothing when the modal takes focus**
   - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on

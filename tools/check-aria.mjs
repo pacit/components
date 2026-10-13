@@ -769,16 +769,17 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // offset both readings report. A focusable element the walk never reached would be one
     // point 4 could say nothing about — and it would say it by passing, so it is a
     // denominator failure like every other half-read template above.
-    for (const widget of component.widgets) {
-      const path = template.paths.get(widget.offset);
+    // A group is asked the same: one with a `tabindex` is a stop a user lands on.
+    for (const element of [...component.widgets, ...component.groups]) {
+      const path = template.paths.get(element.offset);
       if (path === undefined)
         throw new AriaError(
           'denominator',
-          `${component.templatePath}: a widget <${widget.tag}> at offset ${widget.offset} ` +
+          `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
             `is in the tag scan and not in the parsed tree — point 4 asks which elements can ` +
             `stand in the DOM together, and about this one it would have nothing to ask`,
         );
-      widget.path = path;
+      element.path = path;
     }
     component.needsName =
       !component.hostIsWidget && component.widgets.length > 0;
@@ -838,13 +839,13 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           SELF_NAMES.some((key) => (widget.attrs.get(key) ?? '').trim()),
         ),
     );
-    // A group with a `tabindex` is a widget as well, and one element is one carrier: listed
-    // twice it was two names for itself, and its copy as a group has no path to read.
+    // A group with a `tabindex` is a widget as well, and it counts as the group it is: once,
+    // and only where every text inside names itself — a `tabindex` is no way round that.
     const carriers = [
-      ...component.widgets,
-      ...namedGroups.filter(
-        (group) => !component.widgets.some((w) => w.offset === group.offset),
+      ...component.widgets.filter(
+        (widget) => widget.attrs.get('role') !== 'group',
       ),
+      ...namedGroups,
     ].filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
