@@ -3,5 +3,5 @@
 @if (several()) {
 <pct-group [attr.aria-label]="ariaLabel() || null"><ng-content></ng-content></pct-group>
 } @else {
-<pct-toggle [ariaLabel]="ariaLabel()" [attr.aria-labelledby]="ariaLabelledby() || null"></pct-toggle>
+<pct-chrome [ariaLabel]="ariaLabel()" [ariaLabelledby]="ariaLabelledby()"></pct-chrome>
 }

@@ -809,7 +809,7 @@ const insideOf = (template, element, tables) => {
  * role, axe's element table decides: a `<span>`, a `<div>`, a `<p>`, a `<label>`, an `<a>` with
  * no address are named nothing, while a `<section>`, a `<header>` or a cell has a role its name
  * or its place decides — a named section is a region, a `<header>` a banner at the top of a
- * page and, inside one, a generic to Firefox 157 and a section header to Chromium 153. The role
+ * page and, inside `<main>`, a generic to Firefox 157 and a section header to Chromium 153. The role
  * comes first, because that table read alone forbids a name on an `<a href>`: its `[href]`
  * variant is silent and the default fills in, which axe's own check never reaches, the link
  * being a widget. An address is read as `virtual` reads it, so one an expression may drop
@@ -817,16 +817,16 @@ const insideOf = (template, element, tables) => {
  * not read counts as absent, which refuses. A written `role="generic"` is no role to `readRole`
  * (axe's `aria-roles` reports it on the page).
  */
+const forbids = (role) =>
+  NAME_TARGETS.some((name) =>
+    (axe._audit.standards.ariaRoles[role].prohibitedAttrs ?? []).includes(name),
+  );
 const prohibitsAName = (t) => {
   const role = roleOf(t);
   return role === null
     ? axe.commons.standards.getElementSpec(virtual(t.tag, t.attrs))
         .namingProhibited === true
-    : NAME_TARGETS.some((name) =>
-        (axe._audit.standards.ariaRoles[role].prohibitedAttrs ?? []).includes(
-          name,
-        ),
-      );
+    : forbids(role);
 };
 
 const checkAria = ({ components, counted, templates, documents, tables }) => {
@@ -1084,8 +1084,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // text; a `role="none"` named anyway is shown as the tag's own role (a `<section>`'s region).
   // axe spares an element with no role inside a widget, whose name then joins the widget's
   // ("Country Poland" on a button) — refused here, the name being the control's. A component of
-  // the library drawn inside takes the name through its inputs; bound onto its host instead,
-  // the name needs the host's role, as point 2 has it — a host with none is a generic to both
+  // the library drawn inside takes the name through the inputs it declares; bound onto its host
+  // instead, the name needs the role the host ends with — a host with none is a generic to both
   // engines, and axe, sparing custom elements, says nothing. Asked after what a carrier holds,
   // the sharper reason, and before the carriers are counted.
   //
@@ -1176,31 +1176,43 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       ...component.groups.filter((group) => group.forwards),
     ];
   }
-  // A component of the library drawn by its tag — every one of them has the tag for its whole
-  // selector — takes the name through its inputs, when bound to them by property; bound any
-  // other way, the name lands on its host, which carries it only as point 2 asks of a host
-  // block. A custom element the library does not define is not read.
-  const drawnBy = new Map(components.map((c) => [c.selector, c]));
-  const unnamed = (t) => {
+  // A component of the library drawn by a custom tag its selector names takes the name through
+  // the inputs it declares, bound to them by property. Bound any other way, or to an input it
+  // does not declare, the name lands on its host. A role the host block binds carries it, as
+  // point 2 has it, the binding landing after any attribute; otherwise the role is the one
+  // written on the tag — Angular sets the template's attributes after the host block's
+  // (`mergeHostAttribute`) — or else the host block's, and none, or one that forbids a name,
+  // refuses. A custom element the library does not define is not read.
+  const drawnBy = new Map(
+    components.flatMap((c) =>
+      hostTags(c.selector)
+        .filter((tag) => tag.includes('-'))
+        .map((tag) => [tag, c]),
+    ),
+  );
+  const nameForbidden = (t) => {
     const drawn = drawnBy.get(t.tag);
     if (drawn === undefined) return prohibitsAName(t);
-    return (
-      !drawn.hostIsWidget && t.takenAs.some((name) => !drawn.inputs.has(name))
-    );
+    if (t.takenAs.every((name) => drawn.inputs.has(name))) return false;
+    const host = hostRoleOf(drawn);
+    if (host.bound) return false;
+    const role = t.role ?? host.role;
+    return role === null || forbids(role);
   };
   for (const component of components) {
     if (!component.templatePath) continue;
     const unnamable = byPath
       .get(component.templatePath)
-      .read.tags.filter((t) => t.takesName && unnamed(t));
+      .read.tags.filter((t) => t.takesName && nameForbidden(t));
     if (unnamable.length)
       throw new AriaError(
         'forwarded',
         `${component.className} (${component.templatePath}): ${described(unnamable)} ` +
           `bind(s) ${NAME_ATTRIBUTES.join(' or ')} to the inputs, and its role prohibits a ` +
           `name — the role written, or the platform's own for the tag, or with neither the ` +
-          `tag itself (a generic, a \`<p>\`, a \`<label>\`), or for a component of the ` +
-          `library the role its host block gives it. Both engines compute the name and ` +
+          `tag itself (a generic, a \`<p>\`, a \`<label>\`); for a component of the library ` +
+          `named on its host, the role written on its tag or else its host block's. Both ` +
+          `engines compute the name and ` +
           `nothing has to say it, and axe (\`aria-prohibited-attr\`) fails it only where ` +
           `nothing inside reads as text, asks for a review elsewhere — which the page's ` +
           `audit does not read — and says nothing inside a widget or on a custom element. ` +
