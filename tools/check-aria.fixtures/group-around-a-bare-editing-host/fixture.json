@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "`group-around-an-unnamed-editing-host` with the editing host written bare: `contenteditable` with no value, which is the empty string to the parser and an editing host to the platform. A written attribute counts by its presence, so an empty value is one; a reading that asked for a value took the note for no control, and the group passed over a field that names nothing. The tag scan read the bare attribute too."
+}

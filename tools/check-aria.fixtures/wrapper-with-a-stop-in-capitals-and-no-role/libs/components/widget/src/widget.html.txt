@@ -1,5 +1,5 @@
 <!-- The reference's trigger, and its panel with the heading's group wrapper made a stop by a
-     written `tabindex` instead of a role: nothing an option may stand in. -->
+     `tabindex` written in capitals instead of a role: nothing an option may stand in. -->
 <span class="pct-widget__box">
   <button
     class="pct-widget__trigger"
@@ -14,7 +14,7 @@
 
 @if (open()) {
 <div class="pct-widget__panel" role="listbox">
-  <div tabindex="-1">
+  <div TABINDEX="-1">
     <div class="pct-widget__heading">Nearby</div>
     <div role="option">Poland</div>
   </div>

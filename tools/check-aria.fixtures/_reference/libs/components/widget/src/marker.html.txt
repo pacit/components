@@ -1,1 +1,10 @@
-<span class="pct-marker__text"><ng-content></ng-content></span>
+<!-- A `@let`, which the parsed tree holds as a node with a name and no tag, and a style block,
+     which the compiler takes out: a tag the tag scan finds and the tree holds nothing for,
+     outside any ICU — no element of the DOM, and nothing a user lands on. -->
+@let emphasis = 'bold';
+<style>
+  .pct-marker__text {
+    font-weight: 600;
+  }
+</style>
+<span class="pct-marker__text" [attr.data-emphasis]="emphasis"><ng-content></ng-content></span>

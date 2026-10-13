@@ -1,6 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "message": "and it is no container ARIA names as a whole",
-  "$reason": "`name-on-a-region-around-the-trigger` with `TABINDEX` in capitals and the trigger inside named as well: the same name on a stop and on the control within it. HTML ignores the case of an attribute's name, so the region takes focus; the tag scan looked the key up as written, found no `tabindex`, and read a landmark no user lands on — no widget, so no carrier to ask what it holds — while the trigger carried the name for the component and the case passed. The walk reads the name as the parser and the DOM do."
-}
