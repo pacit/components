@@ -1,17 +1,10 @@
-<!-- The reference's two triggers on the two branches of one `@if`, with an `@for` around it:
-     each half takes a branch of its own, so the `<input>` of one stands beside the `<button>`
-     of the next, and the name a consumer wrote is announced twice. -->
+<!-- `a-name-per-item` with a block above the `@for`, as the slider draws its marks, and one
+     between the `@for` and the trigger: the repeat need be neither the outermost block nor the
+     nearest to stamp the trigger once per item. -->
 <span class="pct-widget__box">
+  @if (open()) {
   @for (half of halves(); track half) {
-  @if (half === 'day') {
-  <input
-    class="pct-widget__trigger"
-    type="text"
-    role="combobox"
-    [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || null"
-  />
-  } @else {
+  @if (editable()) {
   <button
     class="pct-widget__trigger"
     type="button"
@@ -21,6 +14,7 @@
   >
     {{ label() }}
   </button>
+  }
   }
   }
 </span>

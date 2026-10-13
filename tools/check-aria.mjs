@@ -430,10 +430,10 @@ const readTemplate = (content, tables) => {
  * class and not of a property's name, so a kind renamed upstream fails the import, not the
  * rule. An `<ng-template>` stands once per place that stamps it, and is not read as repeating,
  * though the select stamps its option rows once per section: how many places is a question
- * about outlets, overlays and directives the walk does not answer, and reading every template
- * as repeated would refuse an `@if` whose two branches each carry the name in the dialog's, the
- * menu's or the popover's panel — each stamped once, each carrying the name inside. A `*ngFor`
- * parses as a template too and passes for the same reason; nothing here uses one.
+ * about outlets, overlays and the class's own `viewChild` the walk does not answer (plan 4.83),
+ * and reading every template as repeated would refuse the dialog's, the menu's and the
+ * popover's panel — each standing once, each carrying the name inside. A `*ngFor` parses as a
+ * template too and passes for the same reason; nothing here uses one.
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
@@ -816,8 +816,10 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
   // tree. Two names for one control is what the rule is about, and two elements that cannot
   // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
-  // Under an `@for` they can: the conditional is stamped once per item, each item takes a
-  // branch of its own, and the two stand at once.
+  // Under an `@for` nothing is one: the body is stamped once per item, so a carrier there is
+  // as many carriers as there are items — the two names below without a second element to
+  // compare, and two branches there are a pair as well. Refused before the pairs are counted,
+  // which leaves `exclusive`'s repeat clause to point 6 (`hint-beside-error-across-items`).
   //
   // A group may carry it too: one name for a set of texts. Two textboxes each carrying the
   // consumer's name would be the two names the rule below refuses; a group carrying it is one
@@ -850,7 +852,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and one has to — an input read ` +
           `by nobody names nothing`,
       );
-    // The pairwise rule is about the FOCUSABLE carriers, because that is what "two names for
+    // Both rules below are about the FOCUSABLE carriers, because that is what "two names for
     // one control" means: two things a user can land on, each announcing the same name. A
     // container named alongside the control that owns it is not that — it is the APG's own
     // arrangement, and `pct-select` is the case: the combobox trigger and the `role="listbox"`
@@ -861,6 +863,18 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     const landable = carriers.filter((widget) =>
       isFocusable(widget.tag, widget.attrs),
     );
+    const repeated = landable.filter((widget) =>
+      widget.path.some((entry) => entry.repeats),
+    );
+    if (repeated.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ` +
+          repeated.map((widget) => `<${widget.tag}>`).join(', ') +
+          ` inside an \`@for\` bind(s) both ${NAME_ATTRIBUTES.join(' and ')} to the inputs, ` +
+          `and the loop stamps each once per item — one element in the template, as many ` +
+          `names for one control as there are items. The name belongs outside the loop`,
+      );
     const together = landable.flatMap((widget, i) =>
       landable.slice(i + 1).filter((other) => !exclusive(widget, other)),
     );
@@ -871,8 +885,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `element(s) bind both ${NAME_ATTRIBUTES.join(' and ')} to the inputs and ` +
           `${together.length + 1} of them can be in the DOM at the same time — two named ` +
           `elements are two names for one control. Two branches of one conditional are not ` +
-          `that; two elements standing side by side are, and so are two branches under an ` +
-          `\`@for\`, which stamps the conditional once per item`,
+          `that; two elements standing side by side are`,
       );
   }
 
