@@ -4,7 +4,10 @@
      asked the group's question whatever stop it carries. A select of the period beside the
      texts names itself as they do, and its options are its own, not the group's, under an
      `<optgroup>` as much as directly; the hidden
-     input that carries the value is in no tree at all. -->
+     input that carries the value is in no tree at all. Each group holds a button of its own
+     beside the texts — a native `<button>` in the first, a `role="button"` written onto a
+     `<span>` in the one with a stop — which names itself and owns its busy bar: a role whose
+     children are presentational makes the bar part of the button, the tag's own or written. -->
 @if (inline()) {
 <div
   class="pct-pair__row"
@@ -20,6 +23,11 @@
       <option>PM</option>
     </optgroup>
   </select>
+  <button class="pct-pair__now" type="button" [attr.aria-labelledby]="nowNamedBy()">
+    @if (busy()) {
+    <progress class="pct-pair__busy"></progress>
+    }
+  </button>
   <input type="hidden" name="when" />
 </div>
 } @else {
@@ -32,5 +40,10 @@
 >
   <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
   <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <span class="pct-pair__now" role="button" tabindex="0" [attr.aria-labelledby]="nowNamedBy()">
+    @if (busy()) {
+    <progress class="pct-pair__busy"></progress>
+    }
+  </span>
 </div>
 }

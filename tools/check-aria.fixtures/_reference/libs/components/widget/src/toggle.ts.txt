@@ -5,7 +5,9 @@ import { Component, input } from '@angular/core';
  * takes focus back: what point 4 must pass around a control — an image and a busy bar inside
  * it, a role an expression decides on it, and a stop around it that takes no name. Drawn on a
  * stop, it is a `role="button"` holding the same icon: a written role is a control as the
- * tag's own is, its children presentational alike.
+ * tag's own is, its children presentational alike. Drawn as a link, it holds a named icon
+ * whose role is written: a link's children are not presentational, and an image is still no
+ * control inside it.
  */
 @Component({
   selector: 'pct-toggle',
