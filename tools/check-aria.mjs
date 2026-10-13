@@ -839,8 +839,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           SELF_NAMES.some((key) => (widget.attrs.get(key) ?? '').trim()),
         ),
     );
-    // A group with a `tabindex` is a widget as well, and it counts as the group it is: once,
-    // and only where every text inside names itself — a `tabindex` is no way round that.
+    // A `role="group"` with a `tabindex` is a widget as well, and it counts as the group it
+    // is: once, and only where every text inside names itself — a `tabindex` is no way round.
     const carriers = [
       ...component.widgets.filter(
         (widget) => widget.attrs.get('role') !== 'group',
