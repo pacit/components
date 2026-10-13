@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). Its tags meet the scan's by offset: one only the tree holds, one
- * only the scan finds inside an ICU, and one the scan reads into an ICU fail point 1.
+ * syntax tree (`parseTemplate`). A tag only the tree holds, a stop it holds and the walk never
+ * reaches, and a tag the scan finds inside or reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -522,8 +522,9 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * scan reads where the parser sees an expression. Its attributes make no stop, though its tag
  * or its written role can still make it a widget, which fails point 1 (`@let mark =
  * '<button>'`). A real tag such a false one swallows is the tree's alone, and an ICU it runs
- * into is one the scan does not read whole (`end`): both fail point 1. A tag the tag reader holds
- * and the walk never reached (`held`, in a block kind the walk does not know) fails it too.
+ * into is one the scan does not read whole (`end`): both fail point 1. A stop or a group the tag
+ * reader holds (`held`) and the walk gives no path fails it too: a template, which the tree holds
+ * as no element, or a tag in a block kind the walk does not descend into.
  */
 const readTemplate = (content, tables, elements, attributes, icus) => {
   const text = content.replace(COMMENT, '');
@@ -625,18 +626,13 @@ const focusAttributes = (node) =>
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
-  names = new Map();
   icus = [];
-  record(node, name) {
-    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
-    this.names.set(node.sourceSpan.start.offset, name);
-  }
   visitElement(node) {
-    this.record(node, node.name);
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     super.visitElement(node);
   }
   visitTemplate(node) {
-    this.record(node, node.tagName ?? 'ng-template');
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     super.visitTemplate(node);
   }
   visitIcu(node) {
@@ -828,7 +824,6 @@ const readMessages = (file, content) => {
     roles: state.roles,
     elements: state.elements,
     attributes: tags.attributes,
-    names: tags.names,
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1064,9 +1059,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     if (unscanned.length)
       throw new AriaError(
         'denominator',
-        `${template.file}: the parsed tree holds ` +
-          `<${said.names.get(unscanned[0])}> at offset ` +
-          `${unscanned[0]}, and the tag scan never found it — a \`<\` before it, in an ` +
+        `${template.file}: the parsed tree holds a tag at offset ${unscanned[0]} ` +
+          `(\`${template.content.replace(COMMENT, '').slice(unscanned[0]).split('\n')[0]}\`), ` +
+          `and the tag scan never found it — a \`<\` before it, in an ` +
           `expression, a string or a text, reads to the scan as a tag that swallows this one, ` +
           `and points 4 and 8, which start from the scan, would not examine it`,
       );
@@ -1140,10 +1135,13 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         throw new AriaError(
           'denominator',
           `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
-            (element.held
-              ? `is in the parsed tree, and the walk never reached it — a block kind it does ` +
-                `not descend into; `
-              : `is in the tag scan and not in the parsed tree — `) +
+            (!element.held
+              ? `is in the tag scan and not in the parsed tree — `
+              : element.tag === 'ng-template'
+                ? `is a template, which the tree holds as no element, so the walk gives it no ` +
+                  `path — `
+                : `is in the parsed tree, and the walk never reached it — a block kind it does ` +
+                  `not descend into; `) +
             (element.unread
               ? `it stands inside an ICU, which the tree holds as no elements, so nothing here ` +
                 `reads what it is`

@@ -1,0 +1,4 @@
+<!-- The reference's marker, and a string holding the markup of a button: the tag scan finds a
+     tag there, outside any ICU, and the parsed tree holds a `@let` and no tag at all. -->
+@let mark = '<button>';
+<span class="pct-marker__text" [attr.data-mark]="mark"><ng-content></ng-content></span>
