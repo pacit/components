@@ -862,11 +862,11 @@ const LEXING = {
  * passed every point. One code unit for one, so that a character outside the basic plane moves no
  * offset.
  *
- * A template the HTML parser reads with errors keeps its text: a comment it finds there may run
- * to the end of the file (`<a href=//x.example>` opens one), and the template is refused as one
- * that does not parse. Angular 22.2 throws on a comment standing directly in an ICU's case — the
- * build, which hands the same text to the same parser, throws as well — and a throw is read the
- * same way.
+ * A template the HTML parser reads with errors keeps its text: a comment it finds there may take
+ * markup with it (`<a href=//x.example>` opens one that takes the rest of its line, and the tag
+ * never ends), and the template is refused as one that does not parse. Angular 22.2 throws on a
+ * comment standing directly in an ICU's case — the build, which hands the same text to the same
+ * parser, throws as well — and a throw is read the same way.
  */
 const readTree = (file, content) => {
   let text = content;
