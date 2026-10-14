@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<span class=\"pct-widget__more\" tabindex=\"0\" >`) is in the tag scan and not in the parsed tree — it stands inside an ICU",
+  "$reason": "`stop-in-an-icu` with a line comment in the start tag of the stop, `// it's the way on`. Inside an ICU the tree holds no element, so the scan is the only reading there is, and the comment has to be blanked there as anywhere: the comment reader enters an ICU's cases, which the compiler's own visitor does not. Left in the text, the apostrophe opens a quote that never closes, the scan finds no tag where the stop starts, and the template passed, as it does on main. The refusal quotes the tag as the blanked text reads it."
+}

@@ -829,7 +829,9 @@ const exclusive = (a, b) =>
  * `<!--` in a block's condition, a `@let` string or an ICU's case value is no comment here
  * either — and not off that function's `commentNodes`: its transform never hands over a comment
  * standing between two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the
- * scan would read what they quote. The base visitor does not enter an ICU's cases; this one does.
+ * scan would read what they quote. The base visitor does not enter an ICU's cases, and this one
+ * does: inside an ICU the scan is the only reading there is, and a comment left in a start tag
+ * there, holding an apostrophe, opens a quote that hides the stop the tag is.
  */
 class CommentReader extends RecursiveVisitor {
   spans = [];
@@ -860,21 +862,27 @@ const LEXING = {
  * passed every point. One code unit for one, so that a character outside the basic plane moves no
  * offset.
  *
- * Angular 22.2 throws on a comment standing directly in an ICU's case — the build, which hands
- * the same text to the same parser, throws as well — and a throw is read as a template that does
- * not parse.
+ * A template the HTML parser reads with errors keeps its text: a comment it finds there may run
+ * to the end of the file (`<a href=//x.example>` opens one), and the template is refused as one
+ * that does not parse. Angular 22.2 throws on a comment standing directly in an ICU's case — the
+ * build, which hands the same text to the same parser, throws as well — and a throw is read the
+ * same way.
  */
 const readTree = (file, content) => {
-  const comments = new CommentReader();
-  visitAll(comments, new HtmlParser().parse(content, file, LEXING).rootNodes);
-  const text = comments.spans.reduce(
-    (blanked, { start, end }) =>
-      blanked.slice(0, start.offset) +
-      blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
-      blanked.slice(end.offset),
-    content,
-  );
+  let text = content;
   try {
+    const html = new HtmlParser().parse(content, file, LEXING);
+    if (!html.errors.length) {
+      const comments = new CommentReader();
+      visitAll(comments, html.rootNodes);
+      text = comments.spans.reduce(
+        (blanked, { start, end }) =>
+          blanked.slice(0, start.offset) +
+          blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
+          blanked.slice(end.offset),
+        content,
+      );
+    }
     const { nodes, errors } = parseTemplate(content, file, {
       preserveWhitespaces: false,
     });
