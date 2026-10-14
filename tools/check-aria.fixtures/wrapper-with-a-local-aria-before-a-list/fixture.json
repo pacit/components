@@ -1,6 +1,0 @@
-{
-  "point": 9,
-  "check": "context",
-  "message": "<div role=\"list\"> (list)",
-  "$reason": "A role-less wrapper whose attributes reach no global ARIA attribute: `aria-expanded`, which is not one, and `arialabel`, written and bound through `attr.`, which `setAttribute` keeps as `arialabel`. axe's `aria-required-children` looks through it (measured, axe 4.13: only a global attribute or a way to land on it keeps a role-less element in the tree; the audit names `aria-expanded` under `aria-allowed-attr`, which no point of this gate reads), so the option inside belongs to the listbox and point 9 passes it. What fails is the next option, under a `list`. A reading that took any `aria-` name for one that keeps the wrapper, or read a written or an `attr.` name as a property's reflection, refused the first option instead; the global attributes are axe's own list now (`globalAria`)."
-}

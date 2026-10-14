@@ -33,7 +33,7 @@
     <div role="option">Poland</div>
   </div>
   <div aria-hidden=" TRUE">
-    <div role="option">Anywhere</div>
+    <div role="option" *ngIf="open()">Anywhere</div>
   </div>
   <div role="list">
     <span role="option" aria-hidden="true">Nowhere</span>

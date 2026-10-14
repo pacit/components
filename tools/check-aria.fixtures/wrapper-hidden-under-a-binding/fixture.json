@@ -2,5 +2,5 @@
   "point": 9,
   "check": "context",
   "message": "a global ARIA attribute (`aria-hidden`)",
-  "$reason": "A written `aria-hidden=\"true\"` under a binding of the same name, which Angular sets after it: the value the page ends up with is the expression's, which the template cannot decide, and in a state where it is not `true` the role-less wrapper is in the tree and owns the option. A reading that took the written value for the one in force passed it."
+  "$reason": "A written `aria-hidden=\"true\"` under a binding of the same name — here the banana-box of the property, `[(ariaHidden)]`, whose reflection sets the attribute after the written one: the value the page ends up with is the expression's, which the template cannot decide, and in a state where it is not `true` the role-less wrapper is in the tree and owns the option. A reading that took the written value for the one in force, or read only an `attr.` binding, or a one-way property, over it, passed it."
 }

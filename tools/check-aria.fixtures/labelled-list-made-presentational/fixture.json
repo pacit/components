@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "stands under <ul role=\"none\"> (list)",
+  "$reason": "A presentational role overridden on a tag with a role of its own: the `aria-label` drops `role=\"none\"` from the `<ul>`, which is a `list` again (Chromium shows `list > listitem` for the same `<ul>` around a `listitem`, and axe reports nothing there), so the option stands in a list. A reading that took the overridden element for a generic one refused it as a wrapper, and would refuse the `listitem` the list rightly owns."
+}

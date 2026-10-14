@@ -28,7 +28,7 @@
      may stand in, and nothing else may. -->
 @if (open()) {
 <div class="pct-widget__panel" role="listbox">
-  <div aria-hidden="true" [attr.aria-hidden]="open() ? null : 'true'">
+  <div aria-hidden="true" [(ariaHidden)]="hidden">
     <div class="pct-widget__heading">Nearby</div>
     <div role="option">Poland</div>
   </div>

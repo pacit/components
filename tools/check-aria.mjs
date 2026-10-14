@@ -805,12 +805,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             // some state.
             names: namesOn(node),
             // Out of the tree with all it holds, the way axe reads the value; bound, it may
-            // be absent.
+            // be absent. Angular's own tags reach no DOM to hide.
             ariaHidden:
+              !TRANSPARENT_TAGS.has(node.name.toLowerCase()) &&
               written('aria-hidden')?.trim().toLowerCase() === 'true' &&
               bindings('aria-hidden').length === 0,
-            tabindex: ['tabindex', '[tabindex]'].some((key) =>
-              focusAttributes(node).has(key),
+            // A way to land on it, as axe decides it: the line `aria-required-children`
+            // draws, which an editing host does not cross (measured, axe 4.13).
+            focusable: axe.commons.dom.isFocusable(
+              virtual(node.name.toLowerCase(), focusAttributes(node)),
             ),
           }
         : null;
@@ -818,11 +821,18 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       state.roles.push({ ...element, ancestors });
     if (element && element.offset !== undefined)
       state.elements.set(element.offset, element);
+    // An `<ng-template>` is stamped where an outlet stands, which the walk does not read (plan
+    // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for.
+    const stamped = node.tagName?.split(':').pop() === 'ng-template';
     walkTemplate(
       node.children ?? [],
       path,
       state,
-      element ? [element, ...ancestors] : ancestors,
+      element
+        ? [element, ...ancestors]
+        : stamped
+          ? ancestors.map((a) => ({ ...a, ariaHidden: false }))
+          : ancestors,
     );
   }
 };
@@ -1715,29 +1725,32 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
               `template — a role that requires a context (${contextOf(element.role)}) ` +
               `wants an owner a reader of the source can see`,
           );
-        const role =
-          ancestor.role ?? tables.implicitRoles.get(ancestor.tag) ?? null;
         // Looked through — unless it carries ARIA or takes focus, which is the line axe draws:
         // such an element is in the tree, and a listbox may not own it. The select's own
         // measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper that
         // keeps its `aria-labelledby`. A presentational role gives way to either (ARIA's
-        // conflict resolution), and the element is in the tree all the same.
+        // conflict resolution), and the element is what its tag makes it.
         const global = ancestor.names.find((name) =>
           tables.globalAria.has(name),
         );
         const held = global
           ? `a global ARIA attribute (\`${global}\`)`
-          : ancestor.tabindex || tables.focusable.has(ancestor.tag)
+          : ancestor.focusable
             ? 'a way to land on it'
             : null;
-        if (role === null || TRANSPARENT_ROLES.has(role)) {
+        const implicit = tables.implicitRoles.get(ancestor.tag) ?? null;
+        const written = ancestor.role ?? implicit;
+        const overridden = TRANSPARENT_ROLES.has(written);
+        if (overridden && held === null) continue;
+        const role = overridden ? implicit : written;
+        if (role === null) {
           if (held === null) continue;
           throw new AriaError(
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-              (role === null
-                ? `<${ancestor.tag}> with no role and ${held}`
-                : `<${ancestor.tag} role="${role}"> with ${held}, which overrides it`) +
+              (overridden
+                ? `<${ancestor.tag} role="${written}"> with ${held}, which overrides it`
+                : `<${ancestor.tag}> with no role and ${held}`) +
               ` — such an element is not looked ` +
               `through, so it is what owns the \`${element.role}\`, and nothing but ` +
               `${contextOf(element.role)} may. The audit reports it as a critical ` +
