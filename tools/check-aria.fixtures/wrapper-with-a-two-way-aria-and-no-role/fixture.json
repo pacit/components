@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a global ARIA attribute (`aria-label`)",
+  "$reason": "`wrapper-with-a-reflected-aria-and-no-role` in the banana-box: `[(ariaLabel)]` sets the element's property as `[ariaLabel]` does, and the reflection writes `aria-label` (measured at run time). The parser gives the input its own binding type, `TwoWay`, and a reading that took only a `Property` for the property's reflection read it as `arialabel` and passed it."
+}

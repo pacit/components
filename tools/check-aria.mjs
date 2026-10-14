@@ -606,6 +606,9 @@ const readTemplate = (text, tables, elements, attributes, icus, kinds) => {
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
+/** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
+const setsProperty = (input) =>
+  input.type === BindingType.Property || input.type === BindingType.TwoWay;
 /**
  * An attribute written on a node, by the name the DOM gives it and with the value the parser
  * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
@@ -614,18 +617,16 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
 const writtenOn = (node, name) =>
   (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
 const boundOn = (node, name) =>
-  (node.inputs ?? []).filter(
-    (i) => nameOf(i.name, i.type === BindingType.Property) === name,
-  );
+  (node.inputs ?? []).filter((i) => nameOf(i.name, setsProperty(i)) === name);
 /**
  * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
- * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`.
+ * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`. A property
+ * binding a component of the library takes as its input reads the same way, as it does in
+ * `focusAttributes`: where that component puts it is not read here.
  */
 const namesOn = (node) => [
   ...(node.attributes ?? []).map((a) => nameOf(a.name)),
-  ...(node.inputs ?? []).map((i) =>
-    nameOf(i.name, i.type === BindingType.Property),
-  ),
+  ...(node.inputs ?? []).map((i) => nameOf(i.name, setsProperty(i))),
 ];
 /**
  * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
@@ -803,6 +804,11 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             // way to land on it. Static or bound — a binding says the attribute exists in
             // some state.
             names: namesOn(node),
+            // Out of the tree with all it holds, the way axe reads the value; bound, it may
+            // be absent.
+            ariaHidden:
+              written('aria-hidden')?.trim().toLowerCase() === 'true' &&
+              bindings('aria-hidden').length === 0,
             tabindex: ['tabindex', '[tabindex]'].some((key) =>
               focusAttributes(node).has(key),
             ),
@@ -1061,7 +1067,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
   // nothing and pass every template as widget-free; and each holds an entry a prepared input
-  // stands on — for the first four, the one that named it when it was a list here. A table
+  // stands on — for the first three, the one that named it when it was a list here. A table
   // that lost one is either a reading this gate has stopped making or a fact about the
   // platform that moved, and both are a verdict to reach rather than a silence.
   if (!tables)
@@ -1695,6 +1701,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     for (const element of byPath.get(template.file).roles) {
       const required = tables.contexts.get(element.role);
       if (!required) continue;
+      // A role an `aria-hidden` takes out of the tree needs no owner, and axe asks it for none.
+      if ([element, ...element.ancestors].some((e) => e.ariaHidden)) continue;
       examined++;
       let settled = false;
       for (const ancestor of element.ancestors) {
@@ -1709,27 +1717,28 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           );
         const role =
           ancestor.role ?? tables.implicitRoles.get(ancestor.tag) ?? null;
-        if (TRANSPARENT_ROLES.has(role)) continue;
-        if (role === null) {
-          // Looked through — unless it carries ARIA or takes focus, which is the line axe
-          // draws: such an element is in the tree, and a listbox may not own it. The select's
-          // own measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper
-          // that keeps its `aria-labelledby`.
-          // `aria-hidden` among them, which a wrapper may also use to take the options out of
-          // the tree with it, where axe asks nothing more: refused all the same.
-          const global = ancestor.names.find((name) =>
-            tables.globalAria.has(name),
-          );
-          const held = global
-            ? `a global ARIA attribute (\`${global}\`)`
-            : ancestor.tabindex || tables.focusable.has(ancestor.tag)
-              ? 'a way to land on it'
-              : null;
+        // Looked through — unless it carries ARIA or takes focus, which is the line axe draws:
+        // such an element is in the tree, and a listbox may not own it. The select's own
+        // measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper that
+        // keeps its `aria-labelledby`. A presentational role gives way to either (ARIA's
+        // conflict resolution), and the element is in the tree all the same.
+        const global = ancestor.names.find((name) =>
+          tables.globalAria.has(name),
+        );
+        const held = global
+          ? `a global ARIA attribute (\`${global}\`)`
+          : ancestor.tabindex || tables.focusable.has(ancestor.tag)
+            ? 'a way to land on it'
+            : null;
+        if (role === null || TRANSPARENT_ROLES.has(role)) {
           if (held === null) continue;
           throw new AriaError(
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-              `<${ancestor.tag}> with no role and ${held} — such an element is not looked ` +
+              (role === null
+                ? `<${ancestor.tag}> with no role and ${held}`
+                : `<${ancestor.tag} role="${role}"> with ${held}, which overrides it`) +
+              ` — such an element is not looked ` +
               `through, so it is what owns the \`${element.role}\`, and nothing but ` +
               `${contextOf(element.role)} may. The audit reports it as a critical ` +
               `\`aria-required-children\` naming the wrapper, on a page that opens the ` +

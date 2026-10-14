@@ -1,5 +1,6 @@
-<!-- The reference's trigger, and its panel with one option inside a role-less wrapper that
-     carries `aria-expanded`, which no element without a role keeps in the tree by, and one more
+<!-- The reference's trigger, and its panel with one option inside a role-less wrapper whose
+     attributes reach no global ARIA attribute — `aria-expanded`, which is not one, and
+     `arialabel` written and bound through `attr.`, which is no ARIA at all — and one more
      inside a `list`, which an option may not stand in. -->
 <span class="pct-widget__box">
   @if (editable()) {
@@ -32,7 +33,7 @@
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>
-  <div aria-expanded="true">
+  <div aria-expanded="true" arialabel="Nearby" [attr.ariaLabel]="'Nearby'">
     <div role="option">Anywhere</div>
   </div>
   <div role="list">
