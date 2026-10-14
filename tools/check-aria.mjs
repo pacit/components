@@ -1702,9 +1702,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 9. a role stands in the context it requires ──────────────────────────
   // The relation itself, read off the template: the first ancestor with a role — written, or
   // the platform's own for the tag — either IS the context the role requires or is the
-  // defect. Generic elements, `presentation`/`none` with nothing overriding them and Angular's
-  // containers are looked through, and a role an `aria-hidden` takes out of the tree is not
-  // asked at all. Where the template runs out, the host answers, and a host with no role hands the
+  // defect. Angular's containers are looked through, and so are generic elements and
+  // `presentation`/`none` with no global attribute and no way to land on them; a role an
+  // `aria-hidden` takes out of the tree is not asked at all. Where the template runs out, the host answers, and a host with no role hands the
   // question to the consumer's template — reported as such, because a static reader that
   // guessed there would be passing on a relation nobody has seen.
   let examined = 0;
