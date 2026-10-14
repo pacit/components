@@ -1068,8 +1068,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       throw new AriaError(
         'denominator',
         `${template.file}: ${read.counted} named-widget tag(s) in the text, ${read.parsed} ` +
-          `parsed — an unbalanced quote swallows the rest of the file, and every element ` +
-          `after it stops being examined`,
+          `parsed — an unbalanced quote swallows the rest of the file, or a \`<\` in an ` +
+          `expression, a string or a text reads to the scan as a tag that swallows what follows ` +
+          `it, and an element swallowed stops being examined`,
       );
     byPath.get(template.file).read = read;
 
