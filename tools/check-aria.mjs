@@ -267,9 +267,9 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  *                 no variant and which HTML names by no method of its own (`progress`,
  *                 `meter`, `dialog`): announced with a name, and only ARIA can give one.
  *   `globalAria` — the attributes ARIA lets any element carry (`aria-labelledby`,
- *                  `aria-describedby`, `aria-hidden`): the ones that keep an element with no
- *                  role in the tree, where point 9 reads them, and the list axe itself asks
- *                  (`getGlobalAriaAttrs`).
+ *                  `aria-describedby`, `aria-live`): the ones that keep an element with no
+ *                  role in the tree, where point 9 reads them — `aria-hidden` too, unless it
+ *                  hides — and the list axe itself asks (`getGlobalAriaAttrs`).
  *
  * What the tables do NOT hold is a fact about axe, measured rather than remembered (three
  * engines, 2026-09-05): `iframe`, `audio` and `video` with `controls`, `embed`, `object`, an
@@ -288,7 +288,10 @@ const ANCHORS = {
   contexts: 'option',
   globalAria: 'aria-labelledby',
 };
-/** Roles that are not in the tree at all, so an element wearing one is looked through. */
+/**
+ * Roles that take an element out of the tree, so one wearing them is looked through — unless a
+ * global attribute or a way to land on it overrides them, as point 9 reads it.
+ */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /** Angular's own tags, which never reach the DOM and never stand between two roles. */
 const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
@@ -1699,8 +1702,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 9. a role stands in the context it requires ──────────────────────────
   // The relation itself, read off the template: the first ancestor with a role — written, or
   // the platform's own for the tag — either IS the context the role requires or is the
-  // defect. Generic elements, `presentation`/`none` and Angular's containers are looked
-  // through. Where the template runs out, the host answers, and a host with no role hands the
+  // defect. Generic elements, `presentation`/`none` with nothing overriding them and Angular's
+  // containers are looked through, and a role an `aria-hidden` takes out of the tree is not
+  // asked at all. Where the template runs out, the host answers, and a host with no role hands the
   // question to the consumer's template — reported as such, because a static reader that
   // guessed there would be passing on a relation nobody has seen.
   let examined = 0;
