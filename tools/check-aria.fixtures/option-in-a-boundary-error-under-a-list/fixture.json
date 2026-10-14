@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "stands under <div role=\"list\"> (list)",
+  "$reason": "An `@boundary` inside a `role=\"list\"` in the listbox, its body drawing a text and its `@error` block an option in the text's place. What a side block draws stands inside the elements around the block, so point 9 reads the `list` above the option and refuses it. A walk that handed a side block's content no elements above it took the option for one at the root of the template, left to the consumer's, and passed this input; one that stepped over the boundary's error blocks refused it on point 1, counting one role that needs a context fewer than the text holds."
+}

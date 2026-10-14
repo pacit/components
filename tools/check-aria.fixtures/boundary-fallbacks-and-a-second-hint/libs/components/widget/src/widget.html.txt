@@ -1,0 +1,75 @@
+<!-- The reference's triggers in an error boundary, and what its `@error` blocks draw in their
+     place: the platform's `<select>` when the list failed, a text field when anything else did.
+     Each carries the name, and no two stand in the DOM at once: the body until it throws, then
+     the first block that matches, the unconditional one last. The text field brings a hint of
+     its own, and that is the defect — the line below can show the error beside it. -->
+<span class="pct-widget__box">
+  @boundary {
+  @if (editable()) {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else if (native()) {
+  <select
+    class="pct-widget__trigger"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    <option>Poland</option>
+    <option>Anywhere</option>
+  </select>
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+  } @error (when listFailed($error)) {
+  <select
+    class="pct-widget__trigger"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    <option>Poland</option>
+    <option>Anywhere</option>
+  </select>
+  } @error {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  <span class="pct-widget__hint" data-pct-part="hint">Type a country</span>
+  }
+</span>
+
+@if (open()) {
+<div
+  class="pct-widget__panel"
+  role="listbox"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <div role="group" aria-labelledby="pct-widget-nearby">
+    <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
+    <div role="option">Poland</div>
+  </div>
+  <div role="option">Anywhere</div>
+</div>
+}
+
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}
