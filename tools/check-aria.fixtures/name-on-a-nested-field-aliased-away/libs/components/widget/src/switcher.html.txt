@@ -1,5 +1,6 @@
-<!-- The group's host is a radiogroup and carries the name bound onto it; the toggle's host has
-     no role, and the toggle takes the name through its inputs and forwards it itself. -->
+<!-- The group's host is a radiogroup and carries the name bound onto it; the tag's host has no
+     role, and `[ariaLabel]` is no input of the tag's — its field of that name is bound as
+     `caption` — so the name lands on that host. -->
 @if (several()) {
 <pct-group [attr.aria-label]="ariaLabel() || null"><ng-content></ng-content></pct-group>
 } @else {

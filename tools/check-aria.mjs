@@ -191,9 +191,10 @@ const INPUT_CALLS = new Set(['input', 'model']);
  * `tryParseSignalModelMapping`): a field, `public` or `protected` — a `private` one the compiler
  * refuses, and the gate reads it all the same — initialised with one of the calls above through
  * any parentheses and `as`, bound by the `alias` its options give as a string — the first
- * argument of a `.required`, the second of any other — and by its own name without one. A pattern over the text stood here and read a field's name with nothing but `readonly`
- * before it: `public readonly ariaLabel = input('')` declared nothing, and `label = input('',
- * { alias: 'ariaLabel' })` declared `label` (`lesson-236`).
+ * argument of a `.required`, the second of any other — and by its own name without one. A
+ * pattern over the text stood here and read a field's name with nothing but `readonly` before
+ * it: `public readonly ariaLabel = input('')` declared nothing, and `label = input('', { alias:
+ * 'ariaLabel' })` declared `label` (`lesson-236`).
  */
 const inputsOf = (node) => {
   const inputs = new Map();
