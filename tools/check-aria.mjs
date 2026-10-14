@@ -1848,9 +1848,14 @@ const isCard = (p) =>
 
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
-const collectInput = (root, files) => ({
-  tables: TABLES,
-  sides: SIDE_BLOCKS,
+/**
+ * What the gate reads: the files under `root`, and the tables and side blocks a case asks for.
+ * The live run asks for nothing, so it reads them through the same lines as a case that does
+ * not doctor them, and a fault there fails the cases too.
+ */
+const collectInput = (root, files, fx = {}) => ({
+  tables: tablesFor(fx),
+  sides: sidesFor(fx),
   ...readSources(root, files.filter(isSource)),
   templates: files
     .filter(isTemplate)
@@ -1901,16 +1906,14 @@ const buildFixture = (name) => {
   return target;
 };
 
-const fixtureInput = (directory, fx = {}) => ({
-  ...collectInput(
+const fixtureInput = (directory, fx = {}) =>
+  collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
-  ),
-  tables: tablesFor(fx),
-  sides: sidesFor(fx),
-});
+    fx,
+  );
 
 /**
  * The tables a case asks for: the live ones, none at all (`"tables": null`), or the live
