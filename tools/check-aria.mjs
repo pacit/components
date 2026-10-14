@@ -1906,7 +1906,7 @@ const buildFixture = (name) => {
   return target;
 };
 
-const fixtureInput = (directory, fx = {}) =>
+const fixtureInput = (directory, fx) =>
   collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
