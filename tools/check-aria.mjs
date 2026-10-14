@@ -188,10 +188,10 @@ const INPUT_CALLS = new Set(['input', 'model']);
 /**
  * The inputs a class declares: the name a template binds each one by, to the field that holds
  * it. Read off the parsed class as Angular's compiler reads them (`tryParseSignalInputMapping`,
- * `tryParseSignalModelMapping`): a field of any visibility, initialised with one of the calls
- * above through any parentheses and `as`, bound by the `alias` its options give as a string —
- * the first argument of a `.required`, the second of any other — and by its own name without
- * one. A pattern over the text stood here and read a field's name with nothing but `readonly`
+ * `tryParseSignalModelMapping`): a field, `public` or `protected` — a `private` one the compiler
+ * refuses, and the gate reads it all the same — initialised with one of the calls above through
+ * any parentheses and `as`, bound by the `alias` its options give as a string — the first
+ * argument of a `.required`, the second of any other — and by its own name without one. A pattern over the text stood here and read a field's name with nothing but `readonly`
  * before it: `public readonly ariaLabel = input('')` declared nothing, and `label = input('',
  * { alias: 'ariaLabel' })` declared `label` (`lesson-236`).
  */
@@ -1321,10 +1321,11 @@ const checkAria = ({
   for (const template of templates) {
     // The fields its owners hold the two name inputs in — `label` for an input bound as
     // `ariaLabel` — which is what an expression forwarding the name reads. An owner that
-    // declares no such input forwards no name through it, whatever member it reads.
+    // declares no such input is read by the input's own name, as every owner once was: a
+    // member it binds under that name (a `computed`) is taken for the name it hands over.
     const owners = components.filter((c) => c.templatePath === template.file);
     const reads = NAME_INPUTS.map(
-      (name) => new Set(owners.flatMap((c) => c.inputs.get(name) ?? [])),
+      (name) => new Set(owners.map((c) => c.inputs.get(name) ?? name)),
     );
     // Parsed first, judged second: the scan below takes from the tree each tag's name, which
     // roles are bound and what makes a stop. A template the parser refuses is refused for what
