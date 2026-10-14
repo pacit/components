@@ -1,0 +1,14 @@
+import { Component, input } from '@angular/core';
+
+/** A count under a limit. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  protected readonly count = input(0);
+  protected readonly limit = input(3);
+}

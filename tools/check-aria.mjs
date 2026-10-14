@@ -22,10 +22,13 @@
  */
 import {
   BindingType,
+  HtmlParser,
   parseTemplate,
+  RecursiveVisitor,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
   tmplAstVisitAll,
+  visitAll,
 } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
@@ -228,7 +231,6 @@ const readSources = (root, files) => {
 
 // ── template scanner ───────────────────────────────────────────────────────────
 
-const COMMENT = /<!--[\s\S]*?-->/g;
 /** An opening tag with its attribute text; quoted values may hold `>`. */
 const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
 /** The same tags counted without parsing, as the denominator of the parse. */
@@ -500,12 +502,11 @@ const isFocusable = (tag, attrs) =>
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
 /**
- * The opening tag at an offset of the text both readings take, on one line and cut short: what
- * a refusal shows a reader of the tag it means. The line stands in where no tag opens there,
- * which no offset the readings report reaches in a template that parses.
+ * The opening tag at an offset of the text both readings take (`readTree`), on one line and cut
+ * short: what a refusal shows a reader of the tag it means. The line stands in where no tag opens
+ * there, which no offset the readings report reaches in a template that parses.
  */
-const openingAt = (content, offset) => {
-  const text = content.replace(COMMENT, '');
+const openingAt = (text, offset) => {
   const tag = new RegExp(OPENING_TAG.source, 'y');
   tag.lastIndex = offset;
   return (tag.exec(text)?.[0] ?? text.slice(offset).split('\n')[0])
@@ -538,10 +539,10 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1. A
  * widget or a group the tag reader holds (`held`) and the walk gives no path fails it too: a
  * template, which the tree holds as no element, or a tag in a block kind the walk does not
- * descend into.
+ * descend into. The text scanned is the one the tree was parsed from, its comments blanked
+ * (`readTree`).
  */
-const readTemplate = (content, tables, elements, attributes, icus, kinds) => {
-  const text = content.replace(COMMENT, '');
+const readTemplate = (text, tables, elements, attributes, icus, kinds) => {
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
     const element = elements.get(m.index);
     const unread = icus.some(([from, to]) => m.index >= from && m.index < to);
@@ -821,14 +822,88 @@ const exclusive = (a, b) =>
   );
 
 /**
+ * Every comment of a template, as the HTML parser reads it, by the span it covers: a `<!-- … -->`
+ * wherever it stands, and the block or line comment Angular 22 reads inside a start tag, opened
+ * by a slash and a star or by two slashes (`<div // the frame` and a line break). Off the
+ * HTML tree, tokenized as `parseTemplate` tokenizes it — blocks, `@let` and ICUs, so that a
+ * `<!--` in a block's condition, a `@let` string or an ICU's case value is no comment here
+ * either — and not off that function's `commentNodes`: its transform never hands over a comment
+ * standing between two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the
+ * scan would read what they quote. The base visitor does not enter an ICU's cases, and this one
+ * does: inside an ICU the scan is the only reading there is, and a comment left in a start tag
+ * there, holding an apostrophe, opens a quote that hides the stop the tag is.
+ */
+class CommentReader extends RecursiveVisitor {
+  spans = [];
+  visitComment(node) {
+    this.spans.push(node.sourceSpan);
+  }
+  visitStartTagComment(node) {
+    this.spans.push(node.sourceSpan);
+  }
+  visitExpansionCase(node, context) {
+    this.visitChildren(context, (visit) => visit(node.expression));
+  }
+}
+const LEXING = {
+  tokenizeExpansionForms: true,
+  tokenizeBlocks: true,
+  tokenizeLet: true,
+  leadingTriviaChars: [' ', '\n', '\r', '\t'],
+};
+
+/**
+ * A template parsed, and the text every reading of it scans: the file's own, each comment blanked
+ * (`CommentReader`) — every character of it a space, a line break kept — so that a tag, a role or
+ * a part a comment quotes is text to the scan as it is to the tree, and the offsets the scan, the
+ * walk and the tag reader join on are the file's. A pattern stood here, and it is not the parser
+ * (`lesson-236`): a `<!--` in one attribute value, string or case value and a `-->` in a later one
+ * made it delete the markup between them from the scan and the tree together, and a stop there
+ * passed every point. One code unit for one, so that a character outside the basic plane moves no
+ * offset.
+ *
+ * A template the HTML parser reads with errors keeps its text: a comment it finds there may take
+ * markup with it (`<a href=//x.example>` opens one that takes the rest of its line, and the tag
+ * never ends), and the template is refused as one that does not parse. Angular 22.2 throws on a
+ * comment standing directly in an ICU's case — the build, which hands the same text to the same
+ * parser, throws as well — and a throw is read the same way.
+ */
+const readTree = (file, content) => {
+  let text = content;
+  try {
+    const html = new HtmlParser().parse(content, file, LEXING);
+    if (!html.errors.length) {
+      const comments = new CommentReader();
+      visitAll(comments, html.rootNodes);
+      text = comments.spans.reduce(
+        (blanked, { start, end }) =>
+          blanked.slice(0, start.offset) +
+          blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
+          blanked.slice(end.offset),
+        content,
+      );
+    }
+    const { nodes, errors } = parseTemplate(content, file, {
+      preserveWhitespaces: false,
+    });
+    return { nodes, errors, text };
+  } catch (error) {
+    return {
+      nodes: [],
+      errors: [{ msg: `the compiler throws: ${error.message}` }],
+      text,
+    };
+  }
+};
+
+/**
  * One template read through the compiler's own parser: the message parts with the conditional
  * path of each, and the path of every element by the offset it starts at. A template it cannot
  * read leaves the gate with nothing to say, which is why the errors travel back rather than
  * being swallowed into an empty list.
  */
 const readMessages = (file, content) => {
-  const text = content.replace(COMMENT, '');
-  const parsed = parseTemplate(text, file, { preserveWhitespaces: false });
+  const { text, ...parsed } = readTree(file, content);
   const state = {
     blocks: 0,
     messages: [],
@@ -853,6 +928,7 @@ const readMessages = (file, content) => {
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
+    text,
   };
 };
 
@@ -1057,7 +1133,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // it was.
     const said = readMessages(template.file, template.content);
     const read = readTemplate(
-      template.content,
+      said.text,
       tables,
       said.elements,
       said.attributes,
@@ -1072,6 +1148,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `after it stops being examined`,
       );
     byPath.get(template.file).read = read;
+    byPath.get(template.file).text = said.text;
 
     if (said.errors.length)
       throw new AriaError(
@@ -1079,7 +1156,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
           `a message-free template and pass it`,
       );
-    const opening = (offset) => openingAt(template.content, offset);
+    const opening = (offset) => openingAt(said.text, offset);
     const scanned = new Set(read.tags.map((t) => t.offset));
     const unscanned = [...said.attributes.keys()].filter(
       (offset) => !scanned.has(offset),
@@ -1133,10 +1210,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     byPath.get(template.file).within = said.within;
     byPath.get(template.file).roles = said.roles;
     const contextual = said.roles.filter((r) => tables.contexts.has(r.role));
-    const contextsCounted = contextsWritten(
-      template.content.replace(COMMENT, ''),
-      tables,
-    );
+    const contextsCounted = contextsWritten(said.text, tables);
     if (contextual.length !== contextsCounted)
       throw new AriaError(
         'denominator',
@@ -1180,7 +1254,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         throw new AriaError(
           'denominator',
           `${component.templatePath}: a tag at offset ${element.offset} ` +
-            `(\`${openingAt(template.content, element.offset)}\`) ` +
+            `(\`${openingAt(template.text, element.offset)}\`) ` +
             (!element.held
               ? `is in the tag scan and not in the parsed tree — `
               : element.template

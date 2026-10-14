@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "A `<button>` between two attribute values that read as comment markers: `title=\"<!--\"` on the surface before it and `title=\"-->\"` on the one after. The parser reads both as values and the button as an element Angular renders, a widget inside the template of a component that declares neither name input. A pattern that took the comments out (`<!--[\\s\\S]*?-->`) deleted everything from the first value to the second, from the tag scan and from the parsed tree together: the template held no widget, the component was asked for no name, and a stop placed there passed every point. The comments the gate blanks now are the ones the parser found."
+}

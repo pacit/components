@@ -1,0 +1,4 @@
+<!-- A count spelled by an ICU, a comment standing directly in one of its cases. Nothing on it is
+     a stop, and nothing has to be: Angular 22.2 throws on the comment while it builds the ICU's
+     message, and the build, which hands the same text to the same parser, throws with it. -->
+<span class="pct-widget__count">{count(), plural, =0 {<!-- nothing yet -->none} other {many}}</span>

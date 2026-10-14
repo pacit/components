@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "`comment-markers-in-attributes` with the markers in two `@let` strings: `@let opening = '<!--';` before the button and `@let closing = '-->';` after it. The parser reads both as expressions, and so must the reading that finds the comments: tokenized without blocks, which takes `@let` with them, as `parseTemplate` does not tokenize it, the two markers make a comment that takes the button out of the scan and not out of the tree, and it fails point 1. (Without `@let` alone and with blocks, Angular's lexer runs out of memory on the first `@let`.) A pattern for the comments deleted the button from both readings, and it passed."
+}

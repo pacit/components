@@ -1,0 +1,14 @@
+<!-- A tone switched between two surfaces, and between the two cases of the switch a comment
+     that quotes markup: a tag, a role and a part. The parser holds it as a comment, and the
+     template transform hands it over to nobody. The button after the switch is a control inside
+     the template of a component that declares no name for it. -->
+@switch (tone()) {
+  @case ('quiet') {
+  <span class="pct-widget__surface"></span>
+  }
+  <!-- Once <button type="button" role="option" data-pct-part="hint"> stood here. -->
+  @default {
+  <span class="pct-widget__surface pct-widget__surface--loud"></span>
+  }
+}
+<button type="button" class="pct-widget__retry">Retry</button>

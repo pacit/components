@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** A count with a way on. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  protected readonly count = input(0);
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree — it stands inside an ICU",
+  "$reason": "`stop-in-an-icu` with the markers in the ICU's case values: the first case is valued `quiet<!--`, the last `other-->`, and the case between them draws a button. The parser reads all three as values, and the button as markup an ICU renders, which fails point 1. Tokenized without ICUs, as `parseTemplate` does not tokenize it, the two markers make a comment that takes the button out of the scan, and the template passed; so did it under a pattern for the comments, which deleted the button from both readings."
+}

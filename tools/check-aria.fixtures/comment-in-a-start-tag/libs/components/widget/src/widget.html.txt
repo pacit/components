@@ -1,0 +1,10 @@
+<!-- A button whose start tag holds a line comment, which Angular 22 reads as trivia inside the
+     tag. The comment holds an apostrophe, and nothing after it closes one. The button is a
+     control inside the template of a component that declares no name for it. -->
+<button
+  type="button"
+  class="pct-widget__retry"
+  // the user's way back
+>
+  Retry
+</button>

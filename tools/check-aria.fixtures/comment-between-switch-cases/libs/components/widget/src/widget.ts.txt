@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** A tone switched between two surfaces, and a control nobody can name. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  protected readonly tone = input('quiet');
+}

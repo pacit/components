@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** A control nobody can name, its start tag annotated. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {}

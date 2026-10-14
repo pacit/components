@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "$reason": "`hidden-with-a-way-in` under a comment holding a character outside the basic plane, two UTF-16 code units long. The parser's offsets count code units, and so must the comment the gate blanks: blanked a code point at a time (a `u` flag, a spread of the string), the comment comes out one character short, every tag after it stands one offset before the element the tree holds there, and the button fails point 1 as a tag the scan never found, not point 8 as the stop it is."
+}

@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** A strip of two surfaces with a control between them, and no name a consumer could hand it. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {}

@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "A comment standing between two cases of an `@switch`, quoting a `<button>` with `role=\"option\"` and `data-pct-part=\"hint\"` on it, above a real button in a component that declares neither name input. The HTML parser holds the comment, and `parseTemplate`'s transform never hands it over in `commentNodes`: taken from there, the comment stayed in the text the scan reads, and its part, then its tag, failed point 1. And the part and the role a comment quotes are counted by neither of point 1's counters, which read the blanked text: counting the file's own text, each fails point 1 here as well."
+}

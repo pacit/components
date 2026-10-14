@@ -1,0 +1,2 @@
+<!-- A link whose address is written without quotes and starts with two slashes. -->
+<a href=//x.example>link</a>

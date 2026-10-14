@@ -1,0 +1,14 @@
+import { Component, input } from '@angular/core';
+
+/** Decoration counting what it shows: hidden from the tree, its count spelled by an ICU. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    'aria-hidden': 'true',
+  },
+})
+export class PctWidget {
+  protected readonly count = input(0);
+}

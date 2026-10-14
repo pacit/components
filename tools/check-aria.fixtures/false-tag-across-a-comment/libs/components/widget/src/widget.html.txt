@@ -1,0 +1,4 @@
+<!-- A count under a limit, written with no space after the less-than sign, and a comment where
+     the block opens: the tag scan reads the comparison as a tag, and its run crosses the
+     comment into the ICU after it, whose case draws a stop. -->
+@if (count() <limit()) {<!-- under the limit -->{count(), plural, other {<span class="pct-widget__more" tabindex="0">more</span>}}}
