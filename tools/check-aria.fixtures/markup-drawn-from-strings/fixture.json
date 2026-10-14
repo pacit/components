@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "draws markup from a string — [innerHTML] at offset 534 (`<span class=\"pct-pair__unit\" [innerHTML]=\"unitHtml()\">`); [outerHTML] at offset 598 (`<span class=\"pct-pair__note\" [outerHTML]=\"noteHtml()\">`); [srcdoc] at offset 662 (`<iframe class=\"pct-pair__preview\" title=\"Preview\" [srcdoc]=\"previewHtml()\">`); srcdoc at offset 749 (`",
+  "$reason": "The reference's group with four elements beside its texts that draw markup from a string: a span binding `[innerHTML]`, one binding `[outerHTML]`, an `<iframe>` binding `[srcdoc]` and one writing it. Angular's sanitizer keeps a link and a `tabindex` stop in the first two, and a written `srcdoc` is not sanitized at all, so each may draw a stop that the tree does not hold and no point examines. The refusal names every one of them. A count of widget tags over the text refused such a string only where it spelled a widget's tag, and blamed an unbalanced quote: the written `srcdoc` here, where the three bound ones passed."
+}

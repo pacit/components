@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "around <button>, which name(s) nothing of their own",
+  "$reason": "`link-in-the-svg-namespace` with HTML inside the chart: an unnamed button in a `<foreignObject>`, written `<xhtml:button>`, which the parser reads as `:xhtml:button`. Read off the text, the name was `xhtml` and the button passed; a reading that took off the `svg` namespace alone would pass it too."
+}

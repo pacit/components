@@ -3,3 +3,5 @@
     Trigger
   </button>
 </span>
+<div class="pct-widget__panel" role="listbox"><div role="option">One</div></div>
+<span class="pct-widget__hint" data-pct-part="hint">Pick one</span>

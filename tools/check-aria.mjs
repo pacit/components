@@ -16,7 +16,7 @@
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
  * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a widget or
- * group the walk gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
+ * group with no path, a tag in or read into an ICU and markup drawn from a string fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -651,6 +651,16 @@ const focusAttributes = (node) =>
   );
 
 /**
+ * The properties and the attribute through which an element draws markup from a string, which
+ * the tree does not hold: `[innerHTML]` and `[outerHTML]`, whose sanitizer keeps a link, a
+ * `tabindex` stop and a `<details>` (it drops a `<button>`), and an `<iframe>`'s `srcdoc`, a
+ * document of its own, which a written value hands over unsanitized. A binding of the name in
+ * any syntax is read as one, `[attr.innerHTML]` too, as it is for a role or a name; a written
+ * `innerHTML` is an attribute of that name and draws nothing.
+ */
+const MARKUP = ['innerHTML', 'outerHTML', 'srcdoc'];
+
+/**
  * An element's name as the parser reads it, its namespace off: `<svg:a>` is an `a` (the parser's
  * `:svg:a`), and `<input(input)="…">` an element named `input(input)`, a binding glued to the
  * name being part of it — one the compiler refuses (`NG8001`) and the DOM makes no input of.
@@ -669,17 +679,28 @@ const localName = (name) => splitNsName(name)[1];
  * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
  * visitor descends into it, so of two at one offset — an inline template and the element, the
  * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
- * name is recorded too (`names`), as `localName` reads it.
+ * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
+ * the name the scan reads off the text, which no point reads. So is the markup an element draws
+ * from a string (`MARKUP`): each way it does, by the offset it starts at.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
   kinds = new Map();
   names = new Map();
+  markup = [];
   icus = [];
   visitElement(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'element');
     this.names.set(node.sourceSpan.start.offset, localName(node.name));
+    const drawn = [
+      ...MARKUP.filter((name) => boundOn(node, nameOf(name)).length).map(
+        (name) => `[${name}]`,
+      ),
+      ...(writtenOn(node, 'srcdoc') === undefined ? [] : ['srcdoc']),
+    ];
+    if (drawn.length)
+      this.markup.push({ offset: node.sourceSpan.start.offset, drawn });
     super.visitElement(node);
   }
   visitTemplate(node) {
@@ -980,6 +1001,7 @@ const readMessages = (file, content, sides) => {
     attributes: tags.attributes,
     kinds: tags.kinds,
     names: tags.names,
+    markup: tags.markup,
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1197,18 +1219,21 @@ const checkAria = ({
     if (said.errors.length)
       throw new AriaError(
         'denominator',
-        `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
-          `a message-free template and pass it`,
+        `${template.file} does not parse (${said.errors[0].msg}) — nothing of it reaches ` +
+          `the walk or the tag reader, and point 6 would then read a message-free template ` +
+          `and pass it, as points 4, 8 and 9 would the elements they never see`,
       );
     // The tree is the denominator of the scan, both ways: a tag it holds the scan must find
     // (below), and a widget or group the scan finds needs the path only a tag of the tree has
     // (classification). A count of widget tags over the text stood before both, and once they
-    // stood it had nothing true left to say: what it found and the scan did not was a tag the
+    // stood it had nothing true left to say. What it found and the scan did not was a tag the
     // tree holds (refused below, by its offset), one in an ICU the scan reads into (refused
-    // below), or text no element is made of: a string a misread `<` runs over, or an attribute
-    // value, which Angular renders as text and prettier keeps (`title="press <button> to go"`,
-    // `[innerHTML]="'<a href=/docs>…'"`) — a template that breaks nothing, refused as an
-    // unbalanced quote that swallowed the file.
+    // below), or text no element is made of: a string a misread `<` runs over, or a written
+    // attribute value, which Angular renders as text and prettier keeps (`title="press <button>
+    // to go"`). What the scan found and it did not was a name a namespace or a glued binding
+    // follows (`<svg:a>`, `<input(input)>`), which the scan now takes from the tree. Markup a
+    // string draws through `[innerHTML]` or `srcdoc` it counted only where the string spelled a
+    // widget's tag, as an unbalanced quote; it is refused below, whatever it spells.
     const read = readTemplate(
       said.text,
       tables,
@@ -1262,6 +1287,19 @@ const checkAria = ({
           `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
           `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
           `read whole and the tree does not hold`,
+      );
+    if (said.markup.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file} draws markup from a string — ` +
+          said.markup
+            .map(
+              ({ offset, drawn }) =>
+                `${drawn.join(' and ')} at offset ${offset} (\`${opening(offset)}\`)`,
+            )
+            .join('; ') +
+          ` — which the tree does not hold and nothing here reads: a link or a stop drawn ` +
+          `there is one no point examines`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
