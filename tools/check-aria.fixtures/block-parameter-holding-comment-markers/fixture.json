@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "`comment-markers-in-attributes` with the markers in two block conditions: `@if (tone() === '<!--')` before the button and `@if (tone() === '-->')` after it. The parser reads both as expressions, and so must the reading that finds the comments: lexed without blocks, as `parseTemplate` does not lex it, the two markers make a comment that takes the button out of the scan and not out of the tree, and it fails point 1. A pattern for the comments deleted it from both, and it passed."
+}

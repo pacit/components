@@ -22,10 +22,13 @@
  */
 import {
   BindingType,
+  HtmlParser,
   parseTemplate,
+  RecursiveVisitor,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
   tmplAstVisitAll,
+  visitAll,
 } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
@@ -819,39 +822,70 @@ const exclusive = (a, b) =>
   );
 
 /**
- * A template parsed once, and the text every reading of it scans: the file's own, each comment
- * the parser found blanked — every character of it a space, a line break kept — so that a tag
- * inside a comment is text to the scan as it is to the tree, and the offsets the scan, the walk
- * and the tag reader join on are the file's. A pattern stood here, and it is not the parser
- * (`lesson-236`): an attribute value holding `<!--` and a later one holding `-->` made it delete
- * the markup between them from the scan and the tree together, and a stop there passed every
- * point. One code unit for one, so that a character outside the basic plane moves no offset.
+ * Every comment of a template, as the HTML parser reads it, by the span it covers: a `<!-- … -->`
+ * wherever it stands, and the block or line comment Angular 22 reads inside a start tag, opened
+ * by a slash and a star or by two slashes (`<div // the frame` and a line break). Off the
+ * HTML tree, lexed as `parseTemplate` lexes it — blocks, `@let` and ICUs, so that a `<!--` in a
+ * block's condition, a `@let` string or an ICU's case value is no comment here either — and not
+ * off that function's `commentNodes`: its transform never hands over a comment standing between
+ * two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the scan would read
+ * what they quote. The base visitor does not enter an ICU's cases; this one does.
+ */
+class CommentReader extends RecursiveVisitor {
+  spans = [];
+  visitComment(node) {
+    this.spans.push(node.sourceSpan);
+  }
+  visitStartTagComment(node) {
+    this.spans.push(node.sourceSpan);
+  }
+  visitExpansionCase(node, context) {
+    this.visitChildren(context, (visit) => visit(node.expression));
+  }
+}
+const LEXING = {
+  tokenizeExpansionForms: true,
+  tokenizeBlocks: true,
+  tokenizeLet: true,
+  leadingTriviaChars: [' ', '\n', '\r', '\t'],
+};
+
+/**
+ * A template parsed, and the text every reading of it scans: the file's own, each comment blanked
+ * (`CommentReader`) — every character of it a space, a line break kept — so that a tag, a role or
+ * a part a comment quotes is text to the scan as it is to the tree, and the offsets the scan, the
+ * walk and the tag reader join on are the file's. A pattern stood here, and it is not the parser
+ * (`lesson-236`): a `<!--` in one attribute value, string or case value and a `-->` in a later one
+ * made it delete the markup between them from the scan and the tree together, and a stop there
+ * passed every point. One code unit for one, so that a character outside the basic plane moves no
+ * offset.
  *
- * Angular 22.2 throws on a comment inside an ICU's case — the build, which hands the same text
- * to the same parser, throws as well — and a throw is read as a template that does not parse.
+ * Angular 22.2 throws on a comment standing directly in an ICU's case — the build, which hands
+ * the same text to the same parser, throws as well — and a throw is read as a template that does
+ * not parse.
  */
 const readTree = (file, content) => {
-  let parsed;
-  try {
-    parsed = parseTemplate(content, file, {
-      preserveWhitespaces: false,
-      collectCommentNodes: true,
-    });
-  } catch (error) {
-    return {
-      nodes: [],
-      errors: [{ msg: `the compiler throws: ${error.message}` }],
-      text: content,
-    };
-  }
-  const text = parsed.commentNodes.reduce(
-    (blanked, { sourceSpan: { start, end } }) =>
+  const comments = new CommentReader();
+  visitAll(comments, new HtmlParser().parse(content, file, LEXING).rootNodes);
+  const text = comments.spans.reduce(
+    (blanked, { start, end }) =>
       blanked.slice(0, start.offset) +
       blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
       blanked.slice(end.offset),
     content,
   );
-  return { nodes: parsed.nodes, errors: parsed.errors, text };
+  try {
+    const { nodes, errors } = parseTemplate(content, file, {
+      preserveWhitespaces: false,
+    });
+    return { nodes, errors, text };
+  } catch (error) {
+    return {
+      nodes: [],
+      errors: [{ msg: `the compiler throws: ${error.message}` }],
+      text,
+    };
+  }
 };
 
 /**

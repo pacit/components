@@ -1,0 +1,11 @@
+<!-- Two blocks whose conditions compare a tone with a string, the first an opening comment
+     marker and the second a closing one, and a button between them: the parser reads both
+     conditions as expressions and the button as an element Angular renders, a control inside
+     the template of a component that declares no name for it. -->
+@if (tone() === '<!--') {
+<span class="pct-widget__surface"></span>
+}
+<button type="button" class="pct-widget__retry">Retry</button>
+@if (tone() === '-->') {
+<span class="pct-widget__surface"></span>
+}

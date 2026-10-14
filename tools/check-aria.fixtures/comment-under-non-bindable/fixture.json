@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "A sample of markup under `ngNonBindable` holding a comment that quotes an `<input>`, above a real button in a component that declares neither name input. The HTML parser holds the comment, and `parseTemplate`'s transform hands over nothing from under `ngNonBindable` in `commentNodes`: taken from there, the comment stayed in the text the scan reads, and its quoted `<input>` failed point 1 as a widget the tree does not hold."
+}

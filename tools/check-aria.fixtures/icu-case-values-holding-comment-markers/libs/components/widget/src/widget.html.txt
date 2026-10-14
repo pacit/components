@@ -1,0 +1,4 @@
+<!-- A choice spelled by an ICU whose case values hold the two comment markers: the first case
+     is valued with an opening one at its end, the last with a closing one at its end. The
+     parser reads them as values, and the case between them draws a button. -->
+<span class="pct-widget__choice">{tone(), select, quiet<!-- {hushed} loud {<button type="button">Retry</button>} other--> {plain}}</span>

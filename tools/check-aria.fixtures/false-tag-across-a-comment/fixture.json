@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<limit()) { {count(), plural, other {<span class=\"pct-widget__more\" tabindex=\"0\">`) on into the ICU at offset",
+  "$reason": "`icu-behind-a-false-tag` with a comment in the false tag's way: `count() <limit()` reads to the scan as a tag, a comment stands right where the block opens, and the ICU after it draws a stop. Blanked whole, the comment leaves the false tag running on into the ICU, which fails point 1 with the refusal it gets everywhere, and the tag it quotes is the blanked text's. Blanked all but its closing `>`, the comment would end the false tag before the ICU and the refusal would change; quoted from the file's own text, the tag would read `<limit()) {<!-- under the limit -->`."
+}
