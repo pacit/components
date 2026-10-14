@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, between a `@let` string holding `<!--` and a later one holding `-->`. Both are strings to `parseTemplate`, and to the HTML lexer told to tokenize `@let` as it does; a pattern took them for a comment and deleted the drawing from the count and the tree together, and point 2 passed it. Told not to, Angular 22.2.1's lexer runs out of memory on the first `@let`, and the run dies with it."
+}

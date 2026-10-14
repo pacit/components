@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, and a commented-out `@case` drawing an icon between two cases of an `@switch`. The template's tree drops a comment standing there, `commentNodes` included; the HTML tree holds it, and a tag it quotes is text."
+}

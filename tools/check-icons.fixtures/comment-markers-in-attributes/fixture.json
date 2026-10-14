@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow written straight into the template, between a `<!--` in one attribute value and a `-->` in a later one. Neither is a comment: the HTML parser reads both as the values they are, and the `<svg>` between them as a drawing outside any icon. A pattern that took them for one deleted the drawing from the count and the tree together, and point 2 passed it."
+}

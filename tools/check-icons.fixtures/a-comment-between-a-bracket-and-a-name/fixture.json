@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, and a `<` before a comment with `svg` after it. The parser reads text, a comment and text; the count reads the same with the comment blanked, while a comment cut out would join the two into an `<svg ` nothing draws, and point 1 would fire."
+}

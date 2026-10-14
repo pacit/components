@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, and an `<svg>` quoted in a comment inside an element of an ICU's case. The base visitor of the HTML tree does not enter an ICU's cases, and a reader that stopped there would count the quoted tag and fire point 1."
+}

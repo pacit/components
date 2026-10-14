@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, between an ICU whose expression holds `<!--` and a later one whose expression holds `-->`. Both are expressions to `parseTemplate`, which tokenizes ICUs; the HTML lexer does not unless asked to, and asked otherwise it reads a comment from the first to the second."
+}
