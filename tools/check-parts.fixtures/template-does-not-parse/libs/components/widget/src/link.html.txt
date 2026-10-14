@@ -1,0 +1,1 @@
+<a class="pct-widget__link" href=//x.example data-pct-part="link"><ng-content></ng-content></a>

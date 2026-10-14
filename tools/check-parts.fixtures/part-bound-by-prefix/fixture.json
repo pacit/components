@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "A part bound with the canonical prefix, `bind-attr.data-pct-part`, the same binding `[attr.data-pct-part]` is. A pattern that knew only the brackets matched `data-pct-part=\"slotName()\"` inside it and wrote a part named `slotName()` into the source read — point 2 fired, naming as a literal the one thing point 3 is there to refuse. The tree holds an input of that name, whichever way it was spelled."
+}
