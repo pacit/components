@@ -1,0 +1,17 @@
+<!-- The reference's trigger, and a projection point under a block whose condition holds a `<`:
+     the tag scan reads `<limit())` as a tag running on to the `<ng-content>`'s `>`, which the
+     parsed tree holds as it is. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+@if (count() <limit()) {
+<ng-content select="[pctWidgetRetry]"></ng-content>
+}

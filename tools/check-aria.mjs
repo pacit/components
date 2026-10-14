@@ -499,6 +499,20 @@ const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
+/**
+ * The opening tag at an offset of the text both readings take, on one line and cut short: what
+ * a refusal shows a reader of the tag it means. The line stands in where no tag opens there,
+ * which no offset the readings report reaches in a template that parses.
+ */
+const openingAt = (content, offset) => {
+  const text = content.replace(COMMENT, '');
+  const tag = new RegExp(OPENING_TAG.source, 'y');
+  tag.lastIndex = offset;
+  return (tag.exec(text)?.[0] ?? text.slice(offset).split('\n')[0])
+    .replace(/\s+/g, ' ')
+    .slice(0, 120);
+};
+
 /** What a tag inside an ICU is read as (`readTemplate`): a stop. */
 const UNREAD = new Map([['[tabindex]', '']]);
 
@@ -535,7 +549,7 @@ const readTemplate = (content, tables, elements, attributes, icus, kinds) => {
       tag: m[1].toLowerCase(),
       attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
       unread,
-      held: attributes.has(m.index),
+      held: kinds.has(m.index),
       template: kinds.get(m.index) === 'template',
       // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
       end: m.index + m[0].length,
@@ -622,9 +636,9 @@ const focusAttributes = (node) =>
  * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
- * whose attributes are not read, as it draws no element (`kinds`). A tag is recorded before the
- * visitor descends into it, so of two at one offset — an inline template and the element, the
- * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
+ * whose attributes are not read, as it draws no element: none (`kinds`). A tag is recorded before
+ * the visitor descends into it, so of two at one offset — an inline template and the element,
+ * the `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -641,6 +655,7 @@ class TagReader extends TmplAstRecursiveVisitor {
     super.visitTemplate(node);
   }
   visitContent(node) {
+    this.attributes.set(node.sourceSpan.start.offset, new Map());
     this.kinds.set(node.sourceSpan.start.offset, 'content');
     super.visitContent(node);
   }
@@ -1063,16 +1078,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
           `a message-free template and pass it`,
       );
-    // The opening tag at an offset of the text both readings take, on one line and cut short:
-    // what a refusal shows a reader of the tag it means.
-    const text = template.content.replace(COMMENT, '');
-    const opening = (offset) => {
-      const tag = new RegExp(OPENING_TAG.source, 'y');
-      tag.lastIndex = offset;
-      return (tag.exec(text)?.[0] ?? text.slice(offset).split('\n')[0])
-        .replace(/\s+/g, ' ')
-        .slice(0, 120);
-    };
+    const opening = (offset) => openingAt(template.content, offset);
     const scanned = new Set(read.tags.map((t) => t.offset));
     const unscanned = [...said.attributes.keys()].filter(
       (offset) => !scanned.has(offset),
@@ -1169,7 +1175,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       if (path === undefined)
         throw new AriaError(
           'denominator',
-          `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
+          `${component.templatePath}: a tag at offset ${element.offset} ` +
+            `(\`${openingAt(template.content, element.offset)}\`) ` +
             (!element.held
               ? `is in the tag scan and not in the parsed tree — `
               : element.template

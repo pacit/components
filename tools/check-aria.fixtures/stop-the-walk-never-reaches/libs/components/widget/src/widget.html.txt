@@ -1,5 +1,6 @@
 <!-- The reference's trigger in an error boundary, and a retry the boundary's `@error` block
-     draws in its place, a stop a user lands on: a block kind the walk does not descend into. -->
+     draws in its place when it can, a stop a user lands on: a block kind the walk does not
+     descend into, and a structural directive making the span a template's too. -->
 @boundary {
 <span class="pct-widget__box">
   <button
@@ -13,5 +14,5 @@
   </button>
 </span>
 } @error {
-<span class="pct-widget__retry" tabindex="0">Retry</span>
+<span class="pct-widget__retry" *ngIf="retry()" tabindex="0">Retry</span>
 }

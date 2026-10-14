@@ -13,5 +13,13 @@
   </button>
 </span>
 @if (count() <limit()) {
-<span class="pct-widget__retry" role="button" [attr.tabindex]="0">Retry</span>
+<span
+  class="pct-widget__retry"
+  role="button"
+  [attr.tabindex]="0"
+  [attr.aria-describedby]="retryDescribedBy() || null"
+  [attr.aria-keyshortcuts]="retryShortcut()"
+>
+  Retry
+</span>
 }
