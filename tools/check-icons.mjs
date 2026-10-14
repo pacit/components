@@ -17,12 +17,6 @@
  *
  * Usage: node tools/check-icons.mjs
  */
-import {
-  HtmlParser,
-  parseTemplate,
-  RecursiveVisitor,
-  visitAll,
-} from '@angular/compiler';
 import { execFileSync } from 'node:child_process';
 import {
   cpSync,
@@ -36,6 +30,7 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -156,75 +151,22 @@ const nameOf = (element) => {
 };
 
 /**
- * Every comment of a template, as the HTML parser reads it, by the span it covers: a `<!-- … -->`
- * wherever it stands, and the block or line comment Angular 22 reads inside a start tag. Off the
- * HTML tree, tokenized as `parseTemplate` tokenizes it, so that a `<!--` in an attribute value, a
- * block's condition, a `@let` string or an ICU's expression is no comment here either — and not
- * off that function's `commentNodes`, which never holds a comment between two cases of an
- * `@switch`, under `ngNonBindable` or in an ICU, so that a tag one of them quotes would be counted
- * and never walked. The base visitor does not enter an ICU's cases, and this one does. The twin
- * of `CommentReader` in `check-aria`, and kept the same.
- */
-class CommentReader extends RecursiveVisitor {
-  spans = [];
-  visitComment(node) {
-    this.spans.push(node.sourceSpan);
-  }
-  visitStartTagComment(node) {
-    this.spans.push(node.sourceSpan);
-  }
-  visitExpansionCase(node, context) {
-    this.visitChildren(context, (visit) => visit(node.expression));
-  }
-}
-const LEXING = {
-  tokenizeExpansionForms: true,
-  tokenizeBlocks: true,
-  tokenizeLet: true,
-  leadingTriviaChars: [' ', '\n', '\r', '\t'],
-};
-
-/**
- * A template parsed, and the text the counters read: the file's own, each comment blanked
- * (`CommentReader`) — every character of it a space, a line break kept, so that the spans after
- * it still start where the file has them and a comment still stands between what it separates (a
- * `<` before it and an `svg` after it are not a tag). A pattern stood here, and it is not the parser
- * ([`lesson-236`](../docs/lessons.md#lesson-236)): a `<!--` in one attribute value and a `-->`
- * in a later one made it delete the markup between them from the count and the tree together,
- * and an `<svg>` written there outside any icon passed point 2.
+ * A template read: its tree walked, and its two tags counted over its text with each comment
+ * blanked. Both come from `readTree` (`template-comments.mjs`): one reader for this gate and
+ * `check-aria`, not a copy in each. A tag a comment quotes is text to the count as it is to the
+ * tree, so the two readings agree wherever the markup does.
  *
- * The tree is the raw text's. A template the parser reads with errors is refused by point 1
- * whatever a comment found there takes with it (`<a href=//x.example>` opens one that takes the
- * rest of its line, and the tag never ends). Angular 22.2 throws on a comment standing directly
- * in an ICU's case, and its HTML parser on a `<![CDATA[` that never closes — the build, which
- * hands the same text to the same parser, throws as well — and a throw is read the same way.
+ * A template the parser reads with errors, or throws on, is refused by point 1 whatever a comment
+ * found there takes with it (`<a href=//x.example>` opens one that takes the rest of its line,
+ * and the tag never ends).
  */
 const readTemplate = ({ file, content }) => {
-  let text = content;
-  let parsed;
-  try {
-    const html = new HtmlParser().parse(content, file, LEXING);
-    const comments = new CommentReader();
-    visitAll(comments, html.rootNodes);
-    text = comments.spans.reduce(
-      (blanked, { start, end }) =>
-        blanked.slice(0, start.offset) +
-        blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
-        blanked.slice(end.offset),
-      content,
-    );
-    parsed = parseTemplate(content, file, { preserveWhitespaces: false });
-  } catch (error) {
-    parsed = {
-      nodes: [],
-      errors: [{ msg: `the compiler throws: ${error.message}` }],
-    };
-  }
+  const { nodes, errors, text } = readTree(file, content);
   const elements = [];
-  walk(parsed.nodes, null, elements);
+  walk(nodes, null, elements);
   return {
     file,
-    errors: parsed.errors ?? [],
+    errors: errors ?? [],
     elements,
     counted: Object.fromEntries(
       Object.entries(COUNTERS).map(([tag, pattern]) => [

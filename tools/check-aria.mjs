@@ -22,14 +22,10 @@
  */
 import {
   BindingType,
-  HtmlParser,
-  parseTemplate,
-  RecursiveVisitor,
   splitNsName,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
   tmplAstVisitAll,
-  visitAll,
 } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
@@ -46,6 +42,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -976,86 +973,15 @@ const exclusive = (a, b) =>
   );
 
 /**
- * Every comment of a template, as the HTML parser reads it, by the span it covers: a `<!-- … -->`
- * wherever it stands, and the block or line comment Angular 22 reads inside a start tag, opened
- * by a slash and a star or by two slashes (`<div // the frame` and a line break). Off the
- * HTML tree, tokenized as `parseTemplate` tokenizes it — blocks, `@let` and ICUs, so that a
- * `<!--` in a block's condition, a `@let` string or an ICU's case value is no comment here
- * either — and not off that function's `commentNodes`: its transform never hands over a comment
- * standing between two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the
- * scan would read what they quote. The base visitor does not enter an ICU's cases, and this one
- * does: inside an ICU the scan is the only reading there is, and a comment left in a start tag
- * there, holding an apostrophe, opens a quote that hides the stop the tag is.
- */
-class CommentReader extends RecursiveVisitor {
-  spans = [];
-  visitComment(node) {
-    this.spans.push(node.sourceSpan);
-  }
-  visitStartTagComment(node) {
-    this.spans.push(node.sourceSpan);
-  }
-  visitExpansionCase(node, context) {
-    this.visitChildren(context, (visit) => visit(node.expression));
-  }
-}
-const LEXING = {
-  tokenizeExpansionForms: true,
-  tokenizeBlocks: true,
-  tokenizeLet: true,
-  leadingTriviaChars: [' ', '\n', '\r', '\t'],
-};
-
-/**
- * A template parsed, and the text every reading of it scans: the file's own, each comment blanked
- * (`CommentReader`) — every character of it a space, a line break kept — so that a tag, a role or
- * a part a comment quotes is text to the scan as it is to the tree, and the offsets the scan, the
- * walk and the tag reader join on are the file's. A pattern stood here, and it is not the parser
- * (`lesson-236`): a `<!--` in one attribute value, string or case value and a `-->` in a later one
- * made it delete the markup between them from the scan and the tree together, and a stop there
- * passed every point. One code unit for one, so that a character outside the basic plane moves no
- * offset.
- *
- * A template the HTML parser reads with errors is refused as one that does not parse before
- * anything reads its text, whatever a comment found there takes with it (`<a href=//x.example>`
- * opens one that takes the rest of its line, and the tag never ends). Angular 22.2 throws on a
- * comment standing directly in an ICU's case — the build, which hands the same text to the same
- * parser, throws as well — and a throw is read the same way.
- */
-const readTree = (file, content) => {
-  let text = content;
-  try {
-    const html = new HtmlParser().parse(content, file, LEXING);
-    const comments = new CommentReader();
-    visitAll(comments, html.rootNodes);
-    text = comments.spans.reduce(
-      (blanked, { start, end }) =>
-        blanked.slice(0, start.offset) +
-        blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
-        blanked.slice(end.offset),
-      content,
-    );
-    const { nodes, errors } = parseTemplate(content, file, {
-      preserveWhitespaces: false,
-    });
-    return { nodes, errors, text };
-  } catch (error) {
-    return {
-      nodes: [],
-      errors: [{ msg: `the compiler throws: ${error.message}` }],
-      text,
-    };
-  }
-};
-
-/**
  * One template read through the compiler's own parser: the message parts with the conditional
- * path of each, and the path of every element by the offset it starts at. A template it cannot
- * read leaves the gate with nothing to say, which is why the errors travel back rather than
- * being swallowed into an empty list. The walk knows the side blocks it is handed: the live
- * run hands it every one, and a prepared input may hold one back to play the block Angular
- * adds next. It knows, too, the fields an expression reads the two name inputs through
- * (`reads`), which are its owners' and not the inputs' names.
+ * path of each, and the path of every element by the offset it starts at. The tree, and the text
+ * every reading scans with each comment blanked, come from `readTree` (`template-comments.mjs`):
+ * one reader for this gate and `check-icons`, not a copy in each. A template it cannot read
+ * leaves the gate with nothing to say, which is why the errors travel back rather than being
+ * swallowed into an empty list. The walk knows the side blocks it is handed: the live run hands
+ * it every one, and a prepared input may hold one back to play the block Angular adds next. It
+ * knows, too, the fields an expression reads the two name inputs through (`reads`), which are its
+ * owners' and not the inputs' names.
  */
 const readMessages = (file, content, sides, reads) => {
   const { text, ...parsed } = readTree(file, content);
