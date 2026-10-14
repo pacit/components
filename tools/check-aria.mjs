@@ -15,7 +15,7 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a stop or
+ * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a widget or
  * group the walk gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
@@ -530,15 +530,15 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * (`icus`). Inside an ICU it is markup Angular renders and the tree does not hold — nothing here
  * can read it, and reading the scan's text instead would make the scan a lexer again — so it is
  * read as a stop (`UNREAD`), the worst case, and fails point 1 as a widget the walk never
- * reached does. Anywhere else it is no element of the DOM: an `<ng-content>`, which projects and
- * draws nothing of its own, a `<style>`, a stylesheet `<link>` or a `<script>` the compiler
- * takes out, a tag in the text of a `<textarea>` or in a string (`@let mark = '<b>'`), one the
- * scan reads where the parser sees an expression. Its attributes make no stop, though its tag
- * or its written role can still make it a widget, which fails point 1 (`@let mark =
- * '<button>'`). A real tag such a false one swallows is the tree's alone, and an ICU it runs
- * into is one the scan does not read whole (`end`): both fail point 1. A stop or a group the tag
- * reader holds (`held`) and the walk gives no path fails it too: a template, which the tree holds
- * as no element, or a tag in a block kind the walk does not descend into.
+ * reached does. Anywhere else it is no element of the DOM: a `<style>`, a stylesheet `<link>` or
+ * a `<script>` the compiler takes out, a tag in the text of a `<textarea>` or in a string
+ * (`@let mark = '<b>'`), one the scan reads where the parser sees an expression. Its attributes
+ * make no stop, though its tag or its written role can still make it a widget, which fails
+ * point 1 (`@let mark = '<button>'`). A real tag such a false one swallows is the tree's alone,
+ * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1. A
+ * widget or a group the tag reader holds (`held`) and the walk gives no path fails it too: a
+ * template, which the tree holds as no element, or a tag in a block kind the walk does not
+ * descend into.
  */
 const readTemplate = (content, tables, elements, attributes, icus, kinds) => {
   const text = content.replace(COMMENT, '');
@@ -636,9 +636,10 @@ const focusAttributes = (node) =>
  * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
- * whose attributes are not read, as it draws no element: none (`kinds`). A tag is recorded before
- * the visitor descends into it, so of two at one offset — an inline template and the element,
- * the `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
+ * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
+ * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
+ * visitor descends into it, so of two at one offset — an inline template and the element, the
+ * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -1105,17 +1106,20 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           `(\`${opening(unreadByTheReader[0].offset)}\`) and the tag reader did not — what ` +
           `makes it a stop would go unread`,
       );
-    const runInto = said.icus.find(([from]) =>
-      read.tags.some((t) => t.offset < from && from < t.end),
-    );
+    const runInto = said.icus
+      .map(([from]) => ({
+        from,
+        tag: read.tags.find((t) => t.offset < from && from < t.end),
+      }))
+      .find(({ tag }) => tag);
     if (runInto)
       throw new AriaError(
         'denominator',
-        `${template.file}: the tag scan reads a tag that runs on into the ICU at offset ` +
-          `${runInto[0]} — a \`<\` before it, in an expression, a string or a text, opens a ` +
-          `tag to the scan ` +
-          `that ends past the ICU's start, and what its cases draw, if anything, is markup the ` +
-          `scan does not read whole and the tree does not hold`,
+        `${template.file}: the tag scan reads the tag at offset ${runInto.tag.offset} ` +
+          `(\`${opening(runInto.tag.offset)}\`) on into the ICU at offset ${runInto.from} — ` +
+          `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
+          `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
+          `read whole and the tree does not hold`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
