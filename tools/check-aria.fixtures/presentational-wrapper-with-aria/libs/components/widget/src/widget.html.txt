@@ -1,5 +1,5 @@
 <!-- The reference's trigger, and its panel with the heading's group wrapper given
-     `role="none"` and keeping its `aria-labelledby`: nothing an option may stand in. -->
+     `role="presentation"` and keeping its `aria-labelledby`: nothing an option may stand in. -->
 <span class="pct-widget__box">
   @if (editable()) {
   <input
@@ -27,7 +27,7 @@
      may stand in, and nothing else may. -->
 @if (open()) {
 <div class="pct-widget__panel" role="listbox">
-  <div role="none" aria-labelledby="pct-widget-nearby">
+  <div role="presentation" aria-labelledby="pct-widget-nearby">
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>

@@ -1,7 +1,7 @@
 <!-- The reference's trigger, and its panel with an option inside a role-less wrapper whose
      attributes reach no global ARIA attribute — `aria-expanded`, which is not one, and
      `arialabel` written and bound through `attr.`, which is no ARIA at all — one inside an
-     `<a>` with no `href`, which nobody lands on, one inside an editing host, and one more inside a `list`, which an option
+     `<a>` with no `href`, which nobody lands on, one inside an editing host, one inside a `<ul>` and an `<li>` made presentational, and one more inside a `list`, which an option
      may not stand in. -->
 <span class="pct-widget__box">
   @if (editable()) {
@@ -43,6 +43,9 @@
   <div contenteditable="true">
     <div role="option">Anyplace</div>
   </div>
+  <ul role="none">
+    <li role="none"><div role="option">Nowhere</div></li>
+  </ul>
   <div role="list">
     <div role="option">Elsewhere</div>
   </div>

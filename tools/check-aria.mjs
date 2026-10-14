@@ -811,7 +811,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
               written('aria-hidden')?.trim().toLowerCase() === 'true' &&
               bindings('aria-hidden').length === 0,
             // A way to land on it, as axe decides it: the line `aria-required-children`
-            // draws, which an editing host does not cross (measured, axe 4.13).
+            // draws, which an editing host does not cross (measured, axe 4.13). Read off the
+            // template, as for points 4 and 8: an `href` a directive's host binding sets
+            // (`routerLink`) is not in it.
             focusable: axe.commons.dom.isFocusable(
               virtual(node.name.toLowerCase(), focusAttributes(node)),
             ),
@@ -1766,7 +1768,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         throw new AriaError(
           'context',
           `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}), ` +
+            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}` +
+            (overridden ? `, the \`${written}\` overridden by ${held}` : '') +
+            `), ` +
             `and nothing but ${contextOf(element.role)} may stand between a ` +
             `\`${element.role}\` and its owner — axe reports this as a critical ` +
             `\`aria-required-children\` where it knows the role in between (it reads the ` +
