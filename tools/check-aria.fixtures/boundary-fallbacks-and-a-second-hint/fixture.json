@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "description",
+  "message": "`hint` and `error` can be in the DOM at the same time",
+  "$reason": "An `@boundary` around the reference's three triggers, and two `@error` blocks drawing a fallback in their place, each carrying the name. Angular 22.2 renders the body until it throws and then the first `@error` whose `when` matches, the unconditional one last, each in the other's place (measured: the body's buttons, then only the matching block's), so the body and every error block are branches of one block, and point 4 passes the five triggers. What fails is the hint the last block draws beside its text field: the message line below the boundary can show the error at the same time, and point 6 reads it. A walk that stepped over a boundary's error blocks refused the fallbacks on point 1 as stops it never reached, and the hint as a message part point 6 does not examine; one that gave the body no branch of the boundary, gave an error block the body's branch or the branch of another error block, or read one as repeating, refused the fallbacks on point 4."
+}

@@ -687,16 +687,27 @@ class TagReader extends TmplAstRecursiveVisitor {
 }
 
 /**
+ * What a block draws in place of its body, by the name the tree holds it under: one block
+ * (`@empty`, `@placeholder`, `@loading`, a deferred `@error`) or a list of them, the `@error`
+ * blocks of an `@boundary`. Angular 22.2 renders a boundary's body until it throws and then the
+ * first `@error` whose `when` matches, the unconditional one last, each in the other's place
+ * (measured: the body's three buttons, then only the matching block's). A name missing here is
+ * a block whose content the walk never reaches: a stop, a message part or a role that needs a
+ * context drawn there fails point 1 (`lesson-180`).
+ */
+const SIDE_BLOCKS = ['empty', 'placeholder', 'loading', 'error', 'errorBlocks'];
+
+/**
  * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
  * `{ block, branch, repeats }`. Two nodes are alternatives when one block holds them both and
  * their branches differ — "the error takes the line" as a fact about the tree rather than
  * about a page somebody rendered.
  *
- * `@if`/`@switch` branch through `branches`/`cases`; `@for` and `@defer` branch through a
- * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
- * the body is branch 0 and each side block one after it. An `@for` with no `@empty` is an
- * entry too, its body marked `repeats` either way — it once left no trace in the path, and
- * what it repeats is what point 4 and `exclusive` have to know.
+ * `@if`/`@switch` branch through `branches`/`cases`; `@for`, `@defer` and `@boundary` branch
+ * through their side blocks (`SIDE_BLOCKS`) against their own body, so the body is branch 0
+ * and each side block one after it. An `@for` with no `@empty` is an entry too, its body
+ * marked `repeats` either way — it once left no trace in the path, and what it repeats is what
+ * point 4 and `exclusive` have to know.
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
@@ -717,12 +728,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       );
       continue;
     }
-    const sides = [
-      node.empty,
-      node.placeholder,
-      node.loading,
-      node.error,
-    ].filter(Boolean);
+    const sides = state.sides.flatMap((name) => node[name] ?? []);
     if (sides.length || repeats(node)) {
       const block = state.blocks++;
       walkTemplate(
@@ -936,11 +942,14 @@ const readTree = (file, content) => {
  * One template read through the compiler's own parser: the message parts with the conditional
  * path of each, and the path of every element by the offset it starts at. A template it cannot
  * read leaves the gate with nothing to say, which is why the errors travel back rather than
- * being swallowed into an empty list.
+ * being swallowed into an empty list. The walk knows the side blocks it is handed: the live
+ * run hands it every one, and a prepared input may hold one back to play the block Angular
+ * adds next.
  */
-const readMessages = (file, content) => {
+const readMessages = (file, content, sides) => {
   const { text, ...parsed } = readTree(file, content);
   const state = {
+    sides,
     blocks: 0,
     messages: [],
     paths: new Map(),
@@ -1078,7 +1087,14 @@ const prohibitsAName = (t) => {
     : forbids(role);
 };
 
-const checkAria = ({ components, counted, templates, documents, tables }) => {
+const checkAria = ({
+  components,
+  counted,
+  templates,
+  documents,
+  tables,
+  sides,
+}) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
   // nothing and pass every template as widget-free; and each holds an entry a prepared input
@@ -1166,7 +1182,7 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     // Parsed first, judged second: the scan below takes from the tree which roles are bound
     // and what makes a stop, and the order of the two verdicts on a broken template stays what
     // it was.
-    const said = readMessages(template.file, template.content);
+    const said = readMessages(template.file, template.content, sides);
     const read = readTemplate(
       said.text,
       tables,
@@ -1834,6 +1850,7 @@ const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 const collectInput = (root, files) => ({
   tables: TABLES,
+  sides: SIDE_BLOCKS,
   ...readSources(root, files.filter(isSource)),
   templates: files
     .filter(isTemplate)
@@ -1884,14 +1901,15 @@ const buildFixture = (name) => {
   return target;
 };
 
-const fixtureInput = (directory, tables = TABLES) => ({
+const fixtureInput = (directory, fx = {}) => ({
   ...collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
   ),
-  tables,
+  tables: tablesFor(fx),
+  sides: sidesFor(fx),
 });
 
 /**
@@ -1912,6 +1930,14 @@ const tablesFor = (fx) => {
     for (const entry of entries) tables[name]?.delete(entry);
   return tables;
 };
+
+/**
+ * The side blocks a case lets the walk know: every one, or every one but those it drops
+ * (`"sides": { "drop": ["errorBlocks"] }`) — a block Angular adds next, which the walk would not
+ * know either, played by one it knows today.
+ */
+const sidesFor = (fx) =>
+  SIDE_BLOCKS.filter((name) => !(fx.sides?.drop ?? []).includes(name));
 
 // ── the run ────────────────────────────────────────────────────────────────────
 
@@ -1959,7 +1985,7 @@ for (const name of cases) {
   );
   const directory = buildFixture(name);
   try {
-    checkAria(fixtureInput(directory, tablesFor(fx)));
+    checkAria(fixtureInput(directory, fx));
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
         `(\`${fx.check}\`) stopped examining anything`,
