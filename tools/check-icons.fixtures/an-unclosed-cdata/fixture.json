@@ -1,5 +1,5 @@
 {
   "point": 1,
   "check": "denominator",
-  "why": "A `<![CDATA[` inside a drawing that never closes. Angular 22.2's HTML parser throws on it (`Cannot read properties of undefined`) before `parseTemplate` is reached, and the build with it; the gate reads that throw too as a template that does not parse instead of throwing it on."
+  "why": "A `<![CDATA[` that never closes, in a template with nothing for the counters to find. Angular 22.2's HTML parser throws on it (`Cannot read properties of undefined`) before `parseTemplate` is reached, and the build with it; the gate reads that throw too as a template that does not parse, instead of throwing it on or reading a template with nothing in it."
 }
