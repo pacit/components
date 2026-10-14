@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a widget or
- * group with no path, a tag in or read into an ICU and markup drawn from a string fail point 1.
+ * syntax tree (`parseTemplate`). A tag of the tree the scan or reader misses, a widget or group
+ * with no path, a tag in or read into an ICU, markup a string or frame draws: each fails point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -272,8 +272,9 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  * them; a `<details>` with no summary it holds focusable and no engine does, which the
  * virtual summary child below settles. The gate reads `contenteditable` itself, as an
  * attribute beside `tabindex`, because an editing host is a textbox by any other name; the
- * six tags it leaves to axe — the day a template here draws one, the audit on the page will
- * not see it either. One source, one blind spot, and a table upstream to correct rather
+ * three frames fail point 1 for the document they embed (`EMBEDS`), and the other three tags it
+ * leaves to axe — the day a template here draws one, the audit on the page will not see it
+ * either. One source, one blind spot, and a table upstream to correct rather
  * than a list here to remember.
  */
 const ANCHORS = {
@@ -651,14 +652,15 @@ const focusAttributes = (node) =>
   );
 
 /**
- * The properties and the attribute through which an element draws markup from a string, which
- * the tree does not hold: `[innerHTML]` and `[outerHTML]`, whose sanitizer keeps a link, a
- * `tabindex` stop and a `<details>` (it drops a `<button>`), and an `<iframe>`'s `srcdoc`, a
- * document of its own, which a written value hands over unsanitized. A binding of the name in
- * any syntax is read as one, `[attr.innerHTML]` too, as it is for a role or a name; a written
- * `innerHTML` is an attribute of that name and draws nothing.
+ * How an element draws markup the tree does not hold. A property bound in any syntax, from a
+ * string: `innerHTML` and `outerHTML`, whose sanitizer keeps a link, a `tabindex` stop and a
+ * `<details>` (it drops a `<button>`) — `[innerHtml]` too, which the compiler maps; an attribute
+ * of that name, written or bound through `[attr.]`, draws nothing. And an element embedding a
+ * document of its own (`EMBEDS`), whatever draws it: a `srcdoc` a written value hands over
+ * unsanitized, a page or a `data:` address.
  */
-const MARKUP = ['innerHTML', 'outerHTML', 'srcdoc'];
+const MARKUP = ['innerHTML', 'outerHTML'];
+const EMBEDS = new Set(['embed', 'iframe', 'object']);
 
 /**
  * An element's name as the parser reads it, its namespace off: `<svg:a>` is an `a` (the parser's
@@ -680,8 +682,8 @@ const localName = (name) => splitNsName(name)[1];
  * visitor descends into it, so of two at one offset — an inline template and the element, the
  * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
  * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
- * the name the scan reads off the text, which no point reads. So is the markup an element draws
- * from a string (`MARKUP`): each way it does, by the offset it starts at.
+ * the name the scan reads off the text, on which no verdict turns. So is the markup an element
+ * draws that the tree does not hold (`MARKUP`): each way it does, by the offset it starts at.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -693,11 +695,12 @@ class TagReader extends TmplAstRecursiveVisitor {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'element');
     this.names.set(node.sourceSpan.start.offset, localName(node.name));
+    const tag = localName(node.name).toLowerCase();
     const drawn = [
-      ...MARKUP.filter((name) => boundOn(node, nameOf(name)).length).map(
-        (name) => `[${name}]`,
-      ),
-      ...(writtenOn(node, 'srcdoc') === undefined ? [] : ['srcdoc']),
+      ...MARKUP.filter((name) =>
+        boundOn(node, nameOf(name)).some(setsProperty),
+      ).map((name) => `[${name}]`),
+      ...(EMBEDS.has(tag) ? [`<${tag}>`] : []),
     ];
     if (drawn.length)
       this.markup.push({ offset: node.sourceSpan.start.offset, drawn });
@@ -1182,6 +1185,22 @@ const checkAria = ({
     return component;
   };
   for (const component of components) inherited(component);
+  // What a host block draws into the component's own element, read as a template's is.
+  for (const component of components) {
+    const drawn = MARKUP.filter((name) =>
+      [...component.host.keys()].some(
+        (key) => key.toLowerCase() === `[${name.toLowerCase()}]`,
+      ),
+    );
+    if (drawn.length)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) binds ` +
+          `${drawn.map((name) => `\`[${name}]\``).join(' and ')} in its host block — markup ` +
+          `drawn into its own element, which the tree does not hold and nothing here reads: a ` +
+          `link or a stop drawn there is one no point examines`,
+      );
+  }
 
   const byPath = new Map(templates.map((t) => [t.file, t]));
   const owned = new Set();
@@ -1228,11 +1247,11 @@ const checkAria = ({
     // (classification). A count of widget tags over the text stood before both, and once they
     // stood it had nothing true left to say. What it found and the scan did not was a tag the
     // tree holds (refused below, by its offset), one in an ICU the scan reads into (refused
-    // below), or text no element is made of: a string a misread `<` runs over, or a written
-    // attribute value, which Angular renders as text and prettier keeps (`title="press <button>
-    // to go"`). What the scan found and it did not was a name a namespace or a glued binding
-    // follows (`<svg:a>`, `<input(input)>`), which the scan now takes from the tree. Markup a
-    // string draws through `[innerHTML]` or `srcdoc` it counted only where the string spelled a
+    // below), or text no element is made of: a string a misread `<` runs over, or a `title`,
+    // which Angular renders as text and prettier keeps (`title="press <button> to go"`). What
+    // the scan found and it did not was a name a glued binding or a dot follows (`<input(input)>`,
+    // `<a.b href>`), which the scan now takes from the tree. Markup a string or a frame draws
+    // (`[innerHTML]`, `srcdoc`, a `data:` address) it counted only where the text spelled a
     // widget's tag, as an unbalanced quote; it is refused below, whatever it spells.
     const read = readTemplate(
       said.text,
@@ -1291,15 +1310,15 @@ const checkAria = ({
     if (said.markup.length)
       throw new AriaError(
         'denominator',
-        `${template.file} draws markup from a string — ` +
+        `${template.file} draws markup the tree does not hold — ` +
           said.markup
             .map(
               ({ offset, drawn }) =>
                 `${drawn.join(' and ')} at offset ${offset} (\`${opening(offset)}\`)`,
             )
             .join('; ') +
-          ` — which the tree does not hold and nothing here reads: a link or a stop drawn ` +
-          `there is one no point examines`,
+          ` — and nothing here reads it: a link or a stop drawn there is one no point ` +
+          `examines`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(

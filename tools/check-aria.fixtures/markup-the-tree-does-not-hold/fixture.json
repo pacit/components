@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "draws markup the tree does not hold — [innerHTML] at offset 551 (`<span class=\"pct-pair__unit\" [innerHtml]=\"unitHtml()\">`); [outerHTML] at offset 615 (`<span class=\"pct-pair__note\" [outerHTML]=\"noteHtml()\">`); <iframe> at offset 679 (`<iframe class=\"pct-pair__preview\" title=\"Preview\" srcdoc=\"<a href='/docs'>Docs</a>\">`); [innerHTML] and <object> at offset 775 (`<object class=\"pct-pair__chart\" data=\"data:text/html,<a href='/docs'>Docs</a>\" [innerHTML]=\"chartHtml()\">`); <embed> at offset 892",
+  "$reason": "The reference's group with five elements beside its texts that draw markup the tree does not hold. A span binds `[innerHtml]`, which the compiler maps to `innerHTML`, and one binds `[outerHTML]`: Angular's sanitizer keeps a link and a `tabindex` stop in either. An `<iframe>` writes a `srcdoc`, which Angular hands over unsanitized. An `<object>` embeds a `data:` address and binds `[innerHTML]` for its fallback. An `<embed>` embeds a page. Each may draw a stop that no point examines, and the refusal names every element and every way it draws. A count of widget tags over the text refused this template only for the two strings that spelled a link, and blamed an unbalanced quote."
+}

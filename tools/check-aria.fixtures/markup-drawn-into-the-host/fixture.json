@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctGroup (libs/components/widget/src/group.ts) binds `[innerHTML]` in its host block",
+  "$reason": "The reference's group binding `[innerHtml]` in its host block, which the compiler maps to `innerHTML` (measured: `ɵɵdomProperty(\"innerHTML\", …, ɵɵsanitizeHtml)`), so it draws its options into the component's own element from a string. That markup is no more the tree's than a template's `[innerHTML]` is, and point 1 refuses it the same way. No count of the text ever read a host block."
+}
