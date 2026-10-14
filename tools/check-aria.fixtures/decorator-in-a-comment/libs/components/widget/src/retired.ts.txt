@@ -1,0 +1,9 @@
+/*
+The toggle the switcher drew before it took the name through its inputs — kept for its
+history, not compiled:
+
+@Component({
+  selector: 'pct-retired',
+})
+export class PctRetired {}
+*/

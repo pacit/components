@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "message": "declares no ariaLabel —",
+  "$reason": "The pair keeps its field `ariaLabel` and forwards it as before, but the input a template binds is now `accessibleName`: what Angular binds is the alias, so a consumer's `[ariaLabel]` reaches no input and an `aria-label` lands on the roleless host. A reader that took the field's name for the input's, or both names, passes it. The alias is spelled three ways a narrower reader of the options misses, each enough to lose it: the options first, as `.required` takes them, the key quoted, and the name in backticks — all three read by Angular's compiler as a plain `alias: 'accessibleName'` would be."
+}

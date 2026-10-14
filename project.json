@@ -152,7 +152,13 @@
         "{workspaceRoot}/docs/components/**/*.md",
         "{workspaceRoot}/tools/check-aria.mjs",
         "{workspaceRoot}/tools/check-aria.fixtures/**/*",
-        { "externalDependencies": ["axe-core", "@angular/compiler"] },
+        {
+          "externalDependencies": [
+            "axe-core",
+            "@angular/compiler",
+            "typescript"
+          ]
+        },
         "index"
       ],
       "options": {
