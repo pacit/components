@@ -1,6 +1,6 @@
 <!-- The reference's group, and beside its texts markup the tree does not hold: a unit's rich
      text, a note that replaces itself, a preview written in place, a chart whose fallback is
-     rich text too, and a sample page. -->
+     rich text too, a sample page and a frame of pages. -->
 <div
   class="pct-pair__row"
   role="group"
@@ -11,7 +11,8 @@
   <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
   <span class="pct-pair__unit" [innerHtml]="unitHtml()"></span>
   <span class="pct-pair__note" [outerHTML]="noteHtml()"></span>
-  <iframe class="pct-pair__preview" title="Preview" srcdoc="<a href='/docs'>Docs</a>"></iframe>
-  <object class="pct-pair__chart" data="data:text/html,<a href='/docs'>Docs</a>" [innerHTML]="chartHtml()"></object>
+  <xhtml:IFRAME class="pct-pair__preview" title="Preview" srcdoc="<a href='/docs'>Docs</a>"></xhtml:IFRAME>
+  <object class="pct-pair__chart" data="data:text/html,<a href='/docs'>Docs</a>" [(innerHTML)]="chartHtml"></object>
   <embed class="pct-pair__sample" type="text/html" src="/sample.html" />
+  <frameset class="pct-pair__pages" cols="100%"><frame src="/pages.html"></frame></frameset>
 </div>

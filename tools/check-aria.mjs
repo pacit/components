@@ -657,10 +657,11 @@ const focusAttributes = (node) =>
  * `<details>` (it drops a `<button>`) — `[innerHtml]` too, which the compiler maps; an attribute
  * of that name, written or bound through `[attr.]`, draws nothing. And an element embedding a
  * document of its own (`EMBEDS`), whatever draws it: a `srcdoc` a written value hands over
- * unsanitized, a page or a `data:` address.
+ * unsanitized, a page or a `data:` address — a `<frame>` too, which draws one inside a
+ * `<frameset>` a template may hold.
  */
 const MARKUP = ['innerHTML', 'outerHTML'];
-const EMBEDS = new Set(['embed', 'iframe', 'object']);
+const EMBEDS = new Set(['embed', 'frame', 'iframe', 'object']);
 
 /**
  * An element's name as the parser reads it, its namespace off: `<svg:a>` is an `a` (the parser's
@@ -683,7 +684,8 @@ const localName = (name) => splitNsName(name)[1];
  * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
  * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
  * the name the scan reads off the text, on which no verdict turns. So is the markup an element
- * draws that the tree does not hold (`MARKUP`): each way it does, by the offset it starts at.
+ * draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it
+ * starts at.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
