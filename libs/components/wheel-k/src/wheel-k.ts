@@ -8,6 +8,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  type OnInit,
   input,
   signal,
   untracked,
@@ -47,7 +48,7 @@ export interface PctWheelKRow {
   styleUrl: './wheel-k.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PctWheelK {
+export class PctWheelK implements OnInit {
   readonly rows = input<readonly string[]>(MINUTES);
   readonly label = input('Minutes');
   /** `scroll-snap-stop: always` on the rows — one row per tick and per flick. */
@@ -86,7 +87,6 @@ export class PctWheelK {
   private readonly viewport = viewChild.required(CdkVirtualScrollViewport);
 
   constructor() {
-    this.walk.setActive(this.start());
     afterRenderEffect(() => {
       this.centring();
       untracked(() => this.centre());
@@ -95,6 +95,11 @@ export class PctWheelK {
 
   protected trackRow(_: number, row: PctWheelKRow): number {
     return row.cycle * 1000 + row.index;
+  }
+
+  /** Inputs are bound after construction: the start row is read here, before the first render. */
+  ngOnInit(): void {
+    this.walk.setActive(this.start());
   }
 
   protected rowId(row: PctWheelKRow): string | null {

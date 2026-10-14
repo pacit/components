@@ -85,6 +85,27 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/runway/runway-view').then((m) => m.RunwayView),
   },
   {
+    path: 'runway-end-c',
+    title: 'End on the copies',
+    summary: 'PROBE 0091: one listbox of three copies and one act of a reader on it.',
+    group: 'cross',
+    load: () => import('./views/runway/runway-case-view').then((m) => m.RunwayCaseView),
+  },
+  {
+    path: 'runway-home-c',
+    title: 'Home on the copies',
+    summary: 'PROBE 0091: one listbox of three copies and one act of a reader on it.',
+    group: 'cross',
+    load: () => import('./views/runway/runway-case-view').then((m) => m.RunwayCaseView),
+  },
+  {
+    path: 'runway-digit-c',
+    title: 'A digit on the copies',
+    summary: 'PROBE 0091: one listbox of three copies and one act of a reader on it.',
+    group: 'cross',
+    load: () => import('./views/runway/runway-case-view').then((m) => m.RunwayCaseView),
+  },
+  {
     path: 'runway-end-w',
     title: 'End on the own window',
     summary: 'PROBE 0091: one windowed listbox and one act of a reader on it.',

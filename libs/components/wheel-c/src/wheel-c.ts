@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  type OnInit,
   ElementRef,
   input,
   signal,
@@ -37,7 +38,7 @@ export interface PctWheelCRow {
   styleUrl: './wheel-c.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PctWheelC {
+export class PctWheelC implements OnInit {
   readonly rows = input<readonly string[]>(MINUTES);
   readonly label = input('Minutes');
   readonly stopAlways = input(true);
@@ -72,11 +73,15 @@ export class PctWheelC {
   private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');
 
   constructor() {
-    this.walk.setActive(this.start());
     afterRenderEffect(() => {
       this.centring();
       untracked(() => this.centre());
     });
+  }
+
+  /** Inputs are bound after construction: the start row is read here, before the first render. */
+  ngOnInit(): void {
+    this.walk.setActive(this.start());
   }
 
   protected rowId(row: PctWheelCRow): string | null {

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { PctWheelC } from '@pacit/components/wheel-c';
 import { PctWheelK } from '@pacit/components/wheel-k';
 import { PctWheelW } from '@pacit/components/wheel-w';
 
@@ -9,13 +10,31 @@ import { PctWheelW } from '@pacit/components/wheel-w';
  * the key wants is not in the tree before the key. The route names the case.
  */
 interface RunwayCase {
-  readonly variant: 'w' | 'k';
+  readonly variant: 'w' | 'k' | 'c';
   readonly start: number;
   readonly label: string;
   readonly intro: string;
 }
 
 const CASES: Readonly<Record<string, RunwayCase>> = {
+  'runway-end-c': {
+    variant: 'c',
+    start: 0,
+    label: 'End on the copies',
+    intro: 'Three copies, the outer ones hidden, on row 00; the act presses End.',
+  },
+  'runway-home-c': {
+    variant: 'c',
+    start: 59,
+    label: 'Home on the copies',
+    intro: 'Three copies, the outer ones hidden, on row 59; the act presses Home.',
+  },
+  'runway-digit-c': {
+    variant: 'c',
+    start: 0,
+    label: 'A digit on the copies',
+    intro: 'Three copies, the outer ones hidden, on row 00; the act types 3.',
+  },
   'runway-end-w': {
     variant: 'w',
     start: 0,
@@ -56,14 +75,20 @@ const CASES: Readonly<Record<string, RunwayCase>> = {
 
 @Component({
   selector: 'sbx-runway-case-view',
-  imports: [PctWheelK, PctWheelW],
+  imports: [PctWheelC, PctWheelK, PctWheelW],
   template: `
     <h2 class="view__title">{{ c.label }}</h2>
     <p class="muted view__intro">{{ c.intro }}</p>
-    @if (c.variant === 'w') {
-      <pct-wheel-w [label]="c.label" [start]="c.start" data-testid="case" />
-    } @else {
-      <pct-wheel-k [label]="c.label" [start]="c.start" data-testid="case" />
+    @switch (c.variant) {
+      @case ('w') {
+        <pct-wheel-w [label]="c.label" [start]="c.start" data-testid="case" />
+      }
+      @case ('c') {
+        <pct-wheel-c [label]="c.label" [start]="c.start" data-testid="case" />
+      }
+      @default {
+        <pct-wheel-k [label]="c.label" [start]="c.start" data-testid="case" />
+      }
     }
   `,
 })

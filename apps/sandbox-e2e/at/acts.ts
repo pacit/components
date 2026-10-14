@@ -104,6 +104,27 @@ export const ACTS: Readonly<Record<string, Act>> = {
     acts: true,
     owner: 'apps/sandbox-e2e/src/date.spec.ts',
   },
+  '/runway-end-c': {
+    what: 'the last row of the copies',
+    on: '[data-testid="case"] [role="listbox"]',
+    key: 'End',
+    acts: false,
+    owner: 'tmp/probes/README.md (0091, probe C)',
+  },
+  '/runway-home-c': {
+    what: 'the first row of the copies',
+    on: '[data-testid="case"] [role="listbox"]',
+    key: 'Home',
+    acts: false,
+    owner: 'tmp/probes/README.md (0091, probe C)',
+  },
+  '/runway-digit-c': {
+    what: 'the row 30 of the copies',
+    on: '[data-testid="case"] [role="listbox"]',
+    key: '3',
+    acts: false,
+    owner: 'tmp/probes/README.md (0091, probe C)',
+  },
   '/runway-end-w': {
     what: 'the last row of the own window, not in the tree before the key',
     on: '[data-testid="case"] [role="listbox"]',
