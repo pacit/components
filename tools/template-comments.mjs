@@ -44,7 +44,7 @@ const LEXING = {
  * a part a comment quotes is text to the scan as it is to the tree, the offsets a reading joins on
  * are the file's, and a comment still stands between what it separates (a `<` before it and an
  * `svg` after it are not a tag). One code unit for one, so that a character outside the basic
- * plane moves no offset. A pattern stood here, and it is not the parser
+ * plane moves no offset. A pattern stood in its place, and it is not the parser
  * ([`lesson-236`](../docs/lessons.md#lesson-236)): a `<!--` in one attribute value, string or
  * case value and a `-->` in a later one made it delete the markup between them from the text and
  * the tree together, and a stop or a drawing there passed every point.
@@ -52,9 +52,10 @@ const LEXING = {
  * The reader of `check-aria` and of `check-icons` alike. Each gate carried a copy of it, and the
  * pattern before it was copied too and repaired in one gate first — the fix is to have one.
  *
- * The tree is the raw text's. A template the HTML parser reads with errors is refused as one that
- * does not parse before anything reads its text, whatever a comment found there takes with it
- * (`<a href=//x.example>` opens one that takes the rest of its line, and the tag never ends).
+ * The tree is the raw text's, and `errors` the compiler's: `null` where it found none. A template
+ * read with errors is refused by each gate as one that does not parse before any verdict reads its
+ * text, whatever a comment found there takes with it (`<a href=//x.example>` opens one that takes
+ * the rest of its line, and the tag never ends).
  * Angular 22.2 throws on a comment standing directly in an ICU's case, and its HTML parser on a
  * `<![CDATA[` that never closes — the build, which hands the same text to the same parser, throws
  * as well — and a throw is read the same way.
