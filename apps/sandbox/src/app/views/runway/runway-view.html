@@ -1,0 +1,45 @@
+<h2 class="view__title">Runway</h2>
+<p class="muted view__intro">
+  A probe for decision 0091: six listboxes of sixty minutes on a ring, each a
+  different runway. Copies of the rows outside the canonical cycle are hidden
+  or plain; a window renders eleven rows with or without a set size.
+</p>
+
+<div class="runway-view__row">
+  <div class="runway-view__case">
+    <pct-wheel-c label="Copies hidden" data-testid="c-hidden" />
+    <p class="muted">C1 · three copies, outer ones aria-hidden, no id</p>
+  </div>
+  <div class="runway-view__case">
+    <pct-wheel-c
+      label="Copies plain"
+      [hideCopies]="false"
+      data-testid="c-plain"
+    />
+    <p class="muted">C2 · three copies, all plain rows with ids</p>
+  </div>
+  <div class="runway-view__case">
+    <pct-wheel-w label="Window with set size" data-testid="w-setsize" />
+    <p class="muted">W1 · own window of eleven, aria-setsize 60</p>
+  </div>
+  <div class="runway-view__case">
+    <pct-wheel-w
+      label="Window without set size"
+      [setsize]="false"
+      data-testid="w-bare"
+    />
+    <p class="muted">W2 · own window of eleven, no set size</p>
+  </div>
+  <div class="runway-view__case">
+    <pct-wheel-k label="CDK window with set size" data-testid="k-setsize" />
+    <p class="muted">K1 · CDK viewport, aria-setsize 60</p>
+  </div>
+  <div class="runway-view__case">
+    <pct-wheel-k
+      label="CDK window without set size"
+      [setsize]="false"
+      data-testid="k-bare"
+    />
+    <p class="muted">K2 · CDK viewport, no set size</p>
+  </div>
+</div>

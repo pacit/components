@@ -1,0 +1,30 @@
+<cdk-virtual-scroll-viewport
+  class="pct-wheel__list"
+  data-pct-part="list"
+  role="listbox"
+  tabindex="0"
+  [itemSize]="ROW"
+  [minBufferPx]="ROW * 3"
+  [maxBufferPx]="ROW * 6"
+  [attr.aria-label]="label()"
+  [attr.aria-activedescendant]="activeId()"
+  (keydown)="onKeydown($event)"
+  (scrollend)="onScrollEnd()"
+>
+  <div
+    *cdkVirtualFor="let row of runway(); trackBy: trackRow"
+    class="pct-wheel__row"
+    data-pct-part="row"
+    role="option"
+    [id]="rowId(row)"
+    [attr.aria-hidden]="row.cycle === MIDDLE ? null : 'true'"
+    [attr.aria-selected]="row.cycle === MIDDLE && row.index === active() ? 'true' : 'false'"
+    [attr.aria-setsize]="setsize() && row.cycle === MIDDLE ? rows().length : null"
+    [attr.aria-posinset]="setsize() && row.cycle === MIDDLE ? row.index + 1 : null"
+    [attr.data-pct-active]="row.cycle === MIDDLE && row.index === active() ? '' : null"
+    [attr.data-pct-cycle]="row.cycle"
+    [style.scroll-snap-stop]="stopAlways() ? 'always' : 'normal'"
+  >
+    {{ row.label }}
+  </div>
+</cdk-virtual-scroll-viewport>

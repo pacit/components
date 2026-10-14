@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.runway-view__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.runway-view__case {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-inline-size: 180px;
+  font-size: 12px;
+}

@@ -1,0 +1,29 @@
+<div
+  #list
+  class="pct-wheel__list"
+  data-pct-part="list"
+  role="listbox"
+  tabindex="0"
+  [attr.aria-label]="label()"
+  [attr.aria-activedescendant]="activeId()"
+  (keydown)="onKeydown($event)"
+  (scrollend)="onScrollEnd()"
+>
+  @for (row of runway(); track row.cycle * 1000 + row.index) {
+  <div
+    class="pct-wheel__row"
+    data-pct-part="row"
+    role="option"
+    [id]="rowId(row)"
+    [attr.aria-hidden]="row.cycle === MIDDLE || !hideCopies() ? null : 'true'"
+    [attr.aria-selected]="row.cycle === MIDDLE && row.index === active() ? 'true' : 'false'"
+    [attr.aria-setsize]="setsize() && row.cycle === MIDDLE ? rows().length : null"
+    [attr.aria-posinset]="setsize() && row.cycle === MIDDLE ? row.index + 1 : null"
+    [attr.data-pct-active]="row.cycle === MIDDLE && row.index === active() ? '' : null"
+    [attr.data-pct-cycle]="row.cycle"
+    [style.scroll-snap-stop]="stopAlways() ? 'always' : 'normal'"
+  >
+    {{ row.label }}
+  </div>
+  }
+</div>

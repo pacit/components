@@ -1,0 +1,51 @@
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+.pct-wheel__list {
+  box-sizing: border-box;
+  inline-size: 96px;
+  block-size: 160px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  box-shadow: 0 0 0 1px var(--pct-border, #888);
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pct-wheel__list:focus {
+  outline: 2px solid var(--pct-primary, #06c);
+}
+
+.pct-wheel__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  block-size: 32px;
+  scroll-snap-align: center;
+  user-select: none;
+}
+
+.pct-wheel__row[data-pct-active] {
+  background: var(--pct-primary, #06c);
+  color: var(--pct-on-primary, #fff);
+}
+
+/* The line: the third of five rows. */
+:host::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 64px;
+  block-size: 32px;
+  border-block: 1px solid var(--pct-primary, #06c);
+  pointer-events: none;
+}
+
+.pct-wheel__runway {
+  box-sizing: border-box;
+}
