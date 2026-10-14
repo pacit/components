@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "does not parse (the compiler throws:",
+  "$reason": "A comment inside an ICU's case, in a decoration that holds nothing to land on. Angular 22.2's parser throws on it (`Cannot read properties of null`) while it builds the ICU's message, with comments collected or not, and so does the build, which calls it on the same text: the gate reads the throw as a template that does not parse, the refusal point 1 gives every template the tree cannot read. A pattern that took the comments out before the parse let it through, the parser never seeing the comment the build does; read as an empty tree instead, the template would have nothing in it to refuse."
+}

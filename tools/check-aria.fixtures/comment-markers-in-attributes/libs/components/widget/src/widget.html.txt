@@ -1,0 +1,7 @@
+<!-- A control standing between two surfaces whose titles read as the two halves of a comment:
+     an opening marker in the first, a closing one in the second. Both are attribute values to
+     the parser, and the button between them is an element Angular renders, a control inside the
+     template of a component that declares no name for it. -->
+<div class="pct-widget__surface" title="<!--"></div>
+<button type="button" class="pct-widget__retry">Retry</button>
+<div class="pct-widget__surface" title="-->"></div>
