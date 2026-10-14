@@ -1,0 +1,4 @@
+<pct-icon name="check">
+  <svg viewBox="0 0 16 16"><![CDATA[ the tick
+  </svg>
+</pct-icon>

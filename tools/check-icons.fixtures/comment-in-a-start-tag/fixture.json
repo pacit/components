@@ -1,5 +1,5 @@
 {
   "point": 2,
   "check": "swappable",
-  "why": "The arrow outside any icon, and an `<svg>` quoted in a comment inside the button's start tag, which Angular 22 reads as a comment. The HTML tree holds it beside the attributes and not among the nodes, and hands it to a visitor only through `visitStartTagComment`; a reader without that hook would count the quoted tag, the tree would hold one `<svg>` where the text spells two, and point 1 would fire on a template whose defect is point 2's."
+  "why": "The arrow outside any icon, a comment glued to its name inside its start tag, and a comment standing right before the mark's icon, each quoting an `<svg>`. Angular 22 reads the first as a comment the HTML tree holds beside the attributes and hands to a visitor only through `visitStartTagComment`. Every comment is blanked, each one, to its last character and no further, and with spaces: a quoted tag left in the text, a `<` blanked after a comment or a name glued to something other than a space would leave the text spelling an `<svg>` or a `<pct-icon>` more or fewer than the tree holds, and point 1 would fire on a template whose defect is point 2's."
 }

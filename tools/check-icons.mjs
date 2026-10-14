@@ -196,8 +196,8 @@ const LEXING = {
  * The tree is the raw text's. A template the parser reads with errors is refused by point 1
  * whatever a comment found there takes with it (`<a href=//x.example>` opens one that takes the
  * rest of its line, and the tag never ends). Angular 22.2 throws on a comment standing directly
- * in an ICU's case — the build, which hands the same text to the same parser, throws as well —
- * and a throw is read the same way.
+ * in an ICU's case, and its HTML parser on a `<![CDATA[` that never closes — the build, which
+ * hands the same text to the same parser, throws as well — and a throw is read the same way.
  */
 const readTemplate = ({ file, content }) => {
   let text = content;

@@ -793,17 +793,18 @@ and every attribute it refuses; `apps/sandbox-e2e/src/select.spec.ts` — a regi
 three engines, in the same box and turning with it; `apps/sandbox-e2e/src/icon.spec.ts` — the
 box's size and tone, a drawing from data in the SVG namespace, and one line dressing the
 library inside a card and not outside it
-**Control:** `tools/check-icons.fixtures/` — sixteen prepared inputs, each rejected on its own
+**Control:** `tools/check-icons.fixtures/` — seventeen prepared inputs, each rejected on its own
 point, the first of them being the shape the library shipped until the icons (an `<svg>` written
 straight into the template). A comment is one the HTML parser holds as one: an `<svg>` between a
 `<!--` and a later `-->` in two attribute values, two `@let` strings, two block conditions or two
 ICU expressions is a drawing like any other (`comment-markers-in-attributes` and the three beside
 it); a tag quoted in a comment inside a start tag, an ICU's case or between two `@switch` cases
-is text, and a comment is blanked rather than cut, so that a `<` before it and an `svg` after it
-stay apart (`comment-in-a-start-tag` and the three beside it); and a `href=//…` the HTML parser
-reads as a comment opening in a start tag that never ends, and a comment standing directly in an
-ICU's case, on which the compiler and the build throw, fail point 1 as templates that do not
-parse (`unquoted-href-read-as-a-comment`, `comment-in-an-icu`);
+is text, and every comment is blanked, to its last character and with spaces, rather than cut,
+so that a `<` before it and an `svg` after it stay apart (`comment-in-a-start-tag` and the three
+beside it); and a `href=//…` the HTML parser reads as a comment opening in a start tag that never
+ends, a comment standing directly in an ICU's case and a `<![CDATA[` that never closes, on which
+the compiler and the build throw, fail point 1 as templates that do not parse
+(`unquoted-href-read-as-a-comment`, `comment-in-an-icu`, `an-unclosed-cdata`);
 `tools/check-styles.fixtures/paint-inside-an-icon/` for point 8.
 Above them a recorded run: the lookup in `PctIcon` returning `null` always leaves 291 cases
 green and turns 7 red, every one of them a replacement
