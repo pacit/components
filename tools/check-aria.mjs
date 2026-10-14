@@ -266,6 +266,10 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  *   `namedTags` — the tags whose implicit role is one of those, which axe holds focusable in
  *                 no variant and which HTML names by no method of its own (`progress`,
  *                 `meter`, `dialog`): announced with a name, and only ARIA can give one.
+ *   `globalAria` — the attributes ARIA lets any element carry (`aria-labelledby`,
+ *                  `aria-describedby`, `aria-hidden`): the ones that keep an element with no
+ *                  role in the tree, where point 9 reads them, and the list axe itself asks
+ *                  (`getGlobalAriaAttrs`).
  *
  * What the tables do NOT hold is a fact about axe, measured rather than remembered (three
  * engines, 2026-09-05): `iframe`, `audio` and `video` with `controls`, `embed`, `object`, an
@@ -282,6 +286,7 @@ const ANCHORS = {
   named: 'tablist',
   namedTags: 'progress',
   contexts: 'option',
+  globalAria: 'aria-labelledby',
 };
 /** Roles that are not in the tree at all, so an element wearing one is looked through. */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
@@ -384,7 +389,8 @@ const platformTables = () => {
   const implicitRoles = new Map(
     Object.entries(implicit).filter(([, role]) => typeof role === 'string'),
   );
-  return { focusable, named, namedTags, contexts, implicitRoles };
+  const globalAria = new Set(axe.commons.standards.getGlobalAriaAttrs());
+  return { focusable, named, namedTags, contexts, implicitRoles, globalAria };
 };
 
 const TABLES = platformTables();
@@ -612,6 +618,16 @@ const boundOn = (node, name) =>
     (i) => nameOf(i.name, i.type === BindingType.Property) === name,
   );
 /**
+ * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
+ * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`.
+ */
+const namesOn = (node) => [
+  ...(node.attributes ?? []).map((a) => nameOf(a.name)),
+  ...(node.inputs ?? []).map((i) =>
+    nameOf(i.name, i.type === BindingType.Property),
+  ),
+];
+/**
  * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
  * and `isFocusable` read it: a written attribute by its name, with its value, and a bound one as
  * `[name]`, whatever syntax binds it. A class, a style or an animation binding of the same name
@@ -783,11 +799,10 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
                 bindings(name).length > 0,
             ),
             // What keeps a role-less element from being looked through, in axe's own
-            // reading of `aria-required-children`: a global ARIA attribute, or a way to land
-            // on it. Static or bound — a binding says the attribute exists in some state.
-            aria:
-              (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
-              (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
+            // reading of `aria-required-children`: a global ARIA attribute among these, or a
+            // way to land on it. Static or bound — a binding says the attribute exists in
+            // some state.
+            names: namesOn(node),
             tabindex: ['tabindex', '[tabindex]'].some((key) =>
               focusAttributes(node).has(key),
             ),
@@ -1045,10 +1060,10 @@ const prohibitsAName = (t) => {
 const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
-  // nothing and pass every template as widget-free; and each holds the entry that named it
-  // when it was a list here — a table that lost one is either a reading this gate has
-  // stopped making or a fact about the platform that moved, and both are a verdict to
-  // reach rather than a silence.
+  // nothing and pass every template as widget-free; and each holds an entry a prepared input
+  // stands on — for the first four, the one that named it when it was a list here. A table
+  // that lost one is either a reading this gate has stopped making or a fact about the
+  // platform that moved, and both are a verdict to reach rather than a silence.
   if (!tables)
     throw new AriaError(
       'denominator',
@@ -1059,10 +1074,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     if (!tables[table]?.has(anchor))
       throw new AriaError(
         'denominator',
-        `the \`${table}\` table read from axe-core holds no \`${anchor}\` — the entry that ` +
-          `named this table when it was a list here, and the one a prepared input still ` +
-          `stands on. Either the read stopped reading or the platform's table moved; ` +
-          `decide which before anything below is believed`,
+        `the \`${table}\` table read from axe-core holds no \`${anchor}\` — an entry a ` +
+          `prepared input stands on. Either the read stopped reading or the platform's ` +
+          `table moved; decide which before anything below is believed`,
       );
   if (components.length !== counted)
     throw new AriaError(
@@ -1701,8 +1715,13 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
           // draws: such an element is in the tree, and a listbox may not own it. The select's
           // own measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper
           // that keeps its `aria-labelledby`.
-          const held = ancestor.aria
-            ? 'an ARIA attribute'
+          // `aria-hidden` among them, which a wrapper may also use to take the options out of
+          // the tree with it, where axe asks nothing more: refused all the same.
+          const global = ancestor.names.find((name) =>
+            tables.globalAria.has(name),
+          );
+          const held = global
+            ? `a global ARIA attribute (\`${global}\`)`
             : ancestor.tabindex || tables.focusable.has(ancestor.tag)
               ? 'a way to land on it'
               : null;
@@ -1854,7 +1873,10 @@ const tablesFor = (fx) => {
   if (!('tables' in fx)) return TABLES;
   if (fx.tables === null) return null;
   const tables = Object.fromEntries(
-    Object.entries(TABLES).map(([name, set]) => [name, new Set(set)]),
+    Object.entries(TABLES).map(([name, table]) => [
+      name,
+      table instanceof Map ? new Map(table) : new Set(table),
+    ]),
   );
   for (const [name, entries] of Object.entries(fx.tables.drop ?? {}))
     for (const entry of entries) tables[name]?.delete(entry);

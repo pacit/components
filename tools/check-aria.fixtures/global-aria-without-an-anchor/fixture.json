@@ -1,0 +1,11 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the `globalAria` table read from axe-core holds no `aria-labelledby`",
+  "tables": {
+    "drop": {
+      "globalAria": ["aria-labelledby"]
+    }
+  },
+  "$reason": "The global ARIA attributes read from axe-core have lost `aria-labelledby` — the one `wrapper-with-aria-and-no-role`, the select's measured case (`lesson-65`), stands on. A package bump can move the list with no line here moving, and point 9 would look through every wrapper carrying it. The anchor makes that loss a verdict rather than a silence."
+}
