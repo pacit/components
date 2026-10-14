@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "message": "declares ariaLabel —",
+  "$reason": "`hidden-with-a-name` offering one name, through a field called `label` that a template binds as `ariaLabel`. Point 8 asks what a consumer can bind, so the alias is the name it reads; a reader asking the fields finds no `ariaLabel` and passes a hidden host that offers one."
+}

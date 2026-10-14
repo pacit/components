@@ -21,7 +21,7 @@
     class="pct-toggle__control"
     [attr.href]="href()"
     [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-labelledby]="labelledBy() || null"
   >
     @if (picture()) {
     <img class="pct-toggle__icon" [src]="picture()" [alt]="iconLabel()" />
@@ -36,7 +36,7 @@
     tabindex="0"
     [attr.aria-pressed]="toggles() ? on() : null"
     [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-labelledby]="labelledBy() || null"
   >
     <svg
       class="pct-toggle__icon"
@@ -51,7 +51,7 @@
     [attr.role]="toggles() ? 'switch' : null"
     [attr.aria-checked]="toggles() ? on() : null"
     [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-labelledby]="labelledBy() || null"
   >
     <svg
       class="pct-toggle__icon"

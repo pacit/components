@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "where the TypeScript parser holds no decorated class",
+  "$reason": "A component commented out with its decorator in column zero: the pattern reads it and the counter counts it, so the two agree, and a gate that took the pattern's word examined a `pct-retired` that exists nowhere — passing it, as it has no template. The class the points below read is the one the parser holds where the decorator starts; where it holds none, the decorator is text, and the gate says so rather than counting it on either side."
+}

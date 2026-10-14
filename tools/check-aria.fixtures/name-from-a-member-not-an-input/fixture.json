@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<p> bind(s)",
+  "$reason": "A component declaring no name input binds a `computed` called `ariaLabel` onto a `<p>`, whose role prohibits a name. An owner that declares no such input is read by the input's own name, as every owner was before the inputs came off the parser; a reader that read only the fields of declared inputs would find nothing bound here and pass a named paragraph the gate refused before."
+}

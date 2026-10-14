@@ -1,0 +1,13 @@
+import { Component, computed } from '@angular/core';
+
+/** A note that points its paragraph at a title through a member, not an input. */
+@Component({
+  selector: 'pct-note',
+  templateUrl: './note.html',
+  host: {
+    class: 'pct-note',
+  },
+})
+export class PctNote {
+  protected readonly ariaLabelledby = computed(() => 'pct-note-title');
+}

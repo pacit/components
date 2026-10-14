@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "and one has to — an input read by nobody names nothing",
+  "$reason": "The toggle declares `ariaLabelledby` of its own over the base's, which takes the same name through its field `labelledBy` — and the template still forwards `labelledBy()`. Angular keeps the subclass's input where both declare one name (`mergeInputsWithTransforms` skips it), so a consumer's `[ariaLabelledby]` sets the toggle's field, the base's signal is never set, and no element carries both names. A merge that let the base's field win reads the template as forwarding them, and passes it."
+}

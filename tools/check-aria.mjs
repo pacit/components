@@ -45,6 +45,7 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -129,12 +130,14 @@ const sorted = (set) => [...set].sort();
 // ── source scanners ────────────────────────────────────────────────────────────
 
 /**
- * A decorated class, up to the brace its body opens with — that tail is where `extends`
- * stands. It anchors on the formatting `nx format:check` enforces (`@Component({` and `})` in
- * column zero), and the number of matches is therefore compared against a counter that does
- * NOT repeat that anchor — otherwise a decorator written some other way would leave a whole
- * component unexamined and both sides of the comparison would be out by one together
- * (`lesson-48`).
+ * A decorator's text, up to the class it stands on. It anchors on the formatting `nx
+ * format:check` enforces (`@Component({` and `})` in column zero), and the number of matches is
+ * therefore compared against a counter that does NOT repeat that anchor — otherwise a decorator
+ * written some other way would leave a whole component unexamined and both sides of the
+ * comparison would be out by one together (`lesson-48`). What it reads is the decorator's
+ * metadata; the class it stands on — its name, its base, its inputs — is the one the TypeScript
+ * parser holds at the offset the match starts at (`decoratedClasses`), and a match where the
+ * parser holds none is no component at all.
  *
  * **`@Directive` is read too, and it was not always.** An attribute directive is still not
  * judged by the points below — it sits on an element the consumer chose, so the gate cannot
@@ -146,18 +149,84 @@ const sorted = (set) => [...set].sort();
  * [`lesson-100`](../docs/lessons.md#lesson-100)).
  */
 const DECORATOR =
-  /^@(Component|Directive)\(\{?\r?\n?([\s\S]*?)^\}?\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
+  /^@(Component|Directive)\(\{?\r?\n?([\s\S]*?)^\}?\)\r?\n(?:export\s+)?(?:abstract\s+)?class\b/gm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
-
-/** `class X extends Y` — the base whose inputs and host block are the subclass's too. */
-const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 const SELECTOR = /selector\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 
-/** `readonly x = input(…)` / `= model(…)` / `= input.required<T>()` in the class body. */
-const INPUT =
-  /^\s*(?:readonly\s+)?([A-Za-z_$][\w$]*)\s*=\s*(?:input|model)(?:\.required)?\s*[<(]/gm;
+/**
+ * Every decorated class of a source, by the offset its decorator's `@` stands at — the parser's
+ * answer to "is there a class here", which a comment or a string that spells one does not get.
+ */
+const decoratedClasses = (path, content) => {
+  const source = ts.createSourceFile(
+    path,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const classes = new Map();
+  const visit = (node) => {
+    if (ts.isDecorator(node) && ts.isClassDeclaration(node.parent))
+      classes.set(node.getStart(source), node.parent);
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return classes;
+};
+
+/** `class X extends Y` — the base whose inputs and host block are the subclass's too. */
+const baseOf = (node) =>
+  node.heritageClauses
+    ?.find((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
+    ?.types[0]?.expression.getText() ?? null;
+
+/** The calls that make a field an input, each with its `.required`. */
+const INPUT_CALLS = new Set(['input', 'model']);
+
+/**
+ * The inputs a class declares: the name a template binds each one by, to the field that holds
+ * it. Read off the parsed class as Angular's compiler reads them (`tryParseSignalInputMapping`,
+ * `tryParseSignalModelMapping`): a field, `public` or `protected` — a `private` one the compiler
+ * refuses, and the gate reads it all the same — initialised with one of the calls above through
+ * any parentheses and `as`, bound by the `alias` its options give as a string — the first
+ * argument of a `.required`, the second of any other — and by its own name without one. A
+ * pattern over the text stood here and read a field's name with nothing but `readonly` before
+ * it: `public readonly ariaLabel = input('')` declared nothing, and `label = input('', { alias:
+ * 'ariaLabel' })` declared `label` (`lesson-236`).
+ */
+const inputsOf = (node) => {
+  const inputs = new Map();
+  for (const member of node.members) {
+    if (!ts.isPropertyDeclaration(member) || member.name.text === undefined)
+      continue;
+    let call = member.initializer;
+    while (
+      call &&
+      (ts.isParenthesizedExpression(call) || ts.isAsExpression(call))
+    )
+      call = call.expression;
+    if (!call || !ts.isCallExpression(call)) continue;
+    const required =
+      ts.isPropertyAccessExpression(call.expression) &&
+      call.expression.name.text === 'required';
+    const callee = required ? call.expression.expression : call.expression;
+    if (!ts.isIdentifier(callee) || !INPUT_CALLS.has(callee.text)) continue;
+    const options = call.arguments[required ? 0 : 1];
+    const alias =
+      options && ts.isObjectLiteralExpression(options)
+        ? options.properties.find(
+            (p) => ts.isPropertyAssignment(p) && p.name.text === 'alias',
+          )?.initializer
+        : undefined;
+    inputs.set(
+      alias && ts.isStringLiteralLike(alias) ? alias.text : member.name.text,
+      member.name.text,
+    );
+  }
+  return inputs;
+};
 
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
@@ -203,31 +272,34 @@ const hostTags = (selector) =>
 
 const readSources = (root, files) => {
   const components = [];
+  const unheld = [];
   let counted = 0;
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
     counted += countOf(content, DECORATOR_COUNTER);
+    const classes = decoratedClasses(file, content);
     for (const match of content.matchAll(DECORATOR)) {
-      const [body, className, heritage] = [match[2], match[3], match[4]];
-      // The class body ends at the first `}` in column zero — the same formatting anchor
-      // as the decorator. Inputs are read from it and not from the file, so a second
-      // component in one file cannot lend its inputs to the first.
-      const after = content.indexOf(match[0]) + match[0].length;
-      const end = content.indexOf('\n}', after);
-      const classBody = content.slice(after, end === -1 ? undefined : end);
+      const node = classes.get(match.index);
+      if (node === undefined) {
+        unheld.push(`${file}: \`${match[0].split('\n')[0]}\``);
+        continue;
+      }
+      const body = match[2];
       const host = hostBlock(body);
       components.push({
         file,
-        className,
-        base: EXTENDS.exec(heritage)?.[1] ?? null,
+        className: node.name?.text,
+        base: baseOf(node),
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
-        inputs: new Set([...classBody.matchAll(INPUT)].map((m) => m[1])),
+        // Off the class itself, so a second component in one file cannot lend its inputs to
+        // the first.
+        inputs: inputsOf(node),
       });
     }
   }
-  return { components, counted };
+  return { components, counted, unheld };
 };
 
 // ── template scanner ───────────────────────────────────────────────────────────
@@ -814,10 +886,13 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // Point 4 takes from the same element what the tag scan cannot read for itself.
     const written = (name) => writtenOn(node, name);
     const bindings = (name) => boundOn(node, name);
-    // Each name attribute bound to its input, in whatever syntax.
+    // Each name attribute bound to its input, in whatever syntax — read in the field the
+    // template's owner holds it in, which an alias names apart from the input.
     const taking = NAME_TARGETS.map((name, i) =>
       bindings(name).filter((b) =>
-        (b.value?.source ?? '').includes(`${NAME_INPUTS[i]}(`),
+        [...state.reads[i]].some((field) =>
+          (b.value?.source ?? '').includes(`${field}(`),
+        ),
       ),
     );
     const element =
@@ -979,12 +1054,14 @@ const readTree = (file, content) => {
  * read leaves the gate with nothing to say, which is why the errors travel back rather than
  * being swallowed into an empty list. The walk knows the side blocks it is handed: the live
  * run hands it every one, and a prepared input may hold one back to play the block Angular
- * adds next.
+ * adds next. It knows, too, the fields an expression reads the two name inputs through
+ * (`reads`), which are its owners' and not the inputs' names.
  */
-const readMessages = (file, content, sides) => {
+const readMessages = (file, content, sides, reads) => {
   const { text, ...parsed } = readTree(file, content);
   const state = {
     sides,
+    reads,
     blocks: 0,
     messages: [],
     paths: new Map(),
@@ -1127,6 +1204,7 @@ const prohibitsAName = (t) => {
 const checkAria = ({
   components,
   counted,
+  unheld,
   templates,
   documents,
   tables,
@@ -1152,6 +1230,15 @@ const checkAria = ({
           `prepared input stands on. Either the read stopped reading or the platform's ` +
           `table moved; decide which before anything below is believed`,
       );
+  // What the decorator's pattern reads where the parser holds no class is text that spells one
+  // — a comment, a string — and what the points below would examine there exists nowhere.
+  if (unheld.length)
+    throw new AriaError(
+      'denominator',
+      `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated ` +
+        `class — a comment or a string spelling one, which no build compiles and no point ` +
+        `below may examine as a component:\n${list(unheld)}`,
+    );
   if (components.length !== counted)
     throw new AriaError(
       'denominator',
@@ -1180,7 +1267,8 @@ const checkAria = ({
           `here`,
       );
     const whole = inherited(base, seen);
-    for (const name of whole.inputs) component.inputs.add(name);
+    for (const [name, field] of whole.inputs)
+      if (!component.inputs.has(name)) component.inputs.set(name, field);
     for (const [key, value] of whole.host)
       if (!component.host.has(key)) component.host.set(key, value);
     component.base = null;
@@ -1232,11 +1320,19 @@ const checkAria = ({
     );
 
   for (const template of templates) {
+    // The fields its owners hold the two name inputs in — `label` for an input bound as
+    // `ariaLabel` — which is what an expression forwarding the name reads. An owner that
+    // declares no such input is read by the input's own name, as every owner once was: a
+    // member it binds under that name (a `computed`) is taken for the name it hands over.
+    const owners = components.filter((c) => c.templatePath === template.file);
+    const reads = NAME_INPUTS.map(
+      (name) => new Set(owners.map((c) => c.inputs.get(name) ?? name)),
+    );
     // Parsed first, judged second: the scan below takes from the tree each tag's name, which
     // roles are bound and what makes a stop. A template the parser refuses is refused for what
     // the parser says, an unbalanced quote included (`Opening tag "button" not terminated`): the
     // build hands it the same text, and prettier refuses it too.
-    const said = readMessages(template.file, template.content, sides);
+    const said = readMessages(template.file, template.content, sides, reads);
     if (said.errors.length)
       throw new AriaError(
         'denominator',

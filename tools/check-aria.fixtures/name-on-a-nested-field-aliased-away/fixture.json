@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<pct-tag> bind(s)",
+  "$reason": "The switcher draws a `pct-tag` in place of the toggle and binds both names by property, but the tag's field `ariaLabel` is the input `caption`: `[ariaLabel]` reaches no input — Angular's DOM schema knows the element property, so it compiles — and the name lands on the tag's host, which has no role. A reader that took a field for an input, by either name, passes it."
+}

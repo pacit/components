@@ -1,0 +1,49 @@
+import { Component, Directive, input } from '@angular/core';
+
+/**
+ * What a family of toggles would share: the state, and one of the two names — under an alias,
+ * so the field the template forwards is `labelledBy` and the input the switcher binds is
+ * `ariaLabelledby`. A merge with the subclass that kept the names and lost the fields would
+ * read the template as forwarding nothing.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-on]': 'on() ? "" : null',
+  },
+})
+export abstract class PctToggleBase {
+  readonly labelledBy = input<string>('', { alias: 'ariaLabelledby' });
+  protected readonly toggles = input(false);
+  protected readonly on = input(false);
+}
+
+/**
+ * A native button that becomes a switch when it toggles, holding an icon, inside a frame that
+ * takes focus back: what point 4 must pass around a control — an image and a busy bar inside
+ * it, a role an expression decides on it, and a stop around it that takes no name. Drawn on a
+ * stop, it is a `role="button"` holding the same icon: a written role is a control as the
+ * tag's own is, its children presentational alike. Drawn as a link, it holds a named icon
+ * whose role is written, or a native `<img>` in its place: a link's children are not
+ * presentational, and an image — or decoration, with an empty `alt` — is still no control
+ * inside it, by a written role or the tag's. Its name inputs are declared two ways a pattern over
+ * the text did not read: `ariaLabel` here, `public`, and `ariaLabelledby` in the base, aliased.
+ */
+@Component({
+  selector: 'pct-toggle',
+  templateUrl: './toggle.html',
+  host: {
+    class: 'pct-toggle',
+  },
+})
+export class PctToggle extends PctToggleBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly busy = input(false);
+  protected readonly iconLabel = input<string>('');
+  /** Whether the toggle is drawn on a stop instead of a native button. */
+  protected readonly stop = input(false);
+  /** Where the toggle leads, when it is a link instead. */
+  protected readonly href = input<string>('');
+  /** A picture the link shows in place of its icon. */
+  protected readonly picture = input<string>('');
+}

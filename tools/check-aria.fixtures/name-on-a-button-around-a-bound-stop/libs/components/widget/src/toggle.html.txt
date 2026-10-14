@@ -4,7 +4,7 @@
   class="pct-toggle__control"
   type="button"
   [attr.aria-label]="ariaLabel() || null"
-  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-labelledby]="labelledBy() || null"
 >
   {{ label() }}
   <span class="pct-toggle__clear" tabindex="{{ on() ? 0 : -1 }}">Clear</span>

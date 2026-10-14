@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** A tag whose field `ariaLabel` is bound as `caption`: the name it takes is not `ariaLabel`. */
+@Component({
+  selector: 'pct-tag',
+  host: {
+    class: 'pct-tag',
+  },
+})
+export class PctTag {
+  readonly ariaLabel = input<string>('', { alias: 'caption' });
+  readonly ariaLabelledby = input<string>('');
+}

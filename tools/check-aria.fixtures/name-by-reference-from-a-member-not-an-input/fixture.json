@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<p> bind(s)",
+  "$reason": "`name-from-a-member-not-an-input` by the other attribute: a `computed` called `ariaLabelledby`, on an owner declaring no name input, bound onto a `<p>`. Each of the two names is read by its own name where no owner declares it, so a fallback kept for `aria-label` alone, or one that reads both attributes by `ariaLabel`, passes this paragraph."
+}

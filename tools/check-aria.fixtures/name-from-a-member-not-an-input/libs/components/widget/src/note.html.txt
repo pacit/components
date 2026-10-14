@@ -1,0 +1,1 @@
+<p class="pct-note__text" [attr.aria-label]="ariaLabel()">Note</p>

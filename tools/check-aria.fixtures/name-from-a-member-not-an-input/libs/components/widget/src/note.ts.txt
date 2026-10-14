@@ -1,0 +1,13 @@
+import { Component, computed } from '@angular/core';
+
+/** A note that names its paragraph through a member, not an input: no consumer's name here. */
+@Component({
+  selector: 'pct-note',
+  templateUrl: './note.html',
+  host: {
+    class: 'pct-note',
+  },
+})
+export class PctNote {
+  protected readonly ariaLabel = computed(() => 'A note');
+}

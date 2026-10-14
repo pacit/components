@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "message": "declares ariaLabel / ariaLabelledby —",
+  "$reason": "`hidden-with-a-name` with the two inputs declared the other ways Angular's compiler reads one: `ariaLabel` a `protected` field holding a `model.required()`, `ariaLabelledby` an `input()` inside parentheses and an `as`. Point 8 is where a name input the reader misses turns into a pass rather than a refusal — a hidden host offering a name — so a reader that stopped at a modifier, at `model`, at `.required` or at the parentheses or the `as` drops one of the two from the message, and with both it passes."
+}
