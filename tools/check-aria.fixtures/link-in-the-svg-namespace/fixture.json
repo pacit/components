@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "around <a>, which name(s) nothing of their own",
+  "$reason": "The reference's group with a map beside its texts, and in the map an icon link that names nothing. The link is written `<svg:a href>`: a template drawn inside an `<svg>` host has to write that prefix, and inside the `<svg>` here it is redundant, the parser reading `:svg:a` either way. The scan read a tag's name off the text up to the first character no name holds. That gave `svg`, which is no widget, so the gate passed the link, though `<a href>` in the same place was refused. The scan now takes the name from the tree, its namespace off."
+}
