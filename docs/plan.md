@@ -179,7 +179,7 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     `pctAfterTransition`; the tier `--pct-wheel-*`, its texts, a card under Choices on the
     APG listbox
   - `scroll-snap-stop: normal`, as 0091 §3 measured it: `always` is one row per tick in two
-    engines and three rows, or none, in chromium 153; a burst is twenty-four rows in all three
+    engines and three rows, or none, in chromium 153; a burst is 24 or 25 rows in all three
   - the drum (rows turned by their distance to the line) comes after, by scroll-driven
     animations where they are (chromium, webkit) — a variant measured, not promised
   - ends with: the card filled in, the wheel in the sandbox in three engines, the readers'
