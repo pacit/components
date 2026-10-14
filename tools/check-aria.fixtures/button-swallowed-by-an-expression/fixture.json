@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<button class=\"pct-widget__retry\" type=\"button\" [attr.aria-label]=\"retryLabel()\">`), and the tag scan never found it",
+  "$reason": "`tag-swallowed-by-an-expression` with a native `<button>` in place of the `role=\"button\"` span. The false tag `<limit())` swallows a widget's own tag, which the tree holds as it is, and the refusal names the tag the scan never found. A count of widget tags over the text stood before that refusal: it found the button the scan did not and blamed an unbalanced quote. The span the other case swallows is no widget tag and never reached the count."
+}

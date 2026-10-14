@@ -176,7 +176,8 @@
         "sms",
         "tui",
         "uri",
-        "wai"
+        "wai",
+        "xhtml"
       ]
     },
     "codes": {

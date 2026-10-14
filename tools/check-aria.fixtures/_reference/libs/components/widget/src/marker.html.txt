@@ -4,14 +4,18 @@
      tag, and the second style block stands right where it ends, outside it. The projection holds
      a fallback, the badge a deferred block with every side block, the dots a loop with an
      `@empty`: the walk and the tag reader both reach what they draw. The icon projects through an
-     `<svg:ng-content>`, an `<ng-content>` the tree knows by its local name. -->
+     `<svg:ng-content>`, an `<ng-content>` the tree knows by its local name. The text's title
+     quotes a `<button>`, which Angular renders as the text it is: no tag of the DOM. -->
 @let emphasis = 'bold';
 <style>
   .pct-marker__text {
     font-weight: 600;
   }
 </style>
-<span class="pct-marker__text" [attr.data-emphasis]="emphasis"
+<span
+  class="pct-marker__text"
+  [attr.data-emphasis]="emphasis"
+  title="Marks the <button> it stands on"
   ><ng-content><span class="pct-marker__fallback">Mark</span></ng-content></span
 >
 @defer (on idle) {

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "around <button>, which name(s) nothing of their own",
+  "$reason": "The reference's group with a button beside its texts that names nothing, its tag written `<BUTTON>`. HTML ignores the case of a tag name, and the parser keeps the case it was written in. The scan takes a tag's name from the tree and lowers it, as it lowered the text's. Kept as written, `BUTTON` is no tag of axe's tables, and the button passed."
+}

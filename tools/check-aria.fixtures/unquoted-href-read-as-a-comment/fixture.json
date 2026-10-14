@@ -2,5 +2,5 @@
   "point": 1,
   "check": "denominator",
   "message": "does not parse (",
-  "$reason": "A link with an unquoted protocol-relative address, `<a href=//x.example>`: Angular's lexer reads the two slashes as a comment opening inside the start tag, and the tag never ends, so the template does not parse, nor does it build. A template the HTML parser reads with errors keeps its text whole: blanked, the comment would run to the end of the file, the scan would find the link's tag and no end to it, and the refusal would be point 1's count of widget tags, blaming an unbalanced quote, instead of the parser's own error."
+  "$reason": "A link with an unquoted protocol-relative address, `<a href=//x.example>`: Angular's lexer reads the two slashes as a comment opening inside the start tag, and the tag never ends, so the template does not parse, nor does it build. The parser's error is the refusal, ahead of every reading of the text, in which the comment runs to the end of the file and the link's tag has no end. A count of widget tags over the text once stood ahead of it and blamed an unbalanced quote."
 }

@@ -15,8 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a widget or
- * group the walk gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
+ * syntax tree (`parseTemplate`). A tag of the tree the scan or reader misses, a widget or group
+ * with no path, a tag in or read into an ICU, markup a string or frame draws: each fails point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -25,6 +25,7 @@ import {
   HtmlParser,
   parseTemplate,
   RecursiveVisitor,
+  splitNsName,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
   tmplAstVisitAll,
@@ -233,12 +234,6 @@ const readSources = (root, files) => {
 
 /** An opening tag with its attribute text; quoted values may hold `>`. */
 const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
-/** The same tags counted without parsing, as the denominator of the parse. */
-const widgetCounter = (tables) =>
-  new RegExp(
-    `<(?:${[...tables.focusable, ...tables.namedTags].sort().join('|')})(?=[\\s/>])`,
-    'gi',
-  );
 const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
 // ── the platform's tables ──────────────────────────────────────────────────────
@@ -277,8 +272,9 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  * them; a `<details>` with no summary it holds focusable and no engine does, which the
  * virtual summary child below settles. The gate reads `contenteditable` itself, as an
  * attribute beside `tabindex`, because an editing host is a textbox by any other name; the
- * six tags it leaves to axe — the day a template here draws one, the audit on the page will
- * not see it either. One source, one blind spot, and a table upstream to correct rather
+ * three frames fail point 1 for the document they embed (`EMBEDS`), and the other three tags it
+ * leaves to axe — the day a template here draws one, the audit on the page will not see it
+ * either. One source, one blind spot, and a table upstream to correct rather
  * than a list here to remember.
  */
 const ANCHORS = {
@@ -528,9 +524,11 @@ const UNREAD = new Map([['[tabindex]', '']]);
 
 /**
  * The tag scan of one template, each tag joined by its offset to the element the parsed tree
- * holds there (`elements`). What the tree can read, the scan takes from it: the role, whether
- * an expression decides it, whether the element binds both name attributes to the inputs or
- * either, whether it names itself, and the attributes that decide whether a user lands on it
+ * holds there (`elements`). What the tree can read, the scan takes from it: the tag's name
+ * (`names`) — the text, read up to the first character no name holds, gets it wrong where a
+ * namespace or a glued binding follows (`<svg:a href>` is a link, not an `svg`) — the role,
+ * whether an expression decides it, whether the element binds both name attributes to the inputs
+ * or either, whether it names itself, and the attributes that decide whether a user lands on it
  * (`attributes`). The parser has decoded the markup, ignores the case of a name and knows
  * every syntax Angular has for a binding, which a pattern over the text does not
  * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
@@ -551,12 +549,20 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * descend into. The text scanned is the one the tree was parsed from, its comments blanked
  * (`readTree`).
  */
-const readTemplate = (text, tables, elements, attributes, icus, kinds) => {
+const readTemplate = (
+  text,
+  tables,
+  elements,
+  attributes,
+  icus,
+  kinds,
+  names,
+) => {
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
     const element = elements.get(m.index);
     const unread = icus.some(([from, to]) => m.index >= from && m.index < to);
     return {
-      tag: m[1].toLowerCase(),
+      tag: (names.get(m.index) ?? m[1]).toLowerCase(),
       attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
       unread,
       held: kinds.has(m.index),
@@ -590,10 +596,6 @@ const readTemplate = (text, tables, elements, attributes, icus, kinds) => {
     // stand in one, and each takes the group's name with a word of its own (0090, E1 to E3).
     // Point 4 reads these as carriers beside the widgets.
     groups: tags.filter((t) => roleOf(t) === 'group'),
-    parsed: tags.filter(
-      (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
-    ).length,
-    counted: countOf(text, widgetCounter(tables)),
   };
 };
 
@@ -650,6 +652,25 @@ const focusAttributes = (node) =>
   );
 
 /**
+ * How an element draws markup the tree does not hold. A property bound in any syntax, from a
+ * string: `innerHTML` and `outerHTML`, whose sanitizer keeps a link, a `tabindex` stop and a
+ * `<details>` (it drops a `<button>`) — `[innerHtml]` too, which the compiler maps; an attribute
+ * of that name, written or bound through `[attr.]`, draws nothing. And an element embedding a
+ * document of its own (`EMBEDS`), whatever draws it: a `srcdoc` a written value hands over
+ * unsanitized, a page or a `data:` address — a `<frame>` too, which draws one inside a
+ * `<frameset>` a template may hold.
+ */
+const MARKUP = ['innerHTML', 'outerHTML'];
+const EMBEDS = new Set(['embed', 'frame', 'iframe', 'object']);
+
+/**
+ * An element's name as the parser reads it, its namespace off: `<svg:a>` is an `a` (the parser's
+ * `:svg:a`), and `<input(input)="…">` an element named `input(input)`, a binding glued to the
+ * name being part of it — one the compiler refuses (`NG8001`) and the DOM makes no input of.
+ */
+const localName = (name) => splitNsName(name)[1];
+
+/**
  * The tags of a template as the compiler's own visitor reaches them: each element and template
  * with its `focusAttributes`, by the offset it starts at, and the span of each ICU, whose cases
  * Angular renders and the tree does not hold (`readTemplate`). The visitor and not the walk,
@@ -660,15 +681,31 @@ const focusAttributes = (node) =>
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
  * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
  * visitor descends into it, so of two at one offset — an inline template and the element, the
- * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
+ * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
+ * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
+ * the name the scan reads off the text, on which no verdict turns. So is the markup an element
+ * draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it
+ * starts at.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
   kinds = new Map();
+  names = new Map();
+  markup = [];
   icus = [];
   visitElement(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'element');
+    this.names.set(node.sourceSpan.start.offset, localName(node.name));
+    const tag = localName(node.name).toLowerCase();
+    const drawn = [
+      ...MARKUP.filter((name) =>
+        boundOn(node, nameOf(name)).some(setsProperty),
+      ).map((name) => `[${name}]`),
+      ...(EMBEDS.has(tag) ? [`<${tag}>`] : []),
+    ];
+    if (drawn.length)
+      this.markup.push({ offset: node.sourceSpan.start.offset, drawn });
     super.visitElement(node);
   }
   visitTemplate(node) {
@@ -904,9 +941,9 @@ const LEXING = {
  * passed every point. One code unit for one, so that a character outside the basic plane moves no
  * offset.
  *
- * A template the HTML parser reads with errors keeps its text: a comment it finds there may take
- * markup with it (`<a href=//x.example>` opens one that takes the rest of its line, and the tag
- * never ends), and the template is refused as one that does not parse. Angular 22.2 throws on a
+ * A template the HTML parser reads with errors is refused as one that does not parse before
+ * anything reads its text, whatever a comment found there takes with it (`<a href=//x.example>`
+ * opens one that takes the rest of its line, and the tag never ends). Angular 22.2 throws on a
  * comment standing directly in an ICU's case — the build, which hands the same text to the same
  * parser, throws as well — and a throw is read the same way.
  */
@@ -914,17 +951,15 @@ const readTree = (file, content) => {
   let text = content;
   try {
     const html = new HtmlParser().parse(content, file, LEXING);
-    if (!html.errors.length) {
-      const comments = new CommentReader();
-      visitAll(comments, html.rootNodes);
-      text = comments.spans.reduce(
-        (blanked, { start, end }) =>
-          blanked.slice(0, start.offset) +
-          blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
-          blanked.slice(end.offset),
-        content,
-      );
-    }
+    const comments = new CommentReader();
+    visitAll(comments, html.rootNodes);
+    text = comments.spans.reduce(
+      (blanked, { start, end }) =>
+        blanked.slice(0, start.offset) +
+        blanked.slice(start.offset, end.offset).replace(/[^\n]/g, ' ') +
+        blanked.slice(end.offset),
+      content,
+    );
     const { nodes, errors } = parseTemplate(content, file, {
       preserveWhitespaces: false,
     });
@@ -970,6 +1005,8 @@ const readMessages = (file, content, sides) => {
     elements: state.elements,
     attributes: tags.attributes,
     kinds: tags.kinds,
+    names: tags.names,
+    markup: tags.markup,
     icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1150,6 +1187,22 @@ const checkAria = ({
     return component;
   };
   for (const component of components) inherited(component);
+  // What a host block draws into the component's own element, read as a template's is.
+  for (const component of components) {
+    const drawn = MARKUP.filter((name) =>
+      [...component.host.keys()].some(
+        (key) => key.toLowerCase() === `[${name.toLowerCase()}]`,
+      ),
+    );
+    if (drawn.length)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) binds ` +
+          `${drawn.map((name) => `\`[${name}]\``).join(' and ')} in its host block — markup ` +
+          `drawn into its own element, which the tree does not hold and nothing here reads: a ` +
+          `link or a stop drawn there is one no point examines`,
+      );
+  }
 
   const byPath = new Map(templates.map((t) => [t.file, t]));
   const owned = new Set();
@@ -1179,10 +1232,29 @@ const checkAria = ({
     );
 
   for (const template of templates) {
-    // Parsed first, judged second: the scan below takes from the tree which roles are bound
-    // and what makes a stop, and the order of the two verdicts on a broken template stays what
-    // it was.
+    // Parsed first, judged second: the scan below takes from the tree each tag's name, which
+    // roles are bound and what makes a stop. A template the parser refuses is refused for what
+    // the parser says, an unbalanced quote included (`Opening tag "button" not terminated`): the
+    // build hands it the same text, and prettier refuses it too.
     const said = readMessages(template.file, template.content, sides);
+    if (said.errors.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file} does not parse (${said.errors[0].msg}) — nothing of it reaches ` +
+          `the walk or the tag reader, and point 6 would then read a message-free template ` +
+          `and pass it, as points 4, 8 and 9 would the elements they never see`,
+      );
+    // The tree is the denominator of the scan, both ways: a tag it holds the scan must find
+    // (below), and a widget or group the scan finds needs the path only a tag of the tree has
+    // (classification). A count of widget tags over the text stood before both, and once they
+    // stood it had nothing true left to say. What it found and the scan did not was a tag the
+    // tree holds (refused below, by its offset), one in an ICU the scan reads into (refused
+    // below), or text no element is made of: a string a misread `<` runs over, or a `title`,
+    // which Angular renders as text and prettier keeps (`title="press <button> to go"`). What
+    // the scan found and it did not was a name a glued binding or a dot follows (`<input(input)>`,
+    // `<a.b href>`), which the scan now takes from the tree. Markup a string or a frame draws
+    // (`[innerHTML]`, `srcdoc`, a `data:` address) it counted only where the text spelled a
+    // widget's tag, as an unbalanced quote; it is refused below, whatever it spells.
     const read = readTemplate(
       said.text,
       tables,
@@ -1190,23 +1262,11 @@ const checkAria = ({
       said.attributes,
       said.icus,
       said.kinds,
+      said.names,
     );
-    if (read.parsed !== read.counted)
-      throw new AriaError(
-        'denominator',
-        `${template.file}: ${read.counted} named-widget tag(s) in the text, ${read.parsed} ` +
-          `parsed — an unbalanced quote swallows the rest of the file, and every element ` +
-          `after it stops being examined`,
-      );
     byPath.get(template.file).read = read;
     byPath.get(template.file).text = said.text;
 
-    if (said.errors.length)
-      throw new AriaError(
-        'denominator',
-        `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
-          `a message-free template and pass it`,
-      );
     const opening = (offset) => openingAt(said.text, offset);
     const scanned = new Set(read.tags.map((t) => t.offset));
     const unscanned = [...said.attributes.keys()].filter(
@@ -1248,6 +1308,19 @@ const checkAria = ({
           `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
           `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
           `read whole and the tree does not hold`,
+      );
+    if (said.markup.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file} draws markup the tree does not hold — ` +
+          said.markup
+            .map(
+              ({ offset, drawn }) =>
+                `${drawn.join(' and ')} at offset ${offset} (\`${opening(offset)}\`)`,
+            )
+            .join('; ') +
+          ` — and nothing here reads it: a link or a stop drawn there is one no point ` +
+          `examines`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(

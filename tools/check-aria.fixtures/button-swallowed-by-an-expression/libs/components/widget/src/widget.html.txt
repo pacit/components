@@ -1,0 +1,17 @@
+<!-- The reference's trigger, and a retry button beside it under a block whose condition holds
+     a `<`: the tag scan reads `<limit())` as a tag that runs on to the next `>`, swallowing the
+     button, which the parsed tree holds as it is. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+@if (count() <limit()) {
+<button class="pct-widget__retry" type="button" [attr.aria-label]="retryLabel()">Retry</button>
+}
