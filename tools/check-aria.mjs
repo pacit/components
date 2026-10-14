@@ -825,11 +825,11 @@ const exclusive = (a, b) =>
  * Every comment of a template, as the HTML parser reads it, by the span it covers: a `<!-- … -->`
  * wherever it stands, and the block or line comment Angular 22 reads inside a start tag, opened
  * by a slash and a star or by two slashes (`<div // the frame` and a line break). Off the
- * HTML tree, lexed as `parseTemplate` lexes it — blocks, `@let` and ICUs, so that a `<!--` in a
- * block's condition, a `@let` string or an ICU's case value is no comment here either — and not
- * off that function's `commentNodes`: its transform never hands over a comment standing between
- * two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the scan would read
- * what they quote. The base visitor does not enter an ICU's cases; this one does.
+ * HTML tree, tokenized as `parseTemplate` tokenizes it — blocks, `@let` and ICUs, so that a
+ * `<!--` in a block's condition, a `@let` string or an ICU's case value is no comment here
+ * either — and not off that function's `commentNodes`: its transform never hands over a comment
+ * standing between two cases of an `@switch`, nor any under `ngNonBindable` or in an ICU, and the
+ * scan would read what they quote. The base visitor does not enter an ICU's cases; this one does.
  */
 class CommentReader extends RecursiveVisitor {
   spans = [];

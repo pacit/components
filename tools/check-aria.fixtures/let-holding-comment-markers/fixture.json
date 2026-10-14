@@ -1,5 +1,5 @@
 {
   "point": 3,
   "check": "inputs",
-  "$reason": "`comment-markers-in-attributes` with the markers in two `@let` strings: `@let opening = '<!--';` before the button and `@let closing = '-->';` after it. The parser reads both as expressions, and so must the reading that finds the comments: lexed without `@let`, as `parseTemplate` does not lex it, the two markers make a comment that takes the button out of the scan and not out of the tree, and it fails point 1. A pattern for the comments deleted it from both, and it passed."
+  "$reason": "`comment-markers-in-attributes` with the markers in two `@let` strings: `@let opening = '<!--';` before the button and `@let closing = '-->';` after it. The parser reads both as expressions, and so must the reading that finds the comments: tokenized without `@let`, as `parseTemplate` does not tokenize it, the two markers make a comment that takes the button out of the scan and not out of the tree, and it fails point 1. A pattern for the comments deleted it from both, and it passed."
 }
