@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "A comment standing directly in an ICU's case. Angular 22.2's parser throws on it (`Cannot read properties of null`), and the build with it; the gate reads the throw as a template that does not parse instead of throwing it on, or of reading the template as one with nothing in it."
+}

@@ -1,0 +1,1 @@
+<span i18n>{count(), plural, =1 {<!-- the one --> one item} other {many items}}</span>

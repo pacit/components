@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "An arrow drawn outside any icon, inside a link with an unquoted address. Angular 22 reads `//` in a start tag as a comment to the end of the line, so the tag never ends and the arrow is in neither the tree nor the blanked text — only the parser's error says that the template was not read, and the build refuses it on that error."
+}

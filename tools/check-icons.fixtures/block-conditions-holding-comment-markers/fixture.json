@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow outside any icon, inside an `@if` whose condition holds `<!--`, before an `@else if` whose condition holds `-->`. Both are expressions to `parseTemplate`, which tokenizes blocks; a comment reader that did not would take them for a comment around the drawing."
+}
