@@ -1,0 +1,15 @@
+<!-- The reference's group with a unit whose ICU draws only text, a note beside the texts that
+     names itself, and right after the note a count whose ICU draws a stop: the note's text holds
+     `<b's`, which the tag scan reads as a tag whose quote runs on into that ICU and past the
+     stop. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+  <span class="pct-pair__unit">{count(), plural, =1 {item} other {items}}</span>
+  <textarea class="pct-pair__note" [attr.aria-labelledby]="noteNamedBy()">it <b's</textarea>{count(), plural, other {<span class="pct-pair__more" tabindex="0">don't</span>}}
+</div>

@@ -14,9 +14,9 @@
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
- * Points 4, 6, 7 and 9 read the template's real syntax tree (`parseTemplate`): which block
- * excludes which is a question no pattern over `@if` can answer. The two readings are joined
- * by the tag's offset, so an element only one of them found fails point 1.
+ * What an element is, whether a user lands on it and which block excludes which come off the
+ * syntax tree (`parseTemplate`). A tag of the tree the scan or the tag reader misses, a widget or
+ * group the walk gives no path, and a tag the scan finds inside or reads into an ICU fail point 1.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -24,6 +24,8 @@ import {
   BindingType,
   parseTemplate,
   TmplAstForLoopBlock,
+  TmplAstRecursiveVisitor,
+  tmplAstVisitAll,
 } from '@angular/compiler';
 import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
@@ -298,20 +300,22 @@ const contextsWritten = (text, tables) =>
 
 /**
  * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
- * link, `type` on an input, `tabindex` on anything. A bound attribute (`[attr.href]`,
- * `[tabindex]`) stands for a present one, with the value that keeps the element focusable —
- * the WORST case, which is the one a name has to be able to reach. A `disabled` binding is
- * not passed on: axe would read it as "takes no focus", and a control that is sometimes
- * disabled still has to be namable. A `<details>` gets a summary child, because the element
- * a user lands on is the summary — the platform's own when the template draws none — so the
- * tag itself is never the widget.
+ * link, `type` on an input, `tabindex` on anything — as the tag reader takes them off the parsed
+ * tree, a written value decoded and a bound one keyed `[href]`, `[tabindex]` whatever the
+ * syntax (`[tabIndex]`, `bind-attr.tabindex`, `tabindex="{{ … }}"`). A bound attribute stands
+ * for a present one, with the value that keeps the element focusable, over a written one of
+ * the same name, which Angular sets first — the WORST case, which is the one a name has to be
+ * able to reach. A `disabled` binding is not passed on: axe would
+ * read it as "takes no focus", and a control that is sometimes disabled still has to be
+ * namable. A `<details>` gets a summary child, because the element a user lands on is the
+ * summary — the platform's own when the template draws none — so the tag itself is never the
+ * widget.
  */
 const DECIDING = { href: '', type: '', tabindex: '-1' };
 const virtual = (tag, attrs) => {
   const attributes = {};
   for (const [name, fallback] of Object.entries(DECIDING)) {
-    const bound = attrs.has(`[${name}]`) || attrs.has(`[attr.${name}]`);
-    const value = attrs.get(name) ?? (bound ? fallback : undefined);
+    const value = attrs.has(`[${name}]`) ? fallback : attrs.get(name);
     if (value !== undefined) attributes[name] = value;
   }
   const node = new axe.SerialVirtualNode({ nodeName: tag, attributes });
@@ -461,10 +465,11 @@ const isWidget = (tag, attrs, role, tables) =>
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
 const roleOf = (t) => {
   if (t.role !== null) return t.role;
-  if (t.tag === 'input' && t.attrs.get('type')?.toLowerCase() === 'hidden')
+  const node = virtual(t.tag, t.attrs);
+  if (t.tag === 'input' && node.attr('type')?.toLowerCase() === 'hidden')
     return null;
   try {
-    return axe.commons.aria.implicitRole(virtual(t.tag, t.attrs));
+    return axe.commons.aria.implicitRole(node);
   } catch {
     return null;
   }
@@ -482,39 +487,79 @@ const holdsPresentation = (t) =>
  * that is the intent, while a `<button>` there is a control the keyboard reaches and the
  * reader cannot describe. axe answers for the tag and its deciding attributes; an editing
  * host is the one thing the gate answers for itself, because the platform focuses it and
- * axe's table does not know (see the tables above).
+ * axe's table does not know (see the tables above). Bound, it is one key whatever the syntax:
+ * the property is `[contentEditable]` — the compiler maps no `[contenteditable]` onto it, and
+ * its DOM schema knows no property of that name on a `<div>` — and `[attr.contenteditable]`
+ * the attribute.
  */
-const EDITING_HOST = [
-  'contenteditable',
-  '[contenteditable]',
-  '[attr.contenteditable]',
-];
+const EDITING_HOST = ['contenteditable', '[contenteditable]'];
+/** Every attribute `virtual` and `isFocusable` read, as the tag reader collects them. */
+const FOCUS_ATTRIBUTES = [...Object.keys(DECIDING), EDITING_HOST[0]];
 const isFocusable = (tag, attrs) =>
   EDITING_HOST.some((key) => attrs.has(key)) ||
   axe.commons.dom.isFocusable(virtual(tag, attrs));
 
 /**
+ * The opening tag at an offset of the text both readings take, on one line and cut short: what
+ * a refusal shows a reader of the tag it means. The line stands in where no tag opens there,
+ * which no offset the readings report reaches in a template that parses.
+ */
+const openingAt = (content, offset) => {
+  const text = content.replace(COMMENT, '');
+  const tag = new RegExp(OPENING_TAG.source, 'y');
+  tag.lastIndex = offset;
+  return (tag.exec(text)?.[0] ?? text.slice(offset).split('\n')[0])
+    .replace(/\s+/g, ' ')
+    .slice(0, 120);
+};
+
+/** What a tag inside an ICU is read as (`readTemplate`): a stop. */
+const UNREAD = new Map([['[tabindex]', '']]);
+
+/**
  * The tag scan of one template, each tag joined by its offset to the element the parsed tree
  * holds there (`elements`). What the tree can read, the scan takes from it: the role, whether
  * an expression decides it, whether the element binds both name attributes to the inputs or
- * either, and whether it names itself. The parser has decoded the markup, ignores the case of
- * a name and knows every syntax Angular has for a binding, which a pattern over the text does
- * not (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
+ * either, whether it names itself, and the attributes that decide whether a user lands on it
+ * (`attributes`). The parser has decoded the markup, ignores the case of a name and knows
+ * every syntax Angular has for a binding, which a pattern over the text does not
+ * (`lesson-236`). A tag the tree holds no element for (`<ng-template>`) keeps its written
  * role, so that a group there still fails point 1, and binds nothing.
+ *
+ * A tag the tag reader holds nothing for is one of two things, and the tree tells which
+ * (`icus`). Inside an ICU it is markup Angular renders and the tree does not hold — nothing here
+ * can read it, and reading the scan's text instead would make the scan a lexer again — so it is
+ * read as a stop (`UNREAD`), the worst case, and fails point 1 as a widget the walk never
+ * reached does. Anywhere else it is no element of the DOM: a `<style>`, a stylesheet `<link>` or
+ * a `<script>` the compiler takes out, a tag in the text of a `<textarea>` or in a string
+ * (`@let mark = '<b>'`), one the scan reads where the parser sees an expression. Its attributes
+ * make no stop, though its tag or its written role can still make it a widget, which fails
+ * point 1 (`@let mark = '<button>'`). A real tag such a false one swallows is the tree's alone,
+ * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1. A
+ * widget or a group the tag reader holds (`held`) and the walk gives no path fails it too: a
+ * template, which the tree holds as no element, or a tag in a block kind the walk does not
+ * descend into.
  */
-const readTemplate = (content, tables, elements) => {
+const readTemplate = (content, tables, elements, attributes, icus, kinds) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => {
-    const attrs = attributesOf(m[2]);
     const element = elements.get(m.index);
+    const unread = icus.some(([from, to]) => m.index >= from && m.index < to);
     return {
       tag: m[1].toLowerCase(),
-      attrs,
+      attrs: attributes.get(m.index) ?? (unread ? UNREAD : new Map()),
+      unread,
+      held: kinds.has(m.index),
+      template: kinds.get(m.index) === 'template',
+      // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
+      end: m.index + m[0].length,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
       // element.
       offset: m.index,
-      role: element ? element.role : readRole(attrs.get('role')),
+      role: element
+        ? element.role
+        : readRole(attributesOf(m[2]).get(LIVE_ATTRIBUTE)),
       boundRole: element?.boundRole ?? false,
       roleWritten: element?.roleWritten ?? false,
       forwards: element?.forwards ?? false,
@@ -553,6 +598,72 @@ const readTemplate = (content, tables, elements) => {
  * template too and passes for the same reason; nothing here uses one.
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
+
+/**
+ * An attribute written on a node, by the name the DOM gives it and with the value the parser
+ * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
+ * of that name, in whatever syntax. One reading for the walk and the tag reader below.
+ */
+const writtenOn = (node, name) =>
+  (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
+const boundOn = (node, name) =>
+  (node.inputs ?? []).filter(
+    (i) => nameOf(i.name, i.type === BindingType.Property) === name,
+  );
+/**
+ * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
+ * and `isFocusable` read it: a written attribute by its name, with its value, and a bound one as
+ * `[name]`, whatever syntax binds it. A class, a style or an animation binding of the same name
+ * (`[class.tabindex]`) reads as one as well, as it does for a role or a name, and so does a
+ * property binding a component of the library takes as its input (`[tabIndex]` on a tag whose
+ * component declared one): neither reaches the attribute, and nothing here writes either.
+ */
+const focusAttributes = (node) =>
+  new Map(
+    FOCUS_ATTRIBUTES.flatMap((name) => [
+      ...(writtenOn(node, name) === undefined
+        ? []
+        : [[name, writtenOn(node, name)]]),
+      ...(boundOn(node, name).length ? [[`[${name}]`, '']] : []),
+    ]),
+  );
+
+/**
+ * The tags of a template as the compiler's own visitor reaches them: each element and template
+ * with its `focusAttributes`, by the offset it starts at, and the span of each ICU, whose cases
+ * Angular renders and the tree does not hold (`readTemplate`). The visitor and not the walk,
+ * because it knows every kind of node Angular has: a kind the walk does not descend into
+ * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
+ * template is read too, though the tree holds it as no element: a stop written on one fails
+ * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
+ * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
+ * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
+ * visitor descends into it, so of two at one offset — an inline template and the element, the
+ * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
+ */
+class TagReader extends TmplAstRecursiveVisitor {
+  attributes = new Map();
+  kinds = new Map();
+  icus = [];
+  visitElement(node) {
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.kinds.set(node.sourceSpan.start.offset, 'element');
+    super.visitElement(node);
+  }
+  visitTemplate(node) {
+    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.kinds.set(node.sourceSpan.start.offset, 'template');
+    super.visitTemplate(node);
+  }
+  visitContent(node) {
+    this.attributes.set(node.sourceSpan.start.offset, new Map());
+    this.kinds.set(node.sourceSpan.start.offset, 'content');
+    super.visitContent(node);
+  }
+  visitIcu(node) {
+    this.icus.push([node.sourceSpan.start.offset, node.sourceSpan.end.offset]);
+  }
+}
 
 /**
  * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
@@ -637,12 +748,8 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
     // Point 4 takes from the same element what the tag scan cannot read for itself.
-    const written = (name) =>
-      (node.attributes ?? []).find((a) => nameOf(a.name) === name)?.value;
-    const bindings = (name) =>
-      (node.inputs ?? []).filter(
-        (i) => nameOf(i.name, i.type === BindingType.Property) === name,
-      );
+    const written = (name) => writtenOn(node, name);
+    const bindings = (name) => boundOn(node, name);
     // Each name attribute bound to its input, in whatever syntax.
     const taking = NAME_TARGETS.map((name, i) =>
       bindings(name).filter((b) =>
@@ -680,11 +787,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
             aria:
               (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
               (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
-            tabindex:
-              (node.attributes ?? []).some((a) => a.name === 'tabindex') ||
-              (node.inputs ?? []).some((i) =>
-                /^(attr\.)?tabindex$/.test(i.name),
-              ),
+            tabindex: ['tabindex', '[tabindex]'].some((key) =>
+              focusAttributes(node).has(key),
+            ),
           }
         : null;
     if (element?.role !== null && element?.role !== undefined)
@@ -732,13 +837,20 @@ const readMessages = (file, content) => {
     roles: [],
     elements: new Map(),
   };
-  if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
+  const tags = new TagReader();
+  if (!parsed.errors?.length) {
+    walkTemplate(parsed.nodes, [], state);
+    tmplAstVisitAll(tags, parsed.nodes);
+  }
   return {
     messages: state.messages,
     paths: state.paths,
     within: state.within,
     roles: state.roles,
     elements: state.elements,
+    attributes: tags.attributes,
+    kinds: tags.kinds,
+    icus: tags.icus,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -838,9 +950,9 @@ const insideOf = (template, element, tables) => {
  * comes first, because that table read alone forbids a name on an `<a href>`: its `[href]`
  * variant is silent and the default fills in, which axe's own check never reaches, the link
  * being a widget. An address is read as `virtual` reads it, so one an expression may drop
- * counts as there, and one given by a directive (`routerLink`) or a spelling the tag scan does
- * not read counts as absent, which refuses. A written `role="generic"` is no role to `readRole`
- * (axe's `aria-roles` reports it on the page).
+ * counts as there, and one given by a directive (`routerLink`) counts as absent, which
+ * refuses. A written `role="generic"` is no role to `readRole` (axe's `aria-roles` reports it
+ * on the page).
  */
 const forbids = (role) =>
   NAME_TARGETS.some((name) =>
@@ -940,10 +1052,18 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     );
 
   for (const template of templates) {
-    // Parsed first, judged second: the scan below takes from the tree which roles are bound,
-    // and the order of the two verdicts on a broken template stays what it was.
+    // Parsed first, judged second: the scan below takes from the tree which roles are bound
+    // and what makes a stop, and the order of the two verdicts on a broken template stays what
+    // it was.
     const said = readMessages(template.file, template.content);
-    const read = readTemplate(template.content, tables, said.elements);
+    const read = readTemplate(
+      template.content,
+      tables,
+      said.elements,
+      said.attributes,
+      said.icus,
+      said.kinds,
+    );
     if (read.parsed !== read.counted)
       throw new AriaError(
         'denominator',
@@ -958,6 +1078,48 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         'denominator',
         `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
           `a message-free template and pass it`,
+      );
+    const opening = (offset) => openingAt(template.content, offset);
+    const scanned = new Set(read.tags.map((t) => t.offset));
+    const unscanned = [...said.attributes.keys()].filter(
+      (offset) => !scanned.has(offset),
+    );
+    if (unscanned.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the parsed tree holds a tag at offset ${unscanned[0]} ` +
+          `(\`${opening(unscanned[0])}\`), and the tag scan never found it — a \`<\` before ` +
+          `it, in an expression, a string or a text, reads to the scan as a tag that swallows ` +
+          `this one, and points 4 and 8, which start from the scan, would not examine it`,
+      );
+    // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
+    // met. On a reader that reaches every kind of node this never fires; it is what holds that
+    // reach — `@for` and its `@empty`, `@switch`, `@defer` and its side blocks, a plain
+    // `<ng-template>`, a projection's fallback — on the library and the reference.
+    const unreadByTheReader = read.tags.filter(
+      (t) => said.paths.has(t.offset) && !said.kinds.has(t.offset),
+    );
+    if (unreadByTheReader.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the walk reached a tag at offset ${unreadByTheReader[0].offset} ` +
+          `(\`${opening(unreadByTheReader[0].offset)}\`) and the tag reader did not — what ` +
+          `makes it a stop would go unread`,
+      );
+    const runInto = said.icus
+      .map(([from]) => ({
+        from,
+        tag: read.tags.find((t) => t.offset < from && from < t.end),
+      }))
+      .find(({ tag }) => tag);
+    if (runInto)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the tag scan reads the tag at offset ${runInto.tag.offset} ` +
+          `(\`${opening(runInto.tag.offset)}\`) on into the ICU at offset ${runInto.from} — ` +
+          `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
+          `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
+          `read whole and the tree does not hold`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
@@ -1017,9 +1179,20 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       if (path === undefined)
         throw new AriaError(
           'denominator',
-          `${component.templatePath}: an element <${element.tag}> at offset ${element.offset} ` +
-            `is in the tag scan and not in the parsed tree — point 4 asks which elements can ` +
-            `stand in the DOM together, and about this one it would have nothing to ask`,
+          `${component.templatePath}: a tag at offset ${element.offset} ` +
+            `(\`${openingAt(template.content, element.offset)}\`) ` +
+            (!element.held
+              ? `is in the tag scan and not in the parsed tree — `
+              : element.template
+                ? `is a template, which the tree holds as no element, so the walk gives it no ` +
+                  `path — `
+                : `is in the parsed tree, and the walk never reached it — a block kind it does ` +
+                  `not descend into; `) +
+            (element.unread
+              ? `it stands inside an ICU, which the tree holds as no elements, so nothing here ` +
+                `reads what it is`
+              : `point 4 asks which elements can stand in the DOM together, and about this ` +
+                `one it would have nothing to ask`),
         );
       element.path = path;
     }

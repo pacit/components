@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a way to land on it",
+  "$reason": "`wrapper-with-aria-and-no-role` with the wrapper kept in by a stop instead of ARIA: a role-less `<div>` between the listbox and an option, `[tabIndex]=\"-1\"` on it. axe's `aria-required-children` looks through a role-less element unless it carries a global ARIA attribute or takes focus, so this one owns the option and a listbox may not own it. Point 9 read the stop off the tree by its literal names — an attribute `tabindex`, an input `tabindex` or `attr.tabindex`, a name the parser never gives one — so the DOM property passed, and so did `TABINDEX`. It reads the same keys as `isFocusable` now."
+}

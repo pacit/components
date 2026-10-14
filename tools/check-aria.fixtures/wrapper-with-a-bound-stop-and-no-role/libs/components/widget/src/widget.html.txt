@@ -1,0 +1,23 @@
+<!-- The reference's trigger, and its panel with the heading's group wrapper made a stop by the
+     DOM property instead of a role: nothing an option may stand in. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+@if (open()) {
+<div class="pct-widget__panel" role="listbox">
+  <div [tabIndex]="-1">
+    <div class="pct-widget__heading">Nearby</div>
+    <div role="option">Poland</div>
+  </div>
+  <div role="option">Anywhere</div>
+</div>
+}

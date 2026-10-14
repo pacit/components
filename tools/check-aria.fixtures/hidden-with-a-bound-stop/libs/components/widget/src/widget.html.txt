@@ -1,0 +1,10 @@
+<div class="pct-widget__surface"></div>
+<span
+  class="pct-widget__retry"
+  role="button"
+  [tabIndex]="0"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  Retry
+</span>

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its role prohibits a name",
+  "$reason": "The reference's `role=\"region\"` on a `<div>`, a second `role=\"none\"` written after the name bindings. Angular keeps both attributes and sets each in turn, so the DOM ends with `none`, a role ARIA forbids a name, on a tag that forbids one as well. The role was read off the tree by the first of the two, a region taking the name, and the case passed; `written` takes the last now, for the role and the names as for a stop."
+}

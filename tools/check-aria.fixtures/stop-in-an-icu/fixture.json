@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree — it stands inside an ICU",
+  "$reason": "A stop inside an ICU case: a `<span>` whose `tabindex` is interpolated, which Angular compiles to a binding and renders. The template parses, and the tree holds the case as an ICU with no element in it, so nothing here can read the span: inside an ICU's span in the tree, a tag is read as a stop, the worst case, and fails point 1 with a refusal that says why. Read as empty, as the first reading off the tree had it and as a tag outside an ICU is, the span passed; read off the scan's text, as the second did, its `tabindex` is the text `{{ limit() }}`, no number, and it passed again — as it did on the tag scan before either."
+}

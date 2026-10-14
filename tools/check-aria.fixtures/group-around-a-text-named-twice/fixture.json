@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "A group named by the consumer around two texts, the first named by an `aria-label` written twice: `Hours`, then empty. Angular sets each in turn, so the DOM ends with the empty label and the text names nothing — 0090's E3 for that text. The self-name was read off the tree by the first of the two and the group passed; `written` takes the last now, as the DOM does."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "which name(s) nothing of their own",
+  "$reason": "The reference's hidden input, its type bound as well: `type=\"hidden\"` written, `[type]` deciding. Angular sets the written attribute first and the binding after it, so the input is a text whenever the expression says so — a control of the group's that names nothing. The tag scan let the written value win, read a hidden input in no tree, and passed the group; a bound attribute stands for the worst case over a written one of the same name now."
+}

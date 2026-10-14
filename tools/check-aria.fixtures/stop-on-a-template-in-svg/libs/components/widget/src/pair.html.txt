@@ -1,0 +1,14 @@
+<!-- The reference's pair, and a stop written on an `<svg:ng-template>` inside an icon: a
+     template the tree knows by its local name, which the tag scan reads as an `svg`. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+</div>
+<svg class="pct-pair__icon" viewBox="0 0 8 8" aria-hidden="true">
+  <svg:ng-template tabindex="0"></svg:ng-template>
+</svg>

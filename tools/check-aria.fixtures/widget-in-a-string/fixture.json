@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree — point 4 asks",
+  "$reason": "A `<button>` in a string, `@let mark = '<button>'`: a tag the tag scan finds and the parsed tree holds nothing for, outside any ICU. It is no element, and its attributes make no stop, but its tag is a widget's all the same, and a widget with no conditional path fails point 1 as a tag only the scan found — the refusal the tag scan gave it too. Said to be in the parsed tree, as a reading that took every tag for one the tree holds would say, the refusal would send a reader looking for a block the walk does not know."
+}

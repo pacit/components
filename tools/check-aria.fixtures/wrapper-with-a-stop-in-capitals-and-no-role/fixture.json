@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a way to land on it",
+  "$reason": "`wrapper-with-a-bound-stop-and-no-role` with the stop written, and in capitals: `TABINDEX=\"-1\"`, which HTML takes as `tabindex`. axe looks through a role-less element unless it carries a global ARIA attribute or takes focus, so the wrapper owns the option and a listbox may not own it. Point 9 read a written stop by its literal name, `tabindex`, and passed this one; it reads the keys `isFocusable` reads now, the written half and the bound alike."
+}

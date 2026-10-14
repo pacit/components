@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "its children are presentational",
+  "$reason": "A native button handed the name, with a stop inside it: a `<span>` whose `tabindex` is interpolated, `tabindex=\"{{ on() ? 0 : -1 }}\"` — a property binding to Angular, which the parser holds as an input like `[tabIndex]`. The tag scan read it as a written attribute whose value is the text `{{ on() ? 0 : -1 }}`, no number, so axe held the span unfocusable; inside a role whose children are presentational only what a user lands on counts, and the button passed. axe reports `nested-interactive` for a focusable descendant of a button."
+}

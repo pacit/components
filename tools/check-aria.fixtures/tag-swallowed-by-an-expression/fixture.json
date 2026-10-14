@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<span class=\"pct-widget__retry\" role=\"button\" [attr.tabindex]=\"0\" [attr.aria-describedby]=\"retryDescribedBy() || null\" [`), and the tag scan never found it",
+  "$reason": "A `<` in a block's condition, `@if (count() <limit())`: the tag scan reads `<limit())` as a tag running on to the next `>`, and the retry `<span>` after it, a stop a user lands on, vanishes into its attributes; the refusal quotes its opening tag on one line, cut short. The parsed tree holds the span as it is. A tag the tree holds nothing for outside an ICU makes no stop, so the false tag passes; the span is the tree's alone, and the tree's own count of its tags fails point 1. The tag scan used to refuse the false tag for the `[attr.tabindex]` it swallowed; prettier refuses the template as well, and this is the gate's own reason."
+}

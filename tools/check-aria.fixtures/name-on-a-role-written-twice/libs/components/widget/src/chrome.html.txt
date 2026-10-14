@@ -1,0 +1,21 @@
+<!-- The reference's two landmarks, the second with its role written twice: a region first and
+     `none` after it, still handed the name. -->
+@if (sectioned()) {
+<section
+  class="pct-chrome__surface"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <ng-content></ng-content>
+</section>
+} @else {
+<div
+  class="pct-chrome__surface"
+  role="region"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  role="none"
+>
+  <ng-content></ng-content>
+</div>
+}

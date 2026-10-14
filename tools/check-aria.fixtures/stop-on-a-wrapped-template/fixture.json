@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is a template, which the tree holds as no element",
+  "$reason": "`group-not-in-the-tree` with a stop for the role, on an `<ng-template>` a structural directive wraps: `tabindex=\"&#48;\"`, which the parser decodes to `0`, and `*ngIf`, which makes it wrap the template in a second one at the same offset, carrying no attribute of its own. A template is no element and the walk gives it no path, so a stop on one fails point 1, as a group there does — but only if its attributes are read off its node, and off the inner of the two, which the visitor records last. The tag scan, handed the text `&#48;`, passed it; so does a reading that records an element's attributes alone, one that records the template with none, and one that keeps the first node it met at an offset."
+}
