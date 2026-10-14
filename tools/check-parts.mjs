@@ -104,11 +104,12 @@ const HOST_STATIC = new RegExp(
 const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
 
 /**
- * An independent counter: EVERY occurrence of the attribute name in a template, whatever its
- * case. The DOM lowercases an HTML attribute's name, so `DATA-PCT-PART="row"` is a part a
- * consumer's selector matches (measured in Chromium), while the tree and the package both
- * hold it as written — and that spelling passed every point until the count stopped telling
- * the cases apart.
+ * An independent counter: EVERY occurrence of the attribute name in a template outside its
+ * comments, whatever its case. The DOM lowercases an HTML attribute's name, so
+ * `DATA-PCT-PART="row"` is a part a consumer's selector matches (measured in Chromium), while
+ * the tree and the package both hold it as written — and in a template that spelling passed
+ * every point until the count stopped telling the cases apart. (In a `host` block it still
+ * does: `HOST_STATIC` and the package read compare the name as written.)
  */
 const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
@@ -191,9 +192,9 @@ const readSources = (root, files) => {
  * The visitor is the compiler's own and enters every block. That reach is the source read's
  * alone: the package read counts a binding in the text of the template function, and the
  * view of an `@if` or an `@for` is a function of its own, so a part bound inside one never
- * reaches it — measured. An element under a structural directive stands in the tree twice,
- * its attributes and inputs hoisted onto the `Template` as the same objects, so each node is
- * counted once.
+ * reaches it — measured. The attributes and inputs of an element under a structural
+ * directive stand in the tree twice, hoisted onto the `Template` as the same objects, so each
+ * node is counted once.
  */
 class PartReader extends TmplAstRecursiveVisitor {
   parts = [];
@@ -416,7 +417,8 @@ const checkParts = (input) => {
 
   // 2. SET — two independent reads of the same list.
   //
-  //    Read A (above) reads the SOURCES: the text of a template and of a decorator.
+  //    Read A (above) reads the SOURCES: the parsed tree of a template and the text of a
+  //    decorator.
   //    Read B reads the BUILT PACKAGE through JIT, that is, the output of Angular's real
   //    template parser. Were the list to come from the sources alone, a component that
   //    dropped out of the package would still have its parts in the inventory — and the
@@ -493,9 +495,10 @@ const checkParts = (input) => {
 
   // 3. STATICNESS. A name composed at runtime can be neither recorded nor frozen: the
   //    inventory and the snapshot would then be green exactly because they have nothing
-  //    to see. Measured on both sides — in the sources as `[attr.…]`, in the package as an
-  //    occurrence of the attribute name inside the compiled template function (a bound
-  //    attribute does not reach `consts`, only the instruction).
+  //    to see. Measured on both sides — in the sources as a binding of the name (`[attr.…]` in
+  //    a `host` block, any input of it in a template), in the package as an occurrence of
+  //    the attribute name inside the compiled template function (a bound attribute does not
+  //    reach `consts`, only the instruction).
   const bound = [
     ...[...fromSources]
       .filter(([, w]) => w.dynamic)

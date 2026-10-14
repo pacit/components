@@ -625,7 +625,7 @@ compares `libs/components/parts.snapshot.md` with the current inventory, and poi
 the denominator: every decorator and every occurrence of the attribute in a template must be
 recognised, and the list of parts is built **twice** — from the sources and from the built
 package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking)
-**Control:** `tools/check-parts.fixtures/` — 25 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 34 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
