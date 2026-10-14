@@ -81,9 +81,9 @@ before an application ships them.
 ./toast 24420 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 14130 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./tree 12928 ./icon @angular/common,@angular/core
-./wheel-c 9358 ./core @angular/core,@angular/forms/signals
-./wheel-k 9874 ./core @angular/cdk/scrolling,@angular/core,@angular/forms/signals
-./wheel-w 10239 ./core @angular/core,@angular/forms/signals
+./wheel-c 9369 ./core @angular/core,@angular/forms/signals
+./wheel-k 9885 ./core @angular/cdk/scrolling,@angular/core,@angular/forms/signals
+./wheel-w 10250 ./core @angular/core,@angular/forms/signals
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows
