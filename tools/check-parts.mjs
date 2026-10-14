@@ -4,7 +4,7 @@
  * VERSIONED, so a consumer's selector survives an update. They are the one route into a
  * component this library leaves (0013) and the one public API whose change gives no red test.
  *
- *  1. DENOMINATOR: every decorator parsed, base read, template owned, occurrence read,
+ *  1. DENOMINATOR: every decorator parsed, base read, template owned and parsed, occurrence read,
  *  2. SET: the parts read from the sources match those read from the BUILT package,
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
@@ -33,8 +33,10 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { TmplAstRecursiveVisitor, tmplAstVisitAll } from '@angular/compiler';
 
 import { freshInputsFor } from './fresh-inputs.mjs';
+import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -101,15 +103,14 @@ const HOST_STATIC = new RegExp(
 /** `'[attr.data-pct-part]': 'expression()'` — a part name from an expression. */
 const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
 
-/** `data-pct-part="name"` in a template. */
-const TEMPLATE_STATIC = new RegExp(
-  `${ATTRIBUTE}\\s*=\\s*(['"])([^'"]*)\\1`,
-  'g',
-);
-/** `[attr.data-pct-part]="expression"` in a template. */
-const TEMPLATE_DYNAMIC = new RegExp(`\\[attr\\.${ATTRIBUTE}\\]\\s*=`, 'g');
-/** An independent counter: EVERY occurrence of the attribute name in a template. */
-const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'g');
+/**
+ * An independent counter: EVERY occurrence of the attribute name in a template, whatever its
+ * case. The DOM lowercases an HTML attribute's name, so `DATA-PCT-PART="row"` is a part a
+ * consumer's selector matches (measured in Chromium), while the tree and the package both
+ * hold it as written — and that spelling passed every point until the count stopped telling
+ * the cases apart.
+ */
+const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
@@ -174,21 +175,59 @@ const readSources = (root, files) => {
 };
 
 /**
- * A template: the static parts, the number of bindings and a count of all occurrences.
+ * The parts of a template, off the tree `parseTemplate` builds: a written one is a
+ * `TextAttribute`, its value decoded as the package's `consts` carry it (`lab&#101;l` is
+ * `label`), and a bound one an input of that name — `[attr.…]`, `bind-attr.…` and `[…]`
+ * alike. A pattern over the text stood here, a second lexer (`lesson-236`): a part quoted in
+ * a comment or a `@let` string was a part to it, `bind-attr.data-pct-part="x()"` a part
+ * named `x()`, an unquoted value nothing it could read.
  *
  * A value with interpolation (`data-pct-part="{{name()}}"`) is a binding even though it
- * looks like a literal — measured, not assumed: Angular emits it into `consts` as
- * `[3, 'data-pct-part']`, that is, after the bindings marker, and writes the attribute
- * name into the body of the template function. Without that distinction the scanner would
- * enter a part named `{{name()}}` into the inventory, and point 3 would never see it.
+ * looks like a literal, and the tree holds it as one — measured, not assumed: Angular emits
+ * it into `consts` as `[3, 'data-pct-part']`, that is, after the bindings marker, and writes
+ * the attribute name into the body of the template function. Read as a literal, it would be
+ * a part named `{{name()}}` in the inventory, and point 3 would never see it.
+ *
+ * The visitor is the compiler's own and enters every block. That reach is the source read's
+ * alone: the package read counts a binding in the text of the template function, and the
+ * view of an `@if` or an `@for` is a function of its own, so a part bound inside one never
+ * reaches it — measured. An element under a structural directive stands in the tree twice,
+ * its attributes and inputs hoisted onto the `Template` as the same objects, so each node is
+ * counted once.
  */
-const readTemplate = (content) => {
-  const hits = [...content.matchAll(TEMPLATE_STATIC)].map((m) => m[2]);
-  const interpolated = hits.filter((w) => w.includes('{{'));
+class PartReader extends TmplAstRecursiveVisitor {
+  parts = [];
+  dynamic = 0;
+  seen = new Set();
+  first(node) {
+    if (node.name !== ATTRIBUTE || this.seen.has(node)) return false;
+    this.seen.add(node);
+    return true;
+  }
+  visitTextAttribute(attribute) {
+    if (this.first(attribute)) this.parts.push(attribute.value);
+  }
+  visitBoundAttribute(input) {
+    if (this.first(input)) this.dynamic++;
+  }
+}
+
+/**
+ * A template: the parser's errors, the static parts, the number of bindings, and a count of
+ * every occurrence over the text `readTree` hands back, each comment blanked — what a
+ * comment quotes is no markup to the build, and so none to the count. Anything else that
+ * spells the name (text, another attribute's value, an expression's string, the case of an
+ * ICU, where the tree holds no element) is counted and not read, and point 1 refuses it.
+ */
+const readTemplate = ({ file, content }) => {
+  const { nodes, errors, text } = readTree(file, content);
+  const reader = new PartReader();
+  tmplAstVisitAll(reader, nodes);
   return {
-    parts: hits.filter((w) => !w.includes('{{')),
-    dynamic: countOf(content, TEMPLATE_DYNAMIC) + interpolated.length,
-    occurrences: countOf(content, TEMPLATE_COUNTER),
+    errors: errors ?? [],
+    parts: reader.parts,
+    dynamic: reader.dynamic,
+    occurrences: countOf(text, TEMPLATE_COUNTER),
   };
 };
 
@@ -284,9 +323,20 @@ const checkParts = (input) => {
         `every other one.`,
     );
 
-  const scans = new Map(
-    templates.map((s) => [s.file, readTemplate(s.content)]),
-  );
+  const scans = new Map(templates.map((s) => [s.file, readTemplate(s)]));
+  const broken = templates
+    .filter((s) => scans.get(s.file).errors.length)
+    .map((s) => `${s.file}: ${scans.get(s.file).errors[0].msg}`);
+  if (broken.length)
+    throw new PartsError(
+      'denominator',
+      `${broken.length} templates do not parse:\n` +
+        list(broken) +
+        `\n    The parts are read off the tree the parser builds, and a template read ` +
+        `with errors hands it part of the markup or none of it — an address left ` +
+        `unquoted opens a comment that takes a part out of the text and the tree ` +
+        `together. The build refuses the same text.`,
+    );
   const unrecognised = templates
     .map((s) => ({ file: s.file, ...scans.get(s.file) }))
     .filter((s) => s.parts.length + s.dynamic !== s.occurrences);
@@ -302,9 +352,10 @@ const checkParts = (input) => {
               `${s.dynamic} bound, and the attribute name appears ${s.occurrences} times`,
           ),
         ) +
-        `\n    The counter is independent of the scanner precisely for this: a part ` +
-        `written in syntax the regex is blind to is to drop out of the inventory LOUDLY, ` +
-        `not quietly.`,
+        `\n    The counter is independent of the tree precisely for this: the name ` +
+        `written where the tree holds no such attribute or binding — in capitals, which ` +
+        `the DOM still makes a part of, or in a string — is to stop the inventory ` +
+        `LOUDLY, not drop out of it quietly.`,
     );
 
   // Inheritance, resolved before the two reads are compared. What a base's `host` block
@@ -905,7 +956,9 @@ const repoFiles = () =>
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
  * compiler program, so it would fire `check-typecheck` (point 1 — a file with no project).
- * One gate's fixture must not be another's defect.
+ * A template prettier would rewrite or refuse — an unquoted value, a comment in a start tag —
+ * sits there as `*.html.txt` for the same reason, as in `check-icons`. One gate's fixture
+ * must not be another's defect.
  */
 const buildFixture = (name, fx) => {
   const target = mkdtempSync(join(tmpdir(), 'pct-check-parts-'));
@@ -917,7 +970,7 @@ const buildFixture = (name, fx) => {
     });
   for (const path of fx.drop ?? [])
     rmSync(join(target, path), { recursive: true, force: true });
-  for (const file of globSync('**/*.ts.txt', { cwd: target }))
+  for (const file of globSync('**/*.{ts,html}.txt', { cwd: target }))
     renameSync(join(target, file), join(target, file.replace(/\.txt$/, '')));
   return target;
 };
