@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a global ARIA attribute (`aria-hidden`)",
+  "$reason": "`aria-hidden` that hides nothing: `false`, a global attribute like any other, which keeps the role-less wrapper in the tree, and axe names it as a child the listbox may not own (measured, axe 4.13). A reading that took any written `aria-hidden` for one that hides passed it."
+}

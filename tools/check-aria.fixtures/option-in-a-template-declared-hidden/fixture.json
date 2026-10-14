@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"list\"> (list)",
+  "$reason": "An `<ng-template>` declared inside an `aria-hidden` element and stamped in the listbox: the rows render where the outlet stands, unhidden, and the hidden element stays empty (measured at run time). Where an outlet stamps a template is not read here (plan 4.83), so a hidden element above the declaration hides nothing; a reading that took it for the rows' own ancestor passed the option under the `list`."
+}

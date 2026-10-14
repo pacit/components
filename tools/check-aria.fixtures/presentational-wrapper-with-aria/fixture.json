@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "role=\"presentation\"> with a global ARIA attribute (`aria-labelledby`), which overrides it",
+  "$reason": "`wrapper-with-aria-and-no-role` with the role made presentational instead of taken off, by `presentation`, the older of its two names. ARIA's conflict resolution drops a presentational role from an element that carries a global attribute or takes focus, so the wrapper is in the tree and owns the option: axe reports `aria-required-children` (measured, axe 4.13), and Chromium shows a generic named `Nearby` among the listbox's children. Point 9 looked through every presentational role before asking what the element carries, and passed it. A reading that overrode `none` alone took `presentation` for a role of its own and refused the wrapper for the wrong reason."
+}

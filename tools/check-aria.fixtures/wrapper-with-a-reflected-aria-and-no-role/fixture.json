@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a global ARIA attribute (`aria-label`)",
+  "$reason": "`wrapper-with-aria-and-no-role` with the name bound to the element's property: `[ariaLabel]`, whose ARIA reflection sets the attribute `aria-label`, so the wrapper is in the tree and axe names it as a child the listbox may not own. The parser gives the input the property's own name, `ariaLabel`, and point 9 read a binding by a literal `aria-` prefix and passed this one; it reads a property binding by the attribute it reaches now (`nameOf`), as the name readings do."
+}

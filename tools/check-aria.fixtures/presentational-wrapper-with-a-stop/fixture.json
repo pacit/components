@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "role=\"none\"> with a way to land on it, which overrides it",
+  "$reason": "`presentational-wrapper-with-aria` with a stop for the attribute: ARIA's conflict resolution drops a presentational role from an element a user can land on as well, so the wrapper owns the option, and axe reports `aria-required-children` (measured, axe 4.13). A reading that let only a global attribute override the role passed it."
+}

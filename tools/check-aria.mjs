@@ -266,6 +266,10 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  *   `namedTags` — the tags whose implicit role is one of those, which axe holds focusable in
  *                 no variant and which HTML names by no method of its own (`progress`,
  *                 `meter`, `dialog`): announced with a name, and only ARIA can give one.
+ *   `globalAria` — the attributes ARIA lets any element carry (`aria-labelledby`,
+ *                  `aria-describedby`, `aria-live`): the ones that keep an element with no
+ *                  role in the tree, where point 9 reads them — `aria-hidden` too, unless it
+ *                  hides — and the list axe itself asks (`getGlobalAriaAttrs`).
  *
  * What the tables do NOT hold is a fact about axe, measured rather than remembered (three
  * engines, 2026-09-05): `iframe`, `audio` and `video` with `controls`, `embed`, `object`, an
@@ -282,8 +286,12 @@ const ANCHORS = {
   named: 'tablist',
   namedTags: 'progress',
   contexts: 'option',
+  globalAria: 'aria-labelledby',
 };
-/** Roles that are not in the tree at all, so an element wearing one is looked through. */
+/**
+ * Roles that take an element out of the tree, so one wearing them is looked through — unless a
+ * global attribute or a way to land on it overrides them, as point 9 reads it.
+ */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /** Angular's own tags, which never reach the DOM and never stand between two roles. */
 const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
@@ -384,7 +392,8 @@ const platformTables = () => {
   const implicitRoles = new Map(
     Object.entries(implicit).filter(([, role]) => typeof role === 'string'),
   );
-  return { focusable, named, namedTags, contexts, implicitRoles };
+  const globalAria = new Set(axe.commons.standards.getGlobalAriaAttrs());
+  return { focusable, named, namedTags, contexts, implicitRoles, globalAria };
 };
 
 const TABLES = platformTables();
@@ -600,6 +609,9 @@ const readTemplate = (text, tables, elements, attributes, icus, kinds) => {
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
+/** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
+const setsProperty = (input) =>
+  input.type === BindingType.Property || input.type === BindingType.TwoWay;
 /**
  * An attribute written on a node, by the name the DOM gives it and with the value the parser
  * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
@@ -608,9 +620,17 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
 const writtenOn = (node, name) =>
   (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
 const boundOn = (node, name) =>
-  (node.inputs ?? []).filter(
-    (i) => nameOf(i.name, i.type === BindingType.Property) === name,
-  );
+  (node.inputs ?? []).filter((i) => nameOf(i.name, setsProperty(i)) === name);
+/**
+ * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
+ * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`. A property
+ * binding a component of the library takes as its input reads the same way, as it does in
+ * `focusAttributes`: where that component puts it is not read here.
+ */
+const namesOn = (node) => [
+  ...(node.attributes ?? []).map((a) => nameOf(a.name)),
+  ...(node.inputs ?? []).map((i) => nameOf(i.name, setsProperty(i))),
+];
 /**
  * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`
  * and `isFocusable` read it: a written attribute by its name, with its value, and a bound one as
@@ -783,13 +803,22 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
                 bindings(name).length > 0,
             ),
             // What keeps a role-less element from being looked through, in axe's own
-            // reading of `aria-required-children`: a global ARIA attribute, or a way to land
-            // on it. Static or bound — a binding says the attribute exists in some state.
-            aria:
-              (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
-              (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
-            tabindex: ['tabindex', '[tabindex]'].some((key) =>
-              focusAttributes(node).has(key),
+            // reading of `aria-required-children`: a global ARIA attribute among these, or a
+            // way to land on it. Static or bound — a binding says the attribute exists in
+            // some state.
+            names: namesOn(node),
+            // Out of the tree with all it holds, the way axe reads the value; bound, it may
+            // be absent. Angular's own tags reach no DOM to hide.
+            ariaHidden:
+              !TRANSPARENT_TAGS.has(node.name.toLowerCase()) &&
+              written('aria-hidden')?.trim().toLowerCase() === 'true' &&
+              bindings('aria-hidden').length === 0,
+            // A way to land on it, as axe decides it: the line `aria-required-children`
+            // draws, which an editing host does not cross (measured, axe 4.13). Read off the
+            // template, as for points 4 and 8: an `href` a directive's host binding sets
+            // (`routerLink`) is not in it.
+            focusable: axe.commons.dom.isFocusable(
+              virtual(node.name.toLowerCase(), focusAttributes(node)),
             ),
           }
         : null;
@@ -797,11 +826,18 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       state.roles.push({ ...element, ancestors });
     if (element && element.offset !== undefined)
       state.elements.set(element.offset, element);
+    // An `<ng-template>` is stamped where an outlet stands, which the walk does not read (plan
+    // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for.
+    const stamped = node.tagName?.split(':').pop() === 'ng-template';
     walkTemplate(
       node.children ?? [],
       path,
       state,
-      element ? [element, ...ancestors] : ancestors,
+      element
+        ? [element, ...ancestors]
+        : stamped
+          ? ancestors.map((a) => ({ ...a, ariaHidden: false }))
+          : ancestors,
     );
   }
 };
@@ -1045,10 +1081,10 @@ const prohibitsAName = (t) => {
 const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
-  // nothing and pass every template as widget-free; and each holds the entry that named it
-  // when it was a list here — a table that lost one is either a reading this gate has
-  // stopped making or a fact about the platform that moved, and both are a verdict to
-  // reach rather than a silence.
+  // nothing and pass every template as widget-free; and each holds an entry a prepared input
+  // stands on — for the first three, the one that named it when it was a list here. A table
+  // that lost one is either a reading this gate has stopped making or a fact about the
+  // platform that moved, and both are a verdict to reach rather than a silence.
   if (!tables)
     throw new AriaError(
       'denominator',
@@ -1059,10 +1095,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     if (!tables[table]?.has(anchor))
       throw new AriaError(
         'denominator',
-        `the \`${table}\` table read from axe-core holds no \`${anchor}\` — the entry that ` +
-          `named this table when it was a list here, and the one a prepared input still ` +
-          `stands on. Either the read stopped reading or the platform's table moved; ` +
-          `decide which before anything below is believed`,
+        `the \`${table}\` table read from axe-core holds no \`${anchor}\` — an entry a ` +
+          `prepared input stands on. Either the read stopped reading or the platform's ` +
+          `table moved; decide which before anything below is believed`,
       );
   if (components.length !== counted)
     throw new AriaError(
@@ -1667,8 +1702,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 9. a role stands in the context it requires ──────────────────────────
   // The relation itself, read off the template: the first ancestor with a role — written, or
   // the platform's own for the tag — either IS the context the role requires or is the
-  // defect. Generic elements, `presentation`/`none` and Angular's containers are looked
-  // through. Where the template runs out, the host answers, and a host with no role hands the
+  // defect. Angular's containers are looked through, and so are generic elements and
+  // `presentation`/`none` with no global attribute and no way to land on them; a role an
+  // `aria-hidden` takes out of the tree is not asked at all. Where the template runs out, the host answers, and a host with no role hands the
   // question to the consumer's template — reported as such, because a static reader that
   // guessed there would be passing on a relation nobody has seen.
   let examined = 0;
@@ -1681,6 +1717,8 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
     for (const element of byPath.get(template.file).roles) {
       const required = tables.contexts.get(element.role);
       if (!required) continue;
+      // A role an `aria-hidden` takes out of the tree needs no owner, and axe asks it for none.
+      if ([element, ...element.ancestors].some((e) => e.ariaHidden)) continue;
       examined++;
       let settled = false;
       for (const ancestor of element.ancestors) {
@@ -1693,24 +1731,33 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
               `template — a role that requires a context (${contextOf(element.role)}) ` +
               `wants an owner a reader of the source can see`,
           );
-        const role =
-          ancestor.role ?? tables.implicitRoles.get(ancestor.tag) ?? null;
-        if (TRANSPARENT_ROLES.has(role)) continue;
+        // Looked through — unless it carries ARIA or takes focus, which is the line axe draws:
+        // such an element is in the tree, and a listbox may not own it. The select's own
+        // measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper that
+        // keeps its `aria-labelledby`. A presentational role gives way to either (ARIA's
+        // conflict resolution), and the element is what its tag makes it.
+        const global = ancestor.names.find((name) =>
+          tables.globalAria.has(name),
+        );
+        const held = global
+          ? `a global ARIA attribute (\`${global}\`)`
+          : ancestor.focusable
+            ? 'a way to land on it'
+            : null;
+        const implicit = tables.implicitRoles.get(ancestor.tag) ?? null;
+        const written = ancestor.role ?? implicit;
+        const overridden = TRANSPARENT_ROLES.has(written);
+        if (overridden && held === null) continue;
+        const role = overridden ? implicit : written;
         if (role === null) {
-          // Looked through — unless it carries ARIA or takes focus, which is the line axe
-          // draws: such an element is in the tree, and a listbox may not own it. The select's
-          // own measured case (`lesson-65`) is this one: `role="group"` taken off a wrapper
-          // that keeps its `aria-labelledby`.
-          const held = ancestor.aria
-            ? 'an ARIA attribute'
-            : ancestor.tabindex || tables.focusable.has(ancestor.tag)
-              ? 'a way to land on it'
-              : null;
           if (held === null) continue;
           throw new AriaError(
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-              `<${ancestor.tag}> with no role and ${held} — such an element is not looked ` +
+              (overridden
+                ? `<${ancestor.tag} role="${written}"> with ${held}, which overrides it`
+                : `<${ancestor.tag}> with no role and ${held}`) +
+              ` — such an element is not looked ` +
               `through, so it is what owns the \`${element.role}\`, and nothing but ` +
               `${contextOf(element.role)} may. The audit reports it as a critical ` +
               `\`aria-required-children\` naming the wrapper, on a page that opens the ` +
@@ -1725,7 +1772,9 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
         throw new AriaError(
           'context',
           `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}), ` +
+            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}` +
+            (overridden ? `, the \`${written}\` overridden by ${held}` : '') +
+            `), ` +
             `and nothing but ${contextOf(element.role)} may stand between a ` +
             `\`${element.role}\` and its owner — axe reports this as a critical ` +
             `\`aria-required-children\` where it knows the role in between (it reads the ` +
@@ -1854,7 +1903,10 @@ const tablesFor = (fx) => {
   if (!('tables' in fx)) return TABLES;
   if (fx.tables === null) return null;
   const tables = Object.fromEntries(
-    Object.entries(TABLES).map(([name, set]) => [name, new Set(set)]),
+    Object.entries(TABLES).map(([name, table]) => [
+      name,
+      table instanceof Map ? new Map(table) : new Set(table),
+    ]),
   );
   for (const [name, entries] of Object.entries(fx.tables.drop ?? {}))
     for (const entry of entries) tables[name]?.delete(entry);

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"list\"> (list)",
+  "$reason": "An `aria-hidden` on an `<ng-container>`, which renders as a comment: the attribute reaches no element, and the `list` and its option are in the tree under the listbox (measured at run time). A reading that took an Angular container's `aria-hidden` for one that hides passed it."
+}

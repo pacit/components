@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "a global ARIA attribute (`aria-labelledby`)",
+  "$reason": "`wrapper-with-aria-and-no-role` with the attribute in capitals: `ARIA-LABELLEDBY`, which HTML takes as `aria-labelledby` and axe names the wrapper by, at critical. The parser keeps the case it was written in, and point 9 read an attribute by a literal `aria-` prefix, so it looked through the wrapper and passed this one; it reads the name the DOM gives it now, as the role and the name readings do."
+}
