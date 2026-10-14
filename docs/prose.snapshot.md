@@ -62,6 +62,7 @@ fresh-inputs.mjs 0 0 0
 markdown-fences.mjs 0 12 163
 release.mjs 6 18 160
 restore-dictionaries.mjs 0 12 128
+template-comments.mjs 0 0 0
 workflow-targets.mjs 4 16 203
 ```
 
