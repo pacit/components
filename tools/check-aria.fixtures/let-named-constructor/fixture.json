@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, the option standing directly in it, its text held in an `@let` named `constructor` — a template `ngc` compiles, strict templates and full compilation, as it does `@let __proto__` and `@let Constructor`. The walk took every node with a string `name` for an element, and asked axe whether a tag named for the variable is one a user lands on: axe looks the name up in a table every object answers `constructor` and `__proto__` from, and threw (`nodeType has to be a number`). The run died before any point was asked, instead of refusing the option on point 9. An `@let` draws nothing and is read as nothing."
+}

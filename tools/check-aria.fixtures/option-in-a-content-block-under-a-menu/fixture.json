@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an `@content` block at offset",
+  "$reason": "The reference's panel made a menu, one of its options standing in an `@content(optgroup)` block. Angular 22.2 builds an `@content` block only as a direct child of a foreign component (`foreignImports`), which places what it holds where its own render function puts it, and refuses one anywhere else: `NG8026` from `ngc`, with the type check and without. The walk took every node with a string `name` for an element and read the block as an `<optgroup>`, a group an option may stand in, so the option under the menu passed, where the same panel without the block is refused on point 9. Read through instead, the block would put the option in the menu, which no foreign component promises. The block is refused for itself."
+}

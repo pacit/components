@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "draws markup the tree does not hold — [innerHTML] at offset",
+  "$reason": "The reference's marker holding an `@content(constructor)` block beside a note it draws from a string (`[innerHTML]`). The walk took the block for an element named `constructor`, and axe, asked whether a user lands on it, looks the name up in a table every object answers `constructor` from, and threw: the run died on the walk, which every point reads, before point 1 could refuse the template. The refusal it gets is the markup's, which point 1 asks ahead of the block's: what the case holds is that the walk reads a block as no element, and reaches a verdict at all — `option-in-a-content-block-under-a-menu` holds the block's own refusal."
+}
