@@ -9,7 +9,9 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   form,
   FormField,
+  minDate,
   required,
+  type SchemaPathTree,
   type ValidationError,
 } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
@@ -17,7 +19,11 @@ import { PctDay } from '@pacit/components/date';
 import { PctField } from '@pacit/components/field';
 
 import { PctDateTime } from './datetime';
-import { PctDatetime, PctDateTimePredicate } from './datetime-field';
+import {
+  PctDatetime,
+  pctDateTimeBounds,
+  PctDateTimePredicate,
+} from './datetime-field';
 
 const dayText = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector(
@@ -1568,5 +1574,376 @@ describe('PctDatetime — the forms that bind it', () => {
     f.componentInstance.value.set('2026-12-01T13:05+01:00');
     await settle(f);
     expect(dayText(f).value).toBe('');
+  });
+});
+
+/**
+ * `pctDateTimeBounds` — the rule a signal form has for a `PctDateTime` bound, which Angular's
+ * `min()` / `max()` cannot take, nor its `minDate()` / `maxDate()` (the last case says why), and
+ * the compiler refuses as an attribute beside `[formField]` (`NG8022`). The platform's `MIN` /
+ * `MAX` point at a key of the field's own type, and the directive reads the bound through them
+ * into the field's inputs.
+ */
+describe('PctDatetime — bounds from a signal form (pctDateTimeBounds)', () => {
+  type Model = { startsAt: PctDateTime | null };
+
+  async function bounded(
+    startsAt: PctDateTime | null,
+    rules: (p: SchemaPathTree<Model>) => void,
+  ) {
+    @Component({
+      imports: [PctDatetime, FormField],
+      template: `<pct-datetime [formField]="f.startsAt" locale="en-GB" />`,
+    })
+    class Signal {
+      readonly model = signal<Model>({ startsAt });
+      readonly f = form(this.model, rules);
+    }
+    const f = await render(Signal);
+    const datetime = f.debugElement.children[0]
+      .componentInstance as PctDatetime;
+    const field = () => f.componentInstance.f.startsAt();
+    const set = async (value: PctDateTime | null) => {
+      f.componentInstance.model.set({ startsAt: value });
+      await settle(f);
+    };
+    return { f, datetime, field, set };
+  }
+
+  const kinds = (errors: readonly ValidationError[]) =>
+    errors.map((e) => e.kind);
+
+  it('hands the bounds to the field, and the calendar and the columns walk inside them', async () => {
+    const { f, datetime, field } = await bounded('2026-12-02T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-02T09:00',
+        max: '2026-12-04T17:00',
+      });
+    });
+    expect([datetime.min(), datetime.max()]).toEqual([
+      '2026-12-02T09:00',
+      '2026-12-04T17:00',
+    ]);
+    expect([field().min?.(), field().max?.()]).toEqual([
+      '2026-12-02T09:00',
+      '2026-12-04T17:00',
+    ]);
+
+    await open(f);
+    expect(dayIn('1 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    expect(dayIn('2 December 2026')?.hasAttribute('aria-disabled')).toBe(false);
+    expect(dayIn('4 December 2026')?.hasAttribute('aria-disabled')).toBe(false);
+    expect(dayIn('5 December 2026')?.getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    // The bound's time on the bound's own day.
+    expect(takeable(columnIn('hour'))[0]).toBe('09');
+    expect(takeable(columnIn('hour'))).toHaveLength(15);
+  });
+
+  it('grades a datetime outside, and none on a bound in either shape, nor an empty field', async () => {
+    const { field, set } = await bounded('2026-12-02T08:59', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-02T09:00',
+        max: '2026-12-04T17:00',
+      });
+    });
+    expect(field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minDateTime',
+        minDateTime: '2026-12-02T09:00',
+      }),
+    ]);
+    expect(field().errors()[0]).not.toHaveProperty('message');
+
+    // The day carries: the hour before is the day before.
+    await set('2026-12-01T23:00');
+    expect(kinds(field().errors())).toEqual(['minDateTime']);
+
+    await set('2026-12-04T17:00:01');
+    expect(field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'maxDateTime',
+        maxDateTime: '2026-12-04T17:00',
+      }),
+    ]);
+
+    for (const inside of [
+      '2026-12-02T09:00',
+      '2026-12-02T09:00:00',
+      '2026-12-04T17:00:00',
+      '2026-12-03T00:00',
+      null,
+    ]) {
+      await set(inside);
+      expect(field().errors()).toEqual([]);
+    }
+  });
+
+  it('has no window: a datetime between a reversed pair is under and over, as the platform reads it (0090, A8)', async () => {
+    const { field, set } = await bounded('2026-12-02T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-02T22:00',
+        max: '2026-12-02T06:00',
+      });
+    });
+    expect(kinds(field().errors())).toEqual(['minDateTime', 'maxDateTime']);
+    await set('2026-12-02T23:00');
+    expect(kinds(field().errors())).toEqual(['maxDateTime']);
+    await set('2026-12-02T05:00');
+    expect(kinds(field().errors())).toEqual(['minDateTime']);
+  });
+
+  it('writes one message on every error, or one written from the error', async () => {
+    const one = await bounded('2026-11-30T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-01T09:00',
+        message: 'During the conference',
+      });
+    });
+    expect(one.field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minDateTime',
+        minDateTime: '2026-12-01T09:00',
+        message: 'During the conference',
+      }),
+    ]);
+
+    const each = await bounded('2026-12-04T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-01T09:00',
+        max: '2026-12-03T18:00',
+        message: (e) =>
+          e.kind === 'minDateTime'
+            ? `From ${e.minDateTime}`
+            : `Until ${e.maxDateTime}`,
+      });
+    });
+    expect(each.field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'maxDateTime',
+        message: 'Until 2026-12-03T18:00',
+      }),
+    ]);
+    // The message reaches the field's one message line once the field is touched.
+    await leave(each.f, timeText(each.f), null);
+    expect(errorOf(each.f)).toBe('Until 2026-12-03T18:00');
+  });
+
+  it('takes a bound from another field, and moves with it — beside a fixed one in the same rule', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      imports: [PctDatetime, FormField],
+      template: `<pct-datetime [formField]="f.endsAt" />`,
+    })
+    class Signal {
+      readonly model = signal<{
+        startsAt: PctDateTime | null;
+        endsAt: PctDateTime | null;
+      }>({ startsAt: '2026-12-01T09:00', endsAt: '2026-12-02T12:00' });
+      readonly f = form(this.model, (p) => {
+        pctDateTimeBounds(p.endsAt, {
+          min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined,
+          max: '2026-12-03T18:00',
+        });
+      });
+    }
+    const f = await render(Signal);
+    const datetime = f.debugElement.children[0]
+      .componentInstance as PctDatetime;
+    const endsAt = () => f.componentInstance.f.endsAt();
+    const start = async (startsAt: PctDateTime | null) => {
+      f.componentInstance.model.update((m) => ({ ...m, startsAt }));
+      await settle(f);
+    };
+    expect([datetime.min(), datetime.max()]).toEqual([
+      '2026-12-01T09:00',
+      '2026-12-03T18:00',
+    ]);
+    expect(endsAt().errors()).toEqual([]);
+
+    await start('2026-12-02T14:00');
+    expect(datetime.min()).toBe('2026-12-02T14:00');
+    expect(endsAt().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minDateTime',
+        minDateTime: '2026-12-02T14:00',
+      }),
+    ]);
+
+    // A start past the fixed end is no window across it: the form refuses every end, and the
+    // field walks without bounds and warns of nothing — the slip is the data's, not the code's.
+    await start('2026-12-04T09:00');
+    expect([datetime.min(), datetime.max()]).toEqual([undefined, undefined]);
+    expect(kinds(endsAt().errors())).toEqual(['minDateTime']);
+    expect(warn).not.toHaveBeenCalled();
+
+    // An empty start is no bound.
+    await start(null);
+    expect([datetime.min(), datetime.max()]).toEqual([
+      undefined,
+      '2026-12-03T18:00',
+    ]);
+    expect(endsAt().errors()).toEqual([]);
+    warn.mockRestore();
+  });
+
+  it('reads a bound that is not a datetime as no bound at all', async () => {
+    const { datetime, field } = await bounded('2026-12-02T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-01 09:00',
+        max: () => '2026-12-01T09:00+01:00',
+      });
+    });
+    expect([datetime.min(), datetime.max()]).toEqual([undefined, undefined]);
+    expect(field().errors()).toEqual([]);
+  });
+
+  it('with two rules the field walks their intersection, and each rule grades its own', async () => {
+    const wide = (p: SchemaPathTree<Model>) =>
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-01T00:00',
+        max: '2026-12-31T23:59',
+      });
+    const narrow = (p: SchemaPathTree<Model>) =>
+      pctDateTimeBounds(p.startsAt, {
+        min: '2026-12-10T09:00',
+        max: '2026-12-10T17:00',
+      });
+
+    for (const order of [
+      [wide, narrow],
+      [narrow, wide],
+    ]) {
+      const { datetime, field, set } = await bounded(
+        '2027-01-01T00:00',
+        (p) => {
+          required(p.startsAt);
+          for (const rule of order) rule(p);
+        },
+      );
+      expect([datetime.min(), datetime.max()]).toEqual([
+        '2026-12-10T09:00',
+        '2026-12-10T17:00',
+      ]);
+      expect(field().errors()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: 'maxDateTime',
+            maxDateTime: '2026-12-31T23:59',
+          }),
+          expect.objectContaining({
+            kind: 'maxDateTime',
+            maxDateTime: '2026-12-10T17:00',
+          }),
+        ]),
+      );
+      expect(field().errors()).toHaveLength(2);
+
+      await set('2026-12-10T08:00');
+      expect(field().errors()).toEqual([
+        expect.objectContaining({
+          kind: 'minDateTime',
+          minDateTime: '2026-12-10T09:00',
+        }),
+      ]);
+
+      // `required` beside them grades the empty field, which the bounds do not.
+      await set(null);
+      expect(kinds(field().errors())).toEqual(['required']);
+    }
+  });
+
+  it('takes each side from the rule that has one', async () => {
+    const { datetime } = await bounded('2026-12-02T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, { min: () => undefined });
+      pctDateTimeBounds(p.startsAt, { min: '2026-12-01T09:00' });
+      pctDateTimeBounds(p.startsAt, { max: '2026-12-03T18:00' });
+      pctDateTimeBounds(p.startsAt, {
+        min: () => undefined,
+        max: () => undefined,
+      });
+    });
+    expect([datetime.min(), datetime.max()]).toEqual([
+      '2026-12-01T09:00',
+      '2026-12-03T18:00',
+    ]);
+  });
+
+  it('compares as datetimes: past the year 9999, and one instant in two shapes is the later rule’s', async () => {
+    const { datetime, field } = await bounded('10000-01-01T00:01', (p) => {
+      pctDateTimeBounds(p.startsAt, {
+        min: '10000-01-01T00:00',
+        max: '10000-01-01T00:00',
+      });
+      pctDateTimeBounds(p.startsAt, {
+        min: '9999-12-31T23:59',
+        max: '10000-12-31T23:59',
+      });
+    });
+    expect([datetime.min(), datetime.max()]).toEqual([
+      '10000-01-01T00:00',
+      '10000-01-01T00:00',
+    ]);
+    expect(field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'maxDateTime',
+        maxDateTime: '10000-01-01T00:00',
+      }),
+    ]);
+
+    for (const [first, second] of [
+      ['2026-12-02T09:00', '2026-12-02T09:00:00'],
+      ['2026-12-02T09:00:00', '2026-12-02T09:00'],
+    ]) {
+      // One instant, both bounds: a window of one, not a reversed pair.
+      const { datetime } = await bounded('2026-12-02T09:00', (p) => {
+        pctDateTimeBounds(p.startsAt, { min: first, max: first });
+        pctDateTimeBounds(p.startsAt, { min: second, max: second });
+      });
+      expect([datetime.min(), datetime.max()]).toEqual([second, second]);
+    }
+  });
+
+  it('rules whose intersection holds no datetime leave the field no bounds, and warn of nothing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { f, datetime, field } = await bounded('2026-12-04T12:00', (p) => {
+      pctDateTimeBounds(p.startsAt, { min: '2026-12-05T09:00' });
+      pctDateTimeBounds(p.startsAt, { max: '2026-12-03T17:00' });
+    });
+    expect([datetime.min(), datetime.max()]).toEqual([undefined, undefined]);
+    expect([field().min?.(), field().max?.()]).toEqual([undefined, undefined]);
+    // Each rule refuses on its own side, with the bound it broke.
+    expect(field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minDateTime',
+        minDateTime: '2026-12-05T09:00',
+      }),
+      expect.objectContaining({
+        kind: 'maxDateTime',
+        maxDateTime: '2026-12-03T17:00',
+      }),
+    ]);
+
+    await open(f);
+    expect(dayIn('1 December 2026')?.hasAttribute('aria-disabled')).toBe(false);
+    expect(dayIn('31 December 2026')?.hasAttribute('aria-disabled')).toBe(
+      false,
+    );
+    expect(takeable(columnIn('hour'))).toHaveLength(24);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("Angular's own minDate cannot bound a PctDateTime: its path is a Date's, and it reads the value as one", () => {
+    TestBed.runInInjectionContext(() => {
+      const f = form(signal<Model>({ startsAt: '2026-12-02T12:00' }), (p) => {
+        // @ts-expect-error — `minDate` takes a path whose value is a `Date`.
+        minDate(p.startsAt, new Date(2026, 11, 1));
+      });
+      expect(() => f.startsAt().errors()).toThrow(TypeError);
+    });
   });
 });

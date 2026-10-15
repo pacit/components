@@ -17,7 +17,20 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { FormValueControl, ValidationError } from '@angular/forms/signals';
+import {
+  createMetadataKey,
+  MAX,
+  metadata,
+  MIN,
+  validate,
+  type FormValueControl,
+  type LimitKey,
+  type LogicFn,
+  type PathKind,
+  type SchemaPath,
+  type SchemaPathRules,
+  type ValidationError,
+} from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_CONFIG,
@@ -69,6 +82,26 @@ import { pctDateTimeHalves, PctDateTimeHalf } from './halves';
  */
 function optionalDateTime(value: unknown): PctDateTime | undefined {
   return isPctDateTime(value) ? value : undefined;
+}
+
+/** Two bounds, either of them absent — the field's inputs, or one rule's. */
+interface DateTimePair {
+  readonly min: PctDateTime | undefined;
+  readonly max: PctDateTime | undefined;
+}
+
+/**
+ * The bounds a field walks: the pair, or none where it is reversed. A reversed pair holds no
+ * datetime, and it is no window either — the platform's reading on a datetime (0090 §5, A8) —
+ * so no pair spells "nothing" here, and the field takes the honest "anything".
+ */
+function windowOf(pair: DateTimePair): DateTimePair {
+  const { min, max } = pair;
+  return min !== undefined &&
+    max !== undefined &&
+    pctCompareDateTimes(min, max) > 0
+    ? { min: undefined, max: undefined }
+    : pair;
 }
 
 /** The seconds in a day. */
@@ -243,7 +276,8 @@ export class PctDatetime
 
   /**
    * The earliest day and time. It belongs to the `FormUiControl` contract, which spells an
-   * absent bound `undefined`.
+   * absent bound `undefined`, and a signal form gives it through `pctDateTimeBounds` — the
+   * compiler refuses the attribute beside `[formField]`.
    *
    * **The bounds clamp the panel's walk and never rewrite what was typed** — the date and the
    * time fields' rule. The calendar gets the day of each bound, and the columns get the time of
@@ -649,15 +683,9 @@ export class PctDatetime
   });
 
   /** The bounds the field obeys: the pair, or none where it is reversed. */
-  private readonly window = computed(() => {
-    const min = this.min();
-    const max = this.max();
-    return min !== undefined &&
-      max !== undefined &&
-      pctCompareDateTimes(min, max) > 0
-      ? { min: undefined, max: undefined }
-      : { min, max };
-  });
+  private readonly window = computed(() =>
+    windowOf({ min: this.min(), max: this.max() }),
+  );
 
   /** The calendar's bounds — the day of each. */
   protected readonly minDay = computed(() => {
@@ -1151,4 +1179,184 @@ export class PctDatetime
       );
     });
   }
+}
+
+/**
+ * A bound `pctDateTimeBounds` takes: a datetime, or a function of the field's context that
+ * returns one — the two shapes Angular's own `min()` takes. One that is not a datetime,
+ * `undefined` among them, is no bound, as it is on the field's input.
+ *
+ * @since next
+ */
+export type PctDateTimeBound<
+  TValue,
+  TPathKind extends PathKind = PathKind.Root,
+> =
+  PctDateTime | undefined | LogicFn<TValue, PctDateTime | undefined, TPathKind>;
+
+/**
+ * What `pctDateTimeBounds` reports: `minDateTime` for a datetime before `min`, `maxDateTime`
+ * for one after `max` — and both at once for one between the two of a reversed pair, the
+ * native element's reading on a datetime (0090, A8). Each carries the bound it broke, as the
+ * bound was written.
+ *
+ * @since next
+ */
+export type PctDateTimeBoundError =
+  | {
+      readonly kind: 'minDateTime';
+      readonly minDateTime: PctDateTime;
+      readonly message?: string;
+    }
+  | {
+      readonly kind: 'maxDateTime';
+      readonly maxDateTime: PctDateTime;
+      readonly message?: string;
+    };
+
+/**
+ * The bounds of `pctDateTimeBounds`, and the sentence its errors carry — one for both, or one
+ * written from the error, which holds the bound.
+ *
+ * @since next
+ */
+export interface PctDateTimeBoundsConfig<
+  TValue,
+  TPathKind extends PathKind = PathKind.Root,
+> {
+  readonly min?: PctDateTimeBound<TValue, TPathKind>;
+  readonly max?: PctDateTimeBound<TValue, TPathKind>;
+  readonly message?: string | ((error: PctDateTimeBoundError) => string);
+}
+
+/**
+ * Every rule's pair on a path, met: the later `min` and the earlier `max`, compared as
+ * datetimes and not as strings — the intersection, as the day's — and the later rule's
+ * spelling where two write one instant in two shapes, `…T09:00` and `…T09:00:00`.
+ *
+ * The keys here are made at the top of the module and marked PURE, for the reason `./core`'s
+ * warning keys are (lesson-252): a call a bundler cannot prove free of effects stays in every
+ * application that imports the entrypoint, and the forms runtime behind it.
+ */
+const DATETIME_PAIR = /* @__PURE__ */ createMetadataKey<
+  DateTimePair,
+  DateTimePair
+>({
+  getInitial: () => ({ min: undefined, max: undefined }),
+  reduce: (acc, item) => ({
+    min:
+      item.min !== undefined &&
+      (acc.min === undefined || pctCompareDateTimes(item.min, acc.min) >= 0)
+        ? item.min
+        : acc.min,
+    max:
+      item.max !== undefined &&
+      (acc.max === undefined || pctCompareDateTimes(item.max, acc.max) <= 0)
+        ? item.max
+        : acc.max,
+  }),
+});
+
+/**
+ * The bounds the field is handed, one key a side: the platform's `MIN` and `MAX` POINT at a key
+ * of the field's own type, and the `[formField]` directive reads the bound through them into
+ * the control's `min` / `max` inputs (`LimitSelectionKey`), as Angular's `minDate()` keys its
+ * own. They hold the window of the met pair, which is what the field walks — and where the
+ * intersection holds no datetime, no bounds: the field would read the reversed pair as none
+ * all the same, and warn of it as of a consumer's slip, where here it is the form's data
+ * (0093). Every rule writes the same reading of the met pair, so the last one written is it.
+ */
+const DATETIME_MIN = /* @__PURE__ */ createMetadataKey<
+  PctDateTime | undefined
+>();
+const DATETIME_MAX = /* @__PURE__ */ createMetadataKey<
+  PctDateTime | undefined
+>();
+
+function dateTimeBound<TValue, TPathKind extends PathKind>(
+  bound: PctDateTimeBound<TValue, TPathKind>,
+): LogicFn<TValue, PctDateTime | undefined, TPathKind> {
+  return (ctx) =>
+    optionalDateTime(typeof bound === 'function' ? bound(ctx) : bound);
+}
+
+/**
+ * Bounds a datetime field in a signal form: what Angular's `min()` / `max()` do for a number
+ * and `minDate()` / `maxDate()` for a `Date`, for a `PctDateTime` — which none of them takes
+ * (their paths are a number's and a `Date`'s, and the latter read the value with
+ * `getTime()`), and which the compiler refuses as an attribute beside `[formField]`
+ * (`NG8022`). The bounds reach the field's `min` / `max`, so the calendar and the columns walk
+ * inside them, and the form grades the value: a datetime outside is `minDateTime` or
+ * `maxDateTime`.
+ *
+ * Each bound is a datetime or a function of the field's context, so one field can be bounded
+ * by another's value; one that is not a datetime is no bound. A bound is inside, in either
+ * shape. An empty field is not graded — that is `required()`'s to say — and neither are the
+ * step, `dateDisabled` and `datetimeDisabled`, which are the panel's.
+ *
+ * **A pair is never a window** — the night shift is two datetimes on two days — so a bound
+ * read off another field may share a rule with a fixed one, where the time's rule needs one of
+ * its own. Several rules on one path are each graded on their own pair, and the field walks
+ * their intersection; where that holds no datetime, the field has no bounds, and the form
+ * refuses every value with the bound it broke.
+ *
+ * @example
+ * const f = form(model, (p) => {
+ *   pctDateTimeBounds(p.startsAt, {
+ *     min: '2026-12-01T09:00',
+ *     max: '2026-12-03T18:00',
+ *     message: 'During the conference',
+ *   });
+ *   pctDateTimeBounds(p.endsAt, {
+ *     min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined,
+ *     max: '2026-12-03T18:00',
+ *   });
+ * });
+ *
+ * @since next
+ */
+export function pctDateTimeBounds<
+  TValue extends PctDateTime | null,
+  TPathKind extends PathKind = PathKind.Root,
+>(
+  path: SchemaPath<TValue, SchemaPathRules.Supported, TPathKind>,
+  config: PctDateTimeBoundsConfig<TValue, TPathKind>,
+): void {
+  const min = dateTimeBound(config.min);
+  const max = dateTimeBound(config.max);
+  metadata(path, DATETIME_PAIR, (ctx) => ({ min: min(ctx), max: max(ctx) }));
+  metadata(
+    path,
+    DATETIME_MIN,
+    ({ state }) => windowOf(state.metadata(DATETIME_PAIR)!()).min,
+  );
+  metadata(
+    path,
+    DATETIME_MAX,
+    ({ state }) => windowOf(state.metadata(DATETIME_PAIR)!()).max,
+  );
+  // The keys hold a `PctDateTime`, and the platform asks for a key of the path's own value
+  // type, which it cannot see is the same type while `TValue` is a parameter.
+  metadata(path, MIN, () => DATETIME_MIN as unknown as LimitKey<TValue>);
+  metadata(path, MAX, () => DATETIME_MAX as unknown as LimitKey<TValue>);
+  validate(path, (ctx) => {
+    const value = ctx.value();
+    if (!isPctDateTime(value)) return undefined;
+    const lo = min(ctx);
+    const hi = max(ctx);
+    const errors: PctDateTimeBoundError[] = [];
+    if (lo !== undefined && pctCompareDateTimes(value, lo) < 0) {
+      errors.push({ kind: 'minDateTime', minDateTime: lo });
+    }
+    if (hi !== undefined && pctCompareDateTimes(value, hi) > 0) {
+      errors.push({ kind: 'maxDateTime', maxDateTime: hi });
+    }
+    const message = config.message;
+    return message === undefined
+      ? errors
+      : errors.map((error) => ({
+          ...error,
+          message: typeof message === 'function' ? message(error) : message,
+        }));
+  });
 }

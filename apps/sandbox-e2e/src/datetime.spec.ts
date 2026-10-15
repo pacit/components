@@ -426,6 +426,50 @@ test.describe('Datetime — the bounds and the slots', () => {
   });
 });
 
+test.describe('Datetime — bounds from a signal form', () => {
+  /**
+   * A signal form cannot write `min` beside `[formField]` (`NG8022`), and Angular's own
+   * `minDate()` takes a `Date`: `pctDateTimeBounds` binds the field's own type to the platform's
+   * `MIN` / `MAX`, and the directive hands the bounds on. The end of the talk is bounded by its
+   * start and by the conference's close.
+   */
+  test('a signal form hands its bounds to the panel, and reports a datetime typed outside', async ({
+    page,
+  }) => {
+    await visit(page, '/datetime');
+    await toggleOf(page, 'datetime-talk-ends').click();
+    const panel = panelOf(page);
+    await expect(panel).toBeVisible();
+    await expect(cellOf(page, '30 novembre 2026')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(cellOf(page, '3 décembre 2026')).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(cellOf(page, '4 décembre 2026')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    // The start's own day opens at the start's hour.
+    await expect
+      .poll(async () => (await takeable(columnOf(panel, 'hour')))[0])
+      .toBe('10');
+    await page.keyboard.press('Escape');
+
+    const time = timeOf(page, 'datetime-talk-ends');
+    await time.fill('09:30');
+    await time.blur();
+    await expect(time).toHaveValue('09:30');
+    await expect(time).toHaveAttribute('aria-invalid', 'true');
+    const field = page.getByTestId('demo-form-bounds').locator('pct-field');
+    await expect(partOf(field.nth(1), 'field-error')).toHaveText(
+      'It ends after it starts',
+    );
+  });
+});
+
 test.describe('Datetime — right to left', () => {
   /**
    * The row mirrors as the date and the time fields do — the button at the END of the row,

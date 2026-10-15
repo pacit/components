@@ -303,7 +303,11 @@ entrypoint, and the datetime card says what was found either way.
   time's are, with the caveat the time card carries, and the date card in part: Angular
   22.2's `min()` and `max()` take numbers, no rule binds a limit of this type, and the
   compiler refuses the attribute beside
-  `[formField]`. They **clamp the walk and never rewrite what was typed** — a bound clamps a
+  `[formField]`. _Amended 2026-10-15: one does now — `pctDateTimeBounds` in `./datetime` hands
+  a signal form's bounds to the field and grades the value, and where its rules meet in no
+  datetime it hands none
+  ([0093](0093-a-bound-of-the-fields-own-type-reaches-it-through-the-limit-key.md), amended)._
+  They **clamp the walk and never rewrite what was typed** — a bound clamps a
   movement, and a sentence is not one. Their **cast** is what is new: the calendar gets the day
   of each bound, and the columns get the time of a bound **only on the bound's own day** — on
   1 December from 09:00 the hours before nine are refused when the chosen day is 1 December and
