@@ -129,7 +129,7 @@ three numbers they typed. The sentence travels through the contract's second cha
 `ownErrors` ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)),
 so a `pct-field` around the control shows it in the same place; it is the `dateMalformed`
 text, so an application that translates the library is not told in English; and it is gated
-by nothing — it exists only once the field was left, and a keystroke or a value from outside
+by nothing — it exists only once the field was left, and a keystroke or a date from outside
 takes it back.
 
 `reset()` takes both back, the text and the report — a reset after junk moves the report and
