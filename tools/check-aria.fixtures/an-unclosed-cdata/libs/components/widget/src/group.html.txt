@@ -1,0 +1,4 @@
+<!-- The options' frame, a `<![CDATA[` in it that never closes. Angular 22.2's HTML parser throws
+     on it, and the build, which hands the same text to the same parser, throws with it. -->
+<div class="pct-group__options"><![CDATA[ the options
+<ng-content></ng-content></div>
