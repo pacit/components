@@ -5,7 +5,9 @@
      a fallback, the badge a deferred block with every side block, the dots a loop with an
      `@empty`: the walk and the tag reader both reach what they draw. The icon projects through an
      `<svg:ng-content>`, an `<ng-content>` the tree knows by its local name. The text's title
-     quotes a `<button>`, which Angular renders as the text it is: no tag of the DOM. -->
+     quotes a `<button>`, which Angular renders as the text it is: no tag of the DOM. Under
+     `ngNonBindable` an ICU is dropped, and its case draws nothing, a stop behind a quoted name
+     neither. -->
 @let emphasis = 'bold';
 <style>
   .pct-marker__text {
@@ -36,3 +38,4 @@
   <svg:ng-content select="[pctMarkerIcon]"></svg:ng-content>
 </svg>
 {count(), plural, =1 {one} other {many}}<style></style>
+<code ngNonBindable>{count(), plural, other {<span [it's]="more()" tabindex="0">more</span>}}</code>
