@@ -316,6 +316,25 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
     });
 
+    it('empties the field, the text and the value alike, on reset', async () => {
+      const fixture = await render(Host);
+      await type(fixture, 'abc');
+      await blur(fixture);
+      const directive = fixture.debugElement
+        .query((d) => d.nativeElement.tagName === 'INPUT')
+        .injector.get(PctNumber);
+
+      // The value was `null` already, so the reset moves the rejection and nothing else — and a
+      // field that heard only the value went on showing `abc` over an empty one, still red.
+      directive.reset();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(inputOf(fixture).value).toBe('');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
+      expect(directive.ownErrors()).toEqual([]);
+    });
+
     it("inside the wrapper the sentence is the chrome's, ahead of the form's", async () => {
       const fixture = await render(NumberInFieldHost);
       await type(fixture, 'abc');

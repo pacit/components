@@ -126,7 +126,7 @@ libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
 libs/components/field/src/autosize.ts 77.03 57(0) 16 0 1 2
 libs/components/field/src/field.ts 75.83 91(0) 26 2 1 1
-libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
+libs/components/field/src/number.ts 84.64 237(0) 41 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
 libs/components/icon/src/fonts.ts 99.12 113(0) 1 0 0 0
@@ -168,5 +168,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 85.98 7151/8317
+TOTAL 85.98 7150/8316
 ```
