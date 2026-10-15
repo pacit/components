@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the parsed tree holds a tag at offset 144 (`<div class=\"pct-group__options\" [it's]=\"labelledBy()\" `), and the tag scan never found it",
+  "$reason": "A bracketed name holding a quote in the options' frame, `[it's]`, and after it a block comment that runs onto a second line. The tag scan never finds the frame, and the refusal quotes the frame from where it starts to the end of its line in the text. Blanking keeps every line break so that the text's lines are the file's, and the excerpt stops at the comment's line break. A comment blanked with its line breaks too would run the excerpt on into the line after it, past what the file holds on the frame's line."
+}

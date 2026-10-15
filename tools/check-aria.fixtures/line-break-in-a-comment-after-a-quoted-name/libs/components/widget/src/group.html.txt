@@ -1,0 +1,4 @@
+<!-- The options' frame, a bracketed name holding a quote in its start tag, and after it a block
+     comment that runs onto a second line. -->
+<div class="pct-group__options" [it's]="labelledBy()" /* bound for
+     nothing */><ng-content></ng-content></div>
