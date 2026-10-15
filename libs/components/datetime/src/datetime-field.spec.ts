@@ -694,20 +694,18 @@ describe('PctDatetime — the panel', () => {
     expect(document.activeElement).toBe(document.body);
   });
 
-  it('takes back a time being typed on reset, and shows the time the field holds', async () => {
+  it('closes a panel asked for in the same task as the reset, before it is drawn', async () => {
     const f = await render(Host);
-    // `13:0` is most of the way to a time and is none yet, so the pair stands.
-    await type(f, timeText(f), '13:0');
-    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
-    expect(timeText(f).value).toBe('13:0');
     const field = f.debugElement.query((node) => node.name === 'pct-datetime')
       .componentInstance as PctDatetime;
-
+    // The press opens the panel and the reset arrives before a render has drawn it.
+    toggleOf(f).click();
     field.reset();
     await settle(f);
 
-    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
-    expect(shown(timeText(f))).toBe('13:05');
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).not.toBe(dayText(f));
   });
 
   it('opens on the day and the time it holds, with focus on the grid', async () => {
@@ -1402,6 +1400,22 @@ describe('PctDatetime — the review’s cases', () => {
     // the other instead of emptying all three.
     expect(f.componentInstance.value()).toBe('2020-01-02T13:05');
     expect(shown(dayText(f))).toBe('02/01/2020');
+    expect(shown(timeText(f))).toBe('13:05');
+  });
+
+  it('takes back a time being typed on reset, and shows the time the field holds', async () => {
+    const f = await render(Host);
+    // `13:0` is most of the way to a time and is none yet, so the pair stands.
+    await type(f, timeText(f), '13:0');
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+    expect(timeText(f).value).toBe('13:0');
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+
+    field.reset();
+    await settle(f);
+
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
     expect(shown(timeText(f))).toBe('13:05');
   });
 

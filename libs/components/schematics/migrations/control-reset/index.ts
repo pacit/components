@@ -59,32 +59,34 @@ export function controlReset(): Rule {
       if (!skipped.test(path) && read.test(path)) paths.push(path);
     });
 
-    const files: { shown: string; text: string }[] = [];
+    // One pass, and no text kept past its file: what a file adds is where its resets stand,
+    // whether it binds a control and whether it gives a radio group an `emptyValue`.
+    let bound = false;
+    const resets: string[] = [];
+    const empties: string[] = [];
     for (const path of paths) {
+      let text: string;
       try {
-        files.push({ shown: path.slice(1), text: tree.readText(path) });
+        text = tree.readText(path);
       } catch {
         // `readText` decodes as UTF-8 and throws on anything else, and `.ts` is also the
         // extension of an MPEG transport stream: one asset must not end the whole run.
+        continue;
       }
+      const shown = path.slice(1);
+      bound ||= bindsAControl(text);
+      resets.push(...bareResets(text, shown));
+      if (/<pct-radio-group\b/i.test(text) && /\bemptyValue\b/.test(text))
+        empties.push(shown);
     }
 
-    if (!files.some((file) => bindsAControl(file.text))) {
+    if (!bound) {
       context.logger.info(
         `[pacit] nothing to read: no file in this workspace binds a form control of this ` +
           `library, so no reset reaches one.`,
       );
       return;
     }
-
-    const resets = files.flatMap((file) => bareResets(file.text, file.shown));
-    const empties = files
-      .filter(
-        (file) =>
-          /<pct-radio-group\b/i.test(file.text) &&
-          /\bemptyValue\b/.test(file.text),
-      )
-      .map((file) => file.shown);
 
     if (resets.length)
       context.logger.warn(

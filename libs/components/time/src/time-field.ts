@@ -529,9 +529,9 @@ export class PctTime
     this.typing.set(false);
     // A panel that holds focus hands it back to the field as it closes, as Escape does — one
     // taken out of the tree under focus drops it to `body`. Focus anywhere else stays there.
+    // A panel asked for in this same task is open and not drawn yet, so it holds nothing.
     const panel = this.panel()?.nativeElement;
-    if (panel === undefined) return;
-    this.close(panel.contains(panel.ownerDocument.activeElement));
+    this.close(panel?.contains(panel.ownerDocument.activeElement) ?? false);
   }
 
   protected onInput(): void {

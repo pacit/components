@@ -430,6 +430,20 @@ describe('PctDate — the panel', () => {
     expect(document.activeElement).toBe(document.body);
   });
 
+  it('closes a panel asked for in the same task as the reset, before it is drawn', async () => {
+    const f = await render(Host);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+    // The press opens the panel and the reset arrives before a render has drawn it.
+    toggleOf(f).click();
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).not.toBe(controlOf(f));
+  });
+
   it('names the button and the panel it opens with one string', async () => {
     const f = await render(Host);
     // The default, because a string the library writes is the library's until somebody

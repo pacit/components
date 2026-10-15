@@ -533,6 +533,19 @@ describe('PctTime — the panel', () => {
     expect(document.activeElement).toBe(document.body);
   });
 
+  it('closes a panel asked for in the same task as the reset, before it is drawn', async () => {
+    const f = await render(Host);
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+    // The press opens the panel and the reset arrives before a render has drawn it.
+    toggleOf(f).click();
+    time.reset();
+    await settle(f);
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).not.toBe(controlOf(f));
+  });
+
   it('names the button and the panel it opens with one string', async () => {
     const f = await render(Host);
     expect(toggleOf(f).getAttribute('aria-label')).toBe('Choose time');

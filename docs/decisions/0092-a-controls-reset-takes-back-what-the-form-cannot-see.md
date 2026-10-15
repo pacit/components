@@ -10,9 +10,9 @@ jsdom 22.1.0, zoneless) — which reset a signal form over every control that ha
 and over Angular's own native bindings as the reference, and read the model, the DOM and the
 field's `dirty` after each; its rows are the "Measurement" section below. The durable record
 is the cases it became, in the eleven spec files of those controls — 38 of them red on the
-sources before this decision, all green after. And Angular's own reading, quoted in the
-context below from the declarations of the package this library pins: `FieldState.reset` and
-`FormUiControl.reset`
+sources before this decision, all green after. Angular's own reading is quoted in the context
+below, from the declarations of the package this library pins — `FieldState.reset` and
+`FormUiControl.reset`.
 
 ## Context
 
