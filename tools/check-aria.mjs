@@ -691,8 +691,8 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
  * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
  * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
  * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
- * option under a menu stood in it. A block Angular does not know carries one too, and comes only
- * with a parse error, on which the walk does not run.
+ * option under a menu stood in it. A block Angular cannot place (an `@empty` with no `@for`)
+ * carries one too, and comes only with a parse error, on which the walk does not run.
  */
 const isElement = (node) =>
   node instanceof TmplAstElement || node instanceof TmplAstContent;
