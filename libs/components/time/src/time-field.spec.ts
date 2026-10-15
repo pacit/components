@@ -1327,6 +1327,49 @@ describe('PctTime — bounds from a signal form (pctTimeBounds)', () => {
     ]);
   });
 
+  it('leaves out the widest gap wherever it stands, to the second', async () => {
+    const span = async (...pairs: { min?: string; max?: string }[]) => {
+      const { time } = await bounded(null, (p) => {
+        for (const pair of pairs) pctTimeBounds(p.startsAt, pair);
+      });
+      return [time.min(), time.max()];
+    };
+    // The night and a later start: 23:00 to midnight and nothing after it, so no max.
+    expect(
+      await span({ min: '22:00', max: '06:00' }, { min: '23:00' }),
+    ).toEqual(['23:00', undefined]);
+    // The widest gap is the one across midnight: a plain pair.
+    expect(
+      await span(
+        { min: '08:00', max: '20:00' },
+        { min: '14:00', max: '12:00' },
+      ),
+    ).toEqual(['08:00', '20:00']);
+    // The widest gap is not the last one: 01:00–03:00, before 22:00–23:00.
+    expect(
+      await span(
+        { min: '23:00', max: '22:00' },
+        { min: '03:00', max: '01:00' },
+      ),
+    ).toEqual(['03:00', '01:00']);
+    // Minutes count: 09:15–09:45 is the gap, and 09:20–09:30 lies inside it.
+    expect(
+      await span(
+        { min: '09:45', max: '09:15' },
+        { min: '09:30', max: '09:20' },
+      ),
+    ).toEqual(['09:45', '09:15']);
+    // A gap of one second is a gap; a window that leaves out none accepts every time.
+    expect(await span({ min: '06:00:02', max: '06:00' })).toEqual([
+      '06:00:02',
+      '06:00',
+    ]);
+    expect(await span({ min: '06:00:01', max: '06:00' })).toEqual([
+      undefined,
+      undefined,
+    ]);
+  });
+
   it('hands no bounds where the rules accept no time at all, and the form refuses every one', async () => {
     // Their later min and earlier max would read as the night, which neither rule accepts.
     const apart = await bounded('23:00', (p) => {

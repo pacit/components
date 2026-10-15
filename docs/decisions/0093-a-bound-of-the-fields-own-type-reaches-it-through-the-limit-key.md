@@ -9,7 +9,7 @@ unit suite's environment (`@angular/forms` and `@angular/core` 22.2.1, zoneless)
 reading of the package's own declarations and FESM. The durable record is the cases they
 became: `libs/components/date/src/date.spec.ts › PctDate — bounds from a signal form` (ten
 cases), `libs/components/time/src/time-field.spec.ts › PctTime — bounds from a signal form`
-(twelve), and one case in each of `apps/sandbox-e2e/src/date.spec.ts` and `time.spec.ts`, green
+(thirteen), and one case in each of `apps/sandbox-e2e/src/date.spec.ts` and `time.spec.ts`, green
 on chromium.
 
 ## Context
@@ -51,16 +51,17 @@ And how the shipped rules compose on one path, each reading in either order of t
   where the strings say otherwise ([`lesson-185`](../lessons.md#lesson-185)).
 - **On a clock the sides do not combine one at a time.** The first version handed the field
   the later `min` and the earlier `max`, as Angular's own keys do, and an independent review
-  of this change measured four pairs where that pair is not what the rules accept:
+  of this change measured where that pair is not what the rules accept:
   `{ min: '18:00' }` and `{ max: '08:00' }` accept no time, and their 18:00 and 08:00 read as
-  the night; 08:00–10:00 and 12:00–14:00 accept none either and read as a 22-hour window; a
-  window with a plain rule — 22:00–06:00 and `{ max: '23:00' }` — offered 23:30, which the
-  form refuses; and two windows whose gaps do not meet — everything but 06:00–07:00, and
-  everything but 10:00–23:00 — refused 08:00, which both accept.
-- **A bound read off another field can make a pair a window.** `{ min: valueOf(p.opensAt),
-max: '22:00' }` with the opening at 23:00 is 23:00 to 22:00 across midnight, and grades a
-  closing at 18:00 inside it. In two rules, `{ min: valueOf(p.opensAt) }` and
-  `{ max: '22:00' }`, neither pair is a window, and 18:00 is `minTime`.
+  the night; 08:00–10:00 and 12:00–14:00 accept none either and read as a 22-hour window; the
+  night, 22:00–06:00, with `{ min: '23:00' }` handed the field 23:00 to 06:00 and offered
+  03:00, which the second rule refuses — the span hands it 23:00 and no `max`; and two
+  windows whose gaps do not meet — everything but 06:00–07:00, and everything but
+  10:00–23:00 — refused 08:00, which both accept.
+- **A bound read off another field can make a pair a window.** One rule with `min` read off
+  the opening time and a fixed `max` of 22:00 is, with the opening at 23:00, the stretch from
+  23:00 to 22:00 across midnight, and grades a closing at 18:00 inside it. Written as two
+  rules, one a side, neither pair is a window, and 18:00 is `minTime`.
 
 ## Decision
 
@@ -87,7 +88,8 @@ max: '22:00' }` with the opening at 23:00 is 23:00 to 22:00 across midnight, and
    exactly where they are one run; where they are several, the panel also offers the gaps
    between them but the widest — it never refuses a time the form accepts; where there is no
    time at all, the field has no bounds, because no pair spells "nothing". The span is read
-   off every rule's pair at once, the same in any order of the rules.
+   off every rule's pair at once, so its times are the same in any order of the rules; where
+   two rules write one second in two shapes, the field is handed the later spelling.
 5. **A bound read off another field goes in a rule of its own** beside a fixed one, so that
    the pair cannot turn into a window when the other field moves. The JSDoc, the example and
    the sandbox say so; the rule cannot, because a window written on purpose looks the same.

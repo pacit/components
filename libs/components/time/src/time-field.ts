@@ -790,9 +790,9 @@ function runsOf({ min, max }: TimePair): (readonly [number, number])[] {
  * where they are several, it leaves out the widest gap between them — the one across midnight
  * included — and keeps the others, so the panel never refuses a time the form accepts and may
  * offer one it refuses. Rules that accept no time at all leave the field no bounds, because no
- * pair of them spells "nothing". A bound is handed on as it was written; midnight and the
- * day's last second, where no rule wrote them, are no bound; a bound is handed on as a rule
- * wrote it.
+ * pair of them spells "nothing". A bound is handed on as a rule wrote it — the later rule's
+ * spelling where two write one second in two shapes — and midnight and the day's last second,
+ * where no rule wrote them, are no bound.
  */
 function timeSpan(pairs: readonly TimePair[]): TimePair {
   const written = new Map<number, PctTimeOfDay>();
