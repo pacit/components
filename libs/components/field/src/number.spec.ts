@@ -728,6 +728,11 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.model().seats).toBeNull();
       expect(inputOf(fixture).value).toBe('abc');
       expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
+      expect(
+        fixture.nativeElement
+          .querySelector('[data-pct-part="field-error"]')
+          ?.textContent?.trim(),
+      ).toBe('Not a number');
 
       // The form's reset calls the control's, and the path an application takes is this one.
       fixture.componentInstance.f().reset();
