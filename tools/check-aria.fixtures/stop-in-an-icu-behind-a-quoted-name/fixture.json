@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an ICU's case draws a tag at offset 756 (`<span class=\"pct-pair__more\" [it's]=\"more()\" tabindex=\"0\">",
+  "$reason": "`stop-in-an-icu` with a bracketed name holding an apostrophe before the stop's `tabindex`, `[it's]`. Angular's lexer reads a bracketed name up to its closing bracket, quotes included, and the template parses with no error; the tag scan opens a quote at the apostrophe that nothing after it closes, and finds no tag where the stop starts. Outside an ICU the tree's own count refuses such a tag, a tag it holds and the scan never found; inside one the tree holds no element to count by, and the template passed, as it does on main, with `[a\"b]` as well. The HTML tree places each tag a case draws (`cased`), and one the scan never found fails point 1."
+}
