@@ -1773,8 +1773,8 @@ describe('PctDatetime — bounds from a signal form (pctDateTimeBounds)', () => 
       }),
     ]);
 
-    // A start past the fixed end is no window across it: the form refuses every end, and the
-    // field walks without bounds and warns of nothing — the slip is the data's, not the code's.
+    // A start past the fixed end is no window across it: the form refuses every end it is
+    // given, and the field walks without bounds and warns of nothing — the slip is the data's.
     await start('2026-12-04T09:00');
     expect([datetime.min(), datetime.max()]).toEqual([undefined, undefined]);
     expect(kinds(endsAt().errors())).toEqual(['minDateTime']);

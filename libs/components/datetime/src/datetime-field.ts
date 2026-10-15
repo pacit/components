@@ -1264,7 +1264,8 @@ const DATETIME_PAIR = /* @__PURE__ */ createMetadataKey<
  * own. They hold the window of the met pair, which is what the field walks — and where the
  * intersection holds no datetime, no bounds: the field would read the reversed pair as none
  * all the same, and warn of it as of a slip in its attributes, where here it is most often the
- * form's data — and a pair written reversed by hand shows in the errors of every value (0093).
+ * form's data — and a pair written reversed by hand shows in the errors of every datetime
+ * (0093).
  * Every rule writes the same reading of the met pair, so the last one written is it.
  */
 const DATETIME_MIN = /* @__PURE__ */ createMetadataKey<
@@ -1299,7 +1300,7 @@ function dateTimeBound<TValue, TPathKind extends PathKind>(
  * read off another field may share a rule with a fixed one, where the time's rule needs one of
  * its own. Several rules on one path are each graded on their own pair, and the field walks
  * their intersection; where that holds no datetime, the field has no bounds, and the form
- * refuses every value with the bound it broke.
+ * refuses every datetime with the bound it broke.
  *
  * @example
  * const f = form(model, (p) => {

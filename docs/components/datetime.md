@@ -190,10 +190,10 @@ texts are not comboboxes),
   night shift is two datetimes on two days, and a time field's `22:00`–`06:00` ported here gets
   a warning and no bounds.
 - **Rules that meet in no datetime leave the panel open.** A start typed past the close hands
-  the end's field no bounds: the panel offers every day and the form refuses every value, each
+  the end's field no bounds: the panel offers every day and the form refuses every datetime, each
   rule with the bound it broke — no pair says "nothing" to a field that reads a reversed one
   as none. The field's warning is for its own attributes: a pair written reversed by hand in
-  one rule warns of nothing either, and every value then carries the errors (0093).
+  one rule warns of nothing either, and every datetime then carries the errors (0093).
 - **No day without a time.** A half-filled field says so, always, and there is no knob to let
   "required" win over it; a form that wants a day with an optional time is a date field and a
   time field.
