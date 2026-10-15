@@ -94,3 +94,19 @@
     data-testid="calendar-inline"
   />
 </sbx-demo>
+
+<sbx-demo
+  heading="Bounds from a signal form"
+  summary="pctDayBounds hands a signal form's bounds to the field, where the compiler refuses min and max beside [formField]: the calendar walks inside them, and a day typed outside is the form's to report. The last day is bounded by the first."
+  [reqs]="['req-api-signal-forms', 'req-api-day']"
+  data-testid="demo-form-bounds"
+>
+  <div class="date-view__row">
+    <pct-field label="Arrives" hint="August to December 2026">
+      <pct-date [formField]="stayForm.arrives" data-testid="date-arrives" />
+    </pct-field>
+    <pct-field label="Leaves" hint="On or after the day it starts">
+      <pct-date [formField]="stayForm.leaves" data-testid="date-leaves" />
+    </pct-field>
+  </div>
+</sbx-demo>

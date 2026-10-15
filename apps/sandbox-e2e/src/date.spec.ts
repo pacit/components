@@ -423,6 +423,40 @@ test.describe('Date — the bounds and the holes in them', () => {
   });
 });
 
+test.describe('Date — bounds from a signal form', () => {
+  /**
+   * A signal form cannot write `min` beside `[formField]` (`NG8022`), and Angular's own
+   * `minDate()` takes a `Date`: `pctDayBounds` binds the field's own type to the platform's
+   * `MIN` / `MAX`, and the directive hands the bounds on. The last day of the stay is bounded
+   * by the first.
+   */
+  test('a signal form hands its bounds to the calendar, and reports a day typed outside', async ({
+    page,
+  }) => {
+    await visit(page, '/date');
+    const leaves = page.getByTestId('date-leaves');
+    await partOf(leaves, 'toggle').click();
+    await expect(
+      panelOf(page)
+        .locator(
+          '[data-pct-part="day"]:not([data-pct-outside]):not([data-pct-disabled])',
+        )
+        .first(),
+    ).toHaveText('27');
+    await page.keyboard.press('Escape');
+
+    const input = leaves.locator('input').first();
+    await input.fill('20/08/2026');
+    await input.blur();
+    await expect(input).toHaveValue('20/08/2026');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    const field = page.getByTestId('demo-form-bounds').locator('pct-field');
+    await expect(partOf(field.nth(1), 'field-error')).toHaveText(
+      'The stay ends after it starts',
+    );
+  });
+});
+
 /**
  * Which day a week starts on, asked of the platform and of the table that stands in for it.
  *

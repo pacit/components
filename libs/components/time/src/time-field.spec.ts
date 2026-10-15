@@ -11,13 +11,14 @@ import {
   FormField,
   required,
   requiredError,
+  type SchemaPathTree,
   type ValidationError,
 } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 
 import { PctTimeOfDay } from './time';
-import { PctTime } from './time-field';
+import { PctTime, pctTimeBounds } from './time-field';
 
 const controlOf = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector(
@@ -1037,5 +1038,260 @@ describe('PctTime — the forms that bind it', () => {
     f.componentInstance.value.set('' as PctTimeOfDay);
     await settle(f);
     expect(shown(f)).toBe('');
+  });
+});
+
+/**
+ * `pctTimeBounds` — the rule a signal form has for a `PctTimeOfDay` bound, which Angular's
+ * `min()` / `max()` cannot take and the compiler refuses as an attribute beside `[formField]`
+ * (`NG8022`). The platform's `MIN` / `MAX` point at a key of the field's own type, and the
+ * directive reads the bound through them into the field's inputs.
+ */
+describe('PctTime — bounds from a signal form (pctTimeBounds)', () => {
+  type Model = { startsAt: PctTimeOfDay | null };
+
+  async function bounded(
+    startsAt: PctTimeOfDay | null,
+    rules: (p: SchemaPathTree<Model>) => void,
+  ) {
+    @Component({
+      imports: [PctTime, FormField],
+      template: `<pct-time [formField]="f.startsAt" locale="en-GB" />`,
+    })
+    class Signal {
+      readonly model = signal<Model>({ startsAt });
+      readonly f = form(this.model, rules);
+    }
+    const f = await render(Signal);
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+    const field = () => f.componentInstance.f.startsAt();
+    const set = async (value: PctTimeOfDay | null) => {
+      f.componentInstance.model.set({ startsAt: value });
+      await settle(f);
+    };
+    return { f, time, field, set };
+  }
+
+  it('hands the bounds to the field, and the panel walks inside them', async () => {
+    const { f, time, field } = await bounded('10:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '09:00', max: '17:00' });
+    });
+    expect([time.min(), time.max()]).toEqual(['09:00', '17:00']);
+    expect([field().min?.(), field().max?.()]).toEqual(['09:00', '17:00']);
+
+    await open(f);
+    const takeable = columnIn('hour').querySelectorAll(
+      '[role="option"]:not([aria-disabled="true"])',
+    );
+    expect(Array.from(takeable, (row) => row.textContent?.trim())).toEqual([
+      '09',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+      '17',
+    ]);
+  });
+
+  it('grades a time outside, and none on a bound, in either shape, nor an empty field', async () => {
+    const { field, set } = await bounded('08:59', (p) => {
+      pctTimeBounds(p.startsAt, { min: '09:00', max: '17:00' });
+    });
+    expect(field().errors()).toEqual([
+      expect.objectContaining({ kind: 'minTime', minTime: '09:00' }),
+    ]);
+    expect(field().errors()[0]).not.toHaveProperty('message');
+
+    await set('17:00:01');
+    expect(field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxTime', maxTime: '17:00' }),
+    ]);
+
+    for (const inside of ['09:00', '09:00:00', '17:00', '17:00:00', null]) {
+      await set(inside);
+      expect(field().errors()).toEqual([]);
+    }
+  });
+
+  it('writes one message on every error, or one written from the error', async () => {
+    const one = await bounded('08:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '09:00', message: 'Office hours only' });
+    });
+    expect(one.field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minTime',
+        minTime: '09:00',
+        message: 'Office hours only',
+      }),
+    ]);
+
+    const each = await bounded('18:00', (p) => {
+      pctTimeBounds(p.startsAt, {
+        min: '09:00',
+        max: '17:00',
+        message: (e) =>
+          e.kind === 'minTime' ? `From ${e.minTime}` : `Until ${e.maxTime}`,
+      });
+    });
+    expect(each.field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxTime', message: 'Until 17:00' }),
+    ]);
+    // The message reaches the field's one message line once the field is touched.
+    controlOf(each.f).dispatchEvent(new Event('blur', { bubbles: true }));
+    await settle(each.f);
+    expect(
+      each.f.nativeElement.querySelector('[data-pct-part="error"]')
+        ?.textContent,
+    ).toContain('Until 17:00');
+  });
+
+  it('reads a window across midnight: a time in the gap is under and over', async () => {
+    const { time, field, set } = await bounded('23:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '22:00', max: '06:00' });
+    });
+    expect([time.min(), time.max()]).toEqual(['22:00', '06:00']);
+    for (const inside of ['23:00', '22:00', '00:00', '05:00', '06:00']) {
+      await set(inside);
+      expect(field().errors()).toEqual([]);
+    }
+    for (const gap of ['06:01', '12:00', '21:59']) {
+      await set(gap);
+      expect(
+        field()
+          .errors()
+          .map((e) => e.kind),
+      ).toEqual(['minTime', 'maxTime']);
+    }
+  });
+
+  it('reads a min equal to its max as one time, and not as a window', async () => {
+    const { field, set } = await bounded('12:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '12:00', max: '12:00:00' });
+    });
+    expect(field().errors()).toEqual([]);
+    await set('12:01');
+    expect(
+      field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['maxTime']);
+    await set('11:59');
+    expect(
+      field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['minTime']);
+  });
+
+  it('takes a bound from another field, and moves with it', async () => {
+    @Component({
+      imports: [PctTime, FormField],
+      template: `<pct-time [formField]="f.endsAt" />`,
+    })
+    class Signal {
+      readonly model = signal<{
+        startsAt: PctTimeOfDay | null;
+        endsAt: PctTimeOfDay | null;
+      }>({ startsAt: '09:00', endsAt: '10:00' });
+      readonly f = form(this.model, (p) => {
+        pctTimeBounds(p.endsAt, {
+          min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined,
+        });
+      });
+    }
+    const f = await render(Signal);
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+    expect([time.min(), time.max()]).toEqual(['09:00', undefined]);
+    expect(f.componentInstance.f.endsAt().errors()).toEqual([]);
+
+    f.componentInstance.model.update((m) => ({ ...m, startsAt: '11:00' }));
+    await settle(f);
+    expect(time.min()).toBe('11:00');
+    expect(f.componentInstance.f.endsAt().errors()).toEqual([
+      expect.objectContaining({ kind: 'minTime', minTime: '11:00' }),
+    ]);
+
+    // An empty start is no bound.
+    f.componentInstance.model.update((m) => ({ ...m, startsAt: null }));
+    await settle(f);
+    expect(time.min()).toBeUndefined();
+    expect(f.componentInstance.f.endsAt().errors()).toEqual([]);
+  });
+
+  it('reads a bound that is not a time as no bound at all', async () => {
+    const { time, field } = await bounded('03:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: 'nine', max: () => '25:00' });
+    });
+    expect([time.min(), time.max()]).toEqual([undefined, undefined]);
+    expect(field().errors()).toEqual([]);
+  });
+
+  it('with two rules the field walks the tighter pair, and each rule grades its own', async () => {
+    const wide = (p: SchemaPathTree<Model>) =>
+      pctTimeBounds(p.startsAt, { min: '08:00', max: '20:00' });
+    const narrow = (p: SchemaPathTree<Model>) =>
+      pctTimeBounds(p.startsAt, { min: '12:00', max: '14:00' });
+
+    for (const order of [
+      [wide, narrow],
+      [narrow, wide],
+    ]) {
+      const { time, field, set } = await bounded('21:00', (p) => {
+        required(p.startsAt);
+        for (const rule of order) rule(p);
+      });
+      expect([time.min(), time.max()]).toEqual(['12:00', '14:00']);
+      expect(field().errors()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'maxTime', maxTime: '20:00' }),
+          expect.objectContaining({ kind: 'maxTime', maxTime: '14:00' }),
+        ]),
+      );
+      expect(field().errors()).toHaveLength(2);
+
+      await set('10:00');
+      expect(field().errors()).toEqual([
+        expect.objectContaining({ kind: 'minTime', minTime: '12:00' }),
+      ]);
+
+      // `required` beside them grades the empty field, which the bounds do not.
+      await set(null);
+      expect(
+        field()
+          .errors()
+          .map((e) => e.kind),
+      ).toEqual(['required']);
+    }
+  });
+
+  it('takes each side from the rule that has one', async () => {
+    const { time } = await bounded('10:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: () => undefined });
+      pctTimeBounds(p.startsAt, { min: '09:00' });
+      pctTimeBounds(p.startsAt, { max: '17:00' });
+      pctTimeBounds(p.startsAt, { min: () => undefined, max: () => undefined });
+    });
+    expect([time.min(), time.max()]).toEqual(['09:00', '17:00']);
+  });
+
+  it('hands two windows whose gaps do not meet the gap of both, and the form grades each', async () => {
+    // Everything but 06:00–07:00, and everything but 10:00–23:00: 08:00 is in both, and no
+    // single pair of bounds spells the two arcs that remain.
+    const { time, field, set } = await bounded('08:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '07:00', max: '06:00' });
+      pctTimeBounds(p.startsAt, { min: '23:00', max: '10:00' });
+    });
+    expect([time.min(), time.max()]).toEqual(['23:00', '06:00']);
+    expect(field().errors()).toEqual([]);
+
+    await set('06:30');
+    expect(
+      field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['minTime', 'maxTime']);
   });
 });

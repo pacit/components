@@ -17,7 +17,20 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { FormValueControl, ValidationError } from '@angular/forms/signals';
+import {
+  createMetadataKey,
+  MAX,
+  metadata,
+  MIN,
+  validate,
+  type FormValueControl,
+  type LimitKey,
+  type LogicFn,
+  type PathKind,
+  type SchemaPath,
+  type SchemaPathRules,
+  type ValidationError,
+} from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_CONFIG,
@@ -199,7 +212,8 @@ export class PctTime
 
   /**
    * The earliest time. It belongs to the `FormUiControl` contract, which spells an absent bound
-   * `undefined`.
+   * `undefined`, and a signal form gives it through `pctTimeBounds` — the compiler refuses the
+   * attribute beside `[formField]`.
    *
    * **The bounds clamp the panel's walk and they do not rewrite what was typed** — the date
    * field's rule: a bound clamps a MOVEMENT, and a time somebody wrote out is not one. A value
@@ -671,4 +685,157 @@ export class PctTime
       );
     });
   }
+}
+
+/**
+ * A bound `pctTimeBounds` takes: a time, or a function of the field's context that returns one —
+ * the two shapes Angular's own `min()` takes. One that is not a time, `undefined` among them, is
+ * no bound, as it is on the field's input.
+ *
+ * @since next
+ */
+export type PctTimeBound<TValue, TPathKind extends PathKind = PathKind.Root> =
+  | PctTimeOfDay
+  | undefined
+  | LogicFn<TValue, PctTimeOfDay | undefined, TPathKind>;
+
+/**
+ * What `pctTimeBounds` reports: `minTime` for a time before `min`, `maxTime` for one after
+ * `max` — and both at once for a time in the gap of a window across midnight, which is the
+ * native element's reading, "under **and** over" (0086, A12). Each carries the bound it broke,
+ * as the bound was written.
+ *
+ * @since next
+ */
+export type PctTimeBoundError =
+  | {
+      readonly kind: 'minTime';
+      readonly minTime: PctTimeOfDay;
+      readonly message?: string;
+    }
+  | {
+      readonly kind: 'maxTime';
+      readonly maxTime: PctTimeOfDay;
+      readonly message?: string;
+    };
+
+/**
+ * The bounds of `pctTimeBounds`, and the sentence its errors carry — one for both, or one
+ * written from the error, which holds the bound.
+ *
+ * @since next
+ */
+export interface PctTimeBoundsConfig<
+  TValue,
+  TPathKind extends PathKind = PathKind.Root,
+> {
+  readonly min?: PctTimeBound<TValue, TPathKind>;
+  readonly max?: PctTimeBound<TValue, TPathKind>;
+  readonly message?: string | ((error: PctTimeBoundError) => string);
+}
+
+/**
+ * The bounds the form hands the field, one key a side, as Angular keys its own `min()`: the
+ * platform's `MIN` and `MAX` POINT at a key of the field's own type, and the `[formField]`
+ * directive reads the bound through them into the control's `min` / `max` inputs
+ * (`LimitSelectionKey`). With two rules on a path, the later `min` and the earlier `max`
+ * reach the field, which is the two bounds' intersection while neither is a window. Two
+ * windows whose gaps do not meet have an intersection no single pair spells, and the panel
+ * is handed the gap of both — narrower than the form, which grades each rule on its own.
+ *
+ * Made at the top of the module and marked PURE, for the reason `./core`'s warning keys are
+ * (lesson-252): a call a bundler cannot prove free of effects stays in every application
+ * that imports the entrypoint, and the forms runtime behind it.
+ */
+const TIME_MIN = /* @__PURE__ */ createMetadataKey<
+  PctTimeOfDay | undefined,
+  PctTimeOfDay | undefined
+>({
+  getInitial: () => undefined,
+  reduce: (acc, item) =>
+    acc === undefined || (item !== undefined && pctCompareTimes(item, acc) > 0)
+      ? item
+      : acc,
+});
+
+const TIME_MAX = /* @__PURE__ */ createMetadataKey<
+  PctTimeOfDay | undefined,
+  PctTimeOfDay | undefined
+>({
+  getInitial: () => undefined,
+  reduce: (acc, item) =>
+    acc === undefined || (item !== undefined && pctCompareTimes(item, acc) < 0)
+      ? item
+      : acc,
+});
+
+function timeBound<TValue, TPathKind extends PathKind>(
+  bound: PctTimeBound<TValue, TPathKind>,
+): LogicFn<TValue, PctTimeOfDay | undefined, TPathKind> {
+  return (ctx) =>
+    optionalTime(typeof bound === 'function' ? bound(ctx) : bound);
+}
+
+/**
+ * Bounds a time field in a signal form: what Angular's `min()` and `max()` do for a number,
+ * for a `PctTimeOfDay` — which they cannot take, and which the compiler refuses as an
+ * attribute beside `[formField]` (`NG8022`). The bounds reach the field's `min` / `max`, so
+ * the panel's walk stops at them, and the form grades the value: a time outside is
+ * `minTime` or `maxTime`, and a time in the gap of a window across midnight — `min` later
+ * than `max`, `22:00` to `06:00` — is both, as the native element reads it (0086, A12).
+ *
+ * Each bound is a time or a function of the field's context, so one field can be bounded by
+ * another's value; one that is not a time is no bound. A bound equal to the value is inside,
+ * in either shape. An empty field is not graded — that is `required()`'s to say — and neither
+ * is the step: `pctTimeOnStep` is the predicate for a validator of its own. With several
+ * rules on one path each grades its own bounds and the field walks the tightest pair; see
+ * the keys above for the one pair of windows that has no tightest.
+ *
+ * @example
+ * const f = form(model, (p) => {
+ *   pctTimeBounds(p.startsAt, { min: '09:00', max: '17:00', message: 'Office hours only' });
+ *   pctTimeBounds(p.endsAt, { min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined });
+ *   pctTimeBounds(p.shift, { min: '22:00', max: '06:00' }); // the night, across midnight
+ * });
+ *
+ * @since next
+ */
+export function pctTimeBounds<
+  TValue extends PctTimeOfDay | null,
+  TPathKind extends PathKind = PathKind.Root,
+>(
+  path: SchemaPath<TValue, SchemaPathRules.Supported, TPathKind>,
+  config: PctTimeBoundsConfig<TValue, TPathKind>,
+): void {
+  const min = timeBound(config.min);
+  const max = timeBound(config.max);
+  // The keys hold a `PctTimeOfDay`, and the platform asks for a key of the path's own value
+  // type, which it cannot see is the same type while `TValue` is a parameter.
+  // A side the rule does not give writes `undefined`, which each key's reducer passes over.
+  metadata(path, TIME_MIN, min);
+  metadata(path, MIN, () => TIME_MIN as unknown as LimitKey<TValue>);
+  metadata(path, TIME_MAX, max);
+  metadata(path, MAX, () => TIME_MAX as unknown as LimitKey<TValue>);
+  validate(path, (ctx) => {
+    const value = ctx.value();
+    if (!isPctTimeOfDay(value)) return undefined;
+    const lo = min(ctx);
+    const hi = max(ctx);
+    const under = lo !== undefined && pctCompareTimes(value, lo) < 0;
+    const over = hi !== undefined && pctCompareTimes(value, hi) > 0;
+    // In a window a time is outside only in its gap: before the start AND after the end.
+    const window =
+      lo !== undefined && hi !== undefined && pctCompareTimes(lo, hi) > 0;
+    if (window && !(under && over)) return undefined;
+    const errors: PctTimeBoundError[] = [];
+    if (under) errors.push({ kind: 'minTime', minTime: lo });
+    if (over) errors.push({ kind: 'maxTime', maxTime: hi });
+    const message = config.message;
+    return message === undefined
+      ? errors
+      : errors.map((error) => ({
+          ...error,
+          message: typeof message === 'function' ? message(error) : message,
+        }));
+  });
 }

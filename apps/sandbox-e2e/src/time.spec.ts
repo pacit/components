@@ -489,6 +489,50 @@ test.describe('Time — the bounds and the step', () => {
       '',
     );
   });
+
+  /**
+   * A signal form cannot write `min` beside `[formField]` (`NG8022`), and Angular's own `min()`
+   * takes a number: `pctTimeBounds` binds the field's own type to the platform's `MIN` / `MAX`,
+   * and the directive hands the bounds on. The closing time is bounded by the opening one.
+   */
+  test('a signal form hands its bounds to the panel, and reports a time typed outside', async ({
+    page,
+  }) => {
+    const closes = page.getByTestId('time-closes');
+    await partOf(closes, 'toggle').click();
+    await expect(
+      columnOf(panelOf(page), 'hour').locator(
+        '[role="option"]:not([aria-disabled])',
+      ),
+    ).toHaveText([
+      '08',
+      '09',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+      '17',
+      '18',
+      '19',
+      '20',
+      '21',
+      '22',
+    ]);
+    await page.keyboard.press('Escape');
+
+    const input = inputOf(page, 'time-closes');
+    await input.fill('07:30');
+    await input.blur();
+    await expect(input).toHaveValue('07:30');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    const field = page.getByTestId('demo-form-bounds').locator('pct-field');
+    await expect(partOf(field.nth(1), 'field-error')).toHaveText(
+      'It closes after it opens',
+    );
+  });
 });
 
 /**

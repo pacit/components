@@ -1,7 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { PctField } from '@pacit/components/field';
-import { PctTime, PctTimeColumns, PctTimeOfDay } from '@pacit/components/time';
+import {
+  PctTime,
+  PctTimeColumns,
+  PctTimeOfDay,
+  pctTimeBounds,
+} from '@pacit/components/time';
 import { SbxDemo } from '../../ui/demo';
 
 /**
@@ -21,6 +26,31 @@ export class TimeView {
 
   protected readonly meetingForm = form(this.model, (p) => {
     required(p.startsAt, { message: 'Pick the time it starts' });
+  });
+
+  protected readonly hours = signal<{
+    opensAt: PctTimeOfDay | null;
+    closesAt: PctTimeOfDay | null;
+  }>({ opensAt: '08:00', closesAt: '18:00' });
+
+  /**
+   * Bounds a signal form hands the fields: the compiler refuses `min` and `max` beside
+   * `[formField]`, and Angular's own `min()` / `max()` take numbers.
+   */
+  protected readonly hoursForm = form(this.hours, (p) => {
+    pctTimeBounds(p.opensAt, {
+      min: '06:00',
+      max: '12:00',
+      message: 'It opens between 06:00 and 12:00',
+    });
+    pctTimeBounds(p.closesAt, {
+      min: ({ valueOf }) => valueOf(p.opensAt) ?? undefined,
+      max: '22:00',
+      message: (error) =>
+        error.kind === 'minTime'
+          ? 'It closes after it opens'
+          : 'It closes by 22:00',
+    });
   });
 
   protected readonly time = signal<PctTimeOfDay | null>('13:05');
