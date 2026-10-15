@@ -118,7 +118,7 @@ libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
 libs/components/date/src/date.ts 80.15 218(0) 54 0 0 8
 libs/components/date/src/day.ts 97.53 158(2) 4 0 0 0
 libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
-libs/components/datetime/src/datetime-field.ts 83.95 612(0) 113 0 4 10
+libs/components/datetime/src/datetime-field.ts 85.64 692(0) 112 0 4 10
 libs/components/datetime/src/datetime.ts 100.00 99(0) 0 0 0 0
 libs/components/datetime/src/halves.ts 91.67 33(0) 3 0 0 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
@@ -169,5 +169,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.50 7443/8605
+TOTAL 86.63 7523/8684
 ```

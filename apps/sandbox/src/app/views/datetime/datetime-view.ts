@@ -1,7 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { PctDay, pctWeekday } from '@pacit/components/date';
-import { PctDatetime, PctDateTime } from '@pacit/components/datetime';
+import {
+  PctDatetime,
+  PctDateTime,
+  pctDateTimeBounds,
+} from '@pacit/components/datetime';
 import { PctField } from '@pacit/components/field';
 import { SbxDemo } from '../../ui/demo';
 
@@ -45,4 +49,32 @@ export class DatetimeView {
   /** A room's bookings on 2 December: the whole of ten o'clock, and half past twelve. */
   protected readonly taken = (value: PctDateTime): boolean =>
     value.startsWith('2026-12-02T10:') || value === '2026-12-02T12:30';
+
+  protected readonly talk = signal<{
+    startsAt: PctDateTime | null;
+    endsAt: PctDateTime | null;
+  }>({ startsAt: '2026-12-01T10:00', endsAt: '2026-12-01T11:00' });
+
+  /**
+   * Bounds a signal form hands the fields: the compiler refuses `min` and `max` beside
+   * `[formField]`, and Angular's own `minDate()` / `maxDate()` take a `Date`.
+   */
+  protected readonly talkForm = form(this.talk, (p) => {
+    pctDateTimeBounds(p.startsAt, {
+      min: '2026-12-01T09:00',
+      max: '2026-12-03T18:00',
+      message:
+        'The conference runs from 1 December, 09:00, to 3 December, 18:00',
+    });
+    // The start and the close in one rule: a datetime's pair is never a window, so a start
+    // past the close is a talk with no end the form takes, not the night between them.
+    pctDateTimeBounds(p.endsAt, {
+      min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined,
+      max: '2026-12-03T18:00',
+      message: (error) =>
+        error.kind === 'minDateTime'
+          ? 'It cannot end before it starts'
+          : 'The conference closes on 3 December at 18:00',
+    });
+  });
 }

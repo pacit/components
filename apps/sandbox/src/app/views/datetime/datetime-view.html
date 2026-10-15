@@ -111,3 +111,31 @@
     />
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="Bounds from a signal form"
+  summary="pctDateTimeBounds hands a signal form's bounds to the field, where the compiler refuses min and max beside [formField]: the calendar and the columns walk inside them, and a datetime typed outside is the form's to report. The end is bounded by the start and by the close, in one rule — a datetime's pair is never a window."
+  [reqs]="['req-api-signal-forms', 'req-api-datetime']"
+  data-testid="demo-form-bounds"
+>
+  <div class="datetime-view__row">
+    <pct-field
+      label="Starts"
+      hint="From 1 December, 09:00, to 3 December, 18:00"
+    >
+      <pct-datetime
+        [formField]="talkForm.startsAt"
+        data-testid="datetime-talk-starts"
+      />
+    </pct-field>
+    <pct-field
+      label="Ends"
+      hint="Not before it starts, and by 3 December at 18:00"
+    >
+      <pct-datetime
+        [formField]="talkForm.endsAt"
+        data-testid="datetime-talk-ends"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>

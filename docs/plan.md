@@ -136,8 +136,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     [`req-api-time`](requirements/api.md#req-api-time); the field `PctTime` and the columns
     `PctTimeColumns` on 2026-10-08, with the tier `--pct-time-*`, nine `PCT_TEXTS` keys and the
     icon role `clock` — and `./time` left `check-bundle`'s list of componentless entrypoints
-  - a signal form gives the field no bounds: Angular 22.2's `min()` and `max()` take numbers,
-    no rule ships, and the compiler refuses `min` beside `[formField]` (`NG8022`) — the card says so
+  - a signal form gives the field its bounds through `pctTimeBounds` since 2026-10-15
+    ([0093](decisions/0093-a-bound-of-the-fields-own-type-reaches-it-through-the-limit-key.md)):
+    Angular 22.2's `min()` takes numbers, and the compiler refuses `min` beside `[formField]`
   - the round trip over 0086's 38 locales is read in three engines
     (`apps/sandbox-e2e/src/time.spec.ts`), and `/time` carries 12-hour and 24-hour fields
   - both cards filled in, the readers' log among their rows
@@ -151,6 +152,8 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     the chrome hands its label's id to a control the label points at, for the two texts' names
   - the panel in three engines and the three readers on it — the grid's Escape on `/datetime`,
     a column's on `/time`, the same listbox (4.82)
+  - a signal form gives the field its bounds through `pctDateTimeBounds` since 2026-10-15 (0093,
+    amended), and none where its rules meet in no datetime
 
 - [x] **1.5 — warnings on a field: `req-api-warning`**, landed 2026-10-07 as
       [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, amended
