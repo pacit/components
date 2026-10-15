@@ -578,8 +578,8 @@ const isFocusable = (tag, attrs) =>
 /**
  * The opening tag at an offset of the text both readings take (`readTree`), on one line and cut
  * short: what a refusal shows a reader of the tag it means. The line stands in where no tag opens
- * there to the scan, which in a template that parses only a tag of an ICU's case reaches: the HTML
- * tree places it, and the scan cannot read it (`cased`).
+ * there to the scan, which in a template that parses a tag behind a quote in a bracketed name
+ * reaches, in an ICU's case (`cased`) or not: a tree places it, and the scan cannot read it.
  */
 const openingAt = (text, offset) => {
   const tag = new RegExp(OPENING_TAG.source, 'y');
