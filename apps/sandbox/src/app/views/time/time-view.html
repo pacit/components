@@ -189,3 +189,19 @@
     data-testid="time-columns-inline"
   />
 </sbx-demo>
+
+<sbx-demo
+  heading="Bounds from a signal form"
+  summary="pctTimeBounds hands a signal form's bounds to the field, where the compiler refuses min and max beside [formField]: the panel walks inside them, and a time typed outside is the form's to report. The closing time is bounded by the opening one."
+  [reqs]="['req-api-signal-forms', 'req-api-time']"
+  data-testid="demo-form-bounds"
+>
+  <div class="time-view__row">
+    <pct-field label="Opens at" hint="Between 06:00 and 12:00">
+      <pct-time [formField]="hoursForm.opensAt" data-testid="time-opens" />
+    </pct-field>
+    <pct-field label="Closes at" hint="Not before it opens, and by 22:00">
+      <pct-time [formField]="hoursForm.closesAt" data-testid="time-closes" />
+    </pct-field>
+  </div>
+</sbx-demo>

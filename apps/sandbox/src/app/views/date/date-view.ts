@@ -1,6 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
-import { PctCalendar, PctDate, PctDay } from '@pacit/components/date';
+import {
+  PctCalendar,
+  PctDate,
+  PctDay,
+  pctDayBounds,
+} from '@pacit/components/date';
 import { PctField } from '@pacit/components/field';
 import { SbxDemo } from '../../ui/demo';
 
@@ -21,6 +26,27 @@ export class DateView {
 
   protected readonly bookingForm = form(this.model, (p) => {
     required(p.startsOn, { message: 'Pick the day it starts' });
+  });
+
+  protected readonly stay = signal<{
+    arrives: PctDay | null;
+    leaves: PctDay | null;
+  }>({ arrives: '2026-08-27', leaves: '2026-08-30' });
+
+  /**
+   * Bounds a signal form hands the fields: the compiler refuses `min` and `max` beside
+   * `[formField]`, and Angular's own `minDate()` / `maxDate()` take a `Date`.
+   */
+  protected readonly stayForm = form(this.stay, (p) => {
+    pctDayBounds(p.arrives, {
+      min: '2026-08-01',
+      max: '2026-12-31',
+      message: 'Bookings run from August to December 2026',
+    });
+    pctDayBounds(p.leaves, {
+      min: ({ valueOf }) => valueOf(p.arrives) ?? undefined,
+      message: 'The stay ends after it starts',
+    });
   });
 
   protected readonly day = signal<PctDay | null>('2026-08-27');

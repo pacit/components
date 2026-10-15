@@ -15,7 +15,20 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { FormValueControl, ValidationError } from '@angular/forms/signals';
+import {
+  createMetadataKey,
+  MAX,
+  metadata,
+  MIN,
+  validate,
+  type FormValueControl,
+  type LimitKey,
+  type LogicFn,
+  type PathKind,
+  type SchemaPath,
+  type SchemaPathRules,
+  type ValidationError,
+} from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_CONFIG,
@@ -36,7 +49,7 @@ import {
 import { PctIcon } from '@pacit/components/icon';
 
 import { PctCalendar, PctDayPredicate } from './calendar';
-import { isPctDay, PctDay } from './day';
+import { isPctDay, pctCompareDays, PctDay } from './day';
 import { pctDayFormat } from './locale';
 
 /**
@@ -192,7 +205,8 @@ export class PctDate
 
   /**
    * The earliest and latest day. They belong to the `FormUiControl` contract, which spells an
-   * absent bound `undefined`.
+   * absent bound `undefined`, and a signal form gives them through `pctDayBounds` — the
+   * compiler refuses the attribute beside `[formField]`.
    *
    * **They clamp the calendar's walk and they do not rewrite what was typed**, which is the
    * one place this control parts company with `[pctNumber]`: a bound clamps a MOVEMENT, and a
@@ -634,4 +648,147 @@ export class PctDate
     event.preventDefault();
     this.close(true);
   }
+}
+
+/**
+ * A bound `pctDayBounds` takes: a day, or a function of the field's context that returns one —
+ * the two shapes Angular's own `min()` takes. One that is not a day, `undefined` among them, is
+ * no bound, as it is on the field's input.
+ *
+ * @since next
+ */
+export type PctDayBound<TValue, TPathKind extends PathKind = PathKind.Root> =
+  PctDay | undefined | LogicFn<TValue, PctDay | undefined, TPathKind>;
+
+/**
+ * What `pctDayBounds` reports: `minDay` for a day before `min`, `maxDay` for one after `max`.
+ * Each carries the bound it broke, as the bound was written.
+ *
+ * @since next
+ */
+export type PctDayBoundError =
+  | {
+      readonly kind: 'minDay';
+      readonly minDay: PctDay;
+      readonly message?: string;
+    }
+  | {
+      readonly kind: 'maxDay';
+      readonly maxDay: PctDay;
+      readonly message?: string;
+    };
+
+/**
+ * The bounds of `pctDayBounds`, and the sentence its errors carry — one for both, or one
+ * written from the error, which holds the bound.
+ *
+ * @since next
+ */
+export interface PctDayBoundsConfig<
+  TValue,
+  TPathKind extends PathKind = PathKind.Root,
+> {
+  readonly min?: PctDayBound<TValue, TPathKind>;
+  readonly max?: PctDayBound<TValue, TPathKind>;
+  readonly message?: string | ((error: PctDayBoundError) => string);
+}
+
+/**
+ * The bounds the form hands the field, one key a side, as Angular keys its own `minDate()`:
+ * the platform's `MIN` and `MAX` POINT at a key of the field's own type, and the
+ * `[formField]` directive reads the bound through them into the control's `min` / `max`
+ * inputs (`LimitSelectionKey`). With two rules on a path the later `min` and the earlier
+ * `max` reach the field — the intersection of the two — compared as days and not as
+ * strings, which part company past the year 9999 (lesson-185).
+ *
+ * Made at the top of the module and marked PURE, for the reason `./core`'s warning keys are
+ * (lesson-252): a call a bundler cannot prove free of effects stays in every application
+ * that imports the entrypoint, and the forms runtime behind it.
+ */
+const DAY_MIN = /* @__PURE__ */ createMetadataKey<
+  PctDay | undefined,
+  PctDay | undefined
+>({
+  getInitial: () => undefined,
+  reduce: (acc, item) =>
+    acc === undefined || (item !== undefined && pctCompareDays(item, acc) > 0)
+      ? item
+      : acc,
+});
+
+const DAY_MAX = /* @__PURE__ */ createMetadataKey<
+  PctDay | undefined,
+  PctDay | undefined
+>({
+  getInitial: () => undefined,
+  reduce: (acc, item) =>
+    acc === undefined || (item !== undefined && pctCompareDays(item, acc) < 0)
+      ? item
+      : acc,
+});
+
+function dayBound<TValue, TPathKind extends PathKind>(
+  bound: PctDayBound<TValue, TPathKind>,
+): LogicFn<TValue, PctDay | undefined, TPathKind> {
+  return (ctx) => optionalDay(typeof bound === 'function' ? bound(ctx) : bound);
+}
+
+/**
+ * Bounds a date field in a signal form: what Angular's `minDate()` and `maxDate()` do for a
+ * `Date`, for a `PctDay` — which they cannot take (their path is a `Date`'s, and their
+ * validator reads the value with `getTime()`), and which the compiler refuses as an
+ * attribute beside `[formField]` (`NG8022`). The bounds reach the field's `min` / `max`, so
+ * the calendar's walk stops at them, and the form grades the value: a day outside is
+ * `minDay` or `maxDay`.
+ *
+ * Each bound is a day or a function of the field's context, so one field can be bounded by
+ * another's value; one that is not a day is no bound. A bound is inside. An empty field is
+ * not graded — that is `required()`'s to say — and neither is `dateDisabled`, which is the
+ * calendar's alone. With several rules on one path each grades its own bounds and the field
+ * walks their intersection.
+ *
+ * @example
+ * const f = form(model, (p) => {
+ *   pctDayBounds(p.startsOn, { min: '2026-01-01', message: 'From the new year' });
+ *   pctDayBounds(p.endsOn, { min: ({ valueOf }) => valueOf(p.startsOn) ?? undefined });
+ * });
+ *
+ * @since next
+ */
+export function pctDayBounds<
+  TValue extends PctDay | null,
+  TPathKind extends PathKind = PathKind.Root,
+>(
+  path: SchemaPath<TValue, SchemaPathRules.Supported, TPathKind>,
+  config: PctDayBoundsConfig<TValue, TPathKind>,
+): void {
+  const min = dayBound(config.min);
+  const max = dayBound(config.max);
+  // The keys hold a `PctDay`, and the platform asks for a key of the path's own value type,
+  // which it cannot see is the same type while `TValue` is a parameter.
+  // A side the rule does not give writes `undefined`, which each key's reducer passes over.
+  metadata(path, DAY_MIN, min);
+  metadata(path, MIN, () => DAY_MIN as unknown as LimitKey<TValue>);
+  metadata(path, DAY_MAX, max);
+  metadata(path, MAX, () => DAY_MAX as unknown as LimitKey<TValue>);
+  validate(path, (ctx) => {
+    const value = ctx.value();
+    if (!isPctDay(value)) return undefined;
+    const lo = min(ctx);
+    const hi = max(ctx);
+    const errors: PctDayBoundError[] = [];
+    if (lo !== undefined && pctCompareDays(value, lo) < 0) {
+      errors.push({ kind: 'minDay', minDay: lo });
+    }
+    if (hi !== undefined && pctCompareDays(value, hi) > 0) {
+      errors.push({ kind: 'maxDay', maxDay: hi });
+    }
+    const message = config.message;
+    return message === undefined
+      ? errors
+      : errors.map((error) => ({
+          ...error,
+          message: typeof message === 'function' ? message(error) : message,
+        }));
+  });
 }

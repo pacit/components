@@ -363,7 +363,11 @@ are one._
   `min()` and `max()` take numbers, and a string bound reaches a control only through a rule
   that binds a limit of the field's own type to `MIN` or `MAX`. Whether the module ships that
   rule is for its own task to measure — the date's card said the directive fills its bounds,
-  with no case behind it, and is hedged beside this record. The bounds clamp the panel's walk —
+  with no case behind it, and is hedged beside this record. _Amended 2026-10-15: measured, and
+  it ships — `pctTimeBounds` in `./time` and `pctDayBounds` in `./date` bind a key of the
+  field's own type to `MIN` / `MAX`, reach the field and grade the value, a window's gap as
+  under and over ([0093](0093-a-bound-of-the-fields-own-type-reaches-it-through-the-limit-key.md))._
+  The bounds clamp the panel's walk —
   an option outside them is disabled — and **never rewrite what was typed**: a bound clamps a
   movement, and a sentence is not one.
 - **`min` later than `max` is a window across midnight**, `22:00` to `06:00`. The HTML

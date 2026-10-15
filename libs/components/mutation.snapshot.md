@@ -115,7 +115,7 @@ libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
 libs/components/core/src/texts.ts 100.00 51(0) 0 0 0 0
 libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
 libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
-libs/components/date/src/date.ts 73.87 147(0) 52 0 0 8
+libs/components/date/src/date.ts 80.15 218(0) 54 0 0 8
 libs/components/date/src/day.ts 97.53 158(2) 4 0 0 0
 libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
 libs/components/datetime/src/datetime-field.ts 83.95 612(0) 113 0 4 10
@@ -162,12 +162,12 @@ libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
 libs/components/time/src/lattice.ts 97.25 106(0) 3 0 0 0
 libs/components/time/src/locale.ts 100.00 277(0) 0 0 0 0
 libs/components/time/src/time-columns.ts 77.97 308(0) 84 0 3 4
-libs/components/time/src/time-field.ts 80.09 185(0) 46 0 0 9
+libs/components/time/src/time-field.ts 86.41 318(0) 50 0 0 9
 libs/components/time/src/time.ts 100.00 230(0) 0 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.23 7239/8395
+TOTAL 86.50 7443/8605
 ```

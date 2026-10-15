@@ -9,14 +9,16 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   form,
   FormField,
+  minDate,
   required,
   requiredError,
+  type SchemaPathTree,
   type ValidationError,
 } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 
-import { PctDate } from './date';
+import { PctDate, pctDayBounds } from './date';
 import { PctDay } from './day';
 
 const controlOf = (f: ComponentFixture<unknown>) =>
@@ -871,5 +873,258 @@ describe('PctDate — the interop that writes what the type forbids', () => {
     f.detectChanges();
     await f.whenStable();
     expect(controlOf(f).value).toBe('');
+  });
+});
+
+/**
+ * `pctDayBounds` — the rule a signal form has for a `PctDay` bound, which Angular's `min()`
+ * / `max()` cannot take, nor its `minDate()` / `maxDate()` (the last case says why), and the
+ * compiler refuses as an attribute beside `[formField]` (`NG8022`). The platform's `MIN` /
+ * `MAX` point at a key of the field's own type, and the directive reads the bound through
+ * them into the field's inputs.
+ */
+describe('PctDate — bounds from a signal form (pctDayBounds)', () => {
+  type Model = { startsOn: PctDay | null };
+
+  async function bounded(
+    startsOn: PctDay | null,
+    rules: (p: SchemaPathTree<Model>) => void,
+  ) {
+    @Component({
+      imports: [PctDate, FormField],
+      template: `<pct-date [formField]="f.startsOn" locale="en-GB" />`,
+    })
+    class Signal {
+      readonly model = signal<Model>({ startsOn });
+      readonly f = form(this.model, rules);
+    }
+    const f = await render(Signal);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+    const field = () => f.componentInstance.f.startsOn();
+    const set = async (value: PctDay | null) => {
+      f.componentInstance.model.set({ startsOn: value });
+      f.detectChanges();
+      await f.whenStable();
+    };
+    return { f, date, field, set };
+  }
+
+  it('hands the bounds to the field, and the calendar walks inside them', async () => {
+    const { f, date, field } = await bounded('2026-08-15', (p) => {
+      pctDayBounds(p.startsOn, { min: '2026-08-10', max: '2026-08-20' });
+    });
+    expect([date.min(), date.max()]).toEqual(['2026-08-10', '2026-08-20']);
+    expect([field().min?.(), field().max?.()]).toEqual([
+      '2026-08-10',
+      '2026-08-20',
+    ]);
+
+    toggleOf(f).click();
+    f.detectChanges();
+    await f.whenStable();
+    const takeable = daysInPanel().filter(
+      (d) => !d.hasAttribute('data-pct-disabled'),
+    );
+    expect(takeable.map((d) => d.textContent?.trim())).toEqual([
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+      '17',
+      '18',
+      '19',
+      '20',
+    ]);
+  });
+
+  it('grades a day outside, and none on a bound, nor an empty field', async () => {
+    const { field, set } = await bounded('2026-08-09', (p) => {
+      pctDayBounds(p.startsOn, { min: '2026-08-10', max: '2026-08-20' });
+    });
+    expect(field().errors()).toEqual([
+      expect.objectContaining({ kind: 'minDay', minDay: '2026-08-10' }),
+    ]);
+    expect(field().errors()[0]).not.toHaveProperty('message');
+
+    await set('2026-08-21');
+    expect(field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxDay', maxDay: '2026-08-20' }),
+    ]);
+
+    for (const inside of ['2026-08-10', '2026-08-20', null]) {
+      await set(inside);
+      expect(field().errors()).toEqual([]);
+    }
+  });
+
+  it('has no window: a min later than its max leaves no day inside', async () => {
+    const { field, set } = await bounded('2026-06-01', (p) => {
+      pctDayBounds(p.startsOn, { min: '2026-12-01', max: '2026-01-01' });
+    });
+    expect(
+      field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['minDay', 'maxDay']);
+    await set('2027-01-01');
+    expect(
+      field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['maxDay']);
+  });
+
+  it('writes one message on every error, or one written from the error', async () => {
+    const one = await bounded('2025-12-31', (p) => {
+      pctDayBounds(p.startsOn, {
+        min: '2026-01-01',
+        message: 'From the new year',
+      });
+    });
+    expect(one.field().errors()).toEqual([
+      expect.objectContaining({
+        kind: 'minDay',
+        minDay: '2026-01-01',
+        message: 'From the new year',
+      }),
+    ]);
+
+    const each = await bounded('2027-01-01', (p) => {
+      pctDayBounds(p.startsOn, {
+        min: '2026-01-01',
+        max: '2026-12-31',
+        message: (e) =>
+          e.kind === 'minDay' ? `From ${e.minDay}` : `Until ${e.maxDay}`,
+      });
+    });
+    expect(each.field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxDay', message: 'Until 2026-12-31' }),
+    ]);
+    // The message reaches the field's one message line once the field is touched.
+    await blur(each.f);
+    expect(
+      each.f.nativeElement.querySelector('[data-pct-part="error"]')
+        ?.textContent,
+    ).toContain('Until 2026-12-31');
+  });
+
+  it('takes a bound from another field, and moves with it', async () => {
+    @Component({
+      imports: [PctDate, FormField],
+      template: `<pct-date [formField]="f.endsOn" />`,
+    })
+    class Signal {
+      readonly model = signal<{
+        startsOn: PctDay | null;
+        endsOn: PctDay | null;
+      }>({ startsOn: '2026-08-10', endsOn: '2026-08-12' });
+      readonly f = form(this.model, (p) => {
+        pctDayBounds(p.endsOn, {
+          min: ({ valueOf }) => valueOf(p.startsOn) ?? undefined,
+        });
+      });
+    }
+    const f = await render(Signal);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+    expect([date.min(), date.max()]).toEqual(['2026-08-10', undefined]);
+    expect(f.componentInstance.f.endsOn().errors()).toEqual([]);
+
+    f.componentInstance.model.update((m) => ({ ...m, startsOn: '2026-08-14' }));
+    f.detectChanges();
+    await f.whenStable();
+    expect(date.min()).toBe('2026-08-14');
+    expect(f.componentInstance.f.endsOn().errors()).toEqual([
+      expect.objectContaining({ kind: 'minDay', minDay: '2026-08-14' }),
+    ]);
+
+    // An empty start is no bound.
+    f.componentInstance.model.update((m) => ({ ...m, startsOn: null }));
+    f.detectChanges();
+    await f.whenStable();
+    expect(date.min()).toBeUndefined();
+    expect(f.componentInstance.f.endsOn().errors()).toEqual([]);
+  });
+
+  it('reads a bound that is not a day as no bound at all', async () => {
+    const { date, field } = await bounded('2026-08-15', (p) => {
+      pctDayBounds(p.startsOn, { min: 'soon', max: () => '2026-02-30' });
+    });
+    expect([date.min(), date.max()]).toEqual([undefined, undefined]);
+    expect(field().errors()).toEqual([]);
+  });
+
+  it('with two rules the field walks their intersection, and each rule grades its own', async () => {
+    const wide = (p: SchemaPathTree<Model>) =>
+      pctDayBounds(p.startsOn, { min: '2026-01-01', max: '2026-12-31' });
+    const narrow = (p: SchemaPathTree<Model>) =>
+      pctDayBounds(p.startsOn, { min: '2026-06-01', max: '2026-06-30' });
+
+    for (const order of [
+      [wide, narrow],
+      [narrow, wide],
+    ]) {
+      const { date, field, set } = await bounded('2027-01-01', (p) => {
+        required(p.startsOn);
+        for (const rule of order) rule(p);
+      });
+      expect([date.min(), date.max()]).toEqual(['2026-06-01', '2026-06-30']);
+      expect(field().errors()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'maxDay', maxDay: '2026-12-31' }),
+          expect.objectContaining({ kind: 'maxDay', maxDay: '2026-06-30' }),
+        ]),
+      );
+      expect(field().errors()).toHaveLength(2);
+
+      await set('2026-03-01');
+      expect(field().errors()).toEqual([
+        expect.objectContaining({ kind: 'minDay', minDay: '2026-06-01' }),
+      ]);
+
+      // `required` beside them grades the empty field, which the bounds do not.
+      await set(null);
+      expect(
+        field()
+          .errors()
+          .map((e) => e.kind),
+      ).toEqual(['required']);
+    }
+  });
+
+  it('takes each side from the rule that has one', async () => {
+    const { date } = await bounded('2026-08-15', (p) => {
+      pctDayBounds(p.startsOn, { min: () => undefined });
+      pctDayBounds(p.startsOn, { min: '2026-08-01' });
+      pctDayBounds(p.startsOn, { max: '2026-08-31' });
+      pctDayBounds(p.startsOn, {
+        min: () => undefined,
+        max: () => undefined,
+      });
+    });
+    expect([date.min(), date.max()]).toEqual(['2026-08-01', '2026-08-31']);
+  });
+
+  it('compares days as days past the year 9999, where the strings part company', async () => {
+    const { date, field } = await bounded('10000-01-02', (p) => {
+      pctDayBounds(p.startsOn, { min: '10000-01-01', max: '10000-01-01' });
+      pctDayBounds(p.startsOn, { min: '9999-12-31', max: '10000-12-31' });
+    });
+    expect([date.min(), date.max()]).toEqual(['10000-01-01', '10000-01-01']);
+    expect(field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxDay', maxDay: '10000-01-01' }),
+    ]);
+  });
+
+  it("Angular's own minDate cannot bound a PctDay: its path is a Date's, and it reads the value as one", () => {
+    TestBed.runInInjectionContext(() => {
+      const f = form(signal<Model>({ startsOn: '2026-08-15' }), (p) => {
+        // @ts-expect-error — `minDate` takes a path whose value is a `Date`.
+        minDate(p.startsOn, new Date(2026, 0, 1));
+      });
+      expect(() => f.startsOn().errors()).toThrow(TypeError);
+    });
   });
 });
