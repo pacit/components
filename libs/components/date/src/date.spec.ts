@@ -320,7 +320,7 @@ describe('PctDate — junk in the field', () => {
     expect(f.componentInstance.touched()).toBe(true);
   });
 
-  it('empties the field, the text and the date alike, on reset', async () => {
+  it('takes junk back on reset, and the value it leaves is the one it held', async () => {
     const f = await render(Host);
     await type(f, 'junk');
     await blur(f);
@@ -339,6 +339,24 @@ describe('PctDate — junk in the field', () => {
         .querySelector('pct-date')
         ?.hasAttribute('data-pct-malformed'),
     ).toBe(false);
+  });
+
+  it('takes back a date half typed on reset, and shows the date the field holds', async () => {
+    const f = await render(Host);
+    // A two-digit year is a date already — the guess lands it in 2020 — and the text is not
+    // the date written out yet.
+    await type(f, '01/12/20');
+    expect(f.componentInstance.value()).toBe('2020-12-01');
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    // The value is the form's, and the text is the field's: the reset rewrites the one from
+    // the other instead of emptying both.
+    expect(f.componentInstance.value()).toBe('2020-12-01');
+    expect(controlOf(f).value).toBe('01/12/2020');
   });
 });
 
@@ -374,6 +392,56 @@ describe('PctDate — the panel', () => {
     expect(panel()?.getAttribute('role')).toBe('dialog');
     expect(toggleOf(f).getAttribute('aria-expanded')).toBe('true');
     expect(toggleOf(f).getAttribute('aria-controls')).toBe(panel()?.id);
+  });
+
+  it('is taken back by a reset, the date stays, and focus held in it comes back to the field', async () => {
+    const f = await render(Host);
+    toggleOf(f).click();
+    f.detectChanges();
+    await f.whenStable();
+    expect(panel()?.contains(document.activeElement)).toBe(true);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+
+    // A form put back to its start has no calendar hanging off it — the select's reading. A
+    // panel taken out under focus would drop it to `body`.
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(f.componentInstance.value()).toBe('2026-08-27');
+    expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('leaves focus where it is when a reset closes a panel that does not hold it', async () => {
+    const f = await render(Host);
+    toggleOf(f).click();
+    f.detectChanges();
+    await f.whenStable();
+    (document.activeElement as HTMLElement).blur();
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('closes a panel asked for in the same task as the reset, before it is drawn', async () => {
+    const f = await render(Host);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+    // The press opens the panel and the reset arrives before a render has drawn it.
+    toggleOf(f).click();
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).not.toBe(controlOf(f));
   });
 
   it('names the button and the panel it opens with one string', async () => {
@@ -676,6 +744,53 @@ describe('PctDate — the forms that bind it', () => {
     await blur(f);
     expect(f.componentInstance.model().startsOn).toBe('2026-12-01');
     expect(f.componentInstance.f.startsOn().touched()).toBe(true);
+
+    // Angular's reset does not change the model, and one given a value shows that value; the
+    // control's own reset emptied the model after either, and was counted as an edit.
+    f.componentInstance.f().reset();
+    f.detectChanges();
+    await f.whenStable();
+    expect(f.componentInstance.model().startsOn).toBe('2026-12-01');
+    expect(controlOf(f).value).toBe('01/12/2026');
+    expect(f.componentInstance.f.startsOn().dirty()).toBe(false);
+    expect(f.componentInstance.f.startsOn().touched()).toBe(false);
+
+    await type(f, 'junk');
+    await blur(f);
+    f.componentInstance.f().reset({ startsOn: '2026-01-02' });
+    f.detectChanges();
+    await f.whenStable();
+    expect(f.componentInstance.model().startsOn).toBe('2026-01-02');
+    expect(controlOf(f).value).toBe('02/01/2026');
+    expect(controlOf(f).getAttribute('aria-invalid')).toBeNull();
+    expect(f.componentInstance.f.startsOn().dirty()).toBe(false);
+  });
+
+  it("a form's reset to a value shows that value over a date the field holds", async () => {
+    @Component({
+      imports: [PctDate, FormField],
+      template: `<pct-date [formField]="f.startsOn" locale="es-ES" />`,
+    })
+    class Signal {
+      readonly model = signal<{ startsOn: PctDay | null }>({
+        startsOn: '2026-08-27',
+      });
+      readonly f = form(this.model);
+    }
+
+    const f = await render(Signal);
+    await type(f, '01/12/2026');
+    await blur(f);
+
+    // The form sets the day and then calls the control's reset; a reset that wrote `null`
+    // reached the form after that day and won.
+    f.componentInstance.f().reset({ startsOn: '2026-01-02' });
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(f.componentInstance.model().startsOn).toBe('2026-01-02');
+    expect(controlOf(f).value).toBe('02/01/2026');
+    expect(f.componentInstance.f.startsOn().dirty()).toBe(false);
   });
 
   it('works with [formControl], in the language the field is in', async () => {

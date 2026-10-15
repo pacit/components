@@ -122,6 +122,10 @@ trigger, and offering to undo something invisible is the same defect one floor d
 - `reset()` and the cross are now one thing plus the panel. What the empty state **is** stayed
   with the subclass (`clearValue`); what a reset **means** moved to the base, where it is
   written once.
+  - _Amended 2026-10-15: **they are two things again.** A reset is the panel alone_ — it takes
+    back what the control holds and the form does not, and the answer is the form's
+    ([0092](0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)). `clearValue` is
+    the cross's now; the reset still lives once, in the base, because the panel is the base's.
 - The space the cross needs is reserved by the **input** (`data-pct-clearable` on the host),
   not by the cross standing: a trigger whose words reflowed the moment an answer appeared
   under them would move while being read.

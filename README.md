@@ -239,7 +239,9 @@ reference as the option in the list:
 ```
 
 No selection is `null`. An application with a non-nullable field supplies its own empty value
-(`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
+(`[emptyValue]="''"`), so the cross that clears it (`clearable`) does not write `null` against
+the model's type. A form's reset writes nothing into a control: `form().reset()` keeps the
+values, as Angular documents, and `form().reset(value)` shows the one it is given.
 
 **More than one answer is a different tag**, `pct-multi-select` — same panel, same options, a
 value that is a list:

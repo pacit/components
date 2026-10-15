@@ -237,15 +237,18 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   protected abstract initialActive(): number;
 
   /**
-   * Called by signal forms when the form is reset — the same two things a clear does, plus
-   * the panel: a form put back to its start has no open list hanging off it. Written once
-   * here rather than twice below, because "what the empty state is" is the subclass's
-   * (`clearValue`) and "what a reset means" is not.
+   * Called by signal forms when the form is reset. It takes back what the control holds and
+   * the form does not — an open panel, and the question typed into it: a form put back to its
+   * start has no list hanging off it. The answer is not touched: it is the form's, and a
+   * signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
+   * Written once here rather than twice below, because the panel is the base's.
    *
    * @since 0.1.0
    */
   reset(): void {
-    this.clearValue();
+    // `close` takes the question with the panel. `clearValue` is the cross's alone now: a
+    // reset that wrote the empty answer reached the form after its own value and won.
     this.close();
   }
 

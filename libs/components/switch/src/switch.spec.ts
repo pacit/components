@@ -299,7 +299,9 @@ describe('PctSwitch', () => {
 
     instance.reset();
     await fixture.whenStable();
-    expect(fixture.componentInstance.checked()).toBe(false);
+    // Nothing of the control's own to take back, and the value is the form's.
+    expect(fixture.componentInstance.checked()).toBe(true);
+    expect(boxOf(fixture).checked).toBe(true);
   });
 
   describe('signal forms', () => {
@@ -314,6 +316,38 @@ describe('PctSwitch', () => {
       await fixture.whenStable();
       expect(host.model().notify).toBe(true);
       expect(host.f.notify().valid()).toBe(true);
+    });
+
+    it("a form's reset keeps the value the form holds, and leaves the form pristine", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      boxOf(fixture).click();
+      await fixture.whenStable();
+      expect(host.f.notify().dirty()).toBe(true);
+
+      // Angular's reset does not change the model; the control's own reset unticked the box,
+      // and was counted as an edit.
+      host.f().reset();
+      await fixture.whenStable();
+
+      expect(host.model().notify).toBe(true);
+      expect(boxOf(fixture).checked).toBe(true);
+      expect(host.f.notify().dirty()).toBe(false);
+    });
+
+    it("a form's reset to a value shows that value — the control's reset no longer outruns it", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      boxOf(fixture).click();
+      await fixture.whenStable();
+
+      // The form sets `true` and then calls the control's reset, which wrote `false` after it.
+      host.f().reset({ notify: true });
+      await fixture.whenStable();
+
+      expect(host.model().notify).toBe(true);
+      expect(boxOf(fixture).checked).toBe(true);
+      expect(host.f.notify().dirty()).toBe(false);
     });
   });
 

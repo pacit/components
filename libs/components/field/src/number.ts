@@ -585,15 +585,18 @@ export class PctNumber
   }
 
   /**
-   * Empties the field, text and value alike.
+   * Takes back what the field holds and the form does not — junk left in it, a number half
+   * typed — and shows the value again. The value is not touched: it is the form's, and a
+   * signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */
   reset(): void {
-    // A commit leaves the rejection to its caller — the blur sets it before committing — so
-    // the reset takes it back here, or the junk outlives the reset that emptied the value.
+    // Neither write is the value's, so the form hears nothing — a write to the value here
+    // reached the form after its own and won, and counted as the user's edit besides.
     this.rejected.set(null);
-    this.commit(null);
+    this.typing.set(false);
   }
 
   /**

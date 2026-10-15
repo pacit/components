@@ -56,7 +56,7 @@ export class PctSelect<T = string>
   /**
    * The selected value — a required field of the `FormValueControl` contract. The type is
    * `T | null`, because "nothing selected" is a state reachable for every `T`: the select
-   * starts empty and a form reset returns to it.
+   * starts empty and the cross returns to it.
    *
    * `NoInfer` takes from this binding the right to **decide** `T` — the type comes from the
    * option list alone, and the value is checked against it. Without it `T` widened to a union
@@ -68,9 +68,11 @@ export class PctSelect<T = string>
   readonly value = model<NoInfer<T> | null>(null);
 
   /**
-   * The value standing for no choice — set when the form is reset. `null` by default, but an
-   * application with a non-nullable field (`plan: string`) supplies its own (`emptyValue=""`),
-   * so that a reset does not write `null` into the model against its type.
+   * The value standing for no choice — what the cross (`clearable`) writes. `null` by default,
+   * but an application with a non-nullable field (`plan: string`) supplies its own
+   * (`emptyValue=""`), so that a clear does not write `null` into the model against its type.
+   * A form's reset writes nothing here: the value it resets to is the form's
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */

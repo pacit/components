@@ -252,7 +252,9 @@ option, so of two options that compare equal only the first is ever reachable. A
 breaks it is reported in dev mode rather than quietly repaired.
 
 No selection is `null`. An application with a non-nullable field supplies its own empty value
-(`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
+(`[emptyValue]="''"`), so the cross that clears it (`clearable`) does not write `null` against
+the model's type. A form's reset writes nothing into a control: `form().reset()` keeps the
+values, as Angular documents, and `form().reset(value)` shows the one it is given.
 `panelWidth` and `panelAlign` control the panel geometry.
 
 #### An option row of your own

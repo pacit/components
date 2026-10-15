@@ -25,6 +25,12 @@ Three things follow directly:
   selected" is reachable for every `T`. An application with a non-nullable field declares an
   empty value of its own (`emptyValue`), so a reset does not write `null` into the model against
   its type.
+  - _Amended 2026-10-15: **a reset writes nothing into the model any more**
+    ([0092](0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)) — the value is the
+    form's, and Angular's reset leaves it alone or sets the one it was given._ The select's
+    `emptyValue` keeps the reason above for the cross, which still writes it
+    ([0036](0036-a-clear-takes-back-what-the-trigger-shows.md)); the radio group's existed for
+    the reset alone, and is deprecated since 0.3.0.
 - **The native radio's `value` attribute describes the option but takes no part in the
   choice**, and for non-primitive values it simply disappears — `[object Object]` in the DOM
   would look like a value while identifying nothing.
