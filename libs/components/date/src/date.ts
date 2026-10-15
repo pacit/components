@@ -8,7 +8,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   LOCALE_ID,
   model,
   output,
@@ -16,8 +15,6 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { NgControl } from '@angular/forms';
-import { FormField } from '@angular/forms/signals';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
@@ -412,19 +409,6 @@ export class PctDate
    */
   private readonly typing = signal(false);
 
-  /**
-   * `FormField` provides `NgControl` as well (interop for legacy `ControlValueAccessor`s), so
-   * its presence alone does not yet mean classic forms (`lesson-26`).
-   */
-  private readonly classicForms = inject(NgControl, {
-    optional: true,
-    self: true,
-  });
-  private readonly signalForms = inject(FormField, {
-    optional: true,
-    self: true,
-  });
-
   // --- the panel ---
 
   /** Inside the chrome the panel lines up with the field's border, not with the input. */
@@ -479,10 +463,15 @@ export class PctDate
     //
     // The rejection is cleared HERE and not on commit, because a value arriving from outside
     // is the one thing a commit cannot see: without this, junk typed and then overwritten by
-    // the model left the field red over a date it had just been given. The write is
-    // `untracked`, and it cannot loop — it moves nothing this effect reads.
+    // the model left the field red over a date it had just been given.
+    //
+    // The rejection is READ as a dependency: a reset after junk changes the rejection and
+    // nothing else — the value was `null` already — and a field that did not hear it went on
+    // showing the junk over an empty value. The write below settles in one more pass: it sets
+    // the rejection to what it already is the second time.
     effect(() => {
       const text = this.text();
+      const junk = this.rejected() ?? '';
       if (this.typing()) return;
       const el = this.control().nativeElement;
       if (text !== '') {
@@ -490,7 +479,6 @@ export class PctDate
         if (el.value !== text) el.value = text;
         return;
       }
-      const junk = untracked(() => this.rejected()) ?? '';
       if (el.value !== junk) el.value = junk;
     });
 
@@ -500,8 +488,6 @@ export class PctDate
       if (this.focusWanted() === 0) return;
       untracked(() => this.calendar()?.focusCursor());
     });
-
-    if (isDevMode()) this.warnOnUnsupportedUsage();
   }
 
   /**
@@ -636,20 +622,5 @@ export class PctDate
 
     event.preventDefault();
     this.close(true);
-  }
-
-  /**
-   * The one way of using this that looks correct and quietly breaks the formatting: classic
-   * forms, whose `DefaultValueAccessor` takes over writing to the DOM and writes raw strings
-   * (`lesson-20`, and `[pctNumber]` carries the same warning).
-   */
-  private warnOnUnsupportedUsage(): void {
-    if (this.classicForms && !this.signalForms) {
-      console.warn(
-        '[pct-date] Classic forms ([formControl], [(ngModel)]) take over writing ' +
-          'the value and break locale formatting. Use signal forms ([formField]) ' +
-          'or [(value)] instead.',
-      );
-    }
   }
 }

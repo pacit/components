@@ -53,8 +53,8 @@ before an application ships them.
 ./chips 15668 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
 ./core 10022 - @angular/core,@angular/forms/signals
-./date 46958 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./datetime 78533 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./date 46475 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./datetime 78421 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./dialog 20746 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 19953 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./field 36933 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
@@ -132,7 +132,7 @@ is worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4708 15684
 ./breadcrumb PctBreadcrumb 3 4808 13354
 ./chips PctChip 2 15526 15529
-./date PctCalendar 2 27124 46512
+./date PctCalendar 2 27012 46029
 ./field PctField 3 24210 33944
 ./menu PctMenu 2 19754 19757
 ./radio PctRadio 2 23832 23834
