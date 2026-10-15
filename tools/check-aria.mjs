@@ -578,7 +578,8 @@ const isFocusable = (tag, attrs) =>
 /**
  * The opening tag at an offset of the text both readings take (`readTree`), on one line and cut
  * short: what a refusal shows a reader of the tag it means. The line stands in where no tag opens
- * there, which no offset the readings report reaches in a template that parses.
+ * there to the scan, which in a template that parses only a tag of an ICU's case reaches: the HTML
+ * tree places it, and the scan cannot read it (`cased`).
  */
 const openingAt = (text, offset) => {
   const tag = new RegExp(OPENING_TAG.source, 'y');
@@ -1336,16 +1337,23 @@ const checkAria = ({
     // Inside an ICU the template tree holds no element, so the refusal above of a tag it holds
     // and the scan missed has nothing there to count by; the HTML tree has, and knows where each
     // tag of a case starts (`cased`). A tag the scan never found there is a stop nothing reads —
-    // not the scan, which would have read it as one (`UNREAD`), and not the tree.
-    const uncased = said.cased.find((offset) => !scanned.has(offset));
+    // not the scan, which would have read it as one (`UNREAD`), and not the tree. Asked only
+    // inside an ICU the template tree holds (`icus`): under `ngNonBindable` it holds none, and
+    // Angular draws nothing of one.
+    const uncased = said.cased.find(
+      (offset) =>
+        !scanned.has(offset) &&
+        said.icus.some(([from, to]) => offset >= from && offset < to),
+    );
     if (uncased !== undefined)
       throw new AriaError(
         'denominator',
         `${template.file}: an ICU's case draws a tag at offset ${uncased} ` +
           `(\`${opening(uncased)}\`), and the tag scan never found it — a quote Angular reads ` +
-          `as part of a bracketed name (\`[it's]\`) opens one to the scan that nothing closes, ` +
-          `and a tag the scan does not find there is one nothing reads: the template tree ` +
-          `holds no element in an ICU`,
+          `as part of a bracketed name (\`[it's]\`), for one, opens one to the scan that ` +
+          `nothing closes, and a \`<\` before it, in the ICU's value or a case, reads as a tag ` +
+          `that swallows it; a tag the scan does not find there is one nothing reads, the ` +
+          `template tree holding no element in an ICU`,
       );
     if (said.markup.length)
       throw new AriaError(
