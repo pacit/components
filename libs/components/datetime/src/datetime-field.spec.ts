@@ -662,20 +662,52 @@ describe('PctDatetime — the panel', () => {
     expect(hostOf(f).hasAttribute('data-pct-open')).toBe(true);
   });
 
-  it('is taken back by a reset, and the pair stays', async () => {
+  it('is taken back by a reset, the pair stays, and focus held in it comes back to the field', async () => {
     const f = await render(Host);
     await open(f);
-    expect(panel()).not.toBeNull();
+    expect(panel()?.contains(document.activeElement)).toBe(true);
     const field = f.debugElement.query((node) => node.name === 'pct-datetime')
       .componentInstance as PctDatetime;
 
-    // A form put back to its start has no panel hanging off it — the select's reading.
+    // A form put back to its start has no panel hanging off it — the select's reading. A
+    // panel taken out under focus would drop it to `body`.
     field.reset();
     await settle(f);
 
     expect(panel()).toBeNull();
     expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
     expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+    expect(document.activeElement).toBe(dayText(f));
+  });
+
+  it('leaves focus where it is when a reset closes a panel that does not hold it', async () => {
+    const f = await render(Host);
+    await open(f);
+    (document.activeElement as HTMLElement).blur();
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+
+    field.reset();
+    await settle(f);
+
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('takes back a time being typed on reset, and shows the time the field holds', async () => {
+    const f = await render(Host);
+    // `13:0` is most of the way to a time and is none yet, so the pair stands.
+    await type(f, timeText(f), '13:0');
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+    expect(timeText(f).value).toBe('13:0');
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+
+    field.reset();
+    await settle(f);
+
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+    expect(shown(timeText(f))).toBe('13:05');
   });
 
   it('opens on the day and the time it holds, with focus on the grid', async () => {

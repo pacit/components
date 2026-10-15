@@ -114,7 +114,7 @@ export class PctRadioGroup<T = string>
 {
   /**
    * The selected value — a required field of the `FormValueControl` contract. `null` means
-   * "no option is selected": the state the group is born in and the one a reset returns to.
+   * "no option is selected": the state the group is born in.
    *
    * @since 0.1.0
    */
@@ -457,7 +457,7 @@ export class PctRadioGroup<T = string>
    * @since 0.1.0
    */
   reset(): void {
-    // Nothing of the group's own to take back. `emptyValue` written here reached the form
-    // after its own value and won, and counted as the user's edit besides.
+    // Nothing of the group's own to take back. The `emptyValue` this used to write reached
+    // the form after its own value and won, and counted as the user's edit besides.
   }
 }

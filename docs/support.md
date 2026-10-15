@@ -61,6 +61,14 @@ An API is never removed without notice. The sequence is fixed:
 3. it is removed only in a release that is breaking anyway — and that release ships a codemod
    (below).
 
+_Amended 2026-10-15: step 2 has one exception, written here rather than left to be found._ An
+input whose whole job a breaking change took away cannot keep working unchanged — the job is
+gone with the change. It is deprecated in that same release, so a template that binds it keeps
+compiling through the window, and its notice says that nothing reads it. The first is
+`emptyValue` on `pct-radio-group`
+([0092](decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)): the behaviour
+went with the breaking change, and the name goes no earlier than two minors later.
+
 Step 1 has a form the gate reads, because a countdown that starts at an unrecorded moment
 cannot be counted:
 

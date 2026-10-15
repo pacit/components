@@ -503,19 +503,34 @@ describe('PctTime — the panel', () => {
     expect(hostOf(f).hasAttribute('data-pct-open')).toBe(true);
   });
 
-  it('is taken back by a reset, and the time stays', async () => {
+  it('is taken back by a reset, the time stays, and focus held in it comes back to the field', async () => {
     const f = await render(Host);
     await open(f);
-    expect(panel()).not.toBeNull();
+    expect(panel()?.contains(document.activeElement)).toBe(true);
     const time = f.debugElement.children[0].componentInstance as PctTime;
 
-    // A form put back to its start has no columns hanging off it — the select's reading.
+    // A form put back to its start has no columns hanging off it — the select's reading. A
+    // panel taken out under focus would drop it to `body`.
     time.reset();
     await settle(f);
 
     expect(panel()).toBeNull();
     expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
     expect(f.componentInstance.value()).toBe('13:05');
+    expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('leaves focus where it is when a reset closes a panel that does not hold it', async () => {
+    const f = await render(Host);
+    await open(f);
+    (document.activeElement as HTMLElement).blur();
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+
+    time.reset();
+    await settle(f);
+
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(document.body);
   });
 
   it('names the button and the panel it opens with one string', async () => {

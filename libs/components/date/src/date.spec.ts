@@ -394,15 +394,16 @@ describe('PctDate — the panel', () => {
     expect(toggleOf(f).getAttribute('aria-controls')).toBe(panel()?.id);
   });
 
-  it('is taken back by a reset, and the date stays', async () => {
+  it('is taken back by a reset, the date stays, and focus held in it comes back to the field', async () => {
     const f = await render(Host);
     toggleOf(f).click();
     f.detectChanges();
     await f.whenStable();
-    expect(panel()).not.toBeNull();
+    expect(panel()?.contains(document.activeElement)).toBe(true);
     const date = f.debugElement.children[0].componentInstance as PctDate;
 
-    // A form put back to its start has no calendar hanging off it — the select's reading.
+    // A form put back to its start has no calendar hanging off it — the select's reading. A
+    // panel taken out under focus would drop it to `body`.
     date.reset();
     f.detectChanges();
     await f.whenStable();
@@ -410,6 +411,23 @@ describe('PctDate — the panel', () => {
     expect(panel()).toBeNull();
     expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
     expect(f.componentInstance.value()).toBe('2026-08-27');
+    expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('leaves focus where it is when a reset closes a panel that does not hold it', async () => {
+    const f = await render(Host);
+    toggleOf(f).click();
+    f.detectChanges();
+    await f.whenStable();
+    (document.activeElement as HTMLElement).blur();
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(document.body);
   });
 
   it('names the button and the panel it opens with one string', async () => {

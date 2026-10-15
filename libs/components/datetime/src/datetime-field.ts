@@ -865,7 +865,11 @@ export class PctDatetime
     this.dayTyping.set(false);
     this.timeTyping.set(false);
     this.split(this.value());
-    this.close(false);
+    // A panel that holds focus hands it back to the field as it closes, as Escape does — one
+    // taken out of the tree under focus drops it to `body`. Focus anywhere else stays there.
+    const panel = this.panel()?.nativeElement;
+    if (panel === undefined) return;
+    this.close(panel.contains(panel.ownerDocument.activeElement));
   }
 
   /**

@@ -174,14 +174,21 @@ describe('control-reset migration — what it names', () => {
     expect(named(drive({ '/c.ts': source }))).toEqual(['c.ts:2']);
   });
 
-  it('takes a class name for ours only behind the package name', () => {
-    const run = drive({
-      '/own.ts': "import { PctNumber } from './my-number';\nreset();",
-      '/core.ts':
-        "import { PctTexts } from '@pacit/components/core';\nreset();",
-    });
-    expect(named(run)).toEqual([]);
-  });
+  it.each([
+    [
+      'a class of ours from somewhere else',
+      "import { PctNumber } from './my-number';",
+    ],
+    [
+      'the package with no control',
+      "import { PctTexts } from '@pacit/components/core';",
+    ],
+  ])(
+    'takes a class name for ours only behind the package name — not %s',
+    (_label, line) => {
+      expect(named(drive({ '/c.ts': `${line}\nreset();` }))).toEqual([]);
+    },
+  );
 
   it('does not take a longer class name for a control', () => {
     const run = drive({
@@ -191,16 +198,67 @@ describe('control-reset migration — what it names', () => {
     expect(named(run)).toEqual([]);
   });
 
-  it('names nothing in a file that binds no control of ours, and says there is nothing', () => {
+  it('names nothing in a workspace that binds no control of ours, and says why', () => {
     const run = drive({ '/src/a.ts': 'this.f().reset();' });
     expect(run.logs).toEqual([
       {
         level: 'info',
         message:
-          '[pacit] nothing to read: no file that binds a form control of this library calls ' +
-          '`reset()` or gives a radio group an `emptyValue`.',
+          '[pacit] nothing to read: no file in this workspace binds a form control of this ' +
+          'library, so no reset reaches one.',
       },
     ]);
+  });
+
+  it('says there is nothing to read in a workspace that binds controls and resets nothing', () => {
+    const run = drive({ '/src/a.html': '<pct-date [formField]="f.on" />' });
+    expect(run.logs).toEqual([
+      {
+        level: 'info',
+        message:
+          '[pacit] nothing to read: this workspace binds form controls of this library, and ' +
+          'no file calls `reset()` or gives a radio group an `emptyValue`.',
+      },
+    ]);
+  });
+});
+
+describe('control-reset migration — a reset reaches a control from another file', () => {
+  it('names the reset of a component whose controls come from an NgModule', () => {
+    const run = drive({
+      '/src/forms.module.ts':
+        "import { NgModule } from '@angular/core';\nimport { PctDate } from '@pacit/components/date';\n@NgModule({ imports: [PctDate], declarations: [Booking] })\nexport class FormsModule {}",
+      '/src/booking.ts':
+        'export class Booking {\n  cancel() {\n    this.f().reset();\n  }\n}',
+    });
+    expect(named(run)).toEqual(['src/booking.ts:3']);
+  });
+
+  it('names the reset of a component whose controls come from a barrel of its own', () => {
+    const run = drive({
+      '/src/shared.ts':
+        "export { PctDate, PctTime } from '@pacit/components/date';\nexport const FORM = [PctDate];",
+      '/src/trip.ts':
+        "import { FORM } from './shared';\nexport class Trip {\n  clear() { this.f().reset(); }\n}",
+    });
+    expect(named(run)).toEqual(['src/trip.ts:3']);
+  });
+
+  it('names the reset in a component whose template is a file of its own', () => {
+    const run = drive({
+      '/src/seats.html': '<input pctNumber [formField]="f.seats" />',
+      '/src/seats.ts':
+        "@Component({ templateUrl: './seats.html' })\nexport class Seats {\n  undo() { this.f().reset(); }\n}",
+    });
+    expect(named(run)).toEqual(['src/seats.ts:3']);
+  });
+
+  it('names a call written over lines by the line its reset stands on', () => {
+    const run = drive({
+      '/a.html':
+        '<pct-date />\n<b (click)="f().reset(\n)"></b>\n\nreset(\n  \n)',
+    });
+    expect(named(run)).toEqual(['a.html:2', 'a.html:5']);
   });
 });
 
@@ -296,11 +354,13 @@ describe('control-reset migration — what it says', () => {
       {
         level: 'warn',
         message:
-          '[pacit] 3 `reset()` call(s) in files that bind a @pacit/components form control. ' +
-          "A control's reset no longer empties its value: a signal form's `reset()` keeps the " +
-          'values, as Angular documents, and `reset(value)` shows the one it is given. Where a ' +
-          'line meant "empty the form", write what empty is — `form().reset({ seats: null, … })`. ' +
-          "A reset that is not a signal form's changed nothing:\n" +
+          '[pacit] 3 `reset()` call(s) in a workspace that binds @pacit/components form ' +
+          "controls. A control's reset no longer empties its value: a signal form's `reset()` " +
+          'keeps the values, as Angular documents, `reset(value)` shows the one it is given, ' +
+          "and a control's own `reset()` takes back only what the control holds — junk, a text " +
+          'half typed, an open panel. Where a line meant "empty", write what empty is — ' +
+          '`form().reset({ seats: null, … })`. A reset of anything else changed nothing; one ' +
+          'look each:\n' +
           '    a.html:2\n    a.html:3\n    b.ts:7',
       },
       {

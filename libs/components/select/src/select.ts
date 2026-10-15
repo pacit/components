@@ -56,7 +56,7 @@ export class PctSelect<T = string>
   /**
    * The selected value — a required field of the `FormValueControl` contract. The type is
    * `T | null`, because "nothing selected" is a state reachable for every `T`: the select
-   * starts empty and a form reset returns to it.
+   * starts empty and the cross returns to it.
    *
    * `NoInfer` takes from this binding the right to **decide** `T` — the type comes from the
    * option list alone, and the value is checked against it. Without it `T` widened to a union

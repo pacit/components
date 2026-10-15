@@ -9,7 +9,7 @@
     },
     "control-reset": {
       "version": "0.3.0",
-      "description": "A form control's reset() takes back what the form cannot see and no longer empties its value (0092): a signal form's reset() keeps the values and reset(value) shows the one given. Nothing is written — what changed is behaviour — and every bare reset() in a file that binds a control, and every emptyValue on a pct-radio-group, is named for one look.",
+      "description": "A form control's reset() takes back what the form cannot see and no longer empties its value (0092): a signal form's reset() keeps the values and reset(value) shows the one given. Nothing is written — what changed is behaviour — and every bare reset() in a workspace that binds a control anywhere, and every emptyValue on a pct-radio-group, is named for one look.",
       "factory": "./migrations/control-reset/index#controlReset"
     }
   },

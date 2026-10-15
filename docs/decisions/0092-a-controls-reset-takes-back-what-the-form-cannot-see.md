@@ -9,8 +9,10 @@ the mutation run's environment (`@angular/forms` and `@angular/core` 22.2.1, Vit
 jsdom 22.1.0, zoneless) — which reset a signal form over every control that has a `reset()`,
 and over Angular's own native bindings as the reference, and read the model, the DOM and the
 field's `dirty` after each; its rows are the "Measurement" section below. The durable record
-is the 34 cases it became, in the ten specs of those controls: red on the sources before this
-decision, green after. And Angular's own reading, quoted from the package this library pins
+is the cases it became, in the eleven spec files of those controls — 38 of them red on the
+sources before this decision, all green after. And Angular's own reading, quoted in the
+context below from the declarations of the package this library pins: `FieldState.reset` and
+`FormUiControl.reset`
 
 ## Context
 
@@ -87,8 +89,11 @@ What each control holds of its own is therefore the whole of its `reset()`:
 | `[pctText]`, checkbox, switch, slider, radio | nothing — the text, the tick, the thumb and the checked option **are** the value |
 
 The datetime's halves are split again from the value the field holds, through the same method a
-value from outside takes, and never composed back: composing is a write to the value. The panel
-is closed without moving focus, as the select's always was — a reset is pressed somewhere else.
+value from outside takes, and never composed back: composing is a write to the value. A panel
+that holds focus hands it back to the field as it closes, as Escape does — one taken out of the
+tree under focus would drop it to `body` — and focus anywhere else stays where it is, because a
+reset is usually pressed somewhere else. The select's panel never holds focus, so closing it
+moves nothing.
 
 **The five with nothing to take back keep the method, with an empty body.** Every control of
 the library answers the same contract member, and taking it away from five of them would be a
@@ -107,13 +112,16 @@ can be reset directly if desired".
   `fix(forms)!`, so the next release is a minor
   ([`req-release-semver`](../requirements/release.md#req-release-semver)).
 - A change of behaviour cannot be rewritten by a machine, so the `ng update` migration for it,
-  `control-reset`, **writes nothing and names the places**: each line that calls `reset()` with
-  no argument in a file that binds one of these controls, and each `emptyValue` on a
-  `pct-radio-group`. It is the CHANGELOG's line pointed at the consumer's own files
-  ([`docs/support.md`](../support.md), "A codemod is not a guarantee of a silent upgrade").
+  `control-reset`, **writes nothing and names the places**: each call of `reset()` with no
+  argument in a workspace that binds one of these controls — asked of the whole tree, because a
+  component gets its controls from an NgModule, a barrel or a parent, and its template is often
+  a file of its own — and each `emptyValue` on a `pct-radio-group`. It is the CHANGELOG's line
+  pointed at the consumer's own files ([`docs/support.md`](../support.md), "A codemod is not a
+  guarantee of a silent upgrade").
 - `pct-radio-group`'s `emptyValue` existed for the reset alone and is read by nothing now. It
   is **deprecated since 0.3.0**, and still binds, so a template carrying it keeps compiling
-  through the notice. `pct-select`'s `emptyValue` keeps its job: it is what the cross writes
+  through the notice — the one exception to "keeps working, unchanged", which the support
+  policy now names. `pct-select`'s `emptyValue` keeps its job: it is what the cross writes
   ([0036](0036-a-clear-takes-back-what-the-trigger-shows.md), amended), and
   [0010](0010-generic-noinfer.md)'s "so a reset does not write `null`" reads "so a clear does
   not" now (amended).

@@ -521,7 +521,11 @@ export class PctDate
     // the form after its own value and won, and counted as the user's edit besides.
     this.rejected.set(null);
     this.typing.set(false);
-    this.close(false);
+    // A panel that holds focus hands it back to the field as it closes, as Escape does — one
+    // taken out of the tree under focus drops it to `body`. Focus anywhere else stays there.
+    const panel = this.panel()?.nativeElement;
+    if (panel === undefined) return;
+    this.close(panel.contains(panel.ownerDocument.activeElement));
   }
 
   protected onInput(): void {

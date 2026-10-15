@@ -524,7 +524,7 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
    * @since 0.1.0
    */
   reset(): void {
-    // Nothing of the slider's own to take back. The midpoint written here reached the form
-    // after its own value and won, and counted as the user's edit besides.
+    // Nothing of the slider's own to take back. The midpoint this used to write reached the
+    // form after its own value and won, and counted as the user's edit besides.
   }
 }

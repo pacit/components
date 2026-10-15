@@ -53,8 +53,8 @@ before an application ships them.
 ./chips 15668 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
 ./core 10022 - @angular/core,@angular/forms/signals
-./date 46518 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./datetime 78348 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./date 46603 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./datetime 78433 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./dialog 20746 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 19953 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./field 36931 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
@@ -77,7 +77,7 @@ before an application ships them.
 ./tabs 16850 ./core @angular/core,@angular/forms/signals
 ./testing 8782 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 49275 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./time 49360 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 24420 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 14130 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./tree 12928 ./icon @angular/common,@angular/core
@@ -132,13 +132,13 @@ is worth, and it is the largest single number this file has ever moved.
 ./accordion PctAccordion 2 4708 15684
 ./breadcrumb PctBreadcrumb 3 4808 13354
 ./chips PctChip 2 15526 15529
-./date PctCalendar 2 27012 46072
+./date PctCalendar 2 27012 46157
 ./field PctField 3 24210 33940
 ./menu PctMenu 2 19754 19757
 ./radio PctRadio 2 23799 23801
 ./select PctMultiSelect 2 52064 78251
 ./stepper PctStep 2 14893 14895
 ./tabs PctTab 2 16681 16684
-./time PctTime 2 47808 47809
+./time PctTime 2 47893 47894
 ./tree PctTree 2 12783 12786
 ```
