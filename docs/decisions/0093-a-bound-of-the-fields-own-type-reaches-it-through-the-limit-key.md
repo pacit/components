@@ -9,7 +9,7 @@ unit suite's environment (`@angular/forms` and `@angular/core` 22.2.1, zoneless)
 reading of the package's own declarations and FESM. The durable record is the cases they
 became: `libs/components/date/src/date.spec.ts › PctDate — bounds from a signal form` (ten
 cases), `libs/components/time/src/time-field.spec.ts › PctTime — bounds from a signal form`
-(ten), and one case in each of `apps/sandbox-e2e/src/date.spec.ts` and `time.spec.ts`, green
+(twelve), and one case in each of `apps/sandbox-e2e/src/date.spec.ts` and `time.spec.ts`, green
 on chromium.
 
 ## Context
@@ -49,9 +49,18 @@ And how the shipped rules compose on one path, each reading in either order of t
   returns `undefined` leave each side to the rules that give it.
 - **Days past the year 9999** are compared as days: `10000-01-01` is the later `min` of the two,
   where the strings say otherwise ([`lesson-185`](../lessons.md#lesson-185)).
-- **Two windows whose gaps do not meet** — everything but 06:00–07:00, and everything but
-  10:00–23:00: the field gets 23:00 to 06:00, and 08:00, which both rules accept, is outside
-  the panel's walk. Typed, it is accepted.
+- **On a clock the sides do not combine one at a time.** The first version handed the field
+  the later `min` and the earlier `max`, as Angular's own keys do, and an independent review
+  of this change measured four pairs where that pair is not what the rules accept:
+  `{ min: '18:00' }` and `{ max: '08:00' }` accept no time, and their 18:00 and 08:00 read as
+  the night; 08:00–10:00 and 12:00–14:00 accept none either and read as a 22-hour window; a
+  window with a plain rule — 22:00–06:00 and `{ max: '23:00' }` — offered 23:30, which the
+  form refuses; and two windows whose gaps do not meet — everything but 06:00–07:00, and
+  everything but 10:00–23:00 — refused 08:00, which both accept.
+- **A bound read off another field can make a pair a window.** `{ min: valueOf(p.opensAt),
+max: '22:00' }` with the opening at 23:00 is 23:00 to 22:00 across midnight, and grades a
+  closing at 18:00 inside it. In two rules, `{ min: valueOf(p.opensAt) }` and
+  `{ max: '22:00' }`, neither pair is a window, and 18:00 is `minTime`.
 
 ## Decision
 
@@ -71,12 +80,18 @@ And how the shipped rules compose on one path, each reading in either order of t
    `pctTimeOnStep`'s and `dateDisabled` is the calendar's — none of them graded here. The
    `message` is one string or a function of the error, and there is none by default, as with
    Angular's own validators.
-4. **Several rules on one path: each grades its own pair, and the field walks the tighter.**
-   The later `min` and the earlier `max`, compared as days or as times. That is the
-   intersection for the day always, and for the time while at most one rule is a window. Two
-   windows whose gaps do not meet leave two arcs no single pair spells, and the panel walks
-   less than the form accepts; the form still grades right.
-5. **The keys are made at the top of the module, marked PURE** — the reason `./core`'s warning
+4. **Several rules on one path: each grades its own pair.** For the day the field walks the
+   later `min` and the earlier `max`, compared as days — the intersection, always; where it is
+   empty, `min` is past `max` and the calendar takes no day. For the time the field walks **the
+   shortest stretch of the clock that holds every time all the rules accept**: those times
+   exactly where they are one run; where they are several, the panel also offers the gaps
+   between them but the widest — it never refuses a time the form accepts; where there is no
+   time at all, the field has no bounds, because no pair spells "nothing". The span is read
+   off every rule's pair at once, the same in any order of the rules.
+5. **A bound read off another field goes in a rule of its own** beside a fixed one, so that
+   the pair cannot turn into a window when the other field moves. The JSDoc, the example and
+   the sandbox say so; the rule cannot, because a window written on purpose looks the same.
+6. **The keys are made at the top of the module, marked PURE** — the reason `./core`'s warning
    keys are ([`lesson-252`](../lessons.md#lesson-252)).
 
 ## Consequences
@@ -92,14 +107,21 @@ And how the shipped rules compose on one path, each reading in either order of t
 
 - **Eight exports**, four per module: the rule, its configuration, a bound and the error.
 - **Bytes.** An application importing the whole entrypoint pays `./date` +709 B, `./time`
-  +777 B and `./datetime` +220 B (`size.snapshot.md`). One importing the tag alone pays
-  +110 B, and that is the import line of five names from `@angular/forms/signals`: the probe
-  keeps it because Angular is external there. The rule's code itself is shed.
+  +1405 B — some 630 of them the span — and `./datetime` +242 B (`size.snapshot.md`). One
+  importing `PctTime` alone pays +132 B, and that is the import line of six names from
+  `@angular/forms/signals`: the probe keeps it because Angular is external there. The rule's
+  code itself is shed.
 - **A cast in each rule**, `as unknown as LimitKey<TValue>`: the platform asks for a key of the
   path's value type, and TypeScript cannot equate it with the key's while `TValue` is a
   parameter.
-- **A habit broken**: Angular's rules take a side each, these take both.
-- **The two windows** of point 4, a panel narrower than the form.
+- **A habit broken**: Angular's rules take a side each, these take both — and a pair of them
+  becomes a window where a side read off another field passes the fixed one, unless the two
+  are written as two rules. Their `message` is a function of the error, not of the context,
+  and there is no `when`: `applyWhen()` is the platform's for that.
+- **A span on the clock**, some forty lines of interval arithmetic in `time-field.ts`, where the
+  day needs two comparisons. Where the times the rules accept are several runs, the panel
+  offers the gaps between them but the widest, and the form refuses those; where there are
+  none, the panel offers every time.
 
 ## What would overturn it
 
@@ -110,10 +132,10 @@ path.
 
 ## Alternatives considered
 
-| alternative                                                  | why rejected                                                                                                                                                                       |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A rule per side, `pctMinTime` and `pctMaxTime`, as Angular's | the window is graded from both bounds at once, so each rule would read the other's key; and the field's pair would then be assembled from sides that may come from different rules |
-| The last rule's bounds reach the field                       | wider than the form in the common case — a reusable office-hours rule written after a narrower one hands the panel the office hours — to be exact only in the rare one             |
-| Reduce the pairs into the smallest arc holding their meet    | exact for two windows too, at the price of interval arithmetic on a circle, every edge a mutant, for a case nobody has asked for; the form grades right without it                 |
-| No rule: the card shows the three metadata lines             | a key typed `T \| undefined` (`TS2322` otherwise), the pointer and a validator that knows the window — three things every application would get right or not                       |
-| `minDate()` for the day, through a `Date`                    | the path and the value would have to be a `Date`'s — the instant [0043](0043-a-day-is-not-an-instant.md) refused                                                                   |
+| alternative                                                            | why rejected                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A rule per side, `pctMinTime` and `pctMaxTime`, as Angular's           | the window is graded from both bounds at once, so each rule would read the other's key; and the field's pair would then be assembled from sides that may come from different rules                                        |
+| The later `min` and the earlier `max` for the time too, as for the day | the first version, and wrong on a clock in both directions: two rules that accept nothing read as a window, a window with a plain rule offers refused times, and two windows refuse accepted ones (the measurement above) |
+| The last rule's bounds reach the field                                 | wider than the form in the common case — a reusable office-hours rule written after a narrower one hands the panel the office hours — to be exact only in the rare one                                                    |
+| No rule: the card shows the three metadata lines                       | a key typed `T \| undefined` (`TS2322` otherwise), the pointer and a validator that knows the window — three things every application would get right or not                                                              |
+| `minDate()` for the day, through a `Date`                              | the path and the value would have to be a `Date`'s — the instant [0043](0043-a-day-is-not-an-instant.md) refused                                                                                                          |

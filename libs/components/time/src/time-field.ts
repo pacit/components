@@ -21,6 +21,7 @@ import {
   createMetadataKey,
   MAX,
   metadata,
+  MetadataReducer,
   MIN,
   validate,
   type FormValueControl,
@@ -57,6 +58,7 @@ import {
   isPctTimeStep,
   pctCompareTimes,
   PctTimeOfDay,
+  pctTimeOfDayParts,
 } from './time';
 import { PctTimeColumns } from './time-columns';
 
@@ -734,40 +736,97 @@ export interface PctTimeBoundsConfig<
   readonly message?: string | ((error: PctTimeBoundError) => string);
 }
 
-/**
- * The bounds the form hands the field, one key a side, as Angular keys its own `min()`: the
- * platform's `MIN` and `MAX` POINT at a key of the field's own type, and the `[formField]`
- * directive reads the bound through them into the control's `min` / `max` inputs
- * (`LimitSelectionKey`). With two rules on a path, the later `min` and the earlier `max`
- * reach the field, which is the two bounds' intersection while neither is a window. Two
- * windows whose gaps do not meet have an intersection no single pair spells, and the panel
- * is handed the gap of both — narrower than the form, which grades each rule on its own.
- *
- * Made at the top of the module and marked PURE, for the reason `./core`'s warning keys are
- * (lesson-252): a call a bundler cannot prove free of effects stays in every application
- * that imports the entrypoint, and the forms runtime behind it.
- */
-const TIME_MIN = /* @__PURE__ */ createMetadataKey<
-  PctTimeOfDay | undefined,
-  PctTimeOfDay | undefined
->({
-  getInitial: () => undefined,
-  reduce: (acc, item) =>
-    acc === undefined || (item !== undefined && pctCompareTimes(item, acc) > 0)
-      ? item
-      : acc,
-});
+/** One rule's two bounds, either of them absent. */
+interface TimePair {
+  readonly min: PctTimeOfDay | undefined;
+  readonly max: PctTimeOfDay | undefined;
+}
 
-const TIME_MAX = /* @__PURE__ */ createMetadataKey<
-  PctTimeOfDay | undefined,
-  PctTimeOfDay | undefined
->({
-  getInitial: () => undefined,
-  reduce: (acc, item) =>
-    acc === undefined || (item !== undefined && pctCompareTimes(item, acc) < 0)
-      ? item
-      : acc,
-});
+/**
+ * Every rule's pair on a path, in the order the rules were written — read whole, because on a
+ * clock the bounds of several rules do not combine a side at a time: `{ min: '18:00' }` and
+ * `{ max: '08:00' }` leave no time at all, and their later `min` and earlier `max` read as the
+ * night.
+ *
+ * The keys here are made at the top of the module and marked PURE, for the reason `./core`'s
+ * warning keys are (lesson-252): a call a bundler cannot prove free of effects stays in every
+ * application that imports the entrypoint, and the forms runtime behind it.
+ */
+const TIME_PAIRS = /* @__PURE__ */ createMetadataKey(
+  /* @__PURE__ */ MetadataReducer.list<TimePair>(),
+);
+
+/**
+ * The bounds the field is handed, one key a side: the platform's `MIN` and `MAX` POINT at a key
+ * of the field's own type, and the `[formField]` directive reads the bound through them into
+ * the control's `min` / `max` inputs (`LimitSelectionKey`), as Angular's `min()` keys its own.
+ * Every rule writes the same reading of the whole list, so the last one written is that reading.
+ */
+const TIME_MIN = /* @__PURE__ */ createMetadataKey<PctTimeOfDay | undefined>();
+const TIME_MAX = /* @__PURE__ */ createMetadataKey<PctTimeOfDay | undefined>();
+
+const DAY = 86_400;
+
+function secondsOf(time: PctTimeOfDay): number {
+  const { hour, minute, second } = pctTimeOfDayParts(time);
+  return (hour * 60 + minute) * 60 + second;
+}
+
+/** The times a pair accepts, as runs of seconds from midnight: two for a window. */
+function runsOf({ min, max }: TimePair): (readonly [number, number])[] {
+  const lo = min === undefined ? 0 : secondsOf(min);
+  const hi = max === undefined ? DAY - 1 : secondsOf(max);
+  return lo <= hi
+    ? [[lo, hi]]
+    : [
+        [0, hi],
+        [lo, DAY - 1],
+      ];
+}
+
+/**
+ * The bounds the field walks for every rule on a path: the shortest stretch of the clock that
+ * holds every time all the rules accept. Where those times are one run, that is them exactly;
+ * where they are several, it leaves out the widest gap between them — the one across midnight
+ * included — and keeps the others, so the panel never refuses a time the form accepts and may
+ * offer one it refuses. Rules that accept no time at all leave the field no bounds, because no
+ * pair of them spells "nothing". A bound is handed on as it was written; midnight and the
+ * day's last second, where no rule wrote them, are no bound; a bound is handed on as a rule
+ * wrote it.
+ */
+function timeSpan(pairs: readonly TimePair[]): TimePair {
+  const written = new Map<number, PctTimeOfDay>();
+  let runs: (readonly [number, number])[] = [[0, DAY - 1]];
+  for (const pair of pairs) {
+    for (const bound of [pair.min, pair.max]) {
+      if (bound !== undefined) written.set(secondsOf(bound), bound);
+    }
+    runs = runs.flatMap(([from, to]) =>
+      runsOf(pair).flatMap(([start, end]) => {
+        const a = Math.max(from, start);
+        const b = Math.min(to, end);
+        return a <= b ? [[a, b] as const] : [];
+      }),
+    );
+  }
+  if (runs.length === 0) return { min: undefined, max: undefined };
+  // The runs are in the clock's order already: each new one lies inside one old one, and a
+  // pair's own runs come morning first.
+  let after = 0;
+  let widest = runs[0][0] + DAY - runs[runs.length - 1][1];
+  for (let i = 1; i < runs.length; i++) {
+    const gap = runs[i][0] - runs[i - 1][1];
+    if (gap > widest) {
+      widest = gap;
+      after = i;
+    }
+  }
+  return {
+    min: written.get(runs[after][0]),
+    // The run before the gap — before the one across midnight, the day's last.
+    max: written.get(runs[(after || runs.length) - 1][1]),
+  };
+}
 
 function timeBound<TValue, TPathKind extends PathKind>(
   bound: PctTimeBound<TValue, TPathKind>,
@@ -787,14 +846,21 @@ function timeBound<TValue, TPathKind extends PathKind>(
  * Each bound is a time or a function of the field's context, so one field can be bounded by
  * another's value; one that is not a time is no bound. A bound equal to the value is inside,
  * in either shape. An empty field is not graded — that is `required()`'s to say — and neither
- * is the step: `pctTimeOnStep` is the predicate for a validator of its own. With several
- * rules on one path each grades its own bounds and the field walks the tightest pair; see
- * the keys above for the one pair of windows that has no tightest.
+ * is the step: `pctTimeOnStep` is the predicate for a validator of its own.
+ *
+ * **One rule's two bounds are one pair, and a pair whose `min` is later than its `max` is a
+ * window.** So a bound read off another field goes in a rule of its own beside a fixed one:
+ * `{ min: valueOf(p.opensAt), max: '22:00' }` reads as the night the moment the opening time
+ * passes 22:00, and grades 18:00 inside it. Several rules on one path are each graded on their
+ * own pair, and the field walks the shortest stretch of the clock that holds every time all of
+ * them accept — exactly those times where they are one run; where they are several, the panel
+ * also offers the gaps between them but the widest; where there are none, it has no bounds.
  *
  * @example
  * const f = form(model, (p) => {
- *   pctTimeBounds(p.startsAt, { min: '09:00', max: '17:00', message: 'Office hours only' });
- *   pctTimeBounds(p.endsAt, { min: ({ valueOf }) => valueOf(p.startsAt) ?? undefined });
+ *   pctTimeBounds(p.opensAt, { min: '09:00', max: '17:00', message: 'Office hours only' });
+ *   pctTimeBounds(p.closesAt, { min: ({ valueOf }) => valueOf(p.opensAt) ?? undefined });
+ *   pctTimeBounds(p.closesAt, { max: '22:00' }); // a rule of its own, so the pair is no window
  *   pctTimeBounds(p.shift, { min: '22:00', max: '06:00' }); // the night, across midnight
  * });
  *
@@ -809,12 +875,20 @@ export function pctTimeBounds<
 ): void {
   const min = timeBound(config.min);
   const max = timeBound(config.max);
+  metadata(path, TIME_PAIRS, (ctx) => ({ min: min(ctx), max: max(ctx) }));
+  metadata(
+    path,
+    TIME_MIN,
+    ({ state }) => timeSpan(state.metadata(TIME_PAIRS)!()).min,
+  );
+  metadata(
+    path,
+    TIME_MAX,
+    ({ state }) => timeSpan(state.metadata(TIME_PAIRS)!()).max,
+  );
   // The keys hold a `PctTimeOfDay`, and the platform asks for a key of the path's own value
   // type, which it cannot see is the same type while `TValue` is a parameter.
-  // A side the rule does not give writes `undefined`, which each key's reducer passes over.
-  metadata(path, TIME_MIN, min);
   metadata(path, MIN, () => TIME_MIN as unknown as LimitKey<TValue>);
-  metadata(path, TIME_MAX, max);
   metadata(path, MAX, () => TIME_MAX as unknown as LimitKey<TValue>);
   validate(path, (ctx) => {
     const value = ctx.value();

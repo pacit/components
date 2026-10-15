@@ -54,7 +54,7 @@ before an application ships them.
 ./container 725 - @angular/core
 ./core 10022 - @angular/core,@angular/forms/signals
 ./date 47305 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./datetime 78646 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./datetime 78668 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./dialog 20746 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 19953 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./field 36931 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
@@ -77,7 +77,7 @@ before an application ships them.
 ./tabs 16850 ./core @angular/core,@angular/forms/signals
 ./testing 8782 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 50130 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./time 50758 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 24420 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 14130 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./tree 12928 ./icon @angular/common,@angular/core
@@ -139,6 +139,6 @@ is worth, and it is the largest single number this file has ever moved.
 ./select PctMultiSelect 2 52064 78251
 ./stepper PctStep 2 14893 14895
 ./tabs PctTab 2 16681 16684
-./time PctTime 2 47996 47997
+./time PctTime 2 48018 48019
 ./tree PctTree 2 12783 12786
 ```

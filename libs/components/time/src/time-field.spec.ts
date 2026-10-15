@@ -1168,9 +1168,12 @@ describe('PctTime — bounds from a signal form (pctTimeBounds)', () => {
   });
 
   it('reads a min equal to its max as one time, and not as a window', async () => {
-    const { field, set } = await bounded('12:00', (p) => {
+    const { time, field, set } = await bounded('12:00', (p) => {
       pctTimeBounds(p.startsAt, { min: '12:00', max: '12:00:00' });
     });
+    for (const bound of [time.min(), time.max()]) {
+      expect(['12:00', '12:00:00']).toContain(bound);
+    }
     expect(field().errors()).toEqual([]);
     await set('12:01');
     expect(
@@ -1229,7 +1232,7 @@ describe('PctTime — bounds from a signal form (pctTimeBounds)', () => {
     expect(field().errors()).toEqual([]);
   });
 
-  it('with two rules the field walks the tighter pair, and each rule grades its own', async () => {
+  it('with two rules the field walks the times both accept, and each rule grades its own', async () => {
     const wide = (p: SchemaPathTree<Model>) =>
       pctTimeBounds(p.startsAt, { min: '08:00', max: '20:00' });
     const narrow = (p: SchemaPathTree<Model>) =>
@@ -1277,21 +1280,140 @@ describe('PctTime — bounds from a signal form (pctTimeBounds)', () => {
     expect([time.min(), time.max()]).toEqual(['09:00', '17:00']);
   });
 
-  it('hands two windows whose gaps do not meet the gap of both, and the form grades each', async () => {
-    // Everything but 06:00–07:00, and everything but 10:00–23:00: 08:00 is in both, and no
-    // single pair of bounds spells the two arcs that remain.
-    const { time, field, set } = await bounded('08:00', (p) => {
+  it('walks the shortest stretch of the clock holding what every rule accepts — the widest gap left out', async () => {
+    // Everything but 06:00–07:00, and everything but 10:00–23:00: what both accept is three
+    // runs, and the stretch round them leaves out the widest gap, 10:00–23:00, and keeps the
+    // hour 06:00–07:00, which the form refuses and the panel offers.
+    const two = await bounded('08:00', (p) => {
       pctTimeBounds(p.startsAt, { min: '07:00', max: '06:00' });
       pctTimeBounds(p.startsAt, { min: '23:00', max: '10:00' });
     });
-    expect([time.min(), time.max()]).toEqual(['23:00', '06:00']);
-    expect(field().errors()).toEqual([]);
-
-    await set('06:30');
+    expect([two.time.min(), two.time.max()]).toEqual(['23:00', '10:00']);
+    expect(two.field().errors()).toEqual([]);
+    await two.set('06:30');
     expect(
-      field()
+      two
+        .field()
         .errors()
         .map((e) => e.kind),
     ).toEqual(['minTime', 'maxTime']);
+
+    // A window and a run inside it: that run, exactly.
+    const inside = await bounded('01:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '22:00', max: '06:00' });
+      pctTimeBounds(p.startsAt, { min: '00:00', max: '04:00' });
+    });
+    expect([inside.time.min(), inside.time.max()]).toEqual(['00:00', '04:00']);
+
+    // A window cut short by a plain bound: 22:00–23:00 and 00:00–06:00, and the hour between
+    // them is the gap the stretch keeps.
+    const cut = await bounded('23:30', (p) => {
+      pctTimeBounds(p.startsAt, { min: '22:00', max: '06:00' });
+      pctTimeBounds(p.startsAt, { max: '23:00' });
+    });
+    expect([cut.time.min(), cut.time.max()]).toEqual(['22:00', '06:00']);
+    expect(cut.field().errors()).toEqual([
+      expect.objectContaining({ kind: 'maxTime', maxTime: '23:00' }),
+    ]);
+
+    // The stretch is the same whichever rule comes first.
+    const swapped = await bounded('08:00', (p) => {
+      pctTimeBounds(p.startsAt, { max: '23:00' });
+      pctTimeBounds(p.startsAt, { min: '22:00', max: '06:00' });
+    });
+    expect([swapped.time.min(), swapped.time.max()]).toEqual([
+      '22:00',
+      '06:00',
+    ]);
+  });
+
+  it('hands no bounds where the rules accept no time at all, and the form refuses every one', async () => {
+    // Their later min and earlier max would read as the night, which neither rule accepts.
+    const apart = await bounded('23:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '18:00' });
+      pctTimeBounds(p.startsAt, { max: '08:00' });
+    });
+    expect([apart.time.min(), apart.time.max()]).toEqual([
+      undefined,
+      undefined,
+    ]);
+    expect(
+      apart
+        .field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['maxTime']);
+    await apart.set('03:00');
+    expect(
+      apart
+        .field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['minTime']);
+
+    const disjoint = await bounded('09:00', (p) => {
+      pctTimeBounds(p.startsAt, { min: '08:00', max: '10:00' });
+      pctTimeBounds(p.startsAt, { min: '12:00', max: '14:00' });
+    });
+    expect([disjoint.time.min(), disjoint.time.max()]).toEqual([
+      undefined,
+      undefined,
+    ]);
+    expect(
+      disjoint
+        .field()
+        .errors()
+        .map((e) => e.kind),
+    ).toEqual(['minTime']);
+  });
+
+  it('reads one rule as a pair, so a bound read off another field goes in a rule of its own', async () => {
+    type Hours = {
+      opensAt: PctTimeOfDay | null;
+      closesAt: PctTimeOfDay | null;
+    };
+
+    @Component({
+      imports: [PctTime, FormField],
+      template: `<pct-time [formField]="f.closesAt" />`,
+    })
+    class OneRule {
+      readonly model = signal<Hours>({ opensAt: '23:00', closesAt: '18:00' });
+      readonly f = form(this.model, (p) => {
+        pctTimeBounds(p.closesAt, {
+          min: ({ valueOf }) => valueOf(p.opensAt) ?? undefined,
+          max: '22:00',
+        });
+      });
+    }
+    // 23:00 to 22:00 is a window, and 18:00 is inside it.
+    const one = await render(OneRule);
+    expect(one.componentInstance.f.closesAt().errors()).toEqual([]);
+
+    @Component({
+      imports: [PctTime, FormField],
+      template: `<pct-time [formField]="f.closesAt" />`,
+    })
+    class TwoRules {
+      readonly model = signal<Hours>({ opensAt: '23:00', closesAt: '18:00' });
+      readonly f = form(this.model, (p) => {
+        pctTimeBounds(p.closesAt, {
+          min: ({ valueOf }) => valueOf(p.opensAt) ?? undefined,
+        });
+        pctTimeBounds(p.closesAt, { max: '22:00' });
+      });
+    }
+    const two = await render(TwoRules);
+    const time = two.debugElement.children[0].componentInstance as PctTime;
+    expect(two.componentInstance.f.closesAt().errors()).toEqual([
+      expect.objectContaining({ kind: 'minTime', minTime: '23:00' }),
+    ]);
+    expect([time.min(), time.max()]).toEqual([undefined, undefined]);
+
+    // Opening earlier, the two rules hand the field the evening between.
+    two.componentInstance.model.update((m) => ({ ...m, opensAt: '17:00' }));
+    await settle(two);
+    expect([time.min(), time.max()]).toEqual(['17:00', '22:00']);
+    expect(two.componentInstance.f.closesAt().errors()).toEqual([]);
   });
 });

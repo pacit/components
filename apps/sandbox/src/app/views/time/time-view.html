@@ -200,7 +200,7 @@
     <pct-field label="Opens at" hint="Between 06:00 and 12:00">
       <pct-time [formField]="hoursForm.opensAt" data-testid="time-opens" />
     </pct-field>
-    <pct-field label="Closes at" hint="After it opens, by 22:00">
+    <pct-field label="Closes at" hint="Not before it opens, and by 22:00">
       <pct-time [formField]="hoursForm.closesAt" data-testid="time-closes" />
     </pct-field>
   </div>

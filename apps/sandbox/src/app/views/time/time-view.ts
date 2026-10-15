@@ -43,14 +43,13 @@ export class TimeView {
       max: '12:00',
       message: 'It opens between 06:00 and 12:00',
     });
+    // Read off another field, the opening time is a rule of its own: beside the fixed 22:00 in
+    // one rule, an opening after 22:00 would make the pair a window across midnight.
     pctTimeBounds(p.closesAt, {
       min: ({ valueOf }) => valueOf(p.opensAt) ?? undefined,
-      max: '22:00',
-      message: (error) =>
-        error.kind === 'minTime'
-          ? 'It closes after it opens'
-          : 'It closes by 22:00',
+      message: 'It cannot close before it opens',
     });
+    pctTimeBounds(p.closesAt, { max: '22:00', message: 'It closes by 22:00' });
   });
 
   protected readonly time = signal<PctTimeOfDay | null>('13:05');

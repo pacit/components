@@ -530,7 +530,7 @@ test.describe('Time — the bounds and the step', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     const field = page.getByTestId('demo-form-bounds').locator('pct-field');
     await expect(partOf(field.nth(1), 'field-error')).toHaveText(
-      'It closes after it opens',
+      'It cannot close before it opens',
     );
   });
 });
