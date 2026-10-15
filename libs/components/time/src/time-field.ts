@@ -469,10 +469,10 @@ export class PctTime
     // the text the user left behind that is not a time. The rejection is cleared HERE and not
     // on commit, because a value arriving from outside is the one thing a commit cannot see.
     //
-    // The rejection is READ as a dependency, where the date field reads it `untracked`: a reset
-    // after junk changes the rejection and nothing else — the value was `null` already — and a
-    // field that did not hear it went on showing the junk over an empty value. The write below
-    // settles in one more pass: it sets the rejection to what it already is the second time.
+    // The rejection is READ as a dependency, as in the date field: a reset after junk changes
+    // the rejection and nothing else — the value was `null` already — and a field that did not
+    // hear it went on showing the junk over an empty value. The write below settles in one
+    // more pass: it sets the rejection to what it already is the second time.
     effect(() => {
       const text = this.text();
       const junk = this.rejected() ?? '';

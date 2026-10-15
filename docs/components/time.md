@@ -131,7 +131,7 @@ four digits they typed. The sentence travels through the contract's second chann
 `ownErrors` ([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)),
 so a `pct-field` around the control shows it in the same place; it is the `timeMalformed`
 text, so an application that translates the library is not told in English; and it exists only
-once the field was left — a keystroke or a value from outside takes it back.
+once the field was left — a keystroke, `reset()` or a time from outside takes it back.
 
 **A time off the step is not junk.** `13:05` in a field of quarter hours is a time, and the
 field writes it, as the native element keeps the value and flags `stepMismatch` beside it;
@@ -174,5 +174,9 @@ textbox is not a combobox),
   browser's default locale where the engine does not carry the language, and in webkit a
   Korean one says `AM` and `PM` — what the same engine's own `Intl` writes on the same page
   (0086, C5 and D2).
+- **An empty value written from outside does not take junk back.** Junk leaves the value
+  `null`; a form that then writes `null` again — `ctrl.reset()`, `setValue(null)` — writes
+  what the model already holds, the model does not move, and the field keeps the text and the
+  report. A time written from outside does take it back.
 - **The sentence comes first.** A control's own error stands ahead of the form's, always —
   there is no knob to let "required" win over "not a time" (0070).

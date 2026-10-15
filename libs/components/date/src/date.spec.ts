@@ -5,8 +5,14 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { requiredError, type ValidationError } from '@angular/forms/signals';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  form,
+  FormField,
+  required,
+  requiredError,
+  type ValidationError,
+} from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 
@@ -312,6 +318,27 @@ describe('PctDate — junk in the field', () => {
     const f = await render(Host);
     await blur(f);
     expect(f.componentInstance.touched()).toBe(true);
+  });
+
+  it('empties the field, the text and the date alike, on reset', async () => {
+    const f = await render(Host);
+    await type(f, 'junk');
+    await blur(f);
+    const date = f.debugElement.children[0].componentInstance as PctDate;
+
+    // The value was `null` already, so the reset moves the rejection and nothing else — and a
+    // field that heard only the value went on showing `junk` over an empty one, unreported.
+    date.reset();
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(f.componentInstance.value()).toBeNull();
+    expect(controlOf(f).value).toBe('');
+    expect(
+      f.nativeElement
+        .querySelector('pct-date')
+        ?.hasAttribute('data-pct-malformed'),
+    ).toBe(false);
   });
 });
 
@@ -622,25 +649,105 @@ describe('PctDate — inside the chrome', () => {
   });
 });
 
-describe('PctDate — the interop that writes what the type forbids', () => {
-  it('warns once when classic forms take the value over', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+/**
+ * Forms, each from a NON-EMPTY value: a field that only ever started empty is a field whose
+ * first write nobody watched (`lesson-26` — `FormField` brings an `NgControl` of its own, and a
+ * control that took that for classic forms rendered an empty input over a filled model).
+ */
+describe('PctDate — the forms that bind it', () => {
+  it('works with [formField], from the model’s value and back into it', async () => {
+    @Component({
+      imports: [PctDate, FormField],
+      template: `<pct-date [formField]="f.startsOn" locale="es-ES" />`,
+    })
+    class Signal {
+      readonly model = signal<{ startsOn: PctDay | null }>({
+        startsOn: '2026-08-27',
+      });
+      readonly f = form(this.model, (p) => {
+        required(p.startsOn);
+      });
+    }
 
+    const f = await render(Signal);
+    expect(controlOf(f).value).toBe('27/08/2026');
+
+    await type(f, '01/12/2026');
+    await blur(f);
+    expect(f.componentInstance.model().startsOn).toBe('2026-12-01');
+    expect(f.componentInstance.f.startsOn().touched()).toBe(true);
+  });
+
+  it('works with [formControl], in the language the field is in', async () => {
+    @Component({
+      imports: [PctDate, ReactiveFormsModule],
+      template: `<pct-date [formControl]="ctrl" locale="es-ES" />`,
+    })
+    class Reactive {
+      readonly ctrl = new FormControl<PctDay | null>('2026-08-27');
+    }
+
+    const f = await render(Reactive);
+    expect(controlOf(f).value).toBe('27/08/2026');
+
+    await type(f, '01/12/2026');
+    await blur(f);
+    expect(f.componentInstance.ctrl.value).toBe('2026-12-01');
+    expect(f.componentInstance.ctrl.touched).toBe(true);
+    expect(controlOf(f).value).toBe('01/12/2026');
+
+    // A value from the form's side is written in the field's language as well.
+    f.componentInstance.ctrl.setValue('2026-03-05');
+    f.detectChanges();
+    await f.whenStable();
+    expect(controlOf(f).value).toBe('05/03/2026');
+
+    f.componentInstance.ctrl.disable();
+    f.detectChanges();
+    await f.whenStable();
+    expect(controlOf(f).disabled).toBe(true);
+  });
+
+  it('works with [(ngModel)], in the application’s language', async () => {
     @Component({
       imports: [PctDate, FormsModule],
       template: `<pct-date [(ngModel)]="value" />`,
     })
-    class Classic {
+    class Template {
       value: PctDay | null = '2026-08-27';
     }
 
-    await render(Classic);
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('[pct-date] Classic forms'),
-    );
-    warn.mockRestore();
+    const f = await render(Template);
+    await f.whenStable();
+    // The testing module's `LOCALE_ID` is `en-US`, month first.
+    expect(controlOf(f).value).toBe('08/27/2026');
+
+    await type(f, '12/01/2026');
+    await blur(f);
+    expect(f.componentInstance.value).toBe('2026-12-01');
+    expect(controlOf(f).value).toBe('12/01/2026');
   });
 
+  it('warns about none of them', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    @Component({
+      imports: [PctDate, FormsModule, ReactiveFormsModule],
+      template: `<pct-date [(ngModel)]="value" />
+        <pct-date [formControl]="ctrl" />`,
+    })
+    class Classic {
+      value: PctDay | null = '2026-08-27';
+      readonly ctrl = new FormControl<PctDay | null>('2026-08-27');
+    }
+
+    await render(Classic);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+describe('PctDate — the interop that writes what the type forbids', () => {
   it('shows nothing for a value that is not a day', async () => {
     const f = await render(Host);
     // `lesson-117`: the bridge writes what the model's type forbids, and no compiler, no

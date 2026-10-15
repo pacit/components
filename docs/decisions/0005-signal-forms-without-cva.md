@@ -67,6 +67,12 @@ Two cases only emerged in use and are conditions in the code today:
     `NG_VALUE_ACCESSOR` directly finds nothing to resolve, and `<pct-date>` warns outright
     under classic forms, because the bridge writes what `PctDay`'s type forbids
     ([`lesson-117`](../lessons.md#lesson-117)).
+  - _Amended 2026-10-15: **`<pct-date>` no longer warns under classic forms.**_ The warning
+    cited [`lesson-20`](../lessons.md#lesson-20), which is about `DefaultValueAccessor` on a
+    native input, and the date field is not one. Measured, `[formControl]` and `[(ngModel)]`
+    bind it from a non-empty value, written in its language, and write back; what the bridge
+    writes that `PctDay`'s type forbids is read defensively. One boundary remains of the two
+    above: `NG_VALUE_ACCESSOR`.
 - A consumer on a very old Angular will not install the library — but
   [`req-project-angular`](../requirements/project.md#req-project-angular) rules that out
   anyway.
