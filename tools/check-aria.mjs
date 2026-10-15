@@ -687,11 +687,12 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
 /**
  * A node the walk reads as an element, asked of the compiler's own classes as `repeats` is: an
  * element, and an `<ng-content>`, which draws none of its own and is looked through
- * (`TRANSPARENT_TAGS`). Two other kinds carry a `name` as a string and draw nothing: an `@let`,
- * the variable's, and an `@content` block, the slot's. Taken for elements, `@let constructor`
- * made a tag axe looks up in a table every object answers `constructor` from, and the run died
- * on a template the build compiles; `@content(optgroup)` made a group, and an option under a
- * menu stood in it.
+ * (`TRANSPARENT_TAGS`). Two other kinds the walk meets carry a `name` as a string and draw
+ * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
+ * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
+ * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
+ * option under a menu stood in it. A block Angular does not know carries one too, and comes only
+ * with a parse error, on which the walk does not run.
  */
 const isElement = (node) =>
   node instanceof TmplAstElement || node instanceof TmplAstContent;
