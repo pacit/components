@@ -320,6 +320,8 @@ describe('PctNumber', () => {
       const fixture = await render(Host);
       await type(fixture, 'abc');
       await blur(fixture);
+      expect(inputOf(fixture).value).toBe('abc');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
       const directive = fixture.debugElement
         .query((d) => d.nativeElement.tagName === 'INPUT')
         .injector.get(PctNumber);
@@ -717,6 +719,26 @@ describe('PctNumber', () => {
       await fixture.whenStable();
       expect(fixture.componentInstance.model().seats).toBe(null);
       expect(inputOf(fixture).value).toBe('');
+    });
+
+    it("a form's reset reaches the control's, and takes junk back with it", async () => {
+      const fixture = await render(SignalFormHost);
+      await type(fixture, 'abc');
+      await blur(fixture);
+      expect(fixture.componentInstance.model().seats).toBeNull();
+      expect(inputOf(fixture).value).toBe('abc');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
+
+      // The form's reset calls the control's, and the path an application takes is this one.
+      fixture.componentInstance.f().reset();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.model().seats).toBeNull();
+      expect(inputOf(fixture).value).toBe('');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="field-error"]'),
+      ).toBeNull();
     });
   });
 

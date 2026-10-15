@@ -397,7 +397,7 @@ export class PctNumber
     pctAttachToField(this.field, this);
 
     // What the field shows: the value formatted, or — while there is none — the text the
-    // user left behind that is not a number. A value arriving from outside takes the
+    // user left behind that is not a number. A number arriving from outside takes the
     // report back, which is the one thing a commit cannot see (the date field's reading).
     //
     // The rejection is READ as a dependency, as in the date and time fields: a reset after
