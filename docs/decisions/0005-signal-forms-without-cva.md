@@ -63,13 +63,16 @@ Two cases only emerged in use and are conditions in the code today:
     value, measured**: `ctrl.disable()` / `enable()` reaches the real control element and
     validity arrives as `aria-invalid`, asserted per composite (select, checkbox, switch,
     radio group, slider) in the same classic-forms suites the requirement's Gate names. The
-    boundary that remains is written where it bites: an integration resolving
-    `NG_VALUE_ACCESSOR` directly finds nothing to resolve.
-  - _Corrected on 2026-10-15:_ `<pct-date>` no longer warns under classic forms. The warning
+    two boundaries that remain are written where they bite: an integration resolving
+    `NG_VALUE_ACCESSOR` directly finds nothing to resolve, and `<pct-date>` warns outright
+    under classic forms, because the bridge writes what `PctDay`'s type forbids
+    ([`lesson-117`](../lessons.md#lesson-117)).
+  - _Amended 2026-10-15: **`<pct-date>` no longer warns under classic forms.**_ The warning
     cited [`lesson-20`](../lessons.md#lesson-20), which is about `DefaultValueAccessor` on a
-    native input; measured, `[formControl]` and `[(ngModel)]` bind the date field from a
-    non-empty value, formatted, and write back, and what the bridge writes that `PctDay`'s
-    type forbids ([`lesson-117`](../lessons.md#lesson-117)) is read defensively.
+    native input, and the date field is not one. Measured, `[formControl]` and `[(ngModel)]`
+    bind it from a non-empty value, written in its language, and write back; what the bridge
+    writes that `PctDay`'s type forbids is read defensively. One boundary remains of the two
+    above: `NG_VALUE_ACCESSOR`.
 - A consumer on a very old Angular will not install the library — but
   [`req-project-angular`](../requirements/project.md#req-project-angular) rules that out
   anyway.

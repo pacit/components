@@ -174,5 +174,9 @@ textbox is not a combobox),
   browser's default locale where the engine does not carry the language, and in webkit a
   Korean one says `AM` and `PM` — what the same engine's own `Intl` writes on the same page
   (0086, C5 and D2).
+- **An empty value written from outside does not take junk back.** Junk leaves the value
+  `null`; a form that then writes `null` again — `ctrl.reset()`, `setValue(null)` — writes
+  what the model already holds, the model does not move, and the field keeps the text and the
+  report. A time written from outside does take it back.
 - **The sentence comes first.** A control's own error stands ahead of the form's, always —
   there is no knob to let "required" win over "not a time" (0070).

@@ -728,7 +728,7 @@ describe('PctDate — the forms that bind it', () => {
     expect(controlOf(f).value).toBe('12/01/2026');
   });
 
-  it('says nothing in the console about any of them', async () => {
+  it('warns about none of them', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     @Component({
