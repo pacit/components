@@ -97,7 +97,7 @@ libs/components/avatar/src/avatar.ts 87.50 28(0) 3 0 1 0
 libs/components/badge/src/badge.ts 81.82 9(0) 2 0 0 0
 libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0 0
 libs/components/button/src/button.ts 92.54 124(0) 10 0 0 3
-libs/components/checkbox/src/checkbox.ts 96.92 63(0) 2 0 0 6
+libs/components/checkbox/src/checkbox.ts 96.83 61(0) 2 0 0 6
 libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0 0
@@ -115,10 +115,10 @@ libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
 libs/components/core/src/texts.ts 100.00 51(0) 0 0 0 0
 libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
 libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
-libs/components/date/src/date.ts 69.23 135(0) 60 0 0 8
+libs/components/date/src/date.ts 73.87 147(0) 52 0 0 8
 libs/components/date/src/day.ts 97.53 158(2) 4 0 0 0
 libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
-libs/components/datetime/src/datetime-field.ts 83.45 605(0) 116 0 4 10
+libs/components/datetime/src/datetime-field.ts 83.95 612(0) 113 0 4 10
 libs/components/datetime/src/datetime.ts 100.00 99(0) 0 0 0 0
 libs/components/datetime/src/halves.ts 91.67 33(0) 3 0 0 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
@@ -126,8 +126,8 @@ libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
 libs/components/field/src/autosize.ts 77.03 57(0) 16 0 1 2
 libs/components/field/src/field.ts 75.83 91(0) 26 2 1 1
-libs/components/field/src/number.ts 84.64 237(0) 41 0 2 11
-libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
+libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
+libs/components/field/src/text.ts 85.37 35(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
 libs/components/icon/src/fonts.ts 99.12 113(0) 1 0 0 0
 libs/components/icon/src/icon.ts 93.28 111(0) 7 0 1 2
@@ -137,21 +137,22 @@ libs/components/menu/src/menu.ts 81.16 280(0) 56 1 8 3
 libs/components/pagination/src/pagination.ts 96.43 108(0) 4 0 0 4
 libs/components/popover/src/popover.ts 70.45 155(0) 50 2 13 3
 libs/components/progress/src/progress.ts 92.31 48(0) 4 0 0 2
-libs/components/radio/src/radio-group.ts 92.45 98(1) 8 0 0 5
+libs/components/radio/src/radio-group.ts 92.38 97(1) 8 0 0 5
 libs/components/radio/src/radio.ts 90.24 37(0) 3 0 1 1
 libs/components/regions/src/regions.ts 96.88 62(0) 2 0 0 2
 libs/components/schematics/migrations/badge-tone/index.ts 78.93 221(0) 56 0 3 0
+libs/components/schematics/migrations/control-reset/index.ts 97.40 75(0) 2 0 0 0
 libs/components/select/src/multi-select.ts 97.14 34(0) 0 1 0 0
 libs/components/select/src/select-filter.ts 100.00 5(0) 0 0 0 0
 libs/components/select/src/select.base.ts 85.13 584(1) 100 0 2 9
 libs/components/select/src/select.template.ts 33.33 1(0) 0 0 2 2
 libs/components/select/src/select.ts 88.89 32(0) 3 1 0 0
 libs/components/skeleton/src/skeleton.ts 92.59 25(0) 2 0 0 2
-libs/components/slider/src/slider.ts 80.53 153(0) 36 0 1 9
+libs/components/slider/src/slider.ts 80.11 149(0) 36 0 1 9
 libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
-libs/components/switch/src/switch.ts 96.88 62(0) 2 0 0 5
+libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 1 0 1
 libs/components/tabs/src/tabs.ts 93.50 115(0) 7 1 0 2
 libs/components/testing/src/dom.ts 100.00 26(0) 0 0 0 0
@@ -161,12 +162,12 @@ libs/components/testing/src/property.testkit.ts 92.04 104(2) 9 0 0 0
 libs/components/time/src/lattice.ts 97.25 106(0) 3 0 0 0
 libs/components/time/src/locale.ts 100.00 277(0) 0 0 0 0
 libs/components/time/src/time-columns.ts 77.97 308(0) 84 0 3 4
-libs/components/time/src/time-field.ts 79.30 180(0) 47 0 0 9
+libs/components/time/src/time-field.ts 80.09 185(0) 46 0 0 9
 libs/components/time/src/time.ts 100.00 230(0) 0 0 0 0
 libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 85.98 7150/8316
+TOTAL 86.23 7239/8395
 ```

@@ -603,6 +603,17 @@ describe('PctRadioGroup / PctRadio', () => {
       expect(yes.getAttribute('value')).toBe('true');
     });
 
+    it('never hands the comparator the absence of a choice', async () => {
+      // `byId` reads `a.id`: a `null` reaching it would throw, and a group with no choice
+      // must not call either option chosen.
+      const fixture = await render(EntityHost);
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(radiosOf(fixture).map((r) => r.checked)).toEqual([false, false]);
+    });
+
     it('reset() takes nothing back, and the emptyValue it used to write is read by nothing', async () => {
       const fixture = await render(EntityHost);
       const group = fixture.debugElement.children[0]
