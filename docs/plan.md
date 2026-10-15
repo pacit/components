@@ -116,7 +116,8 @@ field (**1.4**) on 2026-10-12, as
 [0090](decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md) decided it. The wheel
 and the time panel's shape follow
 [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) of
-2026-10-08, the wheel first. Section 3 holds nothing since `0.2.0`. Section 4 holds five open
+2026-10-08, the wheel first, and its runway was measured and written on 2026-10-14
+([0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md)). Section 3 holds nothing since `0.2.0`. Section 4 holds five open
 findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
@@ -166,10 +167,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
 - [ ] **1.6 — the wheel** `PctWheel<T>` in `@pacit/components/wheel`, as
       [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) decided it:
       a listbox on the platform's scroll, and the row under the line is the value
-  - first the runway's own record: `@angular/cdk/scrolling` (a third CDK entrypoint under the
-    dependency policy) or a window of the wheel's own, measured by bytes on `./wheel`, by a
-    fling across the re-centring in three engines and by three readers on a listbox whose rows
-    are a window, told what of the rows outside it — 0086's order, the probes before the code
+  - the runway's own record landed 2026-10-14 as
+    [0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md): the cycle
+    three times in the tree, the outer copies hidden; no `@angular/cdk/scrolling` — three
+    runways measured by bytes, by a tick, a burst and a jump in three engines, by three readers
   - then the component: options of the select's item shape, `compareWith`, `T | null`,
     `[formField]` and `warnings`, a label and a hint without a wrapper; a settle a gesture
     started writes, the opening and `null` write nothing; `wrap` ringing on keys and on
@@ -177,12 +178,12 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     the centring read off the motion duration by a reader `./core` exports beside
     `pctAfterTransition`; the tier `--pct-wheel-*`, its texts, a card under Choices on the
     APG listbox
-  - `scroll-snap-stop: always` — one row per tick and per flick — is in three engines, and
-    rows per flick on the sixty-row minutes column is the measure that decides it, either way
+  - `scroll-snap-stop: normal`, as 0091 §3 measured it: `always` is one row per tick in two
+    engines and three rows, or none, in chromium 153; a burst is 24 or 25 rows in all three
   - the drum (rows turned by their distance to the line) comes after, by scroll-driven
     animations where they are (chromium, webkit) — a variant measured, not promised
   - ends with: the card filled in, the wheel in the sandbox in three engines, the readers'
-    walk recorded, and the select's long list named as the runway's second consumer or not
+    walk recorded; the select's long list is not this runway's consumer (0091 §6)
 
 - [ ] **1.7 — the time panel's shape** — `picker` (`'list' | 'wheel'`, default `'list'`) on
       `PctTime` and `PctTimeColumns`, after 1.6: the `wheel` shape composes `PctWheel` per
