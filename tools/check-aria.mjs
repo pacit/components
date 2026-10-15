@@ -612,7 +612,8 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * (`@let mark = '<b>'`), one the scan reads where the parser sees an expression. Its attributes
  * make no stop, though its tag or its written role can still make it a widget, which fails
  * point 1 (`@let mark = '<button>'`). A real tag such a false one swallows is the tree's alone,
- * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1. A
+ * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1, as does
+ * a tag of an ICU's case the scan never finds, which the HTML tree places (`cased`). A
  * widget or a group the tag reader holds (`held`) and the walk gives no path fails it too: a
  * template, which the tree holds as no element, or a tag in a block kind the walk does not
  * descend into. The text scanned is the one the tree was parsed from, its comments blanked
@@ -1011,6 +1012,7 @@ const readMessages = (file, content, sides, reads) => {
     names: tags.names,
     markup: tags.markup,
     icus: tags.icus,
+    cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
     text,
@@ -1330,6 +1332,20 @@ const checkAria = ({
           `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
           `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
           `read whole and the tree does not hold`,
+      );
+    // Inside an ICU the template tree holds no element, so the refusal above of a tag it holds
+    // and the scan missed has nothing there to count by; the HTML tree has, and knows where each
+    // tag of a case starts (`cased`). A tag the scan never found there is a stop nothing reads —
+    // not the scan, which would have read it as one (`UNREAD`), and not the tree.
+    const uncased = said.cased.find((offset) => !scanned.has(offset));
+    if (uncased !== undefined)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: an ICU's case draws a tag at offset ${uncased} ` +
+          `(\`${opening(uncased)}\`), and the tag scan never found it — a quote Angular reads ` +
+          `as part of a bracketed name (\`[it's]\`) opens one to the scan that nothing closes, ` +
+          `and a tag the scan does not find there is one nothing reads: the template tree ` +
+          `holds no element in an ICU`,
       );
     if (said.markup.length)
       throw new AriaError(
