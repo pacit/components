@@ -192,5 +192,11 @@ bounds, no warning and a panel open on every day) and
   `f.endsAt().min?.()` reads `undefined` on both sides while the start stands past the close,
   though each rule's side is still a bound the form keeps — a hint written from the metadata
   disappears with it.
+- **A reversed pair written by hand warns of nothing.** `{ min: '…12-05T09:00', max:
+'…12-03T17:00' }` in one rule is a slip in the code, not the data, and the field the same pair
+  as attributes would warn of it. Here the form's errors are its only voice: every value carries
+  one of them or both, with the bounds. The day's and the time's rules warn of no pair either,
+  and a rule could catch only its own pair at build time — never the two rules that contradict
+  each other, nor a side read off another field.
 - **The same cast** as the others, and a reducer over pairs where the day has two keys, because
   the window is read off both sides at once.

@@ -119,13 +119,19 @@
   data-testid="demo-form-bounds"
 >
   <div class="datetime-view__row">
-    <pct-field label="Starts" hint="1 to 3 December, 09:00 to 18:00">
+    <pct-field
+      label="Starts"
+      hint="From 1 December, 09:00, to 3 December, 18:00"
+    >
       <pct-datetime
         [formField]="talkForm.startsAt"
         data-testid="datetime-talk-starts"
       />
     </pct-field>
-    <pct-field label="Ends" hint="After it starts, by 3 December at 18:00">
+    <pct-field
+      label="Ends"
+      hint="Not before it starts, and by 3 December at 18:00"
+    >
       <pct-datetime
         [formField]="talkForm.endsAt"
         data-testid="datetime-talk-ends"

@@ -465,7 +465,7 @@ test.describe('Datetime — bounds from a signal form', () => {
     await expect(time).toHaveAttribute('aria-invalid', 'true');
     const field = page.getByTestId('demo-form-bounds').locator('pct-field');
     await expect(partOf(field.nth(1), 'field-error')).toHaveText(
-      'It ends after it starts',
+      'It cannot end before it starts',
     );
   });
 });

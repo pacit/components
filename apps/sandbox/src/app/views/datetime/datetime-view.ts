@@ -73,7 +73,7 @@ export class DatetimeView {
       max: '2026-12-03T18:00',
       message: (error) =>
         error.kind === 'minDateTime'
-          ? 'It ends after it starts'
+          ? 'It cannot end before it starts'
           : 'The conference closes on 3 December at 18:00',
     });
   });
