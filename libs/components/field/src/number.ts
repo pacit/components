@@ -397,14 +397,19 @@ export class PctNumber
     pctAttachToField(this.field, this);
 
     // What the field shows: the value formatted, or — while there is none — the text the
-    // user left behind that is not a number. A value arriving from outside takes the
+    // user left behind that is not a number. A number arriving from outside takes the
     // report back, which is the one thing a commit cannot see (the date field's reading).
+    //
+    // The rejection is READ as a dependency, as in the date and time fields: a reset after
+    // junk changes the rejection and nothing else — the value was `null` already — and a
+    // field that did not hear it went on showing the junk over an empty value. The write below
+    // settles in one more pass: it sets the rejection to what it already is the second time.
     effect(() => {
       const v = this.value();
+      const junk = this.rejected() ?? '';
       if (this.typing()) return;
       const el = this.el.nativeElement;
       if (v === null) {
-        const junk = untracked(() => this.rejected()) ?? '';
         if (el.value !== junk) el.value = junk;
         return;
       }
@@ -585,6 +590,9 @@ export class PctNumber
    * @since 0.1.0
    */
   reset(): void {
+    // A commit leaves the rejection to its caller — the blur sets it before committing — so
+    // the reset takes it back here, or the junk outlives the reset that emptied the value.
+    this.rejected.set(null);
     this.commit(null);
   }
 
