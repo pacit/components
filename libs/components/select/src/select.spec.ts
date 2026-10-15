@@ -1029,6 +1029,51 @@ describe('PctSelect', () => {
       expect(host.model().country).toBe('pl');
       expect(host.f.country().valid()).toBe(true);
     });
+
+    const shownValue = (f: ComponentFixture<unknown>) =>
+      f.nativeElement
+        .querySelector('[data-pct-part="value"]')
+        ?.textContent?.trim() ?? null;
+
+    const pickFirst = async (f: ComponentFixture<unknown>) => {
+      triggerOf(f).click();
+      f.detectChanges();
+      await f.whenStable();
+      optionsInPanel()[0].click();
+      f.detectChanges();
+      await f.whenStable();
+    };
+
+    it("a form's reset keeps the answer the form holds, and leaves the form pristine", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      await pickFirst(fixture);
+      expect(host.f.country().dirty()).toBe(true);
+
+      // Angular's reset does not change the model; the control's own reset wrote
+      // `emptyValue` into it, and was counted as an edit.
+      host.f().reset();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(host.model().country).toBe('pl');
+      expect(shownValue(fixture)).toBe('Poland');
+      expect(host.f.country().dirty()).toBe(false);
+    });
+
+    it("a form's reset to a value shows that answer — the control's reset no longer outruns it", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      await pickFirst(fixture);
+
+      host.f().reset({ country: 'de' });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(host.model().country).toBe('de');
+      expect(shownValue(fixture)).toBe('Germany');
+      expect(host.f.country().dirty()).toBe(false);
+    });
   });
 
   describe('compatibility with classic forms (no CVA)', () => {
@@ -1268,7 +1313,7 @@ describe('PctSelect', () => {
       ).toBeNull();
     });
 
-    it('reset() returns to the emptyValue the application declared', async () => {
+    it('reset() leaves the answer where it is — emptyValue is the cross’s, not the reset’s', async () => {
       const fixture = await render(NumberHost);
       const select = fixture.debugElement.children[0]
         .componentInstance as PctSelect<number>;
@@ -1280,7 +1325,7 @@ describe('PctSelect', () => {
 
       select.reset();
       await fixture.whenStable();
-      expect(fixture.componentInstance.value()).toBe(-1);
+      expect(fixture.componentInstance.value()).toBe(10);
     });
 
     it('focus() is what signal forms reach for', async () => {
@@ -2553,7 +2598,7 @@ describe('PctSelect', () => {
       expect(host.hasAttribute('data-pct-clearable')).toBe(false);
     });
 
-    it('a form reset is the same two things plus the panel', async () => {
+    it('a reset takes the panel back and leaves the answer — the cross and the reset are two things now', async () => {
       const fixture = await render(ClearHost);
       const select = fixture.debugElement.children[0].componentInstance;
       triggerOf(fixture).click();
@@ -2565,7 +2610,7 @@ describe('PctSelect', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(fixture.componentInstance.value()).toBeNull();
+      expect(fixture.componentInstance.value()).toBe('pl');
       expect(panel()).toBeNull();
     });
   });

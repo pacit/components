@@ -509,12 +509,19 @@ export class PctDate
   }
 
   /**
-   * Empties the field, the typed text and the date alike.
+   * Takes back what the field holds and the form does not — junk left in it, a date half
+   * typed, an open calendar — and shows the date again. The date is not touched: it is the
+   * form's, and a signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */
   reset(): void {
-    this.commit('');
+    // None of these writes is the value's, so the form hears nothing — a commit here reached
+    // the form after its own value and won, and counted as the user's edit besides.
+    this.rejected.set(null);
+    this.typing.set(false);
+    this.close(false);
   }
 
   protected onInput(): void {

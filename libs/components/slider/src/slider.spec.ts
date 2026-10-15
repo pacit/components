@@ -511,6 +511,35 @@ describe('PctSlider', () => {
     expect(fixture.componentInstance.model().budget).toBe(55);
   });
 
+  it("a form's reset keeps the value the form holds, and leaves the form pristine", async () => {
+    const fixture = await render(SignalFormHost);
+    const host = fixture.componentInstance;
+    await move(fixture, 55);
+    expect(host.f.budget().dirty()).toBe(true);
+
+    // Angular's reset does not change the model; the control's own reset moved the thumb to
+    // the midpoint, and was counted as an edit.
+    host.f().reset();
+    await fixture.whenStable();
+
+    expect(host.model().budget).toBe(55);
+    expect(boxOf(fixture).value).toBe('55');
+    expect(host.f.budget().dirty()).toBe(false);
+  });
+
+  it("a form's reset to a value shows that value — the control's reset no longer outruns it", async () => {
+    const fixture = await render(SignalFormHost);
+    const host = fixture.componentInstance;
+    await move(fixture, 55);
+
+    host.f().reset({ budget: 30 });
+    await fixture.whenStable();
+
+    expect(host.model().budget).toBe(30);
+    expect(boxOf(fixture).value).toBe('30');
+    expect(host.f.budget().dirty()).toBe(false);
+  });
+
   it('works with [formControl]', async () => {
     const fixture = await render(ReactiveHost);
 
@@ -567,10 +596,11 @@ describe('PctSlider', () => {
   });
 
   /**
-   * A slider has no empty value — the thumb is always somewhere — so a reset is the middle
-   * of the range rather than a clearing.
+   * The thumb is the value, so a reset has nothing of the slider's own to take back — and the
+   * value is the form's. It used to be the midpoint of the bounds, written after the value the
+   * form had just been reset to.
    */
-  it('resets to the midpoint of its own bounds', async () => {
+  it('takes nothing back on reset: the thumb stays where the value is', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.lo.set(20);
     fixture.componentInstance.hi.set(80);
@@ -582,7 +612,8 @@ describe('PctSlider', () => {
     slider.reset();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.value()).toBe(50);
+    expect(fixture.componentInstance.value()).toBe(75);
+    expect(boxOf(fixture).value).toBe('75');
   });
 
   it('focuses the native control when the form asks it to', async () => {

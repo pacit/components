@@ -68,9 +68,11 @@ export class PctSelect<T = string>
   readonly value = model<NoInfer<T> | null>(null);
 
   /**
-   * The value standing for no choice — set when the form is reset. `null` by default, but an
-   * application with a non-nullable field (`plan: string`) supplies its own (`emptyValue=""`),
-   * so that a reset does not write `null` into the model against its type.
+   * The value standing for no choice — what the cross (`clearable`) writes. `null` by default,
+   * but an application with a non-nullable field (`plan: string`) supplies its own
+   * (`emptyValue=""`), so that a clear does not write `null` into the model against its type.
+   * A form's reset writes nothing here: the value it resets to is the form's
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */

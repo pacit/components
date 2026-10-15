@@ -515,12 +515,19 @@ export class PctTime
   }
 
   /**
-   * Empties the field, the typed text and the time alike.
+   * Takes back what the field holds and the form does not — junk left in it, a time half
+   * typed, open columns — and shows the time again. The time is not touched: it is the form's,
+   * and a signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since next
    */
   reset(): void {
-    this.commit('');
+    // None of these writes is the value's, so the form hears nothing — a commit here reached
+    // the form after its own value and won, and counted as the user's edit besides.
+    this.rejected.set(null);
+    this.typing.set(false);
+    this.close(false);
   }
 
   protected onInput(): void {

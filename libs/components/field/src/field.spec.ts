@@ -585,6 +585,43 @@ describe('PctField + PctText', () => {
         'Invalid address',
       );
     });
+
+    it("a form's reset keeps what was typed — the model's — and leaves the form pristine", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      const input = inputOf(fixture);
+      input.value = 'typed@example.com';
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new Event('blur'));
+      await fixture.whenStable();
+      expect(host.f.email().dirty()).toBe(true);
+
+      // Angular's reset does not change the model, the way a native `<input [formField]>`
+      // keeps its text; the control's own reset emptied it, and counted as an edit.
+      host.f().reset();
+      await fixture.whenStable();
+
+      expect(host.model().email).toBe('typed@example.com');
+      expect(input.value).toBe('typed@example.com');
+      expect(host.f.email().dirty()).toBe(false);
+      expect(host.f.email().touched()).toBe(false);
+    });
+
+    it("a form's reset to a value shows that value — the control's reset no longer outruns it", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      const input = inputOf(fixture);
+      input.value = 'typed@example.com';
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+
+      host.f().reset({ email: 'reset@example.com' });
+      await fixture.whenStable();
+
+      expect(host.model().email).toBe('reset@example.com');
+      expect(input.value).toBe('reset@example.com');
+      expect(host.f.email().dirty()).toBe(false);
+    });
   });
 
   describe('compatibility with classic forms (no CVA)', () => {
@@ -1089,8 +1126,10 @@ describe('PctField + PctText', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(fixture.componentInstance.value()).toBe('');
-      expect(el.value).toBe('');
+      // The field holds nothing the value does not, so a reset has nothing to take back — and
+      // the value is the form's, not the reset's.
+      expect(fixture.componentInstance.value()).toBe('no wrapper');
+      expect(el.value).toBe('no wrapper');
     });
   });
   describe('a chrome with nothing registered in it', () => {

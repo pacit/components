@@ -401,7 +401,7 @@ describe('PctTime — junk in the field', () => {
     expect(f.componentInstance.touched()).toBe(true);
   });
 
-  it('empties the field, the text and the time alike, on reset', async () => {
+  it('takes junk back on reset, and the value it leaves is the one it held', async () => {
     @Component({
       imports: [PctTime],
       template: `<pct-time #t [(value)]="value" />`,
@@ -418,6 +418,22 @@ describe('PctTime — junk in the field', () => {
     expect(f.componentInstance.value()).toBeNull();
     expect(shown(f)).toBe('');
     expect(hostOf(f).hasAttribute('data-pct-malformed')).toBe(false);
+  });
+
+  it('takes back a time half typed on reset, and shows the time the field holds', async () => {
+    const f = await render(Host);
+    // `13:0` is most of the way to `13:05` and is no time yet, so the value stands.
+    await type(f, '13:0');
+    expect(f.componentInstance.value()).toBe('13:05');
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+
+    time.reset();
+    await settle(f);
+
+    // The value is the form's, and the text is the field's: the reset rewrites the one from
+    // the other instead of emptying both.
+    expect(f.componentInstance.value()).toBe('13:05');
+    expect(shown(f)).toBe('1:05 PM');
   });
 });
 
@@ -485,6 +501,21 @@ describe('PctTime — the panel', () => {
     expect(toggleOf(f).getAttribute('aria-expanded')).toBe('true');
     expect(toggleOf(f).getAttribute('aria-controls')).toBe(panel()?.id);
     expect(hostOf(f).hasAttribute('data-pct-open')).toBe(true);
+  });
+
+  it('is taken back by a reset, and the time stays', async () => {
+    const f = await render(Host);
+    await open(f);
+    expect(panel()).not.toBeNull();
+    const time = f.debugElement.children[0].componentInstance as PctTime;
+
+    // A form put back to its start has no columns hanging off it — the select's reading.
+    time.reset();
+    await settle(f);
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(f.componentInstance.value()).toBe('13:05');
   });
 
   it('names the button and the panel it opens with one string', async () => {
@@ -890,6 +921,46 @@ describe('PctTime — the forms that bind it', () => {
     expect(f.componentInstance.model().startsAt).toBeNull();
     expect(shown(f)).toBe('junk');
     expect(hostOf(f).hasAttribute('data-pct-malformed')).toBe(true);
+
+    // A form's reset to a value takes the junk back and shows that value.
+    f.componentInstance.f().reset({ startsAt: '07:15' });
+    await settle(f);
+    expect(f.componentInstance.model().startsAt).toBe('07:15');
+    expect(shown(f)).toBe('7:15 AM');
+    expect(hostOf(f).hasAttribute('data-pct-malformed')).toBe(false);
+  });
+
+  it("a form's reset keeps the time the form holds, and one given a time shows it", async () => {
+    @Component({
+      imports: [PctTime, FormField],
+      template: `<pct-time [formField]="f.startsAt" />`,
+    })
+    class Signal {
+      readonly model = signal<{ startsAt: PctTimeOfDay | null }>({
+        startsAt: '09:30',
+      });
+      readonly f = form(this.model);
+    }
+
+    const f = await render(Signal);
+    await type(f, '14:15');
+    await blur(f);
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(true);
+
+    // Angular's reset does not change the model; the control's own reset emptied it, and was
+    // counted as an edit.
+    f.componentInstance.f().reset();
+    await settle(f);
+    expect(f.componentInstance.model().startsAt).toBe('14:15');
+    expect(shown(f)).toBe('2:15 PM');
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(false);
+
+    // The form sets the time and then calls the control's reset, which wrote `null` after it.
+    f.componentInstance.f().reset({ startsAt: '07:15' });
+    await settle(f);
+    expect(f.componentInstance.model().startsAt).toBe('07:15');
+    expect(shown(f)).toBe('7:15 AM');
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(false);
   });
 
   it('works with [formControl]', async () => {

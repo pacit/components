@@ -662,6 +662,22 @@ describe('PctDatetime — the panel', () => {
     expect(hostOf(f).hasAttribute('data-pct-open')).toBe(true);
   });
 
+  it('is taken back by a reset, and the pair stays', async () => {
+    const f = await render(Host);
+    await open(f);
+    expect(panel()).not.toBeNull();
+    const field = f.debugElement.query((node) => node.name === 'pct-datetime')
+      .componentInstance as PctDatetime;
+
+    // A form put back to its start has no panel hanging off it — the select's reading.
+    field.reset();
+    await settle(f);
+
+    expect(panel()).toBeNull();
+    expect(toggleOf(f).getAttribute('aria-expanded')).toBe('false');
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:05');
+  });
+
   it('opens on the day and the time it holds, with focus on the grid', async () => {
     const f = await render(Host);
     await open(f);
@@ -1126,7 +1142,7 @@ describe('PctDatetime — the chrome it draws when there is none around it', () 
       expect(control.hasAttribute('name')).toBe(false);
   });
 
-  it('empties the field, both texts and the value alike, on reset — junk included', async () => {
+  it('takes junk back on reset, and the value it leaves is the one it held — none', async () => {
     const f = await render(Host);
     await type(f, dayText(f), 'soon');
     await leave(f, dayText(f), timeText(f));
@@ -1340,18 +1356,24 @@ describe('PctDatetime — the review’s cases', () => {
     expect(hidden().value).toBe('');
   });
 
-  it('empties a half being typed into on reset', async () => {
+  it('takes back a half being typed on reset, and shows the pair the field holds', async () => {
     const f = await render(Host);
+    // A two-digit year is a day already, so the pair moved with it; the text is not that day
+    // written out yet.
     await type(f, dayText(f), '2/1/20');
+    expect(f.componentInstance.value()).toBe('2020-01-02T13:05');
     const field = f.debugElement.query((node) => node.name === 'pct-datetime')
       .componentInstance as PctDatetime;
     field.reset();
     await settle(f);
-    expect(dayText(f).value).toBe('');
-    expect(timeText(f).value).toBe('');
+    // The value is the form's, and the texts are the field's: the reset rewrites the ones from
+    // the other instead of emptying all three.
+    expect(f.componentInstance.value()).toBe('2020-01-02T13:05');
+    expect(shown(dayText(f))).toBe('02/01/2020');
+    expect(shown(timeText(f))).toBe('13:05');
   });
 
-  it('keeps a half-filled field under a null from outside — the model held null already — and reset empties it', async () => {
+  it('keeps a half-filled field under a null from outside — the model held null already — and reset takes it back', async () => {
     const f = await render(Host);
     f.componentInstance.value.set(null);
     await settle(f);
@@ -1406,11 +1428,46 @@ describe('PctDatetime — the forms that bind it', () => {
     expect(errorOf(f)).toBe('Enter both a date and a time');
 
     // The form's own reset reaches the control's: a half-filled field the model's `null` could
-    // not clear is emptied by it.
+    // not clear is taken back by it.
     f.componentInstance.f.startsAt().reset(null);
     await settle(f);
     expect(dayText(f).value).toBe('');
     expect(errorOf(f)).toBeNull();
+  });
+
+  it("a form's reset keeps the pair the form holds, and one given a pair shows it", async () => {
+    @Component({
+      imports: [PctDatetime, FormField],
+      template: `<pct-datetime [formField]="f.startsAt" locale="en-GB" />`,
+    })
+    class Signal {
+      readonly model = signal<{ startsAt: PctDateTime | null }>({
+        startsAt: '2026-12-01T09:30',
+      });
+      readonly f = form(this.model);
+    }
+
+    const f = await render(Signal);
+    await type(f, timeText(f), '14:15');
+    await leave(f, timeText(f), null);
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(true);
+
+    // Angular's reset does not change the model; the control's own reset emptied it, and was
+    // counted as an edit.
+    f.componentInstance.f().reset();
+    await settle(f);
+    expect(f.componentInstance.model().startsAt).toBe('2026-12-01T14:15');
+    expect(shown(dayText(f))).toBe('01/12/2026');
+    expect(shown(timeText(f))).toBe('14:15');
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(false);
+
+    // The form sets the pair and then calls the control's reset, which wrote `null` after it.
+    f.componentInstance.f().reset({ startsAt: '2026-01-02T07:15' });
+    await settle(f);
+    expect(f.componentInstance.model().startsAt).toBe('2026-01-02T07:15');
+    expect(shown(dayText(f))).toBe('02/01/2026');
+    expect(shown(timeText(f))).toBe('07:15');
+    expect(f.componentInstance.f.startsAt().dirty()).toBe(false);
   });
 
   it('works with [formControl]', async () => {

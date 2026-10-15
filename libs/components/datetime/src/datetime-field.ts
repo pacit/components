@@ -766,7 +766,7 @@ export class PctDatetime
     // is the pair its halves make, and is let through: the comparison is the compare, so the
     // pair written in the other shape is the same value. A `null` written over a half-filled
     // field moves nothing this effect can see — the model held `null` already — so the half
-    // stays on the screen; `reset()` is what empties both.
+    // stays on the screen; `reset()` is what takes it back.
     effect(() => {
       const value = this.value();
       untracked(() => {
@@ -779,17 +779,7 @@ export class PctDatetime
             pctCompareDateTimes(value, composed) === 0)
         )
           return;
-        // The interop writes values a `PctDateTime | null` model cannot hold — a `null` before
-        // the first real one, and whatever a legacy `ControlValueAccessor` had (`lesson-117`).
-        const parts =
-          value !== null && isPctDateTime(value)
-            ? pctDateTimeParts(value)
-            : null;
-        this.day.set(parts?.day ?? null);
-        this.time.set(parts?.time ?? null);
-        this.dayRejected.set(null);
-        this.timeRejected.set(null);
-        this.left.set(false);
+        this.split(value);
       });
     });
 
@@ -860,19 +850,38 @@ export class PctDatetime
   }
 
   /**
-   * Empties the field — both texts, both halves and the value alike.
+   * Takes back what the field holds and the form does not — junk left in a half, a half
+   * filled with the other empty, a half being typed, an open panel — and shows the value
+   * again. The value is not touched: it is the form's, and a signal form's `reset(value)` has
+   * set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since next
    */
   reset(): void {
+    // The halves are split from the value the field holds, as a value from outside is, and
+    // never composed: none of these writes is the value's, so the form hears nothing. A form's
+    // `reset(value)` reaches the field afterwards, through the effect, as any value does.
     this.dayTyping.set(false);
     this.timeTyping.set(false);
+    this.split(this.value());
+    this.close(false);
+  }
+
+  /**
+   * The value put into the halves, with whatever the user left behind taken back. The interop
+   * writes values a `PctDateTime | null` model cannot hold — a `null` before the first real
+   * one, and whatever a legacy `ControlValueAccessor` had (`lesson-117`) — and those are no
+   * pair.
+   */
+  private split(value: PctDateTime | null): void {
+    const parts =
+      value !== null && isPctDateTime(value) ? pctDateTimeParts(value) : null;
+    this.day.set(parts?.day ?? null);
+    this.time.set(parts?.time ?? null);
     this.dayRejected.set(null);
     this.timeRejected.set(null);
     this.left.set(false);
-    this.day.set(null);
-    this.time.set(null);
-    this.compose();
   }
 
   private firstControl(): HTMLInputElement | undefined {

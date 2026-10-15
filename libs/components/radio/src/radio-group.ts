@@ -225,9 +225,13 @@ export class PctRadioGroup<T = string>
   readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
 
   /**
-   * The "no choice" value, set when the form is reset.
+   * The "no choice" value. It was what a form's reset wrote into the model, and a reset writes
+   * nothing there any more, so nothing reads it
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
+   * @deprecated since 0.3.0 — reset the form with the value it should hold instead:
+   * `form().reset({ plan: null })`. Removed no earlier than 0.5.0.
    */
   readonly emptyValue = input<T | null>(null);
 
@@ -445,11 +449,15 @@ export class PctRadioGroup<T = string>
   }
 
   /**
-   * Called by signal forms when the form is reset.
+   * Called by signal forms when the form is reset. The group holds nothing the form does not
+   * — the checked option is the value — so there is nothing to take back, and the value is
+   * the form's: a signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */
   reset(): void {
-    this.value.set(this.emptyValue());
+    // Nothing of the group's own to take back. `emptyValue` written here reached the form
+    // after its own value and won, and counted as the user's edit besides.
   }
 }

@@ -6,6 +6,11 @@
       "version": "0.2.0",
       "description": "pct-badge: tone=\"neutral\" is removed from HTML templates, because the absence of a tone is now what 'neutral' was. TypeScript is reported and never written — an inline template cannot be found there without parsing TypeScript, and a migration that parses it badly deletes code.",
       "factory": "./migrations/badge-tone/index#badgeTone"
+    },
+    "control-reset": {
+      "version": "0.3.0",
+      "description": "A form control's reset() takes back what the form cannot see and no longer empties its value (0092): a signal form's reset() keeps the values and reset(value) shows the one given. Nothing is written — what changed is behaviour — and every bare reset() in a file that binds a control, and every emptyValue on a pct-radio-group, is named for one look.",
+      "factory": "./migrations/control-reset/index#controlReset"
     }
   },
   "// version": "A version here is hand-written, and 0080 refused hand-written versions for `@since` on exactly the ground that bites here: the coming release's number depends on every commit until it is cut. It is determinate in ONE direction — a breaking change before 1.0 bumps the minor, so a branch carrying one knows the release is the next minor — and the exposure is the other: if some other branch releases that minor first, this entry falls at or below the tag and `ng update` will never run it, since the CLI keeps migrations satisfying `>from <=to`. `check-support` point 4 would not notice, because it asks only whether SOME migration is newer than the last tag. Nothing stamps this file the way `stamp-version.mjs` stamps `@since next`, so until something does, a migration written in one cycle and released in another is a thing to re-read rather than a thing the gates hold."

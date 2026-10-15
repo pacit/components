@@ -486,6 +486,37 @@ describe('PctRadioGroup / PctRadio', () => {
       expect(host.model().plan).toBe('pro');
       expect(host.f.plan().valid()).toBe(true);
     });
+
+    it("a form's reset keeps the choice the form holds, and leaves the form pristine", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      radiosOf(fixture)[1].click();
+      await fixture.whenStable();
+      expect(host.f.plan().dirty()).toBe(true);
+
+      // Angular's reset does not change the model; the control's own reset wrote
+      // `emptyValue` into it, and was counted as an edit.
+      host.f().reset();
+      await fixture.whenStable();
+
+      expect(host.model().plan).toBe('pro');
+      expect(radiosOf(fixture).map((r) => r.checked)).toEqual([false, true]);
+      expect(host.f.plan().dirty()).toBe(false);
+    });
+
+    it("a form's reset to a value checks that option — the control's reset no longer outruns it", async () => {
+      const fixture = await render(SignalFormHost);
+      const host = fixture.componentInstance;
+      radiosOf(fixture)[1].click();
+      await fixture.whenStable();
+
+      host.f().reset({ plan: 'free' });
+      await fixture.whenStable();
+
+      expect(host.model().plan).toBe('free');
+      expect(radiosOf(fixture).map((r) => r.checked)).toEqual([true, false]);
+      expect(host.f.plan().dirty()).toBe(false);
+    });
   });
 
   describe('compatibility with classic forms (no CVA)', () => {
@@ -572,15 +603,17 @@ describe('PctRadioGroup / PctRadio', () => {
       expect(yes.getAttribute('value')).toBe('true');
     });
 
-    it('reset() returns to the emptyValue the application declared', async () => {
+    it('reset() takes nothing back, and the emptyValue it used to write is read by nothing', async () => {
       const fixture = await render(EntityHost);
       const group = fixture.debugElement.children[0]
         .componentInstance as PctRadioGroup<City>;
+      const held = fixture.componentInstance.value();
 
       group.reset();
       await fixture.whenStable();
-      expect(fixture.componentInstance.value()).toBeNull();
+      expect(fixture.componentInstance.value()).toBe(held);
 
+      // The deprecated input still binds, and a reset no longer writes it into the model.
       fixture.componentInstance.emptyValue = LONDON;
       fixture.componentInstance.value.set(PARIS);
       fixture.detectChanges();
@@ -588,7 +621,8 @@ describe('PctRadioGroup / PctRadio', () => {
 
       group.reset();
       await fixture.whenStable();
-      expect(fixture.componentInstance.value()).toBe(LONDON);
+      expect(fixture.componentInstance.value()).toBe(PARIS);
+      expect(radiosOf(fixture).map((r) => r.checked)).toEqual([false, true]);
     });
   });
 

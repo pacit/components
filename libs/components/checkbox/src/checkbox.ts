@@ -299,11 +299,15 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
   }
 
   /**
-   * Called by signal forms when the form is reset.
+   * Called by signal forms when the form is reset. The box holds nothing the form does not —
+   * the tick is the value — so there is nothing to take back, and the value is the form's: a
+   * signal form's `reset(value)` has set it before it calls this
+   * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
    * @since 0.1.0
    */
   reset(): void {
-    this.checked.set(false);
+    // Nothing of the box's own to take back. A write to `checked` here reached the form after
+    // its own and won, and counted as the user's edit besides.
   }
 }

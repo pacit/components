@@ -316,7 +316,7 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
     });
 
-    it('empties the field, the text and the value alike, on reset', async () => {
+    it('takes junk back on reset, and the value it leaves is the one it held', async () => {
       const fixture = await render(Host);
       await type(fixture, 'abc');
       await blur(fixture);
@@ -715,10 +715,76 @@ describe('PctNumber', () => {
       directive.focus();
       expect(document.activeElement).toBe(inputOf(fixture));
 
+      const shown = inputOf(fixture).value;
       directive.reset();
       await fixture.whenStable();
-      expect(fixture.componentInstance.model().seats).toBe(null);
-      expect(inputOf(fixture).value).toBe('');
+      // The value is the form's: a reset takes back what the field holds of its own, and a
+      // number in the field is not that.
+      expect(fixture.componentInstance.model().seats).toBe(12345);
+      expect(inputOf(fixture).value).toBe(shown);
+    });
+
+    it("a form's reset keeps the value the form holds, and leaves the form pristine", async () => {
+      const fixture = await render(SignalFormHost);
+      await type(fixture, '42');
+      await blur(fixture);
+      const seats = fixture.componentInstance.f.seats;
+      expect(seats().dirty()).toBe(true);
+
+      // Angular's reset does not change the model, and a control that wrote its own empty
+      // value from its `reset()` changed it behind the form's back — and was counted as an
+      // edit, so the form came out of its reset dirty.
+      fixture.componentInstance.f().reset();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.model().seats).toBe(42);
+      expect(inputOf(fixture).value).toBe('42');
+      expect(seats().dirty()).toBe(false);
+      expect(seats().touched()).toBe(false);
+    });
+
+    it("a form's reset to a value shows that value — the control's reset no longer outruns it", async () => {
+      const fixture = await render(SignalFormHost);
+      await type(fixture, '42');
+      await blur(fixture);
+
+      // The form sets 4 and then calls the control's reset; a reset that wrote `null` reached
+      // the form after its 4 and won.
+      fixture.componentInstance.f().reset({ seats: 4 });
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.model().seats).toBe(4);
+      expect(inputOf(fixture).value).toBe('4');
+      expect(fixture.componentInstance.f.seats().dirty()).toBe(false);
+    });
+
+    it("a form's reset to a value takes junk back and shows that value", async () => {
+      const fixture = await render(SignalFormHost);
+      await type(fixture, 'abc');
+      await blur(fixture);
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
+
+      fixture.componentInstance.f().reset({ seats: 4 });
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.model().seats).toBe(4);
+      expect(inputOf(fixture).value).toBe('4');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it("a form's reset takes back a number half typed and shows the one the form holds", async () => {
+      const fixture = await render(SignalFormHost);
+      // `42,` is on its way to `42,5`: the value is 42 already and the text is not yet.
+      await type(fixture, '42');
+      await type(fixture, '42,');
+      expect(fixture.componentInstance.model().seats).toBe(42);
+      expect(inputOf(fixture).value).toBe('42,');
+
+      fixture.componentInstance.f().reset();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.model().seats).toBe(42);
+      expect(inputOf(fixture).value).toBe('42');
     });
 
     it("a form's reset reaches the control's, and takes junk back with it", async () => {

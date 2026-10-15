@@ -481,12 +481,22 @@ describe('PctMultiSelect', () => {
     await clickRow(fixture, 0);
     expect(host.model().tags).toEqual(['pl', 'de']);
 
-    // A reset empties the list — `[]` is what "nothing chosen" is for every `T`, so there is
-    // no `emptyValue` to declare.
+    // A form's reset keeps the list the form holds — Angular's reset does not change the
+    // model — and one given a list shows that list; the control's own reset wrote `[]` after
+    // either, and was counted as an edit.
     host.f().reset();
     await settle(fixture);
-    expect(host.model().tags).toEqual([]);
-    expect(valueText(fixture)).toBeNull();
+    expect(host.model().tags).toEqual(['pl', 'de']);
+    expect(valueText(fixture)).toBe('Poland, Germany');
+    expect(host.f.tags().dirty()).toBe(false);
+    // The pick left the panel up, as a many-choice list does; the reset takes it back.
+    expect(panel()).toBeNull();
+
+    host.f().reset({ tags: ['sk'] });
+    await settle(fixture);
+    expect(host.model().tags).toEqual(['sk']);
+    expect(valueText(fixture)).toBe('Slovakia');
+    expect(host.f.tags().dirty()).toBe(false);
   });
 
   /**
