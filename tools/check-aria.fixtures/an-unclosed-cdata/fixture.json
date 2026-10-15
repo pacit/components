@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "does not parse (the compiler throws: Cannot read properties of undefined",
+  "$reason": "The options' frame holding a `<![CDATA[` that never closes. Angular 22.2's HTML parser throws on it (`Cannot read properties of undefined`) while the comments are gathered, before `parseTemplate` is reached, and the build, which hands the same text to the same parser, throws with it: the gate reads that throw too as a template that does not parse, the refusal point 1 gives every template the tree cannot read, as it does where `parseTemplate` throws (`comment-in-an-icu`). A reader that parsed for its comments outside its `try` let the throw out, and the run died on a `TypeError` instead of refusing the template. The refusal carries the parser's own words, as a reader of it needs them."
+}

@@ -1,0 +1,8 @@
+<!-- A count spelled by an ICU whose case says a word, spells a second ICU and says another. The
+     inner case draws a stop, a line comment in its start tag: the comment holds an apostrophe,
+     and nothing after it closes one. -->
+<span class="pct-widget__count">{count(), plural, other {and {count(), plural, other {<span
+  class="pct-widget__more"
+  // it's the way on
+  tabindex="0"
+>more</span>}} left}}</span>

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<span class=\"pct-widget__more\" tabindex=\"0\" >`) is in the tag scan and not in the parsed tree — it stands inside an ICU",
+  "$reason": "`stop-in-an-icu-behind-a-start-tag-comment` with the stop one ICU deeper, and a word on either side of the inner ICU. The comment reader enters every node of an ICU's case, an ICU nested there included, and blanks the comment in the stop's start tag. A reader that entered only a case's first node or only its last would reach a word, and one that entered only the nodes holding children would step over the inner ICU. Each leaves the apostrophe in the text, where it opens a quote that never closes, and the scan finds no tag where the stop starts, so the template passes."
+}
