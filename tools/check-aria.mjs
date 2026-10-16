@@ -694,16 +694,16 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
 /**
  * A node the walk reads as an element, asked of the compiler's own class as `repeats` is. An
- * `<ng-content>` draws no element, and point 1 refuses whatever is written on one, so it is no
- * element of the walk either: what it falls back to stands where it stands, the projection
- * looked through. Read as an element, it carried what was written on it to points 4 and 9 — a
- * `role="option"` an option under a listbox, where none exists. Two other kinds the walk meets
- * carry a `name` as a string and draw nothing: an `@let`, the variable's, and an `@content`
- * block, the slot's. Taken for elements, `@let constructor` made a tag axe looks up in a table
- * every object answers `constructor` from, and the run died on a template the build compiles;
- * `@content(optgroup)` made a group, and an option under a menu stood in it. A block Angular
- * cannot place (an `@empty` with no `@for`) carries one too, and comes only with a parse error,
- * on which the walk does not run.
+ * `<ng-content>` draws no element, and point 1 refuses what is written on one past what Angular
+ * takes as the projection's own (`readOffAProjection`), so it is no element of the walk either:
+ * what it falls back to stands where it stands, the projection looked through. Read as an element,
+ * it carried what was written on it to points 4 and 9 — a `role="option"` an option under a
+ * listbox, where none exists. Two other kinds the walk meets carry a `name` as a string and draw
+ * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
+ * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
+ * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
+ * option under a menu stood in it. A block Angular cannot place (an `@empty` with no `@for`)
+ * carries one too, and comes only with a parse error, on which the walk does not run.
  */
 const isElement = (node) => node instanceof TmplAstElement;
 
@@ -767,11 +767,13 @@ const EMBEDS = new Set(['embed', 'frame', 'iframe', 'object']);
 const localName = (name) => splitNsName(name)[1];
 
 /**
- * What Angular reads off an `<ng-content>`: its `select`, in any case, and `ngProjectAs`, as the
- * compiler's `preparseElement` asks for them, and an inline template's attribute (`*ngIf`), which
- * the template Angular wraps around the projection takes — the tree keeps a copy on the
- * projection too. The `ngNonBindable` that function reads as well stops `ngc` 22.2.1 itself on a
- * projection (`All attributes should have an element-like target`).
+ * What Angular takes off an `<ng-content>` as the projection's own: its `select`, in any case, and
+ * `ngProjectAs`, as the compiler's `preparseElement` asks for them, and an inline template's
+ * attribute (`*ngIf`), which the template Angular wraps around the projection takes — the tree
+ * keeps a copy on the projection too. Every other attribute is only a key an outer `select`
+ * matches when the projection is projected in turn, which `ngProjectAs` names on purpose. The
+ * `ngNonBindable` that function reads as well stops `ngc` 22.2.1 itself on a projection (`All
+ * attributes should have an element-like target`).
  */
 const readOffAProjection = (name) =>
   name.toLowerCase() === 'select' ||
@@ -985,7 +987,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // some state.
           names: namesOn(node),
           // Out of the tree with all it holds, the way axe reads the value; bound, it may
-          // be absent. Angular's own tags reach no DOM to hide.
+          // be absent. Angular's own tag reaches no DOM to hide.
           ariaHidden:
             !own &&
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
@@ -1456,7 +1458,7 @@ const checkAria = ({
     // read as an element, as it was, an option under a listbox passed where none exists. Every
     // attribute but those Angular reads off a projection (`readOffAProjection`), and not ARIA's
     // alone: the tree keeps each under its raw name (`[ariaLabel]`), so sorting them would read
-    // Angular's binding syntax a second time, and a `class` there reaches nothing either. A key
+    // Angular's binding syntax a second time, and a `class` there reaches no element either. A key
     // for an outer `select` is `ngProjectAs`'s to name.
     if (said.projections.length)
       throw new AriaError(
@@ -1465,7 +1467,7 @@ const checkAria = ({
           `(\`${opening(said.projections[0].offset)}\`) carries ` +
           said.projections[0].carried.map((name) => `\`${name}\``).join(', ') +
           ` — Angular draws no element for a projection and renders none of its attributes, ` +
-          `so what is written there reaches nothing: the projected content keeps the role, the ` +
+          `so what is written there reaches no element: the projected content keeps the role, the ` +
           `name and the stop it comes with. Put it on an element around the projection, or, ` +
           `as a key an outer \`select\` matches, in \`ngProjectAs\``,
       );
