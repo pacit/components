@@ -1,6 +1,6 @@
 {
   "point": 9,
   "check": "context",
-  "message": "with no role and a way to land on it",
-  "$reason": "An option under a link inside a map: an `<a href>` in an `<svg>`, which the parser names `:svg:a` and Angular draws as an SVG `<a>` with its address — a link Chromium focuses and axe holds focusable (measured: Angular 22.2, Chromium 153, axe 4.13, which reports the option). axe looks through a role-less element unless it carries a global ARIA attribute or takes focus, so the link owns the option and a listbox may not own it, as with the same `<a href>` outside the map. The walk asked axe about the raw name, `:svg:a`, a tag it does not know, and passed the option; it asks about the local name the tag scan reads now."
+  "message": "<g role=\"option\"> stands under <a> with no role and a way to land on it",
+  "$reason": "An option under a link inside a map: an `<a href>` in an `<svg>`, which the parser names `:svg:a` and Angular draws as an SVG `<a>` with its address — a link Chromium focuses, and axe gives it the role `link` and holds it focusable (measured: Angular 22.2, Chromium 153, axe 4.13, which reports the option). A link may not stand between an option and its listbox. Point 9's table gives an `<a>` no role, axe working it out from the address, so the gate refuses it as an element with no role and a way to land on it, as it refuses the same `<a href>` outside the map. The walk asked axe about the raw name, `:svg:a`, a tag it does not know, and passed the option; it asks about the local name the tag scan reads now, which the message names."
 }

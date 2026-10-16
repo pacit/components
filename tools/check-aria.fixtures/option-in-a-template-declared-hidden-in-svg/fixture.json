@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"option\"> stands under <g role=\"list\"> (list)",
+  "$reason": "`option-in-a-template-declared-hidden` inside an `<svg>`, where the parser names the template `:svg:ng-template`: the rows render as SVG where the outlet stands, in the listbox, and the hidden element above the declaration stays empty (measured, Angular 22.2). A hidden element above where a template is declared hides nothing the walk can vouch for; a reading that asked the raw name whether the node was an `<ng-template>` took the hidden element for the rows' ancestor and passed the option."
+}

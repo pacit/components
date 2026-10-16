@@ -361,10 +361,14 @@ const ANCHORS = {
  */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /**
- * Angular's own tags, which never reach the DOM and never stand between two roles — by the
- * local name in its case, which is how the compiler tells them (`op.tag === 'ng-container'`).
+ * Angular's own tags among the elements the walk reads, which never reach the DOM and never
+ * stand between two roles — by the local name as the compiler tells them. An `<ng-container>`
+ * in its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM; an
+ * `<ng-content>` in any case, which the tree holds as a projection named `ng-content`. An
+ * `<ng-template>` is no element of the walk, the tree holding it as a template, and one written
+ * in capitals is an element the type check refuses (`NG8001`).
  */
-const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
+const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-content']);
 /**
  * The same roles counted without parsing, as the denominator of the walk of point 9: every
  * written `role`, its value read by `readRole` as the walk reads it, so that the two counts
@@ -918,11 +922,13 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ),
       ),
     );
-    // The element's name as the tag scan reads it (`localName`): inside an `<svg>` the parser
-    // names every element `:svg:…`, an `<ng-container>` too, and the compiler draws each as it
-    // would outside — an `<a href>` there is a link. Whether the tag is one of Angular's own is
-    // asked of the name in its case, as the compiler asks it: an `<NG-CONTAINER>` compiles, and
-    // draws an element of the DOM that what it carries reaches (measured, Angular 22.2).
+    // The element's name as the tag scan reads it (`localName`): the parser names the elements
+    // inside an `<svg>` `:svg:…` and those inside a `<math>` `:math:…`, an `<ng-container>` among
+    // them, and the compiler takes the prefix for the namespace it draws in — an `<a href>` there
+    // is an SVG link, an `<ng-container>` a comment, as outside. Whether the tag is one of
+    // Angular's own is asked as the compiler asks it (`TRANSPARENT_TAGS`): an `<NG-CONTAINER>`
+    // compiles, and draws an element of the DOM that what it carries reaches (measured, Angular
+    // 22.2).
     const name = isElement(node) ? localName(node.name) : '';
     const tag = name.toLowerCase();
     const own = TRANSPARENT_TAGS.has(name);
