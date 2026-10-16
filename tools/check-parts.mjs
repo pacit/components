@@ -113,10 +113,11 @@ const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
 const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 /**
  * The same counter over a decorator's body, against what `HOST_STATIC` and `HOST_DYNAMIC`
- * recognise. Both want the name in lowercase, and so does the package read: `hostAttrs` and
- * the host-binding function keep `'DATA-PCT-PART'` as written (measured through the JIT
- * compiler), Angular hands it to the same `setAttribute`, and it passed every point until
- * this count. A comment in the body is not blanked, so it counts as text: prose naming the
+ * recognise. Both want the name in lowercase: `hostAttrs` and the host-binding function keep
+ * `'DATA-PCT-PART'` as written (measured through the JIT compiler), Angular hands it to the
+ * same `setAttribute`, and it passed every point until this count. The package read takes
+ * it in any case, as a part or a binding the sources lack; this count says where it is
+ * written. A comment in the body is not blanked, so it counts as text: prose naming the
  * attribute is refused, and a quoted lowercase pair is one `HOST_STATIC` reads as a part.
  */
 const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
@@ -145,9 +146,7 @@ const entrypointFromPath = (file) => {
  * in `field/src/affix.ts`) and this scanner does not see that — deliberately. A part
  * brought in that way appears in the package read and is missing from the source read,
  * that is, it fires point 2 with the part's name in the message. Exactly the work the
- * second read is there to do — in lowercase. In capitals, there or by a computed key or
- * `@HostBinding`, the package read misses it too, comparing the name as written, and no point
- * fires (`req-api-parts` records it).
+ * second read is there to do, whatever the case the name is written in.
  */
 const readSources = (root, files) => {
   const classes = [];
@@ -384,10 +383,10 @@ const checkParts = (input) => {
               `${k.dynamic} bound, and the attribute name appears ${k.occurrences} times`,
           ),
         ) +
-        `\n    A \`host\` block is read by patterns that want the name in lowercase, and ` +
-        `so is the package; the counter takes it in any case. Angular hands ` +
-        `\`'DATA-PCT-PART'\` to \`setAttribute\` as written and the DOM lowercases it — a ` +
-        `part a consumer's selector matches, which neither read would ever list.`,
+        `\n    A \`host\` block is read by patterns that want the name in lowercase; the ` +
+        `counter takes it in any case. Angular hands \`'DATA-PCT-PART'\` to ` +
+        `\`setAttribute\` as written and the DOM lowercases it — a part a consumer's ` +
+        `selector matches, which the source read would never list.`,
     );
 
   // Inheritance, resolved before the two reads are compared. What a base's `host` block
@@ -860,16 +859,43 @@ const readCard = (file, content) => {
  * compiled function (`ɵɵattribute('data-pct-part', ctx.x)`) — measured, not assumed.
  * Hence the second read over the function's text: without it point 3 would have a blind
  * side in the package.
+ *
+ * The pairs and the count take the name in any case. `consts`, `hostAttrs` and the
+ * instruction keep `'DATA-PCT-PART'` as written — a host attribute spread from an object, a
+ * binding from `@HostBinding('attr.DATA-PCT-PART')` (both measured through ngc in partial
+ * mode and the linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's
+ * selector matches, and one the source scanner never sees.
  */
 const pairAttributes = (attrs) => {
   const out = [];
   for (let i = 0; i < attrs.length; i++) {
     if (typeof attrs[i] === 'number') break;
-    if (attrs[i] === ATTRIBUTE) out.push(attrs[i + 1]);
+    if (attrs[i].toLowerCase() === ATTRIBUTE) out.push(attrs[i + 1]);
     i++;
   }
   return out;
 };
+
+const PACKAGE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
+
+/**
+ * One definition's parts and bindings: `consts` (evaluated), `hostAttrs` and the text of its
+ * template and host-binding functions. The package read hands it each `ɵcmp` and `ɵdir`, and
+ * a fixture the same three fields as data — one code for both, so a fixture holds how a
+ * definition is read and not a copy of it.
+ */
+const readDefinition = ({ consts, hostAttrs, functions }) => ({
+  parts: [
+    ...new Set([
+      ...(consts ?? []).filter(Array.isArray).flatMap(pairAttributes),
+      ...pairAttributes(hostAttrs ?? []),
+    ]),
+  ],
+  dynamic: (functions ?? []).reduce(
+    (n, text) => n + countOf(text, PACKAGE_COUNTER),
+    0,
+  ),
+});
 
 const packageComponents = async (root) => {
   const dist = join(root, DIST);
@@ -898,24 +924,16 @@ const packageComponents = async (root) => {
       const def = value['ɵcmp'] ?? value['ɵdir'];
       if (!def) continue;
 
-      const consts =
-        typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
-      const parts = [
-        ...consts.filter(Array.isArray).flatMap(pairAttributes),
-        ...pairAttributes(def.hostAttrs ?? []),
-      ];
-      const functions = [def.template, def.hostBindings]
-        .filter((f) => typeof f === 'function')
-        .map((f) => f.toString());
-
       out.push({
         entrypoint,
         className,
-        parts: [...new Set(parts)],
-        dynamic: functions.reduce(
-          (n, t) => n + countOf(t, new RegExp(ATTRIBUTE, 'g')),
-          0,
-        ),
+        ...readDefinition({
+          consts: typeof def.consts === 'function' ? def.consts() : def.consts,
+          hostAttrs: def.hostAttrs,
+          functions: [def.template, def.hostBindings]
+            .filter((f) => typeof f === 'function')
+            .map((f) => f.toString()),
+        }),
       });
     }
   }
@@ -983,9 +1001,11 @@ const repoFiles = () =>
  * The package read arrives as DATA (`package.json`) rather than from a real build: building
  * an Angular package for each of a dozen-odd cases would cost minutes per run, and this
  * gate is to run on every commit. The same choice as in `check-zoneless` and for the same
- * reason. The price is plain: the fixtures do NOT exercise the code that reads `ɵcmp` —
- * they exercise every other parser and the whole arrangement of checks. The package read
- * is exercised instead on every run against the real repository.
+ * reason. A class may carry its definition's own `consts`, `hostAttrs` and `functions` (the
+ * text of each) beside or instead of `parts` and `dynamic`, and `readDefinition` reads them
+ * as it reads the package — so a case holds how a definition is read. What no fixture
+ * exercises is the way to one (the manifest's `exports`, the import, `ɵcmp` on access),
+ * exercised instead on every run against the real repository.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
@@ -1016,7 +1036,18 @@ const fixtureInput = (directory) => {
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
-    { pkg: pkg.classes, entrypoints: new Set(pkg.entrypoints) },
+    {
+      pkg: pkg.classes.map((k) => {
+        const read = readDefinition(k);
+        return {
+          entrypoint: k.entrypoint,
+          className: k.className,
+          parts: [...new Set([...(k.parts ?? []), ...read.parts])],
+          dynamic: (k.dynamic ?? 0) + read.dynamic,
+        };
+      }),
+      entrypoints: new Set(pkg.entrypoints),
+    },
   );
 };
 
