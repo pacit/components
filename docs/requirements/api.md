@@ -625,8 +625,8 @@ compares `libs/components/parts.snapshot.md` with the current inventory, and poi
 the denominator: every decorator and every occurrence of the attribute in a template or a
 decorator must be recognised, and the list of parts is built **twice** — from the sources and
 from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking, and the binding
-instructions of every view and host function)
-**Control:** `tools/check-parts.fixtures/` — 49 inputs, each rejected on its own
+instructions of every view of a class and of its host function and its bases')
+**Control:** `tools/check-parts.fixtures/` — 50 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
@@ -637,11 +637,12 @@ a directive whose part is not exported from the entrypoint fires point 2
 > generating and gating it cannot ([`req-project-apps`](project.md#req-project-apps)).
 
 > **Not held:** a template kept in a constant and handed to the decorator by shorthand
-> (`template,`) is not refused by point 1, which wants `template:`. A part written there reaches
-> the package read alone and fires point 2 as a class the scanner cannot see; a part bound
-> there, in any view, fires point 3 from the package alone. A part there of a class no
-> entrypoint exports reaches neither read, as the package read visits exported classes alone
-> — save a base's host binding, which the package read follows to the class extending it.
+> (`template,`) is not refused by point 1, which wants `template:`. A part written or bound
+> there, in any view, reaches the package read alone, and point 2 refuses the class as one the
+> scanner cannot see. A part of a class no entrypoint exports reaches neither read, as the
+> package read visits exported classes alone — save a base's host binding, which it follows to
+> the class extending it. Neither read follows `hostDirectives`: a host directive's host block
+> is read on the directive, not on the component it is applied to.
 
 ---
 

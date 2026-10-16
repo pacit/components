@@ -16,11 +16,25 @@
         },
         "usesInheritance": true,
         "extends": {
-          "className": "PctWidgetBase",
-          "kind": "Directive",
-          "host": {
-            "properties": {
-              "attr.data-pct-part": "slot()"
+          "className": "PctWidgetMiddle",
+          "undecorated": true,
+          "extends": {
+            "className": "PctWidgetBase",
+            "kind": "Directive",
+            "host": {
+              "properties": {
+                "attr.lang": "slot()"
+              }
+            },
+            "usesInheritance": true,
+            "extends": {
+              "className": "PctWidgetRoot",
+              "kind": "Directive",
+              "host": {
+                "properties": {
+                  "attr.data-pct-part": "slot()"
+                }
+              }
             }
           }
         },

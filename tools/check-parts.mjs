@@ -899,10 +899,12 @@ const pairAttributes = (attrs) => {
  * node, another attribute's value, an output so named — and counted each as one (6 in one
  * template, measured through ngc).
  *
- * A call counts when its instruction is one of the four that set a name — an attribute, a
- * property, a DOM property, a two-way one — and its first argument IS the name, in any case,
- * as `@HostBinding('attr.DATA-PCT-PART')` leaves it. A chained call,
- * `ɵɵattribute('title', a)('data-pct-part', b)`, is the instruction at its root.
+ * A call counts when its instruction is one of the four that bind a name — an attribute, a
+ * property, a DOM property, a two-way property — and its first argument IS the name, in any case,
+ * as `@HostBinding('attr.DATA-PCT-PART')` leaves it. The three property kinds set no attribute
+ * at all, so no part either, and they are counted all the same: the source read refuses any
+ * binding of the name, and the two reads hold one rule. A chained call,
+ * `ɵɵattribute('title', a)('lang', b)('data-pct-part', c)`, is the instruction at its root.
  */
 const BINDINGS = new Set([
   R3Identifiers.attribute,
@@ -972,12 +974,15 @@ JitEvaluator.prototype.evaluateStatements = function (
  * One definition: its parts off `consts` and `hostAttrs` (read after the features ran, so a
  * base's host attributes are merged into the class extending it, as its element gets them),
  * and its bindings — those of its own views, and those of the host of the class and of every
- * class up the chain `ɵɵInheritDefinitionFeature` walks. A definition with nothing captured
+ * class up the chain `ɵɵInheritDefinitionFeature` walks, past one with no definition of its
+ * own. A class with none of its own is read as the class whose definition it inherits, as
+ * Angular renders it: an undecorated subclass is its base. A definition with nothing captured
  * was not compiled from a declaration here — a package compiled in full, or a module evaluated
  * before the hook — and of its bindings this read could say nothing but zero.
  */
 const readCompiled = (type) => {
-  const own = compiled.get(type);
+  const def = type['ɵcmp'] ?? type['ɵdir'];
+  const own = compiled.get(def.type);
   if (!own)
     throw new PartsError(
       'set',
@@ -985,10 +990,9 @@ const readCompiled = (type) => {
         `read as none.\n    The package read compiles each class's declaration through JIT ` +
         `(\`compilationMode: partial\`); a package compiled in full carries none.`,
     );
-  const def = type['ɵcmp'] ?? type['ɵdir'];
   const consts = typeof def.consts === 'function' ? def.consts() : def.consts;
   let dynamic = own.views;
-  for (let link = type; link; link = Object.getPrototypeOf(link))
+  for (let link = def.type; link; link = Object.getPrototypeOf(link))
     dynamic += compiled.get(link)?.host ?? 0;
   return {
     parts: [
@@ -1127,14 +1131,17 @@ const buildFixture = (name, fx) => {
  * A class of a prepared input's package, compiled from its declaration: the fields ngc
  * writes, less those supplied here. `extends` declares a base the same way, one no
  * entrypoint exports, beside the `usesInheritance` ngc writes; a dependency is named by its
- * selector, and the type standing in for it is no matter to the compile. `full` defines the
- * class as a package compiled in full would, with no declaration for the read to see compiled.
+ * selector, and the type standing in for it is no matter to the compile. `undecorated` leaves
+ * the class without a definition of its own, as ngc leaves a class with no decorator. `full`
+ * defines the class as a package compiled in full would, with no declaration for the read to
+ * see compiled.
  */
 const declare = ({
   className,
   kind = 'Component',
   extends: base,
   dependencies,
+  undecorated,
   full,
   ...fields
 }) => {
@@ -1142,6 +1149,7 @@ const declare = ({
   const type = parent
     ? { [className]: class extends parent {} }[className]
     : { [className]: class {} }[className];
+  if (undecorated) return type;
   if (full) {
     type['ɵcmp'] = core.ɵɵdefineComponent({
       type,
