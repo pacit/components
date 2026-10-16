@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<span class=\"pct-pair__more\" [it's]=\"more()\" tabindex=\"0\">more</span>`), and the tag scan never found it — a quote Angular reads as part of a bracketed name (`[it's]`)",
+  "$reason": "`stop-in-an-icu-behind-a-quoted-name` outside any ICU: a stop with a bracketed name holding an apostrophe before its `tabindex`, `[it's]`, and no `<` before it. Angular's lexer reads the name up to its closing bracket, quotes included, and the template parses; the tag scan opens a quote at the apostrophe that nothing after it closes, and finds no tag where the stop starts. The tree holds the span, and its count of tags against the scan's refused it before this case too. What the case holds is the refusal's word for why: it named a `<` before the tag alone, which this template does not have, and sent a reader looking for an expression that swallows the stop."
+}
