@@ -15,9 +15,8 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). Each fails point 1: a tag the scan or reader misses, a widget or
- * group with no path, a tag in or read into an ICU, markup a string or frame draws, `@content`,
- * an attribute on an `<ng-content>`.
+ * syntax tree. Each fails point 1: a tag the scan or reader misses, a widget or group with no path,
+ * a tag in or read into an ICU, markup a string or frame draws, `@content`, projection attributes.
  *
  * Usage: node tools/check-aria.mjs
  */
