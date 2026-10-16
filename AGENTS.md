@@ -109,7 +109,8 @@ pass — goes through `scripts/heavy`:
 
 - **It queues.** One slot by default (`HEAVY_SLOTS`), a `flock` in `~/.cache/heavy-queue`
   shared by every worktree and session, first come, first served. The wrapper holds it, not
-  the run, so a process the run leaves behind does not keep the queue. A run that finds the
+  the run, and the run ends with its whole scope: stopping the wrapper stops every process
+  of the run, and nothing the run leaves behind keeps the queue. A run that finds the
   slot taken waits and says who holds it.
 - **It caps memory.** The command runs in a systemd scope with `MemoryMax=6G` (`HEAVY_MEMORY`)
   and `MemorySwapMax=1G`, so the kernel kills the run and not the editor.
