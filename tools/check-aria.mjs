@@ -789,15 +789,15 @@ const readOffAProjection = (name) =>
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
- * it makes a stop; what is written on it, past what Angular reads off it (`readOffAProjection`),
- * is recorded by the offset it starts at (`projections`), and fails point 1. Each tag's kind is
- * recorded beside (`kinds`). A tag is recorded before the visitor descends into it, so of two at
- * one offset — an inline template and the element, the `<ng-template>` or the `<ng-content>` it
- * wraps — the inner one is the one kept. Each element's name is recorded too (`names`), as
- * `localName` reads it; a template's or a projection's tag keeps the name the scan reads off the
- * text, on which no verdict turns. So is the markup an element draws that the tree does not hold
- * (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each `@content` block,
- * by the offset it starts at (`contentBlocks`), its tags read as any others are.
+ * it makes a stop; what is written on it, past what Angular takes as the projection's own
+ * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails point
+ * 1. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor descends
+ * into it, so of two at one offset — an inline template and the element, the `<ng-template>` or
+ * the `<ng-content>` it wraps — the inner one is the one kept. Each element's name is recorded too
+ * (`names`), as `localName` reads it; a template's or a projection's tag keeps the name the scan
+ * reads off the text, on which no verdict turns. So is the markup an element draws that the tree
+ * does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each
+ * `@content` block, by the offset it starts at (`contentBlocks`), its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -1448,18 +1448,18 @@ const checkAria = ({
           `the foreign component places what it holds where the template does not say: points ` +
           `4, 8 and 9 would read it as standing in the element around the block`,
       );
-    // An `<ng-content>` draws no element, and Angular renders none of its attributes: `ngc`
-    // 22.2.1 (strict templates, full compilation) hands each to `ɵɵprojection` — a binding too,
-    // as its raw text (`[attr.role]`), with no instruction that binds it — which reads them only
-    // as keys an outer `select` matches. A role, a name, a stop or a part written there is meant
-    // for an element the DOM never gets, and no engine, audit or spec meets it: the defect of
-    // `lesson-65`, written and read by nobody. Read as nothing, a `menu` around
-    // `<ng-content role="menuitem">` would pass, holding whatever the consumer projects as it is;
-    // read as an element, as it was, an option under a listbox passed where none exists. Every
-    // attribute but those Angular reads off a projection (`readOffAProjection`), and not ARIA's
-    // alone: the tree keeps each under its raw name (`[ariaLabel]`), so sorting them would read
-    // Angular's binding syntax a second time, and a `class` there reaches no element either. A key
-    // for an outer `select` is `ngProjectAs`'s to name.
+    // An `<ng-content>` draws no element, and Angular renders none of its attributes: `ngc` 22.2.1
+    // (strict templates, full compilation) hands each to `ɵɵprojection` — a binding too, as its raw
+    // text (`[attr.role]`), with no instruction that binds it — which reads them only as keys an
+    // outer `select` matches. A role, a name, a stop or a part written there is meant for an
+    // element the DOM never gets, and no engine, audit or spec meets it: the defect of `lesson-65`,
+    // written and read by nobody. Read as nothing, a `menu` around `<ng-content role="menuitem">`
+    // would pass, holding whatever the consumer projects as it is; read as an element, as it was,
+    // an option under a listbox passed where none exists. Every attribute but the projection's own
+    // (`readOffAProjection`), and not ARIA's alone: the tree keeps each under its raw name
+    // (`[ariaLabel]`), so sorting them would read Angular's binding syntax a second time, and a
+    // `class` there reaches no element either. A key for an outer `select` is `ngProjectAs`'s to
+    // name.
     if (said.projections.length)
       throw new AriaError(
         'denominator',
@@ -1467,8 +1467,8 @@ const checkAria = ({
           `(\`${opening(said.projections[0].offset)}\`) carries ` +
           said.projections[0].carried.map((name) => `\`${name}\``).join(', ') +
           ` — Angular draws no element for a projection and renders none of its attributes, ` +
-          `so what is written there reaches no element: the projected content keeps the role, the ` +
-          `name and the stop it comes with. Put it on an element around the projection, or, ` +
+          `so what is written there reaches no element: the projected content keeps the role, ` +
+          `the name and the stop it comes with. Put it on an element around the projection, or, ` +
           `as a key an outer \`select\` matches, in \`ngProjectAs\``,
       );
     if (said.messages.length !== said.counted)

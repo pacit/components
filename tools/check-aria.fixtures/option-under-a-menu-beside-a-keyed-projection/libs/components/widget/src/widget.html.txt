@@ -36,8 +36,9 @@
 </span>
 
 <!-- The panel a menu, the consumer's options projected into it by an `<ng-content>` carrying
-     only what Angular reads off one — its `select`, in capitals, a key for an outer `select`
-     and an inline template's attribute — and an option of its own standing in it. -->
+     only what Angular takes as a projection's own — its `select`, in capitals, a key for an
+     outer `select` and an inline template's attribute — and an option of its own standing in
+     it. -->
 @if (open()) {
 <div
   class="pct-widget__panel"
