@@ -1,5 +1,5 @@
 {
   "point": 4,
   "check": "documentation",
-  "$reason": "A new part on an SVG `<use>` after a namespaced attribute, `xlink:href`, and the card silent about it. The package's `consts` carry `[0, 'xlink', 'href', '#pct-widget-icon', 'data-pct-part', 'icon']` (measured through ngc in partial mode and the linker, the class given the `value()` its template calls). `0` marks a namespaced attribute, which takes three slots, and ordinary pairs go on after it, as Angular's `setUpAttributes` reads them. A package read stopping at the first number lost `icon`, and point 2 fired on a template whose only fault is the card's."
+  "$reason": "A new part on an SVG `<use>` after a namespaced attribute, `xlink:href`, and the card silent about it. The package's `consts` carry `[0, 'xlink', 'href', '#pct-widget-icon', 'data-pct-part', 'icon']` (measured through ngc in partial mode and the linker; the class in `package.json` carries the declaration ngc writes). `0` marks a namespaced attribute, which takes three slots, and ordinary pairs go on after it, as Angular's `setUpAttributes` reads them. A package read stopping at the first number lost `icon`, and point 2 fired on a template whose only fault is the card's."
 }

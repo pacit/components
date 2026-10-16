@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "`[(data-pct-part)]=\"slotName\"` in the package alone: `ɵɵtwoWayProperty('data-pct-part', …)` beside a listener of `data-pct-partChange` (measured through ngc in partial mode, under `NO_ERRORS_SCHEMA`). A read knowing the attribute and property instructions alone passes it."
+}

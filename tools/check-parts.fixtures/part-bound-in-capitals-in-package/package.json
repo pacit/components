@@ -7,28 +7,15 @@
     {
       "entrypoint": "./widget",
       "className": "PctWidget",
-      "consts": [
-        [
-          null,
-          100
-        ],
-        [
-          "data-pct-part",
-          "label",
-          1,
-          "pct-widget__label"
-        ],
-        [
-          "data-pct-part",
-          "value",
-          1,
-          "pct-widget__value"
-        ]
-      ],
-      "functions": [
-        "function PctWidget_Template(rf, ctx) {\n  if (rf & 1) {\n    jit___projectionDef_6();\n    jit___domElementStart_0(0,'span',1);\n    jit___projection_7(1);\n    jit___domElementEnd_2();\n    jit___domElementStart_0(2,'span',2);\n    jit___text_1(3);\n    jit___domElementEnd_2();\n    jit___domTemplate_8(4,PctWidget_Defer_4_Template,2,0)(5,PctWidget_DeferLoading_5_Template,2,0);\n    jit___defer_9(6,4,null,5,null,null,0,null,jit___deferEnableTimerScheduling_10);\n    jit___deferOnIdle_11();\n  }\n  if (rf & 2) {\n    jit___advance_12(3);\n    jit___textInterpolate_13(ctx.value());\n  }\n}",
-        "function PctWidget_HostBindings(rf, ctx) {\n  if (rf & 2) { jit___attribute_5('DATA-PCT-PART',ctx.root); }\n}"
-      ]
+      "declaration": {
+        "selector": "pct-widget",
+        "host": {
+          "properties": {
+            "attr.DATA-PCT-PART": "this.root"
+          }
+        },
+        "template": "<span class=\"pct-widget__label\" data-pct-part=\"label\">\n  <ng-content></ng-content>\n</span>\n<span class=\"pct-widget__value\" data-pct-part=\"value\">{{ value() }}</span>\n<!--\n  A loading block with `after` and no `minimum` puts `[null, 100]` into `consts`: a slot that\n  holds no name, which the package read passes over.\n-->\n@defer (on idle) {\n<span>later</span>\n} @loading (after 100ms) {\n<span>loading</span>\n}\n"
+      }
     },
     {
       "entrypoint": "./widget",

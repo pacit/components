@@ -33,7 +33,14 @@ import {
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { TmplAstRecursiveVisitor, tmplAstVisitAll } from '@angular/compiler';
+import {
+  JitEvaluator,
+  outputAst,
+  R3Identifiers,
+  TmplAstRecursiveVisitor,
+  tmplAstVisitAll,
+} from '@angular/compiler';
+import * as core from '@angular/core';
 
 import { freshInputsFor } from './fresh-inputs.mjs';
 import { readTree } from './template-comments.mjs';
@@ -201,10 +208,8 @@ const readSources = (root, files) => {
  * the attribute name into the body of the template function. Read as a literal, it would be
  * a part named `{{name()}}` in the inventory, and point 3 would never see it.
  *
- * The visitor is the compiler's own and enters every block. That reach is the source read's
- * alone: the package read counts a binding in the text of the template function, and the
- * view of an `@if` or an `@for` is a function of its own, so a part bound inside one never
- * reaches it — measured. The attributes and inputs of an element under a structural
+ * The visitor is the compiler's own and enters every block, as the package read enters every
+ * view the compiler emits for one. The attributes and inputs of an element under a structural
  * directive stand in the tree twice, hoisted onto the `Template` as the same objects, so each
  * node is counted once.
  */
@@ -526,9 +531,9 @@ const checkParts = (input) => {
   // 3. STATICNESS. A name composed at runtime can be neither recorded nor frozen: the
   //    inventory and the snapshot would then be green exactly because they have nothing
   //    to see. Measured on both sides — in the sources as a binding of the name (`[attr.…]` in
-  //    a `host` block, any input of it in a template), in the package as an occurrence of
-  //    the attribute name inside the compiled template function (a bound attribute does not
-  //    reach `consts`, only the instruction).
+  //    a `host` block, any input of it in a template), in the package as an instruction
+  //    binding it in any view or host function (a bound attribute does not reach `consts`,
+  //    only the instruction).
   const bound = [
     ...[...fromSources]
       .filter(([, w]) => w.dynamic)
@@ -847,9 +852,10 @@ const readCard = (file, content) => {
 };
 
 /**
- * Definitions from the BUILT package. `@angular/compiler` is loaded first,
- * because the package is partially compiled and `ɵcmp` appears only on access — the same
- * step the linker performs at the consumer's, and the same as in `check-zoneless`.
+ * Definitions from the BUILT package. It is partially compiled: each class carries a
+ * declaration (`ɵɵngDeclareComponent`), which the compiler imported above turns into `ɵcmp`
+ * through JIT as the module defining the class is evaluated — the step the linker performs at
+ * the consumer's, and the same as in `check-zoneless`.
  *
  * `consts` carries every element's STATIC attributes, as a flat array in which a number
  * opens a section with a different meaning (classes, styles, bindings). So input read only
@@ -859,18 +865,12 @@ const readCard = (file, content) => {
  * them. `<use xlink:href="#a" data-pct-part="icon">` puts `[0, 'xlink', 'href', '#a',
  * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part.
  *
- * The name of a BOUND attribute does not reach `consts` at all, only the body of the
- * compiled function (`ɵɵattribute('data-pct-part', ctx.x)`) — measured, not assumed.
- * Hence the second read over the function's text: without it point 3 would have a blind
- * side in the package.
- *
- * The pairs and the count take the name in any case. `consts`, `hostAttrs` and the
- * instruction keep `'DATA-PCT-PART'` as written — a template kept in a constant and handed to
- * the decorator by shorthand, a host attribute spread from an object, a binding from
- * `@HostBinding('attr.DATA-PCT-PART')` (each measured through ngc in partial mode and the
- * linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's selector
- * matches, and one the source scanner never sees. A slot that is no name is no part: an
- * `@loading (after 100ms)` block puts `[null, 100]` into `consts`.
+ * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
+ * written — a template kept in a constant and handed to the decorator by shorthand, a host
+ * attribute spread from an object (each measured through ngc in partial mode and the linker)
+ * — and the DOM lowercases it in `setAttribute`: a part a consumer's selector matches, and one
+ * the source scanner never sees. A slot that is no name is no part: an `@loading (after
+ * 100ms)` block puts `[null, 100]` into `consts`.
  */
 const NAMESPACE_URI = 0;
 
@@ -888,26 +888,122 @@ const pairAttributes = (attrs) => {
   return out;
 };
 
-const PACKAGE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
+/**
+ * The name of a BOUND attribute reaches no `consts` (`[attr.…]` puts nothing there —
+ * measured), only an instruction: `ɵɵattribute('data-pct-part', ctx.x)`. So a binding is read
+ * as the instruction itself, off the statements the JIT compiler evaluates for a definition,
+ * every view's function among them. The text of `ɵcmp.template` stood here, and it is one
+ * view alone: an `@if`, `@for`, `@switch`, `@defer`, `<ng-template>` or `*` directive renders
+ * through a function of its own, and a part bound in any of them read as no binding
+ * (measured, 0 for each). The text also held whatever spells the name — a `@let` string, a text
+ * node, another attribute's value, an output so named — and counted each as one (6 in one
+ * template, measured through ngc).
+ *
+ * A call counts when its instruction is one of the four that bind a name — an attribute, a
+ * property, a DOM property, a two-way property — and its first argument IS the name, in any case,
+ * as `@HostBinding('attr.DATA-PCT-PART')` leaves it. The three property kinds set no attribute
+ * at all, so no part either, and they are counted all the same, as the source read refuses
+ * any input of the name (it refuses `[class.…]` and `[style.…]` of it too). A chained call,
+ * `ɵɵattribute('title', a)('lang', b)('data-pct-part', c)`, is the instruction at its root.
+ */
+const BINDINGS = new Set([
+  R3Identifiers.attribute,
+  R3Identifiers.property,
+  R3Identifiers.domProperty,
+  R3Identifiers.twoWayProperty,
+]);
+const DEFINITIONS = new Set([
+  R3Identifiers.defineComponent,
+  R3Identifiers.defineDirective,
+]);
+
+class BindingCounter extends outputAst.RecursiveAstVisitor {
+  count = 0;
+  visitInvokeFunctionExpr(call, context) {
+    let instruction = call.fn;
+    while (instruction instanceof outputAst.InvokeFunctionExpr)
+      instruction = instruction.fn;
+    const [name] = call.args;
+    if (
+      BINDINGS.has(instruction.value) &&
+      String(name.value).toLowerCase() === ATTRIBUTE
+    )
+      this.count++;
+    return super.visitInvokeFunctionExpr(call, context);
+  }
+}
 
 /**
- * One definition's parts and bindings: `consts` (evaluated), `hostAttrs` and the text of its
- * template and host-binding functions. The package read hands it each `ɵcmp` and `ɵdir`, and
- * a fixture the same three fields as data — one code for both, so a fixture holds how a
- * definition is read and not a copy of it.
+ * The bindings of every definition compiled in this process, by the class it defines:
+ * `{ views, host }`. The hook stands before any module of the package is imported, because a
+ * declaration compiles as its class is evaluated, not as `ɵcmp` is read. The host function is
+ * kept apart from the views: `ɵɵInheritDefinitionFeature` hands a base's host bindings down
+ * to the class extending it, and not its template — and a subclass with host bindings of its
+ * own runs the base's through a closure whose text names nothing (measured).
  */
-const readDefinition = ({ consts, hostAttrs, functions }) => ({
-  parts: [
-    ...new Set([
-      ...(consts ?? []).filter(Array.isArray).flatMap(pairAttributes),
-      ...pairAttributes(hostAttrs ?? []),
-    ]),
-  ],
-  dynamic: (functions ?? []).reduce(
-    (n, text) => n + countOf(text, PACKAGE_COUNTER),
-    0,
-  ),
-});
+const compiled = new Map();
+const evaluateStatements = JitEvaluator.prototype.evaluateStatements;
+JitEvaluator.prototype.evaluateStatements = function (
+  url,
+  statements,
+  ...rest
+) {
+  for (const statement of statements) {
+    const call =
+      statement instanceof outputAst.DeclareVarStmt ? statement.value : null;
+    if (
+      !(call instanceof outputAst.InvokeFunctionExpr) ||
+      !DEFINITIONS.has(call.fn.value)
+    )
+      continue;
+    const field = (key) =>
+      call.args[0].entries.find((entry) => entry.key === key)?.value;
+    const all = new BindingCounter();
+    for (const each of statements) each.visitStatement(all, null);
+    const host = new BindingCounter();
+    field('hostBindings')?.visitExpression(host, null);
+    compiled.set(field('type')?.node, {
+      views: all.count - host.count,
+      host: host.count,
+    });
+  }
+  return evaluateStatements.call(this, url, statements, ...rest);
+};
+
+/**
+ * One definition: its parts off `consts` and `hostAttrs` (read after the features ran, so a
+ * base's host attributes are merged into the class extending it, as its element gets them),
+ * and its bindings — those of its own views, and those of the host of the class and of every
+ * class up the chain `ɵɵInheritDefinitionFeature` walks, past one with no definition of its
+ * own. A class with none of its own is read as the class whose definition it inherits, as
+ * Angular renders it: an undecorated subclass is its base. A definition with nothing captured
+ * was not compiled from a declaration here — a package compiled in full, or a module evaluated
+ * before the hook — and of its bindings this read could say nothing but zero.
+ */
+const readCompiled = (type) => {
+  const def = type['ɵcmp'] ?? type['ɵdir'];
+  const own = compiled.get(def.type);
+  if (!own)
+    throw new PartsError(
+      'set',
+      `${type.name}: a definition this read did not see compiled — its bindings would ` +
+        `read as none.\n    The package read compiles each class's declaration through JIT ` +
+        `(\`compilationMode: partial\`); a package compiled in full carries none.`,
+    );
+  const consts = typeof def.consts === 'function' ? def.consts() : def.consts;
+  let dynamic = own.views;
+  for (let link = def.type; link; link = Object.getPrototypeOf(link))
+    dynamic += compiled.get(link)?.host ?? 0;
+  return {
+    parts: [
+      ...new Set([
+        ...(consts ?? []).filter(Array.isArray).flatMap(pairAttributes),
+        ...pairAttributes(def.hostAttrs ?? []),
+      ]),
+    ],
+    dynamic,
+  };
+};
 
 const packageComponents = async (root) => {
   const dist = join(root, DIST);
@@ -918,7 +1014,6 @@ const packageComponents = async (root) => {
         `alone.\n    The target needs a \`dependsOn\` on the library's build.`,
     );
 
-  await import('@angular/compiler');
   const exports = JSON.parse(read(root, `${DIST}/package.json`)).exports ?? {};
   const out = [];
   const entrypoints = new Set();
@@ -932,21 +1027,9 @@ const packageComponents = async (root) => {
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
     for (const [className, value] of Object.entries(module)) {
-      if (typeof value !== 'function') continue;
-      const def = value['ɵcmp'] ?? value['ɵdir'];
-      if (!def) continue;
-
-      out.push({
-        entrypoint,
-        className,
-        ...readDefinition({
-          consts: typeof def.consts === 'function' ? def.consts() : def.consts,
-          hostAttrs: def.hostAttrs,
-          functions: [def.template, def.hostBindings]
-            .filter((f) => typeof f === 'function')
-            .map((f) => f.toString()),
-        }),
-      });
+      if (typeof value !== 'function' || !(value['ɵcmp'] ?? value['ɵdir']))
+        continue;
+      out.push({ entrypoint, className, ...readCompiled(value) });
     }
   }
   return { pkg: out, entrypoints };
@@ -1013,14 +1096,14 @@ const repoFiles = () =>
  * The package read arrives as DATA (`package.json`) rather than from a real build: building
  * an Angular package for each of a dozen-odd cases would cost minutes per run, and this
  * gate is to run on every commit. The same choice as in `check-zoneless` and for the same
- * reason. A class may carry its definition's own `consts`, `hostAttrs` and `functions` (the
- * text of each) instead of `parts` and `dynamic`, and `readDefinition` reads them as it
- * reads the package — so a case holds how a definition is read. What no fixture exercises
- * is the way to one and the taking of those fields off it (the manifest's `exports`, the
- * import, `ɵcmp` on access, `consts()` called, the functions turned into text). Every run
- * against the real repository executes all of it but the `consts()` call, and holds it only
- * as far as the library reaches: no definition there has `consts` as a function, and none
- * binds the attribute.
+ * reason. A class may carry, instead of `parts` and `dynamic`, the DECLARATION the package
+ * would hold for it (as ngc writes it in partial mode), and `declare` compiles it through the
+ * JIT compiler and the hook the package goes through, and `readCompiled` reads it. Such a
+ * case is a probe of the read run against the compiler installed: an upgrade that moves a
+ * binding into another view or renames its instruction turns the case green, and the control
+ * red. What no fixture exercises is the way to the package's classes (the manifest's
+ * `exports`, the import) and the `consts()` call: no definition here or in the library has
+ * `consts` as a function.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
@@ -1044,23 +1127,74 @@ const buildFixture = (name, fx) => {
   return target;
 };
 
+/**
+ * A class of a prepared input's package, compiled from its declaration: the fields ngc
+ * writes, less those supplied here. `extends` declares a base the same way, one no
+ * entrypoint exports, beside the `usesInheritance` ngc writes; a dependency is named by its
+ * selector, and the type standing in for it is no matter to the compile. `undecorated` leaves
+ * the class without a definition of its own, as ngc leaves a class with no decorator. `full`
+ * defines the class as a package compiled in full would, with no declaration for the read to
+ * see compiled.
+ */
+const declare = ({
+  className,
+  kind = 'Component',
+  extends: base,
+  dependencies,
+  undecorated,
+  full,
+  ...fields
+}) => {
+  const parent = base ? declare(base) : null;
+  const type = parent
+    ? { [className]: class extends parent {} }[className]
+    : { [className]: class {} }[className];
+  if (undecorated) return type;
+  if (full) {
+    type['ɵcmp'] = core.ɵɵdefineComponent({
+      type,
+      selectors: [[className]],
+      decls: 0,
+      vars: 0,
+      template: () => {},
+      ...fields,
+    });
+    return type;
+  }
+  const declaration = {
+    minVersion: '14.0.0',
+    version: core.VERSION.full,
+    ngImport: core,
+    type,
+    isStandalone: true,
+    dependencies: dependencies?.map((d) => ({ ...d, type: class {} })),
+    ...fields,
+  };
+  if (kind === 'Directive')
+    type['ɵdir'] = core.ɵɵngDeclareDirective(declaration);
+  else type['ɵcmp'] = core.ɵɵngDeclareComponent(declaration);
+  return type;
+};
+
 const fixtureInput = (directory) => {
   const pkg = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+  // Every case compiles its own `PctWidget`, and Angular warns (NG0912) of a second class
+  // whose definition hashes as an earlier one's. The registry is cleared between cases, as
+  // `TestBed` clears it between tests.
+  core.ɵresetCompiledComponents();
   return collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
     {
-      pkg: pkg.classes.map((k) => {
-        const read = readDefinition(k);
-        return {
-          entrypoint: k.entrypoint,
-          className: k.className,
-          parts: [...(k.parts ?? []), ...read.parts],
-          dynamic: (k.dynamic ?? 0) + read.dynamic,
-        };
-      }),
+      pkg: pkg.classes.map((k) => ({
+        entrypoint: k.entrypoint,
+        className: k.className,
+        ...(k.declaration
+          ? readCompiled(declare({ className: k.className, ...k.declaration }))
+          : { parts: k.parts ?? [], dynamic: k.dynamic ?? 0 }),
+      })),
       entrypoints: new Set(pkg.entrypoints),
     },
   );

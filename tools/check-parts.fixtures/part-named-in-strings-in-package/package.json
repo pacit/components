@@ -1,0 +1,25 @@
+{
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "declaration": {
+        "selector": "pct-widget",
+        "template": "<span class=\"pct-widget__label\" data-pct-part=\"label\">\n  <ng-content></ng-content>\n</span>\n<span class=\"pct-widget__value\" data-pct-part=\"value\">{{ value() }}</span>\n<!--\n  A loading block with `after` and no `minimum` puts `[null, 100]` into `consts`: a slot that\n  holds no name, which the package read passes over.\n-->\n@defer (on idle) {\n<span>later</span>\n} @loading (after 100ms) {\n<span>loading</span>\n}\n@let hint = 'data-pct-part=\"hint\"';\n<p [attr.title]=\"hint\" [title]=\"'data-pct-part'\">data-pct-part {{ 'data-pct-part' }}</p>\n<i (data-pct-part)=\"slot()\" [attr.data-pct-part-x]=\"slot()\" [attr.x-data-pct-part]=\"slot()\"></i>\n"
+      }
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "parts": [
+        "widget-marker",
+        "widget-base"
+      ],
+      "dynamic": 0
+    }
+  ]
+}
