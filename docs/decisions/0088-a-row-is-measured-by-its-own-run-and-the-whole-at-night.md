@@ -120,7 +120,8 @@ day after a merge. Measured against 52 hours in fourteen days, and a killed edit
 
 **Point 4 is `scripts/heavy <command>`.** It runs the command under the same ceiling —
 `MemoryMax=6G`, plus `MemorySwapMax=1G` — and first waits for the one slot it shares with
-every worktree and agent session on the desk, a `flock` in `~/.cache/heavy-queue`.
+every worktree and agent session on the desk, a `flock` in `~/.cache/heavy-queue`, in the
+order the runs asked for it.
 
 **Why.** A ceiling bounds one run, not two. Several sessions now work on the desk at once,
 each of them under this record, and each started its own battery, spec or narrow mutation

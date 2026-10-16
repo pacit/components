@@ -5,9 +5,10 @@
 #
 #   scripts/heavy <command...>
 #
-# - Waits for a free slot (default 1, HEAVY_SLOTS=N for more). The slots are flock(1) locks
-#   in ~/.cache/heavy-queue, so the queue holds across worktrees and sessions, and a run that
-#   dies — even by SIGKILL — frees its slot with it.
+# - Waits its turn for a free slot (default 1, HEAVY_SLOTS=N for more), first come, first
+#   served. The slots are flock(1) locks in ~/.cache/heavy-queue, so the queue holds across
+#   worktrees and sessions; the wrapper holds the lock, so a run that ends frees the slot
+#   even when it leaves a process behind, and a wrapper killed by SIGKILL frees it at once.
 # - Runs the command inside a systemd scope with a memory ceiling (HEAVY_MEMORY, default 6G),
 #   so that the kernel kills the run, not the editor or a Claude session.
 # - Loads nvm (like scripts/with-node), so `scripts/heavy npx …` works from a non-interactive shell.
@@ -21,51 +22,90 @@ slots="${HEAVY_SLOTS:-1}"
 ceiling="${HEAVY_MEMORY:-6G}"
 swap="${HEAVY_SWAP:-1G}"
 
-if [ "${1:-}" = "--status" ]; then
+# The runs holding a slot: only the info files whose lock is taken. A file left by an earlier
+# run, or by a larger HEAVY_SLOTS, is not a holder.
+holders() {
+  local f
   for f in "$dir"/slot-*.info; do
     [ -e "$f" ] || continue
-    lock="${f%.info}.lock"
-    if ! flock -n "$lock" true 2>/dev/null; then echo "RUNNING  $(cat "$f")"; fi
+    flock -n "${f%.info}.lock" true 2>/dev/null || echo "$1$(cat "$f")"
   done
+}
+
+# The live waiters, oldest first: the name carries the start in nanoseconds (19 digits, so the
+# names sort by it), and a file whose wrapper is gone is removed.
+waiters() {
+  local f
   for f in "$dir"/wait-*; do
     [ -e "$f" ] || continue
-    pid="${f##*-}"
-    if kill -0 "$pid" 2>/dev/null; then echo "WAITING  $(cat "$f")"; else rm -f "$f"; fi
+    if kill -0 "${f##*-}" 2>/dev/null; then echo "$f"; else rm -f "$f"; fi
   done
+}
+
+if [ "${1:-}" = "--status" ]; then
+  holders "RUNNING  "
+  for f in $(waiters); do echo "WAITING  $(cat "$f")"; done
   exit 0
 fi
 
 [ $# -gt 0 ] || { echo "usage: scripts/heavy <command...> | scripts/heavy --status" >&2; exit 2; }
 
-desc="pid $$ · $(date +%H:%M:%S) · $(pwd) · $*"
+if ! systemctl --user show-environment > /dev/null 2>&1; then
+  echo "[heavy] no systemd user session here (ssh without lingering?), so no memory ceiling" \
+    "can be set; refusing to run unbounded. Run the command directly if that is intended." >&2
+  exit 1
+fi
+
+started="$(date +%H:%M:%S) · $(pwd) · $*"
 waitfile="$dir/wait-$(date +%s%N)-$$"
-echo "$desc" > "$waitfile"
+echo "wrapper $$ · $started" > "$waitfile"
 trap 'rm -f "$waitfile"' EXIT
 
+# First come, first served: a waiter tries the slots only while fewer than `slots` live waiters
+# came before it, so a newcomer polling at the right moment cannot overtake one that waited.
 announced=0
 while :; do
-  for ((i = 1; i <= slots; i++)); do
-    lock="$dir/slot-$i.lock"
-    exec {fd}>"$lock"
-    if flock -n "$fd"; then
-      rm -f "$waitfile"
-      echo "$desc" > "$dir/slot-$i.info"
-      [ "$announced" = 1 ] && echo "[heavy] slot $i free, starting after waiting." >&2
-      export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-      # shellcheck disable=SC1091
-      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-      # The lock fd is inherited by the scope's process, so the slot is held until the run
-      # (not just this wrapper) ends.
-      systemd-run --user --scope --quiet --collect \
-        -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@"
-      exit $?
-    fi
-    exec {fd}>&-
+  ahead=0
+  for f in $(waiters); do
+    [ "$f" = "$waitfile" ] && break
+    ahead=$((ahead + 1))
   done
+  if [ "$ahead" -lt "$slots" ]; then
+    for ((i = 1; i <= slots; i++)); do
+      lock="$dir/slot-$i.lock"
+      exec {fd}> "$lock"
+      if flock -n "$fd"; then break 2; fi
+      exec {fd}>&-
+    done
+  fi
   if [ "$announced" = 0 ]; then
     echo "[heavy] all $slots slot(s) busy, queued. Holding now:" >&2
-    cat "$dir"/slot-*.info 2>/dev/null | sed 's/^/[heavy]   /' >&2
+    holders "[heavy]   " >&2
     announced=1
   fi
-  sleep 3
+  sleep 1
+done
+rm -f "$waitfile"
+[ "$announced" = 1 ] && echo "[heavy] slot $i free, starting after waiting." >&2
+
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+# shellcheck disable=SC1091
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# A daemon the run starts would outlive it inside the scope, under the ceiling.
+export NX_DAEMON="${NX_DAEMON:-false}"
+
+# The slot is held by this wrapper and NOT handed to the run: a process the run leaves behind
+# would otherwise keep the lock, and the queue, for as long as it lives. The wrapper waits for
+# the run and passes it the signals that stop it. `--expand-environment=no`: systemd-run
+# expands `$VAR` in the command line by default, so `bash -c 'echo $X'` would run another
+# command.
+systemd-run --user --scope --quiet --collect --expand-environment=no \
+  -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@" {fd}>&- &
+run=$!
+echo "run $run · wrapper $$ · $started" > "$dir/slot-$i.info"
+trap 'kill -TERM "$run" 2>/dev/null' TERM INT HUP
+while :; do
+  wait "$run"
+  code=$?
+  kill -0 "$run" 2>/dev/null || exit "$code"
 done

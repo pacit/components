@@ -107,12 +107,14 @@ and systemd tore the scope down, 14 GB at its peak). So every run heavier than a
 battery, Playwright, vitest, Stryker, `nx test`/`e2e`/`affected`/`run-many`, a screen-reader
 pass — goes through `scripts/heavy`:
 
-- **It queues.** One slot by default (`HEAVY_SLOTS`), held as a `flock` in
-  `~/.cache/heavy-queue` — shared by every worktree and session, and freed by a run that dies,
-  even by `SIGKILL`. A run that finds the slot taken waits and says who holds it.
+- **It queues.** One slot by default (`HEAVY_SLOTS`), a `flock` in `~/.cache/heavy-queue`
+  shared by every worktree and session, first come, first served. The wrapper holds it, not
+  the run, so a process the run leaves behind does not keep the queue. A run that finds the
+  slot taken waits and says who holds it.
 - **It caps memory.** The command runs in a systemd scope with `MemoryMax=6G` (`HEAVY_MEMORY`)
   and `MemorySwapMax=1G`, so the kernel kills the run and not the editor.
-- **It loads nvm**, like `scripts/with-node`, so the two are not stacked.
+- **It loads nvm**, like `scripts/with-node`, so the two are not stacked, and runs nx
+  without its daemon, which would outlive the run inside the ceiling.
 
 A queued run can wait longer than an agent's shell call allows: start it in the background
 and wait for its end. `scripts/heavy --status` shows the run holding the slot and the ones
