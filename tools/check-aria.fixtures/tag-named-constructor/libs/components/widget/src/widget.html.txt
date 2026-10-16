@@ -3,21 +3,22 @@
      that can be typed into is an `<input>`, one that cannot is a `<button>`, and one with
      nothing of ours to draw is the platform's `<select>`, whose options are its own. Exactly one
      of them is ever in the tree, which is the question point 4 asks — and the answer it must
-     accept. Beside them, outside the conditional, two elements named `constructor`, which the
-     build compiles under `NO_ERRORS_SCHEMA` where no element holds one (Angular's parser
-     closes the element around it) and the DOM holds as unknown elements. Both carry the name
-     too, at the same time; the one a `tabindex` makes a stop is a second control. -->
+     accept. Beside them, outside the conditional, an element named `constructor`, which the
+     build compiles under `NO_ERRORS_SCHEMA` as no element's direct child (Angular's parser
+     closes the element around it), and one named `__proto__`, which only a namespace opens.
+     Both are unknown elements, and both carry the name too, at the same time; the one a
+     `tabindex` makes a stop is a second control. -->
 <constructor
   class="pct-widget__field"
   tabindex="0"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 ></constructor>
-<constructor
+<svg:__proto__
   class="pct-widget__caption"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
-></constructor>
+></svg:__proto__>
 <span class="pct-widget__box">
   @if (editable()) {
   <input

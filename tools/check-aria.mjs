@@ -408,14 +408,15 @@ const DECIDING = { href: '', type: '', tabindex: '-1' };
  * 2026-10-16): `<constructor>` is an `HTMLUnknownElement`, as `<foo>` is — generic to Chromium
  * 153, nothing to Firefox 157 — and both skip such a token as they skip `bogus`, taking the next.
  * That is the reading here, and not a refusal on point 1: the build compiles such a tag (under
- * `NO_ERRORS_SCHEMA` where no element holds it, Angular's parser closing one around it; in a
- * string, `@let mark = '<constructor>'`), and nothing in it is unreadable but axe's lookup. So the
- * tag is asked about under a name no table holds (`UNKNOWN_TAG`), and the token is dropped before
- * axe reads the value (`readRole`). Every other read of a table takes a role out of `readRole`, or
- * out of axe's `implicitRole` over a node built here, and a tag through here or as a table's own
- * key: these two are the doors.
+ * `NO_ERRORS_SCHEMA`, as no element's direct child — Angular's parser closes the element around
+ * one, its own table a plain object too — or in a namespace, `<svg:__proto__>`; in a string,
+ * `@let mark = '<constructor>'`), and nothing in it is unreadable but axe's lookup. So the tag is
+ * asked about under a name no table holds (`UNKNOWN_TAG`), and the token is dropped before axe
+ * reads the value (`readRole`). Every other read of a table takes a role out of `readRole`, or out
+ * of axe's `implicitRole` over a node built here, and a tag through here or as a table's own key:
+ * these two are the doors.
  */
-const inherited = (name) => Object.hasOwn(Object.prototype, name);
+const fromPrototype = (name) => Object.hasOwn(Object.prototype, name);
 const UNKNOWN_TAG = 'unknown';
 const virtual = (tag, attrs) => {
   const attributes = {};
@@ -424,7 +425,7 @@ const virtual = (tag, attrs) => {
     if (value !== undefined) attributes[name] = value;
   }
   const node = new axe.SerialVirtualNode({
-    nodeName: inherited(tag) ? UNKNOWN_TAG : tag,
+    nodeName: fromPrototype(tag) ? UNKNOWN_TAG : tag,
     attributes,
   });
   node.children =
@@ -513,9 +514,13 @@ const attributesOf = (text) => {
  * map, token by token). That is axe's own reader with `fallback`, which its default leaves off
  * — taking `group region` whole, as no role at all — and with `dpub`, because the engines know
  * the `doc-` roles: a `doc-chapter` above an `option` is in the tree, not looked through. axe
- * splits on single spaces alone, so the whitespace is collapsed here first, as WebKit does; and
- * it takes a token named for a member of every object for a role (`inherited`), so such a token
- * is dropped first, in any case, as the engines skip it: `constructor option` is an option. One
+ * splits on single spaces alone, so the value is split here on the ASCII whitespace first, as
+ * WebKit does. Two kinds of token are dropped before axe reads the rest (measured on 2026-10-16).
+ * One holds a character JavaScript takes for whitespace and HTML does not, which axe trims off or
+ * joins to the next token: a no-break space keeps both engines' token whole, and invalid —
+ * Chromium splits on an ideographic one, Firefox on none, and the reading here is Firefox's. The
+ * other is named for a member of every object, in any case, which axe takes for a role and both
+ * engines skip (`fromPrototype`): `constructor option` is an option. One
  * token axe does not know is `generic`, which the engines take: `generic group` is a group here
  * and generic to them — a spelling nobody writes, named rather than handled.
  *
@@ -530,9 +535,10 @@ const readRole = (value) =>
       nodeName: 'div',
       attributes: {
         role: (value ?? '')
-          .replace(/[\t\n\f\r ]+/g, ' ')
-          .split(' ')
-          .filter((token) => !inherited(token.toLowerCase()))
+          .split(/[\t\n\f\r ]+/)
+          .filter(
+            (token) => !/\s/.test(token) && !fromPrototype(token.toLowerCase()),
+          )
           .join(' '),
       },
     }),
