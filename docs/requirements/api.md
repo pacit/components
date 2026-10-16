@@ -635,6 +635,12 @@ a directive whose part is not exported from the entrypoint fires point 2
 > The inventory is **independent of `apps/docs`**. A pretty page rendering it can come later;
 > generating and gating it cannot ([`req-project-apps`](project.md#req-project-apps)).
 
+> **Not held:** a template kept in a constant and handed to the decorator by shorthand
+> (`template,`) is not refused by point 1, which wants `template:`. A part written there reaches
+> the package read alone and fires point 2 as a class the scanner cannot see; a part bound
+> inside a block there reaches neither read and passes every point (measured through ngc: the
+> block renders with a function of its own, and `consts` hold nothing).
+
 ---
 
 ### <a id="req-api-parts-unique"></a>`req-api-parts-unique` — Part names are unambiguous under nesting

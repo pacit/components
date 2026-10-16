@@ -1008,8 +1008,9 @@ const repoFiles = () =>
  * text of each) instead of `parts` and `dynamic`, and `readDefinition` reads them as it
  * reads the package — so a case holds how a definition is read. What no fixture exercises
  * is the way to one and the taking of those fields off it (the manifest's `exports`, the
- * import, `ɵcmp` on access, `consts()` called, the functions turned into text), exercised
- * instead on every run against the real repository.
+ * import, `ɵcmp` on access, `consts()` called, the functions turned into text). Every run
+ * against the real repository executes it, and holds it only as far as the library reaches:
+ * no definition there has `consts` as a function, and none binds the attribute.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no

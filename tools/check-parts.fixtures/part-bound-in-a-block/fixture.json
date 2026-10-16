@@ -1,5 +1,5 @@
 {
   "point": 3,
   "check": "staticness",
-  "$reason": "A part bound inside an `@if`. The package read cannot see it: it counts the name in the text of the template function, and an `@if` renders its branch with a function of its own (measured — `dynamic: 0`, as the reference has). The source read is the only one left to refuse it, so the walk has to enter every block, and the compiler's visitor does."
+  "$reason": "A part bound inside an `@if`. The package read cannot see it: it counts the name in the text of the template function, and an `@if` renders its branch with a function of its own (measured — compiled, this template's main function names the attribute nowhere, as the reference's does not). The source read is the only one left to refuse it, so the walk has to enter every block, and the compiler's visitor does."
 }
