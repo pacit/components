@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container *ngIf=\"open()\">`) carries `*ngIf` —",
+  "$reason": "An inline template's attribute on an `<ng-container>` under `ngNonBindable`, where it makes no template: the tree holds `*ngIf` as an attribute of the container, and `ngc` 22.2.1 keeps it in the consts of a container drawn as a comment, the option inside drawn whatever the condition. Elsewhere the attribute is the template's, and the tree keeps no copy on the container; on a projection it keeps one, which is let through. A reader that let a `*` attribute through on a container, as on a projection, passed this one."
+}

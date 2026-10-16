@@ -16,7 +16,7 @@
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
  * syntax tree. Each fails point 1: a tag the scan or reader misses, a widget or group with no path,
- * a tag in or read into an ICU, markup a string or frame draws, `@content`, what no element carries.
+ * a tag in or read into an ICU, markup a string or frame draws, `@content`, unrendered attributes.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -793,7 +793,8 @@ const isOwnTag = (node) =>
  * `ngNonBindable`, as the compiler's `preparseElement` asks for them, in their case. A `select`
  * it takes off a projection alone. An inline template's attribute (`*ngIf`) is the template's,
  * and the tree keeps no copy on the container, nor of an `i18n` one, which it takes as the
- * message's meta (measured with `ngc`, 22.2.1).
+ * message's meta (measured with `ngc`, 22.2.1); under `ngNonBindable`, where it makes no
+ * template, a `*ngIf` is one more attribute on the container.
  */
 const readOffAContainer = (name) =>
   name === 'ngProjectAs' || name === 'ngNonBindable';
@@ -809,15 +810,16 @@ const readOffAContainer = (name) =>
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
  * it makes a stop; what is written on it, past what Angular takes as the projection's own
  * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails
- * point 1; so is what is written on an `<ng-container>` past the container's own
- * (`readOffAContainer`, `containers`). Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor
- * descends into it, so of two at one offset — an inline template and the element, the
- * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
- * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag
- * keeps the name the scan reads off the text, on which no verdict turns. So is the markup an
- * element draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the
- * offset it starts at. And each `@content` block, by the offset it starts at (`contentBlocks`),
- * its tags read as any others are.
+ * point 1. An `<ng-container>` is recorded with an empty reading too, whatever is bound on it: it
+ * draws a comment, which no user lands on. What is written on one past the container's own
+ * (`readOffAContainer`) is recorded the same way (`containers`), and fails point 1. Each tag's
+ * kind is recorded beside (`kinds`). A tag is recorded before the visitor descends into it, so
+ * of two at one offset — an inline template and the element, the `<ng-template>` or the
+ * `<ng-content>` it wraps — the inner one is the one kept. Each element's name is recorded too
+ * (`names`), as `localName` reads it; a template's or a projection's tag keeps the name the scan
+ * reads off the text, on which no verdict turns. So is the markup an element draws that the tree
+ * does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each
+ * `@content` block, by the offset it starts at (`contentBlocks`), its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -829,7 +831,10 @@ class TagReader extends TmplAstRecursiveVisitor {
   projections = [];
   containers = [];
   visitElement(node) {
-    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.attributes.set(
+      node.sourceSpan.start.offset,
+      isOwnTag(node) ? new Map() : focusAttributes(node),
+    );
     this.kinds.set(node.sourceSpan.start.offset, 'element');
     this.names.set(node.sourceSpan.start.offset, localName(node.name));
     const carried = isOwnTag(node)
@@ -1502,19 +1507,24 @@ const checkAria = ({
     // An `<ng-container>` draws a comment, and Angular renders none of its attributes: `ngc`
     // 22.2.1 (strict templates, full compilation) keeps each written one in the consts it matches
     // directives against, and with none matched draws the container alone
-    // (`ɵɵdomElementContainer`), under `ngNonBindable` too. A written attribute is then a key a
-    // directive's selector names, or a static input one reads — or nothing, and the compiler does
-    // not say which. A binding it does: one no directive takes as an input fails the build
-    // (NG8002, `[role]` and `[ariaLabel]` among them), and an attribute binding cannot be written
-    // there (NG5002), so what is bound is a directive's, read as a component's input is. A role,
-    // a name, a stop or a part written there reaches no element, and no engine, audit or spec
-    // meets it: the defect of `lesson-65`. Read as an element's, as it was, an option under a
-    // listbox passed where none exists; read as nothing, a `menu` around `<ng-container
-    // role="menuitem">` would. Every written attribute but the container's own
-    // (`readOffAContainer`), as on a projection, and not ARIA's alone: what the walk reads is not
-    // all an engine reads (a `title`), and a `class` reaches no element either. What it costs is a
+    // (`ɵɵdomElementContainer`, or its `Start` and `End` around children), under `ngNonBindable`
+    // too. A written attribute is a key a directive's selector names, or a static input one takes,
+    // whose type the type check reads — or nothing, and then the compiler says nothing. A role, a
+    // name, a stop or a part written there reaches no element, and no engine, audit or spec meets
+    // it: the defect of `lesson-65`. Read as an element's, as it was, an option under a listbox
+    // passed where none exists; read as nothing, a `menu` around `<ng-container role="menuitem">`
+    // would. A binding is no such defect: a property binding no directive takes fails the build
+    // (NG8002, `[role]` and `[ariaLabel]` among them), an attribute binding cannot be written there
+    // (NG5002), and a class, a style or an animation binding or a listener, which compile with no
+    // directive and reach nothing, set no ARIA, no name and no stop on any element. The tag reader
+    // records no stop on a container, then, whatever is bound on it, and a name bound there for a
+    // directive point 4 reads as one on a custom element the library does not define: not at all
+    // (`nameForbidden`), the directive's being where the name goes. Every
+    // written attribute but the container's own (`readOffAContainer`), as on a projection, and not
+    // ARIA's alone: what the walk reads is not all an engine reads (a `title`). What it costs is a
     // directive a written attribute matches and no input takes, which cannot stand on a container
-    // here; the library puts none there, and binds what its directives take.
+    // here, and a static input written rather than bound (`matColumnDef="name"`); the library puts
+    // neither there, and binds what its directives take.
     if (said.containers.length)
       throw new AriaError(
         'denominator',
@@ -1524,8 +1534,8 @@ const checkAria = ({
           ` — Angular draws a comment for a container and renders none of its attributes, so ` +
           `a role, a name, a stop or a part written there reaches no element; and the compiler ` +
           `does not check that a directive's selector names what is written. Put it on an ` +
-          `element inside or around the container, or bind the directive's input, which the ` +
-          `compiler refuses where no directive takes it (NG8002)`,
+          `element inside or around the container, or bind the directive's input ` +
+          `(\`[name]="'…'"\`), which the compiler refuses where no directive takes it (NG8002)`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(

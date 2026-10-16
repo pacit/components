@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container ngProjectAs=\"[pctOption]\" ngNonBindable role=\"option\">`) carries `role` —",
+  "$reason": "An option's role written on an `<ng-container>` in the reference's listbox, beside the container's own two attributes, `ngProjectAs` and `ngNonBindable`. Angular takes those two off the container and leaves the role in the consts, on no element (`ɵɵdomElementContainerStart`, measured with `ngc` 22.2.1), so the option is a bare text. What is the container's own is taken an attribute at a time: a reader that let a container through whole for one of them passed the option."
+}
