@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, one option's role written `CONSTRUCTOR __proto__ option`, inside a wrapper whose role is `constructor` alone. Chromium 153 and Firefox 157 skip such a token, as they skip `bogus`, and take the next one (measured on 2026-10-16, in a listbox: an option, and a wrapper of no role): an option standing in a menu, where none may, with nothing in between. axe looks a token up in `ariaRoles`, a plain object that answers `constructor` and `__proto__` from the prototype every object has, and read the first one for a role ARIA defines: the element was no option and the panel passed. The tokens are dropped before axe reads the value, in any case, so that neither one alone nor a spelling in capitals can stand in front of the option, and the wrapper is looked through — a role kept there would put the option under it instead."
+}

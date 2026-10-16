@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "with <progress> inside it — and it is no container ARIA names as a whole",
+  "$reason": "`name-on-a-stop-around-a-bar` with the stop an element named `constructor`, which the engines read as an unknown element: generic to Chromium 153, nothing to Firefox 157 (measured on 2026-10-16), a role whose children are not presentational. The name stops one element above the bar. `tag-named-constructor` holds the stop and the name; this case holds the role, which a stand-in tag of a role with presentational children (`img`, `button`) would give the element, and the bar would be part of it."
+}

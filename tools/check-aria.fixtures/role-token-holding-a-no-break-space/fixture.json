@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "`role-named-for-object-members` with the tokens spelled with no-break spaces: the option's role `constructor` + two U+00A0 + `option option`, the wrapper's a U+202F + `list`. HTML splits a role on ASCII whitespace alone, and Chromium 153 and Firefox 157 keep either space inside a token, which no role then matches (measured on 2026-10-16: no role for such a token in either engine, and in a listbox the option after it): an option standing in a menu, with nothing in between. axe trims the value and joins two such spaces into one of its own before it splits, so it read the wrapper as a list and the option as `constructor`, and the panel passed. A token holding a character JavaScript takes for whitespace is dropped before axe reads the value, as one named for a member of every object is: trimmed, the option's first token is still no such name, and only axe's joining makes it one."
+}
