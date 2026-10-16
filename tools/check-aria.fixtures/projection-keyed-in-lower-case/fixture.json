@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "carries `ngprojectas`",
+  "$reason": "A projection in the reference's listbox keyed for an outer `select` by `ngprojectas`. The compiler's `preparseElement` takes `select` in any case and `ngProjectAs` only as written, so the attribute in lower case is not the projection's own, but one more attribute Angular renders on no element — a key only to an outer `select` that names it — and it is refused as any other. A reader that took `ngProjectAs` in any case let it through."
+}

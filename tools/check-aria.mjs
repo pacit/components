@@ -15,15 +15,14 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). Each fails point 1: a tag the scan or reader misses, a widget or
- * group with no path, a tag in or read into an ICU, markup a string or frame draws, `@content`.
+ * syntax tree. Each fails point 1: a tag the scan or reader misses, a widget or group with no path,
+ * a tag in or read into an ICU, markup a string or frame draws, `@content`, projection attributes.
  *
  * Usage: node tools/check-aria.mjs
  */
 import {
   BindingType,
   splitNsName,
-  TmplAstContent,
   TmplAstElement,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
@@ -361,15 +360,16 @@ const ANCHORS = {
  */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /**
- * Angular's own tags among the elements the walk reads, which never reach the DOM and never
- * stand between two roles — by the local name as the compiler tells them. An `<ng-container>`
- * in its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM; an
- * `<ng-content>` in any case, which the tree holds as a projection named `ng-content`. An
- * `<ng-template>` is no element of the walk, the tree holding it as a template, and one written
- * in capitals is an element the type check refuses (`NG8001`, with no `CUSTOM_ELEMENTS_SCHEMA`,
- * which nothing here declares).
+ * Angular's own tag among the elements the walk reads, which never reaches the DOM and never
+ * stands between two roles — by the local name as the compiler tells it: an `<ng-container>` in
+ * its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM. An
+ * `<ng-content>` is no element of the walk, the tree holding it as a projection (`isElement`),
+ * and one under `ngNonBindable`, which the tree holds as an element, is drawn as one, with what
+ * is written on it (measured with `ngc`, 22.2.1). An `<ng-template>` is no element of the walk
+ * either, the tree holding it as a template, and one written in capitals is an element the type
+ * check refuses (`NG8001`, with no `CUSTOM_ELEMENTS_SCHEMA`, which nothing here declares).
  */
-const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-content']);
+const TRANSPARENT_TAGS = new Set(['ng-container']);
 /**
  * The same roles counted without parsing, as the denominator of the walk of point 9: every
  * written `role`, its value read by `readRole` as the walk reads it, so that the two counts
@@ -693,17 +693,19 @@ const readTemplate = (
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
 /**
- * A node the walk reads as an element, asked of the compiler's own classes as `repeats` is: an
- * element, and an `<ng-content>`, which draws none of its own and is looked through
- * (`TRANSPARENT_TAGS`). Two other kinds the walk meets carry a `name` as a string and draw
+ * A node the walk reads as an element, asked of the compiler's own class as `repeats` is. An
+ * `<ng-content>` draws no element, and point 1 refuses what is written on one past what Angular
+ * takes as the projection's own (`readOffAProjection`), so it is no element of the walk either:
+ * what it falls back to stands where it stands, the projection looked through. Read as an element,
+ * it carried what was written on it to points 4 and 9 — a `role="option"` an option under a
+ * listbox, where none exists. Two other kinds the walk meets carry a `name` as a string and draw
  * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
  * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
  * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
  * option under a menu stood in it. A block Angular cannot place (an `@empty` with no `@for`)
  * carries one too, and comes only with a parse error, on which the walk does not run.
  */
-const isElement = (node) =>
-  node instanceof TmplAstElement || node instanceof TmplAstContent;
+const isElement = (node) => node instanceof TmplAstElement;
 
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
@@ -765,6 +767,20 @@ const EMBEDS = new Set(['embed', 'frame', 'iframe', 'object']);
 const localName = (name) => splitNsName(name)[1];
 
 /**
+ * What Angular takes off an `<ng-content>` as the projection's own: its `select`, in any case, and
+ * `ngProjectAs`, as the compiler's `preparseElement` asks for them, and an inline template's
+ * attribute (`*ngIf`), which the template Angular wraps around the projection takes — the tree
+ * keeps a copy on the projection too. Every other attribute is only a key an outer `select`
+ * matches when the projection is projected in turn, which `ngProjectAs` names on purpose. The
+ * `ngNonBindable` that function reads as well stops `ngc` 22.2.1 itself on a projection (`All
+ * attributes should have an element-like target`).
+ */
+const readOffAProjection = (name) =>
+  name.toLowerCase() === 'select' ||
+  name === 'ngProjectAs' ||
+  name.startsWith('*');
+
+/**
  * The tags of a template as the compiler's own visitor reaches them: each element and template
  * with its `focusAttributes`, by the offset it starts at, and the span of each ICU, whose cases
  * Angular renders and the tree does not hold (`readTemplate`). The visitor and not the walk,
@@ -773,14 +789,16 @@ const localName = (name) => splitNsName(name)[1];
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
- * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
- * visitor descends into it, so of two at one offset — an inline template and the element, the
+ * it makes a stop; what is written on it, past what Angular takes as the projection's own
+ * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails
+ * point 1. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor
+ * descends into it, so of two at one offset — an inline template and the element, the
  * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
- * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
- * the name the scan reads off the text, on which no verdict turns. So is the markup an element
- * draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it
- * starts at. And each `@content` block, by the offset it starts at (`contentBlocks`), its tags read
- * as any others are.
+ * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag
+ * keeps the name the scan reads off the text, on which no verdict turns. So is the markup an
+ * element draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the
+ * offset it starts at. And each `@content` block, by the offset it starts at (`contentBlocks`),
+ * its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -789,6 +807,7 @@ class TagReader extends TmplAstRecursiveVisitor {
   markup = [];
   icus = [];
   contentBlocks = [];
+  projections = [];
   visitElement(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'element');
@@ -812,6 +831,11 @@ class TagReader extends TmplAstRecursiveVisitor {
   visitContent(node) {
     this.attributes.set(node.sourceSpan.start.offset, new Map());
     this.kinds.set(node.sourceSpan.start.offset, 'content');
+    const carried = node.attributes
+      .map((a) => a.name)
+      .filter((name) => !readOffAProjection(name));
+    if (carried.length)
+      this.projections.push({ offset: node.sourceSpan.start.offset, carried });
     super.visitContent(node);
   }
   visitIcu(node) {
@@ -964,7 +988,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // some state.
           names: namesOn(node),
           // Out of the tree with all it holds, the way axe reads the value; bound, it may
-          // be absent. Angular's own tags reach no DOM to hide.
+          // be absent. Angular's own tag reaches no DOM to hide.
           ariaHidden:
             !own &&
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
@@ -1052,6 +1076,7 @@ const readMessages = (file, content, sides, reads) => {
     markup: tags.markup,
     icus: tags.icus,
     contentBlocks: tags.contentBlocks,
+    projections: tags.projections,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1423,6 +1448,29 @@ const checkAria = ({
           `child of a foreign component and refuses it anywhere else (NG8026), and inside one ` +
           `the foreign component places what it holds where the template does not say: points ` +
           `4, 8 and 9 would read it as standing in the element around the block`,
+      );
+    // An `<ng-content>` draws no element, and Angular renders none of its attributes: `ngc` 22.2.1
+    // (strict templates, full compilation) hands each to `ɵɵprojection` — a binding too, as its raw
+    // text (`[attr.role]`), with no instruction that binds it — which reads them only as keys an
+    // outer `select` matches. A role, a name, a stop or a part written there is meant for an
+    // element the DOM never gets, and no engine, audit or spec meets it: the defect of `lesson-65`,
+    // written and read by nobody. Read as nothing, a `menu` around `<ng-content role="menuitem">`
+    // would pass, holding whatever the consumer projects as it is; read as an element, as it was,
+    // an option under a listbox passed where none exists. Every attribute but the projection's own
+    // (`readOffAProjection`), and not ARIA's alone: the tree keeps each under its raw name
+    // (`[ariaLabel]`), so sorting them would read Angular's binding syntax a second time, and a
+    // `class` there reaches no element either. A key for an outer `select` is `ngProjectAs`'s to
+    // name.
+    if (said.projections.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: an \`<ng-content>\` at offset ${said.projections[0].offset} ` +
+          `(\`${opening(said.projections[0].offset)}\`) carries ` +
+          said.projections[0].carried.map((name) => `\`${name}\``).join(', ') +
+          ` — Angular draws no element for a projection and renders none of its attributes, ` +
+          `so what is written there reaches no element: the projected content keeps the role, ` +
+          `the name and the stop it comes with. Put it on an element around the projection, or, ` +
+          `as a key an outer \`select\` matches, in \`ngProjectAs\``,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
