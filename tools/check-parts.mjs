@@ -1165,8 +1165,9 @@ const buildFixture = (name, fx) => {
 
 /**
  * A class of a prepared input's package, compiled from its declaration: the fields ngc
- * writes, less those supplied here. `extends` declares a base the same way, one no
- * entrypoint exports, beside the `usesInheritance` ngc writes; a dependency is named by its
+ * writes, less those supplied here. `extends` declares a base the same way, beside the
+ * `usesInheritance` ngc writes: one no entrypoint exports, or an exported class compiled apart
+ * from its own entry, as `PctMarker` under `PctMarkerOutline`; a dependency is named by its
  * selector, and the type standing in for it is no matter to the compile. `undecorated` leaves
  * the class without a definition of its own, as ngc leaves a class with no decorator. `full`
  * defines the class as a package compiled in full would, with no declaration for the read to
