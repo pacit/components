@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<ng-container> bind(s) [attr.aria-label] or [attr.aria-labelledby] to the inputs on Angular's own tag",
+  "$reason": "`name-handed-to-a-container-a-directive-takes` with the label alone bound on the container: either half of the consumer's name sent where it reaches no element is refused, as either one bound on a role that forbids a name is. A reader that asked for both halves on the container let the label through."
+}

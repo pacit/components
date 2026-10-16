@@ -1816,8 +1816,9 @@ const checkAria = ({
     const role = t.roleWritten ? t.role : host.role;
     return role === null || forbids(role);
   };
-  // On an `<ng-container>` the name lands nowhere: what is bound there compiles only as a
-  // directive's input (NG8002), and the container draws a comment. Read through `nameForbidden`,
+  // On an `<ng-container>` the name lands on no element: a property bound there compiles only as
+  // a directive's input (NG8002), a class binding with none, and the container draws a comment.
+  // Read through `nameForbidden`,
   // the tag was one axe does not know, which it spares as it spares a custom element, and the
   // name passed beside a carrier; a custom element the library does not define is at least an
   // element the name may reach, and a container never is. Where the directive puts the name no
@@ -1831,9 +1832,9 @@ const checkAria = ({
         'forwarded',
         `${component.className} (${component.templatePath}): ${described(contained)} ` +
           `bind(s) ${NAME_ATTRIBUTES.join(' or ')} to the inputs on Angular's own tag — a ` +
-          `container draws a comment, so the name goes to a directive's input, where no point ` +
-          `follows it, and reaches no element of its own. Hand the name to the control, to a ` +
-          `component through its inputs, or to an element whose role takes one`,
+          `container draws a comment, so the name goes to a directive's input or nowhere, and ` +
+          `reaches no element of its own: no point follows it there. Hand the name to the ` +
+          `control, to a component through its inputs, or to an element whose role takes one`,
       );
     const unnamable = tags.filter((t) => t.takesName && nameForbidden(t));
     if (unnamable.length)
