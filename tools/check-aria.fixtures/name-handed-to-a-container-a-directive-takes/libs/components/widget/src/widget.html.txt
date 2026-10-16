@@ -5,18 +5,22 @@
      of them is ever in the tree, which is the question point 4 asks — and the answer it must
      accept. -->
 <span class="pct-widget__box">
-  <!-- The consumer's name handed to a directive on an `<ng-container>`, with a stop, and to no
-       trigger: the container draws a comment, which no user lands on and nothing names. -->
-  <ng-container [pctRows]="rows" [tabIndex]="0" [ariaLabel]="ariaLabel()" [ariaLabelledby]="ariaLabelledby()" />
+  <!-- The consumer's name handed to a directive on an `<ng-container>` as well as to the
+       triggers: the container draws a comment, which nothing names. -->
+  <ng-container [pctRows]="rows" [ariaLabel]="ariaLabel()" [ariaLabelledby]="ariaLabelledby()" />
   @if (editable()) {
   <input
     class="pct-widget__trigger"
     type="text"
     role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
   />
   } @else if (native()) {
   <select
     class="pct-widget__trigger"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
   >
     <option>Poland</option>
     <option>Anywhere</option>
@@ -26,6 +30,8 @@
     class="pct-widget__trigger"
     type="button"
     role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
   >
     {{ label() }}
   </button>
@@ -40,6 +46,8 @@
 <div
   class="pct-widget__panel"
   role="listbox"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
 >
   <div role="group" aria-labelledby="pct-widget-nearby">
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>

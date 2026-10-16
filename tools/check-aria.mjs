@@ -664,6 +664,8 @@ const readTemplate = (
       takesName: element?.takesName ?? false,
       takenAs: element?.takenAs ?? [],
       namesItself: element?.namesItself ?? false,
+      // Angular's own tag (`isOwnTag`), which draws a comment and carries no name.
+      own: element?.own ?? false,
     };
   });
   return {
@@ -1517,9 +1519,8 @@ const checkAria = ({
     // (NG8002, `[role]` and `[ariaLabel]` among them), an attribute binding cannot be written there
     // (NG5002), and a class, a style or an animation binding or a listener, which compile with no
     // directive and reach nothing, set no ARIA, no name and no stop on any element. The tag reader
-    // records no stop on a container, then, whatever is bound on it, and a name bound there for a
-    // directive point 4 reads as one on a custom element the library does not define: not at all
-    // (`nameForbidden`), the directive's being where the name goes. Every
+    // records no stop on a container, then, whatever is bound on it, and point 4 refuses the
+    // consumer's name bound there for a directive, which reaches no element. Every
     // written attribute but the container's own (`readOffAContainer`), as on a projection, and not
     // ARIA's alone: what the walk reads is not all an engine reads (a `title`). What it costs is a
     // directive a written attribute matches and no input takes, which cannot stand on a container
@@ -1815,11 +1816,26 @@ const checkAria = ({
     const role = t.roleWritten ? t.role : host.role;
     return role === null || forbids(role);
   };
+  // On an `<ng-container>` the name lands nowhere: what is bound there compiles only as a
+  // directive's input (NG8002), and the container draws a comment. Read through `nameForbidden`,
+  // the tag was one axe does not know, which it spares as it spares a custom element, and the
+  // name passed beside a carrier; a custom element the library does not define is at least an
+  // element the name may reach, and a container never is. Where the directive puts the name no
+  // point follows, as the gate refuses a role it cannot judge on the same element.
   for (const component of components) {
     if (!component.templatePath) continue;
-    const unnamable = byPath
-      .get(component.templatePath)
-      .read.tags.filter((t) => t.takesName && nameForbidden(t));
+    const tags = byPath.get(component.templatePath).read.tags;
+    const contained = tags.filter((t) => t.takesName && t.own);
+    if (contained.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ${described(contained)} ` +
+          `bind(s) ${NAME_ATTRIBUTES.join(' or ')} to the inputs on Angular's own tag — a ` +
+          `container draws a comment, so the name goes to a directive's input, where no point ` +
+          `follows it, and reaches no element of its own. Hand the name to the control, to a ` +
+          `component through its inputs, or to an element whose role takes one`,
+      );
+    const unnamable = tags.filter((t) => t.takesName && nameForbidden(t));
     if (unnamable.length)
       throw new AriaError(
         'forwarded',

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <ng-container> with no role and a global ARIA attribute (`aria-label`)",
+  "$reason": "`option-under-a-named-container-in-capitals` with the consumer's name bound on the `<NG-CONTAINER>`. Written in capitals it is no container but an element of the DOM, which an attribute binding reaches (the compiler refuses one only on Angular's own tag, NG5002), so the name lands on an element, read as one on a custom element the library does not define is, and point 4 lets it through. With a global ARIA attribute the element stands between the listbox and the option, which point 9 refuses. A reader that asked the tag lowered whether the name was bound on Angular's own refused it on point 4 instead, as a name sent where none lands."
+}

@@ -1,6 +1,6 @@
 {
   "point": 4,
   "check": "forwarded",
-  "message": "none of the 4 element(s) that carry a name, nor any of the 1 group(s) around them",
-  "$reason": "The reference's triggers and panel with the consumer's name taken off them, and handed instead, with a stop, to a directive on an `<ng-container>`. Bound on a container, `[tabIndex]`, `[ariaLabel]` and `[ariaLabelledby]` compile only where a directive takes them as inputs (NG8002, measured with `ngc` 22.2.1), and the container draws a comment, which no user lands on and nothing names. Read as an element, the container was a stop carrying both names, and the template passed point 4 with no control named; read with no stop, as a projection is, it is no carrier, and none of the elements that are binds the name."
+  "message": "<ng-container> bind(s) [attr.aria-label] or [attr.aria-labelledby] to the inputs on Angular's own tag",
+  "$reason": "The reference's triggers and panel, each carrying the consumer's name, and the name handed as well to a directive on an `<ng-container>`. Bound on a container, `[ariaLabel]` and `[ariaLabelledby]` compile only where a directive takes them as inputs (NG8002, measured with `ngc` 22.2.1), and the container draws a comment, so the name reaches no element of its own and goes where no point follows. Asked whether its role takes a name, the tag was one axe does not know and spares, as it spares a custom element, and the template passed: the last reading of a container as an element."
 }
