@@ -5,6 +5,6 @@
 
 ## Contract
 
-|           |                                |
-| --------- | ------------------------------ |
-| **Parts** | `widget-base`, `widget-marker` |
+|           |                 |
+| --------- | --------------- |
+| **Parts** | `widget-marker` |

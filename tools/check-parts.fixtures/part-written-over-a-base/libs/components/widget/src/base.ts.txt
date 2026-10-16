@@ -1,0 +1,18 @@
+import { Directive } from '@angular/core';
+
+/**
+ * A base a directive takes part of its host block from — the shape `PctSelectBase` has in the
+ * library, with no part in it. An element carries one `data-pct-part`, and Angular keeps the
+ * nearest class's (`mergeHostAttrs`), so a part written here as well would reach no element of
+ * `PctMarker`, which writes its own (`part-written-over-a-base`). The package data does NOT list
+ * the base, because an internal base is not exported: the linker merges its host block into the
+ * SUBCLASS (`ɵɵInheritDefinitionFeature`), and `package.json` compiles it there from the two
+ * declarations. `PctMarkerOutline` holds the other half of the merge, a part a class inherits.
+ */
+@Directive({
+  host: {
+    class: 'pct-marker-base',
+    'data-pct-part': 'widget-base',
+  },
+})
+export abstract class PctMarkerBase {}
