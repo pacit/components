@@ -853,7 +853,11 @@ const readCard = (file, content) => {
  *
  * `consts` carries every element's STATIC attributes, as a flat array in which a number
  * opens a section with a different meaning (classes, styles, bindings). So input read only
- * the prefix before the first number — beyond it stand names without values.
+ * the prefix before such a number — beyond it stand names without values. The one marker
+ * that does not end it is `0`, a namespaced attribute: it takes three slots (the prefix, the
+ * name, the value) and ordinary pairs go on after it, as Angular's `setUpAttributes` reads
+ * them. `<use xlink:href="#a" data-pct-part="icon">` puts `[0, 'xlink', 'href', '#a',
+ * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part.
  *
  * The name of a BOUND attribute does not reach `consts` at all, only the body of the
  * compiled function (`ɵɵattribute('data-pct-part', ctx.x)`) — measured, not assumed.
@@ -868,13 +872,18 @@ const readCard = (file, content) => {
  * matches, and one the source scanner never sees. A slot that is no name is no part: an
  * `@loading (after 100ms)` block puts `[null, 100]` into `consts`.
  */
+const NAMESPACE_URI = 0;
+
 const pairAttributes = (attrs) => {
   const out = [];
-  for (let i = 0; i < attrs.length; i++) {
+  for (let i = 0; i < attrs.length; i += 2) {
+    if (attrs[i] === NAMESPACE_URI) {
+      i += 2;
+      continue;
+    }
     if (typeof attrs[i] === 'number') break;
     if (typeof attrs[i] === 'string' && attrs[i].toLowerCase() === ATTRIBUTE)
       out.push(attrs[i + 1]);
-    i++;
   }
   return out;
 };
@@ -1009,8 +1018,9 @@ const repoFiles = () =>
  * reads the package — so a case holds how a definition is read. What no fixture exercises
  * is the way to one and the taking of those fields off it (the manifest's `exports`, the
  * import, `ɵcmp` on access, `consts()` called, the functions turned into text). Every run
- * against the real repository executes it, and holds it only as far as the library reaches:
- * no definition there has `consts` as a function, and none binds the attribute.
+ * against the real repository executes all of it but the `consts()` call, and holds it only
+ * as far as the library reaches: no definition there has `consts` as a function, and none
+ * binds the attribute.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
