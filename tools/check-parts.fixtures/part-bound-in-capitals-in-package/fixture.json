@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "`@HostBinding('attr.DATA-PCT-PART')` on a component's field: a part's name bound by an expression, outside any `host` block the scanner reads. The package holds it in the host-binding function as written, `ɵɵattribute('DATA-PCT-PART', ctx.root)` (measured through ngc in partial mode and the linker, the class given the `value()` its template calls; the class in `package.json` carries the definition's own `consts` and functions), and the DOM lowercases it. A count of the name as written found no binding, and the case passed every point; one taking it in any case says it at point 3."
+}

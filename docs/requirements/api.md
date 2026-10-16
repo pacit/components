@@ -625,7 +625,7 @@ compares `libs/components/parts.snapshot.md` with the current inventory, and poi
 the denominator: every decorator and every occurrence of the attribute in a template or a
 decorator must be recognised, and the list of parts is built **twice** — from the sources and
 from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking)
-**Control:** `tools/check-parts.fixtures/` — 37 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 41 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
@@ -635,11 +635,13 @@ a directive whose part is not exported from the entrypoint fires point 2
 > The inventory is **independent of `apps/docs`**. A pretty page rendering it can come later;
 > generating and gating it cannot ([`req-project-apps`](project.md#req-project-apps)).
 
-> **Not held:** the name in capitals on a route into a `host` block the source scanner does not
-> read — a spread object, a computed or concatenated key, an escape, `@HostBinding` — passes
-> every point. The DOM lowercases it into a part, and the package read compares the name as
-> written; its fixtures give that read as data, so holding a case-insensitive one needs fixtures
-> that carry the raw `hostAttrs` and function text.
+> **Not held:** a template kept in a constant and handed to the decorator by shorthand
+> (`template,`) is not refused by point 1, which wants `template:`. A part written there reaches
+> the package read alone and fires point 2 as a class the scanner cannot see. A part bound there
+> inside a block, an `<ng-template>` or under a `*` directive reaches neither read and passes
+> every point: the binding puts nothing into `consts`, and its view renders with a function of
+> its own, which the package read does not see (measured through ngc). So does any part there
+> of a class no entrypoint exports, as the package read visits exported classes alone.
 
 ---
 

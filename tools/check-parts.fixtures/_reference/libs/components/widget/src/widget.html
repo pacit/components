@@ -2,3 +2,12 @@
   <ng-content></ng-content>
 </span>
 <span class="pct-widget__value" data-pct-part="value">{{ value() }}</span>
+<!--
+  A loading block with `after` and no `minimum` puts `[null, 100]` into `consts`: a slot that
+  holds no name, which the package read passes over.
+-->
+@defer (on idle) {
+<span>later</span>
+} @loading (after 100ms) {
+<span>loading</span>
+}

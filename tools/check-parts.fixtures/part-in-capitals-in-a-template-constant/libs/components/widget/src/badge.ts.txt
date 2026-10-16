@@ -1,0 +1,14 @@
+import { Component } from '@angular/core';
+
+/**
+ * A template kept in a constant and handed to the decorator by shorthand. `TEMPLATE_INLINE`
+ * wants `template:`, so the scanner reads no template here, and the package's `consts` carry
+ * the name as written.
+ */
+const template = '<span DATA-PCT-PART="badge"></span>';
+
+@Component({
+  selector: 'pct-widget-badge',
+  template,
+})
+export class PctWidgetBadge {}

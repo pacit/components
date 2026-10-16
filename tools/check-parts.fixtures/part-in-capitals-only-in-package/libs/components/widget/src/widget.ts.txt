@@ -1,0 +1,30 @@
+import { Component, ElementRef, inject } from '@angular/core';
+
+/**
+ * The host's attributes kept in an object of their own and spread into the decorator, as
+ * `fitHost` is in `field/src/affix.ts`. The scanner reads the decorator's body, where the name
+ * is not written, so the part reaches the package alone.
+ */
+const widgetHost = {
+  'DATA-PCT-PART': 'widget-root',
+};
+
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  styleUrl: './widget.scss',
+  host: {
+    ...widgetHost,
+  },
+})
+export class PctWidget {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * The class's code names a part, as `chips.ts` and `select.base.ts` do in the library. It is
+   * no `host` block, so the counter that holds one reads the decorator's body and not the file.
+   */
+  protected label(): HTMLElement | null {
+    return this.host.nativeElement.querySelector('[data-pct-part="label"]');
+  }
+}

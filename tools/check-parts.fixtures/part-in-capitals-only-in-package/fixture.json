@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "The attribute's name in capitals in an object spread into a component's `host` block, the shape `...fitHost` has in `field/src/affix.ts`. The scanner reads the decorator's body and sees no part there; the package carries one, `hostAttrs` holding `'DATA-PCT-PART', 'widget-root'` as written (measured through ngc in partial mode and the linker, the class given the `value()` its template calls; the class in `package.json` carries the definition's own `consts`, `hostAttrs` and functions). The DOM lowercases the name into a part a consumer's selector matches. A package read comparing the name as written read none, and the case passed every point; one taking it in any case says it at point 2, as a part the sources cannot see."
+}
