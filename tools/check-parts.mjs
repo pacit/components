@@ -902,8 +902,8 @@ const pairAttributes = (attrs) => {
  * A call counts when its instruction is one of the four that bind a name — an attribute, a
  * property, a DOM property, a two-way property — and its first argument IS the name, in any case,
  * as `@HostBinding('attr.DATA-PCT-PART')` leaves it. The three property kinds set no attribute
- * at all, so no part either, and they are counted all the same: the source read refuses any
- * binding of the name, and the two reads hold one rule. A chained call,
+ * at all, so no part either, and they are counted all the same, as the source read refuses
+ * any input of the name (it refuses `[class.…]` and `[style.…]` of it too). A chained call,
  * `ɵɵattribute('title', a)('lang', b)('data-pct-part', c)`, is the instruction at its root.
  */
 const BINDINGS = new Set([

@@ -638,11 +638,12 @@ a directive whose part is not exported from the entrypoint fires point 2
 
 > **Not held:** a template kept in a constant and handed to the decorator by shorthand
 > (`template,`) is not refused by point 1, which wants `template:`. A part written or bound
-> there, in any view, reaches the package read alone, and point 2 refuses the class as one the
-> scanner cannot see. A part of a class no entrypoint exports reaches neither read, as the
-> package read visits exported classes alone — save a base's host binding, which it follows to
-> the class extending it. Neither read follows `hostDirectives`: a host directive's host block
-> is read on the directive, not on the component it is applied to.
+> there, in any view, reaches the package read alone, which refuses it: at point 2 as a class
+> the scanner cannot see, or at point 3 for a binding on a class whose `host` block it reads. A
+> part of a class no entrypoint exports reaches neither read, as the package read visits
+> exported classes alone — save a base's host binding, which it follows to the class extending
+> it. Neither read follows `hostDirectives`: a host directive's host block is read on the
+> directive, not on the component it is applied to.
 
 ---
 
