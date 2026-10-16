@@ -1,0 +1,14 @@
+<!-- The reference's pair, and beside it, outside any ICU, a stop with a bracketed name holding
+     a quote before its `tabindex`: Angular's lexer reads the name up to its closing bracket, and
+     nothing after the quote closes it. No `<` in an expression, a string or a text stands
+     before the stop. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+</div>
+<span class="pct-pair__more" [it's]="more()" tabindex="0">more</span>

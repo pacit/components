@@ -1340,9 +1340,11 @@ const checkAria = ({
       throw new AriaError(
         'denominator',
         `${template.file}: the parsed tree holds a tag at offset ${unscanned[0]} ` +
-          `(\`${opening(unscanned[0])}\`), and the tag scan never found it — a \`<\` before ` +
-          `it, in an expression, a string or a text, reads to the scan as a tag that swallows ` +
-          `this one, and points 4 and 8, which start from the scan, would not examine it`,
+          `(\`${opening(unscanned[0])}\`), and the tag scan never found it — a quote Angular ` +
+          `reads as part of a bracketed name (\`[it's]\`), for one, opens one to the scan that ` +
+          `nothing closes, and a \`<\` before it, in an expression, a string or a text, reads ` +
+          `as a tag that swallows it; points 4 and 8, which start from the scan, would not ` +
+          `examine it`,
       );
     // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
     // met. On a reader that reaches every kind of node this never fires; it is what holds that
