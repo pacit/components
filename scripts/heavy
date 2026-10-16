@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# The queue for heavy runs — Stryker, Playwright, vitest, the nx battery — shared by every
+# agent session and terminal on the desk. Several sessions at once ran out of memory: two
+# heavy runs side by side are what the desk cannot hold, whoever starts them (AGENTS.md).
+#
+#   scripts/heavy <command...>
+#
+# - Waits its turn for a free slot (default 1, HEAVY_SLOTS=N for more), first come, first
+#   served. The slots are flock(1) locks in ~/.cache/heavy-queue, so the queue holds across
+#   worktrees and sessions. The wrapper holds the lock; the run ends with its whole scope, so
+#   nothing it left behind holds the slot, and a slot whose wrapper was killed by SIGKILL stays
+#   busy until that run's scope is gone.
+# - Runs the command inside a systemd scope with a memory ceiling (HEAVY_MEMORY, default 6G),
+#   so that the kernel kills the run, not the editor or a Claude session.
+# - Loads nvm (like scripts/with-node), so `scripts/heavy npx …` works from a non-interactive shell.
+#
+#   scripts/heavy --status   who holds a slot and who waits
+set -u
+
+dir="${HOME}/.cache/heavy-queue"
+mkdir -p "$dir"
+slots="${HEAVY_SLOTS:-1}"
+ceiling="${HEAVY_MEMORY:-6G}"
+swap="${HEAVY_SWAP:-1G}"
+
+# A slot is busy while its lock is held, or while the scope of the run that held it is still
+# active: a wrapper killed by SIGKILL drops the lock, and its run must not overlap the next.
+busy() {
+  local unit=""
+  flock -n "$dir/slot-$1.lock" true 2>/dev/null || return 0
+  [ -e "$dir/slot-$1.unit" ] && unit=$(cat "$dir/slot-$1.unit")
+  [ -n "$unit" ] && systemctl --user is-active --quiet "$unit.scope" 2>/dev/null
+}
+
+# The runs holding a slot. A file left by an earlier run, or by a larger HEAVY_SLOTS, is not.
+holders() {
+  local f n
+  for f in "$dir"/slot-*.info; do
+    [ -e "$f" ] || continue
+    n="${f##*/slot-}"
+    n="${n%.info}"
+    if busy "$n"; then echo "$1$(cat "$f")"; fi
+  done
+}
+
+# The live waiters, oldest first: the name carries the start in nanoseconds (19 digits, so the
+# names sort by it). A file whose wrapper is gone, stopped (Ctrl-Z) or is another process under
+# a reused pid is removed, so it cannot hold the line.
+waiters() {
+  local f pid state
+  for f in "$dir"/wait-*; do
+    [ -e "$f" ] || continue
+    pid="${f##*-}"
+    state=$(awk '{print $3}' "/proc/$pid/stat" 2>/dev/null)
+    if [ -n "$state" ] && [ "$state" != T ] && grep -qa heavy "/proc/$pid/cmdline" 2>/dev/null; then
+      echo "$f"
+    else
+      rm -f "$f"
+    fi
+  done
+}
+
+if [ "${1:-}" = "--status" ]; then
+  holders "RUNNING  "
+  mapfile -t queue < <(waiters)
+  for f in "${queue[@]}"; do echo "WAITING  $(cat "$f")"; done
+  exit 0
+fi
+
+[ $# -gt 0 ] || { echo "usage: scripts/heavy <command...> | scripts/heavy --status" >&2; exit 2; }
+
+if ! systemctl --user show-environment > /dev/null 2>&1; then
+  echo "[heavy] no systemd user session here (ssh without lingering?), so no memory ceiling" \
+    "can be set; refusing to run unbounded. Run the command directly if that is intended." >&2
+  exit 1
+fi
+
+started="$(date +%H:%M:%S) · $(pwd) · $*"
+waitfile="$dir/wait-$(date +%s%N)-$$"
+echo "wrapper $$ · $started" > "$waitfile"
+trap 'rm -f "$waitfile"' EXIT
+
+# First come, first served: a waiter tries the slots only while fewer than `slots` live waiters
+# came before it, so a newcomer polling at the right moment cannot overtake one that waited.
+announced=0
+while :; do
+  # A waiter stopped with Ctrl-Z lost its file to the others; resumed, it joins at the back.
+  if [ ! -e "$waitfile" ]; then
+    waitfile="$dir/wait-$(date +%s%N)-$$"
+    echo "wrapper $$ · $started" > "$waitfile"
+  fi
+  mapfile -t queue < <(waiters)
+  ahead=0
+  for f in "${queue[@]}"; do
+    [ "$f" = "$waitfile" ] && break
+    ahead=$((ahead + 1))
+  done
+  if [ "$ahead" -lt "$slots" ]; then
+    for ((i = 1; i <= slots; i++)); do
+      exec {fd}> "$dir/slot-$i.lock"
+      if flock -n "$fd"; then
+        unit=""
+        [ -e "$dir/slot-$i.unit" ] && unit=$(cat "$dir/slot-$i.unit")
+        if [ -z "$unit" ] || ! systemctl --user is-active --quiet "$unit.scope" 2>/dev/null; then
+          break 2
+        fi
+      fi
+      exec {fd}>&-
+    done
+  fi
+  if [ "$announced" = 0 ]; then
+    echo "[heavy] queued ($ahead waiting ahead, $slots slot(s)). Holding now:" >&2
+    holders "[heavy]   " >&2
+    announced=1
+  fi
+  sleep 1
+done
+rm -f "$waitfile"
+[ "$announced" = 1 ] && echo "[heavy] slot $i free, starting after waiting." >&2
+
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+# shellcheck disable=SC1091
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# A daemon the run starts would outlive it inside the scope, under the ceiling.
+export NX_DAEMON="${NX_DAEMON:-false}"
+
+# The slot is held by this wrapper and NOT handed to the run: a process the run leaves behind
+# would otherwise keep the lock, and the queue, for as long as it lives. The run gets a named
+# scope, and stopping it — a signal to the wrapper, or the run's own end — stops the whole
+# scope, every process in it: a signal to the top process alone left its children running
+# beside the next run. `--expand-environment=no`: systemd-run expands `$VAR` in the command
+# line by default. `<&0`: a background job's stdin is /dev/null otherwise.
+unit="heavy-$$-$(date +%s%N)"
+echo "$unit" > "$dir/slot-$i.unit"
+# A stop before the run exists is kept and delivered as soon as there is one. Both signals go
+# every time: `systemctl kill` returns 0 for a scope whose unit is loaded before the run's
+# process is inside it, and then reaches nothing (1 of 120 probes).
+stop=0
+halt() {
+  [ -n "${run:-}" ] || return 0
+  systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null
+  kill -TERM "$run" 2>/dev/null
+}
+trap 'stop=1; halt' TERM INT HUP
+systemd-run --user --scope --quiet --collect --expand-environment=no --unit="$unit" \
+  -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@" <&0 {fd}>&- &
+run=$!
+[ "$stop" = 1 ] && halt
+echo "run $run · $unit · $started" > "$dir/slot-$i.info"
+# `wait` returns 128+n when the trap fires; the run's own status comes from a second `wait`.
+while :; do
+  wait "$run"
+  code=$?
+  kill -0 "$run" 2>/dev/null || { wait "$run"; code=$?; break; }
+done
+systemctl --user stop "$unit.scope" 2>/dev/null
+exit "$code"

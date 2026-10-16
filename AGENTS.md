@@ -79,12 +79,12 @@ mutants in seventy on one
 ([0088](docs/decisions/0088-a-row-is-measured-by-its-own-run-and-the-whole-at-night.md)).
 So, before a push:
 
-- `scripts/before-push` — the gates CI runs, without `e2e`: minutes.
+- `scripts/heavy scripts/before-push` — the gates CI runs, without `e2e`: minutes.
 - The spec of the component the change touches, on one engine — CI is the verdict on the
   whole suite, eight machines with retries and no neighbour's load:
 
   ```bash
-  scripts/with-node npx playwright test --config apps/sandbox-e2e/playwright.config.mts slider --project=chromium
+  scripts/heavy npx playwright test --config apps/sandbox-e2e/playwright.config.mts slider --project=chromium
   ```
 
 - The mutants of the files the change touches, from the workspace root, then the merge: a
@@ -92,20 +92,34 @@ So, before a push:
   tolerance. A full run is for a record that is not there yet.
 
   ```bash
-  scripts/with-node npx stryker run libs/components/stryker.config.json --mutate libs/components/slider/src/slider.ts
+  scripts/heavy npx stryker run libs/components/stryker.config.json --mutate libs/components/slider/src/slider.ts
   ```
 
   ```bash
   scripts/with-node node tools/check-mutation.mjs --write
   ```
 
-- Anything heavier than a gate runs inside a memory ceiling, so that the kernel kills the run
-  and not the editor (2026-10-06, 10:56: the kernel's OOM killer took a 2.6 GB process out of the editor's
-  scope and systemd tore the scope down, 14 GB at its peak):
+### One heavy run at a time, through `scripts/heavy`
 
-  ```bash
-  systemd-run --user --scope -p MemoryMax=6G -- scripts/with-node npx stryker run libs/components/stryker.config.json --mutate libs/components/slider/src/slider.ts
-  ```
+Several agent sessions share the desk, and two heavy runs side by side are more than it holds
+(2026-10-06, 10:56: the kernel's OOM killer took a 2.6 GB process out of the editor's scope
+and systemd tore the scope down, 14 GB at its peak). So every run heavier than a gate — the
+battery, Playwright, vitest, Stryker, `nx test`/`e2e`/`affected`/`run-many`, a screen-reader
+pass — goes through `scripts/heavy`:
+
+- **It queues.** One slot by default (`HEAVY_SLOTS`), a `flock` in `~/.cache/heavy-queue`
+  shared by every worktree and session, first come, first served. The wrapper holds it, not
+  the run, and the run ends with its whole scope: stopping the wrapper stops every process
+  of the run, and nothing the run leaves behind keeps the queue. A run that finds the
+  slot taken waits and says who holds it.
+- **It caps memory.** The command runs in a systemd scope with `MemoryMax=6G` (`HEAVY_MEMORY`)
+  and `MemorySwapMax=1G`, so the kernel kills the run and not the editor.
+- **It loads nvm**, like `scripts/with-node`, so the two are not stacked, and runs nx
+  without its daemon, which would outlive the run inside the ceiling.
+
+A queued run can wait longer than an agent's shell call allows: start it in the background
+and wait for its end. `scripts/heavy --status` shows the run holding the slot and the ones
+waiting.
 
 ## What a mutant survives on
 

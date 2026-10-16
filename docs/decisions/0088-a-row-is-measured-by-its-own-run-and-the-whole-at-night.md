@@ -115,3 +115,15 @@ day after a merge. Measured against 52 hours in fourteen days, and a killed edit
   the tolerance on most moved ones; the six commits above would have reddened a night each,
   and a red that is expected is a red nobody reads.
 - **More workers on the desk.** The desk is the binding resource, and it is shared.
+
+## Amended 2026-10-16: the ceiling comes with a queue
+
+**Point 4 is `scripts/heavy <command>`.** It runs the command under the same ceiling —
+`MemoryMax=6G`, plus `MemorySwapMax=1G` — and first waits for the one slot it shares with
+every worktree and agent session on the desk, a `flock` in `~/.cache/heavy-queue`, in the
+order the runs asked for it.
+
+**Why.** A ceiling bounds one run, not two. Several sessions now work on the desk at once,
+each of them under this record, and each started its own battery, spec or narrow mutation
+run when it was ready: every run kept under its ceiling, and the desk ran out of memory
+anyway. The queue makes them take turns; the ceiling still decides which process dies.
