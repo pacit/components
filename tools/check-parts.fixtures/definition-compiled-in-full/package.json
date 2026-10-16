@@ -7,11 +7,19 @@
     {
       "entrypoint": "./widget",
       "className": "PctWidget",
-      "parts": [
-        "label",
-        "value"
-      ],
-      "dynamic": 1
+      "declaration": {
+        "full": true,
+        "consts": [
+          [
+            "data-pct-part",
+            "label"
+          ],
+          [
+            "data-pct-part",
+            "value"
+          ]
+        ]
+      }
     },
     {
       "entrypoint": "./widget",

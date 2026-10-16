@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "documentation",
+  "$reason": "A base component no entrypoint exports binds the name in its own template, and the component extending it renders a template of its own. `ɵɵInheritDefinitionFeature` hands down host bindings, never a view, so the binding reaches no element of the subclass — and the sources hold the same, a template is not merged. A read summing every binding up the chain fires point 3 here; the case fires on its own defect, the card silent about `value`."
+}

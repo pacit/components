@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "A class the package carries compiled in full (`ɵɵdefineComponent`), with no declaration. The read takes bindings off what the JIT compiler evaluates for a definition, and here it evaluates nothing: its parts still read off `consts`, and its bindings would read as none whatever its template binds."
+}
