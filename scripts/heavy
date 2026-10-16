@@ -132,12 +132,14 @@ export NX_DAEMON="${NX_DAEMON:-false}"
 # line by default. `<&0`: a background job's stdin is /dev/null otherwise.
 unit="heavy-$$-$(date +%s%N)"
 echo "$unit" > "$dir/slot-$i.unit"
-# A stop before the run exists, or before systemd has registered its scope, is kept and
-# delivered to the run's own process as soon as there is one.
+# A stop before the run exists is kept and delivered as soon as there is one. Both signals go
+# every time: `systemctl kill` returns 0 for a scope whose unit is loaded before the run's
+# process is inside it, and then reaches nothing (1 of 120 probes).
 stop=0
 halt() {
   [ -n "${run:-}" ] || return 0
-  systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null || kill -TERM "$run" 2>/dev/null
+  systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null
+  kill -TERM "$run" 2>/dev/null
 }
 trap 'stop=1; halt' TERM INT HUP
 systemd-run --user --scope --quiet --collect --expand-environment=no --unit="$unit" \
