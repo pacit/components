@@ -366,7 +366,8 @@ const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
  * in its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM; an
  * `<ng-content>` in any case, which the tree holds as a projection named `ng-content`. An
  * `<ng-template>` is no element of the walk, the tree holding it as a template, and one written
- * in capitals is an element the type check refuses (`NG8001`).
+ * in capitals is an element the type check refuses (`NG8001`, with no `CUSTOM_ELEMENTS_SCHEMA`,
+ * which nothing here declares).
  */
 const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-content']);
 /**
