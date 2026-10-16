@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container aria-label=\"Elsewhere\">`) carries `aria-label` —",
+  "$reason": "`option-under-a-non-bindable-ng-content` with an `<ng-container>` where the projection stood. Under `ngNonBindable` a projection is an element of the DOM, and its name stands; a container is still a container (`ɵɵdomElementContainer`, measured with `ngc` 22.2.1), with no directive matched there, so its name reaches no element, and the option is the listbox's through a `<div>` with no role and nothing ARIA reads. A reader that took a container under `ngNonBindable` for an element, as a projection there is, let the name through to point 9, or past it."
+}

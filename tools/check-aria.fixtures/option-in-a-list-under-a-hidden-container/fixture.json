@@ -1,6 +1,6 @@
 {
-  "point": 9,
-  "check": "context",
-  "message": "<div role=\"list\"> (list)",
-  "$reason": "An `aria-hidden` on an `<ng-container>`, which renders as a comment: the attribute reaches no element, and the `list` and its option are in the tree under the listbox (measured at run time). A reading that took an Angular container's `aria-hidden` for one that hides passed it."
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container aria-hidden=\"true\">`) carries `aria-hidden` —",
+  "$reason": "An `aria-hidden` on an `<ng-container>`, which renders as a comment: the attribute reaches no element, and the `list` and its option are in the tree under the listbox (measured at run time). A reading that took an Angular container's `aria-hidden` for one that hides passed it; one that looked through the container refused the option on point 9, and said nothing of the attribute that hides nothing. What is written on a container is refused for itself, as on a projection."
 }

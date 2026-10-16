@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, and between it and an option of its own an `<ng-container>` a directive is bound on, with `[ariaLabel]`. Bound on a container, a property compiles only where a directive takes it as an input (NG8002, measured with `ngc` 22.2.1), so the name is the directive's, and the container draws a comment whatever the directive takes: it stands between no two roles, and the option stands under the menu, which is refused. A walk that did not look through Angular's own tag read the container as a role-less element with a global ARIA attribute, as an `<NG-CONTAINER>` is one (`option-under-a-named-container-in-capitals`), and named it in place of the menu."
+}
