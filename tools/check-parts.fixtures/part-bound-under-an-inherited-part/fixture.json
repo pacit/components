@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "`PctMarkerOutline` binds the name in its `host` block, `'[attr.data-pct-part]': 'part()'`, under the static part it inherits from `PctMarker`. A binding is point 3's whatever else the chain writes: point 1 counts the classes that write a static part, and a count taking the binding in fires point 1 here, naming two writers where the defect is an expression. The package data is the reference's, without the binding, so that point 2 agrees and point 3 fires from the sources."
+}

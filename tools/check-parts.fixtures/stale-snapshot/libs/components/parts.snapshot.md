@@ -17,5 +17,6 @@ from what the browser really gets.
 
 ```
 ./widget PctMarker widget-marker
+./widget PctMarkerOutline widget-marker
 ./widget PctWidget label
 ```

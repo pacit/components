@@ -623,10 +623,12 @@ at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 compares `libs/components/parts.snapshot.md` with the current inventory, and point 6 holds
 [`req-api-parts-unique`](#req-api-parts-unique) below. Points 1 and 2 guard
 the denominator: every decorator and every occurrence of the attribute in a template or a
-decorator must be recognised, and the list of parts is built **twice** — from the sources and
-from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking, and the binding
-instructions of every view of a class and of its host function and its bases')
-**Control:** `tools/check-parts.fixtures/` — 50 inputs, each rejected on its own
+decorator must be recognised, a host takes its part from one class of its chain (Angular keeps
+the nearest class's, so a second is a part no element carries), and the list of parts is built
+**twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
+linking, and the binding instructions of every view of a class and of its host function and its
+bases')
+**Control:** `tools/check-parts.fixtures/` — 53 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;

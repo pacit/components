@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "The same part twice, at either end of a chain: the base and `PctMarkerOutline` each write `widget-marker`, and `PctMarker` between them writes none. Angular keeps the subclass's, the base's value too, so the package compiled from the chain's declarations, the cards and the snapshot agree with the sources, and only the count of writers over the whole chain refuses it. A refusal comparing the two values, or counting the parent's own block in place of its chain, lets it through every point."
+}

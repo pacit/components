@@ -58,8 +58,9 @@ and is not on this list is the gap this requirement exists to name.
 `tools/check-texts.mjs` (target `check-texts`) — `host` attributes and the literals in their
 bindings, merged the same way, and point 4 reads signal factories per FILE rather than per
 class, so a base's default is read where it stands;
-`tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, and
-the template through `templateUrl`, which a base cannot pass on;
+`tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, a
+subclass's part replacing its base's as Angular's merge does, and a chain writing one twice a
+denominator fault; and the template through `templateUrl`, which a base cannot pass on;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
 where nothing is inherited;

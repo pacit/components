@@ -4,7 +4,7 @@
  * VERSIONED, so a consumer's selector survives an update. They are the one route into a
  * component this library leaves (0013) and the one public API whose change gives no red test.
  *
- *  1. DENOMINATOR: every decorator parsed, base read, template owned and parsed, occurrence read,
+ *  1. DENOMINATOR: every decorator, base, template and occurrence read, one host part per chain,
  *  2. SET: the parts read from the sources match those read from the BUILT package,
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
@@ -398,7 +398,9 @@ const checkParts = (input) => {
   // declares is merged INTO the classes that extend it, because that is where the linker
   // puts it (`ɵɵInheritDefinitionFeature` merges `hostAttrs` down the chain); a base no
   // entrypoint exports stops being a class of its own, because that is what the package
-  // does with it. A template is not merged: `templateUrl` is the subclass's own, and a base
+  // does with it. The merge is Angular's: `mergeHostAttrs` lets an attribute replace the one
+  // of the same name a class inherits, so a host carries the part of the nearest class that
+  // writes one. A template is not merged: `templateUrl` is the subclass's own, and a base
   // cannot pass one on. A base the scan cannot see is a denominator fault — the package
   // read would then find its parts on the subclass and the source read never would.
   const declared = new Map(classes.map((k) => [k.className, k]));
@@ -423,18 +425,52 @@ const checkParts = (input) => {
         `of what ships (lesson-100).`,
     );
   const whole = (k, seen = new Set()) => {
-    if (k.base === null || seen.has(k.className)) return k;
+    const writes = k.parts.size ? [k] : [];
+    if (k.base === null || seen.has(k.className)) return { ...k, writes };
     seen.add(k.className);
     const base = whole(declared.get(k.base), seen);
     return {
       ...k,
-      parts: new Set([...base.parts, ...k.parts]),
+      parts: k.parts.size ? k.parts : base.parts,
       dynamic: base.dynamic + k.dynamic,
+      writes: [...base.writes, ...writes],
     };
   };
   const resolved = classes
     .map((k) => whole(k))
     .filter((k) => !(extended.has(k.className) && !exported.has(k.className)));
+
+  // One element, one part. A chain in which two classes write a static part hands the
+  // element the nearest one, and the other is a part the sources write and no element of
+  // the class carries: `PctMarker` writing `widget-marker` over its base's `widget-base` links
+  // to `hostAttrs` with `widget-marker` alone (measured through ngc in partial mode). It drops
+  // out of the inventory as quietly as a name the scanner cannot read, so it is refused here,
+  // whatever the two values. A binding is point 3's, whatever else the chain writes. With
+  // this refusal standing a chain has one writer at most, and the merge above gives what a
+  // union would; it is Angular's so that a second writer is named here, and not at point 2 as
+  // a part that never reached the package.
+  const overwritten = resolved.filter((k) => k.writes.length > 1);
+  if (overwritten.length)
+    throw new PartsError(
+      'denominator',
+      `${overwritten.length} classes take a \`host\` part from more than one class of ` +
+        `their chain:\n` +
+        list(
+          overwritten.map(
+            (k) =>
+              `${k.file}: ${k.className} — ` +
+              k.writes
+                .map(
+                  (w) =>
+                    `${w.className} writes \`${sorted(w.parts).join(', ')}\``,
+                )
+                .join(', '),
+          ),
+        ) +
+        `\n    An element carries one \`${ATTRIBUTE}\`, and Angular keeps the nearest ` +
+        `class's (\`mergeHostAttrs\`): every other is a part the sources write and no element ` +
+        `of the class carries. Write it in one class of the chain.`,
+    );
 
   // Parts from the sources: the `host` block plus the template named by `templateUrl`.
   const fromSources = new Map(); // className -> { entrypoint, file, parts, dynamic }

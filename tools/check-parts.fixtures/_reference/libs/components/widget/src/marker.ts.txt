@@ -11,8 +11,22 @@ import { PctMarkerBase } from './base';
 export class PctMarker extends PctMarkerBase {}
 
 /**
- * A second directive in the file and no part of its own, as `popover.ts` and `tooltip.ts` keep
- * a trigger beside the component. Point 1 reads each decorator's body: a pair counted over the
+ * A directive extending an exported one and writing no part: it carries `PctMarker`'s, merged
+ * into it as the base's host block is merged into `PctMarker`. The reference passes only while
+ * the gate reads inheritance that way — a part a class inherits on the class extending it, and a
+ * part the class writes over a base that writes none.
+ */
+@Directive({
+  selector: '[pctMarkerOutline]',
+  host: {
+    class: 'pct-marker-outline',
+  },
+})
+export class PctMarkerOutline extends PctMarker {}
+
+/**
+ * A directive in the file with no part and no base, as `popover.ts` and `tooltip.ts` keep a
+ * trigger beside the component. Point 1 reads each decorator's body: a pair counted over the
  * whole file would be one this class never wrote, and the reference would stop passing.
  */
 @Directive({
