@@ -1,0 +1,17 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The reference base with its `title` given a word, under a marker that writes `TITLE` rather
+ * than `title` — see `marker.ts`.
+ */
+@Directive({
+  host: {
+    role: 'note',
+    title: 'Note',
+    '[attr.aria-description]': "count() ?? '–'",
+  },
+})
+export abstract class PctMarkerBase {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly count = input<number | null>(null);
+}

@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "A literal with a word in a SUBCLASS's own host binding: `description() || 'Marker'`. The other host-binding case puts its word on the base, which is both extended and without a base of its own; this one holds that point 3 reads the bindings of a class that extends another as well, in the file that writes them."
+}

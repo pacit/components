@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A speaking attribute with a word in a SUBCLASS's own host block, written over its base's empty `title`. Every other host case of point 3 puts its word on a base or a root; this one holds that point 3 judges a class that extends another as well, in the file that writes the string."
+}

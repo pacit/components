@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "A literal with a word in a BASE's host binding: `count() ?? 'None'`. Both the base's and the subclass's host bindings run on the subclass's element, so the string reaches the user through every class that extends the base. Point 3 reads each class's own bindings, and this one is the base's, judged in the file that writes it."
+}

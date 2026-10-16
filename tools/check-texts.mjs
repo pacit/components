@@ -808,11 +808,24 @@ const checkTexts = (input) => {
   // no entrypoint exports stops being a class of its own, because that is what the package
   // does with it. A decorated class nobody extends is untouched by this and still has to be
   // in the package — the rule below is about a base, not about any class the read missed.
+  //
+  // The merge is Angular's: `ɵɵInheritDefinitionFeature` runs `mergeHostAttrs` down the
+  // chain, and an attribute a class writes replaces the one of the same name it inherits —
+  // the name compared with `===` — so an element carries the attribute of the nearest class
+  // that writes it. Measured through ngc in partial mode and the linker: `PctMarker` writing
+  // `title: '*'` over its base's `title: ''` links to `hostAttrs` with `*` alone, and a
+  // `TITLE` beside a base's `title` leaves both. A union would compare the base's value
+  // against a package that never got it, and name a stale `dist` for the cause. Classes and
+  // styles merge otherwise (a union of classes, styles by property), and no point reads them.
+  //
+  // A chain that writes one attribute twice is not refused, unlike in `check-parts`: there the
+  // shadowed value is a part missing from the inventory, here it is a string still written in
+  // a file, and point 3 judges every file's own `host` block, a base's included.
   const extended = new Set(
     classes.map((k) => k.base).filter((base) => base !== null),
   );
-  const merge = (k, seen = new Set()) => {
-    if (k.base === null || seen.has(k.className)) return k;
+  const carried = (k, seen = new Set()) => {
+    if (k.base === null || seen.has(k.className)) return k.attributes;
     seen.add(k.className);
     const base = declared.get(k.base);
     if (base === undefined)
@@ -824,13 +837,13 @@ const checkTexts = (input) => {
           `class in the package, and point 2 would compare the half declared here against ` +
           `the whole of what ships`,
       );
-    const whole = merge(base, seen);
-    k.attributes = [...whole.attributes, ...k.attributes];
-    k.literals = [...whole.literals, ...k.literals];
-    k.base = null;
-    return k;
+    const own = new Set(k.attributes.map(([name]) => name));
+    return [
+      ...carried(base, seen).filter(([name]) => !own.has(name)),
+      ...k.attributes,
+    ];
   };
-  for (const k of classes) merge(k);
+  const shipped = new Map(classes.map((k) => [k.className, carried(k)]));
 
   const fromSources = new Map(
     classes
@@ -872,10 +885,10 @@ const checkTexts = (input) => {
   const ownerOf = (file) => used.get(file)?.[0]?.className ?? file;
 
   const speakingInSources = new Set();
-  // The classes the package has, with what they inherited already merged in — a base that
-  // travels inside its subclasses must not be compared under a name the package has not got.
+  // The classes the package has, with what their chain hands them — a base that travels
+  // inside its subclasses must not be compared under a name the package has not got.
   for (const k of fromSources.values())
-    for (const [name, value] of k.attributes)
+    for (const [name, value] of shipped.get(k.className))
       if (SPEAKING_ATTRIBUTES.has(name))
         speakingInSources.add(`${k.className} ${name}=${value}`);
   for (const s of scans)
@@ -940,6 +953,10 @@ const checkTexts = (input) => {
     for (const a of s.scanner.attributes)
       if (LETTER.test(a.value))
         attributeViolations.push(`${s.file}:${a.line}: ${a.name}="${a.value}"`);
+  // A class answers here for its own `host` block, in its own file, and not for what its chain
+  // hands it: an inherited string is judged on the base that writes it, which point 1 holds
+  // among `classes`, and a shadowed one as well — it is written, and it ships the day a class
+  // extends that base without writing over it.
   for (const k of classes)
     for (const [name, value] of k.attributes)
       if (SPEAKING_ATTRIBUTES.has(name) && LETTER.test(value))

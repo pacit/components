@@ -6,12 +6,18 @@ import { PctMarkerBase } from '@somebody/else';
  * with a static attribute whose key has NO quotes (`role`) beside a binding
  * whose key does. Prettier writes them exactly like that and the scanner must see
  * both.
+ *
+ * Its `title` replaces the base's empty one, as Angular merges a chain: the attribute of the
+ * nearest class that writes it, so the package carries `*` alone. Neither value has a letter,
+ * so only a merge other than Angular's can refuse this input — a union would name the base's
+ * `title` as one the package never got.
  */
 @Directive({
   selector: '[pctMarker]',
   host: {
     class: 'pct-marker',
     'data-pct-part': 'widget-marker',
+    title: '*',
     '[attr.aria-label]': 'description()',
   },
 })

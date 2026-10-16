@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A speaking attribute with a word in a BASE's host block, under a subclass that writes the same attribute over it. Angular keeps the nearest class's value, so the package carries the marker's `*` and the two reads agree only under that merge — a union names the base's `Note` at point 2 as an attribute the package never got, with a stale `dist` for its cause. The string is still written, and it ships the day a class extends the base without writing over it, so point 3 refuses it in the file that writes it."
+}

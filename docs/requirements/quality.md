@@ -55,9 +55,12 @@ and is not on this list is the gap this requirement exists to name.
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
 `extends`, and a base the scan cannot see is a denominator fault;
-`tools/check-texts.mjs` (target `check-texts`) — `host` attributes and the literals in their
-bindings, merged the same way, and point 4 reads signal factories per FILE rather than per
-class, so a base's default is read where it stands;
+`tools/check-texts.mjs` (target `check-texts`) — `host` attributes, merged the same way for
+the comparison with the package, a subclass's attribute replacing its base's of the same exact
+name as Angular's merge does; each class's own attributes and binding literals judged in the
+file that writes them, a shadowed one included, so a chain writing one twice is no fault; and
+point 4 reads signal factories per FILE rather than per class, so a base's default is read
+where it stands;
 `tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, a
 subclass's part replacing its base's as Angular's merge does, and a chain writing one twice a
 denominator fault; and the template through `templateUrl`, which a base cannot pass on;
@@ -74,12 +77,23 @@ and the part list is the declaration's own
 **Control:** `tools/check-aria.fixtures/base-not-read/`,
 `tools/check-texts.fixtures/base-without-declaration/` and
 `tools/check-texts.fixtures/speaking-attribute-on-a-base-host/` — the merge proved by a
-speaking attribute, the one kind the reference input cannot carry without being a violation
-itself; `tools/check-parts.fixtures/base-not-read/`, with the reference's `PctMarkerBase`
-whose part the package puts on `PctMarker` and the source read has to put there too. The
-four gates that read what a base cannot pass on have no fixture, deliberately: the thing that
-would be inherited is not, by the feature named above, and a fixture of it would measure
-Angular rather than the gate
+speaking attribute with a word, which the reference input cannot carry without being a
+violation itself — with Angular's merge held by the reference's `title`, written over its
+base's without a letter, which only a merge other than Angular's refuses, and the merge and
+each class judged in its own file by six more:
+`tools/check-texts.fixtures/speaking-attribute-shadowed-by-a-subclass/` (a shadowed string
+refused in the file that writes it),
+`tools/check-texts.fixtures/speaking-attribute-under-a-name-in-another-case/` (names compared
+exactly), `tools/check-texts.fixtures/speaking-attribute-on-the-root-of-a-chain/` (the whole
+chain followed), `tools/check-texts.fixtures/speaking-attribute-written-over-a-base/` (a
+subclass's own block judged), `tools/check-texts.fixtures/literal-in-a-base-host-binding/` (a
+base's binding judged on the base) and
+`tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
+judged); `tools/check-parts.fixtures/base-not-read/`, with the
+reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
+to put there too. The four gates that read what a base cannot pass on have no fixture,
+deliberately: the thing that would be inherited is not, by the feature named above, and a
+fixture of it would measure Angular rather than the gate
 **Lessons:** [`lesson-100`](../lessons.md#lesson-100)
 
 ---
