@@ -790,14 +790,15 @@ const readOffAProjection = (name) =>
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
  * it makes a stop; what is written on it, past what Angular takes as the projection's own
- * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails point
- * 1. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor descends
- * into it, so of two at one offset — an inline template and the element, the `<ng-template>` or
- * the `<ng-content>` it wraps — the inner one is the one kept. Each element's name is recorded too
- * (`names`), as `localName` reads it; a template's or a projection's tag keeps the name the scan
- * reads off the text, on which no verdict turns. So is the markup an element draws that the tree
- * does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each
- * `@content` block, by the offset it starts at (`contentBlocks`), its tags read as any others are.
+ * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails
+ * point 1. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor
+ * descends into it, so of two at one offset — an inline template and the element, the
+ * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
+ * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag
+ * keeps the name the scan reads off the text, on which no verdict turns. So is the markup an
+ * element draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the
+ * offset it starts at. And each `@content` block, by the offset it starts at (`contentBlocks`),
+ * its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
