@@ -1,6 +1,6 @@
 {
-  "point": 9,
-  "check": "context",
-  "message": "<div role=\"option\"> stands under <div role=\"list\"> (list)",
-  "$reason": "An `aria-hidden` on an `<ng-content>`, whose own content Angular draws when nothing is projected: the option and a comment inside the `list`, the attribute reaching no element (measured, Angular 22.2), so the option is in the tree under the `list`. The tree holds the tag as a projection named `ng-content`, whatever its case or namespace. A walk that did not count a projection among Angular's own tags read it as an element that hides and passed the option."
+  "point": 1,
+  "check": "denominator",
+  "message": "carries `aria-hidden`",
+  "$reason": "An `aria-hidden` on an `<ng-content>`, whose own content Angular draws when nothing is projected: the option and a comment inside the `list`, the attribute reaching no element (measured, Angular 22.2), so the option is in the tree under the `list`. A walk that did not count a projection among Angular's own tags read it as an element that hides, and passed the option; one that did refused the option on point 9, and said nothing of the attribute that hides nothing. What is written on a projection is refused for itself, whatever its case or namespace."
 }

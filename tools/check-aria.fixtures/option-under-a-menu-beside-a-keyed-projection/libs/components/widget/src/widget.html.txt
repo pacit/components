@@ -35,14 +35,13 @@
   }
 </span>
 
-<!-- The panel: a listbox owning its options directly and THROUGH a heading's group, which is
-     the relation point 9 reads off the tree — the group is one of the two contexts an option
-     may stand in, and nothing else may. It carries the consumer's name as well, as the APG's
-     combobox has it: a container named as a whole, around items that are its own. -->
+<!-- The panel a menu, the consumer's options projected into it by an `<ng-content>` carrying
+     only what Angular reads off one — its `select`, in capitals, a key for an outer `select`
+     and an inline template's attribute — and an option of its own standing in it. -->
 @if (open()) {
 <div
   class="pct-widget__panel"
-  role="listbox"
+  role="menu"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 >
@@ -50,15 +49,14 @@
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>
+  <ng-content *ngIf="native()" SELECT="[pctOption]" ngProjectAs="[pctOption]" />
   <div role="option">Anywhere</div>
 </div>
 }
 
-<!-- One message line, and the error takes it — and says it to nobody. Beside it, the hint the
-     consumer projects, the part written on the `<ng-content>`, which draws no element. -->
-<ng-content select="[pctHint]" data-pct-part="hint" />
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
 @if (showError()) {
-<span class="pct-widget__error" data-pct-part="error">{{ error() }}</span>
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
 } @else if (hint()) {
 <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
 }

@@ -35,12 +35,14 @@
   }
 </span>
 
-<!-- The panel a menu, the consumer's options projected into it with the role written on the
-     `<ng-content>`, and an option of its own standing in it. -->
+<!-- The panel: a listbox owning its options directly and THROUGH a heading's group, which is
+     the relation point 9 reads off the tree — the group is one of the two contexts an option
+     may stand in, and nothing else may. It carries the consumer's name as well, as the APG's
+     combobox has it: a container named as a whole, around items that are its own. -->
 @if (open()) {
 <div
   class="pct-widget__panel"
-  role="menu"
+  role="listbox"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 >
@@ -48,8 +50,10 @@
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>
-  <ng-content role="option" />
   <div role="option">Anywhere</div>
+  <!-- The consumer's options, keyed for an outer `select` by an `ngProjectAs` in lower case,
+       which Angular does not read as one. -->
+  <ng-content select="[pctOption]" ngprojectas="[pctOption]" />
 </div>
 }
 

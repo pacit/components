@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, the consumer's options projected into it by an `<ng-content>` carrying only what Angular reads off one: its `select` spelled `SELECT`, which the compiler reads in any case, `ngProjectAs`, and an inline template's `*ngIf`, which the template takes and the tree copies onto the projection. None of them is written for an element, so point 1 lets the projection through, and the option of the template's own is what stands where it may not. A reader that took `select` in its case alone, or refused `ngProjectAs` or the template's attribute, refused the projection on point 1."
+}

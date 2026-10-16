@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "carries `role`, `tabindex`",
+  "$reason": "The reference's panel made a menu whose items are the consumer's, the role and the stop of a menu item written on the `<ng-content>` that projects them. Angular draws no element for a projection and renders none of its attributes: `ngc` (22.2.1, strict templates) hands them to `ɵɵprojection` as keys an outer `select` matches, and the items are whatever the consumer projects, as they are. Read as nothing, the template passed every point, the menu holding nothing the gate reads; read as an element, the projection was a menu item the menu owns. Either way the role and the stop reached nobody, the defect of `lesson-65`, and it is refused for itself."
+}

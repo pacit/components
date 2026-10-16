@@ -1,6 +1,0 @@
-{
-  "point": 4,
-  "check": "forwarded",
-  "message": "holds no control the template draws",
-  "$reason": "The reference's first group carrying the consumer's name around what the consumer projects, the list's role and a name of its own written on the `<ng-content>`. Angular draws no element for a projection and renders none of its attributes: `ngc` (22.2.1, strict templates) hands them to `ɵɵprojection` as an array read only to match an outer `select`. So the group holds no control the template draws. Read as an element with what is written on it, the projection was a named listbox standing in the group, and the group passed; read as no element, the tag scan took the role off its text and made it a widget the walk gave no path, refused on point 1."
-}
