@@ -9,6 +9,10 @@
       "className": "PctWidget",
       "consts": [
         [
+          null,
+          100
+        ],
+        [
           "data-pct-part",
           "label",
           1,
@@ -26,7 +30,7 @@
         "widget-root"
       ],
       "functions": [
-        "function PctWidget_Template(rf, ctx) {\n  if (rf & 1) {\n    jit___projectionDef_3();\n    jit___domElementStart_4(0,'span',0);\n    jit___projection_5(1);\n    jit___domElementEnd_6();\n    jit___domElementStart_4(2,'span',1);\n    jit___text_7(3);\n    jit___domElementEnd_6();\n  }\n  if (rf & 2) {\n    jit___advance_8(3);\n    jit___textInterpolate_9(ctx.value());\n  }\n}"
+        "function PctWidget_Template(rf, ctx) {\n  if (rf & 1) {\n    jit___projectionDef_6();\n    jit___domElementStart_0(0,'span',1);\n    jit___projection_7(1);\n    jit___domElementEnd_2();\n    jit___domElementStart_0(2,'span',2);\n    jit___text_1(3);\n    jit___domElementEnd_2();\n    jit___domTemplate_8(4,PctWidget_Defer_4_Template,2,0)(5,PctWidget_DeferLoading_5_Template,2,0);\n    jit___defer_9(6,4,null,5,null,null,0,null,jit___deferEnableTimerScheduling_10);\n    jit___deferOnIdle_11();\n  }\n  if (rf & 2) {\n    jit___advance_12(3);\n    jit___textInterpolate_13(ctx.value());\n  }\n}"
       ]
     },
     {

@@ -861,16 +861,19 @@ const readCard = (file, content) => {
  * side in the package.
  *
  * The pairs and the count take the name in any case. `consts`, `hostAttrs` and the
- * instruction keep `'DATA-PCT-PART'` as written — a host attribute spread from an object, a
- * binding from `@HostBinding('attr.DATA-PCT-PART')` (both measured through ngc in partial
- * mode and the linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's
- * selector matches, and one the source scanner never sees.
+ * instruction keep `'DATA-PCT-PART'` as written — a template kept in a constant and handed to
+ * the decorator by shorthand, a host attribute spread from an object, a binding from
+ * `@HostBinding('attr.DATA-PCT-PART')` (each measured through ngc in partial mode and the
+ * linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's selector
+ * matches, and one the source scanner never sees. A slot that is no name is no part: an
+ * `@loading (after 100ms)` block puts `[null, 100]` into `consts`.
  */
 const pairAttributes = (attrs) => {
   const out = [];
   for (let i = 0; i < attrs.length; i++) {
     if (typeof attrs[i] === 'number') break;
-    if (attrs[i].toLowerCase() === ATTRIBUTE) out.push(attrs[i + 1]);
+    if (typeof attrs[i] === 'string' && attrs[i].toLowerCase() === ATTRIBUTE)
+      out.push(attrs[i + 1]);
     i++;
   }
   return out;
@@ -1002,10 +1005,11 @@ const repoFiles = () =>
  * an Angular package for each of a dozen-odd cases would cost minutes per run, and this
  * gate is to run on every commit. The same choice as in `check-zoneless` and for the same
  * reason. A class may carry its definition's own `consts`, `hostAttrs` and `functions` (the
- * text of each) beside or instead of `parts` and `dynamic`, and `readDefinition` reads them
- * as it reads the package — so a case holds how a definition is read. What no fixture
- * exercises is the way to one (the manifest's `exports`, the import, `ɵcmp` on access),
- * exercised instead on every run against the real repository.
+ * text of each) instead of `parts` and `dynamic`, and `readDefinition` reads them as it
+ * reads the package — so a case holds how a definition is read. What no fixture exercises
+ * is the way to one and the taking of those fields off it (the manifest's `exports`, the
+ * import, `ɵcmp` on access, `consts()` called, the functions turned into text), exercised
+ * instead on every run against the real repository.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
  * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
@@ -1042,7 +1046,7 @@ const fixtureInput = (directory) => {
         return {
           entrypoint: k.entrypoint,
           className: k.className,
-          parts: [...new Set([...(k.parts ?? []), ...read.parts])],
+          parts: [...(k.parts ?? []), ...read.parts],
           dynamic: (k.dynamic ?? 0) + read.dynamic,
         };
       }),
