@@ -398,13 +398,35 @@ const contextsWritten = (text, tables) =>
  * widget.
  */
 const DECIDING = { href: '', type: '', tabindex: '-1' };
+/**
+ * A name a plain object answers without holding it, a member of `Object.prototype` — of which a
+ * lowercase tag or role token can spell `constructor` and `__proto__`. axe looks both up in plain
+ * objects (a tag in its node types, `htmlElms` and `implicitHtmlRoles`, a role in `ariaRoles`)
+ * and takes the prototype's answer for an entry: an element named `constructor` throws (`nodeType
+ * has to be a number`) and, told its type, is its own implicit role; `role="constructor"` is a
+ * role, and `constructor option` no option. The engines read neither as anything (measured on
+ * 2026-10-16): `<constructor>` is an `HTMLUnknownElement`, as `<foo>` is — generic to Chromium
+ * 153, nothing to Firefox 157 — and both skip such a token as they skip `bogus`, taking the next.
+ * That is the reading here, and not a refusal on point 1: the build compiles such a tag (under
+ * `NO_ERRORS_SCHEMA` where no element holds it, Angular's parser closing one around it; in a
+ * string, `@let mark = '<constructor>'`), and nothing in it is unreadable but axe's lookup. So the
+ * tag is asked about under a name no table holds (`UNKNOWN_TAG`), and the token is dropped before
+ * axe reads the value (`readRole`). Every other read of a table takes a role out of `readRole`, or
+ * out of axe's `implicitRole` over a node built here, and a tag through here or as a table's own
+ * key: these two are the doors.
+ */
+const inherited = (name) => Object.hasOwn(Object.prototype, name);
+const UNKNOWN_TAG = 'unknown';
 const virtual = (tag, attrs) => {
   const attributes = {};
   for (const [name, fallback] of Object.entries(DECIDING)) {
     const value = attrs.has(`[${name}]`) ? fallback : attrs.get(name);
     if (value !== undefined) attributes[name] = value;
   }
-  const node = new axe.SerialVirtualNode({ nodeName: tag, attributes });
+  const node = new axe.SerialVirtualNode({
+    nodeName: inherited(tag) ? UNKNOWN_TAG : tag,
+    attributes,
+  });
   node.children =
     tag === 'details'
       ? [new axe.SerialVirtualNode({ nodeName: 'summary' })]
@@ -491,7 +513,9 @@ const attributesOf = (text) => {
  * map, token by token). That is axe's own reader with `fallback`, which its default leaves off
  * — taking `group region` whole, as no role at all — and with `dpub`, because the engines know
  * the `doc-` roles: a `doc-chapter` above an `option` is in the tree, not looked through. axe
- * splits on single spaces alone, so the whitespace is collapsed here first, as WebKit does. One
+ * splits on single spaces alone, so the whitespace is collapsed here first, as WebKit does; and
+ * it takes a token named for a member of every object for a role (`inherited`), so such a token
+ * is dropped first, in any case, as the engines skip it: `constructor option` is an option. One
  * token axe does not know is `generic`, which the engines take: `generic group` is a group here
  * and generic to them — a spelling nobody writes, named rather than handled.
  *
@@ -504,7 +528,13 @@ const readRole = (value) =>
   axe.commons.aria.getExplicitRole(
     new axe.SerialVirtualNode({
       nodeName: 'div',
-      attributes: { role: (value ?? '').replace(/[\t\n\f\r ]+/g, ' ') },
+      attributes: {
+        role: (value ?? '')
+          .replace(/[\t\n\f\r ]+/g, ' ')
+          .split(' ')
+          .filter((token) => !inherited(token.toLowerCase()))
+          .join(' '),
+      },
     }),
     { fallback: true, dpub: true },
   );

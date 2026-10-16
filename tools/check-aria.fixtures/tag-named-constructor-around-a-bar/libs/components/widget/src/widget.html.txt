@@ -1,0 +1,11 @@
+<!-- `name-on-a-stop-around-a-bar` with the stop an element named `constructor`, which the DOM
+     holds as an unknown element: no role, so its children are its own and the bar is a
+     control inside it. -->
+<constructor
+  class="pct-widget__box"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <progress class="pct-widget__bar"></progress>
+</constructor>

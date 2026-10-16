@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "4 focusable element(s) bind both [attr.aria-label] and [attr.aria-labelledby] to the inputs and 4 of them can be in the DOM at the same time",
+  "$reason": "`two-names-at-once` with the second control an element named `constructor`, made a stop by a `tabindex`, and beside it another, with no stop, both carrying the consumer's name. The build compiles one under `NO_ERRORS_SCHEMA` where no element holds it, and the engines read it as an unknown element, as they read `<foo>`: generic to Chromium 153, nothing to Firefox 157, named by an `aria-label` in both. axe looks a tag up in plain objects, which answer `constructor` from the prototype every object has: it threw on the element (`nodeType has to be a number`), and the run died before any point was asked. Told the node's type, it took the element for its own implicit role, and point 4's name test threw instead. Asked about under a name no table holds, the stop is a second control named at the same time, and the other no control, which a stand-in tag that makes a stop or forbids a name would not read."
+}
