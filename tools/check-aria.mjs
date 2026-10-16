@@ -360,8 +360,16 @@ const ANCHORS = {
  * global attribute or a way to land on it overrides them, as point 9 reads it.
  */
 const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
-/** Angular's own tags, which never reach the DOM and never stand between two roles. */
-const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
+/**
+ * Angular's own tags among the elements the walk reads, which never reach the DOM and never
+ * stand between two roles — by the local name as the compiler tells them. An `<ng-container>`
+ * in its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM; an
+ * `<ng-content>` in any case, which the tree holds as a projection named `ng-content`. An
+ * `<ng-template>` is no element of the walk, the tree holding it as a template, and one written
+ * in capitals is an element the type check refuses (`NG8001`, with no `CUSTOM_ELEMENTS_SCHEMA`,
+ * which nothing here declares).
+ */
+const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-content']);
 /**
  * The same roles counted without parsing, as the denominator of the walk of point 9: every
  * written `role`, its value read by `readRole` as the walk reads it, so that the two counts
@@ -915,10 +923,22 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ),
       ),
     );
+    // The element's name as the tag scan reads it (`localName`): the parser names the elements
+    // inside an `<svg>` `:svg:…` and those inside a `<math>` `:math:…`, an `<ng-container>` among
+    // them, and the compiler takes the prefix for the namespace it draws in — an `<a href>` there
+    // is an SVG link, an `<ng-container>` a comment, as outside. Whether the tag is one of
+    // Angular's own is asked as the compiler asks it (`TRANSPARENT_TAGS`): an `<NG-CONTAINER>`
+    // compiles, and draws an element of the DOM that what it carries reaches (measured, Angular
+    // 22.2).
+    const name = isElement(node) ? localName(node.name) : '';
+    const tag = name.toLowerCase();
+    const own = TRANSPARENT_TAGS.has(name);
     const element = isElement(node)
       ? {
-          tag: node.name.toLowerCase(),
+          tag,
           offset: node.sourceSpan.start.offset,
+          // Angular's own tag, which draws no element and stands between no two roles.
+          own,
           role: readRole(written(LIVE_ATTRIBUTE)),
           // Whether a `role` is written at all, read or not: on a component's tag it
           // replaces the host block's, whatever the engines make of it.
@@ -946,7 +966,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // Out of the tree with all it holds, the way axe reads the value; bound, it may
           // be absent. Angular's own tags reach no DOM to hide.
           ariaHidden:
-            !TRANSPARENT_TAGS.has(node.name.toLowerCase()) &&
+            !own &&
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
             bindings('aria-hidden').length === 0,
           // A way to land on it, as axe decides it: the line `aria-required-children`
@@ -954,7 +974,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // template, as for points 4 and 8: an `href` a directive's host binding sets
           // (`routerLink`) is not in it.
           focusable: axe.commons.dom.isFocusable(
-            virtual(node.name.toLowerCase(), focusAttributes(node)),
+            virtual(tag, focusAttributes(node)),
           ),
         }
       : null;
@@ -1891,7 +1911,7 @@ const checkAria = ({
       examined++;
       let settled = false;
       for (const ancestor of element.ancestors) {
-        if (TRANSPARENT_TAGS.has(ancestor.tag)) continue;
+        if (ancestor.own) continue;
         if (ancestor.boundRole)
           throw new AriaError(
             'context',

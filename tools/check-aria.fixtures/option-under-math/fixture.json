@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<mi role=\"option\"> stands under <math> (math)",
+  "$reason": "An option inside a `<math>`, whose role the platform gives the tag: `math` (axe's table, as `list` for a `<ul>`; axe 4.13 in Chromium 153 reports the option). The parser names it `:math:math`, which no table holds, so the walk looked it up by that name, looked through it, and passed the option. The walk records the local name now, which the table and the messages read."
+}
