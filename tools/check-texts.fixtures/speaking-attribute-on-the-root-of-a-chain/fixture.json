@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A speaking attribute two links up: `PctMarkerRoot` writes it, `PctMarkerBase` extends the root and writes nothing over it, and the package carries it on `PctMarker`. The two reads agree only while the merge follows the whole chain; one that stops at the class's own base fires point 2 instead."
+}

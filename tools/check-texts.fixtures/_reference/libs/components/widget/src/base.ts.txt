@@ -6,12 +6,19 @@ import { Directive, input } from '@angular/core';
  * linker writes its `role` onto the SUBCLASS and its own name reaches no entrypoint. The
  * reference passes only while the gate reads inheritance that way — merged into what extends
  * it, and not demanded from the package under a name the package has not got.
+ *
+ * Its `title` is one the subclass writes over: see `marker.ts`. Its binding carries a literal
+ * with no letter, which point 3 reads and lets through: a dash for a missing count has
+ * nothing in it to translate.
  */
 @Directive({
   host: {
     role: 'note',
+    title: '',
+    '[attr.aria-description]': "count() ?? '–'",
   },
 })
 export abstract class PctMarkerBase {
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly count = input<number | null>(null);
 }

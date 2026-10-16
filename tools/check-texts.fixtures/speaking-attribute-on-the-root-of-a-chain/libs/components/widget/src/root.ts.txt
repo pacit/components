@@ -1,0 +1,12 @@
+import { Directive } from '@angular/core';
+
+/**
+ * A base of the reference's base. `PctMarkerBase` extends it and writes nothing over its
+ * `aria-roledescription`, so the string travels two links down and lands on `PctMarker`.
+ */
+@Directive({
+  host: {
+    'aria-roledescription': 'A note',
+  },
+})
+export abstract class PctMarkerRoot {}

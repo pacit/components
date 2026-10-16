@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "The base writes `title` with a word and the marker writes `TITLE` rather than `title`. Angular compares the names with `===`, so the marker's key replaces nothing and the package carries both, the base's `Note` among them (measured through ngc in partial mode). The two reads agree only while the merge compares names exactly; one that compares them in any case drops `title` from the source read and fires point 2 instead."
+}

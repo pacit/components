@@ -2,5 +2,5 @@
   "point": 3,
   "check": "template",
   "rule": "speaking-attribute",
-  "description": "A speaking attribute written into a BASE's host block. The reference exercises the merge through `role`, which is a keyword and not text, so this is the one arrangement in which the merge decides whether point 3 fires at all: without it the string would stand on a class the package has not got and be compared against nothing. The entry in `package.json` is here so that point 2 agrees and the defect is the declared one alone."
+  "description": "A speaking attribute with a word, written into a BASE's host block and inherited by the marker — the merge proved by the one kind of attribute the reference cannot carry, since a word is a violation by itself. Without the merge, the package's `aria-label` on `PctMarker` has no counterpart in the source read and point 2 fires instead of point 3. The entry in `package.json` is the one the linker writes, so that point 2 agrees and the defect is the declared one alone."
 }

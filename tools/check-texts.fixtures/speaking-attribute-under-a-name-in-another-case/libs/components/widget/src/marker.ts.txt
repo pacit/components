@@ -1,0 +1,41 @@
+import { Directive, input, isDevMode } from '@angular/core';
+import { PctMarkerBase } from './base';
+
+/**
+ * A slot directive — it exists so that the reference input carries a `host` block
+ * with a static attribute whose key has NO quotes (`role`) beside a binding
+ * whose key does. Prettier writes them exactly like that and the scanner must see
+ * both.
+ *
+ * The reference marker with its `title` key written `TITLE`. Angular's merge compares names
+ * with `===`, so this replaces nothing: the package carries `TITLE` from here and the base's
+ * `title` beside it (measured through ngc in partial mode). The base's `Note` reaches the
+ * marker's element, and a merge comparing names in any case would drop it from the source
+ * read while the package still has it.
+ */
+@Directive({
+  selector: '[pctMarker]',
+  host: {
+    class: 'pct-marker',
+    'data-pct-part': 'widget-marker',
+    TITLE: '*',
+    '[attr.aria-label]': 'description()',
+  },
+})
+export class PctMarker extends PctMarkerBase {
+  readonly description = input<string>('');
+}
+
+/**
+ * A developer warning in a FREE FUNCTION rather than in a class method — the shape the
+ * enclosure scanner could not see until D5. A free function's statements sit at the same
+ * two-space indent a class puts its methods at, so `if (` read as the enclosing method and
+ * the guard below was measured from the wrong place.
+ */
+export function pctWarnOnEmptyMarker(description: string): void {
+  if (!isDevMode()) return;
+
+  if (description === '') {
+    console.warn('[pctMarker] Rendered with no description.');
+  }
+}

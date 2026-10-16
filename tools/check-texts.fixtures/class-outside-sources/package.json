@@ -44,12 +44,16 @@
       "className": "PctMarker",
       "attributes": [
         [
-          "role",
-          "note"
-        ],
-        [
           "data-pct-part",
           "widget-marker"
+        ],
+        [
+          "title",
+          "*"
+        ],
+        [
+          "role",
+          "note"
         ]
       ]
     },

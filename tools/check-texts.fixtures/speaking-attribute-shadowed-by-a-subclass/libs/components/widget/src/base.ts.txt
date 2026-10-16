@@ -1,0 +1,19 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The reference base with its `title` given a word. `PctMarker` writes its own `title` over it,
+ * so the package carries the marker's `*` and no element of a shipped class shows `Note`. The
+ * string is written all the same, and it ships the day a class extends this base without
+ * writing over it — point 3 judges what a file writes, not only what reaches an element.
+ */
+@Directive({
+  host: {
+    role: 'note',
+    title: 'Note',
+    '[attr.aria-description]': "count() ?? '–'",
+  },
+})
+export abstract class PctMarkerBase {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly count = input<number | null>(null);
+}

@@ -1,0 +1,18 @@
+import { Directive, input } from '@angular/core';
+import { PctMarkerRoot } from './root';
+
+/**
+ * The reference base, extending a base of its own (`root.ts`). Its `title` is one the
+ * subclass writes over: see `marker.ts`.
+ */
+@Directive({
+  host: {
+    role: 'note',
+    title: '',
+    '[attr.aria-description]': "count() ?? '–'",
+  },
+})
+export abstract class PctMarkerBase extends PctMarkerRoot {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly count = input<number | null>(null);
+}
