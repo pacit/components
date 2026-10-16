@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container title=\"Distance\">`) carries `title` —",
+  "$reason": "A `title` written on an `<ng-container>` inside a `<math>`, where the parser names it `:math:ng-container`. The compiler draws a comment there as anywhere (measured with `ngc` 22.2.1), so the title, a name or a description to an engine, reaches no element. Neither ARIA nor a reading of the walk, it is refused as any written attribute is, in any namespace: a reader that took the SVG namespace alone for one a container may stand in let it through."
+}

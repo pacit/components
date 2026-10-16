@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "`option-under-a-menu-through-a-container-a-directive-names` inside an `<svg>`, where the parser names the container `:svg:ng-container`. The compiler draws it as it does outside, as a comment, so the option stands under the menu, which is refused. A walk that asked the raw name whether the tag was Angular's own read the container as a role-less element with a global ARIA attribute, and named it in place of the menu."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "binds both [attr.aria-label] and [attr.aria-labelledby] to the inputs and holds no control the template draws",
+  "$reason": "The reference's panel made a group carrying the consumer's name, around two `<ng-container>`s, one in a map, each with `[tabIndex]` bound for a directive, which compiles on a container only as a directive's input (NG8002, measured with `ngc` 22.2.1). A container draws a comment, which no user lands on, so the group holds no control. Read as stops, as they were, the containers were two controls naming nothing of their own, and the group was refused for them; a reader that asked the raw name read the one in the map so."
+}

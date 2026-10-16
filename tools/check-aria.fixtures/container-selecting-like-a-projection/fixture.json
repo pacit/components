@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container select=\"[pctOption]\" />`) carries `select` —",
+  "$reason": "A `select` written on an `<ng-container>`, as if it were the `<ng-content>` that takes one. The compiler's `preparseElement` reads a `select` off any element and uses it on a projection alone, so on a container it is one more attribute Angular renders on no element, a key only to a directive's selector, and none here names it. Neither ARIA nor any reading of the walk, it is refused as any other attribute is: a reader that took the container's own for a projection's let it through, and so did one that refused only what the walk reads (a role, an ARIA attribute, a stop, a part)."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, the consumer's rows stamped into it by an `<ng-container>` carrying only what Angular takes as a container's own, `ngProjectAs`, and a property binding, which the compiler lets stand on a container only where a directive takes it as an input (NG8002, measured with `ngc` 22.2.1); an inline template's `*ngIf` is the template's, and the tree keeps no copy on the container. Beside it a sample is kept from binding by `ngNonBindable` on another. None of them is written for an element, so point 1 lets both containers through, and the option of the template's own is what stands where it may not. A reader that refused `ngProjectAs`, `ngNonBindable` or a binding refused a container on point 1."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container ngprojectas=\"[pctOption]\" ngnonbindable>`) carries `ngprojectas`, `ngnonbindable` —",
+  "$reason": "An `<ng-container>` in the reference's listbox with `ngprojectas` and `ngnonbindable`. The compiler's `preparseElement` takes `ngProjectAs` and `ngNonBindable` only as written, so in lower case they are not the container's own, but two more attributes Angular renders on no element, and they are refused as any other. A reader that took either in any case let it through, and the message named the other alone."
+}

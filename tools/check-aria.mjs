@@ -16,7 +16,7 @@
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
  * syntax tree. Each fails point 1: a tag the scan or reader misses, a widget or group with no path,
- * a tag in or read into an ICU, markup a string or frame draws, `@content`, projection attributes.
+ * a tag in or read into an ICU, markup a string or frame draws, `@content`, unrendered attributes.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -362,7 +362,8 @@ const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
 /**
  * Angular's own tag among the elements the walk reads, which never reaches the DOM and never
  * stands between two roles — by the local name as the compiler tells it: an `<ng-container>` in
- * its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM. An
+ * its case (`op.tag === 'ng-container'`), so an `<NG-CONTAINER>` is an element of the DOM. What
+ * is written on a container fails point 1 (`isOwnTag`). An
  * `<ng-content>` is no element of the walk, the tree holding it as a projection (`isElement`),
  * and one under `ngNonBindable`, which the tree holds as an element, is drawn as one, with what
  * is written on it (measured with `ngc`, 22.2.1). An `<ng-template>` is no element of the walk
@@ -663,6 +664,8 @@ const readTemplate = (
       takesName: element?.takesName ?? false,
       takenAs: element?.takenAs ?? [],
       namesItself: element?.namesItself ?? false,
+      // Angular's own tag (`isOwnTag`), which draws a comment and carries no name.
+      own: element?.own ?? false,
     };
   });
   return {
@@ -781,6 +784,24 @@ const readOffAProjection = (name) =>
   name.startsWith('*');
 
 /**
+ * An element the walk reads that is Angular's own (`TRANSPARENT_TAGS`): one question for the walk,
+ * which looks through it, and the tag reader, which records what is written on it.
+ */
+const isOwnTag = (node) =>
+  isElement(node) && TRANSPARENT_TAGS.has(localName(node.name));
+
+/**
+ * What Angular takes off an `<ng-container>` as the container's own: `ngProjectAs` and
+ * `ngNonBindable`, as the compiler's `preparseElement` asks for them, in their case. A `select`
+ * it takes off a projection alone. An inline template's attribute (`*ngIf`) is the template's,
+ * and the tree keeps no copy on the container, nor of an `i18n` one, which it takes as the
+ * message's meta (measured with `ngc`, 22.2.1); under `ngNonBindable`, where it makes no
+ * template, a `*ngIf` is one more attribute on the container.
+ */
+const readOffAContainer = (name) =>
+  name === 'ngProjectAs' || name === 'ngNonBindable';
+
+/**
  * The tags of a template as the compiler's own visitor reaches them: each element and template
  * with its `focusAttributes`, by the offset it starts at, and the span of each ICU, whose cases
  * Angular renders and the tree does not hold (`readTemplate`). The visitor and not the walk,
@@ -791,14 +812,16 @@ const readOffAProjection = (name) =>
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
  * it makes a stop; what is written on it, past what Angular takes as the projection's own
  * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails
- * point 1. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the visitor
- * descends into it, so of two at one offset — an inline template and the element, the
- * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
- * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag
- * keeps the name the scan reads off the text, on which no verdict turns. So is the markup an
- * element draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the
- * offset it starts at. And each `@content` block, by the offset it starts at (`contentBlocks`),
- * its tags read as any others are.
+ * point 1. An `<ng-container>` is recorded with an empty reading too, whatever is bound on it: it
+ * draws a comment, which no user lands on. What is written on one past the container's own
+ * (`readOffAContainer`) is recorded the same way (`containers`), and fails point 1. Each tag's
+ * kind is recorded beside (`kinds`). A tag is recorded before the visitor descends into it, so
+ * of two at one offset — an inline template and the element, the `<ng-template>` or the
+ * `<ng-content>` it wraps — the inner one is the one kept. Each element's name is recorded too
+ * (`names`), as `localName` reads it; a template's or a projection's tag keeps the name the scan
+ * reads off the text, on which no verdict turns. So is the markup an element draws that the tree
+ * does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each
+ * `@content` block, by the offset it starts at (`contentBlocks`), its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -808,10 +831,21 @@ class TagReader extends TmplAstRecursiveVisitor {
   icus = [];
   contentBlocks = [];
   projections = [];
+  containers = [];
   visitElement(node) {
-    this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
+    this.attributes.set(
+      node.sourceSpan.start.offset,
+      isOwnTag(node) ? new Map() : focusAttributes(node),
+    );
     this.kinds.set(node.sourceSpan.start.offset, 'element');
     this.names.set(node.sourceSpan.start.offset, localName(node.name));
+    const carried = isOwnTag(node)
+      ? node.attributes
+          .map((a) => a.name)
+          .filter((name) => !readOffAContainer(name))
+      : [];
+    if (carried.length)
+      this.containers.push({ offset: node.sourceSpan.start.offset, carried });
     const tag = localName(node.name).toLowerCase();
     const drawn = [
       ...MARKUP.filter((name) =>
@@ -956,7 +990,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // 22.2).
     const name = isElement(node) ? localName(node.name) : '';
     const tag = name.toLowerCase();
-    const own = TRANSPARENT_TAGS.has(name);
+    const own = isOwnTag(node);
     const element = isElement(node)
       ? {
           tag,
@@ -988,9 +1022,8 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // some state.
           names: namesOn(node),
           // Out of the tree with all it holds, the way axe reads the value; bound, it may
-          // be absent. Angular's own tag reaches no DOM to hide.
+          // be absent. Written on Angular's own tag, it fails point 1 first.
           ariaHidden:
-            !own &&
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
             bindings('aria-hidden').length === 0,
           // A way to land on it, as axe decides it: the line `aria-required-children`
@@ -1077,6 +1110,7 @@ const readMessages = (file, content, sides, reads) => {
     icus: tags.icus,
     contentBlocks: tags.contentBlocks,
     projections: tags.projections,
+    containers: tags.containers,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1472,6 +1506,38 @@ const checkAria = ({
           `the name and the stop it comes with. Put it on an element around the projection, or, ` +
           `as a key an outer \`select\` matches, in \`ngProjectAs\``,
       );
+    // An `<ng-container>` draws a comment, and Angular renders none of its attributes: `ngc`
+    // 22.2.1 (strict templates, full compilation) keeps each written one in the consts it matches
+    // directives against, and with none matched draws the container alone
+    // (`ɵɵdomElementContainer`, or its `Start` and `End` around children), under `ngNonBindable`
+    // too. A written attribute is a key a directive's selector names, or a static input one takes,
+    // whose type the type check reads — or nothing, and then the compiler says nothing. A role, a
+    // name, a stop or a part written there reaches no element, and no engine, audit or spec meets
+    // it: the defect of `lesson-65`. Read as an element's, as it was, an option under a listbox
+    // passed where none exists; read as nothing, a `menu` around `<ng-container role="menuitem">`
+    // would. A binding is no such defect: a property binding no directive takes fails the build
+    // (NG8002, `[role]` and `[ariaLabel]` among them), an attribute binding cannot be written there
+    // (NG5002), and a class, a style or an animation binding or a listener, which compile with no
+    // directive and reach nothing, set no ARIA, no name and no stop on any element. The tag reader
+    // records no stop on a container, then, whatever is bound on it, and point 4 refuses the
+    // consumer's name bound there for a directive, which reaches no element. Every
+    // written attribute but the container's own (`readOffAContainer`), as on a projection, and not
+    // ARIA's alone: what the walk reads is not all an engine reads (a `title`). What it costs is a
+    // directive a written attribute matches and no input takes, which cannot stand on a container
+    // here, and a static input written rather than bound (`matColumnDef="name"`); the library puts
+    // neither there, and binds what its directives take.
+    if (said.containers.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: an \`<ng-container>\` at offset ${said.containers[0].offset} ` +
+          `(\`${opening(said.containers[0].offset)}\`) carries ` +
+          said.containers[0].carried.map((name) => `\`${name}\``).join(', ') +
+          ` — Angular draws a comment for a container and renders none of its attributes, so ` +
+          `a role, a name, a stop or a part written there reaches no element; and the compiler ` +
+          `does not check that a directive's selector names what is written. Put it on an ` +
+          `element inside or around the container, or bind the directive's input ` +
+          `(\`[name]="'…'"\`), which the compiler refuses where no directive takes it (NG8002)`,
+      );
     if (said.messages.length !== said.counted)
       throw new AriaError(
         'denominator',
@@ -1750,11 +1816,27 @@ const checkAria = ({
     const role = t.roleWritten ? t.role : host.role;
     return role === null || forbids(role);
   };
+  // On an `<ng-container>` the name lands on no element: a property bound there compiles only as
+  // a directive's input (NG8002), a class binding with none, and the container draws a comment.
+  // Read through `nameForbidden`,
+  // the tag was one axe does not know, which it spares as it spares a custom element, and the
+  // name passed beside a carrier; a custom element the library does not define is at least an
+  // element the name may reach, and a container never is. Where the directive puts the name no
+  // point follows, as the gate refuses a role it cannot judge on the same element.
   for (const component of components) {
     if (!component.templatePath) continue;
-    const unnamable = byPath
-      .get(component.templatePath)
-      .read.tags.filter((t) => t.takesName && nameForbidden(t));
+    const tags = byPath.get(component.templatePath).read.tags;
+    const contained = tags.filter((t) => t.takesName && t.own);
+    if (contained.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ${described(contained)} ` +
+          `bind(s) ${NAME_ATTRIBUTES.join(' or ')} to the inputs on Angular's own tag — a ` +
+          `container draws a comment, so the name goes to a directive's input or nowhere, and ` +
+          `reaches no element of its own: no point follows it there. Hand the name to the ` +
+          `control, to a component through its inputs, or to an element whose role takes one`,
+      );
+    const unnamable = tags.filter((t) => t.takesName && nameForbidden(t));
     if (unnamable.length)
       throw new AriaError(
         'forwarded',

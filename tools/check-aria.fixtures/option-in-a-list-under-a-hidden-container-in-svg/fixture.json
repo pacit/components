@@ -1,6 +1,6 @@
 {
-  "point": 9,
-  "check": "context",
-  "message": "<g role=\"option\"> stands under <div role=\"list\"> (list)",
-  "$reason": "`option-in-a-list-under-a-hidden-container` inside an `<svg>`, where the parser names the container `:svg:ng-container`. The compiler draws it as it does outside, as a comment, and the `aria-hidden` reaches no element, so the option and the `list` it stands in are in the tree under the listbox (measured: Angular 22.2; axe 4.13 reports the option). The walk asked the raw name whether the tag was Angular's own, read the container as an element that hides, and passed the option; it asks the local name now, which the message names. Point 9 reaches the container itself here, the option's nearest ancestor, where the `list` of the case beside it stands first: a reading that did not look through Angular's own tags refused it for its `aria-hidden`."
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container aria-hidden=\"true\">`) carries `aria-hidden` —",
+  "$reason": "`option-in-a-list-under-a-hidden-container` inside an `<svg>`, where the parser names the container `:svg:ng-container`. The compiler draws it as it does outside, as a comment (`ɵɵdomElementContainerStart`, measured with `ngc` 22.2.1), and the `aria-hidden` reaches no element, so the option and the `list` it stands in are in the tree under the listbox (measured: Angular 22.2; axe 4.13 reports the option). A reading that asked the raw name whether the tag was Angular's own read the container as an element that hides, and passed the option; asked by the local name, the container is Angular's own, and what is written on it is refused as it is outside."
 }

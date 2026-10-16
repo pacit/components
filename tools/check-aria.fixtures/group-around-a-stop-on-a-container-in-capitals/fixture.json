@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "around <ng-container>, which name(s) nothing of their own",
+  "$reason": "`group-around-containers-a-directive-stops-on` with an `<NG-CONTAINER>` written as a stop instead: an element of the DOM, which the compiler draws with its `tabindex` (`ɵɵdomElementStart`, measured with `ngc` 22.2.1), so the group holds a control that names nothing of its own. A reader that lowered the name before asking whether the tag was Angular's own read no stop on it, and refused the group for holding no control."
+}

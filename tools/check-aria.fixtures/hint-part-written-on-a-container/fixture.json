@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<ng-container data-pct-part=\"hint\">`) carries `data-pct-part` —",
+  "$reason": "The reference's hint drawn as a bare text inside an `<ng-container>` that carries the part. The container draws a comment, so the part marks no element, and what finds the hint by its part, a style or a spec, finds nothing. Read as an element's, the part was a hint on the other branch of the error's conditional, and the template passed points 6 and 7. A reader that let the part through, a name only this library reads, passed it again."
+}
