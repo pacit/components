@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "attribute-only-in-package",
+  "description": "The `attribute-from-spread` case built from a source: the widget spreads `{ 'ARIA-LABEL': 'Items' }` into its `host` block, the linker carries `ARIA-LABEL` into `hostAttrs` as written (measured through ngc in partial mode), and the DOM gives the host `aria-label`. Point 3 cannot see it, and point 2 reports it only while its package read takes the name in any case. Every other case of the fold holds that point 2's two reads agree; this one holds the fold itself, which a point 2 reading both sides exactly would let through."
+}

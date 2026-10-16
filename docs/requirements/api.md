@@ -866,7 +866,7 @@ read by `parseTemplate` from `@angular/compiler`, and the list of static classes
 attributes is built **twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 43 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 44 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

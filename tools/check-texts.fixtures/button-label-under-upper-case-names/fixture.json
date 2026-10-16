@@ -2,5 +2,5 @@
   "point": 3,
   "check": "template",
   "rule": "speaking-attribute",
-  "description": "A submit button's label written `<INPUT TYPE=\"submit\" VALUE=\"Send\">`. The DOM draws an `<input type=\"submit\">` labelled `Send` (measured through ngc in partial mode, the linker and a render in jsdom), so `value` speaks here. Each of the three names is upper case, so reading any one of the tag, `type` or `value` exactly lets the label through. The package entry is here so that the two reads agree."
+  "description": "A submit button's label written `<INPUT TYPE=\"SUBMIT\" VALUE=\"Send\">`. The DOM draws an `<input type=\"submit\">` labelled `Send` (measured through ngc in partial mode, the linker and a render in jsdom), so `value` speaks here. The three names and the type are in capitals, so reading any one of the tag, `type`, its value or `value` exactly lets the label through. The package entry carries the pairs the linker writes; neither name speaks, so point 2 compares neither."
 }

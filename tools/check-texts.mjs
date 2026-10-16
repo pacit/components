@@ -79,8 +79,9 @@ const SPEAKING_ATTRIBUTES = new Set([
  * the DOM lowercases it: `setAttribute('TITLE', …)` on an HTML element writes `title`, so the
  * user reads the string (measured through ngc 22.2.1 in partial mode, the linker and a render in
  * jsdom). An exact lookup let `TITLE="Collapse the list"` through points 2 and 3. The formatter
- * writes such a name in a template in lower case, and leaves an `attr.` binding and a `host`
- * block's key as they are written, so the gate cannot lean on it.
+ * is no fence: it lowercases a written name only where its table of HTML knows that attribute on
+ * that element (`<button TITLE>`), and keeps `ARIA-LABEL`, any name on a `pct-*` tag or in SVG,
+ * an `attr.` binding and a `host` block's key as they are written (prettier 3.9.9).
  *
  * Only the TEST takes the name in any case. What point 2 compares keeps the name as written,
  * because both of its reads carry it so, and the inheritance merge compares names exactly, as
@@ -88,7 +89,8 @@ const SPEAKING_ATTRIBUTES = new Set([
  * refused by the compiler (`NG8002`) in a template and in a `host` block alike. On an SVG or
  * MathML element the DOM keeps the case and `TITLE` is no `title`; it is read as speaking here
  * all the same, because `consts` do not say which namespace an element draws in, and a string
- * written there was written for the user.
+ * written there was written for the user. `toLowerCase` is louder than the DOM's ASCII lowercase
+ * in one spelling as well: the Kelvin sign (U+212A) folds to the `k` of `aria-keyshortcuts`.
  *
  * A name that is not a string speaks nothing: a loading block with `after` and no `minimum` puts
  * `[null, 100]` into `consts`, which the package read takes for a pair, and the exact lookup

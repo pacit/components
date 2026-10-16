@@ -6,10 +6,15 @@
 </span>
 }
 
+<!--
+  A `value` with a word on a button that is no `<input>`: a `<button>` is labelled by its content,
+  so the value is read by nobody, and only an `<input>` of a button type speaks through it.
+-->
 <button
   class="pct-widget__toggle"
   data-pct-part="toggle"
   type="button"
+  [value]="'next'"
   [attr.aria-label]="collapseText()"
   [attr.aria-expanded]="open()"
   (click)="toggle()"

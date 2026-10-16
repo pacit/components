@@ -6,10 +6,15 @@
 </span>
 }
 
+<!--
+  A `value` with a word on a button that is no `<input>`: a `<button>` is labelled by its content,
+  so the value is read by nobody, and only an `<input>` of a button type speaks through it.
+-->
 <button
   class="pct-widget__toggle"
   data-pct-part="toggle"
   type="button"
+  [value]="'next'"
   [attr.aria-label]="collapseText()"
   [attr.aria-expanded]="open()"
   (click)="toggle()"
@@ -25,4 +30,4 @@
 
 <!-- Kept as written: the formatter would write these names in lower case. -->
 <!-- prettier-ignore -->
-<INPUT class="pct-widget__send" TYPE="submit" VALUE="Send" />
+<INPUT class="pct-widget__send" TYPE="SUBMIT" VALUE="Send" />
