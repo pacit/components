@@ -1,0 +1,25 @@
+import { Directive } from '@angular/core';
+import { PctMarkerBase } from './base';
+
+@Directive({
+  selector: '[pctMarker]',
+  host: {
+    class: 'pct-marker',
+    'data-pct-part': 'widget-marker',
+    'DATA-PCT-PART': 'marker-hint',
+  },
+})
+export class PctMarker extends PctMarkerBase {}
+
+/**
+ * A second directive in the file and no part of its own, as `popover.ts` and `tooltip.ts` keep
+ * a trigger beside the component. Point 1 reads each decorator's body: a pair counted over the
+ * whole file would be one this class never wrote, and the reference would stop passing.
+ */
+@Directive({
+  selector: '[pctMarkerSlot]',
+  host: {
+    class: 'pct-marker-slot',
+  },
+})
+export class PctMarkerSlot {}

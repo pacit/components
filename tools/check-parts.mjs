@@ -108,10 +108,18 @@ const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
  * comments, whatever its case. The DOM lowercases an HTML attribute's name, so
  * `DATA-PCT-PART="row"` is a part a consumer's selector matches (measured in Chromium), while
  * the tree and the package both hold it as written — and in a template that spelling passed
- * every point until the count stopped telling the cases apart. (In a `host` block it still
- * does: `HOST_STATIC` and the package read compare the name as written.)
+ * every point until the count stopped telling the cases apart.
  */
 const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
+/**
+ * The same counter over a decorator's body, against what `HOST_STATIC` and `HOST_DYNAMIC`
+ * recognise. Both want the name in lowercase, and so does the package read: `hostAttrs` and
+ * the host-binding function keep `'DATA-PCT-PART'` as written (measured through the JIT
+ * compiler), Angular hands it to the same `setAttribute`, and it passed every point until
+ * this count. A comment in the body is not blanked, so it counts as text: prose naming the
+ * attribute is refused, and a quoted lowercase pair is one `HOST_STATIC` reads as a part.
+ */
+const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
@@ -127,7 +135,8 @@ const entrypointFromPath = (file) => {
 };
 
 /**
- * Decorated classes — `[{ file, className, entrypoint, template, inline, parts, dynamic }]`.
+ * Decorated classes — `[{ file, className, entrypoint, template, inline, parts, statics,
+ * dynamic, occurrences }]`.
  * `parts` come here from the `host` block alone; the template's parts are added by point
  * 1, because a template is a separate file and a separate denominator — its scan has to
  * hold up first.
@@ -136,7 +145,9 @@ const entrypointFromPath = (file) => {
  * in `field/src/affix.ts`) and this scanner does not see that — deliberately. A part
  * brought in that way appears in the package read and is missing from the source read,
  * that is, it fires point 2 with the part's name in the message. Exactly the work the
- * second read is there to do.
+ * second read is there to do — in lowercase. In capitals, there or by a computed key or
+ * `@HostBinding`, the package read misses it too, comparing the name as written, and no point
+ * fires (`req-api-parts` records it).
  */
 const readSources = (root, files) => {
   const classes = [];
@@ -167,7 +178,9 @@ const readSources = (root, files) => {
         // decorator is one.
         inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
         parts: new Set([...body.matchAll(HOST_STATIC)].map((m) => m[3])),
+        statics: countOf(body, HOST_STATIC),
         dynamic: countOf(body, HOST_DYNAMIC),
+        occurrences: countOf(body, HOST_COUNTER),
       });
     }
   }
@@ -357,6 +370,24 @@ const checkParts = (input) => {
         `written where the tree holds no such attribute or binding — in capitals, which ` +
         `the DOM still makes a part of, or in a string — is to stop the inventory ` +
         `LOUDLY, not drop out of it quietly.`,
+    );
+  const unread = classes.filter((k) => k.statics + k.dynamic !== k.occurrences);
+  if (unread.length)
+    throw new PartsError(
+      'denominator',
+      `${unread.length} decorators hold \`${ATTRIBUTE}\` occurrences the scanner did ` +
+        `not recognise:\n` +
+        list(
+          unread.map(
+            (k) =>
+              `${k.file}: ${k.className} — recognised ${k.statics} static + ` +
+              `${k.dynamic} bound, and the attribute name appears ${k.occurrences} times`,
+          ),
+        ) +
+        `\n    A \`host\` block is read by patterns that want the name in lowercase, and ` +
+        `so is the package; the counter takes it in any case. Angular hands ` +
+        `\`'DATA-PCT-PART'\` to \`setAttribute\` as written and the DOM lowercases it — a ` +
+        `part a consumer's selector matches, which neither read would ever list.`,
     );
 
   // Inheritance, resolved before the two reads are compared. What a base's `host` block
