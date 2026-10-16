@@ -15,14 +15,16 @@
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
  * What an element is, whether a user lands on it and which block excludes which come off the
- * syntax tree (`parseTemplate`). A tag of the tree the scan or reader misses, a widget or group
- * with no path, a tag in or read into an ICU, markup a string or frame draws: each fails point 1.
+ * syntax tree (`parseTemplate`). Each fails point 1: a tag the scan or reader misses, a widget or
+ * group with no path, a tag in or read into an ICU, markup a string or frame draws, `@content`.
  *
  * Usage: node tools/check-aria.mjs
  */
 import {
   BindingType,
   splitNsName,
+  TmplAstContent,
+  TmplAstElement,
   TmplAstForLoopBlock,
   TmplAstRecursiveVisitor,
   tmplAstVisitAll,
@@ -682,6 +684,19 @@ const readTemplate = (
  */
 const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
+/**
+ * A node the walk reads as an element, asked of the compiler's own classes as `repeats` is: an
+ * element, and an `<ng-content>`, which draws none of its own and is looked through
+ * (`TRANSPARENT_TAGS`). Two other kinds the walk meets carry a `name` as a string and draw
+ * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
+ * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
+ * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
+ * option under a menu stood in it. A block Angular cannot place (an `@empty` with no `@for`)
+ * carries one too, and comes only with a parse error, on which the walk does not run.
+ */
+const isElement = (node) =>
+  node instanceof TmplAstElement || node instanceof TmplAstContent;
+
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
   input.type === BindingType.Property || input.type === BindingType.TwoWay;
@@ -756,7 +771,8 @@ const localName = (name) => splitNsName(name)[1];
  * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
  * the name the scan reads off the text, on which no verdict turns. So is the markup an element
  * draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it
- * starts at.
+ * starts at. And each `@content` block, by the offset it starts at (`contentBlocks`), its tags read
+ * as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -764,6 +780,7 @@ class TagReader extends TmplAstRecursiveVisitor {
   names = new Map();
   markup = [];
   icus = [];
+  contentBlocks = [];
   visitElement(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'element');
@@ -791,6 +808,10 @@ class TagReader extends TmplAstRecursiveVisitor {
   }
   visitIcu(node) {
     this.icus.push([node.sourceSpan.start.offset, node.sourceSpan.end.offset]);
+  }
+  visitContentBlock(node) {
+    this.contentBlocks.push(node.sourceSpan.start.offset);
+    super.visitContentBlock(node);
   }
 }
 
@@ -855,9 +876,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       );
       continue;
     }
-    // An element — the only kind of node with a tag name of its own. Where it stands in the
-    // conditional structure is what point 4 asks of it; the offset is how it is found again.
-    if (typeof node.name === 'string' && node.sourceSpan) {
+    // An element (`isElement`). Where it stands in the conditional structure is what point 4
+    // asks of it; the offset is how it is found again.
+    if (isElement(node)) {
       state.paths.set(node.sourceSpan.start.offset, path);
       // And the elements standing above it, by the offset each starts at — what point 4 asks
       // of an element carrying a name: which controls stand inside it.
@@ -894,55 +915,52 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ),
       ),
     );
-    const element =
-      typeof node.name === 'string'
-        ? {
-            tag: node.name.toLowerCase(),
-            offset: node.sourceSpan?.start.offset,
-            role: readRole(written(LIVE_ATTRIBUTE)),
-            // Whether a `role` is written at all, read or not: on a component's tag it
-            // replaces the host block's, whatever the engines make of it.
-            roleWritten: written(LIVE_ATTRIBUTE) !== undefined,
-            boundRole: bindings(LIVE_ATTRIBUTE).length > 0,
-            // Both of them: what point 4 calls a carrier. Either: the consumer's name lands
-            // here, and point 4 asks whether the element's role lets it carry one.
-            forwards: taking.every((found) => found.length > 0),
-            takesName: taking.some((found) => found.length > 0),
-            // The names they are bound under: an input's, when a component drawn by this tag
-            // takes the binding as its own (`[ariaLabel]`), or an attribute's, which no input
-            // has (`aria-label`, `ARIA-LABEL`).
-            takenAs: taking.flat().map((b) => b.name),
-            // A name of its own, written or bound — what point 4 asks of each control inside a
-            // group that carries the consumer's name.
-            namesItself: NAME_TARGETS.some(
-              (name) =>
-                (written(name) ?? '').trim() !== '' ||
-                bindings(name).length > 0,
-            ),
-            // What keeps a role-less element from being looked through, in axe's own
-            // reading of `aria-required-children`: a global ARIA attribute among these, or a
-            // way to land on it. Static or bound — a binding says the attribute exists in
-            // some state.
-            names: namesOn(node),
-            // Out of the tree with all it holds, the way axe reads the value; bound, it may
-            // be absent. Angular's own tags reach no DOM to hide.
-            ariaHidden:
-              !TRANSPARENT_TAGS.has(node.name.toLowerCase()) &&
-              written('aria-hidden')?.trim().toLowerCase() === 'true' &&
-              bindings('aria-hidden').length === 0,
-            // A way to land on it, as axe decides it: the line `aria-required-children`
-            // draws, which an editing host does not cross (measured, axe 4.13). Read off the
-            // template, as for points 4 and 8: an `href` a directive's host binding sets
-            // (`routerLink`) is not in it.
-            focusable: axe.commons.dom.isFocusable(
-              virtual(node.name.toLowerCase(), focusAttributes(node)),
-            ),
-          }
-        : null;
+    const element = isElement(node)
+      ? {
+          tag: node.name.toLowerCase(),
+          offset: node.sourceSpan.start.offset,
+          role: readRole(written(LIVE_ATTRIBUTE)),
+          // Whether a `role` is written at all, read or not: on a component's tag it
+          // replaces the host block's, whatever the engines make of it.
+          roleWritten: written(LIVE_ATTRIBUTE) !== undefined,
+          boundRole: bindings(LIVE_ATTRIBUTE).length > 0,
+          // Both of them: what point 4 calls a carrier. Either: the consumer's name lands
+          // here, and point 4 asks whether the element's role lets it carry one.
+          forwards: taking.every((found) => found.length > 0),
+          takesName: taking.some((found) => found.length > 0),
+          // The names they are bound under: an input's, when a component drawn by this tag
+          // takes the binding as its own (`[ariaLabel]`), or an attribute's, which no input
+          // has (`aria-label`, `ARIA-LABEL`).
+          takenAs: taking.flat().map((b) => b.name),
+          // A name of its own, written or bound — what point 4 asks of each control inside a
+          // group that carries the consumer's name.
+          namesItself: NAME_TARGETS.some(
+            (name) =>
+              (written(name) ?? '').trim() !== '' || bindings(name).length > 0,
+          ),
+          // What keeps a role-less element from being looked through, in axe's own
+          // reading of `aria-required-children`: a global ARIA attribute among these, or a
+          // way to land on it. Static or bound — a binding says the attribute exists in
+          // some state.
+          names: namesOn(node),
+          // Out of the tree with all it holds, the way axe reads the value; bound, it may
+          // be absent. Angular's own tags reach no DOM to hide.
+          ariaHidden:
+            !TRANSPARENT_TAGS.has(node.name.toLowerCase()) &&
+            written('aria-hidden')?.trim().toLowerCase() === 'true' &&
+            bindings('aria-hidden').length === 0,
+          // A way to land on it, as axe decides it: the line `aria-required-children`
+          // draws, which an editing host does not cross (measured, axe 4.13). Read off the
+          // template, as for points 4 and 8: an `href` a directive's host binding sets
+          // (`routerLink`) is not in it.
+          focusable: axe.commons.dom.isFocusable(
+            virtual(node.name.toLowerCase(), focusAttributes(node)),
+          ),
+        }
+      : null;
     if (element?.role !== null && element?.role !== undefined)
       state.roles.push({ ...element, ancestors });
-    if (element && element.offset !== undefined)
-      state.elements.set(element.offset, element);
+    if (element) state.elements.set(element.offset, element);
     // An `<ng-template>` is stamped where an outlet stands, which the walk does not read (plan
     // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for.
     const stamped = node.tagName?.split(':').pop() === 'ng-template';
@@ -1013,6 +1031,7 @@ const readMessages = (file, content, sides, reads) => {
     names: tags.names,
     markup: tags.markup,
     icus: tags.icus,
+    contentBlocks: tags.contentBlocks,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1367,6 +1386,21 @@ const checkAria = ({
             .join('; ') +
           ` — and nothing here reads it: a link or a stop drawn there is one no point ` +
           `examines`,
+      );
+    // An `@content` block hands what it holds to a foreign component (`foreignImports`), which
+    // places it where its own render function puts it, and Angular builds one there alone:
+    // anywhere else the compiler refuses it (`NG8026`, measured on 22.2.1 with the type check
+    // and without), and no component here imports a foreign one. Read through, the block would
+    // put what it holds in the element around it, which nothing promises; read as an element,
+    // it was the tag its slot is named for — `@content(button)` a button an option stood under.
+    if (said.contentBlocks.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: an \`@content\` block at offset ${said.contentBlocks[0]} ` +
+          `(\`${opening(said.contentBlocks[0])}\`) — Angular builds one only as a direct ` +
+          `child of a foreign component and refuses it anywhere else (NG8026), and inside one ` +
+          `the foreign component places what it holds where the template does not say: points ` +
+          `4, 8 and 9 would read it as standing in the element around the block`,
       );
     if (said.messages.length !== said.counted)
       throw new AriaError(
