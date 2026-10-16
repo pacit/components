@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "libs/components/widget/src/widget.html: recognised 2 static + 0 bound, and the attribute name appears 3 times",
   "$reason": "A part's markup quoted in a `@let` string. No element carries it, so it is no part, and it binds no attribute, so it is no binding either: the tree holds it as an expression, the counter counts it, and point 1 says so — an occurrence the walk cannot place is refused, not read. A pattern over the text read a part named `hint` and fired point 2. The case borrows the reference's package; what such a string compiles to, and that the package read takes it for no binding, is held by `part-named-in-strings-in-package`."
 }

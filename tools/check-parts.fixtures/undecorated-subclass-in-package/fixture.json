@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the package exposes what the cards do not list — `value`",
   "$reason": "An exported class with no decorator over a directive with no part, the shape ngc leaves with no declaration of its own (measured through ngc in partial mode). Its `ɵdir` is the base's, inherited as a static field, and Angular renders it as the base; the package read reads it so, by the class the definition names, finds nothing and leaves it out. Read by its own class it has nothing captured, and the refusal meant for a package compiled in full fires point 2 on a harmless class; the case fires on its own defect, the card silent about `value`."
 }

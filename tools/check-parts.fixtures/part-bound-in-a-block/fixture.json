@@ -1,5 +1,6 @@
 {
   "point": 3,
   "check": "staticness",
+  "message": "PctWidget (libs/components/widget/src/widget.ts): 1 in the sources",
   "$reason": "A part bound inside an `@if`. The case borrows the reference's package, which binds nothing, so the source read alone refuses it: the walk has to enter every block, and the compiler's visitor does. The package read's own reach into a block is held by `part-bound-in-a-block-in-package`."
 }

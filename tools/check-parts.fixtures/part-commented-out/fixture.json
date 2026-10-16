@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the cards list what the package does not expose — `hint`",
   "$reason": "A part taken out of the template and left quoted in an HTML comment, and the card still listing it. The build never sees a comment, so the package has no `hint`, and the card promises a selector that matches nothing — point 4's to say. A pattern over the raw text took the comment for markup and said point 2's instead: that `hint` is in the sources and missing from the package, about a part the sources no longer have."
 }

@@ -1,6 +1,7 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "`./widget` exposes 3 parts and has no card at all in `docs/components/`",
   "$reason": "The entrypoint exposes parts and has not one card about them. The inventory exists so that somebody reads it.",
   "drop": ["docs/components/widget.md", "docs/components/marker.md"]
 }

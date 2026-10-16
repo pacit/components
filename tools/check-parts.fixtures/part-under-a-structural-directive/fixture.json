@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the package exposes what the cards do not list — `hint`",
   "$reason": "A new part on an element under `*ngIf`, and the card silent about it. The tree holds the element's attributes twice — hoisted onto the `Template` the directive makes, as the same objects, and on the element itself — so a walk counting every node it visits reads two parts where the text has one, and point 1 fires on a template whose only fault is the card's."
 }

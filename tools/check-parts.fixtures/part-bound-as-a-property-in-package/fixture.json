@@ -1,5 +1,6 @@
 {
   "point": 3,
   "check": "staticness",
+  "message": "PctWidget (./widget): 1 in the package",
   "$reason": "`[data-pct-part]=\"slot()\"` on an element a directive matches, in the package alone. With a directive among its dependencies the component is not compiled for the DOM alone, and the binding is `ɵɵproperty`, not `ɵɵdomProperty` (measured through ngc in partial mode, under `NO_ERRORS_SCHEMA`). The declaration names the dependency by its selector."
 }

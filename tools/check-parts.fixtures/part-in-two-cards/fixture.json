@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the same part in two cards — `label`",
   "$reason": "The same part listed in two cards of the same entrypoint. The totals agree, so the set comparison says nothing — and the reader gets two answers to the question of what this part belongs to."
 }

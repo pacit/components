@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "PctWidget — recognised 0 static + 0 bound, and the attribute name appears 1 times",
   "$reason": "The spelling `part-written-in-capitals-in-host` holds, in a component's `host` block: the last class the scan reads. A refusal that stopped one class short would let `widget-root` through every point, the package data being the reference's, without it, as there."
 }

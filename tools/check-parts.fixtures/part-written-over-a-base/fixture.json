@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "PctMarker — PctMarkerBase writes `widget-base`, PctMarker writes `widget-marker`",
   "$reason": "The base writes `widget-base` in its `host` block, under the `widget-marker` `PctMarker` writes in its own. An element carries one `data-pct-part`, and Angular keeps the subclass's: `mergeHostAttrs` replaces an inherited attribute of the same name, and the package here, compiled from the declarations ngc writes for the chain in partial mode, gives `PctMarker` and `PctMarkerOutline` `widget-marker` alone (`hostAttrs` `[\"data-pct-part\", \"widget-marker\", 1, …]`, measured). Read as Angular merges it, the case agrees with the package, the cards and the snapshot, so the base's part — written, and carried by no element — would pass every point; point 1 counts the classes of a chain that write one. A read merging the two as a union fires point 2 here instead, naming `widget-base` as a part that never reached the package: the shape the reference had while its package was data."
 }
