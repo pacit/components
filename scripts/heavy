@@ -132,10 +132,18 @@ export NX_DAEMON="${NX_DAEMON:-false}"
 # line by default. `<&0`: a background job's stdin is /dev/null otherwise.
 unit="heavy-$$-$(date +%s%N)"
 echo "$unit" > "$dir/slot-$i.unit"
-trap '[ -n "${run:-}" ] && systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null' TERM INT HUP
+# A stop before the run exists, or before systemd has registered its scope, is kept and
+# delivered to the run's own process as soon as there is one.
+stop=0
+halt() {
+  [ -n "${run:-}" ] || return 0
+  systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null || kill -TERM "$run" 2>/dev/null
+}
+trap 'stop=1; halt' TERM INT HUP
 systemd-run --user --scope --quiet --collect --expand-environment=no --unit="$unit" \
   -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@" <&0 {fd}>&- &
 run=$!
+[ "$stop" = 1 ] && halt
 echo "run $run · $unit · $started" > "$dir/slot-$i.info"
 # `wait` returns 128+n when the trap fires; the run's own status comes from a second `wait`.
 while :; do
