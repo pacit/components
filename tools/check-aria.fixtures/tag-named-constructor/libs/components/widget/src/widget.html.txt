@@ -6,8 +6,8 @@
      accept. Beside them, outside the conditional, an element named `constructor`, which the
      build compiles under `NO_ERRORS_SCHEMA` as no element's direct child (Angular's parser
      closes the element around it), and one named `__proto__`, which only a namespace opens.
-     Both are unknown elements, and both carry the name too, at the same time; the one a
-     `tabindex` makes a stop is a second control. -->
+     The gate reads both as unknown elements, and both are handed the name too, at the same
+     time; the one a `tabindex` makes a stop is a second control. -->
 <constructor
   class="pct-widget__field"
   tabindex="0"

@@ -37,8 +37,8 @@
 
 <!-- The panel a menu, which no option may stand in, one option's role written after a token
      holding two no-break spaces between `constructor` and `option`, inside a wrapper whose role
-     is `list` after one: the engines read each such token whole, and invalid, so they take the
-     option and look through the wrapper. -->
+     is `list` after a narrow one: the engines read each such token whole, and invalid, so they
+     take the option and look through the wrapper. -->
 @if (open()) {
 <div
   class="pct-widget__panel"
@@ -50,7 +50,7 @@
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>
-  <div class="pct-widget__row" role=" list">
+  <div class="pct-widget__row" role=" list">
     <div role="constructor  option option">Anywhere</div>
   </div>
 </div>
