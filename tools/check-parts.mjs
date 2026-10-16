@@ -116,7 +116,8 @@ const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
  * recognise. Both want the name in lowercase, and so does the package read: `hostAttrs` and
  * the host-binding function keep `'DATA-PCT-PART'` as written (measured through the JIT
  * compiler), Angular hands it to the same `setAttribute`, and it passed every point until
- * this count. A comment in the body is not blanked: one naming the attribute is refused.
+ * this count. A comment in the body is not blanked, so it counts as text: prose naming the
+ * attribute is refused, and a quoted lowercase pair is one `HOST_STATIC` reads as a part.
  */
 const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
@@ -144,7 +145,9 @@ const entrypointFromPath = (file) => {
  * in `field/src/affix.ts`) and this scanner does not see that — deliberately. A part
  * brought in that way appears in the package read and is missing from the source read,
  * that is, it fires point 2 with the part's name in the message. Exactly the work the
- * second read is there to do.
+ * second read is there to do — in lowercase. In capitals, there or by a computed key or
+ * `@HostBinding`, the package read misses it too, comparing the name as written, and no point
+ * fires (`req-api-parts` records it).
  */
 const readSources = (root, files) => {
   const classes = [];

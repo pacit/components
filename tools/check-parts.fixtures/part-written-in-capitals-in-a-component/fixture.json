@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "The spelling `part-written-in-capitals-in-host` holds, in a component's `host` block: the last class the scan reads. A refusal that stopped one class short would let `widget-root` through every point, as the package read, which compares the name as written, lists no such part either."
+}
