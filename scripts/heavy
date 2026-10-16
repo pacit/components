@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# The queue for heavy runs — Stryker, Playwright, vitest, the nx battery — shared by every
+# agent session and terminal on the desk. Several sessions at once ran out of memory: two
+# heavy runs side by side are what the desk cannot hold, whoever starts them (AGENTS.md).
+#
+#   scripts/heavy <command...>
+#
+# - Waits for a free slot (default 1, HEAVY_SLOTS=N for more). The slots are flock(1) locks
+#   in ~/.cache/heavy-queue, so the queue holds across worktrees and sessions, and a run that
+#   dies — even by SIGKILL — frees its slot with it.
+# - Runs the command inside a systemd scope with a memory ceiling (HEAVY_MEMORY, default 6G),
+#   so that the kernel kills the run, not the editor or a Claude session.
+# - Loads nvm (like scripts/with-node), so `scripts/heavy npx …` works from a non-interactive shell.
+#
+#   scripts/heavy --status   who holds a slot and who waits
+set -u
+
+dir="${HOME}/.cache/heavy-queue"
+mkdir -p "$dir"
+slots="${HEAVY_SLOTS:-1}"
+ceiling="${HEAVY_MEMORY:-6G}"
+swap="${HEAVY_SWAP:-1G}"
+
+if [ "${1:-}" = "--status" ]; then
+  for f in "$dir"/slot-*.info; do
+    [ -e "$f" ] || continue
+    lock="${f%.info}.lock"
+    if ! flock -n "$lock" true 2>/dev/null; then echo "RUNNING  $(cat "$f")"; fi
+  done
+  for f in "$dir"/wait-*; do
+    [ -e "$f" ] || continue
+    pid="${f##*-}"
+    if kill -0 "$pid" 2>/dev/null; then echo "WAITING  $(cat "$f")"; else rm -f "$f"; fi
+  done
+  exit 0
+fi
+
+[ $# -gt 0 ] || { echo "usage: scripts/heavy <command...> | scripts/heavy --status" >&2; exit 2; }
+
+desc="pid $$ · $(date +%H:%M:%S) · $(pwd) · $*"
+waitfile="$dir/wait-$(date +%s%N)-$$"
+echo "$desc" > "$waitfile"
+trap 'rm -f "$waitfile"' EXIT
+
+announced=0
+while :; do
+  for ((i = 1; i <= slots; i++)); do
+    lock="$dir/slot-$i.lock"
+    exec {fd}>"$lock"
+    if flock -n "$fd"; then
+      rm -f "$waitfile"
+      echo "$desc" > "$dir/slot-$i.info"
+      [ "$announced" = 1 ] && echo "[heavy] slot $i free, starting after waiting." >&2
+      export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+      # shellcheck disable=SC1091
+      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+      # The lock fd is inherited by the scope's process, so the slot is held until the run
+      # (not just this wrapper) ends.
+      systemd-run --user --scope --quiet --collect \
+        -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@"
+      exit $?
+    fi
+    exec {fd}>&-
+  done
+  if [ "$announced" = 0 ]; then
+    echo "[heavy] all $slots slot(s) busy, queued. Holding now:" >&2
+    cat "$dir"/slot-*.info 2>/dev/null | sed 's/^/[heavy]   /' >&2
+    announced=1
+  fi
+  sleep 3
+done
