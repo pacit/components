@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"menu\"> (menu)",
+  "$reason": "The reference's panel made a menu, the consumer's options projected into it with `role=\"option\"` written on the `<ng-content>`, and an option of the template's own standing in it. The projection reaches no element (`ngc`, 22.2.1: its attributes are an array read only to match an outer `select`), so it is no option and nothing a role requires a context for. Read as an element, it was refused first, as an option under the menu; read as no element and counted in the text, the template was refused on point 1, one more role requiring a context in the text than walked. The option of its own is what stands where it may not."
+}

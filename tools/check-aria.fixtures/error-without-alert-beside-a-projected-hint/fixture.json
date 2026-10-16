@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "The reference's error line with no live region on it, and beside it, outside the conditional, the hint the consumer projects, `data-pct-part=\"hint\"` written on the `<ng-content>`. The projection reaches no element (`ngc`, 22.2.1), so no hint stands beside the error, and the error is refused for itself. Read as an element, the projection was a hint part beside the error, refused on point 6; read as no element and counted in the text, the template was refused on point 1, one more message part in the text than walked."
+}

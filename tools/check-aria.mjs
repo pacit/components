@@ -117,7 +117,10 @@ const nameOf = (name, property = false) =>
   property
     ? name.toLowerCase().replace(/^aria(?!-)/, 'aria-')
     : name.toLowerCase();
-/** The same parts counted without parsing, as the denominator of the walk. */
+/**
+ * The same parts counted without parsing, as the denominator of the walk — outside a
+ * projection's tag (`unprojected`).
+ */
 const MESSAGE_COUNTER = new RegExp(
   `data-pct-part="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
   'g',
@@ -371,15 +374,28 @@ const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
  */
 const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-content']);
 /**
+ * A template's text with the opening tag of each projection taken out, for the two counters the
+ * walk is held to: an `<ng-content>` carries nothing the walk reads (`rendered`), so nothing
+ * written on it is counted either. Which tag is one, the tag reader tells (`kinds`), as the
+ * compiler told it — by the local name, in any case and namespace — and not the walk, whose
+ * reach is what the counters measure.
+ */
+const unprojected = (text, kinds) =>
+  text.replace(OPENING_TAG, (tag, _name, _attributes, offset) =>
+    kinds.get(offset) === 'content' ? '' : tag,
+  );
+
+/**
  * The same roles counted without parsing, as the denominator of the walk of point 9: every
- * written `role`, its value read by `readRole` as the walk reads it, so that the two counts
- * do not part over the case or the whitespace of a value. Markup the parser decodes and this
- * does not (a character reference, an attribute name in capitals, single quotes) still parts
- * them, and the gate stops on it — a refusal, never a pass.
+ * written `role` outside a projection's tag (`unprojected`), its value read by `readRole` as
+ * the walk reads it, so that the two counts do not part over the case or the whitespace of a
+ * value. Markup the parser decodes and this does not (a character reference, an attribute name
+ * in capitals, single quotes) still parts them, and the gate stops on it — a refusal, never a
+ * pass.
  */
 const ROLE_WRITTEN = /\srole="([^"]*)"/g;
-const contextsWritten = (text, tables) =>
-  [...text.matchAll(ROLE_WRITTEN)].filter((m) =>
+const contextsWritten = (text, kinds, tables) =>
+  [...unprojected(text, kinds).matchAll(ROLE_WRITTEN)].filter((m) =>
     tables.contexts.has(readRole(m[1])),
   ).length;
 
@@ -694,16 +710,40 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
 
 /**
  * A node the walk reads as an element, asked of the compiler's own classes as `repeats` is: an
- * element, and an `<ng-content>`, which draws none of its own and is looked through
- * (`TRANSPARENT_TAGS`). Two other kinds the walk meets carry a `name` as a string and draw
- * nothing: an `@let`, the variable's, and an `@content` block, the slot's. Taken for elements,
- * `@let constructor` made a tag axe looks up in a table every object answers `constructor` from,
- * and the run died on a template the build compiles; `@content(optgroup)` made a group, and an
- * option under a menu stood in it. A block Angular cannot place (an `@empty` with no `@for`)
- * carries one too, and comes only with a parse error, on which the walk does not run.
+ * element, and an `<ng-content>`, which draws none of its own, is looked through
+ * (`TRANSPARENT_TAGS`) and carries nothing (`rendered`). Read as one, it is an empty record at
+ * the offset the tag scan finds it at; read as none, the scan took the role its text spells, and
+ * a `role="listbox"` there made a widget the walk gave no path. Two other kinds the walk meets
+ * carry a `name` as a string and draw nothing: an `@let`, the variable's, and an `@content`
+ * block, the slot's. Taken for elements, `@let constructor` made a tag axe looks up in a table
+ * every object answers `constructor` from, and the run died on a template the build compiles;
+ * `@content(optgroup)` made a group, and an option under a menu stood in it. A block Angular
+ * cannot place (an `@empty` with no `@for`) carries one too, and comes only with a parse error,
+ * on which the walk does not run.
  */
 const isElement = (node) =>
   node instanceof TmplAstElement || node instanceof TmplAstContent;
+
+/**
+ * What Angular renders of a node's attributes and bindings: all of an element's, none of a
+ * projection's. An `<ng-content>` draws no element, and the compiler hands every attribute
+ * written on it — a binding too, as its raw text (`[attr.role]`) — to `ɵɵprojection` as an array
+ * read for one thing: the match against an outer `select` when the projection is projected in
+ * turn (measured with `ngc`, strict templates, full compilation, 22.2.1). So the walk reads a
+ * projection as carrying nothing — no role, no name, no message part, nothing a role requires a
+ * context for — as the tag reader reads it making no stop.
+ *
+ * Read as nothing, and not refused: point 1 refuses what the gate cannot read, and this it reads
+ * whole. A role or a name written there is a key Angular matches on and draws nowhere, so no
+ * engine and no audit meets it — unlike a name in a host block (point 2), which lands on an
+ * element the engines name — and a template that keys a projection by an attribute builds. What
+ * the author meant it for is judged where it falls: a name handed there and to no control leaves
+ * the control without one, and a group around the projection holds no control (point 4). What
+ * the consumer projects is not read at all.
+ */
+const NOTHING_RENDERED = { attributes: [], inputs: [] };
+const rendered = (node) =>
+  node instanceof TmplAstContent ? NOTHING_RENDERED : node;
 
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
@@ -773,14 +813,14 @@ const localName = (name) => splitNsName(name)[1];
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
  * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
- * it makes a stop. Each tag's kind is recorded beside (`kinds`). A tag is recorded before the
- * visitor descends into it, so of two at one offset — an inline template and the element, the
- * `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept. Each element's
- * name is recorded too (`names`), as `localName` reads it; a template's or a projection's tag keeps
- * the name the scan reads off the text, on which no verdict turns. So is the markup an element
- * draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it
- * starts at. And each `@content` block, by the offset it starts at (`contentBlocks`), its tags read
- * as any others are.
+ * it makes a stop (`rendered`). Each tag's kind is recorded beside (`kinds`). A tag is recorded
+ * before the visitor descends into it, so of two at one offset — an inline template and the
+ * element, the `<ng-template>` or the `<ng-content>` it wraps — the inner one is the one kept.
+ * Each element's name is recorded too (`names`), as `localName` reads it; a template's or a
+ * projection's tag keeps the name the scan reads off the text, on which no verdict turns. So is
+ * the markup an element draws that the tree does not hold (`MARKUP`, `EMBEDS`): each way it does,
+ * by the offset it starts at. And each `@content` block, by the offset it starts at
+ * (`contentBlocks`), its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -895,7 +935,11 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ancestors.map((a) => a.offset),
       );
     }
-    const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
+    // What the walk reads off a node is what Angular renders of it (`rendered`).
+    const shown = rendered(node);
+    const part = shown.attributes?.find(
+      (a) => a.name === PART_ATTRIBUTE,
+    )?.value;
     if (part && MESSAGE_PART.test(part))
       state.messages.push({
         part,
@@ -905,15 +949,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         // role is neither a pass nor a violation to a reader of the source — it is a thing
         // this gate cannot judge, and it says so instead of guessing.
         role:
-          node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
+          shown.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
           null,
-        boundRole: (node.inputs ?? []).some((i) => BOUND_LIVE.has(i.name)),
+        boundRole: (shown.inputs ?? []).some((i) => BOUND_LIVE.has(i.name)),
       });
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
     // Point 4 takes from the same element what the tag scan cannot read for itself.
-    const written = (name) => writtenOn(node, name);
-    const bindings = (name) => boundOn(node, name);
+    const written = (name) => writtenOn(shown, name);
+    const bindings = (name) => boundOn(shown, name);
     // Each name attribute bound to its input, in whatever syntax — read in the field the
     // template's owner holds it in, which an alias names apart from the input.
     const taking = NAME_TARGETS.map((name, i) =>
@@ -962,7 +1006,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // reading of `aria-required-children`: a global ARIA attribute among these, or a
           // way to land on it. Static or bound — a binding says the attribute exists in
           // some state.
-          names: namesOn(node),
+          names: namesOn(shown),
           // Out of the tree with all it holds, the way axe reads the value; bound, it may
           // be absent. Angular's own tags reach no DOM to hide.
           ariaHidden:
@@ -974,7 +1018,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // template, as for points 4 and 8: an `href` a directive's host binding sets
           // (`routerLink`) is not in it.
           focusable: axe.commons.dom.isFocusable(
-            virtual(tag, focusAttributes(node)),
+            virtual(tag, focusAttributes(shown)),
           ),
         }
       : null;
@@ -1054,7 +1098,7 @@ const readMessages = (file, content, sides, reads) => {
     contentBlocks: tags.contentBlocks,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
-    counted: countOf(text, MESSAGE_COUNTER),
+    counted: countOf(unprojected(text, tags.kinds), MESSAGE_COUNTER),
     text,
   };
 };
@@ -1436,7 +1480,7 @@ const checkAria = ({
     byPath.get(template.file).within = said.within;
     byPath.get(template.file).roles = said.roles;
     const contextual = said.roles.filter((r) => tables.contexts.has(r.role));
-    const contextsCounted = contextsWritten(said.text, tables);
+    const contextsCounted = contextsWritten(said.text, said.kinds, tables);
     if (contextual.length !== contextsCounted)
       throw new AriaError(
         'denominator',
