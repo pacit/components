@@ -7,8 +7,9 @@
 }
 
 <!--
-  A `value` with a word on a button that is no `<input>`: a `<button>` is labelled by its content,
-  so the value is read by nobody, and only an `<input>` of a button type speaks through it.
+  A `value` with a word on a button that is no `<input>`: a `<button>` takes its name from
+  `aria-label` or its content, never from `value`, and only an `<input>` of a button type speaks
+  through it.
 -->
 <!-- Kept as written: the formatter would write the name in lower case. -->
 <!-- prettier-ignore -->

@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `button-label-under-upper-case-names` case with its label bound: `[attr.VALUE]=\"'Send'\"`. The tree names the input `VALUE`, as written, and `setAttribute` gives the submit button the `value` it shows (measured through ngc in partial mode, the linker and a render in jsdom). A binding visit that asks whether the name speaks without the tag and its `type`, as a written attribute is asked, lets the label through. The package entry carries the pairs the linker writes; neither name speaks, so point 2 compares neither."
+}
