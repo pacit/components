@@ -73,6 +73,30 @@ const SPEAKING_ATTRIBUTES = new Set([
   'download',
 ]);
 
+/**
+ * Whether an attribute speaks, by its name in any case. The compiler hands a name on as it is
+ * written — `TITLE` in the template's tree, in `ɵcmp.consts` and in `ɵdir.hostAttrs` alike — and
+ * the DOM lowercases it: `setAttribute('TITLE', …)` on an HTML element writes `title`, so the
+ * user reads the string (measured through ngc 22.2.1 in partial mode, the linker and a render in
+ * jsdom). An exact lookup let `TITLE="Collapse the list"` through points 2 and 3. The formatter
+ * writes such a name in a template in lower case, and leaves an `attr.` binding and a `host`
+ * block's key as they are written, so the gate cannot lean on it.
+ *
+ * Only the TEST takes the name in any case. What point 2 compares keeps the name as written,
+ * because both of its reads carry it so, and the inheritance merge compares names exactly, as
+ * Angular's `mergeHostAttribute` does. A property binding under such a name (`[TITLE]`) is
+ * refused by the compiler (`NG8002`) in a template and in a `host` block alike. On an SVG or
+ * MathML element the DOM keeps the case and `TITLE` is no `title`; it is read as speaking here
+ * all the same, because `consts` do not say which namespace an element draws in, and a string
+ * written there was written for the user.
+ *
+ * A name that is not a string speaks nothing: a loading block with `after` and no `minimum` puts
+ * `[null, 100]` into `consts`, which the package read takes for a pair, and the exact lookup
+ * passed over it where `toLowerCase` throws.
+ */
+const speaks = (name) =>
+  typeof name === 'string' && SPEAKING_ATTRIBUTES.has(name.toLowerCase());
+
 /** `<input type="submit">` prints `value` as the button's label. */
 const BUTTONS = new Set(['submit', 'button', 'reset']);
 
@@ -290,7 +314,7 @@ const readSources = (root, files) => {
           attributes.push([name, value]);
           continue;
         }
-        if (!SPEAKING_ATTRIBUTES.has(name)) continue;
+        if (!speaks(name)) continue;
         for (const l of value.matchAll(LITERAL_IN_EXPRESSION))
           literals.push([name, l[1] ?? l[2]]);
       }
@@ -420,21 +444,28 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     );
   }
 
+  /**
+   * The tag and its `type` in any case, as the names in `speaking`: `<INPUT TYPE="submit"
+   * VALUE="Send">` draws a button labelled "Send" (measured, the same render as `speaks`).
+   */
   visitElement(node) {
     this.seen(node);
     const previous = [this.tag, this.type];
-    this.tag = node.name;
+    this.tag = node.name.toLowerCase();
     this.type =
-      node.attributes.find((a) => a.name === 'type')?.value?.toLowerCase() ??
-      null;
+      node.attributes
+        .find((a) => a.name.toLowerCase() === 'type')
+        ?.value?.toLowerCase() ?? null;
     super.visitElement(node);
     [this.tag, this.type] = previous;
   }
 
   speaking(name) {
     return (
-      SPEAKING_ATTRIBUTES.has(name) ||
-      (name === 'value' && this.tag === 'input' && BUTTONS.has(this.type))
+      speaks(name) ||
+      (name.toLowerCase() === 'value' &&
+        this.tag === 'input' &&
+        BUTTONS.has(this.type))
     );
   }
 
@@ -889,17 +920,17 @@ const checkTexts = (input) => {
   // inside its subclasses must not be compared under a name the package has not got.
   for (const k of fromSources.values())
     for (const [name, value] of shipped.get(k.className))
-      if (SPEAKING_ATTRIBUTES.has(name))
+      if (speaks(name))
         speakingInSources.add(`${k.className} ${name}=${value}`);
   for (const s of scans)
     for (const a of s.scanner.attributes)
-      if (SPEAKING_ATTRIBUTES.has(a.name))
+      if (speaks(a.name))
         speakingInSources.add(`${ownerOf(s.file)} ${a.name}=${a.value}`);
 
   const speakingInPackage = new Set();
   for (const p of pkg)
     for (const [name, value] of p.attributes)
-      if (SPEAKING_ATTRIBUTES.has(name))
+      if (speaks(name))
         speakingInPackage.add(`${p.className} ${name}=${value}`);
 
   const packageOnly = [...speakingInPackage].filter(
@@ -959,7 +990,7 @@ const checkTexts = (input) => {
   // extends that base without writing over it.
   for (const k of classes)
     for (const [name, value] of k.attributes)
-      if (SPEAKING_ATTRIBUTES.has(name) && LETTER.test(value))
+      if (speaks(name) && LETTER.test(value))
         attributeViolations.push(`${k.file}: host \`${name}\` = "${value}"`);
   if (attributeViolations.length)
     throw new TextsError(
