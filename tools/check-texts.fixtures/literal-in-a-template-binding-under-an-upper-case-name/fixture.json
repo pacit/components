@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `literal-in-binding` case with the binding written `[attr.Aria-Label]`, in a mix of cases: the DOM lowercases any capital, not only a name in capitals. The template's tree names the input `Aria-Label`, as written, and `setAttribute` makes it the button's `aria-label` (measured through ngc in partial mode, the linker and a render in jsdom). A binding is no static attribute, so the package entry is the reference's."
+}

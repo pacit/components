@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `literal-in-a-subclass-host-binding` case with the binding written `[attr.ARIA-LABEL]`. An `attr.` binding sets the attribute through `setAttribute`, which lowercases the name on an HTML element, so the fallback is announced as the element's `aria-label`. A binding is no static attribute, so the package entry is the reference's."
+}

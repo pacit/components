@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A `title` with a word in a host block, its key written `TITLE`. The compiler hands the name on as written and `setAttribute` lowercases it on an HTML element, so the user reads it as the host's `title`. The package carries `TITLE` too (measured through ngc in partial mode), so point 2 agrees while its two reads fold the name alike, and point 3's host loop fires only while it folds the name."
+}

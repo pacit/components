@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "The `attribute-with-text` case with the name written `TITLE`. The template's tree and `ɵcmp.consts` carry `TITLE` as written, and the DOM makes it the button's `title` (measured through ngc in partial mode, the linker and a render in jsdom). The package entry is here so that point 2's two reads agree; they do while both fold the name alike. A loading block with `after` puts `[null, 100]` into the same `consts`, ahead of `TITLE`: a name that is no string, which the test must pass over rather than throw on."
+}
