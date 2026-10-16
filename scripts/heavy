@@ -84,6 +84,11 @@ trap 'rm -f "$waitfile"' EXIT
 # came before it, so a newcomer polling at the right moment cannot overtake one that waited.
 announced=0
 while :; do
+  # A waiter stopped with Ctrl-Z lost its file to the others; resumed, it joins at the back.
+  if [ ! -e "$waitfile" ]; then
+    waitfile="$dir/wait-$(date +%s%N)-$$"
+    echo "wrapper $$ · $started" > "$waitfile"
+  fi
   mapfile -t queue < <(waiters)
   ahead=0
   for f in "${queue[@]}"; do
@@ -127,15 +132,16 @@ export NX_DAEMON="${NX_DAEMON:-false}"
 # line by default. `<&0`: a background job's stdin is /dev/null otherwise.
 unit="heavy-$$-$(date +%s%N)"
 echo "$unit" > "$dir/slot-$i.unit"
+trap '[ -n "${run:-}" ] && systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null' TERM INT HUP
 systemd-run --user --scope --quiet --collect --expand-environment=no --unit="$unit" \
   -p MemoryMax="$ceiling" -p MemorySwapMax="$swap" -- "$@" <&0 {fd}>&- &
 run=$!
 echo "run $run · $unit · $started" > "$dir/slot-$i.info"
-trap 'systemctl --user kill --signal=TERM "$unit.scope" 2>/dev/null' TERM INT HUP
+# `wait` returns 128+n when the trap fires; the run's own status comes from a second `wait`.
 while :; do
   wait "$run"
   code=$?
-  kill -0 "$run" 2>/dev/null || break
+  kill -0 "$run" 2>/dev/null || { wait "$run"; code=$?; break; }
 done
 systemctl --user stop "$unit.scope" 2>/dev/null
 exit "$code"
