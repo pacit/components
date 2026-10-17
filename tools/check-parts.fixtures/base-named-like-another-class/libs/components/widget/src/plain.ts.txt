@@ -1,0 +1,5 @@
+/**
+ * A class with no decorator under the name of the reference's decorated base, which
+ * `marker.ts` imports from here.
+ */
+export abstract class PctMarkerBase {}

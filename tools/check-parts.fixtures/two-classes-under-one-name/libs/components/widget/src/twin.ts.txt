@@ -1,0 +1,13 @@
+import { Directive } from '@angular/core';
+
+/**
+ * A directive under the reference's `PctMarker` name, in a file of its own: no entrypoint
+ * exports it, so the package has the reference's class under that name and not this one.
+ */
+@Directive({
+  selector: '[pctTwin]',
+  host: {
+    'data-pct-part': 'widget-marker',
+  },
+})
+export class PctMarker {}

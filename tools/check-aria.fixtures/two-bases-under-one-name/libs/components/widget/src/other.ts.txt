@@ -1,0 +1,16 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * A decorated class under the name of the reference's base, with both naming inputs. Nothing
+ * imports it, so no build hands its inputs to `PctWidget`.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export abstract class PctWidgetBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly size = input<string>('md');
+}

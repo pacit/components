@@ -32,6 +32,8 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { classKey, namesOf } from './class-bases.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const POLICY = `${PROJECT}/forms.policy.json`;
@@ -120,25 +122,28 @@ const classesIn = (file, text) => {
 };
 
 /**
- * The library's classes, keyed by name, with what each one declares and what it stands on.
- * `extends` is followed later, at the point that needs it: a base is a class of this library
- * like any other, and resolving the chain here would hide which file a member really
- * came from.
+ * The library's classes, keyed by name AND file (`class-bases.mjs`), with what each one
+ * declares and what it stands on. Two exported classes of one name are legal TypeScript, and
+ * keyed by the name alone the one read later took the other's place: a control without its
+ * block vanished behind a namesake that is no control, and point 3 passed (measured). `extends`
+ * is followed later, at the point that needs it: a base is a class of this library like any
+ * other, and resolving the chain here would hide which file a member really came from. What is
+ * resolved here is which class the base's NAME stands for — the one the file declares or
+ * imports under it, as TypeScript binds it, and not a class of that name anywhere else.
  */
 const readSources = (root, files) => {
   const classes = new Map();
   const orphans = [];
   for (const file of files) {
-    const { headers, orphans: loose } = classesIn(
-      file,
-      readFileSync(join(root, file), 'utf8'),
-    );
+    const content = readFileSync(join(root, file), 'utf8');
+    const { headers, orphans: loose } = classesIn(file, content);
+    const names = namesOf(file, content);
     orphans.push(...loose);
     for (const header of headers)
-      classes.set(header.name, {
+      classes.set(classKey(file, header.name), {
         ...header,
         file,
-        base: /\bextends\s+(\w+)/.exec(header.heritage)?.[1] ?? null,
+        from: names.get(/\bextends\s+(\w+)/.exec(header.heritage)?.[1]),
         control: CONTRACTS.test(header.heritage),
       });
   }
@@ -172,22 +177,33 @@ const readContract = (text) => {
   );
 };
 
-/** The controls, with every member they carry — their own and their bases'. */
+/**
+ * The controls, with every member they carry — their own and their bases'. A base is the class
+ * its name stands for in the file that extends it, and a base this reading has not got — one
+ * no file exports, or a package's — hands down nothing: what a control would inherit from it is
+ * missing from what point 3 reads, which can refuse a control and never pass one.
+ *
+ * With the links resolved through the import and keyed by file, the chain is the one TypeScript
+ * builds: a cycle in it is one the compiler refuses as well (TS2506, a class named in its own
+ * base expression), and no build compiles it. `seen` guards nothing the gate is handed, and
+ * dropping it is equivalent on every input that compiles.
+ */
 const controlsOf = (classes) => {
-  const inherited = (name, seen = new Set()) => {
-    const cls = classes.get(name);
-    if (!cls || seen.has(name)) return new Map();
-    seen.add(name);
+  const inherited = (key, seen = new Set()) => {
+    const cls = classes.get(key);
+    if (!cls || seen.has(key)) return new Map();
+    seen.add(key);
     // The base FIRST, so a leaf redeclaring a member wins — which is what TypeScript does,
     // and the file the violation names then has to be the file a reader would edit.
-    return new Map([
-      ...(cls.base ? inherited(cls.base, seen) : []),
-      ...cls.members,
-    ]);
+    return new Map([...inherited(cls.from, seen), ...cls.members]);
   };
-  return [...classes.values()]
-    .filter((c) => c.control)
-    .map((c) => ({ name: c.name, file: c.file, members: inherited(c.name) }))
+  return [...classes]
+    .filter(([, c]) => c.control)
+    .map(([key, c]) => ({
+      name: c.name,
+      file: c.file,
+      members: inherited(key),
+    }))
     .sort((a, b) => a.name.localeCompare(b.name));
 };
 

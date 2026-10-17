@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "`PctKnob` no longer extends its base, so it declares the contract and none of the block, and a second exported `PctKnob`, in `twin.ts`, is no control. TypeScript compiles two classes of one name in two files. Keyed by the name alone, the class read later took the control's place, the control left the list point 3 reads, and the input passed. Keyed by file as well, the control stays and point 3 refuses it."
+}

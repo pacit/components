@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "shared-class-name",
+  "description": "A second decorated `PctMarker`, in `twin.ts`, beside the reference's. TypeScript compiles two classes of one name in two files, and the package does not carry this one. Point 2 keys both reads by class name, the only key the package has, so it compared one of the two and passed: the twin's absence from the package went unreported and its strings were held against nothing. The twin writes the reference's `title` with no letter, so no other point can refuse the input."
+}

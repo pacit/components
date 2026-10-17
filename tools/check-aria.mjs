@@ -43,6 +43,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { classKey, namesOf, standsFor } from './class-bases.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -174,7 +175,11 @@ const decoratedClasses = (path, content) => {
   return classes;
 };
 
-/** `class X extends Y` — the base whose inputs and host block are the subclass's too. */
+/**
+ * `class X extends Y` — the base whose inputs and host block are the subclass's too. Y is the
+ * name as written; the class it stands for is found through the file's own declarations and
+ * imports (`class-bases.mjs`), not by the name across the sources.
+ */
 const baseOf = (node) =>
   node.heritageClauses
     ?.find((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
@@ -276,6 +281,7 @@ const readSources = (root, files) => {
     const content = readFileSync(join(root, file), 'utf8');
     counted += countOf(content, DECORATOR_COUNTER);
     const classes = decoratedClasses(file, content);
+    const names = namesOf(file, content);
     for (const match of content.matchAll(DECORATOR)) {
       const node = classes.get(match.index);
       if (node === undefined) {
@@ -284,10 +290,15 @@ const readSources = (root, files) => {
       }
       const body = match[2];
       const host = hostBlock(body);
+      const base = baseOf(node);
       components.push({
         file,
         className: node.name?.text,
-        base: baseOf(node),
+        key: classKey(file, node.name?.text),
+        base,
+        // The class the base's name stands for in this file: `undefined` when there is no base,
+        // or when the file binds its name to nothing a class is read from.
+        from: names.get(base),
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
@@ -1315,19 +1326,28 @@ const checkAria = ({
   // component. The merge is done HERE, once, and every point below sees whole components.
   // A base the scan cannot see is a denominator failure and not a shrug — it is exactly the
   // half that would go unexamined.
-  const byName = new Map(components.map((c) => [c.className, c]));
+  //
+  // A link is the class the base's name stands for in the subclass's file, keyed by its file
+  // too (`class-bases.mjs`), so two components of one name are two and the chain is the one
+  // TypeScript builds: a cycle in it is one the compiler refuses as well (TS2506, a class named
+  // in its own base expression), and no build compiles it. `seen` guards nothing the gate is
+  // handed, and dropping it is equivalent on every input that compiles. By the name alone the
+  // chain could run through a class no build put there and close a cycle TypeScript has not
+  // got, and only `seen` stopped it recursing forever.
+  const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
     if (component.base === null) return component;
-    if (seen.has(component.className)) return component;
-    seen.add(component.className);
-    const base = byName.get(component.base);
+    if (seen.has(component.key)) return component;
+    seen.add(component.key);
+    const base = byKey.get(component.from);
     if (base === undefined)
       throw new AriaError(
         'denominator',
-        `${component.className} (${component.file}) extends \`${component.base}\`, which is ` +
-          `not among the decorated classes read — its inputs and its host block are part of ` +
-          `this component's surface, and every point below would examine the half declared ` +
-          `here`,
+        `${component.className} (${component.file}) extends \`${component.base}\`, ` +
+          `${standsFor(component.from)} — not among the decorated classes read. Its inputs ` +
+          `and its host block are part ` +
+          `of this component's surface, and every point below would examine the half ` +
+          `declared here`,
       );
     const whole = inherited(base, seen);
     for (const [name, field] of whole.inputs)

@@ -52,18 +52,37 @@ merges what a base declares, or what it reads is one of the things a base cannot
 it reads the built package, where the merge has already happened. A gate that reads a class
 and is not on this list is the gap this requirement exists to name.
 
+Following `extends` means following the class TypeScript follows. The name after `extends`
+stands for what the file that writes it binds it to — a class the file declares, or one it
+imports, under the name before `as` — and two classes may share a name in two files. Read by the
+name across the sources, a chain runs through a class no build put there, and can close a cycle
+the compiler has not got: measured on `check-aria`, which passed `PctLoopX extends PctLoopY
+extends PctLoopX` with the second `PctLoopX` an undecorated class of another file, and recursed
+forever on it without its `seen` guard. Refusing two decorated classes of one name does not
+close that: an undecorated namesake or a renamed import does not trip it. So a gate that follows
+`extends` resolves the name through the subclass's file and keys a class by its name and its
+file (`tools/class-bases.mjs`), and a base that resolves to no decorated class it read is a
+denominator fault; and a gate that compares with the package by class name, the one key the
+package carries, refuses a name two decorated classes share.
+
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
-`extends`, and a base the scan cannot see is a denominator fault;
+`extends` as the subclass's file binds it, and a base the scan cannot see is a denominator fault;
 `tools/check-texts.mjs` (target `check-texts`) — `host` attributes, merged the same way for
 the comparison with the package, a subclass's attribute replacing its base's of the same exact
 name as Angular's merge does; each class's own attributes and binding literals judged in the
 file that writes them, a shadowed one included, so a chain writing one twice is no fault; and
 point 4 reads signal factories per FILE rather than per class, so a base's default is read
-where it stands;
+where it stands; a name two decorated classes share is a denominator fault, because point 2
+compares the classes with the package by name;
 `tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, a
 subclass's part replacing its base's as Angular's merge does, and a chain writing one twice a
-denominator fault; and the template through `templateUrl`, which a base cannot pass on;
+denominator fault, as is a name two decorated classes share, point 2 comparing by name as in
+`check-texts`; and the template through `templateUrl`, which a base cannot pass on;
+`tools/check-forms.mjs` (target `check-forms`) — the members of every exported class, a
+control's own and its bases' down `extends` as its file binds it, each class keyed by its file
+as well, so a control is not lost behind a namesake; a base the read has not got hands down
+nothing, which can refuse a control and never pass one;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
 where nothing is inherited;
@@ -91,10 +110,25 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. The four gates that read what a base cannot pass on have no fixture,
-deliberately: the thing that would be inherited is not, by the feature named above, and a
-fixture of it would measure Angular rather than the gate
-**Lessons:** [`lesson-100`](../lessons.md#lesson-100)
+to put there too. What a class's name stands for, by ten more:
+`tools/check-texts.fixtures/two-classes-under-one-name/` and
+`tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
+package does not carry, which passed),
+`tools/check-texts.fixtures/base-named-like-another-class/`,
+`tools/check-parts.fixtures/base-named-like-another-class/`,
+`tools/check-aria.fixtures/base-named-like-another-class/` and
+`tools/check-forms.fixtures/base-named-like-another-class/` (the base an undecorated class of
+the name of a decorated one, imported from its own file, which the chain by name followed to the
+decorated one), `tools/check-aria.fixtures/two-bases-under-one-name/` (two decorated bases of
+one name, the one imported without the naming inputs),
+`tools/check-aria.fixtures/base-from-a-package/` (a package's class under a read class's name),
+`tools/check-forms.fixtures/control-behind-a-namesake/` (a control lost behind an exported class
+of its name) and
+`tools/check-texts.fixtures/speaking-attribute-on-a-base-imported-under-another-name/` (a
+renamed import followed to the class before `as`). The four gates that read what a base cannot
+pass on have no fixture, deliberately: the thing that would be inherited is not, by the feature
+named above, and a fixture of it would measure Angular rather than the gate
+**Lessons:** [`lesson-100`](../lessons.md#lesson-100), [`lesson-257`](../lessons.md#lesson-257)
 
 ---
 

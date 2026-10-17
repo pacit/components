@@ -42,6 +42,7 @@ import {
 } from '@angular/compiler';
 import * as core from '@angular/core';
 
+import { classKey, namesOf, standsFor } from './class-bases.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
 import { readTree } from './template-comments.mjs';
 
@@ -94,7 +95,11 @@ const sorted = (set) => [...set].sort();
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
-/** `class X extends Y` — the base whose `host` block is the subclass's too. */
+/**
+ * `class X extends Y` — the base whose `host` block is the subclass's too. Y is the name as
+ * written; the class it stands for is found through the file's own declarations and imports
+ * (`class-bases.mjs`), not by the name across the sources.
+ */
 const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 /** `templateUrl: './x.html'` — one occurrence per decorator. */
@@ -162,17 +167,23 @@ const readSources = (root, files) => {
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
     declarations += countOf(content, DECORATOR_COUNTER);
+    const names = namesOf(file, content);
 
     for (const [, kind, body, className, heritage] of content.matchAll(
       DECORATOR,
     )) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
+      const base = EXTENDS.exec(heritage ?? '')?.[1] ?? null;
       classes.push({
         file,
         className,
+        key: classKey(file, className),
         kind,
-        base: EXTENDS.exec(heritage ?? '')?.[1] ?? null,
+        base,
+        // The class the base's name stands for in this file: `undefined` when there is no base,
+        // or when the file binds its name to nothing a class is read from.
+        from: names.get(base),
         entrypoint: entrypointFromPath(file),
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
@@ -303,6 +314,30 @@ const checkParts = (input) => {
         `column zero).`,
     );
 
+  // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
+  // exports a class under its name and keeps no file. Two decorated classes of one name are then
+  // one key, and the comparison reads one of them — a class that never reached the package hides
+  // behind its namesake that did (measured: a second `PctMarker` in `twin.ts`, writing a part and
+  // exported by nothing, passed). The chain is not what needs this: `extends` is resolved through
+  // the file that writes it, by name and file.
+  const shared = [...Map.groupBy(classes, (k) => k.className)].filter(
+    ([, named]) => named.length > 1,
+  );
+  if (shared.length)
+    throw new PartsError(
+      'denominator',
+      `${shared.length} names are borne by more than one decorated class:\n` +
+        list(
+          shared.map(
+            ([name, named]) =>
+              `${name}: ${named.map((k) => k.file).join(', ')}`,
+          ),
+        ) +
+        `\n    Point 2 compares the sources with the package by class name, the only key ` +
+        `the package carries, so it would read one class of each name and pass the other ` +
+        `over. Rename one of them.`,
+    );
+
   const inline = classes.filter((k) => k.inline);
   if (inline.length)
     throw new PartsError(
@@ -403,13 +438,17 @@ const checkParts = (input) => {
   // writes one. A template is not merged: `templateUrl` is the subclass's own, and a base
   // cannot pass one on. A base the scan cannot see is a denominator fault — the package
   // read would then find its parts on the subclass and the source read never would.
-  const declared = new Map(classes.map((k) => [k.className, k]));
+  //
+  // A link is the class the base's name stands for in the subclass's file, keyed by its file
+  // too (`class-bases.mjs`), so the chain is the one TypeScript builds: a cycle in it is one the
+  // compiler refuses as well (TS2506, a class named in its own base expression), and no build
+  // compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on every
+  // input that compiles.
+  const declared = new Map(classes.map((k) => [k.key, k]));
   const exported = new Set(pkg.map((p) => p.className));
-  const extended = new Set(
-    classes.map((k) => k.base).filter((base) => base !== null),
-  );
+  const extended = new Set(classes.map((k) => k.from));
   const unresolved = classes.filter(
-    (k) => k.base !== null && !declared.has(k.base),
+    (k) => k.base !== null && !declared.has(k.from),
   );
   if (unresolved.length)
     throw new PartsError(
@@ -417,7 +456,8 @@ const checkParts = (input) => {
       `${unresolved.length} classes extend a base the scan did not read:\n` +
         list(
           unresolved.map(
-            (k) => `${k.file}: ${k.className} extends \`${k.base}\``,
+            (k) =>
+              `${k.file}: ${k.className} extends \`${k.base}\`, ${standsFor(k.from)}`,
           ),
         ) +
         `\n    Whatever that base writes into a \`host\` block is part of this class in ` +
@@ -426,9 +466,9 @@ const checkParts = (input) => {
     );
   const whole = (k, seen = new Set()) => {
     const writes = k.parts.size ? [k] : [];
-    if (k.base === null || seen.has(k.className)) return { ...k, writes };
-    seen.add(k.className);
-    const base = whole(declared.get(k.base), seen);
+    if (k.base === null || seen.has(k.key)) return { ...k, writes };
+    seen.add(k.key);
+    const base = whole(declared.get(k.from), seen);
     return {
       ...k,
       parts: k.parts.size ? k.parts : base.parts,
@@ -438,7 +478,7 @@ const checkParts = (input) => {
   };
   const resolved = classes
     .map((k) => whole(k))
-    .filter((k) => !(extended.has(k.className) && !exported.has(k.className)));
+    .filter((k) => !(extended.has(k.key) && !exported.has(k.className)));
 
   // One element, one part. A chain in which two classes write a static part hands the
   // element the nearest one, and the other is a part the sources write and no element of

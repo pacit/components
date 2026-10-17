@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) keeps its widget inside the template and declares no ariaLabel / ariaLabelledby",
+  "$reason": "Two decorated classes named `PctWidgetBase`, which TypeScript compiles in two files: `base.ts`, which `widget.ts` imports, without the naming inputs, and `other.ts` with both. Keyed by name, the merge took the class read last, handed `PctWidget` inputs no build gives it and passed an unnamed widget. Through the import, `PctWidget` has the base it extends and no name, and point 3 refuses it."
+}

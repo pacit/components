@@ -7482,3 +7482,34 @@ so the pick wins over the walk that led to it, however many keys share a render.
 The wider reading: a focus move scheduled after a render is a claim about every other component
 that may schedule one in the same render, and a spec that renders between keys cannot see the
 race — only keys pressed the way a person presses them can.
+
+### <a id="lesson-257"></a>`lesson-257` — Making a name unique among decorated classes does not make it mean one class
+
+The review of the change behind `req-quality-inheritance`'s merge found `check-texts` resolving
+`extends` by bare name across the sources, and the follow-up was framed as a refusal: two
+decorated classes of one name stop the gate at point 1, and the `seen` guard against a cycle by
+name becomes dead code again. Measured before building it, on the four gates that follow
+`extends`, five inputs of six passed. A second class of a name passed `check-texts`,
+`check-parts`, `check-aria` and `check-forms`, the last losing a control without its block
+behind a namesake that is no control. A base imported as `{ PctPlain as PctWidgetBase }` handed
+a widget the naming inputs of the decorated `PctWidgetBase` it does not extend. The sixth was
+refused, with a stale `dist` for its cause. The refusal would have caught the second decorated
+class and not the import. Then the cycle: `PctLoopX extends PctLoopY extends PctLoopX`,
+the second `PctLoopX` an undecorated class of another file. No two decorated classes share a
+name there, `check-aria` passed it, and without `seen` it threw `RangeError: Maximum call stack
+size exceeded`.
+
+A name means what the file that writes it binds it to: a class it declares, or a class it
+imports, under the name before `as`. Uniqueness among decorated classes is a property of one set,
+and the lookup ran in another, every class and every import binding. So the change split the
+two jobs the bare name had held. The chain is keyed by name and file and resolved through the
+subclass's own declarations and imports (`tools/class-bases.mjs`), as TypeScript resolves it, so
+a cycle in it is one the compiler refuses too (TS2506). The comparison with the package keeps
+the name, the only key the package carries, and that is where a name two decorated classes share
+is refused.
+
+The wider reading: an equivalence claim stands on a precondition, and the precondition has to be
+measured against the inputs that break the claim, not restated as a rule nearby. One more, from
+the same run: a lookup keyed without the file keeps the class read last, so a case meant to fail
+it has to put the wrong namesake last in the reading order. One put first passes by accident of
+the sort.

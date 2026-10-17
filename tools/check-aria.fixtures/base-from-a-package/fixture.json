@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctWidgetBase`, which stands there for PctWidgetBase (@somebody/else)",
+  "$reason": "`PctWidget` extends `PctWidgetBase`, and its file imports that name from a package, while the reference's decorated `PctWidgetBase` is still read in `base.ts`. Angular merges what the package's class declares, which no file here holds. Followed by its name across the sources, the chain reached the class in `base.ts`, which no build puts there, and passed. Followed through the import, the base is one the scan did not read, and point 1 refuses it under the package's specifier."
+}

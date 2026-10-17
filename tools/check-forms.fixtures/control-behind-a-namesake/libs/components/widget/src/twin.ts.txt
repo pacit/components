@@ -1,0 +1,5 @@
+/**
+ * A class under the name of the reference's `PctKnob`, exported from a file of its own and
+ * implementing no contract: it is no control.
+ */
+export class PctKnob {}

@@ -1,0 +1,24 @@
+import { Component, input } from '@angular/core';
+
+import { PctWidgetBase } from '@somebody/else';
+
+/** A control whose role sits inside the template — the case this gate exists for. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    '[attr.data-pct-open]': 'open() ? "" : null',
+  },
+})
+export class PctWidget extends PctWidgetBase {
+  readonly label = input<string>('');
+  protected readonly open = input(false);
+  /** Which of the two triggers is standing — the template's `@if`, and nothing else. */
+  protected readonly editable = input(false);
+  /** Whether the platform's own control stands instead: nothing of ours to draw. */
+  protected readonly native = input(false);
+  protected readonly hint = input<string>('');
+  protected readonly error = input<string>('');
+  protected readonly showError = input(false);
+}

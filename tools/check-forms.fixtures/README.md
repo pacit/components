@@ -42,16 +42,18 @@ because of it rather than because of its own, and every "rejected" would be fals
 
 ## The cases
 
-| directory                    | point | check         | rule                   | defect                                                    |
-| ---------------------------- | ----: | ------------- | ---------------------- | --------------------------------------------------------- |
-| `policy-removed`             |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has |
-| `sources-without-a-class`    |     1 | `denominator` | `no-classes`           | sources that parse to no class at all                     |
-| `member-adrift`              |     1 | `denominator` | `unattributed`         | a member declaration above every class header             |
-| `contract-unreadable`        |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                     |
-| `no-controls`                |     1 | `denominator` | `no-controls`          | classes and members, and not one form control             |
-| `block-outside-the-contract` |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry   |
-| `member-missing`             |     3 | `block`       | `member-missing`       | a control with no `touched`                               |
-| `transform-dropped`          |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`             |
+| directory                       | point | check         | rule                   | defect                                                                    |
+| ------------------------------- | ----: | ------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `policy-removed`                |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has                 |
+| `sources-without-a-class`       |     1 | `denominator` | `no-classes`           | sources that parse to no class at all                                     |
+| `member-adrift`                 |     1 | `denominator` | `unattributed`         | a member declaration above every class header                             |
+| `contract-unreadable`           |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
+| `no-controls`                   |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
+| `block-outside-the-contract`    |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
+| `member-missing`                |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
+| `control-behind-a-namesake`     |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
+| `base-named-like-another-class` |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
+| `transform-dropped`             |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
 `transform-dropped` is the case this gate was written for, and it is worth reading beside
 `member-missing`: they are the two halves of one promise and they break independently. A
@@ -65,6 +67,12 @@ has a case of its own because each arrives from a different direction: the polic
 the sources moved, the reading's anchor outgrown, the dependency's declarations gone, the
 contract stopped being implemented. A gate that reports success over an empty set is the
 failure mode this whole tree exists against ([`lesson-33`](../../docs/lessons.md#lesson-33)).
+
+`control-behind-a-namesake` and `base-named-like-another-class` hold what a name stands for.
+TypeScript compiles two classes of one name in two files, and binds a base's name in the file
+that writes it, through its declaration or its import. Read by the name alone, the first case
+lost a control behind a namesake that is no control, and the second handed a control the
+block of a namesake it does not extend. Both passed, and both are refused here.
 
 ## What the reference carries beyond the defects
 

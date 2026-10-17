@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "base-without-declaration",
+  "description": "Two classes named `PctMarkerBase`: the reference's decorated one in `base.ts`, and one with no decorator in `plain.ts`, which is the one `marker.ts` imports. TypeScript compiles both, and the second is no decorated class, so point 1's refusal of a shared name does not fire. Followed by its name across the sources, the chain reached the decorated class, which no build puts there, and passed. Followed through the import, the base is a class whose `host` block the gate cannot read, and point 1 refuses it as it refuses any base it did not read. The package data is what the linker writes for these sources: the marker's own attributes, with no `role` from a base."
+}

@@ -1,7 +1,7 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "PctMarker extends `PctMarkerBase`",
+  "message": "PctMarker extends `PctMarkerBase`, which stands there for PctMarkerBase (libs/components/widget/src/base.ts)",
   "drop": ["libs/components/widget/src/base.ts.txt"],
   "$reason": "A directive whose base the scan cannot see. Angular merges a decorated base's host attributes into the subclass's definition, so a part the base wrote would stand on `PctMarker` in the package while the source read had never seen it — point 2 would then compare the half declared here against the whole of what ships, and report the base's part as one brought in by syntax the scanner is blind to (lesson-100). The reference's base writes none, so the refusal stands on the `extends` alone: of a base nobody read, nobody can say it writes nothing."
 }

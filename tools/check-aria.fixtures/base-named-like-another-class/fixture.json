@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctWidgetBase`, which stands there for PctWidgetBase (libs/components/widget/src/plain.ts)",
+  "$reason": "Two classes named `PctWidgetBase`: the reference's decorated one in `base.ts`, and one with no decorator in `plain.ts`, which is the one `widget.ts` imports. TypeScript compiles both. Followed by its name across the sources, the chain reached the decorated class, handed the widget two naming inputs no build gives it and passed. Followed through the import, the base is one the scan did not read, and point 1 refuses it."
+}
