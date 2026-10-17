@@ -1,5 +1,5 @@
 {
   "point": 6,
   "check": "part",
-  "why": "A part written on an `<ng-template>` inside the arrow's icon, under a structural directive. Angular renders none of an `<ng-template>`'s attributes — they are read for directive matching alone — so the part names nothing a stylesheet can reach, and the place for it is the `<pct-icon>`. The walk reads the `<ng-template>` as the tag it is written as, and walks the template the directive wraps around it through to it: that wrapper carries no tag (`tagName` is null) and no attribute."
+  "why": "A part written on an `<ng-template>` inside the arrow's icon, under a structural directive. Angular renders none of an `<ng-template>`'s attributes — they are read for matching alone — so the part names nothing a stylesheet can reach, and the place for it is the `<pct-icon>`. The walk reads the `<ng-template>` as the tag it is written as, and walks the template the directive wraps around it through to it: that wrapper carries no tag (`tagName` is null) and none of the `<ng-template>`'s attributes."
 }
