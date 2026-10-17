@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "The arrow's drawing inside an `@content` block, inside its icon, in the last template read. Angular builds such a block only as a direct child of a foreign component, which places what it holds where its own render puts it, and `ngc` refuses this one (NG8026). Read through or read as an element by its name, the drawing stood inside the icon and every point passed a template the build refuses."
+}

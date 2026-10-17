@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "default",
+  "why": "The mark's icon holding an `@let` and no drawing. The declaration renders nothing, so a consumer with no set sees a hole where the mark is; counted as a child, it made the icon one with a drawing of its own, and point 4 passed it."
+}

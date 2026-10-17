@@ -1,0 +1,3 @@
+@content(svg) {
+<span class="arrow__label">Open</span>
+}

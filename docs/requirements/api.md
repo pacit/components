@@ -805,9 +805,17 @@ and every attribute it refuses; `apps/sandbox-e2e/src/select.spec.ts` — a regi
 three engines, in the same box and turning with it; `apps/sandbox-e2e/src/icon.spec.ts` — the
 box's size and tone, a drawing from data in the SVG namespace, and one line dressing the
 library inside a card and not outside it
-**Control:** `tools/check-icons.fixtures/` — seventeen prepared inputs, each rejected on its own
+**Control:** `tools/check-icons.fixtures/` — twenty-four prepared inputs, each rejected on its own
 point, the first of them being the shape the library shipped until the icons (an `<svg>` written
-straight into the template). A comment is one the HTML parser holds as one: an `<svg>` between a
+straight into the template). An element is what the compiler's classes say it is: an `@let` named
+for the drawing hides no `<svg>` in an ICU (`a-let-standing-in-for-a-drawing`), an icon holding an
+`@let` alone has no drawing (`an-icon-holding-only-a-let`), a structural directive's template is
+no second `<svg>` (`a-drawing-under-a-structural-directive`), and a part on an `<ng-template>` or
+an `<ng-content>` inside an icon is refused (`a-part-on-a-template-inside-an-icon`,
+`a-part-on-a-projection-inside-an-icon`); an `@content` block, which `ngc` refuses outside a
+foreign component, fails point 1 in the first template read and in the last
+(`a-content-block-in-the-first-template`, `a-drawing-in-a-content-block`). A comment is one the
+HTML parser holds as one: an `<svg>` between a
 `<!--` and a later `-->` in two attribute values, two `@let` strings, two block conditions or two
 ICU expressions is a drawing like any other (`comment-markers-in-attributes` and the three beside
 it); a tag quoted in a comment inside a start tag, an ICU's case or between two `@switch` cases

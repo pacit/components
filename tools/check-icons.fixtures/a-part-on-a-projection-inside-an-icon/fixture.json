@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "part",
+  "why": "A part written on an `<ng-content>` inside the arrow's icon, around the drawing it renders when nothing is projected. The projection is a tag the template writes, and the walk reads it as an element: what it projects, and its own drawing, stand below the icon and go when a set replaces it."
+}

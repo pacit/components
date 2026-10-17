@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "part",
+  "why": "A part written on an `<ng-template>` inside the arrow's icon, around the drawing for the raised state. An `<ng-template>` is a tag the template writes, and the walk reads it as an element, while the template a structural directive wraps around an element it walks through to that element: what the `<ng-template>` stamps belongs to the drawing a set replaces, and the part with it."
+}

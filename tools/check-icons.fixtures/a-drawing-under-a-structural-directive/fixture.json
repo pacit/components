@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The arrow written straight into the template under a structural directive. The compiler wraps the `<svg>` in a template that carries its tag and holds it as a child; read as an element, that template was a second drawing, point 1 counted two in the tree and one in the text, and refused for a miscount what is a drawing outside an icon — as it refused a `<svg *x>` inside one, which `ngc` compiles."
+}
