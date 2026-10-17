@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "decorator-without-class",
+  "description": "A directive commented out with its decorator in column zero: the pattern reads it and the counter counts it, so the two agree, and the gate read a `PctRetired` that exists nowhere, which point 2 then named as a class the package does not carry, with a stale `dist` for its cause. The TypeScript parser holds no class there, so `class-bases.mjs` has no base for it, and point 1 refuses it, as `check-aria` refuses the same shape."
+}

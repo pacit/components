@@ -1,0 +1,14 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The reference's base without its two naming inputs — the one `widget.ts` imports. A second
+ * decorated class of this name stands in `other.ts` with both inputs.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export abstract class PctWidgetBase {
+  protected readonly size = input<string>('md');
+}

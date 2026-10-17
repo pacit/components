@@ -1,0 +1,28 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The reference's base, with both naming inputs, declared without `export`: the module exports
+ * it under another class's name.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+abstract class PctWidgetBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly size = input<string>('md');
+}
+
+/** A base without the naming inputs, which the module exports as `PctWidgetBase`. */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+class PctBareBase {
+  protected readonly size = input<string>('md');
+}
+
+export { PctBareBase as PctWidgetBase, PctWidgetBase as PctBareBase };

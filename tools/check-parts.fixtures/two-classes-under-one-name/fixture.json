@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctMarker: libs/components/widget/src/marker.ts, libs/components/widget/src/twin.ts",
+  "$reason": "A second decorated `PctMarker`, in `twin.ts`, beside the reference's. TypeScript compiles two classes of one name in two files, and no entrypoint exports this one. Point 2 keys both reads by class name, the only key the package has, so it compared one of the two and passed: a class writing a part that reaches no consumer went unreported, because its namesake is in the package. The twin writes the reference marker's own part, so no other point can refuse the input."
+}

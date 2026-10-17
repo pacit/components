@@ -43,6 +43,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -174,12 +175,6 @@ const decoratedClasses = (path, content) => {
   return classes;
 };
 
-/** `class X extends Y` — the base whose inputs and host block are the subclass's too. */
-const baseOf = (node) =>
-  node.heritageClauses
-    ?.find((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
-    ?.types[0]?.expression.getText() ?? null;
-
 /** The calls that make a field an input, each with its `.required`. */
 const INPUT_CALLS = new Set(['input', 'model']);
 
@@ -272,8 +267,11 @@ const readSources = (root, files) => {
   const components = [];
   const unheld = [];
   let counted = 0;
-  for (const file of files) {
-    const content = readFileSync(join(root, file), 'utf8');
+  const contents = new Map(
+    files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
+  );
+  const bases = classesOf(contents);
+  for (const [file, content] of contents) {
     counted += countOf(content, DECORATOR_COUNTER);
     const classes = decoratedClasses(file, content);
     for (const match of content.matchAll(DECORATOR)) {
@@ -282,12 +280,31 @@ const readSources = (root, files) => {
         unheld.push(`${file}: \`${match[0].split('\n')[0]}\``);
         continue;
       }
+      // A class the parser holds below the top level, or one with no name, is no class
+      // `classesOf` reads — and one of its name at the top level, beside it, is another class.
+      // The pattern runs from an anonymous class's decorator on to the next class it can
+      // name, so a nameless one lands here too.
+      const key = classKey(file, node.name?.text);
+      const held = ts.isSourceFile(node.parent) ? bases.get(key) : undefined;
+      if (held === undefined) {
+        unheld.push(
+          `${file}: \`${match[0].split('\n')[0]}\` with no named class at the top level`,
+        );
+        continue;
+      }
       const body = match[2];
       const host = hostBlock(body);
       components.push({
         file,
         className: node.name?.text,
-        base: baseOf(node),
+        key,
+        // `class X extends Y` — the base whose inputs and host block are the subclass's too.
+        // `base` is Y as written and `from` the class TypeScript binds it to
+        // (`class-bases.mjs`), or `undefined` for none this follows, `via` the module the file
+        // imports Y from.
+        base: held.base ?? null,
+        from: held.from,
+        via: held.via,
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
@@ -1294,13 +1311,19 @@ const checkAria = ({
           `table moved; decide which before anything below is believed`,
       );
   // What the decorator's pattern reads where the parser holds no class is text that spells one
-  // — a comment, a string — and what the points below would examine there exists nowhere.
+  // — a comment, a string — and what the points below would examine there exists nowhere. A
+  // decorated class the parser holds below the top level of its file, inside a namespace or a
+  // function, or one with no name, is one `extends` cannot be resolved for (`class-bases.mjs`
+  // reads the named classes of the top level), and its half of the surface would go unexamined
+  // as surely.
   if (unheld.length)
     throw new AriaError(
       'denominator',
-      `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated ` +
-        `class — a comment or a string spelling one, which no build compiles and no point ` +
-        `below may examine as a component:\n${list(unheld)}`,
+      `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated class, ` +
+        `named, at the top level of the file — a comment or a string spelling one, which no ` +
+        `build compiles, or a class inside a namespace or a function, or one with no name, ` +
+        `whose base this read does not resolve; no point below may examine any of them as a ` +
+        `component:\n${list(unheld)}`,
     );
   if (components.length !== counted)
     throw new AriaError(
@@ -1315,19 +1338,31 @@ const checkAria = ({
   // component. The merge is done HERE, once, and every point below sees whole components.
   // A base the scan cannot see is a denominator failure and not a shrug — it is exactly the
   // half that would go unexamined.
-  const byName = new Map(components.map((c) => [c.className, c]));
+  //
+  // A link is the class TypeScript binds the base's name to (`class-bases.mjs`) — one the
+  // subclass's file declares, or one a module of the sources declares `export class` under the name
+  // imported — keyed by its file too, and anything else is no link but the refusal below. So two
+  // components of one name are two, and the chain is the one TypeScript builds: a cycle in it is
+  // one the compiler refuses as well (TS2506, a class named in its own base expression), and no
+  // build compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on
+  // every input that compiles and whose directories carry no `package.json`, which
+  // `class-bases.mjs` does not read. By the name alone the chain could run through a class no build
+  // put there and close a cycle TypeScript has not got, and only `seen` stopped it recursing
+  // forever.
+  const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
     if (component.base === null) return component;
-    if (seen.has(component.className)) return component;
-    seen.add(component.className);
-    const base = byName.get(component.base);
+    if (seen.has(component.key)) return component;
+    seen.add(component.key);
+    const base = byKey.get(component.from);
     if (base === undefined)
       throw new AriaError(
         'denominator',
-        `${component.className} (${component.file}) extends \`${component.base}\`, which is ` +
-          `not among the decorated classes read — its inputs and its host block are part of ` +
-          `this component's surface, and every point below would examine the half declared ` +
-          `here`,
+        `${component.className} (${component.file}) extends \`${component.base}\`, ` +
+          `${standsFor(component)} — not among the decorated classes read. Its inputs ` +
+          `and its host block are part ` +
+          `of this component's surface, and every point below would examine the half ` +
+          `declared here`,
       );
     const whole = inherited(base, seen);
     for (const [name, field] of whole.inputs)

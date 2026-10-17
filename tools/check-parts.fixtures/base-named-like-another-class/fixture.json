@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctMarker extends `PctMarkerBase`, which stands there for PctMarkerBase (libs/components/widget/src/plain.ts)",
+  "$reason": "Two classes named `PctMarkerBase`: the reference's decorated one in `base.ts`, and one with no decorator in `plain.ts`, which is the one `marker.ts` imports. TypeScript compiles both, and the second is no decorated class, so point 1's refusal of a shared name does not fire. Followed by its name across the sources, the chain reached the decorated class, which no build puts there, and passed. Followed through the import, the base is one the scan did not read, and point 1 refuses it. The package data is what ngc writes for these sources: both classes over the undecorated base, which has no definition, so nothing of the decorated one reaches them."
+}

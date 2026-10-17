@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "Two exported classes named `PctKnobBase`: the reference's in `knob.ts`, carrying the block, and one in `bare.ts` declaring none of it, which is the one `dial.ts` imports. TypeScript compiles both. Followed by its name across the sources, the chain reached the reference's base, handed the dial the whole block and passed: `bare.ts` is read before `knob.ts`, and a key without the file keeps the class read last. Followed through the import, the dial has nothing but `value`, and point 3 refuses it."
+}

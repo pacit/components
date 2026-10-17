@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "The reference's base, with its `title` given a word, imported into `marker.ts` as `PctMarkerFrame`, which is the name `PctMarker` extends. The import binds that name to `PctMarkerBase` of `base.ts`, the name before `as`, and that is the class Angular merges. The case reaches point 3, where the base's `Note` is refused in the file that writes it, only while the gate follows the name to that class. Read by the name as written, across the sources or in the module it comes from, the base is no decorated class and point 1 refuses it."
+}

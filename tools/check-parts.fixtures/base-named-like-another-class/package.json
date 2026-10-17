@@ -1,0 +1,64 @@
+{
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-parts.mjs. Each class carries the declaration ngc writes for it in partial mode, less the fields the gate supplies, and the gate compiles it through JIT as it compiles the package: `PctMarker` over the base it extends, and `PctMarkerOutline` over `PctMarker`, whose part the linker merges into it.",
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "declaration": {
+        "selector": "pct-widget",
+        "template": "<span class=\"pct-widget__label\" data-pct-part=\"label\">\n  <ng-content></ng-content>\n</span>\n<span class=\"pct-widget__value\" data-pct-part=\"value\">{{ value() }}</span>\n<!--\n  A loading block with `after` and no `minimum` puts `[null, 100]` into `consts`: a slot that\n  holds no name, which the package read passes over.\n-->\n@defer (on idle) {\n<span>later</span>\n} @loading (after 100ms) {\n<span>loading</span>\n}\n"
+      }
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "declaration": {
+        "kind": "Directive",
+        "selector": "[pctMarker]",
+        "host": {
+          "attributes": {
+            "data-pct-part": "widget-marker"
+          },
+          "classAttribute": "pct-marker"
+        },
+        "usesInheritance": true,
+        "extends": {
+          "className": "PctMarkerBase",
+          "undecorated": true
+        }
+      }
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarkerOutline",
+      "declaration": {
+        "kind": "Directive",
+        "selector": "[pctMarkerOutline]",
+        "host": {
+          "classAttribute": "pct-marker-outline"
+        },
+        "usesInheritance": true,
+        "extends": {
+          "className": "PctMarker",
+          "kind": "Directive",
+          "selector": "[pctMarker]",
+          "host": {
+            "attributes": {
+              "data-pct-part": "widget-marker"
+            },
+            "classAttribute": "pct-marker"
+          },
+          "usesInheritance": true,
+          "extends": {
+            "className": "PctMarkerBase",
+            "undecorated": true
+          }
+        }
+      }
+    }
+  ]
+}

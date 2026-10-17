@@ -52,18 +52,53 @@ merges what a base declares, or what it reads is one of the things a base cannot
 it reads the built package, where the merge has already happened. A gate that reads a class
 and is not on this list is the gap this requirement exists to name.
 
+Following `extends` means following the class TypeScript follows. The base is the expression of
+the class's own `extends` clause, not the first `extends` of its header, which may be a type
+parameter's constraint. A name there stands for what the file that writes it binds it to: a
+class the file declares, or what a module exports under the name before `as`, the module being
+the one TypeScript's resolver finds (`'.'` is a directory's `index.ts`). Two classes may share a
+name in two files, and a module may export one class under another's name (`export { PctBare as
+PctWidgetBase }`). Read by the name across the sources, a chain runs through a class no build
+put there, and can close a cycle the compiler has not got: measured on `check-aria`, which
+passed `PctLoopX extends PctLoopY extends PctLoopX` with the second `PctLoopX` an undecorated
+class of another file, and recursed forever on it without its `seen` guard. Refusing two
+decorated classes of one name does not close that: an undecorated namesake, a renamed import or
+an export clause does not trip it. So a gate that follows `extends` takes the base and the class
+it binds from `tools/class-bases.mjs`, which resolves the module with TypeScript's own resolver
+over the sources and follows a class the file declares and an import of a class its module
+declares `export class` under that name, and nothing else. A class is keyed by its name and its
+file, and paired with the class the gate's own pattern reads by where its name stands, so that
+one in a comment or a namespace beside a class of its name is not taken for it. A base that
+binds no decorated class the gate read is a denominator fault, and so is a class the gate's
+pattern reads where the parser holds no class at the top level of the file — in a comment,
+inside a namespace or a function, or with no name — whose base the module does not resolve. The
+module reads no `package.json`, and the library has no directory that carries one. `check-texts`
+and `check-parts`, which compare with the package by class name, the one key the package
+carries, also refuse a name two decorated classes share. `check-zoneless` compares by name too
+and does not yet: with the other two standing, no such name reaches it from a tracked file.
+
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
-`extends`, and a base the scan cannot see is a denominator fault;
+`extends` as the subclass's file binds it, and a base the scan cannot see is a denominator fault,
+as is a decorated class the parser holds below the top level or with no name;
 `tools/check-texts.mjs` (target `check-texts`) — `host` attributes, merged the same way for
 the comparison with the package, a subclass's attribute replacing its base's of the same exact
 name as Angular's merge does; each class's own attributes and binding literals judged in the
 file that writes them, a shadowed one included, so a chain writing one twice is no fault; and
 point 4 reads signal factories per FILE rather than per class, so a base's default is read
-where it stands;
+where it stands; a name two decorated classes share is a denominator fault, because point 2
+compares the classes with the package by name, and so is a decorator where the parser holds no
+top-level class;
 `tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way, a
 subclass's part replacing its base's as Angular's merge does, and a chain writing one twice a
-denominator fault; and the template through `templateUrl`, which a base cannot pass on;
+denominator fault, as are a name two decorated classes share, point 2 comparing by name as in
+`check-texts`, and a decorator where the parser holds no top-level class; and the template
+through `templateUrl`, which a base cannot pass on;
+`tools/check-forms.mjs` (target `check-forms`) — the members of every exported class, a
+control's own and its bases' down `extends` as its file binds it, each class keyed by its file
+as well, so a control is not lost behind a namesake, and a header where the parser holds no
+top-level class a denominator fault; a base the read has not got hands down nothing, which can
+refuse a control and never pass one;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
 where nothing is inherited;
@@ -91,10 +126,44 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. The four gates that read what a base cannot pass on have no fixture,
-deliberately: the thing that would be inherited is not, by the feature named above, and a
-fixture of it would measure Angular rather than the gate
-**Lessons:** [`lesson-100`](../lessons.md#lesson-100)
+to put there too. What a class's name stands for, by twenty-three more:
+`tools/check-texts.fixtures/two-classes-under-one-name/` and
+`tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
+package does not carry, which passed),
+`tools/check-texts.fixtures/base-named-like-another-class/`,
+`tools/check-parts.fixtures/base-named-like-another-class/`,
+`tools/check-aria.fixtures/base-named-like-another-class/` and
+`tools/check-forms.fixtures/base-named-like-another-class/` (the base an undecorated class of
+the name of a decorated one, imported from its own file, which the chain by name followed to the
+decorated one), `tools/check-aria.fixtures/two-bases-under-one-name/` (two decorated bases of
+one name, the one imported without the naming inputs),
+`tools/check-aria.fixtures/base-exported-under-another-name/` (a module exporting its two bases
+each under the other's name, which the read by declared name followed to the one with the naming
+inputs), `tools/check-aria.fixtures/base-exported-beside-a-default-class/` (an `export default`
+class under the imported name, which the import does not reach),
+`tools/check-aria.fixtures/base-imported-from-a-directory/` (`'.'`, which a path joined to the
+file's directory took for a file beside it), `tools/check-aria.fixtures/base-from-a-package/` (a
+package's class under a read class's name),
+`tools/check-forms.fixtures/control-behind-a-namesake/` (a control lost behind an exported class
+of its name), `tools/check-parts.fixtures/base-after-a-type-parameter/` (a type parameter's
+constraint, which a pattern over the header read as the base),
+`tools/check-texts.fixtures/decorator-in-a-comment/`,
+`tools/check-parts.fixtures/decorator-in-a-comment/` and
+`tools/check-aria.fixtures/component-below-the-top-level/` (a decorator where the parser holds
+no top-level class, read as a class, or as one with no base),
+`tools/check-texts.fixtures/decorator-in-a-comment-beside-its-namesake/`,
+`tools/check-parts.fixtures/decorator-in-a-comment-beside-its-namesake/`,
+`tools/check-aria.fixtures/component-below-the-top-level-beside-its-namesake/` and
+`tools/check-forms.fixtures/header-in-a-comment-beside-its-namesake/` (the same beside a class
+of its name in the file, which a pairing by name took it for),
+`tools/check-forms.fixtures/header-in-a-comment/` (a header in a comment),
+`tools/check-aria.fixtures/anonymous-component/` (a decorated class with no name, which the
+pattern runs past to the next class) and
+`tools/check-texts.fixtures/speaking-attribute-on-a-base-imported-under-another-name/` (a
+renamed import followed to the class before `as`). The four gates that read what a base cannot
+pass on have no fixture, deliberately: the thing that would be inherited is not, by the feature
+named above, and a fixture of it would measure Angular rather than the gate
+**Lessons:** [`lesson-100`](../lessons.md#lesson-100), [`lesson-257`](../lessons.md#lesson-257)
 
 ---
 

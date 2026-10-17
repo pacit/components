@@ -1,0 +1,17 @@
+import { Component, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+import { PctKnobBase } from './bare';
+
+/**
+ * A control over the `PctKnobBase` of `bare.ts`, and not the reference's class of that name:
+ * the block is missing from it.
+ */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial
+  extends PctKnobBase
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+}

@@ -1,0 +1,16 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * A base of the same name with both naming inputs, in a file named like the directory: what
+ * `'.'` joined to a path and given `.ts` names, and not what TypeScript resolves it to.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export abstract class PctWidgetBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly size = input<string>('md');
+}

@@ -1,0 +1,5 @@
+/**
+ * A class under the name of the reference's `PctKnobBase` that declares none of the block,
+ * which `dial.ts` imports from here.
+ */
+export abstract class PctKnobBase {}

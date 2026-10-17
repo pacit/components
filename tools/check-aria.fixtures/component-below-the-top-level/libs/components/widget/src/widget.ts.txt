@@ -1,0 +1,36 @@
+import { Component, Directive, input } from '@angular/core';
+
+/** A base that hides its host: whatever extends it has its whole template out of the tree. */
+@Directive({
+  host: {
+    'aria-hidden': 'true',
+  },
+})
+export abstract class PctHidingBase {}
+
+/**
+ * The reference widget inside a namespace, its decorator in column zero where no formatter
+ * would leave it, extending the hiding base: the TypeScript parser holds it below the top level
+ * of the file.
+ */
+export namespace W {
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    '[attr.data-pct-open]': 'open() ? "" : null',
+  },
+})
+export class PctWidget extends PctHidingBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  readonly label = input<string>('');
+  protected readonly open = input(false);
+  protected readonly editable = input(false);
+  protected readonly native = input(false);
+  protected readonly hint = input<string>('');
+  protected readonly error = input<string>('');
+  protected readonly showError = input(false);
+}
+}

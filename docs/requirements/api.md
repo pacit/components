@@ -134,7 +134,7 @@ none of those tests: deleting the interop suites would have failed nothing this 
 named
 **Control:** the tests start from a **non-empty** initial value — with an empty model the
 regression in [`lesson-26`](../lessons.md#lesson-26) was invisible; and
-`tools/check-forms.fixtures/` for the structural half — eight prepared inputs, of which
+`tools/check-forms.fixtures/` for the structural half — twelve prepared inputs, of which
 `transform-dropped` is the defect the gate was written for and `member-missing` its other
 half, plus a run against the repository: `booleanAttribute` taken off the checkbox's
 `invalid` fires with the file, the line and the eight sites that disagree with it
@@ -628,8 +628,8 @@ the nearest class's, so a second is a part no element carries), and the list of 
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
 bases')
-**Control:** `tools/check-parts.fixtures/` — 53 inputs, each rejected on its own
-point and by the refusal its `message` names, as point 1 refuses ten ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
+**Control:** `tools/check-parts.fixtures/` — 58 inputs, each rejected on its own
+point and by the refusal its `message` names, as point 1 refuses twelve ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
 a directive whose part is not exported from the entrypoint fires point 2
@@ -866,7 +866,7 @@ read by `parseTemplate` from `@angular/compiler`, and the list of static classes
 attributes is built **twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 45 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 50 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

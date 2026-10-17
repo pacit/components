@@ -1,0 +1,12 @@
+/*
+A marker the widget drew before the reference marker took its part — kept for its history, not
+compiled:
+
+@Directive({
+  selector: '[pctRetired]',
+  host: {
+    'data-pct-part': 'widget-marker',
+  },
+})
+export class PctRetired {}
+*/

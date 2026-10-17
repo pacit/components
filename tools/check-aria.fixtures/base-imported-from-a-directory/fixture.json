@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) keeps its widget inside the template and declares no ariaLabel / ariaLabelledby",
+  "$reason": "`widget.ts` imports its base from `'.'`, which TypeScript resolves to the directory's `index.ts`, whose `PctWidgetBase` has no naming inputs. A `src.ts` beside the directory declares one that has them. A module found by joining the specifier to the importing file's directory and adding `.ts` is `src.ts`, which handed the widget both inputs, and the case passed. TypeScript's own resolver over the sources finds `index.ts`, and point 3 refuses the widget."
+}
