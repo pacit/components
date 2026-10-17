@@ -1,0 +1,13 @@
+import { Injectable } from '@angular/core';
+
+/*
+The badge was a component before it became a service, and its decorator is kept for its history:
+
+@Component({
+  selector: 'pct-widget-badge',
+  templateUrl: './badge.html',
+*/
+@Injectable({
+  providedIn: 'root',
+})
+export class PctWidgetBadge {}

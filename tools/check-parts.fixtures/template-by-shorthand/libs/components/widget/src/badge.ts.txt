@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+/**
+ * A template kept in a constant and handed to the decorator by shorthand: ngc compiles the
+ * constant the shorthand names.
+ */
+const template = '<span data-pct-part="badge"></span>';
+
+@Component({
+  selector: 'pct-widget-badge',
+  template,
+})
+export class PctWidgetBadge {}

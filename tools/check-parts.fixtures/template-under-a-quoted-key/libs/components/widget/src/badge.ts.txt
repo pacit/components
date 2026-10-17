@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+/** The template kept in a constant, out of the decorator's body. */
+const template = '<span data-pct-part="badge"></span>';
+
+@Component({
+  selector: 'pct-widget-badge',
+  'template': template,
+})
+export class PctWidgetBadge {}

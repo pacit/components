@@ -1,12 +1,20 @@
-import { Component, ElementRef, inject } from '@angular/core';
+import { Component, ElementRef, inject as injectRef } from '@angular/core';
 
+/**
+ * The path in backticks, a literal ngc reads as it reads a quoted one, and the library does not
+ * write: the scanner reads it too.
+ */
 @Component({
   selector: 'pct-widget',
-  templateUrl: './widget.html',
+  templateUrl: `./widget.html`,
   styleUrl: './widget.scss',
 })
 export class PctWidget {
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  /**
+   * `inject` under a name of the file's own, which the library does not write: only `Component`
+   * and `Directive` are decorators the pattern knows by name.
+   */
+  private readonly host = injectRef<ElementRef<HTMLElement>>(ElementRef);
 
   /**
    * The class's code names a part, as `chips.ts` and `select.base.ts` do in the library. It is
@@ -16,3 +24,14 @@ export class PctWidget {
     return this.host.nativeElement.querySelector('[data-pct-part="label"]');
   }
 }
+
+/**
+ * A component with an empty template, as `number.ts` and `text.ts` keep one written into the
+ * decorator: it brings no part, so point 1 lets it stand. Written in backticks, the other literal
+ * ngc compiles a template from, which the library does not write.
+ */
+@Component({
+  selector: 'pct-widget-spacer',
+  template: ``,
+})
+export class PctWidgetSpacer {}

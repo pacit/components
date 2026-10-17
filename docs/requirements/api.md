@@ -623,13 +623,15 @@ at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 compares `libs/components/parts.snapshot.md` with the current inventory, and point 6 holds
 [`req-api-parts-unique`](#req-api-parts-unique) below. Points 1 and 2 guard
 the denominator: every decorator and every occurrence of the attribute in a template or a
-decorator must be recognised, a host takes its part from one class of its chain (Angular keeps
-the nearest class's, so a second is a part no element carries), and the list of parts is built
+decorator must be recognised; a decorator's metadata is read as ngc reads it, and a template it
+hands the compiler other than through `templateUrl`, under any key ngc reads, is refused, as is a
+decorator imported under another name; a host takes its part from one class of its chain (Angular
+keeps the nearest class's, so a second is a part no element carries); and the list of parts is built
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
 bases')
-**Control:** `tools/check-parts.fixtures/` — 58 inputs, each rejected on its own
-point and by the refusal its `message` names, as point 1 refuses twelve ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
+**Control:** `tools/check-parts.fixtures/` — 68 inputs, each rejected on its own
+point and by the refusal its `message` names, as point 1 refuses fifteen ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
 a directive whose part is not exported from the entrypoint fires point 2
@@ -638,14 +640,8 @@ a directive whose part is not exported from the entrypoint fires point 2
 > The inventory is **independent of `apps/docs`**. A pretty page rendering it can come later;
 > generating and gating it cannot ([`req-project-apps`](project.md#req-project-apps)).
 
-> **Not held:** a template kept in a constant and handed to the decorator by shorthand
-> (`template,`) is not refused by point 1, which wants `template:`. A part written or bound
-> there, in any view, reaches the package read alone, which refuses it: at point 2 as a class
-> the scanner cannot see, or at point 3 for a binding on a class whose `host` block it reads. A
-> part of a class no entrypoint exports reaches neither read, as the package read visits
-> exported classes alone — save a base's host binding, which it follows to the class extending
-> it. Neither read follows `hostDirectives`: a host directive's host block is read on the
-> directive, not on the component it is applied to.
+> **Not held:** neither read follows `hostDirectives`: a host directive's host block is read on
+> the directive, not on the component it is applied to.
 
 ---
 

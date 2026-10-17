@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 imports take `Component` or `Directive` from `@angular/core` under another name:\n      libs/components/widget/src/badge.ts: * as ng",
+  "$reason": "A component decorated through a namespace import of `@angular/core`, `@ng.Component({…})`. ngc compiles it as it compiles `@Component` (measured through ngc in partial mode and the linker: the template's part reaches `consts`; the class in `package.json` carries the declaration ngc writes), while the pattern and the counter want `@Component(` from the start of a line and saw no decorator: the part reached the package read alone, and point 2 named the class as one the scanner does not see."
+}

@@ -41,6 +41,7 @@ import {
   tmplAstVisitAll,
 } from '@angular/compiler';
 import * as core from '@angular/core';
+import ts from 'typescript';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
@@ -96,10 +97,90 @@ const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
 
-/** `templateUrl: './x.html'` — one occurrence per decorator. */
-const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
-/** `template:` in a decorator — the literal value, to tell an empty one from the rest. */
-const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
+/** The two decorators whose classes the inventory reads, by the names `@angular/core` exports. */
+const DECORATORS = new Set(['Component', 'Directive']);
+
+/**
+ * The metadata of each decorator of a class at the top level of a file, by the offset its `@`
+ * stands at, read as ngc reads it (`metadata`): a map of the members by name, or `null` for a
+ * decorator called with no object literal. ngc takes the argument through `unwrapExpression`,
+ * which takes off an `as` and parentheses, and refuses anything else that is no object literal
+ * (NG1001, measured on `{ … } satisfies { … }`). It takes the members through
+ * `reflectObjectLiteral`: a property named by an identifier or a string (or a number, which
+ * names neither member read here), by the name's text, so `'template'` and `t\u0065mplate` are
+ * `template`; and a shorthand, so `template,` hands the compiler the constant it names. Nothing
+ * else is a member to it: a template under a computed key (`['template']`, `[key]`), in a spread
+ * or behind an accessor is no template ngc compiles, and with no other one the component is
+ * NG2001, "missing a template" (each measured through ngc in partial mode). The pattern stood
+ * here, `template:` from the start of a line: a shorthand, a quoted key and an escaped name each
+ * handed ngc a template it did not see, and one kept in a constant reached the package read
+ * alone (measured through ngc and the linker).
+ *
+ * And the names the file takes `Component` and `Directive` under, other than their own
+ * (`renamed`).
+ */
+const decoratorsOf = (file, content) => {
+  const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest);
+  const unwrap = (node) =>
+    node !== undefined &&
+    (ts.isAsExpression(node) || ts.isParenthesizedExpression(node))
+      ? unwrap(node.expression)
+      : node;
+  const metadataOf = ({ expression }) => {
+    const meta = ts.isCallExpression(expression)
+      ? unwrap(expression.arguments[0])
+      : undefined;
+    if (meta === undefined || !ts.isObjectLiteralExpression(meta)) return null;
+    const members = new Map();
+    for (const member of meta.properties)
+      if (
+        ts.isPropertyAssignment(member) &&
+        (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name))
+      )
+        members.set(member.name.text, member.initializer);
+      else if (ts.isShorthandPropertyAssignment(member))
+        members.set(member.name.text, member.name);
+    return members;
+  };
+  // The pattern and the counter know a decorator by the name `@Component(` or `@Directive(`, and
+  // ngc by the import: it compiles `@Widget({…})` over `Component as Widget`, and `@ng.Component`
+  // over a namespace import, each into `consts` (measured), where neither of them sees a decorator.
+  const renamed = source.statements
+    .filter(
+      (statement) =>
+        ts.isImportDeclaration(statement) &&
+        statement.moduleSpecifier.text === '@angular/core',
+    )
+    .flatMap(({ importClause }) => {
+      const bound = importClause?.namedBindings;
+      if (bound === undefined) return [];
+      if (ts.isNamespaceImport(bound)) return [`* as ${bound.name.text}`];
+      return bound.elements
+        .filter(
+          ({ propertyName, name }) =>
+            DECORATORS.has(propertyName?.text) &&
+            propertyName.text !== name.text,
+        )
+        .map(
+          ({ propertyName, name }) => `${propertyName.text} as ${name.text}`,
+        );
+    });
+  return {
+    renamed,
+    metadata: new Map(
+      source.statements
+        .filter(ts.isClassDeclaration)
+        .flatMap((statement) => ts.getDecorators(statement) ?? [])
+        .map((decorator) => [
+          decorator.getStart(source),
+          metadataOf(decorator),
+        ]),
+    ),
+  };
+};
+
+/** A literal with no text in it: the one template the decorator may carry, as it brings no part. */
+const isEmpty = (node) => ts.isStringLiteralLike(node) && node.text === '';
 
 /** `'data-pct-part': 'name'` in the `host` block. */
 const HOST_STATIC = new RegExp(
@@ -142,8 +223,11 @@ const entrypointFromPath = (file) => {
 };
 
 /**
- * Decorated classes — `[{ file, className, entrypoint, template, inline, parts, statics,
- * dynamic, occurrences }]`.
+ * Decorated classes — `[{ file, className, entrypoint, template, unnamed, inline, parts,
+ * statics, dynamic, occurrences }]`, the decorators read as no class's (`unheld`,
+ * `unparsed`), and the files taking a decorator under another name (`renamed`). The template
+ * is read off the decorator's metadata as the parser holds it (`decoratorsOf`), the `host`
+ * block off the text the pattern reads.
  * `parts` come here from the `host` block alone; the template's parts are added by point
  * 1, because a template is a separate file and a separate denominator — its scan has to
  * hold up first.
@@ -157,6 +241,8 @@ const entrypointFromPath = (file) => {
 const readSources = (root, files) => {
   const classes = [];
   const unheld = [];
+  const unparsed = [];
+  const renamed = [];
   let declarations = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
@@ -165,6 +251,11 @@ const readSources = (root, files) => {
 
   for (const [file, content] of contents) {
     declarations += countOf(content, DECORATOR_COUNTER);
+    const { metadata: decorators, renamed: names } = decoratorsOf(
+      file,
+      content,
+    );
+    for (const name of names) renamed.push(`${file}: ${name}`);
 
     for (const match of content.matchAll(DECORATOR)) {
       const [, kind, body, className] = match;
@@ -176,8 +267,16 @@ const readSources = (root, files) => {
         unheld.push(`${file}: ${className}`);
         continue;
       }
-      const url = TEMPLATE_URL.exec(body);
-      const inline = TEMPLATE_INLINE.exec(body);
+      // And the decorator the parser holds where the pattern read its `@`, called with an object
+      // literal: one in a comment above a class decorated otherwise is not that class's.
+      const metadata = decorators.get(match.index);
+      if (!metadata) {
+        unparsed.push(`${file}: ${className}`);
+        continue;
+      }
+      const url = metadata.get('templateUrl');
+      const named = url !== undefined && ts.isStringLiteralLike(url);
+      const template = metadata.get('template');
       classes.push({
         file,
         className,
@@ -190,15 +289,18 @@ const readSources = (root, files) => {
         from: held.from,
         via: held.via,
         entrypoint: entrypointFromPath(file),
-        template: url
-          ? relative(root, resolve(join(root, dirname(file)), url[2]))
+        template: named
+          ? relative(root, resolve(join(root, dirname(file)), url.text))
               .split('\\')
               .join('/')
           : null,
+        // A path the scanner does not read as written: ngc evaluates the expression, a
+        // constant or a concatenation, and compiles a file the source read never opens.
+        unnamed: url !== undefined && !named,
         // An empty template (`template: ''` in `number.ts` and `text.ts`) can bring no
-        // part, so it is no hole in the denominator. Any other notation written into the
-        // decorator is one.
-        inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
+        // part, so it is no hole in the denominator. Any other template the decorator hands
+        // the compiler is one, a constant it names among them.
+        inline: template !== undefined && !isEmpty(template),
         parts: new Set([...body.matchAll(HOST_STATIC)].map((m) => m[3])),
         statics: countOf(body, HOST_STATIC),
         dynamic: countOf(body, HOST_DYNAMIC),
@@ -207,7 +309,7 @@ const readSources = (root, files) => {
     }
   }
 
-  return { classes, declarations, unheld };
+  return { classes, declarations, unheld, unparsed, renamed };
 };
 
 /**
@@ -299,6 +401,8 @@ const checkParts = (input) => {
     classes,
     declarations,
     unheld,
+    unparsed,
+    renamed,
     templates,
     pkg,
     documents,
@@ -329,6 +433,37 @@ const checkParts = (input) => {
         list(unheld) +
         `\n    A decorator in a comment, or a class inside a namespace or a function: no ` +
         `point below may read it as a component of the library.`,
+    );
+
+  // The template is read off the metadata the parser holds for the decorator where the pattern
+  // read its `@`, as ngc reads it. Where the parser holds no decorator there, or one called with
+  // no object literal, the class has no metadata to read it off, and the text the pattern took
+  // for it is no decorator's: a comment above a class decorated otherwise, read as a component.
+  if (unparsed.length)
+    throw new PartsError(
+      'denominator',
+      `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
+        `called with an object literal:\n` +
+        list(unparsed) +
+        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
+        `is no object literal once an \`as\` is off, which ngc refuses as well ` +
+        `(\`{ … } satisfies { … }\`, NG1001): ` +
+        `the scanner reads a class's template off that object, and here it has none.`,
+    );
+
+  // A decorator under a name of the file's own is one neither the pattern nor the counter sees,
+  // so the count below agrees without it: a class decorated so is no class to the source read, and
+  // its template, written into the decorator, passed every point when no entrypoint exported it.
+  if (renamed.length)
+    throw new PartsError(
+      'denominator',
+      `${renamed.length} imports take \`Component\` or \`Directive\` from \`@angular/core\` ` +
+        `under another name:\n` +
+        list(renamed) +
+        `\n    The pattern and the counter know a decorator by \`@Component(\` and ` +
+        `\`@Directive(\`, and ngc by the import: a class decorated under another name ` +
+        `compiles into the package, and the source read holds no class there. Import them ` +
+        `under their own names.`,
     );
 
   if (classes.length !== declarations)
@@ -376,6 +511,17 @@ const checkParts = (input) => {
         `\n    The source scanner reads templates, not decorators, so parts written ` +
         `there are seen only by the package read — as a drift between two lists rather ` +
         `than as what they are. Move the template out to \`templateUrl\`.`,
+    );
+
+  const unnamed = classes.filter((k) => k.unnamed);
+  if (unnamed.length)
+    throw new PartsError(
+      'denominator',
+      `${unnamed.length} classes name their template file by an expression, not a string:\n` +
+        list(unnamed.map((k) => `${k.file}: ${k.className}`)) +
+        `\n    The scanner opens the file \`templateUrl\` names as written; ngc evaluates ` +
+        `the expression and compiles a file the source read never opens. Write the path as ` +
+        `a string.`,
     );
 
   const used = new Map(); // template -> [classes]
@@ -973,10 +1119,11 @@ const readCard = (file, content) => {
  * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part.
  *
  * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
- * written — a template kept in a constant and handed to the decorator by shorthand, a host
- * attribute spread from an object (each measured through ngc in partial mode and the linker)
- * — and the DOM lowercases it in `setAttribute`: a part a consumer's selector matches, and one
- * the source scanner never sees. A slot that is no name is no part: an `@loading (after
+ * written — an element's attribute in a template, a host attribute spread from an object (each
+ * measured through ngc in partial mode and the linker) — and the DOM lowercases it in
+ * `setAttribute`: a part a consumer's selector matches. The source read refuses the first at
+ * point 1 and never sees the second, so either reaches this read alone, the first from a `dist`
+ * built before its template changed. A slot that is no name is no part: an `@loading (after
  * 100ms)` block puts `[null, 100]` into `consts`.
  */
 const NAMESPACE_URI = 0;

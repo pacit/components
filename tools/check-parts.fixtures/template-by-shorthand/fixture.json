@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "classes take their template from the decorator, not a file:\n      libs/components/widget/src/badge.ts: PctWidgetBadge",
+  "$reason": "A component's template kept in a constant and handed to the decorator by shorthand. ngc reads a shorthand as the member it names (`reflectObjectLiteral`), so the template reaches `consts` as one written in place (measured through ngc in partial mode and the linker; the class in `package.json` carries the declaration ngc writes). The pattern that stood at point 1 wanted `template:`, so the scanner read no template here, and the part reached the package read alone: point 2 named the class as one the scanner does not see. Point 1 reads the metadata as ngc does, and refuses the template as any other written into the decorator."
+}

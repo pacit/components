@@ -2,5 +2,5 @@
   "point": 3,
   "check": "staticness",
   "message": "PctWidget (./widget): 1 in the package",
-  "$reason": "A part bound inside an `@if`, its instruction the third link of a chain (`ɵɵattribute('title', …)('lang', …)('data-pct-part', …)`), in a package whose sources read clean — the route a template kept in a constant takes past the scanner. The class carries the declaration ngc writes in partial mode, compiled here through JIT. The `@if` renders through a function of its own: a read of the text of the component's template function found no binding, and the case passed every point (measured); so would a read taking only the instruction a call names directly, or the one a link before it names. Point 3 says it from the package."
+  "$reason": "A part bound inside an `@if`, its instruction the third link of a chain (`ɵɵattribute('title', …)('lang', …)('data-pct-part', …)`), in a package whose sources read clean, as a `dist` built before its template changed has it. The class carries the declaration ngc writes in partial mode, compiled here through JIT. The `@if` renders through a function of its own: a read of the text of the component's template function found no binding, and the case passed every point (measured); so would a read taking only the instruction a call names directly, or the one a link before it names. Point 3 says it from the package."
 }

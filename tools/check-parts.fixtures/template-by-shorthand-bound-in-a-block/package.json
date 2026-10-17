@@ -70,7 +70,7 @@
       "className": "PctWidgetBadge",
       "declaration": {
         "selector": "pct-widget-badge",
-        "template": "<span DATA-PCT-PART=\"badge\"></span>"
+        "template": "@if (on()) {\n  <i [attr.data-pct-part]=\"name()\"></i>\n}"
       }
     }
   ]

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "classes take their template from the decorator, not a file:\n      libs/components/widget/src/badge.ts: PctWidgetBadge",
+  "$reason": "A part bound inside an `@if`, in a template kept in a constant and handed to the decorator by shorthand. ngc in partial mode and the linker give `consts` nothing for it and write the binding into the `@if`'s own view function, `ɵɵattribute('data-pct-part', …)` (measured; the class in `package.json` carries the declaration ngc writes). The package read counts the binding in that view, and the pattern that stood at point 1 wanted `template:`, so the case reached point 2 as a class the scanner does not see, with no part to name. Point 1 refuses the template as any other written into the decorator, whatever it binds."
+}

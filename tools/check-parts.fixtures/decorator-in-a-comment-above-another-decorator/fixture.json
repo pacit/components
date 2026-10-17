@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 decorators stand where the TypeScript parser holds no decorator called with an object literal:\n      libs/components/widget/src/badge.ts: PctWidgetBadge",
+  "$reason": "A component's decorator kept in a comment above the service its class became, in column zero, so the pattern reads it and the counter counts it, and the class below stands at the top level where the pattern names it. The parser holds no decorator where the pattern read the `@`: what it read is no decorator's, and the class is no component. Read off the text the pattern took, the comment was the class's decorator, and the gate looked for `./badge.html` as its template."
+}
