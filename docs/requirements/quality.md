@@ -71,16 +71,16 @@ file, and paired with the class the gate's own pattern reads by where its name s
 one in a comment or a namespace beside a class of its name is not taken for it. A base that
 binds no decorated class the gate read is a denominator fault, and so is a class the gate's
 pattern reads where the parser holds no class at the top level of the file — in a comment,
-inside a namespace or a function — whose base the module does not resolve. The module reads no
-`package.json`, and the library has no directory that carries one. `check-texts` and
-`check-parts`, which compare with the package by class name, the one key the package carries,
-also refuse a name two decorated classes share. `check-zoneless` compares by name too and does
-not yet: with the other two standing, no such name reaches it from a tracked file.
+inside a namespace or a function, or with no name — whose base the module does not resolve. The
+module reads no `package.json`, and the library has no directory that carries one. `check-texts`
+and `check-parts`, which compare with the package by class name, the one key the package
+carries, also refuse a name two decorated classes share. `check-zoneless` compares by name too
+and does not yet: with the other two standing, no such name reaches it from a tracked file.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
 `extends` as the subclass's file binds it, and a base the scan cannot see is a denominator fault,
-as is a decorated class the parser holds below the top level;
+as is a decorated class the parser holds below the top level or with no name;
 `tools/check-texts.mjs` (target `check-texts`) — `host` attributes, merged the same way for
 the comparison with the package, a subclass's attribute replacing its base's of the same exact
 name as Angular's merge does; each class's own attributes and binding literals judged in the
@@ -126,7 +126,7 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by twenty-two more:
+to put there too. What a class's name stands for, by twenty-three more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
@@ -156,7 +156,9 @@ no top-level class, read as a class, or as one with no base),
 `tools/check-aria.fixtures/component-below-the-top-level-beside-its-namesake/` and
 `tools/check-forms.fixtures/header-in-a-comment-beside-its-namesake/` (the same beside a class
 of its name in the file, which a pairing by name took it for),
-`tools/check-forms.fixtures/header-in-a-comment/` (a header in a comment) and
+`tools/check-forms.fixtures/header-in-a-comment/` (a header in a comment),
+`tools/check-aria.fixtures/anonymous-component/` (a decorated class with no name, which the
+pattern runs past to the next class) and
 `tools/check-texts.fixtures/speaking-attribute-on-a-base-imported-under-another-name/` (a
 renamed import followed to the class before `as`). The four gates that read what a base cannot
 pass on have no fixture, deliberately: the thing that would be inherited is not, by the feature

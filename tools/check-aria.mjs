@@ -280,16 +280,18 @@ const readSources = (root, files) => {
         unheld.push(`${file}: \`${match[0].split('\n')[0]}\``);
         continue;
       }
-      // A class the parser holds below the top level is no class `classesOf` reads — and one of
-      // its name at the top level, beside it, is another class.
-      if (!ts.isSourceFile(node.parent)) {
+      // A class the parser holds below the top level, or one with no name, is no class
+      // `classesOf` reads — and one of its name at the top level, beside it, is another class.
+      // The pattern runs from an anonymous class's decorator on to the next class it can
+      // name, so a nameless one lands here too.
+      const key = classKey(file, node.name?.text);
+      const held = ts.isSourceFile(node.parent) ? bases.get(key) : undefined;
+      if (held === undefined) {
         unheld.push(
-          `${file}: \`${match[0].split('\n')[0]}\` below the top level`,
+          `${file}: \`${match[0].split('\n')[0]}\` with no named class at the top level`,
         );
         continue;
       }
-      const key = classKey(file, node.name?.text);
-      const held = bases.get(key);
       const body = match[2];
       const host = hostBlock(body);
       components.push({
@@ -1311,15 +1313,17 @@ const checkAria = ({
   // What the decorator's pattern reads where the parser holds no class is text that spells one
   // — a comment, a string — and what the points below would examine there exists nowhere. A
   // decorated class the parser holds below the top level of its file, inside a namespace or a
-  // function, is one `extends` cannot be resolved for (`class-bases.mjs` reads the top level),
-  // and its half of the surface would go unexamined as surely.
+  // function, or one with no name, is one `extends` cannot be resolved for (`class-bases.mjs`
+  // reads the named classes of the top level), and its half of the surface would go unexamined
+  // as surely.
   if (unheld.length)
     throw new AriaError(
       'denominator',
-      `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated ` +
-        `class at the top level of the file — a comment or a string spelling one, which no ` +
-        `build compiles, or a class inside a namespace or a function, whose base this read ` +
-        `does not resolve; no point below may examine either as a component:\n${list(unheld)}`,
+      `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated class, ` +
+        `named, at the top level of the file — a comment or a string spelling one, which no ` +
+        `build compiles, or a class inside a namespace or a function, or one with no name, ` +
+        `whose base this read does not resolve; no point below may examine any of them as a ` +
+        `component:\n${list(unheld)}`,
     );
   if (components.length !== counted)
     throw new AriaError(

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/anon.ts: `@Directive({` with no named class at the top level",
+  "$reason": "An anonymous default-exported directive, then a named one in the same file. tsc and ngc compile it. The decorator's pattern runs from the first decorator on to the next `class` it can name, and the parser's class at the first decorator is the anonymous one, which `class-bases.mjs` does not read. Looked up with no guard, its base threw a `TypeError`; point 1 refuses it as a class with no name at the top level."
+}

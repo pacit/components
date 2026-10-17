@@ -1,0 +1,19 @@
+import { Directive, input } from '@angular/core';
+
+/** A directive with no name, the module's default export. */
+@Directive({
+  host: {
+    '[attr.data-pct-anon]': '""',
+  },
+})
+export default class {}
+
+/** A named directive after it in the same file. */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export abstract class PctAnonNeighbour {
+  protected readonly size = input<string>('md');
+}
