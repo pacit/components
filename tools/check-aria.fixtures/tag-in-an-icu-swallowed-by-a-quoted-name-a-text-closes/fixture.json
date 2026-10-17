@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an ICU's case draws a tag at offset 918 (`<b>`), and the tag scan never found it — a quote Angular reads as part of a bracketed name (`[it's]`), for one, opens one to the scan: in its own tag, one nothing closes leaves the scan no tag where it starts, and in a tag before it, one a later quote closes runs that tag on past its start, swallowing it; a `<` before it, in the ICU's value or a case, reads as a tag that swallows it too",
+  "$reason": "`tag-swallowed-by-a-quoted-name-a-text-closes` in an ICU's case, as `stop-in-an-icu-behind-a-quoted-name` is `stop-behind-a-quoted-name` in one. To the tag scan the text's apostrophe closes the quote in the stop's `[it's]`, and the stop's tag runs on past the `<b>` the case draws; the HTML tree places the `<b>` (`cased`), and one the scan never found fails point 1, as it did before this case. What the case holds is the refusal's word for why: it named a quote nothing closes and a `<` in the ICU's value or a case, and this template has neither."
+}
