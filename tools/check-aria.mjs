@@ -43,7 +43,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { classKey, namesOf, standsFor } from './class-bases.mjs';
+import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -175,16 +175,6 @@ const decoratedClasses = (path, content) => {
   return classes;
 };
 
-/**
- * `class X extends Y` — the base whose inputs and host block are the subclass's too. Y is the
- * name as written; the class it stands for is found through the file's own declarations and
- * imports (`class-bases.mjs`), not by the name across the sources.
- */
-const baseOf = (node) =>
-  node.heritageClauses
-    ?.find((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
-    ?.types[0]?.expression.getText() ?? null;
-
 /** The calls that make a field an input, each with its `.required`. */
 const INPUT_CALLS = new Set(['input', 'model']);
 
@@ -277,11 +267,13 @@ const readSources = (root, files) => {
   const components = [];
   const unheld = [];
   let counted = 0;
-  for (const file of files) {
-    const content = readFileSync(join(root, file), 'utf8');
+  const contents = new Map(
+    files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
+  );
+  const bases = classesOf(contents);
+  for (const [file, content] of contents) {
     counted += countOf(content, DECORATOR_COUNTER);
     const classes = decoratedClasses(file, content);
-    const names = namesOf(file, content);
     for (const match of content.matchAll(DECORATOR)) {
       const node = classes.get(match.index);
       if (node === undefined) {
@@ -290,15 +282,17 @@ const readSources = (root, files) => {
       }
       const body = match[2];
       const host = hostBlock(body);
-      const base = baseOf(node);
+      const key = classKey(file, node.name?.text);
       components.push({
         file,
         className: node.name?.text,
-        key: classKey(file, node.name?.text),
-        base,
-        // The class the base's name stands for in this file: `undefined` when there is no base,
-        // or when the file binds its name to nothing a class is read from.
-        from: names.get(base),
+        key,
+        // `class X extends Y` — the base whose inputs and host block are the subclass's too.
+        // `base` is Y as written and `from` the class TypeScript binds it to
+        // (`class-bases.mjs`), or `undefined` for none this follows. A decorated class the parser
+        // holds below the top level has neither.
+        base: bases.get(key)?.base ?? null,
+        from: bases.get(key)?.from,
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
@@ -1327,13 +1321,14 @@ const checkAria = ({
   // A base the scan cannot see is a denominator failure and not a shrug — it is exactly the
   // half that would go unexamined.
   //
-  // A link is the class the base's name stands for in the subclass's file, keyed by its file
-  // too (`class-bases.mjs`), so two components of one name are two and the chain is the one
-  // TypeScript builds: a cycle in it is one the compiler refuses as well (TS2506, a class named
-  // in its own base expression), and no build compiles it. `seen` guards nothing the gate is
-  // handed, and dropping it is equivalent on every input that compiles. By the name alone the
-  // chain could run through a class no build put there and close a cycle TypeScript has not
-  // got, and only `seen` stopped it recursing forever.
+  // A link is the class TypeScript binds the base's name to (`class-bases.mjs`) — one the
+  // subclass's file declares, or one a module of the sources declares `export class` under the name
+  // imported — keyed by its file too, and anything else is no link but the refusal below. So two
+  // components of one name are two, and the chain is the one TypeScript builds: a cycle in it is
+  // one the compiler refuses as well (TS2506, a class named in its own base expression), and no
+  // build compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on
+  // every input that compiles. By the name alone the chain could run through a class no build put
+  // there and close a cycle TypeScript has not got, and only `seen` stopped it recursing forever.
   const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
     if (component.base === null) return component;

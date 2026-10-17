@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctMarker extends `PctMarkerFrame`, which stands there for no class this read follows",
+  "$reason": "`PctMarker<T extends PctMarkerSlot = PctMarkerSlot> extends PctMarkerFrame`: the base is `PctMarkerFrame`, which the file does not import, and `PctMarkerSlot` is only the constraint of a type parameter. A pattern over the class header took the first `extends` and followed `PctMarkerSlot`, a decorated class of the file with no part, and the case passed. Read off the parsed class's `extends` clause, the base is one the scan did not read, and point 1 refuses it."
+}

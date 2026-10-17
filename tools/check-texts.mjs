@@ -38,7 +38,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { classKey, namesOf, standsFor } from './class-bases.mjs';
+import { classesOf, classKey, standsFor } from './class-bases.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -155,18 +155,6 @@ const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
 
 const DECORATOR_COUNT = /^[ \t]*@(?:Component|Directive)\(/gm;
-
-/**
- * `class X extends Y` — and what Y declares is X's too. Angular merges a decorated base's
- * host bindings into the subclass's definition, so the package read finds them ON THE
- * SUBCLASS while the source read finds them one file away. An unexported base is not a class
- * of the package at all: its strings travel inside whatever extends it
- * ([0034](../docs/decisions/0034-multiplicity-is-a-tag.md),
- * [`lesson-100`](../docs/lessons.md#lesson-100)). Y is the name as written; the class it stands
- * for is found through the file's own declarations and imports (`class-bases.mjs`), not by the
- * name across the sources.
- */
-const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
@@ -300,15 +288,15 @@ const nameFromKey = (key) => {
 const readSources = (root, files) => {
   const classes = [];
   let declarations = 0;
+  const contents = new Map(
+    files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
+  );
+  const bases = classesOf(contents);
 
-  for (const file of files) {
-    const content = readFileSync(join(root, file), 'utf8');
+  for (const [file, content] of contents) {
     declarations += countOf(content, DECORATOR_COUNT);
-    const names = namesOf(file, content);
 
-    for (const [, kind, body, className, heritage] of content.matchAll(
-      DECORATOR,
-    )) {
+    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       const host = hostBlock(body) ?? '';
@@ -326,16 +314,23 @@ const readSources = (root, files) => {
           literals.push([name, l[1] ?? l[2]]);
       }
 
-      const base = EXTENDS.exec(heritage ?? '')?.[1] ?? null;
+      const key = classKey(file, className);
       classes.push({
         file,
         className,
-        key: classKey(file, className),
+        key,
         kind,
-        base,
-        // The class the base's name stands for in this file: `undefined` when there is no base,
-        // or when the file binds its name to nothing a class is read from.
-        from: names.get(base),
+        // `class X extends Y` — and what Y declares is X's too. Angular merges a decorated base's
+        // host bindings into the subclass's definition, so the package read finds them ON THE
+        // SUBCLASS while the source read finds them one file away. An unexported base is not a
+        // class of the package at all: its strings travel inside whatever extends it
+        // ([0034](../docs/decisions/0034-multiplicity-is-a-tag.md),
+        // [`lesson-100`](../docs/lessons.md#lesson-100)). `base` is Y as written and `from` the
+        // class TypeScript binds it to (`class-bases.mjs`), or `undefined` for none this follows.
+        // A decorator the pattern reads where the parser holds no class — one in a comment —
+        // has neither.
+        base: bases.get(key)?.base ?? null,
+        from: bases.get(key)?.from,
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
               .split('\\')
@@ -753,8 +748,11 @@ const checkTexts = (input) => {
   // exports a class under its name and keeps no file. Two decorated classes of one name are then
   // one key, and the comparison reads one of them — the other's strings are held against nothing,
   // and a class that never reached the package hides behind its namesake that did (measured: a
-  // second `PctMarker` in `twin.ts`, which the package does not carry, passed). The chain is not
-  // what needs this: `extends` is resolved through the file that writes it, by name and file.
+  // second `PctMarker` in `twin.ts`, which the package does not carry, passed). It is refused
+  // wherever the two stand, two bases no entrypoint exports included, which point 2 never reaches:
+  // a name meets the package in more than one place below (`fromPackage`, the filter of
+  // `fromSources`), and one class per name is what each of them assumes. The chain is not what
+  // needs this: `extends` is resolved through the file that writes it, by name and file.
   const byName = Map.groupBy(classes, (k) => k.className);
   const shared = [...byName].filter(([, named]) => named.length > 1);
   if (shared.length)
@@ -769,8 +767,8 @@ const checkTexts = (input) => {
           ),
         ) +
         `\n    Point 2 compares the sources with the package by class name, the only key ` +
-        `the package carries, so it would read one class of each name and pass the other ` +
-        `over. Rename one of them.`,
+        `the package carries, and where two classes of a name reach it, it reads one and ` +
+        `passes the other over. The name is refused wherever the two stand. Rename one.`,
     );
 
   const inInline = classes.filter((k) => k.inline);
@@ -889,15 +887,16 @@ const checkTexts = (input) => {
   // shadowed value is a part missing from the inventory, here it is a string still written in
   // a file, and point 3 judges every file's own `host` block, a base's included.
   //
-  // A link is the class the base's name stands for in the subclass's file, keyed by its file
-  // too (`class-bases.mjs`), so the chain is the one TypeScript builds: a cycle in it is one the
-  // compiler refuses as well (TS2506, a class named in its own base expression), and no build
-  // compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on every
-  // input that compiles. So is the rest the review of this merge named equivalent while names
-  // are unique, now that point 1 refuses a name two decorated classes share: merging only the
-  // classes point 2 compares, point 3 reading the merged attributes of every class (which only
-  // lists an inherited string again under each subclass), and point 3 reading the classes
-  // through `declared`.
+  // A link is the class TypeScript binds the base's name to (`class-bases.mjs`) — one the
+  // subclass's file declares, or one a module of the sources declares `export class` under the name
+  // imported — keyed by its file too, and anything else is no link but the refusal below. So the
+  // chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well (TS2506,
+  // a class named in its own base expression), and no build compiles it. `seen` guards nothing the
+  // gate is handed, and dropping it is equivalent on every input that compiles. So is the rest the
+  // review of this merge named equivalent while names are unique, now that point 1 refuses a name
+  // two decorated classes share: merging only the classes point 2 compares, point 3 reading the
+  // merged attributes of every class (which only lists an inherited string again under each
+  // subclass), and point 3 reading the classes through `declared`.
   const extended = new Set(classes.map((k) => k.from));
   const carried = (k, seen = new Set()) => {
     if (k.base === null || seen.has(k.key)) return k.attributes;

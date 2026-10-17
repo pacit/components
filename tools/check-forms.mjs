@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { classKey, namesOf } from './class-bases.mjs';
+import { classesOf, classKey } from './class-bases.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -128,24 +128,29 @@ const classesIn = (file, text) => {
  * block vanished behind a namesake that is no control, and point 3 passed (measured). `extends`
  * is followed later, at the point that needs it: a base is a class of this library like any
  * other, and resolving the chain here would hide which file a member really came from. What is
- * resolved here is which class the base's NAME stands for — the one the file declares or
- * imports under it, as TypeScript binds it, and not a class of that name anywhere else.
+ * resolved here is which class the base stands for — the one TypeScript binds the name in its
+ * `extends` clause to (`class-bases.mjs`), and not a class of that name anywhere else. A header
+ * the pattern reads where the parser holds no class — one in a comment — stands on nothing.
  */
 const readSources = (root, files) => {
   const classes = new Map();
   const orphans = [];
-  for (const file of files) {
-    const content = readFileSync(join(root, file), 'utf8');
+  const contents = new Map(
+    files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
+  );
+  const bases = classesOf(contents);
+  for (const [file, content] of contents) {
     const { headers, orphans: loose } = classesIn(file, content);
-    const names = namesOf(file, content);
     orphans.push(...loose);
-    for (const header of headers)
-      classes.set(classKey(file, header.name), {
+    for (const header of headers) {
+      const key = classKey(file, header.name);
+      classes.set(key, {
         ...header,
         file,
-        from: names.get(/\bextends\s+(\w+)/.exec(header.heritage)?.[1]),
+        from: bases.get(key)?.from,
         control: CONTRACTS.test(header.heritage),
       });
+    }
   }
   return { classes, orphans };
 };
@@ -183,10 +188,10 @@ const readContract = (text) => {
  * no file exports, or a package's — hands down nothing: what a control would inherit from it is
  * missing from what point 3 reads, which can refuse a control and never pass one.
  *
- * With the links resolved through the import and keyed by file, the chain is the one TypeScript
- * builds: a cycle in it is one the compiler refuses as well (TS2506, a class named in its own
- * base expression), and no build compiles it. `seen` guards nothing the gate is handed, and
- * dropping it is equivalent on every input that compiles.
+ * A link is the class TypeScript binds the base's name to (`class-bases.mjs`), keyed by its file,
+ * so the chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well
+ * (TS2506, a class named in its own base expression), and no build compiles it. `seen` guards
+ * nothing the gate is handed, and dropping it is equivalent on every input that compiles.
  */
 const controlsOf = (classes) => {
   const inherited = (key, seen = new Set()) => {

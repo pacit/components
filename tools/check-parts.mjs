@@ -42,7 +42,7 @@ import {
 } from '@angular/compiler';
 import * as core from '@angular/core';
 
-import { classKey, namesOf, standsFor } from './class-bases.mjs';
+import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
 import { readTree } from './template-comments.mjs';
 
@@ -95,12 +95,6 @@ const sorted = (set) => [...set].sort();
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
-/**
- * `class X extends Y` — the base whose `host` block is the subclass's too. Y is the name as
- * written; the class it stands for is found through the file's own declarations and imports
- * (`class-bases.mjs`), not by the name across the sources.
- */
-const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 /** `templateUrl: './x.html'` — one occurrence per decorator. */
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
@@ -163,27 +157,29 @@ const entrypointFromPath = (file) => {
 const readSources = (root, files) => {
   const classes = [];
   let declarations = 0;
+  const contents = new Map(
+    files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
+  );
+  const bases = classesOf(contents);
 
-  for (const file of files) {
-    const content = readFileSync(join(root, file), 'utf8');
+  for (const [file, content] of contents) {
     declarations += countOf(content, DECORATOR_COUNTER);
-    const names = namesOf(file, content);
 
-    for (const [, kind, body, className, heritage] of content.matchAll(
-      DECORATOR,
-    )) {
+    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
-      const base = EXTENDS.exec(heritage ?? '')?.[1] ?? null;
+      const key = classKey(file, className);
       classes.push({
         file,
         className,
-        key: classKey(file, className),
+        key,
         kind,
-        base,
-        // The class the base's name stands for in this file: `undefined` when there is no base,
-        // or when the file binds its name to nothing a class is read from.
-        from: names.get(base),
+        // `class X extends Y` — the base whose `host` block is the subclass's too. `base` is Y
+        // as written and `from` the class TypeScript binds it to (`class-bases.mjs`), or
+        // `undefined` for none this follows. A decorator the pattern reads where the parser
+        // holds no class — one in a comment — has neither.
+        base: bases.get(key)?.base ?? null,
+        from: bases.get(key)?.from,
         entrypoint: entrypointFromPath(file),
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
@@ -318,8 +314,11 @@ const checkParts = (input) => {
   // exports a class under its name and keeps no file. Two decorated classes of one name are then
   // one key, and the comparison reads one of them — a class that never reached the package hides
   // behind its namesake that did (measured: a second `PctMarker` in `twin.ts`, writing a part and
-  // exported by nothing, passed). The chain is not what needs this: `extends` is resolved through
-  // the file that writes it, by name and file.
+  // exported by nothing, passed). It is refused wherever the two stand, two bases no entrypoint
+  // exports included, which point 2 never reaches: a name meets the package in more than one
+  // place below (`exported`, `fromPackage`), and one class per name is what each of them assumes.
+  // The chain is not what needs this: `extends` is resolved through the file that writes it, by
+  // name and file.
   const shared = [...Map.groupBy(classes, (k) => k.className)].filter(
     ([, named]) => named.length > 1,
   );
@@ -334,8 +333,8 @@ const checkParts = (input) => {
           ),
         ) +
         `\n    Point 2 compares the sources with the package by class name, the only key ` +
-        `the package carries, so it would read one class of each name and pass the other ` +
-        `over. Rename one of them.`,
+        `the package carries, and where two classes of a name reach it, it reads one and ` +
+        `passes the other over. The name is refused wherever the two stand. Rename one.`,
     );
 
   const inline = classes.filter((k) => k.inline);
@@ -439,11 +438,12 @@ const checkParts = (input) => {
   // cannot pass one on. A base the scan cannot see is a denominator fault — the package
   // read would then find its parts on the subclass and the source read never would.
   //
-  // A link is the class the base's name stands for in the subclass's file, keyed by its file
-  // too (`class-bases.mjs`), so the chain is the one TypeScript builds: a cycle in it is one the
-  // compiler refuses as well (TS2506, a class named in its own base expression), and no build
-  // compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on every
-  // input that compiles.
+  // A link is the class TypeScript binds the base's name to (`class-bases.mjs`) — one the
+  // subclass's file declares, or one a module of the sources declares `export class` under the name
+  // imported — keyed by its file too, and anything else is no link but the refusal below. So the
+  // chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well (TS2506,
+  // a class named in its own base expression), and no build compiles it. `seen` guards nothing the
+  // gate is handed, and dropping it is equivalent on every input that compiles.
   const declared = new Map(classes.map((k) => [k.key, k]));
   const exported = new Set(pkg.map((p) => p.className));
   const extended = new Set(classes.map((k) => k.from));

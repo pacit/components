@@ -7508,6 +7508,17 @@ a cycle in it is one the compiler refuses too (TS2506). The comparison with the 
 the name, the only key the package carries, and that is where a name two decorated classes share
 is refused.
 
+The review of that change found the same mistake one level down. The module bound an import of
+`N` to the class its module DECLARES as `N`, and TypeScript binds it to what the module EXPORTS as
+`N`. `export { PctBare as PctWidgetBase, PctWidgetBase as PctBare }` passed `check-aria` with a
+widget that has no name, and a module exporting a class under the name of another it declares
+gave a chain TypeScript has not got, on which `check-aria` and `check-parts` recursed forever
+without `seen`. Only a class declared `export class N` is followed now. A differential probe
+against the TypeScript checker, over twenty-six shapes of import, export and heritage, gives for
+every class at the top level of its file either the checker's class or a refusal. The base itself
+was read by a pattern in three of the four gates, and a pattern takes the `A` of
+`class C<T extends A> extends B`; it comes off the parsed class now.
+
 The wider reading: an equivalence claim stands on a precondition, and the precondition has to be
 measured against the inputs that break the claim, not restated as a rule nearby. One more, from
 the same run: a lookup keyed without the file keeps the class read last, so a case meant to fail

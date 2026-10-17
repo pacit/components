@@ -84,6 +84,11 @@ negative control has to walk. Measured: with the base read out of the reading, t
 itself fires `member-missing` on all four members of its block, and so does the repository on
 sixteen.
 
+`shapes.ts` carries two things no other input does: a namespace import and a class with no name.
+Neither binds a name an `extends` can follow, and the reading every gate that follows `extends`
+shares (`tools/class-bases.mjs`) has to walk past both; without its guards it stopped on either
+(measured: `bound.elements is not iterable`, and `reading 'text'`).
+
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on
 itself. The same law as the token gate's dictionary — a reference input carries what it uses

@@ -1,0 +1,10 @@
+import * as core from '@angular/core';
+
+/**
+ * Two shapes a source may hold that bind no name an `extends` can follow: a namespace import
+ * and a class with no name. The reading every gate that follows `extends` shares
+ * (`class-bases.mjs`) has to walk past both rather than stop on them.
+ */
+export default class {}
+
+export const version = core.VERSION;

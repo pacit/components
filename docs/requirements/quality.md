@@ -52,18 +52,24 @@ merges what a base declares, or what it reads is one of the things a base cannot
 it reads the built package, where the merge has already happened. A gate that reads a class
 and is not on this list is the gap this requirement exists to name.
 
-Following `extends` means following the class TypeScript follows. The name after `extends`
-stands for what the file that writes it binds it to — a class the file declares, or one it
-imports, under the name before `as` — and two classes may share a name in two files. Read by the
-name across the sources, a chain runs through a class no build put there, and can close a cycle
-the compiler has not got: measured on `check-aria`, which passed `PctLoopX extends PctLoopY
-extends PctLoopX` with the second `PctLoopX` an undecorated class of another file, and recursed
-forever on it without its `seen` guard. Refusing two decorated classes of one name does not
-close that: an undecorated namesake or a renamed import does not trip it. So a gate that follows
-`extends` resolves the name through the subclass's file and keys a class by its name and its
-file (`tools/class-bases.mjs`), and a base that resolves to no decorated class it read is a
-denominator fault; and a gate that compares with the package by class name, the one key the
-package carries, refuses a name two decorated classes share.
+Following `extends` means following the class TypeScript follows. The base is the expression of
+the class's own `extends` clause, not the first `extends` of its header, which may be a type
+parameter's constraint. A name there stands for what the file that writes it binds it to: a
+class the file declares, or what a module exports under the name before `as`. Two classes may
+share a name in two files, and a module may export one class under another's name
+(`export { PctBare as PctWidgetBase }`). Read by the name across the sources, a chain runs
+through a class no build put there, and can close a cycle the compiler has not got: measured on
+`check-aria`, which passed `PctLoopX extends PctLoopY extends PctLoopX` with the second `PctLoopX`
+an undecorated class of another file, and recursed forever on it without its `seen` guard. Refusing
+two decorated classes of one name does not close that: an undecorated namesake, a renamed import
+or an export clause does not trip it. So a gate that follows `extends` takes the base and the
+class it binds from `tools/class-bases.mjs`, which follows a class the file declares and an
+import of a class its module declares `export class` under that name, and nothing else; a class
+is keyed by its name and its file, and a base that binds no decorated class the gate read is a
+denominator fault. `check-texts` and `check-parts`, which compare with the package by class
+name, the one key the package carries, also refuse a name two decorated classes share.
+`check-zoneless` compares by name too and does not yet: with the other two standing, no such
+name reaches it.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
@@ -110,7 +116,7 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by ten more:
+to put there too. What a class's name stands for, by twelve more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
@@ -121,9 +127,12 @@ package does not carry, which passed),
 the name of a decorated one, imported from its own file, which the chain by name followed to the
 decorated one), `tools/check-aria.fixtures/two-bases-under-one-name/` (two decorated bases of
 one name, the one imported without the naming inputs),
-`tools/check-aria.fixtures/base-from-a-package/` (a package's class under a read class's name),
-`tools/check-forms.fixtures/control-behind-a-namesake/` (a control lost behind an exported class
-of its name) and
+`tools/check-aria.fixtures/base-exported-under-another-name/` (a module exporting its two bases
+each under the other's name, which the read by declared name followed to the one with the naming
+inputs), `tools/check-aria.fixtures/base-from-a-package/` (a package's class under a read
+class's name), `tools/check-forms.fixtures/control-behind-a-namesake/` (a control lost behind an
+exported class of its name), `tools/check-parts.fixtures/base-after-a-type-parameter/` (a type
+parameter's constraint, which a pattern over the header read as the base) and
 `tools/check-texts.fixtures/speaking-attribute-on-a-base-imported-under-another-name/` (a
 renamed import followed to the class before `as`). The four gates that read what a base cannot
 pass on have no fixture, deliberately: the thing that would be inherited is not, by the feature

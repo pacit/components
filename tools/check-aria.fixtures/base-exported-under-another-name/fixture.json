@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctWidgetBase`, which stands there for no class this read follows",
+  "$reason": "`base.ts` declares `PctWidgetBase`, with the naming inputs, and `PctBareBase`, without them, and exports each under the other's name. `widget.ts` imports `PctWidgetBase`, so TypeScript binds it to `PctBareBase`, and the widget Angular builds has no name (measured through ngc in partial mode). Read as the class the module declares under that name, the base handed the widget both inputs, and the case passed. An export written as a clause is not followed, so the base is one point 1 refuses."
+}
