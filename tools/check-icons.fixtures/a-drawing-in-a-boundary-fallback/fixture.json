@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "A drawing written straight into the last `@error` block of an `@boundary`, and an icon in its body and in its first `@error`. Angular 22.2 renders the body and, once it throws, the first `@error` whose `when` holds, the unconditional one last; the parser holds them on `errorBlocks`, a list. A walk that left the list out read none of them and failed point 1 for the tags it did not reach, as it refused a boundary whose every fallback is an icon, which `ngc` compiles; one that read the first block alone misses the drawing, and one that read the last alone misses the icon."
+}

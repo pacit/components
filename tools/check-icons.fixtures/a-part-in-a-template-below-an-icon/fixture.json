@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "A part on a drawing inside an `<ng-template>` inside the arrow's icon, under a structural directive. Read where it is written, the part sat below the icon and failed point 6, where the directive may stamp the template anywhere, beside the icon too, and the part would then name a drawing that stays; point 1 refuses the template before point 6 reads it. The directive's template carries no tag (`tagName` is null) around the `<ng-template>` it is written on, and both are templates."
+}

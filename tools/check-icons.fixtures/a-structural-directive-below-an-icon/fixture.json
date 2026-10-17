@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "A structural directive on the drawing of an icon, in the first template read. The directive is handed the drawing as a template and stamps it where its class chooses — its own anchor, an outlet it hands it to (`cdkPortal` does), nowhere — which the template does not say; `ngc` compiles it. Point 1 refuses it as it refuses an `<ng-template>` below an icon: read where it is written, the drawing passed point 2 as the icon's own."
+}

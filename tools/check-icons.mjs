@@ -5,19 +5,20 @@
  * template renders perfectly and is simply impossible to swap
  * ([0011](../docs/decisions/0011-icons.md), [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
  *
- *  1. DENOMINATOR: the names read, each template parsed, no `@content`, each drawing walked,
+ *  1. DENOMINATOR: the names read, each template parsed, no `@content` and no template below
+ *     an icon, each drawing walked,
  *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>`, or is the SVG renderer's own,
  *  3. NAMED: a `<pct-icon>` of the library carries a name, because a set is asked by name,
  *  4. DEFAULT: a named icon carries its own drawing, so a consumer with no set sees an icon,
  *  5. INVENTORY: the names drawn and `PctIconName` are the same set, both ways,
- *  6. PART: `data-pct-part` never sits below a `pct-icon` — the contract is the box, not
- *     the drawing.
+ *  6. PART: `data-pct-part` never sits below a `pct-icon`: the contract is the box, not the drawing.
  *
  * Point 1 is the denominator of the rest ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-icons.mjs
  */
 import {
+  splitNsName,
   TmplAstContent,
   TmplAstElement,
   TmplAstLetDeclaration,
@@ -68,10 +69,18 @@ const PART = 'data-pct-part';
 /**
  * The same two tags counted without parsing, as the denominator of the walk — over the text with
  * its comments blanked (`readTemplate`), since a tag inside one is text and the walk never sees it.
+ * Each is read as Angular's lexer reads a tag (`isNameEnd`, `isPrefixEnd`): in any namespace the
+ * template writes, a letter and then letters or digits before a colon (`PREFIX`), and ended by its
+ * whitespace — a tab to a space, a no-break space — by `<`, `>`, `/`, a quote, `=` or the end
+ * (`NAME_END`). Read with no prefix up to `[\s/>]`, `<svg:svg>`, `<svg="1">` and an `<svg` a control
+ * character ends were drawings to the walk and none to the text, and each stood in for an `<svg>`
+ * the walk never reaches, an ICU's: the two counts agreed and a loose one passed.
  */
+const PREFIX = '(?:[a-zA-Z][a-zA-Z\\d]*:)?';
+const NAME_END = `(?=[\\t-\\x20\\xa0<>/'"=]|$)`;
 const COUNTERS = {
-  [ICON]: /<pct-icon[\s/>]/g,
-  [DRAWING]: /<svg[\s/>]/g,
+  [ICON]: new RegExp(`<${PREFIX}pct-icon${NAME_END}`, 'g'),
+  [DRAWING]: new RegExp(`<${PREFIX}svg${NAME_END}`, 'g'),
 };
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
@@ -87,29 +96,38 @@ class IconError extends Error {
 // ── the walk ───────────────────────────────────────────────────────────────────
 
 /**
- * A node the walk reads as an element, asked of the compiler's own classes: an element, an
- * `<ng-content>` and an `<ng-template>`, each a tag the template writes. The template a structural
- * directive wraps around what it is written on is none of them: it holds that node as its child,
- * and around an element it carries the element's tag and attributes too, so that read as one,
- * `<svg *x>` was counted twice. An `@let` and an `@content` block carry a `name` as well and are
- * no element: `@let svg = 1;` was a drawing, and one inside an icon stood in for an `<svg>` the
- * walk never reaches, an ICU's, so that the two counts of point 1 agreed and a loose one passed.
+ * A node the walk reads as an element, asked of the compiler's own classes: an element and an
+ * `<ng-content>`, each a tag the template writes, drawn where it is written. A template is none —
+ * an `<ng-template>`, or the one a structural directive wraps around what it is written on, which
+ * around an element carries the element's tag and attributes too (read as one, `<svg *x>` was
+ * counted twice). What it holds stands where whatever stamps it puts it, and the walk reads it
+ * through; below an icon, point 1 refuses it (`stamped`). An `@let` and an `@content` block carry
+ * a `name` as well and are no element: `@let svg = 1;` was a drawing, and one inside an icon stood
+ * in for an `<svg>` the walk never reaches, an ICU's, so that the two counts of point 1 agreed and
+ * a loose one passed.
  */
 const isElement = (node) =>
-  node instanceof TmplAstElement ||
-  node instanceof TmplAstContent ||
-  (node instanceof TmplAstTemplate && node.templateAttrs.length === 0);
+  node instanceof TmplAstElement || node instanceof TmplAstContent;
 
 /** A child point 4 counts as an icon's own drawing: any but an `@let`, which renders nothing. */
 const draws = (child) => !(child instanceof TmplAstLetDeclaration);
 
 /**
- * Every element of a template (`isElement`), with the `pct-icon` it stands inside (or `null`).
+ * What a block draws in place of its body, by the name the tree holds it under: one block
+ * (`@empty`, `@placeholder`, `@loading`, a deferred `@error`) or a list of them, the `@error`
+ * blocks of an `@boundary` — the names `check-aria` walks. Without the last, an icon in a
+ * boundary's fallback failed point 1 as a tag the walk did not reach, which `ngc` compiles.
+ */
+const SIDE_BLOCKS = ['empty', 'placeholder', 'loading', 'error', 'errorBlocks'];
+
+/**
+ * Every element of a template (`isElement`), with the `pct-icon` it stands inside (or `null`),
+ * and the line of each template below one (`stamped`).
  *
  * Control flow is walked through rather than around: an icon inside an `@if` is an icon,
  * and a `<path>` inside an `@else` is still a drawing. The blocks carry their children on
- * `branches` / `cases` or on a side block of their own (`@empty`, `@placeholder`,
- * `@loading`, `@error`), so all of them are followed and none of them is a scope.
+ * `branches` / `cases` or on a side block of their own (`SIDE_BLOCKS`), so all of them are
+ * followed and none of them is a scope.
  */
 const walk = (nodes, inside, found) => {
   for (const node of nodes ?? []) {
@@ -122,24 +140,26 @@ const walk = (nodes, inside, found) => {
       for (const branch of branches) walk(branch.children, inside, found);
       continue;
     }
-    const sides = [node.empty, node.placeholder, node.loading, node.error]
-      .filter(Boolean)
-      .map((side) => side.children);
+    const sides = SIDE_BLOCKS.flatMap((name) => node[name] ?? []).map(
+      (side) => side.children,
+    );
     if (sides.length) {
       walk(node.children, inside, found);
       for (const side of sides) walk(side, inside, found);
       continue;
     }
 
+    if (node instanceof TmplAstTemplate && inside !== null)
+      found.stamped.push(node.sourceSpan.start.line + 1);
     if (!isElement(node)) {
       walk(node.children, inside, found);
       continue;
     }
-    // Angular namespaces what it parses inside an `<svg>`: the element is `:svg:svg` and
-    // everything under it `:svg:path`, `:svg:g`. The prefix is the parser's, not the
-    // template's, so it comes off before anything is compared with a written tag. An
-    // `<ng-template>` carries its tag as `tagName`.
-    const tag = (node.name ?? node.tagName).replace(/^:[a-z]+:/, '');
+    // The parser names an element with its namespace: what it parses inside an `<svg>` is
+    // `:svg:path`, and a prefix the template writes stays on (`<svg:svg>`, `<X1:pct-icon>`). A
+    // selector matches the name without one, in any namespace — `ngc` makes the icon of each —
+    // so it comes off before anything is compared with a written tag, as the counts read it.
+    const tag = splitNsName(node.name)[1];
 
     const element = {
       tag,
@@ -159,7 +179,7 @@ const walk = (nodes, inside, found) => {
       // An icon holding an `@let` alone passed point 4 as one with a drawing of its own.
       children: (node.children ?? []).filter(draws).length,
     };
-    found.push(element);
+    found.elements.push(element);
     walk(node.children, tag === ICON ? element : inside, found);
   }
 };
@@ -196,15 +216,15 @@ class ContentBlocks extends TmplAstRecursiveVisitor {
  */
 const readTemplate = ({ file, content }) => {
   const { nodes, errors, text } = readTree(file, content);
-  const elements = [];
-  walk(nodes, null, elements);
+  const found = { elements: [], stamped: [] };
+  walk(nodes, null, found);
   const blocks = new ContentBlocks();
   tmplAstVisitAll(blocks, nodes);
   return {
     file,
     errors: errors ?? [],
     handsContent: blocks.found,
-    elements,
+    ...found,
     counted: Object.fromEntries(
       Object.entries(COUNTERS).map(([tag, pattern]) => [
         tag,
@@ -276,21 +296,44 @@ const checkIcons = ({ templates, names }) => {
         `written.`,
     );
   const miscounted = [];
+  const unreached = new Set();
   for (const template of read)
     for (const [tag, counted] of Object.entries(template.counted)) {
       const parsed = template.elements.filter((e) => e.tag === tag).length;
-      if (parsed !== counted)
+      if (parsed !== counted) {
         miscounted.push(
           `${template.file}: ${parsed} \`<${tag}>\` in the tree, ${counted} in the text`,
         );
+        unreached.add(template.file);
+      }
     }
+  // Counted by template and listed by tag: one template can miss both.
   if (miscounted.length)
     throw new IconError(
       'denominator',
-      `${miscounted.length} templates hold tags the walk did not reach:\n` +
+      `${unreached.size} templates hold tags the walk did not reach:\n` +
         list(miscounted) +
         `\n    A drawing the walk misses is a drawing points 2 and 6 pronounce clean ` +
         `without having seen it.`,
+    );
+  // A template holds what stands where whatever stamps it puts it: an outlet anywhere in the
+  // template, the directive written on it (`cdkPortal` hands its own to an outlet elsewhere) or
+  // the class through a query, which no reading of the template sees (plan 4.83). Read where it
+  // is written, a drawing in one below an icon passed point 2 as the icon's own, stamped outside
+  // it by an outlet beside the icon, which `ngc` compiles. No template of the library stands
+  // below an icon (twelve stand outside every one, 2026-10-17).
+  const templated = read
+    .filter((t) => t.stamped.length)
+    .map((t) => `${t.file}: line ${t.stamped.join(', ')}`);
+  if (templated.length)
+    throw new IconError(
+      'denominator',
+      `${templated.length} templates hold a template below a \`<${ICON}>\`:\n` +
+        list(templated) +
+        `\n    An \`<ng-template>\` or a structural directive draws what it holds where an ` +
+        `outlet, the directive or the class stamps it, which the template does not say: ` +
+        `points 2 and 6 would read it as part of the icon. Write the drawing in the icon, and ` +
+        `branch with \`@if\`.`,
     );
 
   const icons = read.flatMap((t) =>

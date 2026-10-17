@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "A drawing written straight into the template with its namespace, `<svg:svg>`, which `ngc` compiles to the `<svg>` the SVG namespace makes (`ɵɵnamespaceSVG()`, then the element `svg`). The walk takes the parser's name without its namespace and reads a drawing. The text count read it with no prefix and found none, so the two disagreed — and beside an ICU drawing an `<svg>`, which the walk never reaches, they agreed, and the loose one passed every point."
+}

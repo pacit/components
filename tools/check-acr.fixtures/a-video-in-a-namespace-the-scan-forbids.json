@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains a `<video>` written in a namespace, `<x1:video>` — a letter and a digit, as Angular's lexer takes a prefix — and 1.2.1 keeps resting on the scan. `ngc` makes the same element of a prefixed `video` as of a bare one (measured with `foo:`): a video. Read with no prefix, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<x1:video controls></x1:video>\n"
+  }
+}

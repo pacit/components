@@ -128,7 +128,10 @@ const KINDS = new Set([...MEASURING, 'req', 'lesson', 'decision', 'finding']);
 const SCANS = {
   'no-media-elements': {
     over: ['html'],
-    pattern: /<(video|audio)\b/,
+    // In any case and any namespace the template writes, as Angular's lexer takes a prefix: `ngc`
+    // hands `<VIDEO>` to `createElement`, which an HTML document lowers, and makes the same
+    // element of `<foo:video>`, with no namespace instruction (measured on 22.2.1).
+    pattern: /<(?:[a-z][a-z\d]*:)?(?:video|audio)\b/i,
     means: 'an `<audio>` or `<video>` element',
   },
   'no-orientation-lock': {
@@ -153,7 +156,9 @@ const SCANS = {
   },
   'no-svg-text': {
     over: ['html', 'ts'],
-    pattern: /<text\b/,
+    // Inside an `<svg>` or in its namespace, `<svg:text>`, which `ngc` makes anywhere: no other
+    // prefix compiles to one, and SVG names keep their case (`<TEXT>` is no text element).
+    pattern: /<(?:svg:)?text\b/,
     means: 'an SVG `<text>` element',
   },
 };

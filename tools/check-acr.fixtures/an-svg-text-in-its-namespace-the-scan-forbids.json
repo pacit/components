@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A drawing of the library gains a `<text>` written in the SVG namespace, `<svg:text>`, which `ngc` makes (`ɵɵnamespaceSVG()`, then the element `text`), and 1.4.5 keeps resting on the scan. Read with no prefix, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<svg viewBox=\"0 0 24 24\"><svg:text x=\"0\" y=\"16\">AB</svg:text></svg>\n"
+  }
+}

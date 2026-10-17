@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "named",
+  "why": "An icon of the library with no name, written in a namespace the template makes up, `X1:` — a capital and a digit, as Angular's lexer takes a prefix. `ngc` compiles it to the icon component in the HTML namespace (the element `pct-icon`, no namespace instruction): a selector matches the name without its prefix. The walk took off a prefix of small letters alone and the text count read none, so both read no icon here, and the anonymous one passed point 3."
+}

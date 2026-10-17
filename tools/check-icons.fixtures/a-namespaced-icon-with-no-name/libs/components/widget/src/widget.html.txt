@@ -5,11 +5,6 @@
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
       <path d="M4 6l4 4 4-4" />
     </svg>
-    <ng-template *pctRaised data-pct-part="arrow-raised">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
-        <path d="M4 10l4-4 4 4" />
-      </svg>
-    </ng-template>
   </pct-icon>
 </button>
 
@@ -20,3 +15,5 @@
   </svg>
 </pct-icon>
 }
+
+<X1:pct-icon class="widget__badge">+</X1:pct-icon>
