@@ -16,4 +16,6 @@
 </pct-icon>
 }
 
+<a:pct-icon class="widget__badge">+</a:pct-icon>
 <X1:pct-icon class="widget__badge">+</X1:pct-icon>
+<xH1ml:pct-icon class="widget__badge">+</xH1ml:pct-icon>

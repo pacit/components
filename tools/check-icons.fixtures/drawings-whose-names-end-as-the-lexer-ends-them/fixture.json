@@ -1,5 +1,5 @@
 {
   "point": 2,
   "check": "swappable",
-  "why": "Six drawings outside every icon, each ending its tag's name on a different character Angular's lexer ends a name on (`isNameEnd`): a `>`, a `/`, a tab, U+001F — a control character the lexer takes for whitespace and `\\s` does not — a no-break space and an `=` (`<svg=\"1\">`, an attribute with no name, which `ngc` compiles). The walk reads six drawings, and a count that ends a name on fewer characters than the lexer misses one: point 1 fires instead of point 2. Counted up to `[\\s/>]`, the control character and the `=` were drawings to the walk alone, and beside an ICU's `<svg>` the two counts agreed."
+  "why": "Seven drawings outside every icon, each ending its tag's name on a different character Angular's lexer ends a name on (`isNameEnd`): a `>`, a `/`, a tab, U+000E and U+001F — the first and the last control character the lexer takes for whitespace and `\\s` does not — a no-break space and an `=` (`<svg=\"1\">`, an attribute with no name, which `ngc` compiles). The walk reads seven drawings, and a count that ends a name on fewer characters than the lexer misses one: point 1 fires instead of point 2. Counted up to `[\\s/>]`, the control characters and the `=` were drawings to the walk alone, and beside an ICU's `<svg>` the two counts agreed."
 }

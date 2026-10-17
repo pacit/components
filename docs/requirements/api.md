@@ -813,16 +813,18 @@ for the drawing hides no `<svg>` in an ICU (`a-let-standing-in-for-a-drawing`), 
 child is an `@let` has no drawing (`an-icon-holding-only-a-let`), a structural directive's template
 is no second `<svg>` (`a-drawing-under-a-structural-directive`), a part on an `<ng-content>` inside
 an icon is refused (`a-part-on-a-projection-inside-an-icon`), and an `@boundary`'s `@error` blocks are
-walked, each of them (`a-drawing-in-a-boundary-fallback`); an `@content` block, which `ngc` refuses
+walked, each of them (`a-drawing-in-a-boundary-fallback`), as the reference walks an icon in
+every other side block; an `@content` block, which `ngc` refuses
 outside a foreign component, fails point 1 in the first template read and in the last
 (`a-content-block-in-the-first-template`, `a-drawing-in-a-content-block`), and so does a template below
 an icon, which stands where whatever stamps it puts it: an `<ng-template>` an outlet beside the icon
 stamps, in the last template, a structural directive on the drawing, in the first, and one holding a
 part (`a-template-below-an-icon-stamped-outside-it`, `a-structural-directive-below-an-icon`,
 `a-part-in-a-template-below-an-icon`). A tag is one as Angular's lexer reads it, to both counts: in any
-namespace the template writes, `<svg:svg>` a drawing and `<X1:pct-icon>` an icon
-(`a-namespaced-drawing-outside-an-icon`, `a-namespaced-icon-with-no-name`), and ended where the lexer
-ends a name, on a tab, a control character, a no-break space or an `=` too
+namespace the template writes, `<svg:svg>` and `<SVG:svg>` drawings and `<a:pct-icon>`,
+`<X1:pct-icon>` and `<xH1ml:pct-icon>` icons (`a-namespaced-drawing-outside-an-icon`,
+`a-namespaced-icon-with-no-name`), and ended where the lexer ends a name, on a tab, U+000E and
+U+001F, a no-break space or an `=` too
 (`drawings-whose-names-end-as-the-lexer-ends-them`). A comment is one the HTML
 parser holds as one: an `<svg>` between a `<!--` and a later `-->` in two attribute values, two
 `@let` strings, two block conditions or two ICU expressions is a drawing like any other

@@ -324,7 +324,7 @@ const checkIcons = ({ templates, names }) => {
   // below an icon (twelve stand outside every one, 2026-10-17).
   const templated = read
     .filter((t) => t.stamped.length)
-    .map((t) => `${t.file}: line ${t.stamped.join(', ')}`);
+    .map((t) => `${t.file}: line ${[...new Set(t.stamped)].join(', ')}`);
   if (templated.length)
     throw new IconError(
       'denominator',
