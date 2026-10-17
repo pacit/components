@@ -1,0 +1,36 @@
+<!--
+  Every side block a block draws in place of its body, each holding an icon: the walk reads them
+  all (`SIDE_BLOCKS`), and a name it lost would leave an icon the text holds and the tree does not.
+  The `@error` blocks of an `@boundary` are `a-drawing-in-a-boundary-fallback`'s.
+-->
+@for (item of items(); track item) {
+<span class="state__item">{{ item }}</span>
+} @empty {
+<pct-icon class="state__mark" name="check">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M3.5 8.5l3 3 6-6.5" />
+  </svg>
+</pct-icon>
+}
+
+@defer (on idle) {
+<span class="state__ready">Ready</span>
+} @placeholder {
+<pct-icon class="state__mark" name="check">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M3.5 8.5l3 3 6-6.5" />
+  </svg>
+</pct-icon>
+} @loading {
+<pct-icon class="state__mark" name="check">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M3.5 8.5l3 3 6-6.5" />
+  </svg>
+</pct-icon>
+} @error {
+<pct-icon class="state__mark" name="check">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M3.5 8.5l3 3 6-6.5" />
+  </svg>
+</pct-icon>
+}

@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "named",
+  "why": "Three icons of the library with no name, each in a namespace the template makes up, in the shapes Angular's lexer takes a prefix in: one letter (`a:`), a capital and a digit (`X1:`), a capital and a digit inside a longer one (`xH1ml:`). `ngc` compiles each to the icon component in the HTML namespace (the element `pct-icon`, no namespace instruction): a selector matches the name without its prefix. The walk took off a prefix of small letters alone and the text count read none: `<a:pct-icon>` was an icon to the walk and none to the text (point 1), and `X1:` and `xH1ml:` were no icon to either, so an anonymous one there passed point 3. A count that reads a prefix of fewer shapes than the lexer misses one of them, and point 1 fires instead."
+}

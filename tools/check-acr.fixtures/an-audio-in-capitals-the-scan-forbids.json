@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains an `<AUDIO>`, and 1.2.1 keeps resting on the scan. `ngc` hands the name as written to `createElement`, which an HTML document lowers (measured for `<VIDEO>`: an `HTMLVideoElement`): a player. Read in small letters alone, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<AUDIO controls></AUDIO>\n"
+  }
+}

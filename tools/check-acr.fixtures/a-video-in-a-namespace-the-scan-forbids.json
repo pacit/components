@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains a `<video>` written in a namespace, `<xH1ml:video>` — a capital and a digit inside a prefix of five, as Angular's lexer takes one — and 1.2.1 keeps resting on the scan. `ngc` makes the same element of a prefixed `video` as of a bare one (measured with `foo:`; the schema takes off every prefix but `svg` and `math`): a video. Read with no prefix, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<xH1ml:video controls></xH1ml:video>\n"
+  }
+}

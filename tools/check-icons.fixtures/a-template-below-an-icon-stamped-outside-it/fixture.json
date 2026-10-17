@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "An `<ng-template>` written inside the arrow's icon, holding a second drawing, and an outlet beside the button stamping it there: the drawing renders outside every icon, where no set replaces it, and `ngc` compiles it. Read where it is written, it passed point 2 as the icon's own. Where a template stands is said by whatever stamps it — an outlet anywhere in the template, a directive, the class through a query (plan 4.83) — so point 1 refuses one below an icon. It stands in the last template read; `a-structural-directive-below-an-icon` stands in the first."
+}

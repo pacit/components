@@ -389,6 +389,8 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the sound piece — an outlet under an `@for` stamps per item — guards nothing the library
     has: in the select's shape a focusable carrier or a message added to the rows is refused
     already, against the trigger or the lines outside. `slot.template` stays unread
+  - the same class, 2026-10-17: a structural directive's template, read in place here too, and a
+    component's projection; `check-icons` refuses the first below an icon (#117), leaves the second open
   - binds at: **the first carrier or message part in a template stamped more than once at a
     time** — by an outlet under an `@for`, or by two side by side — beyond the three panels
 

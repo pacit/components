@@ -319,8 +319,14 @@ const readSources = (root, files) => {
 
 // ── template scanner ───────────────────────────────────────────────────────────
 
-/** An opening tag with its attribute text; quoted values may hold `>`. */
-const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
+/**
+ * An opening tag with its attribute text; quoted values may hold `>`. The name is the one after a
+ * namespace the template writes, a letter and then letters or digits before a colon, as Angular's
+ * lexer takes a prefix (`isPrefixEnd`): read with its prefix for a name, `<xhtml:button>` in a
+ * string was an `xhtml` and no widget, where a `<button>` there fails point 1.
+ */
+const OPENING_TAG =
+  /<(?:[a-zA-Z][a-zA-Z\d]*:)?([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
 const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
 // ── the platform's tables ──────────────────────────────────────────────────────

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree — point 4 asks",
+  "$reason": "A `<button>` in a string written with the shortest prefix Angular's lexer takes, one letter: `@let mark = '<a:button>'`. The scan reads it as a `<button>` and fails point 1, as `a-namespaced-widget-in-a-string` does with a prefix of five; one only it holds, since the scan refuses at the first widget it finds and a second shape beside the first would hold nothing."
+}
