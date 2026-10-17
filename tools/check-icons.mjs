@@ -322,6 +322,13 @@ const checkIcons = ({ templates, names }) => {
   // is written, a drawing in one below an icon passed point 2 as the icon's own, stamped outside
   // it by an outlet beside the icon, which `ngc` compiles. No template of the library stands
   // below an icon (twelve stand outside every one, 2026-10-17).
+  //
+  // A component below an icon is the same class and is not refused: what it is handed stands
+  // where its own template projects it (`<ng-content>` inside an `<ng-template>`). The library's
+  // own selectors, matched as Angular matches them (`SelectorMatcher`), would hold each of its
+  // components, attribute selectors too (`<g pctThing>`); that reader is not built, since none
+  // stands below an icon (2026-10-17) and no component of another package is imported. The day
+  // one does, it is built (plan 4.83).
   const templated = read
     .filter((t) => t.stamped.length)
     .map((t) => `${t.file}: line ${[...new Set(t.stamped)].join(', ')}`);
