@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an `@content` block at offset 406 (`@content(header) {<span class=\"pct-widget__header\">Header</span>}`)",
+  "$reason": "`option-in-a-content-block-under-a-menu` twice over, with nothing under a menu: a header and a footer, each in an `@content` block no foreign component holds, which the build refuses (`NG8026`). The refusal quotes the first block, the header's, by its offset and the line it opens: each case before this one held one block, so a refusal that quoted the last of them passed them all."
+}

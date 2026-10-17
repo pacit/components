@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the parsed tree holds a tag at offset 545 (`<span class=\"pct-widget__retry\" role=\"button\" tabindex=\"0\">`), and the tag scan never found it",
+  "$reason": "`tag-swallowed-by-an-expression` twice over: two blocks, each with a `<` in its condition, `count() <limit()` and `count() <cap()`, and a stop after each, a retry and an undo. The tag scan reads each comparison as a tag running on to the next `>`, and each span vanishes into the false tag before it; the parsed tree holds both. The refusal quotes the first tag the tree holds and the scan missed, the retry, by its offset and its opening tag: each case before this one held one such tag, so a refusal that quoted the last of them passed them all."
+}
