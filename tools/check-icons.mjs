@@ -5,7 +5,7 @@
  * template renders perfectly and is simply impossible to swap
  * ([0011](../docs/decisions/0011-icons.md), [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
  *
- *  1. DENOMINATOR: the name list read, every template parsed, every drawing the walk saw,
+ *  1. DENOMINATOR: the names read, each template parsed, no `@content`, each drawing walked,
  *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>`, or is the SVG renderer's own,
  *  3. NAMED: a `<pct-icon>` of the library carries a name, because a set is asked by name,
  *  4. DEFAULT: a named icon carries its own drawing, so a consumer with no set sees an icon,
@@ -17,6 +17,14 @@
  *
  * Usage: node tools/check-icons.mjs
  */
+import {
+  TmplAstContent,
+  TmplAstElement,
+  TmplAstLetDeclaration,
+  TmplAstRecursiveVisitor,
+  TmplAstTemplate,
+  tmplAstVisitAll,
+} from '@angular/compiler';
 import { execFileSync } from 'node:child_process';
 import {
   cpSync,
@@ -79,7 +87,24 @@ class IconError extends Error {
 // ── the walk ───────────────────────────────────────────────────────────────────
 
 /**
- * Every element of a template, with the `pct-icon` it stands inside (or `null`).
+ * A node the walk reads as an element, asked of the compiler's own classes: an element, an
+ * `<ng-content>` and an `<ng-template>`, each a tag the template writes. The template a structural
+ * directive wraps around what it is written on is none of them: it holds that node as its child,
+ * and around an element it carries the element's tag and attributes too, so that read as one,
+ * `<svg *x>` was counted twice. An `@let` and an `@content` block carry a `name` as well and are
+ * no element: `@let svg = 1;` was a drawing, and one inside an icon stood in for an `<svg>` the
+ * walk never reaches, an ICU's, so that the two counts of point 1 agreed and a loose one passed.
+ */
+const isElement = (node) =>
+  node instanceof TmplAstElement ||
+  node instanceof TmplAstContent ||
+  (node instanceof TmplAstTemplate && node.templateAttrs.length === 0);
+
+/** A child point 4 counts as an icon's own drawing: any but an `@let`, which renders nothing. */
+const draws = (child) => !(child instanceof TmplAstLetDeclaration);
+
+/**
+ * Every element of a template (`isElement`), with the `pct-icon` it stands inside (or `null`).
  *
  * Control flow is walked through rather than around: an icon inside an `@if` is an icon,
  * and a `<path>` inside an `@else` is still a drawing. The blocks carry their children on
@@ -106,15 +131,15 @@ const walk = (nodes, inside, found) => {
       continue;
     }
 
-    // Angular namespaces what it parses inside an `<svg>`: the element is `:svg:svg` and
-    // everything under it `:svg:path`, `:svg:g`. The prefix is the parser's, not the
-    // template's, so it comes off before anything is compared with a written tag.
-    const tag =
-      (node.name ?? node.tagName ?? null)?.replace(/^:[a-z]+:/, '') ?? null;
-    if (tag === null) {
+    if (!isElement(node)) {
       walk(node.children, inside, found);
       continue;
     }
+    // Angular namespaces what it parses inside an `<svg>`: the element is `:svg:svg` and
+    // everything under it `:svg:path`, `:svg:g`. The prefix is the parser's, not the
+    // template's, so it comes off before anything is compared with a written tag. An
+    // `<ng-template>` carries its tag as `tagName`.
+    const tag = (node.name ?? node.tagName).replace(/^:[a-z]+:/, '');
 
     const element = {
       tag,
@@ -131,7 +156,8 @@ const walk = (nodes, inside, found) => {
           i.value?.source ?? i.sourceSpan.toString(),
         ]),
       ),
-      children: (node.children ?? []).length,
+      // An icon holding an `@let` alone passed point 4 as one with a drawing of its own.
+      children: (node.children ?? []).filter(draws).length,
     };
     found.push(element);
     walk(node.children, tag === ICON ? element : inside, found);
@@ -150,6 +176,14 @@ const nameOf = (element) => {
   };
 };
 
+/** Whether a template holds an `@content` block at any depth, as the compiler's visitor finds it. */
+class ContentBlocks extends TmplAstRecursiveVisitor {
+  found = false;
+  visitContentBlock() {
+    this.found = true;
+  }
+}
+
 /**
  * A template read: its tree walked, and its two tags counted over its text with each comment
  * blanked. Both come from `readTree` (`template-comments.mjs`): one reader for this gate and
@@ -158,15 +192,18 @@ const nameOf = (element) => {
  *
  * A template the parser reads with errors, or throws on, is refused by point 1 whatever a comment
  * found there takes with it (`<a href=//x.example>` opens one that takes the rest of its line,
- * and the tag never ends).
+ * and the tag never ends). So is one holding an `@content` block (`ContentBlocks`).
  */
 const readTemplate = ({ file, content }) => {
   const { nodes, errors, text } = readTree(file, content);
   const elements = [];
   walk(nodes, null, elements);
+  const blocks = new ContentBlocks();
+  tmplAstVisitAll(blocks, nodes);
   return {
     file,
     errors: errors ?? [],
+    handsContent: blocks.found,
     elements,
     counted: Object.fromEntries(
       Object.entries(COUNTERS).map(([tag, pattern]) => [
@@ -220,6 +257,23 @@ const checkIcons = ({ templates, names }) => {
         `\n    The walk reads what the parser hands it, and a template read with errors ` +
         `hands it part of the markup or none of it — a comment opened by mistake takes a ` +
         `drawing out of the text and the tree together. The build refuses the same text.`,
+    );
+  // An `@content` block hands what it holds to a foreign component (`foreignImports`), which
+  // places it where its own render function puts it, and Angular builds one there alone:
+  // anywhere else the compiler refuses it (`NG8026`, measured on 22.2.1 with the type check
+  // and without), and no component here imports a foreign one. Read through, a drawing in one
+  // stood inside the icon around the block, which nothing promises; read as an element,
+  // `@content(svg)` was a drawing.
+  const handed = read.filter((t) => t.handsContent).map((t) => t.file);
+  if (handed.length)
+    throw new IconError(
+      'denominator',
+      `${handed.length} templates hold an \`@content\` block:\n` +
+        list(handed) +
+        `\n    Angular builds one only as a direct child of a foreign component and refuses ` +
+        `it anywhere else (NG8026), and what one holds the foreign component places where ` +
+        `its own render puts it: points 2 to 6 would read it as standing where the block is ` +
+        `written.`,
     );
   const miscounted = [];
   for (const template of read)

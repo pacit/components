@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "A mark drawn in an ICU's case, outside every icon, beside an `@let svg` inside the arrow's icon. The walk never enters an ICU, and point 1 refuses the drawing there by its count: one `<svg>` more in the text than in the tree. Read as an element by the `name` it carries, the `@let` was that `<svg>`, the two counts agreed and every point passed a drawing no set can replace."
+}
