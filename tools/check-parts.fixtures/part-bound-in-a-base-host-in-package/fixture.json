@@ -1,5 +1,6 @@
 {
   "point": 3,
   "check": "staticness",
+  "message": "PctWidget (./widget): 1 in the package",
   "$reason": "A directive no entrypoint exports binds the name in its host, `'[attr.data-pct-part]': 'slot()'`, two definitions up from the component: the component binds `title` in a host of its own and extends an undecorated class, which extends a directive binding `lang`, which extends the one binding the name — all in the package alone. `ɵɵInheritDefinitionFeature` walks the whole chain past the undecorated class and runs the host functions through a closure, `(rf, ctx) => { superHostBindings(rf, ctx); prevHostBindings(rf, ctx); }`, whose text names nothing: a read of `hostBindings` as text found no binding, and the case passed every point (measured through ngc in partial mode, which declares no definition for the undecorated class). So does a read that follows the parent alone, the nearest definition alone, or stops at the class without one."
 }

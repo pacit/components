@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the package exposes what the cards do not list — `hint`",
   "$reason": "A new part with its value unquoted, which Angular reads as it reads a quoted one, and the card silent about it. The template sits here as `widget.html.txt`, because prettier would quote the value. A pattern that wanted quotes counted the name and recognised nothing, and fired point 1 on a part every other reader sees; the tree holds a `TextAttribute` like any other, and point 4 says what is wrong."
 }

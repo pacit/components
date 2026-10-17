@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the package exposes what the cards do not list — `hint`",
   "$reason": "A new part whose value spells a letter as a character reference, `h&#105;nt`, and the card silent about it. The parser decodes it, as the package's `consts` carry it: the part is `hint`. Read off the raw text it was a part named `h&#105;nt`, the two reads disagreed in both directions, and point 2 fired on a template whose only fault is the card's."
 }

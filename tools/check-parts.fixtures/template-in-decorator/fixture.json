@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "classes take their template from the decorator, not a file",
   "$reason": "A template written into the decorator. The source scanner reads template files, so parts written here are seen only by the reading from the package — that is, as a drift between two lists rather than as what they are."
 }

@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the cards list what the package does not expose — `hint`",
   "$reason": "The same, with the part left in the two comments Angular 22 reads inside a start tag — a block one beside an attribute, a line one to the end of its line. The template sits here as `widget.html.txt`, because prettier refuses a comment in a start tag. Read off the raw text, each was a part named `hint` and point 2 fired; the tree holds them as comments, and the count runs over the text with both blanked."
 }

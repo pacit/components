@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "PctMarkerBase — recognised 0 static + 0 bound, and the attribute name appears 1 times",
   "$reason": "The spelling `part-written-in-capitals-in-host` holds, in the `host` block of a base no entrypoint exports: the first class the scan reads, and one another class extends. Point 1 counts each declared class's own body before inheritance merges a base into its subclass, so a refusal that skipped the first class, or the classes others extend, would let `base-hint` through every point, the package data being the reference's, without it, as in `part-written-in-capitals-in-host`."
 }

@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "PctMarker — recognised 1 static + 0 bound, and the attribute name appears 2 times",
   "$reason": "The attribute's name in capitals in a directive's `host` block. Angular keeps a host attribute's name as written (`hostAttrs` carry `'DATA-PCT-PART', 'marker-hint'`, measured through the JIT compiler) and hands it to `setAttribute`, where the DOM lowercases it: a part a consumer's selector matches. `HOST_STATIC` wants the name in lowercase, and so did the package read until it lowercased the name too, so neither read a part and the gate passed every point. The counter over the decorator's body takes the name in any case and turns the silent omission into point 1's message, as `unrecognised-part` does for a template. The package data is the reference's, without `marker-hint`, so that the case stands on that counter alone: the package read lists the part now, and would say it at point 2 as one the sources lack (`part-in-capitals-only-in-package`)."
 }

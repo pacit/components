@@ -1,5 +1,6 @@
 {
   "point": 3,
   "check": "staticness",
+  "message": "PctWidget (./widget): 1 in the package",
   "$reason": "An interpolation on the name, `data-pct-part=\"{{ slot() }}\"`, in the package alone. The compiler makes it a property binding, which sets no attribute, so no part, and binds the name all the same, as the source read refuses it: `ɵɵdomProperty('data-pct-part', …)` in a component with no directive among its dependencies (measured through ngc in partial mode, under the `NO_ERRORS_SCHEMA` without which the template checker refuses it), so a read knowing the attribute instruction alone passes it. It puts `[3, 'data-pct-part']` into `consts` as well, past the marker the pairs stop at."
 }

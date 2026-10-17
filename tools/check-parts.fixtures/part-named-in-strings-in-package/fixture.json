@@ -1,5 +1,6 @@
 {
   "point": 4,
   "check": "documentation",
+  "message": "the package exposes what the cards do not list — `value`",
   "$reason": "The name spelled where nothing binds it, in the package alone: a `@let` string, a text node, an interpolated literal, another attribute's literal value, an output named `data-pct-part` and attributes named `data-pct-part-x` and `x-data-pct-part`. None is a part and none binds one. A read counting the name in the text of the template function counted seven bindings and fired point 3 (measured through ngc in partial mode); their instructions set no name, or another one, and the case fires on its own defect, the card silent about `value`."
 }

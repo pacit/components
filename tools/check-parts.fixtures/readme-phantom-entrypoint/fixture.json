@@ -1,5 +1,6 @@
 {
   "point": 7,
   "check": "readme",
+  "message": "rows naming no entrypoint (1)",
   "$reason": "The npm page names an entrypoint the packed manifest does not export. The row is an instruction a consumer follows into a resolution error."
 }

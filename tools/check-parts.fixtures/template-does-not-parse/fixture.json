@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "templates do not parse",
   "$reason": "A component whose template opens a link with an unquoted address. Angular 22 reads `//` in a start tag as a comment to the end of the line, so the comment takes `data-pct-part=\"link\"` with it, the tag never ends, and the build refuses the template — which is why the package data has no `PctWidgetLink`. With an error in the markup itself, `parseTemplate` hands back no tree at all (one in a binding leaves the tree whole), and the blanked text holds no part either: the walk and the counter agree on none, the class has no parts on either side, and every other point passed it. Only the parser's errors say the template was not read. The template sits here as `link.html.txt`, because prettier refuses it too."
 }

@@ -1314,6 +1314,18 @@ for (const name of cases) {
   const fx = JSON.parse(
     readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
+  // One check, several refusals: point 1 throws ten ways, all of them `denominator`, and the
+  // lines of a list say which of two reads or which part disagreed. A case names a fragment of
+  // the refusal it declares, and the fragment is held, so a change that moves the case onto a
+  // neighbouring refusal is a failure here and not a pass. `no-sources` fired "templates belong
+  // to no decorator" for as long as the check alone was compared. The fragment is required:
+  // a case that names none holds its refusal to nothing, and a blank one is in every message.
+  const named = typeof fx.message === 'string' && fx.message.trim() !== '';
+  if (!named)
+    problems.push(
+      `${name}: \`fixture.json\` names no \`message\` — a fragment of the refusal the case ` +
+        `declares, which point ${fx.point} (\`${fx.check}\`) shares with its other refusals`,
+    );
   const directory = buildFixture(name, fx);
   try {
     checkParts(await fixtureInput(directory));
@@ -1327,6 +1339,11 @@ for (const name of cases) {
       problems.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    else if (named && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
+          `refusal of the same check than the one the fixture declares:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });

@@ -1,5 +1,6 @@
 {
   "point": 2,
   "check": "set",
+  "message": "PctMarker: sits in `./widget`, and the package exports it from `./marker`",
   "$reason": "The class lies in one entrypoint's directory and the package exports it from another. The inventory would tell the consumer where to import from, and would tell an untruth."
 }

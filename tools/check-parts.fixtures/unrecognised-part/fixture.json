@@ -1,5 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
+  "message": "libs/components/widget/src/widget.html: recognised 2 static + 0 bound, and the attribute name appears 3 times",
   "$reason": "The attribute's name in capitals. HTML gives an attribute's name no case: Angular hands `DATA-PCT-PART` to `setAttribute` as written, and the DOM stores `data-pct-part=\"hint\"`, a part a consumer's selector matches (measured in Chromium). The tree holds the name as written, so the walk reads no part, and `consts` carry it as written too — both reads passed it, and so did the gate, until the counter stopped caring about case. The independent counter is what turns that silent omission into a message. The package read lowercases the name now; the package data is the reference's, without `hint`, so that the case stands on the counter alone. Until 2026-10-14 this case was a comment naming the attribute, which is no markup and no part, and which a count over the text with its comments blanked no longer counts."
 }
