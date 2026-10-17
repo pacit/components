@@ -1,0 +1,16 @@
+<!-- The reference's trigger, and two counts, each under a limit written with no space after the
+     less-than sign: the tag scan reads each comparison as a tag that runs on into the ICU right
+     after it, whose case draws a stop. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+@if (count() <limit()) {{count(), plural, other {<span class="pct-widget__more" tabindex="0">more</span>}}}
+@if (count() <cap()) {{count(), plural, other {<span class="pct-widget__less" tabindex="0">less</span>}}}

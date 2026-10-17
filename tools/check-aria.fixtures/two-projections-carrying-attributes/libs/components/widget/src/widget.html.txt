@@ -1,0 +1,15 @@
+<!-- The reference's trigger between two projections, a stop written on the first and
+     `aria-hidden` on the second, neither of which draws an element. -->
+<span class="pct-widget__box">
+  <ng-content select="[pctLead]" tabindex="0" />
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  <ng-content select="[pctTrail]" aria-hidden="true" />
+</span>

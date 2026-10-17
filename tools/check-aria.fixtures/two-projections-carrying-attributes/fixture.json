@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an `<ng-content>` at offset 192 (`<ng-content select=\"[pctLead]\" tabindex=\"0\" />`) carries `tabindex` —",
+  "$reason": "`menu-items-written-on-a-projection` without the menu, on two projections around the trigger: a stop written on the first and `aria-hidden` on the second; neither draws an element, and what is written there reaches none. The refusal quotes the first projection by its offset, its opening tag and what it carries: each case before this one held one such projection, so a refusal that quoted the last of them passed them all."
+}
