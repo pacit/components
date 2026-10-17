@@ -327,8 +327,10 @@ const checkIcons = ({ templates, names }) => {
   // where its own template projects it (`<ng-content>` inside an `<ng-template>`). The library's
   // own selectors, matched as Angular matches them (`SelectorMatcher`), would hold each of its
   // components, attribute selectors too (`<g pctThing>`); that reader is not built, since none
-  // stands below an icon (2026-10-17) and no component of another package is imported. The day
-  // one does, it is built (plan 4.83).
+  // stands below an icon (2026-10-17). One of another package is in scope and projects in place:
+  // `OverlayModule` re-exports CDK's `cdk-virtual-scroll-viewport` into five templates, its
+  // `<ng-content>` inside its own host. The day a component that moves what it is handed stands
+  // below an icon, the reader is built (plan 4.83).
   const templated = read
     .filter((t) => t.stamped.length)
     .map((t) => `${t.file}: line ${[...new Set(t.stamped)].join(', ')}`);
