@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "the pattern read 6 of the 7 decorators the TypeScript parser holds",
+  "message": "the pattern read 6 of the 7 decorators the TypeScript parser holds, and not these:\n      libs/components/widget/src/badge.ts:3",
   "$reason": "An internal component, exported by no entrypoint, its decorator written behind a block comment on the same line, which prettier keeps. ngc compiles it and its template's part reaches `consts` (measured through ngc in partial mode and the linker); the pattern wants the decorator in column zero, and the pattern that counted decorators before wanted it at the start of a line past indentation, so neither saw it and the case passed every point. The parser counts it, and the pattern read one decorator fewer."
 }

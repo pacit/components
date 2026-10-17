@@ -82,7 +82,7 @@ const sorted = (set) => [...set].sort();
 /**
  * A component or directive decorator in a source file. It anchors on the formatting
  * `nx format:check` enforces (`@Component({` and `})` in column zero) — and that is why
- * the number of matches is compared separately against a counter that does NOT repeat that
+ * what it reads is held separately against a counter that does NOT repeat that
  * anchor: repeating it would put out both sides of the comparison at once and point 1 would
  * pass having stopped measuring a whole component (`lesson-48`). The counter is the parser's
  * (`decoratorsOf`): every decorator called by either name, at any depth of the file. A pattern
@@ -118,8 +118,8 @@ const DECORATORS = new Set(['Component', 'Directive']);
  * escaped name each handed ngc a template it did not see, and one kept in a constant reached the
  * package read alone (measured through ngc and the linker).
  *
- * And the number of decorators called by those names anywhere in the file, the counter point 1
- * holds the pattern to (`declared`), and the names the file takes `Component` and `Directive`
+ * And every decorator called by those names anywhere in the file, where its `@` stands and on
+ * which line, the counter point 1 holds the pattern to (`declared`), and the names the file takes `Component` and `Directive`
  * under, other than their own (`renamed`).
  */
 const decoratorsOf = (file, content) => {
@@ -168,14 +168,18 @@ const decoratorsOf = (file, content) => {
           ({ propertyName, name }) => `${propertyName.text} as ${name.text}`,
         );
     });
-  let declared = 0;
+  const declared = [];
   const count = (node) => {
     if (
       ts.isDecorator(node) &&
       ts.isCallExpression(node.expression) &&
       DECORATORS.has(node.expression.expression.text)
     )
-      declared++;
+      declared.push({
+        at: node.getStart(source),
+        line:
+          source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+      });
     ts.forEachChild(node, count);
   };
   count(source);
@@ -258,6 +262,7 @@ const readSources = (root, files) => {
   const unheld = [];
   const unparsed = [];
   const renamed = [];
+  const unseen = [];
   let declarations = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
@@ -270,8 +275,9 @@ const readSources = (root, files) => {
       declared,
       renamed: names,
     } = decoratorsOf(file, content);
-    declarations += declared;
+    declarations += declared.length;
     for (const name of names) renamed.push(`${file}: ${name}`);
+    const read = new Set();
 
     for (const match of content.matchAll(DECORATOR)) {
       const [, kind, body, className] = match;
@@ -322,10 +328,13 @@ const readSources = (root, files) => {
         dynamic: countOf(body, HOST_DYNAMIC),
         occurrences: countOf(body, HOST_COUNTER),
       });
+      read.add(match.index);
     }
+    for (const { at, line } of declared)
+      if (!read.has(at)) unseen.push(`${file}:${line}`);
   }
 
-  return { classes, declarations, unheld, unparsed, renamed };
+  return { classes, declarations, unseen, unheld, unparsed, renamed };
 };
 
 /**
@@ -400,7 +409,7 @@ class PartsError extends Error {
 
 /**
  * The full set of checks over a ready input:
- *   `classes`, `declarations` — from the decorators in the sources (read A),
+ *   `classes`, `declarations`, `unseen` — from the decorators in the sources (read A),
  *   `templates`   — `[{ file, content }]` of all the project's templates,
  *   `pkg`     — `[{ entrypoint, className, parts, dynamic }]` from the built package
  *                  (read B),
@@ -416,6 +425,7 @@ const checkParts = (input) => {
   const {
     classes,
     declarations,
+    unseen,
     unheld,
     unparsed,
     renamed,
@@ -482,13 +492,15 @@ const checkParts = (input) => {
         `under their own names.`,
     );
 
-  if (classes.length !== declarations)
+  if (unseen.length)
     throw new PartsError(
       'denominator',
       `the pattern read ${classes.length} of the ${declarations} decorators the TypeScript ` +
-        `parser holds — the rest would drop out of the inventory without a trace. Usual ` +
-        `cause: a decorator written otherwise than the pattern reads it (\`@Component({\` ` +
-        `and \`})\` in column zero): indented, or behind a comment on its line.`,
+        `parser holds, and not these:\n` +
+        list(unseen) +
+        `\n    They would drop out of the inventory without a trace. Usual cause: a decorator ` +
+        `written otherwise than the pattern reads it (\`@Component({\` and \`})\` in column ` +
+        `zero): indented, inside a namespace or a function, or behind a comment on its line.`,
     );
 
   // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
