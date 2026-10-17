@@ -329,8 +329,8 @@ const checkIcons = ({ templates, names }) => {
   // components, attribute selectors too (`<g pctThing>`); that reader is not built, since none
   // stands below an icon (2026-10-17). One of another package is in scope and projects in place:
   // `OverlayModule` re-exports CDK's `cdk-virtual-scroll-viewport` into four templates (the
-  // select's serves two components), its `<ng-content>` inside its own host. The day a component that moves what it is handed stands
-  // below an icon, the reader is built (plan 4.83).
+  // select's serves two components), its `<ng-content>` inside its own host. The day a component
+  // that moves what it is handed stands below an icon, the reader is built (plan 4.83).
   const templated = read
     .filter((t) => t.stamped.length)
     .map((t) => `${t.file}: line ${[...new Set(t.stamped)].join(', ')}`);
