@@ -119,8 +119,8 @@ const DECORATORS = new Set(['Component', 'Directive']);
  * package read alone (measured through ngc and the linker).
  *
  * And every decorator called by those names anywhere in the file, where its `@` stands and on
- * which line, the counter point 1 holds the pattern to (`declared`), and the names the file takes `Component` and `Directive`
- * under, other than their own (`renamed`).
+ * which line, the counter point 1 holds the pattern to (`declared`), and the names the file
+ * takes `Component` and `Directive` under, other than their own (`renamed`).
  */
 const decoratorsOf = (file, content) => {
   const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest);

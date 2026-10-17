@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the pattern read 6 of the 7 decorators the TypeScript parser holds, and not these:\n      libs/components/widget/src/zeta.ts:15",
+  "$reason": "A decorator behind a comment on its line in `zeta.ts`, the comment padded so that its `@` stands at the offset of the base's decorator in `base.ts`, which the pattern reads (the case carries its own copy of the reference's `base.ts`, so the two offsets stay one). The decorators the pattern read are held file by file: a set of offsets shared across the files would take the base's for this one, and the case would pass every point."
+}

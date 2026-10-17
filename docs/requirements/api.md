@@ -630,7 +630,7 @@ keeps the nearest class's, so a second is a part no element carries); and the li
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
 bases')
-**Control:** `tools/check-parts.fixtures/` — 72 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 73 inputs, each rejected on its own
 point and by the refusal its `message` names, as point 1 refuses fifteen ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
