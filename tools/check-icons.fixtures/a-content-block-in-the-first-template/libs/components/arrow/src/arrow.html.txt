@@ -1,3 +1,6 @@
 @content(svg) {
-<span class="arrow__label">Open</span>
+<svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+  <path d="M4 6l4 4 4-4" />
+</svg>
 }
+<span class="arrow__label">Open</span>

@@ -5,7 +5,7 @@
  * template renders perfectly and is simply impossible to swap
  * ([0011](../docs/decisions/0011-icons.md), [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)).
  *
- *  1. DENOMINATOR: the name list read, every template parsed, every drawing the walk saw,
+ *  1. DENOMINATOR: the names read, each template parsed, no `@content`, each drawing walked,
  *  2. SWAPPABLE: a drawing stands inside a `<pct-icon>`, or is the SVG renderer's own,
  *  3. NAMED: a `<pct-icon>` of the library carries a name, because a set is asked by name,
  *  4. DEFAULT: a named icon carries its own drawing, so a consumer with no set sees an icon,
@@ -13,7 +13,7 @@
  *  6. PART: `data-pct-part` never sits below a `pct-icon` — the contract is the box, not
  *     the drawing.
  *
- * Point 1 is the denominator of the rest ([`lesson-48`](../docs/lessons.md#lesson-48)): `@content` fails it.
+ * Point 1 is the denominator of the rest ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-icons.mjs
  */
@@ -88,12 +88,12 @@ class IconError extends Error {
 
 /**
  * A node the walk reads as an element, asked of the compiler's own classes: an element, an
- * `<ng-content>` and an `<ng-template>`, each a tag the template writes. A structural directive's
- * template is none of them: it holds the element it is written on as its child and carries that
- * element's tag and attributes, so that read as one, `<svg *x>` was two drawings in the tree and
- * one in the text. An `@let` and an `@content` block carry a `name` as well and draw nothing:
- * `@let svg = 1;` was a drawing, and one inside an icon stood in for an `<svg>` the walk never
- * reaches, an ICU's, so that the two counts of point 1 agreed and a loose drawing passed.
+ * `<ng-content>` and an `<ng-template>`, each a tag the template writes. The template a structural
+ * directive wraps around what it is written on is none of them: it holds that node as its child,
+ * and around an element it carries the element's tag and attributes too, so that read as one,
+ * `<svg *x>` was counted twice. An `@let` and an `@content` block carry a `name` as well and are
+ * no element: `@let svg = 1;` was a drawing, and one inside an icon stood in for an `<svg>` the
+ * walk never reaches, an ICU's, so that the two counts of point 1 agreed and a loose one passed.
  */
 const isElement = (node) =>
   node instanceof TmplAstElement ||

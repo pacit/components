@@ -1,5 +1,5 @@
 {
   "point": 1,
   "check": "denominator",
-  "why": "An `@content` block named for the drawing, holding a label, in the first template read; `a-drawing-in-a-content-block` stands in the last. `ngc` refuses the block here (NG8026), and point 1 refuses it for itself: read as an element by its name, it was an `<svg>` in the tree the text does not hold, and point 1 refused the template for a miscount instead."
+  "why": "An `@content` block named for the drawing and holding one outside every icon, the first top-level node of the first template read; `a-drawing-in-a-content-block` stands in the last node of the last. `ngc` refuses the block (NG8026), and point 1 refuses it before point 2 reads the drawing as standing where the block is written: the foreign component puts what a block holds where its own render does. Read as an element by its name, the block was a second `<svg>` the text does not hold, and point 1 refused the template for a miscount instead."
 }

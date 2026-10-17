@@ -5,7 +5,7 @@
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
       <path d="M4 6l4 4 4-4" />
     </svg>
-    <ng-template #raised data-pct-part="arrow-raised">
+    <ng-template *pctRaised data-pct-part="arrow-raised">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
         <path d="M4 10l4-4 4 4" />
       </svg>
