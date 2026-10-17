@@ -5,7 +5,7 @@ them and **requires every one to be rejected — and rejected by the point AND t
 declares**. An input that passes is a fault; an input that fires for a reason other than the
 one written in its `fixture.json` is a fault just the same, because it proves something other
 than what it declares ([`lesson-50`](../../docs/lessons.md#lesson-50): point 1 alone carries
-five rules).
+six rules).
 
 The reason it exists is the same as for every other gate here
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
@@ -42,18 +42,20 @@ because of it rather than because of its own, and every "rejected" would be fals
 
 ## The cases
 
-| directory                       | point | check         | rule                   | defect                                                                    |
-| ------------------------------- | ----: | ------------- | ---------------------- | ------------------------------------------------------------------------- |
-| `policy-removed`                |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has                 |
-| `sources-without-a-class`       |     1 | `denominator` | `no-classes`           | sources that parse to no class at all                                     |
-| `member-adrift`                 |     1 | `denominator` | `unattributed`         | a member declaration above every class header                             |
-| `contract-unreadable`           |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
-| `no-controls`                   |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
-| `block-outside-the-contract`    |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
-| `member-missing`                |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
-| `control-behind-a-namesake`     |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
-| `base-named-like-another-class` |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
-| `transform-dropped`             |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
+| directory                                 | point | check         | rule                   | defect                                                                    |
+| ----------------------------------------- | ----: | ------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `policy-removed`                          |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has                 |
+| `sources-without-a-class`                 |     1 | `denominator` | `no-classes`           | sources that parse to no class at all                                     |
+| `member-adrift`                           |     1 | `denominator` | `unattributed`         | a member declaration above every class header                             |
+| `header-in-a-comment`                     |     1 | `denominator` | `header-without-class` | a class header in a comment                                               |
+| `header-in-a-comment-beside-its-namesake` |     1 | `denominator` | `header-without-class` | the same, beside the control of its name, which it took the place of      |
+| `contract-unreadable`                     |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
+| `no-controls`                             |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
+| `block-outside-the-contract`              |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
+| `member-missing`                          |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
+| `control-behind-a-namesake`               |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
+| `base-named-like-another-class`           |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
+| `transform-dropped`                       |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
 `transform-dropped` is the case this gate was written for, and it is worth reading beside
 `member-missing`: they are the two halves of one promise and they break independently. A
@@ -62,10 +64,10 @@ way is worse, because it IS there — `<pct-widget invalid>` passes the string `
 falsy, so the control is valid for ever and the template that says otherwise is right in
 front of the consumer.
 
-Point 1's five rules are five different ways for the gate to be measuring nothing, and each
+Point 1's six rules are six different ways for the gate to be measuring nothing, and each
 has a case of its own because each arrives from a different direction: the policy deleted,
-the sources moved, the reading's anchor outgrown, the dependency's declarations gone, the
-contract stopped being implemented. A gate that reports success over an empty set is the
+the sources moved, a class header the parser holds no class for, the reading's anchor
+outgrown, the dependency's declarations gone, the contract stopped being implemented. A gate that reports success over an empty set is the
 failure mode this whole tree exists against ([`lesson-33`](../../docs/lessons.md#lesson-33)).
 
 `control-behind-a-namesake` and `base-named-like-another-class` hold what a name stands for.

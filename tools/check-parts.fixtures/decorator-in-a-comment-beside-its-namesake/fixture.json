@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 decorators stand where the TypeScript parser holds no class at the top level of the file:\n      libs/components/widget/src/marker.ts: PctMarker",
+  "$reason": "The reference marker, and below it, in a comment with its decorator in column zero, an older `PctMarker`. The commented one and the real one share a name and a file, so paired with the parser's classes by that key the commented one took the real one's entry: it was read as a class, and point 1 named two classes of one name. Paired by where the name stands, the commented one has no class of the parser, and point 1 refuses it as a decorator in a comment."
+}

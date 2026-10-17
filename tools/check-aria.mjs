@@ -280,14 +280,16 @@ const readSources = (root, files) => {
         unheld.push(`${file}: \`${match[0].split('\n')[0]}\``);
         continue;
       }
-      const key = classKey(file, node.name?.text);
-      const held = bases.get(key);
-      if (held === undefined) {
+      // A class the parser holds below the top level is no class `classesOf` reads — and one of
+      // its name at the top level, beside it, is another class.
+      if (!ts.isSourceFile(node.parent)) {
         unheld.push(
           `${file}: \`${match[0].split('\n')[0]}\` below the top level`,
         );
         continue;
       }
+      const key = classKey(file, node.name?.text);
+      const held = bases.get(key);
       const body = match[2];
       const host = hostBlock(body);
       components.push({
@@ -1339,8 +1341,10 @@ const checkAria = ({
   // components of one name are two, and the chain is the one TypeScript builds: a cycle in it is
   // one the compiler refuses as well (TS2506, a class named in its own base expression), and no
   // build compiles it. `seen` guards nothing the gate is handed, and dropping it is equivalent on
-  // every input that compiles. By the name alone the chain could run through a class no build put
-  // there and close a cycle TypeScript has not got, and only `seen` stopped it recursing forever.
+  // every input that compiles and whose directories carry no `package.json`, which
+  // `class-bases.mjs` does not read. By the name alone the chain could run through a class no build
+  // put there and close a cycle TypeScript has not got, and only `seen` stopped it recursing
+  // forever.
   const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
     if (component.base === null) return component;

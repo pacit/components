@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "header-without-class",
+  "description": "`member-missing`'s control with no `touched`, and below it a comment holding `export class PctWidget {}`, the class it replaced. Prettier leaves a comment as it is, and the source compiles. The commented header and the control share a name and a file, so keyed by them the commented one took the control's place, the control left the list point 3 reads, and the input passed. Paired by where the name stands, the commented header has no class of the parser, and point 1 refuses it."
+}

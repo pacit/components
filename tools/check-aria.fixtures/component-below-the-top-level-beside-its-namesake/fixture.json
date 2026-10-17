@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/widget.ts: `@Component({` below the top level",
+  "$reason": "`component-below-the-top-level` with one more line: an undecorated `PctWidget` at the top level of the file, extending nothing. The nested widget and that class share a name and a file, so paired with the parser's classes by that key the nested widget took the other's entry, lost its hiding base, and the case passed (tsc is clean). Point 1 asks the parser where the decorated class stands, and refuses it below the top level."
+}

@@ -69,10 +69,10 @@ const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/gm;
  * unfound, and its members then become point 1's `unattributed`, which is the reading saying
  * so rather than guessing.
  */
-const CLASS = /^export (?:abstract )?class (\w+)([^{]*)\{/gm;
+const CLASS = /^export (?:abstract )?class (\w+)([^{]*)\{/dgm;
 
 /**
- * A violation. It carries the point's `check` AND its `rule`: point 1 has four rules and a
+ * A violation. It carries the point's `check` AND its `rule`: point 1 has six rules and a
  * case firing on a neighbouring one proves something other than what it declares
  * (`lesson-50`).
  */
@@ -100,6 +100,7 @@ const classesIn = (file, text) => {
     name: m[1],
     heritage: m[0],
     at: m.index,
+    nameAt: m.indices[1][0],
     line: text.slice(0, m.index).split('\n').length,
     members: new Map(),
   }));
@@ -130,11 +131,15 @@ const classesIn = (file, text) => {
  * other, and resolving the chain here would hide which file a member really came from. What is
  * resolved here is which class the base stands for — the one TypeScript binds the name in its
  * `extends` clause to (`class-bases.mjs`), and not a class of that name anywhere else. A header
- * the pattern reads where the parser holds no class — one in a comment — stands on nothing.
+ * the pattern reads where the parser holds no class at the top level is none of the library's,
+ * and is set aside for point 1: one in a comment took the place of the control of its name in
+ * the same file, and the control's missing `touched` passed (measured). The pairing is by where
+ * the name stands, not by the name: the one in the comment and the control share a key.
  */
 const readSources = (root, files) => {
   const classes = new Map();
   const orphans = [];
+  const unheld = [];
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
   );
@@ -144,15 +149,20 @@ const readSources = (root, files) => {
     orphans.push(...loose);
     for (const header of headers) {
       const key = classKey(file, header.name);
+      const held = bases.get(key);
+      if (held?.at !== header.nameAt) {
+        unheld.push(`${file}:${header.line}: ${header.name}`);
+        continue;
+      }
       classes.set(key, {
         ...header,
         file,
-        from: bases.get(key)?.from,
+        from: held.from,
         control: CONTRACTS.test(header.heritage),
       });
     }
   }
-  return { classes, orphans };
+  return { classes, orphans, unheld };
 };
 
 /**
@@ -191,7 +201,8 @@ const readContract = (text) => {
  * A link is the class TypeScript binds the base's name to (`class-bases.mjs`), keyed by its file,
  * so the chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well
  * (TS2506, a class named in its own base expression), and no build compiles it. `seen` guards
- * nothing the gate is handed, and dropping it is equivalent on every input that compiles.
+ * nothing the gate is handed, and dropping it is equivalent on every input that compiles and whose
+ * directories carry no `package.json`, which `class-bases.mjs` does not read.
  */
 const controlsOf = (classes) => {
   const inherited = (key, seen = new Set()) => {
@@ -219,12 +230,13 @@ const controlsOf = (classes) => {
  *   `policy`   — the block declared in `forms.policy.json`, or null,
  *   `classes`  — every class of the sources, by name,
  *   `orphans`  — member declarations no class header stands above,
+ *   `unheld`   — class headers where the parser holds no top-level class,
  *   `contract` — the member names of `FormUiControl`, or null,
  *   `files`    — how many source files were read.
  * Throws on the first violation: the points run from the most basic, so a later one would
  * be examining an input nobody has established anything about.
  */
-const checkForms = ({ policy, classes, orphans, contract, files }) => {
+const checkForms = ({ policy, classes, orphans, unheld, contract, files }) => {
   // ── 1. DENOMINATOR ──────────────────────────────────────────────────────────
   const block = policy?.block;
   if (!Array.isArray(block) || block.length === 0)
@@ -243,6 +255,18 @@ const checkForms = ({ policy, classes, orphans, contract, files }) => {
       'no-classes',
       `no class parsed out of ${files} source file(s) of \`${PROJECT}\` — the points ` +
         `below would then all be measuring an empty set and passing`,
+    );
+
+  if (unheld.length)
+    throw new FormsError(
+      'denominator',
+      'header-without-class',
+      `${unheld.length} class header(s) stand where the TypeScript parser holds no class at ` +
+        `the top level of the file:\n` +
+        list(unheld) +
+        `\n    A header in a comment, or a class inside a namespace or a function, is no ` +
+        `class of the library, and read as one it takes the place of the class of its name ` +
+        `in the same file.`,
     );
 
   if (orphans.length)
@@ -373,11 +397,12 @@ const sourcesIn = (root, files) =>
 
 const gatherInput = (root, files) => {
   const sources = sourcesIn(root, files);
-  const { classes, orphans } = readSources(root, sources);
+  const { classes, orphans, unheld } = readSources(root, sources);
   return {
     policy: JSON.parse(read(root, POLICY) ?? 'null'),
     classes,
     orphans,
+    unheld,
     contract: readContract(read(root, CONTRACT)),
     files: sources.length,
   };

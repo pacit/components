@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctSomeoneElsesBase`, which the file binds to no class it declares or imports",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctSomeoneElsesBase`, which this read follows to no class",
   "$reason": "A component whose base the scan cannot see. Half its surface — fifteen inputs in the case this rule was written from — is declared in a file the gate never read, so every point below would examine the half that happens to be here and pronounce on the whole."
 }

@@ -67,13 +67,15 @@ an export clause does not trip it. So a gate that follows `extends` takes the ba
 it binds from `tools/class-bases.mjs`, which resolves the module with TypeScript's own resolver
 over the sources and follows a class the file declares and an import of a class its module
 declares `export class` under that name, and nothing else. A class is keyed by its name and its
-file; a base that binds no decorated class the gate read is a denominator fault, and so is a
-decorator the gate's pattern reads where the parser holds no class at the top level of the file
-— in a comment, inside a namespace or a function — whose base the module does not resolve.
-`check-texts` and `check-parts`, which compare with the package by class name, the one key the
-package carries, also refuse a name two decorated classes share. `check-zoneless` compares by
-name too and does not yet: with the other two standing, no such name reaches it from a tracked
-file.
+file, and paired with the class the gate's own pattern reads by where its name stands, so that
+one in a comment or a namespace beside a class of its name is not taken for it. A base that
+binds no decorated class the gate read is a denominator fault, and so is a class the gate's
+pattern reads where the parser holds no class at the top level of the file — in a comment,
+inside a namespace or a function — whose base the module does not resolve. The module reads no
+`package.json`, and the library has no directory that carries one. `check-texts` and
+`check-parts`, which compare with the package by class name, the one key the package carries,
+also refuse a name two decorated classes share. `check-zoneless` compares by name too and does
+not yet: with the other two standing, no such name reaches it from a tracked file.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
@@ -94,8 +96,9 @@ denominator fault, as are a name two decorated classes share, point 2 comparing 
 through `templateUrl`, which a base cannot pass on;
 `tools/check-forms.mjs` (target `check-forms`) — the members of every exported class, a
 control's own and its bases' down `extends` as its file binds it, each class keyed by its file
-as well, so a control is not lost behind a namesake; a base the read has not got hands down
-nothing, which can refuse a control and never pass one;
+as well, so a control is not lost behind a namesake, and a header where the parser holds no
+top-level class a denominator fault; a base the read has not got hands down nothing, which can
+refuse a control and never pass one;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
 where nothing is inherited;
@@ -123,7 +126,7 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by seventeen more:
+to put there too. What a class's name stands for, by twenty-two more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
@@ -147,7 +150,13 @@ constraint, which a pattern over the header read as the base),
 `tools/check-texts.fixtures/decorator-in-a-comment/`,
 `tools/check-parts.fixtures/decorator-in-a-comment/` and
 `tools/check-aria.fixtures/component-below-the-top-level/` (a decorator where the parser holds
-no top-level class, read as a class, or as one with no base) and
+no top-level class, read as a class, or as one with no base),
+`tools/check-texts.fixtures/decorator-in-a-comment-beside-its-namesake/`,
+`tools/check-parts.fixtures/decorator-in-a-comment-beside-its-namesake/`,
+`tools/check-aria.fixtures/component-below-the-top-level-beside-its-namesake/` and
+`tools/check-forms.fixtures/header-in-a-comment-beside-its-namesake/` (the same beside a class
+of its name in the file, which a pairing by name took it for),
+`tools/check-forms.fixtures/header-in-a-comment/` (a header in a comment) and
 `tools/check-texts.fixtures/speaking-attribute-on-a-base-imported-under-another-name/` (a
 renamed import followed to the class before `as`). The four gates that read what a base cannot
 pass on have no fixture, deliberately: the thing that would be inherited is not, by the feature

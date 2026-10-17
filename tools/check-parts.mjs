@@ -93,7 +93,7 @@ const sorted = (set) => [...set].sort();
  * components alone would pronounce on an inventory without them.
  */
 const DECORATOR =
-  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
+  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
 
 /** `templateUrl: './x.html'` — one occurrence per decorator. */
@@ -166,10 +166,13 @@ const readSources = (root, files) => {
   for (const [file, content] of contents) {
     declarations += countOf(content, DECORATOR_COUNTER);
 
-    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+    for (const match of content.matchAll(DECORATOR)) {
+      const [, kind, body, className] = match;
       const key = classKey(file, className);
+      // The class of that name at the top level of the file, and only where its name stands
+      // where the pattern read it: one in a comment beside it is not that class.
       const held = bases.get(key);
-      if (held === undefined) {
+      if (held?.at !== match.indices[3][0]) {
         unheld.push(`${file}: ${className}`);
         continue;
       }
@@ -470,7 +473,8 @@ const checkParts = (input) => {
   // imported — keyed by its file too, and anything else is no link but the refusal below. So the
   // chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well (TS2506,
   // a class named in its own base expression), and no build compiles it. `seen` guards nothing the
-  // gate is handed, and dropping it is equivalent on every input that compiles.
+  // gate is handed, and dropping it is equivalent on every input that compiles and whose
+  // directories carry no `package.json`, which `class-bases.mjs` does not read.
   const declared = new Map(classes.map((k) => [k.key, k]));
   const exported = new Set(pkg.map((p) => p.className));
   const extended = new Set(classes.map((k) => k.from));

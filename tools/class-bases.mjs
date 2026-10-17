@@ -19,14 +19,20 @@ import ts from 'typescript';
  * `export … from`, a barrel) and an `export default` are not. The module is the one TypeScript's
  * own resolver finds (`moduleResolution: bundler`, as `tsconfig.base.json` sets it) among the
  * sources and nothing else, so `'.'` is the directory's `index.ts` and `'./a.js'` is `a.ts`, and a
- * package, a path alias or a file outside the sources is no module here. A base expression other
+ * package, a path alias or a file outside the sources is no module here. The sources hold no
+ * `package.json`, so a directory whose own `package.json` names its `types` would be read as its
+ * `index.ts`, where TypeScript follows `types`; the library has no such directory (an entrypoint
+ * carries `ng-package.json`), and the claims below stand for sources that have none. A base expression other
  * than a name (`ns.X`, `mix(Y)`), and a name bound to a namespace, a default import or a `const`,
  * stand for no class either. Every gate refuses a base that stands for no decorated class it read,
  * so whatever this does not follow is said, not guessed — and what it follows is the class
  * TypeScript binds, so a cycle in a chain of them is one the compiler refuses too (TS2506).
  *
  * A class is keyed by its name AND its file (`classKey`): the key is what makes two classes of one
- * name two classes. Only the top level of a file is read, where a class `extends` can name stands.
+ * name two classes. Only the top level of a file is read, where a class `extends` can name stands,
+ * and each class carries where its name stands (`at`), so that a gate pairs the class its own
+ * pattern reads with this one by position — a name in a comment or a namespace, beside a class of
+ * the same name at the top level, is not that class.
  */
 export const classKey = (file, name) => `${name} (${file})`;
 
@@ -40,7 +46,7 @@ export const standsFor = ({ from, via }) =>
     : via !== undefined
       ? `which the file imports from '${via}', where no class of the sources is declared ` +
         '`export class` under that name'
-      : 'which the file binds to no class it declares or imports';
+      : 'which this read follows to no class';
 
 const named = (statement) =>
   ts.isClassDeclaration(statement) && statement.name !== undefined;
@@ -49,10 +55,10 @@ const flagged = (statement, kind) =>
   ts.getModifiers(statement)?.some((m) => m.kind === kind);
 
 /**
- * Every top-level class of `sources` (path → text), by `classKey`, to `{ base, from, via }`: `base`
- * the expression its `extends` clause names as written, or `undefined` with none; `from` the key
- * of the class TypeScript binds it to, or `undefined` when that is no class this follows; `via` the
- * specifier the file imports the name from, when it does.
+ * Every top-level class of `sources` (path → text), by `classKey`, to `{ at, base, from, via }`:
+ * `at` the offset its name stands at; `base` the expression its `extends` clause names as written,
+ * or `undefined` with none; `from` the key of the class TypeScript binds it to, or `undefined` when
+ * that is no class this follows; `via` the specifier the file imports the name from, when it does.
  */
 export const classesOf = (sources) => {
   // The resolver asks the host what exists, and this host knows the sources alone, under a root of
@@ -120,6 +126,7 @@ export const classesOf = (sources) => {
           ? names.get(base.text)
           : undefined;
       classes.set(classKey(file, statement.name.text), {
+        at: statement.name.getStart(source),
         base: base?.getText(source),
         from: bound?.from,
         via: bound?.via,
