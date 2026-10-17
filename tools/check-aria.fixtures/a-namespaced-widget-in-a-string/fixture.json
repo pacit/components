@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree — point 4 asks",
+  "$reason": "A `<button>` in a string written with a namespace, `@let mark = '<xH1ml:button>'` — a capital and a digit inside a prefix of five, as Angular's lexer takes one, which it takes off the name (in a template, `<xhtml:button>` is a button `ngc` makes, with no namespace instruction). The scan reads it as `widget-in-a-string` reads a `<button>`: a tag the parsed tree holds nothing for, outside any ICU, whose tag is a widget's, and fails point 1. Read with its prefix for its name, it was an `xH1ml`, which is no widget, and the string passed; `a-widget-in-a-one-letter-namespace-in-a-string` holds the shortest prefix."
+}

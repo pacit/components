@@ -794,9 +794,10 @@ right name suggested.
 
 **Gate:** `tools/check-icons.mjs` (target `check-icons`) — six points over the library's
 templates: the denominator (every `<svg>` and every `<pct-icon>` the text holds is one the
-walk saw), a drawing stands inside a `pct-icon` or is the SVG renderer's own, that icon
-carries a name, a named icon carries its own drawing, the published names and the drawn names
-are the same set both ways, and no `data-pct-part` sits below an icon; `tools/check-styles.mjs`
+walk saw, and no template stands below an icon), a drawing stands inside a `pct-icon` or is
+the SVG renderer's own, that icon carries a name, a named icon carries its own drawing, the
+published names and the drawn names are the same set both ways, and no `data-pct-part` sits
+below an icon; `tools/check-styles.mjs`
 point 8 — no SVG paint property in a component stylesheet; `libs/components/icon/src/icon.spec.ts`
 — the layer under its own name, including a partial set, a set nobody reads, the sources in
 order and the roles a source carries; `libs/components/icon/src/fonts.spec.ts` — every adapter's
@@ -805,16 +806,26 @@ and every attribute it refuses; `apps/sandbox-e2e/src/select.spec.ts` — a regi
 three engines, in the same box and turning with it; `apps/sandbox-e2e/src/icon.spec.ts` — the
 box's size and tone, a drawing from data in the SVG namespace, and one line dressing the
 library inside a card and not outside it
-**Control:** `tools/check-icons.fixtures/` — twenty-four prepared inputs, each rejected on its own
+**Control:** `tools/check-icons.fixtures/` — thirty prepared inputs, each rejected on its own
 point, the first of them being the shape the library shipped until the icons (an `<svg>` written
 straight into the template). An element is what the compiler's classes say it is: an `@let` named
 for the drawing hides no `<svg>` in an ICU (`a-let-standing-in-for-a-drawing`), an icon whose one
 child is an `@let` has no drawing (`an-icon-holding-only-a-let`), a structural directive's template
-is no second `<svg>` (`a-drawing-under-a-structural-directive`), and a part on an `<ng-template>` or
-an `<ng-content>` inside an icon is refused (`a-part-on-a-template-inside-an-icon`,
-`a-part-on-a-projection-inside-an-icon`); an `@content` block, which `ngc` refuses outside a foreign
-component, fails point 1 in the first template read and in the last
-(`a-content-block-in-the-first-template`, `a-drawing-in-a-content-block`). A comment is one the HTML
+is no second `<svg>` (`a-drawing-under-a-structural-directive`), a part on an `<ng-content>` inside
+an icon is refused (`a-part-on-a-projection-inside-an-icon`), and an `@boundary`'s `@error` blocks are
+walked, each of them (`a-drawing-in-a-boundary-fallback`), as the reference walks an icon in
+every other side block; an `@content` block, which `ngc` refuses
+outside a foreign component, fails point 1 in the first template read and in the last
+(`a-content-block-in-the-first-template`, `a-drawing-in-a-content-block`), and so does a template below
+an icon, which stands where whatever stamps it puts it: an `<ng-template>` an outlet beside the icon
+stamps, in the last template, a structural directive on the drawing, in the first, and one holding a
+part (`a-template-below-an-icon-stamped-outside-it`, `a-structural-directive-below-an-icon`,
+`a-part-in-a-template-below-an-icon`). A tag is one as Angular's lexer reads it, to both counts: in any
+namespace the template writes, `<svg:svg>` and `<SVG:svg>` drawings and `<a:pct-icon>`,
+`<X1:pct-icon>` and `<xH1ml:pct-icon>` icons (`a-namespaced-drawing-outside-an-icon`,
+`a-namespaced-icon-with-no-name`), and ended where the lexer ends a name, on a tab, U+000E and
+U+001F, a no-break space or an `=` too
+(`drawings-whose-names-end-as-the-lexer-ends-them`). A comment is one the HTML
 parser holds as one: an `<svg>` between a `<!--` and a later `-->` in two attribute values, two
 `@let` strings, two block conditions or two ICU expressions is a drawing like any other
 (`comment-markers-in-attributes` and the three beside it); a tag quoted in a comment inside a start
@@ -873,7 +884,7 @@ read by `parseTemplate` from `@angular/compiler`, and the list of static classes
 attributes is built **twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 50 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 51 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A submit button's label written on an `<input>` in a namespace the template makes up, `<X1:input type=\"submit\" value=\"Send\">` — a capital and a digit, as Angular's lexer takes a prefix. `ngc` compiles it to an `<input>` with no namespace instruction (measured on 22.2.1, the schema takes off every prefix but `svg` and `math`), so `value` speaks here. The parser keeps the prefix on the name: read with it, or with a prefix of small letters alone taken off, the tag was no `input` and the label passed. The package entry carries the pairs the linker writes; neither name speaks, so point 2 compares neither."
+}

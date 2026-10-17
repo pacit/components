@@ -1,0 +1,12 @@
+<!--
+  A template outside every icon, holding one: what it holds stands where the outlet stamps it,
+  and an icon is an icon wherever that is.
+-->
+<ng-template #badge>
+  <pct-icon class="badge__mark" name="check">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+      <path d="M3.5 8.5l3 3 6-6.5" />
+    </svg>
+  </pct-icon>
+</ng-template>
+<ng-container [ngTemplateOutlet]="badge" />

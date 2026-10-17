@@ -20,6 +20,7 @@
 import {
   parseTemplate,
   RecursiveAstVisitor,
+  splitNsName,
   TmplAstRecursiveVisitor,
   visitAll,
 } from '@angular/compiler';
@@ -462,12 +463,14 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
 
   /**
    * The tag and its `type` in any case, as the names in `speaking`: `<INPUT TYPE="submit"
-   * VALUE="Send">` draws a button labelled "Send" (measured, the same render as `speaks`).
+   * VALUE="Send">` draws a button labelled "Send" (measured, the same render as `speaks`). The
+   * tag in any namespace the template writes, which the parser keeps on the name: `ngc` makes
+   * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`).
    */
   visitElement(node) {
     this.seen(node);
     const previous = [this.tag, this.type];
-    this.tag = node.name.toLowerCase();
+    this.tag = splitNsName(node.name)[1].toLowerCase();
     this.type =
       node.attributes
         .find((a) => a.name.toLowerCase() === 'type')

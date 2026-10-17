@@ -1,0 +1,6 @@
+<pct-icon class="arrow__mark" [name]="open() ? 'chevron-down' : 'check'">
+  <svg *pctMoved viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M4 6l4 4 4-4" />
+  </svg>
+</pct-icon>
+<span class="arrow__label">Open</span>

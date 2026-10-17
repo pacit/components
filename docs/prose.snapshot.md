@@ -43,7 +43,7 @@ check-files.mjs 10 22 232
 check-flake.mjs 5 17 206
 check-forms.mjs 4 16 139
 check-harness.mjs 6 18 168
-check-icons.mjs 6 18 165
+check-icons.mjs 6 18 170
 check-index.mjs 5 17 150
 check-language.mjs 7 19 196
 check-mutation.mjs 8 20 221
@@ -100,7 +100,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 4.80 closed 9 118
 4.81 open 15 238
 4.82 open 14 206
-4.83 open 18 281
+4.83 open 20 311
 4.78 open 10 148
 4.75 open 13 191
 4.74 closed 12 196

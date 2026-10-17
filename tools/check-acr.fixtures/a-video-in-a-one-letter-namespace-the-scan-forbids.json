@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains a `<video>` in the shortest prefix Angular's lexer takes, one letter: `<a:video>`, which `ngc` compiles to a video, and 1.2.1 keeps resting on the scan. It stands in a case of its own: the scan refuses at the first line it matches, so a second prefix beside `a-video-in-a-namespace-the-scan-forbids`'s would hold nothing.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<a:video controls></a:video>\n"
+  }
+}
