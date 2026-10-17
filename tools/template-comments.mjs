@@ -22,8 +22,10 @@ import {
  * Where a tag stands in a case, this tree does say: each element a case draws, by the offset its
  * `<` stands at (`cased`), at any depth, in a nested ICU too — the visitor hands the flag down as
  * its context. It is the denominator of the scan there: a quote in a bracketed name, which
- * Angular's lexer reads as part of the name (`[it's]`), opens one to the scan that nothing closes,
- * and the scan finds no tag where the stop starts.
+ * Angular's lexer reads as part of the name (`[it's]`), is one to the scan, which pairs each quote
+ * with the next of its kind: where the pairs reach no `>` outside them, the scan finds no tag
+ * where the stop starts, and where their first `>` outside them stands past a later tag's start,
+ * the tag holding the quote runs on and swallows that one.
  */
 class CommentReader extends RecursiveVisitor {
   spans = [];

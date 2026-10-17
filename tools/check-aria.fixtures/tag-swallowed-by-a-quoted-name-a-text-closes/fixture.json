@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "a tag at offset 799 (`<b>`), and the tag scan never found it — a quote Angular reads as part of a bracketed name (`[it's]`), for one, is one to the scan, which pairs each quote with the next of its kind: where the pairs from one in its own tag reach no `>` outside them, the scan finds no tag where it starts, and where those from one in a tag before it reach their first `>` past its start, that tag runs on and swallows it; a `<` before it, in an expression, a string or a text, reads as a tag that swallows it too",
+  "$reason": "`stop-behind-a-quoted-name` with a `<b>` in the stop's text and an apostrophe after it, `<b>it's</b>`. Angular's lexer reads the bracketed name up to its closing bracket, quotes included, and the template parses; the tag scan pairs the quote in `[it's]` with the text's apostrophe, so the stop's tag is found and runs on to the `>` of the `</b>`, past the `<b>`. The tree holds the `<b>`, and its tags' offsets against the scan's refused it before this case too. What the case holds is the refusal's word for why: it named a quote nothing closes and a `<` in an expression, a string or a text, and this template has neither — the quote is closed, and the `<` whose tag swallows the `<b>` is the stop's own."
+}

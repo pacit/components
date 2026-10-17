@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "(`<span class=\"pct-pair__more\" [it's]=\"more()\" tabindex=\"0\">it's what's next</span>`), and the tag scan never found it — a quote Angular reads as part of a bracketed name (`[it's]`), for one, is one to the scan, which pairs each quote with the next of its kind: where the pairs from one in its own tag reach no `>` outside them, the scan finds no tag where it starts",
+  "$reason": "`stop-behind-a-quoted-name` with two apostrophes in the stop's text, `it's what's next`. Angular's lexer reads the bracketed name up to its closing bracket, and the template parses; the tag scan pairs the name's quote with the first apostrophe, and the second opens one nothing after it closes, so no `>` stands outside the pairs and the scan finds no tag where the stop starts. The tree holds the span, and its tags' offsets against the scan's refused it before this case too. What the case holds is the refusal's word for why: it named a quote nothing closes, and the name's quote here is closed — the scan's pairing of every quote after it, not that one quote, decides where the tag ends."
+}
