@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) extends `PctWidgetBase`, which the file imports from './base', where no class of the sources is declared `export class` under that name",
+  "$reason": "`base.ts` declares `export default class PctWidgetBase` and exports a decorated `PctBareBase` as `PctWidgetBase`. `widget.ts` imports `PctWidgetBase`, which TypeScript binds to `PctBareBase`: the default export is named `default`, not by its class. An export clause is not followed, so point 1 refuses the base and says the import it came through. A read that took the default class for the export of its name would stand the base for that undecorated class and say so instead."
+}

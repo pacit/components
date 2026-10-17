@@ -1,0 +1,23 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The module's default export, declared under the reference base's name and carrying both
+ * naming inputs. `import { PctWidgetBase }` does not reach it: a default export is named
+ * `default`.
+ */
+export default abstract class PctWidgetBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+}
+
+/** A base without the naming inputs, which the module exports as `PctWidgetBase`. */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+abstract class PctBareBase {
+  protected readonly size = input<string>('md');
+}
+
+export { PctBareBase as PctWidgetBase };

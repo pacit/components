@@ -628,8 +628,8 @@ the nearest class's, so a second is a part no element carries), and the list of 
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
 bases')
-**Control:** `tools/check-parts.fixtures/` — 56 inputs, each rejected on its own
-point and by the refusal its `message` names, as point 1 refuses eleven ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
+**Control:** `tools/check-parts.fixtures/` — 57 inputs, each rejected on its own
+point and by the refusal its `message` names, as point 1 refuses twelve ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
 a directive whose part is not exported from the entrypoint fires point 2
@@ -866,7 +866,7 @@ read by `parseTemplate` from `@angular/compiler`, and the list of static classes
 attributes is built **twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 48 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 49 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

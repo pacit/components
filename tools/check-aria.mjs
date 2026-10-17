@@ -280,19 +280,27 @@ const readSources = (root, files) => {
         unheld.push(`${file}: \`${match[0].split('\n')[0]}\``);
         continue;
       }
+      const key = classKey(file, node.name?.text);
+      const held = bases.get(key);
+      if (held === undefined) {
+        unheld.push(
+          `${file}: \`${match[0].split('\n')[0]}\` below the top level`,
+        );
+        continue;
+      }
       const body = match[2];
       const host = hostBlock(body);
-      const key = classKey(file, node.name?.text);
       components.push({
         file,
         className: node.name?.text,
         key,
         // `class X extends Y` — the base whose inputs and host block are the subclass's too.
         // `base` is Y as written and `from` the class TypeScript binds it to
-        // (`class-bases.mjs`), or `undefined` for none this follows. A decorated class the parser
-        // holds below the top level has neither.
-        base: bases.get(key)?.base ?? null,
-        from: bases.get(key)?.from,
+        // (`class-bases.mjs`), or `undefined` for none this follows, `via` the module the file
+        // imports Y from.
+        base: held.base ?? null,
+        from: held.from,
+        via: held.via,
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
@@ -1299,13 +1307,17 @@ const checkAria = ({
           `table moved; decide which before anything below is believed`,
       );
   // What the decorator's pattern reads where the parser holds no class is text that spells one
-  // — a comment, a string — and what the points below would examine there exists nowhere.
+  // — a comment, a string — and what the points below would examine there exists nowhere. A
+  // decorated class the parser holds below the top level of its file, inside a namespace or a
+  // function, is one `extends` cannot be resolved for (`class-bases.mjs` reads the top level),
+  // and its half of the surface would go unexamined as surely.
   if (unheld.length)
     throw new AriaError(
       'denominator',
       `${unheld.length} decorator(s) read where the TypeScript parser holds no decorated ` +
-        `class — a comment or a string spelling one, which no build compiles and no point ` +
-        `below may examine as a component:\n${list(unheld)}`,
+        `class at the top level of the file — a comment or a string spelling one, which no ` +
+        `build compiles, or a class inside a namespace or a function, whose base this read ` +
+        `does not resolve; no point below may examine either as a component:\n${list(unheld)}`,
     );
   if (components.length !== counted)
     throw new AriaError(
@@ -1339,7 +1351,7 @@ const checkAria = ({
       throw new AriaError(
         'denominator',
         `${component.className} (${component.file}) extends \`${component.base}\`, ` +
-          `${standsFor(component.from)} — not among the decorated classes read. Its inputs ` +
+          `${standsFor(component)} — not among the decorated classes read. Its inputs ` +
           `and its host block are part ` +
           `of this component's surface, and every point below would examine the half ` +
           `declared here`,

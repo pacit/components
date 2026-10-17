@@ -1,0 +1,12 @@
+/*
+The marker the widget drew before the base took its `title` — kept for its history, not
+compiled:
+
+@Directive({
+  selector: '[pctRetired]',
+  host: {
+    title: '*',
+  },
+})
+export class PctRetired {}
+*/

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/widget.ts: `@Component({` below the top level",
+  "$reason": "The reference widget declared inside `export namespace W`, its decorator in column zero, which no formatter writes and which TypeScript and ngc compile all the same, extending a base that hides its host. The parser holds the class below the top level of the file, where `class-bases.mjs` resolves no base. Read with no base, the widget kept its host in the tree, and the case passed. With the base merged, point 8 refuses a hidden widget that holds a name. Point 1 refuses it before either, as it refuses a decorator in a comment."
+}

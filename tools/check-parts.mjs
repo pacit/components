@@ -156,6 +156,7 @@ const entrypointFromPath = (file) => {
  */
 const readSources = (root, files) => {
   const classes = [];
+  const unheld = [];
   let declarations = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
@@ -166,9 +167,14 @@ const readSources = (root, files) => {
     declarations += countOf(content, DECORATOR_COUNTER);
 
     for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+      const key = classKey(file, className);
+      const held = bases.get(key);
+      if (held === undefined) {
+        unheld.push(`${file}: ${className}`);
+        continue;
+      }
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
-      const key = classKey(file, className);
       classes.push({
         file,
         className,
@@ -176,10 +182,10 @@ const readSources = (root, files) => {
         kind,
         // `class X extends Y` — the base whose `host` block is the subclass's too. `base` is Y
         // as written and `from` the class TypeScript binds it to (`class-bases.mjs`), or
-        // `undefined` for none this follows. A decorator the pattern reads where the parser
-        // holds no class — one in a comment — has neither.
-        base: bases.get(key)?.base ?? null,
-        from: bases.get(key)?.from,
+        // `undefined` for none this follows, `via` the module the file imports Y from.
+        base: held.base ?? null,
+        from: held.from,
+        via: held.via,
         entrypoint: entrypointFromPath(file),
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
@@ -198,7 +204,7 @@ const readSources = (root, files) => {
     }
   }
 
-  return { classes, declarations };
+  return { classes, declarations, unheld };
 };
 
 /**
@@ -286,8 +292,15 @@ class PartsError extends Error {
  * path.
  */
 const checkParts = (input) => {
-  const { classes, declarations, templates, pkg, documents, entrypoints } =
-    input;
+  const {
+    classes,
+    declarations,
+    unheld,
+    templates,
+    pkg,
+    documents,
+    entrypoints,
+  } = input;
 
   // 1. DENOMINATOR. Before anything is compared, the source read has to be able to say
   //    it saw everything it was meant to see. Without that, point 2 would be comparing
@@ -299,6 +312,20 @@ const checkParts = (input) => {
         `the comparison against the counter would then always pass, because zero equals ` +
         `zero (lesson-48).\n    Usual cause: the list of source files stopped returning ` +
         `anything.`,
+    );
+
+  // A decorator the pattern reads where the TypeScript parser holds no class at the top level of
+  // the file — one in a comment, or one inside a namespace or a function, written in column zero
+  // — is no class `extends` can be resolved for, and a class that is not there for the rest. It
+  // is said here, as `check-aria` says it.
+  if (unheld.length)
+    throw new PartsError(
+      'denominator',
+      `${unheld.length} decorators stand where the TypeScript parser holds no class at the ` +
+        `top level of the file:\n` +
+        list(unheld) +
+        `\n    A decorator in a comment, or a class inside a namespace or a function: no ` +
+        `point below may read it as a component of the library.`,
     );
 
   if (classes.length !== declarations)
@@ -457,7 +484,7 @@ const checkParts = (input) => {
         list(
           unresolved.map(
             (k) =>
-              `${k.file}: ${k.className} extends \`${k.base}\`, ${standsFor(k.from)}`,
+              `${k.file}: ${k.className} extends \`${k.base}\`, ${standsFor(k)}`,
           ),
         ) +
         `\n    Whatever that base writes into a \`host\` block is part of this class in ` +

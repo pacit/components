@@ -287,6 +287,7 @@ const nameFromKey = (key) => {
  */
 const readSources = (root, files) => {
   const classes = [];
+  const unheld = [];
   let declarations = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
@@ -297,6 +298,12 @@ const readSources = (root, files) => {
     declarations += countOf(content, DECORATOR_COUNT);
 
     for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+      const id = classKey(file, className);
+      const held = bases.get(id);
+      if (held === undefined) {
+        unheld.push(`${file}: ${className}`);
+        continue;
+      }
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       const host = hostBlock(body) ?? '';
@@ -314,11 +321,10 @@ const readSources = (root, files) => {
           literals.push([name, l[1] ?? l[2]]);
       }
 
-      const key = classKey(file, className);
       classes.push({
         file,
         className,
-        key,
+        key: id,
         kind,
         // `class X extends Y` — and what Y declares is X's too. Angular merges a decorated base's
         // host bindings into the subclass's definition, so the package read finds them ON THE
@@ -326,11 +332,11 @@ const readSources = (root, files) => {
         // class of the package at all: its strings travel inside whatever extends it
         // ([0034](../docs/decisions/0034-multiplicity-is-a-tag.md),
         // [`lesson-100`](../docs/lessons.md#lesson-100)). `base` is Y as written and `from` the
-        // class TypeScript binds it to (`class-bases.mjs`), or `undefined` for none this follows.
-        // A decorator the pattern reads where the parser holds no class — one in a comment —
-        // has neither.
-        base: bases.get(key)?.base ?? null,
-        from: bases.get(key)?.from,
+        // class TypeScript binds it to (`class-bases.mjs`), or `undefined` for none this follows,
+        // `via` the module the file imports Y from.
+        base: held.base ?? null,
+        from: held.from,
+        via: held.via,
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
               .split('\\')
@@ -347,7 +353,7 @@ const readSources = (root, files) => {
     }
   }
 
-  return { classes, declarations };
+  return { classes, declarations, unheld };
 };
 
 /**
@@ -721,7 +727,7 @@ class TextsError extends Error {
 }
 
 const checkTexts = (input) => {
-  const { classes, declarations, templates, pkg, sources } = input;
+  const { classes, declarations, unheld, templates, pkg, sources } = input;
 
   // ── 1. DENOMINATOR ────────────────────────────────────────────────────────────
   if (!classes.length || !sources.length)
@@ -732,6 +738,21 @@ const checkTexts = (input) => {
         `(${PROJECT}; files: ${sources.length}) — every later point would then pass ` +
         `without pronouncing on anything (lesson-48).\n    Usual cause: the list of ` +
         `source files stopped returning anything.`,
+    );
+
+  // A decorator the pattern reads where the TypeScript parser holds no class at the top level of
+  // the file — one in a comment, or one inside a namespace or a function, written in column zero
+  // — is no class `extends` can be resolved for, and a class that is not there for the rest. It
+  // is said here, as `check-aria` says it.
+  if (unheld.length)
+    throw new TextsError(
+      'denominator',
+      'decorator-without-class',
+      `${unheld.length} decorators stand where the TypeScript parser holds no class at the ` +
+        `top level of the file:\n` +
+        list(unheld) +
+        `\n    A decorator in a comment, or a class inside a namespace or a function: no ` +
+        `point below may read it as a component of the library.`,
     );
 
   if (classes.length !== declarations)
@@ -906,7 +927,7 @@ const checkTexts = (input) => {
       throw new TextsError(
         'denominator',
         'base-without-declaration',
-        `${k.className} (${k.file}) extends \`${k.base}\`, ${standsFor(k.from)} — not ` +
+        `${k.className} (${k.file}) extends \`${k.base}\`, ${standsFor(k)} — not ` +
           `among the decorated classes read. Whatever that base writes into a ` +
           `\`host\` block is part of this class in the package, and point 2 would compare ` +
           `the half declared here against the whole of what ships`,

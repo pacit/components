@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 decorators stand where the TypeScript parser holds no class at the top level of the file:\n      libs/components/widget/src/retired.ts: PctRetired",
+  "$reason": "A directive commented out with its decorator in column zero: the pattern reads it and the counter counts it, so the two agree, and the gate read a `PctRetired` that exists nowhere, whose part point 2 then named as one the package does not carry. The TypeScript parser holds no class there, so `class-bases.mjs` has no base for it, and point 1 refuses it, as `check-aria` refuses the same shape."
+}
