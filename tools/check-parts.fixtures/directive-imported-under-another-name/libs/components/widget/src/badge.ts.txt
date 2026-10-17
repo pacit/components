@@ -1,0 +1,10 @@
+import { Directive as Marker } from '@angular/core';
+
+/** A marker the widget applies inside its template, exported by no entrypoint. */
+@Marker({
+  selector: '[pctWidgetBadge]',
+  host: {
+    'data-pct-part': 'badge',
+  },
+})
+export class PctWidgetBadge {}

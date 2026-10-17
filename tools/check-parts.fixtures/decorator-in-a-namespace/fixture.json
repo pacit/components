@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the pattern read 6 of the 7 decorators the TypeScript parser holds",
+  "$reason": "A component declared inside a namespace, its decorator indented as prettier indents it there. ngc compiles it and its template's part reaches `consts` (measured through ngc in partial mode and the linker); the pattern wants the decorator in column zero and reads none. The parser counts decorators at every depth of a file, so the count holds one the pattern did not read; a count of the top level alone would agree with the pattern, and the case would pass every point."
+}

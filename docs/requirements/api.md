@@ -622,15 +622,15 @@ at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 [`components/`](../components/) with what the entrypoint actually exposes, and point 5
 compares `libs/components/parts.snapshot.md` with the current inventory, and point 6 holds
 [`req-api-parts-unique`](#req-api-parts-unique) below. Points 1 and 2 guard
-the denominator: every decorator and every occurrence of the attribute in a template or a
-decorator must be recognised; a decorator's metadata is read as ngc reads it, and a template it
+the denominator: every decorator the TypeScript parser holds and every occurrence of the
+attribute in a template or a decorator must be recognised; a decorator's metadata is read as ngc reads it, and a template it
 hands the compiler other than through `templateUrl`, under any key ngc reads, is refused, as is a
 decorator imported under another name; a host takes its part from one class of its chain (Angular
 keeps the nearest class's, so a second is a part no element carries); and the list of parts is built
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
 bases')
-**Control:** `tools/check-parts.fixtures/` — 68 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 71 inputs, each rejected on its own
 point and by the refusal its `message` names, as point 1 refuses fifteen ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
@@ -640,8 +640,12 @@ a directive whose part is not exported from the entrypoint fires point 2
 > The inventory is **independent of `apps/docs`**. A pretty page rendering it can come later;
 > generating and gating it cannot ([`req-project-apps`](project.md#req-project-apps)).
 
-> **Not held:** neither read follows `hostDirectives`: a host directive's host block is read on
-> the directive, not on the component it is applied to.
+> **Not held:** a part of a class no entrypoint exports reaches neither read where the source
+> scanner does not read it either — a `host` object spread from a constant, an `@HostBinding`
+> (each measured on a directive) — as the package read visits exported classes alone, save a
+> base's host, which it reads on the class extending it. A part a class sets from its own code
+> (`setAttribute`) reaches neither read on any class. Neither read follows `hostDirectives`: a
+> host directive's host block is read on the directive, not on the component it is applied to.
 
 ---
 

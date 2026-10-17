@@ -83,10 +83,12 @@ const sorted = (set) => [...set].sort();
  * A component or directive decorator in a source file. It anchors on the formatting
  * `nx format:check` enforces (`@Component({` and `})` in column zero) — and that is why
  * the number of matches is compared separately against a counter that does NOT repeat that
- * anchor. The counter allows indentation, because repeating the anchor would put out both
- * sides of the comparison at once and point 1 would pass having stopped measuring a whole
- * component (`lesson-48`). `[ \t]*` filters out occurrences in comments — a JSDoc line
- * starts with an asterisk.
+ * anchor: repeating it would put out both sides of the comparison at once and point 1 would
+ * pass having stopped measuring a whole component (`lesson-48`). The counter is the parser's
+ * (`decoratorsOf`): every decorator called by either name, at any depth of the file. A pattern
+ * counted them before, from the start of a line past indentation, and a block comment written
+ * before the decorator on its line, which prettier keeps, hid one from both: ngc compiled it, and
+ * a class no entrypoint exported passed every point (measured).
  *
  * `@Directive` stands here beside `@Component`, because four wrapper parts
  * (`field-prefix-item`, `field-suffix-item`, `field-label-aux-item`,
@@ -95,7 +97,6 @@ const sorted = (set) => [...set].sort();
  */
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
-const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
 
 /** The two decorators whose classes the inventory reads, by the names `@angular/core` exports. */
 const DECORATORS = new Set(['Component', 'Directive']);
@@ -111,13 +112,15 @@ const DECORATORS = new Set(['Component', 'Directive']);
  * `template`; and a shorthand, so `template,` hands the compiler the constant it names. Nothing
  * else is a member to it: a template under a computed key (`['template']`, `[key]`), in a spread
  * or behind an accessor is no template ngc compiles, and with no other one the component is
- * NG2001, "missing a template" (each measured through ngc in partial mode). The pattern stood
- * here, `template:` from the start of a line: a shorthand, a quoted key and an escaped name each
- * handed ngc a template it did not see, and one kept in a constant reached the package read
- * alone (measured through ngc and the linker).
+ * NG2001, "missing a template" (each measured through ngc in partial mode). `jit: true` leaves
+ * the object to a compiler at runtime, which an application built ahead of time does not carry.
+ * The pattern stood here, `template:` from the start of a line: a shorthand, a quoted key and an
+ * escaped name each handed ngc a template it did not see, and one kept in a constant reached the
+ * package read alone (measured through ngc and the linker).
  *
- * And the names the file takes `Component` and `Directive` under, other than their own
- * (`renamed`).
+ * And the number of decorators called by those names anywhere in the file, the counter point 1
+ * holds the pattern to (`declared`), and the names the file takes `Component` and `Directive`
+ * under, other than their own (`renamed`).
  */
 const decoratorsOf = (file, content) => {
   const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest);
@@ -165,7 +168,19 @@ const decoratorsOf = (file, content) => {
           ({ propertyName, name }) => `${propertyName.text} as ${name.text}`,
         );
     });
+  let declared = 0;
+  const count = (node) => {
+    if (
+      ts.isDecorator(node) &&
+      ts.isCallExpression(node.expression) &&
+      DECORATORS.has(node.expression.expression.text)
+    )
+      declared++;
+    ts.forEachChild(node, count);
+  };
+  count(source);
   return {
+    declared,
     renamed,
     metadata: new Map(
       source.statements
@@ -250,11 +265,12 @@ const readSources = (root, files) => {
   const bases = classesOf(contents);
 
   for (const [file, content] of contents) {
-    declarations += countOf(content, DECORATOR_COUNTER);
-    const { metadata: decorators, renamed: names } = decoratorsOf(
-      file,
-      content,
-    );
+    const {
+      metadata: decorators,
+      declared,
+      renamed: names,
+    } = decoratorsOf(file, content);
+    declarations += declared;
     for (const name of names) renamed.push(`${file}: ${name}`);
 
     for (const match of content.matchAll(DECORATOR)) {
@@ -469,10 +485,10 @@ const checkParts = (input) => {
   if (classes.length !== declarations)
     throw new PartsError(
       'denominator',
-      `the parser recognised ${classes.length} of ${declarations} decorators — the rest ` +
-        `would drop out of the inventory without a trace. Usual cause: a decorator ` +
-        `written otherwise than prettier formats it (\`@Component({\` and \`})\` in ` +
-        `column zero).`,
+      `the pattern read ${classes.length} of the ${declarations} decorators the TypeScript ` +
+        `parser holds — the rest would drop out of the inventory without a trace. Usual ` +
+        `cause: a decorator written otherwise than the pattern reads it (\`@Component({\` ` +
+        `and \`})\` in column zero): indented, or behind a comment on its line.`,
     );
 
   // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
@@ -1532,7 +1548,7 @@ for (const name of cases) {
   const fx = JSON.parse(
     readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  // One check, several refusals: point 1 throws ten ways, all of them `denominator`, and the
+  // One check, several refusals: point 1 throws fifteen ways, all of them `denominator`, and the
   // lines of a list say which of two reads or which part disagreed. A case names a fragment of
   // the refusal it declares, and the fragment is held, so a change that moves the case onto a
   // neighbouring refusal is a failure here and not a pass. `no-sources` fired "templates belong

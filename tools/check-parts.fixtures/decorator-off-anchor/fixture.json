@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "the parser recognised 4 of 5 decorators",
-  "$reason": "A decorator indented by two spaces. The parser anchors at column zero, the counter does NOT — without that independence both sides of the comparison would go dark at once and the component would drop out of the inventory quietly (lesson-48)."
+  "message": "the pattern read 4 of the 5 decorators the TypeScript parser holds",
+  "$reason": "A decorator indented by two spaces. The pattern anchors at column zero, the counter (the TypeScript parser's count) does NOT — without that independence both sides of the comparison would go dark at once and the component would drop out of the inventory quietly (lesson-48)."
 }
