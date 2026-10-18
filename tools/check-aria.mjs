@@ -904,19 +904,19 @@ const readOffAContainer = (name) =>
  * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
  * template is read too, though the tree holds it as no element: a stop written on one fails
  * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
- * of the tree point 1 counts, recorded with an empty reading: it draws no element, so nothing on
- * it makes a stop; what is written on it, past what Angular takes as the projection's own
- * (`readOffAProjection`), is recorded by the offset it starts at (`projections`), and fails
- * point 1. An `<ng-container>` is recorded with an empty reading too, whatever is bound on it: it
- * draws a comment, which no user lands on. What is written on one past the container's own
- * (`readOffAContainer`) is recorded the same way (`containers`), and fails point 1. Each tag's
- * kind is recorded beside (`kinds`). A tag is recorded before the visitor descends into it, so
- * of two at one offset — an inline template and the element, the `<ng-template>` or the
- * `<ng-content>` it wraps — the inner one is the one kept. Each element's name is recorded too
- * (`names`), as `localName` reads it; a template's or a projection's tag keeps the name the scan
- * reads off the text, on which no verdict turns. So is the markup an element draws that the tree
- * does not hold (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each
- * `@content` block, by the offset it starts at (`contentBlocks`), its tags read as any others are.
+ * of the tree whose offset point 1 holds the scan to, recorded with an empty reading: it draws no
+ * element, so nothing on it makes a stop; what is written on it, past what Angular takes as the
+ * projection's own (`readOffAProjection`), is recorded by the offset it starts at (`projections`),
+ * and fails point 1. An `<ng-container>` is recorded with an empty reading too, whatever is bound
+ * on it: it draws a comment, which no user lands on. What is written on one past the container's
+ * own (`readOffAContainer`) is recorded the same way (`containers`), and fails point 1. Each tag's
+ * kind is recorded beside (`kinds`). A tag is recorded before the visitor descends into it, so of
+ * two at one offset — an inline template and the element, the `<ng-template>` or the `<ng-content>`
+ * it wraps — the inner one is the one kept. Each element's name is recorded too (`names`), as
+ * `localName` reads it; a template's or a projection's tag keeps the name the scan reads off the
+ * text, on which no verdict turns. So is the markup an element draws that the tree does not hold
+ * (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each `@content` block, by
+ * the offset it starts at (`contentBlocks`), its tags read as any others are.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -1625,11 +1625,11 @@ const checkAria = ({
           `if anything, is markup the scan does not read whole and the tree does not hold`,
       );
     // Inside an ICU the template tree holds no element, so the refusal above of a tag it holds
-    // and the scan missed has nothing there to count by; the HTML tree has, and knows where each
-    // tag of a case starts (`cased`). A tag the scan never found there is a stop nothing reads —
-    // not the scan, which would have read it as one (`UNREAD`), and not the tree. Asked only
-    // inside an ICU the template tree holds (`icus`): under `ngNonBindable` it holds none, and
-    // Angular draws nothing of one.
+    // and the scan missed has no offset there to hold the scan to; the HTML tree has, and knows
+    // where each tag of a case starts (`cased`). A tag the scan never found there is a stop
+    // nothing reads — not the scan, which would have read it as one (`UNREAD`), and not the tree.
+    // Asked only inside an ICU the template tree holds (`icus`): under `ngNonBindable` it holds
+    // none, and Angular draws nothing of one.
     const uncased = said.cased.find(
       (offset) =>
         !scanned.has(offset) &&

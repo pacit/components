@@ -2,5 +2,5 @@
   "point": 1,
   "check": "denominator",
   "message": "and the tag scan never found it",
-  "$reason": "`tag-swallowed-by-an-expression` with a template for the element: the false tag `<limit())` swallows an `<ng-template>` whose `tabindex` would fail point 1, as `stop-on-a-wrapped-template` does. The tree holds the template as a tag of its own, and its count of tags against the scan's counts templates as well as elements; counting elements alone passed this one."
+  "$reason": "`tag-swallowed-by-an-expression` with a template for the element: the false tag `<limit())` swallows an `<ng-template>` whose `tabindex` would fail point 1, as `stop-on-a-wrapped-template` does. The tree holds the template as a tag of its own, and the tree's tag offsets held against the scan's are those of templates as well as elements; holding the scan to the offsets of elements alone passed this one."
 }
