@@ -1,11 +1,13 @@
 import '@angular/core';
 import { Injectable } from '@angular/core';
+import * as interop from '@angular/core/rxjs-interop';
 
 /**
  * Shapes a source file of the library may hold beside its components, none of them a decorator
- * the inventory reads: an import of `@angular/core` that binds no name, a decorator called with
- * no argument (`@Injectable()`, as `icon.ts` has one) and a decorator not called at all. The
- * parser's read of a file passes over each.
+ * the inventory reads: an import of `@angular/core` that binds no name, a namespace import of
+ * another module whose name begins as that one's does, a decorator called with no argument
+ * (`@Injectable()`, as `icon.ts` has one) and a decorator not called at all. The parser's read of
+ * a file passes over each.
  */
 const frozen = (type: object): void => {
   Object.freeze(type);

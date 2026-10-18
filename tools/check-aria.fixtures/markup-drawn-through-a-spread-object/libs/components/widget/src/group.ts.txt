@@ -1,0 +1,19 @@
+import { Component, input } from '@angular/core';
+
+/** The reference's group, drawing its options into its own element from a string. */
+@Component({
+  selector: 'pct-group',
+  templateUrl: './group.html',
+  host: {
+    class: 'pct-group',
+    role: 'radiogroup',
+    '[attr.aria-labelledby]': 'labelledBy()',
+    ...{
+      '[innerHtml]': 'optionsHtml()',
+    },
+  },
+})
+export class PctGroup {
+  protected readonly labelledBy = input<string>('');
+  protected readonly optionsHtml = input<string>('');
+}

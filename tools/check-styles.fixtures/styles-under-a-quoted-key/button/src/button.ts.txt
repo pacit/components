@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** The styles kept in a constant, out of the decorator's body. */
+const styles = [':host { margin-left: 4px; }'];
+
+@Component({
+  selector: 'fx-button',
+  template: '<button type="button"><ng-content /></button>',
+  'styles': styles,
+})
+export class FxButton {}

@@ -1,0 +1,24 @@
+{
+  "point": 6,
+  "check": "explicitness",
+  "message": "PctButton (libs/components/button/src/button.ts): changeDetection",
+  "// defect": "The default strategy restated under a name written with a Unicode escape, `ch\\u0061ngeDetection:`, which ngc reads by its text (measured through ngc in partial mode). The pattern read the name as written, and the restatement passed point 6.",
+  "files": [
+    {
+      "file": "libs/components/button/src/button.ts",
+      "lines": [
+        "import { ChangeDetectionStrategy, Component } from '@angular/core';",
+        "",
+        "/** The strategy kept in a constant, out of the decorator's body. */",
+        "const changeDetection = ChangeDetectionStrategy.OnPush;",
+        "",
+        "@Component({",
+        "  selector: 'pct-button',",
+        "  templateUrl: './button.html',",
+        "  ch\\u0061ngeDetection: changeDetection,",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ]
+}

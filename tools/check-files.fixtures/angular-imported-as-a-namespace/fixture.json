@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "decorator-under-another-name",
+  "description": "`@ng.Component({…})` over a namespace import of `@angular/core`, which ngc compiles as it compiles `@Component` (measured through ngc in partial mode and the linker for `check-parts`). Neither the pattern nor the counter saw a decorator, so no point read the declaration, and the template written into its decorator answered to no point."
+}

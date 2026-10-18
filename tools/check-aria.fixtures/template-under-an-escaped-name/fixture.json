@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidgetBadge (libs/components/widget/src/badge.ts) takes its template from the decorator",
+  "$reason": "The template under a name written with a Unicode escape, `t\\u0065mplate:`. The parser holds the name's text, `template`, and so does ngc (measured through ngc in partial mode and the linker for `check-parts`); a read of the name as written would not."
+}

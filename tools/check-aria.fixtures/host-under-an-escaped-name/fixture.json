@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes aria-label into its host block",
+  "$reason": "`host-name-on-a-presentation-role` with the host block under a name written with a Unicode escape, `h\\u006fst:`. ngc names a member so as it names one by an identifier, and compiles the block into the declaration's `host` (measured through ngc in partial mode). The block was read off the decorator's text, `host: {` from the start of a line, so the scanner read no host here and the named presentational host passed every point (measured by the review of this change). It is read off the metadata now, as ngc reads it."
+}

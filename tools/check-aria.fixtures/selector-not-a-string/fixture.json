@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) names its selector by an expression",
+  "$reason": "`name-on-a-nested-host-without-role` with the chrome's selector kept in a constant and handed to the decorator by shorthand, which ngc reads as the member it names (measured through ngc in partial mode: `selector: \"x-a\"` reaches the declaration). Read as no selector, the chrome's host was a tag no point knew, which point 4 read as a custom element that may carry a name, and the case passed every point (measured by the review of this change). Point 1 refuses a selector it does not read as written, as it refuses such a `templateUrl`."
+}

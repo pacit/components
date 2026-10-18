@@ -25,11 +25,19 @@
   ],
   "// entrypoints": "The same path as in `bundle`, but from the second source — the `exports` map. That agreement is the content of point 3: as long as the two lists overlap, the scan walks what the package really publishes. The comment is also here so that a typo in one of them does not look like a case.",
   "entrypoints": ["fesm2022/pacit-components-button.mjs"],
+  "// sources": "Source text, each file as its lines, read by the gate's own reader (`readSources`), the one the repository's files go through: a case states a decorator the way the sources carry it, and the control exercises the read. A case's `files` replace the file of the same path or join them.",
   "sources": [
     {
       "file": "libs/components/button/src/button.ts",
-      "className": "PctButton",
-      "explicit": []
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-button',",
+        "  templateUrl: './button.html',",
+        "})",
+        "export class PctButton {}"
+      ]
     }
   ],
   "// package": "The built package as the gate reads it: each entrypoint's namespace (`modules`, an export key to a class id) and the classes behind the ids. A case builds a plain class per id, so a class exported twice is one object, as a re-export is, and the gate reads the namespaces with the same function as the real ones.",

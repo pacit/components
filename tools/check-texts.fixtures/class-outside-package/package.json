@@ -38,6 +38,11 @@
           "group"
         ]
       ]
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctBlank",
+      "attributes": []
     }
   ]
 }

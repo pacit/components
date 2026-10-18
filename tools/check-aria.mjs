@@ -44,6 +44,7 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
+import { decoratorsOf, textOf, unwrap } from './decorators.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -133,10 +134,15 @@ const sorted = (set) => [...set].sort();
  * format:check` enforces (`@Component({` and `})` in column zero), and the number of matches is
  * therefore compared against a counter that does NOT repeat that anchor — otherwise a decorator
  * written some other way would leave a whole component unexamined and both sides of the
- * comparison would be out by one together (`lesson-48`). What it reads is the decorator's
- * metadata; the class it stands on — its name, its base, its inputs — is the one the TypeScript
- * parser holds at the offset the match starts at (`decoratedClasses`), and a match where the
- * parser holds none is no component at all.
+ * comparison would be out by one together (`lesson-48`). The counter is the parser's
+ * (`decoratorsOf`, `decorators.mjs`), and so is the metadata the selector and the template are
+ * read off, as ngc reads it: a pattern counted decorators from the start of a line and read
+ * `selector:` and `templateUrl:` off the text, and a template handed over by shorthand, under a
+ * quoted key or an escaped name, a decorator behind a comment on its line and one imported under
+ * another name each reached ngc past it (measured). What the pattern reads is the decorator's
+ * `host` block; the class it stands on — its name, its base, its inputs — is the one the
+ * TypeScript parser holds at the offset the match starts at (`decoratedClasses`), and a match
+ * where the parser holds none is no component at all.
  *
  * **`@Directive` is read too, and it was not always.** An attribute directive is still not
  * judged by the points below — it sits on an element the consumer chose, so the gate cannot
@@ -149,22 +155,13 @@ const sorted = (set) => [...set].sort();
  */
 const DECORATOR =
   /^@(Component|Directive)\(\{?\r?\n?([\s\S]*?)^\}?\)\r?\n(?:export\s+)?(?:abstract\s+)?class\b/gm;
-const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
-
-const SELECTOR = /selector\s*:\s*(['"])([^'"]*)\1/;
-const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 
 /**
- * Every decorated class of a source, by the offset its decorator's `@` stands at — the parser's
- * answer to "is there a class here", which a comment or a string that spells one does not get.
+ * Every decorated class of a parsed source, by the offset its decorator's `@` stands at — the
+ * parser's answer to "is there a class here", which a comment or a string that spells one does
+ * not get.
  */
-const decoratedClasses = (path, content) => {
-  const source = ts.createSourceFile(
-    path,
-    content,
-    ts.ScriptTarget.Latest,
-    true,
-  );
+const decoratedClasses = (source) => {
   const classes = new Map();
   const visit = (node) => {
     if (ts.isDecorator(node) && ts.isClassDeclaration(node.parent))
@@ -224,30 +221,39 @@ const inputsOf = (node) => {
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
 /**
- * The `host` block of a decorator, read by counting braces rather than by a regex: its
- * values are expressions that carry braces of their own, and a lazy `[\s\S]*?` up to the
- * first `}` would cut one of them in half.
+ * The `host` block off the parsed metadata, `key → value`, each entry named as ngc names a
+ * member — by an identifier or a string, by its text — and its value written as a string. `null`
+ * for a block this read does not take as written, which point 1 refuses: a block given by an
+ * expression, which ngc evaluates (a constant, by shorthand or by name), or an entry under a
+ * computed key, by shorthand, or with a value that is no string. A pattern over the decorator's
+ * text stood here, `host: {` from the start of a line, and a block under a quoted key, under an
+ * escaped name or by shorthand passed every point (measured; ngc compiles each).
+ *
+ * A spread of an object written in place, an `as` and parentheses taken off, is read as its
+ * entries, in order, as the text read before took them. A spread of a constant by its name is
+ * passed over, as it was, and that is a hole of this gate's own: the others meet such an entry in
+ * their package read, and this one has none. The library spreads one constant, `fitHost` in
+ * `field/src/affix.ts`, a data attribute and a style. A spread of anything else — a condition, a
+ * call — is a block this read does not take as written.
  */
-const hostBlock = (body) => {
-  const start = body.search(/(?:^|\s)host\s*:\s*\{/m);
-  if (start === -1) return null;
-  const from = body.indexOf('{', start);
-  let depth = 0;
-  for (let i = from; i < body.length; i++) {
-    if (body[i] === '{') depth++;
-    else if (body[i] === '}' && --depth === 0) return body.slice(from + 1, i);
+const hostOf = (node, entries = new Map()) => {
+  if (node === undefined) return entries;
+  if (!ts.isObjectLiteralExpression(node)) return null;
+  for (const entry of node.properties) {
+    if (ts.isSpreadAssignment(entry)) {
+      const spread = unwrap(entry.expression);
+      if (ts.isIdentifier(spread)) continue;
+      if (hostOf(spread, entries) === null) return null;
+      continue;
+    }
+    const value =
+      ts.isPropertyAssignment(entry) &&
+      (ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name))
+        ? textOf(entry.initializer)
+        : undefined;
+    if (value === undefined) return null;
+    entries.set(entry.name.text, value);
   }
-  return null;
-};
-
-/** `'key': 'value'` / `key: 'value'` pairs of a host block. */
-const HOST_ENTRY =
-  /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:\s*(?:'([^']*)'|"([^"]*)"|`([^`]*)`)/g;
-
-const hostEntries = (text) => {
-  const entries = new Map();
-  for (const m of text.matchAll(HOST_ENTRY))
-    entries.set(m[1] ?? m[2] ?? m[3], m[4] ?? m[5] ?? m[6]);
   return entries;
 };
 
@@ -266,14 +272,19 @@ const hostTags = (selector) =>
 const readSources = (root, files) => {
   const components = [];
   const unheld = [];
+  const unparsed = [];
+  const renamed = [];
+  const unseen = [];
   let counted = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
   );
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
-    counted += countOf(content, DECORATOR_COUNTER);
-    const classes = decoratedClasses(file, content);
+    const decorators = decoratorsOf(file, content);
+    counted += decorators.declared;
+    for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
+    const classes = decoratedClasses(decorators.source);
     for (const match of content.matchAll(DECORATOR)) {
       const node = classes.get(match.index);
       if (node === undefined) {
@@ -292,8 +303,17 @@ const readSources = (root, files) => {
         );
         continue;
       }
-      const body = match[2];
-      const host = hostBlock(body);
+      // The metadata the parser holds for the decorator, read as ngc reads it: an argument ngc
+      // refuses (`{ … } satisfies { … }`, NG1001) leaves nothing to read the template off.
+      const metadata = decorators.read(match.index);
+      if (!metadata) {
+        unparsed.push(`${file}: ${node.name.text}`);
+        continue;
+      }
+      const url = metadata.get('templateUrl');
+      const template = metadata.get('template');
+      const selector = metadata.get('selector');
+      const host = hostOf(metadata.get('host'));
       components.push({
         file,
         className: node.name?.text,
@@ -305,16 +325,29 @@ const readSources = (root, files) => {
         base: held.base ?? null,
         from: held.from,
         via: held.via,
-        selector: SELECTOR.exec(body)?.[2] ?? '',
-        template: TEMPLATE_URL.exec(body)?.[2] ?? null,
-        host: host === null ? new Map() : hostEntries(host),
+        selector: textOf(selector) ?? '',
+        // A selector ngc evaluates and the scanner does not read: the host tag the points
+        // below read off it is one no point could know. Read as no selector, the host passed
+        // point 4 as a custom element, which may carry a name (measured).
+        unselected: selector !== undefined && textOf(selector) === undefined,
+        template: textOf(url) ?? null,
+        // A path the scanner does not read as written: ngc evaluates the expression, a
+        // constant or a concatenation, and compiles a file this walk never opens.
+        unnamed: url !== undefined && textOf(url) === undefined,
+        // A template the decorator hands the compiler, a constant it names among them, other
+        // than an empty one: the walk reads files, and a widget drawn there is one it never
+        // examines.
+        inline: template !== undefined && textOf(template) !== '',
+        host: host ?? new Map(),
+        unhosted: host === null,
         // Off the class itself, so a second component in one file cannot lend its inputs to
         // the first.
         inputs: inputsOf(node),
       });
     }
+    unseen.push(...decorators.unseen());
   }
-  return { components, counted, unheld };
+  return { components, counted, unheld, unparsed, renamed, unseen };
 };
 
 // ── template scanner ───────────────────────────────────────────────────────────
@@ -1294,6 +1327,9 @@ const checkAria = ({
   components,
   counted,
   unheld,
+  unparsed,
+  renamed,
+  unseen,
   templates,
   documents,
   tables,
@@ -1334,13 +1370,71 @@ const checkAria = ({
         `whose base this read does not resolve; no point below may examine any of them as a ` +
         `component:\n${list(unheld)}`,
     );
-  if (components.length !== counted)
+  // The selector and the template are read off the metadata the parser holds for the decorator,
+  // as ngc reads it, and an argument ngc refuses leaves none to read them off.
+  if (unparsed.length)
     throw new AriaError(
       'denominator',
-      `${counted} component decorators in the sources, ${components.length} parsed — a ` +
-        `decorator written some other way leaves a whole component unexamined, and the ` +
-        `gate would report on the rest as though on all of them (lesson-48)`,
+      `${unparsed.length} decorator(s) where the TypeScript parser holds no decorator called ` +
+        `with an object literal — metadata that is no object literal once an \`as\` is off, ` +
+        `which ngc refuses as well (\`{ … } satisfies { … }\`, NG1001), leaves no selector ` +
+        `and no template to read:\n${list(unparsed)}`,
     );
+  // A decorator under a name of the file's own is one neither the pattern nor the counter sees,
+  // so the count below agrees without it, and the widget its template draws goes unexamined.
+  if (renamed.length)
+    throw new AriaError(
+      'denominator',
+      `${renamed.length} import(s) take \`Component\` or \`Directive\` from ` +
+        `\`@angular/core\` under another name — the pattern and the counter know a decorator ` +
+        `by \`@Component(\` and \`@Directive(\`, and ngc by the import, so a class decorated ` +
+        `so compiles and is examined by no point below; import them under their own ` +
+        `names:\n${list(renamed)}`,
+    );
+  if (unseen.length)
+    throw new AriaError(
+      'denominator',
+      `the pattern read ${components.length} of the ${counted} decorators the TypeScript ` +
+        `parser holds — a decorator written otherwise than \`@Component({\` in column zero ` +
+        `(indented, inside a namespace or a function, behind a comment on its line, or above ` +
+        `\`export default class\`, which the pattern does not take for a class) leaves ` +
+        `a whole component unexamined, and the gate would report on the rest as though on all ` +
+        `of them (lesson-48):\n${list(unseen)}`,
+    );
+  // The walk reads the template a component names by `templateUrl`, as written. One the decorator
+  // carries is drawn by no file it opens, and one named by an expression is a file ngc evaluates
+  // and the walk never finds: a widget in either passed every point below unexamined.
+  for (const component of components) {
+    if (component.inline)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) takes its template from the decorator, ` +
+          `not a file — the walk reads the file \`templateUrl\` names, so a widget drawn ` +
+          `there would be examined by no point below; move the template out to \`templateUrl\``,
+      );
+    if (component.unnamed)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) names its template file by an ` +
+          `expression, not a string — ngc evaluates it and compiles a file the walk never ` +
+          `opens; write the path as a string`,
+      );
+    if (component.unselected)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) names its selector by an expression, ` +
+          `not a string — ngc evaluates it, and the host tag the points below read off the ` +
+          `selector would be one no point knows; write the selector as a string`,
+      );
+    if (component.unhosted)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) writes a \`host\` block this read does ` +
+          `not take as written — the block given by an expression, or an entry under a ` +
+          `computed key, by shorthand or with a value that is no string, each of which ngc ` +
+          `evaluates; write each entry as a string under its name`,
+      );
+  }
 
   // What a class inherits is part of its surface: Angular merges a decorated base's inputs
   // and host bindings into the subclass, so a rule that reads one class body reads half a

@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "template",
+  "rule": "inline-template",
+  "description": "The button's template kept in a constant and handed to the decorator by shorthand, which ngc reads as the member it names and compiles (measured through ngc in partial mode and the linker for `check-parts`). The pattern that stood here wanted `template:` from the start of a line, so to this gate the declaration named no template, and point 4 refused it as `no-template`: the right point, by the rule for another defect. Read off the metadata, it is the template in the decorator it is.",
+  "drop": ["libs/components/button/src/button.html"]
+}

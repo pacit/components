@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "path-by-expression",
+  "description": "`styleUrls` handed a constant array, which ngc evaluates and compiles (measured through ngc in partial mode). The pattern wanted an array written in place and read no sheet, and point 5 refused the declaration as naming no styles. `style-url-not-a-string` holds the `styleUrl` half."
+}

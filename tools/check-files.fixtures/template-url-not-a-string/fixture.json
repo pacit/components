@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "path-by-expression",
+  "description": "`templateUrl` naming its file through a constant. ngc evaluates the expression and compiles `button.html` (measured through ngc in partial mode); this gate reads the path as written, and points 6 and 7 would hold the file to nothing. Read as text, the declaration named no template, and point 4 refused it as naming none."
+}

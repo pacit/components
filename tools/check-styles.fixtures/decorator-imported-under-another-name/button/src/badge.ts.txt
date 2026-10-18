@@ -1,0 +1,8 @@
+import { Component as Widget } from '@angular/core';
+
+@Widget({
+  selector: 'fx-button-badge',
+  template: '<span><ng-content /></span>',
+  styles: [':host { margin-left: 4px; }'],
+})
+export class FxButtonBadge {}

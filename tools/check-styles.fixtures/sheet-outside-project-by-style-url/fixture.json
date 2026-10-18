@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "sheet-outside-the-list",
+  "description": "A `styleUrl` written as a string, naming `button.css`, a sheet off the list: the `styleUrl` half of `sheet-outside-project`, which names its sheet in `styleUrls`. Each member is read on its own branch, and each needs a case."
+}

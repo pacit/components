@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+/**
+ * A component on a native element, its template the empty string, as `number.ts` and `text.ts`
+ * keep one in the library: the one template a decorator may carry, as it draws nothing. Point 1
+ * lets it stand.
+ */
+@Component({
+  selector: 'input[pctBlank]',
+  template: '',
+})
+export class PctBlank {}

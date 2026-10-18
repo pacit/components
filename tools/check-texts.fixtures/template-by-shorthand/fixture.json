@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-in-decorator",
+  "description": "A component's template kept in a constant and handed to the decorator by shorthand. ngc reads a shorthand as the member it names (`reflectObjectLiteral`) and compiles the template (measured through ngc in partial mode and the linker for `check-parts`). The pattern that stood at point 1 wanted `template:` from the start of a line, so the scanner read no template here, and the text `New` passed every point: the package read compares attributes, and a text is none. Point 1 reads the metadata as ngc does, and refuses the template as any other written into the decorator."
+}

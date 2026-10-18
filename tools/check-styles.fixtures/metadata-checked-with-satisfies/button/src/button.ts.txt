@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'fx-button',
+  template: '<button type="button"><ng-content /></button>',
+  styleUrl: './button.scss',
+} satisfies {
+  selector: string;
+  template: string;
+  styleUrl: string;
+})
+export class FxButton {}

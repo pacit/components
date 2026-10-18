@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctGroup (libs/components/widget/src/group.ts) binds `[innerHTML]` in its host block",
+  "$reason": "`markup-drawn-into-the-host` with the binding in an object spread into the host block where it is written, which ngc compiles into the host's properties as it compiles one written beside the others (measured through ngc in partial mode by the review of this change). The spread is read entry by entry, so the binding is refused as the one it spreads."
+}

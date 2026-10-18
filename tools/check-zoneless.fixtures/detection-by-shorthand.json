@@ -1,0 +1,24 @@
+{
+  "point": 6,
+  "check": "explicitness",
+  "message": "PctButton (libs/components/button/src/button.ts): changeDetection",
+  "// defect": "The default strategy restated, kept in a constant and handed to the decorator by shorthand. ngc reads a shorthand as the member it names (measured through ngc in partial mode: a strategy other than the default reaches the declaration). The pattern that stood here wanted `changeDetection:` two spaces in, so the restatement passed point 6.",
+  "files": [
+    {
+      "file": "libs/components/button/src/button.ts",
+      "lines": [
+        "import { ChangeDetectionStrategy, Component } from '@angular/core';",
+        "",
+        "/** The strategy kept in a constant, out of the decorator's body. */",
+        "const changeDetection = ChangeDetectionStrategy.OnPush;",
+        "",
+        "@Component({",
+        "  selector: 'pct-button',",
+        "  templateUrl: './button.html',",
+        "  changeDetection,",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "`host-name-on-a-presentation-role` with the host block kept in a constant and handed to the decorator by shorthand. ngc evaluates the constant and compiles its entries into the declaration (measured through ngc in partial mode); the scanner read no host here, and the named presentational host passed every point (measured by the review of this change). The gate does not evaluate expressions, so point 1 refuses a block it does not take as written."
+}

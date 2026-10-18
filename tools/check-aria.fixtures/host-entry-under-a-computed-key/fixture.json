@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "`host-name-on-a-presentation-role` with the name under a computed key, `['aria-label']:`, which ngc evaluates into the host's attributes as it does a key written as a string (measured through ngc in partial mode by the review of this change). The read takes a key by an identifier or a string, as ngc names a member of the metadata, and refuses one it does not take as written."
+}

@@ -1,0 +1,7 @@
+import * as ng from '@angular/core';
+
+@ng.Component({
+  selector: 'pct-widget-badge',
+  template: '<span role="combobox" tabindex="0"></span>',
+})
+export class PctWidgetBadge {}

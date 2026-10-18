@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "styles-in-decorator",
+  "description": "The button's styles kept in a constant and handed to the decorator by shorthand, which ngc compiles into the declaration's `styles` (measured through ngc in partial mode). The pattern that stood here wanted `styles:` from the start of a line, so the component carried no styles to point 3, and its `margin-left`, a physical property point 5 refuses in a sheet, passed every point."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget (libs/components/widget/src/widget.ts) names its template file by an expression",
+  "$reason": "`templateUrl` naming its file through a constant. ngc evaluates the expression and compiles `widget.html` (measured through ngc in partial mode), while the walk opens the file named as written. The pattern that stood here read no template off it, and the gate refused `widget.html` as a template nothing owns: a refusal, for a cause that is not the one. Point 1 says the cause."
+}

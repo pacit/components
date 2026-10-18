@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes aria-label into its host block",
+  "$reason": "`host-entries-in-a-spread-object` with the object cast with `as`, which prettier keeps and ngc evaluates into the host's attributes (measured through ngc in partial mode by the review of this change). The spread is read with the `as` and parentheses taken off, as `unwrap` takes them off a decorator's argument; read only where the object stands bare, it passed every point, where the text read before refused it."
+}

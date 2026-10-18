@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/badge.ts:3",
+  "$reason": "An internal component, exported by no entrypoint, its decorator written behind a block comment on the same line, which prettier keeps. ngc compiles it (measured through ngc in partial mode and the linker for `check-parts`); the pattern wants the decorator in column zero, and the counter that stood beside it wanted it at the start of a line past indentation, so neither saw it, and the combobox its template draws, with no name to reach it, passed every point. The parser counts it, and point 1 names it by file and line."
+}

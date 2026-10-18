@@ -38,6 +38,13 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
+import {
+  COMPONENT_ONLY,
+  decoratorsOf,
+  textOf,
+  textsOf,
+} from './decorators.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const POLICY = `${PROJECT}/files.policy.json`;
@@ -55,28 +62,22 @@ const MIN_REASON = 40;
  * The parser's anchor and the counter that does NOT repeat it. A decorator is read on the
  * formatting `nx format:check` enforces (`@Component({` and `})` in column zero), so a
  * declaration written otherwise drops out of the parse — and the only thing that can notice
- * is a second count taken differently. The counter allows indentation, which is what makes
- * the pair meaningful: repeating the anchor would put out the parser and the counter at once
- * and the gate would agree with itself about a library it had stopped reading
- * ([`lesson-48`](../docs/lessons.md#lesson-48), the same pair as in `check-styles`).
+ * is a second count taken differently. The counter is the TypeScript parser's, every
+ * `@Component` decorator at any depth of a file (`decoratorsOf`, `decorators.mjs`), which is what
+ * makes the pair meaningful: repeating the anchor would put out the parser and the counter at
+ * once and the gate would agree with itself about a library it had stopped reading
+ * ([`lesson-48`](../docs/lessons.md#lesson-48), the same pair as in `check-styles`). A pattern
+ * counted from the start of a line past indentation before, and a decorator behind a comment on
+ * its line, which prettier keeps, or imported under another name was a component neither saw.
  *
- * A `@Component(` inside a JSDoc example — `core/src/texts.ts` and `icon/src/icon.ts` both
- * carry one — is filtered by the counter's own anchor: on such a line the asterisk of the
- * comment stands between the indentation and the `@`.
+ * What the decorator names is read off its metadata as ngc reads it — `templateUrl`, `template`,
+ * `styleUrl`, `styleUrls` and `styles` by shorthand, under a quoted key or an escaped name alike
+ * — and not off the text the anchor took: patterns stood here, `template:` from the start of a
+ * line among them, and a template handed over by shorthand was a component naming no template at
+ * all to point 4, its styles one with no sheet to point 5 (measured).
  */
 const DECLARATION =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const DECLARATION_COUNT = /^[ \t]*@Component\(/gm;
-
-/** `templateUrl: './button.html'` — one string, and the decorator admits no array form. */
-const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/g;
-
-/** `styleUrl: './button.scss'` or `styleUrls: ['./a.scss', './b.scss']` — both are Angular's. */
-const STYLE_URLS = /styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g;
-
-/** The decorator's own members. `template\s*:` cannot match `templateUrl:` — the `U` is in the way. */
-const INLINE_TEMPLATE = /^\s*template\s*:/m;
-const INLINE_STYLES = /^\s*styles\s*:/m;
 
 /** A path that can be predicted without opening the directory: `./name.ext`, and nothing else. */
 const SIBLING = /^\.\/[^/]+$/;
@@ -139,33 +140,57 @@ class FilesError extends Error {
 /** The line a match starts on, so every message can send a person to a place. */
 const lineOf = (text, index) => text.slice(0, index).split('\n').length;
 
-/** The quoted strings of a `styleUrls: [...]` array, or the single string of a `styleUrl:`. */
-const styleUrlsOf = (body) =>
-  [...body.matchAll(STYLE_URLS)].flatMap(([, array, , single]) =>
-    single !== undefined
-      ? [single]
-      : [...array.matchAll(/['"]([^'"]*)['"]/g)].map((m) => m[1]),
-  );
-
 /**
  * The `@Component` declarations of one source file. A file may hold several — `breadcrumb.ts`
- * holds three — so the unit here is the declaration and its class name, not the file.
+ * holds three — so the unit here is the declaration and its class name, not the file. Beside
+ * them, what point 1 holds the read to: the decorators the anchor read where the parser holds no
+ * metadata (`unparsed`), the paths a declaration names by an expression (`expressions`), the
+ * names the file takes `Component` under (`renamed`), and the decorators the parser counted and
+ * the anchor did not read (`unseen`, `declared`).
+ *
+ * A path is read as a string written in place: `templateUrl` one, `styleUrl` one and `styleUrls`
+ * an array of them. ngc evaluates any of the three (a constant, a concatenation), and opens a file
+ * this gate would hold to no rule.
  */
 const declarationsOf = (file, text) => {
+  const decorators = decoratorsOf(file, text, COMPONENT_ONLY);
   const found = [];
+  const unparsed = [];
+  const expressions = [];
   for (const match of text.matchAll(DECLARATION)) {
-    const [, body, className] = match;
+    const [, , className] = match;
+    const line = lineOf(text, match.index);
+    const metadata = decorators.read(match.index);
+    if (!metadata) {
+      unparsed.push(`${file}:${line} — ${className}`);
+      continue;
+    }
+    const paths = (member, read) => {
+      const node = metadata.get(member);
+      if (node === undefined) return [];
+      const value = read(node);
+      if (value === undefined)
+        expressions.push(`${file}:${line} — ${className}: \`${member}\``);
+      return [value ?? []].flat();
+    };
     found.push({
       file,
       className,
-      line: lineOf(text, match.index),
-      templates: [...body.matchAll(TEMPLATE_URL)].map((m) => m[2]),
-      sheets: styleUrlsOf(body),
-      inlineTemplate: INLINE_TEMPLATE.test(body),
-      inlineStyles: INLINE_STYLES.test(body),
+      line,
+      templates: paths('templateUrl', textOf),
+      sheets: [...paths('styleUrl', textOf), ...paths('styleUrls', textsOf)],
+      inlineTemplate: metadata.has('template'),
+      inlineStyles: metadata.has('styles'),
     });
   }
-  return found;
+  return {
+    found,
+    unparsed,
+    expressions,
+    renamed: decorators.renamed.map((name) => `${file}: ${name}`),
+    unseen: decorators.unseen(),
+    declared: decorators.declared,
+  };
 };
 
 /**
@@ -272,12 +297,21 @@ const collectInput = (root, files) => {
 
   let counted = 0;
   const declarations = [];
+  const unparsed = [];
+  const expressions = [];
+  const renamed = [];
+  const unseen = [];
   const modules = new Map();
   const exportedTypes = [];
   for (const file of sources) {
     const text = readFileSync(join(root, file), 'utf8');
-    counted += (text.match(DECLARATION_COUNT) ?? []).length;
-    declarations.push(...declarationsOf(file, text));
+    const read = declarationsOf(file, text);
+    counted += read.declared;
+    declarations.push(...read.found);
+    unparsed.push(...read.unparsed);
+    expressions.push(...read.expressions);
+    renamed.push(...read.renamed);
+    unseen.push(...read.unseen);
     const exported = exportsOf(file, text);
     modules.set(file, exported);
     exportedTypes.push(...exported.types);
@@ -292,6 +326,10 @@ const collectInput = (root, files) => {
     assets,
     declarations,
     counted,
+    unparsed,
+    expressions,
+    renamed,
+    unseen,
     modules,
     exportedTypes,
     policy: readPolicy(root),
@@ -350,6 +388,10 @@ const denominator = ({
   sources,
   declarations,
   counted,
+  unparsed,
+  expressions,
+  renamed,
+  unseen,
   exportedTypes,
   policy,
 }) => {
@@ -376,14 +418,58 @@ const denominator = ({
         `components, so an empty set of them makes all four silent. Either the parse broke ` +
         `or the sources are not the library's.`,
     );
-  if (declarations.length !== counted)
+  // What a declaration names is read off the metadata the parser holds for the decorator where
+  // the anchor read its `@`, on a class at the top level of the file. Where it holds none — a
+  // comment above a class decorated otherwise, or a class inside a namespace or a function written
+  // in column zero — or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is
+  // nothing to read it off.
+  if (unparsed.length)
     throw new FilesError(
       'denominator',
-      'decorator-unparsed',
-      `the parser read ${declarations.length} of ${counted} \`@Component\` decorators — ` +
-        `the rest drop out of points 4 to 7 without a trace. Usual cause: a decorator ` +
+      'decorator-without-metadata',
+      `${unparsed.length} decorator(s) stand where the TypeScript parser holds no decorator ` +
+        `called with an object literal:\n` +
+        list(unparsed) +
+        `\n    A decorator in a comment above a class decorated otherwise, one on a class ` +
+        `below the top level of the file (inside a namespace or a function) written in ` +
+        `column zero, or metadata that is no object literal once an \`as\` is off, which ` +
+        `ngc refuses as well: points 4 to ` +
+        `7 read a declaration's files off that object, and here it has none.`,
+    );
+  // A decorator under a name of the file's own is one neither the anchor nor the counter sees, so
+  // the count below agrees without it, and its template and styles answer to no point.
+  if (renamed.length)
+    throw new FilesError(
+      'denominator',
+      'decorator-under-another-name',
+      `${renamed.length} import(s) take \`Component\` from \`@angular/core\` under another ` +
+        `name:\n` +
+        list(renamed) +
+        `\n    The anchor and the counter know a decorator by \`@Component(\`, and ngc by ` +
+        `the import: a component decorated so compiles, and points 4 to 7 never read it. ` +
+        `Import it under its own name.`,
+    );
+  if (unseen.length)
+    throw new FilesError(
+      'denominator',
+      'decorator-unseen',
+      `the anchor read ${declarations.length} of the ${counted} \`@Component\` decorators ` +
+        `the TypeScript parser holds, and not these:\n` +
+        list(unseen) +
+        `\n    They drop out of points 4 to 7 without a trace. Usual cause: a decorator ` +
         `written otherwise than prettier formats it (\`@Component({\` and \`})\` in column ` +
-        `zero).`,
+        `zero): indented, inside a namespace or a function, behind a comment on its line, or ` +
+        `above \`export default class\`, which the anchor does not take for a class.`,
+    );
+  if (expressions.length)
+    throw new FilesError(
+      'denominator',
+      'path-by-expression',
+      `${expressions.length} declaration(s) name a file by an expression, not a string:\n` +
+        list(expressions) +
+        `\n    ngc evaluates the expression and compiles the file it gives; this gate reads ` +
+        `the path as written, so points 6 and 7 would hold that file to nothing. Write the ` +
+        `path as a string.`,
     );
   if (!exportedTypes.length)
     throw new FilesError(

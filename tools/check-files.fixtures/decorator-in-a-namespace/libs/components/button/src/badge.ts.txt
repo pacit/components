@@ -1,0 +1,9 @@
+import { Component } from '@angular/core';
+
+export namespace legacy {
+  @Component({
+    selector: 'fx-button-badge',
+    template: '<span><ng-content /></span>',
+  })
+  export class FxButtonBadge {}
+}

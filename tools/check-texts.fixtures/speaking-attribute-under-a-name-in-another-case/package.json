@@ -60,6 +60,11 @@
           "Note"
         ]
       ]
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctBlank",
+      "attributes": []
     }
   ]
 }

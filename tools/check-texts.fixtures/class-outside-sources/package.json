@@ -61,6 +61,11 @@
       "entrypoint": "./widget",
       "className": "PctWidgetHeader",
       "attributes": []
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctBlank",
+      "attributes": []
     }
   ]
 }

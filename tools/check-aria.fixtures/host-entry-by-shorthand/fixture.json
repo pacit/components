@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "`host-name-on-a-presentation-role` with the role handed to the host block by shorthand from a constant, which ngc evaluates into the host's attributes. The pattern that read the block wanted a value written as a string and read no role, so the host stood as one with no role; point 2 refused it, by the reading of a role the host does not lack. An entry with no key of its own fails point 1 now, as do a computed key (`host-entry-under-a-computed-key`) and a value that is no string (`host-value-from-a-constant`)."
+}

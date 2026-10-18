@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/badge.ts: Component as Widget",
+  "$reason": "An internal component decorated through `Component` imported under another name. ngc follows the import and compiles it (measured through ngc in partial mode and the linker for `check-parts`), while the pattern and the counter know a decorator by `@Component(` and saw none, so no point read the component, and the combobox its template draws, with no name to reach it, passed every point."
+}

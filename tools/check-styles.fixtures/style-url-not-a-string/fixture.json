@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "sheet-by-expression",
+  "description": "A `styleUrl` naming `button.css` through a constant: a sheet off this gate's list, which holds `.scss` alone. ngc evaluates the expression and compiles the sheet (measured through ngc in partial mode). Read as text, the component named no sheet, and its `margin-left` passed every point."
+}

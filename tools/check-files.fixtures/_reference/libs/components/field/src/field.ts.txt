@@ -1,8 +1,12 @@
 import { Component } from '@angular/core';
 
+/**
+ * Its sheet named in an array, `styleUrls`, which Angular reads beside `styleUrl` and the library
+ * does not write: the gate reads both.
+ */
 @Component({
   selector: 'fx-field',
   templateUrl: './field.html',
-  styleUrl: './field.scss',
+  styleUrls: ['./field.scss'],
 })
 export class FxField {}

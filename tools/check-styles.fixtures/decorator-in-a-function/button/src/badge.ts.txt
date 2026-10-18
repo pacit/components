@@ -1,0 +1,13 @@
+import { Component, Type } from '@angular/core';
+
+/** A badge a factory builds, its component declared inside the function. */
+export function makeBadge(): Type<unknown> {
+  @Component({
+    selector: 'fx-button-badge',
+    template: '<span><ng-content /></span>',
+    styles: [':host { margin-left: 4px; }'],
+  })
+  class FxButtonBadge {}
+
+  return FxButtonBadge;
+}

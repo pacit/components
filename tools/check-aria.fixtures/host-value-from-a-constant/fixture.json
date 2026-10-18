@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "`host-name-on-a-presentation-role` with the name's value kept in a constant, under a key written as a string. ngc evaluates the constant into the host's attributes (measured through ngc in partial mode by the review of this change). The text read that stood here wanted a value written as a string and read no name, so the named presentational host passed every point (measured by the review of this change); a value the read does not take as written fails point 1 now. `host-entry-by-shorthand` holds the same refusal for an entry with no key of its own."
+}

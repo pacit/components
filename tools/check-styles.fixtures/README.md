@@ -60,33 +60,52 @@ not be another's defect — the same class of problem as the fake `package.json`
 
 ## The cases
 
-| directory                                                            | what it breaks                                                  | point |
-| -------------------------------------------------------------------- | --------------------------------------------------------------- | ----- |
-| [`no-sheets`](no-sheets)                                             | not one sheet to examine                                        | 1     |
-| [`style-via-mixin`](style-via-mixin)                                 | `padding-left` composed by interpolation, invisible in the text | 2     |
-| [`no-components`](no-components)                                     | not one `@Component` — zero equal to zero                       | 3     |
-| [`decorator-past-parser`](decorator-past-parser)                     | a decorator past the parser's anchor                            | 3     |
-| [`style-in-decorator`](style-in-decorator)                           | `styles: [...]` instead of a sheet                              | 3     |
-| [`sheet-outside-project`](sheet-outside-project)                     | a `styleUrl` at a sheet outside the list                        | 3     |
-| [`exception-without-justification`](exception-without-justification) | an exception marker with no reason                              | 4     |
-| [`exception-without-use`](exception-without-use)                     | the marker names a property other than the one under it         | 4     |
-| [`physical-padding`](physical-padding)                               | `padding-left`                                                  | 5     |
-| [`physical-text-align`](physical-text-align)                         | `text-align: left` — a physical VALUE, not a name               | 5     |
-| [`partial-opacity`](partial-opacity)                                 | `opacity: 0.6` on a state                                       | 6     |
-| [`opacity-from-variable`](opacity-from-variable)                     | `opacity: var(...)` — an undecidable value                      | 6     |
-| [`forced-colors-outranked`](forced-colors-outranked)                 | a rule of forced-colors mode shorter than the base rule's       | 7     |
-| [`paint-inside-an-icon`](paint-inside-an-icon)                       | `stroke` on the drawing a consumer may replace                  | 8     |
-| [`duration-literal`](duration-literal)                               | `transition: … 150ms` — a component keeping its own time        | 9     |
-| [`motion-query-in-a-sheet`](motion-query-in-a-sheet)                 | a sheet answering `prefers-reduced-motion` a second time        | 9     |
-| [`touch-floor-token-gone`](touch-floor-token-gone)                   | no token resolves to the floor — the scan has nothing to find   | 10    |
-| [`touch-floor-applied-nowhere`](touch-floor-applied-nowhere)         | the tokens carry the floor and no sheet applies it              | 10    |
-| [`touch-floor-unmeasured`](touch-floor-unmeasured)                   | a second element takes the floor and no measurement names it    | 10    |
-| [`touch-floor-measurement-adrift`](touch-floor-measurement-adrift)   | a measurement names a floor no sheet declares                   | 10    |
+| directory                                                                                          | what it breaks                                                     | point |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ----- |
+| [`no-sheets`](no-sheets)                                                                           | not one sheet to examine                                           | 1     |
+| [`style-via-mixin`](style-via-mixin)                                                               | `padding-left` composed by interpolation, invisible in the text    | 2     |
+| [`no-components`](no-components)                                                                   | not one `@Component` — zero equal to zero                          | 3     |
+| [`decorator-past-parser`](decorator-past-parser)                                                   | a decorator past the pattern's anchor, which the parser counts     | 3     |
+| [`decorator-behind-a-comment-on-its-line`](decorator-behind-a-comment-on-its-line)                 | a decorator behind a comment on its line, which no pattern counted | 3     |
+| [`decorator-in-a-namespace`](decorator-in-a-namespace)                                             | a component inside a namespace                                     | 3     |
+| [`decorator-in-a-function`](decorator-in-a-function)                                               | a component inside a function                                      | 3     |
+| [`decorator-imported-under-another-name`](decorator-imported-under-another-name)                   | `@Widget({…})` over `Component as Widget`                          | 3     |
+| [`angular-imported-as-a-namespace`](angular-imported-as-a-namespace)                               | `@ng.Component({…})` over a namespace import                       | 3     |
+| [`decorator-in-a-comment-above-another-decorator`](decorator-in-a-comment-above-another-decorator) | a decorator in a comment above a service                           | 3     |
+| [`metadata-checked-with-satisfies`](metadata-checked-with-satisfies)                               | metadata ngc refuses (NG1001), read by the anchor                  | 3     |
+| [`style-in-decorator`](style-in-decorator)                                                         | `styles: [...]` instead of a sheet                                 | 3     |
+| [`styles-by-shorthand`](styles-by-shorthand)                                                       | styles handed to the decorator by shorthand, `styles,`             | 3     |
+| [`styles-under-a-quoted-key`](styles-under-a-quoted-key)                                           | styles under a quoted key, `'styles':`                             | 3     |
+| [`styles-under-an-escaped-name`](styles-under-an-escaped-name)                                     | styles under an escaped name, `st\u0079les:`                       | 3     |
+| [`style-url-not-a-string`](style-url-not-a-string)                                                 | a `styleUrl` through a constant, at a `.css` off the list          | 3     |
+| [`style-urls-not-strings`](style-urls-not-strings)                                                 | a constant beside a string in `styleUrls`                          | 3     |
+| [`sheet-outside-project`](sheet-outside-project)                                                   | a `styleUrls` entry at a sheet outside the list                    | 3     |
+| [`sheet-outside-project-by-style-url`](sheet-outside-project-by-style-url)                         | a `styleUrl` at a sheet outside the list                           | 3     |
+| [`exception-without-justification`](exception-without-justification)                               | an exception marker with no reason                                 | 4     |
+| [`exception-without-use`](exception-without-use)                                                   | the marker names a property other than the one under it            | 4     |
+| [`physical-padding`](physical-padding)                                                             | `padding-left`                                                     | 5     |
+| [`physical-text-align`](physical-text-align)                                                       | `text-align: left` — a physical VALUE, not a name                  | 5     |
+| [`partial-opacity`](partial-opacity)                                                               | `opacity: 0.6` on a state                                          | 6     |
+| [`opacity-from-variable`](opacity-from-variable)                                                   | `opacity: var(...)` — an undecidable value                         | 6     |
+| [`forced-colors-outranked`](forced-colors-outranked)                                               | a rule of forced-colors mode shorter than the base rule's          | 7     |
+| [`paint-inside-an-icon`](paint-inside-an-icon)                                                     | `stroke` on the drawing a consumer may replace                     | 8     |
+| [`duration-literal`](duration-literal)                                                             | `transition: … 150ms` — a component keeping its own time           | 9     |
+| [`motion-query-in-a-sheet`](motion-query-in-a-sheet)                                               | a sheet answering `prefers-reduced-motion` a second time           | 9     |
+| [`touch-floor-token-gone`](touch-floor-token-gone)                                                 | no token resolves to the floor — the scan has nothing to find      | 10    |
+| [`touch-floor-applied-nowhere`](touch-floor-applied-nowhere)                                       | the tokens carry the floor and no sheet applies it                 | 10    |
+| [`touch-floor-unmeasured`](touch-floor-unmeasured)                                                 | a second element takes the floor and no measurement names it       | 10    |
+| [`touch-floor-measurement-adrift`](touch-floor-measurement-adrift)                                 | a measurement names a floor no sheet declares                      | 10    |
 
-Point 3 has four cases, because there are four different routes by which a component
-disappears from the measurement: it is not in the file list, the parser does not see it,
-it is styled outside a sheet, or it points at a sheet the gate does not read. Each ends
-the run green and each leaves a repository that looks sensible.
+Point 3 has seventeen cases, because there are that many routes by which a component
+disappears from the measurement, in four families: it is not in the file list; the read does
+not see it — past the pattern's anchor, behind a comment on its line, inside a namespace or a
+function, imported under another name, or read where the parser holds no metadata; it is styled
+outside a sheet, its styles handed to the decorator in any spelling ngc reads; or it points at a
+sheet the gate does not read, by `styleUrl` or by `styleUrls`, as a string or through an
+expression. Each would end the run green with no case to refuse it, and each leaves a repository
+that looks sensible. While the decorator was read with patterns, the two nestings were refused
+by the old counter, from their indentation, a `styleUrl` written as a string and off the list
+was refused as `sheet-outside-project` is, and the other new routes passed.
 
 Point 10 has four for the same reason, and its first two are its own denominator: the floor
 has to be findable in the tokens before it can be found in a sheet, and found in a sheet
@@ -108,7 +127,9 @@ the comparison "recognised N of M" is blind to zero. `decorator-past-parser` exi
 because the decorator counter repeated the parser's anchor character for character — a
 shift of one space put out both sides of the comparison at once. Both are described by
 [`lesson-48`](../../docs/lessons.md#lesson-48); the second sat in `check-zoneless` too and
-was fixed together with this one.
+was fixed together with this one. The counter is the TypeScript parser's now
+(`tools/decorators.mjs`), every `@Component` decorator at any depth of a file, and a decorator
+the pattern did not read is named by file and line.
 
 ## Adding a new check to the gate
 
