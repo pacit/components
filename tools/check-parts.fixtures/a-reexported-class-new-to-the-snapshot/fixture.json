@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "snapshot",
+  "message": "the inventory snapshot has drifted from the current one:\n    added to the API (2):\n      ./wrap PctWidget label\n      ./wrap PctWidget value\n",
+  "$reason": "`./wrap` re-exports `PctWidget` and its card lists the class's parts, which stands: a consumer imports the class from either entrypoint. The snapshot was not rewritten, and the rows it lacks are the two of `./wrap` and nothing else — a class two entrypoints export is in the inventory once per entrypoint, as point 4 counts it."
+}

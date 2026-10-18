@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "shared-package-name",
+  "message": "PctBlank: ./widget, ./other and ./wrap",
+  "description": "`./other` exports a second object named `PctBlank`, and `./wrap` re-exports it — the class bundled into another entrypoint, a copy beside the original, named once with each entrypoint that exports it. To a consumer the two are two classes; the comparison with the sources keeps one class per name, and read by name it held the attributes of both against the one `PctBlank` of the sources."
+}

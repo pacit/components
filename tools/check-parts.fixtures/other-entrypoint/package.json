@@ -2,7 +2,8 @@
   "entrypoints": [
     ".",
     "./widget",
-    "./marker"
+    "./marker",
+    "./other"
   ],
   "classes": [
     {
@@ -15,8 +16,17 @@
       "dynamic": 0
     },
     {
-      "entrypoint": "./marker",
       "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./marker",
+          "as": "PctMarker"
+        },
+        {
+          "entrypoint": "./other",
+          "as": "PctMarker"
+        }
+      ],
       "declaration": {
         "kind": "Directive",
         "selector": "[pctMarker]",

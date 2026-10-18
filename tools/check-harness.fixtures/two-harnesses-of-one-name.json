@@ -1,0 +1,20 @@
+{
+  "point": 1,
+  "check": "set",
+  "why": "./testing exports a second harness class whose own name is PctButtonHarness, under the key PctButtonAgainHarness, beside the real one exported as PctBtnHarness too; the refusal names each harness once, with all of its keys. A harness is named by its own name, as its declaration is, so point 5 would hold both to the one `declare class PctButtonHarness` and the second to a list that is not its own.",
+  "harnesses": {
+    "PctButtonAgainHarness": {
+      "className": "PctButtonHarness",
+      "hostSelector": "pct-button-again",
+      "parts": []
+    }
+  },
+  "message": "1 names are borne by more than one harness of `./testing`:\n      PctButtonHarness: exported as `PctBtnHarness` and `PctButtonHarness`, `PctButtonAgainHarness`",
+  "reexport": [
+    {
+      "entrypoint": "./testing",
+      "exportedAs": "PctButtonHarness",
+      "as": "PctBtnHarness"
+    }
+  ]
+}

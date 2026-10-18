@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "documentation",
+  "message": "`./other` exposes 2 parts and has no card at all",
+  "$reason": "`./other` re-exports `PctWidget` — the same class, one object — and has no card. Point 2 passes it: the class sits in `./widget`, which exports it. Point 4 counts its parts in both entrypoints, because a consumer imports it from both, so `./other` exposes them and no card lists them. By export record the re-export was a second class, and the comparison by name kept whichever entrypoint came last: `./other` read after `./widget` refused the class as exported from somewhere else, and read before it passed with no card."
+}

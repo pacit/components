@@ -1,0 +1,8 @@
+<!-- The reference's deferred badge, its placeholder drawing a badge and a dot: two tags the walk
+     reaches through a side block it is handed, and the tag reader, its visit of a placeholder
+     taken, never meets. -->
+@defer (on idle) {
+<span class="pct-marker__badge">New</span>
+} @placeholder {
+<span class="pct-marker__badge"></span><span class="pct-marker__dot"></span>
+}
