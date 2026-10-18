@@ -54,9 +54,9 @@
 </div>
 }
 
-<!-- One message line, the error's role bound through an attribute named in capitals. -->
+<!-- One message line, the error's `alert` written and a role bound beside it in capitals. -->
 @if (showError()) {
-<span class="pct-widget__error" data-pct-part="error" [attr.ROLE]="error() ? 'alert' : null">{{ error() }}</span>
+<span class="pct-widget__error" data-pct-part="error" role="alert" [attr.ROLE]="error() ? 'alert' : null">{{ error() }}</span>
 } @else if (hint()) {
 <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
 }

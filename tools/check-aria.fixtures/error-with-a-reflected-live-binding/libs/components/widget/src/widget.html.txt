@@ -54,9 +54,9 @@
 </div>
 }
 
-<!-- One message line, the error's politeness bound through the property that reflects it. -->
+<!-- One message line, the error's `alert` written and its politeness bound through the property that reflects it. -->
 @if (showError()) {
-<span class="pct-widget__error" data-pct-part="error" [ariaLive]="error() ? 'assertive' : null">{{ error() }}</span>
+<span class="pct-widget__error" data-pct-part="error" role="alert" [ariaLive]="error() ? 'assertive' : 'off'">{{ error() }}</span>
 } @else if (hint()) {
 <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
 }

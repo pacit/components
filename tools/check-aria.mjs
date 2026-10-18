@@ -95,12 +95,14 @@ const LIVE_ATTRIBUTE = 'role';
 const LIVE_ROLES = { error: 'alert', warning: 'status' };
 /**
  * The names a binding writes the live region under, as `boundOn` reads them: in whatever syntax
- * and case, `[attr.ROLE]` a `role` and `[ariaLive]` an `aria-live`. A role arriving from an
- * expression is a value the template does not hold, so point 7 reports it rather than reading it
- * — beside a written one too, which the binding replaces — the alternative would be to pass on
- * a role nobody has seen. The set once named each in two forms, `attr.role` beside `role`, of
- * which the tree holds one (`[attr.role]` is an input named `role`), and compared it as written:
- * `[attr.ROLE]` and `[ariaLive]` were no binding to it.
+ * and case, `[attr.ROLE]` a `role` and `[ariaLive]` an `aria-live` — and, as everywhere in the
+ * walk, a class or a style binding of the name, which writes neither. A role or a politeness
+ * arriving from an expression is a value the template does not hold, so point 7 reports it
+ * rather than reading it — beside a written role too, which a bound role replaces and a bound
+ * `aria-live` overrides — the alternative would be to pass on a region nobody has seen. The set
+ * once named each in two forms and compared them as written: `attr.role` beside `role`, though
+ * `[attr.role]` is an input named `role` and an input named `attr.role` is `[attr.attr.role]`,
+ * an attribute of that name and no role; `[attr.ROLE]` and `[ariaLive]` were no binding to it.
  */
 const BOUND_LIVE = ['role', 'aria-live'];
 /**
@@ -815,10 +817,14 @@ const setsProperty = (input) =>
 /**
  * An attribute written on a node, by the name the DOM gives it and with the value the parser
  * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
- * of that name, in whatever syntax. One reading for the walk and the tag reader below.
+ * of that name, in whatever syntax. One reading for the walk and the tag reader below, and
+ * every value written under the name for what counts them (`allWrittenOn`).
  */
-const writtenOn = (node, name) =>
-  (node.attributes ?? []).findLast((a) => nameOf(a.name) === name)?.value;
+const allWrittenOn = (node, name) =>
+  (node.attributes ?? [])
+    .filter((a) => nameOf(a.name) === name)
+    .map((a) => a.value);
+const writtenOn = (node, name) => allWrittenOn(node, name).at(-1);
 const boundOn = (node, name) =>
   (node.inputs ?? []).filter((i) => nameOf(i.name, setsProperty(i)) === name);
 /**
@@ -1059,19 +1065,28 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // The part and its role were read as the first attribute of that exact name: a
     // `role="status"` after the error's `alert`, a `ROLE="status"`, and a part written
     // `DATA-PCT-PART` — which the DOM holds as the attribute the styling API names — all
-    // passed point 7 on what the DOM does not end with.
-    const part = written(PART_ATTRIBUTE);
-    if (part && MESSAGE_PART.test(part))
-      state.messages.push({
-        part,
-        path,
-        // Point 7 reads the STATIC attribute, and records separately whether a binding
-        // writes the same name. An expression's value is not in the template, so a bound
-        // role is neither a pass nor a violation to a reader of the source — it is a thing
-        // this gate cannot judge, and it says so instead of guessing.
-        role: written(LIVE_ATTRIBUTE) ?? null,
-        boundRole: BOUND_LIVE.some((name) => bindings(name).length > 0),
-      });
+    // passed point 7 on what the DOM does not end with. And on any node: an inline template
+    // (`*ngIf`) holds a copy of its element's attributes, so the part was read twice, and one
+    // written on an `<ng-template>` passed for a part no element carries. Only an element
+    // carries a part to the DOM. Each message part written on it is counted for the
+    // denominator, which counts them in the text, where two on one tag are two.
+    if (isElement(node)) {
+      state.parts += allWrittenOn(node, PART_ATTRIBUTE).filter((value) =>
+        MESSAGE_PART.test(value),
+      ).length;
+      const part = written(PART_ATTRIBUTE);
+      if (part && MESSAGE_PART.test(part))
+        state.messages.push({
+          part,
+          path,
+          // Point 7 reads the STATIC attribute, and records separately whether a binding
+          // writes the role or the politeness. An expression's value is not in the template,
+          // so a bound one is no pass to a reader of the source — it is a thing this gate
+          // cannot judge, and it refuses it saying so instead of guessing.
+          role: written(LIVE_ATTRIBUTE) ?? null,
+          boundLive: BOUND_LIVE.some((name) => bindings(name).length > 0),
+        });
+    }
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
     // Point 4 takes from the same element what the tag scan cannot read for itself.
@@ -1190,6 +1205,7 @@ const readMessages = (file, content, sides, reads) => {
     reads,
     blocks: 0,
     messages: [],
+    parts: 0,
     paths: new Map(),
     within: new Map(),
     roles: [],
@@ -1202,6 +1218,7 @@ const readMessages = (file, content, sides, reads) => {
   }
   return {
     messages: state.messages,
+    parts: state.parts,
     paths: state.paths,
     within: state.within,
     roles: state.roles,
@@ -1728,11 +1745,15 @@ const checkAria = ({
           `element inside or around the container, or bind the directive's input ` +
           `(\`[name]="'…'"\`), which the compiler refuses where no directive takes it (NG8002)`,
       );
-    if (said.messages.length !== said.counted)
+    // Part attributes on both sides, not elements: the text holds two where a tag carries
+    // two, and the walk, which reads the last, held one, so a part written over another
+    // was refused here for a block the walk skipped, and the right part never reached
+    // point 7.
+    if (said.parts !== said.counted)
       throw new AriaError(
         'denominator',
         `${template.file}: ${said.counted} message part(s) in the text, ` +
-          `${said.messages.length} walked — a part the walk does not reach is a part point 6 ` +
+          `${said.parts} walked — a part the walk does not reach is a part point 6 ` +
           `does not examine`,
       );
     byPath.get(template.file).said = said.messages;
@@ -2155,24 +2176,25 @@ const checkAria = ({
       if (!kind) continue;
       const liveRole = LIVE_ROLES[kind];
       // A binding beside the written role is the one the DOM ends with: Angular sets it after
-      // the static attributes, and a `null` takes the role off. Asked only where the written
-      // role was wrong, it was never asked where it decides, and `role="alert" [attr.role]="…"`
-      // passed.
-      if (!message.boundRole && message.role === liveRole) {
+      // the static attributes, and a `null` takes the role off; a bound `aria-live` overrides
+      // the politeness the role implies. Asked only where the written role was wrong, it was
+      // never asked where it decides, and `role="alert" [attr.role]="…"` passed.
+      if (!message.boundLive && message.role === liveRole) {
         announced++;
         continue;
       }
       throw new AriaError(
         'announcement',
         `${template.file}: \`${message.part}\` carries ` +
-          (message.boundRole
+          (message.boundLive
             ? `a BOUND \`role\` or \`aria-live\`, so what it announces with is not in the template`
             : message.role === null
               ? `no \`role\``
               : `\`role="${message.role}"\``) +
           ` — a validation message enters the DOM with nobody pointed at it, so the text the ` +
           `user reads has to be the live region that speaks it: \`role="${liveRole}"\` on ` +
-          `a ${kind}, written as a plain attribute (req-a11y-built-in)`,
+          `the ${kind} part, written as a plain attribute and bound by nothing ` +
+          `(req-a11y-built-in)`,
       );
     }
 

@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "carries a BOUND `role` or `aria-live`",
-  "$reason": "An error part whose role a binding writes, `[attr.ROLE]`, which `setAttribute` takes as `role`. The template does not hold the value, so point 7 says it cannot judge it. It compared the binding's name as written against `role` and `attr.role`, so the binding in capitals was none, and the refusal said the part carried no role at all; the name is read as `boundOn` reads it now, in any case and any syntax."
+  "$reason": "The reference's error part with its `alert` written and `[attr.ROLE]` bound beside it, which `setAttribute` takes as `role` and sets after the static attributes: the DOM ends with what the expression gives, and a `null` takes the role off. Point 7 compared a binding's name as written against `role` and `attr.role`, so the binding in capitals was none, and the written `alert` passed. The name is read as `boundOn` reads it now, in any case and any syntax."
 }
