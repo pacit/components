@@ -27,6 +27,16 @@ export const DECORATORS = new Set(['Component', 'Directive']);
 export const COMPONENT_ONLY = new Set(['Component']);
 
 /**
+ * An expression with an `as` and parentheses taken off, as ngc's `unwrapExpression` takes them off
+ * a decorator's argument.
+ */
+export const unwrap = (node) =>
+  node !== undefined &&
+  (ts.isAsExpression(node) || ts.isParenthesizedExpression(node))
+    ? unwrap(node.expression)
+    : node;
+
+/**
  * The text of a member written as a string ngc evaluates as it stands — `'…'`, `"…"` or a template
  * with no substitution — or `undefined` for any other expression, which ngc evaluates (a constant,
  * a concatenation) and no gate reads.
@@ -83,11 +93,6 @@ export const decoratorsOf = (file, content, kinds = DECORATORS) => {
     ts.ScriptTarget.Latest,
     true,
   );
-  const unwrap = (node) =>
-    node !== undefined &&
-    (ts.isAsExpression(node) || ts.isParenthesizedExpression(node))
-      ? unwrap(node.expression)
-      : node;
   const metadataOf = ({ expression }) => {
     const meta = ts.isCallExpression(expression)
       ? unwrap(expression.arguments[0])

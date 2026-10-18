@@ -44,7 +44,7 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
-import { decoratorsOf, textOf } from './decorators.mjs';
+import { decoratorsOf, textOf, unwrap } from './decorators.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -229,22 +229,21 @@ const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
  * text stood here, `host: {` from the start of a line, and a block under a quoted key, under an
  * escaped name or by shorthand passed every point (measured; ngc compiles each).
  *
- * A spread of an object written in place is read as its entries, in order, as the text read
- * before took them. A spread of anything else — a constant, a call — is passed over, as it was,
- * and that is a hole of this gate's own: the others meet such an entry in their package read, and
- * this one has none. The library spreads one constant, `fitHost` in `field/src/affix.ts`, a data
- * attribute and a style.
+ * A spread of an object written in place, an `as` and parentheses taken off, is read as its
+ * entries, in order, as the text read before took them. A spread of a constant by its name is
+ * passed over, as it was, and that is a hole of this gate's own: the others meet such an entry in
+ * their package read, and this one has none. The library spreads one constant, `fitHost` in
+ * `field/src/affix.ts`, a data attribute and a style. A spread of anything else — a condition, a
+ * call — is a block this read does not take as written.
  */
 const hostOf = (node, entries = new Map()) => {
   if (node === undefined) return entries;
   if (!ts.isObjectLiteralExpression(node)) return null;
   for (const entry of node.properties) {
     if (ts.isSpreadAssignment(entry)) {
-      if (
-        ts.isObjectLiteralExpression(entry.expression) &&
-        hostOf(entry.expression, entries) === null
-      )
-        return null;
+      const spread = unwrap(entry.expression);
+      if (ts.isIdentifier(spread)) continue;
+      if (hostOf(spread, entries) === null) return null;
       continue;
     }
     const value =

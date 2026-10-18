@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "The role and the name spread into the host block from a condition, which ngc evaluates into the host's attributes (measured through ngc in partial mode by the review of this change). The read takes a spread of an object written in place and passes over one of a constant by its name; any other spread is a block it does not take as written, and point 1 refuses it. Passed over, it let the named presentational host through every point."
+}
