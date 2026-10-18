@@ -2,5 +2,5 @@
   "point": 2,
   "check": "set",
   "message": "PctBadge (libs/components/widget/src/badge.ts): parts in the sources, and no such class in the package — widget-badge\n",
-  "$reason": "`class-without-export` with the host block kept in a constant and handed to the decorator by shorthand. ngc evaluates the constant and compiles the part into `hostAttrs` (measured through ngc in partial mode and the linker). The package read visits the classes an entrypoint exports and no other, and the pattern that read the host off the decorator's text saw none here, so the part passed every point on a class a component of the library can still render. The read follows a name to a `const` of the file's own, and the part reaches point 2."
+  "$reason": "`class-without-export` with the host block kept in a constant and handed to the decorator by shorthand. ngc evaluates the constant and compiles the part into `hostAttrs` (measured through ngc in partial mode and the linker). The package read visits the classes an entrypoint exports and no other, and the pattern that read the host off the decorator's text saw none here, so the part passed every point on a class a component of the library can still render. The read follows a name to a `const` of the file's own, the constant here the second declarator of its statement, and the part reaches point 2."
 }

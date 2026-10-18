@@ -72,24 +72,27 @@ const constantOf = (name) => {
 };
 
 /**
- * A `host` block as ngc composes it, for every gate that reads one: `entries`, `[key, value]` in
- * order, each named as `reflectObjectLiteral` names a member (an identifier or a string, by its
- * text) and its value written as a string, and `followed`, the object literals the read reached
- * through a name, for a gate counting over their text. ngc hands the block to its partial
- * evaluator, which composes it from whatever it can evaluate: a constant by shorthand (`host,`) or
- * by name, a spread of a constant, an import, a member, a condition or a call, a computed key, a
- * value kept in a constant. Each of these compiled into `hostAttrs` (measured through ngc in
- * partial mode and the linker), and a regex over the decorator read none of them.
+ * A `host` block as ngc composes it, for every gate that reads one: `entries`, `[key, value]`, and
+ * `followed`, the object literals the read reached through a name, for a gate counting over their
+ * text. ngc hands the block to its partial evaluator, which composes it from whatever it can
+ * evaluate: a constant by shorthand (`host,`) or by name, a spread of a constant, an import, a
+ * member, a condition or a call, a computed key, a value kept in a constant. Each of these
+ * compiled into `hostAttrs` (measured through ngc in partial mode and the linker), and a regex
+ * over the decorator read none of them. The evaluator keys an entry by its name's text, so an
+ * escape is resolved, and a later entry of a key stands over an earlier one in its place, so
+ * `{ ...shared, title: '*' }` sets one `title` (measured); the entries are composed alike.
  *
  * So the read takes an object literal written in place and follows a name to a `const` the file
  * declares at its top level whose value is an object literal, as the block or as a spread in it,
- * an `as` and parentheses taken off either. Any other block, entry or spread makes it `null`, a
- * block this read does not take as written, which a gate refuses at point 1. ngc itself refuses
- * an accessor and a `satisfies` (NG1010), and a constant spread into itself, directly or through
- * another, is one TypeScript refuses (TS2448), so none of them reaches a gate.
+ * an `as` and parentheses taken off either, under keys written as an identifier or a string and
+ * values written as strings. Any other block, entry or spread makes it `null`, a block this read
+ * does not take as written, which a gate refuses at point 1: among them some ngc composes, a `!`
+ * or a constant naming another, which the library writes nowhere. ngc itself refuses an accessor,
+ * a `satisfies` and a `<T>` assertion (NG1010), and a constant spread into itself, directly or
+ * through another, is one TypeScript refuses (TS2448), so none of them reaches a gate.
  */
 export const hostOf = (node) => {
-  const entries = [];
+  const entries = new Map();
   const followed = [];
   const objectOf = (expression) => {
     const object = unwrap(expression);
@@ -113,11 +116,13 @@ export const hostOf = (node) => {
           ? textOf(entry.initializer)
           : undefined;
       if (value === undefined) return false;
-      entries.push([entry.name.text, value]);
+      entries.set(entry.name.text, value);
     }
     return true;
   };
-  return node === undefined || read(node) ? { entries, followed } : null;
+  return node === undefined || read(node)
+    ? { entries: [...entries], followed }
+    : null;
 };
 
 /**

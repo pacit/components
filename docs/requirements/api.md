@@ -648,11 +648,12 @@ of parts is built **twice** — from the sources and from the built package (`ɵ
 host function and its bases'); a class of the package is the object an entrypoint exports, under
 its own name, so a re-export or a second name is one class, counted in every entrypoint that
 exports it, and a name two objects of the package bear is refused
-**Control:** `tools/check-parts.fixtures/` — 85 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 87 inputs, each rejected on its own
 point and by the refusal its `message` names, as point 1 refuses sixteen ways, the reference
 exporting a class under two names and one under a name not its own; among them a part in a
-`host` block handed over by shorthand or spread from a constant, on a class no entrypoint exports
-(both passed), and one spread from an import or a `let`; a class two
+`host` block handed over by shorthand or spread from a constant, on a class no entrypoint exports,
+and one whose name is in capitals behind an escape (all three passed), one spread from an import
+or a `let`, and one written over the part a spread brings; a class two
 entrypoints export (refused at point 4 for the card the second lacks, and at point 5 for its
 rows), a name standing for a decorated class no entrypoint exports (which passed, read by export
 key), the same with the name in another entrypoint, a class the package draws no part of, a class the sources lack exported by two entrypoints, and two classes of one name in the package; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,

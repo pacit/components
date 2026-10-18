@@ -2,5 +2,5 @@
   "point": 3,
   "check": "template",
   "rule": "speaking-attribute",
-  "description": "A speaking attribute with a word, in an object spread into the widget's `host` block, the shape `...fitHost` has in `field/src/affix.ts`, its key written `ARIA-LABEL`. The linker carries it into `hostAttrs` as written (measured through ngc in partial mode) and the DOM gives the host `aria-label`. The regex that read the block passed the spread over, and the attribute reached point 2 as one the package alone carries; on a class no entrypoint exports it passed every point. The read follows a `const` of the file's own now (`hostOf`), the two reads agree, and point 3 refuses the word."
+  "description": "A speaking attribute with a word, in an object spread into the widget's `host` block, the shape `...fitHost` has in `field/src/affix.ts`, its key written `ARIA-LABEL`. The linker carries it into `hostAttrs` as written (measured through ngc in partial mode) and the DOM gives the host `aria-label`. The regex that read the block passed the spread over, and the attribute reached point 2 as one the package alone carries, not point 3 as the word it is. The read follows a `const` of the file's own now (`hostOf`), the two reads agree, and point 3 refuses the word."
 }

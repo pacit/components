@@ -228,8 +228,8 @@ const nameFromKey = (key) => {
  *
  * The `host` block is read as ngc composes it (`hostOf`), a constant of the file's own followed
  * by name or in a spread (`...fitHost` in `field/src/affix.ts`). Any other composition is
- * refused at point 1 (`composed`): left to the package read, an attribute it brings fired
- * point 2 on an exported class alone, and on a class no entrypoint exports it passed.
+ * refused at point 1 (`composed`). Left to the package read, an attribute it brings fired point 2
+ * as one the sources lack: a refusal, for a cause that is not the one.
  */
 const readSources = (root, files) => {
   const classes = [];
@@ -848,7 +848,8 @@ const checkTexts = (input) => {
         `member, a condition, a call, a computed key or a value kept in a constant alike; ` +
         `the read follows an object literal written in place or in a \`const\` of the ` +
         `file's own, under keys and values written as strings. An attribute composed ` +
-        `otherwise passed every point on a class no entrypoint exports. Write the block so.`,
+        `otherwise reached point 2 as one the sources lack, for a cause not its own. Write ` +
+        `the block so.`,
     );
 
   const used = new Map();
@@ -1111,8 +1112,8 @@ const checkTexts = (input) => {
         `source read:\n` +
         list(shorten(packageOnly)) +
         `\n    This is what an attribute brought in by syntax the scanner cannot read ` +
-        `looks like — an object spread in a \`host\` block, a mixin, inheritance. Point 3 ` +
-        `would never look at it.`,
+        `looks like — a mixin, inheritance, a \`dist\` built before the source ` +
+        `changed. Point 3 would never look at it.`,
     );
 
   const sourcesOnly = [...speakingInSources].filter(

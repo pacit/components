@@ -115,6 +115,12 @@ const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
  * package read takes it in any case, as a part or a binding the sources lack; this count says
  * where it is written. A comment is not blanked, so it counts as text: prose naming the
  * attribute is refused, and so is a pair commented out, which is no entry.
+ *
+ * It runs a second time over the entries themselves, keys and values as the parser reads them.
+ * An escape in a key written in capitals hid the name from the text and from a read in
+ * lowercase alike, and ngc resolves it into a part (measured through ngc in partial mode and
+ * the linker): it passed every point on a class no entrypoint exports. Two counts and not
+ * their sum, so that an error in one cannot cancel one in the other.
  */
 const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
@@ -133,10 +139,11 @@ const entrypointFromPath = (file) => {
 
 /**
  * Decorated classes — `[{ file, className, entrypoint, template, unnamed, inline, composed,
- * parts, statics, dynamic, occurrences }]`, the decorators read as no class's (`unheld`,
+ * parts, statics, dynamic, occurrences, read }]`, the decorators read as no class's (`unheld`,
  * `unparsed`), and the files taking a decorator under another name (`renamed`). The template
  * and the `host` block are read off the decorator's metadata as the parser holds it
- * (`decoratorsOf`, `hostOf`), and the counter runs over the text the pattern reads.
+ * (`decoratorsOf`, `hostOf`), and the counter runs over the text the pattern reads, over every
+ * constant the block follows, and over the entries the parser reads.
  * `parts` come here from the `host` block alone; the template's parts are added by point
  * 1, because a template is a separate file and a separate denominator — its scan has to
  * hold up first.
@@ -220,6 +227,7 @@ const readSources = (root, files) => {
         statics: written.length,
         dynamic: bound.length,
         occurrences: countOf([body, ...followed].join('\n'), HOST_COUNTER),
+        read: countOf(entries.flat().join('\n'), HOST_COUNTER),
       });
     }
     unseen.push(...decorators.unseen());
@@ -521,7 +529,11 @@ const checkParts = (input) => {
         `the DOM still makes a part of, or in a string — is to stop the inventory ` +
         `LOUDLY, not drop out of it quietly.`,
     );
-  const unread = classes.filter((k) => k.statics + k.dynamic !== k.occurrences);
+  const unread = classes.filter(
+    (k) =>
+      k.statics + k.dynamic !== k.occurrences ||
+      k.statics + k.dynamic !== k.read,
+  );
   if (unread.length)
     throw new PartsError(
       'denominator',
@@ -531,14 +543,16 @@ const checkParts = (input) => {
           unread.map(
             (k) =>
               `${k.file}: ${k.className} — recognised ${k.statics} static + ` +
-              `${k.dynamic} bound, and the attribute name appears ${k.occurrences} times`,
+              `${k.dynamic} bound, and the attribute name appears ${k.occurrences} times ` +
+              `as written and ${k.read} as read`,
           ),
         ) +
         `\n    A \`host\` block is read by the name ngc gives an entry, in lowercase; the ` +
         `counter takes it in any case, over the decorator and every constant its block ` +
-        `follows. Angular hands \`'DATA-PCT-PART'\` to \`setAttribute\` as written and ` +
+        `follows as written, and over the entries as the parser reads them, an escape ` +
+        `resolved. Angular hands \`'DATA-PCT-PART'\` to \`setAttribute\` as written and ` +
         `the DOM lowercases it — a part a consumer's selector matches, which the source ` +
-        `read would never list.`,
+        `read would never list — and of two entries of one key it keeps the later.`,
     );
 
   // Inheritance, resolved before the two reads are compared. What a base's `host` block
@@ -1125,8 +1139,8 @@ const readCard = (file, content) => {
  * also matches a directive with host attributes this read records a part never set: it errs
  * toward recording too much. Five mutants of the loop read as it does on every input the gate
  * is handed: `i += 0` or no `continue` after the `0` differ on `xlink:data-pct-part` alone and
- * `i++` on a value spelling the name, both of which point 1 refuses; `==` against the `0` on an
- * attribute named `0`, which no template writes; `<=` on none.
+ * `i++` on a value spelling the name, both of which point 1 refuses; `==` against the `0` on a
+ * name equal to it as a number (`0`, `00`), which no template writes; `<=` on none.
  *
  * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
  * written — an element's attribute in a template, a host attribute spread from an object (each
@@ -1591,7 +1605,7 @@ for (const name of cases) {
   const fx = JSON.parse(
     readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  // One check, several refusals: point 1 throws fifteen ways, all of them `denominator`, and the
+  // One check, several refusals: point 1 throws sixteen ways, all of them `denominator`, and the
   // lines of a list say which of two reads or which part disagreed. A case names a fragment of
   // the refusal it declares, and the fragment is held, so a change that moves the case onto a
   // neighbouring refusal is a failure here and not a pass. `no-sources` fired "templates belong
