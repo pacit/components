@@ -1,0 +1,35 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`./chips` has and exports a `PctButton` of its own beside the button's, and neither is `onPush`. Two classes of one name, so point 5 lists both, each by the entrypoint that exports it; counted by name, the chips one would drop out of the report.",
+  "message": "2 components in the package do not meet the foundation:\n      PctButton (./button): onPush=false, standalone=true\n      PctButton (./chips): onPush=false, standalone=true",
+  "files": [
+    {
+      "file": "libs/components/chips/src/chip.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-chip',",
+        "  template: '',",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ],
+  "addClasses": {
+    "chip-button": {
+      "name": "PctButton",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./chips": {
+      "PctButton": "chip-button"
+    }
+  },
+  "onPush": {
+    "PctButton": false
+  }
+}

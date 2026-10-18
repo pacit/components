@@ -1,0 +1,35 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "`./chips` exports a `PctButton` of its own, and `./button` exports it too, as `PctChipButton`, beside the button's. Two classes of the button's name in its entrypoint, and the package keeps no file to say which is the component: taking the first of them or the last turns the verdict on the order of the exports.",
+  "message": "PctButton from ./button  (libs/components/button/src/button.ts): 2 classes of that name",
+  "files": [
+    {
+      "file": "libs/components/chips/src/chip.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-chip',",
+        "  template: '',",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ],
+  "addClasses": {
+    "chip-button": {
+      "name": "PctButton",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./chips": {
+      "PctButton": "chip-button"
+    },
+    "./button": {
+      "PctChipButton": "chip-button"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "`./chips` has a `PctButton` of its own and exports none, and its barrel re-exports the button's: `export { PctButton } from '@pacit/components/button'`. Each component has a pair in its own entrypoint, and both pairs are one class, so the chips one is measured by the button's `ɵcmp` (measured: green before 2026-10-18). A class is one class however many entrypoints export it.",
+  "message": "PctButton (./button, ./chips): libs/components/button/src/button.ts, libs/components/chips/src/chip.ts",
+  "files": [
+    {
+      "file": "libs/components/chips/src/chip.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-chip',",
+        "  template: '',",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ],
+  "modules": {
+    "./chips": {
+      "PctButton": "button"
+    }
+  }
+}

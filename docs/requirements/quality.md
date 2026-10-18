@@ -74,8 +74,13 @@ pattern reads where the parser holds no class at the top level of the file — i
 inside a namespace or a function, or with no name — whose base the module does not resolve. The
 module reads no `package.json`, and the library has no directory that carries one. `check-texts`
 and `check-parts`, which compare with the package by class name, the one key the package
-carries, also refuse a name two decorated classes share. `check-zoneless` compares by name too
-and does not yet: with the other two standing, no such name reaches it from a tracked file.
+carries, also refuse a name two decorated classes share. `check-zoneless` has the entrypoint
+on both sides, so it pairs a component with the class its own entrypoint exports under the
+class's own name, one to one, and refuses only what that cannot pair: two classes of a
+component's name in its entrypoint, two components of one name in one entrypoint, or one class
+paired twice through a re-export. `check-harness` reads the package alone, finds a harness's
+class by its selector, and keeps harnesses per exported class — an entrypoint and the name it
+exports — not per name.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down

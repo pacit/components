@@ -1,0 +1,44 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "A second `PctButton` in `./button`, beside the one `./chips` has and exports. A module exports one class under a name, so the button's one `PctButton` pairs with both of its own and one of them is measured by the other's `ɵcmp` (measured: green before 2026-10-18). The pairing is one to one, and the refusal names the class by the entrypoints that export it — the button's alone, not its namesake's.",
+  "message": "PctButton (./button): libs/components/button/src/button.ts, libs/components/button/src/button-group.ts",
+  "files": [
+    {
+      "file": "libs/components/button/src/button-group.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-button-group',",
+        "  template: '',",
+        "})",
+        "export class PctButton {}"
+      ]
+    },
+    {
+      "file": "libs/components/chips/src/chip.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-chip',",
+        "  template: '',",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ],
+  "addClasses": {
+    "chip-button": {
+      "name": "PctButton",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./chips": {
+      "PctButton": "chip-button"
+    }
+  }
+}

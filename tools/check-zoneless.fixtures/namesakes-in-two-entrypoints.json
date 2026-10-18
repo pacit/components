@@ -1,0 +1,32 @@
+{
+  "point": 6,
+  "check": "explicitness",
+  "// defect": "`./chips` has a `PctButton` of its own and exports it, beside the one in `./button`: two classes, two pairs, which point 4 lets through; the chips one then restates `changeDetection`, which point 6 refuses. Were point 4 to refuse the name across entrypoints, or to read the entrypoint off the file name (`chip.ts`) rather than the directory, this case would fire there.",
+  "files": [
+    {
+      "file": "libs/components/chips/src/chip.ts",
+      "lines": [
+        "import { ChangeDetectionStrategy, Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-chip',",
+        "  template: '',",
+        "  changeDetection: ChangeDetectionStrategy.OnPush,",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ],
+  "addClasses": {
+    "chip-button": {
+      "name": "PctButton",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./chips": {
+      "PctButton": "chip-button"
+    }
+  }
+}

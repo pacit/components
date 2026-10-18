@@ -32,23 +32,31 @@ default, and the official guide forbids repeating them.
 
 **Gate:** `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — measuring
 `ɵcmp.onPush === true` and `ɵcmp.standalone === true` for **every** component of the built
-package, plus the denominator (every `@Component` in the sources must be in the package —
-otherwise "every" is counted over a sample that quietly shrinks) and a ban on repeating either
+package, plus the denominator (every `@Component` in the sources must be exported by its own
+entrypoint under its own class name, one to one — otherwise "every" is counted over a sample
+that quietly shrinks, or over a namesake standing in for it) and a ban on repeating either
 default in the decorator. The sources are read with the TypeScript parser as ngc reads them
 (`tools/decorators.mjs`): an option under any key ngc reads is a restatement, and a decorator the
-column-zero pattern did not read or one imported under another name fails the denominator. The reading comes from `dist`, not from the sources, and that is not
+column-zero pattern did not read or one imported under another name fails the denominator. The
+reading comes from `dist`, not from the sources, and that is not
 convenience: the partial declaration **omits** `changeDetection` when it is the default, so
 the value only comes into being at link time and can only be measured there
 ([`lesson-46`](../lessons.md#lesson-46)). Besides that, the library's unit tests configure
 zoneless in `TestBed` (`libs/components/*/src/*.spec.ts`), so a component relying on `zone.js`
 knocks over its own test
 **Control:** `tools/check-zoneless.fixtures/` — doctored inputs, one per way of disarming the
-measurement (an empty set of source components, a component outside the package,
-`onPush: false`, `standalone: false`, a decorator repeating the defaults — as written, by
-shorthand, under a quoted key or an escaped name — and a component the read misses: behind a
-comment on its line, inside a namespace or a function, imported under another name, read where
-the parser holds no metadata). A case states its sources as source text, read by the gate's own
-reader. Each must be
+measurement (an empty set of source components, a component outside the package, one behind
+a namesake another entrypoint exports, behind an alias, behind a re-export, two of one name in
+one entrypoint, two classes of a component's name in its entrypoint, `onPush: false`,
+`standalone: false`, a decorator repeating the defaults — as written, by shorthand, under a
+quoted key or an escaped name — and a component the read misses: behind a comment on its line,
+inside a namespace or a function, imported under another name, read where the parser holds no
+metadata), and four shapes point 4 lets through and a later point refuses: namesakes in two
+entrypoints, a component's own class under an alias, the same under two keys (which point 5
+counts once), a lone re-export; and two faulty namesakes, which point 5 lists one by one. A
+case states its sources as source text, read by the gate's own reader, and its package as a set
+of entrypoint namespaces of plain classes, read by the same function as the built package's.
+Each must be
 rejected **by the point it declares**, and the reference input must pass. Plus a run against
 the real repository: `ChangeDetectionStrategy.Default` added to `PctButton` fires point 6
 straight away (the source scan) and point 5 once the package is rebuilt — the `ɵcmp`
@@ -701,12 +709,15 @@ every card's **Harness** row names harnesses of its own entrypoint that exist, e
 standing on some card. Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host
-**Control:** `tools/check-harness.fixtures/` — 17 prepared inputs, each rejected on its own
-point: the entrypoint gone, a harness off the base, a part named twice, a selector nobody
-answers to, one wider than the class, two harnesses for one class, a class the package lost,
-a class with no harness, a part the component does not draw, a part the harness forgot, the
-declaration file gone, a union narrower and one wider than the list, a card with no row, one
-naming nobody, one borrowing another entrypoint's harness, a harness on no card
+**Control:** `tools/check-harness.fixtures/` — 21 prepared inputs, each rejected on its own
+point: the entrypoint gone, a harness off the base, one with no host, a part named twice, a
+selector nobody answers to, one wider than the class, two harnesses for one class, a class
+the package lost, a selector two namesakes answer to (the refusal naming each by its
+entrypoint), a class with no harness, one whose namesake in another entrypoint has one,
+a part the component does not draw, a part the harness forgot, the declaration file gone, a
+union narrower and one wider than the list, two namesakes with a harness each (refused at
+point 5, so point 2 counts harnesses per exported class, not per name), a card with no row, one naming
+nobody, one borrowing another entrypoint's harness, a harness on no card
 **Decision:** [0068 — a harness is a declaration over the parts contract](../decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)
 
 ---

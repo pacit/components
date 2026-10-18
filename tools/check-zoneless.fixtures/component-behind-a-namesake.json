@@ -1,0 +1,19 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "`PctButton` dropped out of `./button`, and `./chips` exports a class of the same name. Paired by the name alone, the chips one stood in for it and point 5 measured a namesake (measured: green before 2026-10-18). An entrypoint is a module of its own, so the pair is the class the component's OWN entrypoint exports.",
+  "message": "1 components from the sources are not exported by their entrypoint:\n      PctButton from ./button  (libs/components/button/src/button.ts)\n",
+  "dropFromPackage": ["PctButton"],
+  "addClasses": {
+    "chip-button": {
+      "name": "PctButton",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./chips": {
+      "PctButton": "chip-button"
+    }
+  }
+}

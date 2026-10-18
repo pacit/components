@@ -57,7 +57,7 @@ check-texts.mjs 6 18 172
 check-tokens.mjs 11 23 258
 check-tools.mjs 6 18 206
 check-typecheck.mjs 4 16 134
-check-zoneless.mjs 6 18 153
+check-zoneless.mjs 6 18 154
 class-bases.mjs 0 0 0
 decorators.mjs 0 0 0
 fresh-inputs.mjs 0 0 0
