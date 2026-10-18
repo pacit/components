@@ -714,21 +714,25 @@ draws a part has a harness; a harness names exactly the parts its class draws, i
 directions; the union the declaration file offers a consumer's editor is that same list; and
 every card's **Harness** row names existing harnesses of classes its own entrypoint exports,
 every harness standing on some card. A class and a harness are the object a module exports,
-with every name and entrypoint it is exported under: a class two entrypoints export is one
-class, and the card of either may name its harness. Plus `libs/components/testing/src/harness.spec.ts` — the base class
+with every name and entrypoint it is exported under, and a harness is named by its own name, as
+its declaration is, so two harness classes of one name are refused at point 1. A class two
+entrypoints export is one class, and the card of either may name its harness and neither has
+to, as point 6 asks for every harness on some card and not on every card of its entrypoints
+(`check-parts`, which counts a class's parts in each entrypoint, holds both cards to them). Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host
-**Control:** `tools/check-harness.fixtures/` — 24 prepared inputs, each rejected on its own
+**Control:** `tools/check-harness.fixtures/` — 25 prepared inputs, each rejected on its own
 point: the entrypoint gone, a harness off the base, one with no host, a part named twice, two
 harness classes of one name, a selector nobody answers to, one wider than the class, two harnesses for one class, a class
-the package lost, a selector two namesakes answer to (the refusal naming each by its
-entrypoint), a class with no harness, one whose namesake in another entrypoint has one,
+the package lost, a selector two namesakes answer to (the refusal naming each once with the
+entrypoints that export it), a class with no harness, one whose namesake in another entrypoint has one,
 a part the component does not draw, a part the harness forgot, the declaration file gone, a
 union narrower and one wider than the list, two namesakes with a harness each (refused at
 point 5, so point 2 counts harnesses per exported class, not per name), a card with no row, one naming
 nobody, one borrowing another entrypoint's harness, one borrowing the harness of a class two
-entrypoints export (the card of the second standing), one borrowing a harness by its first of two
-names (the other card naming it by the second), a harness on no card
+entrypoints export (the card of the second standing), one borrowing a harness exported under two
+names (the button card naming it by the other), a card naming a harness by a name it is no longer
+exported under (the harness, then on no card, named by the key it is exported under), a harness on no card
 **Decision:** [0068 — a harness is a declaration over the parts contract](../decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)
 
 ---

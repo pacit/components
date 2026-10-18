@@ -9,5 +9,5 @@
       "parts": []
     }
   },
-  "message": "PctButtonHarness: 2 harnesses of this name, exported as `PctButtonHarness` and `PctButtonAgainHarness`"
+  "message": "1 names are borne by more than one harness of `./testing`:\n      PctButtonHarness: exported as `PctButtonAgainHarness` and `PctButtonHarness`"
 }

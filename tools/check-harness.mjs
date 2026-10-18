@@ -272,26 +272,36 @@ const checkHarness = (input) => {
         malformed.push(`${h.className}: names ${quoted([...twice])} twice`);
     }
   }
-  // Point 5 finds a harness's declaration by the harness's own name, and the messages name it
-  // so: two harnesses of one name would be compared with one declaration.
-  for (const [name, named] of Map.groupBy(harnesses.list, (h) => h.className))
-    if (named.length > 1)
-      malformed.push(
-        `${name}: ${named.length} harnesses of this name, exported as ` +
-          named.map((h) => quoted(h.names)).join(' and '),
-      );
   if (malformed.length)
     throw new HarnessError(
       'set',
       `${malformed.length} harnesses are not declarations of the shape the base defines:\n` +
         list(malformed),
     );
+  // Point 5 finds a harness's declaration by the harness's own name, and the messages name it
+  // so: two harnesses of one name would be held to one declaration.
+  const clashing = [...Map.groupBy(harnesses.list, (h) => h.className)].filter(
+    ([, named]) => named.length > 1,
+  );
+  if (clashing.length)
+    throw new HarnessError(
+      'set',
+      `${clashing.length} names are borne by more than one harness of \`${TESTING}\`:\n` +
+        list(
+          clashing.map(
+            ([name, named]) =>
+              `${name}: exported as ` +
+              named.map((h) => quoted(h.names)).join(' and '),
+          ),
+        ) +
+        `\n    A harness is named by its own name, as its declaration is, so point 5 would ` +
+        `hold both to one \`declare class\`.`,
+    );
 
   // 2. The host — one harness, one class, the selector verbatim. A harness finds its class by
   // the selector and nothing else, and the harnesses are kept per class the package exports —
-  // the object, not its name: two entrypoints are two modules and may each export a class of
-  // one name (`export { A as B }` is enough), and by name the harness of one answered for the
-  // other at point 3.
+  // the object, not its name: two entrypoints are two modules and may each declare a class of
+  // one name, and by name the harness of one answered for the other at point 3.
   const bySelector = new Map();
   for (const c of classes)
     bySelector.set(c.selector, [...(bySelector.get(c.selector) ?? []), c]);
@@ -395,8 +405,10 @@ const checkHarness = (input) => {
 
   // 6. The cards — the page names the harness, by any name `./testing` exports it under, and
   // the harness is of a class the card's entrypoint exports. A class two entrypoints export is
-  // what both of them hand a consumer, so the card of either may name its harness: the package
-  // keeps no file to tell the entrypoint that declares the class from the one re-exporting it.
+  // what both of them hand a consumer, so the card of either may name its harness, and neither
+  // has to: the point asks for every harness on some card, not every harness of an entrypoint
+  // on its card. The namespaces do not tell the entrypoint declaring a class from one
+  // re-exporting it, and this point does not ask.
   const harnessNamed = new Map(
     harnesses.list.flatMap((h) => h.names.map((name) => [name, h])),
   );
@@ -428,7 +440,8 @@ const checkHarness = (input) => {
   }
   for (const h of harnesses.list)
     if (!named.has(h))
-      faults.push(`${h.className}: stands on no card in ${DOCUMENTS}/`);
+      // By the names a card can write, which a harness exported under another name is not.
+      faults.push(`${quoted(h.names)}: stands on no card in ${DOCUMENTS}/`);
   if (faults.length)
     throw new HarnessError(
       'cards',
@@ -467,12 +480,33 @@ const patchList = (items, key, patches, blank, what) => {
         );
       items.splice(i, 1);
     } else if (i < 0) items.push({ ...blank(name, patch), ...patch });
+    else if (patch.className !== undefined)
+      throw new Error(
+        `${what} \`${name}\`: \`className\` names a class the case adds — an exported one ` +
+          `keeps its own`,
+      );
     else items[i] = { ...items[i], ...patch };
   }
 };
 
 /** A class of the case's own, distinct from every other: a namesake is another object. */
 const classNamed = (name) => ({ [name]: class {} })[name];
+
+/**
+ * The records as module namespaces give them: each entrypoint's names in code-unit order, and
+ * none twice in one module. A case that appended a name would otherwise always put a class's
+ * own name before the ones it adds, and `PctBtnHarness` comes before `PctButtonHarness`.
+ */
+const inNamespaceOrder = (records) =>
+  [...Map.groupBy(records, (r) => r.entrypoint).values()].flatMap((of) => {
+    const names = of.map((r) => r.exportedAs);
+    const twice = names.filter((n, i) => names.indexOf(n) !== i);
+    if (twice.length)
+      throw new Error(
+        `\`${of[0].entrypoint}\` exports ${quoted(twice)} twice — no module can`,
+      );
+    return of.toSorted((a, b) => (a.exportedAs < b.exportedAs ? -1 : 1));
+  });
 
 /** The records of the live input copied, each holding the very class the live one holds. */
 const copyRecords = (records) =>
@@ -485,9 +519,10 @@ const copyRecords = (records) =>
  * Builds a case's input ON A COPY of the live one, so the case file holds nothing but its
  * own defect: `entrypoint: null` loses the testing module; `harnesses` and `classes` patch
  * an export by the name it is exported under (`null` drops it, an unknown name adds a class
- * of its own, named by `className` where that is not the export's name); `reexport` exports
- * an exported class once more, the same object, from `to` (its own entrypoint by default)
- * under `as` (its own name by default); `declarations: null` loses the declaration file and
+ * of its own, a harness named by `className` where that is not the export's name); `reexport`
+ * exports an exported class once more, the same object, from `to` (its own entrypoint by
+ * default) under `as` (its own name by default), after the patches; the records then stand
+ * in a namespace's order; `declarations: null` loses the declaration file and
  * `declarations.replace` rewrites it by a pattern that has to match; `cards` patches a card
  * by file name (`null` drops it, `harnesses: null` takes its row away); `addClasses` adds
  * classes as written, each an object of its own, a namesake of an exported one included.
@@ -527,13 +562,19 @@ const buildFixture = (fixtureLive, fx) => {
     w.exported,
     'exportedAs',
     fx.classes,
-    (exportedAs, patch) => ({
-      entrypoint: './nowhere',
-      exportedAs,
-      class: classNamed(patch.className ?? exportedAs),
-      selector: '',
-      parts: [],
-    }),
+    (exportedAs, patch) => {
+      if (patch.className !== undefined)
+        throw new Error(
+          `class \`${exportedAs}\`: a class added under a name not its own is written in \`addClasses\``,
+        );
+      return {
+        entrypoint: './nowhere',
+        exportedAs,
+        class: classNamed(exportedAs),
+        selector: '',
+        parts: [],
+      };
+    },
     'class',
   );
   w.exported.push(
@@ -558,6 +599,8 @@ const buildFixture = (fixtureLive, fx) => {
       exportedAs: as ?? exportedAs,
     });
   }
+  w.exported = inNamespaceOrder(w.exported);
+  if (w.harnesses) w.harnesses.list = inNamespaceOrder(w.harnesses.list);
   if (fx.declarations === null) w.declarations = null;
   for (const { pattern, flags, with: replacement } of fx.declarations
     ?.replace ?? []) {

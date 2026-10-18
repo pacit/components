@@ -2,7 +2,7 @@
   "entrypoints": [
     ".",
     "./widget",
-    "./other"
+    "./wrap"
   ],
   "classes": [
     {
@@ -17,7 +17,7 @@
           "as": "PctGadget"
         },
         {
-          "entrypoint": "./other",
+          "entrypoint": "./wrap",
           "as": "PctWidget"
         }
       ],

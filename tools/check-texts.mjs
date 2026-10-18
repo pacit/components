@@ -1700,9 +1700,11 @@ const fixtureInput = (directory) =>
     globSync('**/*.{ts,html}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
-    JSON.parse(
-      readFileSync(join(directory, 'package.json'), 'utf8'),
-    ).classes.flatMap(packageClass),
+    inNamespaceOrder(
+      JSON.parse(
+        readFileSync(join(directory, 'package.json'), 'utf8'),
+      ).classes.flatMap(packageClass),
+    ),
   );
 
 /**
@@ -1722,6 +1724,22 @@ const packageClass = (k) => {
     }),
   );
 };
+
+/**
+ * The records as module namespaces give them: each entrypoint's names in code-unit order, and
+ * none twice in one module. Listed as a case writes them, a class's own name would always
+ * come before its other names, and `PctBare` comes before `PctBlank`.
+ */
+const inNamespaceOrder = (records) =>
+  [...Map.groupBy(records, (r) => r.entrypoint).values()].flatMap((of) => {
+    const names = of.map((r) => r.exportedAs);
+    const twice = names.filter((n, i) => names.indexOf(n) !== i);
+    if (twice.length)
+      throw new Error(
+        `\`${of[0].entrypoint}\` exports ${twice.join(', ')} twice — no module can`,
+      );
+    return of.toSorted((a, b) => (a.exportedAs < b.exportedAs ? -1 : 1));
+  });
 
 // ── the run ───────────────────────────────────────────────────────────────────
 

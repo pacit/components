@@ -65,14 +65,23 @@
         },
         {
           "entrypoint": "./widget",
-          "as": "PctEmpty"
+          "as": "PctBare"
         }
       ],
       "attributes": []
     },
     {
-      "entrypoint": "./other",
       "className": "PctBlank",
+      "exports": [
+        {
+          "entrypoint": "./other",
+          "as": "PctBlank"
+        },
+        {
+          "entrypoint": "./wrap",
+          "as": "PctBlank"
+        }
+      ],
       "attributes": []
     }
   ]

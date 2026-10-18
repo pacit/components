@@ -9,4 +9,4 @@ per entrypoint of the packed manifest, and no row beyond it.
 | -------------------------- | ----------------------------------------------------------- |
 | `@pacit/components`        | configuration                                               |
 | `@pacit/components/widget` | `PctWidget` (also as `PctGadget`), `PctMarker` as `PctMark` |
-| `@pacit/components/other`  | a class of `./widget`                                       |
+| `@pacit/components/wrap`   | a class of `./widget`                                       |

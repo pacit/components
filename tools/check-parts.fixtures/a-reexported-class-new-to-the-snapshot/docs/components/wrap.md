@@ -1,6 +1,6 @@
 # `PctWidget` — the widget, again
 
-**Entrypoint:** `@pacit/components/other`
+**Entrypoint:** `@pacit/components/wrap`
 **Selector:** `pct-widget`
 
 ## Contract

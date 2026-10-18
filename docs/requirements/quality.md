@@ -83,8 +83,8 @@ entrypoint exports is missing from the package even where a key of its name hold
 own entrypoint exports under the class's own name, one to one, and refuses only what that cannot
 pair: two classes of a component's name in its entrypoint, two components of one name in one
 entrypoint, or one class paired twice through a re-export. `check-harness` reads the package
-alone, finds a harness's class by its selector, and keeps classes and harnesses per object, a
-class two entrypoints export standing on the cards of both.
+alone, finds a harness's class by its selector, and keeps classes and harnesses per object: the
+card of either entrypoint exporting a class may name its harness.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
@@ -135,7 +135,7 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by thirty-six more:
+to put there too. What a class's name stands for, by thirty-seven more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
@@ -154,7 +154,9 @@ under two keys, named once), `tools/check-parts.fixtures/a-class-the-package-dra
 `tools/check-parts.fixtures/a-reexported-class-new-to-the-snapshot/` (a re-export, one class
 whose parts both entrypoints expose), `tools/check-harness.fixtures/a-card-borrowing-a-reexported-harness.json`
 (a re-export and a second key, one class whose harness either card may name),
-`tools/check-harness.fixtures/a-harness-under-two-names.json` (one harness under two keys) and
+`tools/check-harness.fixtures/a-harness-under-two-names.json` (one harness under two keys),
+`tools/check-harness.fixtures/a-harness-exported-under-another-name.json` (a harness under a key
+not its own name, its declaration found by its name and its card by the key) and
 `tools/check-harness.fixtures/two-harnesses-of-one-name.json` (two harness objects of one name),
 `tools/check-texts.fixtures/base-named-like-another-class/`,
 `tools/check-parts.fixtures/base-named-like-another-class/`,

@@ -1,6 +1,6 @@
 {
   "point": 2,
   "check": "set",
-  "message": "PctMarker: `./widget`, `./other`",
-  "$reason": "`./other` exports a second object named `PctMarker` — the class bundled into another entrypoint, a copy beside the original. To a consumer the two are two classes, and the comparison with the sources keeps one class per name: by name it read whichever was listed last: after the original, the marker was refused as exported from `./other`; before it, the copy passed unseen."
+  "message": "PctMarker: `./widget`, `./other` and `./wrap`",
+  "$reason": "`./other` exports a second object named `PctMarker`, and `./wrap` re-exports it — the class bundled into another entrypoint, a copy beside the original, named once with each entrypoint that exports it. To a consumer the two are two classes, and the comparison with the sources keeps one class per name: by name it read whichever was listed last: after the original, the marker was refused as exported from `./other`; before it, the copy passed unseen."
 }

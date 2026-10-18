@@ -65,7 +65,7 @@
         },
         {
           "entrypoint": "./widget",
-          "as": "PctEmpty"
+          "as": "PctBare"
         },
         {
           "entrypoint": "./widget",

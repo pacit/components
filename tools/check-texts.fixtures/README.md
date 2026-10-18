@@ -51,9 +51,10 @@ repository.
 What the cases do exercise is how the package's classes are told apart. Each entry of
 `package.json` is one class — one object — and `exports` lists the names it is exported under
 where that is not its own name once (a re-export from another entrypoint, a second name, a
-name that is not its own); the gate turns the entries into one record per exported name, as
-the package read does, and groups them by object with the same code the live run uses. The
-reference exports `PctBlank` a second time, as `PctEmpty`, and passes.
+name that is not its own); the gate turns the entries into one record per exported name, in the order a module
+namespace gives (each entrypoint's names sorted, none twice), as the package read does, and
+groups them by object with the same code the live run uses. The
+reference exports `PctBlank` a second time, as `PctBare`, a name that comes before its own, and passes.
 
 ## One rule with no case
 
