@@ -1,0 +1,16 @@
+import '@angular/core';
+import { Injectable } from '@angular/core';
+
+/**
+ * Shapes a source file of the library may hold beside its components, none of them a decorator
+ * the inventory reads: an import of `@angular/core` that binds no name, a decorator called with
+ * no argument (`@Injectable()`, as `icon.ts` has one) and a decorator not called at all. The
+ * parser's read of a file passes over each.
+ */
+const frozen = (type: object): void => {
+  Object.freeze(type);
+};
+
+@frozen
+@Injectable()
+export class PctWidgetRegistry {}

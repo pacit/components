@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 imports take `Component` or `Directive` from `@angular/core` under another name:\n      libs/components/widget/src/badge.ts: Component as Widget",
+  "$reason": "An internal component, exported by no entrypoint, decorated through `Component` imported under another name, its template written into the decorator. ngc follows the import and compiles the template into `consts` (measured through ngc in partial mode and the linker), while the pattern and the counter know a decorator by `@Component(` and saw none: the source read held no class, the package read visits exported classes alone, and the case passed every point. Exported, the class reached point 2 as one the scanner does not see."
+}

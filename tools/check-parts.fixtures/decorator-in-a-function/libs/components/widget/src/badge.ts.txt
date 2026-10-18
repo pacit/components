@@ -1,0 +1,12 @@
+import { Component, Type } from '@angular/core';
+
+/** A badge a factory builds, its component declared inside the function. */
+export function makeBadge(): Type<unknown> {
+  @Component({
+    selector: 'pct-widget-badge',
+    template: '<span data-pct-part="badge"></span>',
+  })
+  class PctWidgetBadge {}
+
+  return PctWidgetBadge;
+}

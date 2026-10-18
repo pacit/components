@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+
+/**
+ * A template kept in a constant and handed to the decorator by shorthand, its part bound in a
+ * block: the `@if` renders through a view function of its own.
+ */
+const template = `@if (on()) {
+  <i [attr.data-pct-part]="name()"></i>
+}`;
+
+@Component({
+  selector: 'pct-widget-badge',
+  template,
+})
+export class PctWidgetBadge {
+  protected on(): boolean {
+    return true;
+  }
+
+  protected name(): string {
+    return 'badge';
+  }
+}

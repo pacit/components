@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 imports take `Component` or `Directive` from `@angular/core` under another name:\n      libs/components/widget/src/badge.ts: Directive as Marker",
+  "$reason": "An internal directive, exported by no entrypoint, decorated through `Directive` imported under another name and writing a part in its `host` block. ngc follows the import as it does for `Component`; the pattern and the counter know a decorator by `@Directive(` and saw none, so the source read held no class and the package read never visits one no entrypoint exports. The case holds the `Directive` half of the refusal, as `decorator-imported-under-another-name` holds the `Component` half."
+}

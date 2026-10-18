@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "set",
+  "message": "PctWidget: in the package and not in the sources — badge",
+  "$reason": "A stale `dist`: the package was built while the widget's template still wrote a badge, the attribute's name in capitals, and the sources have dropped it since. `consts` keep the name as written, `['DATA-PCT-PART', 'badge']` (measured through ngc in partial mode and the linker on a template of a file; the class in `package.json` carries the declaration ngc writes), and the DOM lowercases it into a part a consumer's selector matches. The case holds the `consts` half of the package read: compared as written there, the package lists no badge either, and the case passes every point. It stood on a template handed to the decorator by shorthand until point 1 refused that route; a stale `dist` leans on no gap of the scanner."
+}

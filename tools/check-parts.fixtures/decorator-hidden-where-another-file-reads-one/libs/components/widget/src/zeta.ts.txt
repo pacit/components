@@ -1,0 +1,19 @@
+import { Component } from '@angular/core';
+
+/*
+ * A component kept beside the widget, its decorator written behind this comment, on the line
+ * the comment ends on. The pattern wants a decorator in column zero and does not read this one;
+ * the TypeScript parser counts it.
+ *
+ * The comment is as long as it is so that the decorator stands at the offset of the base's
+ * decorator in base.ts, which the pattern does read. The decorators read are held file by file:
+ * a set of offsets shared across the files would take that one for this one, and the count
+ * would agree with the pattern.
+ *
+ * The case carries its own copy of base.ts, so that the two offsets stay one when the
+ * reference's base.ts gets changed.
+ */ @Component({
+  selector: 'pct-widget-zeta',
+  template: '',
+})
+export class PctWidgetZeta {}

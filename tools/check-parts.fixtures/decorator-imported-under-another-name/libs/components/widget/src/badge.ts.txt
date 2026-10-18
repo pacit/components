@@ -1,0 +1,11 @@
+import { Component as Widget } from '@angular/core';
+
+/**
+ * A badge the widget renders, exported by no entrypoint. Its decorator is Angular's `Component`
+ * under a name of the file's own.
+ */
+@Widget({
+  selector: 'pct-widget-badge',
+  template: '<span data-pct-part="badge"></span>',
+})
+export class PctWidgetBadge {}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "classes take their template from the decorator, not a file:\n      libs/components/widget/src/badge.ts: PctWidgetBadge",
+  "$reason": "Metadata cast with `as` to a type literal, which ends in `})` in column zero, so the pattern reads the decorator. ngc takes the argument through `unwrapExpression`, which takes the `as` off, and compiles the template into `consts` (measured through ngc in partial mode and the linker; the class in `package.json` carries the declaration ngc writes). The scanner takes it off too and refuses the template; a read that did not would find no object literal and refuse the decorator for that instead."
+}

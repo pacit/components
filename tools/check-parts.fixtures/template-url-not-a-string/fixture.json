@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 classes name their template file by an expression, not a string:\n      libs/components/widget/src/widget.ts: PctWidget",
+  "$reason": "`templateUrl` naming its file through a constant. ngc evaluates the expression and compiles `widget.html` (measured through ngc in partial mode), while the scanner opens the file named as written, and nothing is. Point 1 says so; without that, `widget.html` stood as a template no decorator names, and a template another class also named would have been read for that class alone."
+}

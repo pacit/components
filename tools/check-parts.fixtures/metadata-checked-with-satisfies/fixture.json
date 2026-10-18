@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "1 decorators stand where the TypeScript parser holds no decorator called with an object literal:\n      libs/components/widget/src/widget.ts: PctWidget",
+  "$reason": "Metadata checked with `satisfies` against a type literal, which ends in `})` in column zero, so the pattern reads the decorator. `unwrapExpression` takes off an `as` and parentheses and no `satisfies`, so ngc finds no object literal and refuses the component (NG1001, measured). The scanner reads the metadata as ngc does and has no object to read the template off; the text the pattern took names `./widget.html`, and the template file it read off it was one no build compiles."
+}
