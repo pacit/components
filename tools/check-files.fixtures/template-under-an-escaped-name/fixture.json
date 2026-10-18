@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "template",
+  "rule": "inline-template",
+  "description": "The template under a name written with a Unicode escape, `t\\u0065mplate:`, which ngc reads by its text, `template` (measured through ngc in partial mode and the linker for `check-parts`). The pattern read the name as written, and point 4 refused the declaration as naming no template.",
+  "drop": ["libs/components/button/src/button.html"]
+}

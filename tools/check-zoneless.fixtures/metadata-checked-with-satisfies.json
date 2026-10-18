@@ -1,0 +1,23 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "message": "libs/components/button/src/button.ts: PctButton",
+  "// defect": "Metadata checked with `satisfies` against a type literal, which ends in `})` in column zero, so the pattern reads the decorator. `unwrapExpression` takes off an `as` and parentheses and no `satisfies`, so ngc finds no object literal and refuses the component (NG1001, measured through ngc in partial mode and the linker for `check-parts`). The gate read the component and its options off the text and passed a component no build compiles; it reads the metadata as ngc does now, and there is no object to read it off.",
+  "files": [
+    {
+      "file": "libs/components/button/src/button.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "@Component({",
+        "  selector: 'pct-button',",
+        "  templateUrl: './button.html',",
+        "} satisfies {",
+        "  selector: string;",
+        "  templateUrl: string;",
+        "})",
+        "export class PctButton {}"
+      ]
+    }
+  ]
+}

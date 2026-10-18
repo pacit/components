@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+/** The template kept in a constant, out of the decorator's body. */
+const template = '<span role="combobox" tabindex="0"></span>';
+
+@Component({
+  selector: 'pct-widget-badge',
+  t\u0065mplate: template,
+})
+export class PctWidgetBadge {}

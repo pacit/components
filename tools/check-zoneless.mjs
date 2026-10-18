@@ -22,6 +22,8 @@ import { dirname, extname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execSync } from 'node:child_process';
 
+import { COMPONENT_ONLY, decoratorsOf } from './decorators.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
@@ -67,12 +69,17 @@ const TRACES = [
  * space put out both sides of the comparison at once. Measured on this repository —
  * `PctCheckbox` indented by a space gave "7 components" instead of eight and a green run,
  * so the component dropped out of the OnPush measurement without a trace (`lesson-48`).
- * A check comparing two measurements needs two INDEPENDENT ones; `[ \t]*` filters out
- * occurrences in comments, because a JSDoc line starts with an asterisk.
+ * A check comparing two measurements needs two INDEPENDENT ones.
+ *
+ * The counter is the TypeScript parser's now, every `@Component` decorator at any depth of a file
+ * (`decoratorsOf`, `decorators.mjs`), and the options point 6 reads are read off the decorator's
+ * metadata as ngc reads it. A counter from the start of a line past indentation stood here, and
+ * a decorator behind a comment on its line, which prettier keeps, or imported under another name
+ * was a component neither side saw; a pattern read `changeDetection:` off the text, and the
+ * option written by shorthand, under a quoted key or an escaped name passed point 6 (measured).
  */
 const COMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const COMPONENT_COUNTER = /^[ \t]*@Component\(/gm;
 
 /** Options the Angular guide forbids restating — they are defaults in v22+. */
 const DEFAULT_OPTIONS = ['changeDetection', 'standalone'];
@@ -96,7 +103,7 @@ class ZonelessError extends Error {
  *   `lockPackages` — the `packages` keys of `package-lock.json`,
  *   `bundle`     — `[{ file, text }]` from the built package,
  *   `entrypoints`    — the files the `exports` map points at (the denominator for `bundle`),
- *   `sources`     — `[{ file, className, explicit }]` from `@Component` in the sources,
+ *   `sources`     — `[{ file, content }]`, the library's source files, read by `readSources`,
  *   `components` — `[{ className, entrypoint, onPush, standalone }]` from the package.
  * Throws `ZonelessError` on the first violation — the checks run from the most basic one,
  * so the later ones would have nothing to examine anyway.
@@ -176,16 +183,59 @@ const checkZoneless = ({
 
   // 4. DENOMINATOR. Without this point, "every component" in point 5 means "every one
   // that happened to reach the package" — a sentence that is always true.
-  if (!sources.length)
+  const { found, declarations, unseen, unparsed, renamed } =
+    readSources(sources);
+  // The options point 6 reads are read off the metadata the parser holds for the decorator where
+  // the pattern read its `@`. Where it holds none — a comment above a class decorated otherwise —
+  // or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), the text the pattern took
+  // is no component's.
+  if (unparsed.length)
+    throw new ZonelessError(
+      'denominator',
+      `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
+        `called with an object literal:\n` +
+        unparsed.map((z) => `      ${z}`).join('\n') +
+        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
+        `is no object literal once an \`as\` is off, which ngc refuses as well: no point ` +
+        `below may read it as a component.`,
+    );
+
+  // A decorator under a name of the file's own is one neither the pattern nor the counter sees,
+  // so the count below agrees without it, and the component is measured by no point.
+  if (renamed.length)
+    throw new ZonelessError(
+      'denominator',
+      `${renamed.length} imports take \`Component\` from \`@angular/core\` under another ` +
+        `name:\n` +
+        renamed.map((z) => `      ${z}`).join('\n') +
+        `\n    The pattern and the counter know a decorator by \`@Component(\`, and ngc by ` +
+        `the import: a component decorated so compiles, and drops out of points 4 to 6. ` +
+        `Import it under its own name.`,
+    );
+
+  if (unseen.length)
+    throw new ZonelessError(
+      'denominator',
+      `the pattern read ${found.length} of the ${declarations} \`@Component\` ` +
+        `decorators the TypeScript parser holds, and not these:\n` +
+        unseen.map((z) => `      ${z}`).join('\n') +
+        `\n    They would drop out of the measurement without a trace. Usual cause: a ` +
+        `decorator written otherwise than prettier formats it (\`@Component({\` and ` +
+        `\`})\` in column zero): indented, inside a namespace or a function, or behind a ` +
+        `comment on its line.`,
+    );
+
+  // The empty set after the reasons a read can come up short, each of which names its cause.
+  if (!found.length)
     throw new ZonelessError(
       'denominator',
       `no \`@Component\` found in the sources (${PROJECT}) — point 5 would then always ` +
-        `pass, having nothing to measure. Usual cause: the decorator formatting the ` +
-        `parser anchors on has changed.`,
+        `pass, having nothing to measure. Usual cause: the list of source files stopped ` +
+        `returning anything.`,
     );
 
   const inPackage = new Map(components.map((k) => [k.className, k]));
-  const missing = sources.filter((z) => !inPackage.has(z.className));
+  const missing = found.filter((z) => !inPackage.has(z.className));
   if (missing.length)
     throw new ZonelessError(
       'denominator',
@@ -217,7 +267,7 @@ const checkZoneless = ({
   // 6. Explicitness. The other side of the same rule: since the measurement watches the
   // VALUE, the source is not to restate the defaults (`lesson-11`). Without this point the
   // only guard over the notation would be code review.
-  const explicit = sources.filter((z) => z.explicit?.length);
+  const explicit = found.filter((z) => z.explicit.length);
   if (explicit.length)
     throw new ZonelessError(
       'explicitness',
@@ -234,7 +284,7 @@ const checkZoneless = ({
   return (
     `${manifests.length} manifests and ${lockPackages.length} locked packages free of \`zone.js\`, ` +
     `${bundle.length} package files with no trace of zones, ` +
-    `${sources.length} components from the sources present in the package and all OnPush`
+    `${found.length} components from the sources present in the package and all OnPush`
   );
 };
 
@@ -294,42 +344,47 @@ const packageBundle = () => {
 };
 
 /**
- * Components from the sources. The parser is simple, but its denominator is watched: the
- * number of parsed decorators has to match the number of `@Component(` occurrences at the
- * start of a line. A drift fires point 4 with a clear cause instead of quietly shrinking
- * the set of examined components.
+ * Components from the sources — `found`, `[{ file, className, explicit }]` — and what point 4
+ * holds that read to: the decorators the parser counts (`declarations`) and each of them the
+ * pattern did not read (`unseen`), the ones the pattern read where the parser holds no metadata
+ * (`unparsed`), and the imports taking `Component` under another name (`renamed`). The same
+ * reader for the repository and for a prepared input, which hands it source text: a case states
+ * its defect in the shape the sources carry it, and the reader is what the control exercises.
  */
-const componentSources = () => {
+const readSources = (sources) => {
   const out = [];
+  const unseen = [];
+  const unparsed = [];
+  const renamed = [];
   let declarations = 0;
-
-  for (const file of globSync(`${PROJECT}/*/src/**/*.ts`, {
-    cwd: ROOT,
-  }).sort()) {
-    if (file.endsWith('.spec.ts')) continue;
-    const text = read(file);
-    declarations += (text.match(COMPONENT_COUNTER) ?? []).length;
-    for (const [, body, className] of text.matchAll(COMPONENT))
+  for (const { file, content } of sources) {
+    const decorators = decoratorsOf(file, content, COMPONENT_ONLY);
+    declarations += decorators.declared;
+    for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
+    for (const match of content.matchAll(COMPONENT)) {
+      const [, , className] = match;
+      const metadata = decorators.read(match.index);
+      if (!metadata) {
+        unparsed.push(`${file}: ${className}`);
+        continue;
+      }
       out.push({
-        file: file.split('\\').join('/'),
+        file,
         className,
-        explicit: DEFAULT_OPTIONS.filter((option) =>
-          new RegExp(`^\\s{2}${option}\\s*:`, 'm').test(body),
-        ),
+        explicit: DEFAULT_OPTIONS.filter((option) => metadata.has(option)),
       });
+    }
+    unseen.push(...decorators.unseen());
   }
-
-  if (out.length !== declarations)
-    throw new ZonelessError(
-      'denominator',
-      `the parser recognised ${out.length} of ${declarations} \`@Component\` decorators — ` +
-        `the rest would drop out of the measurement without a trace. Usual cause: a ` +
-        `decorator written otherwise than prettier formats it (\`@Component({\` and ` +
-        `\`})\` in column zero).`,
-    );
-
-  return out;
+  return { found: out, declarations, unseen, unparsed, renamed };
 };
+
+/** The library's source files, specs left out — what `readSources` reads in the repository. */
+const sourceFiles = () =>
+  globSync(`${PROJECT}/*/src/**/*.ts`, { cwd: ROOT })
+    .sort()
+    .filter((file) => !file.endsWith('.spec.ts'))
+    .map((file) => ({ file: file.split('\\').join('/'), content: read(file) }));
 
 /**
  * The package's entrypoints by the `exports` map — `[{ entrypoint, file }]`. One source for
@@ -380,7 +435,9 @@ const readFixture = (name) =>
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
- * but its own defect — you cannot break something in passing and not notice.
+ * but its own defect — you cannot break something in passing and not notice. Sources are
+ * source text, a file's `lines`, and a case's `files` replace the reference's of the same path
+ * or join them.
  */
 const buildFixture = (fx) => {
   const reference = readFixture(REFERENCE);
@@ -389,9 +446,13 @@ const buildFixture = (fx) => {
     lockPackages: reference.lockPackages,
     bundle: reference.bundle,
     entrypoints: reference.entrypoints,
-    sources: reference.sources,
     components: reference.components,
   });
+  const sources = new Map(
+    reference.sources.map((z) => [z.file, z.lines.join('\n')]),
+  );
+  for (const z of fx.files ?? []) sources.set(z.file, z.lines.join('\n'));
+  input.sources = [...sources].map(([file, content]) => ({ file, content }));
 
   if (fx.addDependency) {
     const { file, field, version } = fx.addDependency;
@@ -411,9 +472,6 @@ const buildFixture = (fx) => {
     if (fx.standalone?.[k.className] !== undefined)
       k.standalone = fx.standalone[k.className];
   }
-  for (const z of input.sources)
-    if (fx.explicit?.[z.className]) z.explicit = fx.explicit[z.className];
-
   return input;
 };
 
@@ -429,7 +487,7 @@ try {
     lockPackages: lockPackages(),
     bundle: packageBundle(),
     entrypoints: entrypoints.map((w) => w.file),
-    sources: componentSources(),
+    sources: sourceFiles(),
     components: await packageComponents(entrypoints),
   });
 } catch (error) {
@@ -473,6 +531,12 @@ for (const name of cases) {
       problems.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — ` +
+          `another refusal of the same check than the one the fixture declares:\n    ` +
+          error.message,
       );
   }
 }

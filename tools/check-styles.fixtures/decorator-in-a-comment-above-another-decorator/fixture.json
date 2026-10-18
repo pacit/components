@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "decorator-without-metadata",
+  "description": "A component's decorator kept in a comment above the service its class became, in column zero, so the pattern reads it and the class below stands at the top level where the pattern names it. The parser holds no decorator where the pattern read the `@`: what it read is no decorator's, and the class is no component. Read off the text, the comment was the class's decorator, and it named no sheet, and the case passed every point."
+}

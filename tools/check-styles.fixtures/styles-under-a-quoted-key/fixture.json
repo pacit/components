@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "styles-in-decorator",
+  "description": "The styles under a quoted key, `'styles':`, which ngc names as it names a property by an identifier (measured through ngc in partial mode). The pattern read no styles, and the case passed every point."
+}

@@ -34,7 +34,9 @@ default, and the official guide forbids repeating them.
 `ɵcmp.onPush === true` and `ɵcmp.standalone === true` for **every** component of the built
 package, plus the denominator (every `@Component` in the sources must be in the package —
 otherwise "every" is counted over a sample that quietly shrinks) and a ban on repeating either
-default in the decorator. The reading comes from `dist`, not from the sources, and that is not
+default in the decorator. The sources are read with the TypeScript parser as ngc reads them
+(`tools/decorators.mjs`): an option under any key ngc reads is a restatement, and a decorator the
+column-zero pattern did not read or one imported under another name fails the denominator. The reading comes from `dist`, not from the sources, and that is not
 convenience: the partial declaration **omits** `changeDetection` when it is the default, so
 the value only comes into being at link time and can only be measured there
 ([`lesson-46`](../lessons.md#lesson-46)). Besides that, the library's unit tests configure
@@ -42,7 +44,11 @@ zoneless in `TestBed` (`libs/components/*/src/*.spec.ts`), so a component relyin
 knocks over its own test
 **Control:** `tools/check-zoneless.fixtures/` — doctored inputs, one per way of disarming the
 measurement (an empty set of source components, a component outside the package,
-`onPush: false`, `standalone: false`, a decorator repeating the defaults). Each must be
+`onPush: false`, `standalone: false`, a decorator repeating the defaults — as written, by
+shorthand, under a quoted key or an escaped name — and a component the read misses: behind a
+comment on its line, inside a namespace or a function, imported under another name, read where
+the parser holds no metadata). A case states its sources as source text, read by the gate's own
+reader. Each must be
 rejected **by the point it declares**, and the reference input must pass. Plus a run against
 the real repository: `ChangeDetectionStrategy.Default` added to `PctButton` fires point 6
 straight away (the source scan) and point 5 once the package is rebuilt — the `ɵcmp`
@@ -623,7 +629,7 @@ at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 compares `libs/components/parts.snapshot.md` with the current inventory, and point 6 holds
 [`req-api-parts-unique`](#req-api-parts-unique) below. Points 1 and 2 guard
 the denominator: every `@Component` and `@Directive` decorator the TypeScript parser holds and
-every occurrence of the attribute in a template or a decorator must be recognised; a decorator's metadata is read as ngc reads it, and a template it
+every occurrence of the attribute in a template or a decorator must be recognised; a decorator's metadata is read as ngc reads it (`tools/decorators.mjs`, the reader of five other gates as well), and a template it
 hands the compiler other than through `templateUrl`, under any key ngc reads, is refused, as is a
 decorator imported under another name; a host takes its part from one class of its chain (Angular
 keeps the nearest class's, so a second is a part no element carries); and the list of parts is built
@@ -880,11 +886,14 @@ time and therefore cannot be a library string.
 a text node, into a speaking attribute or into an expression literal; prose in a signal's
 default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
-read by `parseTemplate` from `@angular/compiler`, and the list of static classes and
-attributes is built **twice** — from the sources and from the built package. Plus
+read by `parseTemplate` from `@angular/compiler`, and decorators by the TypeScript parser as ngc
+reads them (`tools/decorators.mjs`): a template the decorator carries, under any key ngc reads, is
+refused, as are a `templateUrl` given by an expression, a decorator the column-zero pattern did not
+read and one imported under another name. The list of static classes and attributes is built
+**twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 51 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 63 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "path-by-expression",
+  "description": "`styleUrl` naming the sheet through a constant, which ngc evaluates and compiles (measured through ngc in partial mode). Read as text, the declaration named no sheet, and point 5 refused it as naming no styles."
+}

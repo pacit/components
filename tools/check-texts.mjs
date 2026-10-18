@@ -40,6 +40,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
+import { decoratorsOf, textOf } from './decorators.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -150,15 +151,14 @@ const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
  * The same anchor as in `check-parts` and for the same reason: the formatting
  * enforced by `nx format:check` puts `@Component({` and `})` in column zero. The counter
  * does NOT repeat that anchor — a repeated one would put out both sides of the comparison
- * at once (`lesson-48`).
+ * at once (`lesson-48`). The counter is the parser's (`decoratorsOf`, `decorators.mjs`), and so
+ * is the metadata the template is read off: a pattern counted decorators from the start of a line
+ * and read `template:` and `templateUrl:` off the text, and a shorthand, a quoted key, an escaped
+ * name, a decorator behind a comment on its line and one imported under another name each handed
+ * ngc a template, its text with it, that this scanner never opened (measured).
  */
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
-
-const DECORATOR_COUNT = /^[ \t]*@(?:Component|Directive)\(/gm;
-
-const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
-const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 
 /** A string literal in an expression (a binding in a `host` block is a string). */
 const LITERAL_IN_EXPRESSION = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
@@ -278,7 +278,10 @@ const nameFromKey = (key) => {
 /**
  * Decorated classes. `attributes` are the `host` block's static attributes (name/value
  * pairs), `literals` the string literals from the expressions of speaking-attribute
- * bindings.
+ * bindings. Beside them, what point 1 holds the read to: the decorators the pattern read where
+ * the parser holds no class (`unheld`) or no metadata (`unparsed`), the ones it counted and the
+ * pattern did not read (`unseen`), and the files taking a decorator under another name
+ * (`renamed`).
  *
  * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost` in
  * `field/src/affix.ts`) and this scanner does not see that — deliberately, exactly as in
@@ -289,6 +292,9 @@ const nameFromKey = (key) => {
 const readSources = (root, files) => {
   const classes = [];
   const unheld = [];
+  const unparsed = [];
+  const renamed = [];
+  const unseen = [];
   let declarations = 0;
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
@@ -296,7 +302,9 @@ const readSources = (root, files) => {
   const bases = classesOf(contents);
 
   for (const [file, content] of contents) {
-    declarations += countOf(content, DECORATOR_COUNT);
+    const decorators = decoratorsOf(file, content);
+    declarations += decorators.declared;
+    for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
 
     for (const match of content.matchAll(DECORATOR)) {
       const [, kind, body, className] = match;
@@ -308,8 +316,16 @@ const readSources = (root, files) => {
         unheld.push(`${file}: ${className}`);
         continue;
       }
-      const url = TEMPLATE_URL.exec(body);
-      const inline = TEMPLATE_INLINE.exec(body);
+      // And the decorator the parser holds where the pattern read its `@`, called with an object
+      // literal: one in a comment above a class decorated otherwise is not that class's.
+      const metadata = decorators.read(match.index);
+      if (!metadata) {
+        unparsed.push(`${file}: ${className}`);
+        continue;
+      }
+      const url = metadata.get('templateUrl');
+      const path = textOf(url);
+      const template = metadata.get('template');
       const host = hostBlock(body) ?? '';
       const attributes = [];
       const literals = [];
@@ -341,23 +357,28 @@ const readSources = (root, files) => {
         base: held.base ?? null,
         from: held.from,
         via: held.via,
-        template: url
-          ? relative(root, resolve(join(root, dirname(file)), url[2]))
-              .split('\\')
-              .join('/')
-          : null,
+        template:
+          path !== undefined
+            ? relative(root, resolve(join(root, dirname(file)), path))
+                .split('\\')
+                .join('/')
+            : null,
+        // A path the scanner does not read as written: ngc evaluates the expression, a
+        // constant or a concatenation, and compiles a file the source read never opens.
+        unnamed: url !== undefined && path === undefined,
         // An empty template (`template: ''` in `number.ts` and `text.ts`) has nothing to
-        // print a string with. Any other notation written into the decorator is a hole:
-        // this scanner reads `.html` files, so text from a decorator would be invisible to
-        // it and travels to the browser all the same.
-        inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
+        // print a string with. Any other template the decorator hands the compiler is a hole,
+        // a constant it names among them: this scanner reads `.html` files, so text from a
+        // decorator would be invisible to it and travels to the browser all the same.
+        inline: template !== undefined && textOf(template) !== '',
         attributes,
         literals,
       });
     }
+    unseen.push(...decorators.unseen());
   }
 
-  return { classes, declarations, unheld };
+  return { classes, declarations, unheld, unparsed, renamed, unseen };
 };
 
 /**
@@ -733,7 +754,17 @@ class TextsError extends Error {
 }
 
 const checkTexts = (input) => {
-  const { classes, declarations, unheld, templates, pkg, sources } = input;
+  const {
+    classes,
+    declarations,
+    unheld,
+    unparsed,
+    renamed,
+    unseen,
+    templates,
+    pkg,
+    sources,
+  } = input;
 
   // ── 1. DENOMINATOR ────────────────────────────────────────────────────────────
   if (!classes.length || !sources.length)
@@ -761,14 +792,51 @@ const checkTexts = (input) => {
         `point below may read it as a component of the library.`,
     );
 
-  if (classes.length !== declarations)
+  // The template is read off the metadata the parser holds for the decorator where the pattern
+  // read its `@`, as ngc reads it. Where the parser holds no decorator there, or one called with
+  // no object literal, the class has no metadata to read it off, and the text the pattern took
+  // for it is no decorator's: a comment above a class decorated otherwise, read as a component.
+  if (unparsed.length)
+    throw new TextsError(
+      'denominator',
+      'decorator-without-metadata',
+      `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
+        `called with an object literal:\n` +
+        list(unparsed) +
+        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
+        `is no object literal once an \`as\` is off, which ngc refuses as well ` +
+        `(\`{ … } satisfies { … }\`, NG1001): the scanner reads a class's template off ` +
+        `that object, and here it has none.`,
+    );
+
+  // A decorator under a name of the file's own is one neither the pattern nor the counter sees,
+  // so the count below agrees without it: a class decorated so is no class to the source read,
+  // and the text of a template written into its decorator passed every point when no entrypoint
+  // exported it.
+  if (renamed.length)
+    throw new TextsError(
+      'denominator',
+      'decorator-under-another-name',
+      `${renamed.length} imports take \`Component\` or \`Directive\` from ` +
+        `\`@angular/core\` under another name:\n` +
+        list(renamed) +
+        `\n    The pattern and the counter know a decorator by \`@Component(\` and ` +
+        `\`@Directive(\`, and ngc by the import: a class decorated under another name ` +
+        `compiles into the package, and the source read holds no class there. Import them ` +
+        `under their own names.`,
+    );
+
+  if (unseen.length)
     throw new TextsError(
       'denominator',
       'decorator-parser',
-      `the parser recognised ${classes.length} of ${declarations} decorators — the rest ` +
-        `would drop out of the measurement without a trace, together with their \`host\` ` +
-        `block. Usual cause: a decorator written otherwise than prettier formats it ` +
-        `(\`@Component({\` and \`})\` in column zero).`,
+      `the pattern read ${classes.length} of the ${declarations} decorators the ` +
+        `TypeScript parser holds, and not these:\n` +
+        list(unseen) +
+        `\n    They would drop out of the measurement without a trace, together with their ` +
+        `\`host\` block. Usual cause: a decorator written otherwise than the pattern reads ` +
+        `it (\`@Component({\` and \`})\` in column zero): indented, inside a namespace or ` +
+        `a function, or behind a comment on its line.`,
     );
 
   // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
@@ -809,6 +877,18 @@ const checkTexts = (input) => {
         `would be invisible to it — and travels to the browser all the same. Move the ` +
         `template out to ` +
         `\`templateUrl\`.`,
+    );
+
+  const unnamed = classes.filter((k) => k.unnamed);
+  if (unnamed.length)
+    throw new TextsError(
+      'denominator',
+      'template-by-expression',
+      `${unnamed.length} classes name their template file by an expression, not a string:\n` +
+        list(unnamed.map((k) => `${k.file}: ${k.className}`)) +
+        `\n    The scanner opens the file \`templateUrl\` names as written; ngc evaluates ` +
+        `the expression and compiles a file the source read never opens. Write the path as ` +
+        `a string.`,
     );
 
   const used = new Map();

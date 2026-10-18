@@ -263,12 +263,14 @@ measurements reach them.
 
 **Gate:** `tools/check-files.mjs` (target `check-files`, in CI) — ten points over the files of
 `libs/components` as the **git index** carries them: 1 the denominator (entrypoints, sources,
-declarations, exported types and the register, plus a second count of `@Component(` taken
-differently from the parser's, so a decorator nobody parsed cannot pass for a component nobody
-faulted), 2 an entrypoint's `ng-package.json` and `src/index.ts` — read in **both** directions,
+declarations, exported types and the register, plus the TypeScript parser's count of every
+`@Component` decorator at any depth of a file, held against the column-zero anchor that reads
+them, so a decorator nobody parsed cannot pass for a component nobody faulted; a decorator is read
+as ngc reads it (`tools/decorators.mjs`), and one imported under another name and a path given by
+an expression are refused), 2 an entrypoint's `ng-package.json` and `src/index.ts` — read in **both** directions,
 so a directory of sources with no manifest beside it fires too, 3 the eponymous pair of a
-component entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no `template:` and no `styles:`
-in a decorator, 6 what a declaration names is a **sibling**, under the extension it promises, and
+component entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no template and no styles in a
+decorator, under any key ngc reads, 6 what a declaration names is a **sibling**, under the extension it promises, and
 in the index, 7 the other direction — no template or sheet a rename left behind, 8 a `*.types.ts`
 exported by the index of its entrypoint and holding nothing but types — read with the TypeScript
 parser in every types file of the library, an entrypoint's or not, because that is the set the
@@ -282,22 +284,25 @@ declarations, 81 templates and sheets and 77 exported types, and excuses three t
 components whose host **is** a native `<input>` and whose template is therefore the empty
 string, and one type no public signature carries — `PctArbitrary`, the property sweep's
 generator, which lives in a testkit the `testing` entrypoint deliberately publishes none of.
-**Control:** `tools/check-files.fixtures/` — 35 prepared trees, each rejected on its own point
+**Control:** `tools/check-files.fixtures/` — 49 prepared trees, each rejected on its own point
 **and its own rule**, among them this requirement's named control
 `template-in-the-decorator/` (a component keeping its template in the decorator — the defect
 that arrives looking like Angular's own advice), `styles-in-the-decorator/` (styles no rule of
 `check-styles` can see, because that gate reads sheets and not decorators),
 `a-template-no-declaration-names/` (the file a rename left behind),
 `stylesheet-that-is-plain-css/` (a sibling that exists and has left every SCSS rule),
-`decorator-off-the-anchor/` (the parser misses a declaration and the counter says so),
+`decorator-off-the-anchor/` (the anchor misses a declaration and the parser's count says so),
+`decorator-behind-a-comment-on-its-line/` and `decorator-imported-under-another-name/` (two
+declarations ngc compiles and the patterns that read decorators before never saw),
+`template-by-shorthand/` (a template a pattern read as no template at all),
 `type-the-index-does-not-export/` (a public type with no line of the index to carry it),
 `re-export-the-gate-cannot-follow/` (a star re-export that leaves an entrypoint's surface open,
 so point 10 stops being able to rule on it), `register-internal-entry-nothing-uses/` (the type
 went public and the excuse stayed), `register-entry-nothing-uses/` (the component was fixed and
 the excuse stayed), `types-file-holding-a-value/` (two predicates beside the type they
 implement, the shape `select.types.ts` had) with seven more cases of where point 8's second rule
-reads and `FORMS`, 43 statements the rule admits or refuses on every run, and six
-cases of point 1 alone, each a different way for the gate to examine nothing and report it
+reads and `FORMS`, 43 statements the rule admits or refuses on every run, and sixteen
+cases of point 1 alone, six of them a different way for the gate to examine nothing and report it
 green. Plus three runs against the real repository: with the register entry for `PctText`
 removed, the gate names `libs/components/field/src/text.ts` and the line of its decorator; with
 `export * from './accordion';` taken out of `libs/components/accordion/src/index.ts`, it names

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-in-decorator",
+  "description": "The template under a quoted key, `'template':`, its text kept in a constant. ngc names a property by a string as it names one by an identifier, and compiles the template (measured through ngc in partial mode and the linker for `check-parts`). The pattern that stood at point 1 wanted `template:` and read no template here, and the text `New` passed every point."
+}

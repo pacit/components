@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-by-expression",
+  "description": "`templateUrl` naming its file through a constant. ngc evaluates the expression and compiles `widget.html` (measured through ngc in partial mode), while the scanner opens the file named as written. The pattern that stood here read no `templateUrl`, and the gate refused `widget.html` as a template no decorator names: a refusal, for a cause that is not the one. Point 1 says the cause."
+}

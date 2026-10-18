@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "styles-in-decorator",
+  "description": "The styles under a name written with a Unicode escape, `st\\u0079les:`, which ngc reads by its text, `styles` (measured through ngc in partial mode). The pattern read the name as written and saw no styles, and the case passed every point."
+}

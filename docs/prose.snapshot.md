@@ -59,6 +59,7 @@ check-tools.mjs 6 18 206
 check-typecheck.mjs 4 16 134
 check-zoneless.mjs 6 18 153
 class-bases.mjs 0 0 0
+decorators.mjs 0 0 0
 fresh-inputs.mjs 0 0 0
 markdown-fences.mjs 0 12 163
 release.mjs 6 18 160

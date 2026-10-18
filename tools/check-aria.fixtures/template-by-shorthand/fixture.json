@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidgetBadge (libs/components/widget/src/badge.ts) takes its template from the decorator",
+  "$reason": "The same template kept in a constant and handed to the decorator by shorthand, which ngc reads as the member it names (measured through ngc in partial mode and the linker for `check-parts`). Read off the metadata, as ngc reads it, it is a template the decorator carries, refused as `template-in-decorator` is."
+}

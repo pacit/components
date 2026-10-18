@@ -1,0 +1,9 @@
+import { Component } from '@angular/core';
+
+export namespace legacy {
+  @Component({
+    selector: 'pct-widget-badge',
+    template: '<span>New</span>',
+  })
+  export class PctWidgetBadge {}
+}

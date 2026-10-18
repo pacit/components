@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "sheet-by-expression",
+  "description": "A `styleUrls` array holding `./button.scss` and a constant that names `button.css`, off the list. ngc evaluates both and compiles both (measured through ngc in partial mode). The pattern read the string and not the constant beside it, so the component took its styles from a sheet the gate reads, to the gate, and the case passed every point."
+}

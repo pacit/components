@@ -36,6 +36,13 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as sass from 'sass';
 
+import {
+  COMPONENT_ONLY,
+  decoratorsOf,
+  textOf,
+  textsOf,
+} from './decorators.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 
@@ -854,8 +861,12 @@ const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
  * The full set of checks over a ready input:
  *   `sheets`     — `[{ file, content, css }]`, where `css` is sass's output,
  *   `components`  — `[{ file, className, sheets, inline }]` from the decorators,
- *   `declarations`  — the number of `@Component(` occurrences in the sources (the parser's
- *                   denominator),
+ *   `declarations`  — the number of `@Component` decorators the TypeScript parser holds in the
+ *                   sources (the pattern's denominator), and `unseen` each of them the pattern
+ *                   did not read,
+ *   `unparsed`, `renamed`, `expressions` — the decorators the pattern read where the parser holds
+ *                   no metadata, the imports taking `Component` under another name, and the
+ *                   sheets a component names by an expression,
  *   `tokens`     — `[{ file, content }]`, the DTCG sources, for point 10's question of
  *                   which custom property carries the floor,
  *   `measurements` — `[{ file, content }]`, the e2e specs, read for the applications they
@@ -867,6 +878,10 @@ const checkStyles = ({
   sheets,
   components,
   declarations,
+  unseen,
+  unparsed,
+  renamed,
+  expressions,
   tokens,
   measurements,
 }) => {
@@ -924,35 +939,88 @@ const checkStyles = ({
         `    Usual cause: the list of source files stopped returning anything.`,
     );
 
-  if (components.length !== declarations)
+  // The sheets are read off the metadata the parser holds for the decorator where the pattern
+  // read its `@`. Where it holds none — a comment above a class decorated otherwise — or holds
+  // metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is nothing to read them off.
+  if (unparsed.length)
     throw new StyleError(
       'style-source',
-      `the parser recognised ${components.length} of ${declarations} \`@Component\` ` +
-        `decorators — the rest would drop out of the measurement without a trace. Usual ` +
-        `cause: a decorator written otherwise than prettier formats it (\`@Component({\` ` +
-        `and \`})\` in column zero).`,
+      `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
+        `called with an object literal:\n` +
+        list(unparsed) +
+        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
+        `is no object literal once an \`as\` is off, which ngc refuses as well: the sheets ` +
+        `are read off that object, and here it has none.`,
+      'decorator-without-metadata',
+    );
+
+  // A decorator under a name of the file's own is one neither the pattern nor the counter sees,
+  // so the count below agrees without it, and the styles it carries answer to no rule.
+  if (renamed.length)
+    throw new StyleError(
+      'style-source',
+      `${renamed.length} imports take \`Component\` from \`@angular/core\` under another ` +
+        `name:\n` +
+        list(renamed) +
+        `\n    The pattern and the counter know a decorator by \`@Component(\`, and ngc by ` +
+        `the import: a component decorated so compiles, and its styles reach the consumer ` +
+        `past every rule here. Import it under its own name.`,
+      'decorator-under-another-name',
+    );
+
+  if (unseen.length)
+    throw new StyleError(
+      'style-source',
+      `the pattern read ${components.length} of the ${declarations} \`@Component\` ` +
+        `decorators the TypeScript parser holds, and not these:\n` +
+        list(unseen) +
+        `\n    They would drop out of the measurement without a trace. Usual cause: a ` +
+        `decorator written otherwise than prettier formats it (\`@Component({\` and \`})\` ` +
+        `in column zero): indented, inside a namespace or a function, or behind a comment on ` +
+        `its line.`,
+      'decorator-unseen',
+    );
+
+  if (expressions.length)
+    throw new StyleError(
+      'style-source',
+      `${expressions.length} components name a sheet by an expression, not a string:\n` +
+        list(expressions) +
+        `\n    ngc evaluates the expression and compiles the sheet it gives; this gate reads ` +
+        `the path as written, so it could not say whether that sheet is one it reads. Write ` +
+        `the path as a string.`,
+      'sheet-by-expression',
+    );
+
+  const inline = components.filter((k) => k.inline);
+  if (inline.length)
+    throw new StyleError(
+      'style-source',
+      `${inline.length} components take their styles from the decorator, not a sheet:\n` +
+        list(inline.map((k) => `${k.file}: ${k.className}`)) +
+        `\n    This gate reads sheets, not decorators: those styles travel to the consumer ` +
+        `like every other, and points 5 and 6 pronounce them "clean" only because they ` +
+        `cannot see them.`,
+      'styles-in-decorator',
     );
 
   const known = new Set(sheets.map((a) => a.file));
-  const withoutStylesheet = components.flatMap((k) => {
-    if (k.inline)
-      return [
-        `${k.file}: ${k.className} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
-      ];
-    return k.sheets
+  const outside = components.flatMap((k) =>
+    k.sheets
       .filter((a) => !known.has(a))
       .map(
         (a) =>
           `${k.file}: ${k.className} takes its styles from \`${a}\`, outside the sheet list`,
-      );
-  });
-  if (withoutStylesheet.length)
+      ),
+  );
+  if (outside.length)
     throw new StyleError(
       'style-source',
-      `${withoutStylesheet.length} components take their styles from beyond this gate's reach:\n` +
-        list(withoutStylesheet) +
+      `${outside.length} components take their styles from beyond this gate's reach:\n` +
+        list(outside) +
         `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
         `pronounce them "clean" only because they cannot see them.`,
+      'sheet-outside-the-list',
     );
 
   // 4. Exceptions: named, justified, used.
@@ -1289,41 +1357,65 @@ const checkStyles = ({
 // ── input from disk ───────────────────────────────────────────────────────────
 
 /**
- * The component decorator. The parser anchors in column zero, because that is the
+ * The component decorator. The pattern anchors in column zero, because that is the
  * formatting `nx format:check` enforces, and the counter watches that a drift from that
- * assumption stays visible — a component the parser does not recognise is to drop out of
+ * assumption stays visible — a component the pattern does not recognise is to drop out of
  * the measurement LOUDLY, not quietly.
  *
- * So the counter must NOT repeat the parser's anchor, and that is the whole point here.
+ * So the counter must NOT repeat the pattern's anchor, and that is the whole point here.
  * The first version had `/^@Component\(/gm` in both places: moving a decorator by one
- * space put out the parser and the counter at once, both sides agreed on seven and the
- * gate ended green, having stopped measuring a whole component (`lesson-48`). Indentation
- * is therefore allowed here, and only occurrences in comments are filtered out —
- * `core/src/texts.ts` has `@Component(` in a JSDoc example, that is, on a line starting
- * with an asterisk.
+ * space put out the pattern and the counter at once, both sides agreed on seven and the
+ * gate ended green, having stopped measuring a whole component (`lesson-48`). The counter
+ * is the TypeScript parser's now, every `@Component` decorator at any depth of a file
+ * (`decoratorsOf`, `decorators.mjs`): one from the start of a line past indentation stood here,
+ * and a decorator behind a comment on its line, which prettier keeps, or imported under another
+ * name was a component it never counted.
+ *
+ * What a decorator names is read off its metadata as ngc reads it, `styleUrl`, `styleUrls` and
+ * `styles` by shorthand, under a quoted key or an escaped name alike: patterns over the text
+ * stood here, and styles handed over by shorthand were a component with no sheet and no styles,
+ * which passed (measured). A sheet is read as a string written in place, `styleUrl` one and
+ * `styleUrls` an array of them; ngc evaluates any other expression, a constant or a
+ * concatenation, and compiles a sheet this gate could not place on its list.
  */
 const COMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const COMPONENT_COUNT = /^[ \t]*@Component\(/gm;
 
 const readComponents = (root, files) => {
   const components = [];
+  const unseen = [];
+  const unparsed = [];
+  const renamed = [];
+  const expressions = [];
   let declarations = 0;
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
-    declarations += (content.match(COMPONENT_COUNT) ?? []).length;
-    for (const [, body, className] of content.matchAll(COMPONENT)) {
+    const decorators = decoratorsOf(file, content, COMPONENT_ONLY);
+    declarations += decorators.declared;
+    for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
+    for (const match of content.matchAll(COMPONENT)) {
+      const [, , className] = match;
+      const metadata = decorators.read(match.index);
+      if (!metadata) {
+        unparsed.push(`${file}: ${className}`);
+        continue;
+      }
+      const paths = (member, read) => {
+        const node = metadata.get(member);
+        if (node === undefined) return [];
+        const value = read(node);
+        if (value === undefined)
+          expressions.push(`${file}: ${className}, \`${member}\``);
+        return [value ?? []].flat();
+      };
       const sheets = [
-        ...body.matchAll(/styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g),
-      ].flatMap(([, array, , single]) =>
-        single !== undefined
-          ? [single]
-          : [...array.matchAll(/['"]([^'"]*)['"]/g)].map((m) => m[1]),
-      );
+        ...paths('styleUrl', textOf),
+        ...paths('styleUrls', textsOf),
+      ];
       components.push({
         file,
         className,
-        inline: /^\s*styles\s*:/m.test(body),
+        inline: metadata.has('styles'),
         sheets: sheets.map((a) =>
           relative(root, resolve(join(root, dirname(file)), a))
             .split('\\')
@@ -1331,8 +1423,9 @@ const readComponents = (root, files) => {
         ),
       });
     }
+    unseen.push(...decorators.unseen());
   }
-  return { components, declarations };
+  return { components, declarations, unseen, unparsed, renamed, expressions };
 };
 
 /** A file with its text, for the two inputs point 10 reads without compiling anything. */

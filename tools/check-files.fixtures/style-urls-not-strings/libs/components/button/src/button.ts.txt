@@ -1,0 +1,14 @@
+import { Component } from '@angular/core';
+
+import type { FxButtonVariant } from './button.types';
+
+const sheets = ['./button.scss'];
+
+@Component({
+  selector: 'fx-button',
+  templateUrl: './button.html',
+  styleUrls: sheets,
+})
+export class FxButton {
+  variant: FxButtonVariant = 'solid';
+}

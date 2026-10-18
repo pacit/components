@@ -41,9 +41,9 @@ import {
   tmplAstVisitAll,
 } from '@angular/compiler';
 import * as core from '@angular/core';
-import ts from 'typescript';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
+import { decoratorsOf, textOf } from './decorators.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
 import { readTree } from './template-comments.mjs';
 
@@ -85,7 +85,8 @@ const sorted = (set) => [...set].sort();
  * what it reads is held separately against a counter that does NOT repeat that
  * anchor: repeating it would put out both sides of the comparison at once and point 1 would
  * pass having stopped measuring a whole component (`lesson-48`). The counter is the parser's
- * (`decoratorsOf`): every decorator called by either name, at any depth of the file. A pattern
+ * (`decoratorsOf`, `decorators.mjs`): every decorator called by either name, at any depth of the
+ * file. A pattern
  * counted them before, from the start of a line past indentation, and a block comment written
  * before the decorator on its line, which prettier keeps, hid one from both: ngc compiled it, and
  * a class no entrypoint exported passed every point (measured).
@@ -97,109 +98,6 @@ const sorted = (set) => [...set].sort();
  */
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
-
-/** The two decorators whose classes the inventory reads, by the names `@angular/core` exports. */
-const DECORATORS = new Set(['Component', 'Directive']);
-
-/**
- * The metadata of each decorator of a class at the top level of a file, by the offset its `@`
- * stands at, read as ngc reads it (`metadata`): a map of the members by name, or `null` for a
- * decorator called with no object literal. ngc takes the argument through `unwrapExpression`,
- * which takes off an `as` and parentheses, and refuses anything else that is no object literal
- * (NG1001, measured on `{ … } satisfies { … }`). It takes the members through
- * `reflectObjectLiteral`: a property named by an identifier or a string (or a number, which
- * names neither member read here), by the name's text, so `'template'` and `t\u0065mplate` are
- * `template`; and a shorthand, so `template,` hands the compiler the constant it names. Nothing
- * else is a member to it: a template under a computed key (`['template']`, `[key]`), in a spread
- * or behind an accessor is no template ngc compiles, and with no other one the component is
- * NG2001, "missing a template" (each measured through ngc in partial mode). `jit: true` leaves
- * the object to a compiler at runtime, which an application built ahead of time does not carry.
- * The pattern stood here, `template:` from the start of a line: a shorthand, a quoted key and an
- * escaped name each handed ngc a template it did not see, and one kept in a constant reached the
- * package read alone (measured through ngc and the linker).
- *
- * And every decorator called by those names anywhere in the file, where its `@` stands and on
- * which line, the counter point 1 holds the pattern to (`declared`), and the names the file
- * takes `Component` and `Directive` under, other than their own (`renamed`).
- */
-const decoratorsOf = (file, content) => {
-  const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest);
-  const unwrap = (node) =>
-    node !== undefined &&
-    (ts.isAsExpression(node) || ts.isParenthesizedExpression(node))
-      ? unwrap(node.expression)
-      : node;
-  const metadataOf = ({ expression }) => {
-    const meta = ts.isCallExpression(expression)
-      ? unwrap(expression.arguments[0])
-      : undefined;
-    if (meta === undefined || !ts.isObjectLiteralExpression(meta)) return null;
-    const members = new Map();
-    for (const member of meta.properties)
-      if (
-        ts.isPropertyAssignment(member) &&
-        (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name))
-      )
-        members.set(member.name.text, member.initializer);
-      else if (ts.isShorthandPropertyAssignment(member))
-        members.set(member.name.text, member.name);
-    return members;
-  };
-  // The pattern and the counter know a decorator by the name `@Component(` or `@Directive(`, and
-  // ngc by the import: it compiles `@Widget({…})` over `Component as Widget`, and `@ng.Component`
-  // over a namespace import, each into `consts` (measured), where neither of them sees a decorator.
-  const renamed = source.statements
-    .filter(
-      (statement) =>
-        ts.isImportDeclaration(statement) &&
-        statement.moduleSpecifier.text === '@angular/core',
-    )
-    .flatMap(({ importClause }) => {
-      const bound = importClause?.namedBindings;
-      if (bound === undefined) return [];
-      if (ts.isNamespaceImport(bound)) return [`* as ${bound.name.text}`];
-      return bound.elements
-        .filter(
-          ({ propertyName, name }) =>
-            DECORATORS.has(propertyName?.text) &&
-            propertyName.text !== name.text,
-        )
-        .map(
-          ({ propertyName, name }) => `${propertyName.text} as ${name.text}`,
-        );
-    });
-  const declared = [];
-  const count = (node) => {
-    if (
-      ts.isDecorator(node) &&
-      ts.isCallExpression(node.expression) &&
-      DECORATORS.has(node.expression.expression.text)
-    )
-      declared.push({
-        at: node.getStart(source),
-        line:
-          source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
-      });
-    ts.forEachChild(node, count);
-  };
-  count(source);
-  return {
-    declared,
-    renamed,
-    metadata: new Map(
-      source.statements
-        .filter(ts.isClassDeclaration)
-        .flatMap((statement) => ts.getDecorators(statement) ?? [])
-        .map((decorator) => [
-          decorator.getStart(source),
-          metadataOf(decorator),
-        ]),
-    ),
-  };
-};
-
-/** A literal with no text in it: the one template the decorator may carry, as it brings no part. */
-const isEmpty = (node) => ts.isStringLiteralLike(node) && node.text === '';
 
 /** `'data-pct-part': 'name'` in the `host` block. */
 const HOST_STATIC = new RegExp(
@@ -270,14 +168,9 @@ const readSources = (root, files) => {
   const bases = classesOf(contents);
 
   for (const [file, content] of contents) {
-    const {
-      metadata: decorators,
-      declared,
-      renamed: names,
-    } = decoratorsOf(file, content);
-    declarations += declared.length;
-    for (const name of names) renamed.push(`${file}: ${name}`);
-    const read = new Set();
+    const decorators = decoratorsOf(file, content);
+    declarations += decorators.declared;
+    for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
 
     for (const match of content.matchAll(DECORATOR)) {
       const [, kind, body, className] = match;
@@ -291,13 +184,13 @@ const readSources = (root, files) => {
       }
       // And the decorator the parser holds where the pattern read its `@`, called with an object
       // literal: one in a comment above a class decorated otherwise is not that class's.
-      const metadata = decorators.get(match.index);
+      const metadata = decorators.read(match.index);
       if (!metadata) {
         unparsed.push(`${file}: ${className}`);
         continue;
       }
       const url = metadata.get('templateUrl');
-      const named = url !== undefined && ts.isStringLiteralLike(url);
+      const path = textOf(url);
       const template = metadata.get('template');
       classes.push({
         file,
@@ -311,27 +204,26 @@ const readSources = (root, files) => {
         from: held.from,
         via: held.via,
         entrypoint: entrypointFromPath(file),
-        template: named
-          ? relative(root, resolve(join(root, dirname(file)), url.text))
-              .split('\\')
-              .join('/')
-          : null,
+        template:
+          path !== undefined
+            ? relative(root, resolve(join(root, dirname(file)), path))
+                .split('\\')
+                .join('/')
+            : null,
         // A path the scanner does not read as written: ngc evaluates the expression, a
         // constant or a concatenation, and compiles a file the source read never opens.
-        unnamed: url !== undefined && !named,
+        unnamed: url !== undefined && path === undefined,
         // An empty template (`template: ''` in `number.ts` and `text.ts`) can bring no
         // part, so it is no hole in the denominator. Any other template the decorator hands
         // the compiler is one, a constant it names among them.
-        inline: template !== undefined && !isEmpty(template),
+        inline: template !== undefined && textOf(template) !== '',
         parts: new Set([...body.matchAll(HOST_STATIC)].map((m) => m[3])),
         statics: countOf(body, HOST_STATIC),
         dynamic: countOf(body, HOST_DYNAMIC),
         occurrences: countOf(body, HOST_COUNTER),
       });
-      read.add(match.index);
     }
-    for (const { at, line } of declared)
-      if (!read.has(at)) unseen.push(`${file}:${line}`);
+    unseen.push(...decorators.unseen());
   }
 
   return { classes, declarations, unseen, unheld, unparsed, renamed };

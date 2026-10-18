@@ -1,4 +1,8 @@
-import { Component, ElementRef, inject as injectRef } from '@angular/core';
+import {
+  Component as Component,
+  ElementRef,
+  inject as injectRef,
+} from '@angular/core';
 
 /**
  * The path in backticks, a literal ngc reads as it reads a quoted one, and the library does not
@@ -12,7 +16,8 @@ import { Component, ElementRef, inject as injectRef } from '@angular/core';
 export class PctWidget {
   /**
    * `inject` under a name of the file's own, which the library does not write: only `Component`
-   * and `Directive` are decorators the pattern knows by name.
+   * and `Directive` are decorators the pattern knows by name. `Component` is imported under an
+   * alias that is its own name, which is no other name.
    */
   private readonly host = injectRef<ElementRef<HTMLElement>>(ElementRef);
 

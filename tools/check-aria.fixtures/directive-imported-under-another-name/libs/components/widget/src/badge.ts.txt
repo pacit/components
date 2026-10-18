@@ -1,0 +1,11 @@
+import { Directive as Marker } from '@angular/core';
+
+/** A marker the widget applies inside its template, exported by no entrypoint. */
+@Marker({
+  selector: '[pctWidgetBadge]',
+  host: {
+    role: 'combobox',
+    tabindex: '0',
+  },
+})
+export class PctWidgetBadge {}

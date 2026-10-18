@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "decorator-under-another-name",
+  "description": "An internal directive decorated through `Directive` imported under another name, writing `title: 'New'` in its `host` block, a string point 3 refuses where it reads one. ngc follows the import as it does for `Component`; the pattern and the counter saw nothing, and the case passed every point. It holds the `Directive` half of the refusal, as `decorator-imported-under-another-name` holds the `Component` half."
+}

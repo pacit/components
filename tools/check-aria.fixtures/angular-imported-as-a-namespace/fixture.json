@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/badge.ts: * as ng",
+  "$reason": "`@ng.Component({…})` over a namespace import of `@angular/core`, which ngc compiles as it compiles `@Component` (measured through ngc in partial mode and the linker for `check-parts`). Neither the pattern nor the counter saw a decorator, so no point read the component, and the combobox its template draws, with no name to reach it, passed every point."
+}

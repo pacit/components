@@ -1,0 +1,20 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "message": "libs/components/button/src/badge.ts: * as ng",
+  "// defect": "`@ng.Component({…})` over a namespace import of `@angular/core`, which ngc compiles as it compiles `@Component` (measured through ngc in partial mode and the linker for `check-parts`). Neither the pattern nor the counter saw a decorator, so the component dropped out of points 4 to 6 without a trace.",
+  "files": [
+    {
+      "file": "libs/components/button/src/badge.ts",
+      "lines": [
+        "import * as ng from '@angular/core';",
+        "",
+        "@ng.Component({",
+        "  selector: 'pct-button-badge',",
+        "  template: '<span><ng-content /></span>',",
+        "})",
+        "export class PctButtonBadge {}"
+      ]
+    }
+  ]
+}

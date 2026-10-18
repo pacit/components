@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "libs/components/widget/src/badge.ts: Directive as Marker",
+  "$reason": "An internal directive decorated through `Directive` imported under another name, putting a focusable combobox on its host. ngc follows the import as it does for `Component`; the pattern and the counter saw nothing, and the case passed every point. It holds the `Directive` half of the refusal."
+}

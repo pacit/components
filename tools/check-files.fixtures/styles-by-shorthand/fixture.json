@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "styles",
+  "rule": "inline-styles",
+  "description": "The button's styles kept in a constant and handed to the decorator by shorthand, which ngc compiles into the declaration's `styles` (measured through ngc in partial mode). The pattern that stood here wanted `styles:` from the start of a line, so to this gate the declaration named no styles, and point 5 refused it as `no-styles`: the right point, by the rule for another defect.",
+  "drop": ["libs/components/button/src/button.scss"]
+}

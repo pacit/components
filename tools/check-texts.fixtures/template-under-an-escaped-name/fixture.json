@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-in-decorator",
+  "description": "The template under a name written with a Unicode escape, `t\\u0065mplate:`, its text kept in a constant. The parser holds the name's text, `template`, and so does ngc, which compiles the template (measured through ngc in partial mode and the linker for `check-parts`). The pattern read the name as written and saw no template, and the text `New` passed every point; a read of the name as written (`getText()`) would pass it again."
+}

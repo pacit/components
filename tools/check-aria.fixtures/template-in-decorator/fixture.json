@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidgetBadge (libs/components/widget/src/badge.ts) takes its template from the decorator",
+  "$reason": "A component whose template is written into the decorator, drawing a combobox no name reaches. The walk reads the file `templateUrl` names, and before point 1 said so it passed over this component, and the widget passed every point. `check-files` refuses a template in a decorator only where its register excuses none; this gate says what it does not read."
+}

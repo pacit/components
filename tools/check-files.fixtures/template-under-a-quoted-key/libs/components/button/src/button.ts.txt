@@ -1,0 +1,15 @@
+import { Component } from '@angular/core';
+
+import type { FxButtonVariant } from './button.types';
+
+/** The template kept in a constant, out of the decorator's body. */
+const template = '<button type="button"><ng-content /></button>';
+
+@Component({
+  selector: 'fx-button',
+  'template': template,
+  styleUrl: './button.scss',
+})
+export class FxButton {
+  variant: FxButtonVariant = 'solid';
+}

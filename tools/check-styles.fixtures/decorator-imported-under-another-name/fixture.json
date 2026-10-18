@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "decorator-under-another-name",
+  "description": "An internal component decorated through `Component` imported under another name. ngc follows the import and compiles it (measured through ngc in partial mode and the linker for `check-parts`), while the pattern and the counter know a decorator by `@Component(` and saw none, so no point read the component, and its `margin-left`, a physical property point 5 refuses in a sheet, passed every point."
+}

@@ -1,0 +1,15 @@
+import { Component } from '@angular/core';
+
+import type { FxButtonVariant } from './button.types';
+
+/** The styles kept in a constant, out of the decorator's body. */
+const styles = [':host { display: inline-flex; }'];
+
+@Component({
+  selector: 'fx-button',
+  templateUrl: './button.html',
+  styles,
+})
+export class FxButton {
+  variant: FxButtonVariant = 'solid';
+}

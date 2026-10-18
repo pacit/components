@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "template",
+  "rule": "inline-template",
+  "description": "The template under a quoted key, `'template':`, which ngc names as it names a property by an identifier (measured through ngc in partial mode and the linker for `check-parts`). The pattern read no template, and point 4 refused the declaration as naming none.",
+  "drop": ["libs/components/button/src/button.html"]
+}

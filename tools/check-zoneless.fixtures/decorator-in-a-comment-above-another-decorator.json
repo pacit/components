@@ -1,0 +1,26 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "message": "libs/components/button/src/badge.ts: PctButtonBadge",
+  "// defect": "A component's decorator kept in a comment above the service its class became, in column zero, so the pattern reads it and the class below stands at the top level where the pattern names it. The parser holds no decorator where the pattern read the `@`: what it read is no decorator's, and the class is no component. Read off the text, the comment was the class's decorator, and point 4 refused the class as a component missing from the package: a refusal, for a cause that is not the one.",
+  "files": [
+    {
+      "file": "libs/components/button/src/badge.ts",
+      "lines": [
+        "import { Injectable } from '@angular/core';",
+        "",
+        "/*",
+        "The badge was a component before it became a service, and its decorator is kept for its history:",
+        "",
+        "@Component({",
+        "  selector: 'pct-button-badge',",
+        "  templateUrl: './badge.html',",
+        "*/",
+        "@Injectable({",
+        "  providedIn: 'root',",
+        "})",
+        "export class PctButtonBadge {}"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+const sheet = './button.css';
+
+@Component({
+  selector: 'fx-button',
+  template: '<button type="button"><ng-content /></button>',
+  styleUrl: sheet,
+})
+export class FxButton {}

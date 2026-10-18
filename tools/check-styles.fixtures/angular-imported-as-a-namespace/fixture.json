@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "rule": "decorator-under-another-name",
+  "description": "`@ng.Component({…})` over a namespace import of `@angular/core`, which ngc compiles as it compiles `@Component` (measured through ngc in partial mode and the linker for `check-parts`). Neither the pattern nor the counter saw a decorator, so no point read the component, and its `margin-left`, a physical property point 5 refuses in a sheet, passed every point."
+}

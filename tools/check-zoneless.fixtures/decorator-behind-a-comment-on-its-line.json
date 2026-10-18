@@ -1,0 +1,20 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "message": "libs/components/button/src/badge.ts:3",
+  "// defect": "An internal component, exported by no entrypoint, its decorator written behind a block comment on the same line, which prettier keeps. ngc compiles it (measured through ngc in partial mode and the linker for `check-parts`); the pattern wants the decorator in column zero, and the counter that stood beside it wanted it at the start of a line past indentation, so neither saw it, and the component dropped out of points 4 to 6 without a trace. The parser counts it, and point 1 names it by file and line.",
+  "files": [
+    {
+      "file": "libs/components/button/src/badge.ts",
+      "lines": [
+        "import { Component } from '@angular/core';",
+        "",
+        "/* A badge the button renders, exported by no entrypoint. */ @Component({",
+        "  selector: 'pct-button-badge',",
+        "  template: '<span><ng-content /></span>',",
+        "})",
+        "export class PctButtonBadge {}"
+      ]
+    }
+  ]
+}
