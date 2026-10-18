@@ -1,0 +1,13 @@
+{
+  "point": 3,
+  "check": "every",
+  "why": "./chips exports a PctButton of its own that draws a label, and no harness stands on it — the harness of the button's PctButton answered for both while the classes were looked up by name.",
+  "addClasses": [
+    {
+      "entrypoint": "./chips",
+      "className": "PctButton",
+      "selector": "pct-chip-button",
+      "parts": ["label"]
+    }
+  ]
+}

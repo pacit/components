@@ -245,7 +245,11 @@ const checkHarness = (input) => {
         list(malformed),
     );
 
-  // 2. The host — one harness, one class, the selector verbatim.
+  // 2. The host — one harness, one class, the selector verbatim. A harness finds its class by
+  // the selector and nothing else, and the harnesses are kept per class the package exports —
+  // an entrypoint and the name it exports — not per name: two entrypoints are two modules and
+  // may each export a class of one name (`export { A as B }` is enough), and by name the
+  // harness of one answered for the other at point 3.
   const bySelector = new Map();
   for (const c of classes)
     bySelector.set(c.selector, [...(bySelector.get(c.selector) ?? []), c]);
@@ -259,20 +263,20 @@ const checkHarness = (input) => {
         `${h.className}: \`${h.hostSelector}\` is the selector of ` +
           (owners.length === 0
             ? 'no class the package exports'
-            : `${owners.length} classes (${owners.map((c) => c.className).join(', ')})`),
+            : `${owners.length} classes (${owners.map((c) => `${c.className} of ${c.entrypoint}`).join(', ')})`),
       );
       continue;
     }
     classOf.set(h.className, owners[0]);
-    harnessesOfClass.set(owners[0].className, [
-      ...(harnessesOfClass.get(owners[0].className) ?? []),
+    harnessesOfClass.set(owners[0], [
+      ...(harnessesOfClass.get(owners[0]) ?? []),
       h.className,
     ]);
   }
-  for (const [className, names] of harnessesOfClass)
+  for (const [c, names] of harnessesOfClass)
     if (names.length > 1)
       wrong.push(
-        `${className}: ${names.length} harnesses answer to its selector — ${names.join(', ')}`,
+        `${c.className} (${c.entrypoint}): ${names.length} harnesses answer to its selector — ${names.join(', ')}`,
       );
   if (wrong.length)
     throw new HarnessError(
@@ -284,7 +288,7 @@ const checkHarness = (input) => {
 
   // 3. Every class that draws a part — the denominator a consumer's suite reaches for.
   const orphaned = classes
-    .filter((c) => c.parts.length && !harnessesOfClass.has(c.className))
+    .filter((c) => c.parts.length && !harnessesOfClass.has(c))
     .map(
       (c) =>
         `${c.className} (${c.entrypoint}): draws ${c.parts.length} parts ` +
@@ -425,7 +429,7 @@ const patchList = (items, key, patches, blank, what) => {
  * an entry by name (`null` drops it, an unknown name adds it); `declarations: null` loses
  * the declaration file and `declarations.replace` rewrites it by a pattern that has to
  * match; `cards` patches a card by file name (`null` drops it, `harnesses: null` takes its
- * row away).
+ * row away); `addClasses` adds classes as written, a namesake of an exported one included.
  */
 const buildFixture = (fixtureLive, fx) => {
   const w = structuredClone(fixtureLive);
@@ -450,6 +454,7 @@ const buildFixture = (fixtureLive, fx) => {
     }),
     'class',
   );
+  w.classes.push(...(fx.addClasses ?? []));
   if (fx.declarations === null) w.declarations = null;
   for (const { pattern, flags, with: replacement } of fx.declarations
     ?.replace ?? []) {
@@ -494,6 +499,11 @@ if (live) {
         problems.push(
           `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
             `was meant to — the fixture proves something other than what it declares`,
+        );
+      else if (fx.message !== undefined && !error.message.includes(fx.message))
+        problems.push(
+          `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
+            `refusal of the same point, or the right one saying something else`,
         );
     }
   }

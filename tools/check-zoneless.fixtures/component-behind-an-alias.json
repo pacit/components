@@ -1,0 +1,19 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "`PctButton` dropped out of `./button`, whose barrel now exports `PctChip as PctButton`. The key a module exports a class under is not the class: paired by it, the chip stood in for the button. The pair is the class's own name, and the refusal names the class behind the key.",
+  "message": "the entrypoint exports `PctChip` under that name",
+  "dropFromPackage": ["PctButton"],
+  "addClasses": {
+    "chip": {
+      "name": "PctChip",
+      "onPush": true,
+      "standalone": true
+    }
+  },
+  "modules": {
+    "./button": {
+      "PctButton": "chip"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "point": 5,
+  "check": "types",
+  "why": "./chips exports a PctButton of its own with a harness of its own — two classes, one harness each, which point 2 passes; the new harness has no declaration, which point 5 refuses. Counted by name, point 2 read two harnesses on one class and fired first.",
+  "addClasses": [
+    {
+      "entrypoint": "./chips",
+      "className": "PctButton",
+      "selector": "pct-chip-button",
+      "parts": ["label"]
+    }
+  ],
+  "harnesses": {
+    "PctChipButtonHarness": {
+      "hostSelector": "pct-chip-button",
+      "parts": ["label"]
+    }
+  }
+}

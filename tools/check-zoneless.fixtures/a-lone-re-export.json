@@ -1,0 +1,14 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`./chips` re-exports the button's `PctButton` and has none of its own. One component, one class, exported twice: point 4 pairs them, and point 5 refuses its `standalone: false`, naming the class once with both entrypoints that export it. Were point 4 to refuse a class two entrypoints export, this case would fire there.",
+  "modules": {
+    "./chips": {
+      "PctButton": "button"
+    }
+  },
+  "standalone": {
+    "PctButton": false
+  },
+  "message": "1 components in the package do not meet the foundation:\n      PctButton (./button, ./chips): onPush=true, standalone=false"
+}

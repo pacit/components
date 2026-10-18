@@ -1,0 +1,14 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`./button` exports its `PctButton` as `PctBtn` and under no other key. The class is the component's, so point 4 pairs them, and point 5 then refuses its `onPush: false`. Were point 4 to pair by the export key, or to refuse an alias, this case would fire there.",
+  "modules": {
+    "./button": {
+      "PctButton": null,
+      "PctBtn": "button"
+    }
+  },
+  "onPush": {
+    "PctButton": false
+  }
+}
