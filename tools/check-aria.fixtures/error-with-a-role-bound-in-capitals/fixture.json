@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "carries a BOUND `role` or `aria-live`",
-  "$reason": "The reference's error part with its `alert` written and `[attr.ROLE]` bound beside it, which `setAttribute` takes as `role` and sets after the static attributes: the DOM ends with what the expression gives, and a `null` takes the role off. Point 7 compared a binding's name as written against `role` and `attr.role`, so the binding in capitals was none, and the written `alert` passed. The name is read as `boundOn` reads it now, in any case and any syntax."
+  "$reason": "The reference's error part with its `alert` written and `[attr.ROLE]` bound beside it, which `setAttribute` takes as `role` and sets after the static attributes: the DOM ends with what the expression gives, and a `null` takes the role off. Point 7 compared the written role first, so the `alert` passed whatever was bound beside it (`error-with-alert-and-a-bound-role`); asked first, as now, but by the name as written against `role` and `attr.role`, the binding in capitals would be none, and the `alert` would pass still. The name is read as `boundOn` reads it, in any case and any syntax."
 }

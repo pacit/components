@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "carries no `role`",
-  "$reason": "The reference's error part with its role taken off and an inline `*ngIf` on it. The parser wraps the element in a template that holds a copy of its attributes, and the walk read the part on both, so the denominator counted one part in the text, refused two walked, and sent the author looking for a block the walk skipped; the error's missing role never reached point 7. Only an element carries a part to the DOM, and only an element's part is read."
+  "$reason": "The reference's error part with its role taken off and an inline `*ngIf` on it. The parser wraps the element in a template that holds a copy of its attributes, and the walk read the part on both, so the denominator, finding one part more walked than the text holds, refused the template and sent the author looking for a block the walk skipped; the error's missing role never reached point 7. Only an element carries a part to the DOM, and only an element's part is read."
 }

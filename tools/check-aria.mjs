@@ -1069,7 +1069,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // (`*ngIf`) holds a copy of its element's attributes, so the part was read twice, and one
     // written on an `<ng-template>` passed for a part no element carries. Only an element
     // carries a part to the DOM. Each message part written on it is counted for the
-    // denominator, which counts them in the text, where two on one tag are two.
+    // denominator, which counts them in the text, where two on one tag are two. The
+    // template around it is looked through, as for `*ngFor` (`repeats`): an `*ngIf` is no
+    // condition to the walk, and its `else` no branch.
     if (isElement(node)) {
       state.parts += allWrittenOn(node, PART_ATTRIBUTE).filter((value) =>
         MESSAGE_PART.test(value),
