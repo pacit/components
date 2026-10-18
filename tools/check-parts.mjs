@@ -120,7 +120,9 @@ const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
  * An escape in a key written in capitals hid the name from the text and from a read in
  * lowercase alike, and ngc resolves it into a part (measured through ngc in partial mode and
  * the linker): it passed every point on a class no entrypoint exports. Two counts and not
- * their sum, so that an error in one cannot cancel one in the other.
+ * their sum, so that an error in one cannot cancel one in the other. A part restated under its
+ * key, a constant spread twice, counts twice as written and once as read and is refused, though
+ * ngc composes one part: a refusal too many, and the library writes neither.
  */
 const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 

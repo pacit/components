@@ -1111,9 +1111,9 @@ const checkTexts = (input) => {
       `${packageOnly.length} speaking attributes are in the package and not in the ` +
         `source read:\n` +
         list(shorten(packageOnly)) +
-        `\n    This is what an attribute brought in by syntax the scanner cannot read ` +
-        `looks like — a mixin, inheritance, a \`dist\` built before the source ` +
-        `changed. Point 3 would never look at it.`,
+        `\n    This is what an attribute the source read does not see looks like — one a ` +
+        `mixin or inheritance brings, or one a \`dist\` built before the source changed ` +
+        `still carries. Point 3 would never look at it.`,
     );
 
   const sourcesOnly = [...speakingInSources].filter(
