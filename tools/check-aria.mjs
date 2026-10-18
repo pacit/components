@@ -1171,11 +1171,13 @@ const exclusive = (a, b) =>
  * one reader for this gate and `check-icons`, not a copy in each. A template it cannot read
  * leaves the gate with nothing to say, which is why the errors travel back rather than being
  * swallowed into an empty list. The walk knows the side blocks it is handed: the live run hands
- * it every one, and a prepared input may hold one back to play the block Angular adds next. It
- * knows, too, the fields an expression reads the two name inputs through (`reads`), which are its
- * owners' and not the inputs' names.
+ * it every one, and a prepared input may hold one back to play the block Angular adds next. The
+ * tag reader goes without the visits a prepared input takes from it (`skips`): the live run takes
+ * none, and a case may name one, which then neither records nor descends — an override of the
+ * reader's that forgets `super`. The walk knows, too, the fields an expression reads the two name
+ * inputs through (`reads`), which are its owners' and not the inputs' names.
  */
-const readMessages = (file, content, sides, reads) => {
+const readMessages = (file, content, sides, skips, reads) => {
   const { text, ...parsed } = readTree(file, content);
   const state = {
     sides,
@@ -1188,6 +1190,7 @@ const readMessages = (file, content, sides, reads) => {
     elements: new Map(),
   };
   const tags = new TagReader();
+  for (const visit of skips) tags[visit] = () => {};
   if (!parsed.errors?.length) {
     walkTemplate(parsed.nodes, [], state);
     tmplAstVisitAll(tags, parsed.nodes);
@@ -1334,6 +1337,7 @@ const checkAria = ({
   documents,
   tables,
   sides,
+  skips,
 }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
@@ -1533,7 +1537,13 @@ const checkAria = ({
     // roles are bound and what makes a stop. A template the parser refuses is refused for what
     // the parser says, an unbalanced quote included (`Opening tag "button" not terminated`): the
     // build hands it the same text, and prettier refuses it too.
-    const said = readMessages(template.file, template.content, sides, reads);
+    const said = readMessages(
+      template.file,
+      template.content,
+      sides,
+      skips,
+      reads,
+    );
     if (said.errors.length)
       throw new AriaError(
         'denominator',
@@ -1585,7 +1595,8 @@ const checkAria = ({
     // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
     // met. On a reader that reaches every kind of node this never fires; it is what holds that
     // reach — `@for` and its `@empty`, `@switch`, `@defer` and its side blocks, a plain
-    // `<ng-template>`, a projection's fallback — on the library and the reference.
+    // `<ng-template>`, a projection's fallback — on the library and the reference. A prepared
+    // input that takes a visit from the reader (`"reader": { "drop" }`) is what holds it.
     const unreadByTheReader = read.tags.filter(
       (t) => said.paths.has(t.offset) && !said.kinds.has(t.offset),
     );
@@ -2336,13 +2347,14 @@ const isCard = (p) =>
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 /**
- * What the gate reads: the files under `root`, and the tables and side blocks a case asks for.
- * The live run asks for nothing, so it reads them through the same lines as a case that does
- * not doctor them, and a fault there fails the cases too.
+ * What the gate reads: the files under `root`, and the tables, side blocks and reader's visits a
+ * case asks for. The live run asks for nothing, so it reads them through the same lines as a case
+ * that does not doctor them, and a fault there fails the cases too.
  */
 const collectInput = (root, files, fx = {}) => ({
   tables: tablesFor(fx),
   sides: sidesFor(fx),
+  skips: skipsFor(fx),
   ...readSources(root, files.filter(isSource)),
   templates: files
     .filter(isTemplate)
@@ -2428,6 +2440,17 @@ const tablesFor = (fx) => {
  */
 const sidesFor = (fx) =>
   SIDE_BLOCKS.filter((name) => !(fx.sides?.drop ?? []).includes(name));
+
+/**
+ * The visits a case takes from the tag reader: none, or those it names
+ * (`"reader": { "drop": ["visitDeferredBlockPlaceholder"] }`) — the walk's counterpart, a kind of
+ * node the reader would not descend into, played by one it descends into today. Only a visit is
+ * taken: a field of the reader's (`kinds`, `markup`), or `visit`, which Angular's `visitAll` calls
+ * in place of each node's own where a visitor has one, takes nothing, as a misspelt visit does,
+ * and the case then passes.
+ */
+const skipsFor = (fx) =>
+  (fx.reader?.drop ?? []).filter((name) => /^visit[A-Z]/.test(name));
 
 // ── the run ────────────────────────────────────────────────────────────────────
 
