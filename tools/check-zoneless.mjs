@@ -7,7 +7,7 @@
  *  1. no manifest in the repository declares `zone.js`,
  *  2. `package-lock.json` has none in the tree, not even nested under someone's package,
  *  3. the built package holds not one trace of the zone runtime,
- *  4. DENOMINATOR: every component from the sources is in the built package,
+ *  4. DENOMINATOR: every component from the sources is exported by its own entrypoint,
  *  5. every component in the package has `ɵcmp.onPush === true` and `standalone === true`,
  *  6. no `@Component` sets `changeDetection` or `standalone` explicitly.
  *
@@ -97,7 +97,8 @@ class ZonelessError extends Error {
  *   `bundle`     — `[{ file, text }]` from the built package,
  *   `entrypoints`    — the files the `exports` map points at (the denominator for `bundle`),
  *   `sources`     — `[{ file, className, explicit }]` from `@Component` in the sources,
- *   `components` — `[{ className, entrypoint, onPush, standalone }]` from the package.
+ *   `modules`    — `[{ entrypoint, module }]`, the namespace each entrypoint of the package
+ *                  exports (built of plain classes in a case, read by the same `componentsOf`).
  * Throws `ZonelessError` on the first violation — the checks run from the most basic one,
  * so the later ones would have nothing to examine anyway.
  */
@@ -107,8 +108,10 @@ const checkZoneless = ({
   bundle,
   entrypoints,
   sources,
-  components,
+  modules,
 }) => {
+  const components = componentsOf(modules);
+
   // 1. No manifest declares `zone.js`. The earliest moment it can be noticed — before
   // anyone runs `npm install`.
   const declared = manifests.flatMap((m) =>
@@ -184,22 +187,98 @@ const checkZoneless = ({
         `parser anchors on has changed.`,
     );
 
-  const inPackage = new Map(components.map((k) => [k.className, k]));
-  const missing = sources.filter((z) => !inPackage.has(z.className));
+  // A component pairs with the class its OWN entrypoint exports under the component's own name.
+  // An entrypoint is a module of its own, named after the directory it is built from; every one
+  // here sits a level under `libs/components`, where the source scan (`*/src/**`) reads. The
+  // class's own name, not the key it is exported under, since `export { PctChip as PctButton }`
+  // is not `PctButton`. And one to one: an entrypoint exporting two classes of the name gives no
+  // pair, and a class is one class however many entrypoints export it, so two components paired
+  // with it (two of one name in one entrypoint, or a namesake re-exported from another) are
+  // refused — point 5 would measure the rest by its `ɵcmp`.
+  const entrypointOf = (z) =>
+    `./${z.file.slice(PROJECT.length + 1).split('/')[0]}`;
+  const pairsOf = (z) => [
+    ...new Set(
+      components
+        .filter(
+          (k) =>
+            k.entrypoint === entrypointOf(z) && k.className === z.className,
+        )
+        .map((k) => k.class),
+    ),
+  ];
+  const missing = sources.filter((z) => pairsOf(z).length === 0);
   if (missing.length)
     throw new ZonelessError(
       'denominator',
-      `${missing.length} components from the sources are not in the built package:\n` +
-        missing.map((z) => `      ${z.className}  (${z.file})`).join('\n') +
+      `${missing.length} components from the sources are not exported by their entrypoint:\n` +
+        missing
+          .map((z) => {
+            const under = components.find(
+              (k) =>
+                k.entrypoint === entrypointOf(z) &&
+                k.exportedAs === z.className,
+            );
+            return (
+              `      ${z.className} from ${entrypointOf(z)}  (${z.file})` +
+              (under
+                ? ` — the entrypoint exports \`${under.className}\` under that name`
+                : '')
+            );
+          })
+          .join('\n') +
         `\n    Point 5 would be computed WITHOUT them, so it says nothing about their ` +
         `change detection strategy. Remedy: export from the entrypoint's \`index.ts\`.`,
     );
 
-  // 5. The measurement. `standalone` travels with `onPush`, because `req-api-foundation`
-  // promises both and both are Angular v22+ defaults — promises of the same class.
-  const faulty = components.filter(
-    (k) => k.onPush !== true || k.standalone !== true,
+  const ambiguous = sources.filter((z) => pairsOf(z).length > 1);
+  if (ambiguous.length)
+    throw new ZonelessError(
+      'denominator',
+      `${ambiguous.length} components share their name with another class their entrypoint exports:\n` +
+        ambiguous
+          .map(
+            (z) =>
+              `      ${z.className} from ${entrypointOf(z)}  (${z.file}): ` +
+              `${pairsOf(z).length} classes of that name`,
+          )
+          .join('\n') +
+        `\n    The package keeps no file, so nothing says which of them is the component. ` +
+        `Rename one.`,
+    );
+
+  const exporters = (c) => [
+    ...new Set(
+      components.filter((k) => k.class === c).map((k) => k.entrypoint),
+    ),
+  ];
+  const shared = [...Map.groupBy(sources, (z) => pairsOf(z)[0])].filter(
+    ([, paired]) => paired.length > 1,
   );
+  if (shared.length)
+    throw new ZonelessError(
+      'denominator',
+      `${shared.length} classes in the package are paired with more than one component:\n` +
+        shared
+          .map(
+            ([c, paired]) =>
+              `      ${c.name} (${exporters(c).join(', ')}): ` +
+              paired.map((z) => z.file).join(', '),
+          )
+          .join('\n') +
+        `\n    A class is one class however many entrypoints export it, so point 5 would ` +
+        `measure all of them by its \`ɵcmp\`. Rename one.`,
+    );
+
+  // 5. The measurement. `standalone` travels with `onPush`, because `req-api-foundation`
+  // promises both and both are Angular v22+ defaults — promises of the same class. A class
+  // exported under two keys or by two entrypoints is one class, and is counted once.
+  const faulty = [
+    ...Map.groupBy(
+      components.filter((k) => k.onPush !== true || k.standalone !== true),
+      (k) => k.class,
+    ).values(),
+  ].map(([k]) => k);
   if (faulty.length)
     throw new ZonelessError(
       'onpush',
@@ -207,7 +286,7 @@ const checkZoneless = ({
         faulty
           .map(
             (k) =>
-              `      ${k.className} (${k.entrypoint}): onPush=${k.onPush}, standalone=${k.standalone}`,
+              `      ${k.className} (${exporters(k.class).join(', ')}): onPush=${k.onPush}, standalone=${k.standalone}`,
           )
           .join('\n') +
         `\n    Either somebody set \`ChangeDetectionStrategy.Default\` explicitly, or ` +
@@ -234,7 +313,7 @@ const checkZoneless = ({
   return (
     `${manifests.length} manifests and ${lockPackages.length} locked packages free of \`zone.js\`, ` +
     `${bundle.length} package files with no trace of zones, ` +
-    `${sources.length} components from the sources present in the package and all OnPush`
+    `${sources.length} components from the sources exported by their own entrypoints and all OnPush`
   );
 };
 
@@ -348,30 +427,43 @@ const packageEntrypoints = () =>
     }));
 
 /**
- * Component definitions from the BUILT package. `@angular/compiler` is loaded first,
+ * The namespaces of the BUILT package's entrypoints. `@angular/compiler` is loaded first,
  * because the package is partially compiled and `ɵcmp` appears only on access — the same
  * step the linker performs at the consumer's.
  */
-const packageComponents = async (entrypoints) => {
+const packageModules = async (entrypoints) => {
   await import('@angular/compiler');
   const out = [];
-
-  for (const { entrypoint, file } of entrypoints) {
-    const module = await import(pathToFileURL(join(ROOT, DIST, file)).href);
-    for (const [name, value] of Object.entries(module)) {
-      if (typeof value !== 'function') continue;
-      if (!Object.getOwnPropertyDescriptor(value, 'ɵcmp')) continue;
-      const def = value['ɵcmp'];
-      out.push({
-        className: name,
-        entrypoint,
-        onPush: def.onPush,
-        standalone: def.standalone,
-      });
-    }
-  }
+  for (const { entrypoint, file } of entrypoints)
+    out.push({
+      entrypoint,
+      module: await import(pathToFileURL(join(ROOT, DIST, file)).href),
+    });
   return out;
 };
+
+/**
+ * Every component a namespace exports — `[{ class, className, exportedAs, entrypoint, onPush,
+ * standalone }]`: the class itself, its own name, the key it is exported under. A case goes
+ * through it too, so what is read from a namespace is what the cases hold.
+ */
+const componentsOf = (modules) =>
+  modules.flatMap(({ entrypoint, module }) =>
+    Object.entries(module)
+      .filter(
+        ([, value]) =>
+          typeof value === 'function' &&
+          Object.getOwnPropertyDescriptor(value, 'ɵcmp'),
+      )
+      .map(([exportedAs, value]) => ({
+        class: value,
+        className: value.name,
+        exportedAs,
+        entrypoint,
+        onPush: value['ɵcmp'].onPush,
+        standalone: value['ɵcmp'].standalone,
+      })),
+  );
 
 // ── negative control ──────────────────────────────────────────────────────────
 
@@ -390,7 +482,8 @@ const buildFixture = (fx) => {
     bundle: reference.bundle,
     entrypoints: reference.entrypoints,
     sources: reference.sources,
-    components: reference.components,
+    classes: reference.classes,
+    modules: reference.modules,
   });
 
   if (fx.addDependency) {
@@ -402,19 +495,47 @@ const buildFixture = (fx) => {
   if (fx.addToBundle) input.bundle[0].text += `\n${fx.addToBundle}\n`;
   if (fx.clearBundle) input.bundle = [];
   if (fx.clearSources) input.sources = [];
-  input.components = input.components.filter(
-    (k) => !(fx.dropFromPackage ?? []).includes(k.className),
-  );
-  for (const k of input.components) {
-    if (fx.onPush?.[k.className] !== undefined)
-      k.onPush = fx.onPush[k.className];
-    if (fx.standalone?.[k.className] !== undefined)
-      k.standalone = fx.standalone[k.className];
+  input.sources.push(...(fx.addToSources ?? []));
+  Object.assign(input.classes, structuredClone(fx.addClasses ?? {}));
+  for (const c of Object.values(input.classes)) {
+    if (fx.onPush?.[c.name] !== undefined) c.onPush = fx.onPush[c.name];
+    if (fx.standalone?.[c.name] !== undefined)
+      c.standalone = fx.standalone[c.name];
   }
+  for (const keys of Object.values(input.modules))
+    for (const key of fx.dropFromPackage ?? []) delete keys[key];
+  for (const [entrypoint, keys] of Object.entries(fx.modules ?? {}))
+    for (const [key, id] of Object.entries(keys)) {
+      input.modules[entrypoint] ??= {};
+      if (id === null) delete input.modules[entrypoint][key];
+      else input.modules[entrypoint][key] = id;
+    }
   for (const z of input.sources)
     if (fx.explicit?.[z.className]) z.explicit = fx.explicit[z.className];
 
-  return input;
+  // The package as namespaces of plain classes, one object per class id: the same class
+  // exported twice is one object, as a re-export is.
+  const made = {};
+  for (const [id, c] of Object.entries(input.classes)) {
+    made[id] = Object.defineProperty(class {}, 'name', { value: c.name });
+    made[id]['ɵcmp'] = { onPush: c.onPush, standalone: c.standalone };
+  }
+  const { classes, modules, ...rest } = input;
+  return {
+    ...rest,
+    modules: Object.entries(modules).map(([entrypoint, keys]) => ({
+      entrypoint,
+      module: Object.fromEntries(
+        Object.entries(keys).map(([key, id]) => {
+          if (!made[id])
+            throw new Error(
+              `${key} of ${entrypoint}: no class \`${id}\` in the case`,
+            );
+          return [key, made[id]];
+        }),
+      ),
+    })),
+  };
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -430,7 +551,7 @@ try {
     bundle: packageBundle(),
     entrypoints: entrypoints.map((w) => w.file),
     sources: componentSources(),
-    components: await packageComponents(entrypoints),
+    modules: await packageModules(entrypoints),
   });
 } catch (error) {
   if (!(error instanceof ZonelessError)) throw error;
@@ -473,6 +594,11 @@ for (const name of cases) {
       problems.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
+          `refusal of the same point, or the right one saying something else`,
       );
   }
 }

@@ -1,0 +1,14 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`./button` exports its `PctButton` under a second key too, `PctBtn`, as a deprecated name would be. One class of the component's name, however many keys, so point 4 pairs them, and point 5 refuses its `onPush: false` — once, since it is one class. Were point 4 to count the keys, it would refuse the pair as two classes; were point 5 to, it would count two components.",
+  "message": "1 components in the package do not meet the foundation:\n      PctButton (./button): onPush=false",
+  "modules": {
+    "./button": {
+      "PctBtn": "button"
+    }
+  },
+  "onPush": {
+    "PctButton": false
+  }
+}

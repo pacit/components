@@ -32,12 +32,11 @@
       "explicit": []
     }
   ],
-  "components": [
-    {
-      "className": "PctButton",
-      "entrypoint": "./button",
-      "onPush": true,
-      "standalone": true
-    }
-  ]
+  "// package": "The built package as the gate reads it: each entrypoint's namespace (`modules`, an export key to a class id) and the classes behind the ids. A case builds a plain class per id, so a class exported twice is one object, as a re-export is, and the gate reads the namespaces with the same function as the real ones.",
+  "classes": {
+    "button": { "name": "PctButton", "onPush": true, "standalone": true }
+  },
+  "modules": {
+    "./button": { "PctButton": "button" }
+  }
 }

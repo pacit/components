@@ -7,5 +7,6 @@
       "hostSelector": "button[pctButton], a[pctButton]",
       "parts": ["label", "spinner"]
     }
-  }
+  },
+  "message": "PctButton (./button): 2 harnesses answer to its selector"
 }

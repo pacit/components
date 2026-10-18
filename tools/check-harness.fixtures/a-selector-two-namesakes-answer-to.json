@@ -1,0 +1,14 @@
+{
+  "point": 2,
+  "check": "host",
+  "why": "./chips exports a PctButton of its own under the button's very selector, so PctButtonHarness stands on two classes of one name \u2014 and the refusal says which two, by entrypoint, or it reads as one class named twice.",
+  "message": "(PctButton of ./button, PctButton of ./chips)",
+  "addClasses": [
+    {
+      "entrypoint": "./chips",
+      "className": "PctButton",
+      "selector": "button[pctButton], a[pctButton]",
+      "parts": ["label", "spinner"]
+    }
+  ]
+}
