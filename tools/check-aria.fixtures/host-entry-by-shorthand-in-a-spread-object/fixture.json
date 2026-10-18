@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctChrome (libs/components/widget/src/chrome.ts) writes a `host` block this read does not take as written",
+  "$reason": "`host-entry-by-shorthand` with the entry inside an object spread where it is written: an entry the read does not take as written is refused wherever the spread puts it, and a read that took the spread's other entries and passed over that one would stand the host with a name and no role."
+}

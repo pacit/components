@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes aria-label into its host block",
+  "$reason": "`host-name-on-a-presentation-role` with the role and the name in an object spread into the host block where it is written. ngc evaluates the spread and compiles both entries into the host's attributes (measured through ngc in partial mode by the review of this change). The text read that stood here found them inside the braces; the parsed read passed every spread over until this case held it to reading one written in place, entry by entry."
+}

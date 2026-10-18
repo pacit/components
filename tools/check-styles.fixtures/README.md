@@ -104,7 +104,8 @@ outside a sheet, its styles handed to the decorator in any spelling ngc reads; o
 sheet the gate does not read, by `styleUrl` or by `styleUrls`, as a string or through an
 expression. Each would end the run green with no case to refuse it, and each leaves a repository
 that looks sensible. While the decorator was read with patterns, the two nestings were refused
-by the old counter, from their indentation, and the other new routes passed.
+by the old counter, from their indentation, a `styleUrl` written as a string and off the list
+was refused as `sheet-outside-project` is, and the other new routes passed.
 
 Point 10 has four for the same reason, and its first two are its own denominator: the floor
 has to be findable in the tokens before it can be found in a sheet, and found in a sheet

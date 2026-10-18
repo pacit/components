@@ -229,16 +229,24 @@ const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
  * text stood here, `host: {` from the start of a line, and a block under a quoted key, under an
  * escaped name or by shorthand passed every point (measured; ngc compiles each).
  *
- * A spread is passed over, as it was, and that is a hole of this gate's own: the others meet a
- * spread entry in their package read, and this one has none. The library spreads one object,
- * `fitHost` in `field/src/affix.ts`, a data attribute and a style.
+ * A spread of an object written in place is read as its entries, in order, as the text read
+ * before took them. A spread of anything else — a constant, a call — is passed over, as it was,
+ * and that is a hole of this gate's own: the others meet such an entry in their package read, and
+ * this one has none. The library spreads one constant, `fitHost` in `field/src/affix.ts`, a data
+ * attribute and a style.
  */
-const hostOf = (node) => {
-  if (node === undefined) return new Map();
+const hostOf = (node, entries = new Map()) => {
+  if (node === undefined) return entries;
   if (!ts.isObjectLiteralExpression(node)) return null;
-  const entries = new Map();
   for (const entry of node.properties) {
-    if (ts.isSpreadAssignment(entry)) continue;
+    if (ts.isSpreadAssignment(entry)) {
+      if (
+        ts.isObjectLiteralExpression(entry.expression) &&
+        hostOf(entry.expression, entries) === null
+      )
+        return null;
+      continue;
+    }
     const value =
       ts.isPropertyAssignment(entry) &&
       (ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name))
