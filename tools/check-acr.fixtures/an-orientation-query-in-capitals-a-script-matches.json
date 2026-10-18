@@ -1,8 +1,8 @@
 {
   "point": 3,
   "check": "evidence",
-  "description": "A component asks `matchMedia('(ORIENTATION: landscape)')`, and 1.3.4 keeps resting on the scan. A media feature is named in any case.",
+  "description": "A component holds `'(ORIENTATION: landscape)'` in a constant and asks `matchMedia(WIDE)`, and 1.3.4 keeps resting on the scan. A media feature is named in any case, and a query in any string of a script is read as one.",
   "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly wide = matchMedia('(ORIENTATION: landscape)').matches;\n}\n"
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\nconst WIDE = '(ORIENTATION: landscape)';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly wide = matchMedia(WIDE).matches;\n}\n"
   }
 }

@@ -808,12 +808,15 @@ const isElement = (node) => node instanceof TmplAstElement;
 /**
  * A `host` key by the attribute it reaches, as `nameOf` reads a template's: `ROLE` is `role`,
  * `[attr.ARIA-LABEL]` is `[attr.aria-label]`, and a property binding is the `[attr.…]` of the
- * attribute it reflects (`[ariaLabel]`, `[role]`). The keys were compared as written, and
+ * attribute it reflects (`[ariaLabel]`, `[role]`), a property being named in its own case. The keys were compared as written, and
  * `'ARIA-LABEL': 'Surface'` or `'[ariaLabel]': "'Surface'"` on a presentational host passed
  * point 2, and `'ARIA-HIDDEN': 'true'` hid nothing from point 8. An event stays as written.
  */
 const hostKey = (key) => {
   const bound = /^\[(attr\.)?(.+)\]$/s.exec(key);
+  // A property is named as the engines spell it, from a small letter: `[ROLE]` sets an expando
+  // nothing reads, and reaches no attribute.
+  if (bound && bound[1] === undefined && !/^[a-z]/.test(bound[2])) return key;
   if (bound) return `[attr.${nameOf(bound[2], bound[1] === undefined)}]`;
   return key.startsWith('(') ? key : nameOf(key);
 };

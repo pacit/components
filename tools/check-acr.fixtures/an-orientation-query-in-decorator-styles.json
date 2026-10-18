@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's `styles`, one string, hold `@media (/**/orientation: portrait)`, and 1.3.4 keeps resting on the scan. The browser reads the query past the comment; the reading compiles the sheet as it compiles a file.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  styles: '@media (/**/orientation: portrait) { :host { display: none; } }',\n})\nexport class PctAvatar {\n}\n"
+  }
+}

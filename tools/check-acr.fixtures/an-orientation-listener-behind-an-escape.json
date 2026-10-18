@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component listens with `@HostListener('window:orient\\u0061tionchange')`, and 1.3.4 keeps resting on the scan. TypeScript cooks the escape, and the listener is the event's. The raw text holds no `orientationchange`.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, HostListener, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @HostListener('window:orient\\u0061tionchange') protected turned(): void {}\n}\n"
+  }
+}

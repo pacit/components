@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "binds its role",
+  "$reason": "`option-under-a-host-role-attribute` with the binding written `'[attr.ROLE]'`: `setAttribute` lowers the name, and the role is the expression's. Read as written, the host carried no role and the option passed as one the consumer's template owns."
+}

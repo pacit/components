@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component's inline `template` draws `<svg><t\\u0065xt>Ada</t\\u0065xt></svg>`, and 1.4.5 keeps resting on the scan. TypeScript cooks the escape and `ngc` compiles an SVG `<text>`: an image of text. The raw text holds no `<text`.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  template: '<svg><t\\u0065xt>Ada</t\\u0065xt></svg>',\n})\nexport class PctAvatar {}\n"
-  }
-}

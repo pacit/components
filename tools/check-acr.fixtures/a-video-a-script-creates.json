@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component calls `document.createElement('video')`, and 1.2.1 keeps resting on the scan: a player, made by a script. The scan read the `<` of a tag.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    document.body.append(document.createElement('video'));\n  }\n}\n"
-  }
-}

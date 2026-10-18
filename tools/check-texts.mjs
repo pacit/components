@@ -106,10 +106,13 @@ const speaks = (name) =>
   typeof name === 'string' && SPEAKING_ATTRIBUTES.has(name.toLowerCase());
 
 /**
- * The attribute a PROPERTY binding writes: the engines reflect every ARIA attribute as a camel-case
- * property, so `[ariaLabel]` sets the element's `aria-label` — as `check-aria` reads it (`nameOf`).
- * Another property is its attribute by name (`[title]`). An `attr.` binding goes through
- * `setAttribute`, which makes `ariaLabel` the attribute `arialabel`, no ARIA, and keeps its name.
+ * The attribute a PROPERTY binding writes: the engines reflect the ARIA attributes with a string
+ * value as camel-case properties, so `[ariaLabel]` sets the element's `aria-label` — as
+ * `check-aria` reads it (`nameOf`). An id reference is an `…Elements` array instead, so
+ * `[ariaLabelledby]` reaches nothing, and reading it as `aria-labelledby` only refuses more; no
+ * speaking attribute is one. Another property is its attribute by name (`[title]`). An `attr.`
+ * binding goes through `setAttribute`, which makes `ariaLabel` the attribute `arialabel`, no ARIA,
+ * and keeps its name.
  */
 const reflected = (name) => name.replace(/^aria(?!-)/, 'aria-');
 
