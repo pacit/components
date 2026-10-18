@@ -1172,8 +1172,8 @@ const exclusive = (a, b) =>
  * leaves the gate with nothing to say, which is why the errors travel back rather than being
  * swallowed into an empty list. The walk knows the side blocks it is handed: the live run hands
  * it every one, and a prepared input may hold one back to play the block Angular adds next. The
- * tag reader goes without the visits it is handed (`skips`): the live run hands it none, and a
- * prepared input may name one, which then neither records nor descends — an override of the
+ * tag reader goes without the visits a prepared input takes from it (`skips`): the live run takes
+ * none, and a case may name one, which then neither records nor descends — an override of the
  * reader's that forgets `super`. The walk knows, too, the fields an expression reads the two name
  * inputs through (`reads`), which are its owners' and not the inputs' names.
  */
@@ -1596,7 +1596,7 @@ const checkAria = ({
     // met. On a reader that reaches every kind of node this never fires; it is what holds that
     // reach — `@for` and its `@empty`, `@switch`, `@defer` and its side blocks, a plain
     // `<ng-template>`, a projection's fallback — on the library and the reference. A prepared
-    // input that takes a visit from the reader (`"reader": { "skip" }`) is what holds it.
+    // input that takes a visit from the reader (`"reader": { "drop" }`) is what holds it.
     const unreadByTheReader = read.tags.filter(
       (t) => said.paths.has(t.offset) && !said.kinds.has(t.offset),
     );
@@ -2443,11 +2443,12 @@ const sidesFor = (fx) =>
 
 /**
  * The visits a case takes from the tag reader: none, or those it names
- * (`"reader": { "skip": ["visitDeferredBlockPlaceholder"] }`) — the walk's counterpart, a kind of
- * node the reader would not descend into, played by one it descends into today. A name the
- * reader has no visit for takes nothing, and the case then passes.
+ * (`"reader": { "drop": ["visitDeferredBlockPlaceholder"] }`) — the walk's counterpart, a kind of
+ * node the reader would not descend into, played by one it descends into today. A name that is
+ * none of the reader's members takes nothing, and the case then passes; one of its fields
+ * (`kinds`) is no visit, and taking it ends the run.
  */
-const skipsFor = (fx) => fx.reader?.skip ?? [];
+const skipsFor = (fx) => fx.reader?.drop ?? [];
 
 // ── the run ────────────────────────────────────────────────────────────────────
 

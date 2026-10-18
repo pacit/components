@@ -2,6 +2,6 @@
   "point": 1,
   "check": "denominator",
   "message": "the walk reached a tag at offset 301 (`<span class=\"pct-marker__badge\">`) and the tag reader did not",
-  "reader": { "skip": ["visitDeferredBlockPlaceholder"] },
+  "reader": { "drop": ["visitDeferredBlockPlaceholder"] },
   "$reason": "Two tags in the `@placeholder` of a deferred block, read by a tag reader that does not descend into a placeholder: an override of the reader's that forgets `super`, played by the visit it makes today — the walk's `\"sides\": { \"drop\" }` turned round. The walk reaches both through the side block it is handed and gives each a path; the reader records neither, so what makes either a stop would go unread, and point 1 refuses the first of them by its offset and its opening tag: the badge, not the dot after it. No template reaches this refusal by itself, which is why the reader is doctored and not the text: the walk gives a path only to an element it reaches through children, branches and side blocks, and the reader, the compiler's own visitor, meets every element, template and projection. Pinned, the message holds the refusal and the tag it names; without the case, the refusal taken out or naming the last tag still passed every prepared input."
 }
