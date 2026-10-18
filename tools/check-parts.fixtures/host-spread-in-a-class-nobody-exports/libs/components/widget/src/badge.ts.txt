@@ -1,0 +1,20 @@
+import { Directive } from '@angular/core';
+
+/** The host attributes every badge shares, spread into the badge's own. */
+const quietHost = {
+  class: 'pct-badge',
+};
+
+/** What the badge spreads into its host block, as `fitHost` is in `field/src/affix.ts`. */
+const badgeHost = {
+  ...quietHost,
+  'data-pct-part': 'widget-badge',
+} as const;
+
+@Directive({
+  selector: '[pctBadge]',
+  host: {
+    ...badgeHost,
+  },
+})
+export class PctBadge {}

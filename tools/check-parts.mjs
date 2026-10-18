@@ -43,7 +43,7 @@ import {
 import * as core from '@angular/core';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
-import { decoratorsOf, textOf } from './decorators.mjs';
+import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
 import { readTree } from './template-comments.mjs';
 
@@ -99,14 +99,6 @@ const sorted = (set) => [...set].sort();
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
 
-/** `'data-pct-part': 'name'` in the `host` block. */
-const HOST_STATIC = new RegExp(
-  `(['"])${ATTRIBUTE}\\1\\s*:\\s*(['"])([^'"]*)\\2`,
-  'g',
-);
-/** `'[attr.data-pct-part]': 'expression()'` — a part name from an expression. */
-const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
-
 /**
  * An independent counter: EVERY occurrence of the attribute name in a template outside its
  * comments, whatever its case. The DOM lowercases an HTML attribute's name, so
@@ -116,13 +108,13 @@ const HOST_DYNAMIC = new RegExp(`(['"])\\[attr\\.${ATTRIBUTE}\\]\\1\\s*:`, 'g');
  */
 const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 /**
- * The same counter over a decorator's body, against what `HOST_STATIC` and `HOST_DYNAMIC`
- * recognise. Both want the name in lowercase: `hostAttrs` and the host-binding function keep
- * `'DATA-PCT-PART'` as written (measured through the JIT compiler), Angular hands it to the
- * same `setAttribute`, and it passed every point until this count. The package read takes
- * it in any case, as a part or a binding the sources lack; this count says where it is
- * written. A comment in the body is not blanked, so it counts as text: prose naming the
- * attribute is refused, and a quoted lowercase pair is one `HOST_STATIC` reads as a part.
+ * The same counter over a decorator's body and the text of every constant its `host` block
+ * follows, against the entries `hostOf` reads under the name in lowercase. `hostAttrs` and the
+ * host-binding function keep `'DATA-PCT-PART'` as written (measured through the JIT compiler),
+ * Angular hands it to the same `setAttribute`, and it passed every point until this count. The
+ * package read takes it in any case, as a part or a binding the sources lack; this count says
+ * where it is written. A comment is not blanked, so it counts as text: prose naming the
+ * attribute is refused, and so is a pair commented out, which is no entry.
  */
 const HOST_COUNTER = new RegExp(ATTRIBUTE, 'gi');
 
@@ -140,20 +132,20 @@ const entrypointFromPath = (file) => {
 };
 
 /**
- * Decorated classes — `[{ file, className, entrypoint, template, unnamed, inline, parts,
- * statics, dynamic, occurrences }]`, the decorators read as no class's (`unheld`,
+ * Decorated classes — `[{ file, className, entrypoint, template, unnamed, inline, composed,
+ * parts, statics, dynamic, occurrences }]`, the decorators read as no class's (`unheld`,
  * `unparsed`), and the files taking a decorator under another name (`renamed`). The template
- * is read off the decorator's metadata as the parser holds it (`decoratorsOf`), the `host`
- * block off the text the pattern reads.
+ * and the `host` block are read off the decorator's metadata as the parser holds it
+ * (`decoratorsOf`, `hostOf`), and the counter runs over the text the pattern reads.
  * `parts` come here from the `host` block alone; the template's parts are added by point
  * 1, because a template is a separate file and a separate denominator — its scan has to
  * hold up first.
  *
- * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost`
- * in `field/src/affix.ts`) and this scanner does not see that — deliberately. A part
- * brought in that way appears in the package read and is missing from the source read,
- * that is, it fires point 2 with the part's name in the message. Exactly the work the
- * second read is there to do, whatever the case the name is written in.
+ * A `host` block is sometimes composed by spreading a constant (`...fitHost` in
+ * `field/src/affix.ts`), and the read follows a constant of the file's own, by name or in a
+ * spread, and refuses any other composition at point 1 (`composed`). Left to the package read,
+ * such a part fired point 2 on an exported class alone: the package read visits no other, so on
+ * a class no entrypoint exports, used inside one that is, it passed every point (measured).
  */
 const readSources = (root, files) => {
   const classes = [];
@@ -192,6 +184,11 @@ const readSources = (root, files) => {
       const url = metadata.get('templateUrl');
       const path = textOf(url);
       const template = metadata.get('template');
+      const host = hostOf(metadata.get('host'));
+      const entries = host?.entries ?? [];
+      const written = entries.filter(([key]) => key === ATTRIBUTE);
+      const bound = entries.filter(([key]) => key === `[attr.${ATTRIBUTE}]`);
+      const followed = (host?.followed ?? []).map((object) => object.getText());
       classes.push({
         file,
         className,
@@ -217,10 +214,12 @@ const readSources = (root, files) => {
         // part, so it is no hole in the denominator. Any other template the decorator hands
         // the compiler is one, a constant it names among them.
         inline: template !== undefined && textOf(template) !== '',
-        parts: new Set([...body.matchAll(HOST_STATIC)].map((m) => m[3])),
-        statics: countOf(body, HOST_STATIC),
-        dynamic: countOf(body, HOST_DYNAMIC),
-        occurrences: countOf(body, HOST_COUNTER),
+        // A block given otherwise than by an object literal of the file, which ngc evaluates.
+        composed: host === null,
+        parts: new Set(written.map(([, value]) => value)),
+        statics: written.length,
+        dynamic: bound.length,
+        occurrences: countOf([body, ...followed].join('\n'), HOST_COUNTER),
       });
     }
     unseen.push(...decorators.unseen());
@@ -446,6 +445,21 @@ const checkParts = (input) => {
         `a string.`,
     );
 
+  // A `host` block ngc composes from more than the read takes: it evaluates the block, and a part
+  // it composes reached the package read on an exported class alone (`hostOf`).
+  const composed = classes.filter((k) => k.composed);
+  if (composed.length)
+    throw new PartsError(
+      'denominator',
+      `${composed.length} classes take a \`host\` block this read does not take as written:\n` +
+        list(composed.map((k) => `${k.file}: ${k.className}`)) +
+        `\n    ngc evaluates the block, and composes it from a constant by name, an import, a ` +
+        `member, a condition, a call, a computed key or a value kept in a constant alike; ` +
+        `the read follows an object literal written in place or in a \`const\` of the ` +
+        `file's own, under keys and values written as strings. A part composed otherwise ` +
+        `passed every point on a class no entrypoint exports. Write the block so.`,
+    );
+
   const used = new Map(); // template -> [classes]
   for (const k of classes)
     if (k.template) used.set(k.template, [...(used.get(k.template) ?? []), k]);
@@ -520,10 +534,11 @@ const checkParts = (input) => {
               `${k.dynamic} bound, and the attribute name appears ${k.occurrences} times`,
           ),
         ) +
-        `\n    A \`host\` block is read by patterns that want the name in lowercase; the ` +
-        `counter takes it in any case. Angular hands \`'DATA-PCT-PART'\` to ` +
-        `\`setAttribute\` as written and the DOM lowercases it — a part a consumer's ` +
-        `selector matches, which the source read would never list.`,
+        `\n    A \`host\` block is read by the name ngc gives an entry, in lowercase; the ` +
+        `counter takes it in any case, over the decorator and every constant its block ` +
+        `follows. Angular hands \`'DATA-PCT-PART'\` to \`setAttribute\` as written and ` +
+        `the DOM lowercases it — a part a consumer's selector matches, which the source ` +
+        `read would never list.`,
     );
 
   // Inheritance, resolved before the two reads are compared. What a base's `host` block
@@ -1099,20 +1114,27 @@ const readCard = (file, content) => {
  * the consumer's, and the same as in `check-zoneless`.
  *
  * `consts` carries every element's STATIC attributes, as a flat array in which a number
- * opens a section with a different meaning (classes, styles, bindings). So input read only
- * the prefix before such a number — beyond it stand names without values. The one marker
+ * opens a section with a different meaning (classes, styles, bindings). So the read takes
+ * only the prefix before such a number — beyond it stand names without values. The one marker
  * that does not end it is `0`, a namespaced attribute: it takes three slots (the prefix, the
  * name, the value) and ordinary pairs go on after it, as Angular's `setUpAttributes` reads
  * them. `<use xlink:href="#a" data-pct-part="icon">` puts `[0, 'xlink', 'href', '#a',
- * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part.
+ * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part. The
+ * list reaches `setUpAttributes` through `mergeHostAttrs`, which drops the namespaced attribute
+ * and every pair after it when it merges the list into a non-empty one, so on an element that
+ * also matches a directive with host attributes this read records a part never set: it errs
+ * toward recording too much. Five mutants of the loop read as it does on every input the gate
+ * is handed: `i += 0` or no `continue` after the `0` differ on `xlink:data-pct-part` alone and
+ * `i++` on a value spelling the name, both of which point 1 refuses; `==` against the `0` on an
+ * attribute named `0`, which no template writes; `<=` on none.
  *
  * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
  * written — an element's attribute in a template, a host attribute spread from an object (each
  * measured through ngc in partial mode and the linker) — and the DOM lowercases it in
- * `setAttribute`: a part a consumer's selector matches. The source read refuses the first at
- * point 1 and never sees the second, so either reaches this read alone, the first from a `dist`
- * built before its template changed. A slot that is no name is no part: an `@loading (after
- * 100ms)` block puts `[null, 100]` into `consts`.
+ * `setAttribute`: a part a consumer's selector matches. The source read refuses both at point
+ * 1, so either reaches this read alone, from a `dist` built before its source changed. A slot
+ * that is no name is no part: an `@loading (after 100ms)` block puts `[null, 100]` into
+ * `consts`.
  */
 const NAMESPACE_URI = 0;
 
@@ -1135,9 +1157,9 @@ const pairAttributes = (attrs) => {
  * measured), only an instruction: `ɵɵattribute('data-pct-part', ctx.x)`. So a binding is read
  * as the instruction itself, off the statements the JIT compiler evaluates for a definition,
  * every view's function among them. The text of `ɵcmp.template` stood here, and it is one
- * view alone: an `@if`, `@for`, `@switch`, `@defer`, `<ng-template>` or `*` directive renders
- * through a function of its own, and a part bound in any of them read as no binding
- * (measured, 0 for each). The text also held whatever spells the name — a `@let` string, a text
+ * view alone: an `@if`, `@for`, `@switch`, `@defer`, `<ng-template>`, `*` directive or the
+ * fallback content of an `<ng-content>` renders through a function of its own, any embedded
+ * view does, and a part bound in any of them read as no binding (measured, 0 for each). The text also held whatever spells the name — a `@let` string, a text
  * node, another attribute's value, an output so named — and counted each as one (6 in one
  * template, measured through ngc).
  *

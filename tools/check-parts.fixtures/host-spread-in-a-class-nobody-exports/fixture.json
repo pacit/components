@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "set",
+  "message": "PctBadge (libs/components/widget/src/badge.ts): parts in the sources, and no such class in the package — widget-badge\n",
+  "$reason": "`class-without-export` with the part in a constant spread into the host block, `as const` on the constant and another constant spread into it ahead of the part. ngc composes the spreads into `hostAttrs` (measured through ngc in partial mode and the linker, `as const` and a spread inside a constant included). The scanner read the decorator's text, where the part is not written, and the package read visits exported classes alone, so the part passed every point. The read follows a spread of a `const` of the file's own, by its name and not the first constant the file declares, into the constants it spreads in turn, its `as` taken off as ngc takes it, and the part reaches point 2."
+}

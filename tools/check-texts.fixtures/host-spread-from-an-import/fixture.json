@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "host-composed",
+  "description": "A speaking attribute with a word in a constant another module exports, spread into the widget's `host` block. ngc evaluates the import and composes the attribute into `hostAttrs` (measured through ngc in partial mode and the linker); the regex that read the block passed the spread over, so the word reached point 2 on an exported class alone, and on a class no entrypoint exports it passed every point. The read follows a `const` of the file's own and nothing else, and point 1 refuses a block it does not take as written."
+}

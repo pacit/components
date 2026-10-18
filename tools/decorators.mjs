@@ -15,9 +15,9 @@ import ts from 'typescript';
  * - `Component` imported under another name (`Component as Widget`), and `@ng.Component` over a
  *   namespace import of `@angular/core`.
  *
- * So the decorators are read here off the TypeScript parser, once per file, and the gate keeps its
- * column-zero pattern only for what it reads off the text (a `host` block) and to pair its read
- * with this one by the offset of the `@`.
+ * So the decorators are read here off the TypeScript parser, once per file, a `host` block among
+ * them (`hostOf`), and the gate keeps its column-zero pattern only for what it counts over the
+ * decorator's text and to pair its read with this one by the offset of the `@`.
  */
 
 /** The two decorators the gates read, by the names `@angular/core` exports them under. */
@@ -54,6 +54,71 @@ export const textsOf = (node) =>
   node.elements.every((element) => textOf(element) !== undefined)
     ? node.elements.map(textOf)
     : undefined;
+
+/**
+ * The value of a `const` the file declares at its top level under the name, an `as` and
+ * parentheses taken off, or `undefined` for a name no such constant bears.
+ */
+const constantOf = (name) => {
+  for (const statement of name.getSourceFile().statements)
+    if (
+      ts.isVariableStatement(statement) &&
+      statement.declarationList.flags & ts.NodeFlags.Const
+    )
+      for (const declaration of statement.declarationList.declarations)
+        if (declaration.name.text === name.text)
+          return unwrap(declaration.initializer);
+  return undefined;
+};
+
+/**
+ * A `host` block as ngc composes it, for every gate that reads one: `entries`, `[key, value]` in
+ * order, each named as `reflectObjectLiteral` names a member (an identifier or a string, by its
+ * text) and its value written as a string, and `followed`, the object literals the read reached
+ * through a name, for a gate counting over their text. ngc hands the block to its partial
+ * evaluator, which composes it from whatever it can evaluate: a constant by shorthand (`host,`) or
+ * by name, a spread of a constant, an import, a member, a condition or a call, a computed key, a
+ * value kept in a constant. Each of these compiled into `hostAttrs` (measured through ngc in
+ * partial mode and the linker), and a regex over the decorator read none of them.
+ *
+ * So the read takes an object literal written in place and follows a name to a `const` the file
+ * declares at its top level whose value is an object literal, as the block or as a spread in it,
+ * an `as` and parentheses taken off either. Any other block, entry or spread makes it `null`, a
+ * block this read does not take as written, which a gate refuses at point 1. ngc itself refuses
+ * an accessor and a `satisfies` (NG1010), and a constant spread into itself, directly or through
+ * another, is one TypeScript refuses (TS2448), so none of them reaches a gate.
+ */
+export const hostOf = (node) => {
+  const entries = [];
+  const followed = [];
+  const objectOf = (expression) => {
+    const object = unwrap(expression);
+    const value = ts.isIdentifier(object) ? constantOf(object) : object;
+    if (value === undefined || !ts.isObjectLiteralExpression(value))
+      return null;
+    if (value !== object) followed.push(value);
+    return value;
+  };
+  const read = (expression) => {
+    const object = objectOf(expression);
+    if (object === null) return false;
+    for (const entry of object.properties) {
+      if (ts.isSpreadAssignment(entry)) {
+        if (!read(entry.expression)) return false;
+        continue;
+      }
+      const value =
+        ts.isPropertyAssignment(entry) &&
+        (ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name))
+          ? textOf(entry.initializer)
+          : undefined;
+      if (value === undefined) return false;
+      entries.push([entry.name.text, value]);
+    }
+    return true;
+  };
+  return node === undefined || read(node) ? { entries, followed } : null;
+};
 
 /**
  * The decorators of one file, read as ngc reads them, for the gate holding `kinds` (`DECORATORS`

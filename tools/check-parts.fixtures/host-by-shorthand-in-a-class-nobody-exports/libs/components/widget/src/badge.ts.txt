@@ -1,0 +1,10 @@
+import { Directive } from '@angular/core';
+
+/** The host block kept in a constant and handed to the decorator by shorthand. */
+const host = { 'data-pct-part': 'widget-badge' };
+
+@Directive({
+  selector: '[pctBadge]',
+  host,
+})
+export class PctBadge {}
