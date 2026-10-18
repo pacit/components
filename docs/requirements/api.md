@@ -47,7 +47,8 @@ a namesake another entrypoint exports, behind an alias, behind a re-export, two 
 one entrypoint, two classes of a component's name in its entrypoint, `onPush: false`,
 `standalone: false`, a decorator repeating the defaults), and four shapes point 4 lets through
 and a later point refuses: namesakes in two entrypoints, a component's own class under an
-alias, the same under two keys (which point 5 counts once), a lone re-export. A case's package is a set of entrypoint namespaces of plain classes,
+alias, the same under two keys (which point 5 counts once), a lone re-export; and two faulty
+namesakes, which point 5 lists one by one. A case's package is a set of entrypoint namespaces of plain classes,
 read by the same function as the built package's. Each must be
 rejected **by the point it declares**, and the reference input must pass. Plus a run against
 the real repository: `ChangeDetectionStrategy.Default` added to `PctButton` fires point 6
