@@ -72,15 +72,19 @@ one in a comment or a namespace beside a class of its name is not taken for it. 
 binds no decorated class the gate read is a denominator fault, and so is a class the gate's
 pattern reads where the parser holds no class at the top level of the file — in a comment,
 inside a namespace or a function, or with no name — whose base the module does not resolve. The
-module reads no `package.json`, and the library has no directory that carries one. `check-texts`
-and `check-parts`, which compare with the package by class name, the one key the package
-carries, also refuse a name two decorated classes share. `check-zoneless` has the entrypoint
-on both sides, so it pairs a component with the class its own entrypoint exports under the
-class's own name, one to one, and refuses only what that cannot pair: two classes of a
-component's name in its entrypoint, two components of one name in one entrypoint, or one class
-paired twice through a re-export. `check-harness` reads the package alone, finds a harness's
-class by its selector, and keeps harnesses per exported class — an entrypoint and the name it
-exports — not per name.
+module reads no `package.json`, and the library has no directory that carries one. A class of
+the built package is the object an entrypoint exports, with every key and entrypoint it is
+exported under, and its name is its own (`name`), not the key: a re-export or a second name is
+one class, and a key may hold a class of another name. `check-texts` and `check-parts`, which
+compare with the package by class name, the one key both reads carry, refuse a name two
+decorated classes share and a name two objects of the package bear, and a decorated class no
+entrypoint exports is missing from the package even where a key of its name holds another class.
+`check-zoneless` has the entrypoint on both sides, so it pairs a component with the class its
+own entrypoint exports under the class's own name, one to one, and refuses only what that cannot
+pair: two classes of a component's name in its entrypoint, two components of one name in one
+entrypoint, or one class paired twice through a re-export. `check-harness` reads the package
+alone, finds a harness's class by its selector, and keeps classes and harnesses per object, a
+class two entrypoints export standing on the cards of both.
 
 **Gate:** the list, one entry per gate that reads a class:
 `tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
@@ -131,10 +135,27 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by twenty-three more:
+to put there too. What a class's name stands for, by thirty-six more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
+`tools/check-texts.fixtures/a-name-standing-for-a-class-nobody-exports/` and
+`tools/check-parts.fixtures/a-name-standing-for-a-class-nobody-exports/` (a key of the package
+holding another class under the name of a decorated one no entrypoint exports, which passed),
+`tools/check-texts.fixtures/a-name-another-entrypoint-holds/` and
+`tools/check-parts.fixtures/a-name-another-entrypoint-holds/` (the same key in another
+entrypoint, the refusal naming the one that holds it),
+`tools/check-texts.fixtures/two-classes-of-one-name-in-the-package/` and
+`tools/check-parts.fixtures/two-classes-of-one-name-in-the-package/` (two objects of one name in
+the package), `tools/check-texts.fixtures/a-class-the-scanner-misses-under-two-names/` (one class
+under two keys, named once), `tools/check-parts.fixtures/a-class-the-package-draws-no-part-of/`
+(a class the package has, drawing nothing, not called missing),
+`tools/check-parts.fixtures/a-class-two-entrypoints-export/` and
+`tools/check-parts.fixtures/a-reexported-class-new-to-the-snapshot/` (a re-export, one class
+whose parts both entrypoints expose), `tools/check-harness.fixtures/a-card-borrowing-a-reexported-harness.json`
+(a re-export and a second key, one class whose harness either card may name),
+`tools/check-harness.fixtures/a-harness-under-two-names.json` (one harness under two keys) and
+`tools/check-harness.fixtures/two-harnesses-of-one-name.json` (two harness objects of one name),
 `tools/check-texts.fixtures/base-named-like-another-class/`,
 `tools/check-parts.fixtures/base-named-like-another-class/`,
 `tools/check-aria.fixtures/base-named-like-another-class/` and

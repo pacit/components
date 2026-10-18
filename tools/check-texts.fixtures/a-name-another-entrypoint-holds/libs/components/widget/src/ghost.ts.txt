@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+/** Decorated and exported by nothing: the name `PctGhost` of `./widget` holds `PctBlank`. */
+@Component({
+  selector: 'input[pctGhost]',
+  template: '',
+})
+export class PctGhost {}

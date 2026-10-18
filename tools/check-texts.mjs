@@ -838,15 +838,16 @@ const checkTexts = (input) => {
         `the pattern does not take for a class.`,
     );
 
-  // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
-  // exports a class under its name and keeps no file. Two decorated classes of one name are then
-  // one key, and the comparison reads one of them — the other's strings are held against nothing,
-  // and a class that never reached the package hides behind its namesake that did (measured: a
-  // second `PctMarker` in `twin.ts`, which the package does not carry, passed). It is refused
-  // wherever the two stand, two bases no entrypoint exports included, which point 2 never reaches:
-  // a name meets the package in more than one place below (`fromPackage`, the filter of
-  // `fromSources`), and one class per name is what each of them assumes. The chain is not what
-  // needs this: `extends` is resolved through the file that writes it, by name and file.
+  // Point 2 compares the two reads by class name, the one key both carry: the package keeps no
+  // file, and a class it exports carries its own name, whatever key it is exported under. Two
+  // decorated classes of one name are then one key, and the comparison reads one of them — the
+  // other's strings are held against nothing, and a class that never reached the package hides
+  // behind its namesake that did (measured: a second `PctMarker` in `twin.ts`, which the package
+  // does not carry, passed). It is refused wherever the two stand, two bases no entrypoint
+  // exports included, which point 2 never reaches: a name meets the package in more than one
+  // place below (`fromPackage`, the filter of `fromSources`), and one class per name is what
+  // each of them assumes. The chain is not what needs this: `extends` is resolved through the
+  // file that writes it, by name and file.
   const byName = Map.groupBy(classes, (k) => k.className);
   const shared = [...byName].filter(([, named]) => named.length > 1);
   if (shared.length)
@@ -972,7 +973,42 @@ const checkTexts = (input) => {
     );
 
   const declared = new Map(classes.map((k) => [k.key, k]));
-  const fromPackage = new Map(pkg.map((p) => [p.className, p]));
+  // The package's classes, one per OBJECT, as `check-zoneless` reads them: a class one
+  // entrypoint re-exports from another, or exports a second time under another name, is one
+  // class. Its name is its own (`name`), the name the sources give it, not the key it is
+  // exported under: by key, `export { PctBlank as PctGhost }` stood in for a decorated
+  // `PctGhost` no entrypoint exports, and the input passed with a class the consumer never gets
+  // counted, and a second name was a class the scanner did not see.
+  const packaged = [...Map.groupBy(pkg, (p) => p.class)].map(([type, of]) => ({
+    className: type.name,
+    entrypoints: [...new Set(of.map((p) => p.entrypoint))].sort(),
+    exports: of.map(({ entrypoint, exportedAs }) => ({
+      entrypoint,
+      exportedAs,
+    })),
+    attributes: of[0].attributes,
+  }));
+  // The two reads meet by class name, so a name two classes of the package bear — one class
+  // bundled into two entrypoints, a copy beside the original — has no class to stand for.
+  const twins = [...Map.groupBy(packaged, (p) => p.className)].filter(
+    ([, named]) => named.length > 1,
+  );
+  if (twins.length)
+    throw new TextsError(
+      'artifact',
+      'shared-package-name',
+      `${twins.length} names are borne by more than one class of the package:\n` +
+        list(
+          twins.map(
+            ([name, named]) =>
+              `${name}: ${named.map((p) => p.entrypoints.join(' and ')).join(', ')}`,
+          ),
+        ) +
+        `\n    Two objects of one name are two classes to a consumer, and the comparison with ` +
+        `the sources, which keeps one class per name, would hold the attributes of both ` +
+        `against one.`,
+    );
+  const fromPackage = new Map(packaged.map((p) => [p.className, p]));
 
   // Inheritance, resolved before the two lists are compared. What a base declares is merged
   // INTO the classes that extend it, because that is where the package puts it; and a base
@@ -1035,12 +1071,30 @@ const checkTexts = (input) => {
   const withoutPackage = [...fromSources.keys()].filter(
     (k) => !fromPackage.has(k),
   );
+  // What a name the sources give a class holds in the package where no class bears it.
+  const holding = (className) =>
+    packaged.flatMap((p) =>
+      p.exports
+        .filter((e) => e.exportedAs === className)
+        .map(
+          (e) =>
+            `\`${e.entrypoint}\` exports \`${p.className}\` under that name`,
+        ),
+    );
   if (withoutPackage.length)
     throw new TextsError(
       'artifact',
       'class-without-package',
       `${withoutPackage.length} classes from the sources are not in the built package:\n` +
-        list(withoutPackage.map((k) => `${k} (${fromSources.get(k).file})`)) +
+        list(
+          withoutPackage.map((k) => {
+            const held = holding(k);
+            return (
+              `${k} (${fromSources.get(k).file})` +
+              (held.length ? ` — ${held.join('; ')}` : '')
+            );
+          }),
+        ) +
         `\n    The measurement would then count the strings of a component the consumer ` +
         `never gets — or, more often, would be reading a stale \`${DIST}\`.`,
     );
@@ -1053,7 +1107,11 @@ const checkTexts = (input) => {
       'artifact',
       'class-without-sources',
       `${withoutSources.length} classes from the package are invisible to the source scanner:\n` +
-        list(withoutSources.map((k) => `${k} (${fromPackage.get(k).input})`)) +
+        list(
+          withoutSources.map(
+            (k) => `${k} (${fromPackage.get(k).entrypoints.join(', ')})`,
+          ),
+        ) +
         `\n    A class the scanner did not see brings strings into a release that this ` +
         `gate says nothing about.`,
     );
@@ -1078,7 +1136,7 @@ const checkTexts = (input) => {
         speakingInSources.add(`${ownerOf(s.file)} ${a.name}=${a.value}`);
 
   const speakingInPackage = new Set();
-  for (const p of pkg)
+  for (const p of packaged)
     for (const [name, value] of p.attributes)
       if (speaks(name))
         speakingInPackage.add(`${p.className} ${name}=${value}`);
@@ -1405,9 +1463,10 @@ const pairAttributes = (attrs) => {
 };
 
 /**
- * Definitions from the BUILT package. `@angular/compiler` is loaded first,
- * because the package is partially compiled and `ɵcmp` appears only on access — the same
- * step the linker performs at the consumer's (`lesson-46`).
+ * Definitions from the BUILT package, one record per name an entrypoint exports, `class` the
+ * object it holds. `@angular/compiler` is loaded first, because the package is partially
+ * compiled and `ɵcmp` appears only on access — the same step the linker performs at the
+ * consumer's (`lesson-46`).
  */
 const packageComponents = async (root) => {
   const dist = join(root, DIST);
@@ -1423,14 +1482,14 @@ const packageComponents = async (root) => {
   const exports = JSON.parse(read(root, `${DIST}/package.json`)).exports ?? {};
   const out = [];
 
-  for (const [input, target] of Object.entries(exports)) {
+  for (const [entrypoint, target] of Object.entries(exports)) {
     const file = typeof target === 'object' ? target.default : target;
     if (typeof file !== 'string' || !file.endsWith('.mjs')) continue;
 
     const module = await import(
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
-    for (const [className, value] of Object.entries(module)) {
+    for (const [exportedAs, value] of Object.entries(module)) {
       if (typeof value !== 'function') continue;
       const def = value['ɵcmp'] ?? value['ɵdir'];
       if (!def) continue;
@@ -1438,8 +1497,9 @@ const packageComponents = async (root) => {
       const consts =
         typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
       out.push({
-        input,
-        className,
+        entrypoint,
+        exportedAs,
+        class: value,
         attributes: [
           ...consts.filter(Array.isArray).flatMap(pairAttributes),
           ...pairAttributes(def.hostAttrs ?? []),
@@ -1640,8 +1700,28 @@ const fixtureInput = (directory) =>
     globSync('**/*.{ts,html}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
-    JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')).classes,
+    JSON.parse(
+      readFileSync(join(directory, 'package.json'), 'utf8'),
+    ).classes.flatMap(packageClass),
   );
+
+/**
+ * One class of a prepared input's package — one object — as the records the package read
+ * gives for it: one per name an entrypoint exports it under. `exports` lists them where the
+ * class is exported otherwise than once, from `entrypoint`, under its own name: a re-export
+ * from another entrypoint, a second name, a name that is not its own.
+ */
+const packageClass = (k) => {
+  const type = { [k.className]: class {} }[k.className];
+  return (k.exports ?? [{ entrypoint: k.entrypoint, as: k.className }]).map(
+    ({ entrypoint, as }) => ({
+      entrypoint,
+      exportedAs: as,
+      class: type,
+      attributes: k.attributes,
+    }),
+  );
+};
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
@@ -1703,6 +1783,12 @@ for (const name of cases) {
       problems.push(
         `${name}: \`${error.check}/${error.rule}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}/${fx.rule}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    // A rule that names what it found says it in the message, and a case may hold that too.
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: \`${fx.check}/${fx.rule}\` fired without "${fx.message}" — the right rule ` +
+          `saying something else:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });

@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "class-without-sources",
+  "message": "1 classes from the package are invisible to the source scanner:\n      PctPhantom (./widget)\n",
+  "description": "`./widget` exports a `PctPhantom` the sources do not declare, under two names. It is one class of one entrypoint, and the refusal names it once, with the entrypoint it comes from — the package read named the entrypoint under a field the prepared inputs did not have, and a case printed it as `undefined`."
+}

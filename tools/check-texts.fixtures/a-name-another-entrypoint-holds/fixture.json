@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "class-without-package",
+  "message": "PctGhost (libs/components/widget/src/ghost.ts) — `./other` exports `PctBlank` under that name\n",
+  "description": "The decorated `PctGhost` of `./widget` is exported by nothing, and `./other` exports `PctBlank` under its name. The refusal names the entrypoint that holds the name, not the one the class sits in, and nothing else."
+}

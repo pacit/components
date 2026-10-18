@@ -1,0 +1,81 @@
+{
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "className": "PctWidget",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctWidget"
+        },
+        {
+          "entrypoint": "./widget",
+          "as": "PctGadget"
+        }
+      ],
+      "parts": [],
+      "dynamic": 0
+    },
+    {
+      "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        }
+      ],
+      "declaration": {
+        "kind": "Directive",
+        "selector": "[pctMarker]",
+        "host": {
+          "attributes": {
+            "data-pct-part": "widget-marker"
+          },
+          "classAttribute": "pct-marker"
+        },
+        "usesInheritance": true,
+        "extends": {
+          "className": "PctMarkerBase",
+          "kind": "Directive",
+          "host": {
+            "classAttribute": "pct-marker-base"
+          }
+        }
+      }
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarkerOutline",
+      "declaration": {
+        "kind": "Directive",
+        "selector": "[pctMarkerOutline]",
+        "host": {
+          "classAttribute": "pct-marker-outline"
+        },
+        "usesInheritance": true,
+        "extends": {
+          "className": "PctMarker",
+          "kind": "Directive",
+          "selector": "[pctMarker]",
+          "host": {
+            "attributes": {
+              "data-pct-part": "widget-marker"
+            },
+            "classAttribute": "pct-marker"
+          },
+          "usesInheritance": true,
+          "extends": {
+            "className": "PctMarkerBase",
+            "kind": "Directive",
+            "host": {
+              "classAttribute": "pct-marker-base"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

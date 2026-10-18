@@ -643,9 +643,16 @@ decorator imported under another name; a host takes its part from one class of i
 keeps the nearest class's, so a second is a part no element carries); and the list of parts is built
 **twice** — from the sources and from the built package (`ɵcmp.consts`, `ɵdir.hostAttrs` after
 linking, and the binding instructions of every view of a class and of its host function and its
-bases')
-**Control:** `tools/check-parts.fixtures/` — 73 inputs, each rejected on its own
-point and by the refusal its `message` names, as point 1 refuses fifteen ways; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
+bases'); a class of the package is the object an entrypoint exports, under its own name, so a
+re-export or a second name is one class, counted in every entrypoint that exports it, and a name
+two objects of the package bear is refused
+**Control:** `tools/check-parts.fixtures/` — 79 inputs, each rejected on its own
+point and by the refusal its `message` names, as point 1 refuses fifteen ways, the reference
+exporting a class under two names and one under a name not its own; among them a class two
+entrypoints export (refused at point 4 for the card the second lacks, and at point 5 for its
+rows), a name standing for a decorated class no entrypoint exports (which passed, read by export
+key), the same with the name in another entrypoint, a class the package draws no part of, and two
+classes of one name in the package; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
 a directive whose part is not exported from the entrypoint fires point 2
@@ -705,19 +712,23 @@ entrypoint is exported and every harness is a `PctHarness` of the right shape; a
 `hostSelector` is verbatim the selector list of exactly one exported class; every class that
 draws a part has a harness; a harness names exactly the parts its class draws, in both
 directions; the union the declaration file offers a consumer's editor is that same list; and
-every card's **Harness** row names harnesses of its own entrypoint that exist, every harness
-standing on some card. Plus `libs/components/testing/src/harness.spec.ts` — the base class
+every card's **Harness** row names existing harnesses of classes its own entrypoint exports,
+every harness standing on some card. A class and a harness are the object a module exports,
+with every name and entrypoint it is exported under: a class two entrypoints export is one
+class, and the card of either may name its harness. Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host
-**Control:** `tools/check-harness.fixtures/` — 21 prepared inputs, each rejected on its own
-point: the entrypoint gone, a harness off the base, one with no host, a part named twice, a
-selector nobody answers to, one wider than the class, two harnesses for one class, a class
+**Control:** `tools/check-harness.fixtures/` — 24 prepared inputs, each rejected on its own
+point: the entrypoint gone, a harness off the base, one with no host, a part named twice, two
+harness classes of one name, a selector nobody answers to, one wider than the class, two harnesses for one class, a class
 the package lost, a selector two namesakes answer to (the refusal naming each by its
 entrypoint), a class with no harness, one whose namesake in another entrypoint has one,
 a part the component does not draw, a part the harness forgot, the declaration file gone, a
 union narrower and one wider than the list, two namesakes with a harness each (refused at
 point 5, so point 2 counts harnesses per exported class, not per name), a card with no row, one naming
-nobody, one borrowing another entrypoint's harness, a harness on no card
+nobody, one borrowing another entrypoint's harness, one borrowing the harness of a class two
+entrypoints export (the card of the second standing), one borrowing a harness by its first of two
+names (the other card naming it by the second), a harness on no card
 **Decision:** [0068 — a harness is a declaration over the parts contract](../decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)
 
 ---
@@ -901,11 +912,15 @@ read by `parseTemplate` from `@angular/compiler`, and decorators by the TypeScri
 reads them (`tools/decorators.mjs`): a template the decorator carries, under any key ngc reads, is
 refused, as are a `templateUrl` given by an expression, a decorator the column-zero pattern did not
 read and one imported under another name. The list of static classes and attributes is built
-**twice** — from the sources and from the built package. Plus
+**twice** — from the sources and from the built package, whose class is the object an entrypoint
+exports, under its own name, and a name two objects bear is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 63 doctored inputs, each rejected on its own
-**rule** (not merely its point); plus nine runs against the repository (a literal in
+**Control:** `tools/check-texts.fixtures/` — 67 doctored inputs, each rejected on its own
+**rule** (not merely its point), the reference exporting a class under two names; among them a
+name standing for a decorated class no entrypoint exports (which passed, read by export key), the
+same with the name in another entrypoint, a class the scanner misses under two names, and two
+classes of one name in the package; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

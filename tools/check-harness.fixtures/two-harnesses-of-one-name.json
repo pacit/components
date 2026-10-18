@@ -1,0 +1,13 @@
+{
+  "point": 1,
+  "check": "set",
+  "why": "./testing exports a second harness class whose own name is PctButtonHarness, under the key PctButtonAgainHarness. A harness is named by its own name, as its declaration is, so point 5 would hold both to the one `declare class PctButtonHarness` and the second to a list that is not its own.",
+  "harnesses": {
+    "PctButtonAgainHarness": {
+      "className": "PctButtonHarness",
+      "hostSelector": "pct-button-again",
+      "parts": []
+    }
+  },
+  "message": "PctButtonHarness: 2 harnesses of this name, exported as `PctButtonHarness` and `PctButtonAgainHarness`"
+}

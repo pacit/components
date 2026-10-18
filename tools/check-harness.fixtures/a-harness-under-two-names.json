@@ -1,0 +1,17 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "./testing exports PctButtonHarness a second time as PctBtnHarness — one harness under two names, its declaration under its own. The button card names it by the second name, which stands; the avatar card names it by the first, and that one disagreement, and no other, is the refusal. By export record it was two harnesses of one selector, refused at point 2, and the second name had no declaration of its own at point 5.",
+  "reexport": [
+    {
+      "entrypoint": "./testing",
+      "exportedAs": "PctButtonHarness",
+      "as": "PctBtnHarness"
+    }
+  ],
+  "cards": {
+    "button.md": { "harnesses": ["PctBtnHarness"] },
+    "avatar.md": { "harnesses": ["PctAvatarHarness", "PctButtonHarness"] }
+  },
+  "message": "1 disagreements between the cards and the harnesses:\n      avatar.md: names `PctButtonHarness`, a harness of `./button` — the card's entrypoint is `./avatar`"
+}

@@ -9,11 +9,11 @@
  *  3. EVERY: every class that draws a part has a harness,
  *  4. PARTS: a harness names exactly the parts its class draws, neither more nor fewer,
  *  5. TYPES: the union offered after `part(` is that same list, one inventory read twice,
- *  6. CARDS: a card's **Harness** row names existing harnesses of its own entrypoint, and
- *     every harness stands on some card.
+ *  6. CARDS: a card's **Harness** row names existing harnesses of classes its own entrypoint
+ *     exports, and every harness stands on some card.
  *
- * The package is read the way `check-parts` reads it, after linking, so the selectors and
- * parts are what a consumer really gets.
+ * The package is read as `check-parts` reads it, after linking, and a class (a harness too) is
+ * the object exported, with every name and entrypoint it is exported under.
  *
  * Usage: node tools/check-harness.mjs
  */
@@ -102,21 +102,40 @@ const isClass = (v) =>
   typeof v === 'function' &&
   /^class[\s{]/.test(Function.prototype.toString.call(v));
 
-/** The harnesses of the testing module — every exported class but the base itself. */
+/**
+ * The harnesses of the testing module — every exported class but the base itself, one record
+ * per name it is exported under; `checkHarness` makes one harness of the records of one class.
+ */
 const harnessesOf = (module) => {
   const Base = module.PctHarness;
   return {
     base: typeof Base === 'function',
     list: Object.entries(module)
       .filter(([, v]) => isClass(v) && v !== Base)
-      .map(([className, H]) => ({
-        className,
+      .map(([exportedAs, H]) => ({
+        entrypoint: TESTING,
+        exportedAs,
+        class: H,
         hostSelector: H.hostSelector,
         parts: Array.isArray(H.parts) ? [...H.parts] : H.parts,
         base: typeof Base === 'function' && H.prototype instanceof Base,
       })),
   };
 };
+
+/**
+ * The classes behind a module's export records, one per OBJECT: a class one entrypoint
+ * re-exports from another, or exports under a second name, is one class with all of its
+ * names, as `check-zoneless` reads it. Its name is its own (`name`), the one its declaration
+ * and the sources give it, not the key it is exported under.
+ */
+const byClass = (records) =>
+  [...Map.groupBy(records, (r) => r.class)].map(([type, of]) => ({
+    ...of[0],
+    className: type.name,
+    names: of.map((r) => r.exportedAs),
+    entrypoints: [...new Set(of.map((r) => r.entrypoint))],
+  }));
 
 const readPackage = async () => {
   if (!existsSync(join(ROOT, DIST, 'package.json')))
@@ -127,7 +146,7 @@ const readPackage = async () => {
     );
   await import('@angular/compiler');
   const exportsMap = JSON.parse(read(`${DIST}/package.json`)).exports ?? {};
-  const classes = [];
+  const exported = [];
   let harnesses = null;
   for (const [entrypoint, target] of Object.entries(exportsMap)) {
     const file = typeof target === 'object' ? target.default : target;
@@ -139,17 +158,23 @@ const readPackage = async () => {
       harnesses = harnessesOf(module);
       continue;
     }
-    for (const [className, value] of Object.entries(module)) {
+    for (const [exportedAs, value] of Object.entries(module)) {
       if (typeof value !== 'function') continue;
       const def = value['ɵcmp'] ?? value['ɵdir'];
       if (!def) continue;
-      const selector = renderSelectors(def.selectors, className);
+      const selector = renderSelectors(def.selectors, value.name);
       // A class with no selector has no host — there is nothing for a harness to stand on.
       if (!selector) continue;
-      classes.push({ entrypoint, className, selector, parts: partsOf(def) });
+      exported.push({
+        entrypoint,
+        exportedAs,
+        class: value,
+        selector,
+        parts: partsOf(def),
+      });
     }
   }
-  return { classes, harnesses };
+  return { exported, harnesses };
 };
 
 // ── the declaration file ───────────────────────────────────────────────────────
@@ -206,7 +231,16 @@ const readInput = async () => ({
 // ── the points ─────────────────────────────────────────────────────────────────
 
 const checkHarness = (input) => {
-  const { classes, harnesses, declarations, documents } = input;
+  const { declarations, documents } = input;
+  // A class and a harness are the OBJECT a module exports, with every name it is exported
+  // under: by export record, `./chips` re-exporting `PctButton`, or `./button` exporting it a
+  // second time under another name, made two classes of one selector, and point 2 refused the
+  // harness of either as standing on two.
+  const classes = byClass(input.exported);
+  const harnesses = input.harnesses && {
+    base: input.harnesses.base,
+    list: byClass(input.harnesses.list),
+  };
 
   // 1. The set — what the package hands a consumer, and its shape.
   if (!harnesses)
@@ -238,6 +272,14 @@ const checkHarness = (input) => {
         malformed.push(`${h.className}: names ${quoted([...twice])} twice`);
     }
   }
+  // Point 5 finds a harness's declaration by the harness's own name, and the messages name it
+  // so: two harnesses of one name would be compared with one declaration.
+  for (const [name, named] of Map.groupBy(harnesses.list, (h) => h.className))
+    if (named.length > 1)
+      malformed.push(
+        `${name}: ${named.length} harnesses of this name, exported as ` +
+          named.map((h) => quoted(h.names)).join(' and '),
+      );
   if (malformed.length)
     throw new HarnessError(
       'set',
@@ -247,9 +289,9 @@ const checkHarness = (input) => {
 
   // 2. The host — one harness, one class, the selector verbatim. A harness finds its class by
   // the selector and nothing else, and the harnesses are kept per class the package exports —
-  // an entrypoint and the name it exports — not per name: two entrypoints are two modules and
-  // may each export a class of one name (`export { A as B }` is enough), and by name the
-  // harness of one answered for the other at point 3.
+  // the object, not its name: two entrypoints are two modules and may each export a class of
+  // one name (`export { A as B }` is enough), and by name the harness of one answered for the
+  // other at point 3.
   const bySelector = new Map();
   for (const c of classes)
     bySelector.set(c.selector, [...(bySelector.get(c.selector) ?? []), c]);
@@ -263,11 +305,11 @@ const checkHarness = (input) => {
         `${h.className}: \`${h.hostSelector}\` is the selector of ` +
           (owners.length === 0
             ? 'no class the package exports'
-            : `${owners.length} classes (${owners.map((c) => `${c.className} of ${c.entrypoint}`).join(', ')})`),
+            : `${owners.length} classes (${owners.map((c) => `${c.className} of ${c.entrypoints.join(' and ')}`).join(', ')})`),
       );
       continue;
     }
-    classOf.set(h.className, owners[0]);
+    classOf.set(h, owners[0]);
     harnessesOfClass.set(owners[0], [
       ...(harnessesOfClass.get(owners[0]) ?? []),
       h.className,
@@ -276,7 +318,7 @@ const checkHarness = (input) => {
   for (const [c, names] of harnessesOfClass)
     if (names.length > 1)
       wrong.push(
-        `${c.className} (${c.entrypoint}): ${names.length} harnesses answer to its selector — ${names.join(', ')}`,
+        `${c.className} (${c.entrypoints.join(', ')}): ${names.length} harnesses answer to its selector — ${names.join(', ')}`,
       );
   if (wrong.length)
     throw new HarnessError(
@@ -291,7 +333,7 @@ const checkHarness = (input) => {
     .filter((c) => c.parts.length && !harnessesOfClass.has(c))
     .map(
       (c) =>
-        `${c.className} (${c.entrypoint}): draws ${c.parts.length} parts ` +
+        `${c.className} (${c.entrypoints.join(', ')}): draws ${c.parts.length} parts ` +
         `(${c.parts.join(', ')}) and has no harness`,
     );
   if (orphaned.length)
@@ -303,7 +345,7 @@ const checkHarness = (input) => {
   // 4. The parts — both directions.
   const drift = [];
   for (const h of harnesses.list) {
-    const c = classOf.get(h.className);
+    const c = classOf.get(h);
     const extra = h.parts.filter((p) => !c.parts.includes(p));
     const missing = c.parts.filter((p) => !h.parts.includes(p));
     if (extra.length)
@@ -351,8 +393,13 @@ const checkHarness = (input) => {
         list(typed),
     );
 
-  // 6. The cards — the page names the harness, and the name is a real one of its own entrypoint.
-  const known = new Set(harnesses.list.map((h) => h.className));
+  // 6. The cards — the page names the harness, by any name `./testing` exports it under, and
+  // the harness is of a class the card's entrypoint exports. A class two entrypoints export is
+  // what both of them hand a consumer, so the card of either may name its harness: the package
+  // keeps no file to tell the entrypoint that declares the class from the one re-exporting it.
+  const harnessNamed = new Map(
+    harnesses.list.flatMap((h) => h.names.map((name) => [name, h])),
+  );
   const named = new Set();
   const faults = [];
   for (const d of documents) {
@@ -363,23 +410,24 @@ const checkHarness = (input) => {
     if (d.harnesses.length === 0)
       faults.push(`${d.file}: the **Harness** row names no harness`);
     for (const name of d.harnesses) {
-      named.add(name);
-      if (!known.has(name)) {
+      const h = harnessNamed.get(name);
+      if (!h) {
         faults.push(
           `${d.file}: names \`${name}\`, which \`${TESTING}\` does not export`,
         );
         continue;
       }
-      const owner = classOf.get(name).entrypoint;
-      if (owner !== d.entrypoint)
+      named.add(h);
+      const owners = classOf.get(h).entrypoints;
+      if (!owners.includes(d.entrypoint))
         faults.push(
-          `${d.file}: names \`${name}\`, a harness of \`${owner}\` — the card's ` +
+          `${d.file}: names \`${name}\`, a harness of ${quoted(owners)} — the card's ` +
             `entrypoint is \`${d.entrypoint}\``,
         );
     }
   }
   for (const h of harnesses.list)
-    if (!named.has(h.className))
+    if (!named.has(h))
       faults.push(`${h.className}: stands on no card in ${DOCUMENTS}/`);
   if (faults.length)
     throw new HarnessError(
@@ -387,7 +435,7 @@ const checkHarness = (input) => {
       `${faults.length} disagreements between the cards and the harnesses:\n${list(faults)}`,
     );
 
-  return { classOf, harnessesOfClass };
+  return { classOf, harnessesOfClass, harnesses: harnesses.list };
 };
 
 // ── the run ────────────────────────────────────────────────────────────────────
@@ -418,43 +466,98 @@ const patchList = (items, key, patches, blank, what) => {
           `${what} \`${name}\` is not in the live input — the case drops nothing`,
         );
       items.splice(i, 1);
-    } else if (i < 0) items.push({ ...blank(name), ...patch });
+    } else if (i < 0) items.push({ ...blank(name, patch), ...patch });
     else items[i] = { ...items[i], ...patch };
   }
 };
 
+/** A class of the case's own, distinct from every other: a namesake is another object. */
+const classNamed = (name) => ({ [name]: class {} })[name];
+
+/** The records of the live input copied, each holding the very class the live one holds. */
+const copyRecords = (records) =>
+  records.map((r) => ({
+    ...r,
+    parts: Array.isArray(r.parts) ? [...r.parts] : r.parts,
+  }));
+
 /**
  * Builds a case's input ON A COPY of the live one, so the case file holds nothing but its
  * own defect: `entrypoint: null` loses the testing module; `harnesses` and `classes` patch
- * an entry by name (`null` drops it, an unknown name adds it); `declarations: null` loses
- * the declaration file and `declarations.replace` rewrites it by a pattern that has to
- * match; `cards` patches a card by file name (`null` drops it, `harnesses: null` takes its
- * row away); `addClasses` adds classes as written, a namesake of an exported one included.
+ * an export by the name it is exported under (`null` drops it, an unknown name adds a class
+ * of its own, named by `className` where that is not the export's name); `reexport` exports
+ * an exported class once more, the same object, from `to` (its own entrypoint by default)
+ * under `as` (its own name by default); `declarations: null` loses the declaration file and
+ * `declarations.replace` rewrites it by a pattern that has to match; `cards` patches a card
+ * by file name (`null` drops it, `harnesses: null` takes its row away); `addClasses` adds
+ * classes as written, each an object of its own, a namesake of an exported one included.
+ *
+ * The copy holds the live classes and not clones of them: a class is the object an entrypoint
+ * exports, and `checkHarness` tells one class from another by nothing else.
  */
 const buildFixture = (fixtureLive, fx) => {
-  const w = structuredClone(fixtureLive);
+  const w = {
+    ...structuredClone({
+      declarations: fixtureLive.declarations,
+      documents: fixtureLive.documents,
+    }),
+    exported: copyRecords(fixtureLive.exported),
+    harnesses: fixtureLive.harnesses && {
+      base: fixtureLive.harnesses.base,
+      list: copyRecords(fixtureLive.harnesses.list),
+    },
+  };
   if (fx.entrypoint === null) w.harnesses = null;
   if (w.harnesses)
     patchList(
       w.harnesses.list,
-      'className',
+      'exportedAs',
       fx.harnesses,
-      (className) => ({ className, hostSelector: '', parts: [], base: true }),
+      (exportedAs, patch) => ({
+        entrypoint: TESTING,
+        exportedAs,
+        class: classNamed(patch.className ?? exportedAs),
+        hostSelector: '',
+        parts: [],
+        base: true,
+      }),
       'harness',
     );
   patchList(
-    w.classes,
-    'className',
+    w.exported,
+    'exportedAs',
     fx.classes,
-    (className) => ({
+    (exportedAs, patch) => ({
       entrypoint: './nowhere',
-      className,
+      exportedAs,
+      class: classNamed(patch.className ?? exportedAs),
       selector: '',
       parts: [],
     }),
     'class',
   );
-  w.classes.push(...(fx.addClasses ?? []));
+  w.exported.push(
+    ...(fx.addClasses ?? []).map(({ className, ...c }) => ({
+      exportedAs: className,
+      ...c,
+      class: classNamed(className),
+    })),
+  );
+  for (const { entrypoint, exportedAs, to, as } of fx.reexport ?? []) {
+    const records = entrypoint === TESTING ? w.harnesses?.list : w.exported;
+    const source = records?.find(
+      (r) => r.entrypoint === entrypoint && r.exportedAs === exportedAs,
+    );
+    if (!source)
+      throw new Error(
+        `\`${exportedAs}\` of \`${entrypoint}\` is not in the live input — the case re-exports nothing`,
+      );
+    records.push({
+      ...source,
+      entrypoint: to ?? entrypoint,
+      exportedAs: as ?? exportedAs,
+    });
+  }
   if (fx.declarations === null) w.declarations = null;
   for (const { pattern, flags, with: replacement } of fx.declarations
     ?.replace ?? []) {
@@ -516,12 +619,12 @@ if (problems.length) {
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-const named = live.harnesses.list.reduce((n, h) => n + h.parts.length, 0);
+const named = held.harnesses.reduce((n, h) => n + h.parts.length, 0);
 const entrypoints = new Set(
-  [...held.classOf.values()].map((c) => c.entrypoint),
+  [...held.classOf.values()].flatMap((c) => c.entrypoints),
 );
 console.log(
-  `✓ Harnesses: ${live.harnesses.list.length} harnesses on ${held.harnessesOfClass.size} classes ` +
+  `✓ Harnesses: ${held.harnesses.length} harnesses on ${held.harnessesOfClass.size} classes ` +
     `of ${entrypoints.size} entrypoints, ${named} parts named and typed, ${live.documents.length} cards ` +
     `naming them. Negative control: the reference input passes, ${cases.length} prepared ones ` +
     `rejected on their own points.`,
