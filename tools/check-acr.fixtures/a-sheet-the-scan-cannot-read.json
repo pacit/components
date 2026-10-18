@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A stylesheet leaves a block open, and 1.3.4 keeps resting on the scan. The build refuses such a sheet; the scan, which reads the sheet as sass compiles it, cannot read it either, and says so rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.scss": ":host {\n  display: block;\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabindex]=\"-4294967295\"`, which Angular sets as the `tabIndex` property, and 2.4.3 keeps resting on the scan. The property is a `long`: the number wraps past 32 bits to one.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabindex]=\"-4294967295\">Ada</span>\n"
+  }
+}

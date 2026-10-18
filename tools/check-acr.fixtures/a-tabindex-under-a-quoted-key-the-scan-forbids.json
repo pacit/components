@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A `host` block writes `'tabindex': '1'`, a static attribute under a quoted key, and 2.4.3 keeps resting on the scan. `ngc` reads a quoted key as the name it spells. The quote between the name and the colon hid it from the scan.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    'tabindex': '1',\n  },\n})\nexport class PctAvatar {\n}\n"
-  }
-}

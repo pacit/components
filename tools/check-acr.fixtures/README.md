@@ -90,23 +90,35 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-tabindex-bound-as-an-attribute-the-scan-forbids.json`](a-tabindex-bound-as-an-attribute-the-scan-forbids.json)         | a template binds `[attr.tabindex]="3"`                                                                   | 3     | `evidence`  |
 | [`a-tabindex-bound-to-true.json`](a-tabindex-bound-to-true.json)                                                           | a template binds `[tabindex]="true"`, which the property takes for one                                   | 3     | `evidence`  |
 | [`a-tabindex-bound-with-a-plus-sign.json`](a-tabindex-bound-with-a-plus-sign.json)                                         | a template binds `[tabindex]="+1"`: a plus is no minus                                                   | 3     | `evidence`  |
+| [`a-tabindex-bound-two-way.json`](a-tabindex-bound-two-way.json)                                                           | a template binds `[(tabindex)]="order"`, a value it cannot judge: refused, not passed                    | 3     | `evidence`  |
+| [`a-tabindex-that-wraps-to-one.json`](a-tabindex-that-wraps-to-one.json)                                                   | a template binds `[tabindex]="-4294967295"`, which the property wraps to one                             | 3     | `evidence`  |
 | [`a-positive-tabindex-written-with-a-sign-and-a-unit.json`](a-positive-tabindex-written-with-a-sign-and-a-unit.json)       | a template writes `tabindex=" +01px"`, one by HTML's integer rule                                        | 3     | `evidence`  |
 | [`a-tabindex-in-the-other-branch-of-a-condition.json`](a-tabindex-in-the-other-branch-of-a-condition.json)                 | a template binds `[tabindex]="on() ? 0 : 1"`, positive in the second branch                              | 3     | `evidence`  |
-| [`a-tabindex-the-scan-cannot-judge.json`](a-tabindex-the-scan-cannot-judge.json)                                           | a template binds `[tabindex]="order"`, a value the source does not say: refused, not passed              | 3     | `evidence`  |
 | [`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json)                                                         | an ICU's case draws `<span tabindex="2">`, which only the HTML tree holds                                | 3     | `evidence`  |
 | [`a-tabindex-in-markup-an-expression-holds.json`](a-tabindex-in-markup-an-expression-holds.json)                           | a template hands `innerHTML` a string with `tabindex=2` in it                                            | 3     | `evidence`  |
+| [`a-tabindex-left-to-a-substitution-in-an-expression.json`](a-tabindex-left-to-a-substitution-in-an-expression.json)       | a template hands `innerHTML` a template literal whose tabindex a substitution says                       | 3     | `evidence`  |
+| [`a-tabindex-left-to-a-concatenation-in-an-expression.json`](a-tabindex-left-to-a-concatenation-in-an-expression.json)     | a template hands `innerHTML` markup whose tabindex a concatenation says                                  | 3     | `evidence`  |
 | [`a-tabindex-bound-in-an-inline-template.json`](a-tabindex-bound-in-an-inline-template.json)                               | a component's inline `template` binds `[tabindex]="1"`                                                   | 3     | `evidence`  |
+| [`a-template-the-scan-cannot-read.json`](a-template-the-scan-cannot-read.json)                                             | a template closes a tag it never opened                                                                  | 3     | `evidence`  |
+| [`an-inline-template-the-scan-cannot-read.json`](an-inline-template-the-scan-cannot-read.json)                             | an inline `template` closes a tag it never opened                                                        | 3     | `evidence`  |
+| [`an-inline-template-given-by-a-constant.json`](an-inline-template-given-by-a-constant.json)                               | a `template` given by a constant, which the reading does not hold                                        | 3     | `evidence`  |
 | [`a-tabindex-bound-in-a-host-block-the-scan-forbids.json`](a-tabindex-bound-in-a-host-block-the-scan-forbids.json)         | a `host` block binds `'[tabIndex]': '5'`                                                                 | 3     | `evidence`  |
-| [`a-tabindex-under-a-quoted-key-the-scan-forbids.json`](a-tabindex-under-a-quoted-key-the-scan-forbids.json)               | a `host` block writes `'tabindex': '1'` under a quoted key                                               | 3     | `evidence`  |
-| [`an-input-default-bound-as-a-tabindex-the-scan-forbids.json`](an-input-default-bound-as-a-tabindex-the-scan-forbids.json) | a `host` block binds `order()` over `order = input(2)`                                                   | 3     | `evidence`  |
-| [`a-tabindex-from-an-input-with-options.json`](a-tabindex-from-an-input-with-options.json)                                 | the same over `input(0, { transform: () => 3 })`: an input with options has no default to stand on       | 3     | `evidence`  |
-| [`a-tabindex-from-a-field-set-in-the-constructor.json`](a-tabindex-from-a-field-set-in-the-constructor.json)               | the same over a field the constructor sets to `() => 2`                                                  | 3     | `evidence`  |
+| [`an-input-default-bound-as-a-tabindex-the-scan-forbids.json`](an-input-default-bound-as-a-tabindex-the-scan-forbids.json) | a `host` block binds `order()` over `order = input(2)`: an input holds what any template gives it        | 3     | `evidence`  |
+| [`a-tabindex-from-a-field-the-class-fills-in.json`](a-tabindex-from-a-field-the-class-fills-in.json)                       | the same over a `readonly` field with no initializer, which `Object.assign` fills                        | 3     | `evidence`  |
+| [`a-tabindex-from-a-computed-the-constructor-replaces.json`](a-tabindex-from-a-computed-the-constructor-replaces.json)     | the same over a `readonly` `computed` the constructor replaces                                           | 3     | `evidence`  |
+| [`a-tabindex-from-a-computed-anyone-can-replace.json`](a-tabindex-from-a-computed-anyone-can-replace.json)                 | the same over a `computed` that is not `readonly`                                                        | 3     | `evidence`  |
+| [`a-tabindex-from-a-static-namesake.json`](a-tabindex-from-a-static-namesake.json)                                         | the same over a method returning `5` beside a static namesake returning `0`                              | 3     | `evidence`  |
+| [`a-tabindex-under-a-shorthand-key.json`](a-tabindex-under-a-shorthand-key.json)                                           | a `host` block writes `tabindex` by shorthand, over a constant                                           | 3     | `evidence`  |
 | [`a-tabindex-a-method-returns-in-its-other-branch.json`](a-tabindex-a-method-returns-in-its-other-branch.json)             | the same over a method returning `this.on ? -1 : 1`                                                      | 3     | `evidence`  |
 | [`a-tabindex-a-method-returns-second.json`](a-tabindex-a-method-returns-second.json)                                       | the same over a method returning `-1`, then `2`                                                          | 3     | `evidence`  |
-| [`a-tabindex-a-host-binding-decorator-sets.json`](a-tabindex-a-host-binding-decorator-sets.json)                           | a component writes `@HostBinding('attr.tabindex') order = 1`                                             | 3     | `evidence`  |
+| [`a-tabindex-a-host-binding-decorator-sets.json`](a-tabindex-a-host-binding-decorator-sets.json)                           | a component writes `@HostBinding('attr.tabindex') readonly order = 1`                                    | 3     | `evidence`  |
+| [`a-tabindex-a-host-binding-getter-sets.json`](a-tabindex-a-host-binding-getter-sets.json)                                 | a component writes `@HostBinding('attr.tabindex')` on a getter returning `1`                             | 3     | `evidence`  |
 | [`a-tabindex-a-renderer-sets.json`](a-tabindex-a-renderer-sets.json)                                                       | a component calls `renderer.setAttribute(el, 'tabindex', '1')`                                           | 3     | `evidence`  |
 | [`a-tabindex-a-script-assigns.json`](a-tabindex-a-script-assigns.json)                                                     | a component assigns `el.tabIndex = 1`                                                                    | 3     | `evidence`  |
-| [`a-tabindex-in-markup-a-script-holds.json`](a-tabindex-in-markup-a-script-holds.json)                                     | a component holds the string `'<b tabindex="1">'`                                                        | 3     | `evidence`  |
+| [`a-tabindex-a-script-assigns-by-key.json`](a-tabindex-a-script-assigns-by-key.json)                                       | a component assigns `el['tabIndex'] = 1`                                                                 | 3     | `evidence`  |
+| [`a-tabindex-in-capitals-in-markup-a-script-holds.json`](a-tabindex-in-capitals-in-markup-a-script-holds.json)             | a component holds the string `'<b TABINDEX="1">'`                                                        | 3     | `evidence`  |
+| [`a-tabindex-left-to-a-substitution.json`](a-tabindex-left-to-a-substitution.json)                                         | a component holds markup whose tabindex a substitution says                                              | 3     | `evidence`  |
+| [`a-tabindex-left-to-a-concatenation.json`](a-tabindex-left-to-a-concatenation.json)                                       | a component holds markup whose tabindex a concatenation says                                             | 3     | `evidence`  |
 | [`an-accesskey-bound-as-a-property-the-scan-forbids.json`](an-accesskey-bound-as-a-property-the-scan-forbids.json)         | a template binds the property, `[accessKey]`, and 2.1.4 still says Supports                              | 3     | `evidence`  |
 | [`an-accesskey-behind-an-escape.json`](an-accesskey-behind-an-escape.json)                                                 | a `host` key spells `[attr.acc\u0065sskey]`, which TypeScript cooks to `accesskey`                       | 3     | `evidence`  |
 | [`a-motion-listener-in-a-template.json`](a-motion-listener-in-a-template.json)                                             | a template listens with `(window:devicemotion)`, and 2.5.4 still says Not Applicable                     | 3     | `evidence`  |
@@ -116,10 +128,19 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`an-orientation-query-in-capitals.json`](an-orientation-query-in-capitals.json)                                           | a stylesheet queries `(ORIENTATION: portrait)`, and 1.3.4 still says Supports                            | 3     | `evidence`  |
 | [`an-orientation-query-in-a-template-style.json`](an-orientation-query-in-a-template-style.json)                           | a template's `<style>` queries `(orientation: portrait)`                                                 | 3     | `evidence`  |
 | [`an-orientation-query-in-a-css-sheet.json`](an-orientation-query-in-a-css-sheet.json)                                     | a component gains `avatar.css` with the query                                                            | 3     | `evidence`  |
-| [`an-orientation-query-a-script-matches.json`](an-orientation-query-a-script-matches.json)                                 | a component asks `matchMedia('(orientation: portrait)')`                                                 | 3     | `evidence`  |
 | [`an-orientation-lock-a-script-calls.json`](an-orientation-lock-a-script-calls.json)                                       | a component calls `screen.orientation.lock('portrait')`                                                  | 3     | `evidence`  |
+| [`an-orientation-query-in-capitals-a-script-matches.json`](an-orientation-query-in-capitals-a-script-matches.json)         | a component asks `matchMedia('(ORIENTATION: landscape)')`                                                | 3     | `evidence`  |
+| [`an-orientation-read-off-the-window-screen.json`](an-orientation-read-off-the-window-screen.json)                         | a component reads `window.screen.orientation.type`                                                       | 3     | `evidence`  |
+| [`an-orientation-read-by-key.json`](an-orientation-read-by-key.json)                                                       | a component reads `window['orientation']`                                                                | 3     | `evidence`  |
+| [`an-orientation-the-window-holds.json`](an-orientation-the-window-holds.json)                                             | a component reads `window.orientation`, behind a cast                                                    | 3     | `evidence`  |
+| [`an-orientation-listener-in-a-template.json`](an-orientation-listener-in-a-template.json)                                 | a template listens with `(window:orientationchange)`                                                     | 3     | `evidence`  |
+| [`a-sheet-the-scan-cannot-read.json`](a-sheet-the-scan-cannot-read.json)                                                   | a stylesheet leaves a block open                                                                         | 3     | `evidence`  |
 | [`a-video-in-an-inline-template-behind-an-escape.json`](a-video-in-an-inline-template-behind-an-escape.json)               | an inline `template` draws `<vid\u0065o>`, and 1.2.1 still says Not Applicable                           | 3     | `evidence`  |
+| [`a-video-a-script-creates.json`](a-video-a-script-creates.json)                                                           | a component calls `document.createElement('video')`                                                      | 3     | `evidence`  |
+| [`an-audio-a-script-constructs.json`](an-audio-a-script-constructs.json)                                                   | a component calls `new Audio('chime.mp3')`                                                               | 3     | `evidence`  |
 | [`an-svg-text-in-an-inline-template-behind-an-escape.json`](an-svg-text-in-an-inline-template-behind-an-escape.json)       | an inline `template` draws `<t\u0065xt>` in an `<svg>`, and 1.4.5 still says Not Applicable              | 3     | `evidence`  |
+| [`an-svg-text-a-script-creates.json`](an-svg-text-a-script-creates.json)                                                   | a component calls `createElementNS(svg, 'text')`                                                         | 3     | `evidence`  |
+| [`an-svg-text-a-renderer-creates.json`](an-svg-text-a-renderer-creates.json)                                               | a component calls a renderer's `createElement('text', 'svg')`                                            | 3     | `evidence`  |
 | [`a-gate-that-left-ci.json`](a-gate-that-left-ci.json)                                                                     | `check-aria` is cited, and ci.yml no longer runs it                                                      | 4     | `wired`     |
 | [`a-card-that-owes-the-keyboard.json`](a-card-that-owes-the-keyboard.json)                                                 | the button card's keyboard row turns into a gap under a Supports                                         | 5     | `cards`     |
 | [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                                                         | finding 4.75 is ticked in the plan while 4.1.2 still leans on it                                         | 6     | `finding`   |
@@ -139,17 +160,20 @@ tracked set lacks are still silent, and no case uses either that way.
 
 Point 2 has four cases because a level can be wrong in four directions and every one of them
 reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
-its own limit, a _Not Evaluated_ with no owner. Point 3 has forty-four. Five are one per kind
+its own limit, a _Not Evaluated_ with no owner. Point 3 has sixty-five. Five are one per kind
 of citation that can go stale — a gate's point, a case's title, a quoted sentence, a decision's
 number, a scan over the sources — because each goes stale for a different reason and at a
-different moment. The other thirty-nine are the scans', one per spelling of what a scan
-forbids, because a spelling its reading does not take reads as a library that has none: a tag
-in a namespace or in capitals, an attribute written in capitals, bound as a property or through
-`attr.`, keyed in a `host` block, set by a script, a decorator or a renderer, a value a
-condition, a method or an input's default hands over, an inline template, a name behind an
-escape, a media feature in capitals, in a template's `<style>`, in a `.css` sheet or in a
-script. Three of them passed the pattern the reading replaced as well
-([`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json) and the two markup ones):
+different moment. The other sixty are the scans', one per spelling of what a scan forbids,
+because a spelling its reading does not take reads as a library that has none: a tag in a
+namespace or in capitals, or one a script creates; an attribute written in capitals, bound as a
+property, two ways or through `attr.`, keyed in a `host` block, set by a script, a decorator or
+a renderer; a value a condition, a method, a field or a string a script builds hands over; an
+inline template, a name behind an escape; a media feature in capitals, in a template's
+`<style>`, in a `.css` sheet or in a script; a listener of the orientation and a read of it. A
+template, an inline template and a sheet the reading cannot read are refused as such. Two of
+them passed the pattern the reading replaced as well
+([`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json) and
+[`a-tabindex-in-markup-an-expression-holds.json`](a-tabindex-in-markup-an-expression-holds.json)):
 they hold that the parser reaches what the raw text reached. Point 7 has five: "recorded" can
 be a lie in three places — the directory, the cards, and the logs, which can stand on disk
 without one `open` row the table promises — the act table can cite a spec that never presses

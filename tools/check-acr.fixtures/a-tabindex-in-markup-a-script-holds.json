@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component holds the string `'<b tabindex=\"1\">'`, markup a script can hand to `innerHTML`, and 2.4.3 keeps resting on the scan. The pattern on main read it in the raw text; the reading that replaces it reads every string as markup.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly mark = '<b tabindex=\"1\">Ada</b>';\n}\n"
-  }
-}

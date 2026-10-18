@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component assigns `el['tabIndex'] = 1`, and 2.4.3 keeps resting on the scan. An element access writes the property as a dot does. Read in small letters straight before `=`, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef);\n  constructor() {\n    this.el.nativeElement['tabIndex'] = 1;\n  }\n}\n"
+  }
+}

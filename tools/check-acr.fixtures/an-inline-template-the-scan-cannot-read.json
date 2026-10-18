@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's inline `template` closes a tag it never opened, `<b></i>`, and 2.4.3 keeps resting on the scan. The scan cannot read it, and says so rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  template: '<b>Ada</i>',\n})\nexport class PctAvatar {\n}\n"
+  }
+}

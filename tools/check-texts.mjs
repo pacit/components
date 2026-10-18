@@ -533,8 +533,8 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
 
   visitBoundAttribute(node) {
     this.seen(node);
-    const property =
-      node.type === BindingType.Property || node.type === BindingType.TwoWay;
+    // A two-way binding holds no literal to read, so a property is the one-way kind.
+    const property = node.type === BindingType.Property;
     if (!this.speaking(property ? reflected(node.name) : node.name)) return;
     node.value.visit(
       new ExpressionLiterals((v) =>

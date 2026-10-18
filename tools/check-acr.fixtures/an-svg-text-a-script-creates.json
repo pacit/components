@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `createElementNS('http://www.w3.org/2000/svg', 'text')`, and 1.4.5 keeps resting on the scan: an image of text, made by a script. The scan read the `<` of a tag.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    document.body.append(document.createElementNS('http://www.w3.org/2000/svg', 'text'));\n  }\n}\n"
+  }
+}

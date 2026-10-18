@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's `template` is a constant, `TEMPLATE`, holding `<i [tabindex]=\"3\"></i>`, and 2.4.3 keeps resting on the scan. `ngc` evaluates the constant; the reading holds no template there and refuses it rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\nconst TEMPLATE = '<i [tabindex]=\"3\"></i>';\n\n@Component({\n  selector: 'pct-avatar',\n  template: TEMPLATE,\n})\nexport class PctAvatar {\n}\n"
+  }
+}

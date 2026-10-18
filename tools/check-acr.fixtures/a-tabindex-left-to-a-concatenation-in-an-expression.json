@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template hands `innerHTML` `'<b tabindex=' + n + '>'`, and 2.4.3 keeps resting on the scan. The value is no literal the reading can judge, and it is refused.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [innerHTML]=\"'<b tabindex=' + n + '>Ada</b>'\"></span>\n"
+  }
+}

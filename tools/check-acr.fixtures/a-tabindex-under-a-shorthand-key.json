@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block writes `tabindex` by shorthand over `const tabindex = String(1)`, and 2.4.3 keeps resting on the scan. `ngc` evaluates the constant into the host's attribute. The value is no literal the reading can judge, and it is refused.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\nconst tabindex = String(1);\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    tabindex,\n  },\n})\nexport class PctAvatar {\n}\n"
+  }
+}

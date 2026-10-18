@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "$reason": "`hidden-with-a-way-in` with the host's `aria-hidden` written in capitals, `'ARIA-HIDDEN': 'true'`. `hostAttrs` keeps the name as written and `setAttribute` lowers it on the host: the subtree is out of the tree, the button still in the tab order. The keys were compared as written, and this host hid nothing from point 8."
+}

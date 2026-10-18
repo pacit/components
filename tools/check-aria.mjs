@@ -805,6 +805,22 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
  */
 const isElement = (node) => node instanceof TmplAstElement;
 
+/**
+ * A `host` key by the attribute it reaches, as `nameOf` reads a template's: `ROLE` is `role`,
+ * `[attr.ARIA-LABEL]` is `[attr.aria-label]`, and a property binding is the `[attr.…]` of the
+ * attribute it reflects (`[ariaLabel]`, `[role]`). The keys were compared as written, and
+ * `'ARIA-LABEL': 'Surface'` or `'[ariaLabel]': "'Surface'"` on a presentational host passed
+ * point 2, and `'ARIA-HIDDEN': 'true'` hid nothing from point 8. An event stays as written.
+ */
+const hostKey = (key) => {
+  const bound = /^\[(attr\.)?(.+)\]$/s.exec(key);
+  if (bound) return `[attr.${nameOf(bound[2], bound[1] === undefined)}]`;
+  return key.startsWith('(') ? key : nameOf(key);
+};
+/** The host's keys that reach one of `keys`, as written. */
+const hostKeysIn = (component, keys) =>
+  [...component.host.keys()].filter((key) => keys.includes(hostKey(key)));
+
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
   input.type === BindingType.Property || input.type === BindingType.TwoWay;
@@ -1237,12 +1253,13 @@ class AriaError extends Error {
 }
 
 /**
- * The role a host block gives the component's element: written (`role`), read as the engines
- * read it, or bound (`[attr.role]`, `[role]`) — one an expression decides.
+ * The role a host block gives the component's element: written (`role`, in any case — the last of
+ * two, as the DOM keeps it), read as the engines read it, or bound (`[attr.role]`, `[role]`) — one
+ * an expression decides.
  */
 const hostRoleOf = (component) => ({
-  role: readRole(component.host.get('role')),
-  bound: component.host.has('[attr.role]') || component.host.has('[role]'),
+  role: readRole(component.host.get(hostKeysIn(component, ['role']).at(-1))),
+  bound: hostKeysIn(component, ['[attr.role]']).length > 0,
 });
 
 /**
@@ -1809,7 +1826,7 @@ const checkAria = ({
 
   // ── 2. an ARIA name in a host block ──────────────────────────────────────────
   for (const component of components) {
-    const written = HOST_NAME_KEYS.filter((key) => component.host.has(key));
+    const written = hostKeysIn(component, HOST_NAME_KEYS);
     if (written.length && !component.hostIsWidget)
       throw new AriaError(
         'host',
@@ -2186,8 +2203,8 @@ const checkAria = ({
   // scan gives is a flat list, so "inside a hidden element" is a question about nesting it
   // cannot answer. A host is the one hidden element whose subtree IS the whole template, so
   // this is the part of the rule that can be decided rather than guessed.
-  const hidden = components.filter((c) =>
-    HOST_HIDDEN_KEYS.some((key) => c.host.has(key)),
+  const hidden = components.filter(
+    (c) => hostKeysIn(c, HOST_HIDDEN_KEYS).length > 0,
   );
   for (const component of hidden) {
     const landable = component.widgets.filter((widget) =>
