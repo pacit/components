@@ -4,7 +4,7 @@
  * `data-pct-part` contract. Nothing in one proves itself, so every declaration is held to the
  * BUILT package, both ways, the way the cards are:
  *
- *  1. SET: `./testing` is exported and every harness is a `PctHarness` with distinct parts,
+ *  1. SET: `./testing` is exported, every harness a `PctHarness` of its own name, distinct parts,
  *  2. HOST: a `hostSelector` is verbatim one exported class's list, and no class has two,
  *  3. EVERY: every class that draws a part has a harness,
  *  4. PARTS: a harness names exactly the parts its class draws, neither more nor fewer,
@@ -291,7 +291,9 @@ const checkHarness = (input) => {
           clashing.map(
             ([name, named]) =>
               `${name}: exported as ` +
-              named.map((h) => quoted(h.names)).join(' and '),
+              named
+                .map((h) => h.names.map((n) => `\`${n}\``).join(' and '))
+                .join(', '),
           ),
         ) +
         `\n    A harness is named by its own name, as its declaration is, so point 5 would ` +
@@ -405,9 +407,9 @@ const checkHarness = (input) => {
 
   // 6. The cards — the page names the harness, by any name `./testing` exports it under, and
   // the harness is of a class the card's entrypoint exports. A class two entrypoints export is
-  // what both of them hand a consumer, so the card of either may name its harness, and neither
-  // has to: the point asks for every harness on some card, not every harness of an entrypoint
-  // on its card. The namespaces do not tell the entrypoint declaring a class from one
+  // what both of them hand a consumer, so the card of either may name its harness, and one card
+  // naming it is enough: the point asks for every harness on some card, not every harness of an
+  // entrypoint on its card. The namespaces do not tell the entrypoint declaring a class from one
   // re-exporting it, and this point does not ask.
   const harnessNamed = new Map(
     harnesses.list.flatMap((h) => h.names.map((name) => [name, h])),

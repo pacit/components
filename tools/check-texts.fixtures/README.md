@@ -54,7 +54,8 @@ where that is not its own name once (a re-export from another entrypoint, a seco
 name that is not its own); the gate turns the entries into one record per exported name, in the order a module
 namespace gives (each entrypoint's names sorted, none twice), as the package read does, and
 groups them by object with the same code the live run uses. The
-reference exports `PctBlank` a second time, as `PctBare`, a name that comes before its own, and passes.
+reference exports `PctBlank` a second time, as `PctBare`, a name that comes before its own, and `PctMarker` under `PctMark`
+alone, and passes.
 
 ## One rule with no case
 

@@ -716,8 +716,7 @@ every card's **Harness** row names existing harnesses of classes its own entrypo
 every harness standing on some card. A class and a harness are the object a module exports,
 with every name and entrypoint it is exported under, and a harness is named by its own name, as
 its declaration is, so two harness classes of one name are refused at point 1. A class two
-entrypoints export is one class, and the card of either may name its harness and neither has
-to, as point 6 asks for every harness on some card and not on every card of its entrypoints
+entrypoints export is one class, and the card of either may name its harness, one card naming it being enough, as point 6 asks for every harness on some card and not on every card of its entrypoints
 (`check-parts`, which counts a class's parts in each entrypoint, holds both cards to them). Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host

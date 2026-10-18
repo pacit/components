@@ -39,8 +39,13 @@
       ]
     },
     {
-      "entrypoint": "./widget",
       "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        }
+      ],
       "attributes": [
         [
           "data-pct-part",

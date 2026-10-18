@@ -2,8 +2,8 @@
   "entrypoints": [
     ".",
     "./widget",
-    "./other",
-    "./wrap"
+    "./wrap",
+    "./other"
   ],
   "classes": [
     {
@@ -85,11 +85,11 @@
       "className": "PctMarker",
       "exports": [
         {
-          "entrypoint": "./other",
+          "entrypoint": "./wrap",
           "as": "PctMarker"
         },
         {
-          "entrypoint": "./wrap",
+          "entrypoint": "./other",
           "as": "PctMarker"
         }
       ],

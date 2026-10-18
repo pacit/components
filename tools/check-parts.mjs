@@ -1432,7 +1432,7 @@ const fixtureInput = (directory) => {
       .map((p) => p.split('\\').join('/'))
       .sort(),
     {
-      pkg: inNamespaceOrder(pkg.classes.flatMap(packageClass)),
+      pkg: inNamespaceOrder(pkg.classes.flatMap(packageClass), pkg.entrypoints),
       entrypoints: new Set(pkg.entrypoints),
     },
   );
@@ -1463,20 +1463,30 @@ const packageClass = (k) => {
 };
 
 /**
- * The records as module namespaces give them: each entrypoint's names in code-unit order, and
- * none twice in one module. Listed as a case writes them, a class's own name would always
- * come before its other names, and `PctGadget` comes before `PctWidget`.
+ * The records as the package read gives them: the entrypoints in the manifest's order, each
+ * one's names in code-unit order, as a module namespace lists them, and none twice in one
+ * module. Listed as a case writes them, a class's own name would always come before its other
+ * names, and `PctGadget` comes before `PctWidget`.
  */
-const inNamespaceOrder = (records) =>
-  [...Map.groupBy(records, (r) => r.entrypoint).values()].flatMap((of) => {
-    const names = of.map((r) => r.exportedAs);
-    const twice = names.filter((n, i) => names.indexOf(n) !== i);
-    if (twice.length)
+const inNamespaceOrder = (records, manifest) => {
+  const modules = Map.groupBy(records, (r) => r.entrypoint);
+  for (const entrypoint of modules.keys())
+    if (!manifest.includes(entrypoint))
       throw new Error(
-        `\`${of[0].entrypoint}\` exports ${twice.join(', ')} twice — no module can`,
+        `\`${entrypoint}\` exports a class and is not in the case's \`entrypoints\``,
       );
-    return of.toSorted((a, b) => (a.exportedAs < b.exportedAs ? -1 : 1));
-  });
+  return [...modules]
+    .toSorted(([a], [b]) => manifest.indexOf(a) - manifest.indexOf(b))
+    .flatMap(([entrypoint, of]) => {
+      const names = of.map((r) => r.exportedAs);
+      const twice = names.filter((n, i) => names.indexOf(n) !== i);
+      if (twice.length)
+        throw new Error(
+          `\`${entrypoint}\` exports ${twice.join(', ')} twice — no module can`,
+        );
+      return of.toSorted((a, b) => (a.exportedAs < b.exportedAs ? -1 : 1));
+    });
+};
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
