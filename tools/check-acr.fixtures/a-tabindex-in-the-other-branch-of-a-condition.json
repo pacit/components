@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabindex]=\"on() ? 0 : 1\"`, and 2.4.3 keeps resting on the scan. Either branch is what the element gets, and the second is a positive stop. Read as one pattern, the binding was never a tabindex.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabindex]=\"on() ? 0 : 1\">Ada</span>\n"
+  }
+}

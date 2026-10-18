@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `literal-in-binding` case with the binding written as the property, `[ariaLabel]`: the engines reflect every ARIA attribute as a camel-case property, and setting it writes the button's `aria-label` (`check-aria` reads the binding so, `nameOf`). The read took the property's name for the attribute's, and `arialabel` is no speaking attribute. A binding is no static attribute, so the package entry is the reference's."
+}

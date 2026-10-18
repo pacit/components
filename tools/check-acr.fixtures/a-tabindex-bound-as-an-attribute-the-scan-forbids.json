@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[attr.tabindex]=\"3\"`, and 2.4.3 keeps resting on the scan. The binding sets the attribute itself; the scan, reading `tabindex` straight before `=`, found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [attr.tabindex]=\"3\">Ada</span>\n"
+  }
+}

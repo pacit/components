@@ -18,6 +18,7 @@
  * Usage: node tools/check-texts.mjs
  */
 import {
+  BindingType,
   parseTemplate,
   RecursiveAstVisitor,
   splitNsName,
@@ -41,6 +42,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, textOf } from './decorators.mjs';
+import { staticAttributes } from './static-attributes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -102,6 +104,14 @@ const SPEAKING_ATTRIBUTES = new Set([
  */
 const speaks = (name) =>
   typeof name === 'string' && SPEAKING_ATTRIBUTES.has(name.toLowerCase());
+
+/**
+ * The attribute a PROPERTY binding writes: the engines reflect every ARIA attribute as a camel-case
+ * property, so `[ariaLabel]` sets the element's `aria-label` — as `check-aria` reads it (`nameOf`).
+ * Another property is its attribute by name (`[title]`). An `attr.` binding goes through
+ * `setAttribute`, which makes `ariaLabel` the attribute `arialabel`, no ARIA, and keeps its name.
+ */
+const reflected = (name) => name.replace(/^aria(?!-)/, 'aria-');
 
 /** `<input type="submit">` prints `value` as the button's label. */
 const BUTTONS = new Set(['submit', 'button', 'reset']);
@@ -267,10 +277,14 @@ const hostBlock = (body) => {
   return null;
 };
 
-/** The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`. */
+/**
+ * The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`, and the property
+ * `[ariaLabel]` → `aria-label` (`reflected`).
+ */
 const nameFromKey = (key) => {
-  const bound = /^\[(?:attr\.)?([^\]]+)\]$/.exec(key);
-  return bound ? { name: bound[1], bound: true } : { name: key, bound: false };
+  const bound = /^\[(attr\.)?([^\]]+)\]$/.exec(key);
+  if (!bound) return { name: key, bound: false };
+  return { name: bound[1] ? bound[2] : reflected(bound[2]), bound: true };
 };
 
 /**
@@ -519,7 +533,9 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
 
   visitBoundAttribute(node) {
     this.seen(node);
-    if (!this.speaking(node.name)) return;
+    const property =
+      node.type === BindingType.Property || node.type === BindingType.TwoWay;
+    if (!this.speaking(property ? reflected(node.name) : node.name)) return;
     node.value.visit(
       new ExpressionLiterals((v) =>
         this.expressions.push({
@@ -1447,19 +1463,17 @@ const isSource = (p) =>
 const isTemplate = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
 
 /**
- * Static attributes from Angular's flat array (`consts`, `hostAttrs`). A number opens a
- * section with a different meaning (classes, styles, bindings), so we read only the prefix
- * before the first number — beyond it stand names without values. The same parser as in
- * `check-parts`.
+ * A definition's static attributes, its elements' (`consts`) and its host's (`hostAttrs`), read
+ * as `check-parts` reads them (`static-attributes.mjs`). A case gives the same two arrays, read
+ * here too (`packageClass`).
  */
-const pairAttributes = (attrs) => {
-  const out = [];
-  for (let i = 0; i < attrs.length; i++) {
-    if (typeof attrs[i] === 'number') break;
-    out.push([attrs[i], attrs[i + 1]]);
-    i++;
-  }
-  return out;
+const attributesOf = (def) => {
+  const consts =
+    typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
+  return [
+    ...consts.filter(Array.isArray).flatMap(staticAttributes),
+    ...staticAttributes(def.hostAttrs ?? []),
+  ];
 };
 
 /**
@@ -1494,16 +1508,11 @@ const packageComponents = async (root) => {
       const def = value['ɵcmp'] ?? value['ɵdir'];
       if (!def) continue;
 
-      const consts =
-        typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
       out.push({
         entrypoint,
         exportedAs,
         class: value,
-        attributes: [
-          ...consts.filter(Array.isArray).flatMap(pairAttributes),
-          ...pairAttributes(def.hostAttrs ?? []),
-        ],
+        attributes: attributesOf(def),
       });
     }
   }
@@ -1711,7 +1720,9 @@ const fixtureInput = (directory) =>
  * One class of a prepared input's package — one object — as the records the package read
  * gives for it: one per name an entrypoint exports it under. `exports` lists them where the
  * class is exported otherwise than once, from `entrypoint`, under its own name: a re-export
- * from another entrypoint, a second name, a name that is not its own.
+ * from another entrypoint, a second name, a name that is not its own. Its static attributes are
+ * the pairs as `attributes` lists them, or the definition's own arrays (`consts`, `hostAttrs`) as
+ * the linker writes them, read by the function the package read uses (`attributesOf`).
  */
 const packageClass = (k) => {
   const type = { [k.className]: class {} }[k.className];
@@ -1720,7 +1731,7 @@ const packageClass = (k) => {
       entrypoint,
       exportedAs: as,
       class: type,
-      attributes: k.attributes,
+      attributes: k.attributes ?? attributesOf(k),
     }),
   );
 };

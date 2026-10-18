@@ -134,6 +134,7 @@
         "{workspaceRoot}/tools/class-bases.mjs",
         "{workspaceRoot}/tools/decorators.mjs",
         "{workspaceRoot}/tools/fresh-inputs.mjs",
+        "{workspaceRoot}/tools/static-attributes.mjs",
         "{workspaceRoot}/tools/template-comments.mjs",
         "{workspaceRoot}/tools/check-parts.fixtures/**/*",
         {
@@ -338,6 +339,7 @@
         "{workspaceRoot}/libs/tokens/src/**/*",
         "{workspaceRoot}/tools/check-*.mjs",
         "{workspaceRoot}/tools/workflow-targets.mjs",
+        "{workspaceRoot}/tools/decorators.mjs",
         "{workspaceRoot}/tools/check-acr.fixtures/**/*",
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/.prettierrc",

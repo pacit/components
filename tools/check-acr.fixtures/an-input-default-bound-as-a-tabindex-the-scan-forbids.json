@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component binds `'[tabindex]': 'order()'` and declares `order = input(2)`, and 2.4.3 keeps resting on the scan. Every consumer who sets nothing gets the library's own two. The binding holds no digit and the input no `tabindex`, so the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  readonly order = input(2);\n}\n"
+  }
+}

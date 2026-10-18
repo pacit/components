@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabindex]=\"order\"`, a property of the class the source says nothing about, and 2.4.3 keeps resting on the scan. A value the reading cannot judge is refused, never passed: a field holds whatever was last put there.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabindex]=\"order\">Ada</span>\n"
+  }
+}

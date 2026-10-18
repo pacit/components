@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component gains `avatar.css` with `@media (orientation: portrait)`, and 1.3.4 keeps resting on the scan. A stylesheet in plain CSS is a stylesheet. The sources the scan read held no `.css` file.",
+  "sources": {
+    "libs/components/avatar/src/avatar.css": "@media (orientation: portrait) {\n  :host {\n    display: none;\n  }\n}\n"
+  }
+}

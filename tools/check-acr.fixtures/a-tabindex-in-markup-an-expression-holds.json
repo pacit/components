@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[innerHTML]=\"'<b tabindex=2>Ada</b>'\"`, and 2.4.3 keeps resting on the scan. The sanitizer keeps the attribute. The pattern on main read it in the raw text; the reading that replaces it reads every string of an expression as markup.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [innerHTML]=\"'<b tabindex=2>Ada</b>'\"></span>\n"
+  }
+}

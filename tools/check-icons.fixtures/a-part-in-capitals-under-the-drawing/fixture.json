@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "part",
+  "why": "The part moved from the box onto a `<span>` wrapping the drawing and written in capitals, `DATA-PCT-PART=\"arrow\"`. The compiler hands the name on as written and `setAttribute` lowers it on an HTML element: a consumer's `[data-pct-part=\"arrow\"]` matches it, and it goes when a set replaces the drawing. `check-parts` reads the name in any case; this point read it in small letters alone."
+}

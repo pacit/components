@@ -20,6 +20,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { valuesOf } from './static-attributes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = 'dist/libs/components';
@@ -76,16 +77,8 @@ const renderSelectors = (selectors, className) =>
     })
     .join(', ');
 
-/** The static attributes' prefix of a `consts` entry, read as `check-parts` reads it. */
-const pairAttributes = (attrs) => {
-  const out = [];
-  for (let i = 0; i < attrs.length; i++) {
-    if (typeof attrs[i] === 'number') break;
-    if (attrs[i] === ATTRIBUTE) out.push(attrs[i + 1]);
-    i++;
-  }
-  return out;
-};
+/** The parts among a definition's static attributes, read as `check-parts` reads them. */
+const pairAttributes = (attrs) => valuesOf(attrs, ATTRIBUTE);
 
 const partsOf = (def) => {
   const consts =
@@ -521,7 +514,8 @@ const copyRecords = (records) =>
  * Builds a case's input ON A COPY of the live one, so the case file holds nothing but its
  * own defect: `entrypoint: null` loses the testing module; `harnesses` and `classes` patch
  * an export by the name it is exported under (`null` drops it, an unknown name adds a class
- * of its own, a harness named by `className` where that is not the export's name); `reexport`
+ * of its own, a harness named by `className` where that is not the export's name, and a
+ * class's `def` — its `consts` and `hostAttrs` — gives its parts through `partsOf`); `reexport`
  * exports an exported class once more, the same object, from `to` (its own entrypoint by
  * default) under `as` (its own name by default), after the patches; the records then stand
  * in a namespace's order; `declarations: null` loses the declaration file and
@@ -560,10 +554,19 @@ const buildFixture = (fixtureLive, fx) => {
       }),
       'harness',
     );
+  // A class's parts may be given as the definition the linker leaves (`def`: its `consts` and
+  // `hostAttrs`), read by the `partsOf` the live package goes through.
+  const withParts = ({ def, ...patch }) =>
+    def === undefined ? patch : { ...patch, parts: partsOf(def) };
   patchList(
     w.exported,
     'exportedAs',
-    fx.classes,
+    Object.fromEntries(
+      Object.entries(fx.classes ?? {}).map(([name, patch]) => [
+        name,
+        patch && withParts(patch),
+      ]),
+    ),
     (exportedAs, patch) => {
       if (patch.className !== undefined)
         throw new Error(

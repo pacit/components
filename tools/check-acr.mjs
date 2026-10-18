@@ -19,6 +19,27 @@
  *
  * Usage: node tools/check-acr.mjs [--write]  (--write: regenerate docs/acr.md)
  */
+import {
+  BindingType,
+  Call,
+  CombinedRecursiveAstVisitor,
+  Conditional,
+  HtmlParser,
+  ImplicitReceiver,
+  LiteralPrimitive,
+  parseTemplate,
+  Parser,
+  Lexer,
+  ParseLocation,
+  ParseSourceFile,
+  ParseSourceSpan,
+  PropertyRead,
+  RecursiveVisitor,
+  TmplAstRecursiveVisitor,
+  tmplAstVisitAll,
+  Unary,
+  visitAll,
+} from '@angular/compiler';
 import { execSync } from 'node:child_process';
 import {
   existsSync,
@@ -27,9 +48,11 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join, posix } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import * as sass from 'sass';
 import ts from 'typescript';
+import { decoratorsOf, textOf } from './decorators.mjs';
 import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -121,46 +144,565 @@ const MEASURING = new Set(['gate', 'spec', 'cards', 'scan', 'source']);
 const KINDS = new Set([...MEASURING, 'req', 'lesson', 'decision', 'finding']);
 
 /**
- * A scan is a claim "by construction" turned into a measurement: the pattern a criterion
- * forbids, read over the library's own sources on every run. `over` picks the sources:
- * templates, sheets, or the TypeScript outside the specs.
+ * A scan is a claim "by construction" turned into a measurement: what a criterion forbids, read
+ * over the library's own sources on every run. `over` picks the sources — templates, sheets, or
+ * the TypeScript outside the specs — and `find` says where one of them holds it, in the words of
+ * the refusal, or nothing.
+ *
+ * Each scan was one pattern over the lines of the text, and four of them read a name in one
+ * spelling where Angular and the engines take others (measured on main, 2026-10-17 and 18):
+ * `[tabIndex]="2"`, `[attr.tabindex]="3"`, `TABINDEX="4"`, `'[tabIndex]': '5'` in a `host`
+ * block and `tabIndex = input(2)` bound there each passed the tabindex scan, `ACCESSKEY="k"`
+ * and `[accessKey]="k"` the accesskey scan, `@media (ORIENTATION: portrait)` the orientation
+ * scan and a template's `(window:devicemotion)` the motion scan. So the reading is chosen per
+ * scan, by what the criterion turns on:
+ *
+ * - a NAME whose presence alone breaks the claim (`accesskey`, a motion event, a `<video>` or an
+ *   SVG `<text>` tag) is a pattern, over the raw text and over the text the TypeScript parser
+ *   cooks out of each string and name (`cookedHolding`). Every syntax that spells it holds the
+ *   name as written — an attribute, a property or `attr.` binding, a `host` key, `@HostListener`,
+ *   `addEventListener`, an assignment, an inline `template` — and the cooked text holds it where
+ *   an escape hides it
+ *   (`'[attr.acc\u0065sskey]'`). Over-approximated by design, and named: prose that says the
+ *   word is refused with the code, and so is an event type no engine fires (`'DeviceMotion'`: a
+ *   listener's type is compared as written);
+ * - a VALUE — `tabindex`, whose zero and minus one the library writes on purpose, while only a
+ *   positive one breaks 2.4.3 — is read off the parsed template and the parsed TypeScript
+ *   (`positiveTabindexIn`), because no pattern tells `[tabIndex]="on ? 0 : -1"` from
+ *   `[tabIndex]="2"`. What the reading cannot judge is refused, never passed;
+ * - a MEDIA FEATURE is read off the stylesheet as it compiles (`orientationIn`): comments out,
+ *   interpolation spelled, a mixin of another file inlined — what the browser gets.
  */
 const SCANS = {
   'no-media-elements': {
-    over: ['html'],
+    over: ['html', 'ts'],
     // In any case and any namespace the template writes, as Angular's lexer takes a prefix: `ngc`
     // hands `<VIDEO>` to `createElement`, which an HTML document lowers, and makes the same
-    // element of `<foo:video>`, with no namespace instruction (measured on 22.2.1).
-    pattern: /<(?:[a-z][a-z\d]*:)?(?:video|audio)\b/i,
+    // element of `<foo:video>`, with no namespace instruction (measured on 22.2.1). In a script
+    // too, where an inline `template` stands.
+    find: (path, text) =>
+      lineHolding(path, text, MEDIA) ?? cookedHolding(path, text, MEDIA),
     means: 'an `<audio>` or `<video>` element',
   },
   'no-orientation-lock': {
-    over: ['scss'],
-    pattern: /\borientation\s*:/,
-    means: 'an `orientation` media feature',
+    over: ['scss', 'css', 'html', 'ts'],
+    find: (path, text) => orientationIn(path, text),
+    means: 'a reading of the display orientation',
   },
   'no-positive-tabindex': {
     over: ['html', 'ts'],
-    pattern: /tabindex\s*[:=]\s*["']?[1-9]/,
+    find: (path, text) => positiveTabindexIn(path, text),
     means: 'a positive `tabindex`',
   },
   'no-accesskey': {
-    over: ['html'],
-    pattern: /\baccesskey\b/,
+    over: ['html', 'ts'],
+    find: (path, text) =>
+      lineHolding(path, text, ACCESSKEY) ??
+      cookedHolding(path, text, ACCESSKEY),
     means: 'an `accesskey`',
   },
   'no-device-motion': {
-    over: ['ts'],
-    pattern: /devicemotion|deviceorientation/,
-    means: 'a device-motion listener',
+    over: ['html', 'ts'],
+    find: (path, text) =>
+      lineHolding(path, text, MOTION) ?? cookedHolding(path, text, MOTION),
+    means: 'a device-motion or orientation listener, or a motion sensor',
   },
   'no-svg-text': {
     over: ['html', 'ts'],
     // Inside an `<svg>` or in its namespace, `<svg:text>`, which `ngc` makes anywhere: no other
     // prefix compiles to one, and SVG names keep their case (`<TEXT>` is no text element).
-    pattern: /<(?:svg:)?text\b/,
+    find: (path, text) =>
+      lineHolding(path, text, SVG_TEXT) ?? cookedHolding(path, text, SVG_TEXT),
     means: 'an SVG `<text>` element',
   },
+};
+
+const MEDIA = /<(?:[a-z][a-z\d]*:)?(?:video|audio)\b/i;
+const SVG_TEXT = /<(?:svg:)?text\b/;
+
+/** The end of a refusal that found what a scan forbids. */
+const BROKEN = ' — the claim "by construction" no longer holds';
+
+/** `accesskey` in every spelling Angular binds it by: `ACCESSKEY`, `[accessKey]`, `[attr.accesskey]`. */
+const ACCESSKEY = /\baccesskey\b/i;
+/**
+ * A motion or orientation event, by its type or a window's `on…` property, its interface
+ * (`DeviceMotionEvent.requestPermission()`), and the classes of the Generic Sensor API that read
+ * the same motion — written in their own case, which the flag makes no matter.
+ */
+const MOTION =
+  /devicemotion|deviceorientation|\b(?:Accelerometer|Gyroscope|\w*(?:Acceleration|Gravity|Orientation)Sensor)\b/i;
+
+// ── what the scans read ───────────────────────────────────────────────────────
+
+/** The first line of the text a pattern matches. */
+const lineHolding = (path, text, pattern) => {
+  const at = text.split('\n').findIndex((line) => pattern.test(line));
+  return at === -1 ? undefined : `\`${path}:${at + 1}\` holds one${BROKEN}`;
+};
+
+/**
+ * Every source is read once per text: a case is built on the live sources and rewrites one or two
+ * of them, and a parse of every file per case would make the negative control the whole run.
+ */
+const memo = (read) => {
+  const done = new Map();
+  return (path, text) => {
+    const key = `${path}\0${text}`;
+    if (!done.has(key)) done.set(key, read(path, text));
+    return done.get(key);
+  };
+};
+
+/**
+ * The first string or name of a TypeScript source a pattern matches as the parser cooks it, escapes
+ * resolved: `'(window:device\u006dotion)'` is `(window:devicemotion)` to `ngc`, which reads a
+ * `host` key and `@HostListener`'s argument so, and to the engines, and to a pattern over the raw
+ * text it is no such thing.
+ */
+const cookedHolding = (path, text, pattern) => {
+  if (!path.endsWith('.ts')) return undefined;
+  const at = tsReading(path, text).cooked.find((c) => pattern.test(c.text));
+  return at && `\`${path}:${at.line}\` holds one (${quoted(at.text)})${BROKEN}`;
+};
+
+/** A spelling a refusal quotes: on one line and cut short. */
+const quoted = (text) => `\`${text.replace(/\s+/g, ' ').slice(0, 80)}\``;
+
+/**
+ * Whether a value makes the tabindex positive: as the attribute's integer, which skips leading
+ * whitespace and a sign and stops at the first character that is no digit (`" +01px"` is 1), or as
+ * the property's number, which takes `true` for 1.
+ */
+const positive = (value) =>
+  parseInt(String(value), 10) > 0 || Number(value) >= 1;
+
+/** Values joined; `null` is a value the reading cannot judge, and it takes the union. */
+const union = (...parts) => (parts.includes(null) ? null : parts.flat());
+
+/**
+ * The expressions a function returns: a concise arrow's body, or each `return` of its block that
+ * no nested function holds — `undefined` for a bare one and for a block with none, and nothing it
+ * can judge for a signature with no body.
+ */
+const returnsOf = (fn) => {
+  if (fn.body === undefined) return [null];
+  if (!ts.isBlock(fn.body)) return [fn.body];
+  const out = [];
+  const visit = (node) => {
+    if (ts.isFunctionLike(node) || ts.isClassLike(node)) return;
+    if (ts.isReturnStatement(node)) out.push(node.expression);
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return out.length ? out : [undefined];
+};
+
+/**
+ * The values a TypeScript expression can take, as far as the source says them: a literal, a
+ * negative one, either branch of a condition, an input's default — the library's own value, as a
+ * consumer's is the consumer's — and what a `computed` returns. Anything else is `null`: a signal
+ * or a field holds whatever was last put there, a call returns anything, and an input given
+ * options can transform whatever it is given.
+ */
+const tsValues = (node) => {
+  if (node === undefined) return [undefined];
+  if (node === null) return null;
+  if (ts.isNumericLiteral(node)) return [Number(node.text)];
+  if (ts.isStringLiteralLike(node)) return [node.text];
+  if (
+    ts.isPrefixUnaryExpression(node) &&
+    node.operator === ts.SyntaxKind.MinusToken
+  )
+    return tsValues(node.operand)?.map((v) => -v) ?? null;
+  if (ts.isConditionalExpression(node))
+    return union(tsValues(node.whenTrue), tsValues(node.whenFalse));
+  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+    const [first, ...rest] = node.arguments;
+    if (node.expression.text === 'input' && rest.length === 0)
+      return tsValues(first);
+    if (
+      node.expression.text === 'computed' &&
+      first !== undefined &&
+      (ts.isArrowFunction(first) || ts.isFunctionExpression(first))
+    )
+      return union(...returnsOf(first).map(tsValues));
+  }
+  return null;
+};
+
+/** A member of a class by its name, as an expression of the class reads it off the instance. */
+const memberOf = (owner, name) =>
+  owner?.members.find(
+    (m) =>
+      m.name !== undefined &&
+      (ts.isIdentifier(m.name) || ts.isStringLiteral(m.name)) &&
+      m.name.text === name,
+  );
+
+/**
+ * The values a bound expression can take, off Angular's own expression tree: a literal, a signed
+ * one, either branch of a condition, and — where the class is known, as a `host` block's is — a
+ * member called with nothing around it: what a method returns, what an input or a `computed`
+ * holds (`tsValues`). Anything else is `null`, and refused: a template variable (`$index`), a
+ * pipe, a property read, a member of a class the template does not name.
+ */
+const ngValues = (ast, owner) => {
+  if (ast instanceof LiteralPrimitive) return [ast.value];
+  if (ast instanceof Unary)
+    return (
+      ngValues(ast.expr, owner)?.map((v) =>
+        ast.operator === '-' ? -v : Number(v),
+      ) ?? null
+    );
+  if (ast instanceof Conditional)
+    return union(ngValues(ast.trueExp, owner), ngValues(ast.falseExp, owner));
+  if (
+    ast instanceof Call &&
+    ast.receiver instanceof PropertyRead &&
+    ast.receiver.receiver instanceof ImplicitReceiver
+  ) {
+    const member = memberOf(owner, ast.receiver.name);
+    if (member !== undefined && ts.isMethodDeclaration(member))
+      return union(...returnsOf(member).map(tsValues));
+    if (member !== undefined && ts.isPropertyDeclaration(member))
+      return tsValues(member.initializer ?? null);
+  }
+  return null;
+};
+
+/** A `host` entry's value, parsed as `ngc` parses one: an expression of the class it decorates. */
+const EXPRESSIONS = new Parser(new Lexer());
+const bindingValues = (path, expression, owner) => {
+  const at = new ParseLocation(new ParseSourceFile(expression, path), 0, 0, 0);
+  const parsed = EXPRESSIONS.parseBinding(
+    expression,
+    new ParseSourceSpan(at, at),
+    0,
+  );
+  return parsed.errors.length ? null : ngValues(parsed.ast, owner);
+};
+
+/** The bindings that reach an element's attribute: a property, a two-way one, and `attr.`. */
+const REACHING = new Set([
+  BindingType.Property,
+  BindingType.TwoWay,
+  BindingType.Attribute,
+]);
+
+/**
+ * Every element of an HTML tree, an ICU's cases included: the base visitor does not enter a case,
+ * and the markup there is rendered — Angular's i18n sanitizer keeps `tabindex` and `accesskey`.
+ */
+class Elements extends RecursiveVisitor {
+  found = [];
+  visitElement(node, context) {
+    this.found.push(node);
+    return super.visitElement(node, context);
+  }
+  visitExpansionCase(node, context) {
+    visitAll(this, node.expression, context);
+  }
+}
+const TEMPLATE_LEXING = {
+  tokenizeExpansionForms: true,
+  tokenizeBlocks: true,
+  tokenizeLet: true,
+};
+const elementsOf = (text, path, options = {}) => {
+  const visitor = new Elements();
+  visitAll(visitor, new HtmlParser().parse(text, path, options).rootNodes);
+  return visitor.found;
+};
+
+/** Each tabindex written on an element of an HTML tree, its name in any case. */
+const writtenTabindex = (elements, lineOf, out) => {
+  for (const element of elements)
+    for (const a of element.attrs)
+      if (a.name.toLowerCase() === 'tabindex')
+        out.push({
+          line: lineOf(a),
+          values: [a.value],
+          spelling: `${a.name}="${a.value}"`,
+        });
+};
+
+/**
+ * The tabindex a string writes, read as markup: a string handed to `innerHTML`, `srcdoc` or
+ * `insertAdjacentHTML` is parsed by the engine, and the sanitizer keeps the attribute. Every
+ * string holding a `<` is read so, whatever takes it — a string that is never markup is read as
+ * markup too, an over-approximation the library pays nothing for.
+ */
+const markupWrites = (text, line, out) => {
+  if (text.includes('<'))
+    for (const element of elementsOf(text, 'markup'))
+      for (const a of element.attrs)
+        if (a.name.toLowerCase() === 'tabindex')
+          out.push({
+            line,
+            values: [a.value],
+            spelling: `${a.name}="${a.value}"`,
+          });
+};
+
+/** The strings of a template's expressions, read as markup (`markupWrites`). */
+class ExpressionStrings extends CombinedRecursiveAstVisitor {
+  constructor(text, out) {
+    super();
+    this.text = text;
+    this.out = out;
+  }
+  lineAt(offset) {
+    return this.text.slice(0, offset).split('\n').length;
+  }
+  visitLiteralPrimitive(ast) {
+    if (typeof ast.value === 'string')
+      markupWrites(ast.value, this.lineAt(ast.sourceSpan.start), this.out);
+  }
+  visitTemplateLiteralElement(ast) {
+    markupWrites(ast.text, this.lineAt(ast.sourceSpan.start), this.out);
+  }
+}
+
+/** The bound tabindex of each element of a template tree, in every syntax Angular binds it by. */
+class BoundTabindex extends TmplAstRecursiveVisitor {
+  constructor(out) {
+    super();
+    this.out = out;
+  }
+  visitElement(node) {
+    for (const input of node.inputs)
+      if (REACHING.has(input.type) && input.name.toLowerCase() === 'tabindex')
+        this.out.push({
+          line: input.sourceSpan.start.line + 1,
+          values: ngValues(input.value.ast, undefined),
+          spelling: input.sourceSpan.toString(),
+        });
+    super.visitElement(node);
+  }
+}
+
+/**
+ * One template, read as `ngc` reads it: its first error, its `<style>` elements — which `ngc`
+ * takes into the component's styles — and every tabindex it writes, each `{ line, values,
+ * spelling }`:
+ *
+ * - written, off the HTML tree, in any case, an ICU's cases included: `TABINDEX="4"` is the
+ *   attribute, as `setAttribute` lowers a name on an HTML element;
+ * - bound, off the template tree, by a property, a two-way or an `attr.` binding in any syntax
+ *   (`[tabIndex]`, `[attr.tabindex]`, `bind-tabindex`, `tabindex="{{ … }}"`), its value judged
+ *   where the template says it as a literal or a condition of literals. Anything else is refused:
+ *   an interpolation, and a member the binding calls, which is not looked up, since a template
+ *   file does not name its class — no binding of the library calls one;
+ * - in a string of an expression, read as markup.
+ *
+ * A name in a namespace (`xlink:tabindex`) is no tabindex to the platform, and is not read.
+ */
+const templateReading = memo((path, text) => {
+  const { nodes, errors, styles } = parseTemplate(text, path, {
+    preserveWhitespaces: false,
+  });
+  if (errors?.length) return { error: errors[0].msg, writes: [], styles: [] };
+  const writes = [];
+  writtenTabindex(
+    elementsOf(text, path, TEMPLATE_LEXING),
+    (a) => a.sourceSpan.start.line + 1,
+    writes,
+  );
+  tmplAstVisitAll(new BoundTabindex(writes), nodes);
+  new ExpressionStrings(text, writes).visitAllTemplateNodes(nodes);
+  return { writes, styles };
+});
+
+/**
+ * The name a TypeScript key or argument writes, as a `host` key and `@HostBinding` take it:
+ * `[tabIndex]` and `[attr.tabindex]` bound, `tabIndex` as the property, `TABINDEX` as the attribute.
+ */
+const writtenName = (text) =>
+  text
+    .replace(/^\[(.*)\]$/s, '$1')
+    .replace(/^attr\./, '')
+    .toLowerCase();
+
+/**
+ * One TypeScript source, parsed once (`decoratorsOf`):
+ *
+ * - `writes` — every tabindex it writes, `{ line, values, spelling }`: an object's key, a static
+ *   one judged as the attribute's value (`tabindex: '0'`) and a bracketed one as a binding of the
+ *   class it stands in (`'[tabindex]': 'rovingIndex()'`); a call's string argument naming it —
+ *   `setAttribute`, `setAttributeNS`, a renderer's `setAttribute` and `setProperty` — judged by the
+ *   argument after it, and `@HostBinding`'s, judged by the member it decorates; an assignment to a
+ *   property of that name (`el.tabIndex = 1`); each string, read as markup; and a decorator's
+ *   inline `template`, read as a template file is;
+ * - `cooked` — the text of each string and each name (`cookedHolding`);
+ * - `screens` — each read of `screen.orientation`, the Screen Orientation API's lock and type.
+ *
+ * Not read, by name: a key under a computed name (`['tabindex']`), an attribute named by an
+ * expression (the SVG renderer's paint list, every name of which is geometry or paint), a
+ * compound assignment, and a write in a template's event handler. Over-approximated: a read of the
+ * name is taken for a write (`getAttribute('tabindex')` judges the value it is not given — none),
+ * and so is an `@Input` aliased `tabindex`.
+ */
+const tsReading = memo((path, text) => {
+  const { source, read } = decoratorsOf(path, text);
+  const lineOf = (node) =>
+    source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+  const classOf = (node) => {
+    let at = node.parent;
+    while (at !== undefined && !ts.isClassDeclaration(at)) at = at.parent;
+    return at;
+  };
+  const writes = [];
+  const cooked = [];
+  const screens = [];
+  const write = (node, values) =>
+    writes.push({ line: lineOf(node), values, spelling: node.getText(source) });
+  const visit = (node) => {
+    if (
+      (ts.isPropertyAssignment(node) ||
+        ts.isShorthandPropertyAssignment(node)) &&
+      (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&
+      writtenName(node.name.text) === 'tabindex'
+    )
+      write(
+        node,
+        /^\[.*\]$/s.test(node.name.text)
+          ? bindingValues(path, textOf(node.initializer) ?? '', classOf(node))
+          : tsValues(node.initializer ?? null),
+      );
+    if (ts.isCallExpression(node))
+      node.arguments.forEach((argument, i) => {
+        if (
+          !ts.isStringLiteralLike(argument) ||
+          writtenName(argument.text) !== 'tabindex'
+        )
+          return;
+        if (!ts.isDecorator(node.parent))
+          write(
+            node,
+            node.arguments[i + 1] === undefined
+              ? ['']
+              : tsValues(node.arguments[i + 1]),
+          );
+        else if (ts.isPropertyDeclaration(node.parent.parent))
+          write(node, tsValues(node.parent.parent.initializer ?? null));
+        else write(node, null);
+      });
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      (ts.isPropertyAccessExpression(node.left) ||
+        ts.isElementAccessExpression(node.left)) &&
+      (ts.isPropertyAccessExpression(node.left)
+        ? node.left.name.text
+        : textOf(node.left.argumentExpression)
+      )?.toLowerCase() === 'tabindex'
+    )
+      write(node, tsValues(node.right));
+    if (ts.isStringLiteralLike(node) || ts.isTemplateLiteralToken(node)) {
+      cooked.push({ line: lineOf(node), text: node.text });
+      markupWrites(node.text, lineOf(node), writes);
+    }
+    if (ts.isIdentifier(node))
+      cooked.push({ line: lineOf(node), text: node.text });
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      node.name.text === 'orientation' &&
+      ((ts.isIdentifier(node.expression) &&
+        node.expression.text === 'screen') ||
+        (ts.isPropertyAccessExpression(node.expression) &&
+          node.expression.name.text === 'screen'))
+    )
+      screens.push({ line: lineOf(node), spelling: node.getText(source) });
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  for (const cls of source.statements.filter(ts.isClassDeclaration))
+    for (const decorator of ts.getDecorators(cls) ?? []) {
+      const inline = read(decorator.getStart(source))?.get('template');
+      if (textOf(inline) === undefined) continue;
+      const template = templateReading(`${path} (template)`, textOf(inline));
+      if (template.error)
+        writes.push({
+          line: lineOf(inline),
+          values: null,
+          spelling: template.error,
+        });
+      for (const w of template.writes)
+        writes.push({ ...w, line: lineOf(inline) - 1 + w.line });
+    }
+  return { writes, cooked, screens };
+});
+
+/** Where a source writes a positive tabindex, or one whose value the reading cannot judge. */
+const positiveTabindexIn = (path, text) => {
+  const reading = path.endsWith('.ts')
+    ? tsReading(path, text)
+    : templateReading(path, text);
+  if (reading.error)
+    return `\`${path}\` does not parse (${reading.error}), and the scan cannot read it`;
+  const found = reading.writes.find(
+    (w) => w.values === null || w.values.some(positive),
+  );
+  if (found === undefined) return undefined;
+  return found.values === null
+    ? `\`${path}:${found.line}\` writes one the scan cannot judge (${quoted(found.spelling)}): ` +
+        `it reads a literal and a condition of literals, and in a \`host\` block a method, an ` +
+        `input or a \`computed\` of the class that returns one`
+    : `\`${path}:${found.line}\` holds one (${quoted(found.spelling)})${BROKEN}`;
+};
+
+/** The word `orientation`, which no hyphen or letter joins to another (`aria-orientation`). */
+const ORIENTATION = /(?<![\w-])orientation(?![\w-])/i;
+/** A media query on it in a string a script hands to `matchMedia`: `(orientation: portrait)`. */
+const MEDIA_QUERY = /\(\s*orientation\s*[:)]/i;
+
+/**
+ * A stylesheet as the browser gets it: compiled, so that a comment is no reading and a feature
+ * spelled by interpolation or a mixin of another file is one. A sheet that does not compile is
+ * refused as one the scan cannot read; the build refuses it as well.
+ */
+const compiled = memo((path, sheet) => {
+  try {
+    return sass.compileString(sheet, {
+      url: pathToFileURL(join(ROOT, path)),
+      syntax: path.endsWith('.scss') ? 'scss' : 'css',
+      style: 'compressed',
+    }).css;
+  } catch (error) {
+    return { error: error.message.split('\n')[0] };
+  }
+});
+
+/**
+ * Where a source reads the display orientation. A stylesheet — `.scss`, `.css`, a template's
+ * `<style>` — that compiles to the word anywhere: an `@media` feature, `@viewport`'s descriptor,
+ * and, over-approximated, an `@container` query on a box's orientation or a class of that name. A
+ * script with a media query on it in a string (`matchMedia`), or a read of `screen.orientation`.
+ * A query a script builds from pieces, and an alias of `screen`, are not read.
+ */
+const orientationIn = (path, text) => {
+  if (path.endsWith('.ts')) {
+    const reading = tsReading(path, text);
+    const at =
+      reading.cooked.find((c) => MEDIA_QUERY.test(c.text)) ??
+      reading.screens.map((s) => ({ line: s.line, text: s.spelling }))[0];
+    return (
+      at && `\`${path}:${at.line}\` holds one (${quoted(at.text)})${BROKEN}`
+    );
+  }
+  const sheets = path.endsWith('.html')
+    ? templateReading(path, text).styles
+    : [text];
+  for (const sheet of sheets) {
+    const css = compiled(path.endsWith('.html') ? `${path}.css` : path, sheet);
+    if (css.error)
+      return `\`${path}\` does not compile (${css.error}), and the scan cannot read it`;
+    const at = ORIENTATION.exec(css);
+    if (at)
+      return `\`${path}\` compiles to one (${quoted(css.slice(Math.max(0, at.index - 20), at.index + 30))})${BROKEN}`;
+  }
+  return undefined;
 };
 
 /** The cards' row this gate reads when the pass is claimed as recorded (point 7). */
@@ -189,7 +731,10 @@ const librarySources = () => {
     if (!existsSync(src) || !statSync(src).isDirectory()) continue;
     for (const file of readdirSync(src)) {
       const ext = file.split('.').pop();
-      if (!['html', 'scss', 'ts'].includes(ext) || file.endsWith('.spec.ts'))
+      if (
+        !['css', 'html', 'scss', 'ts'].includes(ext) ||
+        file.endsWith('.spec.ts')
+      )
         continue;
       out[`${LIB}/${entry}/src/${file}`] = readFileSync(
         join(src, file),
@@ -586,13 +1131,11 @@ const checkAcr = (input) => {
           scan.over.includes(path.split('.').pop()),
         );
         for (const [path, text] of over) {
-          const lines = text.split('\n');
-          const at = lines.findIndex((l) => scan.pattern.test(l));
-          if (at !== -1)
+          const found = scan.find(path, text);
+          if (found !== undefined)
             throw new AcrError(
               'evidence',
-              `${where} rests on scan \`${e.scan}\` (${scan.means}), and \`${path}:${at + 1}\` ` +
-                `holds one — the claim "by construction" no longer holds`,
+              `${where} rests on scan \`${e.scan}\` (${scan.means}), and ${found}`,
             );
         }
         scanned[e.scan] = over.length;

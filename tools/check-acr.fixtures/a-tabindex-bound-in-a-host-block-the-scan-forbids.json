@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabIndex]': '5'`, and 2.4.3 keeps resting on the scan. A host binding is the component's own element, and five is a stop ahead of the page's order. The key ends in `]` and a quote, and the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabIndex]': '5',\n  },\n})\nexport class PctAvatar {\n}\n"
+  }
+}

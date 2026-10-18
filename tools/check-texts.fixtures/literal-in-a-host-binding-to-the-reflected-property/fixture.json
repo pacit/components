@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `literal-in-a-host-binding-under-an-upper-case-name` case with the binding written as the property, `'[ariaLabel]'`: the host's `aria-label`, through the reflection, falls back to `Marker`. The read took the key's name for the attribute's, and `arialabel` is no speaking attribute. A binding is no static attribute, so the package entry is the reference's."
+}

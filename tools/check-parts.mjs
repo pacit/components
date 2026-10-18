@@ -45,6 +45,7 @@ import * as core from '@angular/core';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, textOf } from './decorators.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
+import { valuesOf } from './static-attributes.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1098,37 +1099,14 @@ const readCard = (file, content) => {
  * through JIT as the module defining the class is evaluated — the step the linker performs at
  * the consumer's, and the same as in `check-zoneless`.
  *
- * `consts` carries every element's STATIC attributes, as a flat array in which a number
- * opens a section with a different meaning (classes, styles, bindings). So input read only
- * the prefix before such a number — beyond it stand names without values. The one marker
- * that does not end it is `0`, a namespaced attribute: it takes three slots (the prefix, the
- * name, the value) and ordinary pairs go on after it, as Angular's `setUpAttributes` reads
- * them. `<use xlink:href="#a" data-pct-part="icon">` puts `[0, 'xlink', 'href', '#a',
- * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part.
- *
- * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
- * written — an element's attribute in a template, a host attribute spread from an object (each
- * measured through ngc in partial mode and the linker) — and the DOM lowercases it in
- * `setAttribute`: a part a consumer's selector matches. The source read refuses the first at
- * point 1 and never sees the second, so either reaches this read alone, the first from a `dist`
- * built before its template changed. A slot that is no name is no part: an `@loading (after
- * 100ms)` block puts `[null, 100]` into `consts`.
+ * Its parts are the static attributes of the name (`static-attributes.mjs`), in any case. `consts`
+ * and `hostAttrs` keep `'DATA-PCT-PART'` as written — an element's attribute in a template, a
+ * host attribute spread from an object (each measured through ngc in partial mode and the
+ * linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's selector matches.
+ * The source read refuses the first at point 1 and never sees the second, so either reaches this
+ * read alone, the first from a `dist` built before its template changed.
  */
-const NAMESPACE_URI = 0;
-
-const pairAttributes = (attrs) => {
-  const out = [];
-  for (let i = 0; i < attrs.length; i += 2) {
-    if (attrs[i] === NAMESPACE_URI) {
-      i += 2;
-      continue;
-    }
-    if (typeof attrs[i] === 'number') break;
-    if (typeof attrs[i] === 'string' && attrs[i].toLowerCase() === ATTRIBUTE)
-      out.push(attrs[i + 1]);
-  }
-  return out;
-};
+const pairAttributes = (attrs) => valuesOf(attrs, ATTRIBUTE);
 
 /**
  * The name of a BOUND attribute reaches no `consts` (`[attr.…]` puts nothing there —

@@ -158,7 +158,7 @@
     {
       "id": "1.3.4",
       "conformance": "Supports",
-      "remarks": "No stylesheet reads the orientation; the components lay out the same either way. The gate scans every stylesheet for an `orientation` media feature.",
+      "remarks": "No stylesheet and no script reads the display orientation; the components lay out the same either way. The gate scans every stylesheet as it compiles, and the scripts, for a reading of it.",
       "evidence": [
         {
           "scan": "no-orientation-lock"
@@ -648,7 +648,7 @@
     {
       "id": "2.5.4",
       "conformance": "Not Applicable",
-      "remarks": "Nothing listens to device motion or orientation; the gate scans the sources for a listener.",
+      "remarks": "Nothing listens to device motion or orientation, and no motion sensor is read; the gate scans the templates and the scripts for either.",
       "evidence": [
         {
           "scan": "no-device-motion"

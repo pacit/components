@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component assigns `window.ondevic\\u0065motion`, a name with an escape in it, and 2.5.4 keeps resting on the scan. TypeScript and the engines read the name as `ondevicemotion`: a handler for every shake. The raw text holds no `devicemotion`.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    window.ondevic\\u0065motion = () => undefined;\n  }\n}\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to a field the constructor sets, `this.order = () => 2`, and 2.4.3 keeps resting on the scan. A field with no initializer says nothing of its value: the reading refuses it rather than take it for nothing.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected order: () => number;\n  constructor() {\n    this.order = () => 2;\n  }\n}\n"
+  }
+}

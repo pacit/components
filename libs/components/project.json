@@ -355,6 +355,7 @@
         "{workspaceRoot}/tools/check-texts.mjs",
         "{workspaceRoot}/tools/class-bases.mjs",
         "{workspaceRoot}/tools/decorators.mjs",
+        "{workspaceRoot}/tools/static-attributes.mjs",
         "{workspaceRoot}/tools/check-texts.fixtures/**/*",
         {
           "externalDependencies": ["@angular/compiler", "typescript"]
@@ -376,6 +377,7 @@
         },
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/tools/check-harness.mjs",
+        "{workspaceRoot}/tools/static-attributes.mjs",
         "{workspaceRoot}/tools/check-harness.fixtures/**/*",
         {
           "externalDependencies": ["@angular/compiler", "@angular/cdk"]

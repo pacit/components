@@ -68,56 +68,99 @@ tracked set lacks are still silent, and no case uses either that way.
 
 ## The cases
 
-| file                                                                                                                 | what it breaks — or, for a state of the status sentence, what it sets                                    | point | check       |
-| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----- | ----------- |
-| [`a-criterion-the-report-skips.json`](a-criterion-the-report-skips.json)                                             | the row for 1.1.1 is gone — a skipped criterion reads as a pass                                          | 1     | `catalogue` |
-| [`a-criterion-the-standard-does-not-have.json`](a-criterion-the-standard-does-not-have.json)                         | a row for `9.9.9` — a number that is no success criterion                                                | 1     | `catalogue` |
-| [`a-word-outside-the-five.json`](a-word-outside-the-five.json)                                                       | `1.1.1` says "Meets", a word the template does not have                                                  | 2     | `level`     |
-| [`supports-on-no-measurement.json`](supports-on-no-measurement.json)                                                 | `1.1.1` says Supports and cites a requirement alone                                                      | 2     | `level`     |
-| [`supports-with-a-limit-attached.json`](supports-with-a-limit-attached.json)                                         | `1.1.1` says Supports and cites an open finding                                                          | 2     | `level`     |
-| [`not-evaluated-with-no-owner.json`](not-evaluated-with-no-owner.json)                                               | `1.4.4` says Not Evaluated and cites no finding                                                          | 2     | `level`     |
-| [`a-point-the-gate-does-not-number.json`](a-point-the-gate-does-not-number.json)                                     | `1.1.1` cites point 42 of `check-aria`                                                                   | 3     | `evidence`  |
-| [`a-case-the-spec-does-not-hold.json`](a-case-the-spec-does-not-hold.json)                                           | `1.4.13` cites a tooltip case by a title the spec no longer has                                          | 3     | `evidence`  |
-| [`a-sentence-the-source-does-not-say.json`](a-sentence-the-source-does-not-say.json)                                 | `2.5.2` quotes the field row on `click`, and the source says otherwise                                   | 3     | `evidence`  |
-| [`a-decision-that-is-not-on-disk.json`](a-decision-that-is-not-on-disk.json)                                         | `2.2.1` cites decision 9999, which is not on disk                                                        | 3     | `evidence`  |
-| [`a-scan-that-finds-what-it-forbids.json`](a-scan-that-finds-what-it-forbids.json)                                   | a template grows a `<video>`, and 1.2.1 still says Not Applicable                                        | 3     | `evidence`  |
-| [`a-video-in-a-namespace-the-scan-forbids.json`](a-video-in-a-namespace-the-scan-forbids.json)                       | a template grows an `<xH1ml:video>`, a video `ngc` makes, and 1.2.1 still says Not Applicable            | 3     | `evidence`  |
-| [`a-video-in-a-one-letter-namespace-the-scan-forbids.json`](a-video-in-a-one-letter-namespace-the-scan-forbids.json) | a template grows an `<a:video>`, the shortest prefix, and 1.2.1 still says Not Applicable                | 3     | `evidence`  |
-| [`an-audio-in-capitals-the-scan-forbids.json`](an-audio-in-capitals-the-scan-forbids.json)                           | a template grows an `<AUDIO>`, which the DOM lowers, and 1.2.1 still says Not Applicable                 | 3     | `evidence`  |
-| [`an-svg-text-in-its-namespace-the-scan-forbids.json`](an-svg-text-in-its-namespace-the-scan-forbids.json)           | a drawing grows an `<svg:text>`, and 1.4.5 still says Not Applicable                                     | 3     | `evidence`  |
-| [`a-gate-that-left-ci.json`](a-gate-that-left-ci.json)                                                               | `check-aria` is cited, and ci.yml no longer runs it                                                      | 4     | `wired`     |
-| [`a-card-that-owes-the-keyboard.json`](a-card-that-owes-the-keyboard.json)                                           | the button card's keyboard row turns into a gap under a Supports                                         | 5     | `cards`     |
-| [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                                                   | finding 4.75 is ticked in the plan while 4.1.2 still leans on it                                         | 6     | `finding`   |
-| [`a-pass-claimed-without-its-logs.json`](a-pass-claimed-without-its-logs.json)                                       | `recorded: true` with nothing under `docs/acr/at/`                                                       | 7     | `pass`      |
-| [`a-pass-claimed-with-a-card-still-owing.json`](a-pass-claimed-with-a-card-still-owing.json)                         | `recorded: true` with a log on disk, and every card still reading `none — gap`                           | 7     | `pass`      |
-| [`an-act-whose-owner-never-presses-it.json`](an-act-whose-owner-never-presses-it.json)                               | the dialog act cites the axe sweep as its owner, a spec that never names the control                     | 7     | `owner`     |
-| [`an-act-the-record-never-opened.json`](an-act-the-record-never-opened.json)                                         | `recorded: true`, and the toast act moves to a control no log has an `open` row on                       | 7     | `pass`      |
-| [`a-pass-recorded-in-words.json`](a-pass-recorded-in-words.json)                                                     | `recorded: "false"` — a word, which point 7 skipped and every rendering read as true                     | 7     | `pass`      |
-| [`a-pass-not-on-record.json`](a-pass-not-on-record.json)                                                             | the pass not recorded, every row at Supports or Not Applicable: the decision's sentence                  | 8     | `status`    |
-| [`a-pass-not-on-record-and-a-row-below-supports.json`](a-pass-not-on-record-and-a-row-below-supports.json)           | the pass not recorded and 4.1.2 below Supports: still the decision's sentence — the pass is read first   | 8     | `status`    |
-| [`a-row-below-supports-with-the-pass-on-record.json`](a-row-below-supports-with-the-pass-on-record.json)             | the pass recorded and 4.1.2 at Partially Supports on a finding: one row, counted, and its owner named    | 8     | `status`    |
-| [`three-rows-below-supports-one-at-each-word.json`](three-rows-below-supports-one-at-each-word.json)                 | three rows below Supports, one at each word under it: three, in the standard's order, all three owners   | 8     | `status`    |
-| [`a-row-held-by-a-card-and-no-finding.json`](a-row-held-by-a-card-and-no-finding.json)                               | 2.1.1 at Partially Supports over a card that owes the keyboard row: the card is the owner named          | 8     | `status`    |
-| [`two-kinds-of-owner-on-one-report.json`](two-kinds-of-owner-on-one-report.json)                                     | 1.4.4 on two findings and 2.1.1 over two owing cards: both kinds named, the findings in the plan's order | 8     | `status`    |
-| [`a-label-two-rows-cite-named-once.json`](a-label-two-rows-cite-named-once.json)                                     | 1.3.3 and 2.4.4 over the same owed cards' row: two rows, one limit, the label named once                 | 8     | `status`    |
-| [`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json)                       | the pass recorded, every row at Supports or Not Applicable: the word the decision reserves               | 8     | `status`    |
+| file                                                                                                                       | what it breaks — or, for a state of the status sentence, what it sets                                    | point | check       |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----- | ----------- |
+| [`a-criterion-the-report-skips.json`](a-criterion-the-report-skips.json)                                                   | the row for 1.1.1 is gone — a skipped criterion reads as a pass                                          | 1     | `catalogue` |
+| [`a-criterion-the-standard-does-not-have.json`](a-criterion-the-standard-does-not-have.json)                               | a row for `9.9.9` — a number that is no success criterion                                                | 1     | `catalogue` |
+| [`a-word-outside-the-five.json`](a-word-outside-the-five.json)                                                             | `1.1.1` says "Meets", a word the template does not have                                                  | 2     | `level`     |
+| [`supports-on-no-measurement.json`](supports-on-no-measurement.json)                                                       | `1.1.1` says Supports and cites a requirement alone                                                      | 2     | `level`     |
+| [`supports-with-a-limit-attached.json`](supports-with-a-limit-attached.json)                                               | `1.1.1` says Supports and cites an open finding                                                          | 2     | `level`     |
+| [`not-evaluated-with-no-owner.json`](not-evaluated-with-no-owner.json)                                                     | `1.4.4` says Not Evaluated and cites no finding                                                          | 2     | `level`     |
+| [`a-point-the-gate-does-not-number.json`](a-point-the-gate-does-not-number.json)                                           | `1.1.1` cites point 42 of `check-aria`                                                                   | 3     | `evidence`  |
+| [`a-case-the-spec-does-not-hold.json`](a-case-the-spec-does-not-hold.json)                                                 | `1.4.13` cites a tooltip case by a title the spec no longer has                                          | 3     | `evidence`  |
+| [`a-sentence-the-source-does-not-say.json`](a-sentence-the-source-does-not-say.json)                                       | `2.5.2` quotes the field row on `click`, and the source says otherwise                                   | 3     | `evidence`  |
+| [`a-decision-that-is-not-on-disk.json`](a-decision-that-is-not-on-disk.json)                                               | `2.2.1` cites decision 9999, which is not on disk                                                        | 3     | `evidence`  |
+| [`a-scan-that-finds-what-it-forbids.json`](a-scan-that-finds-what-it-forbids.json)                                         | a template grows a `<video>`, and 1.2.1 still says Not Applicable                                        | 3     | `evidence`  |
+| [`a-video-in-a-namespace-the-scan-forbids.json`](a-video-in-a-namespace-the-scan-forbids.json)                             | a template grows an `<xH1ml:video>`, a video `ngc` makes, and 1.2.1 still says Not Applicable            | 3     | `evidence`  |
+| [`a-video-in-a-one-letter-namespace-the-scan-forbids.json`](a-video-in-a-one-letter-namespace-the-scan-forbids.json)       | a template grows an `<a:video>`, the shortest prefix, and 1.2.1 still says Not Applicable                | 3     | `evidence`  |
+| [`an-audio-in-capitals-the-scan-forbids.json`](an-audio-in-capitals-the-scan-forbids.json)                                 | a template grows an `<AUDIO>`, which the DOM lowers, and 1.2.1 still says Not Applicable                 | 3     | `evidence`  |
+| [`an-svg-text-in-its-namespace-the-scan-forbids.json`](an-svg-text-in-its-namespace-the-scan-forbids.json)                 | a drawing grows an `<svg:text>`, and 1.4.5 still says Not Applicable                                     | 3     | `evidence`  |
+| [`a-tabindex-in-capitals-the-scan-forbids.json`](a-tabindex-in-capitals-the-scan-forbids.json)                             | a template writes `TABINDEX="4"`, which `setAttribute` lowers, and 2.4.3 still says Supports             | 3     | `evidence`  |
+| [`a-tabindex-bound-as-a-property-the-scan-forbids.json`](a-tabindex-bound-as-a-property-the-scan-forbids.json)             | a template binds the property, `[tabIndex]="2"`                                                          | 3     | `evidence`  |
+| [`a-tabindex-bound-as-an-attribute-the-scan-forbids.json`](a-tabindex-bound-as-an-attribute-the-scan-forbids.json)         | a template binds `[attr.tabindex]="3"`                                                                   | 3     | `evidence`  |
+| [`a-tabindex-bound-to-true.json`](a-tabindex-bound-to-true.json)                                                           | a template binds `[tabindex]="true"`, which the property takes for one                                   | 3     | `evidence`  |
+| [`a-tabindex-bound-with-a-plus-sign.json`](a-tabindex-bound-with-a-plus-sign.json)                                         | a template binds `[tabindex]="+1"`: a plus is no minus                                                   | 3     | `evidence`  |
+| [`a-positive-tabindex-written-with-a-sign-and-a-unit.json`](a-positive-tabindex-written-with-a-sign-and-a-unit.json)       | a template writes `tabindex=" +01px"`, one by HTML's integer rule                                        | 3     | `evidence`  |
+| [`a-tabindex-in-the-other-branch-of-a-condition.json`](a-tabindex-in-the-other-branch-of-a-condition.json)                 | a template binds `[tabindex]="on() ? 0 : 1"`, positive in the second branch                              | 3     | `evidence`  |
+| [`a-tabindex-the-scan-cannot-judge.json`](a-tabindex-the-scan-cannot-judge.json)                                           | a template binds `[tabindex]="order"`, a value the source does not say: refused, not passed              | 3     | `evidence`  |
+| [`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json)                                                         | an ICU's case draws `<span tabindex="2">`, which only the HTML tree holds                                | 3     | `evidence`  |
+| [`a-tabindex-in-markup-an-expression-holds.json`](a-tabindex-in-markup-an-expression-holds.json)                           | a template hands `innerHTML` a string with `tabindex=2` in it                                            | 3     | `evidence`  |
+| [`a-tabindex-bound-in-an-inline-template.json`](a-tabindex-bound-in-an-inline-template.json)                               | a component's inline `template` binds `[tabindex]="1"`                                                   | 3     | `evidence`  |
+| [`a-tabindex-bound-in-a-host-block-the-scan-forbids.json`](a-tabindex-bound-in-a-host-block-the-scan-forbids.json)         | a `host` block binds `'[tabIndex]': '5'`                                                                 | 3     | `evidence`  |
+| [`a-tabindex-under-a-quoted-key-the-scan-forbids.json`](a-tabindex-under-a-quoted-key-the-scan-forbids.json)               | a `host` block writes `'tabindex': '1'` under a quoted key                                               | 3     | `evidence`  |
+| [`an-input-default-bound-as-a-tabindex-the-scan-forbids.json`](an-input-default-bound-as-a-tabindex-the-scan-forbids.json) | a `host` block binds `order()` over `order = input(2)`                                                   | 3     | `evidence`  |
+| [`a-tabindex-from-an-input-with-options.json`](a-tabindex-from-an-input-with-options.json)                                 | the same over `input(0, { transform: () => 3 })`: an input with options has no default to stand on       | 3     | `evidence`  |
+| [`a-tabindex-from-a-field-set-in-the-constructor.json`](a-tabindex-from-a-field-set-in-the-constructor.json)               | the same over a field the constructor sets to `() => 2`                                                  | 3     | `evidence`  |
+| [`a-tabindex-a-method-returns-in-its-other-branch.json`](a-tabindex-a-method-returns-in-its-other-branch.json)             | the same over a method returning `this.on ? -1 : 1`                                                      | 3     | `evidence`  |
+| [`a-tabindex-a-method-returns-second.json`](a-tabindex-a-method-returns-second.json)                                       | the same over a method returning `-1`, then `2`                                                          | 3     | `evidence`  |
+| [`a-tabindex-a-host-binding-decorator-sets.json`](a-tabindex-a-host-binding-decorator-sets.json)                           | a component writes `@HostBinding('attr.tabindex') order = 1`                                             | 3     | `evidence`  |
+| [`a-tabindex-a-renderer-sets.json`](a-tabindex-a-renderer-sets.json)                                                       | a component calls `renderer.setAttribute(el, 'tabindex', '1')`                                           | 3     | `evidence`  |
+| [`a-tabindex-a-script-assigns.json`](a-tabindex-a-script-assigns.json)                                                     | a component assigns `el.tabIndex = 1`                                                                    | 3     | `evidence`  |
+| [`a-tabindex-in-markup-a-script-holds.json`](a-tabindex-in-markup-a-script-holds.json)                                     | a component holds the string `'<b tabindex="1">'`                                                        | 3     | `evidence`  |
+| [`an-accesskey-bound-as-a-property-the-scan-forbids.json`](an-accesskey-bound-as-a-property-the-scan-forbids.json)         | a template binds the property, `[accessKey]`, and 2.1.4 still says Supports                              | 3     | `evidence`  |
+| [`an-accesskey-behind-an-escape.json`](an-accesskey-behind-an-escape.json)                                                 | a `host` key spells `[attr.acc\u0065sskey]`, which TypeScript cooks to `accesskey`                       | 3     | `evidence`  |
+| [`a-motion-listener-in-a-template.json`](a-motion-listener-in-a-template.json)                                             | a template listens with `(window:devicemotion)`, and 2.5.4 still says Not Applicable                     | 3     | `evidence`  |
+| [`a-motion-event-in-capitals.json`](a-motion-event-in-capitals.json)                                                       | a component asks `DeviceMotionEvent.requestPermission()`                                                 | 3     | `evidence`  |
+| [`a-motion-handler-behind-an-escaped-name.json`](a-motion-handler-behind-an-escaped-name.json)                             | a component assigns `window.ondevic\u0065motion`, a name with an escape                                  | 3     | `evidence`  |
+| [`a-motion-sensor.json`](a-motion-sensor.json)                                                                             | a component reads `new Gyroscope(…)`, a sensor of the same motion                                        | 3     | `evidence`  |
+| [`an-orientation-query-in-capitals.json`](an-orientation-query-in-capitals.json)                                           | a stylesheet queries `(ORIENTATION: portrait)`, and 1.3.4 still says Supports                            | 3     | `evidence`  |
+| [`an-orientation-query-in-a-template-style.json`](an-orientation-query-in-a-template-style.json)                           | a template's `<style>` queries `(orientation: portrait)`                                                 | 3     | `evidence`  |
+| [`an-orientation-query-in-a-css-sheet.json`](an-orientation-query-in-a-css-sheet.json)                                     | a component gains `avatar.css` with the query                                                            | 3     | `evidence`  |
+| [`an-orientation-query-a-script-matches.json`](an-orientation-query-a-script-matches.json)                                 | a component asks `matchMedia('(orientation: portrait)')`                                                 | 3     | `evidence`  |
+| [`an-orientation-lock-a-script-calls.json`](an-orientation-lock-a-script-calls.json)                                       | a component calls `screen.orientation.lock('portrait')`                                                  | 3     | `evidence`  |
+| [`a-video-in-an-inline-template-behind-an-escape.json`](a-video-in-an-inline-template-behind-an-escape.json)               | an inline `template` draws `<vid\u0065o>`, and 1.2.1 still says Not Applicable                           | 3     | `evidence`  |
+| [`an-svg-text-in-an-inline-template-behind-an-escape.json`](an-svg-text-in-an-inline-template-behind-an-escape.json)       | an inline `template` draws `<t\u0065xt>` in an `<svg>`, and 1.4.5 still says Not Applicable              | 3     | `evidence`  |
+| [`a-gate-that-left-ci.json`](a-gate-that-left-ci.json)                                                                     | `check-aria` is cited, and ci.yml no longer runs it                                                      | 4     | `wired`     |
+| [`a-card-that-owes-the-keyboard.json`](a-card-that-owes-the-keyboard.json)                                                 | the button card's keyboard row turns into a gap under a Supports                                         | 5     | `cards`     |
+| [`a-finding-that-has-closed.json`](a-finding-that-has-closed.json)                                                         | finding 4.75 is ticked in the plan while 4.1.2 still leans on it                                         | 6     | `finding`   |
+| [`a-pass-claimed-without-its-logs.json`](a-pass-claimed-without-its-logs.json)                                             | `recorded: true` with nothing under `docs/acr/at/`                                                       | 7     | `pass`      |
+| [`a-pass-claimed-with-a-card-still-owing.json`](a-pass-claimed-with-a-card-still-owing.json)                               | `recorded: true` with a log on disk, and every card still reading `none — gap`                           | 7     | `pass`      |
+| [`an-act-whose-owner-never-presses-it.json`](an-act-whose-owner-never-presses-it.json)                                     | the dialog act cites the axe sweep as its owner, a spec that never names the control                     | 7     | `owner`     |
+| [`an-act-the-record-never-opened.json`](an-act-the-record-never-opened.json)                                               | `recorded: true`, and the toast act moves to a control no log has an `open` row on                       | 7     | `pass`      |
+| [`a-pass-recorded-in-words.json`](a-pass-recorded-in-words.json)                                                           | `recorded: "false"` — a word, which point 7 skipped and every rendering read as true                     | 7     | `pass`      |
+| [`a-pass-not-on-record.json`](a-pass-not-on-record.json)                                                                   | the pass not recorded, every row at Supports or Not Applicable: the decision's sentence                  | 8     | `status`    |
+| [`a-pass-not-on-record-and-a-row-below-supports.json`](a-pass-not-on-record-and-a-row-below-supports.json)                 | the pass not recorded and 4.1.2 below Supports: still the decision's sentence — the pass is read first   | 8     | `status`    |
+| [`a-row-below-supports-with-the-pass-on-record.json`](a-row-below-supports-with-the-pass-on-record.json)                   | the pass recorded and 4.1.2 at Partially Supports on a finding: one row, counted, and its owner named    | 8     | `status`    |
+| [`three-rows-below-supports-one-at-each-word.json`](three-rows-below-supports-one-at-each-word.json)                       | three rows below Supports, one at each word under it: three, in the standard's order, all three owners   | 8     | `status`    |
+| [`a-row-held-by-a-card-and-no-finding.json`](a-row-held-by-a-card-and-no-finding.json)                                     | 2.1.1 at Partially Supports over a card that owes the keyboard row: the card is the owner named          | 8     | `status`    |
+| [`two-kinds-of-owner-on-one-report.json`](two-kinds-of-owner-on-one-report.json)                                           | 1.4.4 on two findings and 2.1.1 over two owing cards: both kinds named, the findings in the plan's order | 8     | `status`    |
+| [`a-label-two-rows-cite-named-once.json`](a-label-two-rows-cite-named-once.json)                                           | 1.3.3 and 2.4.4 over the same owed cards' row: two rows, one limit, the label named once                 | 8     | `status`    |
+| [`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json)                             | the pass recorded, every row at Supports or Not Applicable: the word the decision reserves               | 8     | `status`    |
 
-Point 2 has four cases because a level can be wrong in four directions and every one of
-them reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that
-names its own limit, a _Not Evaluated_ with no owner. Point 3 has five, one per kind of
-citation that can go stale — a gate's point, a case's title, a quoted sentence, a
-decision's number, a scan over the sources — because each goes stale for a different reason
-and at a different moment. Point 7 has five: "recorded" can be a lie in three places — the
-directory, the cards, and the logs, which can stand on disk without one `open` row the table
-promises — the act table can cite a spec that never presses the control, recorded or not, and
-the flag itself can be a word rather than a boolean, which the point would skip and every
-rendering read as true. Point 8 has eight, for a sentence with three states and the edges
-inside two of them: the pass unrecorded over rows all held and over one below, because the
-pass is read before the rows; one row below and three, one at each word under Supports,
-because a count goes wrong in the singular or in one of the words as easily as in the plural;
-a row held by a finding and one held by a card, because a limit has two kinds of owner and a
-sentence that knows one kind reads "held by nothing" at the other; both kinds on one report,
-with the findings in the plan's order and a card that has no row at all, because a sentence
-that names one owner and stops reads like a report whose other limit has closed; a label two
-rows lean on, named once, because one row of the cards is one limit; and nothing below with
-the pass on record, the one state that earns the stronger word.
+Point 2 has four cases because a level can be wrong in four directions and every one of them
+reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
+its own limit, a _Not Evaluated_ with no owner. Point 3 has forty-four. Five are one per kind
+of citation that can go stale — a gate's point, a case's title, a quoted sentence, a decision's
+number, a scan over the sources — because each goes stale for a different reason and at a
+different moment. The other thirty-nine are the scans', one per spelling of what a scan
+forbids, because a spelling its reading does not take reads as a library that has none: a tag
+in a namespace or in capitals, an attribute written in capitals, bound as a property or through
+`attr.`, keyed in a `host` block, set by a script, a decorator or a renderer, a value a
+condition, a method or an input's default hands over, an inline template, a name behind an
+escape, a media feature in capitals, in a template's `<style>`, in a `.css` sheet or in a
+script. Three of them passed the pattern the reading replaced as well
+([`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json) and the two markup ones):
+they hold that the parser reaches what the raw text reached. Point 7 has five: "recorded" can
+be a lie in three places — the directory, the cards, and the logs, which can stand on disk
+without one `open` row the table promises — the act table can cite a spec that never presses
+the control, recorded or not, and the flag itself can be a word rather than a boolean, which
+the point would skip and every rendering read as true. Point 8 has eight, for a sentence with
+three states and the edges inside two of them: the pass unrecorded over rows all held and over
+one below, because the pass is read before the rows; one row below and three, one at each word
+under Supports, because a count goes wrong in the singular or in one of the words as easily as
+in the plural; a row held by a finding and one held by a card, because a limit has two kinds of
+owner and a sentence that knows one kind reads "held by nothing" at the other; both kinds on
+one report, with the findings in the plan's order and a card that has no row at all, because a
+sentence that names one owner and stops reads like a report whose other limit has closed; a
+label two rows lean on, named once, because one row of the cards is one limit; and nothing
+below with the pass on record, the one state that earns the stronger word.

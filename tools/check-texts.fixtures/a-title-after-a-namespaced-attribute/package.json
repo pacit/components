@@ -1,0 +1,88 @@
+{
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. `PctWidget` is given as the definition the linker leaves, its elements' static attributes in `consts`, and read by the function the package read uses; the other classes as the reference gives them.",
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "consts": [
+        [
+          "data-pct-part",
+          "label"
+        ],
+        [
+          "aria-hidden",
+          "true"
+        ],
+        [
+          "data-pct-part",
+          "toggle"
+        ],
+        [
+          "type",
+          "button"
+        ],
+        [
+          "data-pct-part",
+          "list"
+        ],
+        [
+          "data-pct-part",
+          "item"
+        ],
+        [
+          "data-pct-part",
+          "empty"
+        ],
+        [
+          "role",
+          "group"
+        ],
+        [
+          0,
+          "xlink",
+          "href",
+          "#pct-widget-icon",
+          "title",
+          "Expand"
+        ]
+      ]
+    },
+    {
+      "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        }
+      ],
+      "attributes": [
+        [
+          "data-pct-part",
+          "widget-marker"
+        ],
+        [
+          "title",
+          "*"
+        ],
+        [
+          "role",
+          "note"
+        ]
+      ]
+    },
+    {
+      "className": "PctBlank",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctBlank"
+        },
+        {
+          "entrypoint": "./widget",
+          "as": "PctBare"
+        }
+      ],
+      "attributes": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabindex]=\"true\"`, which Angular sets as the `tabIndex` property, and 2.4.3 keeps resting on the scan. The property takes a number, and `true` is one. No digit stands in the binding at all.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabindex]=\"true\">Ada</span>\n"
+  }
+}
