@@ -1,0 +1,15 @@
+<!-- The reference's pair, a unit whose ICU draws only text, and a count whose ICU draws a stop
+     in one of its cases, a bracketed name holding a quote before its `tabindex`, and in its text
+     a word with an apostrophe that closes it: Angular's lexer reads the name up to its closing
+     bracket, and the tag holding the quote runs on to the next `>` after it, past the `<b>`. -->
+<div
+  class="pct-pair__row"
+  role="group"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <input class="pct-pair__first" type="text" [attr.aria-labelledby]="firstNamedBy()" />
+  <input class="pct-pair__second" type="text" [attr.aria-labelledby]="secondNamedBy()" />
+</div>
+<span class="pct-pair__unit">{count(), plural, =1 {item} other {items}}</span>
+<span class="pct-pair__count">{count(), plural, =0 {nothing} other {<span class="pct-pair__more" [it's]="more()" tabindex="0"><b>it's</b> more</span>}}</span>

@@ -683,12 +683,13 @@ const UNREAD = new Map([['[tabindex]', '']]);
  * (`@let mark = '<b>'`), one the scan reads where the parser sees an expression. Its attributes
  * make no stop, though its tag or its written role can still make it a widget, which fails
  * point 1 (`@let mark = '<button>'`). A real tag such a false one swallows is the tree's alone,
- * and an ICU it runs into is one the scan does not read whole (`end`): both fail point 1, as does
- * a tag of an ICU's case the scan never finds, which the HTML tree places (`cased`). A
- * widget or a group the tag reader holds (`held`) and the walk gives no path fails it too: a
- * template, which the tree holds as no element, or a tag in a block kind the walk does not
- * descend into. The text scanned is the one the tree was parsed from, its comments blanked
- * (`readTree`).
+ * as is one a real tag swallows, run on by a quote in its bracketed name that the scan pairs
+ * with the next of its kind, and an ICU either runs into is one the scan does not read whole
+ * (`end`): a swallowed tag and an ICU run into both fail point 1, as does a tag of an ICU's case
+ * the scan never finds, which the HTML tree places (`cased`). A widget or a group the tag reader
+ * holds (`held`) and the walk gives no path fails it too: a template, which the tree holds as no
+ * element, or a tag in a block kind the walk does not descend into. The text scanned is the one
+ * the tree was parsed from, its comments blanked (`readTree`).
  */
 const readTemplate = (
   text,
@@ -708,7 +709,9 @@ const readTemplate = (
       unread,
       held: kinds.has(m.index),
       template: kinds.get(m.index) === 'template',
-      // Where the scan's reading of the tag ends: past an ICU's start only for a false one.
+      // Where the scan's reading of the tag ends: past an ICU's start for a false one, or for a
+      // real one whose bracketed name holds a quote, where the scan, pairing each quote with the
+      // next of its kind, meets its first `>` outside them past that start.
       end: m.index + m[0].length,
       // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the
       // same string — the one key by which the two readings of one template name the same
@@ -1477,9 +1480,12 @@ const checkAria = ({
         'denominator',
         `${template.file}: the parsed tree holds a tag at offset ${unscanned[0]} ` +
           `(\`${opening(unscanned[0])}\`), and the tag scan never found it — a quote Angular ` +
-          `reads as part of a bracketed name (\`[it's]\`), for one, opens one to the scan that ` +
-          `nothing closes, and a \`<\` before it, in an expression, a string or a text, reads ` +
-          `as a tag that swallows it; points 4 and 8, which start from the scan, would not ` +
+          `reads as part of a bracketed name (\`[it's]\`), for one, is one to the scan, which ` +
+          `pairs each quote with the next of its kind: where the pairs from one in its own tag ` +
+          `reach no \`>\` outside them, the scan finds no tag where it starts, and where those ` +
+          `from one in a tag before it reach their first \`>\` past its start, that tag runs on ` +
+          `and swallows it; a \`<\` before it, in an expression, a string or a text, reads as a ` +
+          `tag that swallows it too; points 4 and 8, which start from the scan, would not ` +
           `examine it`,
       );
     // The walk and the tag reader read one tree, so a tag the walk gives a path the reader has
@@ -1508,8 +1514,10 @@ const checkAria = ({
         `${template.file}: the tag scan reads the tag at offset ${runInto.tag.offset} ` +
           `(\`${opening(runInto.tag.offset)}\`) on into the ICU at offset ${runInto.from} — ` +
           `a \`<\` in an expression, a string or a text opens a tag to the scan that ends past ` +
-          `the ICU's start, and what its cases draw, if anything, is markup the scan does not ` +
-          `read whole and the tree does not hold`,
+          `the ICU's start, and so does a real tag holding a quote Angular reads as part of a ` +
+          `bracketed name (\`[it's]\`) where the scan, pairing each quote with the next of its ` +
+          `kind, meets its first \`>\` outside them past that start; what the ICU's cases draw, ` +
+          `if anything, is markup the scan does not read whole and the tree does not hold`,
       );
     // Inside an ICU the template tree holds no element, so the refusal above of a tag it holds
     // and the scan missed has nothing there to count by; the HTML tree has, and knows where each
@@ -1527,10 +1535,13 @@ const checkAria = ({
         'denominator',
         `${template.file}: an ICU's case draws a tag at offset ${uncased} ` +
           `(\`${opening(uncased)}\`), and the tag scan never found it — a quote Angular reads ` +
-          `as part of a bracketed name (\`[it's]\`), for one, opens one to the scan that ` +
-          `nothing closes, and a \`<\` before it, in the ICU's value or a case, reads as a tag ` +
-          `that swallows it; a tag the scan does not find there is one nothing reads, the ` +
-          `template tree holding no element in an ICU`,
+          `as part of a bracketed name (\`[it's]\`), for one, is one to the scan, which pairs ` +
+          `each quote with the next of its kind: where the pairs from one in its own tag reach ` +
+          `no \`>\` outside them, the scan finds no tag where it starts, and where those from ` +
+          `one in a tag before it reach their first \`>\` past its start, that tag runs on and ` +
+          `swallows it; a \`<\` before it, in the ICU's value or in an expression, a string or ` +
+          `a text of a case, reads as a tag that swallows it too; a tag the scan does not find ` +
+          `there is one nothing reads, the template tree holding no element in an ICU`,
       );
     if (said.markup.length)
       throw new AriaError(
