@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries a BOUND `role` or `aria-live`",
+  "$reason": "An error part whose `aria-live` a property binding writes, `[ariaLive]`, which the element reflects to the attribute. Point 7 matched a binding's name against `aria-live` as written, so the property binding was no binding to it and the refusal said the part carried no role; read as `boundOn` reads it, `[ariaLive]` reaches `aria-live`, as it does for a name point 4 reads."
+}

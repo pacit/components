@@ -94,16 +94,15 @@ const LIVE_ATTRIBUTE = 'role';
  */
 const LIVE_ROLES = { error: 'alert', warning: 'status' };
 /**
- * The same name written as a binding, in either of the two forms Angular gives it. A role
- * arriving from an expression is a value the template does not hold, so point 7 reports it
- * rather than reading it — the alternative would be to pass on a role nobody has seen.
+ * The names a binding writes the live region under, as `boundOn` reads them: in whatever syntax
+ * and case, `[attr.ROLE]` a `role` and `[ariaLive]` an `aria-live`. A role arriving from an
+ * expression is a value the template does not hold, so point 7 reports it rather than reading it
+ * — beside a written one too, which the binding replaces — the alternative would be to pass on
+ * a role nobody has seen. The set once named each in two forms, `attr.role` beside `role`, of
+ * which the tree holds one (`[attr.role]` is an input named `role`), and compared it as written:
+ * `[attr.ROLE]` and `[ariaLive]` were no binding to it.
  */
-const BOUND_LIVE = new Set([
-  'role',
-  'attr.role',
-  'aria-live',
-  'attr.aria-live',
-]);
+const BOUND_LIVE = ['role', 'aria-live'];
 /**
  * An attribute's name as the DOM takes it from the parsed tree: HTML ignores the case of a name
  * (`ROLE`, `[attr.ARIA-LABEL]`), and only a PROPERTY binding reaches an ARIA attribute through
@@ -118,9 +117,14 @@ const nameOf = (name, property = false) =>
   property
     ? name.toLowerCase().replace(/^aria(?!-)/, 'aria-')
     : name.toLowerCase();
-/** The same parts counted without parsing, as the denominator of the walk. */
+/**
+ * The same parts counted without parsing, as the denominator of the walk: the attribute's name
+ * in any case, as HTML takes it and the walk reads it (`writtenOn`), its value as written, which
+ * the DOM keeps. Counted in lower case alone, a `DATA-PCT-PART="error"` the walk reads is a part
+ * the text does not hold, and the denominator refuses a template whose fault is point 7's.
+ */
 const MESSAGE_COUNTER = new RegExp(
-  `data-pct-part="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
+  `(?i:${PART_ATTRIBUTE})="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
   'g',
 );
 
@@ -1048,7 +1052,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         ancestors.map((a) => a.offset),
       );
     }
-    const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
+    // What is written on the node and bound on it, as the DOM ends with it: one reading for the
+    // message part below and the element after it.
+    const written = (name) => writtenOn(node, name);
+    const bindings = (name) => boundOn(node, name);
+    // The part and its role were read as the first attribute of that exact name: a
+    // `role="status"` after the error's `alert`, a `ROLE="status"`, and a part written
+    // `DATA-PCT-PART` — which the DOM holds as the attribute the styling API names — all
+    // passed point 7 on what the DOM does not end with.
+    const part = written(PART_ATTRIBUTE);
     if (part && MESSAGE_PART.test(part))
       state.messages.push({
         part,
@@ -1057,16 +1069,12 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
         // writes the same name. An expression's value is not in the template, so a bound
         // role is neither a pass nor a violation to a reader of the source — it is a thing
         // this gate cannot judge, and it says so instead of guessing.
-        role:
-          node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
-          null,
-        boundRole: (node.inputs ?? []).some((i) => BOUND_LIVE.has(i.name)),
+        role: written(LIVE_ATTRIBUTE) ?? null,
+        boundRole: BOUND_LIVE.some((name) => bindings(name).length > 0),
       });
     // Point 9 reads every element with a role, and the roles standing above it in THIS
     // template — the tree's own answer to "what owns this", as far as a template can give it.
     // Point 4 takes from the same element what the tag scan cannot read for itself.
-    const written = (name) => writtenOn(node, name);
-    const bindings = (name) => boundOn(node, name);
     // Each name attribute bound to its input, in whatever syntax — read in the field the
     // template's owner holds it in, which an alias names apart from the input.
     const taking = NAME_TARGETS.map((name, i) =>
@@ -2146,7 +2154,11 @@ const checkAria = ({
       );
       if (!kind) continue;
       const liveRole = LIVE_ROLES[kind];
-      if (message.role === liveRole) {
+      // A binding beside the written role is the one the DOM ends with: Angular sets it after
+      // the static attributes, and a `null` takes the role off. Asked only where the written
+      // role was wrong, it was never asked where it decides, and `role="alert" [attr.role]="…"`
+      // passed.
+      if (!message.boundRole && message.role === liveRole) {
         announced++;
         continue;
       }
@@ -2154,7 +2166,7 @@ const checkAria = ({
         'announcement',
         `${template.file}: \`${message.part}\` carries ` +
           (message.boundRole
-            ? `a BOUND role, so what it announces with is not in the template`
+            ? `a BOUND \`role\` or \`aria-live\`, so what it announces with is not in the template`
             : message.role === null
               ? `no \`role\``
               : `\`role="${message.role}"\``) +

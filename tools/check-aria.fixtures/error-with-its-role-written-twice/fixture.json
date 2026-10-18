@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries `role=\"status\"`",
+  "$reason": "The reference's error part with a second `role=\"status\"` written after its `alert`. Angular keeps both attributes and sets each in turn, so the DOM ends with a `status`: the error waits its turn where it should interrupt. Point 7 read the first attribute of the name, the `alert`, and passed it; `written` takes the last, as it does for a role point 4 or 9 reads."
+}

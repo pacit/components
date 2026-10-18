@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries a BOUND `role` or `aria-live`",
+  "$reason": "An error part whose role a binding writes, `[attr.ROLE]`, which `setAttribute` takes as `role`. The template does not hold the value, so point 7 says it cannot judge it. It compared the binding's name as written against `role` and `attr.role`, so the binding in capitals was none, and the refusal said the part carried no role at all; the name is read as `boundOn` reads it now, in any case and any syntax."
+}

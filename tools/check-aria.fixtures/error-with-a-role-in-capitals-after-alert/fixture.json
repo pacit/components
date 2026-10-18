@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries `role=\"status\"`",
+  "$reason": "The reference's error part with `ROLE=\"status\"` after its `alert`. HTML ignores the case of a name, so the second attribute sets the same `role` and the DOM ends with a `status`. Point 7 compared the name as written, and the attribute in capitals was no role to it; read by the name the DOM gives it, it is the last of the two."
+}
