@@ -1,6 +1,6 @@
 {
   "point": 2,
   "check": "set",
-  "message": "widget-marker (`./other` exports `PctMarker` under that name)\n",
-  "$reason": "The decorated `PctGhost` of `./widget` is exported by nothing, and `./other` exports `PctMarker` under its name. The refusal names the entrypoint that holds the name, not the one the class sits in, and nothing else: by export key the package had a `PctGhost` of `./other`, refused as the class exported from another entrypoint than its own."
+  "message": "widget-marker (`./wrap` exports `PctWidget` under that name; `./other` exports `PctMarker` under that name)\n",
+  "$reason": "The decorated `PctGhost` of `./widget` is exported by nothing; `./other` exports `PctMarker` under its name and `./wrap` exports `PctWidget` under it. The refusal names each entrypoint that holds the name, not the one the class sits in, and nothing else: by export key the package had a `PctGhost`, refused as the class exported from another entrypoint than its own."
 }

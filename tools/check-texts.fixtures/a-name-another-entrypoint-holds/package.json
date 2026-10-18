@@ -44,6 +44,10 @@
         {
           "entrypoint": "./widget",
           "as": "PctMark"
+        },
+        {
+          "entrypoint": "./wrap",
+          "as": "PctGhost"
         }
       ],
       "attributes": [

@@ -85,6 +85,10 @@
         {
           "entrypoint": "./widget",
           "as": "PctSpectre"
+        },
+        {
+          "entrypoint": "./other",
+          "as": "PctPhantom"
         }
       ],
       "attributes": []

@@ -1,6 +1,16 @@
 {
   "point": 3,
   "check": "every",
-  "why": "PctChip draws label and remove, and no harness reaches them — a consumer copies the selectors by hand again.",
-  "harnesses": { "PctChipHarness": null }
+  "why": "PctChip draws label and remove, and no harness reaches them — a consumer copies the selectors by hand again. ./avatar re-exports it, and the refusal names the class once with both entrypoints.",
+  "harnesses": {
+    "PctChipHarness": null
+  },
+  "reexport": [
+    {
+      "entrypoint": "./chips",
+      "exportedAs": "PctChip",
+      "to": "./avatar"
+    }
+  ],
+  "message": "PctChip (./avatar, ./chips): draws 2 parts"
 }

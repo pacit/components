@@ -715,14 +715,18 @@ const checkParts = (input) => {
     if (!b) {
       // A class the package has and that draws nothing is not missing from it.
       const there = shipped.find((p) => p.className === className);
-      const held = there ? [] : holding(className);
+      if (there) {
+        divergences.push(
+          `${className} (${a.file}): parts in the sources, and the package's class of ` +
+            `${ticked(there.entrypoints)} draws none — ${sorted(a.parts).join(', ')}`,
+        );
+        continue;
+      }
+      const held = holding(className);
       divergences.push(
-        there
-          ? `${className} (${a.file}): parts in the sources, and the package's class of ` +
-              `${ticked(there.entrypoints)} draws none — ${sorted(a.parts).join(', ')}`
-          : `${className} (${a.file}): parts in the sources, and no such class in the package — ` +
-              `${sorted(a.parts).join(', ')}` +
-              (held.length ? ` (${held.join('; ')})` : ''),
+        `${className} (${a.file}): parts in the sources, and no such class in the package — ` +
+          `${sorted(a.parts).join(', ')}` +
+          (held.length ? ` (${held.join('; ')})` : ''),
       );
       continue;
     }

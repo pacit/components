@@ -42,7 +42,7 @@ check-e2e.mjs 4 15 142
 check-files.mjs 10 22 232
 check-flake.mjs 5 17 206
 check-forms.mjs 4 16 139
-check-harness.mjs 6 18 178
+check-harness.mjs 6 18 179
 check-icons.mjs 6 18 170
 check-index.mjs 5 17 150
 check-language.mjs 7 19 196

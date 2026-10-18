@@ -135,7 +135,7 @@ base's binding judged on the base) and
 `tools/check-texts.fixtures/literal-in-a-subclass-host-binding/` (a subclass's own binding
 judged); `tools/check-parts.fixtures/base-not-read/`, with the
 reference's `PctMarkerBase` whose part the package puts on `PctMarker` and the source read has
-to put there too. What a class's name stands for, by thirty-seven more:
+to put there too. What a class's name stands for, by thirty-eight more:
 `tools/check-texts.fixtures/two-classes-under-one-name/` and
 `tools/check-parts.fixtures/two-classes-under-one-name/` (a second decorated `PctMarker` the
 package does not carry, which passed),
@@ -147,8 +147,9 @@ holding another class under the name of a decorated one no entrypoint exports, w
 entrypoint, the refusal naming the one that holds it),
 `tools/check-texts.fixtures/two-classes-of-one-name-in-the-package/` and
 `tools/check-parts.fixtures/two-classes-of-one-name-in-the-package/` (two objects of one name in
-the package), `tools/check-texts.fixtures/a-class-the-scanner-misses-under-two-names/` (one class
-under two keys, named once), `tools/check-parts.fixtures/a-class-the-package-draws-no-part-of/`
+the package), `tools/check-texts.fixtures/a-class-the-scanner-misses-under-two-names/` and
+`tools/check-parts.fixtures/a-class-the-scanner-misses-in-two-entrypoints/` (one class under
+several keys, named once with its entrypoints), `tools/check-parts.fixtures/a-class-the-package-draws-no-part-of/`
 (a class the package has, drawing nothing, not called missing),
 `tools/check-parts.fixtures/a-class-two-entrypoints-export/` and
 `tools/check-parts.fixtures/a-reexported-class-new-to-the-snapshot/` (a re-export, one class

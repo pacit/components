@@ -4,7 +4,7 @@
  * `data-pct-part` contract. Nothing in one proves itself, so every declaration is held to the
  * BUILT package, both ways, the way the cards are:
  *
- *  1. SET: `./testing` is exported, every harness a `PctHarness` of its own name, distinct parts,
+ *  1. SET: `./testing` is exported, every harness a `PctHarness`, no two of one name, distinct parts,
  *  2. HOST: a `hostSelector` is verbatim one exported class's list, and no class has two,
  *  3. EVERY: every class that draws a part has a harness,
  *  4. PARTS: a harness names exactly the parts its class draws, neither more nor fewer,
