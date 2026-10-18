@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "(`<ng-container role=\"menuitem\" tabindex=\"-1\">`) carries `role`, `tabindex` —",
+  "message": "an `<ng-container>` at offset 1623 (`<ng-container role=\"menuitem\" tabindex=\"-1\">`) carries `role`, `tabindex` —",
   "$reason": "The reference's panel made a menu whose items are the consumer's, the role and the stop of a menu item written on the `<ng-container>` around the projection, and a separator's role on one more after it. Angular draws a comment for a container and renders none of its attributes: `ngc` (22.2.1, strict templates) keeps them in the consts it matches directives against, matches none and draws the container alone (`ɵɵdomElementContainerStart` and `End`, around the projection), and the items are whatever the consumer projects, as they are. Read as an element, the container was a menu item the menu owns, and the template passed every point; the role and the stop reached nobody, the defect of `lesson-65`, and they are refused for themselves, on the first container that carries any."
 }

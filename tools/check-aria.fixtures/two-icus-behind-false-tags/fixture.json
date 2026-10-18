@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "reads the tag at offset 502 (`<limit()) {{count(), plural, other {<span class=\"pct-widget__more\" tabindex=\"0\">`) on into the ICU at offset 513",
+  "$reason": "`false-tag-across-a-comment` twice over, without the comment: two blocks, `count() <limit()` and `count() <cap()`, each opening on an ICU whose case draws a stop. The tag scan reads each comparison as a tag that runs on into the ICU after it. The refusal quotes the first false tag and the ICU it runs into, by their offsets: each case before this one held one ICU run into, so a refusal that quoted the last of them passed them all."
+}
