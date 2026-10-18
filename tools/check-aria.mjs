@@ -2444,11 +2444,13 @@ const sidesFor = (fx) =>
 /**
  * The visits a case takes from the tag reader: none, or those it names
  * (`"reader": { "drop": ["visitDeferredBlockPlaceholder"] }`) — the walk's counterpart, a kind of
- * node the reader would not descend into, played by one it descends into today. A name that is
- * none of the reader's members takes nothing, and the case then passes; one of its fields
- * (`kinds`) is no visit, and taking it ends the run.
+ * node the reader would not descend into, played by one it descends into today. Only a visit is
+ * taken: a field of the reader's (`kinds`, `markup`), or `visit`, which Angular's `visitAll` calls
+ * in place of each node's own where a visitor has one, takes nothing, as a misspelt visit does,
+ * and the case then passes.
  */
-const skipsFor = (fx) => fx.reader?.drop ?? [];
+const skipsFor = (fx) =>
+  (fx.reader?.drop ?? []).filter((name) => /^visit[A-Z]/.test(name));
 
 // ── the run ────────────────────────────────────────────────────────────────────
 
