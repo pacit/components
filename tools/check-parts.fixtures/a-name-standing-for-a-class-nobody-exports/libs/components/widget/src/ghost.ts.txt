@@ -1,0 +1,13 @@
+import { Directive } from '@angular/core';
+
+/**
+ * Decorated, writing the marker's part, and exported by nothing: the name `PctGhost` of
+ * `./widget` holds `PctMarker`.
+ */
+@Directive({
+  selector: '[pctGhost]',
+  host: {
+    'data-pct-part': 'widget-marker',
+  },
+})
+export class PctGhost {}

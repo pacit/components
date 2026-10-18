@@ -1,0 +1,87 @@
+{
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "attributes": [
+        [
+          "data-pct-part",
+          "label"
+        ],
+        [
+          "aria-hidden",
+          "true"
+        ],
+        [
+          "data-pct-part",
+          "toggle"
+        ],
+        [
+          "type",
+          "button"
+        ],
+        [
+          "data-pct-part",
+          "list"
+        ],
+        [
+          "data-pct-part",
+          "item"
+        ],
+        [
+          "data-pct-part",
+          "empty"
+        ],
+        [
+          "role",
+          "group"
+        ]
+      ]
+    },
+    {
+      "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        },
+        {
+          "entrypoint": "./wrap",
+          "as": "PctGhost"
+        }
+      ],
+      "attributes": [
+        [
+          "data-pct-part",
+          "widget-marker"
+        ],
+        [
+          "title",
+          "*"
+        ],
+        [
+          "role",
+          "note"
+        ]
+      ]
+    },
+    {
+      "className": "PctBlank",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctBlank"
+        },
+        {
+          "entrypoint": "./widget",
+          "as": "PctBare"
+        },
+        {
+          "entrypoint": "./other",
+          "as": "PctGhost"
+        }
+      ],
+      "attributes": []
+    }
+  ]
+}

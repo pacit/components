@@ -1,0 +1,26 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "./chips re-exports PctButton and ./button exports it a second time as PctBtn — one class, not a namesake. The chips card names PctButtonHarness beside its own harnesses, which stands: a class two entrypoints export is what both hand a consumer. The avatar card names it too, and ./avatar exports no such class; that one disagreement, and no other, is the refusal, naming each entrypoint of the class once. By export record each export was a class of the button's selector, and point 2 refused the harness as standing on three.",
+  "reexport": [
+    {
+      "entrypoint": "./button",
+      "exportedAs": "PctButton",
+      "to": "./chips"
+    },
+    {
+      "entrypoint": "./button",
+      "exportedAs": "PctButton",
+      "as": "PctBtn"
+    }
+  ],
+  "cards": {
+    "chips.md": {
+      "harnesses": ["PctChipsHarness", "PctChipHarness", "PctButtonHarness"]
+    },
+    "avatar.md": {
+      "harnesses": ["PctAvatarHarness", "PctButtonHarness"]
+    }
+  },
+  "message": "1 disagreements between the cards and the harnesses:\n      avatar.md: names `PctButtonHarness`, a harness of `./button`, `./chips` — the card's entrypoint is `./avatar`"
+}

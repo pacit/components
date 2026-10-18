@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "class-without-package",
+  "message": "PctGhost (libs/components/widget/src/ghost.ts) — `./widget` exports `PctBlank` under that name",
+  "description": "A decorated `PctGhost` no entrypoint exports, and `./widget` exports `PctBlank` under the name `PctGhost` as well. Read by export key, the package had a `PctGhost` and the input passed (measured): a component the consumer never gets, counted. Read by object, the package has no class of that name, and the refusal says what the name holds."
+}

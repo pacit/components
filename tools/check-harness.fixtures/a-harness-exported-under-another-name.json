@@ -1,0 +1,14 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "./testing exports the harness class PctButtonHarness under the name PctBtnHarness alone. Its declaration is found by its own name, and a card names it by the name a consumer imports: the button card still writes PctButtonHarness, which ./testing does not export, and the refusal names the harness by PctBtnHarness, the name a card can write.",
+  "harnesses": {
+    "PctButtonHarness": null,
+    "PctBtnHarness": {
+      "className": "PctButtonHarness",
+      "hostSelector": "button[pctButton], a[pctButton]",
+      "parts": ["label", "spinner"]
+    }
+  },
+  "message": "2 disagreements between the cards and the harnesses:\n      button.md: names `PctButtonHarness`, which `./testing` does not export\n      `PctBtnHarness`: stands on no card"
+}

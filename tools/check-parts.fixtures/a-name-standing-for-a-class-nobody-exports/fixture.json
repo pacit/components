@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "set",
+  "message": "widget-marker (`./widget` exports `PctMarker` under that name)",
+  "$reason": "A decorated `PctGhost` writes the marker's part and no entrypoint exports it; `./widget` exports `PctMarker` under the name `PctGhost` as well. Read by export key, the package had a `PctGhost` drawing `widget-marker`, the sources had one too, and the input passed (measured): a part that reaches no consumer, recorded as one. Read by object, the package has no class of that name, and the refusal says what the name holds."
+}

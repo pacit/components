@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "set",
+  "message": "PctWidget (libs/components/widget/src/widget.ts): parts in the sources, and the package's class of `./widget` draws none — label, value",
+  "$reason": "The package has `PctWidget`, exported under two names, and its definition carries no part: a stale `dist`. The refusal says the class is there and draws nothing; it said the package had no such class, and the package has it."
+}

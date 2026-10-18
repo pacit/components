@@ -5,7 +5,7 @@ per entrypoint of the packed manifest, and no row beyond it.
 
 ## Entrypoints
 
-| entrypoint                 | what is in it            |
-| -------------------------- | ------------------------ |
-| `@pacit/components`        | configuration            |
-| `@pacit/components/widget` | `PctWidget`, `PctMarker` |
+| entrypoint                 | what is in it                                               |
+| -------------------------- | ----------------------------------------------------------- |
+| `@pacit/components`        | configuration                                               |
+| `@pacit/components/widget` | `PctWidget` (also as `PctGadget`), `PctMarker` as `PctMark` |

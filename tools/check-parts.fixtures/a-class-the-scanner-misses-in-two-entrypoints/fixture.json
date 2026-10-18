@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "set",
+  "message": "PctPhantom (./other, ./widget): parts in the package, and the source scanner does not see the class — phantom",
+  "$reason": "`./widget` and `./other` export a `PctPhantom` the sources do not declare, one object. It is one class, named once with each entrypoint that exports it."
+}

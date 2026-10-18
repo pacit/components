@@ -303,8 +303,8 @@ class PartsError extends Error {
  * The full set of checks over a ready input:
  *   `classes`, `declarations`, `unseen` — from the decorators in the sources (read A),
  *   `templates`   — `[{ file, content }]` of all the project's templates,
- *   `pkg`     — `[{ entrypoint, className, parts, dynamic }]` from the built package
- *                  (read B),
+ *   `pkg`     — `[{ entrypoint, exportedAs, class, parts, dynamic }]` from the built package
+ *                  (read B), one per name an entrypoint exports, `class` the object it holds,
  *   `documents`  — `[{ file, entrypoint, parts }]` from `docs/components/`,
  *   `entrypoints`— the keys of the packed manifest's `exports` map,
  *   `snapshot`   — the file's contents, or `null`.
@@ -396,13 +396,14 @@ const checkParts = (input) => {
         `above \`export default class\`, which the pattern does not take for a class.`,
     );
 
-  // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint
-  // exports a class under its name and keeps no file. Two decorated classes of one name are then
-  // one key, and the comparison reads one of them — a class that never reached the package hides
-  // behind its namesake that did (measured: a second `PctMarker` in `twin.ts`, writing a part and
-  // exported by nothing, passed). It is refused wherever the two stand, two bases no entrypoint
-  // exports included, which point 2 never reaches: a name meets the package in more than one
-  // place below (`exported`, `fromPackage`), and one class per name is what each of them assumes.
+  // Point 2 compares the two reads by class name, the one key both carry: the package keeps no
+  // file, and a class it exports carries its own name, whatever key it is exported under. Two
+  // decorated classes of one name are then one key, and the comparison reads one of them — a
+  // class that never reached the package hides behind its namesake that did (measured: a second
+  // `PctMarker` in `twin.ts`, writing a part and exported by nothing, passed). It is refused
+  // wherever the two stand, two bases no entrypoint exports included, which point 2 never
+  // reaches: a name meets the package in more than one place below (`exported`, `fromPackage`),
+  // and one class per name is what each of them assumes.
   // The chain is not what needs this: `extends` is resolved through the file that writes it, by
   // name and file.
   const shared = [...Map.groupBy(classes, (k) => k.className)].filter(
@@ -543,7 +544,23 @@ const checkParts = (input) => {
   // gate is handed, and dropping it is equivalent on every input that compiles and whose
   // directories carry no `package.json`, which `class-bases.mjs` does not read.
   const declared = new Map(classes.map((k) => [k.key, k]));
-  const exported = new Set(pkg.map((p) => p.className));
+  // The package's classes, one per OBJECT, as `check-zoneless` reads them: a class one
+  // entrypoint re-exports from another, or exports a second time under another name, is one
+  // class with all of its entrypoints. Its name is its own (`name`), the name the sources give
+  // it, not the key it is exported under: by key, `export { PctMarker as PctGhost }` stood in
+  // for a decorated `PctGhost` no entrypoint exports, and point 2 passed a part that reaches
+  // no consumer.
+  const shipped = [...Map.groupBy(pkg, (p) => p.class)].map(([type, of]) => ({
+    className: type.name,
+    entrypoints: [...new Set(of.map((p) => p.entrypoint))].sort(),
+    exports: of.map(({ entrypoint, exportedAs }) => ({
+      entrypoint,
+      exportedAs,
+    })),
+    parts: of[0].parts,
+    dynamic: of[0].dynamic,
+  }));
+  const exported = new Set(shipped.map((p) => p.className));
   const extended = new Set(classes.map((k) => k.from));
   const unresolved = classes.filter(
     (k) => k.base !== null && !declared.has(k.from),
@@ -634,18 +651,50 @@ const checkParts = (input) => {
   //    consumer would not have them at all. From the package alone — a part brought in by
   //    syntax our scanner cannot read would enter the inventory as a fait accompli, with
   //    no line in the diff.
+  //
+  //    The two reads meet by class name, so a name two classes of the package bear — one
+  //    class bundled into two entrypoints, a copy beside the original — has no class to stand
+  //    for. One object exported twice is one class, and is no such name.
+  const twins = [...Map.groupBy(shipped, (p) => p.className)].filter(
+    ([, named]) => named.length > 1,
+  );
+  if (twins.length)
+    throw new PartsError(
+      'set',
+      `${twins.length} names are borne by more than one class of the package:\n` +
+        list(
+          twins.map(
+            ([name, named]) =>
+              `${name}: ${named.map((p) => p.entrypoints.map((e) => `\`${e}\``).join(' and ')).join(', ')}`,
+          ),
+        ) +
+        `\n    Two objects of one name are two classes to a consumer — an \`instanceof\`, a ` +
+        `token or a query for one misses the other — and the comparison with the sources, ` +
+        `which keeps one class per name, would read one of them.`,
+    );
   const fromPackage = new Map(
-    pkg
+    shipped
       .filter((p) => p.parts.length || p.dynamic)
       .map((p) => [
         p.className,
         {
-          entrypoint: p.entrypoint,
+          entrypoints: p.entrypoints,
           parts: new Set(p.parts),
           dynamic: p.dynamic,
         },
       ]),
   );
+  // What a name the sources give a class holds in the package where no class bears it.
+  const holding = (className) =>
+    shipped.flatMap((p) =>
+      p.exports
+        .filter((e) => e.exportedAs === className)
+        .map(
+          (e) =>
+            `\`${e.entrypoint}\` exports \`${p.className}\` under that name`,
+        ),
+    );
+  const ticked = (entrypoints) => entrypoints.map((e) => `\`${e}\``).join(', ');
 
   if (!fromSources.size || !fromPackage.size)
     throw new PartsError(
@@ -664,22 +713,35 @@ const checkParts = (input) => {
     const a = fromSources.get(className);
     const b = fromPackage.get(className);
     if (!b) {
+      // A class the package has and that draws nothing is not missing from it.
+      const there = shipped.find((p) => p.className === className);
+      if (there) {
+        divergences.push(
+          `${className} (${a.file}): parts in the sources, and the package's class of ` +
+            `${ticked(there.entrypoints)} draws none — ${sorted(a.parts).join(', ')}`,
+        );
+        continue;
+      }
+      const held = holding(className);
       divergences.push(
         `${className} (${a.file}): parts in the sources, and no such class in the package — ` +
-          `${sorted(a.parts).join(', ')}`,
+          `${sorted(a.parts).join(', ')}` +
+          (held.length ? ` (${held.join('; ')})` : ''),
       );
       continue;
     }
     if (!a) {
       divergences.push(
-        `${className} (${b.entrypoint}): parts in the package, and the source scanner does not see the class — ` +
+        `${className} (${b.entrypoints.join(', ')}): parts in the package, and the source scanner does not see the class — ` +
           `${sorted(b.parts).join(', ')}`,
       );
       continue;
     }
-    if (a.entrypoint !== b.entrypoint)
+    // A class sits in one entrypoint's directory, and that entrypoint has to export it; one
+    // that re-exports it as well hands a consumer the same class.
+    if (!b.entrypoints.includes(a.entrypoint))
       divergences.push(
-        `${className}: sits in \`${a.entrypoint}\`, and the package exports it from \`${b.entrypoint}\``,
+        `${className}: sits in \`${a.entrypoint}\`, and the package exports it from ${ticked(b.entrypoints)}`,
       );
     const missingInPackage = sorted(a.parts).filter((c) => !b.parts.has(c));
     const missingInSources = sorted(b.parts).filter((c) => !a.parts.has(c));
@@ -719,7 +781,7 @@ const checkParts = (input) => {
       .filter(([, w]) => w.dynamic)
       .map(
         ([className, w]) =>
-          `${className} (${w.entrypoint}): ${w.dynamic} in the package`,
+          `${className} (${w.entrypoints.join(', ')}): ${w.dynamic} in the package`,
       ),
   ];
   if (bound.length)
@@ -738,13 +800,16 @@ const checkParts = (input) => {
   //    goes per ENTRYPOINT, because that is how the library is imported, and one card is
   //    sometimes about two classes
   //    (`radio.md`) and one entrypoint has three cards (`field`, `number`,
-  //    `text`).
+  //    `text`). A class two entrypoints export counts in both, as it is imported from
+  //    both: an entrypoint re-exporting a class hands a consumer its parts, and its cards
+  //    say so.
   const byEntrypoint = new Map();
-  for (const [, w] of fromPackage) {
-    const set = byEntrypoint.get(w.entrypoint) ?? new Set();
-    for (const c of w.parts) set.add(c);
-    byEntrypoint.set(w.entrypoint, set);
-  }
+  for (const [, w] of fromPackage)
+    for (const entrypoint of w.entrypoints) {
+      const set = byEntrypoint.get(entrypoint) ?? new Set();
+      for (const c of w.parts) set.add(c);
+      byEntrypoint.set(entrypoint, set);
+    }
 
   const unknownEntrypoints = documents
     .filter((d) => d.entrypoint === null || !entrypoints.has(d.entrypoint))
@@ -857,7 +922,9 @@ const checkParts = (input) => {
   // "the snapshot has drifted" — a correct diagnosis of a problem that is not there.
   const rows = [...fromPackage]
     .flatMap(([className, w]) =>
-      sorted(w.parts).map((c) => [w.entrypoint, className, c]),
+      w.entrypoints.flatMap((e) =>
+        sorted(w.parts).map((c) => [e, className, c]),
+      ),
     )
     .sort((a, b) => (a.join(' ') < b.join(' ') ? -1 : 1));
   const content = renderSnapshot(rows);
@@ -1201,10 +1268,15 @@ const packageComponents = async (root) => {
     const module = await import(
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
-    for (const [className, value] of Object.entries(module)) {
+    for (const [exportedAs, value] of Object.entries(module)) {
       if (typeof value !== 'function' || !(value['ɵcmp'] ?? value['ɵdir']))
         continue;
-      out.push({ entrypoint, className, ...readCompiled(value) });
+      out.push({
+        entrypoint,
+        exportedAs,
+        class: value,
+        ...readCompiled(value),
+      });
     }
   }
   return { pkg: out, entrypoints };
@@ -1364,16 +1436,60 @@ const fixtureInput = (directory) => {
       .map((p) => p.split('\\').join('/'))
       .sort(),
     {
-      pkg: pkg.classes.map((k) => ({
-        entrypoint: k.entrypoint,
-        className: k.className,
-        ...(k.declaration
-          ? readCompiled(declare({ className: k.className, ...k.declaration }))
-          : { parts: k.parts ?? [], dynamic: k.dynamic ?? 0 }),
-      })),
+      pkg: inNamespaceOrder(pkg.classes.flatMap(packageClass), pkg.entrypoints),
       entrypoints: new Set(pkg.entrypoints),
     },
   );
+};
+
+/**
+ * One class of a prepared input's package — one object, compiled from its declaration or
+ * standing for one read already — as the records the package read gives for it: one per name
+ * an entrypoint exports it under. `exports` lists them where the class is exported otherwise
+ * than once, from `entrypoint`, under its own name: a re-export from another entrypoint, a
+ * second name, a name that is not its own.
+ */
+const packageClass = (k) => {
+  const type = k.declaration
+    ? declare({ className: k.className, ...k.declaration })
+    : { [k.className]: class {} }[k.className];
+  const read = k.declaration
+    ? readCompiled(type)
+    : { parts: k.parts ?? [], dynamic: k.dynamic ?? 0 };
+  return (k.exports ?? [{ entrypoint: k.entrypoint, as: k.className }]).map(
+    ({ entrypoint, as }) => ({
+      entrypoint,
+      exportedAs: as,
+      class: type,
+      ...read,
+    }),
+  );
+};
+
+/**
+ * The records as the package read gives them: the entrypoints in the manifest's order, each
+ * one's names in code-unit order, as a module namespace lists them, and none twice in one
+ * module. Listed as a case writes them, a class's own name would always come before its other
+ * names, and `PctGadget` comes before `PctWidget`.
+ */
+const inNamespaceOrder = (records, manifest) => {
+  const modules = Map.groupBy(records, (r) => r.entrypoint);
+  for (const entrypoint of modules.keys())
+    if (!manifest.includes(entrypoint))
+      throw new Error(
+        `\`${entrypoint}\` exports a class and is not in the case's \`entrypoints\``,
+      );
+  return [...modules]
+    .toSorted(([a], [b]) => manifest.indexOf(a) - manifest.indexOf(b))
+    .flatMap(([entrypoint, of]) => {
+      const names = of.map((r) => r.exportedAs);
+      const twice = names.filter((n, i) => names.indexOf(n) !== i);
+      if (twice.length)
+        throw new Error(
+          `\`${entrypoint}\` exports ${twice.join(', ')} twice — no module can`,
+        );
+      return of.toSorted((a, b) => (a.exportedAs < b.exportedAs ? -1 : 1));
+    });
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
