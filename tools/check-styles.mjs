@@ -940,16 +940,20 @@ const checkStyles = ({
     );
 
   // The sheets are read off the metadata the parser holds for the decorator where the pattern
-  // read its `@`. Where it holds none — a comment above a class decorated otherwise — or holds
-  // metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is nothing to read them off.
+  // read its `@`, on a class at the top level of the file. Where it holds none — a comment above a
+  // class decorated otherwise, or a class inside a namespace or a function written in column zero
+  // — or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is nothing to read
+  // them off.
   if (unparsed.length)
     throw new StyleError(
       'style-source',
       `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
         `called with an object literal:\n` +
         list(unparsed) +
-        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
-        `is no object literal once an \`as\` is off, which ngc refuses as well: the sheets ` +
+        `\n    A decorator in a comment above a class decorated otherwise, one on a class ` +
+        `below the top level of the file (inside a namespace or a function) written in ` +
+        `column zero, or metadata that is no object literal once an \`as\` is off, which ` +
+        `ngc refuses as well: the sheets ` +
         `are read off that object, and here it has none.`,
       'decorator-without-metadata',
     );
@@ -976,8 +980,9 @@ const checkStyles = ({
         list(unseen) +
         `\n    They would drop out of the measurement without a trace. Usual cause: a ` +
         `decorator written otherwise than prettier formats it (\`@Component({\` and \`})\` ` +
-        `in column zero): indented, inside a namespace or a function, or behind a comment on ` +
-        `its line.`,
+        `in column zero): indented, inside a namespace or a function, behind a comment on ` +
+        `its line, or above \`export default class\`, which the pattern does not take for a ` +
+        `class.`,
       'decorator-unseen',
     );
 

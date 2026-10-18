@@ -143,8 +143,6 @@ const shorten = (entries, countOf = 8) =>
     ? entries
     : [...entries.slice(0, countOf), `… and ${entries.length - countOf} more`];
 
-const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
-
 // ── source scanners ────────────────────────────────────────────────────────────
 
 /**
@@ -829,14 +827,15 @@ const checkTexts = (input) => {
   if (unseen.length)
     throw new TextsError(
       'denominator',
-      'decorator-parser',
+      'decorator-unseen',
       `the pattern read ${classes.length} of the ${declarations} decorators the ` +
         `TypeScript parser holds, and not these:\n` +
         list(unseen) +
         `\n    They would drop out of the measurement without a trace, together with their ` +
         `\`host\` block. Usual cause: a decorator written otherwise than the pattern reads ` +
         `it (\`@Component({\` and \`})\` in column zero): indented, inside a namespace or ` +
-        `a function, or behind a comment on its line.`,
+        `a function, behind a comment on its line, or above \`export default class\`, which ` +
+        `the pattern does not take for a class.`,
     );
 
   // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint

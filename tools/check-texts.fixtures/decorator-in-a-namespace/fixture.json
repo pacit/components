@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "rule": "decorator-parser",
+  "rule": "decorator-unseen",
   "description": "A component declared inside a namespace, its decorator indented as prettier indents it there. ngc compiles it (measured through ngc in partial mode and the linker for `check-parts`). The counter that stood here counted it from the start of its line past the indentation and refused it; the parser's counter descends into a namespace's body as well, and a count that did not would agree with the pattern and pass the case. `decorator-in-a-function` holds the other nesting."
 }

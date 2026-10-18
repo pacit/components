@@ -59,14 +59,14 @@ const TRACES = [
 
 /**
  * The component decorator in a source file. It anchors on the formatting `nx format:check`
- * enforces (`@Component({` and `})` in column zero) — and that is exactly why the number
- * of matches is compared separately against the number of plain `@Component(`. Without
- * that, a change of formatting would not break the parser but quietly SHRINK point 4's
- * denominator, with the gate still green: the very defect it stands against.
+ * enforces (`@Component({` and `})` in column zero) — and that is exactly why what it reads
+ * is held separately against a count of the decorators taken another way. Without that, a
+ * change of formatting would not break the pattern but quietly SHRINK point 4's denominator,
+ * with the gate still green: the very defect it stands against.
  *
- * The counter allows INDENTATION, because until 2026-08-05 it did not, and so did nothing:
- * it repeated the parser's anchor character for character, so moving a decorator by one
- * space put out both sides of the comparison at once. Measured on this repository —
+ * The counter allowed INDENTATION from 2026-08-05, because until then it did not, and so did
+ * nothing: it repeated the pattern's anchor character for character, so moving a decorator by
+ * one space put out both sides of the comparison at once. Measured on this repository —
  * `PctCheckbox` indented by a space gave "7 components" instead of eight and a green run,
  * so the component dropped out of the OnPush measurement without a trace (`lesson-48`).
  * A check comparing two measurements needs two INDEPENDENT ones.
@@ -186,17 +186,20 @@ const checkZoneless = ({
   const { found, declarations, unseen, unparsed, renamed } =
     readSources(sources);
   // The options point 6 reads are read off the metadata the parser holds for the decorator where
-  // the pattern read its `@`. Where it holds none — a comment above a class decorated otherwise —
-  // or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), the text the pattern took
-  // is no component's.
+  // the pattern read its `@`, on a class at the top level of the file. Where it holds none — a
+  // comment above a class decorated otherwise, or a class inside a namespace or a function written
+  // in column zero — or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is no
+  // component's metadata to read them off.
   if (unparsed.length)
     throw new ZonelessError(
       'denominator',
       `${unparsed.length} decorators stand where the TypeScript parser holds no decorator ` +
         `called with an object literal:\n` +
         unparsed.map((z) => `      ${z}`).join('\n') +
-        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
-        `is no object literal once an \`as\` is off, which ngc refuses as well: no point ` +
+        `\n    A decorator in a comment above a class decorated otherwise, one on a class ` +
+        `below the top level of the file (inside a namespace or a function) written in ` +
+        `column zero, or metadata that is no object literal once an \`as\` is off, which ` +
+        `ngc refuses as well: no point ` +
         `below may read it as a component.`,
     );
 
@@ -221,8 +224,9 @@ const checkZoneless = ({
         unseen.map((z) => `      ${z}`).join('\n') +
         `\n    They would drop out of the measurement without a trace. Usual cause: a ` +
         `decorator written otherwise than prettier formats it (\`@Component({\` and ` +
-        `\`})\` in column zero): indented, inside a namespace or a function, or behind a ` +
-        `comment on its line.`,
+        `\`})\` in column zero): indented, inside a namespace or a function, behind a ` +
+        `comment on its line, or above \`export default class\`, which the pattern does not ` +
+        `take for a class.`,
     );
 
   // The empty set after the reasons a read can come up short, each of which names its cause.

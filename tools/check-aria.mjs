@@ -221,30 +221,32 @@ const inputsOf = (node) => {
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
 /**
- * The `host` block of a decorator, read by counting braces rather than by a regex: its
- * values are expressions that carry braces of their own, and a lazy `[\s\S]*?` up to the
- * first `}` would cut one of them in half.
+ * The `host` block off the parsed metadata, `key → value`, each entry named as ngc names a
+ * member — by an identifier or a string, by its text — and its value written as a string. `null`
+ * for a block this read does not take as written, which point 1 refuses: a block given by an
+ * expression, which ngc evaluates (a constant, by shorthand or by name), or an entry under a
+ * computed key, by shorthand, or with a value that is no string. A pattern over the decorator's
+ * text stood here, `host: {` from the start of a line, and a block under a quoted key, under an
+ * escaped name or by shorthand passed every point (measured; ngc compiles each).
+ *
+ * A spread is passed over, as it was, and that is a hole of this gate's own: the others meet a
+ * spread entry in their package read, and this one has none. The library spreads one object,
+ * `fitHost` in `field/src/affix.ts`, a data attribute and a style.
  */
-const hostBlock = (body) => {
-  const start = body.search(/(?:^|\s)host\s*:\s*\{/m);
-  if (start === -1) return null;
-  const from = body.indexOf('{', start);
-  let depth = 0;
-  for (let i = from; i < body.length; i++) {
-    if (body[i] === '{') depth++;
-    else if (body[i] === '}' && --depth === 0) return body.slice(from + 1, i);
-  }
-  return null;
-};
-
-/** `'key': 'value'` / `key: 'value'` pairs of a host block. */
-const HOST_ENTRY =
-  /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:\s*(?:'([^']*)'|"([^"]*)"|`([^`]*)`)/g;
-
-const hostEntries = (text) => {
+const hostOf = (node) => {
+  if (node === undefined) return new Map();
+  if (!ts.isObjectLiteralExpression(node)) return null;
   const entries = new Map();
-  for (const m of text.matchAll(HOST_ENTRY))
-    entries.set(m[1] ?? m[2] ?? m[3], m[4] ?? m[5] ?? m[6]);
+  for (const entry of node.properties) {
+    if (ts.isSpreadAssignment(entry)) continue;
+    const value =
+      ts.isPropertyAssignment(entry) &&
+      (ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name))
+        ? textOf(entry.initializer)
+        : undefined;
+    if (value === undefined) return null;
+    entries.set(entry.name.text, value);
+  }
   return entries;
 };
 
@@ -303,8 +305,8 @@ const readSources = (root, files) => {
       }
       const url = metadata.get('templateUrl');
       const template = metadata.get('template');
-      const body = match[2];
-      const host = hostBlock(body);
+      const selector = metadata.get('selector');
+      const host = hostOf(metadata.get('host'));
       components.push({
         file,
         className: node.name?.text,
@@ -316,9 +318,11 @@ const readSources = (root, files) => {
         base: held.base ?? null,
         from: held.from,
         via: held.via,
-        // A selector written otherwise than as a string is one no host tag is read off, which
-        // the points below hold to the worst case: a host that cannot carry the name.
-        selector: textOf(metadata.get('selector')) ?? '',
+        selector: textOf(selector) ?? '',
+        // A selector ngc evaluates and the scanner does not read: the host tag the points
+        // below read off it is one no point could know. Read as no selector, the host passed
+        // point 4 as a custom element, which may carry a name (measured).
+        unselected: selector !== undefined && textOf(selector) === undefined,
         template: textOf(url) ?? null,
         // A path the scanner does not read as written: ngc evaluates the expression, a
         // constant or a concatenation, and compiles a file this walk never opens.
@@ -327,7 +331,8 @@ const readSources = (root, files) => {
         // than an empty one: the walk reads files, and a widget drawn there is one it never
         // examines.
         inline: template !== undefined && textOf(template) !== '',
-        host: host === null ? new Map() : hostEntries(host),
+        host: host ?? new Map(),
+        unhosted: host === null,
         // Off the class itself, so a second component in one file cannot lend its inputs to
         // the first.
         inputs: inputsOf(node),
@@ -1384,7 +1389,8 @@ const checkAria = ({
       'denominator',
       `the pattern read ${components.length} of the ${counted} decorators the TypeScript ` +
         `parser holds — a decorator written otherwise than \`@Component({\` in column zero ` +
-        `(indented, inside a namespace or a function, or behind a comment on its line) leaves ` +
+        `(indented, inside a namespace or a function, behind a comment on its line, or above ` +
+        `\`export default class\`, which the pattern does not take for a class) leaves ` +
         `a whole component unexamined, and the gate would report on the rest as though on all ` +
         `of them (lesson-48):\n${list(unseen)}`,
     );
@@ -1405,6 +1411,21 @@ const checkAria = ({
         `${component.className} (${component.file}) names its template file by an ` +
           `expression, not a string — ngc evaluates it and compiles a file the walk never ` +
           `opens; write the path as a string`,
+      );
+    if (component.unselected)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) names its selector by an expression, ` +
+          `not a string — ngc evaluates it, and the host tag the points below read off the ` +
+          `selector would be one no point knows; write the selector as a string`,
+      );
+    if (component.unhosted)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) writes a \`host\` block this read does ` +
+          `not take as written — the block given by an expression, or an entry under a ` +
+          `computed key, by shorthand or with a value that is no string, each of which ngc ` +
+          `evaluates; write each entry as a string under its name`,
       );
   }
 

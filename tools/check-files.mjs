@@ -419,9 +419,10 @@ const denominator = ({
         `or the sources are not the library's.`,
     );
   // What a declaration names is read off the metadata the parser holds for the decorator where
-  // the anchor read its `@`. Where it holds none — a comment above a class decorated otherwise —
-  // or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is nothing to read
-  // it off, and the text the anchor took names files no build compiles.
+  // the anchor read its `@`, on a class at the top level of the file. Where it holds none — a
+  // comment above a class decorated otherwise, or a class inside a namespace or a function written
+  // in column zero — or holds metadata ngc refuses (`{ … } satisfies { … }`, NG1001), there is
+  // nothing to read it off.
   if (unparsed.length)
     throw new FilesError(
       'denominator',
@@ -429,8 +430,10 @@ const denominator = ({
       `${unparsed.length} decorator(s) stand where the TypeScript parser holds no decorator ` +
         `called with an object literal:\n` +
         list(unparsed) +
-        `\n    A decorator in a comment above a class decorated otherwise, or metadata that ` +
-        `is no object literal once an \`as\` is off, which ngc refuses as well: points 4 to ` +
+        `\n    A decorator in a comment above a class decorated otherwise, one on a class ` +
+        `below the top level of the file (inside a namespace or a function) written in ` +
+        `column zero, or metadata that is no object literal once an \`as\` is off, which ` +
+        `ngc refuses as well: points 4 to ` +
         `7 read a declaration's files off that object, and here it has none.`,
     );
   // A decorator under a name of the file's own is one neither the anchor nor the counter sees, so
@@ -449,13 +452,14 @@ const denominator = ({
   if (unseen.length)
     throw new FilesError(
       'denominator',
-      'decorator-unparsed',
+      'decorator-unseen',
       `the anchor read ${declarations.length} of the ${counted} \`@Component\` decorators ` +
         `the TypeScript parser holds, and not these:\n` +
         list(unseen) +
         `\n    They drop out of points 4 to 7 without a trace. Usual cause: a decorator ` +
         `written otherwise than prettier formats it (\`@Component({\` and \`})\` in column ` +
-        `zero): indented, inside a namespace or a function, or behind a comment on its line.`,
+        `zero): indented, inside a namespace or a function, behind a comment on its line, or ` +
+        `above \`export default class\`, which the anchor does not take for a class.`,
     );
   if (expressions.length)
     throw new FilesError(

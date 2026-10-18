@@ -392,7 +392,8 @@ const checkParts = (input) => {
         list(unseen) +
         `\n    They would drop out of the inventory without a trace. Usual cause: a decorator ` +
         `written otherwise than the pattern reads it (\`@Component({\` and \`})\` in column ` +
-        `zero): indented, inside a namespace or a function, or behind a comment on its line.`,
+        `zero): indented, inside a namespace or a function, behind a comment on its line, or ` +
+        `above \`export default class\`, which the pattern does not take for a class.`,
     );
 
   // Point 2 compares the two reads by class name, the one key the package carries: an entrypoint

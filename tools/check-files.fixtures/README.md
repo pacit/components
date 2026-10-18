@@ -106,12 +106,12 @@ redden nothing in the library — only this file and the rows of `FORMS` that ad
 | [`no-entrypoint-in-the-project`](no-entrypoint-in-the-project/)                                       |     1 | `denominator`          | `no-entrypoint`                 | the walk finds no `ng-package.json`, so the layout points rule on nothing |
 | [`no-source-under-an-entrypoint`](no-source-under-an-entrypoint/)                                     |     1 | `denominator`          | `no-source`                     | the manifests are counted and every `src/` is gone                        |
 | [`not-one-component-declared`](not-one-component-declared/)                                           |     1 | `denominator`          | `no-declaration`                | sources by the dozen and no `@Component` among them                       |
-| [`decorator-off-the-anchor`](decorator-off-the-anchor/)                                               |     1 | `denominator`          | `decorator-unparsed`            | a decorator the anchor misses and the parser counts                       |
+| [`decorator-off-the-anchor`](decorator-off-the-anchor/)                                               |     1 | `denominator`          | `decorator-unseen`              | a decorator the anchor misses and the parser counts                       |
 | [`not-one-type-exported`](not-one-type-exported/)                                                     |     1 | `denominator`          | `no-exported-type`              | sources by the dozen and no `type`, `interface` or `enum` among them      |
 | [`register-the-gate-cannot-read`](register-the-gate-cannot-read/)                                     |     1 | `denominator`          | `register-unreadable`           | `inline` is an object where the gate reads a list                         |
-| [`decorator-behind-a-comment-on-its-line`](decorator-behind-a-comment-on-its-line/)                   |     1 | `denominator`          | `decorator-unparsed`            | a decorator behind a comment on its line, which no pattern counted        |
-| [`decorator-in-a-namespace`](decorator-in-a-namespace/)                                               |     1 | `denominator`          | `decorator-unparsed`            | a declaration inside a namespace, which the parser counts                 |
-| [`decorator-in-a-function`](decorator-in-a-function/)                                                 |     1 | `denominator`          | `decorator-unparsed`            | a declaration inside a function, the other nesting                        |
+| [`decorator-behind-a-comment-on-its-line`](decorator-behind-a-comment-on-its-line/)                   |     1 | `denominator`          | `decorator-unseen`              | a decorator behind a comment on its line, which no pattern counted        |
+| [`decorator-in-a-namespace`](decorator-in-a-namespace/)                                               |     1 | `denominator`          | `decorator-unseen`              | a declaration inside a namespace, which the parser counts                 |
+| [`decorator-in-a-function`](decorator-in-a-function/)                                                 |     1 | `denominator`          | `decorator-unseen`              | a declaration inside a function, the other nesting                        |
 | [`decorator-imported-under-another-name`](decorator-imported-under-another-name/)                     |     1 | `denominator`          | `decorator-under-another-name`  | `@Widget({…})` over `Component as Widget`                                 |
 | [`angular-imported-as-a-namespace`](angular-imported-as-a-namespace/)                                 |     1 | `denominator`          | `decorator-under-another-name`  | `@ng.Component({…})` over a namespace import of `@angular/core`           |
 | [`decorator-in-a-comment-above-another-decorator`](decorator-in-a-comment-above-another-decorator/)   |     1 | `denominator`          | `decorator-without-metadata`    | a decorator in a comment above a service, read by the anchor              |
@@ -161,8 +161,9 @@ star returns an empty list rather than an error ([`lesson-48`](../../docs/lesson
 The other ten are the ways a declaration reaches ngc past the read: a decorator the anchor
 misses (behind a comment on its line, inside a namespace or a function), one imported under
 another name, a decorator the anchor reads where the parser holds no metadata, and a path given
-by an expression. Each of them passed, or was refused by the rule for another defect, while the
-decorator was read with patterns; each is measured through ngc. The same spellings stand in
+by an expression. While the decorator was read with patterns, the two nestings were refused by
+the old counter, from their indentation, and each of the others passed or was refused by the
+rule for another defect; each is measured through ngc. The same spellings stand in
 `check-texts`, `check-aria`, `check-styles`, `check-zoneless` and `check-parts`, which read
 decorators through one module, `tools/decorators.mjs`. Points 4 and 5 hold the members a pattern
 did not read — a template or styles by shorthand, under a quoted key, under an escaped name.

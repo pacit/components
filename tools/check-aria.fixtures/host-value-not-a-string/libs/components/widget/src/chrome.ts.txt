@@ -1,0 +1,16 @@
+import { Component } from '@angular/core';
+
+/** A surface whose host is taken out of the tree, and named all the same. */
+/** The role kept in a constant, out of the host block. */
+const role = 'presentation';
+
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    role,
+    'aria-label': 'Surface',
+  },
+})
+export class PctChrome {}

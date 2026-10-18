@@ -102,8 +102,9 @@ not see it — past the pattern's anchor, behind a comment on its line, inside a
 function, imported under another name, or read where the parser holds no metadata; it is styled
 outside a sheet, its styles handed to the decorator in any spelling ngc reads; or it points at a
 sheet the gate does not read, by `styleUrl` or by `styleUrls`, as a string or through an
-expression. Each ends the run green, or did while the decorator was read with patterns, and
-each leaves a repository that looks sensible.
+expression. Each would end the run green with no case to refuse it, and each leaves a repository
+that looks sensible. While the decorator was read with patterns, the two nestings were refused
+by the old counter, from their indentation, and the other new routes passed.
 
 Point 10 has four for the same reason, and its first two are its own denominator: the floor
 has to be findable in the tokens before it can be found in a sheet, and found in a sheet
