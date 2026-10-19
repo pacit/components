@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A `host` block binds `'[tabindex]': 'order()'` to `readonly order = computed(() => 0)`, and the constructor writes `(<{ order: unknown }>this).order = computed(() => 5)`, and 2.4.3 keeps resting on the scan. `readonly` is no guard against a cast: the field holds what was last put there.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected readonly order = computed(() => 0);\n  constructor() {\n    (<{ order: unknown }>this).order = computed(() => 5);\n  }\n}\n"
-  }
-}

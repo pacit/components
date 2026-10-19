@@ -1,8 +1,8 @@
 {
   "point": 3,
   "check": "evidence",
-  "description": "A template draws `<span tabindex=\"2\">` in a case of an ICU, and 2.4.3 keeps resting on the scan. The template tree holds no element there; the HTML tree does, and the i18n sanitizer keeps the attribute. The pattern on main read it as text; the reading that replaces it has to reach the case.",
+  "description": "A template draws `<span tabindex=\"&#50;\">` in a case of an ICU, and 2.4.3 keeps resting on the scan. The template tree holds no element there; the HTML tree does, decodes the entity, and the i18n sanitizer keeps the attribute. The pattern on main saw no digit after the `=`, and the reading that replaces it has to reach the case.",
   "sources": {
-    "libs/components/avatar/src/avatar.html": "{count, plural, =1 {<span tabindex=\"2\">one</span>} other {many}}\n"
+    "libs/components/avatar/src/avatar.html": "{count, plural, =1 {<span tabindex=\"&#50;\">one</span>} other {many}}\n"
   }
 }

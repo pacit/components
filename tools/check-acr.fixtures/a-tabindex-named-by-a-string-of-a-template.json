@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[name]=\"'tabIndex'\"` and `[value]=\"5\"` on one element, and 2.4.3 keeps resting on the scan. A directive can write the value under the name, and the reading follows no name a template's string holds.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span pctAttr [name]=\"'tabIndex'\" [value]=\"5\">Ada</span>\n"
+  }
+}

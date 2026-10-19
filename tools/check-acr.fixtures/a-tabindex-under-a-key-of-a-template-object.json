@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template keeps `@let attrs = { 'tabIndex': 0 }` and hands it to a binding, and 2.4.3 keeps resting on the scan. A directive can write the key onto an element, and no `host` block holds it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "@let attrs = { 'tabIndex': 0 };\n<span [title]=\"attrs\">Ada</span>\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `protected order()` returning `0`, and a class extends `const Base = … ? PctAvatar : Object` and returns `5`, and 2.4.3 keeps resting on the scan. A constant was read back only where it names a class.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected order(): number {\n    return 0;\n  }\n}\n\nconst Base = Math.random() > 0.5 ? PctAvatar : Object;\n\nexport class PctAvatarRaised extends (Base as typeof PctAvatar) {\n  protected override order(): number {\n    return 5;\n  }\n}\n"
+  }
+}

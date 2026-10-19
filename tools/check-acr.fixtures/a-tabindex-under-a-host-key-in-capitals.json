@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block writes `TABINDEX: '5'`, a static attribute in capitals, and 2.4.3 keeps resting on the scan. Angular sets it through `setAttribute`, which lowers the name on an HTML element, and the key is a name, which no string holds.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    TABINDEX: '5',\n  },\n})\nexport class PctAvatar {}\n"
+  }
+}

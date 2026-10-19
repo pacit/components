@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to a `computed` returning `0`, which `@Field()` makes an input, with `const Field = Input`, and 2.4.3 keeps resting on the scan. A decorator was known by its name or an import's alias alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, Input } from '@angular/core';\n\nconst Field = Input;\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  @Field() readonly order = computed(() => 0);\n}\n"
+  }
+}

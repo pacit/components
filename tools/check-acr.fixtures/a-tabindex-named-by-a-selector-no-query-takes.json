@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component keeps `const SELECTOR = '[tabindex]'` and calls `setAttribute(SELECTOR.slice(1, -1), '5')`, and 2.4.3 keeps resting on the scan. A selector was placed in any string. The refusal names the constant's line, ahead of a positive tabindex further down: the reading's first refusal is the one on the first line.",
+  "says": ["avatar.ts:3` names `tabindex` in a string"],
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\nconst SELECTOR = '[tabindex]';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.setAttribute(SELECTOR.slice(1, -1), '5');\n    this.el.tabIndex = 4;\n  }\n}\n"
+  }
+}

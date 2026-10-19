@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[title]=\"order<limit\"` and then writes `tabindex=\"&#53;\"`. The refusal names that last line: a binding's value is an expression the template tree reads, and a comparison in it ends in no tag.",
+  "says": ["avatar.html:3` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [title]=\"order<limit\">Ada</span>\n<span>Ada</span>\n<b tabindex=\"&#53;\">Ada</b>\n"
+  }
+}

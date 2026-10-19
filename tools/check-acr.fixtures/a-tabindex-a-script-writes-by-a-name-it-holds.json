@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component holds `const KEY = 'tabIndex'` and writes `el[KEY] = 5`, and 2.4.3 keeps resting on the scan. A string that names the attribute where no reading places it is refused: it can be the name a script writes by.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\nconst KEY = 'tabIndex';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef);\n  constructor() {\n    this.el.nativeElement[KEY] = 5;\n  }\n}\n"
-  }
-}

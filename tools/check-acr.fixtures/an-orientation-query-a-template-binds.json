@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `<source [media]=\"'(orientation: portrait)'\">`, and 1.3.4 keeps resting on the scan. The scan read a template's `<style>` alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<picture>\n  <source [media]=\"'(orientation: portrait)'\" srcset=\"ada-tall.png\" />\n  <img src=\"ada.png\" alt=\"Ada\" />\n</picture>\n"
+  }
+}
