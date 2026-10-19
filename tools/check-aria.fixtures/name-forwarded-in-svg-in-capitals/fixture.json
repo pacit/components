@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "none of the 1 element(s) that carry a name",
+  "$reason": "The reference's widget with its trigger alone, an SVG `<a href>` binding `[attr.ARIA-LABEL]` and `[attr.ARIA-LABELLEDBY]` to the inputs. Angular sets an `attr.` binding through `setAttribute` under the name as written, which keeps its case on an SVG element: the link carries attributes `ARIA-LABEL` and `ARIA-LABELLEDBY`, and the consumer's name reaches nothing (three engines). The walk lowered both names and passed the link as the carrier."
+}

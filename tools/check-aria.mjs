@@ -114,16 +114,33 @@ const BOUND_LIVE = ['role', 'aria-live'];
  * `bind-`) parses to an input of that name — so a role arriving from an expression, for point
  * 9 a path the template cannot decide and for point 4 an element it cannot judge, is an input
  * named `role`.
+ *
+ * HTML ignores the case of a name on an element of its own namespace alone. An element the parser
+ * names `:svg:` or `:math:` — inside an `<svg>` or a `<math>`, or written with the prefix — Angular
+ * creates in that namespace, and there `setAttribute` keeps `ROLE` as written: no engine reads it
+ * as a role, `ARIA-LABEL` as a name or `ARIA-HIDDEN` as hiding anything (Chromium 153, Firefox 155,
+ * WebKit 26.6, measured on 2026-10-19). Lowered there too, an error part inside an `<svg>` with
+ * `ROLE="alert"` passed point 7, announcing nothing. A property reaches the attribute it reflects,
+ * in lower case, in every namespace; a template draws nothing, and a host block and the scan read
+ * no namespace, so each of them is read as HTML.
  */
-const nameOf = (name, property = false) =>
+const FOREIGN = new Set(['svg', 'math']);
+const keepsCase = (node) =>
+  isElement(node) && FOREIGN.has(splitNsName(node.name)[0]);
+const nameOf = (name, property = false, node = null) =>
   property
     ? name.toLowerCase().replace(/^aria(?!-)/, 'aria-')
-    : name.toLowerCase();
+    : keepsCase(node)
+      ? name
+      : name.toLowerCase();
 /**
  * The same parts counted without parsing, as the denominator of the walk: the attribute's name
  * in any case, as HTML takes it and the walk reads it (`writtenOn`), its value as written, which
  * the DOM keeps. Counted in lower case alone, a `DATA-PCT-PART="error"` the walk reads is a part
- * the text does not hold, and the denominator refuses a template whose fault is point 7's.
+ * the text does not hold, and the denominator refuses a template whose fault is point 7's. On an
+ * SVG or a MathML element the walk keeps the case, as the DOM does (`nameOf`), and reads such a
+ * part as none; counted here, it is refused — Firefox and WebKit match no `[data-pct-part]` on it,
+ * Chromium does (measured on 2026-10-19).
  */
 const MESSAGE_COUNTER = new RegExp(
   `(?i:${PART_ATTRIBUTE})="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
@@ -525,10 +542,15 @@ const platformTables = () => {
 
 const TABLES = platformTables();
 
+/**
+ * The attributes of a tag the scan reads where the tree holds no element, by name as `nameOf`
+ * reads one, the last of two: the name was taken as written, and a `<ng-template ROLE="group">`
+ * or a `ROLE="listbox"` in a string passed point 1, where `role` fails it.
+ */
 const attributesOf = (text) => {
   const attrs = new Map();
   for (const m of text.matchAll(ATTRIBUTE))
-    attrs.set(m[1], m[2] ?? m[3] ?? m[4] ?? '');
+    attrs.set(nameOf(m[1]), m[2] ?? m[3] ?? m[4] ?? '');
   return attrs;
 };
 
@@ -807,20 +829,23 @@ const setsProperty = (input) =>
  */
 const allWrittenOn = (node, name) =>
   (node.attributes ?? [])
-    .filter((a) => nameOf(a.name) === name)
+    .filter((a) => nameOf(a.name, false, node) === name)
     .map((a) => a.value);
 const writtenOn = (node, name) => allWrittenOn(node, name).at(-1);
 const boundOn = (node, name) =>
-  (node.inputs ?? []).filter((i) => nameOf(i.name, setsProperty(i)) === name);
+  (node.inputs ?? []).filter(
+    (i) => nameOf(i.name, setsProperty(i), node) === name,
+  );
 /**
  * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
- * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`. A property
+ * `ARIA-LABELLEDBY` is `aria-labelledby` on an HTML element and itself inside an `<svg>`, and
+ * `[ariaLabel]` reaches `aria-label` on either. A property
  * binding a component of the library takes as its input reads the same way, as it does in
  * `focusAttributes`: where that component puts it is not read here.
  */
 const namesOn = (node) => [
-  ...(node.attributes ?? []).map((a) => nameOf(a.name)),
-  ...(node.inputs ?? []).map((i) => nameOf(i.name, setsProperty(i))),
+  ...(node.attributes ?? []).map((a) => nameOf(a.name, false, node)),
+  ...(node.inputs ?? []).map((i) => nameOf(i.name, setsProperty(i), node)),
 ];
 /**
  * What decides whether a user can land on a tag (`FOCUS_ATTRIBUTES`), keyed the way `virtual`

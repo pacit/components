@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "The reference's error drawn as an SVG `<text>`, its role written `ROLE=\"alert\"`. The parser names the element `:svg:text`, Angular creates it in the SVG namespace and sets the attribute as written, and `setAttribute` lowers a name on an HTML element alone: the text carries an attribute `ROLE`, no role, and announces nothing (Chromium 153, Firefox 155, WebKit 26.6). The walk lowered every name in every namespace and passed it as the live region."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "`error-in-svg-with-a-role-in-capitals` in MathML: the parser names the element `:math:mi`, and a name written on it keeps its case as on an SVG element (measured in the same three engines). The walk lowered it, and the error passed point 7 as the live region it is not."
+}

@@ -1,0 +1,4 @@
+<!-- A marker with a string holding the markup of a listbox, its role written in capitals: the tag
+     scan finds a tag there, outside any ICU, and the parsed tree holds a `@let` and no tag at all. -->
+@let mark = '<div ROLE="listbox">';
+<span class="pct-marker__text" [attr.data-mark]="mark"><ng-content></ng-content></span>

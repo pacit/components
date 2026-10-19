@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"option\"> stands under <div role=\"list\"> (list)",
+  "$reason": "The reference's panel with an option inside a `list`, which an option may not stand in, under an `<svg>` written `ARIA-HIDDEN=\"true\"`. On an SVG element the name keeps its case, and no engine hides the subtree for it: the option is in the tree, in the list (three engines). The walk lowered the name, read the map as hidden, and passed the option it holds."
+}
