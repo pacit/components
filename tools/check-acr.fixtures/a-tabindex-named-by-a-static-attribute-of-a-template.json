@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template writes `pctAttr=\"tabIndex\"` beside `pctValue=\"5\"` on one element, and 2.4.3 keeps resting on the scan. A directive's input takes the name either way, and the reading refused it only in a binding.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span pctAttr=\"tabIndex\" pctValue=\"5\">Ada</span>\n"
+  }
+}

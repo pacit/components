@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component imports `HostBinding as Bind` and writes `@Bind()` on a getter named `tabIndex`, returning `5`, and 2.4.3 keeps resting on the scan. The decorator is `HostBinding` by the name it imports, and with no argument it binds the member's name.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, HostBinding as Bind } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @Bind()\n  get tabIndex(): number {\n    return 5;\n  }\n}\n"
+  }
+}

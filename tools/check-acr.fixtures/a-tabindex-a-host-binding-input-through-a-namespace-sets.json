@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component writes `@ng.Input() @ng.HostBinding('attr.tabindex') readonly order = 0` over `import * as ng`, and 2.4.3 keeps resting on the scan. The decorator is `Input` through the namespace.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import * as ng from '@angular/core';\n\n@ng.Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @ng.Input() @ng.HostBinding('attr.tabindex') readonly order = 0;\n}\n"
-  }
-}

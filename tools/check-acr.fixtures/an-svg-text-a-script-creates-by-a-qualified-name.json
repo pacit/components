@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `createElementNS(svg, 'svg:text')`, and 1.4.5 keeps resting on the scan. In a namespace the name is qualified, and the element is a text.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.append(\n      document.createElementNS('http://www.w3.org/2000/svg', 'svg:text'),\n    );\n  }\n}\n"
+  }
+}

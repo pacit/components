@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component holds the string `'<b TABINDEX=\"&#49;\">'`, markup a script can hand to `innerHTML`, and 2.4.3 keeps resting on the scan. The HTML parser lowers the name and decodes the value to one; read as written, neither is a positive tabindex.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly mark = '<b TABINDEX=\"&#49;\">Ada</b>';\n}\n"
-  }
-}
