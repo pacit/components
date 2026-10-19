@@ -1,0 +1,9 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the walk holds more than the counter finds",
+  "counter": {
+    "drop": ["DATA-PCT-PART"]
+  },
+  "$reason": "The error part written `DATA-PCT-PART`, read by a counter that does not take that spelling for the part: one it would miss, played by one it reads today, as the counter read the name in lower case alone before #123. The walk holds a part the HTML tree, so counted, does not, and the denominator says the counter is at fault, not the template. It compared the two counts only for difference, and a denominator turned into \"the tree holds more\" alone passed every case."
+}

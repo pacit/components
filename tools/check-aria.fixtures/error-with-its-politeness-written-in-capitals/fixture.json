@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a written `aria-live=\"polite\"`",
+  "$reason": "An error part with its `alert` and an `ARIA-LIVE=\"polite\"` beside it. HTML takes the name in any case, and both engines expose `polite` for the part (Chromium 153, Firefox 158, measured on 2026-10-19): the error waits its turn behind whatever the reader is saying, which is the warning's politeness and not the error's (0026). Point 7 read the role alone and passed it."
+}

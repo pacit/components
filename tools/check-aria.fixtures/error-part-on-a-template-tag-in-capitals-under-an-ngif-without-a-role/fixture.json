@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "The error part written on an `<NG-TEMPLATE>` under an `*ngIf`, with no role. In capitals the tag is no template to Angular, which asks for `ng-template` as written: it is an element of the DOM, which the part reaches, and the inline template around it holds a copy of the part named `NG-TEMPLATE`. Read in any case, the tag was taken for an `<ng-template>` and the part refused by point 1 as one on no element; it reaches point 7, which refuses it for its missing role."
+}

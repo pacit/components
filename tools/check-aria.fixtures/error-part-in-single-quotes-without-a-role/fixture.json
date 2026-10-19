@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "An error part written `data-pct-part='error'`, in single quotes, with no role. The walk held the part and the counter, reading the value in double quotes alone, after a lower-case prefix alone and undecoded, did not: the template was refused as one holding a part the walk does not reach, when it holds one the walk reads. Counted by its name alone, wherever the lexer starts one, the part reaches point 7, which refuses it for its missing role."
+}

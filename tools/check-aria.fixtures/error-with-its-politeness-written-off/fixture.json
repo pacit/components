@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a written `aria-live=\"off\"`",
+  "$reason": "An error part with its `alert` and an `aria-live=\"off\"` written beside it. Both engines expose the written politeness in place of the one the role implies: Chromium 153 takes the live region away at `off`, Firefox 158 hands `off` on as written (measured on 2026-10-19). The error enters the DOM and nothing speaks it. Point 7 read the role alone and passed the part, though it refused a bound `aria-live` beside the same `alert`."
+}

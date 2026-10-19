@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "2 part attribute(s) in the HTML tree, 1 on the elements the walk reads",
+  "$reason": "The hint drawn in a case of an ICU. Angular renders the case, and the template tree holds no element there, so the walk never reaches the part and point 6 never pairs it with the error. The HTML tree holds the case's elements, and its count of parts enters the case: left out there, the two counts agreed, and the template was refused only later, by the tag scan, for a stop it reads every tag of an ICU as."
+}

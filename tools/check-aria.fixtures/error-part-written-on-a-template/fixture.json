@@ -1,6 +1,6 @@
 {
   "point": 1,
   "check": "denominator",
-  "message": "message part(s) in the text",
-  "$reason": "The error's part and its `alert` written on an `<ng-template>` around the text instead of on it. A template draws no element, so neither attribute reaches the DOM: the text the user reads carries no part and no live region. The walk read the part on any node and passed it with the role beside it. Only an element's part is read now, so the walk holds one part fewer than the text, and the denominator refuses the template."
+  "message": "carries `data-pct-part` — a template draws no element",
+  "$reason": "The error's part and its `alert` written on an `<ng-template>` around the text instead of on it. A template draws no element, so neither attribute reaches the DOM: the text the user reads carries no part and no live region. The walk read the part on any node and passed it with the role beside it. Read on an element alone, the part was then refused by the denominator as one the walk does not reach — and the walk reaches the template and the element it stamps. The tag reader records a part written on an `<ng-template>`, and point 1 refuses it for what it is."
 }
