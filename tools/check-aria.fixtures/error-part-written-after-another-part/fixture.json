@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries no `role`",
+  "$reason": "An error part written after a `data-pct-part=\"box\"` on the same element, with no role. Angular sets each attribute in turn, so the DOM ends with the `error`, and it announces nothing. The walk read the first, a `box` that is no message, and the denominator, counting the `error` in the text, refused the template as one holding a part the walk does not reach: the right template for a reason that sends its author looking for a block the walk skipped. Read as the DOM ends with it, the part reaches point 7, which refuses it for its missing role."
+}

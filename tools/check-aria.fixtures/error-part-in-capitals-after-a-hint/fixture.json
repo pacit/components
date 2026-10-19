@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries no `role`",
+  "$reason": "A `data-pct-part=\"hint\"` followed by `DATA-PCT-PART=\"error\"` on one element, with no role. HTML ignores the case of a name and Angular sets each attribute in turn, so the DOM ends with an error part, which announces nothing. Point 7 read the first attribute of the exact name, a hint, which needs no role, and the denominator, counting in lower case alone, counted the hint and agreed. Read in any case, the text holds two part attributes, and the denominator, which counted the walk's ELEMENTS, refused a tag carrying two as a part the walk does not reach. It counts the part attributes on the elements now, and the error reaches point 7."
+}

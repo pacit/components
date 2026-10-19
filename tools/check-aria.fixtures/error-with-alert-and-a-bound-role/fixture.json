@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries a BOUND `role` or `aria-live`",
+  "$reason": "The reference's error part with its `alert` written and a `[attr.role]` bound beside it. Angular sets the binding after the static attributes, so the DOM ends with what the expression gives, and a `null` takes the role off. Point 7 asked about the binding only when the written role was wrong, so with an `alert` written it passed a role nobody has seen; a binding is refused before the written role is compared."
+}

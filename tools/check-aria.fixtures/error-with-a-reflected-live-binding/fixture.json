@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries a BOUND `role` or `aria-live`",
+  "$reason": "The reference's error part with its `alert` written and `[ariaLive]` bound beside it, a property the element reflects to `aria-live`, which, per ARIA, takes precedence over the politeness the role implies. Point 7 compared the written role first, so the `alert` passed whatever was bound beside it; asked first, as now, but by a binding's name matched against `aria-live` as written, the property binding would be none, and the `alert` would pass still. Read as `boundOn` reads it, `[ariaLive]` reaches `aria-live`, as it does for a name point 4 reads."
+}

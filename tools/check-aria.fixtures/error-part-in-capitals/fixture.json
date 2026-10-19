@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "carries no `role`",
+  "$reason": "An error part written `DATA-PCT-PART=\"error\"`, with no role. HTML ignores the case of a name, so the DOM holds the `data-pct-part` the styling API names, and the error announces nothing. The walk compared the name as written and saw no part at all, and the denominator, counting `data-pct-part=` in lower case alone, counted none either, so the two agreed on zero and the template passed. Both read the name in any case now, and the part reaches point 7, which refuses it for its missing role."
+}
