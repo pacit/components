@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The theme the package ships gains an `@media (orientation: portrait)` block while 1.3.4 keeps resting on the scan that forbids one. The theme is no source of the library: `libs/tokens/build.mjs` writes it from the DTCG files into `libs/tokens/dist/pct.css`, and the package ships a copy as `themes/pct.css` — so a query a token build adds shipped past a scan that read the library's `src` alone. Laid on disk where the build writes it and read by the live reader (`tree`), so the case holds the path the reader takes the theme from.",
+  "tree": {
+    "libs/tokens/dist/pct.css": ":root {\n  --pct-gap: 1rem;\n}\n\n@media (orientation: portrait) {\n  :root {\n    --pct-gap: 0;\n  }\n}\n"
+  },
+  "says": ["`libs/tokens/dist/pct.css` compiles to one"]
+}

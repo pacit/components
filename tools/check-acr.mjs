@@ -44,11 +44,15 @@ import {
 import { execSync } from 'node:child_process';
 import {
   existsSync,
+  mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as sass from 'sass';
@@ -66,6 +70,7 @@ const CI = '.github/workflows/ci.yml';
 const IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 const MANIFEST = 'libs/components/package.json';
 const LIB = 'libs/components';
+const THEME = 'libs/tokens/dist/pct.css';
 const ACTS = 'apps/sandbox-e2e/at/acts.ts';
 const FIXTURES = join(ROOT, 'tools/check-acr.fixtures');
 const REFERENCE = '_reference.json';
@@ -190,6 +195,11 @@ const SCANS = {
   },
   'no-orientation-lock': {
     over: ['scss', 'css', 'html', 'ts'],
+    // The theme's `@media` blocks are the library's too, and a scan that did not find it would
+    // count one sheet fewer and say nothing (`librarySources`).
+    needs: {
+      [THEME]: 'the theme the package ships, which `tokens:build` writes',
+    },
     find: (path, text) => orientationIn(path, text),
     means: 'a reading of the display orientation',
   },
@@ -1677,25 +1687,66 @@ class AcrError extends Error {
 
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
-/** Every file under the entrypoints' `src` directories, by extension, specs left out. */
-const librarySources = () => {
+/**
+ * The extensions some scan reads, taken from `over` rather than listed a second time. An economy
+ * and no more: each scan picks its own out of what is read, so a file of another extension read
+ * here would change no answer and no count.
+ */
+const SCANNED = new Set(Object.values(SCANS).flatMap((scan) => scan.over));
+
+/** The paths of the library no page receives, each with its reason. */
+const LEFT_OUT = new Set([
+  // The `ng add` and `ng update` schematics: Node code run in a terminal on the consumer's
+  // workspace, which renders nothing.
+  `${LIB}/schematics`,
+  // The copy of the theme the `themes` target makes: the theme is read as built (`THEME`). The
+  // file and not the folder, whose every top-level file the package ships (`assets` in
+  // `ng-package.json`, glob `*`).
+  `${LIB}/themes/pct.css`,
+  // The mutation run's TestBed setup, which no entrypoint imports.
+  `${LIB}/mutation.setup.ts`,
+]);
+
+/**
+ * What the scans read, from a root laid out as the repository is: every file of the library at
+ * any depth, of an extension some scan reads, specs and `LEFT_OUT` left out, and the theme the
+ * package ships.
+ *
+ * The whole library and not its entrypoints' `src`: ng-packagr takes an `ng-package.json` at any
+ * depth for an entrypoint and compiles whatever its entry file reaches, in `src` or beside it,
+ * while `check-files` reads the `src` of the library and of a directory one level below it and
+ * sees neither an entrypoint nested deeper nor a module beside a `src`. So a file nothing ships is
+ * read as well — over-approximated, in the direction that refuses rather than passes. A
+ * `node_modules` is no source at any depth: installed packages and the build's caches, which nx
+ * does not hash. Until 2026-10-19 this read the files directly in `<entry>/src`, and a file in a
+ * subdirectory, the primary entrypoint's own `libs/components/src` and everything outside a `src`
+ * reached no scan.
+ *
+ * The theme is read as built, `libs/tokens/dist/pct.css`, of which the package's `themes/pct.css`
+ * is a copy (the `themes` target). Its sources in `libs/tokens/src` are DTCG files, JSON with no
+ * stylesheet to compile, and the `@media` blocks are written by `libs/tokens/build.mjs`, so the one
+ * text that holds every query the theme ships is the theme. Not the copy under `libs/components`:
+ * it is there only after a library build and may be an earlier build's, while this file is what
+ * `tokens:build` writes before the gate (`dependsOn`). A theme not built is no source here, and the
+ * scan that `needs` it refuses.
+ *
+ * Sorted here rather than left to libuv, which sorts a directory on Unix and does not promise to:
+ * the first refusal names the same file everywhere.
+ */
+const librarySources = (root = ROOT) => {
   const out = {};
-  for (const entry of readdirSync(join(ROOT, LIB))) {
-    const src = join(ROOT, LIB, entry, 'src');
-    if (!existsSync(src) || !statSync(src).isDirectory()) continue;
-    for (const file of readdirSync(src)) {
-      const ext = file.split('.').pop();
-      if (
-        !['css', 'html', 'scss', 'ts'].includes(ext) ||
-        file.endsWith('.spec.ts')
-      )
-        continue;
-      out[`${LIB}/${entry}/src/${file}`] = readFileSync(
-        join(src, file),
-        'utf8',
-      );
+  const walk = (dir) => {
+    for (const name of readdirSync(join(root, dir)).sort()) {
+      const path = `${dir}/${name}`;
+      if (LEFT_OUT.has(path) || name === 'node_modules') continue;
+      if (statSync(join(root, path)).isDirectory()) walk(path);
+      else if (SCANNED.has(name.split('.').pop()) && !name.endsWith('.spec.ts'))
+        out[path] = readFileSync(join(root, path), 'utf8');
     }
-  }
+  };
+  walk(LIB);
+  if (existsSync(join(root, THEME)))
+    out[THEME] = readFileSync(join(root, THEME), 'utf8');
   return out;
 };
 
@@ -2085,6 +2136,13 @@ const checkAcr = (input) => {
             'evidence',
             `${where} cites scan \`${e.scan}\`, which this gate does not know (${Object.keys(SCANS).join(', ')})`,
           );
+        for (const [path, what] of Object.entries(scan.needs ?? {}))
+          if (typeof sources[path] !== 'string')
+            throw new AcrError(
+              'evidence',
+              `${where} rests on scan \`${e.scan}\` (${scan.means}), which reads \`${path}\` — ` +
+                `${what} — and there is no such file, so the scan would pass over less than it names`,
+            );
         const over = Object.entries(sources).filter(([path]) =>
           scan.over.includes(path.split('.').pop()),
         );
@@ -2549,7 +2607,41 @@ const buildFixture = (live, fx) => {
       else (w.cards[id] ??= []).push({ criterion: label, evidence });
     }
   Object.assign(w.texts, fx.texts ?? {});
-  Object.assign(w.sources, fx.sources ?? {});
+  // A library source rewritten, added or, with `null`, dropped: a source the live run did not
+  // find is one the reader left out, and a scan that needs it says so (`needs`).
+  for (const [path, text] of Object.entries(fx.sources ?? {}))
+    if (text !== null) w.sources[path] = text;
+    else if (Object.hasOwn(w.sources, path)) delete w.sources[path];
+    else
+      throw new Error(
+        `the case drops the source \`${path}\`, and the live input holds no such thing`,
+      );
+  // Files laid on disk where the repository keeps them and read by the reader the live run reads
+  // with, so that a case reaches `librarySources` — `sources` hands a scan its text and says
+  // nothing about which files are read. What the reader leaves out reaches no scan, and the case
+  // passes.
+  if (fx.tree !== undefined) {
+    const root = mkdtempSync(join(tmpdir(), 'pct-check-acr-'));
+    try {
+      mkdirSync(join(root, LIB), { recursive: true });
+      for (const [path, text] of Object.entries(fx.tree)) {
+        if (
+          posix.isAbsolute(path) ||
+          posix.normalize(path).split('/')[0] === '..'
+        )
+          throw new Error(`the case lays \`${path}\` outside the tree`);
+        mkdirSync(dirname(join(root, path)), { recursive: true });
+        writeFileSync(join(root, path), text);
+      }
+      // In the reader's order, after the live sources: a file both hold moves to where the reader
+      // puts it, so that a refusal names the first file a reader of a tree holding both would.
+      const read = librarySources(root);
+      for (const path of Object.keys(read)) delete w.sources[path];
+      Object.assign(w.sources, read);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
   for (const path of fx.dropFiles ?? []) w.files.delete(path);
   // A finding closed, dropped or absent — or opened: a case that needs an open finding builds
   // its own, because one borrowed from the plan closes the day the work is done and takes the

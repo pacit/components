@@ -1,0 +1,10 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The copy of the theme under `libs/components/themes` and the theme as `tokens:build` writes it both gain an `@media (orientation: portrait)` block, and 1.3.4 keeps resting on the scan. The copy is left out — it is there only after a library build and may be an earlier one's — and the theme is read as built, so the refusal names `libs/tokens/dist/pct.css`. A reader that took the copy names it first, the library being walked before the theme is read. Laid on disk and read by the live reader (`tree`).",
+  "tree": {
+    "libs/components/themes/pct.css": "@media (orientation: portrait) {\n  :root {\n    --pct-gap: 0;\n  }\n}\n",
+    "libs/tokens/dist/pct.css": "@media (orientation: portrait) {\n  :root {\n    --pct-gap: 0;\n  }\n}\n"
+  },
+  "says": ["`libs/tokens/dist/pct.css` compiles to one"]
+}

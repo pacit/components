@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The theme is not built — a checkout where `tokens:build` has not run — and 1.3.4 keeps resting on the scan that reads it. The reader finds no file there and takes none; without the refusal the scan passes over one sheet fewer than the package ships and the report says Supports. The case drops the theme from the sources (`null`), the state the reader leaves when the file is not there.",
+  "sources": {
+    "libs/tokens/dist/pct.css": null
+  },
+  "says": ["reads `libs/tokens/dist/pct.css`", "`tokens:build`"]
+}

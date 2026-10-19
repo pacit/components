@@ -32,7 +32,11 @@ it from two layers:
 2. the operations from the case file, applied to a copy of it (`criteria` — a row replaced,
    added or, with `null`, dropped; `assistiveTechnology`; `cards` — a card's row rewritten
    or, with `null`, dropped, so that a card can owe a row by not having it at all;
-   `texts` and `sources` — a cited file or a library source rewritten; `dropFiles`; `plan`
+   `texts` — a cited file rewritten; `sources` — a library source rewritten, added or, with
+   `null`, dropped, the state the reader leaves when a file is not there; `tree` — files laid
+   on disk where the repository keeps them, in a directory of their own, and read by the reader
+   the live run reads with, so that the case reaches the choice of files and not only the
+   scans; `dropFiles`; `plan`
    — a finding closed, dropped or absent, or **opened**, so that a case which needs an open
    finding builds its own instead of borrowing one the plan will close; `ci`; `atLogs`;
    `acts` — an act of the reader walk's table rewritten, added or, with `null`, dropped).
@@ -69,7 +73,8 @@ of it — so
 red on that day with the weaker word against the stronger one it names, is its canary, and
 the two are patched together. A `null` that names no row, no card or no criterion, and a
 `plan` state other than `open` on an item the plan lacks, are authoring faults reported by
-the case's name; an `acts` `null` on a route the table lacks and a `dropFiles` path the
+the case's name, and so is a `sources` `null` on a source the live input lacks and a `tree`
+path that leaves its directory; an `acts` `null` on a route the table lacks and a `dropFiles` path the
 tracked set lacks are still silent, and no case uses either that way.
 
 ## The cases
@@ -89,6 +94,15 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-scan-named-by-a-prototype-key.json`](a-scan-named-by-a-prototype-key.json)                                                                                 | `2.4.3` cites a scan named `constructor`, which every object answers from its prototype                                     | 3     | `evidence`  |
 | [`a-requirement-named-by-a-prototype-key.json`](a-requirement-named-by-a-prototype-key.json)                                                                   | `2.4.3` cites a requirement named `constructor`                                                                             | 3     | `evidence`  |
 | [`a-scan-that-finds-what-it-forbids.json`](a-scan-that-finds-what-it-forbids.json)                                                                             | a template grows a `<video>`, and 1.2.1 still says Not Applicable                                                           | 3     | `evidence`  |
+| [`a-video-in-a-subdirectory-of-an-entrypoint.json`](a-video-in-a-subdirectory-of-an-entrypoint.json)                                                           | a template two directories below an entrypoint's `src` grows a `<video>`, laid on disk (`tree`)                             | 3     | `evidence`  |
+| [`a-video-in-the-primary-entrypoint.json`](a-video-in-the-primary-entrypoint.json)                                                                             | a template of `libs/components/src`, the primary entrypoint, grows a `<video>`, laid on disk                                | 3     | `evidence`  |
+| [`a-video-in-a-source-beside-a-spec.json`](a-video-in-a-source-beside-a-spec.json)                                                                             | a spec and a source in a subdirectory both hold a `<video>`; `says` the source, the spec left out                           | 3     | `evidence`  |
+| [`an-orientation-query-in-the-theme.json`](an-orientation-query-in-the-theme.json)                                                                             | the theme as `tokens:build` writes it gains `@media (orientation: portrait)`, laid on disk                                  | 3     | `evidence`  |
+| [`the-theme-is-not-built.json`](the-theme-is-not-built.json)                                                                                                   | the theme is not there, and 1.3.4 still rests on the scan that reads it                                                     | 3     | `evidence`  |
+| [`a-video-in-a-module-outside-any-src.json`](a-video-in-a-module-outside-any-src.json)                                                                         | a module beside an entrypoint's `src` grows a `<video>`, as a nested entrypoint would, laid on disk                         | 3     | `evidence`  |
+| [`a-video-where-no-page-receives-it.json`](a-video-where-no-page-receives-it.json)                                                                             | the mutation setup, a `node_modules` cache, the schematics and a later template hold a `<video>`; `says` the template       | 3     | `evidence`  |
+| [`an-orientation-the-theme-copy-holds.json`](an-orientation-the-theme-copy-holds.json)                                                                         | the theme's copy under the library and the theme as built both query the orientation; `says` the built one                  | 3     | `evidence`  |
+| [`an-orientation-in-a-second-sheet-of-the-themes-folder.json`](an-orientation-in-a-second-sheet-of-the-themes-folder.json)                                     | a second sheet in the folder the package ships the theme from queries the orientation                                       | 3     | `evidence`  |
 | [`a-video-in-a-namespace-the-scan-forbids.json`](a-video-in-a-namespace-the-scan-forbids.json)                                                                 | a template grows an `<xH1ml:video>`, a video `ngc` makes, and 1.2.1 still says Not Applicable                               | 3     | `evidence`  |
 | [`a-video-in-a-one-letter-namespace-the-scan-forbids.json`](a-video-in-a-one-letter-namespace-the-scan-forbids.json)                                           | a template grows an `<a:video>`, the shortest prefix, and 1.2.1 still says Not Applicable                                   | 3     | `evidence`  |
 | [`an-audio-in-capitals-the-scan-forbids.json`](an-audio-in-capitals-the-scan-forbids.json)                                                                     | a template grows an `<AUDIO>`, which the DOM lowers, and 1.2.1 still says Not Applicable                                    | 3     | `evidence`  |
@@ -248,11 +262,11 @@ tracked set lacks are still silent, and no case uses either that way.
 
 Point 2 has four cases because a level can be wrong in four directions and every one of them
 reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
-its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and forty-seven. Seven
+its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and fifty-six. Seven
 are one per kind of citation that can go stale — a gate's point, a case's title, a quoted
 sentence, a decision's number, a scan over the sources, and a scan's and a requirement's name,
 which a prototype answers for every object — because each goes stale for a different reason and
-at a different moment. The other one hundred and forty are the scans', one per spelling of what
+at a different moment. One hundred and forty are the scans', one per spelling of what
 a scan forbids, because a spelling its reading does not take reads as a library that has none:
 a tag in a namespace or in capitals, or one a script creates, by a call, a key or a
 constructor; an attribute written in capitals, bound as a property, two ways or through
@@ -281,6 +295,20 @@ main refuses passes
 ([`a-positive-tabindex-a-comment-names.json`](a-positive-tabindex-a-comment-names.json)), and
 speaks only where the reading finds nothing
 ([`a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json`](a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json)).
+Nine hold which files the scans read, through the reader the live run reads with (`tree`) or
+the state it leaves (`null`): a file two directories below an entrypoint's `src`, a file of the
+primary entrypoint, a module outside any `src`, a spec left out beside a source, the mutation
+setup, a `node_modules` and the schematics left out ahead of a template, the theme as
+`tokens:build` writes it, its copy left out ahead of it while a second sheet in its folder is read,
+and the theme not there. A tree's files
+go after the live sources in the reader's order, a file both hold moved there too, so a case reads
+the same whether or not a build left the theme's copy in the checkout. The spec's case has a
+second guard in the live input, where a spec holds a template the tabindex scan cannot read. A case cannot show three
+things. That the theme is current: the reader takes what the build left, and that the build ran
+first is the edge on `tokens:build` in the target and the build `tools/release.mjs` runs before it
+renders the report. The extensions the reader keeps: an economy, since each scan picks its own out
+of what is read. And the reader's sort: Node lists a directory in name order on Unix already, so a
+reader without it reads the same here.
 Point 7 has five: "recorded" can be a lie in three places — the directory, the cards, and the
 logs, which can stand on disk without one `open` row the table promises — the act table can
 cite a spec that never presses the control, recorded or not, and the flag itself can be a word
