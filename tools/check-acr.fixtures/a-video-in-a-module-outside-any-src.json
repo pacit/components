@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A module beside an entrypoint's `src`, which its index would import by `../frame`, gains a `<video>` while 1.2.1 keeps resting on the scan. ng-packagr compiles whatever an entry file reaches, and takes an `ng-package.json` at any depth for an entrypoint, so a module outside `src` and a nested entrypoint both ship, while `check-files` reads one level of `<entry>/src` and sees neither. A reader of the entrypoints' `src` — at any depth, or of every `src` however nested — finds none. Laid on disk and read by the live reader (`tree`).",
+  "tree": {
+    "libs/components/avatar/frame.ts": "export const frame = '<video controls></video>';\n"
+  },
+  "says": ["libs/components/avatar/frame.ts:1"]
+}

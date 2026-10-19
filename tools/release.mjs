@@ -322,6 +322,10 @@ if (!dryRun)
 //    place in a dry run too: on a clean tree the bytes are the same, since the manifest did
 //    not move, and nothing is added — so the rehearsal proves that the step runs, not that
 //    it re-renders with the new version; a dirty `claims.json` would be rendered, dry or not.
+//    The gate scans the theme as `tokens:build` writes it and refuses 1.3.4 when there is
+//    none; its nx target depends on that build, and run directly it does not, while a fresh
+//    runner has built nothing yet — so the build comes first.
+run(['nx', 'run', 'tokens:build']);
 console.log('\n> node tools/check-acr.mjs --write');
 execFileSync('node', ['tools/check-acr.mjs', '--write'], { stdio: 'inherit' });
 if (!dryRun) execFileSync('git', ['add', 'docs/acr.md'], { stdio: 'inherit' });

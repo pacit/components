@@ -1688,21 +1688,35 @@ class AcrError extends Error {
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 /**
- * The extensions some scan reads. An economy and no more: each scan picks its own (`over`) out of
- * what is read, so a file of another extension read here would change no answer and no count.
+ * The extensions some scan reads, taken from `over` rather than listed a second time. An economy
+ * and no more: each scan picks its own out of what is read, so a file of another extension read
+ * here would change no answer and no count.
  */
 const SCANNED = new Set(Object.values(SCANS).flatMap((scan) => scan.over));
 
+/** The paths of the library no page receives, each with its reason. */
+const LEFT_OUT = new Set([
+  // The `ng add` and `ng update` schematics: Node code run in a terminal on the consumer's
+  // workspace, which renders nothing.
+  `${LIB}/schematics`,
+  // The copy of the theme the `themes` target makes: the theme is read as built (`THEME`).
+  `${LIB}/themes`,
+  // The mutation run's TestBed setup, which no entrypoint imports.
+  `${LIB}/mutation.setup.ts`,
+]);
+
 /**
- * What the scans read, from a root laid out as the repository is: every file under an
- * entrypoint's `src` at any depth, of an extension some scan reads, specs left out, and the theme
- * the package ships.
+ * What the scans read, from a root laid out as the repository is: every file of the library at
+ * any depth, of an extension some scan reads, specs and `LEFT_OUT` left out, and the theme the
+ * package ships.
  *
- * The entrypoints are `libs/components/src` — the primary one, `@pacit/components` itself — and
- * `libs/components/<entry>/src`: the layout `check-files` reads and holds (`req-project-files`:
- * sources with no `ng-package.json` beside them, and an entrypoint with no `src/index.ts`, fail its
- * point 2). Until 2026-10-19 this read one level of the secondary ones only, so a file in a
- * subdirectory and the primary entrypoint's own files reached no scan.
+ * The whole library and not its entrypoints' `src`: ng-packagr takes an `ng-package.json` at any
+ * depth for an entrypoint and compiles whatever its entry file reaches, in `src` or beside it,
+ * while `check-files` reads `libs/components/src` and one level of `<entry>/src` and sees neither
+ * a nested entrypoint nor a module beside one. So a file nothing ships is read as well —
+ * over-approximated, in the direction that refuses rather than passes. Until 2026-10-19 this read
+ * one level of `<entry>/src`, and a file in a subdirectory, the primary entrypoint's own
+ * `libs/components/src` and everything outside a `src` reached no scan.
  *
  * The theme is read as built, `libs/tokens/dist/pct.css`, of which the package's `themes/pct.css`
  * is a copy (the `themes` target). Its sources in `libs/tokens/src` are DTCG files, JSON with no
@@ -1712,23 +1726,21 @@ const SCANNED = new Set(Object.values(SCANS).flatMap((scan) => scan.over));
  * `tokens:build` writes before the gate (`dependsOn`). A theme not built is no source here, and the
  * scan that `needs` it refuses.
  *
- * Not read: the schematics, which run in a terminal at `ng add` and render nothing.
+ * Sorted here rather than left to libuv, which sorts a directory on Unix and does not promise to:
+ * the first refusal names the same file everywhere.
  */
 const librarySources = (root = ROOT) => {
   const out = {};
   const walk = (dir) => {
-    for (const name of readdirSync(join(root, dir))) {
+    for (const name of readdirSync(join(root, dir)).sort()) {
       const path = `${dir}/${name}`;
+      if (LEFT_OUT.has(path)) continue;
       if (statSync(join(root, path)).isDirectory()) walk(path);
       else if (SCANNED.has(name.split('.').pop()) && !name.endsWith('.spec.ts'))
         out[path] = readFileSync(join(root, path), 'utf8');
     }
   };
-  const entries = ['', ...readdirSync(join(root, LIB))];
-  for (const entry of entries) {
-    const src = posix.join(LIB, entry, 'src');
-    if (existsSync(join(root, src))) walk(src);
-  }
+  walk(LIB);
   if (existsSync(join(root, THEME)))
     out[THEME] = readFileSync(join(root, THEME), 'utf8');
   return out;
