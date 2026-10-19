@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `protected order()` returning `0`, on a class that extends `PctAvatarBase`, whose `inputs` lists `order`, and 2.4.3 keeps resting on the scan. Angular inherits the input, and a base's inputs can stand in another file.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, Directive } from '@angular/core';\n\n@Directive({ inputs: ['order'] })\nclass PctAvatarBase {}\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar extends PctAvatarBase {\n  protected order(): number {\n    return 0;\n  }\n}\n"
+  }
+}

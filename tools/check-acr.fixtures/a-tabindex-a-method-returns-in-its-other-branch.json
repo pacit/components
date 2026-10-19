@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'`, and the method returns `this.on ? -1 : 1`, and 2.4.3 keeps resting on the scan. The class says the value, in its second branch.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  on = false;\n  protected order(): number {\n    return this.on ? -1 : 1;\n  }\n}\n"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes aria-label into its host block",
+  "$reason": "`host-name-on-a-presentation-role` with the role written twice, `role: 'button'` and then `ROLE: 'presentation'`. `setAttribute` lowers the second onto the first, and the host keeps the last: a presentational host, and a name on it read by nobody. Read as written, or by the first of the two, the host was a button and the name passed."
+}

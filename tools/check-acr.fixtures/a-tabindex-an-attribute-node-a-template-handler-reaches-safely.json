@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template's handler hands on `$any($event.target).attributes?.tabindex`, and 2.4.3 keeps resting on the scan. A node of the attribute read through `?.` is one a later `.value` fills, as one read by dot is.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<button type=\"button\" (focus)=\"grab($any($event.target).attributes?.tabindex)\">Ada</button>\n"
+  }
+}

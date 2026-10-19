@@ -41,7 +41,7 @@
     {
       "id": "1.2.1",
       "conformance": "Not Applicable",
-      "remarks": "No component renders audio or video: the templates hold no `<audio>` and no `<video>` element, and the gate scans them for one on every run.",
+      "remarks": "No component renders audio or video: no template holds an `<audio>` or a `<video>` element and no script makes one, and the gate scans both on every run.",
       "evidence": [
         {
           "scan": "no-media-elements"
@@ -158,7 +158,7 @@
     {
       "id": "1.3.4",
       "conformance": "Supports",
-      "remarks": "No stylesheet reads the orientation; the components lay out the same either way. The gate scans every stylesheet for an `orientation` media feature.",
+      "remarks": "No stylesheet and no script reads the display orientation; the components lay out the same either way. The gate scans every stylesheet as it compiles, the templates' media queries, and the scripts, for a reading of it.",
       "evidence": [
         {
           "scan": "no-orientation-lock"
@@ -264,7 +264,7 @@
     {
       "id": "1.4.5",
       "conformance": "Not Applicable",
-      "remarks": "The library ships no image of text: icons are glyph drawings without a `<text>` element, and every word is live text. The gate scans the templates and the drawings for one.",
+      "remarks": "The library ships no image of text: icons are glyph drawings without a `<text>` element, and every word is live text. The gate scans the templates, the drawings and the scripts for one.",
       "evidence": [
         {
           "scan": "no-svg-text"
@@ -648,7 +648,7 @@
     {
       "id": "2.5.4",
       "conformance": "Not Applicable",
-      "remarks": "Nothing listens to device motion or orientation; the gate scans the sources for a listener.",
+      "remarks": "Nothing listens to device motion or orientation, and no motion sensor is read; the gate scans the templates and the scripts for either.",
       "evidence": [
         {
           "scan": "no-device-motion"

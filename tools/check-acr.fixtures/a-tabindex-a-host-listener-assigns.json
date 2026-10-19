@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block listens with `'(focus)': '$event.target.tabIndex = rank; $event.stopPropagation()'`, and 2.4.3 keeps resting on the scan. The listener writes a value the reading cannot judge, and it was read as markup, where `rank;` is a value of an attribute.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '(focus)': '$event.target.tabIndex = rank; $event.stopPropagation()',\n  },\n})\nexport class PctAvatar {\n  protected readonly rank = 5;\n}\n"
+  }
+}

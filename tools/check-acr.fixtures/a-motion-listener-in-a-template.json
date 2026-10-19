@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template listens with `(window:devicemotion)`, and 2.5.4 keeps resting on the scan: a shake that operates the component. The scan read the TypeScript alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span (window:devicemotion)=\"fail()\">Ada</span>\n"
+  }
+}

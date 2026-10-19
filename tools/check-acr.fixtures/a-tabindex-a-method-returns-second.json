@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'`, and the method returns `-1` first and `2` after it, and 2.4.3 keeps resting on the scan. Every `return` of a method is what the binding can get.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  on = false;\n  protected order(): number {\n    if (this.on) return -1;\n    return 2;\n  }\n}\n"
+  }
+}

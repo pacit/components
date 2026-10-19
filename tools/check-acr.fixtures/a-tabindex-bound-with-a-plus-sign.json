@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabindex]=\"+1\"`, and 2.4.3 keeps resting on the scan. A plus sign is no minus: the value is one. The scan read `tabindex` before a bracket, not before `=`, and found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabindex]=\"+1\">Ada</span>\n"
+  }
+}

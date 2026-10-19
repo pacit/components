@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `@HostBinding() readonly order = computed(() => 0)`, where the file imports `Input as HostBinding`, and 2.4.3 keeps resting on the scan. The decorator is `Input` by the name it imports, whatever it is called.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, Input as HostBinding } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  @HostBinding() readonly order = computed(() => 0);\n}\n"
+  }
+}

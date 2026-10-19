@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+/** A surface whose host is taken out of the tree, and named all the same. */
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    '[ROLE]': "'button'",
+    'aria-label': 'Surface',
+  },
+})
+export class PctChrome {}

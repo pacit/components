@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "part",
+  "why": "The part moved from the box onto a `<span>` wrapping the drawing, bound and in capitals: `[attr.DATA-PCT-PART]=\"'arrow'\"`. The binding hands the name to `setAttribute`, which lowers it on an HTML element, below the icon. This point read the written attributes alone, and in small letters."
+}

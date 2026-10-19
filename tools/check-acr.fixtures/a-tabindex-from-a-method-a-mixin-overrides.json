@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A directive binds `'[tabindex]': 'order()'` over `order()` returning `0`, and a component of another file extends `mixinOrder(PctAvatarBase)`, a mixin another package exports, and 2.4.3 keeps resting on the scan. A base no name resolves can be any class, one that overrides the method too: every value read off a member is refused.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Directive } from '@angular/core';\n\n@Directive({\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatarBase {\n  protected order(): number {\n    return 0;\n  }\n}\n",
+    "libs/components/avatar/src/plain.ts": "import { Component } from '@angular/core';\nimport { mixinOrder } from '@pacit/mixins';\nimport { PctAvatarBase } from './avatar';\n\n@Component({\n  selector: 'pct-plain',\n  template: '',\n})\nexport class PctPlain extends mixinOrder(PctAvatarBase) {}\n"
+  }
+}

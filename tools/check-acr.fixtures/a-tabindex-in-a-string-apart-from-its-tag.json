@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component holds `'TABINDEX=\"5\"'`, the attribute apart from the tag it is joined into (`` `<b ${this.attrs}>` `` reads as much), and 2.4.3 keeps resting on the scan. An attribute written in any string is read as one, a `<` or not.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly attrs = 'TABINDEX=\"5\"';\n}\n"
+  }
+}

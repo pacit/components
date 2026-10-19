@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component asks `DeviceMotionEvent.requestPermission()`, the step before it listens, and 2.5.4 keeps resting on the scan. Read in small letters alone, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    (DeviceMotionEvent as unknown as { requestPermission(): void }).requestPermission();\n  }\n}\n"
+  }
+}

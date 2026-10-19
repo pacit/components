@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template listens with `(window:orientationchange)`, and 1.3.4 keeps resting on the scan: a component that lays itself out by the orientation it hears of. The scan read the stylesheets alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span (window:orientationchange)=\"fail()\">Ada</span>\n"
+  }
+}

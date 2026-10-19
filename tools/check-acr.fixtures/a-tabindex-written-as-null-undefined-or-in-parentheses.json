@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabIndex]': '(order())'` to a method returning `null`, a component writes `tabIndex = (0)`, `<number>0` and `undefined` behind a cast, and then `'5'`. The refusal names that last line: parentheses, casts, `null` and `undefined` are values the reading judges, as Prettier writes them.",
+  "says": ["avatar.ts:20` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabIndex]': '(order())',\n  },\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  protected order(): number | null {\n    return null;\n  }\n\n  constructor() {\n    this.el.tabIndex = (0);\n    this.el.tabIndex = <number>0;\n    this.el.tabIndex = undefined as unknown as number;\n    this.el.setAttribute('tabindex', '5');\n  }\n}\n"
+  }
+}

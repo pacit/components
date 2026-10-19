@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `protected order()` returning `0`, and the file calls `Object.assign(PctAvatar.prototype, { order: () => 5 })`, and 2.4.3 keeps resting on the scan. The prototype was read only as a receiver of the member's name.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected order(): number {\n    return 0;\n  }\n}\n\nObject.assign(PctAvatar.prototype, { order: () => 5 });\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component holds `['tabindex=\"0', this.n, '\"'].join('')`, attributes for a tag joined elsewhere, and 2.4.3 keeps resting on the scan. A piece that ends inside a value leaves it to whatever is joined to it, a `join` as much as a `+`: `05` is five.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected n = 5;\n  protected readonly mark = ['tabindex=\"0', this.n, '\"'].join('');\n}\n"
+  }
+}

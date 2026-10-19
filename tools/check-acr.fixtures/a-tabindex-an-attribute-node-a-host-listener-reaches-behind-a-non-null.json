@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block listens with `'(focus)': '$event.target.attributes!.tabindex.value = 5'`, and 2.4.3 keeps resting on the scan. The listener's reading takes no node reached through `!`; the string names the attribute, and the denominator, which every string of a script stays under, refuses it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '(focus)': '$event.target.attributes!.tabindex.value = 5',\n  },\n})\nexport class PctAvatar {}\n"
+  }
+}

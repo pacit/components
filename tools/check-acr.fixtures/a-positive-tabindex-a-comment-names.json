@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template's comment says `tabindex=\"5\"`, and 2.4.3 keeps resting on the scan. No reading takes a comment for a write. The pattern main refused it with stays under the reading as a floor, so that no input main refuses passes, and this over-approximation stays with it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<!-- tabindex=\"5\" -->\n<span>Ada</span>\n"
+  }
+}

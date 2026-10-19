@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes [ariaLabel] into its host block",
+  "$reason": "`host-name-on-a-presentation-role` with the name bound as the property it reflects, `'[ariaLabel]': \"'Surface'\"`: the engines set the host's `aria-label` from it, as they do for the template's `[ariaLabel]`, which the tag reader maps (`nameOf`). The host's keys were compared as written, and the named presentational host passed point 2."
+}

@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template writes `tabindex=\"&#53;\"` and, on the next line, a comment that says `tabindex=\"5\"`. The refusal names the write's line: the floor of main's pattern speaks only where the reading finds nothing.",
+  "says": ["avatar.html:1` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<b tabindex=\"&#53;\">Ada</b>\n<!-- tabindex=\"5\" -->\n"
+  }
+}

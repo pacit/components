@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A directive binds `'[tabindex]': 'order()'` over `order()` returning `0`, and a component of another file extends it as `avatarExports.PctAvatarBase` over `import * as avatarExports`, with `order()` returning `5`, and 2.4.3 keeps resting on the scan. A base named through a namespace is named by its last part.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Directive } from '@angular/core';\n\n@Directive({\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatarBase {\n  protected order(): number {\n    return 0;\n  }\n}\n",
+    "libs/components/avatar/src/plain.ts": "import { Component } from '@angular/core';\nimport * as avatarExports from './avatar';\n\n@Component({\n  selector: 'pct-plain',\n  template: '',\n})\nexport class PctPlain extends avatarExports.PctAvatarBase {\n  protected override order(): number {\n    return 5;\n  }\n}\n"
+  }
+}

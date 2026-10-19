@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component reads `(window['screen'] satisfies Screen).orientation.type`, and 1.3.4 keeps resting on the scan. The screen by key is the screen, and `satisfies` changes nothing the engine reads.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly kind = (window['screen'] satisfies Screen).orientation.type;\n}\n"
+  }
+}

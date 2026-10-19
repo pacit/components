@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[accessKey]=\"'k'\"`, the property the attribute reflects, and 2.1.4 keeps resting on the scan: a one-key shortcut on the whole page. Read in small letters alone, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<button [accessKey]=\"'k'\">Ada</button>\n"
+  }
+}

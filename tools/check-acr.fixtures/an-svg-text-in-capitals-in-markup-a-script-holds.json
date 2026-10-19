@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component holds the string `'<svg><TEXT>Ada</TEXT></svg>'`, markup a script can hand to `innerHTML`, and 1.4.5 keeps resting on the scan. The HTML parser lowers the tag inside an `<svg>` to a text element (Chromium 152); in a template it would be none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly mark = '<svg><TEXT>Ada</TEXT></svg>';\n}\n"
+  }
+}

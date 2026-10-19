@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `@HostBinding() readonly tabIndex = 5`, and 2.4.3 keeps resting on the scan. With no argument the binding takes the member's own name, the `tabIndex` property. A field of that name is read in any class, as `Object.assign(el, instance)` copies it too.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @HostBinding() readonly tabIndex = 5;\n}\n"
+  }
+}

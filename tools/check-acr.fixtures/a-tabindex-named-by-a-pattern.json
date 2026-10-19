@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `setAttribute(/tabindex/.source, '5')`, and 2.4.3 keeps resting on the scan. The name stands in a pattern, which the reading did not collect.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.setAttribute(/tabindex/.source, '5');\n  }\n}\n"
+  }
+}

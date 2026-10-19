@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component hands `innerHTML` `'<b tabindex=&#53>Ada</b>'`, and 2.4.3 keeps resting on the scan. An engine decodes the reference without its semicolon to `5`, and Angular's parser decodes nothing there: the value is one the reading cannot judge.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.innerHTML = '<b tabindex=&#53>Ada</b>';\n  }\n}\n"
+  }
+}

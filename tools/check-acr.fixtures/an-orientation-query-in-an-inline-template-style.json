@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's inline `template` holds `<style>` with `@media (/**/orientation: portrait)`, and 1.3.4 keeps resting on the scan. `ngc` takes it into the component's styles, as it takes a template file's, and the browser reads the query past the comment.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  template: '<style>@media (/**/orientation: portrait) { span { display: none; } }</style><span>Ada</span>',\n})\nexport class PctAvatar {\n}\n"
+  }
+}

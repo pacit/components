@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component imports from `./roving-tabindex`, types a field `HTMLElement['tabIndex']` and `Pick<HTMLElement, 'tabIndex'>`, tests `'tabIndex' in el`, writes `dataset['tabindex']` and `dataset.tabIndex`, and then writes `'5'`. The refusal names that last line: a module's path, a type, the left of `in` and a `data-` attribute write no tabindex.",
+  "says": ["avatar.ts:17` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\nimport { focusables } from './roving-tabindex';\nexport type { Roving } from './roving-tabindex';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  protected readonly index: HTMLElement['tabIndex'] = 0;\n  protected readonly kept: Pick<HTMLElement, 'tabIndex'> | null = null;\n\n  constructor() {\n    if ('tabIndex' in this.el) this.el.dataset['tabindex'] = 'roving';\n    this.el.dataset.tabIndex = '5';\n    this.el.setAttribute('tabindex', '5');\n  }\n}\n"
+  }
+}

@@ -777,6 +777,25 @@ const repeats = (node) => node instanceof TmplAstForLoopBlock;
  */
 const isElement = (node) => node instanceof TmplAstElement;
 
+/**
+ * A `host` key by the attribute it reaches, as `nameOf` reads a template's: `ROLE` is `role`,
+ * `[attr.ARIA-LABEL]` is `[attr.aria-label]`, and a property binding is the `[attr.…]` of the
+ * attribute it reflects (`[ariaLabel]`, `[role]`), a property being named in its own case. The keys were compared as written, and
+ * `'ARIA-LABEL': 'Surface'` or `'[ariaLabel]': "'Surface'"` on a presentational host passed
+ * point 2, and `'ARIA-HIDDEN': 'true'` hid nothing from point 8. An event stays as written.
+ */
+const hostKey = (key) => {
+  const bound = /^\[(attr\.)?(.+)\]$/s.exec(key);
+  // A property is named as the engines spell it, from a small letter: `[ROLE]` sets an expando
+  // nothing reads, and reaches no attribute.
+  if (bound && bound[1] === undefined && !/^[a-z]/.test(bound[2])) return key;
+  if (bound) return `[attr.${nameOf(bound[2], bound[1] === undefined)}]`;
+  return key.startsWith('(') ? key : nameOf(key);
+};
+/** The host's keys that reach one of `keys`, as written. */
+const hostKeysIn = (component, keys) =>
+  [...component.host.keys()].filter((key) => keys.includes(hostKey(key)));
+
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
   input.type === BindingType.Property || input.type === BindingType.TwoWay;
@@ -1230,12 +1249,13 @@ class AriaError extends Error {
 }
 
 /**
- * The role a host block gives the component's element: written (`role`), read as the engines
- * read it, or bound (`[attr.role]`, `[role]`) — one an expression decides.
+ * The role a host block gives the component's element: written (`role`, in any case — the last of
+ * two, as the DOM keeps it), read as the engines read it, or bound (`[attr.role]`, `[role]`) — one
+ * an expression decides.
  */
 const hostRoleOf = (component) => ({
-  role: readRole(component.host.get('role')),
-  bound: component.host.has('[attr.role]') || component.host.has('[role]'),
+  role: readRole(component.host.get(hostKeysIn(component, ['role']).at(-1))),
+  bound: hostKeysIn(component, ['[attr.role]']).length > 0,
 });
 
 /**
@@ -1450,9 +1470,20 @@ const checkAria = ({
   // `class-bases.mjs` does not read. By the name alone the chain could run through a class no build
   // put there and close a cycle TypeScript has not got, and only `seen` stopped it recursing
   // forever.
+  //
+  // The host block merges as Angular's `mergeHostAttrsAcrossInheritance` merges it: the chain's own
+  // entries from the root down, a key standing where it first stood with the value of the class
+  // nearest the leaf, and the leaf's own entries in front. Of `role` on the root and `ROLE` on a
+  // class below it, the DOM keeps the later one `setUpAttributes` sets: the leaf's own merge put
+  // the root's last and read a button where three classes make a presentational host (Angular
+  // 22's own functions, run on the chain, measured on 2026-10-19).
   const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
-    if (component.base === null) return component;
+    component.own ??= new Map(component.host);
+    if (component.base === null) {
+      component.chain ??= [component.own];
+      return component;
+    }
     if (seen.has(component.key)) return component;
     seen.add(component.key);
     const base = byKey.get(component.from);
@@ -1468,8 +1499,12 @@ const checkAria = ({
     const whole = inherited(base, seen);
     for (const [name, field] of whole.inputs)
       if (!component.inputs.has(name)) component.inputs.set(name, field);
-    for (const [key, value] of whole.host)
-      if (!component.host.has(key)) component.host.set(key, value);
+    component.chain = [...(whole.chain ?? [whole.own]), component.own];
+    const merged = new Map();
+    for (const own of component.chain)
+      for (const [key, value] of own) merged.set(key, value);
+    component.host = new Map(component.own);
+    for (const [key, value] of merged) component.host.set(key, value);
     component.base = null;
     return component;
   };
@@ -1807,7 +1842,7 @@ const checkAria = ({
 
   // ── 2. an ARIA name in a host block ──────────────────────────────────────────
   for (const component of components) {
-    const written = HOST_NAME_KEYS.filter((key) => component.host.has(key));
+    const written = hostKeysIn(component, HOST_NAME_KEYS);
     if (written.length && !component.hostIsWidget)
       throw new AriaError(
         'host',
@@ -2189,8 +2224,8 @@ const checkAria = ({
   // scan gives is a flat list, so "inside a hidden element" is a question about nesting it
   // cannot answer. A host is the one hidden element whose subtree IS the whole template, so
   // this is the part of the rule that can be decided rather than guessed.
-  const hidden = components.filter((c) =>
-    HOST_HIDDEN_KEYS.some((key) => c.host.has(key)),
+  const hidden = components.filter(
+    (c) => hostKeysIn(c, HOST_HIDDEN_KEYS).length > 0,
   );
   for (const component of hidden) {
     const landable = component.widgets.filter((widget) =>

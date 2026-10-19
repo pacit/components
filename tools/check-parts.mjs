@@ -45,6 +45,7 @@ import * as core from '@angular/core';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
+import { valuesOf } from './static-attributes.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1129,44 +1130,21 @@ const readCard = (file, content) => {
  * through JIT as the module defining the class is evaluated — the step the linker performs at
  * the consumer's, and the same as in `check-zoneless`.
  *
- * `consts` carries every element's STATIC attributes, as a flat array in which a number
- * opens a section with a different meaning (classes, styles, bindings). So the read takes
- * only the prefix before such a number — beyond it stand names without values. The one marker
- * that does not end it is `0`, a namespaced attribute: it takes three slots (the prefix, the
- * name, the value) and ordinary pairs go on after it, as Angular's `setUpAttributes` reads
- * them. `<use xlink:href="#a" data-pct-part="icon">` puts `[0, 'xlink', 'href', '#a',
- * 'data-pct-part', 'icon']` into `consts`, and a read stopping at the `0` lost the part. The
- * list reaches `setUpAttributes` through `mergeHostAttrs`, which drops the namespaced attribute
- * and every pair after it when it merges the list into a non-empty one, so on an element that
- * also matches a directive with host attributes this read records a part never set: it errs
- * toward recording too much. Five mutants of the loop read as it does on every input the gate
- * is handed: `i += 0` or no `continue` after the `0` differ on `xlink:data-pct-part` alone and
- * `i++` on a value spelling the name, both of which point 1 refuses; `==` against the `0` on a
- * name equal to it as a number (`0`, `00`), which no template writes; `<=` on none.
- *
- * The pairs take the name in any case. `consts` and `hostAttrs` keep `'DATA-PCT-PART'` as
- * written — an element's attribute in a template, a host attribute spread from an object (each
- * measured through ngc in partial mode and the linker) — and the DOM lowercases it in
- * `setAttribute`: a part a consumer's selector matches. The source read refuses both at point
- * 1, so either reaches this read alone, from a `dist` built before its source changed. A slot
- * that is no name is no part: an `@loading (after 100ms)` block puts `[null, 100]` into
- * `consts`.
+ * Its parts are the static attributes of the name (`static-attributes.mjs`), in any case. `consts`
+ * and `hostAttrs` keep `'DATA-PCT-PART'` as written — an element's attribute in a template, a
+ * host attribute spread from an object (each measured through ngc in partial mode and the
+ * linker) — and the DOM lowercases it in `setAttribute`: a part a consumer's selector matches.
+ * The source read refuses both at point 1, so either reaches this read alone, from a `dist`
+ * built before its source changed. The list reaches `setUpAttributes` through `mergeHostAttrs`,
+ * which drops a namespaced attribute and every pair after it when it merges the list into a
+ * non-empty one, so on an element that also matches a directive with host attributes this read
+ * records a part never set: it errs toward recording too much. Five mutants of the shared loop
+ * read as it does on every input this gate is handed: `i += 0` or no `continue` after the `0`
+ * differ on `xlink:data-pct-part` alone and `i++` on a value spelling the name, both of which
+ * point 1 refuses; `==` against the `0` on a name equal to it as a number (`0`, `00`), which no
+ * template writes; `<=` on none.
  */
-const NAMESPACE_URI = 0;
-
-const pairAttributes = (attrs) => {
-  const out = [];
-  for (let i = 0; i < attrs.length; i += 2) {
-    if (attrs[i] === NAMESPACE_URI) {
-      i += 2;
-      continue;
-    }
-    if (typeof attrs[i] === 'number') break;
-    if (typeof attrs[i] === 'string' && attrs[i].toLowerCase() === ATTRIBUTE)
-      out.push(attrs[i + 1]);
-  }
-  return out;
-};
+const pairAttributes = (attrs) => valuesOf(attrs, ATTRIBUTE);
 
 /**
  * The name of a BOUND attribute reaches no `consts` (`[attr.…]` puts nothing there —

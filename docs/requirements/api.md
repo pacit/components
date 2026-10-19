@@ -724,12 +724,14 @@ entrypoints export is one class, and the card of either may name its harness, on
 (`check-parts`, which counts a class's parts in each entrypoint, holds both cards to them). Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host
-**Control:** `tools/check-harness.fixtures/` — 25 prepared inputs, each rejected on its own
+**Control:** `tools/check-harness.fixtures/` — 27 prepared inputs, each rejected on its own
 point: the entrypoint gone, a harness off the base, one with no host, a part named twice, two
 harness classes of one name, a selector nobody answers to, one wider than the class, two harnesses for one class, a class
 the package lost, a selector two namesakes answer to (the refusal naming each once with the
 entrypoints that export it), a class with no harness, one whose namesake in another entrypoint has one,
-a part the component does not draw, a part the harness forgot, the declaration file gone, a
+a part the component does not draw, a part the harness forgot — written plainly, in capitals and
+after a namespaced attribute, the last two given as the definition the linker leaves and read
+through the same `partsOf`, as `check-parts` reads them (`static-attributes.mjs`) — the declaration file gone, a
 union narrower and one wider than the list, two namesakes with a harness each (refused at
 point 5, so point 2 counts harnesses per exported class, not per name), a card with no row, one naming
 nobody, one borrowing another entrypoint's harness, one borrowing the harness of a class two
@@ -841,13 +843,15 @@ and every attribute it refuses; `apps/sandbox-e2e/src/select.spec.ts` — a regi
 three engines, in the same box and turning with it; `apps/sandbox-e2e/src/icon.spec.ts` — the
 box's size and tone, a drawing from data in the SVG namespace, and one line dressing the
 library inside a card and not outside it
-**Control:** `tools/check-icons.fixtures/` — thirty prepared inputs, each rejected on its own
+**Control:** `tools/check-icons.fixtures/` — thirty-two prepared inputs, each rejected on its own
 point, the first of them being the shape the library shipped until the icons (an `<svg>` written
 straight into the template). An element is what the compiler's classes say it is: an `@let` named
 for the drawing hides no `<svg>` in an ICU (`a-let-standing-in-for-a-drawing`), an icon whose one
 child is an `@let` has no drawing (`an-icon-holding-only-a-let`), a structural directive's template
 is no second `<svg>` (`a-drawing-under-a-structural-directive`), a part on an `<ng-content>` inside
-an icon is refused (`a-part-on-a-projection-inside-an-icon`), and an `@boundary`'s `@error` blocks are
+an icon is refused (`a-part-on-a-projection-inside-an-icon`), and so is one written in capitals
+or bound through `attr.`, as `check-parts` reads a part (`a-part-in-capitals-under-the-drawing`,
+`a-bound-part-under-the-drawing`), and an `@boundary`'s `@error` blocks are
 walked, each of them (`a-drawing-in-a-boundary-fallback`), as the reference walks an icon in
 every other side block; an `@content` block, which `ngc` refuses
 outside a foreign component, fails point 1 in the first template read and in the last
@@ -925,11 +929,13 @@ class is the object an entrypoint exports, under its own name, and a name two ob
 refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 69 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 72 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
-same with the name in another entrypoint, a class the scanner misses under two names, and two
-classes of one name in the package; plus nine runs against the repository (a literal in
+same with the name in another entrypoint, a class the scanner misses under two names, two
+classes of one name in the package, a `title` the package draws after a namespaced attribute
+(given as the definition's `consts`, read as `check-parts` reads them), and a literal bound to
+`aria-label` through the property it reflects, `[ariaLabel]`, in a template and in a `host` block; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template's `<iframe>` holds `srcdoc=\"<b tabindex='{{ order }}'>…\"`, and 2.4.3 keeps resting on the scan. The interpolation supplies the value, which the reading cannot judge.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<iframe title=\"Ada\" srcdoc=\"<b tabindex='{{ order }}'>Ada</b>\"></iframe>\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `Object.assign(el, { get tabIndex() { return 5; } })`, and 2.4.3 keeps resting on the scan. `Object.assign` copies the getter's value, and the reading read a key's value alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    Object.assign(this.el, {\n      get tabIndex() {\n        return 5;\n      },\n    });\n  }\n}\n"
+  }
+}

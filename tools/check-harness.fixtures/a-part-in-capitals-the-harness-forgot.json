@@ -1,0 +1,17 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctButton's definition writes a third part in capitals, `['DATA-PCT-PART', 'glyph']` in `consts`, as the linker keeps a name written so; `setAttribute` lowers it, and a consumer's selector matches it. PctButtonHarness names `label` and `spinner` alone. The read compared the name as written and saw two parts.",
+  "message": "glyph",
+  "classes": {
+    "PctButton": {
+      "def": {
+        "consts": [
+          ["data-pct-part", "label"],
+          ["data-pct-part", "spinner"],
+          ["DATA-PCT-PART", "glyph"]
+        ]
+      }
+    }
+  }
+}

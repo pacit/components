@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `readonly order = computed(() => 0)`, and the constructor calls `Object.assign(this, { order: computed(() => 5) })`, and 2.4.3 keeps resting on the scan. Handed the instance, `Object` writes any of its properties.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected readonly order = computed(() => 0);\n  constructor() {\n    Object.assign(this, { order: computed(() => 5) });\n  }\n}\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component lists `inputs: ['order']` and writes `@HostBinding('attr.tabindex') readonly order = 0`, and 2.4.3 keeps resting on the scan. An input named in the metadata is an input as a decorated one is.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  inputs: ['order'],\n})\nexport class PctAvatar {\n  @HostBinding('attr.tabindex') readonly order = 0;\n}\n"
+  }
+}

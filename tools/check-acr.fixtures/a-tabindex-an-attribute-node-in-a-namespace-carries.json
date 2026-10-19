@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `getAttributeNodeNS(null, 'tabindex')!.value = '2'`, and 2.4.3 keeps resting on the scan. The call hands over the attribute's node, and the node's value is what a later write says.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef);\n  constructor() {\n    this.el.nativeElement.getAttributeNodeNS(null, 'tabindex')!.value = '2';\n  }\n}\n"
+  }
+}

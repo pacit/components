@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls a renderer's `createElement('text', 'svg')`, and 1.4.5 keeps resting on the scan: the namespace argument makes an SVG `<text>`. The scan read the `<` of a tag.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly renderer = inject(Renderer2);\n  protected readonly label = this.renderer.createElement('text', 'svg');\n}\n"
+  }
+}

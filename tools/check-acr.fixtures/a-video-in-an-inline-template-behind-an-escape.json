@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's inline `template` draws `<vid\\u0065o controls>`, and 1.2.1 keeps resting on the scan. TypeScript cooks the escape and `ngc` compiles a `<video>`: a player. The scan read the `.html` files alone, and the raw text holds no `<video`.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  template: '<vid\\u0065o controls></vid\\u0065o>',\n})\nexport class PctAvatar {}\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `document.createAttribute('tabindex')`, sets the node's `value` to `'2'` and hands it to `setAttributeNode`, and 2.4.3 keeps resting on the scan. A call naming the attribute with nothing after it writes what the reading cannot judge, unless it only reads.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef);\n  constructor() {\n    const node = document.createAttribute('tabindex');\n    node.value = '2';\n    this.el.nativeElement.setAttributeNode(node);\n  }\n}\n"
+  }
+}
