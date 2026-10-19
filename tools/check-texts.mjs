@@ -41,7 +41,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
-import { decoratorsOf, textOf } from './decorators.mjs';
+import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
 import { staticAttributes } from './static-attributes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -226,61 +226,6 @@ const literalsIn = (expression) => {
 };
 
 /**
- * The key of a `host` block entry — the quotes are optional, because prettier does not add
- * them: `role: 'spinbutton'` and `'[attr.aria-label]': 'x()'` stand side by side in the same
- * block (`field/src/number.ts`). A pattern demanding quotes would let the first through
- * SILENTLY — and that is exactly the half the static attributes sit in.
- */
-const HOST_KEY = /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:/g;
-
-/**
- * The `host` block's entries as key/value pairs — with the values read with escapes in
- * mind, because bindings carry the other kind of quote inside (`'open() ? "" : null'`).
- *
- * An entry this scanner does not understand (a `...fitHost` spread, a value composed by an
- * expression) is skipped WITHOUT a message — deliberately: its denominator is point 2, the
- * comparison against the built package. A static attribute brought in by such syntax will
- * appear on the artifact's side and be missing on the sources' side, so it fires with its
- * name in the message.
- */
-const readHost = (block) => {
-  const entries = [];
-  for (const m of block.matchAll(HOST_KEY)) {
-    const key = m[1] ?? m[2] ?? m[3];
-    let i = m.index + m[0].length;
-    while (/\s/.test(block[i])) i++;
-    const quote = block[i];
-    if (quote !== "'" && quote !== '"') continue;
-    let k = i + 1;
-    let value = '';
-    while (k < block.length && block[k] !== quote) {
-      if (block[k] === '\\') k++;
-      value += block[k];
-      k++;
-    }
-    if (k >= block.length) continue;
-    entries.push([key, value]);
-  }
-  return entries;
-};
-
-/**
- * The `host` block from a decorator's body — with braces matched rather than a regex up to
- * the first `}`: values can contain braces (`'open() ? "" : null'`).
- */
-const hostBlock = (body) => {
-  const i = body.search(/(^|\s)host\s*:\s*\{/m);
-  if (i === -1) return null;
-  const start = body.indexOf('{', i);
-  let depth = 0;
-  for (let k = start; k < body.length; k++) {
-    if (body[k] === '{') depth++;
-    else if (body[k] === '}' && --depth === 0) return body.slice(start + 1, k);
-  }
-  return null;
-};
-
-/**
  * The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`, and the property
  * `[ariaLabel]` → `aria-label` (`reflected`).
  */
@@ -298,11 +243,10 @@ const nameFromKey = (key) => {
  * pattern did not read (`unseen`), and the files taking a decorator under another name
  * (`renamed`).
  *
- * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost` in
- * `field/src/affix.ts`) and this scanner does not see that — deliberately, exactly as in
- * `check-parts`. An attribute brought in by a spread appears in the package read and is
- * missing from the source read, so it fires point 2. Exactly the work the second read is
- * there to do.
+ * The `host` block is read as ngc composes it (`hostOf`), a constant of the file's own followed
+ * by name or in a spread (`...fitHost` in `field/src/affix.ts`). Any other composition is
+ * refused at point 1 (`composed`). Left to the package read, an attribute it brings fired point 2
+ * as one the sources lack: a refusal, for a cause that is not the one.
  */
 const readSources = (root, files) => {
   const classes = [];
@@ -322,7 +266,7 @@ const readSources = (root, files) => {
     for (const name of decorators.renamed) renamed.push(`${file}: ${name}`);
 
     for (const match of content.matchAll(DECORATOR)) {
-      const [, kind, body, className] = match;
+      const [, kind, , className] = match;
       const id = classKey(file, className);
       // The class of that name at the top level of the file, and only where its name stands
       // where the pattern read it: one in a comment beside it is not that class.
@@ -341,11 +285,11 @@ const readSources = (root, files) => {
       const url = metadata.get('templateUrl');
       const path = textOf(url);
       const template = metadata.get('template');
-      const host = hostBlock(body) ?? '';
+      const host = hostOf(metadata.get('host'));
       const attributes = [];
       const literals = [];
 
-      for (const [key, value] of readHost(host)) {
+      for (const [key, value] of host?.entries ?? []) {
         const { name, bound } = nameFromKey(key);
         if (!bound) {
           attributes.push([name, value]);
@@ -386,6 +330,8 @@ const readSources = (root, files) => {
         // a constant it names among them: this scanner reads `.html` files, so text from a
         // decorator would be invisible to it and travels to the browser all the same.
         inline: template !== undefined && textOf(template) !== '',
+        // A block given otherwise than by an object literal of the file, which ngc evaluates.
+        composed: host === null,
         attributes,
         literals,
       });
@@ -910,6 +856,21 @@ const checkTexts = (input) => {
         `a string.`,
     );
 
+  const composed = classes.filter((k) => k.composed);
+  if (composed.length)
+    throw new TextsError(
+      'denominator',
+      'host-composed',
+      `${composed.length} classes take a \`host\` block this read does not take as written:\n` +
+        list(composed.map((k) => `${k.file}: ${k.className}`)) +
+        `\n    ngc evaluates the block, and composes it from a constant by name, an import, a ` +
+        `member, a condition, a call, a computed key or a value kept in a constant alike; ` +
+        `the read follows an object literal written in place or in a \`const\` of the ` +
+        `file's own, under keys and values written as strings. An attribute composed ` +
+        `otherwise reached point 2 as one the sources lack, for a cause not its own. Write ` +
+        `the block so.`,
+    );
+
   const used = new Map();
   for (const k of classes)
     if (k.template) used.set(k.template, [...(used.get(k.template) ?? []), k]);
@@ -978,10 +939,9 @@ const checkTexts = (input) => {
 
   // ── 2. ARTIFACT ─────────────────────────────────────────────────────────────
   //
-  //    The source read reads a decorator's text, so it is blind to a `host` block
-  //    composed by spreading somebody else's object (`...fitHost`). The package read
-  //    reads `ɵdir.hostAttrs` and `ɵcmp.consts` after linking — the output of the REAL
-  //    compiler.
+  //    The source read takes a `host` block off the parser as far as it follows its
+  //    composition (`hostOf`), and point 1 refuses the rest. The package read reads
+  //    `ɵdir.hostAttrs` and `ɵcmp.consts` after linking — the output of the REAL compiler.
   if (!pkg.length)
     throw new TextsError(
       'artifact',
@@ -1170,9 +1130,9 @@ const checkTexts = (input) => {
       `${packageOnly.length} speaking attributes are in the package and not in the ` +
         `source read:\n` +
         list(shorten(packageOnly)) +
-        `\n    This is what an attribute brought in by syntax the scanner cannot read ` +
-        `looks like — an object spread in a \`host\` block, a mixin, inheritance. Point 3 ` +
-        `would never look at it.`,
+        `\n    This is what an attribute the source read does not see looks like — one a ` +
+        `mixin or inheritance brings, or one a \`dist\` built before the source changed ` +
+        `still carries. Point 3 would never look at it.`,
     );
 
   const sourcesOnly = [...speakingInSources].filter(

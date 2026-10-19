@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "classes take a `host` block this read does not take as written:\n      libs/components/widget/src/badge.ts: PctBadge",
+  "$reason": "`host-spread-in-a-class-nobody-exports` with the object kept in a `let`. ngc composes it into `hostAttrs` all the same, its initializer read as for a `const` (measured through ngc in partial mode and the linker). The read follows a `const` alone, the one name whose value is its initializer wherever the file reads it, and refuses the rest at point 1."
+}

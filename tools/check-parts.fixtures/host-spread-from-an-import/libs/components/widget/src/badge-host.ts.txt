@@ -1,0 +1,2 @@
+/** A host block kept in a module of its own, for the badge to spread. */
+export const badgeHost = { 'data-pct-part': 'widget-badge' };
