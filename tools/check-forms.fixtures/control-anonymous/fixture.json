@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A control written as a class expression, `export const PctMade = class implements FormValueControl<string>`, alone in its file and with no `touched`. The class has no name, and the file no header the pattern reads, so its members, at two spaces, are nobody's as well. The parser holds the class, and point 1 refuses it as a control the reading has not got before it refuses its members as unattributed: the class is why they are."
+}

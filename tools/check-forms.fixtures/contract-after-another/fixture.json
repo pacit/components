@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control implementing `OnDestroy, FormValueControl<number>`, the contract second, with no `touched`. The reference's controls name the contract alone; read off the first type of the clause, the dial is no control, and the input passes."
+}

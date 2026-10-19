@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A control declared inside a function, `PctMade`, with no `touched`. Prettier indents it, so the pattern reads no header and its members, at four spaces, are read by nothing: the gate measured the reference's two controls and passed (measured). The parser holds the class two levels below the top of the file, and point 1 refuses it."
+}

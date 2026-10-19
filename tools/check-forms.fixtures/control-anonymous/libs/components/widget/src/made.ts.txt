@@ -1,0 +1,14 @@
+import { booleanAttribute, input, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/**
+ * A control written as a class expression: the class has no name of its own, and the file has
+ * no header the reading reads. It has no `touched`.
+ */
+export const PctMade = class implements FormValueControl<string> {
+  /** The value — the contract's one required member. */
+  readonly value = model('');
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+};

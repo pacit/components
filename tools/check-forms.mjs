@@ -4,7 +4,7 @@
  * signal-forms state block, the same way in every one of them — have a measurement behind
  * it? Every member of `FormUiControl` is optional, so `implements` proves only `value`.
  *
- *  1. DENOMINATOR: sources parse, members attributed to classes, contract read, controls found,
+ *  1. DENOMINATOR: sources parse, members and controls have headers, contract read, controls found,
  *  2. CONTRACT: every name the block policy declares is really a member of `FormUiControl`,
  *  3. BLOCK: every control declares every member of the block,
  *  4. SHAPE: factory, default and transform identical in every control, character for character.
@@ -32,6 +32,8 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import ts from 'typescript';
+
 import { classesOf, classKey } from './class-bases.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,8 +46,11 @@ const REFERENCE = '_reference';
 /** The interface whose members the block is drawn from, in the dependency's declarations. */
 const CONTRACT_INTERFACE = 'FormUiControl';
 
-/** The contracts a class implements to BE a control — the two shapes signal forms offers. */
-const CONTRACTS = /\b(FormValueControl|FormCheckboxControl)\b/;
+/**
+ * The contracts a class implements to BE a control — the two shapes signal forms offers — by the
+ * names `@angular/forms/signals` exports them under.
+ */
+const CONTRACTS = new Set(['FormValueControl', 'FormCheckboxControl']);
 
 /**
  * A member declaration, as this library and Angular's own guide write them:
@@ -63,16 +68,17 @@ const CONTRACTS = /\b(FormValueControl|FormCheckboxControl)\b/;
 const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/gm;
 
 /**
- * `export class X`, `export abstract class X<T> extends Y implements Z {` — the name and the
- * heritage, which may run over three lines as prettier writes it. `[^{]*` reaches the body's
- * own brace and stops there; a heritage carrying a brace of its own would leave the class
- * unfound, and its members then become point 1's `unattributed`, which is the reading saying
- * so rather than guessing.
+ * `export class X`, `export abstract class X<T> extends Y implements Z {` — the name, and where
+ * it stands. The heritage is not read here: what a class extends is the parser's
+ * (`class-bases.mjs`), and so is what it implements (`implementersIn`). A class the pattern does
+ * not reach — one written without `export`, exported as the default, nested and indented, or a
+ * class expression — is no class of the reading, and point 1 refuses one that implements a
+ * contract.
  */
-const CLASS = /^export (?:abstract )?class (\w+)([^{]*)\{/dgm;
+const CLASS = /^export (?:abstract )?class (\w+)/dgm;
 
 /**
- * A violation. It carries the point's `check` AND its `rule`: point 1 has six rules and a
+ * A violation. It carries the point's `check` AND its `rule`: point 1 has seven rules and a
  * case firing on a neighbouring one proves something other than what it declares
  * (`lesson-50`).
  */
@@ -93,12 +99,13 @@ const list = (items) => items.map((t) => `      ${t}`).join('\n');
  * header to the next one, which is enough here and is not a parser: these files hold one
  * exported class each, or a base and its leaf, never a class inside a class. What the
  * arrangement buys is that the LAST header before a member is the class that owns it, and
- * point 1 counts the members that found no header at all.
+ * point 1 counts the members that found no header at all. Which of the classes is a control is
+ * not read here: it is the parser's, below, and a control it holds where no header stands is
+ * point 1's as well.
  */
 const classesIn = (file, text) => {
   const headers = [...text.matchAll(CLASS)].map((m) => ({
     name: m[1],
-    heritage: m[0],
     at: m.index,
     nameAt: m.indices[1][0],
     line: text.slice(0, m.index).split('\n').length,
@@ -123,6 +130,69 @@ const classesIn = (file, text) => {
 };
 
 /**
+ * The classes of one source file that implement a contract, by the offset their name stands at
+ * (a class with no name: where the class starts), to its name and line. Read off the TypeScript
+ * parser at every depth, exported or not, because the reading above sees a header at the margin
+ * and nothing else: a control written without `export`, nested in a function or a namespace, or
+ * written as a class expression had no header, its members were nobody's or the class's above,
+ * and the gate measured fewer controls than the library has, with nothing to say so (measured).
+ *
+ * A contract is a type of the class's own `implements` clause, in any position, named by a
+ * named import of the file under the contract's name, from whatever module — through
+ * `FormValueControl as PctValueContract`, `PctValueContract` is the contract — or by the last
+ * part of a qualified name, `signals.FormValueControl` through a namespace import. A name no
+ * named import binds is none: an interface the file declares under a contract's name is what
+ * TypeScript binds the name to there. Not read is a contract reached through another name of the
+ * sources — a type alias (`type PctContract<T> = FormValueControl<T>`), an interface extending
+ * one, a re-export under another name — or through a base that implements it: what is read is
+ * the clause, not the type TypeScript's checker resolves it to. A class's `extends` clause is
+ * not read, and that changes nothing on an input that compiles: it names a value, and neither
+ * contract is one.
+ */
+const implementersIn = (file, text) => {
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest);
+  const imported = new Map(
+    source.statements.flatMap((statement) => {
+      const bound = ts.isImportDeclaration(statement)
+        ? statement.importClause?.namedBindings
+        : undefined;
+      return bound !== undefined && ts.isNamedImports(bound)
+        ? bound.elements.map((element) => [
+            element.name.text,
+            (element.propertyName ?? element.name).text,
+          ])
+        : [];
+    }),
+  );
+  const contract = (expression) =>
+    ts.isIdentifier(expression)
+      ? imported.get(expression.text)
+      : ts.isPropertyAccessExpression(expression)
+        ? expression.name.text
+        : undefined;
+  const found = new Map();
+  const visit = (node) => {
+    if (
+      ts.isClassLike(node) &&
+      node.heritageClauses?.some(
+        (clause) =>
+          clause.token === ts.SyntaxKind.ImplementsKeyword &&
+          clause.types.some((type) => CONTRACTS.has(contract(type.expression))),
+      )
+    ) {
+      const at = (node.name ?? node).getStart(source);
+      found.set(at, {
+        name: node.name?.text ?? 'a class with no name',
+        line: source.getLineAndCharacterOfPosition(at).line + 1,
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return found;
+};
+
+/**
  * The library's classes, keyed by name AND file (`class-bases.mjs`), with what each one
  * declares and what it stands on. Two exported classes of one name are legal TypeScript, and
  * keyed by the name alone the one read later took the other's place: a control without its
@@ -135,17 +205,24 @@ const classesIn = (file, text) => {
  * and is set aside for point 1: one in a comment took the place of the control of its name in
  * the same file, and the control's missing `touched` passed (measured). The pairing is by where
  * the name stands, not by the name: the one in the comment and the control share a key.
+ *
+ * A class is a control when the parser holds one implementing a contract where its name stands
+ * (`implementersIn`), and each such class is taken off the parser's list as its header pairs
+ * with it. What remains is a control no header stands at, set aside for point 1 as well: by
+ * where the name stands again, so a control nested beside a header of its name is not that one.
  */
 const readSources = (root, files) => {
   const classes = new Map();
   const orphans = [];
   const unheld = [];
+  const unread = [];
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
   );
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
     const { headers, orphans: loose } = classesIn(file, content);
+    const implementers = implementersIn(file, content);
     orphans.push(...loose);
     for (const header of headers) {
       const key = classKey(file, header.name);
@@ -158,11 +235,13 @@ const readSources = (root, files) => {
         ...header,
         file,
         from: held.from,
-        control: CONTRACTS.test(header.heritage),
+        control: implementers.delete(header.nameAt),
       });
     }
+    for (const { name, line } of implementers.values())
+      unread.push(`${file}:${line}: ${name}`);
   }
-  return { classes, orphans, unheld };
+  return { classes, orphans, unheld, unread };
 };
 
 /**
@@ -231,12 +310,21 @@ const controlsOf = (classes) => {
  *   `classes`  — every class of the sources, by name,
  *   `orphans`  — member declarations no class header stands above,
  *   `unheld`   — class headers where the parser holds no top-level class,
+ *   `unread`   — classes implementing a contract where the reading reads no header,
  *   `contract` — the member names of `FormUiControl`, or null,
  *   `files`    — how many source files were read.
  * Throws on the first violation: the points run from the most basic, so a later one would
  * be examining an input nobody has established anything about.
  */
-const checkForms = ({ policy, classes, orphans, unheld, contract, files }) => {
+const checkForms = ({
+  policy,
+  classes,
+  orphans,
+  unheld,
+  unread,
+  contract,
+  files,
+}) => {
   // ── 1. DENOMINATOR ──────────────────────────────────────────────────────────
   const block = policy?.block;
   if (!Array.isArray(block) || block.length === 0)
@@ -267,6 +355,21 @@ const checkForms = ({ policy, classes, orphans, unheld, contract, files }) => {
         `\n    A header in a comment, or a class inside a namespace or a function, is no ` +
         `class of the library, and read as one it takes the place of the class of its name ` +
         `in the same file.`,
+    );
+
+  if (unread.length)
+    throw new FormsError(
+      'denominator',
+      'control-unread',
+      `${unread.length} class(es) implement a form contract where the reading reads no ` +
+        `class header:\n` +
+        list(unread) +
+        `\n    The reading takes a class from \`export class\` or \`export abstract class\` ` +
+        `at the margin, and a control written without \`export\`, exported as the default, ` +
+        `nested in a function or a namespace, or written as a class expression has no such ` +
+        `header: it is a control no point examines, and the gate measures fewer controls ` +
+        `than the library has. Its members are read as the header's above it, where they ` +
+        `stand at two spaces, or not at all.`,
     );
 
   if (orphans.length)
@@ -397,12 +500,13 @@ const sourcesIn = (root, files) =>
 
 const gatherInput = (root, files) => {
   const sources = sourcesIn(root, files);
-  const { classes, orphans, unheld } = readSources(root, sources);
+  const { classes, orphans, unheld, unread } = readSources(root, sources);
   return {
     policy: JSON.parse(read(root, POLICY) ?? 'null'),
     classes,
     orphans,
     unheld,
+    unread,
     contract: readContract(read(root, CONTRACT)),
     files: sources.length,
   };

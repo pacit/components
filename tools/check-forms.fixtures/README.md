@@ -5,7 +5,7 @@ them and **requires every one to be rejected — and rejected by the point AND t
 declares**. An input that passes is a fault; an input that fires for a reason other than the
 one written in its `fixture.json` is a fault just the same, because it proves something other
 than what it declares ([`lesson-50`](../../docs/lessons.md#lesson-50): point 1 alone carries
-six rules).
+seven rules).
 
 The reason it exists is the same as for every other gate here
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
@@ -49,11 +49,19 @@ because of it rather than because of its own, and every "rejected" would be fals
 | `member-adrift`                           |     1 | `denominator` | `unattributed`         | a member declaration above every class header                             |
 | `header-in-a-comment`                     |     1 | `denominator` | `header-without-class` | a class header in a comment                                               |
 | `header-in-a-comment-beside-its-namesake` |     1 | `denominator` | `header-without-class` | the same, beside the control of its name, which it took the place of      |
+| `control-unexported`                      |     1 | `denominator` | `control-unread`       | a control declared without `export`, its members handed to the one above  |
+| `control-nested`                          |     1 | `denominator` | `control-unread`       | a control declared inside a function, indented                            |
+| `control-nested-beside-its-namesake`      |     1 | `denominator` | `control-unread`       | the same under the name of the control a header stands at in the file     |
+| `control-anonymous`                       |     1 | `denominator` | `control-unread`       | a control written as a class expression, refused before its members are   |
 | `contract-unreadable`                     |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
 | `no-controls`                             |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
 | `block-outside-the-contract`              |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
 | `member-missing`                          |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
 | `control-behind-a-namesake`               |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
+| `checkbox-member-missing`                 |     3 | `block`       | `member-missing`       | a control of `FormCheckboxControl` with no `touched`                      |
+| `contract-under-another-name`             |     3 | `block`       | `member-missing`       | the same of `FormValueControl`, imported under another name               |
+| `contract-through-a-namespace`            |     3 | `block`       | `member-missing`       | the same, named through a namespace import                                |
+| `contract-after-another`                  |     3 | `block`       | `member-missing`       | the same, the contract second in the `implements` clause                  |
 | `base-named-like-another-class`           |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
 | `transform-dropped`                       |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
@@ -64,11 +72,33 @@ way is worse, because it IS there — `<pct-widget invalid>` passes the string `
 falsy, so the control is valid for ever and the template that says otherwise is right in
 front of the consumer.
 
-Point 1's six rules are six different ways for the gate to be measuring nothing, and each
+Point 1's seven rules are seven different ways for the gate to be measuring nothing, and each
 has a case of its own because each arrives from a different direction: the policy deleted,
-the sources moved, a class header the parser holds no class for, the reading's anchor
-outgrown, the dependency's declarations gone, the contract stopped being implemented. A gate that reports success over an empty set is the
-failure mode this whole tree exists against ([`lesson-33`](../../docs/lessons.md#lesson-33)).
+the sources moved, a class header the parser holds no class for, a control the parser holds
+and the reading has no header for, the reading's anchor outgrown, the dependency's declarations
+gone, the contract stopped being implemented. A gate that reports success over an empty set is
+the failure mode this whole tree exists against
+([`lesson-33`](../../docs/lessons.md#lesson-33)).
+
+`header-without-class` and `control-unread` are the two directions of one pairing: the
+pattern's headers against the classes the TypeScript parser holds, by the offset a class's name
+stands at. The first refuses a header with no class behind it; the second a control with no
+header in front of it. The pattern reads `export class` at the margin, and a control declared
+otherwise is legal TypeScript: without `export`, inside a function, as a class expression. Each
+of `control-unexported`, `control-nested` and `control-nested-beside-its-namesake` passed before
+the rule, the first with its members handed by position to the control above it, which declares
+them all the same way; `control-anonymous` fired, and on its members rather than on the class
+they are missing from, so the rule comes before `unattributed`. The parser's list is read at
+every depth, a class expression included, and paired by where the name stands, so a control
+nested under the name of one a header stands at is not taken for it.
+
+Which class is a control is the parser's too, off the class's own `implements` clause, and the
+four cases at point 3 hold that reading: a contract is either of the two names, at any position
+of the clause, through a named import under another name, or as the last part of a qualified
+one. `contract-under-another-name` passed before it, because a pattern over the header found no
+contract's name in `implements PctValueContract<number>`. What the clause reaches through
+another name of the sources — a type alias, an interface extending a contract, a base that
+implements one — is not read, which is said in the gate and not held by a case.
 
 `control-behind-a-namesake` and `base-named-like-another-class` hold what a name stands for.
 TypeScript compiles two classes of one name in two files, and binds a base's name in the file
@@ -86,10 +116,18 @@ negative control has to walk. Measured: with the base read out of the reading, t
 itself fires `member-missing` on all four members of its block, and so does the repository on
 sixteen.
 
-`shapes.ts` carries two things no other input does: a namespace import and a class with no name.
-Neither binds a name an `extends` can follow, and the reading every gate that follows `extends`
-shares (`tools/class-bases.mjs`) has to walk past both; without its guards it stopped on either
-(measured: `bound.elements is not iterable`, and `reading 'text'`).
+`shapes.ts` carries three things no other input does: a namespace import, an import that binds
+nothing (`import '@angular/localize/init'`) and a class with no name. None binds a name an
+`extends` can follow, and the reading every gate that follows `extends` shares
+(`tools/class-bases.mjs`) has to walk past all three; without its guards it stopped on each
+(measured: `bound.elements is not iterable`, `reading 'namedBindings'`, and `reading 'text'`).
+The reading of what a class implements walks the same imports, and stops on the first two
+without its own guards (measured).
+
+`lookalike.ts` declares an interface under a contract's name and a class implementing it. That
+name is the file's own interface, which is what TypeScript binds it to there, so the class is no
+control, and it carries none of the block: read by the name alone, it is one, and the reference
+fires point 3 on itself (measured).
 
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on

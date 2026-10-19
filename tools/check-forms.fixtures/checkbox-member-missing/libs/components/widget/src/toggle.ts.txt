@@ -1,0 +1,21 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import { FormCheckboxControl, ValidationError } from '@angular/forms/signals';
+
+/** A control of the other contract, `checked` where the others have `value`, with no `touched`. */
+@Component({ selector: 'pct-toggle', template: '' })
+export class PctToggle implements FormCheckboxControl {
+  /** On or off — the contract's one required member. */
+  readonly checked = model(false);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}
