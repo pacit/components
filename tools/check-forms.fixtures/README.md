@@ -47,7 +47,8 @@ hold the place and the name of the control they refuse, `header-in-a-comment` th
 `transform-dropped` the line of a member, the two member cases at point 3 the class and the
 member, and `checkbox-member-missing` and the three cases of a base this reading has not got the
 whole list of where a chain stopped — nothing for a control with no base, one line for two tags
-over one base, none for a control that lacks nothing, and what the base stands for.
+over one base, none for a control that lacks nothing, two lines in order for two bases, and the
+lead-in on its own line after the last missing member — with what each base stands for.
 
 ## The cases
 
@@ -80,10 +81,10 @@ over one base, none for a control that lacks nothing, and what the base stands f
 | `contract-inside-another-type`             |     3 | `block`       | `member-missing`       | the same, the contract a type argument of `Readonly<…>`                   |
 | `contract-deep-inside-another-type`        |     3 | `block`       | `member-missing`       | the same, two types down inside an intersection                           |
 | `contract-through-an-import-type`          |     3 | `block`       | `member-missing`       | the same, named by an import type                                         |
-| `contract-through-a-qualified-import-type` |     3 | `block`       | `member-missing`       | the same, an import type qualified twice, a comment inside                |
+| `contract-through-a-qualified-import-type` |     3 | `block`       | `member-missing`       | the same, an import type followed by three names, a comment between       |
 | `base-named-like-another-class`            |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
 | `base-without-a-header`                    |     3 | `block`       | `member-missing`       | the block on an unexported root, the refusal naming where the chain stops |
-| `base-from-a-package`                      |     3 | `block`       | `member-missing`       | a control over a package's class lacking one member, the module named     |
+| `base-from-a-package`                      |     3 | `block`       | `member-missing`       | two controls over a package's class and a mixin, two stop lines in order  |
 | `base-from-an-expression`                  |     3 | `block`       | `member-missing`       | a control over a mixin's result, the base followed to no class            |
 | `transform-dropped`                        |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
@@ -141,8 +142,9 @@ Which class is a control is the parser's too, off the class's own `implements` c
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the
 clause or at any depth within a type of it, through a named import under another name, as the
 last part of a qualified name, or as the last part of an import type's qualifier, read off the
-parser's names, not off its text, in which a comment can stand. `contract-under-another-name`
-passed on main, whose pattern over the header found no contract's name in
+parser's names, not off the qualifier's text, in which a comment can stand.
+`contract-under-another-name` passed on main, whose pattern over the header found no contract's
+name in
 `implements PctValueContract<number>`; `contract-inside-another-type` and
 `contract-through-an-import-type` passed on an earlier reading of this one, of the clause's own
 types, and `contract-through-a-qualified-import-type` on one of the qualifier's text (measured).

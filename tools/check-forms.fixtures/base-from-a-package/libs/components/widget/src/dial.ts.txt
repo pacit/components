@@ -1,10 +1,13 @@
-import { CdkMenuItem } from '@angular/cdk/menu';
+import { CdkMonitorFocus } from '@angular/cdk/a11y';
 import { booleanAttribute, input, model, output } from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 
 /** A control over a package's class, with no `touched` of its own. */
 @Component({ selector: 'pct-dial', template: '' })
-export class PctDial extends CdkMenuItem implements FormValueControl<number> {
+export class PctDial
+  extends CdkMonitorFocus
+  implements FormValueControl<number>
+{
   /** The value — the contract's one required member. */
   readonly value = model(0);
 

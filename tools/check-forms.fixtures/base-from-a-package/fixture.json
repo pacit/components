@@ -2,6 +2,6 @@
   "point": 3,
   "check": "block",
   "rule": "member-missing",
-  "description": "Two controls over two bases this reading has not got, each declaring all of the block but `touched`: `PctDial` over `CdkMenuItem` of `@angular/cdk/menu`, a package's class, and `PctGauge` over a mixin's result. Each chain stops where its base is, and the refusal says so of each, in order and for a control missing one member of four, naming the module the dial's file imports its base from.",
-  "message": "what it declares is not read:\n      libs/components/widget/src/dial.ts: PctDial extends `CdkMenuItem`, which the file imports from '@angular/cdk/menu', where no class of the sources is declared `export class` under that name\n      libs/components/widget/src/gauge.ts: PctGauge extends `pctFocusable(PctGaugeBase)`, which this read follows to no class\n    Every member"
+  "description": "Two controls over two bases this reading has not got, each declaring all of the block but `touched`: `PctDial` over `CdkMonitorFocus` of `@angular/cdk/a11y`, a package's class whose members are none of the block's, and `PctGauge` over a mixin's result. Each chain stops where its base is, and the refusal says so of each, in order and for a control missing one member of four, naming the module the dial's file imports its base from.",
+  "message": "what it declares is not read:\n      libs/components/widget/src/dial.ts: PctDial extends `CdkMonitorFocus`, which the file imports from '@angular/cdk/a11y', where no class of the sources is declared `export class` under that name\n      libs/components/widget/src/gauge.ts: PctGauge extends `pctFocusable(PctGaugeBase)`, which this read follows to no class\n    Every member"
 }
