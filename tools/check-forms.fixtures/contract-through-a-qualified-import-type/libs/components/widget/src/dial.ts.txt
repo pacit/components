@@ -2,12 +2,12 @@ import { booleanAttribute, input, model, output } from '@angular/core';
 import type { ValidationError } from '@angular/forms/signals';
 
 /**
- * A control whose contract is an import type of a barrel, qualified twice and with a comment
- * inside the qualifier, with no `touched`. TypeScript compiles it, and prettier keeps it so.
+ * A control whose contract is an import type of a barrel, followed by three names with a comment
+ * between two of them, with no `touched`. TypeScript compiles it, and prettier keeps it so.
  */
 @Component({ selector: 'pct-dial', template: '' })
 export class PctDial implements Readonly<
-  import('./barrel').signals./* the contract */ FormValueControl<number>
+  import('./barrel').a.b./* the contract */ FormValueControl<number>
 > {
   /** The value — the contract's one required member. */
   readonly value = model(0);
