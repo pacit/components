@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`role=\"status\"`",
+  "$reason": "An error part with the warning's `role=\"status\"`, a `[class.role]` and a `[style.aria-live]` binding beside it. A class binding sets a class and a style binding a style, neither the role nor the politeness, so the DOM ends with the written `status`, and that is what point 7 refuses. Read as a bound live region, as the rest of the walk reads a class or a style binding of a name, it was refused as a value the template does not hold — sending its author to look for an expression that writes no region."
+}

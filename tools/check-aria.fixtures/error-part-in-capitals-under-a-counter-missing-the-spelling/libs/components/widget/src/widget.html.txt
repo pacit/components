@@ -54,9 +54,9 @@
 </div>
 }
 
-<!-- One message line, the error under the warning's role and a class binding named role. -->
+<!-- One message line, the error's part named in capitals. -->
 @if (showError()) {
-<span class="pct-widget__error" data-pct-part="error" role="status" [class.role]="showError()">{{ error() }}</span>
+<span class="pct-widget__error" DATA-PCT-PART="error" role="alert">{{ error() }}</span>
 } @else if (hint()) {
 <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
 }

@@ -54,9 +54,9 @@
 </div>
 }
 
-<!-- One message line, the error's part glued to the quote before it and no role on it. -->
+<!-- One message line, the error under the warning's role and class and style bindings named for the region. -->
 @if (showError()) {
-<span class="pct-widget__error"data-pct-part="error">{{ error() }}</span>
+<span class="pct-widget__error" data-pct-part="error" role="status" [class.role]="showError()" [style.aria-live]="hint()">{{ error() }}</span>
 } @else if (hint()) {
 <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
 }

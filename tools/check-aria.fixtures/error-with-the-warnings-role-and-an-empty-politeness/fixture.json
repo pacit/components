@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`role=\"status\"`",
+  "$reason": "An error part with the warning's `role=\"status\"` and an empty `aria-live` beside it. Both engines read the empty value as none and keep what the role gives them (Chromium 153 its `polite`, Firefox 158 the same, measured on 2026-10-19), so the part is refused for its role and not for a politeness it does not write. Read as a written one, the empty value was refused with a claim the engines contradict."
+}

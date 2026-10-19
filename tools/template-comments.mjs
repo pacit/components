@@ -25,13 +25,17 @@ import {
  * Angular's lexer reads as part of the name (`[it's]`), is one to the scan, which pairs each quote
  * with the next of its kind: where the pairs reach no `>` outside them, the scan finds no tag
  * where the stop starts, and where their first `>` outside them stands past a later tag's start,
- * the tag holding the quote runs on and swallows that one.
+ * the tag holding the quote runs on and swallows that one. And the name of every attribute written
+ * on every element of this tree, a case's too (`attributes`), as the lexer read it: the denominator
+ * of what the template tree's walk reads written on its elements.
  */
 class CommentReader extends RecursiveVisitor {
   spans = [];
   cased = [];
+  attributes = [];
   visitElement(node, inCase) {
     if (inCase) this.cased.push(node.sourceSpan.start.offset);
+    this.attributes.push(...node.attrs.map((a) => a.name));
     super.visitElement(node, inCase);
   }
   visitComment(node) {
@@ -66,7 +70,8 @@ const LEXING = {
  * pattern before it was copied too and repaired in one gate first — the fix is to have one.
  *
  * The tree is the raw text's, and `errors` the compiler's: `null` where it found none. Beside them,
- * the offsets of the tags an ICU's cases draw (`cased`), off the HTML tree. A template
+ * the offsets of the tags an ICU's cases draw (`cased`) and every attribute's name (`attributes`),
+ * off the HTML tree. A template
  * read with errors is refused by each gate as one that does not parse before any verdict reads its
  * text, whatever a comment found there takes with it (`<a href=//x.example>` opens one that takes
  * the rest of its line, and the tag never ends).
@@ -90,13 +95,20 @@ export const readTree = (file, content) => {
     const { nodes, errors } = parseTemplate(content, file, {
       preserveWhitespaces: false,
     });
-    return { nodes, errors, text, cased: comments.cased };
+    return {
+      nodes,
+      errors,
+      text,
+      cased: comments.cased,
+      attributes: comments.attributes,
+    };
   } catch (error) {
     return {
       nodes: [],
       errors: [{ msg: `the compiler throws: ${error.message}` }],
       text,
       cased: [],
+      attributes: [],
     };
   }
 };

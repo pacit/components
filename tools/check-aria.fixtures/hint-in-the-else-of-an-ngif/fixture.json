@@ -1,6 +1,6 @@
 {
   "point": 6,
   "check": "description",
-  "message": "the template its `else` names are none the walk reads as two branches",
+  "message": "the template its `else` names are no two branches the walk reads",
   "$reason": "The error under an `*ngIf` and the hint in the template its `else` names: one line on a page, which the walk does not read as one. It looks through an inline template, as through a stamped one, and models no directive's branches; the library writes `@if` and `@else`. Refused as two parts in the DOM at the same time, as before, and the refusal now says why and what to write."
 }

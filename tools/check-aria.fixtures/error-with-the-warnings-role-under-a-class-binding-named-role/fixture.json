@@ -1,6 +1,0 @@
-{
-  "point": 7,
-  "check": "announcement",
-  "message": "`role=\"status\"`",
-  "$reason": "An error part with the warning's `role=\"status\"` and a `[class.role]` binding beside it. A class binding sets a class, not the role, so the DOM ends with the written `status`, and that is what point 7 refuses. Read as a bound live region, as the rest of the walk reads a class binding of a name, it was refused as a value the template does not hold — sending its author to look for an expression that writes no role."
-}
