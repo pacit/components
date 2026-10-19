@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A control exported as the default, with no name, a decorator and a comment above it, and no `touched`. The pattern reads no header for it. The parser holds the class from its decorator, and point 1 refuses it at the line the class starts on.",
+  "message": "libs/components/widget/src/default.ts:8: a class with no name"
+}

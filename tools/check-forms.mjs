@@ -4,7 +4,7 @@
  * signal-forms state block, the same way in every one of them — have a measurement behind
  * it? Every member of `FormUiControl` is optional, so `implements` proves only `value`.
  *
- *  1. DENOMINATOR: sources parse, members and controls have headers, contract read, controls found,
+ *  1. DENOMINATOR: sources parse, headers and controls paired, contract read, controls found,
  *  2. CONTRACT: every name the block policy declares is really a member of `FormUiControl`,
  *  3. BLOCK: every control declares every member of the block,
  *  4. SHAPE: factory, default and transform identical in every control, character for character.
@@ -77,7 +77,7 @@ const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/dgm;
 const CLASS = /^export (?:abstract )?class (\w+)/dgm;
 
 /**
- * A violation. It carries the point's `check` AND its `rule`: point 1 has seven rules and a
+ * A violation. It carries the point's `check` AND its `rule`: point 1 has six rules and a
  * case firing on a neighbouring one proves something other than what it declares
  * (`lesson-50`).
  */
@@ -97,10 +97,12 @@ const list = (items) => items.map((t) => `      ${t}`).join('\n');
  * The classes of one source file the pattern reads a header for, and the members each declares.
  * The pattern finds the declarations and the parser says whose they are (`owners`): a member is
  * the property whose name stands where the pattern reads the member's, of the class whose name
- * the header stands at. By position — the last header above the member — a class of no header
- * lent what it declares at two spaces to the header above it, and a control without `disabled`
- * passed on a neighbour's (measured). A member the parser holds in no class (in a comment, a
- * string, above every class), or in a class no header stands at, is set aside for point 1.
+ * the header stands at. A declaration the parser holds as no property, a line in a comment or a
+ * string, is no member. One of a class no header stands at is that class's: no control (point 1
+ * refuses one that is), and a base no header stands at hands down nothing, which point 3 can
+ * refuse a control for and never pass one. By position, the last header above it, a class of
+ * no header lent what it declares at two spaces to the control above, a commented line was a
+ * member, and a control without `disabled` or `touched` passed on either (measured).
  */
 const classesIn = (file, text, owners) => {
   const headers = [...text.matchAll(CLASS)].map((m) => ({
@@ -109,7 +111,6 @@ const classesIn = (file, text, owners) => {
     line: text.slice(0, m.index).split('\n').length,
     members: new Map(),
   }));
-  const orphans = [];
   for (const m of text.matchAll(MEMBER)) {
     const owner = headers.find((h) => h.nameAt === owners.get(m.indices[1][0]));
     const member = {
@@ -121,10 +122,9 @@ const classesIn = (file, text, owners) => {
       file,
       line: text.slice(0, m.index).split('\n').length,
     };
-    if (!owner) orphans.push(`${file}:${member.line}: ${member.name}`);
-    else owner.members.set(member.name, member);
+    owner?.members.set(member.name, member);
   }
-  return { headers, orphans };
+  return headers;
 };
 
 /**
@@ -134,11 +134,13 @@ const classesIn = (file, text, owners) => {
  *   `owners`       — every property of a class, by the offset its name stands at, to its class's.
  * The pattern sees a header at the margin and nothing else: a control written without `export`,
  * nested in a function, a namespace or a method, or written as a class expression had none, and
- * the gate measured fewer controls than the library has — passing three such inputs, and
- * refusing a fourth on its members rather than on the control they belong to (measured).
+ * the gate measured fewer controls than the library has — passing five such inputs, and
+ * refusing a sixth on its members rather than on the control they belong to (measured).
  *
- * A contract is a type of the class's own `implements` clause, in any position, named by a
- * named import of the file under the contract's name, from whatever module — through
+ * A contract is a type of the class's own `implements` clause, in any position, or a type within
+ * one (`Readonly<FormValueControl<T>>`, which compiles and passed), so a contract wrapped in any
+ * type makes a control: that errs toward measuring a class, never toward leaving one out. It is
+ * named by a named import of the file under the contract's name, from whatever module — through
  * `FormValueControl as PctValueContract`, `PctValueContract` is the contract — or by the last
  * part of a qualified name, `signals.FormValueControl` through a namespace import. A name no
  * named import binds is none: an interface the file declares under a contract's name is what
@@ -164,12 +166,23 @@ const parsedIn = (file, text) => {
         : [];
     }),
   );
-  const contract = (expression) =>
-    ts.isIdentifier(expression)
-      ? imported.get(expression.text)
-      : ts.isPropertyAccessExpression(expression)
-        ? expression.name.text
-        : undefined;
+  const contract = (name) =>
+    ts.isIdentifier(name)
+      ? imported.get(name.text)
+      : ts.isPropertyAccessExpression(name)
+        ? name.name.text
+        : ts.isQualifiedName(name)
+          ? name.right.text
+          : undefined;
+  // A type of the clause names its contract by an expression, and a type within it by a type name.
+  const reaches = (node) =>
+    CONTRACTS.has(
+      ts.isExpressionWithTypeArguments(node)
+        ? contract(node.expression)
+        : ts.isTypeReferenceNode(node)
+          ? contract(node.typeName)
+          : undefined,
+    ) || ts.forEachChild(node, reaches) === true;
   const where = (node) => (node.name ?? node).getStart(source);
   const implementers = new Map();
   const owners = new Map();
@@ -179,7 +192,7 @@ const parsedIn = (file, text) => {
       node.heritageClauses?.some(
         (clause) =>
           clause.token === ts.SyntaxKind.ImplementsKeyword &&
-          clause.types.some((type) => CONTRACTS.has(contract(type.expression))),
+          clause.types.some(reaches),
       )
     )
       implementers.set(where(node), {
@@ -216,7 +229,6 @@ const parsedIn = (file, text) => {
  */
 const readSources = (root, files) => {
   const classes = new Map();
-  const orphans = [];
   const unheld = [];
   const unread = [];
   const contents = new Map(
@@ -225,9 +237,7 @@ const readSources = (root, files) => {
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
     const { implementers, owners } = parsedIn(file, content);
-    const { headers, orphans: loose } = classesIn(file, content, owners);
-    orphans.push(...loose);
-    for (const header of headers) {
+    for (const header of classesIn(file, content, owners)) {
       const key = classKey(file, header.name);
       const held = bases.get(key);
       if (held?.at !== header.nameAt) {
@@ -244,7 +254,7 @@ const readSources = (root, files) => {
     for (const { name, line } of implementers.values())
       unread.push(`${file}:${line}: ${name}`);
   }
-  return { classes, orphans, unheld, unread };
+  return { classes, unheld, unread };
 };
 
 /**
@@ -310,8 +320,7 @@ const controlsOf = (classes) => {
 /**
  * The four points over a ready input:
  *   `policy`   — the block declared in `forms.policy.json`, or null,
- *   `classes`  — every class of the sources, by name,
- *   `orphans`  — member declarations of no class the reading holds,
+ *   `classes`  — every class of the sources a header stands at, by name and file,
  *   `unheld`   — class headers where the parser holds no top-level class,
  *   `unread`   — classes implementing a contract where the reading reads no header,
  *   `contract` — the member names of `FormUiControl`, or null,
@@ -319,15 +328,7 @@ const controlsOf = (classes) => {
  * Throws on the first violation: the points run from the most basic, so a later one would
  * be examining an input nobody has established anything about.
  */
-const checkForms = ({
-  policy,
-  classes,
-  orphans,
-  unheld,
-  unread,
-  contract,
-  files,
-}) => {
+const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
   // ── 1. DENOMINATOR ──────────────────────────────────────────────────────────
   const block = policy?.block;
   if (!Array.isArray(block) || block.length === 0)
@@ -344,7 +345,7 @@ const checkForms = ({
     throw new FormsError(
       'denominator',
       'no-classes',
-      `no class parsed out of ${files} source file(s) of \`${PROJECT}\` — the points ` +
+      `the reading holds no class in ${files} source file(s) of \`${PROJECT}\` — the points ` +
         `below would then all be measuring an empty set and passing`,
     );
 
@@ -372,21 +373,6 @@ const checkForms = ({
         `nested in a function, a namespace or a method, or written as a class expression ` +
         `has no such header: it is a control no point examines, and the gate measures ` +
         `fewer controls than the library has.`,
-    );
-
-  if (orphans.length)
-    throw new FormsError(
-      'denominator',
-      'unattributed',
-      `${orphans.length} member declaration(s) are no member of a class the reading ` +
-        `holds:\n` +
-        list(orphans) +
-        `\n    A member the reading could not attribute is a member no point examines. ` +
-        `The parser holds each member in the class that declares it, and these stand in ` +
-        `none — in a comment, a string, above every class — or in a class no header stands ` +
-        `at, which by position would lend them to the header above it. This fires when a ` +
-        `file is shaped in a way the reading was not written for, which is the moment to ` +
-        `widen it rather than to guess.`,
     );
 
   if (contract === null || contract.size === 0)
@@ -505,11 +491,10 @@ const sourcesIn = (root, files) =>
 
 const gatherInput = (root, files) => {
   const sources = sourcesIn(root, files);
-  const { classes, orphans, unheld, unread } = readSources(root, sources);
+  const { classes, unheld, unread } = readSources(root, sources);
   return {
     policy: JSON.parse(read(root, POLICY) ?? 'null'),
     classes,
-    orphans,
     unheld,
     unread,
     contract: readContract(read(root, CONTRACT)),

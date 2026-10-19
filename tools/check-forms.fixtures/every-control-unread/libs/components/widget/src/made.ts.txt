@@ -1,0 +1,18 @@
+import { booleanAttribute, input, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/**
+ * A control built per call: declared inside the function, so prettier indents it and its
+ * members stand at four spaces. It has no `touched`, and no header the reading reads.
+ */
+export function pctFieldOf(initial: string) {
+  @Component({ selector: 'pct-made', template: '' })
+  class PctMade implements FormValueControl<string> {
+    /** The value — the contract's one required member. */
+    readonly value = model(initial);
+
+    /** Blocks the control and greys it. */
+    readonly disabled = input(false, { transform: booleanAttribute });
+  }
+  return PctMade;
+}
