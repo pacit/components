@@ -899,8 +899,8 @@ const inForeign = (node) =>
  * 153, Firefox 155, WebKit 26.6, the page from Angular 22.2's `renderApplication`; hydration adds the
  * name as written beside it and keeps the parser's). Either reading would pass what the other
  * refuses — read lowered, `ROLE="alert"` on an SVG error part announced nothing in the browser; read
- * as written, an `<svg ARIA-HIDDEN>` hid nothing on a page the server rendered — so the name fails
- * point 1 (`req-project-ssr`). A property binding is the compiler's to refuse: `[aria-LABEL]` or
+ * as written, a `<g ROLE="list">` above an option was no list, which a page the server rendered
+ * makes one — so the name fails point 1 (`req-project-ssr`). A property binding is the compiler's to refuse: `[aria-LABEL]` or
  * `[ROLE]` on such an element is no property it knows (NG8002, `ngc` 22.2.1, strict templates).
  */
 const readsName = (name) =>
@@ -1841,8 +1841,8 @@ const checkAria = ({
           said.spelled[0].spelled
             .map((name) => `\`${name.replace(/^:([^:]+):/, '$1:')}\``)
             .join(', ') +
-          ` — Angular sets a name there as written, which no engine reads as the attribute in ` +
-          `lower case, and a page the server rendered hands it to the browser's HTML parser, ` +
+          ` — Angular sets a name there as written, which such an element keeps, and a page ` +
+          `the server rendered hands it to the browser's HTML parser, ` +
           `which lowers it: one attribute in the browser and another after hydration ` +
           `(req-project-ssr). Write it in lower case`,
       );
