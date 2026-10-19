@@ -1476,9 +1476,20 @@ const checkAria = ({
   // `class-bases.mjs` does not read. By the name alone the chain could run through a class no build
   // put there and close a cycle TypeScript has not got, and only `seen` stopped it recursing
   // forever.
+  //
+  // The host block merges as Angular's `mergeHostAttrsAcrossInheritance` merges it: the chain's own
+  // entries from the root down, a key standing where it first stood with the value of the class
+  // nearest the leaf, and the leaf's own entries in front. Of `role` on the root and `ROLE` on a
+  // class below it, the DOM keeps the later one `setUpAttributes` sets: the leaf's own merge put
+  // the root's last and read a button where three classes make a presentational host (Angular
+  // 22's own functions, run on the chain, measured on 2026-10-19).
   const byKey = new Map(components.map((c) => [c.key, c]));
   const inherited = (component, seen = new Set()) => {
-    if (component.base === null) return component;
+    component.own ??= new Map(component.host);
+    if (component.base === null) {
+      component.chain ??= [component.own];
+      return component;
+    }
     if (seen.has(component.key)) return component;
     seen.add(component.key);
     const base = byKey.get(component.from);
@@ -1494,8 +1505,12 @@ const checkAria = ({
     const whole = inherited(base, seen);
     for (const [name, field] of whole.inputs)
       if (!component.inputs.has(name)) component.inputs.set(name, field);
-    for (const [key, value] of whole.host)
-      if (!component.host.has(key)) component.host.set(key, value);
+    component.chain = [...(whole.chain ?? [whole.own]), component.own];
+    const merged = new Map();
+    for (const own of component.chain)
+      for (const [key, value] of own) merged.set(key, value);
+    component.host = new Map(component.own);
+    for (const [key, value] of merged) component.host.set(key, value);
     component.base = null;
     return component;
   };

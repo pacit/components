@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "PctChrome",
+  "$reason": "`host-name-under-a-presentation-role-written-last` with the two roles on two bases of a chain of three: the root writes `role: 'button'`, the class below it `ROLE: 'presentation'`, and the leaf names its host. Angular merges a chain from the root down and puts the leaf's own entries in front (`mergeHostAttrsAcrossInheritance`), so `setUpAttributes` sets the root's `role` and then the middle's `ROLE`: a presentational host, and a name on it read by nobody. Merged as the leaf's own entries and then its base's whole, the root's came last, and the leaf passed as a button."
+}

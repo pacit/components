@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component imports `Input as NgInput` and writes `@NgInput() @HostBinding('attr.tabindex') readonly order = 0`, and 2.4.3 keeps resting on the scan. The decorator is `Input` by the name it imports.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, HostBinding, Input as NgInput } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @NgInput() @HostBinding('attr.tabindex') readonly order = 0;\n}\n"
+  }
+}

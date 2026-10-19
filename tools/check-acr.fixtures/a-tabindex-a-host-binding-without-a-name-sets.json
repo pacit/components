@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `@HostBinding() readonly tabindex = 5`, and 2.4.3 keeps resting on the scan. With no argument the binding takes the member's own name, which Angular maps to the `tabIndex` property. The pattern on main read it in the raw text; the reading that replaces it has to read the decorator.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @HostBinding() readonly tabindex = 5;\n}\n"
+  }
+}

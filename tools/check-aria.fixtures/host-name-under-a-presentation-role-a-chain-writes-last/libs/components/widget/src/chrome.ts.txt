@@ -1,0 +1,26 @@
+import { Component, Directive } from '@angular/core';
+
+/** A surface whose role two bases write, the nearer one last: a presentational host, named. */
+@Directive({
+  host: {
+    role: 'button',
+  },
+})
+export class PctChromeRoot {}
+
+@Directive({
+  host: {
+    ROLE: 'presentation',
+  },
+})
+export class PctChromeMiddle extends PctChromeRoot {}
+
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    'aria-label': 'Surface',
+  },
+})
+export class PctChrome extends PctChromeMiddle {}

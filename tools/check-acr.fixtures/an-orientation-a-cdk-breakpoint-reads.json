@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component asks the CDK's `BreakpointObserver` about `Breakpoints.HandsetPortrait`, and 1.3.4 keeps resting on the scan. The table holds `(orientation: portrait)` where no string of the script says it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\nimport { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly tall = inject(BreakpointObserver).isMatched(Breakpoints.HandsetPortrait);\n}\n"
+  }
+}

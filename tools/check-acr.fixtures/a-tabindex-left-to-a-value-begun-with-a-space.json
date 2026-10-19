@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component holds `'tabindex=\" ' + this.n + '\"'`, attributes for a tag joined elsewhere, and 2.4.3 keeps resting on the scan. The attribute's integer skips the space, and the value is the expression's.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected n = 5;\n  protected readonly mark = 'tabindex=\" ' + this.n + '\"';\n}\n"
+  }
+}

@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A component calls `screen.orientation.lock('portrait')`, and 1.3.4 keeps resting on the scan. That is the lock the criterion names. The scan read the stylesheets alone.",
-  "sources": {
-    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    void (screen.orientation as unknown as { lock(o: string): Promise<void> }).lock('portrait');\n  }\n}\n"
-  }
-}

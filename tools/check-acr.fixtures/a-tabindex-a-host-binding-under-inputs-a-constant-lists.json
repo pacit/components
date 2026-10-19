@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's `inputs` is a constant, `INPUTS`, and it writes `@HostBinding('attr.tabindex') readonly order = 0`, and 2.4.3 keeps resting on the scan. `ngc` evaluates the constant; the reading does not, and takes every member for an input.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject } from '@angular/core';\n\nconst INPUTS = ['order'];\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  inputs: INPUTS,\n})\nexport class PctAvatar {\n  @HostBinding('attr.tabindex') readonly order = 0;\n}\n"
+  }
+}

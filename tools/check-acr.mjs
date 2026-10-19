@@ -390,8 +390,8 @@ const dressed = (node) => {
 };
 
 /**
- * Whether an expression is written to: the left of an assignment, the operand of `++` or `--`,
- * or a target of a destructuring one (`[this.order] = …`, `({ a: this.order } = …)`).
+ * Whether an expression is written to: the left of an assignment, the operand of `++` or `--`, a
+ * target of a destructuring one (`[this.order] = …`, `({ a: this.order } = …)`), or of a `for`.
  */
 const writtenTo = (node) => {
   let at = dressed(node);
@@ -413,95 +413,105 @@ const writtenTo = (node) => {
   )
     at = at.parent;
   return (
-    ts.isBinaryExpression(at.parent) &&
-    at.parent.left === at &&
-    at.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-    at.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+    (ts.isBinaryExpression(at.parent) &&
+      at.parent.left === at &&
+      at.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+      at.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
+    ((ts.isForOfStatement(at.parent) || ts.isForInStatement(at.parent)) &&
+      at.parent.initializer === at)
   );
 };
 
 /** What reflection writes a property through when it is handed the instance. */
 const REFLECTING = /^(?:Object|Reflect)$/;
 
-/** The inputs a class's decorators name in their `inputs` metadata, by the class member's name. */
-const metadataInputs = (owner) =>
-  (ts.getDecorators(owner) ?? []).flatMap((decorator) => {
-    const [meta] = ts.isCallExpression(decorator.expression)
-      ? decorator.expression.arguments
-      : [];
-    const inputs =
-      meta !== undefined && ts.isObjectLiteralExpression(meta)
-        ? meta.properties.find(
-            (p) =>
-              ts.isPropertyAssignment(p) &&
-              (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) &&
-              p.name.text === 'inputs',
-          )?.initializer
-        : undefined;
-    return inputs !== undefined && ts.isArrayLiteralExpression(inputs)
-      ? inputs.elements.flatMap((e) =>
-          ts.isStringLiteralLike(e) ? [e.text.split(':')[0].trim()] : [],
-        )
-      : [];
-  });
+/**
+ * The inputs of each class a source declares, by member name (`tsReading`): what its decorators'
+ * `inputs` metadata names, read as ngc reads it — `'order'`, `'order: rank'`, `{ name: 'order' }`,
+ * an `as const` taken off — and each member an `@Input` decorates, by any name the file imports it
+ * under. `null` for an `inputs` this does not read (a constant), which makes every member one.
+ */
+const INPUTS = new WeakMap();
 
 /**
- * Whether a field holds what its initializer says. It is `readonly`, so that nothing outside the
- * class replaces it; it is no input, by decorator or by the class's `inputs`, since a template sets
- * an input; and the class neither writes it — by an assignment, `++`, a destructuring, a cast
- * receiver (`(this as any).order = …`) — nor hands the instance to `Object` or `Reflect`, which
- * write any of its properties (`Object.assign(this, …)`).
+ * Whether a member of a class holds what its source says, so that a value read off it can be
+ * judged. A field is `readonly` and a method is not public, so that nothing outside the class
+ * replaces it without a cast. It is no input (`INPUTS`), since a template sets an input. And the
+ * class neither writes it — by an assignment, `++`, a destructuring, a `for` target, through a cast
+ * receiver (`(<T>this).order = …`) or the prototype (`PctX.prototype.order = …`) — nor hands the
+ * instance to `Object` or `Reflect` (`Object.assign(this, …)`, `Object['assign'](this, …)`), nor
+ * stores it in a name the reading does not follow (`const self = this`, `self = this`). A write
+ * through another file's cast, and the instance handed to another call or put in an object or an
+ * array, are not read.
  */
-const settled = (owner, field) => {
-  if (!(ts.getCombinedModifierFlags(field) & ts.ModifierFlags.Readonly))
-    return false;
+const kept = (owner, member) => {
+  const name = member.name.text;
+  const flags = ts.getCombinedModifierFlags(member);
   if (
-    (ts.getDecorators(field) ?? []).some(
-      (d) =>
-        ts.isCallExpression(d.expression) &&
-        ts.isIdentifier(d.expression.expression) &&
-        d.expression.expression.text === 'Input',
-    ) ||
-    metadataInputs(owner).includes(field.name.text)
+    ts.isPropertyDeclaration(member)
+      ? !(flags & ts.ModifierFlags.Readonly)
+      : !(flags & (ts.ModifierFlags.Private | ts.ModifierFlags.Protected)) &&
+        !ts.isPrivateIdentifier(member.name)
   )
     return false;
+  const inputs = INPUTS.get(owner);
+  if (inputs === null || inputs?.has(name)) return false;
   let changed = false;
-  const visit = (node) => {
+  const stored = (at) =>
+    (ts.isVariableDeclaration(at.parent) && at.parent.initializer === at) ||
+    (ts.isBinaryExpression(at.parent) &&
+      at.parent.right === at &&
+      at.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken);
+  const inClass = (node) => {
     if (node.kind === ts.SyntaxKind.ThisKeyword) {
       const at = dressed(node);
-      const access = at.parent;
+      const parent = at.parent;
+      const callee =
+        ts.isCallExpression(parent) && parent.arguments.includes(at)
+          ? bare(parent.expression)
+          : undefined;
+      const receiver =
+        callee !== undefined && accessedName(callee) !== undefined
+          ? bare(callee.expression)
+          : undefined;
       if (
-        (ts.isPropertyAccessExpression(access) ||
-          ts.isElementAccessExpression(access)) &&
-        access.expression === at
+        (ts.isPropertyAccessExpression(parent) ||
+          ts.isElementAccessExpression(parent)) &&
+        parent.expression === at
       ) {
-        const name = ts.isPropertyAccessExpression(access)
-          ? access.name.text
-          : textOf(access.argumentExpression);
-        if (name === field.name.text && writtenTo(access)) changed = true;
+        if (accessedName(parent) === name && writtenTo(parent)) changed = true;
       } else if (
-        ts.isCallExpression(access) &&
-        access.arguments.includes(at) &&
-        ts.isPropertyAccessExpression(bare(access.expression)) &&
-        ts.isIdentifier(bare(access.expression).expression) &&
-        REFLECTING.test(bare(access.expression).expression.text)
+        receiver !== undefined &&
+        ts.isIdentifier(receiver) &&
+        REFLECTING.test(receiver.text)
       )
         changed = true;
+      else if (stored(at)) changed = true;
     }
-    ts.forEachChild(node, visit);
+    ts.forEachChild(node, inClass);
   };
-  visit(owner);
+  inClass(owner);
+  const inFile = (node) => {
+    if (
+      accessedName(node) === name &&
+      accessedName(bare(node.expression)) === 'prototype' &&
+      writtenTo(node)
+    )
+      changed = true;
+    ts.forEachChild(node, inFile);
+  };
+  inFile(owner.getSourceFile());
   return !changed;
 };
 
-/** What a field holds, where it is settled; `null` where anything may replace it. */
+/** What a field holds, where it is kept; `null` where anything may replace it. */
 const fieldValues = (owner, field) =>
-  settled(owner, field) ? tsValues(field.initializer ?? null) : null;
+  kept(owner, field) ? tsValues(field.initializer ?? null) : null;
 
 /**
  * The values a bound expression can take, off Angular's own expression tree: a literal, a signed
  * one, either branch of a condition, and — where the class is known, as a `host` block's is — a
- * member called with nothing around it: what a method returns, what a settled `computed` holds.
+ * member called with nothing around it: what a kept method returns, what a kept `computed` holds.
  * The members it reads go into `consulted`: a class that extends this one may override them.
  * Anything else is `null`, and refused: a template variable (`$index`), a pipe, a property read,
  * an input, a member of a class the template does not name.
@@ -527,7 +537,9 @@ const ngValues = (ast, owner, consulted = new Set()) => {
     const member = memberOf(owner, ast.receiver.name);
     if (member !== undefined) consulted.add(ast.receiver.name);
     if (member !== undefined && ts.isMethodDeclaration(member))
-      return union(...returnsOf(member).map(tsValues));
+      return kept(owner, member)
+        ? union(...returnsOf(member).map(tsValues))
+        : null;
     if (member !== undefined && ts.isPropertyDeclaration(member))
       return fieldValues(owner, member);
   }
@@ -591,23 +603,55 @@ const writtenTabindex = (elements, lineOf, out) => {
 };
 
 /**
- * A piece of markup that ends inside a tabindex, leaving its value to whatever is joined to it — a
- * `+`, a substitution, `concat`, `join`: a tag left open on the name (`'<b tabindex'`) or a value
- * begun and not closed (`'<b tabindex="'`, `'<b tabindex="0'`, which a `5` makes `05`).
+ * A piece of markup that ends inside a tabindex's value, leaving it to whatever is joined to it — a
+ * `+`, a substitution, `concat`, `join`: a value begun and not closed (`'tabindex="'`,
+ * `'tabindex=" '`, `'tabindex="0'`, which a `5` makes `05`); and one that ends inside an open tag
+ * (`'<b '`, `'<b tabindex'`), which leaves every attribute to it.
  */
-const OPEN_VALUE = /(?:<[^>]*\btabindex\s*|\btabindex\s*=\s*["']?[^"'\s>]*)$/i;
+const OPEN_VALUE = /\btabindex\s*=\s*(?:"[^"]*|'[^']*|[^"'\s>]*)$/i;
+const OPEN_TAG = /<[a-z][\w:-]*(?:\s[^<>]*)?$/i;
+/** A tabindex a string writes as an attribute does, quoted or not: `tabindex="5"`, `tabindex=5`. */
+const FRAGMENT = /\btabindex\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]*))/gi;
+/** The selector of the attribute, which names it and writes nothing: `[tabindex]`. */
+const SELECTOR = /\[\s*tabindex\s*\]/gi;
+
+/**
+ * Whether every mention of `tabindex` in a string is one the markup reading places: a value it
+ * judges (`FRAGMENT`, `OPEN_VALUE`) or a selector (`SELECTOR`). A script's string that names the
+ * attribute otherwise is refused (`tsReading`): it can be the name a script writes by
+ * (`el[name] = 5`, `['tabIndex', 5]`), and the reading does not follow it.
+ */
+const placedIn = (text) =>
+  !/tabindex/i.test(
+    text.replace(FRAGMENT, '').replace(SELECTOR, '').replace(OPEN_VALUE, ''),
+  );
 
 /**
  * The tabindex a string writes, read as markup: a string handed to `innerHTML`, `srcdoc` or
  * `insertAdjacentHTML` is parsed by the engine, and the sanitizer keeps the attribute. Every
- * string holding a `<` is read so, whatever takes it — a string that is never markup is read as
- * markup too, an over-approximation the library pays nothing for. A string that ends inside a
- * tabindex (`OPEN_VALUE`) leaves the value to an expression, which the reading cannot judge.
- * `lineOf` places an attribute by its line in the string.
+ * string is read so, whatever takes it, a piece of markup as much as a whole: each `tabindex=`
+ * in it (`FRAGMENT`), in any case and whether a `<` stands in the same string or another one
+ * joined to it, and each attribute the HTML parser decodes where a tag stands (`&#49;` is one). A
+ * string that is never markup is read as markup too, an over-approximation the library pays
+ * nothing for. A string that ends inside a tabindex or an open tag (`OPEN_VALUE`, `OPEN_TAG`)
+ * leaves a value to an expression, which the reading cannot judge. `lineOf` places an attribute
+ * by its line in the string.
  */
 const markupWrites = (text, lineOf, out) => {
-  if (OPEN_VALUE.test(text))
-    out.push({ line: lineOf(0), values: null, spelling: text.slice(-60) });
+  const lineAt = (offset) =>
+    lineOf(text.slice(0, offset).split('\n').length - 1);
+  if (OPEN_VALUE.test(text) || OPEN_TAG.test(text))
+    out.push({
+      line: lineAt(text.length),
+      values: null,
+      spelling: text.slice(-60),
+    });
+  for (const at of text.matchAll(FRAGMENT))
+    out.push({
+      line: lineAt(at.index),
+      values: [at[1] ?? at[2] ?? at[3]],
+      spelling: at[0],
+    });
   if (text.includes('<'))
     for (const element of elementsOf(text, 'markup'))
       for (const a of element.attrs)
@@ -716,55 +760,60 @@ const calleeName = (call) =>
     : accessedName(bare(call.expression));
 
 /**
- * The calls that only read a name, and write nothing when given no value: a test, a read, a
- * removal, a selector. Any other call naming `tabindex` with nothing after it writes something the
- * reading cannot judge — `createAttribute('tabindex')` makes a node a later `.value` fills.
+ * The calls that make an attribute node, which a later `.value` fills: named with nothing after
+ * the name (`createAttribute('tabindex')`), they write a value the reading cannot judge. Any other
+ * call naming the attribute with nothing after it writes nothing: a read, a test, a removal.
  */
-const READS = new Set([
-  'getAttribute',
-  'hasAttribute',
-  'removeAttribute',
-  'querySelector',
-  'querySelectorAll',
-  'closest',
-  'matches',
-]);
+const ATTRIBUTE_NODE =
+  /^(?:createAttribute|getAttributeNode|getNamedItem)(?:NS)?$/;
 
 /** Where the orientation can be read: `screen`, and `window`, whose own is the legacy angle. */
 const ORIENTED = new Set(['screen', 'window']);
+/** A table of media queries the script does not write out: the CDK's `Breakpoints`. */
+const BREAKPOINTS = new Set(['Breakpoints']);
 
 /**
  * One TypeScript source, parsed once (`decoratorsOf`):
  *
- * - `writes` — every tabindex it writes, `{ line, values, spelling, owner }`: an object's key, a
- *   static one judged as the attribute's value (`tabindex: '0'`) and a bracketed one as a binding
- *   of the class it stands in (`'[tabindex]': 'rovingIndex()'`); a call's string argument naming
- *   it — `setAttribute`, `setAttributeNS`, a renderer's `setAttribute` and `setProperty` — judged by
- *   the argument after it, unless the call only reads (`READS`); `@HostBinding`'s, judged by the
- *   field it decorates, a getter refused; an assignment to a property of that name
- *   (`el.tabIndex = 1`, `el['tabIndex'] = 1`); each string but an inline template, read as markup;
- *   and a decorator's inline `template`, read as a template file is, or refused where it is no
- *   string the parser holds whole (a constant, a concatenation, a substitution). `owner` names the
- *   class whose members a judged value was read off;
+ * - `writes` — every tabindex it writes, `{ line, values, spelling, owner }`:
+ *   - an object's key, a static one judged as the attribute's value (`tabindex: '0'`) and a
+ *     bracketed one as a binding of the class it stands in (`'[tabindex]': 'rovingIndex()'`);
+ *   - a call's string argument naming it, `attr.` taken off — `setAttribute`, `setAttributeNS`, a
+ *     renderer's `setAttribute` and `setProperty`, `Reflect.set` — judged by the argument after
+ *     it, and with none after it a value only where the call makes an attribute node
+ *     (`ATTRIBUTE_NODE`); `@HostBinding`'s, and `@HostBinding()`'s on a member of that name,
+ *     judged by the field it decorates, a getter or a method refused;
+ *   - a property of that name written to, by dot or key (`el.tabIndex = 1`, `el['tabIndex']++`),
+ *     judged where it is assigned and refused otherwise;
+ *   - each string but an inline template, read as markup (`markupWrites`);
+ *   - a decorator's inline `template`, read as a template file is, or refused where it is no
+ *     string the parser holds whole (a constant, a concatenation, a substitution);
+ *   - a string naming the attribute that no reading above places (`placedIn`), refused: a name
+ *     the code writes by can stand in any string (`const k = 'tabIndex'`).
+ *
+ *   `owner` names the class whose members a judged value was read off;
  * - `cooked` — the text of each string and each name (`cookedHolding`);
  * - `created` — each element a script creates, by the name a call hands over:
  *   `createElement(name)`, `createElementNS(ns, name)`, by dot or key, and `new Audio()`;
  * - `oriented` — each read of `orientation` off the screen or the window, by dot or key, casts
- *   taken off (`bare`): `screen.orientation` and its lock among them;
+ *   taken off (`bare`): `screen.orientation` and its lock among them; and each name of the CDK's
+ *   breakpoints, which match queries no string of the script holds;
  * - `sheets` and `queries` — the strings a decorator's `styles` and an inline template's `<style>`
- *   hold, and the strings `matchMedia` is handed, for `orientationIn` to compile;
- * - `extended` — the name of each class a class here extends, an imported alias read back to the
- *   name it imports (`extendedIn`).
+ *   hold, and what `matchMedia` is handed, for `orientationIn` to compile, or refuse where it is
+ *   no string;
+ * - `extended`, `aliases`, `defaults` and `opaque` — what `extendedIn` reads: the name each class
+ *   here extends, each name the file gives another one (an import, a re-export or a constant
+ *   under another name), each default import, and whether a class extends an expression no name
+ *   resolves (a mixin's call).
  *
- * Not read, by name: a key under a computed name (`['tabindex']`), an attribute or a tag named by
- * an expression (the SVG renderer's paint list, every name of which is geometry or paint), a
- * compound assignment or a destructuring one, a write in a template's event handler, a callee or a
- * receiver reached through an alias (`const ce = document.createElement.bind(document)`,
- * `globalThis.screen`, `const { orientation } = screen`, `document.defaultView`), a string that
- * mixes an escaped line break with real ones, which is placed by its real ones, and a class inside
- * a namespace or a function, which every gate reading a decorator refuses as one it did not read
- * (`decoratorsOf`'s `unseen`). Over-approximated: `toggleAttribute('tabindex', on)` judges `on`,
- * and an `@Input` aliased `tabindex` is taken for a write.
+ * Not read, by name: an attribute or a tag named by an expression (the SVG renderer's paint list,
+ * every name of which is geometry or paint), a name a script builds from pieces (`'tab' + 'index'`),
+ * a write in a template's event handler, a callee or a receiver reached through an alias (`.bind`,
+ * `globalThis`, `self`, destructuring, `defaultView`), a string that mixes an escaped line break
+ * with real ones, which is placed by its real ones, and a class inside a namespace or a function,
+ * which every gate reading a decorator refuses as one it did not read (`decoratorsOf`'s `unseen`).
+ * Over-approximated: `toggleAttribute('tabindex', on)` judges `on`, an `@Input('tabindex')` is taken
+ * for a write, and a sentence in a string that names the attribute is refused with the names.
  */
 const tsReading = memo((path, text) => {
   const { source, read } = decoratorsOf(path, text);
@@ -785,7 +834,12 @@ const tsReading = memo((path, text) => {
   const sheets = [];
   const queries = [];
   const extended = new Set();
-  const imported = new Map();
+  const aliases = new Map();
+  const imports = new Map();
+  const defaults = new Set();
+  let opaque = false;
+  const placed = new Set();
+  const mentions = [];
   const write = (node, values, owner) =>
     writes.push({
       line: lineOf(node),
@@ -794,10 +848,69 @@ const tsReading = memo((path, text) => {
       owner: owner?.name?.text,
     });
 
+  for (const statement of source.statements)
+    if (ts.isImportDeclaration(statement)) {
+      const clause = statement.importClause;
+      if (clause?.name !== undefined) defaults.add(clause.name.text);
+      const bound = clause?.namedBindings;
+      if (bound !== undefined && ts.isNamedImports(bound))
+        for (const element of bound.elements)
+          if (element.propertyName !== undefined) {
+            imports.set(element.name.text, element.propertyName.text);
+            aliases.set(element.name.text, element.propertyName.text);
+          }
+    }
+  const named = (decorator, wanted) =>
+    ts.isCallExpression(decorator.expression) &&
+    (ts.isIdentifier(bare(decorator.expression.expression))
+      ? (imports.get(bare(decorator.expression.expression).text) ??
+        bare(decorator.expression.expression).text)
+      : accessedName(bare(decorator.expression.expression))) === wanted;
+
+  const isInput = (decorator) => named(decorator, 'Input');
+
   const inlines = new Set();
-  for (const cls of source.statements.filter(ts.isClassDeclaration))
+  const classes = [];
+  const collect = (node) => {
+    if (ts.isClassLike(node)) classes.push(node);
+    ts.forEachChild(node, collect);
+  };
+  collect(source);
+  for (const cls of classes) {
+    const inputs = new Set(
+      cls.members
+        .filter((m) => (ts.getDecorators(m) ?? []).some(isInput))
+        .map((m) => m.name?.text),
+    );
+    let unread = false;
     for (const decorator of ts.getDecorators(cls) ?? []) {
-      const metadata = read(decorator.getStart(source));
+      const metadata = ts.isClassDeclaration(cls)
+        ? read(decorator.getStart(source))
+        : undefined;
+      const listed = metadata?.get('inputs');
+      if (listed !== undefined) {
+        const list = bare(listed);
+        if (!ts.isArrayLiteralExpression(list)) unread = true;
+        else
+          for (const element of list.elements) {
+            const entry = bare(element);
+            const name = ts.isStringLiteralLike(entry)
+              ? entry.text.split(':')[0].trim()
+              : ts.isObjectLiteralExpression(entry)
+                ? textOf(
+                    entry.properties.find(
+                      (p) =>
+                        ts.isPropertyAssignment(p) &&
+                        (ts.isIdentifier(p.name) ||
+                          ts.isStringLiteral(p.name)) &&
+                        p.name.text === 'name',
+                    )?.initializer,
+                  )
+                : undefined;
+            if (name === undefined) unread = true;
+            else inputs.add(name);
+          }
+      }
       const styles = metadata?.get('styles');
       for (const sheet of styles === undefined
         ? []
@@ -820,6 +933,7 @@ const tsReading = memo((path, text) => {
         continue;
       }
       inlines.add(inline);
+      placed.add(inline);
       const template = templateReading(`${path} (template)`, textOf(inline));
       if (template.error)
         writes.push({
@@ -832,6 +946,8 @@ const tsReading = memo((path, text) => {
       for (const w of template.writes)
         writes.push({ ...w, line: linesIn(inline)(w.line - 1) });
     }
+    INPUTS.set(cls, unread ? null : inputs);
+  }
 
   const visit = (node) => {
     if (
@@ -842,6 +958,8 @@ const tsReading = memo((path, text) => {
     ) {
       const consulted = new Set();
       const owner = classOf(node);
+      placed.add(node.name);
+      if (ts.isPropertyAssignment(node)) placed.add(node.initializer);
       write(
         node,
         /^\[.*\]$/s.test(node.name.text)
@@ -859,41 +977,64 @@ const tsReading = memo((path, text) => {
       node.arguments.forEach((argument, i) => {
         if (
           !ts.isStringLiteralLike(argument) ||
-          writtenName(argument.text) !== 'tabindex' ||
-          READS.has(calleeName(node))
+          argument.text.replace(/^attr\./, '').toLowerCase() !== 'tabindex'
         )
           return;
-        if (!ts.isDecorator(node.parent))
+        placed.add(argument);
+        const member = ts.isDecorator(node.parent)
+          ? node.parent.parent
+          : undefined;
+        if (member === undefined)
           write(
             node,
-            node.arguments[i + 1] === undefined
-              ? null
-              : tsValues(node.arguments[i + 1]),
+            node.arguments[i + 1] !== undefined
+              ? tsValues(node.arguments[i + 1])
+              : ATTRIBUTE_NODE.test(calleeName(node) ?? '')
+                ? null
+                : [''],
           );
-        else if (ts.isPropertyDeclaration(node.parent.parent))
-          write(
-            node,
-            fieldValues(classOf(node), node.parent.parent),
-            classOf(node),
-          );
+        else if (ts.isParameter(member)) return;
+        else if (ts.isPropertyDeclaration(member))
+          write(node, fieldValues(classOf(node), member), classOf(node));
         else write(node, null);
       });
       const [first, second] = node.arguments;
-      const named =
+      const made =
         calleeName(node) === 'createElementNS'
           ? { name: second, namespaced: true }
           : calleeName(node) === 'createElement'
             ? { name: first, namespaced: second !== undefined }
             : undefined;
-      if (named?.name !== undefined && ts.isStringLiteralLike(named.name))
+      if (made?.name !== undefined && ts.isStringLiteralLike(made.name))
         created.push({
           line: lineOf(node),
-          name: named.name.text,
-          namespaced: named.namespaced,
+          name: made.name.text,
+          namespaced: made.namespaced,
           spelling: node.getText(source),
         });
-      if (calleeName(node) === 'matchMedia' && textOf(first) !== undefined)
-        queries.push({ line: lineOf(node), text: textOf(first) });
+      if (calleeName(node) === 'matchMedia')
+        queries.push({
+          line: lineOf(node),
+          text: textOf(first),
+          spelling: node.getText(source),
+        });
+    }
+    if (
+      ts.isDecorator(node) &&
+      named(node, 'HostBinding') &&
+      node.expression.arguments.length === 0 &&
+      (ts.isIdentifier(node.parent.name) ||
+        ts.isStringLiteral(node.parent.name)) &&
+      writtenName(node.parent.name.text) === 'tabindex'
+    ) {
+      placed.add(node.parent.name);
+      write(
+        node.parent,
+        ts.isPropertyDeclaration(node.parent)
+          ? fieldValues(classOf(node.parent), node.parent)
+          : null,
+        classOf(node.parent),
+      );
     }
     if (
       ts.isNewExpression(node) &&
@@ -907,23 +1048,31 @@ const tsReading = memo((path, text) => {
         namespaced: false,
         spelling: node.getText(source),
       });
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      (ts.isPropertyAccessExpression(node.left) ||
-        ts.isElementAccessExpression(node.left)) &&
-      (ts.isPropertyAccessExpression(node.left)
-        ? node.left.name.text
-        : textOf(node.left.argumentExpression)
-      )?.toLowerCase() === 'tabindex'
-    )
-      write(node, tsValues(node.right));
+    if (accessedName(node)?.toLowerCase() === 'tabindex') {
+      if (ts.isElementAccessExpression(node))
+        placed.add(node.argumentExpression);
+      if (writtenTo(node)) {
+        const at = dressed(node);
+        write(
+          node,
+          ts.isBinaryExpression(at.parent) &&
+            at.parent.left === at &&
+            at.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken
+            ? tsValues(at.parent.right)
+            : null,
+        );
+      }
+    }
     if (ts.isStringLiteralLike(node) || ts.isTemplateLiteralToken(node)) {
       cooked.push({ line: lineOf(node), text: node.text });
       if (!inlines.has(node)) markupWrites(node.text, linesIn(node), writes);
+      if (/tabindex/i.test(node.text)) mentions.push(node);
     }
-    if (ts.isIdentifier(node))
+    if (ts.isIdentifier(node)) {
       cooked.push({ line: lineOf(node), text: node.text });
+      if (BREAKPOINTS.has(node.text))
+        oriented.push({ line: lineOf(node), spelling: node.text });
+    }
     const receiver =
       accessedName(node) === 'orientation' ? bare(node.expression) : undefined;
     if (
@@ -932,20 +1081,37 @@ const tsReading = memo((path, text) => {
         accessedName(receiver) === 'screen')
     )
       oriented.push({ line: lineOf(node), spelling: node.getText(source) });
-    if (ts.isImportSpecifier(node) && node.propertyName !== undefined)
-      imported.set(node.name.text, node.propertyName.text);
+    if (ts.isExportSpecifier(node) && node.propertyName !== undefined)
+      aliases.set(node.name.text, node.propertyName.text);
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined &&
+      ts.isIdentifier(bare(node.initializer))
+    )
+      aliases.set(node.name.text, bare(node.initializer).text);
     if (
       ts.isHeritageClause(node) &&
-      node.token === ts.SyntaxKind.ExtendsKeyword
+      node.token === ts.SyntaxKind.ExtendsKeyword &&
+      ts.isClassLike(node.parent)
     )
       for (const type of node.types) {
         const base = bare(type.expression);
         const name = ts.isIdentifier(base) ? base.text : accessedName(base);
-        if (name !== undefined) extended.add(name);
+        if (name === undefined) opaque = true;
+        else extended.add(name);
       }
     ts.forEachChild(node, visit);
   };
   visit(source);
+  for (const node of mentions)
+    if (!placed.has(node) && !placedIn(node.text))
+      writes.push({
+        line: lineOf(node),
+        values: null,
+        unplaced: true,
+        spelling: node.getText(source),
+      });
   return {
     writes,
     cooked,
@@ -953,22 +1119,41 @@ const tsReading = memo((path, text) => {
     oriented,
     sheets,
     queries,
-    extended: new Set([...extended].map((name) => imported.get(name) ?? name)),
+    extended,
+    aliases,
+    defaults,
+    opaque,
   };
 });
 
 /**
- * The classes some class of the sources extends, by name — a namesake in another file counts too,
- * over-approximated. A value read off a member of one of them is one a subclass may override:
- * Angular evaluates an inherited `host` binding on the subclass's instance (`PctSelectBase` and
- * its two subclasses are the library's own case).
+ * The classes some class of the sources extends — an import, a re-export or a constant under
+ * another name read back to the name it stands for, a namesake in another file counted too,
+ * over-approximated — or every class, where one extends an expression no name resolves (a mixin's
+ * call) or a default import. A value read off a member of one of them is one a subclass may
+ * override: Angular evaluates an inherited `host` binding on the subclass's instance, through a
+ * mixin too (`PctSelectBase` and its two subclasses are the library's own case).
  */
-const extendedIn = (sources) =>
-  new Set(
-    Object.entries(sources).flatMap(([path, text]) =>
-      path.endsWith('.ts') ? [...tsReading(path, text).extended] : [],
-    ),
-  );
+const extendedIn = (sources) => {
+  const readings = Object.entries(sources)
+    .filter(([path]) => path.endsWith('.ts'))
+    .map(([path, text]) => tsReading(path, text));
+  const aliases = new Map(readings.flatMap((r) => [...r.aliases]));
+  const defaults = new Set(readings.flatMap((r) => [...r.defaults]));
+  const names = new Set();
+  let all = readings.some((r) => r.opaque);
+  for (const reading of readings)
+    for (let name of reading.extended) {
+      if (defaults.has(name)) all = true;
+      for (
+        const seen = new Set();
+        !seen.has(name);
+        name = aliases.get(name) ?? name
+      )
+        (seen.add(name), names.add(name));
+    }
+  return { has: (name) => all || names.has(name) };
+};
 
 /**
  * Where a source writes a positive tabindex, or one whose value the reading cannot judge — a
@@ -992,6 +1177,12 @@ const positiveTabindexIn = (path, text, context) => {
       `\`${path}:${found.line}\` holds a template the scan cannot read (${found.unread}), ` +
       `and a tabindex there is one it cannot judge`
     );
+  if (found.unplaced)
+    return (
+      `\`${path}:${found.line}\` names \`tabindex\` in a string the reading does not place ` +
+      `(${quoted(found.spelling)}): it reads a key, a call's argument, a property, a selector ` +
+      `and markup, and a name the code writes by can stand in any other string`
+    );
   if (found.values !== null && !found.values.some(positive))
     return (
       `\`${path}:${found.line}\` writes one the scan cannot judge (${quoted(found.spelling)}): ` +
@@ -999,8 +1190,8 @@ const positiveTabindexIn = (path, text, context) => {
     );
   return found.values === null
     ? `\`${path}:${found.line}\` writes one the scan cannot judge (${quoted(found.spelling)}): ` +
-        `it reads a literal, a signed one and a condition of them, and what a method or a settled ` +
-        `\`computed\` of the class a binding stands in returns`
+        `it reads a literal, a signed one and a condition of them, and what a method or a field ` +
+        `of the class a binding stands in returns, where nothing else can change it`
     : `\`${path}:${found.line}\` holds one (${quoted(found.spelling)})${BROKEN}`;
 };
 
@@ -1076,6 +1267,11 @@ const orientationIn = (path, text) => {
       if (found !== undefined) return found;
     }
     for (const query of reading.queries) {
+      if (query.text === undefined)
+        return (
+          `\`${path}:${query.line}\` hands \`matchMedia\` a query the scan cannot read ` +
+          `(${quoted(query.spelling)}), and an orientation there is one it cannot see`
+        );
       const found = sheetHolding(
         `\`${path}:${query.line}\``,
         `${path}.css`,
@@ -1501,7 +1697,8 @@ const checkAcr = (input) => {
         const target = impliedTarget(path);
         if (target) targets.set(path, target);
       }
-      if (e.req !== undefined && !ids.reqFile[e.req])
+      // By its own key: `constructor` is a member of every object, and names no requirement.
+      if (e.req !== undefined && !Object.hasOwn(ids.reqFile, e.req))
         throw new AcrError(
           'evidence',
           `${where} cites \`${e.req}\`, which no requirement declares`,
