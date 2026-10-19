@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<A>` in the SVG namespace to Angular, which draws it in the browser, and `<a>` in the SVG namespace",
+  "$reason": "The reference's widget with its trigger alone, an SVG link written `<A href role=\"combobox\">` and binding both name attributes to the inputs. Angular draws it as written, `<A>` in the SVG namespace — an element of no kind, drawn nowhere and no stop — and its server renderer writes `<A>` into the page, which the browser's HTML parser lowers to an SVG `<a>`, a link every engine lands on; hydration keeps it without a word (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read lowered, as the scan read every tag, the link was the carrier and passed, where in the browser the consumer's name lands on an element no user reaches."
+}

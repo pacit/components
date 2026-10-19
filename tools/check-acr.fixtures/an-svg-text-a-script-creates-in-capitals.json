@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `createElementNS(svg, 'TEXT')`, and 1.4.5 keeps resting on the scan. In the browser the element is of no kind; run on the server, it is written `<TEXT>` into the page as a template's is, and the HTML parser lowers it to a text element. Compared as written, the call made none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.append(\n      document.createElementNS('http://www.w3.org/2000/svg', 'TEXT'),\n    );\n  }\n}\n"
+  }
+}

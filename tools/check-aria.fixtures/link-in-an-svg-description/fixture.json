@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<a>` in the SVG namespace to Angular, which draws it in the browser, and `<a>` in HTML",
+  "$reason": "The reference's widget with its trigger alone, a link inside an SVG `<desc>`. Angular draws it in the namespace of the `<desc>`, an SVG link; the `<desc>` is an HTML integration point to the browser's HTML parser, which reads the link in it as HTML after SSR, and hydration keeps that one (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read as either, it passed as the carrier."
+}

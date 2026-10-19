@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"list\"> (list)",
+  "$reason": "An option in a named group, the group in a `list`. A group is an option's context only inside a listbox: axe's `aria-required-parent` passes a `group` and asks the next ancestor (`ownGroupRoles`), and reports this one in Chromium 153 and Firefox 155. The walk stopped at the first group and passed it; it reached a named SVG `<g>` the same way, a group to both engines, which the reading of the engines' roles made one."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<mrow>` in the MathML namespace to Angular, which draws it in the browser, and `<mrow>` in HTML",
+  "$reason": "A hidden formula holding a MathML link, `<mrow href>`, inside an `<mi>`. Angular draws it in MathML, a stop to Firefox and WebKit inside a host hidden from the tree; the `<mi>` is a text integration point to the HTML parser, which reads the `<mrow>` after SSR as an HTML element of no kind, no stop (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read through HTML's tables as an unknown tag, it was no stop, and the hidden host passed point 8."
+}

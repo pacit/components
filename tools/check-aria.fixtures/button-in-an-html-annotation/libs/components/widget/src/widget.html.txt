@@ -1,0 +1,23 @@
+<!-- The trigger alone, a button in a formula's annotation for HTML. -->
+<math class="pct-widget__box">
+  <semantics>
+    <mi>x</mi>
+    <annotation-xml encoding="text/html">
+      <button
+        type="button"
+        role="combobox"
+        [attr.aria-label]="ariaLabel() || null"
+        [attr.aria-labelledby]="ariaLabelledby() || null"
+      >
+        {{ label() }}
+      </button>
+    </annotation-xml>
+  </semantics>
+</math>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

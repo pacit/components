@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<button>` in the MathML namespace to Angular, which draws it in the browser, and `<button>` in HTML",
+  "$reason": "The reference's widget with its trigger alone, a button in a formula's HTML annotation, `<annotation-xml encoding=\"text/html\">` — an element the schema does not know, so built under `NO_ERRORS_SCHEMA`. Angular draws the button in the namespace of the annotation, MathML, an element of no kind; the annotation is an HTML integration point to the HTML parser, which reads a real button there after SSR (`DOMParser`, Chromium 153 and Firefox 155, 2026-10-19). Read as a button, it carried the name and passed."
+}

@@ -1,0 +1,18 @@
+<!-- The trigger alone, a link written in the SVG namespace with no drawing around it. -->
+<span class="pct-widget__box">
+  <svg:a
+    href="#"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </svg:a>
+</span>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

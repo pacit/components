@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<button>` in HTML to Angular, which draws it in the browser, and `<button>` in the SVG namespace",
+  "$reason": "The reference's widget with its trigger alone, an HTML button written `<xhtml:button>` straight in a map, with no `<foreignObject>` around it. Angular draws an HTML button inside the `<svg>`, drawn nowhere and a stop to WebKit alone; the HTML parser keeps a `<button>` in SVG, and after SSR it is an SVG element of no kind (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read as a button, it carried the name and passed. `button-in-the-xhtml-namespace` has it inside a `<foreignObject>`, where both read HTML."
+}

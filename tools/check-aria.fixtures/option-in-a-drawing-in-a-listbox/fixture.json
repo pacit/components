@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"option\"> stands under <svg> (graphics-document)",
+  "$reason": "An option drawn in a map inside the reference's listbox. An `<svg>` is a `graphics-document` to Firefox 158 and SVG-AAM, and an element of the tree to Chromium 153 (`SvgRoot`; a nested one a group) — measured on 2026-10-19 — not one either looks through, so the option stands under it. axe's HTML table gives an `<svg>` no role, and the walk looked through it to the listbox."
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls a renderer's `createElement('text')` with no namespace, and 1.4.5 keeps resting on the scan. In the browser it is an HTML element of no kind; put into an `<svg>` and run on the server, it is written `<text>` into the page, which the HTML parser keeps in SVG, a text element. The scan asked for a namespace and found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly renderer = inject(Renderer2);\n  protected readonly label = this.renderer.createElement('text');\n}\n"
+  }
+}

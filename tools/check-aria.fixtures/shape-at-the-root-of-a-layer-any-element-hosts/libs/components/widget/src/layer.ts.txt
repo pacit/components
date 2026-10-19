@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+/**
+ * The layer on an SVG group, or on any element bearing its attribute: an HTML one among them.
+ */
+@Component({
+  selector: 'g[pctLayer], [pctLayer]',
+  templateUrl: './layer.html',
+})
+export class PctLayer {}

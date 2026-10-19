@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "message": "holds 1 element(s) a user can land on (<mrow>)",
+  "$reason": "A formula drawn as decoration, its host an image hidden from the tree, holding a MathML link, `<mrow href>`: MathML's own link attribute, a stop to Firefox 155 and WebKit 26.6 and not to Chromium 153, in the browser and after SSR alike (measured on 2026-10-19). axe's focusability knows no MathML link, and read through it the `<mrow>` was no stop, so the hidden host passed point 8."
+}

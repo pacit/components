@@ -1,0 +1,2 @@
+<!-- A formula, its one token a MathML link. -->
+<math class="pct-widget__formula"><mi><mrow href="#x">x</mrow></mi></math>

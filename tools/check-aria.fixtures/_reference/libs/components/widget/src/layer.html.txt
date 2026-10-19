@@ -1,0 +1,3 @@
+<!-- The layer's frame, drawn in the group that hosts it: an SVG shape to Angular, which takes the
+     namespace from the prefix, and to the HTML parser, which reads the page inside the group. -->
+<svg:rect class="pct-layer__frame" width="8" height="8" />

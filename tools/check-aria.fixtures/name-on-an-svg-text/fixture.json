@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<text> bind(s) [attr.aria-label] or [attr.aria-labelledby] to the inputs, and its role prohibits a name",
+  "$reason": "The reference's widget with the consumer's name handed, beside its triggers, to the label drawn as SVG `<text>`. SVG-AAM maps a `<text>` to a group, and neither engine does: generic to Chromium 153 and Firefox 158, named or not (measured on 2026-10-19). axe's HTML table knows no `<text>` and forbids it no name, so the name passed beside the carrier."
+}

@@ -226,17 +226,29 @@ const SCANS = {
   },
   'no-svg-text': {
     over: ['html', 'ts'],
-    // Inside an `<svg>` or in its namespace, `<svg:text>`, which `ngc` makes anywhere: no other
-    // prefix compiles to one, and SVG names keep their case in a template (`<TEXT>` is no text
-    // element there). A script's string in any case: the HTML parser `innerHTML` hands it to lowers
-    // `<TEXT>` inside an `<svg>` to a text element (Chromium 152) — over-approximated, an inline
-    // `template` holding `<TEXT>` too. A script makes one in a namespace: `createElementNS(…,
-    // 'text')`, a renderer's `createElement('text', 'svg')` — over-approximated, any namespace and
-    // any second argument.
+    // Inside an `<svg>` or in its namespace, `<svg:text>`, which `ngc` makes anywhere, in any case
+    // and any namespace the template writes, as the page the server rendered reads it: Angular
+    // draws `<TEXT>` in an `<svg>` as written, no text element in the browser, and its server
+    // renderer writes `<TEXT>` into the page, which the browser's HTML parser lowers to a drawn
+    // `<text>` that hydration keeps; an `<xhtml:text>` in an `<svg>` (built under
+    // `NO_ERRORS_SCHEMA`) is an HTML element to Angular and a `<text>` to the parser (Chromium 153,
+    // Firefox 155, WebKit 26.6, Angular 22.2's `renderApplication`, 2026-10-19) — over-approximated,
+    // a `<text>` outside any `<svg>` too. A script's string the same way, an inline `template`
+    // among them: the HTML parser `innerHTML` hands it to lowers `<TEXT>` inside an `<svg>` to a
+    // text element (Chromium 152). A script's own lines are read in lower case alone, where a type
+    // argument (`Set<Text>`, the DOM's text node) is no tag.
+    // A script makes one by name, in any case: `createElementNS(…, 'TEXT')` on the server is
+    // written `<TEXT>` into the page as the template's is, and so is a renderer's
+    // `createElement('text')` with no namespace put into an `<svg>` — over-approximated, any
+    // namespace and any second argument, or none.
     find: (path, text) =>
-      lineHolding(path, text, SVG_TEXT) ??
-      cookedHolding(path, text, MARKUP_SVG_TEXT) ??
-      createdIn(path, text, (c) => c.name === 'text' && c.namespaced),
+      lineHolding(
+        path,
+        text,
+        path.endsWith('.ts') ? SVG_TEXT_IN_CODE : SVG_TEXT,
+      ) ??
+      cookedHolding(path, text, SVG_TEXT) ??
+      createdIn(path, text, (c) => /^text$/i.test(c.name)),
     means: 'an SVG `<text>` element',
   },
 };
@@ -249,8 +261,8 @@ const MEDIA = /<(?:[a-z][a-z\d]*:)?(?:video|audio)\b/i;
  * that writes one (`tabindex: 5`).
  */
 const FLOOR = /tabindex\s*[:=]\s*["']?[1-9]/;
-const SVG_TEXT = /<(?:svg:)?text\b/;
-const MARKUP_SVG_TEXT = /<(?:svg:)?text\b/i;
+const SVG_TEXT = /<(?:[a-z][a-z\d]*:)?text\b/i;
+const SVG_TEXT_IN_CODE = /<(?:[a-z][a-z\d]*:)?text\b/;
 
 /** The end of a refusal that found what a scan forbids. */
 const BROKEN = ' — the claim "by construction" no longer holds';
@@ -1278,7 +1290,6 @@ const tsReading = memo((path, text) => {
           name: made.namespaced
             ? made.name.text.replace(/^[^:]*:/, '')
             : made.name.text,
-          namespaced: made.namespaced,
           spelling: node.getText(source),
         });
       if (calleeName(node) === 'matchMedia')
@@ -1319,7 +1330,6 @@ const tsReading = memo((path, text) => {
       created.push({
         line: lineOf(node),
         name: 'audio',
-        namespaced: false,
         spelling: node.getText(source),
       });
     if (accessedName(node)?.toLowerCase() === 'tabindex') {

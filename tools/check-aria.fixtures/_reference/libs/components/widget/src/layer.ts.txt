@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/**
+ * A component on an SVG group, as a chart draws a layer: its template's root stands in the group
+ * that hosts it, inside the consumer's drawing, so what it draws is written in the SVG namespace.
+ */
+@Component({
+  selector: 'g[pctLayer]',
+  templateUrl: './layer.html',
+})
+export class PctLayer {}

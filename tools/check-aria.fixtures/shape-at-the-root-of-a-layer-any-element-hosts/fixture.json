@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<rect>` in the SVG namespace to Angular, which draws it in the browser, and `<rect>` in HTML",
+  "$reason": "The reference's layer with a second selector, `[pctLayer]` alone, which puts it on any element bearing the attribute — a `<div>` among them, where its root `<svg:rect>` is an SVG element to Angular and an HTML one to the parser after SSR, as `shape-at-the-root-of-a-layer-hosted-in-html` has it. The host's tags were read with the parts that name none dropped, so the one left, `g`, put the root in SVG and the layer passed."
+}
