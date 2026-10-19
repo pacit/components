@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctBadge — recognised 0 static + 0 bound, and the attribute name appears 0 times as written and 1 as read",
+  "$reason": "The attribute's name in capitals with its hyphen written as an escape, in the host block of a class no entrypoint exports. ngc resolves the escape and the linker carries `'DATA-PCT-PART', 'widget-badge'` into `hostAttrs`, which the DOM lowercases into a part a consumer's selector matches (measured through ngc in partial mode and the linker by the review of this change). The counter over the text met no name, the escape standing in it, and the read in lowercase none either, so the part passed every point, on `main` too. The second count runs over the entries as the parser reads them and meets the name."
+}

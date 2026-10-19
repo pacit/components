@@ -1,0 +1,4 @@
+/** What the widget spreads into its `host` block, kept in a module of its own. */
+export const widgetHost = {
+  'aria-label': 'Items',
+};

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctBadge — recognised 1 static + 0 bound, and the attribute name appears 2 times as written and 1 as read",
+  "$reason": "A part written over the one a spread constant brings, under the same key. ngc's evaluator keeps the later entry in the earlier one's place and the linker carries `widget-tag` alone (measured through ngc in partial mode and the linker); the read composes the entries alike, so `widget-badge` is a part the sources write and no element carries. The text names the attribute twice and the entries once, and point 1 says so. A read keeping both entries listed the two parts and passed point 1."
+}

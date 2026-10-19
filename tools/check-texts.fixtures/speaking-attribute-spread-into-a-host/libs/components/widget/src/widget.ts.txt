@@ -12,8 +12,7 @@ export type PctWidgetSize = 'sm' | 'md' | 'lg';
 
 /**
  * What the widget spreads into its `host` block, the shape of `...fitHost` in
- * `field/src/affix.ts`: no regex over the block reads it, and its `aria-label` is written
- * `ARIA-LABEL`.
+ * `field/src/affix.ts`, its `aria-label` written `ARIA-LABEL`.
  */
 const widgetHost = {
   'ARIA-LABEL': 'Items',

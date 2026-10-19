@@ -1,0 +1,10 @@
+import { Directive } from '@angular/core';
+import { badgeHost } from './badge-host';
+
+@Directive({
+  selector: '[pctBadge]',
+  host: {
+    ...badgeHost,
+  },
+})
+export class PctBadge {}

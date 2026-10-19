@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "PctWidget — recognised 0 static + 0 bound, and the attribute name appears 1 times",
+  "$reason": "The attribute's name in capitals in an object spread into a component's `host` block, the shape `...fitHost` has in `field/src/affix.ts`. The linker carries `'DATA-PCT-PART', 'widget-root'` into `hostAttrs` as written and the DOM lowercases it into a part a consumer's selector matches (measured through ngc in partial mode and the linker). The read reads an entry under the name in lowercase, so it reads no part here, and the counter over the decorator's body saw no name: the part reached the package read alone, and on a class no entrypoint exports no read at all. The counter runs over every constant the block follows as well, and the name in it fails point 1. The class's code names a part in a selector, outside the decorator and the constant, where the counter does not look."
+}

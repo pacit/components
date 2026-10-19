@@ -1,0 +1,14 @@
+import { Directive } from '@angular/core';
+
+/**
+ * The badge's tone and its host block, kept in one statement and the block handed to the
+ * decorator by shorthand.
+ */
+const tone = 'quiet',
+  host = { 'data-pct-part': 'widget-badge' };
+
+@Directive({
+  selector: '[pctBadge]',
+  host,
+})
+export class PctBadge {}
