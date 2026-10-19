@@ -1,0 +1,19 @@
+{
+  "// defect": "`./alpha` carries three tags and no row, and the message lists them in code-unit order, the order a module namespace gives its keys in: `PctAlphaRange` before `PctAlphapicker`, and the old name `PctAlphaPicker` before `PctAlphapicker`. `localeCompare` would take the machine's locale and list both pairs the other way round — `pl-PL` puts `PctDatepicker` before `PctDateRange` — so the class a row names could differ between the desk and CI.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./alpha` carries 3 tags — PctAlpha, PctAlphaRange, PctAlphapicker (as PctAlphaPicker, PctAlphapicker) — and no probe imported",
+  "exports": {
+    "./alpha": {
+      "PctAlphapicker": {
+        "component": "PctAlphapicker"
+      },
+      "PctAlphaRange": {
+        "component": "PctAlphaRange"
+      },
+      "PctAlphaPicker": {
+        "component": "PctAlphapicker"
+      }
+    }
+  }
+}

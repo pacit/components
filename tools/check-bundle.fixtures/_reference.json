@@ -83,16 +83,18 @@
   "named": {
     "./beta": {
       "export": "PctBeta",
+      "imported": "PctB",
       "tags": 2,
       "bytes": 900,
       "all": 1400
     }
   },
-  "// why modules": "What each entrypoint's module exports, read by the gate's own `componentRecords` into the TAGS point 12 holds the rows to. Each value says what the key is — a component, a directive, a function or a value — and the label which object: one label is one class, wherever and under whatever key it stands. `./beta` exports `PctBeta` under a second name, `PctB`, that sorts before its own and is not a second tag, and a directive beside its two components, the way the real `./select` exports `PctSelectOptionTemplate`. The primary re-exports the kernel's provider as the very object the kernel exports, the way `.` re-exports `providePctConfig` from `./core`. The keys are written out of order on purpose: the case builder lists them in code-unit order, as a module namespace does.",
+  "// why modules": "What each entrypoint's module exports, read by the gate's own `componentRecords` into the TAGS point 12 holds the rows to. Each value says what the key is — a component, a directive, a function or a value — and the label which object: one label is one class, wherever and under whatever key it stands. `./beta` exports `PctBeta` under a second name, `PctB`, that sorts before its own and is not a second tag, and a directive beside its two components, the way the real `./select` exports `PctSelectOptionTemplate`. The primary re-exports the kernel's provider as the very object the kernel exports, the way `.` re-exports `providePctConfig` from `./core`, and exports a value that is `null`, which the reader passes over without reading a definition off it. The keys are written out of order on purpose: the case builder lists them in code-unit order, as a module namespace does.",
   "modules": {
     ".": {
       "providePctKernel": { "function": "providePctKernel" },
-      "PCT_VERSION": { "value": "1.0.0" }
+      "PCT_VERSION": { "value": "1.0.0" },
+      "PCT_DEFAULT": { "value": null }
     },
     "./alpha": {
       "PctAlpha": { "component": "PctAlpha" }

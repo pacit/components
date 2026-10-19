@@ -2,5 +2,6 @@
   "// defect": "Importing ONE class costs more than importing every class of the entrypoint. That cannot happen to one measurement of one entrypoint, so the two probes are measuring different things — the arithmetic is what says so, and no reading of the bytes themselves would.",
   "point": 12,
   "check": "shaken",
+  "message": "importing the class `PctBeta` alone (2000 B) is LARGER than importing all 2 tags of `./beta` (1400 B).",
   "namedProbe": { "ep": "./beta", "is": { "bytes": 2000 } }
 }

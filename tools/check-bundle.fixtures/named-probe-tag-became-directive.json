@@ -1,0 +1,13 @@
+{
+  "// defect": "`PctBetaItem` is a directive now, and the row of `./beta` still counts two tags — the row a component that lost its template leaves behind. A directive is not a tag, so the entrypoint carries one and has no row to write.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./beta` has a one-tag row counting 2 tags, and the components it exports are: PctBeta (as PctB, PctBeta).",
+  "exports": {
+    "./beta": {
+      "PctBetaItem": {
+        "directive": "PctBetaItem"
+      }
+    }
+  }
+}

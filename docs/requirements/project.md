@@ -204,14 +204,15 @@ cannot cost more than every class — while the numbers are held by point 13 wit
 row. And the rows are the package's: a tag is a component **object**, as the gates reading the
 package's classes count one, so a class exported under a second name is one tag, a class
 another entrypoint re-exports is a tag of each, and a row is owed to exactly the entrypoints
-carrying two, counting them and naming the first by its own name. Counted by export key, as
+carrying two or more, counting them, naming the first by its own name in code-unit order and
+importing it under one of its own keys. Counted by export key, as
 the point used to, `export { PctButton, PctButton as PctBtn }` gave `./button` a row of two
 tags 2 B apart, and `PctSelect as PctASelect` turned the probe of `./select` round to the other
 tag — both measured, and both written by `--write` with every point green. The budget's number is what an **application** carries, not
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 41 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 46 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
 and the read that takes the literal does not take it for the entrypoint),
@@ -228,16 +229,22 @@ removed), `named-probe-empty/` and `named-probe-larger/` (the one-tag measuremen
 bytes, and one class costing more than every class), `named-probe-missing/`,
 `named-probe-one-tag-two-names/`, `named-probe-counts-names/`, `named-probe-follows-an-alias/`,
 `named-probe-two-objects-one-name/`, `named-probe-reexport-counts/`,
-`named-probe-reexport-unmeasured/` and `named-probe-no-component/` (the rows held to the
-package's tags: a row owed and missing, a row for one class under two names, a count of names,
-a row an alias turned round, two objects bearing one name, a re-export counted in each
-entrypoint, both ways round, and a row for an entrypoint of directives) and
+`named-probe-reexport-unmeasured/`, `named-probe-no-component/`, `named-probe-names-a-key/`,
+`named-probe-tag-became-directive/`, `named-probe-tags-in-code-unit-order/`,
+`named-probe-imports-another-class/` and `named-probe-imports-the-class-name/` (the rows held
+to the package's tags: a row owed and missing, a row for one class under two names, a count of
+names, a row an alias turned round, two objects bearing one name, a re-export counted in each
+entrypoint, both ways round, a row for an entrypoint of directives, a row naming a key rather
+than the class, a tag that became a directive and left its row behind, tags in the order no
+locale moves, and a probe that imported another class or a name the entrypoint does not
+export) and
 `pair-no-larger-than-single/` —
 literally "an app importing two entrypoints must produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
 of the single message line that the old ±5% band had recorded nowhere, and point 12's first run was green — the
 paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them;
-point 12 was measured the same way — with its two rules disarmed both cases pass, and the
+point 12 was measured the same way — with its first two rules disarmed both of their cases
+passed, and the
 first reading it produced was WRONG, because it looked for the sibling's selector in the
 text instead of weighing it ([`lesson-171`](../lessons.md#lesson-171))
 **Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)

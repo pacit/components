@@ -164,7 +164,8 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText, residue } }`,
  *   `components` — `[{ entrypoint, exportedAs, class }]`, one per export key of a component
  *                  (`componentRecords`), which point 12 makes tags of (`tagsOf`),
- *   `named`     — `{ entrypoint: { export, tags, bytes, all } }`, the one-tag probes,
+ *   `named`     — `{ entrypoint: { export, imported, tags, bytes, all } }`, the one-tag
+ *                  probes: the class, the key its probe imported it under, and so on,
  *   `pair`      — `{ entrypoints: [a, b], bytes }`,
  *   `builder`   — `[{ entrypoints, found, overlay }]` from a real build.
  *
@@ -678,14 +679,15 @@ const checkBundle = (input) => {
   //     why.
   //
   //     And the rows are the package's: one for every entrypoint carrying two tags or more,
-  //     none for any other, each counting the entrypoint's tags and naming the first. A tag
-  //     is a component OBJECT (`tagsOf`). Counted by export key, as this point used to,
-  //     `export { PctButton, PctButton as PctBtn }` gave `./button` a row of two tags whose
-  //     second cost 2 B, and `PctSelect as PctASelect` gave `./select` three tags and a
-  //     probe of the other direction — both measured, and both written by `--write` with
-  //     every point green. On the live run the rows come from the same `tagsOf`, so these
-  //     rules hold the loop that measures them; in a case the rows are data, and they hold
-  //     the reading itself.
+  //     none for any other, each counting the entrypoint's tags, naming the first and
+  //     importing it under one of its own keys. A tag is a component OBJECT (`tagsOf`).
+  //     Counted by export key, as this point used to, `export { PctButton, PctButton as
+  //     PctBtn }` gave `./button` a row of two tags whose second cost 2 B, and `PctSelect
+  //     as PctASelect` gave `./select` three tags and a probe of the other direction — both
+  //     measured, and both written by `--write` with every point green. On the live run
+  //     the rows come from the same `tagsOf`, so these rules hold the loop: which
+  //     entrypoints it measures, what its rows say and which class its probe imported. In
+  //     a case the rows are data, and they hold the reading itself.
   const tags = tagsOf(input.components ?? []);
   const named = input.named ?? {};
   for (const [e, of] of Object.entries(tags))
@@ -724,10 +726,18 @@ const checkBundle = (input) => {
           `    The class a row measures is the first by the name its declaration gives ` +
           `it, so an alias that sorts first does not turn the reading round`,
       );
+    if (!of[0].names.includes(measurement.imported))
+      throw new BundleError(
+        'shaken',
+        `the row of \`${e}\` names \`${of[0].className}\`, and its probe imported ` +
+          `\`${measurement.imported}\`, which is not a name of that class: ${tagList(of)}.\n` +
+          `    The bytes of the row are then another class's, under this one's name`,
+      );
     if (!measurement.bytes)
       throw new BundleError(
         'shaken',
-        `the probe importing \`${measurement.export}\` from ` +
+        `the probe importing the class \`${measurement.export}\` ` +
+          `(\`${measurement.imported}\`) from ` +
           `\`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` produced no bytes.\n` +
           `    A named import the bundler dropped entirely measures nothing, and the row ` +
           `it writes would read as "one tag costs nothing" — the most flattering possible ` +
@@ -736,7 +746,7 @@ const checkBundle = (input) => {
     if (measurement.bytes > measurement.all)
       throw new BundleError(
         'shaken',
-        `importing \`${measurement.export}\` alone (${measurement.bytes} B) is LARGER ` +
+        `importing the class \`${measurement.export}\` alone (${measurement.bytes} B) is LARGER ` +
           `than importing all ${measurement.tags} tags of \`${e}\` ` +
           `(${measurement.all} B).\n` +
           `    One class cannot cost more than every class, so the two probes are not ` +
@@ -863,8 +873,8 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     '```',
     '',
     'And the second reading, for the entrypoints that carry more than one tag. The rows',
-    'are: entrypoint · the class a probe imported BY NAME · how many tags the entrypoint',
-    'has · the bytes of that one class · the bytes of a probe importing EVERY tag of it.',
+    'are: entrypoint · the class a probe imported ALONE · how many tags the entrypoint has ·',
+    'the bytes of that one class · the bytes of a probe importing EVERY tag of it.',
     'It answers the question everybody answers with "of course, ESM": whether importing one',
     'tag of an entrypoint sheds the rest of it. The two numbers side by side are the whole',
     'reading — where they are equal, nothing was shed and the entrypoint is the unit a',
@@ -893,11 +903,12 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     '   Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,',
     '   `PCT_TABS`), there is no reference and this half does not apply.',
     '',
-    'The reading is DIRECTIONAL, because the probe imports the first class by its own name.',
-    'A tag is a class, so a second name it is exported under is neither a second tag nor a',
-    'way to move the probe: `PctSelect` is shed or not shed by a bundle that asked for',
-    '`PctMultiSelect`, and the other direction can differ — an entrypoint whose group declares',
-    'providers pins the group when a consumer imports only the child.',
+    'The reading is DIRECTIONAL, because the probe imports one class: the first by the name',
+    'its declaration gives it, under whichever key it is exported. A tag is a class, so a',
+    'second name it is exported under is neither a second tag nor a way to move the probe:',
+    '`PctSelect` is shed or not shed by a bundle that asked for `PctMultiSelect`, and the',
+    'other direction can differ — an entrypoint whose group declares providers pins the group',
+    'when a consumer imports only the child.',
     '',
     '`./select` used to be the row neither half explained, and the answer was the first half',
     "after all: the orphan-slot report stood in each tag's `providers`, so a consumer who",
@@ -1076,7 +1087,9 @@ const componentRecords = (entrypoint, module) =>
  * tags of an entrypoint are in the order of their own names, so the class a row measures
  * does not move when an alias that sorts first is added (measured: `PctSelect as
  * PctASelect` took the probe of `./select` from `PctMultiSelect` to `PctSelect`, and the row
- * read three tags under a name no class bears).
+ * read three tags under a name no class bears). The order is code-unit, as a namespace
+ * orders its keys: `localeCompare` takes the machine's locale, and `pl-PL` puts
+ * `PctDatepicker` before `PctDateRange`, so the desk and CI could name different classes.
  */
 const tagsOf = (records) =>
   Object.fromEntries(
@@ -1087,9 +1100,12 @@ const tagsOf = (records) =>
           className: type.name,
           names: own.map((r) => r.exportedAs),
         }))
-        .sort((a, b) => a.className.localeCompare(b.className)),
+        .sort((a, b) => byCodeUnit(a.className, b.className)),
     ]),
   );
+
+/** The order a module namespace gives its keys in, which no locale moves. */
+const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** `PctBeta`, or `PctBeta (as PctB, PctBeta)` for a tag exported under any other key. */
 const tagList = (tags) =>
@@ -1411,6 +1427,9 @@ const measureRepository = async () => {
     const named = {};
     for (const [e, list] of Object.entries(tagsOf(components))) {
       if (list.length < 2 || !files.has(e)) continue;
+      // The key the probe imports is the key the row records, so point 12 reads the very
+      // name the bundle was asked for.
+      const imported = list[0].names[0];
       const one = await probe(
         esbuild,
         linker,
@@ -1418,7 +1437,7 @@ const measureRepository = async () => {
         markers,
         byFile,
         [e],
-        [list[0].names[0]],
+        [imported],
       );
       const all = await probe(
         esbuild,
@@ -1431,6 +1450,7 @@ const measureRepository = async () => {
       );
       named[e] = {
         export: list[0].className,
+        imported,
         tags: list.length,
         bytes: one.bytes,
         all: all.bytes,
@@ -1532,7 +1552,7 @@ const modulesOf = (described) => {
     entrypoint,
     module: Object.fromEntries(
       Object.entries(exported)
-        .toSorted(([a], [b]) => (a < b ? -1 : 1))
+        .toSorted(([a], [b]) => byCodeUnit(a, b))
         .map(([key, descriptor]) => [key, objectOf(descriptor)]),
     ),
   }));

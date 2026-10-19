@@ -84,8 +84,8 @@ before an application ships them.
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows
-are: entrypoint · the class a probe imported BY NAME · how many tags the entrypoint
-has · the bytes of that one class · the bytes of a probe importing EVERY tag of it.
+are: entrypoint · the class a probe imported ALONE · how many tags the entrypoint has ·
+the bytes of that one class · the bytes of a probe importing EVERY tag of it.
 It answers the question everybody answers with "of course, ESM": whether importing one
 tag of an entrypoint sheds the rest of it. The two numbers side by side are the whole
 reading — where they are equal, nothing was shed and the entrypoint is the unit a
@@ -114,11 +114,12 @@ tag nobody imported:
    Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,
    `PCT_TABS`), there is no reference and this half does not apply.
 
-The reading is DIRECTIONAL, because the probe imports the first class by its own name.
-A tag is a class, so a second name it is exported under is neither a second tag nor a
-way to move the probe: `PctSelect` is shed or not shed by a bundle that asked for
-`PctMultiSelect`, and the other direction can differ — an entrypoint whose group declares
-providers pins the group when a consumer imports only the child.
+The reading is DIRECTIONAL, because the probe imports one class: the first by the name
+its declaration gives it, under whichever key it is exported. A tag is a class, so a
+second name it is exported under is neither a second tag nor a way to move the probe:
+`PctSelect` is shed or not shed by a bundle that asked for `PctMultiSelect`, and the
+other direction can differ — an entrypoint whose group declares providers pins the group
+when a consumer imports only the child.
 
 `./select` used to be the row neither half explained, and the answer was the first half
 after all: the orphan-slot report stood in each tag's `providers`, so a consumer who

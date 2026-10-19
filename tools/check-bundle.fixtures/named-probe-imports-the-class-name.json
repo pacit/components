@@ -1,0 +1,11 @@
+{
+  "// defect": "`./beta` exports a third class, `PctAardvark`, only under the key `PctZed`, and the row's probe imported `PctAardvark` — the class's own name, which no key of the entrypoint holds. The row names the class by that name, but a probe imports a KEY: this import names nothing in the module, so it fails or resolves to something else, and its bytes are not the class's.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` names `PctAardvark`, and its probe imported `PctAardvark`, which is not a name of that class: PctAardvark (as PctZed), PctBeta (as PctB, PctBeta), PctBetaItem.",
+  "exports": { "./beta": { "PctZed": { "component": "PctAardvark" } } },
+  "namedProbe": {
+    "ep": "./beta",
+    "is": { "export": "PctAardvark", "imported": "PctAardvark", "tags": 3 }
+  }
+}
