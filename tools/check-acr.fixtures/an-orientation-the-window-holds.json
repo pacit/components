@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component reads `window.orientation`, the legacy angle, and 1.3.4 keeps resting on the scan. The scan read the stylesheets alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly upright = (window as unknown as { orientation: number }).orientation === 0;\n}\n"
+  }
+}

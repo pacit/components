@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `@HostBinding('attr.tabindex') get order() { return 1; }`, and 2.4.3 keeps resting on the scan. The getter is read on every check; the reading does not follow it and refuses it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @HostBinding('attr.tabindex') get order(): number {\n    return 1;\n  }\n}\n"
+  }
+}

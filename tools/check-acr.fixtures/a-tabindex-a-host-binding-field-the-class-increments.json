@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `@HostBinding('attr.tabindex') readonly order: number = 0` and its constructor `this.order++`, and 2.4.3 keeps resting on the scan. The field holds one by the time the host is bound.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @HostBinding('attr.tabindex') readonly order: number = 0;\n  constructor() {\n    this.order++;\n  }\n}\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template holds `<style>` with `@media (\\6f rientation: portrait)`, and 1.3.4 keeps resting on the scan. `ngc` takes the element into the component's styles, and the escape is the letter to the engine. The scan read the `.scss` files alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<style>\n  @media (\\6f rientation: portrait) {\n    span {\n      display: none;\n    }\n  }\n</style>\n<span>Ada</span>\n"
+  }
+}

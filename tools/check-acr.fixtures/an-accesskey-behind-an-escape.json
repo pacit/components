@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[attr.acc\\u0065sskey]': \"'k'\"`, and 2.1.4 keeps resting on the scan. TypeScript cooks the escape, and `ngc` reads the key as `[attr.accesskey]`. The raw text holds no `accesskey`, and the scan read the templates alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[attr.acc\\u0065sskey]': \"'k'\",\n  },\n})\nexport class PctAvatar {\n}\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template writes `tabindex=\" +01px\"`, and 2.4.3 keeps resting on the scan. HTML parses the attribute as an integer: it skips the space and the sign and stops at the first character that is no digit — one, a positive stop, where a number would be none. The scan wanted a digit from one to nine straight after the quote.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span tabindex=\" +01px\">Ada</span>\n"
+  }
+}

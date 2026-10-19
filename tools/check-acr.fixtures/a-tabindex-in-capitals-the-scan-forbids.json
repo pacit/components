@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains `TABINDEX=\"4\"`, and 2.4.3 keeps resting on the scan. The compiler hands the name on as written and `setAttribute` lowers it on an HTML element: a stop that jumps the order. Read in small letters alone, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span TABINDEX=\"4\">Ada</span>\n"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A stylesheet uses `@angular/cdk` and then queries `(\\6f rientation: portrait)`. The refusal names the query: the sheet compiles, with the package resolved as the build resolves it, and a reading that failed the `@use` would refuse it as a sheet that does not compile.",
+  "says": ["avatar.scss` compiles to one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.scss": "@use '@angular/cdk';\n\n:host {\n  display: inline-block;\n}\n\n@media (\\6f rientation: portrait) {\n  :host {\n    display: none;\n  }\n}\n"
+  }
+}

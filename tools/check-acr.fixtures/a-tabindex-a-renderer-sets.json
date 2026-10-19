@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component calls `renderer.setAttribute(el, 'tabindex', '1')`, and 2.4.3 keeps resting on the scan. The name stands before a quote and a comma, never before `=`, and the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly renderer = inject(Renderer2);\n  private readonly el = inject(ElementRef);\n  constructor() {\n    this.renderer.setAttribute(this.el.nativeElement, 'tabindex', '1');\n  }\n}\n"
+  }
+}

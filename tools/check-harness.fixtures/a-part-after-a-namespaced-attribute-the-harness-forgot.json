@@ -1,0 +1,17 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctButton's definition draws a third part on an SVG `<use>` after its `xlink:href`: `[0, 'xlink', 'href', '#pct-glyph', 'data-pct-part', 'glyph']` in `consts` (the shape measured through ngc and the linker). PctButtonHarness names `label` and `spinner` alone. The read stopped at the namespace marker and saw two parts.",
+  "message": "glyph",
+  "classes": {
+    "PctButton": {
+      "def": {
+        "consts": [
+          ["data-pct-part", "label"],
+          ["data-pct-part", "spinner"],
+          [0, "xlink", "href", "#pct-glyph", "data-pct-part", "glyph"]
+        ]
+      }
+    }
+  }
+}

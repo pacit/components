@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[tabIndex]=\"2\"`, the property the attribute reflects, and 2.4.3 keeps resting on the scan. Read as `tabindex` followed by `=` or `:`, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [tabIndex]=\"2\">Ada</span>\n"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component writes `@Input() @HostBinding('attr.tabindex') readonly order = 0`, and 2.4.3 keeps resting on the scan. An input holds what a template gives it, the library's own templates among them; and a member any decorator but `@HostBinding` carries is no kept one, `@Input` under any name or one that replaces the member.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, Input, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  @Input() @HostBinding('attr.tabindex') readonly order = 0;\n}\n"
+  }
+}

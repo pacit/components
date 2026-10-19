@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's `styles` and the queries it calls select `[tabindex]`, with an operator and a flag, and then it writes `'5'`. The refusal names that last line: a selector a query or a sheet takes names the attribute and writes nothing.",
+  "says": ["avatar.ts:15` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  styles: [':host [tabindex] { outline: none; }'],\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.querySelector('[tabindex]');\n    this.el.querySelectorAll('[tabindex^=\"-\"]');\n    this.el.closest('[tabindex^=\"-\" i]');\n    this.el.matches('[tabindex]');\n    this.el.setAttribute('tabindex', '5');\n  }\n}\n"
+  }
+}

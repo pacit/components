@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component hands `innerHTML` `String(/<b TABINDEX=\"5\">Ada<\\/b>/)`, and 2.4.3 keeps resting on the scan. A pattern's text is markup to the engine once a string holds it, and the reading read strings alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, ElementRef, inject } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  constructor() {\n    this.el.innerHTML = String(/<b TABINDEX=\"5\">Ada<\\/b>/);\n  }\n}\n"
+  }
+}

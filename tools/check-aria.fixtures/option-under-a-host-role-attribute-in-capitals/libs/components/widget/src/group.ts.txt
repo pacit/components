@@ -1,0 +1,16 @@
+import { Component, input } from '@angular/core';
+
+/** A container whose role an expression decides, through the attribute binding. */
+@Component({
+  selector: 'pct-group',
+  templateUrl: './group.html',
+  host: {
+    class: 'pct-group',
+    '[attr.ROLE]': 'multiple() ? "listbox" : "radiogroup"',
+    '[attr.aria-labelledby]': 'labelledBy()',
+  },
+})
+export class PctGroup {
+  protected readonly labelledBy = input<string>('');
+  protected readonly multiple = input(false);
+}

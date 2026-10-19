@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "message": "writes aria-label into its host block",
+  "$reason": "`host-name-without-role`'s shape with the role bound as `'[ROLE]'`. A property is named in its own case: `ROLE` is an expando nothing reads, and the host carries no role, so the name on it is read by nobody. Taken for the role binding, the host passed as one an expression gives a role."
+}

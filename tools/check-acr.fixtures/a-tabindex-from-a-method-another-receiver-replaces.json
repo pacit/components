@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `protected order()` returning `0`, and a function of the file writes `(avatar as any).order = () => 5` on an instance it is handed, and 2.4.3 keeps resting on the scan. The reading read a write through `this` and the prototype alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  protected order(): number {\n    return 0;\n  }\n}\n\nexport function reorder(avatar: PctAvatar): void {\n  (avatar as any).order = () => 5;\n}\n"
+  }
+}

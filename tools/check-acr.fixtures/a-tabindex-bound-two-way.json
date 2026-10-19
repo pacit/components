@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template binds `[(tabindex)]=\"order\"`, and 2.4.3 keeps resting on the scan. A two-way binding sets the property as a one-way one does, and its value is a field, which the template does not say: the reading refuses a value it cannot judge rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<span [(tabindex)]=\"order\">Ada</span>\n"
+  }
+}

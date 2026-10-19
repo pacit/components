@@ -44,9 +44,13 @@ gate's fixture may not be another's defect.
 The reading from the built package arrives as data (`package.json`) rather than from a real
 Angular build — the same choice as in `check-parts` and `check-zoneless` and for the same
 reason: a build for each of the sixty-odd cases would cost minutes, and the gate runs on
-every commit. The price is outright: the code reading `ɵcmp.consts` and `ɵdir.hostAttrs` is
-not exercised here once. It is exercised instead by **every** run against the real
-repository.
+every commit. Most cases give a class's static attributes as pairs, and the code reading
+`ɵcmp.consts` and `ɵdir.hostAttrs` is not exercised by them. A class may give the two arrays
+themselves, as the linker leaves them, and those are read by the function the package read uses
+(`attributesOf`, over `static-attributes.mjs`): `a-title-after-a-namespaced-attribute` gives
+`consts`, because a read that stopped at the namespace marker lost every attribute after it, and
+`attribute-from-spread` gives `hostAttrs`, so that a read losing the host's half fails a case
+too. A case handing over the pairs could have shown neither.
 
 What the cases do exercise is how the package's classes are told apart. Each entry of
 `package.json` is one class — one object — and `exports` lists the names it is exported under

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template closes a tag it never opened, `<b></i>`, and 2.4.3 keeps resting on the scan. The build refuses such a template; the scan, which reads the parsed tree, cannot read it either, and says so rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<b>Ada</i>\n"
+  }
+}

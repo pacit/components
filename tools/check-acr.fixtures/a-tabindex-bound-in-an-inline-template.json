@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's inline `template` binds `[tabindex]=\"1\"`, and 2.4.3 keeps resting on the scan. A template in a string is a template: the reading parses it as it parses a file. The scan read `tabindex` straight before `=`, and a bracket stood there.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  template: '<i [tabindex]=\"1\"></i>',\n})\nexport class PctAvatar {\n}\n"
+  }
+}

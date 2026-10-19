@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[innerHTML]': \"'<b tabindex=' + rank + '>Ada</b>'\"`, and 2.4.3 keeps resting on the scan. `ngc` parses the binding as an expression, whose string leaves the value to `rank`; read as one string, the value was the quoted text.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[innerHTML]': \"'<b tabindex=' + rank + '>Ada</b>'\",\n  },\n})\nexport class PctAvatar {\n  protected readonly rank = 5;\n}\n"
+  }
+}

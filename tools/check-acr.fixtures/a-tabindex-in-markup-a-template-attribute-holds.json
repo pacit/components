@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template's `<iframe>` holds `srcdoc=\"&lt;b tab&#105;ndex=&quot;5&quot;&gt;…\"`, and 2.4.3 keeps resting on the scan. The engine parses the value as a document, its entities decoded, the name's among them. The pattern on main saw no `tabindex` there, and the reading read a template's markup only in its expressions.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<iframe title=\"Ada\" srcdoc=\"&lt;b tab&#105;ndex=&quot;5&quot;&gt;Ada&lt;/b&gt;\"></iframe>\n"
+  }
+}

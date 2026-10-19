@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component asks `matchMedia('(\\\\6f rientation: portrait)')`, and 1.3.4 keeps resting on the scan. The engine reads the CSS escape as an `o` (Chromium 152); the reading compiles the query as it compiles a sheet.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  protected readonly tall = matchMedia('(\\\\6f rientation: portrait)').matches;\n}\n"
+  }
+}

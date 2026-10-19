@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component's `styles` is a constant, `STYLES`, and 1.3.4 keeps resting on the scan. `ngc` evaluates the constant; the reading holds no sheet there and refuses it rather than pass it.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\nconst STYLES = ':host { display: block; }';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  styles: [STYLES],\n})\nexport class PctAvatar {\n}\n"
+  }
+}

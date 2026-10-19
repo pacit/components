@@ -176,6 +176,17 @@ const walk = (nodes, inside, found) => {
           i.value?.source ?? i.sourceSpan.toString(),
         ]),
       ),
+      // The part as `check-parts` reads one: written in any case, which `setAttribute` lowers on
+      // an HTML element (`DATA-PCT-PART="arrow"`), and bound by any input of the name, `attr.`
+      // or not (`[attr.data-pct-part]`). `name` above is an input of the icon, matched as written.
+      part: [
+        ...(node.attributes ?? [])
+          .filter((a) => a.name.toLowerCase() === PART)
+          .map((a) => `${a.name}="${a.value}"`),
+        ...(node.inputs ?? [])
+          .filter((i) => i.name.toLowerCase() === PART)
+          .map((i) => i.sourceSpan.toString()),
+      ][0],
       // An icon holding an `@let` alone passed point 4 as one with a drawing of its own.
       children: (node.children ?? []).filter(draws).length,
     };
@@ -424,8 +435,8 @@ const checkIcons = ({ templates, names }) => {
   // ── 6. the part is the box ───────────────────────────────────────────────────
   const buried = read.flatMap((t) =>
     t.elements
-      .filter((e) => e.inside !== null && e.attributes.has(PART))
-      .map((e) => `${t.file}: \`${e.attributes.get(PART)}\` on <${e.tag}>`),
+      .filter((e) => e.inside !== null && e.part !== undefined)
+      .map((e) => `${t.file}: \`${e.part}\` on <${e.tag}>`),
   );
   if (buried.length)
     throw new IconError(

@@ -1,0 +1,14 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "`2.4.3` rests on a scan named `constructor`, a key every object answers from its prototype, and the gate knows no such scan. Looked up as a plain key, the name found a function, and the row stood at Supports on a scan that does not exist: 'no match in function Object() … source files'. A scan is looked up by its own key.",
+  "criteria": {
+    "2.4.3": {
+      "evidence": [
+        {
+          "scan": "constructor"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component reads `new Gyroscope({ frequency: 60 })`, and 2.5.4 keeps resting on the scan. A sensor of the Generic Sensor API reads the same motion as the event. The scan knew the events alone.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  constructor() {\n    new Gyroscope({ frequency: 60 }).start();\n  }\n}\n"
+  }
+}

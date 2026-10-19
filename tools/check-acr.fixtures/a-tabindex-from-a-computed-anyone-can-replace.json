@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A `host` block binds `'[tabindex]': 'order()'` to `order = computed(() => 0)`, a field that is not `readonly`, and 2.4.3 keeps resting on the scan. Whatever holds the instance can put another `computed` there: the initializer is not what the binding reads.",
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Component, computed, ElementRef, HostBinding, inject, input, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n  host: {\n    '[tabindex]': 'order()',\n  },\n})\nexport class PctAvatar {\n  order = computed(() => 0);\n}\n"
+  }
+}

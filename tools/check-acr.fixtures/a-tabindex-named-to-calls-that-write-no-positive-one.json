@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A component names `tabindex` to every call that reads, tests, removes, binds or injects the attribute, and to three that write `0` or `-1`, and then writes `'5'`. The refusal names that last line: a call naming the attribute is no name the reading loses, and a reading that refused one of them would name its line first.",
+  "says": ["avatar.ts:26` holds one"],
+  "sources": {
+    "libs/components/avatar/src/avatar.ts": "import { Attribute, Component, ElementRef, HostAttributeToken, HostBinding, inject, Renderer2 } from '@angular/core';\n\n@Component({\n  selector: 'pct-avatar',\n  templateUrl: './avatar.html',\n})\nexport class PctAvatar {\n  private readonly el = inject(ElementRef).nativeElement as HTMLElement;\n  private readonly renderer = inject(Renderer2);\n  private readonly given = inject(new HostAttributeToken('tabindex'), {\n    optional: true,\n  });\n  @HostBinding('attr.tabindex') protected readonly order = 0;\n\n  constructor(@Attribute('tabindex') readonly said: string | null) {\n    this.el.getAttribute('tabindex');\n    this.el.getAttributeNS(null, 'tabindex');\n    this.el.hasAttribute('tabindex');\n    this.el.hasAttributeNS(null, 'tabindex');\n    this.el.toggleAttribute('tabindex');\n    this.el.removeAttribute('tabindex');\n    this.el.removeAttributeNS(null, 'tabindex');\n    this.el.setAttribute('tabindex', '0');\n    this.el.setAttributeNS(null, 'tabindex', '-1');\n    this.renderer.setProperty(this.el, 'tabIndex', 0);\n    this.el.setAttribute('tabindex', '5');\n  }\n}\n"
+  }
+}

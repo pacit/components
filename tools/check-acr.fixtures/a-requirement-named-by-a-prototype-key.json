@@ -1,0 +1,17 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "`2.4.3` cites a requirement named `constructor`, a key every object answers from its prototype, and no requirement declares it. Looked up as a plain key, the name found a function, and the report linked to `function Object() { [native code] }`. A requirement is looked up by its own key.",
+  "criteria": {
+    "2.4.3": {
+      "evidence": [
+        {
+          "req": "constructor"
+        },
+        {
+          "scan": "no-positive-tabindex"
+        }
+      ]
+    }
+  }
+}
