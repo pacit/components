@@ -1,0 +1,2 @@
+/** The signal-forms entry point under a namespace of its own. */
+export * as signals from '@angular/forms/signals';

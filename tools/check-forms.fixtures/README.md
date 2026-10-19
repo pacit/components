@@ -45,42 +45,47 @@ found — the file, the line, the class — says it in the message, and the righ
 something else is a fault as well. `control-anonymous` and `control-exported-as-the-default`
 hold the place and the name of the control they refuse, `header-in-a-comment` the header's,
 `transform-dropped` the line of a member, the two member cases at point 3 the class and the
-member, and `base-without-a-header` the base the chain stopped at.
+member, and `checkbox-member-missing` and the three cases of a base this reading has not got the
+whole list of where a chain stopped — nothing for a control with no base, one line for two tags
+over one base, none for a control that lacks nothing, and what the base stands for.
 
 ## The cases
 
-| directory                                 | point | check         | rule                   | defect                                                                    |
-| ----------------------------------------- | ----: | ------------- | ---------------------- | ------------------------------------------------------------------------- |
-| `policy-removed`                          |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has                 |
-| `sources-without-a-class`                 |     1 | `denominator` | `no-classes`           | sources the reading finds no class in                                     |
-| `header-in-a-comment`                     |     1 | `denominator` | `header-without-class` | a class header in a comment                                               |
-| `header-in-a-comment-beside-its-namesake` |     1 | `denominator` | `header-without-class` | the same, beside the control of its name, which it took the place of      |
-| `control-in-a-namespace-at-the-margin`    |     1 | `denominator` | `header-without-class` | a namespace's control left at the margin, its header read                 |
-| `control-unexported`                      |     1 | `denominator` | `control-unread`       | a control declared without `export`, its members handed to the one above  |
-| `control-nested`                          |     1 | `denominator` | `control-unread`       | a control declared inside a function, indented                            |
-| `control-nested-beside-its-namesake`      |     1 | `denominator` | `control-unread`       | the same under the name of the control a header stands at in the file     |
-| `control-anonymous`                       |     1 | `denominator` | `control-unread`       | a control written as a class expression                                   |
-| `control-exported-as-the-default`         |     1 | `denominator` | `control-unread`       | a control exported as the default, with no name, refused where it starts  |
-| `control-in-a-namespace`                  |     1 | `denominator` | `control-unread`       | a control exported from a namespace, indented                             |
-| `control-in-a-method`                     |     1 | `denominator` | `control-unread`       | a control declared inside a static method of a class that is none         |
-| `every-control-unread`                    |     1 | `denominator` | `control-unread`       | the library's one control nested, refused before `no-controls`            |
-| `contract-unreadable`                     |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
-| `no-controls`                             |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
-| `block-outside-the-contract`              |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
-| `member-missing`                          |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
-| `control-behind-a-namesake`               |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
-| `member-lent-by-a-class-without-a-header` |     3 | `block`       | `member-missing`       | a control with no `disabled`, below it an unexported class that has one   |
-| `member-in-a-comment`                     |     3 | `block`       | `member-missing`       | a control's `touched` retired into a comment inside its body              |
-| `checkbox-member-missing`                 |     3 | `block`       | `member-missing`       | a control of `FormCheckboxControl` with no `touched`                      |
-| `contract-under-another-name`             |     3 | `block`       | `member-missing`       | the same of `FormValueControl`, imported under another name               |
-| `contract-through-a-namespace`            |     3 | `block`       | `member-missing`       | the same, named through a namespace import                                |
-| `contract-after-another`                  |     3 | `block`       | `member-missing`       | the same, the contract second in the `implements` clause                  |
-| `contract-inside-another-type`            |     3 | `block`       | `member-missing`       | the same, the contract a type argument of `Readonly<…>`                   |
-| `contract-deep-inside-another-type`       |     3 | `block`       | `member-missing`       | the same, two types down inside an intersection                           |
-| `contract-through-an-import-type`         |     3 | `block`       | `member-missing`       | the same, named by an import type                                         |
-| `base-named-like-another-class`           |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
-| `base-without-a-header`                   |     3 | `block`       | `member-missing`       | the block on an unexported root, the refusal naming where the chain stops |
-| `transform-dropped`                       |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
+| directory                                  | point | check         | rule                   | defect                                                                    |
+| ------------------------------------------ | ----: | ------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `policy-removed`                           |     1 | `denominator` | `no-policy`            | no block declared, so the members are whatever a file has                 |
+| `sources-without-a-class`                  |     1 | `denominator` | `no-classes`           | sources the reading finds no class in                                     |
+| `header-in-a-comment`                      |     1 | `denominator` | `header-without-class` | a class header in a comment                                               |
+| `header-in-a-comment-beside-its-namesake`  |     1 | `denominator` | `header-without-class` | the same, beside the control of its name, which it took the place of      |
+| `control-in-a-namespace-at-the-margin`     |     1 | `denominator` | `header-without-class` | a namespace's control left at the margin, its header read                 |
+| `control-unexported`                       |     1 | `denominator` | `control-unread`       | a control declared without `export`, its members handed to the one above  |
+| `control-nested`                           |     1 | `denominator` | `control-unread`       | a control declared inside a function, indented                            |
+| `control-nested-beside-its-namesake`       |     1 | `denominator` | `control-unread`       | the same under the name of the control a header stands at in the file     |
+| `control-anonymous`                        |     1 | `denominator` | `control-unread`       | a control written as a class expression                                   |
+| `control-exported-as-the-default`          |     1 | `denominator` | `control-unread`       | a control exported as the default, with no name, refused where it starts  |
+| `control-in-a-namespace`                   |     1 | `denominator` | `control-unread`       | a control exported from a namespace, indented                             |
+| `control-in-a-method`                      |     1 | `denominator` | `control-unread`       | a control declared inside a static method of a class that is none         |
+| `every-control-unread`                     |     1 | `denominator` | `control-unread`       | the library's one control nested, refused before `no-controls`            |
+| `contract-unreadable`                      |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
+| `no-controls`                              |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
+| `block-outside-the-contract`               |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
+| `member-missing`                           |     3 | `block`       | `member-missing`       | a control with no `touched`                                               |
+| `control-behind-a-namesake`                |     3 | `block`       | `member-missing`       | a control without its block, beside a class of its name that is none      |
+| `member-lent-by-a-class-without-a-header`  |     3 | `block`       | `member-missing`       | a control with no `disabled`, below it an unexported class that has one   |
+| `member-in-a-comment`                      |     3 | `block`       | `member-missing`       | a control's `touched` retired into a comment inside its body              |
+| `checkbox-member-missing`                  |     3 | `block`       | `member-missing`       | a control of `FormCheckboxControl` with no `touched`                      |
+| `contract-under-another-name`              |     3 | `block`       | `member-missing`       | the same of `FormValueControl`, imported under another name               |
+| `contract-through-a-namespace`             |     3 | `block`       | `member-missing`       | the same, named through a namespace import                                |
+| `contract-after-another`                   |     3 | `block`       | `member-missing`       | the same, the contract second in the `implements` clause                  |
+| `contract-inside-another-type`             |     3 | `block`       | `member-missing`       | the same, the contract a type argument of `Readonly<…>`                   |
+| `contract-deep-inside-another-type`        |     3 | `block`       | `member-missing`       | the same, two types down inside an intersection                           |
+| `contract-through-an-import-type`          |     3 | `block`       | `member-missing`       | the same, named by an import type                                         |
+| `contract-through-a-qualified-import-type` |     3 | `block`       | `member-missing`       | the same, an import type qualified twice, a comment inside                |
+| `base-named-like-another-class`            |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
+| `base-without-a-header`                    |     3 | `block`       | `member-missing`       | the block on an unexported root, the refusal naming where the chain stops |
+| `base-from-a-package`                      |     3 | `block`       | `member-missing`       | a control over a package's class lacking one member, the module named     |
+| `base-from-an-expression`                  |     3 | `block`       | `member-missing`       | a control over a mixin's result, the base followed to no class            |
+| `transform-dropped`                        |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
 `transform-dropped` is the case this gate was written for, and it is worth reading beside
 `member-missing`: they are the two halves of one promise and they break independently. A
@@ -132,14 +137,15 @@ comment at a member's indentation was a member: `member-lent-by-a-class-without-
 could not place, `unattributed`, is gone with the reading by position, and with it the case of a
 member above every class, which the parser holds as none.
 
-Which class is a control is the parser's too, off the class's own `implements` clause, and seven
+Which class is a control is the parser's too, off the class's own `implements` clause, and eight
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the
 clause or at any depth within a type of it, through a named import under another name, as the
-last part of a qualified name, or as an import type's qualifier. `contract-under-another-name`
+last part of a qualified name, or as the last part of an import type's qualifier, read off the
+parser's names and not the text, which a comment inside the qualifier stands in. `contract-under-another-name`
 passed on main, whose pattern over the header found no contract's name in
 `implements PctValueContract<number>`; `contract-inside-another-type` and
 `contract-through-an-import-type` passed on an earlier reading of this one, of the clause's own
-types (measured). A contract wrapped in a type of the clause makes a control, which errs toward
+types, and `contract-through-a-qualified-import-type` on one of the qualifier's text (measured). A contract wrapped in a type of the clause makes a control, which errs toward
 measuring a class, never toward leaving one out. What the clause reaches through another name of
 the sources — a type alias, an interface extending a contract, a base that implements one — is
 not read, which is said in the gate and not held by a case.
@@ -167,8 +173,8 @@ three; without its guards it stopped on each (measured: `bound.elements is not i
 `reading 'namedBindings'`, and `reading 'text'`). The reading of what a class implements walks
 the same imports, and stops on the two imports without its own guards (measured).
 
-`lookalike.ts` holds three classes that are no control and carry none of the block, each
-refused by point 3 under a reading that took it for one (measured): `PctLookalike` implements an
+`lookalike.ts` holds four classes that are no control and carry none of the block. Three are
+refused by point 3 under a reading that took them for one (measured): `PctLookalike` implements an
 interface the file declares under a contract's name, which TypeScript binds there in the
 contract's place, and is a control to a reading by the name alone; `PctLegacyDial` extends a
 class of the sources under a contract's name (`legacy.ts`), imported under another, and is one to
@@ -176,7 +182,7 @@ a reading of `extends` as well as `implements`; `PctPlain` implements an importe
 is neither contract, and is one to a reading taking any name a named import binds.
 `PctModuleShaped` implements `Partial<typeof import('@angular/core')>`, an import type with no
 qualifier, which names no contract, and stops a reading that takes every import type to have one
-(measured: `reading 'getText'`).
+(measured: `reading 'kind'`).
 
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on

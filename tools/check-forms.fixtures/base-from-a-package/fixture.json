@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control over a package's class, `CdkMenuItem` of `@angular/cdk/menu`, declaring all of the block but `touched`. The package's class is no class this reading has, so the chain stops there, and the refusal says so of a control missing one member of four, naming the module the file imports the base from.",
+  "message": "PctDial extends `CdkMenuItem`, which the file imports from '@angular/cdk/menu', where no class of the sources is declared `export class` under that name\n    Every member"
+}

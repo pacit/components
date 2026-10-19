@@ -151,7 +151,7 @@ none of those tests: deleting the interop suites would have failed nothing this 
 named
 **Control:** the tests start from a **non-empty** initial value — with an empty model the
 regression in [`lesson-26`](../lessons.md#lesson-26) was invisible; and
-`tools/check-forms.fixtures/` for the structural half — thirty prepared inputs, of which
+`tools/check-forms.fixtures/` for the structural half — thirty-three prepared inputs, of which
 `transform-dropped` is the defect the gate was written for and `member-missing` its other
 half, eight a control the reading had no header for (`control-unexported` the first) and two a
 member a reading by position credited to the wrong class, plus a run against the repository:

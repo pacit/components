@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control over a mixin's result, `extends pctFocusable(PctDialBase)`, with no `touched`. A base expression other than a name stands for no class this reading follows, and the refusal says so, without the note it gives a class no header stands at.",
+  "message": "PctDial extends `pctFocusable(PctDialBase)`, which this read follows to no class\n    Every member"
+}

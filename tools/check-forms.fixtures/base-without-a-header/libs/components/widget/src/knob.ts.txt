@@ -19,10 +19,10 @@ abstract class PctKnobRoot {
   readonly touch = output<void>();
 }
 
-/** The base the tag stands on, between it and the root. */
+/** The base the two tags stand on, between them and the root. */
 export abstract class PctKnobBase extends PctKnobRoot {}
 
-/** The tag over that base. */
+/** A tag over that base. */
 @Component({ selector: 'pct-knob', template: '' })
 export class PctKnob
   extends PctKnobBase
@@ -30,4 +30,42 @@ export class PctKnob
 {
   /** The value — the contract's one required member. */
   readonly value = model<number | null>(null);
+}
+
+/** A second tag over the same base: one chain, one place it stops. */
+@Component({ selector: 'pct-knob-mini', template: '' })
+export class PctKnobMini
+  extends PctKnobBase
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+}
+
+/** A spare base declared without `export`, carrying nothing. */
+abstract class PctKnobSpare {}
+
+/** A control over the spare base declaring the whole block itself: it lacks nothing. */
+@Component({ selector: 'pct-knob-full', template: '' })
+export class PctKnobFull
+  extends PctKnobSpare
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once. */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
 }

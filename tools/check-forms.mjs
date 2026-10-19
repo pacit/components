@@ -143,15 +143,16 @@ const classesIn = (file, text, owners) => {
  * one out. It is named by a named import of the file under the contract's name, from whatever
  * module — through `FormValueControl as PctValueContract`, `PctValueContract` is the contract —
  * by the last part of a qualified name, `signals.FormValueControl` through a namespace import,
- * or by an import type's, `import('@angular/forms/signals').FormValueControl`. A name no
- * named import binds is none: an interface the file declares under a contract's name is what
- * TypeScript binds the name to there. Not read is a contract reached through another name of the
- * sources — a type alias (`type PctContract<T> = FormValueControl<T>`), an interface extending
+ * or by the last part of an import type's qualifier, of whatever module as well
+ * (`import('@angular/forms/signals').FormValueControl`, `import('./x').signals.FormValueControl`).
+ * A name no named import binds is none: an interface the file declares under a contract's name is
+ * what TypeScript binds the name to there. Not read is a contract reached through another name of
+ * the sources — a type alias (`type PctContract<T> = FormValueControl<T>`), an interface extending
  * one, a re-export under another name — or through a base that implements it: what is read is
  * the clause, not the type TypeScript's checker resolves it to, and a class implementing a
- * contract that way is no control here, a header standing at it or not. A class's `extends` clause is
- * not read: a class of the sources may carry a contract's name, and one extending it is no
- * control (`lookalike.ts` in the reference input).
+ * contract that way is no control here, a header standing at it or not. A class's `extends`
+ * clause is not read: a class of the sources may carry a contract's name, and one extending it is
+ * no control (`lookalike.ts` in the reference input).
  */
 const parsedIn = (file, text) => {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
@@ -184,8 +185,11 @@ const parsedIn = (file, text) => {
         ? contract(node.expression)
         : ts.isTypeReferenceNode(node)
           ? contract(node.typeName)
-          : ts.isImportTypeNode(node)
-            ? node.qualifier?.getText(source).split('.').at(-1)
+          : ts.isImportTypeNode(node) && node.qualifier !== undefined
+            ? (ts.isQualifiedName(node.qualifier)
+                ? node.qualifier.right
+                : node.qualifier
+              ).text
             : undefined,
     ) || ts.forEachChild(node, reaches) === true;
   const where = (node) => (node.name ?? node).getStart(source);

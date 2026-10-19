@@ -1,0 +1,26 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import type { ValidationError } from '@angular/forms/signals';
+
+/**
+ * A control whose contract is an import type of a barrel, qualified twice and with a comment
+ * inside the qualifier, with no `touched`. TypeScript compiles it, and prettier keeps it so.
+ */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements Readonly<
+  import('./barrel').signals./* the contract */ FormValueControl<number>
+> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}
