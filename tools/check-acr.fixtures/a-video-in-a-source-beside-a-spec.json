@@ -1,0 +1,10 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A subdirectory of an entrypoint holds a spec and a source, both with a `<video>` in a string, and 1.2.1 keeps resting on the scan. A spec reaches no consumer and the reader leaves it out at any depth, so the refusal names the source, listed after it by name; a reader that took the spec names the spec's line first. Laid on disk and read by the live reader (`tree`).",
+  "tree": {
+    "libs/components/avatar/src/parts/a.spec.ts": "export const page = '<video controls></video>';\n",
+    "libs/components/avatar/src/parts/b.ts": "export const frame = '<video controls></video>';\n"
+  },
+  "says": ["libs/components/avatar/src/parts/b.ts:1"]
+}

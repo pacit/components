@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template two directories below an entrypoint's `src` gains a `<video>` while 1.2.1 keeps resting on the scan that forbids one. ng-packagr compiles what the entry file reaches, at any depth, and the reader took one level of the secondary entrypoints until 2026-10-19: the scan found none. The file is laid on disk and read by the reader the live run reads with (`tree`), so the case holds the reader and not only the scan.",
+  "tree": {
+    "libs/components/avatar/src/parts/frame/frame.html": "<video controls></video>\n"
+  },
+  "says": ["libs/components/avatar/src/parts/frame/frame.html:1"]
+}

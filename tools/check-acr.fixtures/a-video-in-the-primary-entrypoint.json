@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the primary entrypoint, `libs/components/src` — `@pacit/components` itself — gains a `<video>` while 1.2.1 keeps resting on the scan. The reader looked for `<entry>/src` under the library and so never at the library's own `src`: the scan found none. Laid on disk and read by the live reader (`tree`).",
+  "tree": {
+    "libs/components/src/intro.html": "<video controls></video>\n"
+  },
+  "says": ["libs/components/src/intro.html:1"]
+}
