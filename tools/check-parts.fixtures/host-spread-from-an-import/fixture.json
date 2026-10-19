@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "classes take a `host` block this read does not take as written:\n      libs/components/widget/src/badge.ts: PctBadge",
+  "$reason": "The part in a constant another module exports, spread into the host block of a class no entrypoint exports. ngc evaluates the import and composes the part into `hostAttrs` (measured through ngc in partial mode and the linker), and the case passed every point until point 1 refused it. The read follows a `const` of the file's own and nothing else; a spread of an import, a member, a condition or a call is a block it does not take as written."
+}

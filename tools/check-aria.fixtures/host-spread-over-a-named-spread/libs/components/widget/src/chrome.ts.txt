@@ -1,0 +1,17 @@
+import { Component } from '@angular/core';
+
+/** A named button's host attributes, and a flat surface's, kept apart. */
+const named = { role: 'button', 'aria-label': 'Surface' };
+const flat = { role: 'presentation' };
+
+/** The flat surface spread after the named button: its role stands over the button's. */
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    ...named,
+    ...flat,
+  },
+})
+export class PctChrome {}

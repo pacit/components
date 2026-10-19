@@ -44,7 +44,7 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
-import { decoratorsOf, textOf, unwrap } from './decorators.mjs';
+import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -221,43 +221,6 @@ const inputsOf = (node) => {
 const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
 /**
- * The `host` block off the parsed metadata, `key → value`, each entry named as ngc names a
- * member — by an identifier or a string, by its text — and its value written as a string. `null`
- * for a block this read does not take as written, which point 1 refuses: a block given by an
- * expression, which ngc evaluates (a constant, by shorthand or by name), or an entry under a
- * computed key, by shorthand, or with a value that is no string. A pattern over the decorator's
- * text stood here, `host: {` from the start of a line, and a block under a quoted key, under an
- * escaped name or by shorthand passed every point (measured; ngc compiles each).
- *
- * A spread of an object written in place, an `as` and parentheses taken off, is read as its
- * entries, in order, as the text read before took them. A spread of a constant by its name is
- * passed over, as it was, and that is a hole of this gate's own: the others meet such an entry in
- * their package read, and this one has none. The library spreads one constant, `fitHost` in
- * `field/src/affix.ts`, a data attribute and a style. A spread of anything else — a condition, a
- * call — is a block this read does not take as written.
- */
-const hostOf = (node, entries = new Map()) => {
-  if (node === undefined) return entries;
-  if (!ts.isObjectLiteralExpression(node)) return null;
-  for (const entry of node.properties) {
-    if (ts.isSpreadAssignment(entry)) {
-      const spread = unwrap(entry.expression);
-      if (ts.isIdentifier(spread)) continue;
-      if (hostOf(spread, entries) === null) return null;
-      continue;
-    }
-    const value =
-      ts.isPropertyAssignment(entry) &&
-      (ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name))
-        ? textOf(entry.initializer)
-        : undefined;
-    if (value === undefined) return null;
-    entries.set(entry.name.text, value);
-  }
-  return entries;
-};
-
-/**
  * The element names a selector puts the component on. `button[pctButton]` is a component on
  * a native button — the host IS the widget there, and the consumer's `aria-label` reaches it
  * with nothing to forward. An attribute-only selector (`[pctPrefix]`) yields nothing, and a
@@ -338,7 +301,10 @@ const readSources = (root, files) => {
         // than an empty one: the walk reads files, and a widget drawn there is one it never
         // examines.
         inline: template !== undefined && textOf(template) !== '',
-        host: host ?? new Map(),
+        // The `host` block, `key → value`, read as ngc composes it (`hostOf`): a later entry
+        // stands over an earlier one of its key, as in ngc's map. `null` from the read is a
+        // block point 1 refuses.
+        host: new Map(host?.entries),
         unhosted: host === null,
         // Off the class itself, so a second component in one file cannot lend its inputs to
         // the first.
@@ -1434,9 +1400,10 @@ const checkAria = ({
       throw new AriaError(
         'denominator',
         `${component.className} (${component.file}) writes a \`host\` block this read does ` +
-          `not take as written — the block given by an expression, or an entry under a ` +
-          `computed key, by shorthand or with a value that is no string, each of which ngc ` +
-          `evaluates; write each entry as a string under its name`,
+          `not take as written — the block or a spread in it given by an expression other ` +
+          `than an object literal, written in place or in a \`const\` of the file's own, or ` +
+          `an entry under a computed key, by shorthand or with a value that is no string, ` +
+          `each of which ngc evaluates; write each entry as a string under its name`,
       );
   }
 

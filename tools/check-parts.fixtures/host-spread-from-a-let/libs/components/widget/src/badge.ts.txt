@@ -1,0 +1,12 @@
+import { Directive } from '@angular/core';
+
+/** What the badge spreads into its host block, kept in a variable. */
+let badgeHost = { 'data-pct-part': 'widget-badge' };
+
+@Directive({
+  selector: '[pctBadge]',
+  host: {
+    ...badgeHost,
+  },
+})
+export class PctBadge {}

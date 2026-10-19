@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "host",
+  "$reason": "`host-name-on-a-presentation-role` composed from two constants spread one after the other, the second's `role` over the first's. ngc's evaluator keeps the later value of a key in the earlier one's place, and the declaration carries `role: 'presentation'` beside the name (measured through ngc in partial mode and the linker by the review of this change). The read composes the entries alike (`hostOf`); one keeping the first value read a named button and passed every point, and this gate has no package read to say otherwise. An explicit `role` written before the second spread would be TS2783 under `strict`, so the case spreads twice."
+}
