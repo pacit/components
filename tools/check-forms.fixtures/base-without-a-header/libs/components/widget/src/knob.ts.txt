@@ -1,0 +1,33 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/** The block, on a root declared without `export`: no header of the reading stands at it. */
+abstract class PctKnobRoot {
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once. */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}
+
+/** The base the tag stands on, between it and the root. */
+export abstract class PctKnobBase extends PctKnobRoot {}
+
+/** The tag over that base. */
+@Component({ selector: 'pct-knob', template: '' })
+export class PctKnob
+  extends PctKnobBase
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+}

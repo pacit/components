@@ -44,8 +44,8 @@ A case may also carry `message`, a phrase the refusal has to contain: a rule tha
 found — the file, the line, the class — says it in the message, and the right rule saying
 something else is a fault as well. `control-anonymous` and `control-exported-as-the-default`
 hold the place and the name of the control they refuse, `header-in-a-comment` the header's,
-`transform-dropped` the line of a member, and the two member cases at point 3 the class and the
-member.
+`transform-dropped` the line of a member, the two member cases at point 3 the class and the
+member, and `base-without-a-header` the base the chain stopped at.
 
 ## The cases
 
@@ -76,7 +76,10 @@ member.
 | `contract-through-a-namespace`            |     3 | `block`       | `member-missing`       | the same, named through a namespace import                                |
 | `contract-after-another`                  |     3 | `block`       | `member-missing`       | the same, the contract second in the `implements` clause                  |
 | `contract-inside-another-type`            |     3 | `block`       | `member-missing`       | the same, the contract a type argument of `Readonly<…>`                   |
+| `contract-deep-inside-another-type`       |     3 | `block`       | `member-missing`       | the same, two types down inside an intersection                           |
+| `contract-through-an-import-type`         |     3 | `block`       | `member-missing`       | the same, named by an import type                                         |
 | `base-named-like-another-class`           |     3 | `block`       | `member-missing`       | a base of the reference base's name, from another file, declaring nothing |
+| `base-without-a-header`                   |     3 | `block`       | `member-missing`       | the block on an unexported root, the refusal naming where the chain stops |
 | `transform-dropped`                       |     4 | `shape`       | `shape-drift`          | `invalid` declared without `booleanAttribute`                             |
 
 `transform-dropped` is the case this gate was written for, and it is worth reading beside
@@ -98,40 +101,48 @@ pattern's headers against the classes the TypeScript parser holds, by the offset
 stands at. The first refuses a header with no class behind it; the second a control with no
 header in front of it. The pattern reads `export class` at the margin, and a control declared
 otherwise is legal TypeScript: without `export`, exported as the default, inside a function, a
-namespace or a method, as a class expression. Five of those inputs passed before the rule,
+namespace or a method, as a class expression. On main, five of those inputs passed,
 `control-unexported` with its members handed by position to the control above it, which
-declares them all the same way; `control-anonymous` was refused on its members rather than on
-the control (measured). The parser's list is read at every depth — a function's body, a
-namespace's, a method's, a variable's initializer — and paired by where the name stands, so a
-control nested under the name of one a header stands at is not taken for it.
+declares them all the same way, and `control-anonymous` and `control-exported-as-the-default`
+were refused on their members rather than as controls (measured). The parser's list is read at
+every depth — a function's body, a namespace's, a method's, a variable's initializer — and
+paired by where the name stands, so a control nested under the name of one a header stands at
+is not taken for it.
 
-The order of the two holds what each message says. A header standing at a control the parser
-holds below the top level is the header's fault, so `header-without-class` comes first:
+The order holds what each message says. A header standing at a control the parser holds below
+the top level is the header's fault, so `header-without-class` comes first:
 `control-in-a-namespace-at-the-margin` would otherwise be told the reading reads no header for a
 control it has one for. A control with no header is refused before `no-controls`, which would
-tell `every-control-unread` that not one class implements a contract. `no-policy`, `no-classes`
-and `no-contract` can name an input of theirs first that also has a control with no header: the
-verdict is the same, another refusal named.
+tell `every-control-unread` that not one class implements a contract. `no-policy` and
+`no-classes` come before it and can name an input of theirs first that also has a control with
+no header, and `no-contract` comes after it: on an input with both, either message is true, the
+verdict is the same, and which one is named is not held by a case.
 
 Members are paired the same way and need no rule: the pattern finds a member's declaration, and
 the parser says whose it is — the property whose name stands there, of the class whose name a
 header stands at. A line in a comment is no member, and a member of a class no header stands at
-is that class's: no control, or point 1 has refused it, and as a base it hands down nothing,
-which point 3 can refuse a control for and never pass one. By position, the last header above
-it, a class with no header lent what it declares at two spaces to the control above it, and a
-line in a comment at a member's indentation was a member: `member-lent-by-a-class-without-a-header`
-and `member-in-a-comment` both passed (measured). The rule that refused a member the reading
-could not place, `unattributed`, is gone with the reading by position, and with it the case of
-a member above every class, which the parser holds as none.
+is that class's: a class no point measures, because it is no control this reading recognises or
+point 1 has refused it, or a base, which hands down nothing — point 3 then refuses the control
+and names the base its chain stopped at (`base-without-a-header`), and never passes it. A class
+implementing a contract through another name of the sources is no control here, a header
+standing at it or not, which is the limit below. By position, the last header above it, a class
+with no header lent what it declares at two spaces to the control above it, and a line in a
+comment at a member's indentation was a member: `member-lent-by-a-class-without-a-header` and
+`member-in-a-comment` both passed on main (measured). The rule that refused a member the reading
+could not place, `unattributed`, is gone with the reading by position, and with it the case of a
+member above every class, which the parser holds as none.
 
-Which class is a control is the parser's too, off the class's own `implements` clause, and five
-cases at point 3 hold that reading: a contract is either of the two names, at any position of
-the clause or within a type of it, through a named import under another name, or as the last
-part of a qualified name. `contract-under-another-name` and `contract-inside-another-type`
-passed before it (measured). A contract wrapped in a type of the clause makes a control, which
-errs toward measuring a class, never toward leaving one out. What the clause reaches through
-another name of the sources — a type alias, an interface extending a contract, a base that
-implements one — is not read, which is said in the gate and not held by a case.
+Which class is a control is the parser's too, off the class's own `implements` clause, and seven
+cases at point 3 hold that reading: a contract is either of the two names, at any position of the
+clause or at any depth within a type of it, through a named import under another name, as the
+last part of a qualified name, or as an import type's qualifier. `contract-under-another-name`
+passed on main, whose pattern over the header found no contract's name in
+`implements PctValueContract<number>`; `contract-inside-another-type` and
+`contract-through-an-import-type` passed on an earlier reading of this one, of the clause's own
+types (measured). A contract wrapped in a type of the clause makes a control, which errs toward
+measuring a class, never toward leaving one out. What the clause reaches through another name of
+the sources — a type alias, an interface extending a contract, a base that implements one — is
+not read, which is said in the gate and not held by a case.
 
 `control-behind-a-namesake` and `base-named-like-another-class` hold what a name stands for.
 TypeScript compiles two classes of one name in two files, and binds a base's name in the file
@@ -163,6 +174,9 @@ contract's place, and is a control to a reading by the name alone; `PctLegacyDia
 class of the sources under a contract's name (`legacy.ts`), imported under another, and is one to
 a reading of `extends` as well as `implements`; `PctPlain` implements an imported interface that
 is neither contract, and is one to a reading taking any name a named import binds.
+`PctModuleShaped` implements `Partial<typeof import('@angular/core')>`, an import type with no
+qualifier, which names no contract, and stops a reading that takes every import type to have one
+(measured: `reading 'getText'`).
 
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on

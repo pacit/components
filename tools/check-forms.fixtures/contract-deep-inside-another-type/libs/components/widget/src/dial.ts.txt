@@ -1,0 +1,27 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import type { OnDestroy } from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/**
+ * A control whose contract stands two types down, in an intersection, with no `touched`.
+ * TypeScript compiles it: every member of the type is optional or declared below.
+ */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements Readonly<
+  Partial<FormValueControl<number> & OnDestroy>
+> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}

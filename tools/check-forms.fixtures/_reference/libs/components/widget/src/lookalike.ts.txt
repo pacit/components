@@ -21,3 +21,8 @@ export class PctLegacyDial extends PctLegacy {}
 export class PctPlain implements OnDestroy {
   ngOnDestroy(): void {}
 }
+
+/** An import type with no qualifier, the module's own type: it names no contract. */
+export class PctModuleShaped implements Partial<
+  typeof import('@angular/core')
+> {}

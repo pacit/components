@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
-import { classesOf, classKey } from './class-bases.mjs';
+import { classesOf, classKey, standsFor } from './class-bases.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
@@ -135,19 +135,21 @@ const classesIn = (file, text, owners) => {
  * The pattern sees a header at the margin and nothing else: a control written without `export`,
  * nested in a function, a namespace or a method, or written as a class expression had none, and
  * the gate measured fewer controls than the library has — passing five such inputs, and
- * refusing a sixth on its members rather than on the control they belong to (measured).
+ * refusing two more on their members rather than as controls (measured).
  *
  * A contract is a type of the class's own `implements` clause, in any position, or a type within
- * one (`Readonly<FormValueControl<T>>`, which compiles and passed), so a contract wrapped in any
- * type makes a control: that errs toward measuring a class, never toward leaving one out. It is
- * named by a named import of the file under the contract's name, from whatever module — through
- * `FormValueControl as PctValueContract`, `PctValueContract` is the contract — or by the last
- * part of a qualified name, `signals.FormValueControl` through a namespace import. A name no
+ * one at any depth (`Readonly<Partial<FormValueControl<T> & OnDestroy>>` compiles), so a contract
+ * wrapped in any type makes a control: that errs toward measuring a class, never toward leaving
+ * one out. It is named by a named import of the file under the contract's name, from whatever
+ * module — through `FormValueControl as PctValueContract`, `PctValueContract` is the contract —
+ * by the last part of a qualified name, `signals.FormValueControl` through a namespace import,
+ * or by an import type's, `import('@angular/forms/signals').FormValueControl`. A name no
  * named import binds is none: an interface the file declares under a contract's name is what
  * TypeScript binds the name to there. Not read is a contract reached through another name of the
  * sources — a type alias (`type PctContract<T> = FormValueControl<T>`), an interface extending
  * one, a re-export under another name — or through a base that implements it: what is read is
- * the clause, not the type TypeScript's checker resolves it to. A class's `extends` clause is
+ * the clause, not the type TypeScript's checker resolves it to, and a class implementing a
+ * contract that way is no control here, a header standing at it or not. A class's `extends` clause is
  * not read: a class of the sources may carry a contract's name, and one extending it is no
  * control (`lookalike.ts` in the reference input).
  */
@@ -174,14 +176,17 @@ const parsedIn = (file, text) => {
         : ts.isQualifiedName(name)
           ? name.right.text
           : undefined;
-  // A type of the clause names its contract by an expression, and a type within it by a type name.
+  // A type of the clause names its contract by an expression, a type within it by a type name,
+  // and an import type (`import('@angular/forms/signals').FormValueControl`) by its qualifier.
   const reaches = (node) =>
     CONTRACTS.has(
       ts.isExpressionWithTypeArguments(node)
         ? contract(node.expression)
         : ts.isTypeReferenceNode(node)
           ? contract(node.typeName)
-          : undefined,
+          : ts.isImportTypeNode(node)
+            ? node.qualifier?.getText(source).split('.').at(-1)
+            : undefined,
     ) || ts.forEachChild(node, reaches) === true;
   const where = (node) => (node.name ?? node).getStart(source);
   const implementers = new Map();
@@ -247,7 +252,9 @@ const readSources = (root, files) => {
       classes.set(key, {
         ...header,
         file,
+        base: held.base,
         from: held.from,
+        via: held.via,
         control: implementers.delete(header.nameAt),
       });
     }
@@ -287,8 +294,9 @@ const readContract = (text) => {
 /**
  * The controls, with every member they carry — their own and their bases'. A base is the class
  * its name stands for in the file that extends it, and a base this reading has not got — one
- * no file exports, or a package's — hands down nothing: what a control would inherit from it is
- * missing from what point 3 reads, which can refuse a control and never pass one.
+ * no header stands at, one no file exports, or a package's — hands down nothing: what a control
+ * would inherit from it is missing from what point 3 reads, which can refuse a control and never
+ * pass one, and names the base the chain stopped at, where the member may well stand.
  *
  * A link is the class TypeScript binds the base's name to (`class-bases.mjs`), keyed by its file,
  * so the chain is the one TypeScript builds: a cycle in it is one the compiler refuses as well
@@ -297,20 +305,24 @@ const readContract = (text) => {
  * directories carry no `package.json`, which `class-bases.mjs` does not read.
  */
 const controlsOf = (classes) => {
+  // The members down the chain, and `stop`: the class whose base it ends at unread, if one does.
   const inherited = (key, seen = new Set()) => {
     const cls = classes.get(key);
-    if (!cls || seen.has(key)) return new Map();
+    if (!cls || seen.has(key)) return { members: new Map() };
     seen.add(key);
+    const up = classes.has(cls.from)
+      ? inherited(cls.from, seen)
+      : { members: new Map(), stop: cls.base === undefined ? undefined : cls };
     // The base FIRST, so a leaf redeclaring a member wins — which is what TypeScript does,
     // and the file the violation names then has to be the file a reader would edit.
-    return new Map([...inherited(cls.from, seen), ...cls.members]);
+    return { members: new Map([...up.members, ...cls.members]), stop: up.stop };
   };
   return [...classes]
     .filter(([, c]) => c.control)
     .map(([key, c]) => ({
       name: c.name,
       file: c.file,
-      members: inherited(key),
+      ...inherited(key),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 };
@@ -415,12 +427,31 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
       .filter((name) => !c.members.has(name))
       .map((name) => `${c.file}: ${c.name} has no \`${name}\``),
   );
+  // Where a control missing a member stops inheriting, said: the member may stand on that base.
+  const stops = [
+    ...new Set(
+      controls
+        .filter((c) => c.stop && block.some((name) => !c.members.has(name)))
+        .map(
+          ({ stop }) =>
+            `${stop.file}: ${stop.name} extends \`${stop.base}\`, ${standsFor(stop)}` +
+            (stop.from === undefined
+              ? ''
+              : ', where no header of the reading stands'),
+        ),
+    ),
+  ];
   if (missing.length)
     throw new FormsError(
       'block',
       'member-missing',
       `${missing.length} member(s) of the block are not declared:\n` +
         list(missing) +
+        (stops.length
+          ? `\n    A chain stops at a base this reading has not got, which hands down ` +
+            `nothing — what it declares is not read:\n` +
+            list(stops)
+          : '') +
         `\n    Every member of \`${CONTRACT_INTERFACE}\` is optional, so this compiles ` +
         `and the control simply never learns that state — an invalid field that never ` +
         `opens red, a readonly one that goes on taking input. What a consumer sees is a ` +
