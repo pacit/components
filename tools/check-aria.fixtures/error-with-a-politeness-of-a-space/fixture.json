@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a written `aria-live=\" \"`",
+  "$reason": "An error part with its `alert` and an `aria-live` of a single space beside it. Unlike the empty value, both engines expose the space in place of the politeness the role implies (Chromium 153 and Firefox 158, measured on 2026-10-19), as they do `OFF` or `bogus`: only the empty value is none. Trimmed before it was read, the space passed as none."
+}
