@@ -1,0 +1,32 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/** A mixin over a base: what it returns is no class this reading follows. */
+const pctFocusable = <T extends abstract new (...args: never[]) => object>(
+  base: T,
+) => base;
+
+/** A base of the file, declared without `export`. */
+abstract class PctGaugeBase {}
+
+/** A second control, over a mixin's result, with no `touched`: a second place a chain stops. */
+@Component({ selector: 'pct-gauge', template: '' })
+export class PctGauge
+  extends pctFocusable(PctGaugeBase)
+  implements FormValueControl<number>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "`control-nested`'s control under the name of the reference widget, in the widget's own file: `pctWidgetOf` declares a `PctWidget` of its own, which shadows the file's there, and TypeScript compiles it. It has no `touched`. The two share a name and a file, so paired with the reading by them the nested control was taken for the one a header stands at, and the input passed. Paired by where the name stands, the nested one has no header, and point 1 refuses it."
+}

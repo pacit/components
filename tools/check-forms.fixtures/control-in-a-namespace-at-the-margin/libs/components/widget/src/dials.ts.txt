@@ -1,0 +1,18 @@
+import { booleanAttribute, input, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/**
+ * `control-in-a-namespace` as it stands before prettier: the namespace's control at the margin,
+ * where the pattern reads its header. The parser holds the class in the namespace, not at the
+ * top of the file. It has no `touched`.
+ */
+export namespace PctDials {
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements FormValueControl<number> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+}
+}

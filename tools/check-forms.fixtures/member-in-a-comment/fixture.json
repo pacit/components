@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The reference widget with its `touched` retired into a block comment, at a member's indentation. Prettier leaves a comment as it is, and the source compiles. Read by position, the line in the comment was the widget's `touched`, and the input passed (measured). The parser holds no property there, so the line is no member, and point 3 refuses the widget.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`"
+}

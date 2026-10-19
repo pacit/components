@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control implementing `signals.FormValueControl<number>`, through a namespace import of `@angular/forms/signals`, with no `touched`. The clause names the contract by a qualified name, whose last part is the contract's; read only as a name the file imports, the dial is no control, and the input passes."
+}

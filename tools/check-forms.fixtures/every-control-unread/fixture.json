@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "`control-nested`'s control, and the reference's two controls dropped: the classes the reading holds are no controls, and the library's one control is nested. `no-controls` would say not one class implements a contract, which the parser holds one that does: the rule comes before it, and says which.",
+  "drop": [
+    "libs/components/widget/src/widget.ts.txt",
+    "libs/components/widget/src/knob.ts.txt"
+  ]
+}

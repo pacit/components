@@ -1,0 +1,30 @@
+import {
+  booleanAttribute,
+  input,
+  model,
+  output,
+  type OnDestroy,
+} from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/** A control whose contract is the second type it implements, with no `touched`. */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements OnDestroy, FormValueControl<number> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+
+  /** Nothing to release; the method is what `OnDestroy` asks for. */
+  ngOnDestroy(): void {}
+}

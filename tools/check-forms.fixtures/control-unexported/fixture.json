@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A second control below the reference widget, `PctWidgetLite`, declared without `export` and with no `touched`. TypeScript compiles it and the file can use it. The pattern reads no header for it, and its members, at two spaces, fell to `PctWidget` above, which declares each of them the same way: one control was measured where the library has two, and the input passed (measured). The parser holds it implementing `FormValueControl`, and point 1 refuses it."
+}

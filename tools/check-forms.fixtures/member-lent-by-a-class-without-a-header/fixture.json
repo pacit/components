@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The reference widget without `disabled`, and below it `PctWidgetOption`, an option directive declared without `export`, which declares a `disabled` of its own. It is no control, so `control-unread` has nothing to say of it. Read by position, its member, at two spaces below the widget's header, fell to the widget, which declares the rest of the block the same way, and the input passed (measured). The parser holds the member in the option, and point 3 refuses the widget.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `disabled`"
+}

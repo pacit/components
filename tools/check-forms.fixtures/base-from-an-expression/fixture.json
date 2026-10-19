@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control over a mixin's result, `extends pctFocusable(PctDialBase)`, with no `touched`. A base expression other than a name stands for no class this reading follows, and the refusal says so after the last missing member, on a line of its own, without the `where no header of the reading stands` it adds for a class no header stands at.",
+  "message": "PctDial has no `touched`\n    A chain stops at a base this reading has not got, which hands down nothing — what it declares is not read:\n      libs/components/widget/src/dial.ts: PctDial extends `pctFocusable(PctDialBase)`, which this read follows to no class\n    Every member"
+}

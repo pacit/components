@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control implementing `Readonly<import('./barrel').a.b./* the contract */ FormValueControl<number>>`, through a barrel of namespaces whose innermost is signal forms, with no `touched`. The import type is followed by three names, a comment between the last two, which prettier keeps: read as the qualifier's text, its last part was the comment and the name, no contract, and the input passed (measured, on this change's fourth reading). Read through the parser's names, the last of them is the contract, and point 3 refuses the dial."
+}

@@ -1,0 +1,12 @@
+import { model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/**
+ * A control exported as the default, with no name: the pattern reads `export class` and
+ * `export abstract class`, and no header here. It has no `touched`.
+ */
+@Component({ selector: 'pct-default', template: '' })
+export default class implements FormValueControl<string> {
+  /** The value — the contract's one required member. */
+  readonly value = model('');
+}

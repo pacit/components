@@ -1,0 +1,2 @@
+/** A namespace of namespaces: the barrel's `a` holds `inner.ts`'s `b`. */
+export * as a from './inner';

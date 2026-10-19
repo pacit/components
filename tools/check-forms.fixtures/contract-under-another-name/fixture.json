@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control implementing `PctValueContract<number>`, the name its file imports `FormValueControl` under, with no `touched`. A pattern over the header found no contract's name in it, the dial was no control, and the input passed (measured). Read through the import, the name before `as` is the contract, and point 3 refuses the dial."
+}

@@ -1,0 +1,24 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import {
+  FormValueControl as PctValueContract,
+  ValidationError,
+} from '@angular/forms/signals';
+
+/** A control naming its contract by the name the import binds it to, with no `touched`. */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements PctValueContract<number> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}

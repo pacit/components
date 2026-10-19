@@ -1,0 +1,17 @@
+import { booleanAttribute, input, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/**
+ * A control exported from a namespace: prettier indents it, so the pattern reads no header and
+ * its members, at four spaces, are read by nothing. It has no `touched`.
+ */
+export namespace PctDials {
+  @Component({ selector: 'pct-dial', template: '' })
+  export class PctDial implements FormValueControl<number> {
+    /** The value — the contract's one required member. */
+    readonly value = model(0);
+
+    /** Blocks the control and greys it. */
+    readonly disabled = input(false, { transform: booleanAttribute });
+  }
+}

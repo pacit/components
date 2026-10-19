@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "header-without-class",
+  "description": "`control-in-a-namespace` before prettier: the namespace's control at the margin, where the pattern reads `export class PctDial`. The parser holds the class in the namespace, not at the top level. A header stands at the control's name, so it is the header that is refused, by the rule that comes first: `control-unread` would say the reading reads no header for a control it has one for."
+}

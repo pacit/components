@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The reference knob's block moved onto `PctKnobRoot`, declared without `export`, under the exported `PctKnobBase` two tags extend, and beside them `PctKnobFull`, over a spare base of no header, declaring the whole block itself. The root hands down nothing: no header of the reading stands at it, so its members are no class's the reading holds, and point 3 refuses both tags for all four. The refusal says where their chain stopped, once for the two of them and not for the full control, which lacks nothing: main refused the root's members as unattributed, and this change, before it named the stop, said only which members the knob lacked, which hid where they are declared (measured, with one tag).",
+  "message": "what it declares is not read:\n      libs/components/widget/src/knob.ts: PctKnobBase extends `PctKnobRoot`, which stands there for PctKnobRoot (libs/components/widget/src/knob.ts), where no header of the reading stands\n    Every member"
+}

@@ -2,5 +2,6 @@
   "point": 1,
   "check": "denominator",
   "rule": "header-without-class",
-  "description": "A class header in a comment, `export class PctRetired {}`, below the reference widget. The pattern reads it as a class, and the TypeScript parser holds none there. Point 1 refuses it rather than read a class that is not in the library."
+  "description": "A class header in a comment, `export class PctRetired {}`, below the reference widget. The pattern reads it as a class, and the TypeScript parser holds none there. Point 1 refuses it rather than read a class that is not in the library.",
+  "message": "libs/components/widget/src/widget.ts:32: PctRetired"
 }

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A control declared inside `static lite()` of an exported class that is no control, with no `touched`. The pattern reads the outer class's header and none for the control, whose members stand at six spaces. The parser holds it inside the outer class's method, and point 1 refuses it."
+}

@@ -1,0 +1,26 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import type { ValidationError } from '@angular/forms/signals';
+
+/**
+ * A control whose contract is an import type within `Readonly<…>`, with no `touched`: no import
+ * declaration names the contract, and TypeScript compiles it.
+ */
+@Component({ selector: 'pct-dial', template: '' })
+export class PctDial implements Readonly<
+  import('@angular/forms/signals').FormValueControl<number>
+> {
+  /** The value — the contract's one required member. */
+  readonly value = model(0);
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}

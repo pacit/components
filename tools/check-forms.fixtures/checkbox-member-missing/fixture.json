@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control of the other contract, `PctToggle implements FormCheckboxControl`, with no `touched`. The reference's controls both implement `FormValueControl`, so it is this input that holds the second name of the two: read without it, the toggle is no control, and the input passes.",
+  "message": "PctToggle has no `touched`\n    Every member"
+}

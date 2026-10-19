@@ -1,0 +1,28 @@
+import type { OnDestroy } from '@angular/core';
+
+import { FormValueControl as PctLegacy } from './legacy';
+
+/**
+ * An interface under a contract's name, which TypeScript binds in this file in the contract's
+ * place: a class implementing it is no control, and this one carries none of the block.
+ */
+interface FormValueControl<T> {
+  readonly value: T;
+}
+
+export class PctLookalike implements FormValueControl<string> {
+  readonly value = '';
+}
+
+/** A class of the contract's name, extended: `extends` names a base, never a contract. */
+export class PctLegacyDial extends PctLegacy {}
+
+/** An interface the file imports that is neither contract. */
+export class PctPlain implements OnDestroy {
+  ngOnDestroy(): void {}
+}
+
+/** An import type with no qualifier, the module's own type: it names no contract. */
+export class PctModuleShaped implements Partial<
+  typeof import('@angular/core')
+> {}

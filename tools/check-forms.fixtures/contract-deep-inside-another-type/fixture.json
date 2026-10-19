@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control implementing `Readonly<Partial<FormValueControl<number> & OnDestroy>>`, with no `touched`: the contract two types down, inside an intersection, named by a plain import. Read one type down, or through type arguments alone, or only where a type name is qualified, the dial is no control, and the input passes. Read through every type within the clause, point 3 refuses it."
+}

@@ -1,0 +1,5 @@
+/**
+ * A class of the sources under a contract's name: no contract, and a base like any other.
+ * `lookalike.ts` imports it under another name and extends it.
+ */
+export class FormValueControl {}
