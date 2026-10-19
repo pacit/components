@@ -1699,8 +1699,9 @@ const LEFT_OUT = new Set([
   // The `ng add` and `ng update` schematics: Node code run in a terminal on the consumer's
   // workspace, which renders nothing.
   `${LIB}/schematics`,
-  // The copy of the theme the `themes` target makes: the theme is read as built (`THEME`).
-  `${LIB}/themes`,
+  // The copy of the theme the `themes` target makes: the theme is read as built (`THEME`). The
+  // file and not the folder, which the package ships whole (`assets` in `ng-package.json`).
+  `${LIB}/themes/pct.css`,
   // The mutation run's TestBed setup, which no entrypoint imports.
   `${LIB}/mutation.setup.ts`,
 ]);
@@ -1712,11 +1713,13 @@ const LEFT_OUT = new Set([
  *
  * The whole library and not its entrypoints' `src`: ng-packagr takes an `ng-package.json` at any
  * depth for an entrypoint and compiles whatever its entry file reaches, in `src` or beside it,
- * while `check-files` reads `libs/components/src` and one level of `<entry>/src` and sees neither
- * a nested entrypoint nor a module beside one. So a file nothing ships is read as well —
- * over-approximated, in the direction that refuses rather than passes. Until 2026-10-19 this read
- * one level of `<entry>/src`, and a file in a subdirectory, the primary entrypoint's own
- * `libs/components/src` and everything outside a `src` reached no scan.
+ * while `check-files` reads the `src` of the library and of a directory one level below it and
+ * sees neither an entrypoint nested deeper nor a module beside a `src`. So a file nothing ships is
+ * read as well — over-approximated, in the direction that refuses rather than passes. A
+ * `node_modules` is no source at any depth: installed packages and the build's caches, which nx
+ * does not hash. Until 2026-10-19 this read the files directly in `<entry>/src`, and a file in a
+ * subdirectory, the primary entrypoint's own `libs/components/src` and everything outside a `src`
+ * reached no scan.
  *
  * The theme is read as built, `libs/tokens/dist/pct.css`, of which the package's `themes/pct.css`
  * is a copy (the `themes` target). Its sources in `libs/tokens/src` are DTCG files, JSON with no
@@ -1734,7 +1737,7 @@ const librarySources = (root = ROOT) => {
   const walk = (dir) => {
     for (const name of readdirSync(join(root, dir)).sort()) {
       const path = `${dir}/${name}`;
-      if (LEFT_OUT.has(path)) continue;
+      if (LEFT_OUT.has(path) || name === 'node_modules') continue;
       if (statSync(join(root, path)).isDirectory()) walk(path);
       else if (SCANNED.has(name.split('.').pop()) && !name.endsWith('.spec.ts'))
         out[path] = readFileSync(join(root, path), 'utf8');
@@ -2629,7 +2632,11 @@ const buildFixture = (live, fx) => {
         mkdirSync(dirname(join(root, path)), { recursive: true });
         writeFileSync(join(root, path), text);
       }
-      Object.assign(w.sources, librarySources(root));
+      // In the reader's order, after the live sources: a file both hold moves to where the reader
+      // puts it, so that a refusal names the first file a reader of a tree holding both would.
+      const read = librarySources(root);
+      for (const path of Object.keys(read)) delete w.sources[path];
+      Object.assign(w.sources, read);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

@@ -100,7 +100,7 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`an-orientation-query-in-the-theme.json`](an-orientation-query-in-the-theme.json)                                                                             | the theme as `tokens:build` writes it gains `@media (orientation: portrait)`, laid on disk                                  | 3     | `evidence`  |
 | [`the-theme-is-not-built.json`](the-theme-is-not-built.json)                                                                                                   | the theme is not there, and 1.3.4 still rests on the scan that reads it                                                     | 3     | `evidence`  |
 | [`a-video-in-a-module-outside-any-src.json`](a-video-in-a-module-outside-any-src.json)                                                                         | a module beside an entrypoint's `src` grows a `<video>`, as a nested entrypoint would, laid on disk                         | 3     | `evidence`  |
-| [`a-video-the-schematics-and-the-setup-hold.json`](a-video-the-schematics-and-the-setup-hold.json)                                                             | the schematics, the mutation setup and a later template hold a `<video>`; `says` the template                               | 3     | `evidence`  |
+| [`a-video-where-no-page-receives-it.json`](a-video-where-no-page-receives-it.json)                                                                             | the mutation setup, a `node_modules` cache, the schematics and a later template hold a `<video>`; `says` the template       | 3     | `evidence`  |
 | [`an-orientation-the-theme-copy-holds.json`](an-orientation-the-theme-copy-holds.json)                                                                         | the theme's copy under the library and the theme as built both query the orientation; `says` the built one                  | 3     | `evidence`  |
 | [`a-video-in-a-namespace-the-scan-forbids.json`](a-video-in-a-namespace-the-scan-forbids.json)                                                                 | a template grows an `<xH1ml:video>`, a video `ngc` makes, and 1.2.1 still says Not Applicable                               | 3     | `evidence`  |
 | [`a-video-in-a-one-letter-namespace-the-scan-forbids.json`](a-video-in-a-one-letter-namespace-the-scan-forbids.json)                                           | a template grows an `<a:video>`, the shortest prefix, and 1.2.1 still says Not Applicable                                   | 3     | `evidence`  |
@@ -296,10 +296,12 @@ speaks only where the reading finds nothing
 ([`a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json`](a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json)).
 Eight hold which files the scans read, through the reader the live run reads with (`tree`) or
 the state it leaves (`null`): a file two directories below an entrypoint's `src`, a file of the
-primary entrypoint, a module outside any `src`, a spec left out beside a source, the schematics
-and the mutation setup left out ahead of a template, the theme as `tokens:build` writes it, its
-copy left out ahead of it, and the theme not there. The spec's case has a second guard in the live
-input, where a spec holds a template the tabindex scan cannot read. A case cannot show three
+primary entrypoint, a module outside any `src`, a spec left out beside a source, the mutation
+setup, a `node_modules` and the schematics left out ahead of a template, the theme as
+`tokens:build` writes it, its copy left out ahead of it, and the theme not there. A tree's files
+go after the live sources in the reader's order, a file both hold moved there too, so a case reads
+the same whether or not a build left the theme's copy in the checkout. The spec's case has a
+second guard in the live input, where a spec holds a template the tabindex scan cannot read. A case cannot show three
 things. That the theme is current: the reader takes what the build left, and that the build ran
 first is the edge on `tokens:build` in the target and the build `tools/release.mjs` runs before it
 renders the report. The extensions the reader keeps: an economy, since each scan picks its own out
