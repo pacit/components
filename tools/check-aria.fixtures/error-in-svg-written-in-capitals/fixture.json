@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<TEXT>` in the SVG namespace to Angular",
+  "$reason": "The reference's error drawn as SVG text written `<TEXT>`, its part and its live region on it. Angular draws `<TEXT>` in the SVG namespace, an element of no kind: in the browser the error is drawn nowhere; after SSR the HTML parser lowers it to a `<text>`, drawn, with its role (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read lowered, the part announced itself and passed point 7."
+}

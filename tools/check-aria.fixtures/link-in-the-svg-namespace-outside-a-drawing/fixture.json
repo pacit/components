@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<a>` in the SVG namespace to Angular, which draws it in the browser, and `<a>` in HTML",
+  "$reason": "The reference's widget with its trigger alone, a link written `<svg:a href>` with no `<svg>` around it. Angular draws it in SVG, outside any drawing: drawn nowhere, a stop to WebKit alone; its server renderer writes `<a>` into the page, an HTML link to the parser, which every engine lands on after hydration (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read as a link, it carried the name and passed."
+}

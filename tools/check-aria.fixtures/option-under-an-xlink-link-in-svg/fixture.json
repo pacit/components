@@ -1,6 +1,6 @@
 {
   "point": 9,
   "check": "context",
-  "message": "<g role=\"option\"> stands under <a> with no role and a way to land on it",
-  "$reason": "`option-under-a-link-in-svg` with the link's address written `xlink:href`, which the parser names `:xlink:href` and Angular sets in the XLink namespace: an SVG link all three engines focus, Chromium reading it as `link` (measured on 2026-10-19: Chromium 153, Firefox 155, WebKit 26.6). The tag reader read `href` alone, held the link for no stop, looked through it and passed the option."
+  "message": "<g role=\"option\"> stands under <a> (link)",
+  "$reason": "`option-under-a-link-in-svg` with the link's address written `xlink:href`, which the parser names `:xlink:href` and Angular sets in the XLink namespace: an SVG link all three engines focus, Chromium reading it as `link` (measured on 2026-10-19: Chromium 153, Firefox 155, WebKit 26.6). The tag reader read `href` alone, held the link for no stop, looked through it and passed the option; read by the engines' roles, it is the link both give it."
 }

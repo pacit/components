@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A drawing of the library gains a `<xhtml:text>` — built under `NO_ERRORS_SCHEMA` — and 1.4.5 keeps resting on the scan. Angular draws an HTML element of no kind inside the `<svg>`; its server renderer writes `<text>` into the page, which the browser's HTML parser keeps in SVG, a drawn text element after SSR (`DOMParser`, Chromium 153 and Firefox 155, 2026-10-19). Read with the `svg` prefix alone, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<svg viewBox=\"0 0 24 24\"><xhtml:text x=\"0\" y=\"16\">AB</xhtml:text></svg>\n"
+  }
+}

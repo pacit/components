@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"option\"> stands under <div role=\"list\"> (list)",
+  "$reason": "An option inside a `<datalist>` drawn in a map — built under `NO_ERRORS_SCHEMA` — the map looked through by `role=\"none\"`, inside a `list`. In SVG a `<datalist>` is no listbox: generic to Chromium 153 and nothing to Firefox 158 (measured on 2026-10-19), so the option stands under the list. Read through HTML's table, the datalist was the listbox the option needs, and it passed."
+}

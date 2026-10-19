@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<foreignobject>` in the SVG namespace to Angular, which draws it in the browser, and `<foreignObject>` in the SVG namespace",
+  "$reason": "The reference's widget with its trigger alone, an HTML button inside an SVG `<foreignobject>` written in lower case, which the schema takes in any case. Angular draws `foreignobject` as written, an SVG element of no kind, and the button inside it is drawn nowhere and no stop; the HTML parser restores SVG's camel case, and after SSR the `<foreignObject>` draws the button, a stop (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read as a button, it carried the name and passed."
+}

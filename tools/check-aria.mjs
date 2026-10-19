@@ -22,6 +22,7 @@
  */
 import {
   BindingType,
+  DomElementSchemaRegistry,
   splitNsName,
   TmplAstElement,
   TmplAstForLoopBlock,
@@ -395,6 +396,10 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  * leaves to axe — the day a template here draws one, the audit on the page will not see it
  * either. One source, one blind spot, and a table upstream to correct rather
  * than a list here to remember.
+ *
+ * The tables are HTML's, and axe has none for SVG or MathML: an element of either namespace is read
+ * off what the engines compute for it (`foreignOf`), and never through these, whatever HTML tag its
+ * name spells.
  */
 const ANCHORS = {
   focusable: 'summary',
@@ -606,12 +611,13 @@ const readRole = (value) =>
  * role ARIA names as a whole (a composite whose children are what the user focuses, a
  * `toolbar`, a `dialog`), or its TAG has such a role although nobody can land on it at all.
  * A link without an address is not focusable, nor is a hidden input; a `tabindex` makes
- * anything focusable, which is how a role written onto a `div` becomes a widget.
+ * anything focusable, which is how a role written onto a `div` becomes a widget. The tag tables
+ * are HTML's: an element of SVG or MathML is named by a `<title>` or an attribute of its own and
+ * is no named tag, whatever HTML element its name spells (`foreignOf`).
  */
-const namedAsAWhole = (tag, role, tables) =>
-  tables.named.has(role) || tables.namedTags.has(tag);
-const isWidget = (tag, attrs, role, tables) =>
-  namedAsAWhole(tag, role, tables) || isFocusable(tag, attrs);
+const namedAsAWhole = (t, tables) =>
+  tables.named.has(t.role) || (!t.foreign && tables.namedTags.has(t.tag));
+const isWidget = (t, tables) => namedAsAWhole(t, tables) || isFocusable(t);
 
 /**
  * What a reader meets as a control of its own when it stands inside another element: anything
@@ -639,10 +645,14 @@ const isWidget = (tag, attrs, role, tables) =>
  * table, has none here (axe throws on a `<td>` with no table around it, and on a `<header>` or
  * a `<footer>` with nothing above), and a hidden `<input>` none at all: it is in no tree,
  * though axe's table gives the tag a textbox (the datetime field keeps one beside its group).
+ *
+ * An element of SVG or MathML has a role for each engine (`foreignOf`), and they part: a `<g>` is
+ * a group to Chromium and nothing to Firefox. So each question is asked of every role it has
+ * (`rolesOf`) and answered the way that refuses: a control where either engine makes it one, and
+ * a group, a container or a role holding its children presentational only where both do.
  */
 const INTERACTIVE_TYPES = new Set(['widget', 'composite', 'window']);
-const roleOf = (t) => {
-  if (t.role !== null) return t.role;
+const htmlRoleOf = (t) => {
   const node = virtual(t.tag, t.attrs);
   if (t.tag === 'input' && node.attr('type')?.toLowerCase() === 'hidden')
     return null;
@@ -652,12 +662,16 @@ const roleOf = (t) => {
     return null;
   }
 };
-const roleTypeOf = (t) => axe._audit.standards.ariaRoles[roleOf(t)]?.type;
+const rolesOf = (t) =>
+  t.role !== null ? [t.role] : t.foreign ? t.foreign.roles : [htmlRoleOf(t)];
+const typeOf = (role) => axe._audit.standards.ariaRoles[role]?.type;
 const isInteractive = (t) =>
-  isFocusable(t.tag, t.attrs) || INTERACTIVE_TYPES.has(roleTypeOf(t));
+  isFocusable(t) ||
+  rolesOf(t).some((role) => INTERACTIVE_TYPES.has(typeOf(role)));
 /** A role whose children are presentational: `button`, `tab`, `switch`, `slider`, `img`. */
-const holdsPresentation = (t) =>
-  axe._audit.standards.ariaRoles[roleOf(t)]?.childrenPresentational === true;
+const presents = (role) =>
+  axe._audit.standards.ariaRoles[role]?.childrenPresentational === true;
+const holdsPresentation = (t) => rolesOf(t).every(presents);
 
 /**
  * The narrower question inside the one above: can a user LAND on this element. It is the whole
@@ -668,14 +682,21 @@ const holdsPresentation = (t) =>
  * axe's table does not know (see the tables above). Bound, it is one key whatever the syntax:
  * the property is `[contentEditable]` — the compiler maps no `[contenteditable]` onto it, and
  * its DOM schema knows no property of that name on a `<div>` — and `[attr.contenteditable]`
- * the attribute.
+ * the attribute. An element of SVG or MathML is no editing host in any engine, and the stops it
+ * makes are its own (`foreignOf`).
  */
 const EDITING_HOST = ['contenteditable', '[contenteditable]'];
 /** Every attribute `virtual` and `isFocusable` read, as the tag reader collects them. */
 const FOCUS_ATTRIBUTES = [...Object.keys(DECIDING), EDITING_HOST[0]];
-const isFocusable = (tag, attrs) =>
-  EDITING_HOST.some((key) => attrs.has(key)) ||
-  axe.commons.dom.isFocusable(virtual(tag, attrs));
+const isFocusable = (t) =>
+  t.foreign
+    ? t.foreign.stop
+    : EDITING_HOST.some((key) => t.attrs.has(key)) ||
+      axe.commons.dom.isFocusable(virtual(t.tag, t.attrs));
+const isNativelyFocusable = (t) =>
+  t.foreign
+    ? t.foreign.native
+    : axe.commons.dom.isNativelyFocusable(virtual(t.tag, t.attrs));
 
 /**
  * The opening tag at an offset of the text both readings take (`readTree`), on one line and cut
@@ -760,20 +781,20 @@ const readTemplate = (
       namesItself: element?.namesItself ?? false,
       // Angular's own tag (`isOwnTag`), which draws a comment and carries no name.
       own: element?.own ?? false,
+      // What an element of SVG or MathML is to the engines (`foreignOf`); an HTML one is axe's.
+      foreign: element?.foreign ?? null,
     };
   });
   return {
     tags,
-    widgets: tags
-      .filter((t) => isWidget(t.tag, t.attrs, t.role, tables))
-      .map((t) => ({ ...t })),
+    widgets: tags.filter((t) => isWidget(t, tables)).map((t) => ({ ...t })),
     // A group — `role="group"`, or the platform's own for a `<fieldset>`, a `<details>` or an
     // `<optgroup>` — names a SET of
     // controls, and ARIA asks it for no name — so it is no widget of the tables above. It may
     // still be the element a consumer's name is handed to: the datetime field's two texts
     // stand in one, and each takes the group's name with a word of its own (0090, E1 to E3).
     // Point 4 reads these as carriers beside the widgets.
-    groups: tags.filter((t) => roleOf(t) === 'group'),
+    groups: tags.filter((t) => rolesOf(t).every((role) => role === 'group')),
   };
 };
 
@@ -945,6 +966,384 @@ const twoWays = (node) =>
     : [];
 
 /**
+ * The element itself, read by the two readers that make one of it: Angular, which draws it in the
+ * browser, and the browser's HTML parser, which reads the page the server rendered. Angular draws
+ * an element in the namespace of its prefix, `svg` or `math` (`FOREIGN`), and any other in HTML —
+ * `<xhtml:div>` and `<x1:div>` with no namespace instruction, as `createElement` does, which lowers
+ * an HTML name — and it hands the name on as written: `ɵɵnamespaceSVG()`, then `"A"` (`ngc`
+ * 22.2.1). Its server renderer writes the name into the page as it stands, and the parser reads it
+ * by WHATWG's rules for foreign content: every name lowered, SVG's camel-cased ones restored
+ * (`SVG_CASED`); the children of an HTML element, of an HTML integration point (an SVG
+ * `<foreignObject>`, `<desc>` or `<title>`, a MathML `<annotation-xml>` whose `encoding` is HTML)
+ * and of a MathML text integration point (`<mi>`, `<mo>`, `<mn>`, `<ms>`, `<mtext>`, all but an
+ * `<mglyph>` and a `<malignmark>` there) read as HTML, where only `<svg>` and `<math>` open a
+ * namespace; a `<svg>` in an `<annotation-xml>` is SVG; every other name inside foreign content
+ * stays there, but for the tags the parser closes it on (`BREAKOUT`, and a `<font>` with a
+ * `color`, `face` or `size`), which it places, as HTML, after the foreign element around them.
+ * Measured with `DOMParser` in Chromium 153 and Firefox 155 for every tag of axe's HTML table, the
+ * integration points and the nestings below (2026-10-19).
+ *
+ * Where the two part, the page is one element in the browser and another after SSR
+ * (`req-project-ssr`), and hydration keeps the parser's without a word, or, where the parser moved
+ * it, stops on it (NG0500) — measured on 2026-10-19, Angular 22.2's `renderApplication` and
+ * `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6: `<svg><A href>` an unknown
+ * element drawn nowhere in the browser and a link every engine lands on after SSR;
+ * `<svg><foreignobject>` an unknown element whose `<xhtml:button>` is drawn nowhere, and a
+ * `foreignObject` whose button is a stop; `<svg><desc><a href>` an SVG link and an HTML one;
+ * `<math><mi><mrow href>` a MathML stop in Firefox and WebKit and an HTML element; `<math><mrow>
+ * <svg><a href>` an SVG link and a MathML `<a>`; `<svg><math>` MathML and an SVG element named
+ * `math`; `<div><svg:a href>` an SVG link drawn nowhere and an HTML link; `<svg><xhtml:button>` an
+ * HTML button WebKit lands on and an SVG element; `<svg><xhtml:div>` and, under
+ * `NO_ERRORS_SCHEMA`, `<svg><ul>` NG0500. Each compiles under strict templates with no schema but
+ * `<svg><ul>`, which `ngc` refuses there (NG8001). Read as either, the element passes what the
+ * other refuses, so it fails point 1. A template's root stands in its host (`hostContext`): an
+ * element of the page, HTML, unless every host its owners' selectors name is an element of SVG or
+ * of MathML alone (`g[pctLayer]`), whose children the parser reads there; an `<ng-container>`,
+ * which draws a comment, stands in the element around it; and a template too, read where it is
+ * declared, as the walk reads it (plan 4.83) — so one an outlet stamps into another namespace is
+ * read as it stands, not as it lands, which is a blind spot shared with the walk and not one of
+ * this reading's. An `<svg><title>` holds text to Angular's lexer, unless written `<svg:title>`.
+ * HTML's own rules among HTML elements — an `<image>` read as an `<img>`, a `<table>` that fosters
+ * an element out of it — are another class, not read here.
+ */
+const HTML = 'HTML';
+const asciiLower = (name) => name.replace(/[A-Z]/g, (c) => c.toLowerCase());
+const spaceOf = (node) => {
+  const prefix = splitNsName(node.name)[0] ?? '';
+  return Object.hasOwn(FOREIGN, prefix) ? FOREIGN[prefix] : HTML;
+};
+const SVG_CASED = new Map(
+  [
+    'altGlyph',
+    'altGlyphDef',
+    'altGlyphItem',
+    'animateColor',
+    'animateMotion',
+    'animateTransform',
+    'clipPath',
+    'feBlend',
+    'feColorMatrix',
+    'feComponentTransfer',
+    'feComposite',
+    'feConvolveMatrix',
+    'feDiffuseLighting',
+    'feDisplacementMap',
+    'feDistantLight',
+    'feDropShadow',
+    'feFlood',
+    'feFuncA',
+    'feFuncB',
+    'feFuncG',
+    'feFuncR',
+    'feGaussianBlur',
+    'feImage',
+    'feMerge',
+    'feMergeNode',
+    'feMorphology',
+    'feOffset',
+    'fePointLight',
+    'feSpecularLighting',
+    'feSpotLight',
+    'feTile',
+    'feTurbulence',
+    'foreignObject',
+    'glyphRef',
+    'linearGradient',
+    'radialGradient',
+    'textPath',
+  ].map((name) => [name.toLowerCase(), name]),
+);
+const BREAKOUT = new Set([
+  'b',
+  'big',
+  'blockquote',
+  'body',
+  'br',
+  'center',
+  'code',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'em',
+  'embed',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'head',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'listing',
+  'menu',
+  'meta',
+  'nobr',
+  'ol',
+  'p',
+  'pre',
+  'ruby',
+  's',
+  'small',
+  'span',
+  'strike',
+  'strong',
+  'sub',
+  'sup',
+  'table',
+  'tt',
+  'u',
+  'ul',
+  'var',
+]);
+const FONT_BREAKOUT = ['color', 'face', 'size'];
+const HTML_POINTS = new Set(['foreignObject', 'desc', 'title']);
+const TEXT_POINTS = new Set(['mi', 'mo', 'mn', 'ms', 'mtext']);
+const HTML_ENCODINGS = ['text/html', 'application/xhtml+xml'];
+const PAGE = { space: HTML };
+const drawnAs = (node) => {
+  const space = spaceOf(node);
+  const name = localName(node.name);
+  return { space, name: space === HTML ? asciiLower(name) : name };
+};
+const parsedAs = (context, node) => {
+  const name = asciiLower(localName(node.name));
+  const inBody =
+    context.space === HTML ||
+    context.integrates ||
+    (context.text && name !== 'mglyph' && name !== 'malignmark') ||
+    (context.annotation && name === 'svg');
+  if (
+    !inBody &&
+    (BREAKOUT.has(name) ||
+      (name === 'font' &&
+        FONT_BREAKOUT.some((key) => namesOn(node).includes(key))))
+  )
+    return { space: HTML, name, moved: true };
+  const space = !inBody
+    ? context.space
+    : name === 'svg'
+      ? 'SVG'
+      : name === 'math'
+        ? 'MathML'
+        : HTML;
+  const spelled = space === 'SVG' ? (SVG_CASED.get(name) ?? name) : name;
+  const annotation = space === 'MathML' && spelled === 'annotation-xml';
+  return {
+    space,
+    name: spelled,
+    integrates:
+      (space === 'SVG' && HTML_POINTS.has(spelled)) ||
+      (annotation &&
+        (boundOn(node, 'encoding').length > 0 ||
+          HTML_ENCODINGS.includes(
+            asciiLower(writtenOn(node, 'encoding') ?? ''),
+          ))),
+    text: space === 'MathML' && TEXT_POINTS.has(spelled),
+    annotation,
+  };
+};
+const parts = (drawn, parsed) =>
+  parsed.moved === true ||
+  drawn.space !== parsed.space ||
+  drawn.name !== parsed.name;
+
+/**
+ * Where a template's root stands to the parser: in its host. A host is an element of the page,
+ * HTML, unless the tag a selector names is an element of SVG or of MathML and of no HTML, by
+ * Angular's own schema — `g[pctLayer]` a group a consumer draws in an `<svg>`, `svg[pctChart]` a
+ * drawing — whose children the parser reads there: written `<svg:rect>`, the root agrees, and
+ * written `<title>`, it is an HTML element to Angular and an SVG one to the parser. A tag both
+ * vocabularies hold (`a`, `title`) or none (a custom element, an attribute selector) stands in
+ * HTML, and so does a template whose owners' hosts stand in more than one place.
+ */
+const SCHEMA = new DomElementSchemaRegistry();
+const contextOfHost = (tag) => {
+  if (tag === '' || SCHEMA.hasElement(tag, [])) return PAGE;
+  for (const [space, prefix] of [
+    ['SVG', ':svg:'],
+    ['MathML', ':math:'],
+  ])
+    if (SCHEMA.hasElement(`${prefix}${tag}`, [])) {
+      const name = space === 'SVG' ? (SVG_CASED.get(tag) ?? tag) : tag;
+      return {
+        space,
+        name,
+        integrates: space === 'SVG' && HTML_POINTS.has(name),
+        text: space === 'MathML' && TEXT_POINTS.has(name),
+      };
+    }
+  return PAGE;
+};
+const hostContext = (owners) => {
+  const contexts = owners
+    .flatMap((owner) => hostTags(owner.selector))
+    .map(contextOfHost);
+  const [first = PAGE] = contexts;
+  return contexts.every(
+    (context) =>
+      context.space === first.space &&
+      context.integrates === first.integrates &&
+      context.text === first.text,
+  )
+    ? first
+    : PAGE;
+};
+
+/**
+ * What an element of SVG or MathML is to the engines, read off a table of what they compute
+ * rather than through axe's, which is HTML's: an SVG `<select>` is no combobox, a `<progress>`
+ * there no progressbar, and `<svg>` no element to look through. Measured on 2026-10-19 on elements
+ * drawn as Angular draws them (`createElementNS`): roles by Chromium 153's own `computedRole` and
+ * accessibility tree and Firefox 158's computed role (WebDriver), focus in Chromium 153, Firefox
+ * 155 and WebKit 26.6. The role is each engine's (`[Chromium, Firefox]`), `null` where it computes
+ * none or `generic`, and `''` where it computes a role of the namespace's own that ARIA does not
+ * name (Chromium's `MathMLRow`, `MathMLTable`, …; an empty role to Firefox): such an element is in
+ * the tree, so not looked through, and ARIA gives it nothing to carry a name with. Firefox reads
+ * several elements otherwise once they are named — by an `aria-label`, an `aria-labelledby`, or a
+ * `<title>` or `<desc>` child (`SVG_NAMING`) — or a stop (a `<g>` none, and then a group; a
+ * `<rect>` none, and then an image), as SVG-AAM includes them, so a role is read in two states:
+ *
+ *   `<svg>`              graphics-document (SVG-AAM's mapping, Firefox's; Chromium's `SvgRoot`, an
+ *                        image where it holds drawing alone, a group nested) — read as the image
+ *                        when named, which refuses more; no verdict below turns on the rest
+ *   `<g>`                group, and none to Firefox until named
+ *   `<a>`                with an address (`href`, `xlink:href`), a link to both, and a stop in all
+ *                        three engines; with none, a group to Chromium and a link to Firefox, a
+ *                        stop to neither
+ *   `<image>`            image, none to Firefox until named
+ *   `<foreignObject>`    group, none to Firefox (generic, named)
+ *   `<use>`              graphics-object, none to Firefox (generic, named)
+ *   a shape (`<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<path>`, `<polygon>`, `<polyline>`)
+ *                        graphics-symbol, none to Firefox until named, and then an image
+ *   any other SVG name   generic or none to both: `<text>`, `<tspan>`, `<textPath>`, `<title>`,
+ *                        `<desc>`, `<symbol>`, `<switch>`, `<marker>`, `<view>`, `<defs>`, the
+ *                        paint servers, the filters, the animations, `<style>` and `<script>`,
+ *                        and an HTML name drawn in SVG (`<select>`, `<button>`, `<progress>`)
+ *   `<math>`             math (MathML-AAM's mapping, Firefox's; Chromium's `MathMLMath`)
+ *   any other MathML name  a role of MathML's own to both — but a link to Firefox with an `href`
+ *                        on an `<a>`, generic to Chromium on `<mspace>` and `<menclose>`, and
+ *                        generic to both on an HTML name: read as the role of its own, which
+ *                        refuses more
+ *
+ * A stop is one where any engine lands, or may: an SVG link; a `tabindex` on any element — all
+ * three engines on a drawn one, WebKit alone on a `<tspan>`, a `<textPath>`, a `<view>` or an
+ * unknown name, none on a `<title>`, a `<desc>`, a `<symbol>` or a `<marker>`, read as a stop all
+ * the same, which refuses more; and a MathML element with an `href`, a stop to Firefox and WebKit
+ * and not to Chromium (MathML's own link attribute; axe knows none). A `contenteditable` makes
+ * none in any engine. Neither SVG-AAM nor MathML-AAM is read in place of a measurement: SVG-AAM
+ * maps `<text>` to a group, which neither engine computes, and MathML-AAM leaves every element but
+ * `<math>` without an ARIA role.
+ */
+const SHAPE = [
+  ['graphics-symbol', null],
+  ['graphics-symbol', 'image'],
+];
+const FOREIGN_ROLES = {
+  SVG: new Map([
+    [
+      'svg',
+      [
+        ['graphics-document', 'graphics-document'],
+        ['image', 'graphics-document'],
+      ],
+    ],
+    [
+      'g',
+      [
+        ['group', null],
+        ['group', 'group'],
+      ],
+    ],
+    [
+      'image',
+      [
+        ['image', null],
+        ['image', 'image'],
+      ],
+    ],
+    [
+      'foreignObject',
+      [
+        ['group', null],
+        ['group', null],
+      ],
+    ],
+    [
+      'use',
+      [
+        ['graphics-object', null],
+        ['graphics-object', null],
+      ],
+    ],
+    ...['rect', 'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline'].map(
+      (name) => [name, SHAPE],
+    ),
+  ]),
+  MathML: new Map([
+    [
+      'math',
+      [
+        ['math', 'math'],
+        ['math', 'math'],
+      ],
+    ],
+  ]),
+};
+const OTHER_ROLES = {
+  SVG: [
+    [null, null],
+    [null, null],
+  ],
+  MathML: [
+    ['', ''],
+    ['', ''],
+  ],
+};
+const ENGINES = ['Chromium 153', 'Firefox 158'];
+/** The children SVG names an element by, which Firefox reads as a name (a `<g>` with one, a group). */
+const SVG_NAMING = ['title', 'desc'];
+const foreignOf = (node) => {
+  if (!isElement(node)) return null;
+  const space = spaceOf(node);
+  if (space === HTML) return null;
+  const name = localName(node.name);
+  const attrs = focusAttributes(node);
+  // MathML's link is `href` alone: an `xlink:href` there is a stop to no engine.
+  const addressed =
+    space === 'SVG'
+      ? attrs.has('href') || attrs.has('[href]')
+      : writtenOn(node, 'href') !== undefined ||
+        boundOn(node, 'href').length > 0;
+  const linked = space === 'SVG' ? name === 'a' && addressed : addressed;
+  const stop = linked || attrs.has('tabindex') || attrs.has('[tabindex]');
+  const named =
+    stop ||
+    NAME_TARGETS.some(
+      (target) =>
+        (writtenOn(node, target) ?? '').trim() !== '' ||
+        boundOn(node, target).length > 0,
+    ) ||
+    (space === 'SVG' &&
+      node.children.some(
+        (child) =>
+          isElement(child) &&
+          spaceOf(child) === 'SVG' &&
+          SVG_NAMING.includes(localName(child.name)),
+      ));
+  const roles =
+    space === 'SVG' && name === 'a'
+      ? addressed
+        ? ['link', 'link']
+        : ['group', 'link']
+      : (FOREIGN_ROLES[space].get(name) ?? OTHER_ROLES[space])[named ? 1 : 0];
+  return { space, roles, stop, native: linked };
+};
+
+/**
  * What Angular takes off an `<ng-content>` as the projection's own: its `select`, in any case, and
  * `ngProjectAs`, as the compiler's `preparseElement` asks for them, and an inline template's
  * attribute (`*ngIf`), which the template Angular wraps around the projection takes — the tree
@@ -1005,7 +1404,8 @@ const readOffAContainer = (name) =>
  * `localName` reads it; a template's or a projection's tag keeps the name the scan reads off the
  * text, on which no verdict turns. So is the markup an element draws that the tree does not hold
  * (`MARKUP`, `EMBEDS`): each way it does, by the offset it starts at. And each `@content` block, by
- * the offset it starts at (`contentBlocks`), its tags read as any others are.
+ * the offset it starts at (`contentBlocks`), its tags read as any others are. And each element the
+ * browser's HTML parser reads otherwise than Angular draws it (`parted`), which fails point 1.
  */
 class TagReader extends TmplAstRecursiveVisitor {
   attributes = new Map();
@@ -1018,6 +1418,8 @@ class TagReader extends TmplAstRecursiveVisitor {
   containers = [];
   templateParts = [];
   spelled = [];
+  parted = [];
+  context = [PAGE];
   visitElement(node) {
     this.attributes.set(
       node.sourceSpan.start.offset,
@@ -1048,7 +1450,23 @@ class TagReader extends TmplAstRecursiveVisitor {
     ];
     if (drawn.length)
       this.markup.push({ offset: node.sourceSpan.start.offset, drawn });
+    if (isOwnTag(node)) {
+      super.visitElement(node);
+      return;
+    }
+    // The element as Angular draws it and as the HTML parser reads the page (`parsedAs`), in the
+    // element the parser stands in, which an `<ng-container>` or a template does not change.
+    const parsed = parsedAs(this.context.at(-1), node);
+    const made = drawnAs(node);
+    if (parts(made, parsed))
+      this.parted.push({
+        offset: node.sourceSpan.start.offset,
+        drawn: made,
+        parsed,
+      });
+    this.context.push(parsed);
     super.visitElement(node);
+    this.context.pop();
   }
   visitTemplate(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
@@ -1205,6 +1623,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     const name = isElement(node) ? localName(node.name) : '';
     const tag = name.toLowerCase();
     const own = isOwnTag(node);
+    const foreign = own ? null : foreignOf(node);
     const element = isElement(node)
       ? {
           tag,
@@ -1243,10 +1662,12 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // A way to land on it, as axe decides it: the line `aria-required-children`
           // draws, which an editing host does not cross (measured, axe 4.13). Read off the
           // template, as for points 4 and 8: an `href` a directive's host binding sets
-          // (`routerLink`) is not in it.
-          focusable: axe.commons.dom.isFocusable(
-            virtual(tag, focusAttributes(node)),
-          ),
+          // (`routerLink`) is not in it. An element of SVG or MathML is read off the engines'
+          // table instead (`foreignOf`), its roles with it.
+          foreign,
+          focusable: foreign
+            ? foreign.stop
+            : axe.commons.dom.isFocusable(virtual(tag, focusAttributes(node))),
         }
       : null;
     if (element?.role !== null && element?.role !== undefined)
@@ -1294,11 +1715,12 @@ const exclusive = (a, b) =>
  * tag reader goes without the visits a prepared input takes from it (`skips`): the live run takes
  * none, and a case may name one, which then neither records nor descends — an override of the
  * reader's that forgets `super`. The walk knows, too, the fields an expression reads the two name
- * inputs through (`reads`), which are its owners' and not the inputs' names. The parts are counted
- * on the HTML tree by the counter a case hands over (`countsAsAPart`): the live run's reads every
+ * inputs through (`reads`), which are its owners' and not the inputs' names, and the tag reader
+ * the element its root stands in to the HTML parser (`hostContext`). The parts are counted on the
+ * HTML tree by the counter a case hands over (`countsAsAPart`): the live run's reads every
  * spelling.
  */
-const readMessages = (file, content, sides, skips, reads, counter) => {
+const readMessages = (file, content, sides, skips, reads, counter, root) => {
   const { text, ...parsed } = readTree(file, content);
   const state = {
     sides,
@@ -1312,6 +1734,7 @@ const readMessages = (file, content, sides, skips, reads, counter) => {
     elements: new Map(),
   };
   const tags = new TagReader();
+  tags.context = [root];
   for (const visit of skips) tags[visit] = () => {};
   if (!parsed.errors?.length) {
     walkTemplate(parsed.nodes, [], state);
@@ -1334,6 +1757,7 @@ const readMessages = (file, content, sides, skips, reads, counter) => {
     containers: tags.containers,
     templateParts: tags.templateParts,
     spelled: tags.spelled,
+    parted: tags.parted,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: parsed.attributes.filter(counter).length,
@@ -1378,7 +1802,7 @@ const hostRoleOf = (component) => ({
  * whole and holds no control. Which of what stands inside is its own is `owns`'s question.
  */
 const isContainer = (t, tables) =>
-  tables.named.has(roleOf(t)) && !holdsPresentation(t);
+  rolesOf(t).every((role) => tables.named.has(role) && !presents(role));
 /**
  * What a control standing inside an element takes as its own: a container of a composite or a
  * widget type whatever stands in it, at any depth, as its items (a `<select>` or a listbox its
@@ -1392,8 +1816,9 @@ const isContainer = (t, tables) =>
  */
 const ITEM_TYPES = new Set(['widget', 'composite']);
 const owns = (owner, t, tables) =>
-  (isContainer(owner, tables) && ITEM_TYPES.has(roleTypeOf(owner))) ||
-  (holdsPresentation(owner) && !isFocusable(t.tag, t.attrs));
+  (isContainer(owner, tables) &&
+    rolesOf(owner).every((role) => ITEM_TYPES.has(typeOf(role)))) ||
+  (holdsPresentation(owner) && !isFocusable(t));
 
 /**
  * The controls standing inside an element of a template, read off the parsed tree. Where the
@@ -1413,7 +1838,7 @@ const insideOf = (template, element, tables) => {
     (t) =>
       within(t).includes(element.offset) &&
       (holdsPresentation(element)
-        ? isFocusable(t.tag, t.attrs)
+        ? isFocusable(t)
         : isInteractive(t) || t.boundRole),
   );
   return controls.filter(
@@ -1428,7 +1853,7 @@ const insideOf = (template, element, tables) => {
  * Whether ARIA forbids the element a name. A role written on it decides by axe's
  * `prohibitedAttrs` — `presentation`, `none`, `paragraph`, `code`, `strong` and the rest take
  * neither `aria-label` nor `aria-labelledby`, which ARIA forbids together — and so would the
- * platform's own role for the tag (`roleOf`), though none in axe's table forbids one. With no
+ * platform's own role for the tag (`rolesOf`), though none in axe's table forbids one. With no
  * role, axe's element table decides: a `<span>`, a `<div>`, a `<p>`, a `<label>`, an `<a>` with
  * no address are named nothing, while a `<section>`, a `<header>` or a cell has a role its name
  * or its place decides — a named section is a region, a `<header>` a banner at the top of a
@@ -1438,19 +1863,22 @@ const insideOf = (template, element, tables) => {
  * being a widget. An address is read as `virtual` reads it, so one an expression may drop
  * counts as there, and one given by a directive (`routerLink`) counts as absent, which
  * refuses. A written `role="generic"` is no role to `readRole` (axe's `aria-roles` reports it
- * on the page).
+ * on the page). An element of SVG or MathML is read by the engines' roles (`foreignOf`), each of
+ * which has to take the name: none, a generic and a role of the namespace's own that ARIA does not
+ * name forbid one — an SVG `<text>`, a `<foreignObject>` to Firefox, an `<mrow>`.
  */
 const forbids = (role) =>
   NAME_TARGETS.some((name) =>
     (axe._audit.standards.ariaRoles[role].prohibitedAttrs ?? []).includes(name),
   );
-const prohibitsAName = (t) => {
-  const role = roleOf(t);
-  return role === null
-    ? axe.commons.standards.getElementSpec(virtual(t.tag, t.attrs))
-        .namingProhibited === true
-    : forbids(role);
-};
+const prohibitsAName = (t) =>
+  rolesOf(t).some((role) =>
+    role === null
+      ? t.foreign !== null ||
+        axe.commons.standards.getElementSpec(virtual(t.tag, t.attrs))
+          .namingProhibited === true
+      : role === '' || forbids(role),
+  );
 
 const checkAria = ({
   components,
@@ -1687,6 +2115,7 @@ const checkAria = ({
       skips,
       reads,
       counter,
+      hostContext(owners),
     );
     if (said.errors.length)
       throw new AriaError(
@@ -1890,6 +2319,27 @@ const checkAria = ({
           `which lowers it: one attribute in the browser and another after hydration ` +
           `(req-project-ssr). Write it in lower case`,
       );
+    // The element itself, drawn by Angular one way and read by the HTML parser another
+    // (`parsedAs`): read as either, it passes what the other refuses.
+    if (said.parted.length) {
+      const { offset, drawn, parsed } = said.parted[0];
+      const as = (reading) =>
+        `\`<${reading.name}>\` in ` +
+        (reading.space === HTML ? 'HTML' : `the ${reading.space} namespace`);
+      throw new AriaError(
+        'denominator',
+        `${template.file}: the element at offset ${offset} (\`${opening(offset)}\`) is ` +
+          `${as(drawn)} to Angular, which draws it in the browser, and ${as(parsed)} to the ` +
+          `browser's HTML parser, which reads the page the server rendered` +
+          (parsed.moved
+            ? `, placed after the foreign element around it, which the parser closes on it — ` +
+              `hydration stops there (NG0500)`
+            : ` — hydration keeps the parser's element without a word`) +
+          `: one element in the browser and another after SSR (req-project-ssr). Write it as ` +
+          `both read it: an SVG or MathML name in its own case, inside its \`<svg>\` or ` +
+          `\`<math>\` and outside an HTML integration point, and HTML outside them`,
+      );
+    }
     // A part written on an `<ng-template>` (`templateParts`): the template draws no element, so
     // neither the part nor a role beside it reaches the text the user reads. The walk reads a part
     // on an element alone, and the denominator below refused it as one the walk does not reach,
@@ -2099,10 +2549,7 @@ const checkAria = ({
     const unjudged = byPath
       .get(component.templatePath)
       .read.tags.filter(
-        (t) =>
-          t.takesName &&
-          t.boundRole &&
-          !axe.commons.dom.isNativelyFocusable(virtual(t.tag, t.attrs)),
+        (t) => t.takesName && t.boundRole && !isNativelyFocusable(t),
       );
     if (unjudged.length)
       throw new AriaError(
@@ -2254,9 +2701,7 @@ const checkAria = ({
     // and not of a list of roles: the thing the user lands on is the one that counts, and a
     // `role="combobox"` on a `<button>` is that thing although ARIA files the role under
     // `composite` (`lesson-196`).
-    const landable = carriers.filter((widget) =>
-      isFocusable(widget.tag, widget.attrs),
-    );
+    const landable = carriers.filter((widget) => isFocusable(widget));
     const repeated = landable.filter((widget) =>
       widget.path.some((entry) => entry.repeats),
     );
@@ -2395,9 +2840,7 @@ const checkAria = ({
     (c) => hostKeysIn(c, HOST_HIDDEN_KEYS).length > 0,
   );
   for (const component of hidden) {
-    const landable = component.widgets.filter((widget) =>
-      isFocusable(widget.tag, widget.attrs),
-    );
+    const landable = component.widgets.filter((widget) => isFocusable(widget));
     if (landable.length)
       throw new AriaError(
         'hidden',
@@ -2421,7 +2864,13 @@ const checkAria = ({
   // ── 9. a role stands in the context it requires ──────────────────────────
   // The relation itself, read off the template: the first ancestor with a role — written, or
   // the platform's own for the tag — either IS the context the role requires or is the
-  // defect. Angular's containers are looked through, and so are generic elements and
+  // defect. A `group` is a context only inside one of the others, as axe's
+  // `aria-required-parent` reads it: the walk passes it and asks the next ancestor for the rest
+  // — an option's group for a listbox — with the role itself added for a `listitem` or a
+  // `treeitem`, whose group a `listitem` or a `treeitem` owns (axe's `ownGroupRoles`). Settled by
+  // the first group, `<div role="list"><div role="group" aria-label="…"><div role="option">`
+  // passed, which axe reports in both engines measured, and a named SVG `<g>`, a group to both,
+  // with it. Angular's containers are looked through, and so are generic elements and
   // `presentation`/`none` with no global attribute and no way to land on them; a role an
   // `aria-hidden` takes out of the tree is not asked at all. Where the template runs out, the host answers, and a host with no role hands the
   // question to the consumer's template — reported as such, because a static reader that
@@ -2430,11 +2879,12 @@ const checkAria = ({
   let ownedHere = 0;
   let leftToHost = 0;
   let leftToConsumer = 0;
-  const contextOf = (role) => sorted(tables.contexts.get(role)).join(' / ');
+  const contextOf = (roles) => sorted(roles).join(' / ');
+  const OWN_GROUP_ROLES = ['listitem', 'treeitem'];
   for (const template of templates) {
     const owners = components.filter((c) => c.templatePath === template.file);
     for (const element of byPath.get(template.file).roles) {
-      const required = tables.contexts.get(element.role);
+      let required = tables.contexts.get(element.role);
       if (!required) continue;
       // A role an `aria-hidden` takes out of the tree needs no owner, and axe asks it for none.
       if ([element, ...element.ancestors].some((e) => e.ariaHidden)) continue;
@@ -2447,7 +2897,7 @@ const checkAria = ({
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
               `<${ancestor.tag}> whose role is BOUND, so what owns it is not in the ` +
-              `template — a role that requires a context (${contextOf(element.role)}) ` +
+              `template — a role that requires a context (${contextOf(required)}) ` +
               `wants an owner a reader of the source can see`,
           );
         // Looked through — unless it carries ARIA or takes focus, which is the line axe draws:
@@ -2463,10 +2913,39 @@ const checkAria = ({
           : ancestor.focusable
             ? 'a way to land on it'
             : null;
-        const implicit = tables.implicitRoles.get(ancestor.tag) ?? null;
+        // The platform's own role: axe's table for an HTML tag, and each engine's for an element
+        // of SVG or MathML (`foreignOf`). Where the two engines part — a `<g>` a group to one and
+        // nothing to the other — the element is two different ancestors, and the walk that
+        // followed either would pass what the other refuses, so it fails here unless its role is
+        // written.
+        const readings = ancestor.foreign
+          ? ancestor.foreign.roles
+          : [tables.implicitRoles.get(ancestor.tag) ?? null];
+        const [implicit] = readings;
         const written = ancestor.role ?? implicit;
         const overridden = TRANSPARENT_ROLES.has(written);
         if (overridden && held === null) continue;
+        const shown = (reading) =>
+          reading === null
+            ? 'no role'
+            : reading === ''
+              ? `a role of ${ancestor.foreign.space}'s own, which ARIA does not name`
+              : `\`${reading}\``;
+        if (
+          (ancestor.role === null || overridden) &&
+          new Set(readings).size > 1
+        )
+          throw new AriaError(
+            'context',
+            `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
+              `<${ancestor.tag}>, an element of the ${ancestor.foreign.space} namespace ` +
+              readings
+                .map((reading, i) => `${ENGINES[i]} reads as ${shown(reading)}`)
+                .join(' and ') +
+              ` — two different ancestors, and nothing but ${contextOf(required)} may ` +
+              `stand between a \`${element.role}\` and its owner: a walk that followed one ` +
+              `engine would pass what the other refuses. Write its role`,
+          );
         const role = overridden ? implicit : written;
         if (role === null) {
           if (held === null) continue;
@@ -2478,10 +2957,17 @@ const checkAria = ({
                 : `<${ancestor.tag}> with no role and ${held}`) +
               ` — such an element is not looked ` +
               `through, so it is what owns the \`${element.role}\`, and nothing but ` +
-              `${contextOf(element.role)} may. The audit reports it as a critical ` +
+              `${contextOf(required)} may. The audit reports it as a critical ` +
               `\`aria-required-children\` naming the wrapper, on a page that opens the ` +
               `panel and nowhere else`,
           );
+        }
+        if (role === 'group' && required.has(role)) {
+          required = new Set([
+            ...[...required].filter((context) => context !== 'group'),
+            ...(OWN_GROUP_ROLES.includes(element.role) ? [element.role] : []),
+          ]);
+          continue;
         }
         if (required.has(role)) {
           settled = true;
@@ -2491,10 +2977,11 @@ const checkAria = ({
         throw new AriaError(
           'context',
           `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
-            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}` +
+            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (` +
+            (role === '' ? shown(role) : role) +
             (overridden ? `, the \`${written}\` overridden by ${held}` : '') +
             `), ` +
-            `and nothing but ${contextOf(element.role)} may stand between a ` +
+            `and nothing but ${contextOf(required)} may stand between a ` +
             `\`${element.role}\` and its owner — axe reports this as a critical ` +
             `\`aria-required-children\` where it knows the role in between (it reads the ` +
             `\`doc-\` ones as none), on a page that opens the panel, and no page has to`,
@@ -2512,14 +2999,14 @@ const checkAria = ({
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> reaches the root of ` +
               `its template and ${host.owner.className}'s host binds its role — the owner ` +
-              `a \`${element.role}\` requires (${contextOf(element.role)}) is not in the source`,
+              `a \`${element.role}\` requires (${contextOf(required)}) is not in the source`,
           );
         if (host.role !== null && !required.has(host.role))
           throw new AriaError(
             'context',
             `${template.file}: <${element.tag} role="${element.role}"> reaches the root of ` +
               `its template and the host of ${host.owner.className} is a ` +
-              `\`${host.role}\` — a \`${element.role}\` requires ${contextOf(element.role)} ` +
+              `\`${host.role}\` — a \`${element.role}\` requires ${contextOf(required)} ` +
               `above it, and the host is the last element this template can put there`,
           );
       }

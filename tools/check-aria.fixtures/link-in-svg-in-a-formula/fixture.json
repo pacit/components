@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<svg>` in the SVG namespace to Angular, which draws it in the browser, and `<svg>` in the MathML namespace",
+  "$reason": "The reference's widget with its trigger alone, an SVG link in a drawing inside a formula's `<mrow>`. Angular opens the SVG namespace on `<svg>` wherever it stands; the HTML parser opens it only in HTML or at an integration point, and reads an `<svg>` in an `<mrow>` as MathML, the link with it: a stop Firefox and WebKit land on in both, an SVG link in the browser and a MathML element after SSR, generic to Chromium (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). Read as a link, it carried the name and passed."
+}

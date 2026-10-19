@@ -1,0 +1,4 @@
+<!-- The layer's frame, drawn in the group that hosts it, and a title naming the group, written
+     with no prefix. -->
+<title>Frame</title>
+<svg:rect class="pct-layer__frame" width="8" height="8" />

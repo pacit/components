@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A drawing of the library gains a `<TEXT>` written in capitals, and 1.4.5 keeps resting on the scan. Angular draws it as written, no text element in the browser; its server renderer writes `<TEXT>` into the page, and the browser's HTML parser lowers it to a `<text>`, drawn, which hydration keeps (Chromium 153, Firefox 155, WebKit 26.6, the page from Angular 22.2's `renderApplication`, 2026-10-19). Read as written, the scan found none.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<svg viewBox=\"0 0 24 24\"><TEXT x=\"0\" y=\"16\">AB</TEXT></svg>\n"
+  }
+}

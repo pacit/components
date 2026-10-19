@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "placed after the foreign element around it, which the parser closes on it — hydration stops there (NG0500)",
+  "$reason": "An option drawn in a map inside the reference's listbox, written as HTML in its namespace, `<xhtml:div role=\"option\">`. Angular draws an HTML `<div>` inside the `<svg>`, drawn nowhere; the HTML parser closes the `<svg>` on a `<div>` and places it after, and hydration stops on the missing node with NG0500 (measured on 2026-10-19: Angular 22.2's `renderApplication` and `provideClientHydration`, Chromium 153, Firefox 155, WebKit 26.6). The walk looked through the `<svg>` and passed the option as the listbox's."
+}

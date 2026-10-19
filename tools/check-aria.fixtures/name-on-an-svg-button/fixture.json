@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "message": "<button> bind(s) [attr.aria-label] or [attr.aria-labelledby] to the inputs, and its role prohibits a name",
+  "$reason": "The reference's widget with its trigger alone, a `<button>` drawn in a map — an element the schema does not know in SVG, so built under `NO_ERRORS_SCHEMA` — binding both name attributes to the inputs. In SVG it is no button: generic to Chromium 153 and nothing to Firefox 158, a stop to no engine (measured on 2026-10-19, `createElementNS` as Angular draws it, and the same after SSR, the parser keeping it in SVG). Read through HTML's tables, it was a button, the carrier, and passed; read as SVG, the name lands on a generic."
+}

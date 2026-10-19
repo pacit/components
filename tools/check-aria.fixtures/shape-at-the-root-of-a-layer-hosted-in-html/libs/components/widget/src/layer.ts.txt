@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+/**
+ * The layer on a `<span>`: an HTML host, whose children the parser reads as HTML.
+ */
+@Component({
+  selector: 'span[pctLayer]',
+  templateUrl: './layer.html',
+})
+export class PctLayer {}

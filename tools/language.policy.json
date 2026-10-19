@@ -87,7 +87,7 @@
   "$vocabulary": "The false positives of the two dictionary limbs, of three kinds: words the pinned Polish list holds and the English one does not, words the fourth limb reads as a foreign stem carrying a Polish ending, and words the fifth reads as a Polish stem carrying a derivational suffix (the gate's verdict line carries the current count — a number written here would only rot). None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
   "vocabulary": {
     "abbreviations": {
-      "reason": "English words written short, in identifiers and in prose — HTML element names among them (`div`, `ul`, `tr`), which reach the artifact as the tags a template really emits. Each is a shortening a reader expands without thinking; none is a Polish word here.",
+      "reason": "English words written short, in identifiers and in prose — HTML element names among them (`div`, `ul`, `tr`), which reach the artifact as the tags a template really emits, and MathML's `mrow`, a row of a formula, which a gate's cases draw. Each is a shortening a reader expands without thinking; none is a Polish word here.",
       "words": [
         "abs",
         "acc",
@@ -122,6 +122,7 @@
         "lc",
         "lh",
         "loc",
+        "mrow",
         "mts",
         "ol",
         "param",
@@ -143,6 +144,7 @@
         "toc",
         "tok",
         "tr",
+        "tt",
         "txt",
         "ul",
         "ver",

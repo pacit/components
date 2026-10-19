@@ -5,7 +5,7 @@
      of them is ever in the tree, which is the question point 4 asks — and the answer it must
      accept. Beside them, outside the conditional, an element named `constructor`, which the
      build compiles under `NO_ERRORS_SCHEMA` as no element's direct child (Angular's parser
-     closes the element around it), and one named `__proto__`, which only a namespace opens.
+     closes the element around it), and one named `__proto__`, which only a namespace opens, HTML's here.
      The gate reads both as unknown elements, and both are handed the name too, at the same
      time; the one a `tabindex` makes a stop is a second control. -->
 <constructor
@@ -14,11 +14,11 @@
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
 ></constructor>
-<svg:__proto__
+<xhtml:__proto__
   class="pct-widget__caption"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
-></svg:__proto__>
+></xhtml:__proto__>
 <span class="pct-widget__box">
   @if (editable()) {
   <input

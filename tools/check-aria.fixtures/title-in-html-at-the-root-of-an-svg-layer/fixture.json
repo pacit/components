@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<title>` in HTML to Angular, which draws it in the browser, and `<title>` in the SVG namespace",
+  "$reason": "The reference's layer naming itself with a `<title>` at its root, written with no prefix. The host is an SVG group, and the parser reads the page there: an SVG `<title>`, which names the group, after SSR. Angular takes the namespace from the prefix alone, and draws an HTML `<title>` into the group, which names nothing (`DOMParser`, Chromium 153 and Firefox 155, 2026-10-19; Angular 22.2 compiles it under strict templates, `title` being an HTML element). A root read as standing in HTML whatever the host passed it."
+}

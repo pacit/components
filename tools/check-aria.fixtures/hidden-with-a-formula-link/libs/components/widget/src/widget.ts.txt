@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+/** A formula drawn as decoration: a picture, hidden from the tree. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    role: 'img',
+    'aria-hidden': 'true',
+  },
+})
+export class PctWidget {}

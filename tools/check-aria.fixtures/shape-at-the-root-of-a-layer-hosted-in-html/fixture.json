@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<rect>` in the SVG namespace to Angular, which draws it in the browser, and `<rect>` in HTML",
+  "$reason": "The reference's layer on a `<span>` instead of an SVG group. Its root is written `<svg:rect>`, which Angular draws in SVG wherever the host stands, and the host is an HTML element now: the server renderer writes `<rect>` inside a `<span>`, an HTML element of no kind to the parser, which hydration keeps without a word, as it keeps the `<a>` of `<div><svg:a href>` (measured on 2026-10-19: Angular 22.2's `renderApplication`, Chromium 153, Firefox 155, WebKit 26.6). Read as standing in its host whatever the host is, the root passed."
+}

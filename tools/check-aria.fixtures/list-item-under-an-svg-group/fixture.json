@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<g role=\"listitem\"> stands under <g>, an element of the SVG namespace Chromium 153 reads as `group` and Firefox 158 reads as no role",
+  "$reason": "A list drawn in a map, looked through by `role=\"none\"`, its item inside a `<g>` with no role. Chromium 153 reads that `<g>` as a group, which a listitem may not stand in, and Firefox 158 as nothing until it is named or a stop (measured on 2026-10-19): one list is valid in Firefox and not in Chromium. axe's HTML table gives a `<g>` no role, and the walk looked through it."
+}
