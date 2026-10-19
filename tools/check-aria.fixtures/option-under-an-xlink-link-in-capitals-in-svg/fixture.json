@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "carries `XLINK:HREF` — Angular sets",
+  "$reason": "`option-under-an-xlink-link-in-svg` with the address written `XLINK:HREF`, which the parser names `:XLINK:HREF` and Angular sets through `setAttribute` under that name, its prefix being no namespace Angular knows: no link in the browser. Its server renderer writes the name into the page as it stands, and the browser's HTML parser lowers it and puts it in the XLink namespace, so after hydration the map's link is one (measured on 2026-10-19: Chromium 153, Firefox 155, WebKit 26.6). Read lowered, a link above the option; read as written, none: a name the gate reads, in capitals on an element of a foreign namespace, fails point 1."
+}

@@ -1,4 +1,4 @@
-<!-- The trigger alone, drawn as an SVG link: the one element that can carry the name. -->
+<!-- The trigger alone, drawn in a map: the one element that can carry the name. -->
 <svg class="pct-widget__box" viewBox="0 0 8 8">
   <a
     href="#"

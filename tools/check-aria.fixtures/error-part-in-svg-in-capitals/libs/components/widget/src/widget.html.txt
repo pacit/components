@@ -1,0 +1,57 @@
+<!-- The reference's widget, its error drawn as an SVG `<text>` with the part written in capitals. -->
+<span class="pct-widget__box">
+  @if (editable()) {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else if (native()) {
+  <select
+    class="pct-widget__trigger"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    <option>Poland</option>
+    <option>Anywhere</option>
+  </select>
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+</span>
+
+<!-- The panel: a listbox owning its options directly and THROUGH a heading's group, which is
+     the relation point 9 reads off the tree — the group is one of the two contexts an option
+     may stand in, and nothing else may. It carries the consumer's name as well, as the APG's
+     combobox has it: a container named as a whole, around items that are its own. -->
+@if (open()) {
+<div
+  class="pct-widget__panel"
+  role="listbox"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <div role="group" aria-labelledby="pct-widget-nearby">
+    <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
+    <div role="option">Poland</div>
+  </div>
+  <div role="option">Anywhere</div>
+</div>
+}
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<svg><text class="pct-widget__error" DATA-PCT-PART="error" role="alert">{{ error() }}</text></svg>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

@@ -1,6 +1,6 @@
 {
-  "point": 7,
-  "check": "announcement",
-  "message": "`error` carries no `role`",
-  "$reason": "The reference's error drawn as an SVG `<text>`, its role written `ROLE=\"alert\"`. The parser names the element `:svg:text`, Angular creates it in the SVG namespace and sets the attribute as written, and `setAttribute` lowers a name on an HTML element alone: the text carries an attribute `ROLE`, no role, and announces nothing (Chromium 153, Firefox 155, WebKit 26.6). The walk lowered every name in every namespace and passed it as the live region."
+  "point": 1,
+  "check": "denominator",
+  "message": "carries `ROLE` — Angular sets a name there as written",
+  "$reason": "The reference's error drawn as an SVG `<text>`, its role written `ROLE=\"alert\"`; the parser names the element `:svg:text`. Angular sets a name on such an element as written, and `setAttribute` keeps its case there, so in the browser the text carries an attribute `ROLE`, no role, and announces nothing; its server renderer writes the name into the page as it stands, and the browser's HTML parser lowers it, so after hydration it carries `role=\"alert\"` (measured on 2026-10-19: Chromium 153, Firefox 155, WebKit 26.6, the page from Angular 22.2's `renderApplication`). Read lowered, as the walk read every name, it passed; read as written, it would pass the page the server rendered. A name the gate reads, in capitals on an element of a foreign namespace, fails point 1."
 }

@@ -1,9 +1,5 @@
-<!-- The role sits here and not on the host, so the name has to be handed over. It is handed
-     over more than once, because the element a trigger is follows the role it carries: one
-     that can be typed into is an `<input>`, one that cannot is a `<button>`, and one with
-     nothing of ours to draw is the platform's `<select>`, whose options are its own. Exactly one
-     of them is ever in the tree, which is the question point 4 asks — and the answer it must
-     accept. -->
+<!-- The reference's widget, its panel holding an option inside a `list` under a map written
+     `ARIA-HIDDEN` in capitals. -->
 <span class="pct-widget__box">
   @if (editable()) {
   <input
