@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is a template, which the tree holds as no element",
+  "$reason": "`group-not-in-the-tree` with the role written `ROLE=\"group\"`. HTML ignores the case of a name, as the walk reads one on an element, and the scan read the attributes of a tag the tree holds no element for by their names as written: `role` was absent, the template no group, and it passed point 1 where `role=\"group\"` fails it. The scan reads a name as `nameOf` does now."
+}

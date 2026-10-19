@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is in the tag scan and not in the parsed tree",
+  "$reason": "`widget-in-a-string` with a `<div>` a written role makes a widget, `ROLE=\"listbox\"`, in place of the `<button>`. A tag the tree holds nothing for is read by the scan alone, and its role, which the scan took off a name written in lower case, made no widget: the string passed point 1, where `role=\"listbox\"` fails it as a widget with no path. The scan reads a name as `nameOf` does now, in any case."
+}

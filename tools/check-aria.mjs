@@ -113,7 +113,9 @@ const BOUND_LIVE = ['role', 'aria-live'];
  * Every syntax Angular has for a binding (`[attr.x]`, `[x]`, `x="{{ … }}"`, `attr.x="{{ … }}"`,
  * `bind-`) parses to an input of that name — so a role arriving from an expression, for point
  * 9 a path the template cannot decide and for point 4 an element it cannot judge, is an input
- * named `role`.
+ * named `role`. On an SVG or a MathML element a name the gate reads, written in capitals, is
+ * one attribute in the browser and another on a page the server rendered, and fails point 1
+ * before anything here reads it (`twoWays`).
  */
 const nameOf = (name, property = false) =>
   property
@@ -525,10 +527,15 @@ const platformTables = () => {
 
 const TABLES = platformTables();
 
+/**
+ * The attributes of a tag the scan reads where the tree holds no element, by name as `nameOf`
+ * reads one, the last of two: the name was taken as written, and a `<ng-template ROLE="group">`
+ * or a `ROLE="listbox"` in a string passed point 1, where `role` fails it.
+ */
 const attributesOf = (text) => {
   const attrs = new Map();
   for (const m of text.matchAll(ATTRIBUTE))
-    attrs.set(m[1], m[2] ?? m[3] ?? m[4] ?? '');
+    attrs.set(nameOf(m[1]), m[2] ?? m[3] ?? m[4] ?? '');
   return attrs;
 };
 
@@ -829,15 +836,29 @@ const namesOn = (node) => [
  * (`[class.tabindex]`) reads as one as well, as it does for a role or a name, and so does a
  * property binding a component of the library takes as its input (`[tabIndex]` on a tag whose
  * component declared one): neither reaches the attribute, and nothing here writes either.
+ *
+ * An SVG link takes its address from `xlink:href` too (the parser's `:xlink:href`), which all three
+ * engines focus as a link (Chromium 153, Firefox 155, WebKit 26.6, measured on 2026-10-19): on an
+ * element of a foreign namespace (`inForeign`) it is read as `href`, the one SVG prefers when both
+ * stand. Read as nothing, an option under such a link passed point 9. On an HTML element Angular
+ * sets it in the XLink namespace, which makes no link.
  */
+const XLINK_HREF = ':xlink:href';
 const focusAttributes = (node) =>
   new Map(
-    FOCUS_ATTRIBUTES.flatMap((name) => [
-      ...(writtenOn(node, name) === undefined
-        ? []
-        : [[name, writtenOn(node, name)]]),
-      ...(boundOn(node, name).length ? [[`[${name}]`, '']] : []),
-    ]),
+    FOCUS_ATTRIBUTES.flatMap((name) => {
+      const names =
+        name === 'href' && inForeign(node) ? [name, XLINK_HREF] : [name];
+      const written = names
+        .map((spelling) => writtenOn(node, spelling))
+        .find((value) => value !== undefined);
+      return [
+        ...(written === undefined ? [] : [[name, written]]),
+        ...(names.some((spelling) => boundOn(node, spelling).length)
+          ? [[`[${name}]`, '']]
+          : []),
+      ];
+    }),
   );
 
 /**
@@ -858,6 +879,47 @@ const EMBEDS = new Set(['embed', 'frame', 'iframe', 'object']);
  * name being part of it — one the compiler refuses (`NG8001`) and the DOM makes no input of.
  */
 const localName = (name) => splitNsName(name)[1];
+
+/**
+ * The namespaces besides HTML an element of the tree can stand in, by the prefix the parser names
+ * it with: inside an `<svg>` or a `<math>`, or written with the prefix (`<svg:g>`). A
+ * `<foreignObject>`'s children are HTML again, and so is `<xhtml:div>`.
+ */
+const FOREIGN = { svg: 'SVG', math: 'MathML' };
+const inForeign = (node) =>
+  isElement(node) && Object.hasOwn(FOREIGN, splitNsName(node.name)[0] ?? '');
+
+/**
+ * The names an element of a foreign namespace carries one way in the browser and another on a page
+ * the server rendered: one the gate reads (a role, an ARIA attribute, a part, what decides a stop),
+ * written or bound through `attr.` in capitals. Angular sets an attribute as written, and on such an
+ * element `setAttribute` keeps the case, so `ROLE` is no role to any engine; its server renderer
+ * writes `ROLE` into the page, and the browser's HTML parser lowers every name there but the ones it
+ * restores (`viewBox`), so after hydration the element has a `role` (measured on 2026-10-19: Chromium
+ * 153, Firefox 155, WebKit 26.6, the page from Angular 22.2's `renderApplication`; hydration adds the
+ * name as written beside it and keeps the parser's). Either reading would pass what the other
+ * refuses — read lowered, `ROLE="alert"` on an SVG error part announced nothing in the browser; read
+ * as written, a `<g ROLE="list">` above an option was no list, which a page the server rendered
+ * makes one — so the name fails point 1 (`req-project-ssr`). A property binding is the compiler's to refuse: `[aria-LABEL]` or
+ * `[ROLE]` on such an element is no property it knows (NG8002, `ngc` 22.2.1, strict templates).
+ */
+const readsName = (name) =>
+  name === LIVE_ATTRIBUTE ||
+  name === PART_ATTRIBUTE ||
+  name === XLINK_HREF ||
+  name.startsWith('aria-') ||
+  FOCUS_ATTRIBUTES.includes(name);
+const twoWays = (node) =>
+  inForeign(node)
+    ? [
+        ...node.attributes.map((a) => a.name),
+        ...node.inputs
+          .filter((i) => i.type === BindingType.Attribute)
+          .map((i) => i.name),
+      ].filter(
+        (name) => name !== name.toLowerCase() && readsName(name.toLowerCase()),
+      )
+    : [];
 
 /**
  * What Angular takes off an `<ng-content>` as the projection's own: its `select`, in any case, and
@@ -922,6 +984,7 @@ class TagReader extends TmplAstRecursiveVisitor {
   contentBlocks = [];
   projections = [];
   containers = [];
+  spelled = [];
   visitElement(node) {
     this.attributes.set(
       node.sourceSpan.start.offset,
@@ -936,6 +999,13 @@ class TagReader extends TmplAstRecursiveVisitor {
       : [];
     if (carried.length)
       this.containers.push({ offset: node.sourceSpan.start.offset, carried });
+    const spelled = twoWays(node);
+    if (spelled.length)
+      this.spelled.push({
+        offset: node.sourceSpan.start.offset,
+        namespace: FOREIGN[splitNsName(node.name)[0]],
+        spelled,
+      });
     const tag = localName(node.name).toLowerCase();
     const drawn = [
       ...MARKUP.filter((name) =>
@@ -1221,6 +1291,7 @@ const readMessages = (file, content, sides, skips, reads) => {
     contentBlocks: tags.contentBlocks,
     projections: tags.projections,
     containers: tags.containers,
+    spelled: tags.spelled,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
@@ -1759,6 +1830,21 @@ const checkAria = ({
           `does not check that a directive's selector names what is written. Put it on an ` +
           `element inside or around the container, or bind the directive's input ` +
           `(\`[name]="'…'"\`), which the compiler refuses where no directive takes it (NG8002)`,
+      );
+    // A name the gate reads, in capitals on an element of a foreign namespace (`twoWays`): read
+    // either way, it passes what the page renders the other way.
+    if (said.spelled.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: an element of the ${said.spelled[0].namespace} namespace at offset ` +
+          `${said.spelled[0].offset} (\`${opening(said.spelled[0].offset)}\`) carries ` +
+          said.spelled[0].spelled
+            .map((name) => `\`${name.replace(/^:([^:]+):/, '$1:')}\``)
+            .join(', ') +
+          ` — Angular sets a name there as written, which such an element keeps, and a page ` +
+          `the server rendered hands it to the browser's HTML parser, ` +
+          `which lowers it: one attribute in the browser and another after hydration ` +
+          `(req-project-ssr). Write it in lower case`,
       );
     // Part attributes on both sides, not elements: the text holds two where a tag carries
     // two, and the walk, which reads the last, held one, so a part written over another

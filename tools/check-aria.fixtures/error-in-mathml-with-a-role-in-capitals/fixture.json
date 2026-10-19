@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "an element of the MathML namespace",
+  "$reason": "`error-in-svg-with-a-role-in-capitals` in MathML, an element the parser names `:math:mi`. Angular sets a name on such an element as written, and `setAttribute` keeps its case there, so in the browser it carries `ROLE`, no role; its server renderer writes the name into the page as it stands, and the browser's HTML parser lowers it, so after hydration it carries `role=\"alert\"` (measured on 2026-10-19: Chromium 153, Firefox 155, WebKit 26.6, the page from Angular 22.2's `renderApplication`). Read lowered, as the walk read every name, it passed. A name the gate reads, in capitals on an element of a foreign namespace, fails point 1."
+}

@@ -1,0 +1,18 @@
+<!-- The trigger alone, drawn in a map: the one element that can carry the name. -->
+<svg class="pct-widget__box" viewBox="0 0 8 8">
+  <a
+    href="#"
+    role="combobox"
+    [attr.ARIA-LABEL]="ariaLabel() || null"
+    [attr.ARIA-LABELLEDBY]="ariaLabelledby() || null"
+  >
+    <text>{{ label() }}</text>
+  </a>
+</svg>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}
