@@ -1,6 +1,6 @@
 {
   "// why": "The reference input of the `check-bundle` negative control. Every case beside it is built ON A COPY OF IT, so a case file holds nothing but its own defect. This input MUST pass: were it defective itself, every case would fire because of it rather than because of its own.",
-  "// why data, not a real measurement": "Building a dozen esbuild probes for each of the seventeen cases would cost minutes per run, and with Angular's real builder — quarters of an hour. The same choice as in `check-zoneless` and `check-parts`. The price is visible: the fixtures do NOT exercise the bundling code, they exercise the whole arrangement of checks. Bundling is exercised on every run against the real repository.",
+  "// why data, not a real measurement": "Building a dozen esbuild probes for each case would cost minutes per run, and with Angular's real builder — quarters of an hour. The same choice as in `check-zoneless` and `check-parts`. The price is visible: the fixtures do NOT exercise the bundling code, they exercise the whole arrangement of checks. Bundling is exercised on every run against the real repository.",
   "// why a fake library": "The entrypoints are called `alpha`, `beta`, `kernel` rather than `button`, `select`, `core` — a copy of the real measurement would drift from the repository at every new component, and the fixtures would then need maintenance although they examine nothing that changed. `kernel` is pulled in by EVERY probe (like the real `./core`), it is MIXED — a directive beside its providers, as `./core` has been since D2 — and only `beta` takes that directive, the way only `./select` takes `pctOverlayPanel`. `beta` alone reaches for the CDK overlay (like the real `./select`). `rig` is the plain entrypoint of the `quotes` kind (like the real `./testing`): no component of its own, every other entrypoint's selector in its text as data, held by the metafile alone.",
   "sources": [".", "./alpha", "./beta", "./kernel", "./rig"],
   "manifest": {
@@ -86,6 +86,30 @@
       "tags": 2,
       "bytes": 900,
       "all": 1400
+    }
+  },
+  "// why modules": "What each entrypoint's module exports, read by the gate's own `componentRecords` into the TAGS point 12 holds the rows to. Each value says what the key is — a component, a directive, a function or a value — and the label which object: one label is one class, wherever and under whatever key it stands. `./beta` exports `PctBeta` under a second name, `PctB`, that sorts before its own and is not a second tag, and a directive beside its two components, the way the real `./select` exports `PctSelectOptionTemplate`. The primary re-exports the kernel's provider as the very object the kernel exports, the way `.` re-exports `providePctConfig` from `./core`. The keys are written out of order on purpose: the case builder lists them in code-unit order, as a module namespace does.",
+  "modules": {
+    ".": {
+      "providePctKernel": { "function": "providePctKernel" },
+      "PCT_VERSION": { "value": "1.0.0" }
+    },
+    "./alpha": {
+      "PctAlpha": { "component": "PctAlpha" }
+    },
+    "./beta": {
+      "PctBetaOption": { "directive": "PctBetaOption" },
+      "PctBetaItem": { "component": "PctBetaItem" },
+      "PctBeta": { "component": "PctBeta" },
+      "PctB": { "component": "PctBeta" }
+    },
+    "./kernel": {
+      "providePctKernel": { "function": "providePctKernel" },
+      "PctKernelPanel": { "directive": "PctKernelPanel" }
+    },
+    "./rig": {
+      "PctBetaHarness": { "function": "PctBetaHarness" },
+      "PctAlphaHarness": { "function": "PctAlphaHarness" }
     }
   },
   "pair": {

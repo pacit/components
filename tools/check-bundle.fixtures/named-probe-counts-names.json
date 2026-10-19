@@ -1,0 +1,7 @@
+{
+  "// defect": "The row of `./beta` counts three tags, one per export key — `PctB`, `PctBeta`, `PctBetaItem` — and the entrypoint carries two classes. Measured on the real `./select` with `PctSelect as PctASelect` added: the row read three tags, and nothing refused it.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` counts 3 tags, and the entrypoint carries 2: PctBeta (as PctB, PctBeta), PctBetaItem.",
+  "namedProbe": { "ep": "./beta", "is": { "tags": 3 } }
+}

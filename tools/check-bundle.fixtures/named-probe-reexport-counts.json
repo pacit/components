@@ -1,0 +1,7 @@
+{
+  "// defect": "`./beta` re-exports `./alpha`'s `PctAlpha`, the very object, and its row still counts two tags. An import from `./beta` names `PctAlpha` there, so it is a tag of `./beta` as well as of `./alpha`, and the row has three to count. Read once for the whole package, the class would be a tag of the first entrypoint exporting it and of no other. (The live package cannot get here: point 4 refuses a marker two entrypoints export before point 12 reads a row, and in a case the markers are data.)",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` counts 2 tags, and the entrypoint carries 3: PctAlpha, PctBeta (as PctB, PctBeta), PctBetaItem.",
+  "exports": { "./beta": { "PctAlpha": { "component": "PctAlpha" } } }
+}

@@ -114,10 +114,11 @@ tag nobody imported:
    Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,
    `PCT_TABS`), there is no reference and this half does not apply.
 
-The reading is DIRECTIONAL, because the probe imports the first export name: `PctSelect`
-is shed or not shed by a bundle that asked for `PctMultiSelect`, and the other direction
-can differ — an entrypoint whose group declares providers pins the group when a consumer
-imports only the child.
+The reading is DIRECTIONAL, because the probe imports the first class by its own name.
+A tag is a class, so a second name it is exported under is neither a second tag nor a
+way to move the probe: `PctSelect` is shed or not shed by a bundle that asked for
+`PctMultiSelect`, and the other direction can differ — an entrypoint whose group declares
+providers pins the group when a consumer imports only the child.
 
 `./select` used to be the row neither half explained, and the answer was the first half
 after all: the orphan-slot report stood in each tag's `providers`, so a consumer who

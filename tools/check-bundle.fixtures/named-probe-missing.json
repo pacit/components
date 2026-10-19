@@ -1,0 +1,7 @@
+{
+  "// defect": "`./beta` carries two tags and the measurement has no row for it — the loop that discovers multi-tag entrypoints stopped seeing this one. Point 13 would say the snapshot is not the render, and `--write`, the answer it gives, would drop the row without a word; this rule is the one that says the measurement is short. The message lists the tags as the package read gives them: `PctBeta` with the second name `PctB` before its own, as a namespace orders them.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./beta` carries 2 tags — PctBeta (as PctB, PctBeta), PctBetaItem — and no probe imported",
+  "dropNamed": "./beta"
+}

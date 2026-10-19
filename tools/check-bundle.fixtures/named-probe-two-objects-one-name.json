@@ -1,0 +1,7 @@
+{
+  "// defect": "`./alpha` exports two classes that bear one name — its own `PctAlpha` and another object named `PctAlpha` under the key `PctAlphaTwin`, as a re-export of a stranger's class would put it there. Two objects are two tags, and the entrypoint has no row; read by name, the two would merge into one tag and the entrypoint would need none.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./alpha` carries 2 tags — PctAlpha, PctAlpha (as PctAlphaTwin) — and no probe imported",
+  "exports": { "./alpha": { "PctAlphaTwin": { "component": "PctAlpha#2" } } }
+}

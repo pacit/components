@@ -1,0 +1,10 @@
+{
+  "// defect": "A one-tag row for `./kernel`, which exports a directive and a provider and no component at all. A directive is not a tag — the question of the row is what a consumer of one TAG pays — so the entrypoint has none to measure, and the message says so rather than listing nothing.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./kernel` has a one-tag row counting 2 tags, and the components it exports are: (none).",
+  "namedProbe": {
+    "ep": "./kernel",
+    "is": { "export": "PctKernelPanel", "tags": 2, "bytes": 1600, "all": 1700 }
+  }
+}

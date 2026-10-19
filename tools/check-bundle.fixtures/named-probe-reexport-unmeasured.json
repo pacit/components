@@ -1,0 +1,7 @@
+{
+  "// defect": "`./alpha` re-exports `./beta`'s `PctBetaItem`, the very object, and so carries two tags with no row. The class stays a tag of `./beta` too: read once for the whole package and given to the LAST entrypoint exporting it, `./alpha` would carry one tag and need no row — the other direction of `named-probe-reexport-counts`.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./alpha` carries 2 tags — PctAlpha, PctBetaItem — and no probe imported",
+  "exports": { "./alpha": { "PctBetaItem": { "component": "PctBetaItem" } } }
+}

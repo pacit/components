@@ -201,11 +201,17 @@ nothing are parent/child pairs where the child injects the container, which is a
 the bundler is right to keep; `./select` is a pair of SIBLINGS and is the finding. The point
 itself holds the measurement — a named probe with no bytes measured nothing, and one class
 cannot cost more than every class — while the numbers are held by point 13 with every other
-row. The budget's number is what an **application** carries, not
+row. And the rows are the package's: a tag is a component **object**, as the gates reading the
+package's classes count one, so a class exported under a second name is one tag, a class
+another entrypoint re-exports is a tag of each, and a row is owed to exactly the entrypoints
+carrying two, counting them and naming the first by its own name. Counted by export key, as
+the point used to, `export { PctButton, PctButton as PctBtn }` gave `./button` a row of two
+tags 2 B apart, and `PctSelect as PctASelect` turned the probe of `./select` round to the other
+tag — both measured, and both written by `--write` with every point green. The budget's number is what an **application** carries, not
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 32 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 41 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
 and the read that takes the literal does not take it for the entrypoint),
@@ -219,7 +225,14 @@ component in, and the metafile read fires),
 `size-grew/` (one byte, the smallest thing the point can be asked to see),
 `snapshot-not-the-render/` (every row right, and the prose still describing the band 0023
 removed), `named-probe-empty/` and `named-probe-larger/` (the one-tag measurement produced no
-bytes, and one class costing more than every class) and `pair-no-larger-than-single/` —
+bytes, and one class costing more than every class), `named-probe-missing/`,
+`named-probe-one-tag-two-names/`, `named-probe-counts-names/`, `named-probe-follows-an-alias/`,
+`named-probe-two-objects-one-name/`, `named-probe-reexport-counts/`,
+`named-probe-reexport-unmeasured/` and `named-probe-no-component/` (the rows held to the
+package's tags: a row owed and missing, a row for one class under two names, a count of names,
+a row an alias turned round, two objects bearing one name, a re-export counted in each
+entrypoint, both ways round, and a row for an entrypoint of directives) and
+`pair-no-larger-than-single/` —
 literally "an app importing two entrypoints must produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
 of the single message line that the old ±5% band had recorded nowhere, and point 12's first run was green — the

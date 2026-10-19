@@ -1,0 +1,8 @@
+{
+  "// defect": "`./beta` exports `PctBetaItem` under a second name, `PctAItem`, that sorts before every other key, and the row measures `PctBetaItem` — the class an alias put first, not the first by its own name. Measured on the real `./select`: `PctSelect as PctASelect` turned its probe from `PctMultiSelect` alone (52064 B) to `PctSelect` alone (51887 B), and the row changed direction with no line of code saying so.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` names `PctBetaItem`, and the first tag of the entrypoint by its own name is `PctBeta`: PctBeta (as PctB, PctBeta), PctBetaItem (as PctAItem, PctBetaItem).",
+  "exports": { "./beta": { "PctAItem": { "component": "PctBetaItem" } } },
+  "namedProbe": { "ep": "./beta", "is": { "export": "PctBetaItem" } }
+}
