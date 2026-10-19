@@ -140,18 +140,17 @@ member above every class, which the parser holds as none.
 
 Which class is a control is the parser's too, off the class's own `implements` clause, and eight
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the
-clause or at any depth within a type of it, through a named import under another name, as the
-last part of a qualified name, or as the last part of an import type's qualifier, read off the
-parser's names, not off the qualifier's text, in which a comment can stand.
-`contract-under-another-name` passed on main, whose pattern over the header found no contract's
-name in
+clause or at any depth within a type of it, through a named import under another name, as the last
+part of a qualified name, or as the last part of an import type's qualifier, read off the parser's
+names, not off the qualifier's text, in which a comment can stand. `contract-under-another-name`
+passed on main, whose pattern over the header found no contract's name in
 `implements PctValueContract<number>`; `contract-inside-another-type` and
 `contract-through-an-import-type` passed on an earlier reading of this one, of the clause's own
-types, and `contract-through-a-qualified-import-type` on one of the qualifier's text (measured).
-A contract wrapped in a type of the clause makes a control, which errs toward
-measuring a class, never toward leaving one out. What the clause reaches through another name of
-the sources — a type alias, an interface extending a contract, a base that implements one — is
-not read, which is said in the gate and not held by a case.
+types, and `contract-through-a-qualified-import-type` on one of the qualifier's text (measured). A
+contract wrapped in a type of the clause makes a control, which errs toward measuring a class, never
+toward leaving one out. What the clause reaches through another name of the sources — a type alias,
+an interface extending a contract, a base that implements one — is not read, which is said in the
+gate and not held by a case.
 
 `control-behind-a-namesake` and `base-named-like-another-class` hold what a name stands for.
 TypeScript compiles two classes of one name in two files, and binds a base's name in the file
