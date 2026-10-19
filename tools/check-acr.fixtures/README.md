@@ -48,8 +48,7 @@ comparison with `docs/acr.md` is the real run's alone, and the cases run with it
 A rejected case may name phrases its refusal must hold (`says`), where the point alone does
 not tell which reading refused. A case that writes a positive tabindex after constructs the
 reading lets through — a call that reads the attribute, a selector, a value in parentheses —
-names the line of that write. A reading that refused one of the constructs names an earlier
-line, and fails the case, since a refusal names the first line it finds. Nothing holds the
+names the place of that write: its line, or the sheet that compiles to it. A reading that refused one of the constructs names an earlier line or another reason, and fails the case, since a refusal names the first line it finds. Nothing holds the
 rule itself: a runner that skipped `says` would pass every case.
 
 A case that carries a `status` is read the other way round. It is a state of the report, not
@@ -105,7 +104,6 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-tabindex-in-the-other-branch-of-a-condition.json`](a-tabindex-in-the-other-branch-of-a-condition.json)                                                     | a template binds `[tabindex]="on() ? 0 : 1"`, positive in the second branch                                                 | 3     | `evidence`  |
 | [`a-tabindex-in-an-icu-case.json`](a-tabindex-in-an-icu-case.json)                                                                                             | an ICU's case draws `<span tabindex="&#50;">`, which only the HTML tree holds                                               | 3     | `evidence`  |
 | [`a-tabindex-left-to-a-substitution-in-an-expression.json`](a-tabindex-left-to-a-substitution-in-an-expression.json)                                           | a template hands `innerHTML` a template literal whose tabindex a substitution says                                          | 3     | `evidence`  |
-| [`a-tabindex-left-to-a-concatenation-in-an-expression.json`](a-tabindex-left-to-a-concatenation-in-an-expression.json)                                         | a template hands `innerHTML` `'<b tabindex=0' + n`, a value begun                                                           | 3     | `evidence`  |
 | [`a-tabindex-bound-in-an-inline-template.json`](a-tabindex-bound-in-an-inline-template.json)                                                                   | a component's inline `template` binds `[tabindex]="1"`                                                                      | 3     | `evidence`  |
 | [`a-template-the-scan-cannot-read.json`](a-template-the-scan-cannot-read.json)                                                                                 | a template closes a tag it never opened                                                                                     | 3     | `evidence`  |
 | [`an-inline-template-the-scan-cannot-read.json`](an-inline-template-the-scan-cannot-read.json)                                                                 | an inline `template` closes a tag it never opened                                                                           | 3     | `evidence`  |
@@ -125,13 +123,17 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-condition.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-condition.json)             | the same over a method a subclass overrides through `const Base = … ? PctAvatar : Object`                                   | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-an-object.json`](a-tabindex-from-a-method-a-subclass-overrides-through-an-object.json)                 | the same through `Bases.Avatar`, with `const Bases = { Avatar: PctAvatar }`                                                 | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-reassigned-name.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-reassigned-name.json) | the same through `let Base; Base = PctAvatar`                                                                               | 3     | `evidence`  |
+| [`a-tabindex-from-a-method-a-subclass-overrides-through-a-destructuring.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-destructuring.json)     | the same through `const { Avatar } = Bases`                                                                                 | 3     | `evidence`  |
+| [`a-tabindex-from-a-method-a-subclass-overrides-through-a-call.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-call.json)                       | the same through `bases().Avatar`                                                                                           | 3     | `evidence`  |
+| [`a-tabindex-from-a-method-a-mixin-raises-through-a-parameter.json`](a-tabindex-from-a-method-a-mixin-raises-through-a-parameter.json)                         | the same through a mixin's `class extends Base`, `Base` its parameter                                                       | 3     | `evidence`  |
+| [`a-tabindex-from-an-input-imported-under-the-name-host-binding.json`](a-tabindex-from-an-input-imported-under-the-name-host-binding.json)                     | the same over a `computed` `@HostBinding()` decorates, `Input` imported under that name                                     | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-prototype-reached-by-reflection-replaces.json`](a-tabindex-from-a-method-a-prototype-reached-by-reflection-replaces.json)         | the same over a method replaced on `Object.getPrototypeOf(avatar)`                                                          | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-under-an-alias.json`](a-tabindex-from-a-method-a-subclass-overrides-under-an-alias.json)                       | the same over a method a subclass of another file overrides with one returning `5`, extending an imported alias of the base | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-namespace.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-namespace.json)             | the same, the subclass extending the base through a namespace import                                                        | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-constant.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-constant.json)               | the same, the subclass extending a constant that holds the base                                                             | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-re-export.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-re-export.json)             | the same, the subclass extending a re-export of the base under another name                                                 | 3     | `evidence`  |
 | [`a-tabindex-from-a-method-a-subclass-overrides-through-a-default-import.json`](a-tabindex-from-a-method-a-subclass-overrides-through-a-default-import.json)   | the same, the subclass extending a default import                                                                           | 3     | `evidence`  |
-| [`a-tabindex-from-a-method-a-mixin-overrides.json`](a-tabindex-from-a-method-a-mixin-overrides.json)                                                           | the same, a mixin's class overriding it                                                                                     | 3     | `evidence`  |
+| [`a-tabindex-from-a-method-a-mixin-overrides.json`](a-tabindex-from-a-method-a-mixin-overrides.json)                                                           | the same, a mixin another package exports in between                                                                        | 3     | `evidence`  |
 | [`a-tabindex-from-a-computed-a-destructuring-replaces.json`](a-tabindex-from-a-computed-a-destructuring-replaces.json)                                         | the same over one a destructuring in the constructor replaces                                                               | 3     | `evidence`  |
 | [`a-tabindex-from-a-computed-object-assign-replaces.json`](a-tabindex-from-a-computed-object-assign-replaces.json)                                             | the same over one `Object.assign(this, …)` replaces                                                                         | 3     | `evidence`  |
 | [`a-tabindex-from-a-computed-reflect-replaces.json`](a-tabindex-from-a-computed-reflect-replaces.json)                                                         | the same over one `Reflect.set(this, …)` replaces                                                                           | 3     | `evidence`  |
@@ -179,6 +181,9 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-tabindex-an-attribute-node-reached-by-name-carries.json`](a-tabindex-an-attribute-node-reached-by-name-carries.json)                                       | `el.attributes['tabindex'].value = '5'`                                                                                     | 3     | `evidence`  |
 | [`a-tabindex-behind-a-reference-without-its-semicolon.json`](a-tabindex-behind-a-reference-without-its-semicolon.json)                                         | `'<b tabindex=&#53>Ada</b>'`, a reference an engine decodes without its semicolon                                           | 3     | `evidence`  |
 | [`a-tabindex-a-host-listener-assigns.json`](a-tabindex-a-host-listener-assigns.json)                                                                           | a `host` listener runs `$event.target.tabIndex = rank; …`                                                                   | 3     | `evidence`  |
+| [`a-tabindex-left-to-a-concatenation-in-a-host-binding.json`](a-tabindex-left-to-a-concatenation-in-a-host-binding.json)                                       | a `host` block binds `'[innerHTML]'` to markup a concatenation leaves open                                                  | 3     | `evidence`  |
+| [`a-tabindex-an-attribute-node-a-template-handler-reaches.json`](a-tabindex-an-attribute-node-a-template-handler-reaches.json)                                 | a handler runs `$any($event.target).attributes.tabindex.value = 5`                                                          | 3     | `evidence`  |
+| [`a-tabindex-behind-a-decoy-in-markup.json`](a-tabindex-behind-a-decoy-in-markup.json)                                                                         | `'<b title="tabindex=" TABINDEX="5">'`, a match that would swallow the next                                                 | 3     | `evidence`  |
 | [`a-tabindex-named-by-a-static-attribute-of-a-template.json`](a-tabindex-named-by-a-static-attribute-of-a-template.json)                                       | a template writes `pctAttr="tabIndex"` beside `pctValue="5"`                                                                | 3     | `evidence`  |
 | [`a-tabindex-named-to-calls-that-write-no-positive-one.json`](a-tabindex-named-to-calls-that-write-no-positive-one.json)                                       | every call that reads, tests, removes, binds or injects it, then `'5'`; `says` that line                                    | 3     | `evidence`  |
 | [`a-tabindex-named-by-selectors-a-query-takes.json`](a-tabindex-named-by-selectors-a-query-takes.json)                                                         | selectors in `styles` and four queries, an operator and a flag, then `'5'`; `says` that line                                | 3     | `evidence`  |
@@ -241,30 +246,32 @@ tracked set lacks are still silent, and no case uses either that way.
 
 Point 2 has four cases because a level can be wrong in four directions and every one of them
 reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
-its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and thirty-nine. Seven
+its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and forty-five. Seven
 are one per kind of citation that can go stale — a gate's point, a case's title, a quoted
 sentence, a decision's number, a scan over the sources, and a scan's and a requirement's name,
 which a prototype answers for every object — because each goes stale for a different reason and
-at a different moment. The other one hundred and thirty-two are the scans', one per spelling of
-what a scan forbids, because a spelling its reading does not take reads as a library that has
-none: a tag in a namespace or in capitals, or one a script creates, by a call, a key or a
+at a different moment. The other one hundred and thirty-eight are the scans', one per spelling
+of what a scan forbids, because a spelling its reading does not take reads as a library that
+has none: a tag in a namespace or in capitals, or one a script creates, by a call, a key or a
 constructor; an attribute written in capitals, bound as a property, two ways or through
 `attr.`, keyed in a `host` block, set by a script, a decorator with or without a name, a
 renderer or an attribute node reached by a call or by name, or written by a name a string, a
 pattern, a key outside a `host` block, a call that names no attribute, a selector no query
 takes or a cut of markup holds; one in a template's attribute, object, handler or string, a
-`host` listener, a reference without its semicolon, an entity in the name, in a pattern's
-markup or a getter; a value a condition, a method, a field or a string a script builds hands
-over, and one a subclass however named, a cast, a destructuring, `++`, a `for`, `Object`,
-`Reflect`, a stored instance, the prototype, another receiver, a key, a decorator or an
-inherited input can change; a getter a renamed `@HostBinding` binds; an inline template, a name
-behind an escape; a media feature in capitals, behind a comment, an escape or an entity, bound,
-in a template's `<style>` or `<source>`, a decorator's `styles`, a `.css` sheet, a script or a
-CDK breakpoint; a listener of the orientation and a read of it, through casts and keys. A
-template, an inline template, a decorator's `styles`, a `matchMedia` query and a sheet the
-reading cannot read are refused as such. Six hold the other side with `says`: what the reading
-lets through — a call that reads the attribute, a selector, a path, a type, a value in
-parentheses, a comparison in a binding, a package a sheet uses — stays let through. A seventh
+`host` listener or binding, an attribute node a handler reaches, a reference without its
+semicolon, a match that swallows the next, an entity in the name, in a pattern's markup or a
+getter; a value a condition, a method, a field or a string a script builds hands over, and one
+a subclass however named, a cast, a destructuring, `++`, a `for`, `Object`, `Reflect`, a stored
+instance, the prototype, another receiver, a key, a decorator, an inherited input or an `Input`
+imported under another name can change, through a subclass a destructuring, a call or a mixin's
+parameter names too; a getter a renamed `@HostBinding` binds; an inline template, a name behind
+an escape; a media feature in capitals, behind a comment, an escape or an entity, bound, in a
+template's `<style>` or `<source>`, a decorator's `styles`, a `.css` sheet, a script or a CDK
+breakpoint; a listener of the orientation and a read of it, through casts and keys. A template,
+an inline template, a decorator's `styles`, a `matchMedia` query and a sheet the reading cannot
+read are refused as such. Six hold the other side with `says`: what the reading lets through —
+a call that reads the attribute, a selector, a path, a type, a value in parentheses, a
+comparison in a binding, a package a sheet uses — stays let through. A seventh
 ([`a-tabindex-named-by-a-selector-no-query-takes.json`](a-tabindex-named-by-a-selector-no-query-takes.json))
 names the first of two refusals' lines, which those six lean on. Two pass the pattern the
 reading replaced as well: that pattern stays under the reading as a floor, so that no input

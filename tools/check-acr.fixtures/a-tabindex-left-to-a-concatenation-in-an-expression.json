@@ -1,8 +1,0 @@
-{
-  "point": 3,
-  "check": "evidence",
-  "description": "A template hands `innerHTML` `'<b tabindex=0' + n + '>'`, a value begun and left to an expression, and 2.4.3 keeps resting on the scan: a `5` makes it `05`, five. The value is no literal the reading can judge, and it is refused.",
-  "sources": {
-    "libs/components/avatar/src/avatar.html": "<span [innerHTML]=\"'<b tabindex=0' + n + '>Ada</b>'\"></span>\n"
-  }
-}
