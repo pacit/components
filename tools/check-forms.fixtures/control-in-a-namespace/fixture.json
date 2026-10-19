@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "control-unread",
+  "description": "A control exported from a namespace, `PctDials.PctDial`, with no `touched`. Prettier indents it, so the pattern reads no header and its members, at four spaces, are read by nothing. The parser holds the class in the namespace's body, and point 1 refuses it."
+}

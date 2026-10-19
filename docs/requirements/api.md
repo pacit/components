@@ -132,7 +132,7 @@ second half — the block is declared in `libs/components/forms.policy.json`, he
 `FormUiControl` in `@angular/forms`'s own declarations, and every control is held to it
 through its base class — every class whose `implements` clause names either contract, wherever
 the file declares it, a control declared where the gate's reading has no header for it refused
-rather than left out of the count. It exists because `implements` proves almost nothing here: **every
+rather than left out of the count, and a member the class's the parser holds it in. It exists because `implements` proves almost nothing here: **every
 member of `FormUiControl` is optional** — the one required member is `value` — so a control
 missing `touched`, or declaring `invalid` with no `booleanAttribute`, compiles and satisfies
 the contract. The prose above those members is deliberately NOT held: what `readonly` means
@@ -150,12 +150,12 @@ none of those tests: deleting the interop suites would have failed nothing this 
 named
 **Control:** the tests start from a **non-empty** initial value — with an empty model the
 regression in [`lesson-26`](../lessons.md#lesson-26) was invisible; and
-`tools/check-forms.fixtures/` for the structural half — twenty prepared inputs, of which
+`tools/check-forms.fixtures/` for the structural half — twenty-five prepared inputs, of which
 `transform-dropped` is the defect the gate was written for and `member-missing` its other
-half, four of them a control the reading had no header for (`control-unexported`,
-`control-nested`, `control-nested-beside-its-namesake`, `control-anonymous`), plus a run against
-the repository: `booleanAttribute` taken off the checkbox's
-`invalid` fires with the file, the line and the eight sites that disagree with it
+half, six a control the reading had no header for (`control-unexported` the first) and two a
+member a reading by position handed to the wrong class, plus a run against the repository:
+`booleanAttribute` taken off the checkbox's `invalid` fires with the file, the line and the nine
+sites that disagree with it
 **Decision:** [0005 — signal forms without CVA](../decisions/0005-signal-forms-without-cva.md)
 **Lessons:** [`lesson-9`](../lessons.md#lesson-9), [`lesson-20`](../lessons.md#lesson-20),
 [`lesson-26`](../lessons.md#lesson-26)

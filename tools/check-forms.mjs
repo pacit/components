@@ -57,20 +57,19 @@ const CONTRACTS = new Set(['FormValueControl', 'FormCheckboxControl']);
  *
  *     readonly invalid = input(false, { transform: booleanAttribute });
  *
- * Anchored at two spaces because that is a member of a top-level class and nothing else — a
- * local inside a method stands deeper, a module constant at the margin. The anchor is what
- * makes point 1's attribution honest rather than clever. No list of factories: every
+ * Anchored at two spaces, where prettier puts a member of a top-level class: the anchor finds the
+ * declarations, and the parser says whose each one is (`classesIn`). No list of factories: every
  * `readonly` member is read, whatever it is assigned, so a control cannot leave the
  * denominator by being written in an unusual way. `readonly` itself IS required, which is
  * how every signal member in this library is declared — one written without it is missing
  * from the block and says so.
  */
-const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/gm;
+const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/dgm;
 
 /**
  * `export class X`, `export abstract class X<T> extends Y implements Z {` — the name, and where
  * it stands. The heritage is not read here: what a class extends is the parser's
- * (`class-bases.mjs`), and so is what it implements (`implementersIn`). A class the pattern does
+ * (`class-bases.mjs`), and so is what it implements (`parsedIn`). A class the pattern does
  * not reach — one written without `export`, exported as the default, nested and indented, or a
  * class expression — is no class of the reading, and point 1 refuses one that implements a
  * contract.
@@ -95,25 +94,24 @@ const list = (items) => items.map((t) => `      ${t}`).join('\n');
 // ── the reading ───────────────────────────────────────────────────────────────
 
 /**
- * The classes of one source file and the members each declares. A class runs from its own
- * header to the next one, which is enough here and is not a parser: these files hold one
- * exported class each, or a base and its leaf, never a class inside a class. What the
- * arrangement buys is that the LAST header before a member is the class that owns it, and
- * point 1 counts the members that found no header at all. Which of the classes is a control is
- * not read here: it is the parser's, below, and a control it holds where no header stands is
- * point 1's as well.
+ * The classes of one source file the pattern reads a header for, and the members each declares.
+ * The pattern finds the declarations and the parser says whose they are (`owners`): a member is
+ * the property whose name stands where the pattern reads the member's, of the class whose name
+ * the header stands at. By position — the last header above the member — a class of no header
+ * lent what it declares at two spaces to the header above it, and a control without `disabled`
+ * passed on a neighbour's (measured). A member the parser holds in no class (in a comment, a
+ * string, above every class), or in a class no header stands at, is set aside for point 1.
  */
-const classesIn = (file, text) => {
+const classesIn = (file, text, owners) => {
   const headers = [...text.matchAll(CLASS)].map((m) => ({
     name: m[1],
-    at: m.index,
     nameAt: m.indices[1][0],
     line: text.slice(0, m.index).split('\n').length,
     members: new Map(),
   }));
   const orphans = [];
   for (const m of text.matchAll(MEMBER)) {
-    const owner = [...headers].reverse().find((h) => h.at < m.index);
+    const owner = headers.find((h) => h.nameAt === owners.get(m.indices[1][0]));
     const member = {
       name: m[1],
       // The declaration, whitespace collapsed: a member wrapped over two lines by prettier
@@ -121,7 +119,7 @@ const classesIn = (file, text) => {
       // them different would fire on the formatter.
       text: m[2].replace(/\s+/g, ' ').trim(),
       file,
-      line: text.slice(0, m.index).split('\n').length + 1,
+      line: text.slice(0, m.index).split('\n').length,
     };
     if (!owner) orphans.push(`${file}:${member.line}: ${member.name}`);
     else owner.members.set(member.name, member);
@@ -130,12 +128,14 @@ const classesIn = (file, text) => {
 };
 
 /**
- * The classes of one source file that implement a contract, by the offset their name stands at
- * (a class with no name: where the class starts), to its name and line. Read off the TypeScript
- * parser at every depth, exported or not, because the reading above sees a header at the margin
- * and nothing else: a control written without `export`, nested in a function or a namespace, or
- * written as a class expression had no header, its members were nobody's or the class's above,
- * and the gate measured fewer controls than the library has, with nothing to say so (measured).
+ * What the TypeScript parser holds of one source file, at every depth, exported or not:
+ *   `implementers` — the classes implementing a contract, by the offset their name stands at (a
+ *                    class with no name: where it starts), to their name and line,
+ *   `owners`       — every property of a class, by the offset its name stands at, to its class's.
+ * The pattern sees a header at the margin and nothing else: a control written without `export`,
+ * nested in a function, a namespace or a method, or written as a class expression had none, and
+ * the gate measured fewer controls than the library has — passing three such inputs, and
+ * refusing a fourth on its members rather than on the control they belong to (measured).
  *
  * A contract is a type of the class's own `implements` clause, in any position, named by a
  * named import of the file under the contract's name, from whatever module — through
@@ -146,11 +146,11 @@ const classesIn = (file, text) => {
  * sources — a type alias (`type PctContract<T> = FormValueControl<T>`), an interface extending
  * one, a re-export under another name — or through a base that implements it: what is read is
  * the clause, not the type TypeScript's checker resolves it to. A class's `extends` clause is
- * not read, and that changes nothing on an input that compiles: it names a value, and neither
- * contract is one.
+ * not read: a class of the sources may carry a contract's name, and one extending it is no
+ * control (`lookalike.ts` in the reference input).
  */
-const implementersIn = (file, text) => {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest);
+const parsedIn = (file, text) => {
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const imported = new Map(
     source.statements.flatMap((statement) => {
       const bound = ts.isImportDeclaration(statement)
@@ -170,7 +170,9 @@ const implementersIn = (file, text) => {
       : ts.isPropertyAccessExpression(expression)
         ? expression.name.text
         : undefined;
-  const found = new Map();
+  const where = (node) => (node.name ?? node).getStart(source);
+  const implementers = new Map();
+  const owners = new Map();
   const visit = (node) => {
     if (
       ts.isClassLike(node) &&
@@ -179,17 +181,18 @@ const implementersIn = (file, text) => {
           clause.token === ts.SyntaxKind.ImplementsKeyword &&
           clause.types.some((type) => CONTRACTS.has(contract(type.expression))),
       )
-    ) {
-      const at = (node.name ?? node).getStart(source);
-      found.set(at, {
+    )
+      implementers.set(where(node), {
         name: node.name?.text ?? 'a class with no name',
-        line: source.getLineAndCharacterOfPosition(at).line + 1,
+        line: source.getLineAndCharacterOfPosition(where(node)).line + 1,
       });
-    }
+    // A property's parent is the class that declares it, a class expression's included.
+    if (ts.isPropertyDeclaration(node))
+      owners.set(node.name.getStart(source), where(node.parent));
     ts.forEachChild(node, visit);
   };
   visit(source);
-  return found;
+  return { implementers, owners };
 };
 
 /**
@@ -207,7 +210,7 @@ const implementersIn = (file, text) => {
  * the name stands, not by the name: the one in the comment and the control share a key.
  *
  * A class is a control when the parser holds one implementing a contract where its name stands
- * (`implementersIn`), and each such class is taken off the parser's list as its header pairs
+ * (`parsedIn`), and each such class is taken off the parser's list as its header pairs
  * with it. What remains is a control no header stands at, set aside for point 1 as well: by
  * where the name stands again, so a control nested beside a header of its name is not that one.
  */
@@ -221,8 +224,8 @@ const readSources = (root, files) => {
   );
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
-    const { headers, orphans: loose } = classesIn(file, content);
-    const implementers = implementersIn(file, content);
+    const { implementers, owners } = parsedIn(file, content);
+    const { headers, orphans: loose } = classesIn(file, content, owners);
     orphans.push(...loose);
     for (const header of headers) {
       const key = classKey(file, header.name);
@@ -308,7 +311,7 @@ const controlsOf = (classes) => {
  * The four points over a ready input:
  *   `policy`   — the block declared in `forms.policy.json`, or null,
  *   `classes`  — every class of the sources, by name,
- *   `orphans`  — member declarations no class header stands above,
+ *   `orphans`  — member declarations of no class the reading holds,
  *   `unheld`   — class headers where the parser holds no top-level class,
  *   `unread`   — classes implementing a contract where the reading reads no header,
  *   `contract` — the member names of `FormUiControl`, or null,
@@ -366,22 +369,24 @@ const checkForms = ({
         list(unread) +
         `\n    The reading takes a class from \`export class\` or \`export abstract class\` ` +
         `at the margin, and a control written without \`export\`, exported as the default, ` +
-        `nested in a function or a namespace, or written as a class expression has no such ` +
-        `header: it is a control no point examines, and the gate measures fewer controls ` +
-        `than the library has. Its members are read as the header's above it, where they ` +
-        `stand at two spaces, or not at all.`,
+        `nested in a function, a namespace or a method, or written as a class expression ` +
+        `has no such header: it is a control no point examines, and the gate measures ` +
+        `fewer controls than the library has.`,
     );
 
   if (orphans.length)
     throw new FormsError(
       'denominator',
       'unattributed',
-      `${orphans.length} member declaration(s) stand above every class header:\n` +
+      `${orphans.length} member declaration(s) are no member of a class the reading ` +
+        `holds:\n` +
         list(orphans) +
         `\n    A member the reading could not attribute is a member no point examines. ` +
-        `The attribution is positional — the last header before the declaration owns it — ` +
-        `so this fires when a file is shaped in a way the reading was not written for, ` +
-        `which is the moment to widen it rather than to guess.`,
+        `The parser holds each member in the class that declares it, and these stand in ` +
+        `none — in a comment, a string, above every class — or in a class no header stands ` +
+        `at, which by position would lend them to the header above it. This fires when a ` +
+        `file is shaped in a way the reading was not written for, which is the moment to ` +
+        `widen it rather than to guess.`,
     );
 
   if (contract === null || contract.size === 0)
@@ -627,6 +632,12 @@ for (const name of cases) {
         `${name}: \`${error.check}/${error.rule}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}/${fx.rule}\`) was meant to — the fixture proves something ` +
           `other than what it declares`,
+      );
+    // A rule that names what it found says it in the message, and a case may hold that too.
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: \`${fx.check}/${fx.rule}\` fired without "${fx.message}" — the right rule ` +
+          `saying something else:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });

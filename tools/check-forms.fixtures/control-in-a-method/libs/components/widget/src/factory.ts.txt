@@ -1,0 +1,21 @@
+import { booleanAttribute, input, model } from '@angular/core';
+import { FormValueControl } from '@angular/forms/signals';
+
+/** A factory of the library — no control itself. */
+export class PctWidgets {
+  /**
+   * A control built per call, as a class inside a method of the class above: indented, so the
+   * pattern reads no header for it. It has no `touched`.
+   */
+  static lite() {
+    @Component({ selector: 'pct-widget-lite', template: '' })
+    class PctWidgetLite implements FormValueControl<string> {
+      /** The value — the contract's one required member. */
+      readonly value = model('');
+
+      /** Blocks the control and greys it. */
+      readonly disabled = input(false, { transform: booleanAttribute });
+    }
+    return PctWidgetLite;
+  }
+}

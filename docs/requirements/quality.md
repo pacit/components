@@ -107,7 +107,7 @@ through `templateUrl`, which a base cannot pass on;
 control's own and its bases' down `extends` as its file binds it, each class keyed by its file
 as well, so a control is not lost behind a namesake, and a header where the parser holds no
 top-level class a denominator fault, as is a class implementing a contract, at any depth, that no
-header stands at; a base the read has not got hands down nothing, which can refuse a control and
+header stands at, and a member the parser holds in no class a header stands at; a base the read has not got hands down nothing, which can refuse a control and
 never pass one;
 `tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
 every `@Component` decorator, an abstract base's included, and `onPush` from the package,
