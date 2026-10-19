@@ -1179,8 +1179,16 @@ const contextOfHost = (tag) => {
   return PAGE;
 };
 const hostContext = (owners) => {
+  // Every part of each selector list, a part that names no tag (`[pctLayer]`) among them: it puts
+  // the component on any element, an HTML one too.
   const contexts = owners
-    .flatMap((owner) => hostTags(owner.selector))
+    .flatMap((owner) =>
+      owner.selector
+        .split(',')
+        .map(
+          (part) => /^\s*([a-zA-Z][\w-]*)/.exec(part)?.[1]?.toLowerCase() ?? '',
+        ),
+    )
     .map(contextOfHost);
   const [first = PAGE] = contexts;
   return contexts.every(
@@ -1304,8 +1312,16 @@ const OTHER_ROLES = {
   ],
 };
 const ENGINES = ['Chromium 153', 'Firefox 158'];
-/** The children SVG names an element by, which Firefox reads as a name (a `<g>` with one, a group). */
+/**
+ * The children SVG names an element by, which Firefox reads as a name (a `<g>` with one, a group):
+ * the element's own, an `<ng-container>` looked through, as it draws a comment. One a block draws
+ * is no child the element always has, and the element is read unnamed, which refuses more.
+ */
 const SVG_NAMING = ['title', 'desc'];
+const drawnChildren = (node) =>
+  (node.children ?? [])
+    .filter(isElement)
+    .flatMap((child) => (isOwnTag(child) ? drawnChildren(child) : [child]));
 const foreignOf = (node) => {
   if (!isElement(node)) return null;
   const space = spaceOf(node);
@@ -1328,9 +1344,8 @@ const foreignOf = (node) => {
         boundOn(node, target).length > 0,
     ) ||
     (space === 'SVG' &&
-      node.children.some(
+      drawnChildren(node).some(
         (child) =>
-          isElement(child) &&
           spaceOf(child) === 'SVG' &&
           SVG_NAMING.includes(localName(child.name)),
       ));
@@ -2866,8 +2881,9 @@ const checkAria = ({
   // the platform's own for the tag — either IS the context the role requires or is the
   // defect. A `group` is a context only inside one of the others, as axe's
   // `aria-required-parent` reads it: the walk passes it and asks the next ancestor for the rest
-  // — an option's group for a listbox — with the role itself added for a `listitem` or a
-  // `treeitem`, whose group a `listitem` or a `treeitem` owns (axe's `ownGroupRoles`). Settled by
+  // — an option's group for a listbox — with the role itself added for a `treeitem`, whose group
+  // a `treeitem` owns (axe's `ownGroupRoles`, which names a `listitem` too, whose own context
+  // holds no group). Settled by
   // the first group, `<div role="list"><div role="group" aria-label="…"><div role="option">`
   // passed, which axe reports in both engines measured, and a named SVG `<g>`, a group to both,
   // with it. Angular's containers are looked through, and so are generic elements and
@@ -2880,12 +2896,20 @@ const checkAria = ({
   let leftToHost = 0;
   let leftToConsumer = 0;
   const contextOf = (roles) => sorted(roles).join(' / ');
-  const OWN_GROUP_ROLES = ['listitem', 'treeitem'];
+  const OWN_GROUP_ROLES = ['treeitem'];
   for (const template of templates) {
     const owners = components.filter((c) => c.templatePath === template.file);
     for (const element of byPath.get(template.file).roles) {
       let required = tables.contexts.get(element.role);
       if (!required) continue;
+      // Whether a group may stand in the context is decided once, by the role's own, and every
+      // group on the way is passed while it may (axe's `allowsGroup`): an option in two nested
+      // groups in a listbox is the listbox's.
+      const allowsGroup = required.has('group');
+      const aboveGroup = new Set([
+        ...[...required].filter((context) => context !== 'group'),
+        ...(OWN_GROUP_ROLES.includes(element.role) ? [element.role] : []),
+      ]);
       // A role an `aria-hidden` takes out of the tree needs no owner, and axe asks it for none.
       if ([element, ...element.ancestors].some((e) => e.ariaHidden)) continue;
       examined++;
@@ -2962,11 +2986,8 @@ const checkAria = ({
               `panel and nowhere else`,
           );
         }
-        if (role === 'group' && required.has(role)) {
-          required = new Set([
-            ...[...required].filter((context) => context !== 'group'),
-            ...(OWN_GROUP_ROLES.includes(element.role) ? [element.role] : []),
-          ]);
+        if (role === 'group' && allowsGroup) {
+          required = aboveGroup;
           continue;
         }
         if (required.has(role)) {
