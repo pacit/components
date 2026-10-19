@@ -1,8 +1,9 @@
 {
   "point": 3,
   "check": "evidence",
-  "description": "The mutation run's setup, a cache under the library's `node_modules` and a file of the schematics hold a `<video>`, and so does a template of the primary entrypoint, listed after all three by name; 1.2.1 keeps resting on the scan. None of the first three reaches a page — the setup is imported by no entrypoint, a `node_modules` holds installed packages and the build's caches, and the schematics run in a terminal at `ng add` and `ng update` — so the reader leaves them out and the refusal names the template. A reader that took any of them names its line first. Laid on disk and read by the live reader (`tree`).",
+  "description": "A `node_modules` inside an entrypoint, the mutation run's setup, a cache under the library's own `node_modules` and a file of the schematics hold a `<video>`, and so does a template of the primary entrypoint, listed after all four by name; 1.2.1 keeps resting on the scan. None of the first four reaches a page — the setup is imported by no entrypoint, a `node_modules` holds installed packages and the build's caches, and the schematics run in a terminal at `ng add` and `ng update` — so the reader leaves them out and the refusal names the template. A reader that took any of them names its line first. Laid on disk and read by the live reader (`tree`).",
   "tree": {
+    "libs/components/avatar/node_modules/.vite/page.html": "<video controls></video>\n",
     "libs/components/mutation.setup.ts": "export const page = '<video controls></video>';\n",
     "libs/components/node_modules/.cache/ng-packagr/page.html": "<video controls></video>\n",
     "libs/components/schematics/ng-add/files/page.html": "<video controls></video>\n",

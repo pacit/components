@@ -1700,7 +1700,8 @@ const LEFT_OUT = new Set([
   // workspace, which renders nothing.
   `${LIB}/schematics`,
   // The copy of the theme the `themes` target makes: the theme is read as built (`THEME`). The
-  // file and not the folder, which the package ships whole (`assets` in `ng-package.json`).
+  // file and not the folder, whose every top-level file the package ships (`assets` in
+  // `ng-package.json`, glob `*`).
   `${LIB}/themes/pct.css`,
   // The mutation run's TestBed setup, which no entrypoint imports.
   `${LIB}/mutation.setup.ts`,

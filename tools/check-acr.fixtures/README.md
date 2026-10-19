@@ -102,6 +102,7 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-video-in-a-module-outside-any-src.json`](a-video-in-a-module-outside-any-src.json)                                                                         | a module beside an entrypoint's `src` grows a `<video>`, as a nested entrypoint would, laid on disk                         | 3     | `evidence`  |
 | [`a-video-where-no-page-receives-it.json`](a-video-where-no-page-receives-it.json)                                                                             | the mutation setup, a `node_modules` cache, the schematics and a later template hold a `<video>`; `says` the template       | 3     | `evidence`  |
 | [`an-orientation-the-theme-copy-holds.json`](an-orientation-the-theme-copy-holds.json)                                                                         | the theme's copy under the library and the theme as built both query the orientation; `says` the built one                  | 3     | `evidence`  |
+| [`an-orientation-in-a-second-sheet-of-the-themes-folder.json`](an-orientation-in-a-second-sheet-of-the-themes-folder.json)                                     | a second sheet in the folder the package ships the theme from queries the orientation                                       | 3     | `evidence`  |
 | [`a-video-in-a-namespace-the-scan-forbids.json`](a-video-in-a-namespace-the-scan-forbids.json)                                                                 | a template grows an `<xH1ml:video>`, a video `ngc` makes, and 1.2.1 still says Not Applicable                               | 3     | `evidence`  |
 | [`a-video-in-a-one-letter-namespace-the-scan-forbids.json`](a-video-in-a-one-letter-namespace-the-scan-forbids.json)                                           | a template grows an `<a:video>`, the shortest prefix, and 1.2.1 still says Not Applicable                                   | 3     | `evidence`  |
 | [`an-audio-in-capitals-the-scan-forbids.json`](an-audio-in-capitals-the-scan-forbids.json)                                                                     | a template grows an `<AUDIO>`, which the DOM lowers, and 1.2.1 still says Not Applicable                                    | 3     | `evidence`  |
@@ -261,7 +262,7 @@ tracked set lacks are still silent, and no case uses either that way.
 
 Point 2 has four cases because a level can be wrong in four directions and every one of them
 reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
-its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and fifty-five. Seven
+its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and fifty-six. Seven
 are one per kind of citation that can go stale — a gate's point, a case's title, a quoted
 sentence, a decision's number, a scan over the sources, and a scan's and a requirement's name,
 which a prototype answers for every object — because each goes stale for a different reason and
@@ -294,11 +295,12 @@ main refuses passes
 ([`a-positive-tabindex-a-comment-names.json`](a-positive-tabindex-a-comment-names.json)), and
 speaks only where the reading finds nothing
 ([`a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json`](a-positive-tabindex-the-reading-refuses-ahead-of-the-floor.json)).
-Eight hold which files the scans read, through the reader the live run reads with (`tree`) or
+Nine hold which files the scans read, through the reader the live run reads with (`tree`) or
 the state it leaves (`null`): a file two directories below an entrypoint's `src`, a file of the
 primary entrypoint, a module outside any `src`, a spec left out beside a source, the mutation
 setup, a `node_modules` and the schematics left out ahead of a template, the theme as
-`tokens:build` writes it, its copy left out ahead of it, and the theme not there. A tree's files
+`tokens:build` writes it, its copy left out ahead of it while a second sheet in its folder is read,
+and the theme not there. A tree's files
 go after the live sources in the reader's order, a file both hold moved there too, so a case reads
 the same whether or not a build left the theme's copy in the checkout. The spec's case has a
 second guard in the live input, where a spec holds a template the tabindex scan cannot read. A case cannot show three

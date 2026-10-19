@@ -1,0 +1,9 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A second sheet beside the theme's copy, `libs/components/themes/print.css`, gains an `@media (orientation: portrait)` block, and 1.3.4 keeps resting on the scan. The package ships every top-level file of that folder (`assets` in `ng-package.json`, glob `*`), and the reader leaves out the copy alone, `themes/pct.css`: a reader that left out the folder finds none. Laid on disk and read by the live reader (`tree`).",
+  "tree": {
+    "libs/components/themes/print.css": "@media (orientation: portrait) {\n  body {\n    margin: 0;\n  }\n}\n"
+  },
+  "says": ["`libs/components/themes/print.css` compiles to one"]
+}
