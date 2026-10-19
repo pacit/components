@@ -96,7 +96,7 @@
     },
     {
       "path": ".github/workflows/release.yml",
-      "reason": "The second workflow the same enumeration finds — the publication path, which runs on a tag rather than on a push."
+      "reason": "The second workflow the same enumeration finds — the publication path, dispatched by hand: once for the release pull request, once to stage and tag the commit it became (decision 0094)."
     },
     {
       "path": ".github/workflows/pages.yml",

@@ -62,7 +62,7 @@ class-bases.mjs 0 0 0
 decorators.mjs 0 0 0
 fresh-inputs.mjs 0 0 0
 markdown-fences.mjs 0 12 163
-release.mjs 6 18 160
+release.mjs 7 18 199
 restore-dictionaries.mjs 0 12 128
 static-attributes.mjs 0 9 105
 template-comments.mjs 0 0 0

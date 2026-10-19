@@ -58,6 +58,10 @@ repository, and deploys only from a commit on `main` whose CI run concluded gree
    `release.yml` dispatches `CI` on `main` after its push — a dispatch is one of the two
    events the token may raise — and the site follows that run the way it follows every
    other._
+   _Amended 2026-10-19: the release commit no longer reaches `main` by the bot's push. It is
+   a pull request a person squash-merges, and its push runs CI like any merge; the dispatch
+   moved to the release branch
+   ([0094](0094-the-release-reaches-main-as-a-pull-request-and-the-tag-follows-the-merge.md))._
 4. **The 404 is a page of the site.** A `not-found` page is prerendered under `/404` through
    the catch-all's `getPrerenderParams` — `{ '**': '404' }`, the parameter name Angular
    documents for a catch-all — and the workflow copies it to the root `404.html` that Pages
