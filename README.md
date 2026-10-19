@@ -276,17 +276,27 @@ that channel: they are English and silent outside development mode.
 ## Release
 
 Releases go through the manual **Release** workflow (`.github/workflows/release.yml`), a dry run
-by default. The same thing locally:
+by default, in two dispatches, because `main` takes only a commit whose CI went green, and the
+release commit gets there as a pull request
+([0094](docs/decisions/0094-the-release-reaches-main-as-a-pull-request-and-the-tag-follows-the-merge.md)):
+
+1. **`step: prepare`** bumps the version, writes the CHANGELOG and commits, then pushes the
+   commit to `release/<version>`, dispatches CI on it and opens the pull request.
+2. **A person squash-merges** that pull request once it is green.
+3. **`step: publish`**, once CI is green on `main`, stages the merged commit on npm, then tags
+   it and creates the GitHub Release.
+
+The same rehearsal locally:
 
 ```bash
-node tools/release.mjs --dry-run --first-release
+node tools/release.mjs --dry-run
 ```
 
 A script drives the release rather than `nx release` alone, because the order matters: version →
-stamp the `PCT_VERSION` constant → build → package gate → CHANGELOG, tag, GitHub Release →
-stage on npm. A build before the bump ships the old constant
-([`lesson-41`](docs/lessons.md#lesson-41)). The version follows from conventional commits; before
-1.0 a breaking change bumps the minor.
+stamp the `PCT_VERSION` constant → build → package gate → CHANGELOG and commit; then, from the
+merged commit, build → package gate → stage on npm → tag and GitHub Release. A build before the
+bump ships the old constant ([`lesson-41`](docs/lessons.md#lesson-41)). The version follows from
+conventional commits; before 1.0 a breaking change bumps the minor.
 
 The publish is a **staged** one. The trusted publisher the workflow runs as may only
 `npm stage publish`: the tarball goes up with provenance, and the version reaches consumers once

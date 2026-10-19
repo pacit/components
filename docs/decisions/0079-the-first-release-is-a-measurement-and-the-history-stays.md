@@ -93,6 +93,11 @@ publishing is configured a minute after the first publish, because it cannot be 
    `GITHUB_TOKEN` gives it no CI of its own; the push run after that pull request merged added
    a third, `format:check` red on the CHANGELOG the release had written
    ([`lesson-243`](../lessons.md#lesson-243)) — all three go into the release path next._
+   _Amended 2026-10-19: where the release commit goes and what follows it are
+   [0094](0094-the-release-reaches-main-as-a-pull-request-and-the-tag-follows-the-merge.md)'s.
+   The ruleset on `main` refuses the bot's push, so the commit reaches `main` as a pull
+   request a person merges, and a second run stages that commit before it tags it. The guard
+   of a green CI run on `main` stays, read by `release.mjs` for the commit it publishes._
 5. **The order of the premiere is fixed by what depends on what.** The site at its address
    first, because the public `.d.ts` cite it; then the citations, the CI-colour check in the
    release workflow and the contributor path; then the publish, on a sentence, as

@@ -5,11 +5,11 @@ on:
     branches:
       - main
   pull_request:
-  # For the release commit alone. Its push is the bot's, with `GITHUB_TOKEN`, and a push
-  # made with that token starts no workflow — so the one commit on `main` that moves the
-  # manifest was the one commit with no verdict, and the site behind `workflow_run` stayed
-  # a release behind (lesson-243). `release.yml` dispatches this workflow after its push:
-  # a dispatch is one of the two events the token may raise.
+  # For the release branch alone. `release.yml` pushes the release commit to
+  # `release/<version>` with `GITHUB_TOKEN`, and neither that push nor the pull request it
+  # opens starts a workflow (lesson-243) — so it dispatches this one there, a dispatch being
+  # one of the two events the token may raise, and the run's checks are the pull request's.
+  # The commit reaches `main` by a person's merge, whose push runs CI as any other (0094).
   workflow_dispatch:
 
 permissions:
