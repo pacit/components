@@ -1,0 +1,17 @@
+{
+  "// defect": "`./alpha` exports its one component under a second name, `PctAlphaOld`, that sorts after its own, and the measurement has a one-tag row for it counting two tags, 2 B apart — the row the gate wrote while it counted export keys, measured on `export { PctButton, PctButton as PctBtn }` in the real `./button` (15808 B against 15810, and every point green after `--write`). A second name of one class is not a second tag, so the entrypoint carries one and has no row to write.",
+  "point": 12,
+  "check": "shaken",
+  "message": "`./alpha` has a one-tag row counting 2 tags, and the components it exports are: PctAlpha (as PctAlpha, PctAlphaOld).",
+  "exports": { "./alpha": { "PctAlphaOld": { "component": "PctAlpha" } } },
+  "namedProbe": {
+    "ep": "./alpha",
+    "is": {
+      "export": "PctAlpha",
+      "imported": "PctAlpha",
+      "tags": 2,
+      "bytes": 7900,
+      "all": 7902
+    }
+  }
+}

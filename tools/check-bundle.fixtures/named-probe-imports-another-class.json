@@ -1,0 +1,12 @@
+{
+  "// defect": "The row of `./beta` names `PctBeta`, and its probe imported `PctBetaItem` — a key of the other class. The row would then carry the bytes of one class under the name of another, and every number in it would look right.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` names `PctBeta`, and its probe imported `PctBetaItem`, which is not a name of that class: PctBeta (as PctB, PctBeta), PctBetaItem.",
+  "namedProbe": {
+    "ep": "./beta",
+    "is": {
+      "imported": "PctBetaItem"
+    }
+  }
+}

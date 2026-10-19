@@ -1,0 +1,12 @@
+{
+  "// defect": "The row of `./beta` names `PctB`, a key `PctBeta` is exported under, and not the class: the row the gate wrote while it took a class's name from its first export key, measured on the real `./select` as `PctASelect`, a name no class bears. The row names the class by the name its declaration gives it.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./beta` names `PctB`, and the first tag of the entrypoint by its own name is `PctBeta`: PctBeta (as PctB, PctBeta), PctBetaItem.",
+  "namedProbe": {
+    "ep": "./beta",
+    "is": {
+      "export": "PctB"
+    }
+  }
+}

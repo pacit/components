@@ -1,0 +1,23 @@
+{
+  "// defect": "`./alpha` exports two classes that bear one name — its own `PctAlpha` and another object named `PctAlpha` under the key `PctAlphaTwin` — and the row names `PctAlpha` while its probe imported `PctAlphaTwin`, the namesake's key. A name is not a class: the row's bytes are the other object's.",
+  "point": 12,
+  "check": "shaken",
+  "message": "the row of `./alpha` names `PctAlpha`, and its probe imported `PctAlphaTwin`, which is not a name of that class: PctAlpha, PctAlpha (as PctAlphaTwin).",
+  "exports": {
+    "./alpha": {
+      "PctAlphaTwin": {
+        "component": "PctAlpha#2"
+      }
+    }
+  },
+  "namedProbe": {
+    "ep": "./alpha",
+    "is": {
+      "export": "PctAlpha",
+      "imported": "PctAlphaTwin",
+      "tags": 2,
+      "bytes": 7900,
+      "all": 9500
+    }
+  }
+}

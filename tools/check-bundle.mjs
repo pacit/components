@@ -162,6 +162,10 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  *   `declaredPlain` — `{ entrypoint: 'silent' | 'quotes' }`, the entrypoints declared to
  *                  have no component of their own (`PLAIN` for the live run),
  *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText, residue } }`,
+ *   `components` — `[{ entrypoint, exportedAs, class }]`, one per export key of a component
+ *                  (`componentRecords`), which point 12 makes tags of (`tagsOf`),
+ *   `named`     — `{ entrypoint: { export, imported, tags, bytes, all } }`, the one-tag
+ *                  probes: the class, the key its probe imported it under, and so on,
  *   `pair`      — `{ entrypoints: [a, b], bytes }`,
  *   `builder`   — `[{ entrypoints, found, overlay }]` from a real build.
  *
@@ -673,12 +677,67 @@ const checkBundle = (input) => {
   //     answer itself is a row of the snapshot, held by point 13 with every other row — so
   //     the day a bundler starts shedding the sibling, the gate is red and somebody reads
   //     why.
-  const namedProbes = Object.entries(input.named ?? {});
+  //
+  //     And the rows are the package's: one for every entrypoint carrying two tags or more,
+  //     none for any other, each counting the entrypoint's tags, naming the first and
+  //     importing it under one of its own keys. A tag is a component OBJECT (`tagsOf`).
+  //     Counted by export key, as this point used to, `export { PctButton, PctButton as
+  //     PctBtn }` gave `./button` a row of two tags whose second cost 2 B, and `PctSelect
+  //     as PctASelect` gave `./select` three tags and a probe of the other direction — both
+  //     measured, and both written by `--write` with every point green. On the live run
+  //     the rows come from the same `tagsOf`, so these rules hold the loop: which
+  //     entrypoints it measures, what its rows say and which class its probe imported. In
+  //     a case the rows are data, and they hold the reading itself.
+  const tags = tagsOf(input.components ?? []);
+  const named = input.named ?? {};
+  for (const [e, of] of Object.entries(tags))
+    if (of.length >= 2 && !Object.hasOwn(named, e))
+      throw new BundleError(
+        'shaken',
+        `\`${e}\` carries ${of.length} tags — ${tagList(of)} — and no probe imported ` +
+          `one of them by name.\n` +
+          `    Its row is missing from the measurement, and \`--write\` would drop it from ` +
+          `the snapshot without a word`,
+      );
+  const namedProbes = Object.entries(named);
   for (const [e, measurement] of namedProbes) {
+    const of = tags[e] ?? [];
+    if (of.length < 2)
+      throw new BundleError(
+        'shaken',
+        `\`${e}\` has a one-tag row counting ${measurement.tags} tags, and the ` +
+          `components it exports are: ${tagList(of)}.\n` +
+          `    A one-tag row weighs one tag against the others, and neither a second name ` +
+          `of one class nor a directive is another tag`,
+      );
+    if (measurement.tags !== of.length)
+      throw new BundleError(
+        'shaken',
+        `the row of \`${e}\` counts ${measurement.tags} tags, and the entrypoint carries ` +
+          `${of.length}: ${tagList(of)}.\n` +
+          `    A tag is a component object, counted once whatever names it is exported ` +
+          `under and wherever else it is exported`,
+      );
+    if (measurement.export !== of[0].className)
+      throw new BundleError(
+        'shaken',
+        `the row of \`${e}\` names \`${measurement.export}\`, and the first tag of the ` +
+          `entrypoint by its own name is \`${of[0].className}\`: ${tagList(of)}.\n` +
+          `    The class a row measures is the first by the name its declaration gives ` +
+          `it, so an alias that sorts first does not turn the reading round`,
+      );
+    if (!of[0].names.includes(measurement.imported))
+      throw new BundleError(
+        'shaken',
+        `the row of \`${e}\` names \`${of[0].className}\`, and its probe imported ` +
+          `\`${measurement.imported}\`, which is not a name of that class: ${tagList(of)}.\n` +
+          `    The bytes of the row are then another class's, under this one's name`,
+      );
     if (!measurement.bytes)
       throw new BundleError(
         'shaken',
-        `the probe importing \`${measurement.export}\` from ` +
+        `the probe importing the class \`${measurement.export}\` ` +
+          `(\`${measurement.imported}\`) from ` +
           `\`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` produced no bytes.\n` +
           `    A named import the bundler dropped entirely measures nothing, and the row ` +
           `it writes would read as "one tag costs nothing" — the most flattering possible ` +
@@ -687,7 +746,7 @@ const checkBundle = (input) => {
     if (measurement.bytes > measurement.all)
       throw new BundleError(
         'shaken',
-        `importing \`${measurement.export}\` alone (${measurement.bytes} B) is LARGER ` +
+        `importing the class \`${measurement.export}\` alone (${measurement.bytes} B) is LARGER ` +
           `than importing all ${measurement.tags} tags of \`${e}\` ` +
           `(${measurement.all} B).\n` +
           `    One class cannot cost more than every class, so the two probes are not ` +
@@ -814,8 +873,8 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     '```',
     '',
     'And the second reading, for the entrypoints that carry more than one tag. The rows',
-    'are: entrypoint · the class a probe imported BY NAME · how many tags the entrypoint',
-    'has · the bytes of that one class · the bytes of a probe importing EVERY tag of it.',
+    'are: entrypoint · the class a probe imported ALONE · how many tags the entrypoint has ·',
+    'the bytes of that one class · the bytes of a probe importing EVERY tag of it.',
     'It answers the question everybody answers with "of course, ESM": whether importing one',
     'tag of an entrypoint sheds the rest of it. The two numbers side by side are the whole',
     'reading — where they are equal, nothing was shed and the entrypoint is the unit a',
@@ -844,10 +903,12 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     '   Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,',
     '   `PCT_TABS`), there is no reference and this half does not apply.',
     '',
-    'The reading is DIRECTIONAL, because the probe imports the first export name: `PctSelect`',
-    'is shed or not shed by a bundle that asked for `PctMultiSelect`, and the other direction',
-    'can differ — an entrypoint whose group declares providers pins the group when a consumer',
-    'imports only the child.',
+    'The reading is DIRECTIONAL, because the probe imports one class: the first by the name',
+    'its declaration gives it, under whichever key it is exported. A tag is a class, so a',
+    'second name it is exported under is neither a second tag nor a way to move the probe:',
+    '`PctSelect` is shed or not shed by a bundle that asked for `PctMultiSelect`, and the',
+    'other direction can differ — an entrypoint whose group declares providers pins the group',
+    'when a consumer imports only the child.',
     '',
     '`./select` used to be the row neither half explained, and the answer was the first half',
     "after all: the orphan-slot report stood in each tag's `providers`, so a consumer who",
@@ -973,31 +1034,18 @@ const collectMarkers = async (dist, files) => {
   await import('@angular/compiler');
   const markersOf = {};
   const plainOf = {};
-  const componentsOf = {};
+  const components = [];
   for (const [input, file] of files) {
     const module = await import(
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
     const markers = new Set();
-    const components = [];
     let plain = false;
-    for (const [name, value] of Object.entries(module)) {
+    for (const value of Object.values(module)) {
       const def =
         typeof value === 'function'
           ? (value['ɵcmp'] ?? value['ɵdir'])
           : undefined;
-      // The COMPONENTS by their export name, which is what an import names. Components and
-      // not directives, because the question underneath is about TAGS: `pct-select` and
-      // `pct-multi-select` are two tags over one template (0034), and what point 13 asks is
-      // what a consumer of one of them pays for the other.
-      if (typeof value === 'function' && value['ɵcmp'])
-        components.push({
-          name,
-          markers: (value['ɵcmp'].selectors ?? [])
-            .flat()
-            .filter((t) => typeof t === 'string' && /^pct[-A-Z]/.test(t))
-            .sort(),
-        });
       // Anything that is not a component or a directive: a token, a provider factory, a
       // function. Types do not count — they are gone by the time this module is imported,
       // which is the point of reading the artifact rather than the sources.
@@ -1008,12 +1056,68 @@ const collectMarkers = async (dist, files) => {
     }
     markersOf[input] = [...markers].sort();
     plainOf[input] = plain;
-    componentsOf[input] = components.sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    components.push(...componentRecords(input, module));
   }
-  return { markers: markersOf, plain: plainOf, components: componentsOf };
+  return { markers: markersOf, plain: plainOf, components };
 };
+
+/**
+ * The components of one entrypoint's module, one record per export KEY:
+ * `{ entrypoint, exportedAs, class }`. Components and not directives, because the question
+ * underneath is about TAGS: `pct-select` and `pct-multi-select` are two tags over one
+ * template (0034), and what point 12 asks is what a consumer of one of them pays for the
+ * other. A case reads its prepared module through this same function, so the filter is
+ * held by the cases as well as by the live run.
+ */
+const componentRecords = (entrypoint, module) =>
+  Object.entries(module)
+    .filter(([, value]) => typeof value === 'function' && value['ɵcmp'])
+    .map(([exportedAs, value]) => ({ entrypoint, exportedAs, class: value }));
+
+/**
+ * The TAGS of every entrypoint: one per component OBJECT it exports, as `check-zoneless`,
+ * `check-parts`, `check-harness` and `check-texts` read a class of the package. A class
+ * exported under a second name is one tag with two names, and a class another entrypoint
+ * re-exports is a tag of each entrypoint exporting it — an import names it there, and
+ * importing it from there is what the row of that entrypoint weighs. (The live package
+ * cannot get that far: point 4 refuses a marker two entrypoints export.)
+ *
+ * A tag is named by its own `name`, the one its declaration gives it, and `names` are the
+ * keys it is exported under in namespace order — one of them is what a probe imports. The
+ * tags of an entrypoint are in the order of their own names, so the class a row measures
+ * does not move when an alias that sorts first is added (measured: `PctSelect as
+ * PctASelect` took the probe of `./select` from `PctMultiSelect` to `PctSelect`, and the row
+ * read three tags under a name no class bears). The order is code-unit, as a namespace
+ * orders its keys. `localeCompare` follows a locale's collation instead, which is another
+ * order — every locale measured puts `PctDatepicker` before `PctDateRange` — and not one
+ * order either: `et-EE` puts `PctZoom` before `PctTabs`, and `da-DK` capitals first, so
+ * two machines could name different classes.
+ */
+const tagsOf = (records) =>
+  Object.fromEntries(
+    [...Map.groupBy(records, (r) => r.entrypoint)].map(([entrypoint, of]) => [
+      entrypoint,
+      [...Map.groupBy(of, (r) => r.class)]
+        .map(([type, own]) => ({
+          className: type.name,
+          names: own.map((r) => r.exportedAs),
+        }))
+        .sort((a, b) => byCodeUnit(a.className, b.className)),
+    ]),
+  );
+
+/** The order a module namespace gives its keys in, which no locale moves. */
+const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** `PctBeta`, or `PctBeta (as PctB, PctBeta)` for a tag exported under any other key. */
+const tagList = (tags) =>
+  tags
+    .map((t) =>
+      t.names.join(', ') === t.className
+        ? t.className
+        : `${t.className} (as ${t.names.join(', ')})`,
+    )
+    .join(', ') || '(none)';
 
 /**
  * Whether a bundle's text holds a marker: the token as a string literal, either quote,
@@ -1318,12 +1422,16 @@ const measureRepository = async () => {
      * day a second tag joins another entrypoint the measurement follows by itself; a
      * hard-coded `./select` would be a gate that stopped seeing at the first new pair.
      *
-     * The class taken is the first by export name, and which one it is does not matter:
-     * the question is symmetric, and measured it answers the same either way.
+     * A tag is a class OBJECT (`tagsOf`), and the one taken is the first by its own name,
+     * imported under the first key it is exported under — any key of one object imports
+     * the same bytes. The reading is directional, and the snapshot says so.
      */
     const named = {};
-    for (const [e, list] of Object.entries(components)) {
+    for (const [e, list] of Object.entries(tagsOf(components))) {
       if (list.length < 2 || !files.has(e)) continue;
+      // The key the probe imports is the key the row records, so point 12 reads the very
+      // name the bundle was asked for.
+      const imported = list[0].names[0];
       const one = await probe(
         esbuild,
         linker,
@@ -1331,7 +1439,7 @@ const measureRepository = async () => {
         markers,
         byFile,
         [e],
-        [list[0].name],
+        [imported],
       );
       const all = await probe(
         esbuild,
@@ -1340,10 +1448,11 @@ const measureRepository = async () => {
         markers,
         byFile,
         [e],
-        list.map((c) => c.name),
+        list.map((t) => t.names[0]),
       );
       named[e] = {
-        export: list[0].name,
+        export: list[0].className,
+        imported,
         tags: list.length,
         bytes: one.bytes,
         all: all.bytes,
@@ -1415,6 +1524,43 @@ const readFixture = (name) =>
   JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
 /**
+ * A prepared input's modules as the package read gives them: each entrypoint's keys in
+ * code-unit order, as a module namespace lists them, and one object per LABEL across the
+ * whole case — a label two keys or two entrypoints write is one class, exported under a
+ * second name or re-exported. A label's class bears the label as its `name` up to a `#`, so
+ * `PctAlpha#2` is a second object named `PctAlpha`.
+ */
+const modulesOf = (described) => {
+  const objects = new Map();
+  const objectOf = (descriptor) => {
+    const [[kind, label]] = Object.entries(descriptor);
+    if (kind === 'value') return label;
+    const known = objects.get(label);
+    if (known && known.kind !== kind)
+      throw new Error(
+        `label \`${label}\` is written as a ${known.kind} and as a ${kind}`,
+      );
+    if (known) return known.type;
+    const name = label.split('#')[0];
+    const type = { [name]: function () {} }[name];
+    if (kind === 'component') type['ɵcmp'] = { selectors: [] };
+    else if (kind === 'directive') type['ɵdir'] = { selectors: [] };
+    else if (kind !== 'function')
+      throw new Error(`label \`${label}\`: no kind \`${kind}\``);
+    objects.set(label, { kind, type });
+    return type;
+  };
+  return Object.entries(described).map(([entrypoint, exported]) => ({
+    entrypoint,
+    module: Object.fromEntries(
+      Object.entries(exported)
+        .toSorted(([a], [b]) => byCodeUnit(a, b))
+        .map(([key, descriptor]) => [key, objectOf(descriptor)]),
+    ),
+  }));
+};
+
+/**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  *
@@ -1450,6 +1596,15 @@ const buildFixture = (fx) => {
   if (fx.dropFromExports) delete input.manifest.exports[fx.dropFromExports];
   if (fx.sideEffects !== undefined) input.manifest.sideEffects = fx.sideEffects;
   if (fx.dropProbe) delete input.probes[fx.dropProbe];
+  // The case's exports are laid over the reference's, key by key, and the records are read
+  // by the live `componentRecords` — so a case holds the read and not only the rule.
+  const described = structuredClone(reference.modules ?? {});
+  for (const [e, exported] of Object.entries(fx.exports ?? {}))
+    described[e] = { ...described[e], ...exported };
+  input.components = modulesOf(described).flatMap(({ entrypoint, module }) =>
+    componentRecords(entrypoint, module),
+  );
+  if (fx.dropNamed) delete input.named[fx.dropNamed];
   if (fx.namedProbe)
     input.named[fx.namedProbe.ep] = {
       ...input.named[fx.namedProbe.ep],
@@ -1608,6 +1763,13 @@ for (const name of cases) {
       problems.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    // A point with several rules fires on any of them, so a case aimed at one rule pins the
+    // words only that rule writes.
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      problems.push(
+        `${name}: \`${fx.check}\` fired without "${fx.message}" — the right point saying ` +
+          `something else:\n    ${error.message}`,
       );
   }
 }
