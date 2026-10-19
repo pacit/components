@@ -212,7 +212,7 @@ tag — both measured, and both written by `--write` with every point green. The
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 46 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 47 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
 and the read that takes the literal does not take it for the entrypoint),
@@ -231,13 +231,14 @@ bytes, and one class costing more than every class), `named-probe-missing/`,
 `named-probe-two-objects-one-name/`, `named-probe-reexport-counts/`,
 `named-probe-reexport-unmeasured/`, `named-probe-no-component/`, `named-probe-names-a-key/`,
 `named-probe-tag-became-directive/`, `named-probe-tags-in-code-unit-order/`,
-`named-probe-imports-another-class/` and `named-probe-imports-the-class-name/` (the rows held
+`named-probe-imports-another-class/`, `named-probe-imports-a-namesake/` and
+`named-probe-imports-the-class-name/` (the rows held
 to the package's tags: a row owed and missing, a row for one class under two names, a count of
 names, a row an alias turned round, two objects bearing one name, a re-export counted in each
 entrypoint, both ways round, a row for an entrypoint of directives, a row naming a key rather
 than the class, a tag that became a directive and left its row behind, tags in the order no
-locale moves, and a probe that imported another class or a name the entrypoint does not
-export) and
+locale moves, and a probe that imported another class, a namesake or a name the entrypoint
+does not export) and
 `pair-no-larger-than-single/` —
 literally "an app importing two entrypoints must produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift

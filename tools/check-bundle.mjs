@@ -1088,8 +1088,10 @@ const componentRecords = (entrypoint, module) =>
  * does not move when an alias that sorts first is added (measured: `PctSelect as
  * PctASelect` took the probe of `./select` from `PctMultiSelect` to `PctSelect`, and the row
  * read three tags under a name no class bears). The order is code-unit, as a namespace
- * orders its keys: `localeCompare` takes the machine's locale, and `pl-PL` puts
- * `PctDatepicker` before `PctDateRange`, so the desk and CI could name different classes.
+ * orders its keys. `localeCompare` follows a locale's collation instead, which is another
+ * order — every locale measured puts `PctDatepicker` before `PctDateRange` — and not one
+ * order either: `et-EE` puts `PctZoom` before `PctTabs`, and `da-DK` capitals first, so
+ * two machines could name different classes.
  */
 const tagsOf = (records) =>
   Object.fromEntries(

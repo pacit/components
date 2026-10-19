@@ -2,6 +2,6 @@
   "// defect": "The probe importing one class by name produced no bytes — the bundler dropped the import entirely, which is what a class name that no longer stands in the package looks like. The row it would write reads \"one tag costs nothing\", the most flattering possible reading of a probe that failed.",
   "point": 12,
   "check": "shaken",
-  "message": "the probe importing the class `PctBeta` (`PctB`) from `@pacit/components/beta` produced no bytes.",
+  "message": "the probe importing the class `PctBeta` (`PctBeta`) from `@pacit/components/beta` produced no bytes.",
   "namedProbe": { "ep": "./beta", "is": { "bytes": 0 } }
 }

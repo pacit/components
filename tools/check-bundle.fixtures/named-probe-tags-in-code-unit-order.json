@@ -1,5 +1,5 @@
 {
-  "// defect": "`./alpha` carries three tags and no row, and the message lists them in code-unit order, the order a module namespace gives its keys in: `PctAlphaRange` before `PctAlphapicker`, and the old name `PctAlphaPicker` before `PctAlphapicker`. `localeCompare` would take the machine's locale and list both pairs the other way round — `pl-PL` puts `PctDatepicker` before `PctDateRange` — so the class a row names could differ between the desk and CI.",
+  "// defect": "`./alpha` carries three tags and no row, and the message lists them in code-unit order, the order a module namespace gives its keys in: `PctAlphaRange` before `PctAlphapicker`, and the old name `PctAlphaPicker` before `PctAlphapicker`. `localeCompare` would follow a locale's collation instead: every locale measured (`pl-PL`, `en-US`, `de-DE`, `et-EE`, `da-DK`, `lt-LT`) lists the first pair the other way round, and all but `da-DK`, which puts capitals first, the second — so the class a row names would depend on the machine.",
   "point": 12,
   "check": "shaken",
   "message": "`./alpha` carries 3 tags — PctAlpha, PctAlphaRange, PctAlphapicker (as PctAlphaPicker, PctAlphapicker) — and no probe imported",
