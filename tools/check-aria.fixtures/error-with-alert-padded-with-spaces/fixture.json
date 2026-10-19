@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`role=\" alert \"`",
+  "$reason": "An error part with `role=\" alert \"`. Chromium 153 and Firefox 158 read it as an alert (measured on 2026-10-19); point 7 compares the literal `role=\"alert\"` on purpose, as with `ALERT`. Nothing held that: a trimmed reading passed every case."
+}

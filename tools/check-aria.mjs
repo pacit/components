@@ -80,7 +80,9 @@ const HOST_NAME_KEYS = [
  * Their names are never bound by an expression — `check-parts` point 3 is what holds that —
  * so reading the static attributes here reads all of them. The warning joined the error and
  * the hint with [0087](../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md): the
- * same line, the same conditional, one more branch.
+ * same line, the same conditional, one more branch. A kind in capitals (`ERROR`) names no message:
+ * a selector of the styling API matches the value as written, and `check-parts` point 4 refuses a
+ * part no card can list.
  */
 const MESSAGE_KINDS = ['hint', 'warning', 'error'];
 const MESSAGE_PART = new RegExp(`(^|-)(${MESSAGE_KINDS.join('|')})$`);
@@ -94,17 +96,29 @@ const LIVE_ATTRIBUTE = 'role';
  */
 const LIVE_ROLES = { error: 'alert', warning: 'status' };
 /**
+ * The attribute that overrides the politeness a role implies, and which a part that announces
+ * carries none of: written, in any case and with any value, it is what both engines expose in
+ * place of the role's (measured on 2026-10-19 beside `role="alert"`: Chromium 153's tree drops the
+ * region at `off` and is `polite` at `polite`; Firefox 158 hands the value on as written, `OFF` and
+ * `bogus` too, and exposes none at all for the `alert` alone, which it announces by the role, so
+ * even an `assertive` adds what the role does not). Allowing the value the role implies would ask
+ * which one that is of two engines that disagree, for an attribute that adds nothing to `alert`.
+ */
+const POLITENESS = 'aria-live';
+/**
  * The names a binding writes the live region under, as `boundOn` reads them: in whatever syntax
- * and case, `[attr.ROLE]` a `role` and `[ariaLive]` an `aria-live` — and, as everywhere in the
- * walk, a class or a style binding of the name, which writes neither. A role or a politeness
+ * and case, `[attr.ROLE]` a `role` and `[ariaLive]` an `aria-live`. A role or a politeness
  * arriving from an expression is a value the template does not hold, so point 7 reports it
  * rather than reading it — beside a written role too, which a bound role replaces and a bound
  * `aria-live` overrides — the alternative would be to pass on a region nobody has seen. The set
  * once named each in two forms and compared them as written: `attr.role` beside `role`, though
  * `[attr.role]` is an input named `role` and an input named `attr.role` is `[attr.attr.role]`,
  * an attribute of that name and no role; `[attr.ROLE]` and `[ariaLive]` were no binding to it.
+ * Only a binding that writes the attribute counts (`writesAttribute`): a class, a style or an
+ * animation binding of the name, which the rest of the walk reads as one, sets neither, and
+ * `role="alert" [class.role]="…"` was refused as a region bound.
  */
-const BOUND_LIVE = ['role', 'aria-live'];
+const BOUND_LIVE = [LIVE_ATTRIBUTE, POLITENESS];
 /**
  * An attribute's name as the DOM takes it from the parsed tree: HTML ignores the case of a name
  * (`ROLE`, `[attr.ARIA-LABEL]`), and only a PROPERTY binding reaches an ARIA attribute through
@@ -122,15 +136,27 @@ const nameOf = (name, property = false) =>
     ? name.toLowerCase().replace(/^aria(?!-)/, 'aria-')
     : name.toLowerCase();
 /**
- * The same parts counted without parsing, as the denominator of the walk: the attribute's name
- * in any case, as HTML takes it and the walk reads it (`writtenOn`), its value as written, which
- * the DOM keeps. Counted in lower case alone, a `DATA-PCT-PART="error"` the walk reads is a part
- * the text does not hold, and the denominator refuses a template whose fault is point 7's.
+ * The parts counted without parsing, as the denominator of the walk: every attribute of the name,
+ * in any case, as HTML takes it and the walk reads it (`writtenOn`), whatever its value — which
+ * kind of part it is the walk decides, once it holds it. The counter read the value as well, and
+ * read it as no parser does: in double quotes alone, after a lower-case prefix alone, undecoded,
+ * so `data-pct-part='error'`, `=error`, `="Field-error"` and `="&#101;rror"`, each an error part
+ * the walk holds, were refused as parts the walk does not reach. A name is counted where Angular's
+ * lexer starts one (`_consumeTagOpen`): after whitespace as it takes whitespace — every code unit
+ * from a tab to a space, and a no-break space — or right after the quote closing the value before
+ * it, which no whitespace has to follow; a comment in a start tag is blanked to spaces in the text
+ * (`readTree`). And it ends where the lexer ends one (`isNameEnd`). So `attr.data-pct-part`,
+ * `xlink:data-pct-part` and `[data-pct-part]` are not the attribute, as they are not to the walk.
+ * A case may drop a place the counter starts a name at (`"counter": { "drop": ["quote"] }`): a
+ * spelling the counter would miss, played by one it reads today.
  */
-const MESSAGE_COUNTER = new RegExp(
-  `(?i:${PART_ATTRIBUTE})="(?:[a-z-]*-)?(?:${MESSAGE_KINDS.join('|')})"`,
-  'g',
-);
+const NAME_STARTS = { whitespace: '\\t-\\x20\\xA0', quote: `"'` };
+const NAME_END = `[\\t-\\x20\\xA0=<>/"']|$`;
+const partCounter = (starts) =>
+  new RegExp(
+    `(?<=[${Object.values(starts).join('')}])${PART_ATTRIBUTE}(?=${NAME_END})`,
+    'gi',
+  );
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 const sorted = (set) => [...set].sort();
@@ -562,7 +588,8 @@ const attributesOf = (text) => {
  * One reading wherever the gate asks what an element is: the widget test, the group test, a
  * host's role, and point 9's walk with its counter. Point 7 alone compares the literal
  * `role="alert"`, which refuses a spelling the engines would accept and passes none they would
- * not.
+ * not: Chromium 153 and Firefox 158 read `ALERT` and ` alert ` as an alert (measured on
+ * 2026-10-19), and two cases hold that point 7 does not.
  */
 const readRole = (value) =>
   axe.commons.aria.getExplicitRole(
@@ -806,6 +833,9 @@ const hostKeysIn = (component, keys) =>
 /** A binding that sets the element's property, one-way or two-way (`[(ariaLabel)]`). */
 const setsProperty = (input) =>
   input.type === BindingType.Property || input.type === BindingType.TwoWay;
+/** A binding that reaches the attribute itself: through its property, or `[attr.…]`. */
+const writesAttribute = (input) =>
+  setsProperty(input) || input.type === BindingType.Attribute;
 /**
  * An attribute written on a node, by the name the DOM gives it and with the value the parser
  * decoded — of two, the last, which the DOM keeps: Angular sets each in turn — and the bindings
@@ -943,6 +973,14 @@ const isOwnTag = (node) =>
   isElement(node) && TRANSPARENT_TAGS.has(localName(node.name));
 
 /**
+ * An `<ng-template>` written as one, in whatever namespace: a template, which draws no element. An
+ * inline template (`*ngIf`) is named for the element it wraps, and holds a copy of what is written
+ * there; an `<NG-TEMPLATE>` is an element of the DOM, as an `<NG-CONTAINER>` is.
+ */
+const isTemplateTag = (node) =>
+  node.tagName?.split(':').pop() === 'ng-template';
+
+/**
  * What Angular takes off an `<ng-container>` as the container's own: `ngProjectAs` and
  * `ngNonBindable`, as the compiler's `preparseElement` asks for them, in their case. A `select`
  * it takes off a projection alone. An inline template's attribute (`*ngIf`) is the template's,
@@ -960,7 +998,8 @@ const readOffAContainer = (name) =>
  * because it knows every kind of node Angular has: a kind the walk does not descend into
  * (`lesson-180`) still has its tags read, and a stop there fails point 1 for want of a path. A
  * template is read too, though the tree holds it as no element: a stop written on one fails
- * point 1, as a group does. An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
+ * point 1, as a group does, and so does a part written on an `<ng-template>` (`isTemplateTag`),
+ * recorded by the offset it starts at (`templateParts`). An `<ng-content>`, in whatever namespace (`<svg:ng-content>`), is a tag
  * of the tree whose offset point 1 holds the scan to, recorded with an empty reading: it draws no
  * element, so nothing on it makes a stop; what is written on it, past what Angular takes as the
  * projection's own (`readOffAProjection`), is recorded by the offset it starts at (`projections`),
@@ -984,6 +1023,7 @@ class TagReader extends TmplAstRecursiveVisitor {
   contentBlocks = [];
   projections = [];
   containers = [];
+  templateParts = [];
   spelled = [];
   visitElement(node) {
     this.attributes.set(
@@ -1020,6 +1060,8 @@ class TagReader extends TmplAstRecursiveVisitor {
   visitTemplate(node) {
     this.attributes.set(node.sourceSpan.start.offset, focusAttributes(node));
     this.kinds.set(node.sourceSpan.start.offset, 'template');
+    if (isTemplateTag(node) && allWrittenOn(node, PART_ATTRIBUTE).length)
+      this.templateParts.push(node.sourceSpan.start.offset);
     super.visitTemplate(node);
   }
   visitContent(node) {
@@ -1123,14 +1165,13 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // passed point 7 on what the DOM does not end with. And on any node: an inline template
     // (`*ngIf`) holds a copy of its element's attributes, so the part was read twice, and one
     // written on an `<ng-template>` passed for a part no element carries. Only an element
-    // carries a part to the DOM. Each message part written on it is counted for the
-    // denominator, which counts them in the text, where two on one tag are two. The
-    // template around it is looked through, as for `*ngFor` (`repeats`): an `*ngIf` is no
-    // condition to the walk, and its `else` no branch.
+    // carries a part to the DOM (one written on a template fails point 1, `templateParts`).
+    // Each part written on it, of whatever kind, is counted for the denominator, which counts
+    // them in the text, where two on one tag are two. The template around it is looked
+    // through, as for `*ngFor` (`repeats`): an `*ngIf` is no condition to the walk, and its
+    // `else` no branch — point 6 says so when it refuses one, and the library writes `@if`.
     if (isElement(node)) {
-      state.parts += allWrittenOn(node, PART_ATTRIBUTE).filter((value) =>
-        MESSAGE_PART.test(value),
-      ).length;
+      state.parts += allWrittenOn(node, PART_ATTRIBUTE).length;
       const part = written(PART_ATTRIBUTE);
       if (part && MESSAGE_PART.test(part))
         state.messages.push({
@@ -1141,7 +1182,11 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // so a bound one is no pass to a reader of the source — it is a thing this gate
           // cannot judge, and it refuses it saying so instead of guessing.
           role: written(LIVE_ATTRIBUTE) ?? null,
-          boundLive: BOUND_LIVE.some((name) => bindings(name).length > 0),
+          boundLive: BOUND_LIVE.some((name) =>
+            bindings(name).some(writesAttribute),
+          ),
+          // A politeness written beside the role, whatever its value (`POLITENESS`).
+          politeness: written(POLITENESS) ?? null,
         });
     }
     // Point 9 reads every element with a role, and the roles standing above it in THIS
@@ -1215,7 +1260,7 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     if (element) state.elements.set(element.offset, element);
     // An `<ng-template>` is stamped where an outlet stands, which the walk does not read (plan
     // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for.
-    const stamped = node.tagName?.split(':').pop() === 'ng-template';
+    const stamped = isTemplateTag(node);
     walkTemplate(
       node.children ?? [],
       path,
@@ -1255,9 +1300,11 @@ const exclusive = (a, b) =>
  * tag reader goes without the visits a prepared input takes from it (`skips`): the live run takes
  * none, and a case may name one, which then neither records nor descends — an override of the
  * reader's that forgets `super`. The walk knows, too, the fields an expression reads the two name
- * inputs through (`reads`), which are its owners' and not the inputs' names.
+ * inputs through (`reads`), which are its owners' and not the inputs' names. The parts are counted
+ * in the text by the counter a case hands over (`partCounter`): the live run's reads every place
+ * a name starts at.
  */
-const readMessages = (file, content, sides, skips, reads) => {
+const readMessages = (file, content, sides, skips, reads, counter) => {
   const { text, ...parsed } = readTree(file, content);
   const state = {
     sides,
@@ -1291,10 +1338,11 @@ const readMessages = (file, content, sides, skips, reads) => {
     contentBlocks: tags.contentBlocks,
     projections: tags.projections,
     containers: tags.containers,
+    templateParts: tags.templateParts,
     spelled: tags.spelled,
     cased: parsed.cased,
     errors: parsed.errors ?? [],
-    counted: countOf(text, MESSAGE_COUNTER),
+    counted: countOf(text, counter),
     text,
   };
 };
@@ -1422,6 +1470,7 @@ const checkAria = ({
   tables,
   sides,
   skips,
+  counter,
 }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
   // The tables the classification below reads. Absent, the gate would classify against
@@ -1643,6 +1692,7 @@ const checkAria = ({
       sides,
       skips,
       reads,
+      counter,
     );
     if (said.errors.length)
       throw new AriaError(
@@ -1846,16 +1896,41 @@ const checkAria = ({
           `which lowers it: one attribute in the browser and another after hydration ` +
           `(req-project-ssr). Write it in lower case`,
       );
-    // Part attributes on both sides, not elements: the text holds two where a tag carries
-    // two, and the walk, which reads the last, held one, so a part written over another
-    // was refused here for a block the walk skipped, and the right part never reached
-    // point 7.
-    if (said.parts !== said.counted)
+    // A part written on an `<ng-template>` (`templateParts`): the template draws no element, so
+    // neither the part nor a role beside it reaches the text the user reads. The walk reads a part
+    // on an element alone, and the denominator below refused it as one the walk does not reach,
+    // which it does: it reads the template, and the elements the template stamps.
+    if (said.templateParts.length)
       throw new AriaError(
         'denominator',
-        `${template.file}: ${said.counted} message part(s) in the text, ` +
-          `${said.parts} walked — a part the walk does not reach is a part point 6 ` +
-          `does not examine`,
+        `${template.file}: an \`<ng-template>\` at offset ${said.templateParts[0]} ` +
+          `(\`${opening(said.templateParts[0])}\`) carries \`${PART_ATTRIBUTE}\` — a template ` +
+          `draws no element, so the part, and a role written beside it, reach none: the text the ` +
+          `user reads carries neither. Put them on the element the template stamps`,
+      );
+    // Part attributes on both sides, not elements, and of every kind: the text holds two where a
+    // tag carries two, and the walk, which reads the last, held one, so a part written over
+    // another was refused here for a block the walk skipped, and the right part never reached
+    // point 7. Each way the counts differ says something else. More in the text is a part on no
+    // element the walk reaches — in a block it does not know (`lesson-180`), or in text no
+    // element is made of — which points 6 and 7 do not examine. More in the walk is a spelling
+    // the parser reads and the counter does not, which is the counter's fault and not the
+    // template's: refused all the same, since the next spelling it misses may be one on no
+    // element either.
+    if (said.parts < said.counted)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: ${said.counted} part attribute(s) in the text, ${said.parts} on ` +
+          `the elements the walk reads — a part the walk does not reach is one points 6 and 7 ` +
+          `do not examine`,
+      );
+    if (said.parts > said.counted)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: ${said.parts} part attribute(s) on the elements the walk reads, ` +
+          `${said.counted} in the text — the walk holds more than the counter finds, so the ` +
+          `counter misses a spelling the parser reads, and a part written so on no element ` +
+          `would go uncounted too`,
       );
     byPath.get(template.file).said = said.messages;
     byPath.get(template.file).paths = said.paths;
@@ -2253,7 +2328,9 @@ const checkAria = ({
               'description',
               `${template.file}: \`${one.part}\` and \`${other.part}\` can be in the DOM at ` +
                 `the same time — they are not two branches of one conditional, or the ` +
-                `conditional stands under an \`@for\`, which stamps it once per item. Then the ` +
+                `conditional stands under an \`@for\`, which stamps it once per item. An ` +
+                `\`*ngIf\` and the template its \`else\` names are none the walk reads as two ` +
+                `branches: write them as \`@if\` and \`@else\`. Then the ` +
                 `control grows by a row on a message and \`aria-describedby\` names one the ` +
                 `wrapped same control never shows (req-api-message)`,
             );
@@ -2280,7 +2357,13 @@ const checkAria = ({
       // the static attributes, and a `null` takes the role off; a bound `aria-live` overrides
       // the politeness the role implies. Asked only where the written role was wrong, it was
       // never asked where it decides, and `role="alert" [attr.role]="…"` passed.
-      if (!message.boundLive && message.role === liveRole) {
+      // A written `aria-live` the same: the engines expose it in place of the role's politeness
+      // (`POLITENESS`), and it was never read, so `role="alert" aria-live="off"` passed.
+      if (
+        !message.boundLive &&
+        message.politeness === null &&
+        message.role === liveRole
+      ) {
         announced++;
         continue;
       }
@@ -2289,13 +2372,16 @@ const checkAria = ({
         `${template.file}: \`${message.part}\` carries ` +
           (message.boundLive
             ? `a BOUND \`role\` or \`aria-live\`, so what it announces with is not in the template`
-            : message.role === null
-              ? `no \`role\``
-              : `\`role="${message.role}"\``) +
+            : message.politeness !== null
+              ? `a written \`aria-live="${message.politeness}"\`, which the engines expose in ` +
+                `place of the politeness its role implies`
+              : message.role === null
+                ? `no \`role\``
+                : `\`role="${message.role}"\``) +
           ` — a validation message enters the DOM with nobody pointed at it, so the text the ` +
           `user reads has to be the live region that speaks it: \`role="${liveRole}"\` on ` +
-          `the ${kind} part, written as a plain attribute and bound by nothing ` +
-          `(req-a11y-built-in)`,
+          `the ${kind} part, written as a plain attribute, bound by nothing and with no ` +
+          `\`aria-live\` beside it (req-a11y-built-in)`,
       );
     }
 
@@ -2471,14 +2557,15 @@ const isCard = (p) =>
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 /**
- * What the gate reads: the files under `root`, and the tables, side blocks and reader's visits a
- * case asks for. The live run asks for nothing, so it reads them through the same lines as a case
+ * What the gate reads: the files under `root`, and the tables, side blocks, reader's visits and
+ * counter a case asks for. The live run asks for nothing, so it reads them through the same lines as a case
  * that does not doctor them, and a fault there fails the cases too.
  */
 const collectInput = (root, files, fx = {}) => ({
   tables: tablesFor(fx),
   sides: sidesFor(fx),
   skips: skipsFor(fx),
+  counter: counterFor(fx),
   ...readSources(root, files.filter(isSource)),
   templates: files
     .filter(isTemplate)
@@ -2575,6 +2662,20 @@ const sidesFor = (fx) =>
  */
 const skipsFor = (fx) =>
   (fx.reader?.drop ?? []).filter((name) => /^visit[A-Z]/.test(name));
+
+/**
+ * The places the counter of parts starts a name at (`NAME_STARTS`): every one, or every one but
+ * those a case drops (`"counter": { "drop": ["whitespace"] }`) — a spelling the counter would not
+ * read, played by one it reads today, which is how the walk comes to hold more parts than the text.
+ */
+const counterFor = (fx) =>
+  partCounter(
+    Object.fromEntries(
+      Object.entries(NAME_STARTS).filter(
+        ([name]) => !(fx.counter?.drop ?? []).includes(name),
+      ),
+    ),
+  );
 
 // ── the run ────────────────────────────────────────────────────────────────────
 

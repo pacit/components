@@ -1,0 +1,9 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "the walk holds more than the counter finds",
+  "counter": {
+    "drop": ["whitespace"]
+  },
+  "$reason": "The reference input read by a counter that starts no name after whitespace: a spelling the counter would miss, played by every part the reference writes. The walk holds parts the text then does not, and the denominator says the counter is at fault, not the template. It compared the two counts only for difference, and a denominator turned into \"the text holds more\" alone passed every case."
+}

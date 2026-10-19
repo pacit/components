@@ -1,0 +1,9 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "part attribute(s) in the text, 1 on the elements the walk reads",
+  "sides": {
+    "drop": ["empty"]
+  },
+  "$reason": "The error repeated per item in an `@for` and the hint in its `@empty`, a correct line the reference could hold: one block, two branches. The walk is handed no `@empty`, the block Angular adds next played by one it knows today (`lesson-180`), and the hint drawn there is a part the walk never reaches, which point 6 then does not pair with the error. The text holds one part more than the walk."
+}

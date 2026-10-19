@@ -1,0 +1,62 @@
+<!-- The role sits here and not on the host, so the name has to be handed over. It is handed
+     over more than once, because the element a trigger is follows the role it carries: one
+     that can be typed into is an `<input>`, one that cannot is a `<button>`, and one with
+     nothing of ours to draw is the platform's `<select>`, whose options are its own. Exactly one
+     of them is ever in the tree, which is the question point 4 asks — and the answer it must
+     accept. -->
+<span class="pct-widget__box">
+  @if (editable()) {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else if (native()) {
+  <select
+    class="pct-widget__trigger"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    <option>Poland</option>
+    <option>Anywhere</option>
+  </select>
+  } @else {
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+  }
+</span>
+
+<!-- The panel: a listbox owning its options directly and THROUGH a heading's group, which is
+     the relation point 9 reads off the tree — the group is one of the two contexts an option
+     may stand in, and nothing else may. It carries the consumer's name as well, as the APG's
+     combobox has it: a container named as a whole, around items that are its own. -->
+@if (open()) {
+<div
+  class="pct-widget__panel"
+  role="listbox"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <div role="group" aria-labelledby="pct-widget-nearby">
+    <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
+    <div role="option">Poland</div>
+  </div>
+  <div role="option">Anywhere</div>
+</div>
+}
+
+<!-- One message line, the error's politeness written polite in capitals beside its role. -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert" ARIA-LIVE="polite">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

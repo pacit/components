@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a written `aria-live=\"assertive\"`",
+  "$reason": "An error part with its `alert` and the `aria-live=\"assertive\"` Chromium derives from that role written beside it. It is refused outright, not as a value other than the role's: Firefox 158 exposes no politeness at all for the `alert` alone, which it announces by the role, and `assertive` written there adds what the role does not (measured on 2026-10-19). Allowing the role's own value would ask which value that is of two engines that disagree, for an attribute that adds nothing to `alert`."
+}

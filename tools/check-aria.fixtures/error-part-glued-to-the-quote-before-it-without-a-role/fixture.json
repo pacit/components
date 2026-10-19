@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`error` carries no `role`",
+  "$reason": "An error part written right after the closing quote of the `class` before it, with no whitespace between, and no role. Angular's lexer starts the next name there, as HTML does. The counter starts a name after whitespace or after such a quote (`NAME_STARTS`): without the quote, it misses a part the walk reads, and refuses the template as its own fault rather than for the missing role."
+}
