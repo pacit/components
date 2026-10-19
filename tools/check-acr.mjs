@@ -766,7 +766,10 @@ const attributeMarkup = (elements, out) => {
  * nothing in a template hands one to a query), refused; an object's key naming it (`{ tabindex: 5
  * }`, `@let`), refused, since a directive may write it and no `host` block holds it; an
  * assignment in an event handler to a property of that name (`el.tabIndex = 5`), judged; and an
- * attribute node reached by it (`el.attributes.tabindex`), refused.
+ * attribute node reached by it off `attributes` read by dot (`el.attributes.tabindex`, `?.` too),
+ * refused. Not read: `attributes` reached by a key, through `!` or in parentheses
+ * (`el['attributes'].tabindex`); a `host` listener so written is refused by the denominator, its
+ * string naming the attribute.
  */
 class ExpressionStrings extends CombinedRecursiveAstVisitor {
   constructor(text, out) {
@@ -995,7 +998,8 @@ const BREAKPOINTS = new Set(['Breakpoints']);
  * `Reflect.construct(Audio)`, a callee or a receiver reached through an
  * alias (`.bind`, `.call`, `globalThis`, `self`, destructuring, `defaultView`), a string that mixes an
  * escaped line break with real ones, which is placed by its real ones, a `host` block given by a
- * constant or keyed by a computed name, whose bindings and listeners are read as strings alone,
+ * constant or keyed by a computed name, and an entry's value given by a constant or a cast
+ * (`'[innerHTML]': MARKUP`), whose bindings and listeners are read as strings alone,
  * the legacy `screen.mozOrientation` and `msOrientation`, and a class inside a
  * namespace or a function, which every gate reading a decorator refuses as one it did not read
  * (`decoratorsOf`'s `unseen`). Over-approximated: `toggleAttribute('tabindex', on)` judges `on`,
@@ -1450,9 +1454,12 @@ const tsReading = memo((path, text) => {
  * over-approximated — or every class, where one extends an expression no name resolves (a mixin's
  * call), a default import, or a name that can hold any class: a constant computed from anything
  * but a name (`c ? PctX : Other`), a name written later, destructured or a parameter (a mixin's
- * `Base`), or one a base is read off (`Bases.Avatar`). A value read off a member of one of them is one a subclass may
- * override: Angular evaluates an inherited `host` binding on the subclass's instance, through a
- * mixin too (`PctSelectBase` and its two subclasses are the library's own case).
+ * `Base`) — read off as a base is too (`Bases.Avatar` with `const Bases = { … }`) — or anything
+ * but a name a base is read off (`bases().Avatar`). Not read: a base kept as a class's static
+ * member (`Holder.Base`), and a name bound by `for…of` or `catch`. A value read off a member of
+ * one of them is one a subclass may override: Angular evaluates an inherited `host` binding on
+ * the subclass's instance, through a mixin too (`PctSelectBase` and its two subclasses are the
+ * library's own case).
  */
 const extendedIn = (sources) => {
   const readings = Object.entries(sources)

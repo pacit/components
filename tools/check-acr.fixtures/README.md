@@ -183,6 +183,8 @@ tracked set lacks are still silent, and no case uses either that way.
 | [`a-tabindex-a-host-listener-assigns.json`](a-tabindex-a-host-listener-assigns.json)                                                                           | a `host` listener runs `$event.target.tabIndex = rank; …`                                                                   | 3     | `evidence`  |
 | [`a-tabindex-left-to-a-concatenation-in-a-host-binding.json`](a-tabindex-left-to-a-concatenation-in-a-host-binding.json)                                       | a `host` block binds `'[innerHTML]'` to markup a concatenation leaves open                                                  | 3     | `evidence`  |
 | [`a-tabindex-an-attribute-node-a-template-handler-reaches.json`](a-tabindex-an-attribute-node-a-template-handler-reaches.json)                                 | a handler runs `$any($event.target).attributes.tabindex.value = 5`                                                          | 3     | `evidence`  |
+| [`a-tabindex-an-attribute-node-a-template-handler-reaches-safely.json`](a-tabindex-an-attribute-node-a-template-handler-reaches-safely.json)                   | the same node handed on through `attributes?.tabindex`                                                                      | 3     | `evidence`  |
+| [`a-tabindex-an-attribute-node-a-host-listener-reaches-behind-a-non-null.json`](a-tabindex-an-attribute-node-a-host-listener-reaches-behind-a-non-null.json)   | the same in a `host` listener, through `!`, which the denominator refuses                                                   | 3     | `evidence`  |
 | [`a-tabindex-behind-a-decoy-in-markup.json`](a-tabindex-behind-a-decoy-in-markup.json)                                                                         | `'<b title="tabindex=" TABINDEX="5">'`, a match that would swallow the next                                                 | 3     | `evidence`  |
 | [`a-tabindex-named-by-a-static-attribute-of-a-template.json`](a-tabindex-named-by-a-static-attribute-of-a-template.json)                                       | a template writes `pctAttr="tabIndex"` beside `pctValue="5"`                                                                | 3     | `evidence`  |
 | [`a-tabindex-named-to-calls-that-write-no-positive-one.json`](a-tabindex-named-to-calls-that-write-no-positive-one.json)                                       | every call that reads, tests, removes, binds or injects it, then `'5'`; `says` that line                                    | 3     | `evidence`  |
@@ -246,13 +248,13 @@ tracked set lacks are still silent, and no case uses either that way.
 
 Point 2 has four cases because a level can be wrong in four directions and every one of them
 reads like a report: a word outside the five, a _Supports_ on prose, a _Supports_ that names
-its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and forty-five. Seven
+its own limit, a _Not Evaluated_ with no owner. Point 3 has one hundred and forty-seven. Seven
 are one per kind of citation that can go stale — a gate's point, a case's title, a quoted
 sentence, a decision's number, a scan over the sources, and a scan's and a requirement's name,
 which a prototype answers for every object — because each goes stale for a different reason and
-at a different moment. The other one hundred and thirty-eight are the scans', one per spelling
-of what a scan forbids, because a spelling its reading does not take reads as a library that
-has none: a tag in a namespace or in capitals, or one a script creates, by a call, a key or a
+at a different moment. The other one hundred and forty are the scans', one per spelling of what
+a scan forbids, because a spelling its reading does not take reads as a library that has none:
+a tag in a namespace or in capitals, or one a script creates, by a call, a key or a
 constructor; an attribute written in capitals, bound as a property, two ways or through
 `attr.`, keyed in a `host` block, set by a script, a decorator with or without a name, a
 renderer or an attribute node reached by a call or by name, or written by a name a string, a
