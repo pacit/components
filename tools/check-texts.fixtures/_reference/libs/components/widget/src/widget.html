@@ -28,3 +28,50 @@
   <li class="pct-widget__empty" data-pct-part="empty">{{ emptyText() }}</li>
   }
 </ul>
+
+<!--
+  Arrays of `consts` the package read places by the instruction taking each: the attributes of a
+  block whose root element listens (`@if`, `@for`, `@empty`, `@boundary`), the block's own array
+  beside the element's; the local references of an element, of one with children, of a
+  container, of one with children and of a template, named as speaking attributes are; a `@defer`
+  block's timings. The three elements in a row are one chained call, its third link's arrays
+  taken by the instruction at its root. Read as attributes, a reference here fires point 2 on a
+  correct template; left unplaced, any of them fires it too.
+-->
+@if (open()) {
+<span class="pct-widget__if" (click)="toggle()"></span>
+}
+<span class="pct-widget__element" #title></span>
+<span class="pct-widget__second"></span>
+<span class="pct-widget__third" #third></span>
+@for (item of items(); track item) {
+<span class="pct-widget__for" (click)="toggle()"></span>
+} @empty {
+<span class="pct-widget__none" (click)="toggle()"></span>
+}
+<span #download><span></span></span>
+@boundary {
+<span class="pct-widget__boundary" (click)="toggle()"></span>
+} @error {
+<span></span>
+}
+<span class="pct-widget__after"></span>
+@defer (on idle) {
+<span></span>
+} @loading (after 100ms) {
+<span></span>
+} @placeholder (minimum 500ms) {
+<span></span>
+}
+<ng-container class="pct-widget__container" #alt></ng-container>
+<ng-container class="pct-widget__container-start" #abbr>
+  <span></span>
+</ng-container>
+<ng-template class="pct-widget__template" #placeholder></ng-template>
+
+<!--
+  An `attr.` binding sets the attribute under the name it gives, `setAttribute('ariaLabel', …)`
+  makes `arialabel`, and no ARIA attribute is set: the word reaches no user. Only a property
+  binding reaches `aria-label` through the reflection.
+-->
+<span class="pct-widget__attr" [attr.ariaLabel]="'Unread'"></span>

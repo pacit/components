@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "The `literal-in-a-template-binding-to-the-reflected-property` case with the property written as the attribute is named, `[aria-label]`, which Angular binds without `attr.`: ngc compiles it under `strictTemplates`, in a component with no directive among its dependencies to `ɵɵattribute('aria-label', …)` (measured through ngc 22.2.1 in partial mode). The property-to-attribute mapping of `[ariaLabel]` inserts a hyphen after a leading `aria` only where none follows; a mapping that inserted one before any hyphen made this name `aria--label`, no speaking attribute. A binding is no static attribute, so the package entry is the reference's."
+}

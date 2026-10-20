@@ -43,14 +43,26 @@ gate's fixture may not be another's defect.
 
 The reading from the built package arrives as data (`package.json`) rather than from a real
 Angular build — the same choice as in `check-parts` and `check-zoneless` and for the same
-reason: a build for each of the sixty-odd cases would cost minutes, and the gate runs on
+reason: a build for each of the seventy-odd cases would cost minutes, and the gate runs on
 every commit. Most cases give a class's static attributes as pairs, and the code reading
-`ɵcmp.consts` and `ɵdir.hostAttrs` is not exercised by them. A class may give the two arrays
-themselves, as the linker leaves them, and those are read by the function the package read uses
-(`attributesOf`, over `static-attributes.mjs`): `a-title-after-a-namespaced-attribute` gives
-`consts`, because a read that stopped at the namespace marker lost every attribute after it, and
-`attribute-from-spread` gives `hostAttrs`, so that a read losing the host's half fails a case
-too. A case handing over the pairs could have shown neither.
+`ɵcmp.consts` and `ɵdir.hostAttrs` is not exercised by them.
+
+A class may instead carry the declaration ngc writes for it in partial mode (`declaration`: its
+selector, `host` and template, measured against the full declaration ngc wrote), which the gate
+compiles through JIT and reads with the code the package goes through: `consts` placed by the
+instructions taking each array (`CONSTS_AT`), then the pairs (`attributesOf`, over
+`static-attributes.mjs`). The reference's `PctWidget` is one, compiled to the DOM-only
+instructions, its template holding a local reference on every node that takes one, a `@defer`
+block's timings and blocks with an attributes array of their own — a read that takes a reference
+for attributes, or cannot place an array, refuses the reference.
+`a-title-after-a-namespaced-attribute` carries one with a directive among its dependencies, so its
+template compiles to the full instructions, and a read that stopped at the namespace marker lost
+the title after it, and `a-title-sharing-its-array-with-a-reference` one whose empty `title` is the
+array a local reference takes too, which a read placing it as the reference alone lost. A class
+may also give the two arrays themselves, as a package compiled in full
+carries them, with no declaration to compile: `attribute-from-spread` gives `hostAttrs`, so that a
+read losing the host's half fails a case too, and `a-component-compiled-in-full` gives `consts`,
+which no instruction places. A case handing over the pairs could have shown none of them.
 
 What the cases do exercise is how the package's classes are told apart. Each entry of
 `package.json` is one class — one object — and `exports` lists the names it is exported under
