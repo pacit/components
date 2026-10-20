@@ -1,0 +1,21 @@
+import { Component, input } from '@angular/core';
+
+/**
+ * A message line under everything that hides nothing, the pass side of what points 6 and 7 refuse
+ * (`HIDING`): its host written `aria-hidden="false"` and binding a class named `inert`.
+ */
+@Component({
+  selector: 'pct-calm',
+  templateUrl: './calm.html',
+  host: {
+    class: 'pct-calm',
+    'aria-hidden': 'false',
+    '[class.inert]': 'quiet()',
+  },
+})
+export class PctCalm {
+  protected readonly error = input<string>('');
+  protected readonly warning = input<string>('');
+  protected readonly hint = input<string>('');
+  protected readonly quiet = input(false);
+}
