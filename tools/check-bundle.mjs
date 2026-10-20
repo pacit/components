@@ -99,7 +99,7 @@ const PAIR_SLACK = 0.05;
  * one about somebody else's package — because `@angular/cdk/overlay` is the library's most
  * expensive optional dependency and it is the one named in `req-project-tree-shaking`. The
  * string is no assumption here: the builder probe with ALL the entrypoints has to find it,
- * or point 10 fires on itself.
+ * or point 11 fires on itself.
  */
 const MARKER_OVERLAY = 'cdk-overlay';
 
@@ -364,7 +364,7 @@ const checkBundle = (input) => {
   //       entrypoint with no marker would always pass point 6 — there is nothing to look
   //       for. The declared-plain ones are exempt by (b) and (b') — they are held by the
   //       metafile, and the declaration is the sentence that says so — and an entrypoint
-  //       every probe brings in (today `./core`) is nowhere proved absent.
+  //       every probe brought in, were there one, would be nowhere proved absent.
   const absentSomewhere = sources.filter(
     (e) =>
       e !== PRIMARY &&
@@ -465,9 +465,10 @@ const checkBundle = (input) => {
   //    The second direction has one exemption, and it is computed rather than listed: a
   //    MIXED entrypoint — one exporting components AND plain values — can legitimately
   //    contribute bytes with no marker among them, because the bytes are the plain half.
-  //    `./core` is the case that named it: every entrypoint pulls `providePctConfig` from
-  //    it and none of them but `./select` takes its directive. An entrypoint of components
-  //    alone has no such half, so for those the direction stands as it did.
+  //    `./core` is the case that named it: on 2026-08-19 every entrypoint took its config
+  //    from it and none of them but `./select` took its directive. An
+  //    entrypoint of components alone has no such half, so for those the direction stands
+  //    as it did.
   for (const e of sources) {
     // A `quotes` entrypoint's text names every component by construction, so read it and
     // every marker is "content with no metafile entry". Its contents are the metafile's
@@ -496,11 +497,11 @@ const checkBundle = (input) => {
   }
 
   // 8. External dependencies per entrypoint. This is where the literal "the `button`
-  //    bundle has no CDK Overlay" lives: the snapshot records `@angular/cdk/overlay` at
-  //    `./select` and nowhere else, so a second entrypoint reaching for it is a line in the
-  //    diff. The same mechanism will cover every future dependency, including one nobody
-  //    has thought of — which is why the point compares a SET rather than looking for a
-  //    name written in advance.
+  //    bundle has no CDK Overlay" lives: the snapshot records `@angular/cdk/overlay` on the
+  //    rows of the entrypoints that bundle it and on no other, so one more entrypoint
+  //    reaching for it is a line in the diff. The same mechanism will cover every future
+  //    dependency, including one nobody has thought of — which is why the point compares a
+  //    SET rather than looking for a name written in advance.
   for (const e of sources) {
     const measured = new Set(probes[e]?.external ?? []);
     const recorded = new Set(rows.get(e)?.external ?? []);
@@ -645,38 +646,39 @@ const checkBundle = (input) => {
           `${p.overlay ? 'HOLDS' : 'does NOT hold'} the CDK overlay (\`${MARKER_OVERLAY}\`), ` +
           `and by the esbuild probes it ${expectedOverlay ? 'should' : 'should not'}.\n` +
           `    CDK Overlay is this library's most expensive optional dependency — a ` +
-          `consumer who never used \`pct-select\` has no business receiving it`,
+          `consumer of no entrypoint whose snapshot row names it has no business receiving it`,
       );
   }
 
-  // 12. WHAT ONE TAG COSTS. Eleven entrypoints carry more than one component, and what a
+  // 12. WHAT ONE TAG COSTS. An entrypoint may carry more than one component, and what a
   //     consumer importing ONE of them pays is the question everybody answers with "of
-  //     course, ESM". Measured, the answer is "it depends, and the difference is 60% of
-  //     the bundle": `./accordion` is 4162 B for one tag against 11333 for both,
-  //     `./date` 22123 against 38901, `./field` 16059 against 24895 — while `./chips`,
-  //     `./menu`, `./radio`, `./stepper`, `./tabs`, `./tree` and `./select` shed nothing
-  //     at all, their two numbers standing 2 or 3 bytes apart.
+  //     course, ESM". Measured, the answer is "it depends": some rows shed the tags nobody
+  //     named, and some stand a few bytes apart with every other tag kept whole. Which row
+  //     does which is the second block of the snapshot, and why is the paragraph the
+  //     renderer writes above it — `providers` on the tag nobody imported, or a reference
+  //     to it from the one imported ([`lesson-173`](../docs/lessons.md#lesson-173)). This
+  //     comment quotes no row as the present one: the rows it used to quote were those of
+  //     2026-09-07, held by nothing here.
   //
-  //     Six of those seven are parent/child pairs: a chip injects its container, a tab
-  //     injects the strip, so importing the child names the parent and the bundler is
-  //     right to keep it. `./select` is the exception and the reason this point exists —
-  //     `pct-select` and `pct-multi-select` are SIBLINGS with no reference between them
-  //     (0034: one template, compiled twice), and a consumer of one still pays for the
-  //     other. Why the bundler keeps it is not measured here and is written down as a
-  //     finding rather than guessed at.
+  //     One of them is why this point exists. That day `./select` read 69904 B for
+  //     `PctMultiSelect` alone against 69907 for both: `pct-select` and `pct-multi-select`
+  //     are SIBLINGS with no reference between them (0034: one template, compiled twice),
+  //     and a consumer of one paid for the other whole. The pin was the orphan-slot
+  //     report's `providers`, and taking them out the same day made the row shed
+  //     ([`lesson-176`](../docs/lessons.md#lesson-176)).
   //
   //     It is measured in BYTES and not by looking for the sibling's selector in the text,
-  //     and that was a measurement too: `pct-select` stands in a bundle that imported
-  //     `PctMultiSelect` alone, inside the shared base's own
-  //     `get tag() { … 'pct-multi-select' : 'pct-select' }`, and `pct-tree-item` stands in
+  //     and that was a measurement too, of the same day
+  //     ([`lesson-171`](../docs/lessons.md#lesson-171)): `pct-select` stood in a bundle
+  //     that imported `PctMultiSelect` alone, inside the shared base's own
+  //     `get tag() { … 'pct-multi-select' : 'pct-select' }`, and `pct-tree-item` stood in
   //     a `PctTree`-only bundle as its content-projection selector. Two false positives in
   //     seven rows — a string equal to a selector is not a component.
   //
   //     What this point holds is the MEASUREMENT, not the answer: a probe that pulled
   //     nothing measured nothing, and one class cannot cost more than every class. The
   //     answer itself is a row of the snapshot, held by point 13 with every other row — so
-  //     the day a bundler starts shedding the sibling, the gate is red and somebody reads
-  //     why.
+  //     the day a tag starts or stops being shed, the gate is red and somebody reads why.
   //
   //     And the rows are the package's: one for every entrypoint carrying two tags or more,
   //     none for any other, each counting the entrypoint's tags, naming the first and
@@ -881,10 +883,11 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     'consumer pays in; where they differ, that difference is what the other tags cost.',
     '',
     'It is measured in bytes and NOT by looking for the other tags in the text, and that',
-    'is a measurement rather than a preference: searched for, `pct-select` is in a bundle',
-    "that imported `PctMultiSelect` alone — inside the shared base's own",
+    'is a measurement rather than a preference: searched for on 2026-09-07',
+    '([`lesson-171`](../../docs/lessons.md#lesson-171)), `pct-select` was in a bundle that',
+    "imported `PctMultiSelect` alone — inside the shared base's own",
     "`get tag() { return this.multiple ? 'pct-multi-select' : 'pct-select' }` — and",
-    '`pct-tree-item` is in one that imported `PctTree` alone, as its content-projection',
+    '`pct-tree-item` was in one that imported `PctTree` alone, as its content-projection',
     'selector. Two false positives in seven rows, both of them a string that equals a',
     'selector without being a component.',
     '',
@@ -898,10 +901,11 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     '   pure, so the statement that defines the class has a side effect and the class stays,',
     '   with its template and its stylesheet. `sideEffects: false` on the package does not',
     '   reach inside a module that something else in it is imported from.',
-    '2. **Something reaches it.** The child injects the parent CLASS as its token —',
-    '   `inject(PctStepper)`, `inject(PctRadioGroup)` — which is a reference like any other.',
-    '   Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,',
-    '   `PCT_TABS`), there is no reference and this half does not apply.',
+    '2. **Something reaches it.** The tag imported names it — a child injecting the parent',
+    '   CLASS as its token, `inject(PctStepper)`, `inject(PctRadioGroup)`, or a parent listing',
+    '   the child in its `imports`, as `PctTime` lists `PctTimeColumns` — which is a reference',
+    '   like any other. Where the channel is a token declared beside the class instead',
+    '   (`PCT_ACCORDION`, `PCT_TABS`), there is no reference and this half does not apply.',
     '',
     'The reading is DIRECTIONAL, because the probe imports one class: the first by the name',
     'its declaration gives it, under whichever key it is exported. A tag is a class, so a',
@@ -916,8 +920,9 @@ const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
     'cannot print. The report now reads the content query that finds it instead of an',
     'injector — the query IS the claim — and no component in this package declares',
     '`providers` for a message any more',
-    '([`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair',
-    'is worth, and it is the largest single number this file has ever moved.',
+    '([`lesson-176`](../../docs/lessons.md#lesson-176)). Its row below is what that repair',
+    'is worth today, the gap between the two numbers, and on 2026-09-07 it was the largest',
+    'single number this file had ever moved.',
     '',
     '```',
     ...Object.keys(named)
@@ -946,9 +951,9 @@ const snapshotRows = (content) => {
   const out = new Map();
   // The FIRST code block and not the whole file: the second one carries a row per
   // multi-tag entrypoint (point 12), and its rows begin with an entrypoint too. Read
-  // whole, `./accordion PctAccordion 2 4162 11333` parses as an entrypoint that pulls in
-  // "2" — measured, and it is the same shape as `lesson-50` one line down: two readings
-  // of one file, and the narrower one has to say where it stops.
+  // whole, `./accordion PctAccordion 2 …` parses as an entrypoint that pulls in "2" —
+  // measured, and it is the same shape as `lesson-50` one line down: two readings of one
+  // file, and the narrower one has to say where it stops.
   const block = String(content ?? '').split('```')[1] ?? '';
   for (const w of block.split('\n')) {
     if (!/^\.(\/[a-z0-9-]+)?\s/.test(w)) continue;
@@ -1162,10 +1167,11 @@ const specifierOf = (e) =>
  * is, and `ɵɵngDeclareClassMetadata` carries the whole decorator argument a second time,
  * template and styles included. A consumer's builder runs this linker over it before
  * bundling, turning the declarations into instructions. A probe that skips the step
- * measures the PACKAGE's bytes, and the two differ in BOTH directions — measured:
- * `./field` -1850 B, `./checkbox` +823 B, the template compiling into more than it was
- * written as. So this is not a discount for prose ([`lesson-67`](../docs/lessons.md#lesson-67));
- * it is a different quantity, and the promise on the snapshot names the consumer's.
+ * measures the PACKAGE's bytes, and the two differ in BOTH directions — measured on
+ * 2026-08-18: `./field` -1850 B, `./checkbox` +823 B, the template compiling into more
+ * than it was written as. So this is not a discount for prose
+ * ([`lesson-67`](../docs/lessons.md#lesson-67)); it is a different quantity, and the
+ * promise on the snapshot names the consumer's.
  *
  * The result is cached per file: with a dozen probes over the same handful of FESMs the
  * linker would otherwise run the same transform a dozen times. The cache is why the plugin
@@ -1219,12 +1225,12 @@ const angularLinker = async (dist) => {
  * `ngDevMode: false` is the second half of the same declaration `minify: true` already
  * makes — this is a PRODUCTION build. It is not a detail: unfolded, the linker's output
  * keeps `setClassMetadata` with the whole decorator source, and the compiler's `debugName`
- * for every signal. Measured, `./button` 7932 → 4481 B, `./field` 37444 → 22316 B. The
- * two steps only work together: neither alone moves the number by a fifth of that, because
- * partial compilation emits the metadata UNGUARDED and it is the linker that wraps it in
- * the guard this define then folds. What does NOT fold is `isDevMode()` — a call to an
- * external module, so C2's and C10's reports stay in the measurement, as they stay in a
- * consumer's bundle.
+ * for every signal. Measured on 2026-08-18, `./button` 7932 → 4481 B, `./field` 37444 →
+ * 22316 B. The two steps only work together: neither alone moves the number by a fifth of
+ * that, because partial compilation emits the metadata UNGUARDED and it is the linker that
+ * wraps it in the guard this define then folds. What does NOT fold is `isDevMode()` — a
+ * call to an external module, so C2's and C10's reports stay in the measurement, as they
+ * stay in a consumer's bundle.
  */
 const probe = async (
   esbuild,

@@ -14,7 +14,8 @@ Angular 22 · TypeScript 6 · Nx 23 · Vitest · Playwright · SSR
 
 ## Principles
 
-- Minimal runtime dependencies: `@angular/cdk` alone (CDK Overlay in `PctSelect`).
+- Minimal runtime dependencies: `@angular/cdk` alone (CDK Overlay only in the entrypoints whose
+  row of `libs/components/size.snapshot.md` names it).
 - Standalone, OnPush, signals, zoneless (`zone.js` is not a dependency of this project), SSR.
 - Accessibility: WCAG 2.2 AA at minimum, verified by an axe-core audit of every view in e2e,
   plus a touch target of at least 24×24 px.
