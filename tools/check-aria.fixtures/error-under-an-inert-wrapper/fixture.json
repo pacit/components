@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`inert` on the `<div>` above it may take `error` out of the accessibility tree",
+  "$reason": "An error part with its `alert` inside an inert wrapper: the text is on the screen, and both engines take an inert subtree out of the tree (measured on 2026-10-20: Chromium 141 and 155 `inertElement`, Firefox 136 and 158 no accessible, at any value of the attribute, `false` too). Nobody announces the error. Playwright's own snapshot keeps it, which is not what either engine does. A reading of `aria-hidden` alone, as point 9's walk is, passed it."
+}

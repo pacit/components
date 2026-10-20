@@ -1,0 +1,15 @@
+import { Component, input } from '@angular/core';
+
+/** A message shown under a form, drawn by a component whose host is out of the tree. */
+@Component({
+  selector: 'pct-notice',
+  templateUrl: './notice.html',
+  host: {
+    class: 'pct-notice',
+    'aria-hidden': 'true',
+  },
+})
+export class PctNotice {
+  protected readonly error = input<string>('');
+  protected readonly showError = input(false);
+}

@@ -1,0 +1,20 @@
+<!-- The reference's trigger, and a message line whose hint sits in an inert wrapper. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__aside" inert>
+  <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+</span>
+}

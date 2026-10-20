@@ -9,8 +9,8 @@
  *  3. INPUTS: a widget inside the template means `ariaLabel` and `ariaLabelledby` are declared,
  *  4. FORWARDED: both on ONE element per DOM state, not per file, its role one taking a name,
  *  5. SURFACE: the card that names the selector names both inputs,
- *  6. DESCRIPTION: hint, warning and error parts are ALTERNATIVES of one conditional (`req-api-message`),
- *  7. ANNOUNCEMENT: an error part IS the live region, and a warning part the polite one ([0026](../docs/decisions/0026-one-channel-per-politeness.md)),
+ *  6. DESCRIPTION: hint, warning and error parts are ALTERNATIVES of one conditional (`req-api-message`), no hint inert,
+ *  7. ANNOUNCEMENT: an error part IS the live region, and a warning part the polite one ([0026](../docs/decisions/0026-one-channel-per-politeness.md)), neither hidden,
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
@@ -122,6 +122,39 @@ const POLITENESS = 'aria-live';
  * `role="alert" [class.role]="…"` was refused as a region bound.
  */
 const BOUND_LIVE = [LIVE_ATTRIBUTE, POLITENESS];
+/**
+ * What takes an element out of the accessibility tree with all it holds, as each engine reads it
+ * (measured on 2026-10-20, Chromium 141 and 155 off their own tree, Firefox 136 and 158 off theirs
+ * and WebDriver's computed role): `aria-hidden` in Chromium at any value but the empty one, `false`
+ * and `undefined`, in any case — `TRUE`, ` true `, `0` and `yes` hide there — and in Firefox at
+ * `true` alone, as written; `inert` in both at any value, `false` too, being a boolean attribute. A
+ * `false` below a hidden element brings nothing back in either. What MAY hide in one engine —
+ * every value Chromium hides at, and a binding of either attribute, which may in some state
+ * (`writesAttribute`) — is what a message part may not stand under (`UNREACHABLE`). `hidden`, a
+ * `display: none` and a `visibility: hidden` take a part out of both trees too and are none of
+ * these: they hide the text from every user alike, and the part is back in both trees with its
+ * role once it is shown (measured), as one an `@if` draws is. Point 9 looks past a role as axe
+ * does, the value trimmed and in any case (`ariaHidden`).
+ */
+const HIDING = ['aria-hidden', 'inert'];
+const SHOWN = /^(|false|undefined)$/i;
+const mayHide = (name, value) => name === 'inert' || !SHOWN.test(value);
+/**
+ * What takes each message part out of the reader's reach, of what may hide an element (`HIDING`,
+ * measured on 2026-10-20). An error and a warning are live regions, and one out of the tree is
+ * announced by nobody: both engines drop an `alert` and a `status` under either attribute while
+ * the text stays on the screen, and axe 4.13 reports none of it — `aria-hidden-focus` asks about
+ * stops alone. A hint is read as the control's description, which both engines still compute from
+ * an element `aria-hidden` takes out of the tree — the target of an `aria-describedby` is read
+ * hidden or not — and which Chromium drops from an inert one, where Firefox keeps it. A
+ * `presentation` or `none` above a part hides nothing: both engines keep its `alert`, as they do
+ * under a `<button>` or an `img`, whose children are presentational.
+ */
+const UNREACHABLE = {
+  error: HIDING,
+  warning: HIDING,
+  hint: ['inert'],
+};
 /**
  * An attribute's name as the DOM takes it from the parsed tree: HTML ignores the case of a name
  * (`ROLE`, `[attr.ARIA-LABEL]`), and only a PROPERTY binding reaches an ARIA attribute through
@@ -864,6 +897,31 @@ const writtenOn = (node, name) => allWrittenOn(node, name).at(-1);
 const boundOn = (node, name) =>
   (node.inputs ?? []).filter((i) => nameOf(i.name, setsProperty(i)) === name);
 /**
+ * Each attribute that may take an element out of the tree (`HIDING`), with how it stands: written
+ * at a value that hides in some engine (`mayHide`), or bound. One reading for an element of a
+ * template (`hidingOn`), whose binding is one that writes the attribute, and for a host block
+ * (`hostHidingOf`), read off its keys as `hostKey` reads them.
+ */
+const hiding = (name, written, bound) => [
+  ...(written !== undefined && mayHide(name, written)
+    ? [
+        {
+          name,
+          as: written === '' ? `\`${name}\`` : `\`${name}="${written}"\``,
+        },
+      ]
+    : []),
+  ...(bound ? [{ name, as: `a bound \`${name}\`` }] : []),
+];
+const hidingOn = (node) =>
+  HIDING.flatMap((name) =>
+    hiding(
+      name,
+      writtenOn(node, name),
+      boundOn(node, name).some(writesAttribute),
+    ),
+  );
+/**
  * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
  * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`. A property
  * binding a component of the library takes as its input reads the same way, as it does in
@@ -1585,6 +1643,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
     // message part below and the element after it.
     const written = (name) => writtenOn(node, name);
     const bindings = (name) => boundOn(node, name);
+    // What on the element may take it out of the tree with all it holds (`HIDING`): nothing on
+    // Angular's own tag reaches the DOM, and point 1 refuses what is written there.
+    const hides = isElement(node) && !isOwnTag(node) ? hidingOn(node) : [];
     // The part and its role were read as the first attribute of that exact name: a
     // `role="status"` after the error's `alert`, a `ROLE="status"`, and a part written
     // `DATA-PCT-PART` — which the DOM holds as the attribute the styling API names — all
@@ -1614,6 +1675,23 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // A politeness written beside the role, whatever its value but the empty one,
           // which the engines read as none (`POLITENESS`).
           politeness: written(POLITENESS) || null,
+          // What may take the part out of the tree, on it and above it in this template
+          // (`UNREACHABLE`), read where an `<ng-template>` is declared: an outlet in the same
+          // hidden element stamps it hidden, and where else an outlet stands is not read (plan
+          // 4.83). The part was read alone, and `<div aria-hidden="true">` around an error's
+          // `alert` passed point 7, a region the engines drop from the tree.
+          hiddenBy: [
+            ...hides.map((h) => ({
+              name: h.name,
+              text: `${h.as} on the part`,
+            })),
+            ...ancestors.flatMap((a) =>
+              a.hides.map((h) => ({
+                name: h.name,
+                text: `${h.as} on the \`<${a.tag}>\` above it`,
+              })),
+            ),
+          ],
         });
     }
     // Point 9 reads every element with a role, and the roles standing above it in THIS
@@ -1674,6 +1752,8 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           ariaHidden:
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
             bindings('aria-hidden').length === 0,
+          // Each attribute that may take it out of the tree, for the message parts below it.
+          hides,
           // A way to land on it, as axe decides it: the line `aria-required-children`
           // draws, which an editing host does not cross (measured, axe 4.13). Read off the
           // template, as for points 4 and 8: an `href` a directive's host binding sets
@@ -1689,7 +1769,9 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       state.roles.push({ ...element, ancestors });
     if (element) state.elements.set(element.offset, element);
     // An `<ng-template>` is stamped where an outlet stands, which the walk does not read (plan
-    // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for.
+    // 4.83): an `aria-hidden` above where it is declared hides nothing the walk can vouch for, so
+    // point 9 asks a role there for its owner. What MAY hide it (`hides`) stays: an outlet in the
+    // same element stamps it hidden, and a message part is refused for what may hide it.
     const stamped = isTemplateTag(node);
     walkTemplate(
       node.children ?? [],
@@ -1809,6 +1891,36 @@ const hostRoleOf = (component) => ({
   role: readRole(component.host.get(hostKeysIn(component, ['role']).at(-1))),
   bound: hostKeysIn(component, ['[attr.role]']).length > 0,
 });
+
+/**
+ * What in a host block may take the component's element out of the tree with its whole template
+ * (`hiding`): `aria-hidden` and `inert`, written in any case — the last of two — or bound. Point 8
+ * asks a hidden host for no stop and no name; a message part in its template is announced by
+ * nobody, and point 7 reads the host above every part.
+ */
+const hostHidingOf = (component) =>
+  HIDING.flatMap((name) => {
+    const key = hostKeysIn(component, [name]).at(-1);
+    return hiding(
+      name,
+      key === undefined ? undefined : component.host.get(key),
+      hostKeysIn(component, [`[attr.${name}]`]).length > 0,
+    ).map((h) => ({
+      name: h.name,
+      text: `${h.as} on the host of ${component.className}`,
+    }));
+  });
+
+/**
+ * What may take a message part of a kind out of the reader's reach (`UNREACHABLE`): on the part,
+ * above it in its template, and on the host of each component drawing that template.
+ */
+const outOfReach = (message, owners) => {
+  const kind = MESSAGE_KINDS.find((k) => message.part.endsWith(k));
+  return [...message.hiddenBy, ...owners.flatMap(hostHidingOf)]
+    .filter((h) => UNREACHABLE[kind].includes(h.name))
+    .map((h) => h.text);
+};
 
 /**
  * A container ARIA names as a whole: the role is named as a whole (the calendar's `grid`, a
@@ -2766,13 +2878,27 @@ const checkAria = ({
 
   // ── 6. one message line ──────────────────────────────────────────────────────
   // Every pair of kinds, not only hint against error: a warning beside an error is a second
-  // row exactly as a hint beside one is, and the three are branches of ONE conditional.
+  // row exactly as a hint beside one is, and the three are branches of ONE conditional. And the
+  // hint is a description a reader gets: nothing may take it out of that (`UNREACHABLE`).
   let pairs = 0;
   for (const template of templates) {
     const said = byPath.get(template.file).said;
+    const owners = components.filter((c) => c.templatePath === template.file);
     const byKind = MESSAGE_KINDS.map((kind) =>
       said.filter((m) => m.part.endsWith(kind)),
     );
+    for (const hint of byKind[MESSAGE_KINDS.indexOf('hint')]) {
+      const hidden = outOfReach(hint, owners);
+      if (hidden.length)
+        throw new AriaError(
+          'description',
+          `${template.file}: ${hidden[0]} may take \`${hint.part}\` out of the control's ` +
+            `description — Chromium computes none from an inert element, where Firefox does, so ` +
+            `the \`aria-describedby\` naming the hint names nothing to one engine. An ` +
+            `\`aria-hidden\` takes nothing from a description; an \`inert\` on a hint, above it ` +
+            `in its template or on its host, written or bound, does (req-api-message)`,
+        );
+    }
     for (let a = 0; a < byKind.length; a++)
       for (let b = a + 1; b < byKind.length; b++)
         for (const one of byKind[a])
@@ -2799,9 +2925,12 @@ const checkAria = ({
   // `role="alert"` on the error part itself and `role="status"` on the warning part (0087),
   // which is what every template here already does and what `req-a11y-built-in` promises in
   // those words. `aria-live` on a wrapper would satisfy a reader and move the owner off the
-  // sentence, and then two components would announce the same fact in two shapes.
+  // sentence, and then two components would announce the same fact in two shapes. A region the
+  // engines take out of the tree is the owner of nothing: no `aria-hidden` and no `inert` may
+  // stand on the part, above it in its template or on its host (`UNREACHABLE`).
   let announced = 0;
-  for (const template of templates)
+  for (const template of templates) {
+    const owners = components.filter((c) => c.templatePath === template.file);
     for (const message of byPath.get(template.file).said) {
       const kind = Object.keys(LIVE_ROLES).find((k) =>
         message.part.endsWith(k),
@@ -2819,8 +2948,21 @@ const checkAria = ({
         message.politeness === null &&
         message.role === liveRole
       ) {
-        announced++;
-        continue;
+        const hidden = outOfReach(message, owners);
+        if (hidden.length === 0) {
+          announced++;
+          continue;
+        }
+        throw new AriaError(
+          'announcement',
+          `${template.file}: ${hidden[0]} may take \`${message.part}\` out of the ` +
+            `accessibility tree, and the live region with it — the text stays on the screen, ` +
+            `an engine that drops the region announces it to nobody, and axe reports nothing. ` +
+            `Nothing on an error or a warning part, above it in its template or on its host ` +
+            `may hide it: no \`aria-hidden\` at any value but \`false\`, \`undefined\` or the ` +
+            `empty one (Chromium hides at the rest, \`TRUE\` and \`0\` among them), no ` +
+            `\`inert\`, and neither bound (req-a11y-built-in)`,
+        );
       }
       throw new AriaError(
         'announcement',
@@ -2839,6 +2981,7 @@ const checkAria = ({
           `\`aria-live\` beside it (req-a11y-built-in)`,
       );
     }
+  }
 
   // ── 8. a hidden component holds nothing to land on ──────────────────────────
   // The two rules are one sentence read from both ends. A subtree taken out of the

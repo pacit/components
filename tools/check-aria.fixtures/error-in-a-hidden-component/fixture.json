@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-hidden=\"true\"` on the host of PctNotice may take `error` out of the accessibility tree",
+  "$reason": "A component whose host block writes `aria-hidden: 'true'` and whose template holds an error part with its `alert`: the whole template is out of the tree (measured on 2026-10-20 with an `aria-hidden` custom element around an `alert`: Chromium 141 and 155, Firefox 136 and 158), and the error is announced by nobody. It holds no stop and declares no name, so point 8 has nothing to ask of it, and point 7 read the part alone: it passed both."
+}

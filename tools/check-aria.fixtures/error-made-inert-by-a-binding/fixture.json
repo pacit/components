@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a bound `inert` on the part may take `error` out of the accessibility tree",
+  "$reason": "An error part with its `alert` and an `[inert]` an expression decides: in the state where it is true both engines take the region out of the tree (measured on 2026-10-20 for a written `inert`, Chromium 141 and 155, Firefox 136 and 158). The property reaches the attribute it reflects, as `[ariaLabel]` does, and its value is not in the template, so it is refused rather than read. Point 7 read the role and the politeness alone, and passed it."
+}

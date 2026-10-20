@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-hidden=\"true\"` on the part may take `warning` out of the accessibility tree",
+  "$reason": "A warning part with its `status`, written `aria-hidden=\"true\"` on itself: both engines take the element out of the tree with the region (measured on 2026-10-20: Chromium 141 and 155 `ariaHiddenElement`, Firefox 136 and 158 no accessible), and the warning on the screen is announced by nobody. Point 7 read the part's role and not what hides it; a reading that asked only the elements above the part, as one that copied point 9's walk of the ancestors without the element itself would, passed it too."
+}

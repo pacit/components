@@ -1,0 +1,4 @@
+<!-- An error part with its `alert`, alone in a component whose host hides it. -->
+@if (showError()) {
+<span class="pct-notice__error" data-pct-part="error" role="alert">{{ error() }}</span>
+}
