@@ -57,7 +57,9 @@ block's timings and blocks with an attributes array of their own — a read that
 for attributes, or cannot place an array, refuses the reference.
 `a-title-after-a-namespaced-attribute` carries one with a directive among its dependencies, so its
 template compiles to the full instructions, and a read that stopped at the namespace marker lost
-the title after it. A class may also give the two arrays themselves, as a package compiled in full
+the title after it, and `a-title-sharing-its-array-with-a-reference` one whose empty `title` is the
+array a local reference takes too, which a read placing it as the reference alone lost. A class
+may also give the two arrays themselves, as a package compiled in full
 carries them, with no declaration to compile: `attribute-from-spread` gives `hostAttrs`, so that a
 read losing the host's half fails a case too, and `a-component-compiled-in-full` gives `consts`,
 which no instruction places. A case handing over the pairs could have shown none of them.

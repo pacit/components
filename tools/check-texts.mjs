@@ -1466,8 +1466,9 @@ const isTemplate = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
  * 500ms`). An element writes the DOM-only instruction in a component with no directive among its
  * dependencies, the full one otherwise, and the two take the same arguments. A chained call
  * (`ɵɵdomElement(0, 'span', null, 0)(2, 'b', 3)`) is the instruction at its root, and a block's
- * `@else` the branch its `@if` chains. An instruction not here takes no constant this read
- * places. An i18n message's would be one (`ɵɵi18n`), but no template of the library is marked
+ * `@else` the branch its `@if` chains; a `@boundary` block's content is such a branch at the root
+ * of a chain of its own (`ɵɵboundaryCreate` chains nothing). An instruction not here takes no
+ * constant this read places. An i18n message's would be one (`ɵɵi18n`), but no template of the library is marked
  * for translation, and the `consts()` of one throws here first: it calls `$localize`, which
  * nothing here defines.
  */
@@ -1486,6 +1487,7 @@ const CONSTS_AT = new Map([
   [R3Identifiers.templateCreate, TEMPLATE],
   [R3Identifiers.domTemplate, TEMPLATE],
   [R3Identifiers.conditionalCreate, [[5], []]],
+  [R3Identifiers.conditionalBranchCreate, [[5], []]],
   [R3Identifiers.repeaterCreate, [[5, 12], []]],
   [R3Identifiers.defer, [[], [6, 7]]],
 ]);

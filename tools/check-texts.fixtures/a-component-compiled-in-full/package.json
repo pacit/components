@@ -97,6 +97,14 @@
         ],
         [
           1,
+          "pct-widget__boundary"
+        ],
+        [
+          1,
+          "pct-widget__after"
+        ],
+        [
+          1,
           "pct-widget__container"
         ],
         [
@@ -132,6 +140,12 @@
         [
           1,
           "pct-widget__none",
+          3,
+          "click"
+        ],
+        [
+          1,
+          "pct-widget__boundary",
           3,
           "click"
         ]

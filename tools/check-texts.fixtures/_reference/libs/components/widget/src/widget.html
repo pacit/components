@@ -31,12 +31,12 @@
 
 <!--
   Arrays of `consts` the package read places by the instruction taking each: the attributes of a
-  block whose root element listens, the block's own array beside the element's; the local
-  references of an element, of one with children, of a container, of one with children and of a
-  template, named as speaking attributes are; a `@defer` block's timings. The three elements in a
-  row are one chained call, its third link's arrays taken by the instruction at its root. Read as
-  attributes, a reference here fires point 2 on a correct template; left unplaced, any of them
-  fires it too.
+  block whose root element listens (`@if`, `@for`, `@empty`, `@boundary`), the block's own array
+  beside the element's; the local references of an element, of one with children, of a
+  container, of one with children and of a template, named as speaking attributes are; a `@defer`
+  block's timings. The three elements in a row are one chained call, its third link's arrays
+  taken by the instruction at its root. Read as attributes, a reference here fires point 2 on a
+  correct template; left unplaced, any of them fires it too.
 -->
 @if (open()) {
 <span class="pct-widget__if" (click)="toggle()"></span>
@@ -50,6 +50,12 @@
 <span class="pct-widget__none" (click)="toggle()"></span>
 }
 <span #download><span></span></span>
+@boundary {
+<span class="pct-widget__boundary" (click)="toggle()"></span>
+} @error {
+<span></span>
+}
+<span class="pct-widget__after"></span>
 @defer (on idle) {
 <span></span>
 } @loading (after 100ms) {

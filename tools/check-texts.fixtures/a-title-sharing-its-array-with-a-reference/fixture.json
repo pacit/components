@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "attribute-only-in-package",
+  "message": "PctWidget title=",
+  "description": "The package draws `title=\"\"` on a `<b>` no source writes any more — a `dist` built before the template lost it. Its attributes are `['title', '']`, and so are the local references of the reference's `<span #title>`: ngc keeps one copy of equal constants, and both instructions take the one array (measured through ngc 22.2.1 in partial mode and the linker). It is an attribute array as much as a reference, and a read placing it as the reference alone lost the title."
+}
