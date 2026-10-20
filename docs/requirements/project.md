@@ -170,8 +170,8 @@ and explicit imports.
 **Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — thirteen
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
 same way a consumer does: point 6 watches which entrypoints an import of one of them pulls
-in, point 8 which external dependencies come along (CDK Overlay is allowed in `./select`
-only), point 9 the size per entrypoint against `libs/components/size.snapshot.md` — **to the
+in, point 8 which external dependencies come along (CDK Overlay only with the entrypoints
+whose row names it), point 9 the size per entrypoint against `libs/components/size.snapshot.md` — **to the
 byte**, in both directions, because the measurement does not wobble and a band decides not
 only when a run fails but when the record is written
 ([0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). Point 4 watches that the primary entrypoint carries no component
@@ -191,15 +191,17 @@ snapshot is exactly what the renderer writes, prose included — the points abov
 through a map of its rows, so a paragraph rewritten in the renderer used to stay out of the
 file until some byte happened to move with it
 ([`lesson-79`](../lessons.md#lesson-79)). Point 12 asks the question one floor **inside** an
-entrypoint: eleven of them carry more than one component, and what a consumer importing ONE
-tag pays is measured rather than assumed — a probe importing one class by name beside a probe
-importing every class of that entrypoint, both recorded. The answer is not the "of course,
-ESM" everybody gives: `./accordion` is 4162 B for one tag against 11333 for both and
-`./field` 16059 against 24895, while `./select` reads 69904 against 69907 — three bytes, so a
-consumer of one select tag carries the other whole. Six of the seven entrypoints that shed
-nothing are parent/child pairs where the child injects the container, which is a reference
-the bundler is right to keep; `./select` is a pair of SIBLINGS and is the finding. The point
-itself holds the measurement — a named probe with no bytes measured nothing, and one class
+entrypoint: for every entrypoint carrying more than one component, what a consumer importing
+ONE tag pays is measured rather than assumed — a probe importing one class by name beside a
+probe importing every class of that entrypoint, both recorded as a row of the snapshot's second
+block. The answer is not the "of course, ESM" everybody gives: some rows shed the tags nobody
+named and some stand a few bytes apart, and which row does which — and why, `providers` on the
+tag nobody imported or a reference to it from the one imported
+([`lesson-173`](../lessons.md#lesson-173)) — is that block and the paragraph the renderer
+writes above it, not this text. Measured on 2026-09-07, `./select`
+was the finding: two SIBLINGS, 69904 B for one tag against 69907 for both, until the
+orphan-slot report left `providers` the same day ([`lesson-176`](../lessons.md#lesson-176)).
+The point itself holds the measurement — a named probe with no bytes measured nothing, and one class
 cannot cost more than every class — while the numbers are held by point 13 with every other
 row. And the rows are the package's: a tag is a component **object**, as the gates reading the
 package's classes count one, so a class exported under a second name is one tag, a class
@@ -210,8 +212,8 @@ the point used to, `export { PctButton, PctButton as PctBtn }` gave `./button` a
 tags 2 B apart, and `PctSelect as PctASelect` turned the probe of `./select` round to the other
 tag — both measured, and both written by `--write` with every point green. The budget's number is what an **application** carries, not
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
-the Angular linker run over the package and `ngDevMode` folded — and the two together take a
-component entrypoint to some 60% of its unlinked size
+the Angular linker run over the package and `ngDevMode` folded — and measured on 2026-08-18
+the two together took a component entrypoint to some 60% of its unlinked size
 **Control:** `tools/check-bundle.fixtures/` — 47 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
@@ -242,7 +244,7 @@ does not export) and
 `pair-no-larger-than-single/` —
 literally "an app importing two entrypoints must produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
-of the single message line that the old ±5% band had recorded nowhere, and point 12's first run was green — the
+of the single message line that the old ±5% band had recorded nowhere, and point 13's first run was green — the
 paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them;
 point 12 was measured the same way — with its first two rules disarmed both of their cases
 passed, and the

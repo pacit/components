@@ -92,10 +92,11 @@ reading — where they are equal, nothing was shed and the entrypoint is the uni
 consumer pays in; where they differ, that difference is what the other tags cost.
 
 It is measured in bytes and NOT by looking for the other tags in the text, and that
-is a measurement rather than a preference: searched for, `pct-select` is in a bundle
-that imported `PctMultiSelect` alone — inside the shared base's own
+is a measurement rather than a preference: searched for on 2026-09-07
+([`lesson-171`](../../docs/lessons.md#lesson-171)), `pct-select` was in a bundle that
+imported `PctMultiSelect` alone — inside the shared base's own
 `get tag() { return this.multiple ? 'pct-multi-select' : 'pct-select' }` — and
-`pct-tree-item` is in one that imported `PctTree` alone, as its content-projection
+`pct-tree-item` was in one that imported `PctTree` alone, as its content-projection
 selector. Two false positives in seven rows, both of them a string that equals a
 selector without being a component.
 
@@ -109,10 +110,11 @@ tag nobody imported:
    pure, so the statement that defines the class has a side effect and the class stays,
    with its template and its stylesheet. `sideEffects: false` on the package does not
    reach inside a module that something else in it is imported from.
-2. **Something reaches it.** The child injects the parent CLASS as its token —
-   `inject(PctStepper)`, `inject(PctRadioGroup)` — which is a reference like any other.
-   Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,
-   `PCT_TABS`), there is no reference and this half does not apply.
+2. **Something reaches it.** The tag imported names it — a child injecting the parent
+   CLASS as its token, `inject(PctStepper)`, `inject(PctRadioGroup)`, or a parent listing
+   the child in its `imports`, as `PctTime` lists `PctTimeColumns` — which is a reference
+   like any other. Where the channel is a token declared beside the class instead
+   (`PCT_ACCORDION`, `PCT_TABS`), there is no reference and this half does not apply.
 
 The reading is DIRECTIONAL, because the probe imports one class: the first by the name
 its declaration gives it, under whichever key it is exported. A tag is a class, so a
@@ -127,8 +129,9 @@ imported one carried the other, 24458 B for a `console.warn` their production bu
 cannot print. The report now reads the content query that finds it instead of an
 injector — the query IS the claim — and no component in this package declares
 `providers` for a message any more
-([`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair
-is worth, and it is the largest single number this file has ever moved.
+([`lesson-176`](../../docs/lessons.md#lesson-176)). Its row below is what that repair
+is worth today, the gap between the two numbers, and on 2026-09-07 it was the largest
+single number this file had ever moved.
 
 ```
 ./accordion PctAccordion 2 4708 15684
