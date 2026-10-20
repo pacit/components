@@ -11,6 +11,9 @@ import { PctMarkerBase } from './base';
  * nearest class that writes it, so the package carries `*` alone. Neither value has a letter,
  * so only a merge other than Angular's can refuse this input — a union would name the base's
  * `title` as one the package never got.
+ *
+ * Its `[attr.ariaLabel]` sets the attribute `arialabel`, no ARIA attribute: the word in it reaches
+ * no user, as only the property `[ariaLabel]` reaches `aria-label`.
  */
 @Directive({
   selector: '[pctMarker]',
@@ -19,6 +22,7 @@ import { PctMarkerBase } from './base';
     'data-pct-part': 'widget-marker',
     title: '*',
     '[attr.aria-label]': 'description()',
+    '[attr.ariaLabel]': "'Unread'",
   },
 })
 export class PctMarker extends PctMarkerBase {

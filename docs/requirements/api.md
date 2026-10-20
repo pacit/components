@@ -931,16 +931,21 @@ place or in a `const` of the file's own (`hostOf` follows one by name or in a sp
 the column-zero pattern did not read and one imported under another name. The list of static
 classes and attributes is built **twice** — from the sources and from the built package, whose
 class is the object an entrypoint exports, under its own name, and a name two objects bear is
-refused. Plus
+refused; an array of a definition's `consts` is read as attributes only where an instruction takes
+it as a node's, a local reference or a `@defer` block's timing is placed apart, and one no
+instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 72 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 74 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
 classes of one name in the package, a `title` the package draws after a namespaced attribute
-(given as the definition's `consts`, read as `check-parts` reads them), and a literal bound to
-`aria-label` through the property it reflects, `[ariaLabel]`, in a template and in a `host` block; plus nine runs against the repository (a literal in
+(given as the declaration ngc writes, compiled through JIT to the full instructions, while the
+reference's compiles to the DOM-only ones and holds a local reference on every node that takes
+one), a component compiled in full, whose `consts` no instruction places, and a literal bound to
+`aria-label` through the property it reflects, `[ariaLabel]`, in a template and in a `host` block,
+and through `[aria-label]`, which Angular binds without `attr.`; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

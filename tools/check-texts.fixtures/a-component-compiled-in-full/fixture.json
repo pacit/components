@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "artifact",
+  "rule": "unplaced-const",
+  "message": "PctWidget: 0: [\"title\",\"\"]",
+  "description": "`PctWidget` is the reference's, given as the definition a package compiled in full carries: its `consts` hold the local reference `#title` as `['title', '']`, its attributes, a `@defer` block's timings, and no declaration compiled here says which is which. Read whole, the reference was the attribute `title=` and fired `attribute-only-in-package` on a correct template; read as nothing, an attribute a stale `dist` still draws would pass. The read refuses the arrays it cannot place."
+}

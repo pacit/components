@@ -1,0 +1,184 @@
+{
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. `PctWidget` is given as the definition a package compiled in full carries: the reference's `consts` and `hostAttrs` as ngc and the linker write them (measured), with no declaration for the gate to compile; the other classes as the reference gives them.",
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "consts": [
+        [
+          "title",
+          ""
+        ],
+        [
+          "third",
+          ""
+        ],
+        [
+          "download",
+          ""
+        ],
+        [
+          "alt",
+          ""
+        ],
+        [
+          "abbr",
+          ""
+        ],
+        [
+          "placeholder",
+          ""
+        ],
+        [
+          null,
+          100
+        ],
+        [
+          500
+        ],
+        [
+          "data-pct-part",
+          "label",
+          1,
+          "pct-widget__label"
+        ],
+        [
+          "data-pct-part",
+          "toggle",
+          "type",
+          "button",
+          1,
+          "pct-widget__toggle",
+          3,
+          "click",
+          "value"
+        ],
+        [
+          "data-pct-part",
+          "list",
+          1,
+          "pct-widget__list"
+        ],
+        [
+          "data-pct-part",
+          "item",
+          1,
+          "pct-widget__item"
+        ],
+        [
+          "data-pct-part",
+          "empty",
+          1,
+          "pct-widget__empty"
+        ],
+        [
+          1,
+          "pct-widget__if"
+        ],
+        [
+          1,
+          "pct-widget__element"
+        ],
+        [
+          1,
+          "pct-widget__second"
+        ],
+        [
+          1,
+          "pct-widget__third"
+        ],
+        [
+          1,
+          "pct-widget__for"
+        ],
+        [
+          1,
+          "pct-widget__none"
+        ],
+        [
+          1,
+          "pct-widget__container"
+        ],
+        [
+          1,
+          "pct-widget__container-start"
+        ],
+        [
+          1,
+          "pct-widget__template"
+        ],
+        [
+          1,
+          "pct-widget__attr"
+        ],
+        [
+          "aria-hidden",
+          "true",
+          1,
+          "pct-widget__mark"
+        ],
+        [
+          1,
+          "pct-widget__if",
+          3,
+          "click"
+        ],
+        [
+          1,
+          "pct-widget__for",
+          3,
+          "click"
+        ],
+        [
+          1,
+          "pct-widget__none",
+          3,
+          "click"
+        ]
+      ],
+      "hostAttrs": [
+        "role",
+        "group",
+        1,
+        "pct-widget"
+      ]
+    },
+    {
+      "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        }
+      ],
+      "attributes": [
+        [
+          "data-pct-part",
+          "widget-marker"
+        ],
+        [
+          "title",
+          "*"
+        ],
+        [
+          "role",
+          "note"
+        ]
+      ]
+    },
+    {
+      "className": "PctBlank",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctBlank"
+        },
+        {
+          "entrypoint": "./widget",
+          "as": "PctBare"
+        }
+      ],
+      "attributes": []
+    }
+  ]
+}

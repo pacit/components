@@ -2,5 +2,6 @@
   "point": 2,
   "check": "artifact",
   "rule": "attribute-only-in-package",
-  "description": "The package draws `title=\"Expand\"` on an SVG `<use>` after its `xlink:href`: `[0, 'xlink', 'href', '#pct-widget-icon', 'title', 'Expand']` in `consts`, the shape measured through ngc and the linker, and no source writes it — a `dist` built before the template lost it. `0` marks a namespaced attribute, which takes three slots, and ordinary pairs go on after it. A package read stopping at the first number lost the title."
+  "description": "The package draws `title=\"Expand\"` on an SVG `<use>` after its `xlink:href`, and no source writes it — a `dist` built before the template lost it. The package's `PctWidget` is the declaration ngc wrote for that older template, whose `consts` hold `[0, 'xlink', 'href', '#pct-widget-icon', 'title', 'Expand']` (measured through ngc and the linker): `0` marks a namespaced attribute, which takes three slots, and ordinary pairs go on after it. A package read stopping at the first number lost the title. The older template put the marker on its icon, and a directive among the dependencies compiles the template to the full instructions (`ɵɵelement`, `ɵɵelementContainer`, `ɵɵtemplate`), where the reference's compile to the DOM-only ones: a read that does not know where one of them takes its attributes or its local references refuses this input at `unplaced-const` instead.",
+  "message": "PctWidget title=Expand"
 }

@@ -19,12 +19,16 @@
  */
 import {
   BindingType,
+  JitEvaluator,
+  outputAst,
   parseTemplate,
+  R3Identifiers,
   RecursiveAstVisitor,
   splitNsName,
   TmplAstRecursiveVisitor,
   visitAll,
 } from '@angular/compiler';
+import * as core from '@angular/core';
 import { execFileSync } from 'node:child_process';
 import {
   cpSync,
@@ -966,7 +970,25 @@ const checkTexts = (input) => {
       exportedAs,
     })),
     attributes: of[0].attributes,
+    unplaced: of[0].unplaced,
   }));
+  // A constant of `consts` is a node's attributes or something else — its local references, a
+  // `@defer` block's timings — and only the instruction taking its index says which
+  // (`CONSTS_AT`). One no instruction the read knows takes is read as neither: as attributes, a
+  // reference fired this point on a correct template; as nothing, an attribute a stale `dist`
+  // still draws passed it.
+  const unplaced = packaged.filter((p) => p.unplaced.length);
+  if (unplaced.length)
+    throw new TextsError(
+      'artifact',
+      'unplaced-const',
+      `${unplaced.length} classes of the package hold constants in \`consts\` that no ` +
+        `instruction this read knows takes:\n` +
+        list(unplaced.map((p) => `${p.className}: ${p.unplaced.join(', ')}`)) +
+        `\n    Either the class was not compiled from its declaration here (a package ` +
+        `compiled in full carries none, and the read sees no instruction), or the compiler ` +
+        `takes the constant through an instruction or an argument \`CONSTS_AT\` does not hold.`,
+    );
   // The two reads meet by class name, so a name two classes of the package bear — one class
   // bundled into two entrypoints, a copy beside the original — has no class to stand for.
   const twins = [...Map.groupBy(packaged, (p) => p.className)].filter(
@@ -1426,24 +1448,123 @@ const isSource = (p) =>
 const isTemplate = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
 
 /**
- * A definition's static attributes, its elements' (`consts`) and its host's (`hostAttrs`), read
- * as `check-parts` reads them (`static-attributes.mjs`). A case gives the same two arrays, read
- * here too (`packageClass`).
+ * Where an instruction takes an index into `consts`: first where the runtime reads the attributes
+ * of the node it creates (`TNode.attrs`), then where it reads anything else. `consts` holds every
+ * array a view needs, and only the instruction taking its index tells one from another:
+ * `['title', '']` is the attributes of `<b title="">` and the local references of `<span #title>`
+ * alike, one array for both, as the compiler keeps one copy of equal constants (measured through
+ * ngc 22.2.1 in partial mode and the linker, as every shape below). Read whole, a reference named
+ * like a speaking attribute fired point 2 on a correct template, `PctWidget title=`.
+ *
+ * An element's attributes are what `setUpAttributes` writes onto it. A container's and a
+ * template's stand on a comment, and a block's are its one root element's, kept for content
+ * projection — an array of the block's own where it keeps other bindings than the element does,
+ * as beside an element that listens. No node draws them, and they are read all the same, because
+ * the source read holds every node's attributes and point 2 compares the two. Beside them stand an element's, a container's and a template's local
+ * references (`['placeholder', 'pctThing']` for `#placeholder="pctThing"`) and a `@defer` block's
+ * timings of `@loading` and `@placeholder` (`[null, 100]` for `after 100ms`, `[500]` for `minimum
+ * 500ms`). An element writes the DOM-only instruction in a component with no directive among its
+ * dependencies, the full one otherwise, and the two take the same arguments. A chained call
+ * (`ɵɵdomElement(0, 'span', null, 0)(2, 'b', 3)`) is the instruction at its root, and a block's
+ * `@else` the branch its `@if` chains. An instruction not here takes no constant this read
+ * places. An i18n message's would be one (`ɵɵi18n`), but no template of the library is marked
+ * for translation, and the `consts()` of one throws here first: it calls `$localize`, which
+ * nothing here defines.
+ */
+const ELEMENT = [[2], [3]];
+const CONTAINER = [[1], [2]];
+const TEMPLATE = [[5], [6]];
+const CONSTS_AT = new Map([
+  [R3Identifiers.element, ELEMENT],
+  [R3Identifiers.elementStart, ELEMENT],
+  [R3Identifiers.domElement, ELEMENT],
+  [R3Identifiers.domElementStart, ELEMENT],
+  [R3Identifiers.elementContainer, CONTAINER],
+  [R3Identifiers.elementContainerStart, CONTAINER],
+  [R3Identifiers.domElementContainer, CONTAINER],
+  [R3Identifiers.domElementContainerStart, CONTAINER],
+  [R3Identifiers.templateCreate, TEMPLATE],
+  [R3Identifiers.domTemplate, TEMPLATE],
+  [R3Identifiers.conditionalCreate, [[5], []]],
+  [R3Identifiers.repeaterCreate, [[5, 12], []]],
+  [R3Identifiers.defer, [[], [6, 7]]],
+]);
+
+class ConstsReader extends outputAst.RecursiveAstVisitor {
+  attributes = new Set();
+  other = new Set();
+  visitInvokeFunctionExpr(call, context) {
+    let instruction = call.fn;
+    while (instruction instanceof outputAst.InvokeFunctionExpr)
+      instruction = instruction.fn;
+    const [attributes, other] = CONSTS_AT.get(instruction.value) ?? [[], []];
+    for (const at of attributes) this.attributes.add(call.args[at]?.value);
+    for (const at of other) this.other.add(call.args[at]?.value);
+    return super.visitInvokeFunctionExpr(call, context);
+  }
+}
+
+/**
+ * The indices of `consts` every component compiled in this process takes, by the class it
+ * defines: the statements the JIT compiler evaluates for one definition hold its template's
+ * function and every embedded view's. The hook stands before any module of the package is
+ * imported, because a declaration compiles as its class is evaluated — the same hook as in
+ * `check-parts`.
+ */
+const compiled = new Map();
+const evaluateStatements = JitEvaluator.prototype.evaluateStatements;
+JitEvaluator.prototype.evaluateStatements = function (
+  url,
+  statements,
+  ...rest
+) {
+  for (const { value: call } of statements) {
+    if (
+      !(call instanceof outputAst.InvokeFunctionExpr) ||
+      call.fn.value !== R3Identifiers.defineComponent
+    )
+      continue;
+    const reader = new ConstsReader();
+    for (const each of statements) each.visitStatement(reader, null);
+    compiled.set(
+      call.args[0].entries.find((entry) => entry.key === 'type').value.node,
+      reader,
+    );
+  }
+  return evaluateStatements.call(this, url, statements, ...rest);
+};
+
+/**
+ * A definition's static attributes — the arrays of `consts` an instruction takes as a node's
+ * attributes, and its host's (`hostAttrs`) — read as `check-parts` reads them
+ * (`static-attributes.mjs`), and the constants no instruction it was compiled with takes
+ * (`unplaced`). A definition this process did not compile, one a package compiled in full
+ * carries, takes none: its constants are all unplaced, and point 2 refuses them rather than read
+ * a reference for an attribute or an attribute for nothing. A case gives a definition the same way
+ * (`packageClass`).
  */
 const attributesOf = (def) => {
   const consts =
     typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
-  return [
-    ...consts.filter(Array.isArray).flatMap(staticAttributes),
-    ...staticAttributes(def.hostAttrs ?? []),
-  ];
+  const taken = compiled.get(def.type);
+  const attributes = [];
+  const unplaced = [];
+  for (const [i, entry] of consts.entries()) {
+    if (taken?.attributes.has(i)) attributes.push(...staticAttributes(entry));
+    else if (!taken?.other.has(i))
+      unplaced.push(`${i}: ${JSON.stringify(entry)}`);
+  }
+  return {
+    attributes: [...attributes, ...staticAttributes(def.hostAttrs ?? [])],
+    unplaced,
+  };
 };
 
 /**
  * Definitions from the BUILT package, one record per name an entrypoint exports, `class` the
- * object it holds. `@angular/compiler` is loaded first, because the package is partially
- * compiled and `ɵcmp` appears only on access — the same step the linker performs at the
- * consumer's (`lesson-46`).
+ * object it holds. `@angular/compiler` is loaded and its evaluator hooked before the first
+ * import, because the package is partially compiled: each class's declaration compiles through
+ * JIT as its module is evaluated — the step the linker performs at the consumer's (`lesson-46`).
  */
 const packageComponents = async (root) => {
   const dist = join(root, DIST);
@@ -1455,7 +1576,6 @@ const packageComponents = async (root) => {
         `alone.\n    The target needs a \`dependsOn\` on the library's build.`,
     );
 
-  await import('@angular/compiler');
   const exports = JSON.parse(read(root, `${DIST}/package.json`)).exports ?? {};
   const out = [];
 
@@ -1471,12 +1591,7 @@ const packageComponents = async (root) => {
       const def = value['ɵcmp'] ?? value['ɵdir'];
       if (!def) continue;
 
-      out.push({
-        entrypoint,
-        exportedAs,
-        class: value,
-        attributes: attributesOf(def),
-      });
+      out.push({ entrypoint, exportedAs, class: value, ...attributesOf(def) });
     }
   }
   return out;
@@ -1639,10 +1754,11 @@ const repoFiles = () =>
  *
  * The package read arrives as DATA (`package.json`) rather than from a real build — the same
  * choice as in `check-parts` and `check-zoneless` and for the same reason: building an
- * Angular package for each of a dozen-odd cases would cost minutes per run. The price is
- * plain: the fixtures do NOT exercise the code that reads `ɵcmp` — they exercise every
- * other parser and the whole arrangement of checks. The package read itself is exercised on
- * every run against the repository.
+ * Angular package for each of a dozen-odd cases would cost minutes per run. A class may carry
+ * the declaration ngc writes for it instead, compiled through JIT and read by the code that reads
+ * the package's (`packageClass`). What no case exercises is the way to the package's classes (the
+ * manifest's `exports`, the import) and the `consts()` call: no definition here or in the library
+ * has `consts` as a function. That way is exercised on every run against the repository.
  *
  * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — a `.ts` file
  * in `tools/` belongs to no compiler program, so it would fire `check-typecheck`. One
@@ -1666,8 +1782,12 @@ const buildFixture = (name, fx) => {
   return destination;
 };
 
-const fixtureInput = (directory) =>
-  gatherInput(
+const fixtureInput = (directory) => {
+  // Every case compiles its own `PctWidget`, and Angular warns (NG0912) of a second class whose
+  // definition hashes as an earlier one's. The registry is cleared between cases, as `TestBed`
+  // clears it between tests and `check-parts` between its cases.
+  core.ɵresetCompiledComponents();
+  return gatherInput(
     directory,
     globSync('**/*.{ts,html}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
@@ -1678,26 +1798,52 @@ const fixtureInput = (directory) =>
       ).classes.flatMap(packageClass),
     ),
   );
+};
 
 /**
  * One class of a prepared input's package — one object — as the records the package read
  * gives for it: one per name an entrypoint exports it under. `exports` lists them where the
  * class is exported otherwise than once, from `entrypoint`, under its own name: a re-export
  * from another entrypoint, a second name, a name that is not its own. Its static attributes are
- * the pairs as `attributes` lists them, or the definition's own arrays (`consts`, `hostAttrs`) as
- * the linker writes them, read by the function the package read uses (`attributesOf`).
+ * the pairs as `attributes` lists them, or read by the function the package read uses
+ * (`attributesOf`) off a definition: the one its `declaration` compiles to, or the arrays it
+ * gives as a definition no declaration compiled here, as a package compiled in full carries one
+ * (`consts`, `hostAttrs`).
  */
 const packageClass = (k) => {
   const type = { [k.className]: class {} }[k.className];
+  if (k.declaration) type['ɵcmp'] = declare(type, k.declaration);
+  const read = k.attributes
+    ? { attributes: k.attributes, unplaced: [] }
+    : attributesOf(type['ɵcmp'] ?? k);
   return (k.exports ?? [{ entrypoint: k.entrypoint, as: k.className }]).map(
     ({ entrypoint, as }) => ({
       entrypoint,
       exportedAs: as,
       class: type,
-      attributes: k.attributes ?? attributesOf(k),
+      ...read,
     }),
   );
 };
+
+/**
+ * A component of a prepared input's package compiled from its declaration, as ngc writes it in
+ * partial mode less the fields supplied here, through the JIT compiler and the hook the package
+ * goes through (`compiled`): a case's `consts` are placed by the instructions the compiler
+ * installed writes for its template, as the package's are. A dependency is named by its kind and
+ * selector, and the type standing in for it is no matter to the compile: one directive among them
+ * makes the full instructions of the template, and none the DOM-only ones.
+ */
+const declare = (type, { dependencies, ...fields }) =>
+  core.ɵɵngDeclareComponent({
+    minVersion: '14.0.0',
+    version: core.VERSION.full,
+    ngImport: core,
+    type,
+    isStandalone: true,
+    dependencies: dependencies?.map((d) => ({ ...d, type: class {} })),
+    ...fields,
+  });
 
 /**
  * The records as module namespaces give them: each entrypoint's names in code-unit order, and
