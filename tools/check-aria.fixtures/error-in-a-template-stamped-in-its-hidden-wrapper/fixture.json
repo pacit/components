@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-hidden=\"true\"` on the `<div>` above it may take `error` out of the accessibility tree",
+  "$reason": "An error part in an `<ng-template>` declared inside an `aria-hidden` wrapper and stamped by an outlet in that same wrapper, where the region is out of the tree in both engines. Point 9 resets what hides above a declaration, the outlet being read nowhere (plan 4.83), and asks a role there for its owner; a reading of the part that took that reset passed it, as point 7, which read nothing above the part, did. What may hide a part is read where it is declared."
+}

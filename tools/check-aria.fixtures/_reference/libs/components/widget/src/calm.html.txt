@@ -1,0 +1,25 @@
+<!-- Each wrapper hides nothing in either engine (measured on 2026-10-20): `aria-hidden` at
+     `FALSE`, at `Undefined` and with no value; a class and an animation named `inert`, which
+     write no attribute; an `inert` on an SVG group, which is HTML's attribute alone. The hint
+     under an `aria-hidden` is still the control's description in both. -->
+<div aria-hidden="FALSE">
+  <span aria-hidden="Undefined">
+    <span aria-hidden [class.inert]="quiet()" [@inert]="quiet()">
+      @if (error()) {
+      <svg class="pct-calm__mark" role="none">
+        <g inert>
+          <foreignObject width="100%" height="100%">
+            <span class="pct-calm__error" data-pct-part="error" role="alert">{{ error() }}</span>
+          </foreignObject>
+        </g>
+      </svg>
+      } @else if (warning()) {
+      <span class="pct-calm__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
+      } @else if (hint()) {
+      <span aria-hidden="true">
+        <span class="pct-calm__hint" data-pct-part="hint">{{ hint() }}</span>
+      </span>
+      }
+    </span>
+  </span>
+</div>

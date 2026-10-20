@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "description",
+  "message": "`inert` on the `<span>` above it may take `hint` out of the control's description",
+  "$reason": "The reference's message line with the hint inside an inert wrapper. A hint is read as the control's description, which an `aria-describedby` target gives under an `aria-hidden` element in both engines; under an inert one Chromium 141 and 155 compute none, where Firefox 136 and 158 still do (measured on 2026-10-20). The control loses its hint to one engine. Point 6 asked the parts whether they are alternatives, which these are, and passed it."
+}

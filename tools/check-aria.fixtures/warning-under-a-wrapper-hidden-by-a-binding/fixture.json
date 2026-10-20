@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a bound `aria-hidden` on the `<span>` above it may take `warning` out of the accessibility tree",
+  "$reason": "A warning part with its `status`, inside a wrapper whose `aria-hidden` an expression writes: in the state where it gives `'true'` both engines take the region out of the tree, and the warning on the screen is announced by nobody. Its value is not in the template, so it is refused as point 7 refuses a bound role, rather than read; point 7 read the part alone, and a reading of the written attribute alone passed it."
+}

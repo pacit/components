@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-hidden=\"true\"` on the `<div>` above it may take `error` out of the accessibility tree",
+  "$reason": "The reference's message line inside a wrapper written `aria-hidden=\"true\"`: the error part carries its `alert`, bound by nothing, and the text stays on the screen, while Chromium 141 and 155 drop the region from their tree (`ariaHiddenSubtree`) and Firefox 136 and 158 build no accessible for it (measured on 2026-10-20). Nobody announces the error, and axe 4.13 reports nothing on the page. Point 7 read the part and its role on the element alone, and passed it. The hint beside it is no defect: a hint is read as the control's description, which both engines compute from a hidden element."
+}
