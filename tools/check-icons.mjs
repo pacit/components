@@ -40,11 +40,13 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readTree } from './template-comments.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const FIXTURES = join(ROOT, 'tools/check-icons.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 /** Where the published list of names lives. */
 const NAMES_FILE = `${PROJECT}/icon/src/icon.ts`;
@@ -552,28 +554,48 @@ if (cases.length === 0)
   }
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name);
   try {
     checkIcons(fixtureInput(directory));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
         `(\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof IconError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readCase(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-icons.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    holds: ['passed', 'check'],
+  })),
+);
 
 // ── result ─────────────────────────────────────────────────────────────────────
 
@@ -585,6 +607,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Icons: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+  `✓ Icons: ${description}. Negative control: the reference input passes, ${cases.length} ` +
+    `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
+    `fired another check.`,
 );

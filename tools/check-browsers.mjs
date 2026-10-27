@@ -22,10 +22,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { runsTarget, withoutComment } from './workflow-targets.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-browsers.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 const E2E = 'apps/sandbox-e2e';
 const TESTDIR = `${E2E}/src`;
@@ -1015,7 +1017,7 @@ if (!existsSync(FIXTURES))
 
 const cases = existsSync(FIXTURES)
   ? readdirSync(FIXTURES)
-      .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+      .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
       .sort()
   : [];
 
@@ -1039,23 +1041,42 @@ if (cases.length) {
   }
 }
 
-for (const name of cases) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own rule.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkBrowsers(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `rule \`${fx.check}/${fx.rule}\` stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof BrowsersError)) throw error;
     if (error.check !== fx.check || error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: rule \`${error.check}/${error.rule}\` fired, and \`${fx.check}/${fx.rule}\` ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-browsers.fixtures/${RUNNER}`,
+    load: () => readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    holds: ['passed', 'check', 'rule'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1067,6 +1088,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Browser matrix: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own rules.`,
+  `✓ Browser matrix: ${summary}. Negative control: the reference input passes, ${cases.length} ` +
+    `prepared ones rejected on their own rules, and the runner reports a case that passed or ` +
+    `fired another check or rule.`,
 );

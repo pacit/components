@@ -46,6 +46,15 @@ cases here had that shape and one had already gone quiet, which is why a reading
 every case would fire because of it rather than because of its own defect, and every
 "rejected" would be false.
 
+## The runner's own control
+
+The runner reports a case that passed and a case that fired another check, and no case here proves
+it does: every case is built to be refused on its own. [`_runner.json`](_runner.json) holds those
+rules. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+`a-header-that-grew.json` as written, which it has to pass, and once for each rule — without
+`headers`, the input it is built on, which the gate passes; with `check` set to `budget` — and has
+to report each. The control is played apart from the cases and counts as none.
+
 ## The cases
 
 | file                                                                                                 | what it breaks                                                                                                                                            | point | check         |

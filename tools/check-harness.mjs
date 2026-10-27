@@ -675,6 +675,7 @@ if (live) {
       cases,
       read: readFixture,
       run: runCase,
+      holds: ['passed', 'check'],
       own: (fx) => fx.message,
       pin: (fx, message) => ({ ...fx, message }),
     })),
@@ -693,9 +694,9 @@ const entrypoints = new Set(
   [...held.classOf.values()].flatMap((c) => c.entrypoints),
 );
 console.log(
-  `✓ Harnesses: ${held.harnesses.length} harnesses on ${held.harnessesOfClass.size} classes ` +
-    `of ${entrypoints.size} entrypoints, ${named} parts named and typed, ${live.documents.length} cards ` +
-    `naming them. Negative control: the reference input passes, ${cases.length} prepared ones ` +
-    `rejected on their own points, and the runner reports a case pinned to a phrase its ` +
-    `refusal lacks.`,
+  `✓ Harnesses: ${held.harnesses.length} harnesses on ${held.harnessesOfClass.size} classes of ` +
+    `${entrypoints.size} entrypoints, ${named} parts named and typed, ${live.documents.length} ` +
+    `cards naming them. Negative control: the reference input passes, ${cases.length} prepared ` +
+    `ones rejected on their own points, and the runner reports a case that passed or fired ` +
+    `another check, or pinned to a phrase its refusal lacks.`,
 );

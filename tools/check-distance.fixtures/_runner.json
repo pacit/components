@@ -1,0 +1,22 @@
+{
+  "case": "a-week-on-one-disk.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["carried", "commits"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "commits"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "too-many-commits"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-week-on-one-disk.json` is refused by `days/too-old`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `carried`, `commits`, a case that passed; with `check` set to `commits`, a case that fired another check; with `rule` set to `too-many-commits`, a case that fired another rule."
+}

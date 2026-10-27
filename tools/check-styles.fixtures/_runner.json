@@ -1,0 +1,22 @@
+{
+  "case": "angular-imported-as-a-namespace",
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference"
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "logical"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "decorator-unseen"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `angular-imported-as-a-namespace` is refused by `style-source/decorator-under-another-name`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `logical`, a case that fired another check; with `rule` set to `decorator-unseen`, a case that fired another rule."
+}

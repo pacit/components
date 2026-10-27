@@ -1444,6 +1444,7 @@ problems.push(
     cases,
     read: readCase,
     run: runCase,
+    holds: ['passed', 'check', 'rule'],
     own: (fx) => fx.names,
     pin: (fx, names) => ({ ...fx, names }),
   })),
@@ -1499,8 +1500,8 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Files: ${description}. Negative control: the reference tree passes, ` +
-    `${cases.length} prepared ones rejected on their own points, ${FORMS.length} forms ` +
-    `read as marked, and the runner reports a case pinned to a name its message lacks, or ` +
-    `to no list of names.`,
+  `✓ Files: ${description}. Negative control: the reference tree passes, ${cases.length} ` +
+    `prepared ones rejected on their own points, ${FORMS.length} forms read as marked, and the ` +
+    `runner reports a case that passed or fired another check or rule, or pinned to a name its ` +
+    `message lacks, or to no list of names.`,
 );

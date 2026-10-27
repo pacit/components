@@ -8,14 +8,18 @@ it declares. A case may also say what its message has to name (`names`): each en
 in the message with no digit on either side, as in `check-files` and `check-reach`.
 
 A case that lists `names` lists what its message carries, so none of them proves the comparison is
-made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
-through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds
+both: through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `the-call-reader-skips-a-form.json` once more with its `names` replaced — its lines and those
-`the-call-reader-reads-the-wrong-line.json` names under the same rule, once after its own and once before; a name that is no list; an
-empty list; a blank name and a name that is no string, each beside a good one; and the words
-before the first line number and after the last, which the message holds only with a digit
-beside them — and has to report each, and nothing of the case with its own `names`. The control is played apart from the cases and counts as
-none.
+`the-call-reader-reads-the-wrong-line.json` names under the same rule, once after its own and once
+before; a name that is no list; an empty list; a blank name and a name that is no string, each
+beside a good one; and the words before the first line number and after the last, which the message
+holds only with a digit beside them — and has to report each, and nothing of the case with its own
+`names`. The control is played apart from the cases and counts as none. The same control holds the
+runner's other rules, which no case proves either, since every case is built to be refused on its
+own — a case that passed, a case that fired another check and a case that fired another rule: it
+plays the case without `calls`, the input it is built on, which the gate passes; with `check` set to
+`measured`; with `rule` set to `callers-misread`, and has to report each.
 
 The reason it exists is the same as for every other gate here
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):

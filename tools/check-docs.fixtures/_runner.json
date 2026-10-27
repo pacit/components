@@ -1,0 +1,10 @@
+{
+  "case": "tools/check-docs.fixtures/no-gate.md",
+  "variants": [
+    {
+      "for": "passed",
+      "case": "tools/check-docs.fixtures/_reference/requirements.md"
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`) for the requirement files of points 1 and 2, played apart from them. `no-gate.md` is refused, and the runner has to report nothing of it as written; played over `_reference/requirements.md`, a file the gate passes, it has to be reported — a case that passed, which no prepared file is."
+}

@@ -27,10 +27,12 @@ import { execFileSync } from 'node:child_process';
 import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-e2e.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 /**
  * The two suites, as directories rather than as a list of spec names. A new spec is to be
@@ -835,8 +837,10 @@ let description = null;
     );
 }
 
+// `_reference` and `_two-points`, the input the runner's own control plays a case over, are
+// no cases.
 const cases = readdirSync(FIXTURES, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && d.name !== REFERENCE)
+  .filter((d) => d.isDirectory() && !d.name.startsWith('_'))
   .map((d) => d.name)
   .sort();
 
@@ -863,42 +867,41 @@ if (!cases.length)
   }
 }
 
-for (const name of cases) {
-  let fx;
-  try {
-    fx = JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
-  } catch (error) {
-    problems.push(
-      `${name}: no readable \`fixture.json\` (${error.message}) — a case that does not ` +
-        `declare the point it proves proves nothing`,
-    );
-    continue;
-  }
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * alone and, where it declares one, on its own rule. The loop plays every case through it, and
+ * so does the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name, fx);
   try {
     const { errors } = examine(directory, fixtureFiles(directory));
     if (!errors.length)
-      problems.push(
+      said.push(
         `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
           `(\`${fx.check}\`) stopped examining anything`,
       );
     // More than one is a fault of the CASE, not of the gate: a corpus carrying two defects
     // proves neither, because whichever of them still works satisfies the run.
     else if (errors.length > 1)
-      problems.push(
+      said.push(
         `${name}: ${errors.length} points fired ` +
           `(\`${errors.map((e) => e.check).join('`, `')}\`) and the case declares one — a ` +
           `corpus holding more than its own defect is satisfied by whichever of them ` +
           `happens to still work`,
       );
     else if (errors[0].check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${errors[0].check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what ` +
           `it declares`,
       );
     else if (fx.rule && errors[0].rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: point ${fx.point} fired on rule \`${errors[0].rule ?? '—'}\` and the ` +
           `case is built for \`${fx.rule}\` — one point, two rules, and the one this ` +
           `input exists to prove is the one that stayed silent`,
@@ -906,7 +909,33 @@ for (const name of cases) {
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+  return said;
+};
+
+for (const name of cases) {
+  let fx;
+  try {
+    fx = readCase(name);
+  } catch (error) {
+    problems.push(
+      `${name}: no readable \`fixture.json\` (${error.message}) — a case that does not ` +
+        `declare the point it proves proves nothing`,
+    );
+    continue;
+  }
+  problems.push(...runCase(name, fx));
 }
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-e2e.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    holds: ['passed', 'undeclared', 'check', 'rule'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -918,6 +947,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ E2E: ${description}. Negative control: the reference corpus passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+  `✓ E2E: ${description}. Negative control: the reference corpus passes, ${cases.length} ` +
+    `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
+    `fired more than its point, another check or another rule.`,
 );

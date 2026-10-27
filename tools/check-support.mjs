@@ -20,6 +20,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POLICY = 'docs/support.md';
@@ -28,6 +29,7 @@ const SCHEMATICS = 'libs/components/schematics';
 const COLLECTION = `${SCHEMATICS}/migration.json`;
 const FIXTURES = join(ROOT, 'tools/check-support.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 /** Release tags — `release.releaseTag.pattern` in `nx.json` is `{projectName}@{version}`. */
 const TAG = 'components@*';
@@ -382,7 +384,7 @@ try {
 }
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 
 if (cases.length === 0)
@@ -403,24 +405,43 @@ try {
   );
 }
 
-for (const name of cases) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkSupport(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof SupportError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what ` +
           `it declares`,
       );
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-support.fixtures/${RUNNER}`,
+    load: () => readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    holds: ['passed', 'check'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -432,6 +453,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Support: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+  `✓ Support: ${summary}. Negative control: the reference input passes, ${cases.length} prepared ` +
+    `ones rejected on their own points, and the runner reports a case that passed or fired ` +
+    `another check.`,
 );

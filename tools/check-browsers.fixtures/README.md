@@ -40,6 +40,16 @@ path. A reader that reads a spelling wrong then fails a case, or the reference i
 reference names Playwright's image only under `container:` and installs nothing, so a
 reader that stopped seeing that form leaves the reference with no installation at all.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule, and no case here proves it does: every case is built to be refused on its own.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `ambiguous-baseline.json` as written,
+which it has to pass, and once for each rule — without `addEngines`, the input it is built on, which
+the gate passes; with `check` set to `ci`; with `rule` set to `extra-engine` — and has to report
+each. The control is played apart from the cases and counts as none.
+
 ## What these cases do NOT exercise
 
 Three readings arrive here as data rather than from a real run:

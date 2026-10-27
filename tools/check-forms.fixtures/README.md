@@ -53,13 +53,17 @@ of where a chain stopped — nothing for a control with no base, one line for tw
 over one base, none for a control that lacks nothing, two lines in order for two bases, and the
 lead-in on its own line after the last missing member — with what each base stands for.
 
-**The runner has a control of its own.** A case that pins a message pins one its refusal carries, so none of them
-proves the comparison is made: a runner that stopped comparing would pass them all, and every
-pinned message would be free to drift onto a neighbouring refusal. [`_runner.json`](_runner.json)
-holds it. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
-`control-exported-as-the-default` once more, pinned to the refusal `control-anonymous` holds — the
-same rule at another file — and has to report it, and nothing of the case with its own message. The control is played apart
-from the cases and counts as none.
+**The runner has a control of its own.** A case that pins a message pins one its refusal carries, so
+none of them proves the comparison is made: a runner that stopped comparing would pass them all, and
+every pinned message would be free to drift onto a neighbouring refusal.
+[`_runner.json`](_runner.json) holds it. Through [`runner-control.mjs`](../runner-control.mjs) the
+runner plays `control-exported-as-the-default` once more, pinned to the refusal `control-anonymous`
+holds — the same rule at another file — and has to report it, and nothing of the case with its own
+message. The control is played apart from the cases and counts as none. The same control holds the
+runner's other rules, which no case proves either, since every case is built to be refused on its
+own — a case that passed, a case that fired another check and a case that fired another rule: it
+plays the case over `_reference`, which the gate passes; with `check` set to `block`; with `rule`
+set to `header-without-class`, and has to report each.
 
 ## The cases
 

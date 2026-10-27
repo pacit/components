@@ -10,5 +10,33 @@
       "`libs/components/themes/print.css` compiles to one"
     ]
   ],
-  "description": "The runner's own control (`tools/runner-control.mjs`) for a refusal's phrases, played apart from the cases. `an-orientation-in-a-second-sheet-of-the-themes-folder.json` is refused by `evidence` for an orientation query in `print.css`, and here its `says` keeps that phrase and gains the one `an-orientation-query-in-the-theme.json` holds for `pct.css` — the drift a pinned phrase exists to catch — once after its own phrase and once before it. The runner has to report each, and nothing of the case pinned to its own phrase alone."
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["tree"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "catalogue"
+      }
+    },
+    {
+      "for": "built",
+      "set": {
+        "criteria": {
+          "9.9.9": null
+        }
+      }
+    },
+    {
+      "for": "status",
+      "set": {
+        "status": {
+          "word": "machine-audited"
+        }
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`) for a refusal's phrases, played apart from the cases. `an-orientation-in-a-second-sheet-of-the-themes-folder.json` is refused by `evidence` for an orientation query in `print.css`, and here its `says` keeps that phrase and gains the one `an-orientation-query-in-the-theme.json` holds for `pct.css` — the drift a pinned phrase exists to catch — once after its own phrase and once before it. The runner has to report each, and nothing of the case pinned to its own phrase alone. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `tree`, a case that passed; with `check` set to `catalogue`, a case that fired another check; with `criteria` set to `{\"9.9.9\": null}`, a case that cannot be built; with `status` set to `{\"word\": \"machine-audited\"}`, a state of an input the gate refuses."
 }

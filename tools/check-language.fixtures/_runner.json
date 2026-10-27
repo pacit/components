@@ -1,0 +1,22 @@
+{
+  "case": "dead-entry.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["replaceFile"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "denominator"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "entry-without-file"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `dead-entry.json` is refused by `register/dead-entry`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `replaceFile`, a case that passed; with `check` set to `denominator`, a case that fired another check; with `rule` set to `entry-without-file`, a case that fired another rule."
+}

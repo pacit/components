@@ -121,6 +121,7 @@
           "transitive": false
         },
         "{projectRoot}/check-package.mjs",
+        "{workspaceRoot}/tools/runner-control.mjs",
         "{projectRoot}/dependencies.policy.json",
         "{workspaceRoot}/apps/docs/public/CNAME",
         "{workspaceRoot}/tools/check-package.fixtures/**/*"
@@ -173,6 +174,7 @@
         },
         "{workspaceRoot}/.verdaccio/config.yml",
         "{workspaceRoot}/tools/check-consumer.mjs",
+        "{workspaceRoot}/tools/runner-control.mjs",
         "{workspaceRoot}/tools/check-consumer.fixtures/**/*",
         {
           "externalDependencies": [
@@ -266,6 +268,7 @@
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/.github/workflows/nightly.yml",
         "{workspaceRoot}/tools/check-mutation.mjs",
+        "{workspaceRoot}/tools/runner-control.mjs",
         "{workspaceRoot}/tools/check-mutation.fixtures/**/*",
         "index",
         {
@@ -426,6 +429,7 @@
         "{workspaceRoot}/libs/tokens/src/**/*.json",
         "{workspaceRoot}/apps/sandbox-e2e/src/**/*.spec.ts",
         "{workspaceRoot}/tools/check-styles.mjs",
+        "{workspaceRoot}/tools/runner-control.mjs",
         "{workspaceRoot}/tools/decorators.mjs",
         "{workspaceRoot}/tools/check-styles.fixtures/**/*",
         {

@@ -54,6 +54,20 @@ and the reading taken before the wait rather than after it. `static.spec.ts` is 
 an index into a list nothing is appending to, read after an auto-retrying assertion has said
 how long the list is, which is most of the real suite and must never fire.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired more than its own point, a case that
+fired another check and one that fired another rule, and no case here proves it does: every case
+is built to fire its own point alone. [`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `hovered-card-race` as written, which
+it has to pass, and once for each rule — over `_reference`, which the gate passes; over
+[`_two-points/`](_two-points), the card's race beside the paused sheen's bare wait, two points of
+which the race comes first, so that only the rule of one point alone reports it; with `check` set
+to `baseline`; with `rule` set to `wait-then-baseline` — and has to report each. `_two-points/` is
+no case: like `_reference`, its `_` keeps it out of the loop. The control is played apart from the
+cases and counts as none. **Not held:** a `fixture.json` that cannot be read, which the loop reports
+before the runner plays anything.
+
 ## The cases
 
 | directory                                        | what it breaks                                                         | point | rule                 |

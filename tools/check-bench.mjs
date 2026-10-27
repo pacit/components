@@ -22,6 +22,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { freshInputsFor } from './fresh-inputs.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -31,6 +32,7 @@ const REGISTRY = 'apps/docs/src/app/demos/index.ts';
 const BENCH = 'apps/docs/bench/previews.bench.ts';
 const FIXTURES = join(ROOT, 'tools/check-bench.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 /** The readings that are counts, in the column order of the record, with their floors. */
 const COUNTS = [
@@ -378,7 +380,7 @@ const buildFixture = (fixtureLive, fx) => {
 };
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 if (cases.length === 0)
   problems.push(
@@ -386,25 +388,43 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
+  try {
+    checkBench(buildFixture(live, fx));
+    said.push(
+      `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
+        `(\`${fx.check}\`) stopped examining anything`,
+    );
+  } catch (error) {
+    if (!(error instanceof BenchError)) throw error;
+    if (error.check !== fx.check)
+      said.push(
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
+          `was meant to — the fixture proves something other than what it declares`,
+      );
+  }
+  return said;
+};
+
 if (live) {
   // The live input MUST pass (it did, above) — every case is built on it.
-  for (const name of cases) {
-    const fx = readFixture(name);
-    try {
-      checkBench(buildFixture(live, fx));
-      problems.push(
-        `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
-          `(\`${fx.check}\`) stopped examining anything`,
-      );
-    } catch (error) {
-      if (!(error instanceof BenchError)) throw error;
-      if (error.check !== fx.check)
-        problems.push(
-          `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
-            `was meant to — the fixture proves something other than what it declares`,
-        );
-    }
-  }
+  for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+  problems.push(
+    ...(await runnerControl({
+      where: `tools/check-bench.fixtures/${RUNNER}`,
+      load: () => readFixture(RUNNER),
+      cases,
+      read: readFixture,
+      run: runCase,
+      holds: ['passed', 'check'],
+    })),
+  );
 }
 
 // ── result ────────────────────────────────────────────────────────────────────
@@ -417,9 +437,10 @@ if (problems.length) {
 const scenes = Object.values(live.report.scenes);
 const sum = (key) => scenes.reduce((n, s) => n + s[key], 0);
 console.log(
-  `✓ Cost gate: ${scenes.length} scenes — ${sum('elements')} elements, ${sum('listeners')} listeners, ` +
-    `${scenes.filter((s) => s.renders > 1).length} settling in more than one render; ` +
+  `✓ Cost gate: ${scenes.length} scenes — ${sum('elements')} elements, ${sum('listeners')} ` +
+    `listeners, ${scenes.filter((s) => s.renders > 1).length} settling in more than one render; ` +
     `${WRITE ? `${SNAPSHOT} written` : `${SNAPSHOT} is the record`} (the clock of ` +
     `${live.report.measured}, ${BENCH}). Negative control: the live input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a case ` +
+    `that passed or fired another check.`,
 );

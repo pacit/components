@@ -1,0 +1,22 @@
+{
+  "case": "an-axis-of-one-option.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["dropThemes"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "themes"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "axis-in-the-base"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `an-axis-of-one-option.json` is refused by `axes/axis-of-one`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `dropThemes`, a case that passed; with `check` set to `themes`, a case that fired another check; with `rule` set to `axis-in-the-base`, a case that fired another rule."
+}

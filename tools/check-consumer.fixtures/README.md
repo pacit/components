@@ -35,6 +35,16 @@ would fire because of it rather than because of its own — that is, this whole 
 would become what it stands against. Measured: `tokensInCss: 0` in the reference moves
 nine cases from points 6 and 7 onto somebody else's rule.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule, and no case here proves it does: every case is built to be refused on its own.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `build-failed.json` as written, which
+it has to pass, and once for each rule — without `buildCode`, the input it is built on, which the
+gate passes; with `check` set to `install`; with `rule` set to `library-absent` — and has to report
+each. The control is played apart from the cases and counts as none.
+
 ## What these cases do NOT exercise
 
 The measurement arrives as **data**, not from a real run. Starting the registry, the

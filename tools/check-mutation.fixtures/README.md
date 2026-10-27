@@ -46,6 +46,17 @@ changes it would always agree with the measurement, so point 6 would have nothin
 examine, and written by hand it would fire on a difference of format instead of on the
 case's defect.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule, and no case here proves it does: every case is built to be refused on its own.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays
+`a-dry-run-on-the-default-ceiling.json` as written, which it has to pass, and once for each rule —
+without `runConfig`, the input it is built on, which the gate passes; with `check` set to `score`;
+with `rule` set to `stale-measurement` — and has to report each. The control is played apart from
+the cases and counts as none.
+
 ## What these cases do NOT exercise
 
 Five readings arrive here as data rather than from a real run:

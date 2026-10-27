@@ -2783,10 +2783,17 @@ if (summary) {
     problems.push(...runCase(name, fx));
   }
   // A refusal and a status sentence are held to what a case pins by two comparisons, so the
-  // runner has two controls: the phrases of a refusal, and the word and phrases of a state.
-  for (const [file, own, pin] of [
-    [RUNNER, (fx) => fx.says, (fx, says) => ({ ...fx, says })],
-    [RUNNER_STATUS, (fx) => fx.status, (fx, status) => ({ ...fx, status })],
+  // runner has two controls: the phrases of a refusal, and the word and phrases of a state. The
+  // first plays its rules besides — a case that passed, fired another check, cannot be built,
+  // or declares a state of an input the gate refuses.
+  for (const [file, own, pin, holds] of [
+    [
+      RUNNER,
+      (fx) => fx.says,
+      (fx, says) => ({ ...fx, says }),
+      ['passed', 'check', 'built', 'status'],
+    ],
+    [RUNNER_STATUS, (fx) => fx.status, (fx, status) => ({ ...fx, status }), []],
   ])
     problems.push(
       ...(await runnerControl({
@@ -2795,6 +2802,7 @@ if (summary) {
         cases,
         read: readFixture,
         run: runCase,
+        holds,
         own,
         pin,
       })),
@@ -2818,10 +2826,13 @@ const words = Object.fromEntries(
 console.log(
   `✓ Conformance gate: ${CATALOGUE.length} criteria — ` +
     LEVELS.map((w) => `${words[w]} ${w.toLowerCase()}`).join(', ') +
-    `; the assistive-technology pass ${input.claims.assistiveTechnology.recorded ? 'recorded' : `not recorded (${sr.gaps.length + sr.missing.length} of ${Object.keys(input.cards).length} cards owe the reading)`}; ` +
+    `; the assistive-technology pass ` +
+    `${input.claims.assistiveTechnology.recorded ? 'recorded' : `not recorded (${sr.gaps.length + sr.missing.length} of ${Object.keys(input.cards).length} cards owe the reading)`}; ` +
     `the status reads "${summary.status?.word ?? '(none)'}"; ` +
     `${WRITE ? `${REPORT} written` : `${REPORT} is the rendering of the claims`}. ` +
     `Negative control: the live input passes, ${cases.length - states} prepared ones rejected ` +
     `on their own points and ${states} rendered with the status they declare, and the ` +
-    `runner reports a case pinned to a phrase or a word its refusal or its status lacks.`,
+    `runner reports a case that passed, fired another check or cannot be built, a state of an ` +
+    `input the gate refuses, and a case pinned to a phrase or a word its refusal or its status ` +
+    `lacks.`,
 );

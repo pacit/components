@@ -2021,6 +2021,7 @@ problems.push(
     cases,
     read: readCase,
     run: runCase,
+    holds: ['passed', 'check', 'rule'],
     own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
@@ -2036,7 +2037,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Texts: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own rules, and the runner reports a ` +
-    `case pinned to a phrase its refusal lacks.`,
+  `✓ Texts: ${description}. Negative control: the reference input passes, ${cases.length} ` +
+    `prepared ones rejected on their own rules, and the runner reports a case that passed or ` +
+    `fired another check or rule, or pinned to a phrase its refusal lacks.`,
 );

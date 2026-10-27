@@ -87,6 +87,16 @@ That form of the command exists solely to maintain the fixtures. Without it the 
 change of the snapshot's format would overturn the reference input, and fixing it by hand
 would be writing the same code a second time in markdown.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule where it declares one, and no case here proves it does: every case is built to be refused on
+its own. [`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `colour-in-a-gradient` as written,
+which it has to pass, and once for each rule — over `_reference`, which the gate passes; with
+`check` set to `levels`; with `rule` set to `denominator` — and has to report each. The control is
+played apart from the cases and counts as none.
+
 ## The cases
 
 | directory                      | point | check        | rule                        | defect                                                      |

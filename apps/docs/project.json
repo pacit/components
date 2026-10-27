@@ -212,6 +212,7 @@
         "{projectRoot}/bench.snapshot.md",
         "{projectRoot}/src/app/demos/index.ts",
         "{workspaceRoot}/tools/check-bench.mjs",
+        "{workspaceRoot}/tools/runner-control.mjs",
         "{workspaceRoot}/tools/fresh-inputs.mjs",
         "{workspaceRoot}/tools/check-bench.fixtures/**/*"
       ],
