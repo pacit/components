@@ -1123,7 +1123,15 @@ problems.push(
     cases,
     read: readCase,
     run: runCase,
-    holds: ['passed', 'check', 'rule', 'rehearsal', 'releaseOnly'],
+    holds: [
+      'passed',
+      'check',
+      'rule',
+      'unread',
+      'unsaid',
+      'rehearsal',
+      'ordinary',
+    ],
   })),
 );
 

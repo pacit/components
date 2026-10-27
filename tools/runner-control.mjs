@@ -28,7 +28,8 @@ const varied = (fx, variant) => {
  * play throws; `unheard`, a variant the runner reported nothing of. `gate.play(name, fx)` plays
  * a declaration over the input named and returns the lines the runner reported; it is asked
  * only of a sound declaration — the case as written first, then pinned to its own value and to
- * every pin, then every variant.
+ * every pin, then every variant — and each play gets a copy of the case of its own, so a pin or
+ * a runner that writes into what it is handed cannot change the plays after it.
  */
 const verdict = async (gate) => {
   let control;
@@ -51,14 +52,15 @@ const verdict = async (gate) => {
     return [{ rule: 'unreadable', error, of: control.case }];
   }
   if (pinned && mine === undefined) return [{ rule: 'no-own-pin', control }];
+  const copy = () => structuredClone(fx);
   const clean = [
-    ...(await gate.play(control.case, fx)),
-    ...(pinned ? await gate.play(control.case, gate.pin(fx, mine)) : []),
+    ...(await gate.play(control.case, copy())),
+    ...(pinned ? await gate.play(control.case, gate.pin(copy(), mine)) : []),
   ];
   if (clean.length) return [{ rule: 'unclean', control, lines: clean }];
   const found = [];
   for (const value of pinned ? control.pins : [])
-    if ((await gate.play(control.case, gate.pin(fx, value))).length === 0)
+    if ((await gate.play(control.case, gate.pin(copy(), value))).length === 0)
       found.push({ rule: 'unheard', control, value });
   const variants = Array.isArray(control.variants) ? control.variants : [];
   for (const key of gate.holds)
@@ -69,7 +71,7 @@ const verdict = async (gate) => {
     try {
       lines = await gate.play(
         variant.case ?? control.case,
-        varied(fx, variant),
+        varied(copy(), variant),
       );
     } catch (error) {
       found.push({ rule: 'unplayable', control, variant, error });
@@ -84,9 +86,10 @@ const verdict = async (gate) => {
  * The verdict held on prepared declarations and reports — a control of the control, as
  * `check-coverage` holds its own (`ownControl`). Without these rows a rule here that stopped
  * refusing would stay green for as long as every gate's runner works, which is all of the time
- * this control exists for. The prepared runner plays `CASE` as the case `a`: it reports a play
- * over any other input as one that passed, a `check` or a `rule` other than the case's, and
- * what `said` maps the pin to — unless the row makes it `deaf` to one of them. A declaration
+ * this control exists for. The prepared runner plays `CASE` as the case `a`, and as `c`, an input
+ * of the same defect: it reports a play over `b`, or without the defect, as one that passed, a
+ * `check` or a `rule` other than the case's, and what `said` maps the pin to — unless the row
+ * makes it `deaf` to one of them. A declaration
  * is `CONTROL` and the gate's `pin` writes the value in place unless the row says otherwise;
  * `pin: null` is a gate that pins nothing.
  */
@@ -210,6 +213,41 @@ const OWN = [
     finds: ['unheard passed'],
   },
   {
+    why: 'a variant that is no object',
+    control: { ...CONTROL, variants: [null, ...CONTROL.variants] },
+    finds: ['unplayable'],
+  },
+  {
+    why: 'variants over another input that take fields out and set them too',
+    control: {
+      ...CONTROL,
+      variants: [
+        ...CONTROL.variants,
+        { for: 'passed', case: 'c', without: ['defect'] },
+        { for: 'check', case: 'c', set: { check: 'e' } },
+      ],
+    },
+    finds: [],
+  },
+  {
+    why: 'variants taking out two fields, in either order',
+    control: {
+      ...CONTROL,
+      variants: [
+        ...CONTROL.variants,
+        { for: 'passed', without: ['pin', 'defect'] },
+        { for: 'passed', without: ['defect', 'pin'] },
+      ],
+    },
+    finds: [],
+  },
+  {
+    why: 'a pin that writes into the case it is handed, and a runner deaf to another check',
+    pin: (fx, value) => Object.assign(fx, { pin: value }),
+    deaf: ['check'],
+    finds: ['unheard check'],
+  },
+  {
     why: 'a control with no variant for a rule the gate holds',
     control: { ...CONTROL, variants: CONTROL.variants.slice(0, 2) },
     finds: ['no-variant rule'],
@@ -258,7 +296,7 @@ const ownControl = async () => {
       holds: ['passed', 'check', 'rule'],
       play: async (name, played) => {
         if (name === 'z') throw new Error('no such input');
-        if (name !== 'a' || !('defect' in played))
+        if (name === 'b' || !('defect' in played))
           return deaf.includes('passed') ? [] : ['passed'];
         return [
           ...['check', 'rule'].filter(
@@ -285,6 +323,10 @@ const HELD = {
   rule: 'a case that fired another rule',
   built: 'a case that cannot be built',
   undeclared: 'a case that fired more than it declares',
+  unread: 'a case declaring what no reading of it reads',
+  unsaid: 'a case with two modes that does not say what its third reading does',
+  ordinary: 'a case with two modes that an ordinary run refuses',
+  rehearsal: 'a case whose rehearsal does not do what the case says',
   silent: 'a case a declared rule of which stayed silent',
   hides: 'a case that names in `hides` a rule nothing keeps silent',
   stops: 'a case that keeps a rule silent and does not name it in `hides`',
@@ -369,15 +411,15 @@ const said = (where, f) => {
  * the rest. `for` names the rule of the runner the variant proves, and every rule the gate
  * `holds` needs one, so a variant cannot leave the declaration without the control saying so.
  *
- * The gate hands over `load()`, which reads the declaration, `read(name)`, which returns a case
- * as its loop plays it, `run(name, fx)`, the very function its loop plays every case through,
- * returning the lines it reports, and `holds`, the rules of that runner no case proves; and,
- * where its cases pin, `own(fx)`, the value the case pins, and `pin(fx, value)`, which writes a
- * value where its cases write theirs. A case's pin, its check and its rule are read by the
- * runner alone — the input a check judges is built from the rest — so a variant that differs
- * from a clean play in one of them alone is reported for it, and the mutants of each gate's
- * runner say which rule each variant proves. Played apart from the loop, the control counts as
- * no case.
+ * The gate hands over `load()`, which reads the declaration, `read(name)`, which returns a case as
+ * its loop plays it, `run(name, fx)`, the very function its loop plays every case through,
+ * returning the lines it reports, and `holds`, the rules of that runner no case proves; and, where
+ * its cases pin, `own(fx)`, the value the case pins, and `pin(fx, value)`, which writes a value
+ * where its cases write theirs. A case's pin, its check and its rule are read by the runner alone
+ * — the input a check judges is built from the rest, and `check-mutation`, whose runner picks the
+ * reading a case goes through by a `check` of `write`, sets another — so a variant that differs
+ * from a clean play in one of them alone is reported for it, and the mutants of each gate's runner
+ * say which rule each variant proves. Played apart from the loop, the control counts as no case.
  *
  * Not held here: that a gate calls this at all, as nothing holds that its loop runs, and that
  * `holds` names every rule its runner has.

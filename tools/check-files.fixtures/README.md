@@ -85,8 +85,9 @@ its own `names`. The control is played apart from the cases and counts as none. 
 holds the runner's other rules, which no case proves either, since every case is built to be refused
 on its own — a case that passed, a case that fired another check and a case that fired another rule:
 it plays the case over `_reference`, which the gate passes; with `check` set to `index`; with `rule`
-set to `not-exported`; with `rule` set to `None`; with `rule` set to `null`, for the comparison runs
-both ways, and has to report each.
+set to `not-exported`; and, for the comparison runs both ways, with `rule` set to `null` where one
+fires, and over `a-template-no-declaration-names` as `orphan`, without its `names`, where none
+fires — and has to report each.
 
 Sources sit in the repository as `*.ts.txt` and become `*.ts` only inside the temporary
 directory the case is assembled in. The reason is hard: a `.ts` file under `tools/` belongs to

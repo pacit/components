@@ -44,7 +44,8 @@ and over [`_two-rules/`](_two-rules), a plan firing its own rule and then `open-
 runner has to report each. `_two-rules/` declares nothing, so neither loop plays it. The controls
 are played apart from the cases and count as none. Point 3's rule that a case fires one rule alone
 has no variant: each of its readings returns or fires once, so a pair never fires two rules, and
-the rule comparison reports what that rule would.
+the rule comparison reports what that rule would. Nor has the requirement runner's rule that a
+file holds no requirement: such a file is one the gate passes, and the PASSED rule reports it.
 
 ## The cases
 

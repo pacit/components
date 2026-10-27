@@ -38,7 +38,15 @@
       "set": {
         "rule": null
       }
+    },
+    {
+      "for": "rule",
+      "case": "a-template-no-declaration-names",
+      "without": ["names"],
+      "set": {
+        "check": "orphan"
+      }
     }
   ],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `types-file-importing-for-its-effect` is refused by point 8 (`types/not-type-only`) at line 3 of a types file, and here its `names` keeps that line and gains the one `types-file-importing-with-type-on-each-name` holds under the same rule, line 5 — the drift a pinned name exists to catch — once after its own and once before it. Then it is pinned to the shapes the runner refuses before it compares anything: a name that is no list, an empty list, a blank name and a name that is no string, each of the last two beside a good one. Last come two names the refusal holds only with a digit beside them, the file before its line number and the words after the count: a name is found with no digit on either side, so each is a name the message lacks. The runner has to report each, and nothing of the case pinned to its own `names`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `index`, a case that fired another check; with `rule` set to `not-exported`, a case that fired another rule; with `rule` set to `null`, a case that declares no rule where one fires — the comparison runs both ways."
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `types-file-importing-for-its-effect` is refused by point 8 (`types/not-type-only`) at line 3 of a types file, and here its `names` keeps that line and gains the one `types-file-importing-with-type-on-each-name` holds under the same rule, line 5 — the drift a pinned name exists to catch — once after its own and once before it. Then it is pinned to the shapes the runner refuses before it compares anything: a name that is no list, an empty list, a blank name and a name that is no string, each of the last two beside a good one. Last come two names the refusal holds only with a digit beside them, the file before its line number and the words after the count: a name is found with no digit on either side, so each is a name the message lacks. The runner has to report each, and nothing of the case pinned to its own `names`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `index`, a case that fired another check; with `rule` set to `not-exported`, a case that fired another rule; with `rule` set to `null`, a case that declares no rule where one fires; and over `a-template-no-declaration-names` as `orphan`, without its `names`, a case that declares a rule where none fires — the comparison runs both ways."
 }

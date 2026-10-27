@@ -51,7 +51,8 @@ runner makes those comparisons: every case declares exactly what its run fires a
 runner plays `a-drift-behind-a-decimal-floor.json` as written — `record/stale-prose`,
 `measured/no-repetition-floor` beside it, `measured/too-few-repetitions` kept silent — which it has
 to pass, and once for each comparison: with `beside` empty, a rule fired that the case does not
-declare; with `outcomes/case-always-failed` added to `beside`, a declared rule that stays silent;
+declare, and declaring `measured/no-repetition-floor` alone, so that the rule it does not declare
+is the second the run fires; with `outcomes/case-always-failed` added to `beside`, a declared rule that stays silent;
 with it added to `hides`, a rule named there that nothing keeps silent; with `hides` empty, a rule
 kept silent that the case does not name — and has to report each. It plays the case without `policy`
 and `snapshot` too, the reference, on which nothing fires, and the runner reports that as well; but

@@ -55,9 +55,11 @@ which it has to pass, and once for each rule: over `_reference` without its two 
 passed; without them and with `check` set to `licence`, or `rule` to `dead`, another check or rule;
 without `releaseOnly`, a `rehearsal` nothing reads; without `rehearsal`, or with it set to `often`,
 a case that does not say what the third reading does; with it set to `warns`, a rehearsal that
-blocks; over `since-next` as `since` at point 10, a rehearsal that passes where the case says it
+blocks where the case says it warns (reported by the rule beside it as well, see below); over `since-next` as `since` at point 10, a rehearsal that passes where the case says it
 blocks; and with `drop` set to `["LICENSE"]`, an ordinary run that blocks beside the warning of
-point 6 — and has to report each. The control is played apart from the cases and counts as none.
+point 6 — and has to report each. Each kind of rule is a key of its own in the gate's `holds`
+(`unread`, `unsaid`, `rehearsal`, `ordinary`), so a declaration that loses the last variant of one
+is reported. The control is played apart from the cases and counts as none.
 
 **Not held**, since no prepared input tells each from the rule beside it: a release-only case
 whose ordinary run passes without a warning, or whose rehearsal passes without one where the case
