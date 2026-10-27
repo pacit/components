@@ -20,6 +20,7 @@
 import {
   BindingType,
   JitEvaluator,
+  LiteralMap,
   outputAst,
   parseTemplate,
   R3Identifiers,
@@ -491,15 +492,34 @@ class ExpressionLiterals extends RecursiveAstVisitor {
  * What a node hands the directives on it, as the compiler matches them
  * (`getAttrsForDirectiveMatching`): an inline template (`*ngIf="…"`) its own bindings alone — the
  * attributes and inputs it carries beside them are its element's, hoisted, and the element's
- * directives take them — and an element or an `<ng-template>` its attributes and bindings. A
- * directive may put any of them into the context of a template it draws. An `attr.`, `class.` or
- * `style.` binding of an element reaches no directive and is read all the same: the read is never
- * narrower than the compiler's.
+ * directives take them — and an element or an `<ng-template>` its attributes and its property
+ * bindings. An `attr.`, `class.` or `style.` binding reaches the DOM and no directive.
  */
 const handedTo = (node) =>
-  node instanceof TmplAstTemplate && node.tagName !== 'ng-template'
+  (node instanceof TmplAstTemplate && node.tagName !== 'ng-template'
     ? node.templateAttrs
-    : [...node.attributes, ...node.inputs];
+    : [...node.attributes, ...node.inputs]
+  ).filter(
+    (attribute) =>
+      attribute instanceof TmplAstTextAttribute ||
+      attribute.type === BindingType.Property,
+  );
+
+/**
+ * What a variable reading `key` of a template's context takes of one thing handed to the template.
+ * A map literal is a context as an outlet takes it, and a key of it is that key's value; a map with
+ * a spread may hold any key, and is taken whole. Anything else is an input, which a directive puts into the context
+ * under a key no read here knows: under its own name (`ngIf`, which `as m` reads) or as the
+ * implicit value (`let-m`, the item of `*ngFor`) — and a written attribute under its own name alone,
+ * a slot's name (`pctColumn="name"`) being no value of `let-row`. So `let i = index` takes nothing
+ * of `ngForOf`, and `let-o` nothing of `{ $implicit: o, id: 'pct-option-' + o.value }` but `o`.
+ */
+const take = ({ name, values, keys, spread, bound }, key) =>
+  keys?.has(key)
+    ? keys.get(key)
+    : spread || name === key || (bound && key === '$implicit')
+      ? values
+      : [];
 
 /**
  * What the names of one template stand for, read off the compiler's own binder (`R3TargetBinder`,
@@ -515,8 +535,8 @@ const handedTo = (node) =>
  *    it — an outlet beside its context, an `*ngIf` with a `then` — hands the template what the node
  *    is handed (`handedTo`).
  *  - A template's variable (`let-m`, `*ngIf="… as m"`, `*ngFor="let m of …"`) stands for the
- *    literals handed to the template and by every such node, whichever input a directive fills the
- *    context from. It stands for no template: the outlet drawing the template names it beside the
+ *    literals handed to the template and by every such node, under the key of the context it reads
+ *    (`take`). It stands for no template: the outlet drawing the template names it beside the
  *    context, and a variable standing for it would make each node reading the variable one more
  *    that hands the template — a listbox's `[attr.aria-posinset]="i + 1"` with its `role`.
  *  - A reference to an element stands for nothing: what a read of its members gives is the DOM's.
@@ -543,7 +563,10 @@ class Names {
     for (let grew = true; grew;) {
       grew = false;
       const handed = new Map(
-        owners.map((owner) => [owner, this.handed(owner)]),
+        owners.map((owner) => [
+          owner,
+          handedTo(owner).map((a) => this.given(a)),
+        ]),
       );
       for (const name of names)
         for (const value of this.bindingOf(name, handed))
@@ -579,12 +602,25 @@ class Names {
     return found;
   }
 
-  handed(owner) {
-    return handedTo(owner).flatMap((attribute) =>
-      attribute instanceof TmplAstTextAttribute
-        ? [attribute.value]
-        : this.valuesOf(attribute.value),
-    );
+  /** One thing a node hands, by its name, with what each key of a map literal it is stands for. */
+  given(attribute) {
+    if (attribute instanceof TmplAstTextAttribute)
+      return { name: attribute.name, values: [attribute.value], bound: false };
+    const map = attribute.value.ast;
+    const literal = map instanceof LiteralMap;
+    const spread = literal && map.keys.some((k) => k.kind === 'spread');
+    return {
+      name: attribute.name,
+      values: this.valuesOf(attribute.value),
+      keys:
+        literal && !spread
+          ? new Map(
+              map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
+            )
+          : null,
+      spread,
+      bound: true,
+    };
   }
 
   /** What binds a name gives under the sets found so far, `handed` holding what each node hands. */
@@ -595,9 +631,12 @@ class Names {
       return this.valuesOf(node.expression);
     if (node instanceof TmplAstForLoopBlock)
       return name === node.item ? this.valuesOf(node.expression) : [];
+    const key = name.value || '$implicit';
     return [...handed]
-      .flatMap(([owner, values]) =>
-        owner === node || values.includes(node) ? values : [],
+      .flatMap(([owner, given]) =>
+        owner === node || given.some((g) => g.values.includes(node))
+          ? given.flatMap((g) => take(g, key))
+          : [],
       )
       .filter((v) => typeof v === 'string');
   }
@@ -656,10 +695,10 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
 
   /**
    * Whether an attribute or a binding is read here for the first time. An inline template carries
-   * its element's attributes and inputs, the same objects, hoisted for the directives the compiler
-   * matches (`handedTo`), and the walk is handed each twice: once with the template, outside the
-   * element, and once with the element, which decides whether it speaks (`<input
-   * type="submit">`). Read twice, one `title` was two refusals.
+   * its element's attributes and inputs hoisted, the same objects, beside its own bindings — no
+   * directive of the template takes them (`handedTo`) — and the walk is handed each twice: once with
+   * the template, outside the element, and once with the element, which decides whether it speaks
+   * (`<input type="submit">`). Read twice, one `title` was two refusals.
    */
   first(node) {
     if (this.taken.has(node)) return false;

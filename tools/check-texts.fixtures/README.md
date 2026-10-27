@@ -143,19 +143,28 @@ printed reads of a template's name reach no literal with a letter.
   variable stands for the literals handed to the template, as the compiler hands the directives on
   it what it matches them by: an inline template its own bindings (`*ngIf="… as m"`,
   `*ngFor="let x of …"`) and not the attributes of its element, which it carries hoisted — the
-  `class` beside `*ngFor` is one refusal fewer — and an `<ng-template>` its attributes and bindings
-  (`[ngIf]`, and `ngIf` written), whichever key of the context the directive fills.
+  `class` beside `*ngFor` is one refusal fewer — and an `<ng-template>` its attributes and property
+  bindings (`[ngIf]`, and `ngIf` written).
+- What a directive puts under which key of the context no read here knows, so a variable takes a
+  binding by the key it reads (`take`): one of the binding's name (`as m` reads `ngIf`), and the
+  implicit value (`let-m`, the item of `*ngFor`) every binding. `let i = index` beside the item
+  takes nothing of `ngForOf`. A written attribute hands the variable of its name alone, so a slot's
+  name beside it (`pctWidgetSlot="row"`) is no value of `m`.
 - `literal-through-an-outlet-context`, `literal-through-a-then-template`,
-  `literal-through-an-outlet-to-a-listbox-row` — and the literals every node hands it whose binding
-  stands for the template: an outlet beside its context, an `*ngIf` with a `then`. A variable stands
-  for no template, or every element reading one — a listbox row's `[attr.aria-posinset]="i + 1"`
-  — would be one more node handing the template, its `class` and `role` with it.
+  `literal-through-an-outlet-to-a-listbox-row`, `literal-through-a-spread-context` — and the
+  literals every node hands it whose binding stands for the template: an outlet beside its context,
+  an `*ngIf` with a `then`. A map literal is a context as an outlet takes it, and a variable takes
+  the entry of its key — the row's `let-label` takes the implicit one and not `part: 'option'` —
+  unless a spread may hold any key. A variable stands for no template, or every element reading
+  one — the row's `[attr.aria-posinset]="i + 1"` — would be one more node handing the template,
+  its `class` and `role` with it.
 - `literal-through-a-tree-an-outlet-draws`, `literal-through-a-name-bound-after-its-template` — what
   every name stands for is found once per template, the least sets that hold what each binding
   gives under the sets found so far: a tree a template draws of itself hands its variable back to
   it, a name may be read before the `@let` handing it is declared, and a read following each name
   anew grew with the factorial of the variables a template reads (ten `let v = index` read in
-  bindings: 58 s, measured; forty now take 14 ms).
+  bindings: 58 s, measured; forty now take 14 ms). The tree's outer outlet is an element, whose
+  `class` hands no variable of that name and whose `class.` binding no directive.
 - `literal-through-a-name-in-a-speaking-binding` — the same read in `[attr.aria-label]` and
   `[title]`, two refusals, on a button an `*ngIf` wraps. The inline template carries its element's
   attributes and bindings hoisted, the same objects, and the walk is handed each twice; it reads
@@ -169,11 +178,22 @@ template's variable nothing hands a word while the nodes around it are handed so
 took every node for one handing the template, the index for the collection, or a template for a
 string, refuses it.
 
+What a name stands for is every literal of what binds it, as point 3 reads a printed expression:
+`@let open = state() === 'open'` printed through `{{ open ? … : … }}` is refused as
+`{{ state() === 'open' ? … : … }}` is, and so is a literal handed to a call
+(`@for (o of sortBy(options(), 'label'))`). The comparison belongs in a block's condition, which
+draws nothing.
+
 Not held: a context the class hands a template (`createEmbeddedView(tpl, { $implicit: 'Delete' })`),
-which no template read sees; a literal an outlet's context hands a template from outside the file, a
-consumer's slot among them, which may print it or not; a template handed in a context and drawn by
-an outlet through a variable (`[ngTemplateOutlet]="m.next"`), since a variable stands for no
-template; a reference to a directive (`#c="pctCell"`), which the binder resolves to nothing with no
+which no template read sees; a template a component takes as content and draws with a context of
+its own (`<pct-list [items]="['Delete']"><ng-template let-x>`); a literal an outlet's context hands a
+template from outside the file, a consumer's slot among them, which may print it or not; a template
+handed in a context and drawn by an outlet through a variable (`[ngTemplateOutlet]="m.next"`),
+since a variable stands for no template; a binding a directive puts into the context under a key
+not its name — a context a call returns reaches the implicit variable alone, and `ngIf="Delete"
+let-m` passes, a written attribute handing only the variable of its name; an `<ng-template>` inside
+an `<svg>` (`:svg:ng-template`), which the compiler matches as an inline template, as `handedTo`
+does; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
 gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`). Beside names, a
 property binding that draws its value as text (`[textContent]`, `[innerHTML]`) is no printed

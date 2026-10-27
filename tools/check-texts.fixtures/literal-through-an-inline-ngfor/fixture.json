@@ -2,6 +2,6 @@
   "point": 3,
   "check": "template",
   "rule": "literal-through-a-name",
-  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `x` → \"Delete the row\"",
-  "description": "A sentence an inline template's `ngForOf` binding hands the loop's variable. The variable stands for what the template is handed, whichever key of the context the directive fills (`$implicit` here) — its own bindings, and not the attributes of its element (`class`), which the template carries hoisted and the element's directives take, so the refusal counts one."
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:35: interpolation reads `x` → \"Delete the row\"",
+  "description": "A sentence an inline template's `ngForOf` binding hands the loop's variable. The item reads the context's implicit value, which an input of the directive fills under no name the read knows, so it stands for every binding of the template — its own, and not the attributes of its element (`class`), which the template carries hoisted and the element's directives take. `let i = index` reads a key no binding is named after and stands for nothing, so the refusal counts one."
 }

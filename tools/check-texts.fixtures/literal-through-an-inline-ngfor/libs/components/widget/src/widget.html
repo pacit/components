@@ -29,6 +29,8 @@
   }
 </ul>
 
-<span *ngFor="let x of ['Delete the row']" class="pct-widget__row"
-  >{{ x }}</span
+<span
+  *ngFor="let x of ['Delete the row']; let i = index"
+  class="pct-widget__row"
+  >{{ i + 1 }}. {{ x }}</span
 >

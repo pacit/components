@@ -3,5 +3,5 @@
   "check": "template",
   "rule": "literal-through-a-name",
   "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"",
-  "description": "The same sentence written as an attribute, which sets the directive's input as a binding does (measured: drawn). A template's variable stands for its written attributes too, and a read of its bindings alone passes this case."
+  "description": "The same sentence written as an attribute, which sets the directive's input as a binding does (measured: drawn). A written attribute hands the variable of its own name, `let-m=\"ngIf\"`, and no other: a slot's name beside it (`pctWidgetSlot=\"row\"`) is no value of `m`, and the refusal counts one."
 }

@@ -38,9 +38,11 @@
   ></ng-container>
   }
 </ng-template>
-<ng-container
+<div
+  class="pct-widget__tree"
+  [class.pct-widget__narrow]="size() === 'sm'"
   [ngTemplateOutlet]="tree"
   [ngTemplateOutletContext]="{
     $implicit: { label: 'Delete the row', children: [] }
   }"
-></ng-container>
+></div>

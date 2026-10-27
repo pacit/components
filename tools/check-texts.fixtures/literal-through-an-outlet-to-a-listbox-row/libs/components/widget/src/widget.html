@@ -30,10 +30,18 @@
 </ul>
 
 <ng-container
-  *ngTemplateOutlet="row; context: { $implicit: 'Delete the row', index: 0 }"
+  *ngTemplateOutlet="
+    row;
+    context: { $implicit: 'Delete the row', index: 0, part: 'option' }
+  "
 ></ng-container>
-<ng-template #row let-label let-i="index">
-  <span class="pct-widget__row" role="option" [attr.aria-posinset]="i + 1"
+<ng-template #row let-label let-i="index" let-part="part">
+  <span
+    class="pct-widget__row"
+    role="option"
+    [attr.aria-posinset]="i + 1"
+    [attr.data-pct-part]="part"
+    [id]="'pct-widget-row-' + label"
     >{{ label }}</span
   >
 </ng-template>

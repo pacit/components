@@ -3,5 +3,5 @@
   "check": "template",
   "rule": "literal-through-a-name",
   "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `node` → \"Delete the row\"",
-  "description": "A sentence handed to a tree a template draws of itself: the outlet inside it hands each child back to it, a child being an item of what the variable stands for. A read following the names without end never returns, and one that counts a node a name stands for as a literal finds two."
+  "description": "A sentence handed to a tree a template draws of itself: the outlet inside it hands each child back to it, a child being an item of what the variable stands for, and what every name stands for is found together until no set grows. The outlet outside is an element with a `class` and a `class.` binding: a written attribute hands only the variable of its name and a `class.` binding no directive at all, so the refusal counts one."
 }
