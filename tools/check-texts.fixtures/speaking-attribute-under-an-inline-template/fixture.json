@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "message": "2 speaking attributes carry a string written inline:\n      libs/components/widget/src/widget.html:32: title=\"Remove the item\"\n      libs/components/widget/src/widget.html:33: value=\"Send the form\"",
+  "description": "Speaking attributes on elements inline templates wrap: a `title` under `*ngFor`, and the `value` of a submit `<input>` under `*ngIf`. The template carries each attribute hoisted, the same object as its element's, and the walk is handed it twice; read twice, each was two refusals, and only the read with the element can tell that the `value` speaks — a read that kept the first visit lost it."
+}

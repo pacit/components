@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:36: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence in an outlet's context, handed to the template the outlet draws. The template is named by a reference in a binding of another node, and its variable stands for what that node is handed: the context, whichever input it is."
+}

@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:35: interpolation reads `label` → \"Delete the row\"",
+  "description": "A sentence in a context a `@let` holds, handed to an outlet by name (measured: drawn). Only a map literal written in the binding is read by its keys; any other context is taken whole by every variable, `let-label=\"label\"` among them — read as the binding's own name alone, it took nothing."
+}

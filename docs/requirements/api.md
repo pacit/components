@@ -926,11 +926,12 @@ language without a reload sees the change. An input's default value is a read at
 time and therefore cannot be a library string.
 
 **Gate:** `tools/check-texts.mjs` (target `check-texts`) — six points: a string written into
-a text node, into a speaking attribute or into an expression literal; prose in a signal's
-default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
+a text node, into a speaking attribute or into an expression literal, printed there or through a
+name the template binds; prose in a signal's default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
 read by `parseTemplate` from `@angular/compiler` and walked by the compiler's visitor, each node of
-the tree, found over every node's fields, reached and of a kind the walk knows, and decorators by
+the tree, found over every node's fields, reached and of a kind the walk knows, a printed name read
+as what binds it in the scope the compiler's binder gives it, and decorators by
 the TypeScript parser as ngc reads them (`tools/decorators.mjs`): a template the decorator
 carries, under any key ngc reads, is refused, as are a `templateUrl` given by an expression, a
 `host` block composed otherwise than in place or in a `const` of the file's own (`hostOf` follows
@@ -942,7 +943,7 @@ attributes only where an instruction takes it as a node's, a local reference or 
 timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 79 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 97 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
@@ -955,7 +956,14 @@ compiled in full, whose `consts` no instruction places, and a literal bound to
 and through `[aria-label]`, which Angular binds without `attr.`, a sentence in an `@boundary`
 block's `@error`, and a `@content` block, refused as a kind the walk does not know and, with
 variables, as holding nodes it never reaches, while the reference holds a node of every kind it
-knows but an ICU; plus nine runs against the repository (a literal in
+knows but an ICU, and a sentence a printed name stands for — through a `@let`, an `@if` alias, a
+`@for` item, an inline template's `ngIf` and `ngForOf`, an `<ng-template>`'s `[ngIf]`, bound and
+written, a two-way binding, an outlet's context, under its key, through a spread or a name that
+holds it, a map an `ngIf` holds, an `*ngIf`'s `then`, a tree an
+outlet draws of itself, a listbox row whose other variables elements read, a `@let` declared after
+the template it feeds, and two
+speaking bindings an `*ngIf` wraps, read once each, as are the speaking attributes of an element an
+inline template wraps — while the reference's names stand for none; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

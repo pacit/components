@@ -6,7 +6,7 @@
  *
  *  1. DENOMINATOR: every decorator parsed, every template owned, every node reached and known,
  *  2. ARTIFACT: the classes and static attributes from the sources match the BUILT package,
- *  3. TEMPLATE: no text node and no SPEAKING attribute carries a literal with a letter,
+ *  3. TEMPLATE: no text node, SPEAKING attribute or printed name holds a literal with a letter,
  *  4. TYPESCRIPT: a signal's default is not prose and does not read `PCT_TEXTS`,
  *  5. CHANNEL: the `PctTexts` keys, their defaults and their reads are one set,
  *  6. WARNINGS: `console.*` draws nothing from `PCT_TEXTS` and is quiet outside `isDevMode()`.
@@ -20,13 +20,23 @@
 import {
   BindingType,
   JitEvaluator,
+  LiteralMap,
   outputAst,
   parseTemplate,
   R3Identifiers,
+  R3TargetBinder,
   RecursiveAstVisitor,
   splitNsName,
   TmplAstDeferredTrigger,
+  TmplAstElement,
+  TmplAstForLoopBlock,
+  TmplAstIfBlockBranch,
+  TmplAstLetDeclaration,
   TmplAstRecursiveVisitor,
+  TmplAstReference,
+  TmplAstTemplate,
+  TmplAstTextAttribute,
+  TmplAstVariable,
   visitAll,
 } from '@angular/compiler';
 import * as compiler from '@angular/compiler';
@@ -373,7 +383,8 @@ const KNOWN_NODES = new Set([
   'BoundAttribute',
   // What holds the rest: the walk enters each, an `@boundary` and its `@error` blocks among
   // them (measured: the text in both is read), and none draws a string of its own — what a
-  // condition or a collection hands a name is the hole the `@let` below stands for.
+  // condition or a collection hands a name is drawn where the name is printed, and read there
+  // (`Names`).
   'Element',
   'Template',
   'Content',
@@ -397,11 +408,8 @@ const KNOWN_NODES = new Set([
   'SwitchBlockCase',
   'SwitchExhaustiveCheck',
   'DeferredTrigger',
-  // A `@let`, whose value is not read, nor is any expression no point reads that hands a name
-  // its value — a block's condition, a loop's collection, a template's input, an outlet's
-  // context: a literal there is drawn wherever the name is printed (`@let m = 'Delete'`,
-  // `@if ('Delete'; as m)`), and the walk follows no name. The library's blocks hold literals in
-  // comparisons alone.
+  // A `@let`, which draws nothing where it stands: its value is drawn where its name is printed,
+  // and read there (`Names`).
   'LetDeclaration',
   // Refused whole by point 3 (`visitIcu`).
   'Icu',
@@ -448,17 +456,27 @@ const nodesOf = (
   return found;
 };
 
-/** String literals from an expression — pipe arguments excluded (see `visitPipe`). */
+/**
+ * String literals from an expression — pipe arguments excluded (see `visitPipe`) — and every
+ * property it reads, each handed to `read`: a read of a name the template binds is followed
+ * (`Names`), the rest are the class's. A name is read by a `PropertyRead` alone, the one read the
+ * binder resolves (`getExpressionTarget`): `m?.x` reads `m` by one, `this.m` names the class.
+ */
 class ExpressionLiterals extends RecursiveAstVisitor {
-  constructor(collect) {
+  constructor(collect, read) {
     super();
     this.collect = collect;
+    this.read = read;
   }
   visitLiteralPrimitive(node) {
     if (typeof node.value === 'string') this.collect(node.value);
   }
   visitTemplateLiteralElement(node) {
     this.collect(node.text);
+  }
+  visitPropertyRead(node, ctx) {
+    this.read(node);
+    super.visitPropertyRead(node, ctx);
   }
   /**
    * A pipe's argument never reaches the DOM — it is a format marker (`date: 'short'`),
@@ -471,11 +489,165 @@ class ExpressionLiterals extends RecursiveAstVisitor {
 }
 
 /**
- * One walk over a template's tree. It collects what the user sees: node texts, the values
- * of speaking attributes and the literals from expressions that land in such a place. It
- * counts the nodes it reaches along the way (`seen`) — point 1 compares that count against zero,
- * because a pass that visited nothing pronounces on everything (`lesson-48`), and holds every node
- * of the tree to having been reached (`nodesOf`).
+ * What a node hands the directives on it, as the compiler matches them
+ * (`getAttrsForDirectiveMatching`): an inline template (`*ngIf="…"`) its own bindings alone — the
+ * attributes and inputs it carries beside them are its element's, hoisted, and the element's
+ * directives take them — and an element or an `<ng-template>` its attributes and its property and
+ * two-way bindings. An `attr.`, `class.` or `style.` binding reaches the DOM and no directive.
+ */
+const handedTo = (node) =>
+  (node instanceof TmplAstTemplate && node.tagName !== 'ng-template'
+    ? node.templateAttrs
+    : [...node.attributes, ...node.inputs]
+  ).filter(
+    (attribute) =>
+      attribute instanceof TmplAstTextAttribute ||
+      attribute.type === BindingType.Property ||
+      attribute.type === BindingType.TwoWay,
+  );
+
+/**
+ * What a variable reading `key` of a template's context takes of one thing handed to the template.
+ * A map literal is a context as an outlet takes it: the variable takes the entry of its key, or the
+ * whole map where it reads the binding's own name or the implicit value and the map writes no such
+ * key (`*ngIf="{ … } as vm"`). A map with a spread may hold any key, and anything else — a map a
+ * name holds, a call, an array — is an input a directive files under a key no read here knows, and
+ * is taken whole. A written attribute is taken under its own name alone, a slot's name
+ * (`pctColumn="name"`) being no value of `let-row`. So `let-o` takes `o` alone of
+ * `{ $implicit: o, id: 'pct-option-' + o.value }`, and `let i = index` all of `ngForOf`.
+ */
+const take = ({ name, values, keys, bound }, key) =>
+  keys
+    ? (keys.get(key) ?? (name === key || key === '$implicit' ? values : []))
+    : bound || name === key
+      ? values
+      : [];
+
+/**
+ * What the names of one template stand for, read off the compiler's own binder (`R3TargetBinder`,
+ * with no directive matched), so that a name is the one `ngc` reads in its scope: a name a block
+ * binds again is the block's, and `this.m` is the class's member whatever a `@let` is called. A
+ * printed name is read as what binds it, every literal of it, as point 3 reads every literal of a
+ * printed expression: `@let m = 'Delete'` and `{{ m }}` draw what `{{ 'Delete' }}` draws.
+ *
+ *  - A `@let` stands for its value, an `@if` branch's alias (`as m`) for the branch's condition,
+ *    and a `@for` block's item for the collection. The block's own variables stand for nothing:
+ *    `$index` and its kin are the numbers and booleans it makes.
+ *  - A reference to a template stands for the template, and a node a binding of which stands for
+ *    it — an outlet beside its context, an `*ngIf` with a `then` — hands the template what the node
+ *    is handed (`handedTo`).
+ *  - A template's variable (`let-m`, `*ngIf="… as m"`, `*ngFor="let m of …"`) stands for the
+ *    literals handed to the template and by every such node, under the key of the context it reads
+ *    (`take`). It stands for no template: the outlet drawing the template names it beside the
+ *    context, and a variable standing for it would make each node reading the variable one more
+ *    that hands the template — a listbox's `[attr.aria-posinset]="i + 1"` with its `role`.
+ *  - A reference to an element stands for nothing: what a read of its members gives is the DOM's.
+ *
+ * Measured on Angular 22.2.1 through JIT and a render in jsdom: each of these draws the literal
+ * its name stands for, and `{{ this.m }}` beside `@let m` draws the member. What every name stands
+ * for is found once per template, the least set that holds what each name's binding gives under
+ * the sets found so far: a tree a template draws of itself hands its variable back to it, and a
+ * read following each name anew grew with the factorial of the variables a template reads.
+ */
+class Names {
+  constructor(nodes, tree) {
+    this.bound = new R3TargetBinder(null).bind({ template: nodes });
+    const owners = tree.filter(
+      (node) =>
+        node instanceof TmplAstElement || node instanceof TmplAstTemplate,
+    );
+    const names = tree.filter(
+      (node) =>
+        node instanceof TmplAstLetDeclaration ||
+        node instanceof TmplAstVariable,
+    );
+    this.values = new Map(names.map((name) => [name, new Set()]));
+    for (let grew = true; grew;) {
+      grew = false;
+      const handed = new Map(
+        owners.map((owner) => [
+          owner,
+          handedTo(owner).map((a) => this.given(a)),
+        ]),
+      );
+      for (const name of names)
+        for (const value of this.bindingOf(name, handed))
+          if (!this.values.get(name).has(value)) {
+            this.values.get(name).add(value);
+            grew = true;
+          }
+    }
+  }
+
+  /** The literals a printed read stands for, when it reads a name the template binds. */
+  of(read) {
+    const entity = this.bound.getExpressionTarget(read);
+    return this.values.has(entity)
+      ? [...this.values.get(entity)].filter((v) => typeof v === 'string')
+      : [];
+  }
+
+  /** An expression's literals, and the templates it stands for, under the sets found so far. */
+  valuesOf(expression) {
+    const found = [];
+    expression.visit(
+      new ExpressionLiterals(
+        (value) => found.push(value),
+        (read) => {
+          const entity = this.bound.getExpressionTarget(read);
+          if (entity instanceof TmplAstReference)
+            found.push(this.bound.getReferenceTarget(entity));
+          else if (entity) found.push(...this.values.get(entity));
+        },
+      ),
+    );
+    return found;
+  }
+
+  /** One thing a node hands, by its name, with what each key of a map literal it is stands for. */
+  given(attribute) {
+    if (attribute instanceof TmplAstTextAttribute)
+      return { name: attribute.name, values: [attribute.value], bound: false };
+    const map = attribute.value.ast;
+    const literal = map instanceof LiteralMap;
+    return {
+      name: attribute.name,
+      values: this.valuesOf(attribute.value),
+      keys:
+        literal && map.keys.every((k) => k.kind !== 'spread')
+          ? new Map(
+              map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
+            )
+          : null,
+      bound: true,
+    };
+  }
+
+  /** What binds a name gives under the sets found so far, `handed` holding what each node hands. */
+  bindingOf(name, handed) {
+    if (name instanceof TmplAstLetDeclaration) return this.valuesOf(name.value);
+    const node = this.bound.getDefinitionNodeOfSymbol(name);
+    if (node instanceof TmplAstIfBlockBranch)
+      return this.valuesOf(node.expression);
+    if (node instanceof TmplAstForLoopBlock)
+      return name === node.item ? this.valuesOf(node.expression) : [];
+    const key = name.value || '$implicit';
+    return [...handed]
+      .flatMap(([owner, given]) =>
+        owner === node || given.some((g) => g.values.includes(node))
+          ? given.flatMap((g) => take(g, key))
+          : [],
+      )
+      .filter((v) => typeof v === 'string');
+  }
+}
+
+/**
+ * One walk over a template's tree. It collects what the user sees: node texts, the values of
+ * speaking attributes and the literals from expressions that land in such a place, written there or
+ * standing for a name read there (`names`). It counts the nodes it reaches along the way (`seen`) —
+ * point 1 compares that count against zero, because a pass that visited nothing pronounces on
+ * everything (`lesson-48`), and holds every node of the tree to having been reached (`nodesOf`).
  */
 class TemplateScanner extends TmplAstRecursiveVisitor {
   constructor(file) {
@@ -484,6 +656,9 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.texts = [];
     this.attributes = [];
     this.expressions = [];
+    this.named = [];
+    this.names = null;
+    this.taken = new Set();
     this.icu = 0;
     this.nodesSeen = 0;
     this.reached = new Set();
@@ -505,7 +680,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    * (measured on Angular 22.2.1, through JIT and a render in jsdom): an `<ng-content>`'s
    * attributes, keys an outer `select` matches, of which nothing is drawn or put into `consts`;
    * an inline template's own bindings (`*ngFor="let item of items()"`), inputs of a directive on
-   * the template, which draws a comment, and hands its names what they print (`KNOWN_NODES`); the
+   * the template, which draws a comment, and hands its names what they print (`Names`); the
    * `never` of an exhaustive `@switch`, which takes no body; and what an ICU holds, which point 3
    * refuses whole.
    */
@@ -518,16 +693,40 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
       this.texts.push({ value: node.value.trim(), line: line(node) });
   }
 
-  visitBoundText(node) {
+  /**
+   * Whether an attribute or a binding is read here for the first time. An inline template carries
+   * its element's attributes and inputs hoisted, the same objects, beside its own bindings — no
+   * directive of the template takes them (`handedTo`) — and the walk is handed each twice: once with
+   * the template, outside the element, and once with the element, which decides whether it speaks
+   * (`<input type="submit">`). Read twice, one `title` was two refusals.
+   */
+  first(node) {
+    if (this.taken.has(node)) return false;
+    this.taken.add(node);
+    return true;
+  }
+
+  /** What a printed expression draws: its literals, and those the names it reads stand for. */
+  print(node, where) {
+    if (!this.first(node)) return;
     node.value.visit(
-      new ExpressionLiterals((v) =>
-        this.expressions.push({
-          where: 'interpolation',
-          value: v,
-          line: line(node),
-        }),
+      new ExpressionLiterals(
+        (value) => this.expressions.push({ where, value, line: line(node) }),
+        (read) => {
+          for (const value of this.names.of(read))
+            this.named.push({
+              where,
+              name: read.name,
+              value,
+              line: line(node),
+            });
+        },
       ),
     );
+  }
+
+  visitBoundText(node) {
+    this.print(node, 'interpolation');
   }
 
   /**
@@ -557,7 +756,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitTextAttribute(node) {
-    if (this.speaking(node.name))
+    if (this.speaking(node.name) && this.first(node))
       this.attributes.push({
         name: node.name,
         value: node.value,
@@ -569,15 +768,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     // A two-way binding holds no literal to read, so a property is the one-way kind.
     const property = node.type === BindingType.Property;
     if (!this.speaking(property ? reflected(node.name) : node.name)) return;
-    node.value.visit(
-      new ExpressionLiterals((v) =>
-        this.expressions.push({
-          where: `binding \`${node.name}\``,
-          value: v,
-          line: line(node),
-        }),
-      ),
-    );
+    this.print(node, `binding \`${node.name}\``);
   }
 
   /**
@@ -633,15 +824,18 @@ const line = (node) => node?.sourceSpan?.start?.line + 1 || '?';
  * `preserveWhitespaces: false` — that is how a template really compiles, so that is the set
  * of nodes reaching the browser. Under `true` every indent would be a text node of its own
  * and point 3 would be pronouncing on whitespace. Beside the scan, each node of the tree the walk
- * never reached (`nodesOf`), by its kind and the field holding it.
+ * never reached (`nodesOf`), by its kind and the field holding it; the same tree gives the nodes a
+ * template's variable may be handed by (`Names`).
  */
 const readTemplate = (file, content) => {
   const result = parseTemplate(content, file, { preserveWhitespaces: false });
   const scanner = new TemplateScanner(file);
   const unreached = [];
   if (!result.errors?.length) {
+    const tree = nodesOf(result.nodes);
+    scanner.names = new Names(result.nodes, [...tree.keys()]);
     visitAll(scanner, result.nodes);
-    for (const [node, holder] of nodesOf(result.nodes))
+    for (const [node, holder] of tree)
       if (!scanner.reached.has(node))
         unreached.push(`${kindOf(node)} in \`${holder}\`, line ${line(node)}`);
   }
@@ -1304,6 +1498,27 @@ const checkTexts = (input) => {
         `\n    \`{{ open() ? 'Close' : 'Open' }}\` bypasses the channel exactly like a ` +
         `string written into a node's text — only it looks like code. A pipe's argument ` +
         `does not count: that is a format marker, not text.`,
+    );
+
+  const namedViolations = [];
+  for (const s of scans)
+    for (const w of s.scanner.named)
+      if (LETTER.test(w.value))
+        namedViolations.push(
+          `${s.file}:${w.line}: ${w.where} reads \`${w.name}\` → ${JSON.stringify(w.value)}`,
+        );
+  if (namedViolations.length)
+    throw new TextsError(
+      'template',
+      'literal-through-a-name',
+      `${namedViolations.length} string literals reach the DOM through a name the template ` +
+        `binds:\n` +
+        list(shorten(namedViolations)) +
+        `\n    A name is printed as what binds it: \`@let m = 'Delete'\` and \`{{ m }}\` draw ` +
+        `what \`{{ 'Delete' }}\` draws, and so do an \`@if\`'s condition through \`as m\`, a ` +
+        `\`@for\`'s collection through its item, and what a template is handed — a ` +
+        `directive's input, an outlet's context — through \`let-m\`. The string goes through ` +
+        `\`PCT_TEXTS\`, and the name carries the read.`,
     );
 
   const withIcu = scans.filter((s) => s.scanner.icu);

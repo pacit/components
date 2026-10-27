@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `x` → \"Delete the row\"",
+  "description": "A sentence an inline template's `ngForOf` binding hands the loop's variable. A binding that is no map literal is an input a directive files under a key no read here knows, and the item takes it whole — the template's own bindings, and not the attributes of its element (`class`), which the template carries hoisted and the element's directives take, so the refusal counts one."
+}

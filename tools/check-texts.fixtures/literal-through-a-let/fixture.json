@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence a `@let` holds and the template prints. The value of a `@let` is read where no point reads it, and the literal is drawn wherever the name is printed (measured: JIT and a render in jsdom draw \"Delete the row\"). Point 3 reads a printed name as what binds it (`Names`), so `{{ m }}` is `{{ 'Delete the row' }}`."
+}
