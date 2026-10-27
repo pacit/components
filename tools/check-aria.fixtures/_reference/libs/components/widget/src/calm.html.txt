@@ -2,12 +2,19 @@
      `FALSE`, at `Undefined` and with no value; a class and an animation named `inert`, which
      write no attribute; an `inert` on an SVG group, which is HTML's attribute alone. The hint
      under an `aria-hidden` is still the control's description in both. Nothing sets a part's
-     live region either (measured on 2026-10-27): an `aria-live` above the error, which Firefox
-     hands an `alert` that has none of its own; an `aria-relevant`, `aria-atomic` or `aria-busy`
-     left empty, which is none to either engine, or named by a class binding; the three at their
-     worst above the hint, which is no live region, and on an element before the line. -->
-<span class="pct-calm__wait" aria-busy="true" aria-relevant="removals" aria-atomic="false"></span>
-<div aria-hidden="FALSE" aria-live="off">
+     live region either (measured on 2026-10-27): an `aria-live`, `aria-relevant` or
+     `aria-atomic` left empty, which is none to either engine, or named by a class binding; an
+     `aria-busy` at `FALSE` or `false`, on the part or inside it, which neither reads as busy;
+     the four at their worst above the hint, which is no live region, and on an element before
+     the line. -->
+<span
+  class="pct-calm__wait"
+  aria-live="off"
+  aria-busy="true"
+  aria-relevant="removals"
+  aria-atomic="false"
+></span>
+<div aria-hidden="FALSE" aria-live="">
   <span aria-hidden="Undefined" [class.aria-busy]="quiet()">
     <span aria-hidden [class.inert]="quiet()" [@inert]="quiet()">
       @if (error()) {
@@ -26,10 +33,16 @@
         data-pct-part="warning"
         role="status"
         aria-atomic=""
-        aria-busy=""
-      >{{ warning() }}</span>
+        aria-busy="FALSE"
+      ><span aria-busy="false" [class.aria-live]="quiet()">{{ warning() }}</span></span>
       } @else if (hint()) {
-      <span aria-hidden="true" aria-busy="true" aria-relevant="removals" aria-atomic="false">
+      <span
+        aria-hidden="true"
+        aria-live="off"
+        aria-busy="true"
+        aria-relevant="removals"
+        aria-atomic="false"
+      >
         <span class="pct-calm__hint" data-pct-part="hint">{{ hint() }}</span>
       </span>
       }

@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "`aria-busy=\"true\"` on the host of PctPending sets the live region of `error` otherwise than its role does",
-  "$reason": "A component whose host block writes `aria-busy: 'true'`, its template holding an error part with its `alert`. Firefox 158 hands every part below a busy custom element `container-busy=\"true\"` (measured on 2026-10-27). The host is above every part of the template, and point 7 read none of it."
+  "$reason": "A component whose host block writes `aria-busy: 'true'`, its template holding an error part with its `alert`. Firefox 158 hands every part below a busy custom element `container-busy=\"true\"` (measured on 2026-10-27); for an `alert` it costs nothing measured, as above a wrapper, and it is refused by the rule that holds a warning there. The host is above every part of the template, and point 7 read none of it."
 }

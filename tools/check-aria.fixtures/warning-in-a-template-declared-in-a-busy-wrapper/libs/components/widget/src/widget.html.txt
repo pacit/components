@@ -1,4 +1,4 @@
-<!-- The reference's trigger, and an error part in a template declared and stamped inside a busy wrapper. -->
+<!-- The reference's trigger, and a warning part in a template declared and stamped inside a busy wrapper. -->
 <span class="pct-widget__box">
   <button
     class="pct-widget__trigger"
@@ -12,9 +12,11 @@
 </span>
 
 @if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (showWarning()) {
 <div class="pct-widget__messages" aria-busy="true">
   <ng-template #message>
-    <span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+    <span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
   </ng-template>
   <ng-container [ngTemplateOutlet]="message" />
 </div>

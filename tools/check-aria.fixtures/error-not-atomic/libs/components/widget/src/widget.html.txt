@@ -1,4 +1,4 @@
-<!-- The reference's trigger, and an error part whose region is not atomic. -->
+<!-- The reference's trigger, and an error part, not atomic, whose name and message are two nodes. -->
 <span class="pct-widget__box">
   <button
     class="pct-widget__trigger"
@@ -12,7 +12,9 @@
 </span>
 
 @if (showError()) {
-<span class="pct-widget__error" data-pct-part="error" role="alert" aria-atomic="false">{{ error() }}</span>
+<span class="pct-widget__error" data-pct-part="error" role="alert" aria-atomic="false"
+  ><span class="pct-widget__field">{{ label() }}:</span> {{ error() }}</span
+>
 } @else if (showWarning()) {
 <span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
 } @else if (hint()) {

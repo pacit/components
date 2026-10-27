@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "`aria-atomic=\"false\"` on the part sets the live region of `error` otherwise than its role does",
-  "$reason": "An error part with its `alert` and `aria-atomic=\"false\"`. Chromium 153 takes the atomicity the role implies away (measured on 2026-10-27), and a reader then says the text that changed instead of the region (Orca reads the inserted text unless `container-atomic` is `true`, NVDA the same): a message going from `At least 3 characters` to `At least 5 characters` is announced as `5`. Point 7 read the part's role and politeness and what may hide it, and passed it."
+  "$reason": "An error part with its `alert` and `aria-atomic=\"false\"`, holding the field's name and the message in two nodes. Chromium 153 takes the atomicity the role implies away (measured on 2026-10-27); a reader then says the node that changed rather than the region (Orca reads the inserted text unless `container-atomic` is `true`, NVDA the new text), and Chromium takes a node's text as changed whole (`ComputeHypertextRemovedAndInserted`): a new message is said without the name before it. A part holding one text node, as every part of the library does, would be said whole either way. Point 7 read the part's role and politeness and what may hide it, and passed it."
 }

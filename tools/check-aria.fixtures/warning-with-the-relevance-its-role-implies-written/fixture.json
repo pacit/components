@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "`aria-relevant=\"additions text\"` on the part sets the live region of `warning` otherwise than its role does",
-  "$reason": "A warning part with its `status` and the `aria-relevant=\"additions text\"` the role implies, written. It is refused outright, as a written `aria-live` is, not as a value other than the role's: Firefox 158 exposes no relevance at all for the `status` alone and `container-relevant` for the written one, and a reading that allowed the role's own value would have to say which spellings are it (`ADDITIONS TEXT` is exposed as written by both engines, measured on 2026-10-27)."
+  "$reason": "A warning part with its `status` and the `aria-relevant=\"additions text\"` the role implies, written. It costs nothing measured and is refused by the rule, as a written `aria-live` is: Firefox 158 exposes no relevance for the `status` alone and `container-relevant` for the written one, Chromium 153 the same value either way (measured on 2026-10-27), and a reading that allowed the role's own value would have to say which spellings are it (`ADDITIONS TEXT` goes on as written in both)."
 }

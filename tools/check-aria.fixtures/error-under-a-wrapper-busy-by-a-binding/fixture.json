@@ -1,6 +1,0 @@
-{
-  "point": 7,
-  "check": "announcement",
-  "message": "a bound `aria-busy` on the `<div>` above it sets the live region of `error` otherwise than its role does",
-  "$reason": "The message line inside a wrapper whose `aria-busy` an expression writes, the shape the library's README gives for a region that waits. In the state where it gives `'true'` Firefox 158 hands the part a busy region (measured on 2026-10-27); its value is not in the template, so it is refused as a bound role is, rather than read. Point 7 read nothing above the part but what may hide it."
-}

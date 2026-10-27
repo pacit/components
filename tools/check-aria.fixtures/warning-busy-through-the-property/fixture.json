@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "a bound `aria-busy` on the part sets the live region of `warning` otherwise than its role does",
-  "$reason": "A warning part with its `status` and `[ariaBusy]`, the property that reflects `aria-busy`: in the state where it is `true` the region is busy in both engines and NVDA drops it. It is a binding of the attribute under another name, and refused as `[attr.aria-busy]` is. Point 7 read the part's role and politeness and what may hide it, and passed it."
+  "$reason": "A warning part with its `status` and `[ariaBusy]`, the property that reflects `aria-busy`: in the state where it is `true` the region is busy in both engines (measured on 2026-10-27). It is a binding of the attribute under another name, and refused as `[attr.aria-busy]` is. Point 7 read the part's role and politeness and what may hide it, and passed it."
 }
