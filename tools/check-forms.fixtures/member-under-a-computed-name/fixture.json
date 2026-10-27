@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The widget's `touched` under a computed name, a template literal (`member-overridden-under-a-computed-name` holds a string). TypeScript calls the property `touched`, and Angular reflects no name for it (`reflectClassMember`): `[touched]` on the widget binds no input (NG8002). The gate reads the name Angular does, and point 3 refuses the widget and says where the declaration that is none stands.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`, only a declaration that is no member at libs/components/widget/src/widget.ts:27"
+}

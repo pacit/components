@@ -1,0 +1,63 @@
+import {
+  booleanAttribute,
+  Inject,
+  InjectionToken,
+  input,
+  InputSignalWithTransform,
+  model,
+  output,
+} from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/**
+ * A control whose block stands on its BASE, which is the shape `pct-select` and
+ * `pct-multi-select` have: two tags over one abstract class. The leaf declares the contract
+ * and not one member of the block, so the reference walks the inheritance every run — with
+ * the base read out of the reading, this input fires point 3 on all four members.
+ */
+export abstract class PctKnobBase {
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once. */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}
+
+/** What the knob is told it starts as — a token, so the constructor below can take it. */
+const PCT_KNOB_INVALID = new InjectionToken<boolean>('PCT_KNOB_INVALID');
+
+/** The tag over that base — one line of its own, and the whole block behind it. */
+@Component({ selector: 'pct-knob', template: '' })
+export class PctKnob
+  extends PctKnobBase
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+
+  /** The form's verdict, redeclared through `Boolean` — without `readonly`. */
+  override invalid = input(false, { transform: Boolean });
+
+  /**
+   * The base's `touched`, its type said again: `declare` emits nothing, so this is no
+   * declaration of a property and hides nothing.
+   */
+  declare readonly touched: InputSignalWithTransform<boolean, unknown>;
+
+  /**
+   * A parameter under a member's name: without a modifier it is no property, and hides nothing
+   * of the base.
+   */
+  constructor(@Inject(PCT_KNOB_INVALID) invalid: boolean) {
+    super();
+  }
+}

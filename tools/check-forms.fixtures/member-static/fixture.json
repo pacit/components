@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The widget's `touched` declared `static`: a member of the class, which no form binds — ngc refuses an input so declared (NG1100). It declares no property of an instance, so the refusal names no declaration under the name. Read as a member, it gave point 3 a `touched` the widget has none of.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`\n    Every member of"
+}

@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The widget's `touched` written without `readonly`. Angular takes the input, and this library's rule does not: every signal member here is `readonly`, which the gate requires of a member of the block. Point 3 refuses the widget and says where the declaration that is none stands.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`, only a declaration that is no member at libs/components/widget/src/widget.ts:27"
+}

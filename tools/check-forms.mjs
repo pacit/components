@@ -4,10 +4,10 @@
  * signal-forms state block, the same way in every one of them — have a measurement behind
  * it? Every member of `FormUiControl` is optional, so `implements` proves only `value`.
  *
- *  1. DENOMINATOR: sources parse, headers and controls paired, contract read, controls found,
+ *  1. DENOMINATOR: sources parse, headers, controls and names read, contract read, controls found,
  *  2. CONTRACT: every name the block policy declares is really a member of `FormUiControl`,
  *  3. BLOCK: every control declares every member of the block,
- *  4. SHAPE: factory, default and transform identical in every control, character for character.
+ *  4. SHAPE: factory, default and transform identical in every control, token for token.
  *
  * The contract's member list is read from `@angular/forms`'s own declarations, never copied
  * here (`lesson-122`); the PROSE above those members is deliberately not held. A fifth run
@@ -52,19 +52,103 @@ const CONTRACT_INTERFACE = 'FormUiControl';
  */
 const CONTRACTS = new Set(['FormValueControl', 'FormCheckboxControl']);
 
+const flagged = (node, kind) =>
+  ts.getModifiers(node)?.some((m) => m.kind === kind);
+
+/**
+ * The name an instance property of a class is declared under, as TypeScript binds it — an
+ * identifier, a string, or a computed name that is a string, `['invalid']` or `` [`invalid`] `` —
+ * `null` for one under another computed name, and `undefined` for a declaration of none. A
+ * property declaration declares one, and so does a parameter property, which TypeScript makes a
+ * property of the class. None is declared by:
+ *   - `static` — the class's own, not an instance's: ngc refuses an input so declared (NG1100),
+ *   - `declare` — it says the type of a property the class has anyway and emits nothing, which is
+ *     how a leaf narrows a member of its base (`declare readonly invalid: …`, compiled by ngc),
+ *   - a `#private` name, which is no name of the block (and no input: NG1053).
+ * A computed name through an expression, `[KEY]` or `[Names.Invalid]`, is bound by the checker,
+ * which this reading does not run, and point 1 refuses it: under a member's name it hides the
+ * base's, and its field is the one the input runs, so what a control carries would not be known.
+ * Read as nothing, a leaf's `override readonly [INVALID]` through `Boolean` passed (measured).
+ * The rule errs toward refusing: a symbol (`[Symbol.toStringTag]`), a number and an abstract
+ * property name no member of the block and are refused as well, and the library declares no
+ * computed name in a class.
+ */
+const declaredName = (node) => {
+  if (
+    !(
+      ts.isPropertyDeclaration(node) &&
+      !flagged(node, ts.SyntaxKind.StaticKeyword) &&
+      !flagged(node, ts.SyntaxKind.DeclareKeyword)
+    ) &&
+    !ts.isParameterPropertyDeclaration(node, node.parent)
+  )
+    return undefined;
+  const { name } = node;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
+  if (!ts.isComputedPropertyName(name)) return undefined;
+  return ts.isStringLiteralLike(name.expression) ? name.expression.text : null;
+};
+
 /**
  * A member declaration, as this library and Angular's own guide write them:
  *
  *     readonly invalid = input(false, { transform: booleanAttribute });
  *
- * Anchored at two spaces, where prettier puts a member of a top-level class: the anchor finds the
- * declarations, and the parser says whose each one is (`classesIn`). No list of factories: every
- * `readonly` member is read, whatever it is assigned, so a control cannot leave the
- * denominator by being written in an unusual way. `readonly` itself IS required, which is
- * how every signal member in this library is declared — one written without it is missing
- * from the block and says so.
+ * of what `declaredName` names: a property declaration written `readonly` and with an initializer,
+ * whatever else it is written with — `override`, which `noImplicitOverride` demands of a leaf
+ * redeclaring its base's, an access modifier, a type — and wherever its lines break, under a name
+ * Angular reflects (`reflectClassMember`): an identifier's or a string's, `readonly 'disabled'`
+ * being the input `disabled`. No list of factories: every such member is read, whatever it is
+ * assigned, so a control cannot leave the denominator by being written in an unusual way.
+ * `readonly` itself IS required, which is how every signal member in this library is declared,
+ * though Angular takes an input written without it: that is the library's rule, not Angular's.
+ * The type before `=` is not compared, and changes nothing at run time; a decorator is not
+ * compared either, and an alias it gives (`@Output('blurred')`) is refused by the lint
+ * (`no-input-rename`, `no-output-rename`).
+ *
+ * Anything else declared under a name is no member, and in a leaf it hides its base's: a parameter
+ * property — ngc refuses `input()` anywhere but a property's initializer (NG8110) — a computed
+ * name — Angular reflects no name for it, and a binding to it is to no input (NG8002) — and a
+ * property without `readonly` or without an initializer. TypeScript types the property by the
+ * leaf's declaration, and the field written at run time is the leaf's: a transform declared there
+ * is the one the input runs (measured off ngc's output), so a control hiding a member of its base
+ * in any of these shapes has none, and point 3 says where the declaration stands. An abstract
+ * property takes no initializer (TS1267), and a concrete class implements it with one of its own.
+ *
+ * Read by a pattern at the margin, an `override` was no member and a declaration ended at its
+ * first line ending in `;`: a leaf's override compared as its base's and a block-bodied transform
+ * cut before it differed passed point 4, and a typed, a wrapped and a quoted member were refused
+ * as missing (measured).
  */
-const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/dgm;
+const isMember = (node) =>
+  ts.isPropertyDeclaration(node) &&
+  node.initializer !== undefined &&
+  flagged(node, ts.SyntaxKind.ReadonlyKeyword) &&
+  (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name));
+
+/**
+ * An initializer as point 4 compares it: its tokens, the whitespace and the comments between them
+ * aside, and a comma that only closes a list — `f(a,)`, `{ a, }`, `[a,]` — dropped, which changes
+ * nothing at run time. Prettier writes that comma where it wraps a list over lines, and compared
+ * as text, a member on one line and the same one wrapped were two declarations: a typed member,
+ * whose line prettier wraps, was refused beside its untyped twin (measured). A string keeps its
+ * spaces. What is compared is what is written, not what its names bind: a `booleanAttribute` of
+ * the file's own reads as Angular's.
+ */
+const shapeOf = (node, source) => {
+  const tokens = [];
+  const visit = (n) => {
+    if (ts.isToken(n)) return void tokens.push(n.getText(source));
+    const children = n.getChildren(source).filter((c) => !ts.isJSDoc(c));
+    // What ends in a comma is a list closed by it: inside a list, a comma separates, and
+    // nothing else of an expression ends in one. A hole before it is the one exception, `[,]`
+    // reading as `[]`, and no member of the contract is typed to hold either.
+    if (children.at(-1)?.kind === ts.SyntaxKind.CommaToken) children.pop();
+    children.forEach(visit);
+  };
+  visit(node);
+  return tokens.join(' ');
+};
 
 /**
  * `export class X`, `export abstract class X<T> extends Y implements Z {` — the name, and where
@@ -77,7 +161,7 @@ const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/dgm;
 const CLASS = /^export (?:abstract )?class (\w+)/dgm;
 
 /**
- * A violation. It carries the point's `check` AND its `rule`: point 1 has six rules and a
+ * A violation. It carries the point's `check` AND its `rule`: point 1 has seven rules and a
  * case firing on a neighbouring one proves something other than what it declares
  * (`lesson-50`).
  */
@@ -94,44 +178,32 @@ const list = (items) => items.map((t) => `      ${t}`).join('\n');
 // ── the reading ───────────────────────────────────────────────────────────────
 
 /**
- * The classes of one source file the pattern reads a header for, and the members each declares.
- * The pattern finds the declarations and the parser says whose they are (`owners`): a member is
- * the property whose name stands where the pattern reads the member's, of the class whose name
- * the header stands at. A declaration the parser holds as no property, a line in a comment or a
- * string, is no member. One of a class no header stands at is that class's: no control (point 1
- * refuses one that is), and a base no header stands at hands down nothing, which point 3 can
- * refuse a control for and never pass one. By position, the last header above it, a class of
- * no header lent what it declares at two spaces to the control above, a commented line was a
- * member, and a control without `disabled` or `touched` passed on either (measured).
+ * The classes of one source file the pattern reads a header for, and what each declares under a
+ * name: the parser's (`parsedIn`), of the class whose name the header stands at. A line in a
+ * comment or a string is no member, the parser holding no property there. A member of a class
+ * no header stands at is that class's: no control (point 1 refuses one that is), and a base no
+ * header stands at hands down nothing, which point 3 can refuse a control for and never pass
+ * one. By position, the last header above it, a class of no header lent what it declares at two
+ * spaces to the control above, a commented line was a member, and a control without `disabled`
+ * or `touched` passed on either (measured).
  */
-const classesIn = (file, text, owners) => {
-  const headers = [...text.matchAll(CLASS)].map((m) => ({
+const classesIn = (text, declared) =>
+  [...text.matchAll(CLASS)].map((m) => ({
     name: m[1],
     nameAt: m.indices[1][0],
     line: text.slice(0, m.index).split('\n').length,
-    members: new Map(),
+    declared: declared.get(m.indices[1][0]) ?? new Map(),
   }));
-  for (const m of text.matchAll(MEMBER)) {
-    const owner = headers.find((h) => h.nameAt === owners.get(m.indices[1][0]));
-    const member = {
-      name: m[1],
-      // The declaration, whitespace collapsed: a member wrapped over two lines by prettier
-      // and one written on a single line are the same declaration, and a gate that called
-      // them different would fire on the formatter.
-      text: m[2].replace(/\s+/g, ' ').trim(),
-      file,
-      line: text.slice(0, m.index).split('\n').length,
-    };
-    owner?.members.set(member.name, member);
-  }
-  return headers;
-};
 
 /**
  * What the TypeScript parser holds of one source file, at every depth, exported or not:
  *   `implementers` — the classes implementing a contract, by the offset their name stands at (a
  *                    class with no name: where it starts), to their name and line,
- *   `owners`       — every property of a class, by the offset its name stands at, to its class's.
+ *   `declared`     — what each class declares under a name (`declaredName`), by the same
+ *                    offset, as a map of names to the file and line of the name, whether it is
+ *                    a member (`isMember`), and a member's initializer as printed and compared,
+ *   `unnamed`      — every property declared under a computed name it does not resolve, by its
+ *                    file, line and class.
  * The pattern sees a header at the margin and nothing else: a control written without `export`,
  * nested in a function, a namespace or a method, or written as a class expression had none, and
  * the gate measured fewer controls than the library has — passing five such inputs, and
@@ -194,7 +266,10 @@ const parsedIn = (file, text) => {
     ) || ts.forEachChild(node, reaches) === true;
   const where = (node) => (node.name ?? node).getStart(source);
   const implementers = new Map();
-  const owners = new Map();
+  const declared = new Map();
+  const unnamed = [];
+  const line = (node) =>
+    source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
   const visit = (node) => {
     if (
       ts.isClassLike(node) &&
@@ -208,13 +283,35 @@ const parsedIn = (file, text) => {
         name: node.name?.text ?? 'a class with no name',
         line: source.getLineAndCharacterOfPosition(where(node)).line + 1,
       });
-    // A property's parent is the class that declares it, a class expression's included.
-    if (ts.isPropertyDeclaration(node))
-      owners.set(node.name.getStart(source), where(node.parent));
+    // A property's parent is the class that declares it, a class expression's included, and a
+    // parameter property's is the constructor.
+    const name = declaredName(node);
+    if (name === null)
+      unnamed.push(
+        `${file}:${line(node.name)}: ${node.parent.name?.text ?? 'a class with no name'}`,
+      );
+    else if (name !== undefined) {
+      const owner = where(
+        ts.isParameter(node) ? node.parent.parent : node.parent,
+      );
+      const names = declared.get(owner) ?? new Map();
+      const member = isMember(node);
+      names.set(name, {
+        member,
+        file,
+        line: line(node.name),
+        // The initializer as the refusal prints it, whitespace collapsed, and as it is compared.
+        ...(member && {
+          text: node.initializer.getText(source).replace(/\s+/g, ' '),
+          shape: shapeOf(node.initializer, source),
+        }),
+      });
+      declared.set(owner, names);
+    }
     ts.forEachChild(node, visit);
   };
   visit(source);
-  return { implementers, owners };
+  return { implementers, declared, unnamed };
 };
 
 /**
@@ -240,13 +337,15 @@ const readSources = (root, files) => {
   const classes = new Map();
   const unheld = [];
   const unread = [];
+  const unnamed = [];
   const contents = new Map(
     files.map((file) => [file, readFileSync(join(root, file), 'utf8')]),
   );
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
-    const { implementers, owners } = parsedIn(file, content);
-    for (const header of classesIn(file, content, owners)) {
+    const { implementers, declared, unnamed: here } = parsedIn(file, content);
+    unnamed.push(...here);
+    for (const header of classesIn(content, declared)) {
       const key = classKey(file, header.name);
       const held = bases.get(key);
       if (held?.at !== header.nameAt) {
@@ -265,7 +364,7 @@ const readSources = (root, files) => {
     for (const { name, line } of implementers.values())
       unread.push(`${file}:${line}: ${name}`);
   }
-  return { classes, unheld, unread };
+  return { classes, unheld, unread, unnamed };
 };
 
 /**
@@ -309,17 +408,23 @@ const readContract = (text) => {
  * directories carry no `package.json`, which `class-bases.mjs` does not read.
  */
 const controlsOf = (classes) => {
-  // The members down the chain, and `stop`: the class whose base it ends at unread, if one does.
+  // What is declared down the chain, and `stop`: the class whose base it ends at unread, if one
+  // does.
   const inherited = (key, seen = new Set()) => {
     const cls = classes.get(key);
-    if (!cls || seen.has(key)) return { members: new Map() };
+    if (!cls || seen.has(key)) return { declared: new Map() };
     seen.add(key);
     const up = classes.has(cls.from)
       ? inherited(cls.from, seen)
-      : { members: new Map(), stop: cls.base === undefined ? undefined : cls };
-    // The base FIRST, so a leaf redeclaring a member wins — which is what TypeScript does,
-    // and the file the violation names then has to be the file a reader would edit.
-    return { members: new Map([...up.members, ...cls.members]), stop: up.stop };
+      : { declared: new Map(), stop: cls.base === undefined ? undefined : cls };
+    // The base FIRST, so a leaf redeclaring a member — `override readonly`, as
+    // `noImplicitOverride` has it written, or in a shape that is no member — wins, which is what
+    // TypeScript does, and the file the violation names then has to be the file a reader would
+    // edit.
+    return {
+      declared: new Map([...up.declared, ...cls.declared]),
+      stop: up.stop,
+    };
   };
   return [...classes]
     .filter(([, c]) => c.control)
@@ -339,12 +444,21 @@ const controlsOf = (classes) => {
  *   `classes`  — every class of the sources a header stands at, by name and file,
  *   `unheld`   — class headers where the parser holds no top-level class,
  *   `unread`   — classes implementing a contract where the reading reads no header,
+ *   `unnamed`  — properties declared under a computed name the reading does not resolve,
  *   `contract` — the member names of `FormUiControl`, or null,
  *   `files`    — how many source files were read.
  * Throws on the first violation: the points run from the most basic, so a later one would
  * be examining an input nobody has established anything about.
  */
-const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
+const checkForms = ({
+  policy,
+  classes,
+  unheld,
+  unread,
+  unnamed,
+  contract,
+  files,
+}) => {
   // ── 1. DENOMINATOR ──────────────────────────────────────────────────────────
   const block = policy?.block;
   if (!Array.isArray(block) || block.length === 0)
@@ -391,6 +505,18 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
         `fewer controls than the library has.`,
     );
 
+  if (unnamed.length)
+    throw new FormsError(
+      'denominator',
+      'name-unread',
+      `${unnamed.length} propert(ies) of a class are declared under a computed name the ` +
+        `reading does not resolve:\n` +
+        list(unnamed) +
+        `\n    TypeScript binds \`[KEY]\` through its checker, which this gate does not run. ` +
+        `Under a member's name, such a property hides the base's member and its field is ` +
+        `the one the input runs, so what a control carries is not known.`,
+    );
+
   if (contract === null || contract.size === 0)
     throw new FormsError(
       'denominator',
@@ -426,16 +552,29 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
     );
 
   // ── 3. BLOCK ────────────────────────────────────────────────────────────────
+  const lacks = (c, name) => !c.declared.get(name)?.member;
   const missing = controls.flatMap((c) =>
     block
-      .filter((name) => !c.members.has(name))
-      .map((name) => `${c.file}: ${c.name} has no \`${name}\``),
+      .filter((name) => lacks(c, name))
+      .map((name) => {
+        const other = c.declared.get(name);
+        return (
+          `${c.file}: ${c.name} has no \`${name}\`` +
+          (other === undefined
+            ? ''
+            : `, only a declaration that is no member at ${other.file}:${other.line}`)
+        );
+      }),
+  );
+  // A declaration standing where a member is missing, said: it hides a base's member.
+  const hides = controls.some((c) =>
+    block.some((name) => lacks(c, name) && c.declared.has(name)),
   );
   // Where a control missing a member stops inheriting, said: the member may stand on that base.
   const stops = [
     ...new Set(
       controls
-        .filter((c) => c.stop && block.some((name) => !c.members.has(name)))
+        .filter((c) => c.stop && block.some((name) => lacks(c, name)))
         .map(
           ({ stop }) =>
             `${stop.file}: ${stop.name} extends \`${stop.base}\`, ${standsFor(stop)}` +
@@ -456,6 +595,12 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
             `nothing — what it declares is not read:\n` +
             list(stops)
           : '') +
+        (hides
+          ? `\n    A declaration under a member's name that is no member — a parameter ` +
+            `property, a computed name, one without \`readonly\` or an initializer — ` +
+            `stands for none, and over a base hides the base's: TypeScript types the property ` +
+            `by it, and the field written at run time is the class's own.`
+          : '') +
         `\n    Every member of \`${CONTRACT_INTERFACE}\` is optional, so this compiles ` +
         `and the control simply never learns that state — an invalid field that never ` +
         `opens red, a readonly one that goes on taking input. What a consumer sees is a ` +
@@ -467,19 +612,23 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
   for (const name of block) {
     const variants = new Map();
     for (const control of controls) {
-      const declaration = control.members.get(name);
+      const declaration = control.declared.get(name);
       // A SET of places, because two tags standing on one base are two controls reading the
       // same line, and a line printed twice reads as two copies that agree with each other.
-      const seen = variants.get(declaration.text) ?? new Set();
-      seen.add(`${declaration.file}:${declaration.line}`);
-      variants.set(declaration.text, seen);
+      // Printed as the first declaration of its shape is written.
+      const variant = variants.get(declaration.shape) ?? {
+        text: declaration.text,
+        where: new Set(),
+      };
+      variant.where.add(`${declaration.file}:${declaration.line}`);
+      variants.set(declaration.shape, variant);
     }
     if (variants.size === 1) continue;
     drift.push(
       `\`${name}\` is declared ${variants.size} different ways:\n` +
-        [...variants]
+        [...variants.values()]
           .map(
-            ([text, where]) =>
+            ({ text, where }) =>
               `        ${text}\n          ${[...where].sort().join(', ')}`,
           )
           .join('\n'),
@@ -503,7 +652,7 @@ const checkForms = ({ policy, classes, unheld, unread, contract, files }) => {
   // two tags over one abstract class are two controls and one copy of the block, and the
   // number worth printing is how many copies there are to drift.
   const sites = new Set(
-    controls.flatMap((c) => block.map((name) => c.members.get(name).file)),
+    controls.flatMap((c) => block.map((name) => c.declared.get(name).file)),
   );
   return (
     `${controls.length} controls carrying the block from ${sites.size} declaration ` +
@@ -526,12 +675,13 @@ const sourcesIn = (root, files) =>
 
 const gatherInput = (root, files) => {
   const sources = sourcesIn(root, files);
-  const { classes, unheld, unread } = readSources(root, sources);
+  const { classes, unheld, unread, unnamed } = readSources(root, sources);
   return {
     policy: JSON.parse(read(root, POLICY) ?? 'null'),
     classes,
     unheld,
     unread,
+    unnamed,
     contract: readContract(read(root, CONTRACT)),
     files: sources.length,
   };

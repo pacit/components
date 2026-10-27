@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "name-unread",
+  "description": "The `member-overridden` defect under a name kept in a constant, `[INVALID]`. It compiles (ngc), and the lint says nothing of it; the field under the name is the knob's, so the input runs its `Boolean`. TypeScript binds the name through its checker, which the gate does not run, so it cannot say which member the property hides: read as nothing, it let the base's `booleanAttribute` stand and the input passed (measured). Point 1 refuses the property, with where it stands; a class expression below holds the same, which the refusal names as a class with no name.",
+  "message": "libs/components/widget/src/knob.ts:55: PctKnob\n      libs/components/widget/src/knob.ts:74: a class with no name"
+}

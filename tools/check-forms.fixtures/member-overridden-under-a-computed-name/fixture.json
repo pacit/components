@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The `member-overridden` defect under a computed name: it compiles (ngc), Angular reflects no input for it and inherits the base's, and the field under the name is the knob's, so the input runs the knob's `Boolean` (core's `writeToDirectiveInput`) and `<pct-knob invalid>` reads `''` false. Read as nothing, it let the base's `booleanAttribute` stand for the knob's: the input passed (measured). It hides the base's member, and point 3 refuses the knob.",
+  "message": "libs/components/widget/src/knob.ts: PctKnob has no `invalid`, only a declaration that is no member at libs/components/widget/src/knob.ts:48"
+}

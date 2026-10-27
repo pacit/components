@@ -1,4 +1,12 @@
-import { booleanAttribute, input, model, output } from '@angular/core';
+import {
+  booleanAttribute,
+  Inject,
+  InjectionToken,
+  input,
+  InputSignalWithTransform,
+  model,
+  output,
+} from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 
 /**
@@ -24,6 +32,9 @@ export abstract class PctKnobBase {
   readonly touch = output<void>();
 }
 
+/** What the knob is told it starts as — a token, so the constructor below can take it. */
+const PCT_KNOB_INVALID = new InjectionToken<boolean>('PCT_KNOB_INVALID');
+
 /** The tag over that base — one line of its own, and the whole block behind it. */
 @Component({ selector: 'pct-knob', template: '' })
 export class PctKnob
@@ -32,4 +43,18 @@ export class PctKnob
 {
   /** The value — the contract's one required member. */
   readonly value = model<number | null>(null);
+
+  /**
+   * The base's `touched`, its type said again: `declare` emits nothing, so this is no
+   * declaration of a property and hides nothing.
+   */
+  declare readonly touched: InputSignalWithTransform<boolean, unknown>;
+
+  /**
+   * A parameter under a member's name: without a modifier it is no property, and hides nothing
+   * of the base.
+   */
+  constructor(@Inject(PCT_KNOB_INVALID) invalid: boolean) {
+    super();
+  }
 }
