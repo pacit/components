@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-text",
+  "message": "\"Collapse the list\"",
+  "description": "Text in an element an inline template wraps (`*ngIf`). The template's own binding is an input of the directive on the template, which draws a comment: the compiler's visitor does not hand it on (`templateAttrs`), and the walk passes over it, as it reads the text inside. A walk that left the binding unreached refuses this case on point 1 instead."
+}

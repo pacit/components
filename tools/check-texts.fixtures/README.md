@@ -82,11 +82,34 @@ groups them by object with the same code the live run uses. The
 reference exports `PctBlank` a second time, as `PctBare`, a name that comes before its own, and `PctMarker` under `PctMark`
 alone, and passes.
 
-## One rule with no case
+## The walk's own denominator
 
-`denominator/unknown-node` — fires when `parseTemplate` returns a kind of node this
-workaround does not know. It cannot be reached today: selectorless syntax (`<Widget/>`,
-`@Marker`), the only source of new node kinds on the horizon, is **off** in the parser's
-default options — measured, `parseTemplate('<Widget/>')` gives an ordinary `Element`. The
-rule exists so that the day it is switched on is the day the gate **says so**, and not the
-day it quietly stops measuring the contents of such a node.
+Two rules of point 1 hold the walk to the template's tree, and each has a case. Every method of
+the compiler's visitor counts the node it is handed (`seen`), and not only the methods
+`TemplateScanner` writes: eight of the thirty-one counted nothing — those of an `@boundary` and
+its `@error` blocks, of the groups of an `@switch` and its `never`, of a `@defer` block's
+triggers, of a `@content` block and of the selectorless `Component` and `Directive` — so
+`unknown-node`, which this README once called unreachable for want of a new kind, was unreachable
+for want of a count. The reference holds a node of every kind `KNOWN_NODES` lists but the ICU,
+which `icu-in-template` holds, its `@boundary` among them, so that a kind taken off the list
+refuses one of the two, and `text-in-an-error-block` shows the sentence an `@error` block says
+read.
+
+- `content-block-in-a-template` — `denominator/unknown-node`: a `@content` block, which the
+  parser makes with no flag and `ngc` refuses outside a foreign component (`NG8026`). The kind is
+  left out of the list: the library has no foreign component, and what one draws of the block is
+  its render function's, which no reading here follows.
+- `content-block-with-variables` — `denominator/unreached-node`: the same block with variables,
+  which the compiler's visitor does not hand on. The gate finds the tree a second time, over
+  every node's fields (`nodesOf`), and refuses a node the walk was never handed before it asks a
+  kind: what is never reached is never checked. What the visitor leaves and draws nothing, the
+  walk passes over and reads nothing of, each measured on Angular 22.2.1 through JIT and a render
+  in jsdom: an `<ng-content>`'s attributes, an inline template's own bindings
+  (`text-under-an-inline-template`), the `never` of an exhaustive `@switch`, and what an ICU
+  holds (`icu-in-template`).
+
+Not held: `Component` and `Directive` are made only under `enableSelectorless`, which this gate's
+parse leaves off as `ngc` does by default, so no input brings one; a library that switched it on
+in `ngc` alone would still be read with it off — a `<Widget>` as an element, a `@Marker(…)` as a
+parse error point 1 refuses. And a `@let`'s value is not read: a literal it holds is drawn wherever
+its name is printed, and no template of the library declares one.

@@ -4,16 +4,16 @@
  * `PCT_TEXTS` token, not into a template or an input's default. A literal added to a template
  * compiles, passes the tests and looks right in every screenshot; it breaks at a consumer.
  *
- *  1. DENOMINATOR: every decorator parsed, every template owned, no unknown AST node,
+ *  1. DENOMINATOR: every decorator parsed, every template owned, every node reached and known,
  *  2. ARTIFACT: the classes and static attributes from the sources match the BUILT package,
  *  3. TEMPLATE: no text node and no SPEAKING attribute carries a literal with a letter,
  *  4. TYPESCRIPT: a signal's default is not prose and does not read `PCT_TEXTS`,
  *  5. CHANNEL: the `PctTexts` keys, their defaults and their reads are one set,
  *  6. WARNINGS: `console.*` draws nothing from `PCT_TEXTS` and is quiet outside `isDevMode()`.
  *
- * The template is read by `parseTemplate` from `@angular/compiler` and walked by
- * `TmplAstRecursiveVisitor`: it cannot lose syntax quietly, and point 1's four rules watch
- * that it sees EVERYTHING.
+ * The template is read by `parseTemplate` from `@angular/compiler` and walked by the compiler's
+ * own visitor, every method of which counts what it is handed; point 1 holds the count to the
+ * tree, found over every node's fields, so that the walk cannot lose syntax quietly.
  *
  * Usage: node tools/check-texts.mjs
  */
@@ -25,9 +25,11 @@ import {
   R3Identifiers,
   RecursiveAstVisitor,
   splitNsName,
+  TmplAstDeferredTrigger,
   TmplAstRecursiveVisitor,
   visitAll,
 } from '@angular/compiler';
+import * as compiler from '@angular/compiler';
 import * as core from '@angular/core';
 import { execFileSync } from 'node:child_process';
 import {
@@ -349,37 +351,99 @@ const readSources = (root, files) => {
 };
 
 /**
- * The node kinds this walk understands. The list exists so that the day Angular adds a new
- * kind of node carrying text (on the horizon today: `TmplAstComponent` and
- * `TmplAstDirective` from the selectorless syntax) is the day this gate SAYS so — rather
- * than the day it quietly stops measuring that node's contents.
+ * The node kinds this walk understands, and what each carries. The list exists so that the day
+ * the parser makes a kind it does not hold is the day this gate SAYS so — rather than the day it
+ * quietly stops measuring that node's contents. Every method of the compiler's visitor counts the
+ * node it is handed, whichever of them `TemplateScanner` writes (`seen`), so a kind is checked
+ * wherever it stands; and the reference holds a node of each but an ICU, which a case holds
+ * (`icu-in-template`), so that a kind taken off the list refuses one of the two.
+ *
+ * Left out, measured on Angular 22.2.1: `ContentBlock` (`@content`), a foreign component's slot,
+ * which the parser makes and `ngc` refuses outside one (`NG8026`) — the library has none, and what
+ * one draws of the block is its render function's, which no reading here follows; `Component` and
+ * `Directive`, which the parser makes under the selectorless syntax alone, off in `ngc` and in
+ * `parseTemplate` alike; and `UnknownBlock`, which comes with a parse error every time, so that
+ * point 1 refuses its template before any walk.
  */
 const KNOWN_NODES = new Set([
+  // What the walk reads: a text, a speaking attribute's value, a binding's literals.
   'Text',
   'BoundText',
   'TextAttribute',
   'BoundAttribute',
-  'BoundEvent',
+  // What holds the rest: the walk enters each, an `@boundary` and its `@error` blocks among
+  // them (measured: the text in both is read), and none draws a string of its own.
   'Element',
   'Template',
   'Content',
-  'Reference',
-  'Variable',
-  'LetDeclaration',
   'IfBlock',
   'IfBlockBranch',
   'ForLoopBlock',
   'ForLoopBlockEmpty',
   'SwitchBlock',
-  'SwitchBlockCase',
   'SwitchBlockCaseGroup',
   'DeferredBlock',
   'DeferredBlockPlaceholder',
   'DeferredBlockLoading',
   'DeferredBlockError',
+  'BoundaryBlock',
+  'BoundaryErrorBlock',
+  // What draws nothing: a listener, a name, a condition — a `@case`'s, the `never` of an
+  // exhaustive `@switch`, which takes no body, and a `@defer` block's trigger (`kindOf`).
+  'BoundEvent',
+  'Reference',
+  'Variable',
+  'SwitchBlockCase',
+  'SwitchExhaustiveCheck',
+  'DeferredTrigger',
+  // A `@let`, whose value is not read: a literal it holds is drawn wherever its name is
+  // printed, and no binding the walk reads follows the name there. No template of the library
+  // declares one.
+  'LetDeclaration',
+  // Refused whole by point 3 (`visitIcu`).
   'Icu',
-  'UnknownBlock',
 ]);
+
+/**
+ * A node's kind, by its class's name. A `@defer` block's trigger is one kind whatever it waits for
+ * (`on idle`, `on hover(…)`, `when …` — eight classes in 22.2.1): a condition, which no class of
+ * them draws.
+ */
+const kindOf = (node) =>
+  node instanceof TmplAstDeferredTrigger
+    ? 'DeferredTrigger'
+    : node.constructor.name;
+
+/**
+ * Every node of a template's tree, found over the fields of each object it holds rather than by
+ * the walk, with the field of the nearest node holding it (`ContentBlock.variables`): an object of
+ * a class `@angular/compiler` exports under a `TmplAst` name is a node. It is the walk's
+ * denominator. What the compiler's visitor does not hand on, no method of the walk is handed, and
+ * the count could not show it: measured on 22.2.1, an `<ng-content>`'s attributes, an inline
+ * template's own bindings, the `never` of an exhaustive `@switch`, the variables of a `@content`
+ * block and what an ICU holds.
+ */
+const TEMPLATE_NODES = Object.entries(compiler)
+  .filter(
+    ([name, value]) =>
+      name.startsWith('TmplAst') && value !== TmplAstRecursiveVisitor,
+  )
+  .map(([, value]) => value);
+const nodesOf = (
+  value,
+  holder = 'the template',
+  found = new Map(),
+  passed = new WeakSet(),
+) => {
+  if (value === null || typeof value !== 'object' || passed.has(value))
+    return found;
+  passed.add(value);
+  const node = TEMPLATE_NODES.some((kind) => value instanceof kind);
+  if (node) found.set(value, holder);
+  for (const [field, held] of Object.entries(value))
+    nodesOf(held, node ? `${kindOf(value)}.${field}` : holder, found, passed);
+  return found;
+};
 
 /** String literals from an expression — pipe arguments excluded (see `visitPipe`). */
 class ExpressionLiterals extends RecursiveAstVisitor {
@@ -406,9 +470,9 @@ class ExpressionLiterals extends RecursiveAstVisitor {
 /**
  * One walk over a template's tree. It collects what the user sees: node texts, the values
  * of speaking attributes and the literals from expressions that land in such a place. It
- * counts visited nodes along the way — point 1 compares that count against zero, because a
- * pass that visited nothing
- * pronounces on everything (`lesson-48`).
+ * counts the nodes it reaches along the way (`seen`) — point 1 compares that count against zero,
+ * because a pass that visited nothing pronounces on everything (`lesson-48`), and holds every node
+ * of the tree to having been reached (`nodesOf`).
  */
 class TemplateScanner extends TmplAstRecursiveVisitor {
   constructor(file) {
@@ -419,25 +483,38 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.expressions = [];
     this.icu = 0;
     this.nodesSeen = 0;
+    this.reached = new Set();
     this.unknown = new Set();
     this.tag = null;
     this.type = null;
   }
 
+  /** A node the walk reaches: from each method of the compiler's visitor, and from `passOver`. */
   seen(node) {
-    const kind = node?.constructor?.name;
     this.nodesSeen++;
+    this.reached.add(node);
+    const kind = kindOf(node);
     if (!KNOWN_NODES.has(kind)) this.unknown.add(kind);
   }
 
+  /**
+   * What the walk reaches and reads nothing of, which the compiler's visitor does not hand on
+   * (measured on Angular 22.2.1, through JIT and a render in jsdom): an `<ng-content>`'s
+   * attributes, keys an outer `select` matches, of which nothing is drawn or put into `consts`;
+   * an inline template's own bindings (`*pctReveal="…"`), inputs of a directive on the template,
+   * which draws a comment; the `never` of an exhaustive `@switch`, which takes no body; and what
+   * an ICU holds, which point 3 refuses whole.
+   */
+  passOver(nodes) {
+    for (const node of nodes) this.seen(node);
+  }
+
   visitText(node) {
-    this.seen(node);
     if (node.value.trim() !== '')
       this.texts.push({ value: node.value.trim(), line: line(node) });
   }
 
   visitBoundText(node) {
-    this.seen(node);
     node.value.visit(
       new ExpressionLiterals((v) =>
         this.expressions.push({
@@ -456,7 +533,6 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`).
    */
   visitElement(node) {
-    this.seen(node);
     const previous = [this.tag, this.type];
     this.tag = splitNsName(node.name)[1].toLowerCase();
     this.type =
@@ -477,7 +553,6 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitTextAttribute(node) {
-    this.seen(node);
     if (this.speaking(node.name))
       this.attributes.push({
         name: node.name,
@@ -487,7 +562,6 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitBoundAttribute(node) {
-    this.seen(node);
     // A two-way binding holds no literal to read, so a property is the one-way kind.
     const property = node.type === BindingType.Property;
     if (!this.speaking(property ? reflected(node.name) : node.name)) return;
@@ -510,88 +584,64 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    * to be loud rather than invisible.
    */
   visitIcu(node) {
-    this.seen(node);
     this.icu++;
-    return super.visitIcu(node);
+    this.passOver([
+      ...Object.values(node.vars),
+      ...Object.values(node.placeholders),
+    ]);
   }
 
-  visitBoundEvent(node) {
-    this.seen(node);
-  }
-  visitReference(node) {
-    this.seen(node);
-  }
-  visitVariable(node) {
-    this.seen(node);
-  }
   visitContent(node) {
-    this.seen(node);
-    return super.visitContent(node);
+    this.passOver(node.attributes);
+    super.visitContent(node);
   }
   visitTemplate(node) {
-    this.seen(node);
-    return super.visitTemplate(node);
-  }
-  visitLetDeclaration(node) {
-    this.seen(node);
-  }
-  visitIfBlock(node) {
-    this.seen(node);
-    return super.visitIfBlock(node);
-  }
-  visitIfBlockBranch(node) {
-    this.seen(node);
-    return super.visitIfBlockBranch(node);
-  }
-  visitForLoopBlock(node) {
-    this.seen(node);
-    return super.visitForLoopBlock(node);
-  }
-  visitForLoopBlockEmpty(node) {
-    this.seen(node);
-    return super.visitForLoopBlockEmpty(node);
+    this.passOver(node.templateAttrs);
+    super.visitTemplate(node);
   }
   visitSwitchBlock(node) {
-    this.seen(node);
-    return super.visitSwitchBlock(node);
-  }
-  visitSwitchBlockCase(node) {
-    this.seen(node);
-    return super.visitSwitchBlockCase(node);
-  }
-  visitDeferredBlock(node) {
-    this.seen(node);
-    return super.visitDeferredBlock(node);
-  }
-  visitDeferredBlockPlaceholder(node) {
-    this.seen(node);
-    return super.visitDeferredBlockPlaceholder(node);
-  }
-  visitDeferredBlockLoading(node) {
-    this.seen(node);
-    return super.visitDeferredBlockLoading(node);
-  }
-  visitDeferredBlockError(node) {
-    this.seen(node);
-    return super.visitDeferredBlockError(node);
-  }
-  visitUnknownBlock(node) {
-    this.seen(node);
+    if (node.exhaustiveCheck) this.passOver([node.exhaustiveCheck]);
+    super.visitSwitchBlock(node);
   }
 }
+
+/**
+ * `seen` around every method of the compiler's visitor, not only the ones written above: a node
+ * passed on by a method the walk does not write was counted by none, and its kind never checked
+ * — an `@boundary` and its `@error` blocks, the groups of an `@switch`, a `@defer` block's
+ * triggers (measured on 22.2.1: eight methods of thirty-one). A method the next Angular adds is
+ * wrapped the day it is there.
+ */
+for (const name of Object.getOwnPropertyNames(
+  TmplAstRecursiveVisitor.prototype,
+))
+  if (name.startsWith('visit')) {
+    const visit = TemplateScanner.prototype[name];
+    TemplateScanner.prototype[name] = function (node) {
+      this.seen(node);
+      return visit.call(this, node);
+    };
+  }
 
 const line = (node) => node?.sourceSpan?.start?.line + 1 || '?';
 
 /**
  * `preserveWhitespaces: false` — that is how a template really compiles, so that is the set
  * of nodes reaching the browser. Under `true` every indent would be a text node of its own
- * and point 3 would be pronouncing on whitespace.
+ * and point 3 would be pronouncing on whitespace. Beside the scan, each node of the tree the walk
+ * never reached (`nodesOf`), by its kind and the field holding it.
  */
 const readTemplate = (file, content) => {
   const result = parseTemplate(content, file, { preserveWhitespaces: false });
   const scanner = new TemplateScanner(file);
-  if (!result.errors?.length) visitAll(scanner, result.nodes);
-  return { file, errors: result.errors ?? [], scanner };
+  const unreached = [];
+  if (!result.errors?.length) {
+    visitAll(scanner, result.nodes);
+    for (const [node, holder] of nodesOf(result.nodes))
+      if (!scanner.reached.has(node))
+        unreached.push(`${kindOf(node)} in \`${holder}\`, line ${line(node)}`);
+  }
+  return { file, errors: result.errors ?? [], scanner, unreached };
 };
 
 // ── TypeScript scanner ─────────────────────────────────────────────────────────
@@ -918,6 +968,19 @@ const checkTexts = (input) => {
         ) +
         `\n    A tree that does not exist has no text node either — point 3 would pass ` +
         `over it without objection.`,
+    );
+
+  // Reached before known: a node the walk never reaches is a kind it never checks.
+  const unreached = scans.filter((s) => s.unreached.length);
+  if (unreached.length)
+    throw new TextsError(
+      'denominator',
+      'unreached-node',
+      `${unreached.length} templates hold nodes the walk never reaches:\n` +
+        list(unreached.map((s) => `${s.file}: ${s.unreached.join(', ')}`)) +
+        `\n    The compiler's visitor does not hand on what that field holds, and a node no ` +
+        `method of the walk is handed may carry text no point reads. Reach it in ` +
+        `\`TemplateScanner\`, or pass over it there with a decision on why it draws nothing.`,
     );
 
   const unknown = scans.filter((s) => s.scanner.unknown.size);
