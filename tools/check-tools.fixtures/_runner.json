@@ -1,0 +1,26 @@
+{
+  "case": "the-call-reader-skips-a-form.json",
+  "pins": [
+    [
+      "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point",
+      "the reader read lines `16`, `17`, `18`, `19`, `20`, `21`, `22`, `24`, `25`, `26`, `28`, `35`. Point"
+    ],
+    [
+      "the reader read lines `16`, `17`, `18`, `19`, `20`, `21`, `22`, `24`, `25`, `26`, `28`, `35`. Point",
+      "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point"
+    ],
+    "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point",
+    [],
+    [
+      "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point",
+      " "
+    ],
+    [
+      "the reader read lines `16`, `17`, `18`, `19`, `21`, `22`, `24`, `25`, `26`, `27`, `28`. Point",
+      5
+    ],
+    ["asks git for its index on lines `"],
+    ["`, twelve ways"]
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `the-call-reader-skips-a-form.json` is refused by point 3 (`control/calls-misread`) for the lines a reader that skips a form reads, and here its `names` keeps those and gains the lines `the-call-reader-reads-the-wrong-line.json` holds under the same rule — the drift a pinned name exists to catch — once after its own and once before it. Then it is pinned to the shapes the runner refuses before it compares anything: a name that is no list, an empty list, a blank name and a name that is no string, each of the last two beside a good one. Last come two names the refusal holds only with a digit beside them, the words before the first line number and those after the last: a name is found with no digit on either side, so each is a name the message lacks. The runner has to report each, and nothing of the case pinned to its own `names`."
+}

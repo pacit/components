@@ -46,6 +46,7 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
+import { runnerControl } from './runner-control.mjs';
 import { readTree } from './template-comments.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -53,6 +54,7 @@ const PROJECT = 'libs/components';
 const DOCUMENTS = 'docs/components';
 const FIXTURES = join(ROOT, 'tools/check-aria.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 /** The two inputs by which a component hands its name over. */
 const NAME_INPUTS = ['ariaLabel', 'ariaLabelledby'];
@@ -3368,36 +3370,57 @@ if (cases.length === 0)
   }
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and says what it pins. The loop plays every case through it, and so does the runner's own
+ * control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name);
   try {
     checkAria(fixtureInput(directory, fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
         `(\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof AriaError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
-    // One check, several refusals: point 4 throws six ways, all of them `forwarded`. A case
+    // One check, several refusals: point 4 throws eight ways, all of them `forwarded`. A case
     // that names a fragment of its refusal holds it to that one, so a change that moves it to a
     // neighbouring throw is a failure here and not a pass.
     else if (fx.message !== undefined && !error.message.includes(fx.message))
-      problems.push(
+      said.push(
         `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
           `refusal of the same check than the one the fixture declares:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readCase(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-aria.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    own: (fx) => fx.message,
+    pin: (fx, message) => ({ ...fx, message }),
+  })),
+);
 
 // ── result ─────────────────────────────────────────────────────────────────────
 
@@ -3412,5 +3435,6 @@ if (problems.length) {
 
 console.log(
   `✓ ARIA names and descriptions: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
+    `case pinned to a phrase its refusal lacks.`,
 );

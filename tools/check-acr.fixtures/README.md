@@ -52,8 +52,12 @@ comparison with `docs/acr.md` is the real run's alone, and the cases run with it
 A rejected case may name phrases its refusal must hold (`says`), where the point alone does
 not tell which reading refused. A case that writes a positive tabindex after constructs the
 reading lets through — a call that reads the attribute, a selector, a value in parentheses —
-names the place of that write: its line, or the sheet that compiles to it. A reading that refused one of the constructs names an earlier line or another reason, and fails the case, since a refusal names the first line it finds. Nothing holds the
-rule itself: a runner that skipped `says` would pass every case.
+names the place of that write: its line, or the sheet that compiles to it. A reading that refused one of the constructs names an earlier line or another reason, and fails the case, since a refusal names the first line it finds. No case holds the
+rule itself — a runner that skipped `says` would pass every one — so
+[`_runner.json`](_runner.json) does: through [`runner-control.mjs`](../runner-control.mjs) the
+runner plays `an-orientation-in-a-second-sheet-of-the-themes-folder.json` once more, its phrase
+kept and the one `an-orientation-query-in-the-theme.json` holds added once after it and once
+before, and has to report each, and nothing of the case with its own phrase.
 
 A case that carries a `status` is read the other way round. It is a state of the report, not
 a defect, and the gate must accept it; what it examines is the rendering — the word after
@@ -71,7 +75,12 @@ the second keeps its edge, and the first,
 of it — so
 [`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json),
 red on that day with the weaker word against the stronger one it names, is its canary, and
-the two are patched together. A `null` that names no row, no card or no criterion, and a
+the two are patched together. The word and the phrases a state pins have a control of their own,
+[`_runner-status.json`](_runner-status.json): `a-pass-not-on-record.json` played with its `status`
+replaced whole — a second phrase, `a-row-below-supports-with-the-pass-on-record.json`'s, after its
+own and before it, and the other word — each of which the runner has to report, and nothing of the
+case with its own `status`. Both controls are played apart from the cases and count as none.
+A `null` that names no row, no card or no criterion, and a
 `plan` state other than `open` on an item the plan lacks, are authoring faults reported by
 the case's name, and so is a `sources` `null` on a source the live input lacks and a `tree`
 path that leaves its directory; an `acts` `null` on a route the table lacks and a `dropFiles` path the

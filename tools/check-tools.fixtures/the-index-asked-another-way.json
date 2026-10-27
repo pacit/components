@@ -12,6 +12,7 @@
         "scripts": ["tools/check-tools.mjs"],
         "inputs": [
           "{workspaceRoot}/tools/check-tools.mjs",
+          "{workspaceRoot}/tools/runner-control.mjs",
           "{workspaceRoot}/tools/workflow-targets.mjs",
           { "runtime": "git ls-files --others --exclude-standard" }
         ]

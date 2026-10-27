@@ -42,6 +42,15 @@ it from two layers:
    A case may pin a `message`: a phrase the refusal has to carry, where the point has more
    than one thing to say.
 
+A case that pins a message pins one its refusal carries, so none of them proves that comparison
+is made: a
+runner that stopped comparing would pass them all. [`_runner.json`](_runner.json) holds it.
+Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+`two-harnesses-for-one-class.json` once more, pinned to the namesakes
+`a-selector-two-namesakes-answer-to.json` names under the same point, and has to report it, and
+nothing of the case with its own message. The control is played apart from the cases and counts
+as none.
+
 ## The cases
 
 | file                                                                                                                         | what it breaks                                                                           | point | check   |

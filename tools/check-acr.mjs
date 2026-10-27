@@ -58,6 +58,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 import { decoratorsOf, textOf, unwrap } from './decorators.mjs';
+import { runnerControl } from './runner-control.mjs';
 import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -74,6 +75,8 @@ const THEME = 'libs/tokens/dist/pct.css';
 const ACTS = 'apps/sandbox-e2e/at/acts.ts';
 const FIXTURES = join(ROOT, 'tools/check-acr.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
+const RUNNER_STATUS = '_runner-status.json';
 
 /** WCAG 2.2, the 31 criteria of level A and the 24 of level AA, in the standard's order. */
 const CATALOGUE = [
@@ -2687,7 +2690,13 @@ const buildFixture = (live, fx) => {
 };
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter(
+    (n) =>
+      n.endsWith('.json') &&
+      n !== REFERENCE &&
+      n !== RUNNER &&
+      n !== RUNNER_STATUS,
+  )
   .sort();
 if (cases.length === 0)
   problems.push(
@@ -2695,73 +2704,101 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
+/**
+ * What the runner reports of one prepared case: nothing, when a defect was rejected on its own
+ * point or a state rendered with its word, saying what it pins. The loop plays every case
+ * through it, and so do the runner's own controls (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
+  let input;
+  try {
+    input = buildFixture(summary.input, fx);
+  } catch (error) {
+    said.push(`${name}: the case cannot be built — ${error.message}`);
+    return said;
+  }
+  if (fx.status !== undefined) {
+    // A state of the status sentence, not a defect: the gate must ACCEPT the input, and the
+    // rendering must say the word the case declares and every phrase it names — the rows
+    // counted, their owners. A rule with three branches lies in three ways, and each one
+    // reads like a report.
+    let rendered;
+    try {
+      ({ rendered } = checkAcr(input));
+    } catch (error) {
+      if (!(error instanceof AcrError)) throw error;
+      said.push(
+        `${name}: the prepared input was REJECTED (\`${error.check}\`: ${error.message}) ` +
+          `and was meant to be rendered — point ${fx.point} (\`${fx.check}\`) never saw it`,
+      );
+      return said;
+    }
+    const status = statusOf(rendered);
+    if (status?.word !== fx.status.word)
+      said.push(
+        `${name}: the rendering says "Status: ${status?.word ?? '(none)'}" and the case ` +
+          `expects "Status: ${fx.status.word}" — point ${fx.point} (\`${fx.check}\`) put ` +
+          `the wrong word on the report`,
+      );
+    for (const phrase of fx.status.says ?? [])
+      if (!status?.sentence.includes(phrase))
+        said.push(
+          `${name}: the status sentence does not say "${phrase}" — it reads: ` +
+            `${status?.sentence ?? '(no status sentence)'}`,
+        );
+    return said;
+  }
+  try {
+    checkAcr(input);
+    said.push(
+      `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
+        `(\`${fx.check}\`) stopped examining anything`,
+    );
+  } catch (error) {
+    if (!(error instanceof AcrError)) throw error;
+    if (error.check !== fx.check)
+      said.push(
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
+          `was meant to — the fixture proves something other than what it declares`,
+      );
+    // What the refusal must name, where the point alone does not tell which reading refused —
+    // the line a write stands on, ahead of one a looser reading would refuse first.
+    else
+      for (const phrase of fx.says ?? [])
+        if (!error.message.includes(phrase))
+          said.push(
+            `${name}: the refusal does not say "${phrase}" — it reads: ${error.message}`,
+          );
+  }
+  return said;
+};
+
 let states = 0;
 if (summary) {
   // The live input MUST pass (it did, above) — every case is built on it.
   for (const name of cases) {
     const fx = readFixture(name);
-    let input;
-    try {
-      input = buildFixture(summary.input, fx);
-    } catch (error) {
-      problems.push(`${name}: the case cannot be built — ${error.message}`);
-      continue;
-    }
-    if (fx.status !== undefined) {
-      // A state of the status sentence, not a defect: the gate must ACCEPT the input, and the
-      // rendering must say the word the case declares and every phrase it names — the rows
-      // counted, their owners. A rule with three branches lies in three ways, and each one
-      // reads like a report.
-      states++;
-      let rendered;
-      try {
-        ({ rendered } = checkAcr(input));
-      } catch (error) {
-        if (!(error instanceof AcrError)) throw error;
-        problems.push(
-          `${name}: the prepared input was REJECTED (\`${error.check}\`: ${error.message}) ` +
-            `and was meant to be rendered — point ${fx.point} (\`${fx.check}\`) never saw it`,
-        );
-        continue;
-      }
-      const status = statusOf(rendered);
-      if (status?.word !== fx.status.word)
-        problems.push(
-          `${name}: the rendering says "Status: ${status?.word ?? '(none)'}" and the case ` +
-            `expects "Status: ${fx.status.word}" — point ${fx.point} (\`${fx.check}\`) put ` +
-            `the wrong word on the report`,
-        );
-      for (const phrase of fx.status.says ?? [])
-        if (!status?.sentence.includes(phrase))
-          problems.push(
-            `${name}: the status sentence does not say "${phrase}" — it reads: ` +
-              `${status?.sentence ?? '(no status sentence)'}`,
-          );
-      continue;
-    }
-    try {
-      checkAcr(input);
-      problems.push(
-        `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
-          `(\`${fx.check}\`) stopped examining anything`,
-      );
-    } catch (error) {
-      if (!(error instanceof AcrError)) throw error;
-      if (error.check !== fx.check)
-        problems.push(
-          `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
-            `was meant to — the fixture proves something other than what it declares`,
-        );
-      // What the refusal must name, where the point alone does not tell which reading refused —
-      // the line a write stands on, ahead of one a looser reading would refuse first.
-      else
-        for (const phrase of fx.says ?? [])
-          if (!error.message.includes(phrase))
-            problems.push(
-              `${name}: the refusal does not say "${phrase}" — it reads: ${error.message}`,
-            );
-    }
+    if (fx.status !== undefined) states++;
+    problems.push(...runCase(name, fx));
   }
+  // A refusal and a status sentence are held to what a case pins by two comparisons, so the
+  // runner has two controls: the phrases of a refusal, and the word and phrases of a state.
+  for (const [file, own, pin] of [
+    [RUNNER, (fx) => fx.says, (fx, says) => ({ ...fx, says })],
+    [RUNNER_STATUS, (fx) => fx.status, (fx, status) => ({ ...fx, status })],
+  ])
+    problems.push(
+      ...(await runnerControl({
+        where: `tools/check-acr.fixtures/${file}`,
+        load: () => readFixture(file),
+        cases,
+        read: readFixture,
+        run: runCase,
+        own,
+        pin,
+      })),
+    );
 }
 
 // ── result ────────────────────────────────────────────────────────────────────
@@ -2785,5 +2822,6 @@ console.log(
     `the status reads "${summary.status?.word ?? '(none)'}"; ` +
     `${WRITE ? `${REPORT} written` : `${REPORT} is the rendering of the claims`}. ` +
     `Negative control: the live input passes, ${cases.length - states} prepared ones rejected ` +
-    `on their own points and ${states} rendered with the status they declare.`,
+    `on their own points and ${states} rendered with the status they declare, and the ` +
+    `runner reports a case pinned to a phrase or a word its refusal or its status lacks.`,
 );

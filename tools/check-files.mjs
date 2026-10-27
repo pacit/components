@@ -44,12 +44,14 @@ import {
   textOf,
   textsOf,
 } from './decorators.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const POLICY = `${PROJECT}/files.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-files.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 /**
  * The floor under a reason in the register. The same number as in `check-mutation` and for
@@ -1359,34 +1361,33 @@ if (!cases.length)
   }
 }
 
-for (const name of cases) {
-  let fx;
-  try {
-    fx = JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
-  } catch (error) {
-    problems.push(
-      `${name}: \`fixture.json\` cannot be read (${error.message.split('\n')[0]}) — a case ` +
-        `that declares nothing proves nothing`,
-    );
-    continue;
-  }
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and its message names what the case pins. The loop plays every case through it, and so does
+ * the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name, fx);
   try {
     checkFiles(fixtureInput(directory));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof FilesError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what ` +
           `it declares`,
       );
     else if ((fx.rule ?? null) !== (error.rule ?? null))
-      problems.push(
+      said.push(
         `${name}: point ${fx.point} fired on rule \`${error.rule ?? '—'}\` and the case is ` +
           `built for \`${fx.rule ?? '—'}\` — one point, several rules, and the one this ` +
           `input exists to prove is the one that stayed silent`,
@@ -1399,7 +1400,7 @@ for (const name of cases) {
         !fx.names.length ||
         fx.names.some((named) => typeof named !== 'string' || !named.trim()))
     )
-      problems.push(
+      said.push(
         `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
           `what its message names proves nothing about it, and an empty one is named anywhere`,
       );
@@ -1408,7 +1409,7 @@ for (const name of cases) {
         (named) => !namedIn(error.message, named),
       );
       if (unnamed.length)
-        problems.push(
+        said.push(
           `${name}: point ${fx.point} fired on its own rule, and its message does not name ` +
             `${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that sends a ` +
             `person to the wrong place, or to none`,
@@ -1417,7 +1418,36 @@ for (const name of cases) {
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+  return said;
+};
+
+for (const name of cases) {
+  let fx;
+  try {
+    fx = readCase(name);
+  } catch (error) {
+    problems.push(
+      `${name}: \`fixture.json\` cannot be read (${error.message.split('\n')[0]}) — a case ` +
+        `that declares nothing proves nothing`,
+    );
+    continue;
+  }
+  problems.push(...runCase(name, fx));
 }
+
+// The runner refuses `names` it cannot hold a message to as well, so the control pins the
+// case to those shapes beside a name its message lacks.
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-files.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    own: (fx) => fx.names,
+    pin: (fx, names) => ({ ...fx, names }),
+  })),
+);
 
 // Point 8's reading, form by form: every row of `FORMS` is one statement, alone in a types file,
 // and the rule itself — not the reading it calls — admits or refuses it as the row is marked.
@@ -1471,5 +1501,6 @@ if (problems.length) {
 console.log(
   `✓ Files: ${description}. Negative control: the reference tree passes, ` +
     `${cases.length} prepared ones rejected on their own points, ${FORMS.length} forms ` +
-    `read as marked.`,
+    `read as marked, and the runner reports a case pinned to a name its message lacks, or ` +
+    `to no list of names.`,
 );

@@ -20,6 +20,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runnerControl } from './runner-control.mjs';
 import { valuesOf } from './static-attributes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -28,6 +29,7 @@ const DECLARATIONS = `${DIST}/types/pacit-components-testing.d.ts`;
 const DOCUMENTS = 'docs/components';
 const FIXTURES = join(ROOT, 'tools/check-harness.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 const TESTING = './testing';
 const ATTRIBUTE = 'data-pct-part';
 // A form to copy and a directory note — neither is a card (the same two `check-parts` leaves out).
@@ -627,7 +629,7 @@ const buildFixture = (fixtureLive, fx) => {
 };
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 if (cases.length === 0)
   problems.push(
@@ -635,29 +637,48 @@ if (cases.length === 0)
       `is one more silent defect (req-quality-negative-control)`,
   );
 
-if (live) {
-  for (const name of cases) {
-    const fx = readFixture(name);
-    try {
-      checkHarness(buildFixture(live, fx));
-      problems.push(
-        `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
-          `(\`${fx.check}\`) stopped examining anything`,
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and says what it pins. The loop plays every case through it, and so does the runner's own
+ * control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
+  try {
+    checkHarness(buildFixture(live, fx));
+    said.push(
+      `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
+        `(\`${fx.check}\`) stopped examining anything`,
+    );
+  } catch (error) {
+    if (!(error instanceof HarnessError)) throw error;
+    if (error.check !== fx.check)
+      said.push(
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
+          `was meant to — the fixture proves something other than what it declares`,
       );
-    } catch (error) {
-      if (!(error instanceof HarnessError)) throw error;
-      if (error.check !== fx.check)
-        problems.push(
-          `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
-            `was meant to — the fixture proves something other than what it declares`,
-        );
-      else if (fx.message !== undefined && !error.message.includes(fx.message))
-        problems.push(
-          `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
-            `refusal of the same point, or the right one saying something else`,
-        );
-    }
+    else if (fx.message !== undefined && !error.message.includes(fx.message))
+      said.push(
+        `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
+          `refusal of the same point, or the right one saying something else`,
+      );
   }
+  return said;
+};
+
+if (live) {
+  for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+  problems.push(
+    ...(await runnerControl({
+      where: `tools/check-harness.fixtures/${RUNNER}`,
+      load: () => readFixture(RUNNER),
+      cases,
+      read: readFixture,
+      run: runCase,
+      own: (fx) => fx.message,
+      pin: (fx, message) => ({ ...fx, message }),
+    })),
+  );
 }
 
 // ── result ────────────────────────────────────────────────────────────────────
@@ -675,5 +696,6 @@ console.log(
   `✓ Harnesses: ${held.harnesses.length} harnesses on ${held.harnessesOfClass.size} classes ` +
     `of ${entrypoints.size} entrypoints, ${named} parts named and typed, ${live.documents.length} cards ` +
     `naming them. Negative control: the reference input passes, ${cases.length} prepared ones ` +
-    `rejected on their own points.`,
+    `rejected on their own points, and the runner reports a case pinned to a phrase its ` +
+    `refusal lacks.`,
 );
