@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence an `@if` block's condition hands its alias (`as m`), which the branch prints. The condition is no printed expression, and the alias stands for it."
+}

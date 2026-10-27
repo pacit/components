@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:32: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence an inline template's `ngIf` binding hands the name `as m` puts into its context. The binding is an input of the directive on the template, which the walk passes over, and the variable stands for what the template is handed."
+}

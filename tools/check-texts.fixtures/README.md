@@ -116,8 +116,49 @@ Not held: `Component` and `Directive` are made only under `enableSelectorless`, 
 parse leaves off as `ngc` does by default, so no input brings one; a library that switched it on
 in `ngc` alone would still be read with it off — a `<Widget>` as an element, a `@Marker(…)` as an
 animation binding beside attributes or as a parse error point 1 refuses, none of them the
-selectorless reading. And a literal in an expression no point reads, handed to a name, is drawn
-wherever the name is printed: a `@let`'s value, a block's condition, a loop's collection, a
-template's input or an outlet's context among them (`@let m = 'Delete'`, `@if ('Delete'; as m)`,
-`*ngFor="let m of ['Delete']"`, each passed by the gate). The library's blocks hold literals in
-comparisons alone.
+selectorless reading.
+
+## A name stands for what binds it
+
+A literal in an expression no point reads is drawn wherever a name it is handed to is printed —
+`@let m = 'Delete'` and `{{ m }}` draw what `{{ 'Delete' }}` draws (measured on Angular 22.2.1
+through JIT and a render in jsdom, each shape below). Point 3 follows the name:
+`template/literal-through-a-name` reads a name in an interpolation or a speaking binding as what
+binds it, every literal of it, as the point reads every literal of a printed expression. The name
+is resolved by the compiler's own binder (`R3TargetBinder`), so it is the one `ngc` reads in that
+scope, and `{{ this.m }}` beside a `@let m` reads the class's member, as it draws it.
+
+The decision, and what it is not. Refusing a lettered literal wherever an expression binds a name
+would refuse a correct library: its block headers hold 21 literals, every one a comparison or an
+`@case` value (`@if (half === 'day')`), and `@let narrow = size() === 'sm'` read as a condition
+alone draws no word. A shape test like point 4's `isProse` passes `'close'`, and in a template it
+is position that decides — a name carries a literal to its position. Followed, the library's 14
+printed reads of a template's name reach no literal with a letter.
+
+- `literal-through-a-let`, `literal-through-an-if-alias`, `literal-through-a-loop-item` — a
+  `@let`'s value, an `@if` branch's condition through `as m`, a `@for` block's collection through
+  its item.
+- `literal-through-an-inline-ngif`, `literal-through-an-inline-ngfor`,
+  `literal-through-a-template-input`, `literal-through-a-written-template-input` — a template's
+  variable stands for what the template is handed, an input of a directive on it: `*ngIf="… as m"`,
+  `*ngFor="let x of …"`, `[ngIf]` and `ngIf` written as an attribute, whichever key of the context
+  the directive fills.
+- `literal-through-an-outlet-context`, `literal-through-a-then-template` — and for what every node
+  is handed whose binding names the template by a reference: an outlet beside its context, an
+  `*ngIf` with a `then`.
+- `literal-through-a-tree-an-outlet-draws` — a template that draws itself hands its own variable
+  back to it, and a name already on the way stands for nothing more, or the read never returns.
+- `literal-through-a-name-in-a-speaking-binding` — the same read in `[attr.aria-label]` and
+  `[title]`, two refusals.
+
+The reference holds the names that stand for no such literal: a `@let` holding `*`, a loop's
+`$index` (the block's own variables are its numbers and booleans) beside an item over `['sm', 'md']`
+read in a comparison alone, a `@let` read as a condition, and a template's variable nothing hands a
+word while the nodes around it are handed some — a read that took every node for one handing the
+template, or the index for the collection, refuses it.
+
+Not held: a context the class hands a template (`createEmbeddedView(tpl, { $implicit: 'Delete' })`),
+which no template read sees; a literal an outlet's context hands a template from outside the file, a
+consumer's slot among them, which may print it or not; and a reference to an element, read as the
+element and nothing it holds — `{{ r.value }}` gives the DOM's state, which the `value` of a text
+field, not a name, puts there.

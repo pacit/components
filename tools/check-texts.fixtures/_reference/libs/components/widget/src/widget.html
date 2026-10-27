@@ -91,3 +91,19 @@
 } @case (false) {
 <span></span>
 } @default never; }
+
+<!--
+  Names a printed expression reads, none standing for a literal with a letter (`Names`): a mark a
+  `@let` holds, which has none; a loop's index, which the block makes, beside its item, which
+  stands for a collection of axis values and is read in a comparison alone; a `@let` that holds a
+  comparison and is read as a condition alone; and a template's variable, which nothing hands a
+  string, while the nodes around it are handed words.
+-->
+@let mark = '*';
+<span aria-hidden="true">{{ mark }}</span>
+@let narrow = size() === 'sm'; @if (narrow) {
+<span></span>
+} @for (axis of ['sm', 'md']; track axis; let i = $index) {
+<span [class.pct-widget__current]="axis === size()">{{ i }}</span>
+}
+<ng-template #row let-item><span>{{ item }}</span></ng-template>

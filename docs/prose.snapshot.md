@@ -53,7 +53,7 @@ check-reach.mjs 7 19 181
 check-since.mjs 4 15 120
 check-styles.mjs 10 22 231
 check-support.mjs 5 17 150
-check-texts.mjs 6 18 191
+check-texts.mjs 6 18 192
 check-tokens.mjs 11 23 258
 check-tools.mjs 6 18 206
 check-typecheck.mjs 4 16 134
