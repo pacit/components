@@ -3091,10 +3091,11 @@ const checkAria = ({
               `change of and NVDA drops; one whose relevance names neither \`additions\` nor ` +
               `\`text\` NVDA drops; one \`off\` NVDA and Orca read no region off; one not ` +
               `atomic is said by the node that changed, and an atomic one above it whole; one ` +
-              `\`polite\` or \`assertive\` around it is a second region, which Orca leaves an ` +
-              `\`alert\`'s entry to. Above an error — which enters by its \`alert\` event, and ` +
-              `which Firefox gives no region NVDA or Orca reads — and for a value the role implies, ` +
-              `on which the engines disagree, the refusal is the rule's and no measured cost. No ` +
+              `\`polite\` or \`assertive\` around it, standing before it enters, is a second ` +
+              `region, which Orca leaves an \`alert\`'s entry to. A busy, relevance or atomicity ` +
+              `above an error — which enters by its \`alert\` event, and which Firefox gives no ` +
+              `region NVDA or Orca reads — and a value the role implies, on which the engines ` +
+              `disagree, are refused by the rule at no measured cost. No ` +
               `\`aria-live\`, ` +
               `\`aria-relevant\` or \`aria-atomic\` at any value but the empty one, and no ` +
               `\`aria-busy\` but at the empty one, \`false\` or \`undefined\`, on an error or a ` +
