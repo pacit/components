@@ -183,17 +183,20 @@ const UNREACHABLE = {
  * `additions` nor `text`; NVDA and Orca read no region off a `container-live` but `polite` or
  * `assertive`, so an `off` inside a warning silences its changes; a region not atomic is said by
  * the node that changed — the whole message while a part holds one text node, as each does
- * today (Chromium takes a node's text as changed whole), a piece of it once it holds more; one
- * above that is atomic is read whole for a change of the part; and a `polite` region above an
- * error is what Orca leaves it to, ignoring the `alert`'s entry as an event of a live region.
- * An error enters by its `alert` event, which no busy, relevance or atomicity holds back, and
- * NVDA and Orca read no region of an `alert` Firefox gives none: above an error, and for a value
- * the role implies (`aria-atomic="true"`, `aria-relevant="additions text"`, on which the engines
+ * today (both engines take a node of text that is not editable as changed whole: Chromium's
+ * `ComputeHypertextRemovedAndInserted`, Firefox's `TextUpdater`), a piece of it once it holds
+ * more; one above that is atomic is read whole for a change of the part; and a `polite` region
+ * standing above an error before it enters is what Orca leaves it to, ignoring an insertion into
+ * a live region, the `alert`'s entry among them. An error enters by its `alert` event, which no
+ * busy, relevance or atomicity holds back, and NVDA and Orca read no region of an `alert` Firefox
+ * gives none: above an error, for `aria-atomic` on a part of one text node and for a value the
+ * role implies (`aria-atomic="true"`, `aria-relevant="additions text"`, on which the engines
  * disagree), the refusal is the rule's — the part's region is its role's — and no measured cost.
  * An `aria-busy` neither engine reads as busy is no refusal: a `false` on the part is what keeps
- * a consumer's busy region above it, which Firefox would hand down, off it. A value from above
- * that Firefox does not hand down (`aria-atomic="false"`) says nothing a template has a reason to
- * say there, and the gate does not ask which it is. An empty one is none to either engine.
+ * a consumer's busy region above it, which Firefox would hand down, off it. A value above or
+ * inside that Firefox does not hand down (`aria-atomic="false"`) says nothing a template has a
+ * reason to say there, and the gate does not ask which it is. An empty one is none to either
+ * engine.
  */
 const BUSY = 'aria-busy';
 const LIVE_PROPERTIES = [POLITENESS, 'aria-atomic', 'aria-relevant', BUSY];
@@ -3087,8 +3090,12 @@ const checkAria = ({
               `first — is what the engines expose in its place. A busy one Chromium fires no ` +
               `change of and NVDA drops; one whose relevance names neither \`additions\` nor ` +
               `\`text\` NVDA drops; one \`off\` NVDA and Orca read no region off; one not ` +
-              `atomic is said by the node that changed, and an atomic one above it whole; and a ` +
-              `value the role implies is one the engines disagree on. No \`aria-live\`, ` +
+              `atomic is said by the node that changed, and an atomic one above it whole; one ` +
+              `\`polite\` or \`assertive\` around it is a second region, which Orca leaves an ` +
+              `\`alert\`'s entry to. Above an error — which enters by its \`alert\` event, and ` +
+              `which Firefox gives no region NVDA or Orca reads — and for a value the role implies, ` +
+              `on which the engines disagree, the refusal is the rule's and no measured cost. No ` +
+              `\`aria-live\`, ` +
               `\`aria-relevant\` or \`aria-atomic\` at any value but the empty one, and no ` +
               `\`aria-busy\` but at the empty one, \`false\` or \`undefined\`, on an error or a ` +
               `warning part, inside it, above it in its template or in its host block, and none ` +

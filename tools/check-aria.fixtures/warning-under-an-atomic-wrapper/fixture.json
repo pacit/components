@@ -2,5 +2,5 @@
   "point": 7,
   "check": "announcement",
   "message": "`aria-atomic=\"true\"` on the `<div>` above it sets the live region of `warning` otherwise than its role does",
-  "$reason": "A warning part inside a wrapper written `aria-atomic=\"true\"` that also holds the field's name. Firefox 158 hands the part `container-atomic=\"true\"` from it (measured on 2026-10-27), and a reader walks up to the element that carries it and reads it whole for a change of the part (Orca's `_find_container`, NVDA's `findAriaAtomic`): the name is said with every new warning. Chromium 153 exposes none of it on the part. Point 7 read nothing above the part but what may hide it, and passed it."
+  "$reason": "A warning part inside a wrapper written `aria-atomic=\"true\"` that also holds the field's name. Firefox 158 hands the part `container-atomic=\"true\"` from it (measured on 2026-10-27), and a reader walks up to the element that carries it and reads it whole for a change of the part (Orca's `_find_container`, NVDA's `findAriaAtomic`): the name is said with the warning each time it changes while shown. Chromium 153 exposes none of it on the part. Point 7 read nothing above the part but what may hide it, and passed it."
 }

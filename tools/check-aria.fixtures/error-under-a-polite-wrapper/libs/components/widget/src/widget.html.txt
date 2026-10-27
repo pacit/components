@@ -1,4 +1,4 @@
-<!-- The reference's trigger, and an error part inside a polite wrapper. -->
+<!-- The reference's trigger, and its message line inside a polite wrapper. -->
 <span class="pct-widget__box">
   <button
     class="pct-widget__trigger"
@@ -11,12 +11,12 @@
   </button>
 </span>
 
-@if (showError()) {
 <div class="pct-widget__messages" aria-live="polite">
+  @if (showError()) {
   <span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+  } @else if (showWarning()) {
+  <span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
+  } @else if (hint()) {
+  <span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+  }
 </div>
-} @else if (showWarning()) {
-<span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
-} @else if (hint()) {
-<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
-}
