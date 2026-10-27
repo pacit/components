@@ -943,7 +943,7 @@ attributes only where an instruction takes it as a node's, a local reference or 
 timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 94 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 97 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
@@ -958,7 +958,8 @@ block's `@error`, and a `@content` block, refused as a kind the walk does not kn
 variables, as holding nodes it never reaches, while the reference holds a node of every kind it
 knows but an ICU, and a sentence a printed name stands for — through a `@let`, an `@if` alias, a
 `@for` item, an inline template's `ngIf` and `ngForOf`, an `<ng-template>`'s `[ngIf]`, bound and
-written, an outlet's context, under its key or through a spread, an `*ngIf`'s `then`, a tree an
+written, a two-way binding, an outlet's context, under its key, through a spread or a name that
+holds it, a map an `ngIf` holds, an `*ngIf`'s `then`, a tree an
 outlet draws of itself, a listbox row whose other variables elements read, a `@let` declared after
 the template it feeds, and two
 speaking bindings an `*ngIf` wraps, read once each, as are the speaking attributes of an element an

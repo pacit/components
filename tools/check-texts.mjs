@@ -492,8 +492,8 @@ class ExpressionLiterals extends RecursiveAstVisitor {
  * What a node hands the directives on it, as the compiler matches them
  * (`getAttrsForDirectiveMatching`): an inline template (`*ngIf="…"`) its own bindings alone — the
  * attributes and inputs it carries beside them are its element's, hoisted, and the element's
- * directives take them — and an element or an `<ng-template>` its attributes and its property
- * bindings. An `attr.`, `class.` or `style.` binding reaches the DOM and no directive.
+ * directives take them — and an element or an `<ng-template>` its attributes and its property and
+ * two-way bindings. An `attr.`, `class.` or `style.` binding reaches the DOM and no directive.
  */
 const handedTo = (node) =>
   (node instanceof TmplAstTemplate && node.tagName !== 'ng-template'
@@ -502,22 +502,24 @@ const handedTo = (node) =>
   ).filter(
     (attribute) =>
       attribute instanceof TmplAstTextAttribute ||
-      attribute.type === BindingType.Property,
+      attribute.type === BindingType.Property ||
+      attribute.type === BindingType.TwoWay,
   );
 
 /**
  * What a variable reading `key` of a template's context takes of one thing handed to the template.
- * A map literal is a context as an outlet takes it, and a key of it is that key's value; a map with
- * a spread may hold any key, and is taken whole. Anything else is an input, which a directive puts into the context
- * under a key no read here knows: under its own name (`ngIf`, which `as m` reads) or as the
- * implicit value (`let-m`, the item of `*ngFor`) — and a written attribute under its own name alone,
- * a slot's name (`pctColumn="name"`) being no value of `let-row`. So `let i = index` takes nothing
- * of `ngForOf`, and `let-o` nothing of `{ $implicit: o, id: 'pct-option-' + o.value }` but `o`.
+ * A map literal is a context as an outlet takes it: the variable takes the entry of its key, or the
+ * whole map where it reads the binding's own name or the implicit value and the map writes no such
+ * key (`*ngIf="{ … } as vm"`). A map with a spread may hold any key, and anything else — a map a
+ * name holds, a call, an array — is an input a directive files under a key no read here knows, and
+ * is taken whole. A written attribute is taken under its own name alone, a slot's name
+ * (`pctColumn="name"`) being no value of `let-row`. So `let-o` takes `o` alone of
+ * `{ $implicit: o, id: 'pct-option-' + o.value }`, and `let i = index` all of `ngForOf`.
  */
-const take = ({ name, values, keys, spread, bound }, key) =>
-  keys?.has(key)
-    ? keys.get(key)
-    : spread || name === key || (bound && key === '$implicit')
+const take = ({ name, values, keys, bound }, key) =>
+  keys
+    ? (keys.get(key) ?? (name === key || key === '$implicit' ? values : []))
+    : bound || name === key
       ? values
       : [];
 
@@ -608,17 +610,15 @@ class Names {
       return { name: attribute.name, values: [attribute.value], bound: false };
     const map = attribute.value.ast;
     const literal = map instanceof LiteralMap;
-    const spread = literal && map.keys.some((k) => k.kind === 'spread');
     return {
       name: attribute.name,
       values: this.valuesOf(attribute.value),
       keys:
-        literal && !spread
+        literal && map.keys.every((k) => k.kind !== 'spread')
           ? new Map(
               map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
             )
           : null,
-      spread,
       bound: true,
     };
   }

@@ -143,19 +143,23 @@ printed reads of a template's name reach no literal with a letter.
   variable stands for the literals handed to the template, as the compiler hands the directives on
   it what it matches them by: an inline template its own bindings (`*ngIf="… as m"`,
   `*ngFor="let x of …"`) and not the attributes of its element, which it carries hoisted — the
-  `class` beside `*ngFor` is one refusal fewer — and an `<ng-template>` its attributes and property
-  bindings (`[ngIf]`, and `ngIf` written).
+  `class` beside `*ngFor` is one refusal fewer — and an `<ng-template>` its attributes and its
+  property and two-way bindings (`[ngIf]`, `ngIf` written, and `[(value)]` in
+  `literal-through-a-two-way-binding`).
 - What a directive puts under which key of the context no read here knows, so a variable takes a
-  binding by the key it reads (`take`): one of the binding's name (`as m` reads `ngIf`), and the
-  implicit value (`let-m`, the item of `*ngFor`) every binding. `let i = index` beside the item
-  takes nothing of `ngForOf`. A written attribute hands the variable of its name alone, so a slot's
-  name beside it (`pctWidgetSlot="row"`) is no value of `m`.
+  binding by the key it reads (`take`) where the binding says it, and whole where it does not. A
+  map literal written in the binding gives the entry under the key, or the whole map where the
+  variable reads the binding's own name or the implicit value and the map writes no such key
+  (`literal-through-a-map-an-ngif-holds`: `*ngIf="{ … } as vm"`, `[ngIf]="{ … }" let-vm`). Any
+  other binding — a map a name holds (`literal-through-a-context-a-name-holds`), a spread, a call,
+  an array — is taken whole by every variable. A written attribute hands the variable of its name
+  alone, so a slot's name beside it (`pctWidgetSlot="row"`) is no value of `m`.
 - `literal-through-an-outlet-context`, `literal-through-a-then-template`,
   `literal-through-an-outlet-to-a-listbox-row`, `literal-through-a-spread-context` — and the
   literals every node hands it whose binding stands for the template: an outlet beside its context,
-  an `*ngIf` with a `then`. A map literal is a context as an outlet takes it, and a variable takes
-  the entry of its key — the row's `let-label` takes the implicit one and not `part: 'option'` —
-  unless a spread may hold any key. A variable stands for no template, or every element reading
+  an `*ngIf` with a `then`. A map literal is a context as an outlet takes it — the row's
+  `let-label` takes the implicit entry and not `part: 'option'` — unless a spread, which may hold
+  any key, writes over a default (`{ label: '', ...row }`). A variable stands for no template, or every element reading
   one — the row's `[attr.aria-posinset]="i + 1"` — would be one more node handing the template,
   its `class` and `role` with it.
 - `literal-through-a-tree-an-outlet-draws`, `literal-through-a-name-bound-after-its-template` — what
@@ -182,18 +186,18 @@ What a name stands for is every literal of what binds it, as point 3 reads a pri
 `@let open = state() === 'open'` printed through `{{ open ? … : … }}` is refused as
 `{{ state() === 'open' ? … : … }}` is, and so is a literal handed to a call
 (`@for (o of sortBy(options(), 'label'))`). The comparison belongs in a block's condition, which
-draws nothing.
+draws nothing. And a binding no map literal writes is taken whole by every variable: `let i = index`
+of `*ngFor="let size of ['sm', 'md']"` printed is refused, where `@for`'s `$index` is not.
 
 Not held: a context the class hands a template (`createEmbeddedView(tpl, { $implicit: 'Delete' })`),
 which no template read sees; a template a component takes as content and draws with a context of
 its own (`<pct-list [items]="['Delete']"><ng-template let-x>`); a literal an outlet's context hands a
 template from outside the file, a consumer's slot among them, which may print it or not; a template
 handed in a context and drawn by an outlet through a variable (`[ngTemplateOutlet]="m.next"`),
-since a variable stands for no template; a binding a directive puts into the context under a key
-not its name — a context a call returns reaches the implicit variable alone, and `ngIf="Delete"
-let-m` passes, a written attribute handing only the variable of its name; an `<ng-template>` inside
-an `<svg>` (`:svg:ng-template`), which the compiler matches as an inline template, as `handedTo`
-does; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
+since a variable stands for no template; a written attribute a directive files under a key other
+than its name — `ngIf="Delete" let-m` passes, a written attribute handing only the variable of its
+name; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
+matches by its inline bindings alone, as `handedTo` does, and which JIT draws all the same; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
 gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`). Beside names, a
 property binding that draws its value as text (`[textContent]`, `[innerHTML]`) is no printed
