@@ -46,6 +46,17 @@ written in, each having pinned only the side it was named after
 every case would fire because of it rather than because of its own defect, and every
 "rejected" would be false.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule, and no case here proves it does: every case is built to be refused on its own.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `a-week-on-one-disk.json` as written,
+which it has to pass, and once for each rule — without `carried` and `commits`, the input it is
+built on, which the gate passes; with `check` set to `commits`; with `rule` set to
+`too-many-commits` — and has to report each. The control is played apart from the cases and counts
+as none.
+
 ## The cases
 
 | file                                                                             | what it breaks                                                                    | point | check         | rule                     |

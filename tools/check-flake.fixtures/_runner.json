@@ -1,0 +1,52 @@
+{
+  "case": "a-drift-behind-a-decimal-floor.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["policy", "snapshot"]
+    },
+    {
+      "for": "undeclared",
+      "set": {
+        "beside": []
+      }
+    },
+    {
+      "for": "silent",
+      "set": {
+        "beside": [
+          {
+            "check": "measured",
+            "rule": "no-repetition-floor"
+          },
+          {
+            "check": "outcomes",
+            "rule": "case-always-failed"
+          }
+        ]
+      }
+    },
+    {
+      "for": "hides",
+      "set": {
+        "hides": [
+          {
+            "check": "measured",
+            "rule": "too-few-repetitions"
+          },
+          {
+            "check": "outcomes",
+            "rule": "case-always-failed"
+          }
+        ]
+      }
+    },
+    {
+      "for": "stops",
+      "set": {
+        "hides": []
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-drift-behind-a-decimal-floor.json` fires `record/stale-prose` with `measured/no-repetition-floor` beside it and `measured/too-few-repetitions` kept silent, and the runner has to report nothing of it as written. It has to report each variant, every one a comparison no prepared case can prove, since every case declares the whole set its run reports: without `policy` and `snapshot`, the reference, on which nothing fires; with `beside` empty, a rule fired that the case does not declare; with `outcomes/case-always-failed` added to `beside`, a declared rule that stays silent; with it added to `hides`, a rule named there that nothing keeps silent; with `hides` empty, a rule kept silent that the case does not name. A case that passed is reported by the silent rule as well — its own rule is always declared — so its variant proves the play reaches the runner, not a rule of its own."
+}

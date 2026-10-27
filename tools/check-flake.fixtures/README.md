@@ -43,6 +43,24 @@ other, so the repetitions of one case are found by grouping on `<path> | <projec
 test of every entry and by nothing else — which is also why a case is addressed here by that
 same string, and why point 2 checks that every case ran the same number of times.
 
+## The runner's own control
+
+A case is held to the whole set its run reports and to what it `hides`, and no case here proves the
+runner makes those comparisons: every case declares exactly what its run fires and keeps silent.
+[`_runner.json`](_runner.json) holds them. Through [`runner-control.mjs`](../runner-control.mjs) the
+runner plays `a-drift-behind-a-decimal-floor.json` as written — `record/stale-prose`,
+`measured/no-repetition-floor` beside it, `measured/too-few-repetitions` kept silent — which it has
+to pass, and once for each comparison: with `beside` empty, a rule fired that the case does not
+declare; with `outcomes/case-always-failed` added to `beside`, a declared rule that stays silent;
+with it added to `hides`, a rule named there that nothing keeps silent; with `hides` empty, a rule
+kept silent that the case does not name — and has to report each. It plays the case without `policy`
+and `snapshot` too, the reference, on which nothing fires, and the runner reports that as well; but
+a case that passed is reported by the silent rule beside its own, since its own rule is always
+declared, so switching the PASSED report off is an equivalent mutant, and the variant only proves
+the play reaches the runner. The control is played apart from the cases and counts as none. **Not
+held:** that `--write` refuses exactly what points 1 to 3 reject — two readings of the same input,
+compared, which no declaration of a case can make disagree.
+
 ## The cases
 
 | file                                                                             | what it breaks                                                                 | check         | rule                         |

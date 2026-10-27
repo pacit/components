@@ -44,6 +44,28 @@ good measure: were the reference itself defective, every case would fire because
 rather than because of its own defect, and every "rejected" would be false — that is,
 this whole negative control would become exactly what it stands against.
 
+## The runner's own control
+
+The runner reports a case that passed, fired another check or another rule, and — for a case with
+two modes — a declaration it cannot read and a mode that does not do what the case says, and no case
+here proves it does: every case is built to be refused, warned of and rehearsed as it declares.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `repository-missing` as written,
+which it has to pass, and once for each rule: over `_reference` without its two modes, a case that
+passed; without them and with `check` set to `licence`, or `rule` to `dead`, another check or rule;
+without `releaseOnly`, a `rehearsal` nothing reads; without `rehearsal`, or with it set to `often`,
+a case that does not say what the third reading does; with it set to `warns`, a rehearsal that
+blocks; over `since-next` as `since` at point 10, a rehearsal that passes where the case says it
+blocks; and with `drop` set to `["LICENSE"]`, an ordinary run that blocks beside the warning of
+point 6 — and has to report each. The control is played apart from the cases and counts as none.
+
+**Not held**, since no prepared input tells each from the rule beside it: a release-only case
+whose ordinary run passes without a warning, or whose rehearsal passes without one where the case
+says it warns (both would need a release-only point that does not warn, which is the defect these
+rules exist for); a rehearsal that blocks on another check than the release (the two readings part
+only at point 10, the last); and a rehearsal that blocks where the case says it warns, which,
+with point 10 the last, never carries a warning, so the rule that a rehearsal warns reports it too.
+
 ## The cases
 
 | directory                                                       | what it breaks                                                | point | rule           |

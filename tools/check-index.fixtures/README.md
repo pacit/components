@@ -42,6 +42,15 @@ two shapes that are easy to leave unexercised: a decision whose status is not `a
 the renderer writes into the title cell, and one with no `Implements:` line at all, which
 renders an em dash.
 
+## The runner's own control
+
+The runner reports a case that passed and a case that fired another check, and no case here proves
+it does: every case is built to be refused on its own. [`_runner.json`](_runner.json) holds those
+rules. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+`a-cases-section-with-no-table.json` as written, which it has to pass, and once for each rule —
+without `trees`, the input it is built on, which the gate passes; with `check` set to `counts` — and
+has to report each. The control is played apart from the cases and counts as none.
+
 ## The cases
 
 | case                                          | point | check     | defect                                                    |

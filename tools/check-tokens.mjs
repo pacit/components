@@ -41,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 
 import { freshInputsFor } from './fresh-inputs.mjs';
 import * as sass from 'sass';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TOKENS = 'libs/tokens';
@@ -52,6 +53,7 @@ const CONTRAST_POLICY = `${TOKENS}/src/contrast.policy.json`;
 const LAYERS_POLICY = `${TOKENS}/src/layers.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 const WRITE = process.argv.includes('--write');
 
@@ -1858,21 +1860,27 @@ if (cases.length === 0)
   }
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and, where it declares one, its own rule. The loop plays every case through it, and so does
+ * the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name, fx);
   try {
     checkTokens(fixtureInput(directory));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof TokenError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
@@ -1880,13 +1888,27 @@ for (const name of cases) {
     // THAT rule and not on a neighbouring rule of the same point — otherwise the point's
     // identifier confirms nothing but itself.
     else if (fx.rule && error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: at point ${fx.point} rule \`${error.rule}\` fired, and \`${fx.rule}\` — the same point, a different sentence`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readCase(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-tokens.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    holds: ['passed', 'check', 'rule'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1898,6 +1920,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Tokens: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+  `✓ Tokens: ${description}. Negative control: the reference input passes, ${cases.length} ` +
+    `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
+    `fired another check or rule.`,
 );

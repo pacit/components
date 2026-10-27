@@ -20,6 +20,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -28,6 +29,7 @@ const POLICY = 'tools/flake.policy.json';
 const SNAPSHOT = 'docs/flake.snapshot.md';
 const FIXTURES = join(ROOT, 'tools/check-flake.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 /** The statuses Playwright puts on a test, and what each means for a repetition. */
 const PASSED = 'expected';
@@ -724,7 +726,9 @@ const buildFixture = (fx) => {
 };
 
 const cases = readdirSync(FIXTURES)
-  .filter((name) => name.endsWith('.json') && name !== REFERENCE)
+  .filter(
+    (name) => name.endsWith('.json') && name !== REFERENCE && name !== RUNNER,
+  )
   .sort();
 if (cases.length === 0)
   problems.push(
@@ -750,9 +754,11 @@ const listed = (rules) => `\`${rules.join('`, `')}\``;
  * whichever of its defects still works. A case names in `hides` everything a finding of points
  * 1 and 2 keeps silent on its input, read off every point run with nothing taken out: a hidden
  * finding that is not there proves no stop, and one left unnamed is a stop nobody accounted for.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
  */
-for (const name of cases) {
-  const fx = JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
+const runCase = (name, fx) => {
+  const said = [];
   const input = buildFixture(fx);
   const found = checkFlake(input);
   const fired = found.map(ruleOf);
@@ -760,17 +766,17 @@ for (const name of cases) {
   const extra = fired.filter((r) => !declared.includes(r));
   const silent = declared.filter((r) => !fired.includes(r));
   if (!fired.length)
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `\`${fx.check}\`/\`${fx.rule}\` stopped examining anything`,
     );
   else if (extra.length)
-    problems.push(
+    said.push(
       `${name}: ${listed(extra)} fired where the case declares ${listed(declared)} — ` +
         `the case proves something other than what it declares`,
     );
   else if (silent.length)
-    problems.push(
+    said.push(
       `${name}: ${listed(silent)} stayed silent beside ${listed(fired)} — either one ` +
         `finding hid another, and a night loses what it found behind the first, or the ` +
         `case does not build the defect it declares`,
@@ -788,12 +794,12 @@ for (const name of cases) {
     .filter((r, i, all) => !fired.includes(r) && all.indexOf(r) === i);
   const hides = (fx.hides ?? []).map(ruleOf);
   for (const rule of hides.filter((r) => !silenced.includes(r)))
-    problems.push(
+    said.push(
       `${name}: the case hides \`${rule}\`, and nothing on this input keeps it silent — it ` +
         `fires in the run, or not even with nothing taken out: the case proves no stop`,
     );
   for (const rule of silenced.filter((r) => !hides.includes(r)))
-    problems.push(
+    said.push(
       `${name}: \`${rule}\` fires with nothing taken out and a stop keeps it silent, and the ` +
         `case does not name it in \`hides\` — a stop nobody accounted for`,
     );
@@ -801,14 +807,34 @@ for (const name of cases) {
   // the set the refusal is written with.
   const rejected = unstopped.length > 0 || checkOutcomes(input).length > 0;
   if (rejected !== refusalOf(found).length > 0)
-    problems.push(
+    said.push(
       rejected
         ? `${name}: points 1 to 3 reject this input and \`--write\` would record it — a run ` +
             `they refuse would be written down as the accepted state (\`lesson-49\`)`
         : `${name}: points 1 to 3 accept this input and \`--write\` would refuse it — the ` +
             `command that writes a finding down would turn away the run that found it`,
     );
-}
+  return said;
+};
+
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+// The runner's own control plays one case with each of these comparisons broken in turn — a
+// rule taken out of `beside` or added to it, one taken out of `hides` or added to it — beside
+// the case as written and the case with its defect taken out.
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-flake.fixtures/${RUNNER}`,
+    load: () => readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    holds: ['passed', 'undeclared', 'silent', 'hides', 'stops'],
+  })),
+);
 
 // ── the report ────────────────────────────────────────────────────────────────
 
@@ -838,5 +864,6 @@ console.log(
     `${tally.repetitions} repetitions ` +
     `(${rateOf(tally.wobbling.length, tally.cases.length).toFixed(2)}%), taken ${tally.date}; ` +
     `\`${SNAPSHOT}\` is the record. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own rules.`,
+    `${cases.length} prepared ones rejected on their own rules, and the runner reports a case at ` +
+    `odds with its \`beside\` or its \`hides\`.`,
 );

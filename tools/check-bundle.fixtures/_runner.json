@@ -1,5 +1,17 @@
 {
   "case": "named-probe-imports-another-class.json",
   "pins": ["the row of `./alpha` names `PctAlpha`"],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `named-probe-imports-another-class.json` is refused by `shaken` for the row of `./beta`, and here it is pinned to the row `named-probe-imports-a-namesake.json` names under the same rule, `./alpha` — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`."
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["namedProbe"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "presence"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `named-probe-imports-another-class.json` is refused by `shaken` for the row of `./beta`, and here it is pinned to the row `named-probe-imports-a-namesake.json` names under the same rule, `./alpha` — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `namedProbe`, a case that passed; with `check` set to `presence`, a case that fired another check."
 }

@@ -47,12 +47,14 @@ import {
 import { basename, dirname, extname, join, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { runnerControl } from '../../tools/runner-control.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIST = join(HERE, '../../dist/libs/components');
 const CNAME = join(HERE, '../../apps/docs/public/CNAME');
 const FIXTURES = join(HERE, '../../tools/check-package.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 const THEME = 'themes/pct.css';
 const POLICY = 'dependencies.policy.json';
 
@@ -1010,20 +1012,27 @@ if (cases.length === 0)
     );
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared package: nothing, when it was rejected on its own
+ * point and, where it declares one, its own rule — and, for a case with two modes, warned of in
+ * an ordinary run and read under `--rehearsal` as it declares. The loop plays every case
+ * through it, and so does the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   const directory = buildFixture(name, fx);
   try {
     const resultFx = checkPackage(directory, { release: true });
     if (!resultFx.error)
-      problems.push(
+      said.push(
         `${name}: the prepared package PASSED and was meant not to — ` +
           `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
       );
     else if (resultFx.error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${resultFx.error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
           `what it declares`,
@@ -1032,7 +1041,7 @@ for (const name of cases) {
     // a case built for a dead allowance and rejected for an undeclared import passes the
     // comparison above while proving nothing about the rule it was written for.
     else if (fx.rule && resultFx.error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: rule \`${resultFx.error.rule}\` of check \`${fx.check}\` fired, and ` +
           `\`${fx.rule}\` was meant to — the case is rejected for the wrong reason`,
       );
@@ -1047,50 +1056,50 @@ for (const name of cases) {
     // (`lesson-242`). A release-only case that does not say is refused — and so is a
     // `rehearsal` on a case that is not release-only, since nothing below would read it.
     if (fx.rehearsal !== undefined && !fx.releaseOnly)
-      problems.push(
+      said.push(
         `${name}: \`rehearsal\` without \`releaseOnly\` — the third reading is examined ` +
           `only on a case with two modes, so this declaration is never read`,
       );
     if (fx.releaseOnly) {
       const ordinary = checkPackage(directory, { release: false });
       if (ordinary.error)
-        problems.push(
+        said.push(
           `${name}: in an ordinary run the gate BLOCKS (${ordinary.error.check}) ` +
             `and was meant only to warn — blocking belongs to \`--release\``,
         );
       else if (ordinary.warnings.length === 0)
-        problems.push(
+        said.push(
           `${name}: in an ordinary run neither an error nor a warning — ` +
             `missing metadata passes without a trace`,
         );
       const rehearsal = checkPackage(directory, { rehearsal: true });
       if (fx.rehearsal === 'blocks') {
         if (!rehearsal.error)
-          problems.push(
+          said.push(
             `${name}: under \`--rehearsal\` the gate passed and point ${fx.point} ` +
               `(\`${fx.check}\`) was meant to block — a dry run would rehearse past what ` +
               `the release refuses`,
           );
         else if (rehearsal.error.check !== fx.check)
-          problems.push(
+          said.push(
             `${name}: under \`--rehearsal\` check \`${rehearsal.error.check}\` fired, and ` +
               `point ${fx.point} (\`${fx.check}\`) was meant to — the case is rejected for ` +
               `the wrong reason`,
           );
       } else if (fx.rehearsal === 'warns') {
         if (rehearsal.error)
-          problems.push(
+          said.push(
             `${name}: under \`--rehearsal\` the gate BLOCKS (${rehearsal.error.check}) ` +
               `and was meant only to warn — a dry run builds before any stamp, so every ` +
               `rehearsal would end here (\`lesson-242\`)`,
           );
         else if (rehearsal.warnings.length === 0)
-          problems.push(
+          said.push(
             `${name}: under \`--rehearsal\` neither an error nor a warning — what the ` +
               `real run is to stamp passes without a trace`,
           );
       } else
-        problems.push(
+        said.push(
           `${name}: ` +
             (fx.rehearsal === undefined
               ? '`releaseOnly` without `rehearsal`'
@@ -1102,7 +1111,21 @@ for (const name of cases) {
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readCase(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-package.fixtures/${RUNNER}`,
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    holds: ['passed', 'check', 'rule', 'rehearsal', 'releaseOnly'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1114,7 +1137,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Package complete: ${result.description}. ` +
-    `Negative control: the reference package passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+  `✓ Package complete: ${result.description}. Negative control: the reference package passes, ` +
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a case ` +
+    `that passed, fired another check or rule, or reads its modes otherwise than it declares.`,
 );

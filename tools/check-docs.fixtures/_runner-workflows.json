@@ -1,0 +1,17 @@
+{
+  "case": "tools/check-docs.fixtures/a-night-that-skips-a-gate",
+  "variants": [
+    {
+      "for": "passed",
+      "case": "tools/check-docs.fixtures/_reference",
+      "without": ["rule"]
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "night-line-empty"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`) for the workflow pairs of point 3, played apart from the cases. `a-night-that-skips-a-gate` fires `night-skips-a-target`, and the runner has to report nothing of it as written. It has to report each variant: over `_reference` without its `rule`, a case that passed, which only the PASSED rule reports when the case declares no rule; with `rule` set to `night-line-empty`, another rule. Point 3 fires one rule at most — each of its readings returns or fires once — so the runner's rule that a case fires one rule alone is reported by the rule comparison and needs no variant here."
+}

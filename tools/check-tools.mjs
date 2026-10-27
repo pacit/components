@@ -975,6 +975,7 @@ problems.push(
     // The case as the loop plays it: a prepared target's `inputs` are resolved onto it above.
     read: (name) => new Map(fixtures).get(name),
     run: runCase,
+    holds: ['passed', 'check', 'rule'],
     own: (fx) => fx.names,
     pin: (fx, names) => ({ ...fx, names }),
   })),
@@ -991,11 +992,11 @@ if (problems.length) {
 process.stdout.write(
   `✓ Scripts gate: ${scripts.length} script(s) read two ways, every name resolves; ` +
     `${live.underTools.filter((n) => live.exercised.includes(n)).length} of the ` +
-    `${live.underTools.length} under \`tools/\` run in a pass ` +
-    `and the rest carry a reason; ${live.targets.length} target(s) run a script and hash ` +
-    `it with what it loads, ${askingOf(live).length} of them asking git for its index and ` +
-    `hashing the answer. ` +
-    `Negative control: the prepared defect is reported and the prepared browser names are ` +
-    `not, ${cases.length} prepared input(s) rejected on their own points, and the runner ` +
-    `reports a case pinned to a name its message lacks, or to no list of names.\n`,
+    `${live.underTools.length} under \`tools/\` run in a pass and the rest carry a reason; ` +
+    `${live.targets.length} target(s) run a script and hash it with what it loads, ` +
+    `${askingOf(live).length} of them asking git for its index and hashing the answer. Negative ` +
+    `control: the prepared defect is reported and the prepared browser names are not, ` +
+    `${cases.length} prepared input(s) rejected on their own points, and the runner reports a ` +
+    `case that passed or fired another check or rule, or pinned to a name its message lacks, or ` +
+    `to no list of names.\n`,
 );

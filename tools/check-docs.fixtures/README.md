@@ -27,6 +27,25 @@ it has been shown to fail.** The two documented runs this rule came from are `le
 This directory is **exempt** from the citation check — the identifiers in it are fictional by
 design.
 
+## The runner's own control
+
+Each of the four runners here — the requirement files, point 3's pairs, point 7's cards, point
+8's plans — reports a case that passed, and the two that read a declaration report one firing
+another rule, or more than one, and no case proves any of it: every case is built to be refused on
+its own. Each runner has a declaration of its own, played through
+[`runner-control.mjs`](../runner-control.mjs) with its case as written, which it has to pass:
+[`_runner.json`](_runner.json) plays `no-gate.md` over `_reference/requirements.md`, and
+[`_runner-cards.json`](_runner-cards.json) the card over `docs/components/button.md`, both of which
+the gate passes; [`_runner-workflows.json`](_runner-workflows.json) plays
+`a-night-that-skips-a-gate` over `_reference` without its `rule` — a case that declares no rule is
+the one only the PASSED rule reports — and with `rule` set to `night-line-empty`; and
+[`_runner-plans.json`](_runner-plans.json) plays `plan-claims-work-with-no-gate` the same two ways
+and over [`_two-rules/`](_two-rules), a plan firing its own rule and then `open-but-closed`. The
+runner has to report each. `_two-rules/` declares nothing, so neither loop plays it. The controls
+are played apart from the cases and count as none. Point 3's rule that a case fires one rule alone
+has no variant: each of its readings returns or fires once, so a pair never fires two rules, and
+the rule comparison reports what that rule would.
+
 ## The cases
 
 | case                                                                     | what it breaks                                                                                                                                | which check must fire         | rule                   |

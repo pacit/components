@@ -49,15 +49,21 @@ case would fire because of it rather than because of its own defect, and every "
 would be false. A case examines the decision, not the drift of the file on disk: the
 comparison with `docs/acr.md` is the real run's alone, and the cases run with it left out.
 
-A rejected case may name phrases its refusal must hold (`says`), where the point alone does
-not tell which reading refused. A case that writes a positive tabindex after constructs the
-reading lets through — a call that reads the attribute, a selector, a value in parentheses —
-names the place of that write: its line, or the sheet that compiles to it. A reading that refused one of the constructs names an earlier line or another reason, and fails the case, since a refusal names the first line it finds. No case holds the
-rule itself — a runner that skipped `says` would pass every one — so
+A rejected case may name phrases its refusal must hold (`says`), where the point alone does not tell
+which reading refused. A case that writes a positive tabindex after constructs the reading lets
+through — a call that reads the attribute, a selector, a value in parentheses — names the place of
+that write: its line, or the sheet that compiles to it. A reading that refused one of the constructs
+names an earlier line or another reason, and fails the case, since a refusal names the first line it
+finds. No case holds the rule itself — a runner that skipped `says` would pass every one — so
 [`_runner.json`](_runner.json) does: through [`runner-control.mjs`](../runner-control.mjs) the
-runner plays `an-orientation-in-a-second-sheet-of-the-themes-folder.json` once more, its phrase
-kept and the one `an-orientation-query-in-the-theme.json` holds added once after it and once
-before, and has to report each, and nothing of the case with its own phrase.
+runner plays `an-orientation-in-a-second-sheet-of-the-themes-folder.json` once more, its phrase kept
+and the one `an-orientation-query-in-the-theme.json` holds added once after it and once before, and
+has to report each, and nothing of the case with its own phrase. The same control holds the runner's
+other rules, which no case proves either, since every case is built to be refused on its own point
+or rendered with its own word: it plays the case without `tree`, the live input, which the gate
+passes; with `check` set to `catalogue`, another check; with `criteria` dropping a row the live
+input does not hold, a case that cannot be built; and with a `status`, a state declared of an input
+the gate refuses — and has to report each.
 
 A case that carries a `status` is read the other way round. It is a state of the report, not
 a defect, and the gate must accept it; what it examines is the rendering — the word after

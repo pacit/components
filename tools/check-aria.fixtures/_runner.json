@@ -1,5 +1,17 @@
 {
   "case": "button-in-capitals",
   "pins": ["holds no control"],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `button-in-capitals` is refused by point 4 (`forwarded`) for what stands around a `<button>` naming nothing of its own, and here it is pinned to the words of another of the point's refusals, the one `focusable-group-in-capitals` holds — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`."
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference"
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "denominator"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `button-in-capitals` is refused by point 4 (`forwarded`) for what stands around a `<button>` naming nothing of its own, and here it is pinned to the words of another of the point's refusals, the one `focusable-group-in-capitals` holds — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `denominator`, a case that fired another check."
 }

@@ -58,6 +58,16 @@ belongs to no compiler program, so it would fire `check-typecheck`. One gate's f
 not be another's defect — the same class of problem as the fake `package.json` in
 [`check-package.fixtures`](../check-package.fixtures/README.md).
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule where it declares one, and no case here proves it does: every case is built to be refused on
+its own. [`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `angular-imported-as-a-namespace` as
+written, which it has to pass, and once for each rule — over `_reference`, which the gate passes;
+with `check` set to `logical`; with `rule` set to `decorator-unseen` — and has to report each. The
+control is played apart from the cases and counts as none.
+
 ## The cases
 
 | directory                                                                                          | what it breaks                                                     | point |

@@ -25,6 +25,7 @@ import {
 } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -34,6 +35,7 @@ const INDEX = `${DECISIONS}/README.md`;
 const MAP = 'docs/README.md';
 const FIXTURES = join(ROOT, 'tools/check-index.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 /** Where a fixture tree may live, and where the gate it belongs to is looked for. */
 const TREES = ['tools/*.fixtures', 'libs/components/*.fixtures'];
@@ -646,7 +648,7 @@ try {
 }
 
 const prepared = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 
 if (!prepared.length)
@@ -667,24 +669,43 @@ try {
   );
 }
 
-for (const name of prepared) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkIndex(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof IndexError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what ` +
           `it declares`,
       );
   }
-}
+  return said;
+};
+
+for (const name of prepared) problems.push(...runCase(name, readFixture(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-index.fixtures/${RUNNER}`,
+    load: () => readFixture(RUNNER),
+    cases: prepared,
+    read: readFixture,
+    run: runCase,
+    holds: ['passed', 'check'],
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -696,6 +717,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Index: ${summary}. Negative control: the reference input passes, ` +
-    `${prepared.length} prepared ones rejected on their own points.`,
+  `✓ Index: ${summary}. Negative control: the reference input passes, ${prepared.length} ` +
+    `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
+    `fired another check.`,
 );
