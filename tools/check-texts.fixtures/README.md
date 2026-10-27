@@ -113,8 +113,9 @@ read.
 Not held: `Component` and `Directive` are made only under `enableSelectorless`, which this gate's
 parse leaves off as `ngc` does by default, so no input brings one; a library that switched it on
 in `ngc` alone would still be read with it off — a `<Widget>` as an element, a `@Marker(…)` as an
-animation binding, and one with a value in its parentheses, the only form that carries text, as a
-parse error point 1 refuses. And a literal the walk does not read, handed to a name, is drawn
-wherever the name is printed: a `@let`'s value, a block's condition, a loop's collection, an
-inline template's binding (`@let m = 'Delete'`, `@if ('Delete'; as m)`, `*ngFor="let m of
-['Delete']"`, each passed by the gate). The library's blocks hold literals in comparisons alone.
+animation binding beside attributes or as a parse error point 1 refuses, none of them the
+selectorless reading. And a literal in an expression no point reads, handed to a name, is drawn
+wherever the name is printed: a `@let`'s value, a block's condition, a loop's collection, a
+template's input or an outlet's context among them (`@let m = 'Delete'`, `@if ('Delete'; as m)`,
+`*ngFor="let m of ['Delete']"`, each passed by the gate). The library's blocks hold literals in
+comparisons alone.

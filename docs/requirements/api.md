@@ -935,12 +935,11 @@ the TypeScript parser as ngc reads them (`tools/decorators.mjs`): a template the
 carries, under any key ngc reads, is refused, as are a `templateUrl` given by an expression, a
 `host` block composed otherwise than in place or in a `const` of the file's own (`hostOf` follows
 one by name or in a spread), a decorator the column-zero pattern did not read and one imported
-under another name. The list of static
-classes and attributes is built **twice** — from the sources and from the built package, whose
-class is the object an entrypoint exports, under its own name, and a name two objects bear is
-refused; an array of a definition's `consts` is read as attributes only where an instruction takes
-it as a node's, a local reference or a `@defer` block's timing is placed apart, and one no
-instruction the read knows takes is refused. Plus
+under another name. The list of static classes and attributes is built **twice** — from the
+sources and from the built package, whose class is the object an entrypoint exports, under its own
+name, and a name two objects bear is refused; an array of a definition's `consts` is read as
+attributes only where an instruction takes it as a node's, a local reference or a `@defer` block's
+timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
 **Control:** `tools/check-texts.fixtures/` — 79 doctored inputs, each rejected on its own

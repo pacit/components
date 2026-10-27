@@ -397,10 +397,11 @@ const KNOWN_NODES = new Set([
   'SwitchBlockCase',
   'SwitchExhaustiveCheck',
   'DeferredTrigger',
-  // A `@let`, whose value is not read, nor is a block's condition, a loop's collection or an
-  // inline template's binding: a literal one of them hands a name is drawn wherever the name is
-  // printed (`@let m = 'Delete'`, `@if ('Delete'; as m)`, `*ngFor="let m of ['Delete']"`), and
-  // the walk follows no name. The library's blocks hold literals in comparisons alone.
+  // A `@let`, whose value is not read, nor is any expression no point reads that hands a name
+  // its value — a block's condition, a loop's collection, a template's input, an outlet's
+  // context: a literal there is drawn wherever the name is printed (`@let m = 'Delete'`,
+  // `@if ('Delete'; as m)`), and the walk follows no name. The library's blocks hold literals in
+  // comparisons alone.
   'LetDeclaration',
   // Refused whole by point 3 (`visitIcu`).
   'Icu',

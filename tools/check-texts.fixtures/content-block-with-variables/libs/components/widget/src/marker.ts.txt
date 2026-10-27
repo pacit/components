@@ -2,10 +2,9 @@ import { Component, input, isDevMode } from '@angular/core';
 import { PctMarkerBase } from './base';
 
 /**
- * A slot directive — it exists so that the reference input carries a `host` block
- * with a static attribute whose key has NO quotes (`role`) beside a binding
- * whose key does. Prettier writes them exactly like that and the scanner must see
- * both.
+ * A slot directive in the reference, a component here — it exists so that the reference input
+ * carries a `host` block with a static attribute whose key has NO quotes (`role`) beside a
+ * binding whose key does. Prettier writes them exactly like that and the scanner must see both.
  *
  * Its `title` replaces the base's empty one, as Angular merges a chain: the attribute of the
  * nearest class that writes it, so the package carries `*` alone. Neither value has a letter,
