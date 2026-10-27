@@ -10,7 +10,7 @@ import { FormValueControl, ValidationError } from '@angular/forms/signals';
 /**
  * A control that carries the block itself — the ordinary shape, seven of eight here — with three
  * members written in shapes a pattern at the margin did not read: a name in quotes, a type before
- * `=` with the initializer over three lines, and a break after `=`.
+ * `=`, which prettier wraps, and a break after `=`.
  */
 @Component({ selector: 'pct-widget', template: '' })
 export class PctWidget implements FormValueControl<string> {
@@ -24,7 +24,7 @@ export class PctWidget implements FormValueControl<string> {
   readonly invalid = input(false, { transform: booleanAttribute });
 
   /** Whether the user has left the field once — under a computed name. */
-  readonly ['touched'] = input(false, { transform: booleanAttribute });
+  readonly [`touched`] = input(false, { transform: booleanAttribute });
 
   /** The form's validation errors. */
   readonly errors =

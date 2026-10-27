@@ -2,6 +2,6 @@
   "point": 3,
   "check": "block",
   "rule": "member-missing",
-  "description": "The widget's `touched` declared as a parameter property. It is a parameter, not a property declaration, and ngc refuses `input()` anywhere but a property's initializer (NG8110), so the widget has no input `touched`, and point 3 says so.",
-  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`"
+  "description": "The widget's `touched` declared as a parameter property. TypeScript makes it a property of the class, and it is a parameter, not a property declaration: ngc refuses `input()` anywhere but a property's initializer (NG8110). The widget has no input `touched`, and point 3 says so and where the declaration that is none stands.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`, only a declaration that is no member at libs/components/widget/src/widget.ts:28"
 }

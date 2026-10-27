@@ -45,7 +45,9 @@ found — the file, the line, the class — says it in the message, and the righ
 something else is a fault as well. `control-anonymous` and `control-exported-as-the-default`
 hold the place and the name of the control they refuse, `header-in-a-comment` the header's,
 `transform-dropped`, `member-overridden` and `member-past-a-semicolon` the line of a member, the
-last two its text as well, the member cases at point 3 the class and the member, and
+last two its text as the refusal prints it, the member cases at point 3 the class and the
+member and where a declaration under its name that is no member stands, or for `member-static`
+that the line ends there, and
 `checkbox-member-missing` and the three cases of a base this reading has not got the whole list
 of where a chain stopped — nothing for a control with no base, one line for two tags
 over one base, none for a control that lacks nothing, two lines in order for two bases, and the
@@ -79,6 +81,8 @@ lead-in on its own line after the last missing member — with what each base st
 | `member-as-a-parameter-property`           |     3 | `block`       | `member-missing`       | a control's `touched` a parameter property of its constructor             |
 | `member-under-a-computed-name`             |     3 | `block`       | `member-missing`       | a control's `touched` under a computed name, which Angular reads as none  |
 | `member-without-readonly`                  |     3 | `block`       | `member-missing`       | a control's `touched` written without `readonly`                          |
+| `member-overridden-without-readonly`       |     3 | `block`       | `member-missing`       | a leaf's override of `invalid` through `Boolean`, without `readonly`      |
+| `member-overridden-under-a-computed-name`  |     3 | `block`       | `member-missing`       | the same under `['invalid']`, which hides the base's member as well       |
 | `checkbox-member-missing`                  |     3 | `block`       | `member-missing`       | a control of `FormCheckboxControl` with no `touched`                      |
 | `contract-under-another-name`              |     3 | `block`       | `member-missing`       | the same of `FormValueControl`, imported under another name               |
 | `contract-through-a-namespace`             |     3 | `block`       | `member-missing`       | the same, named through a namespace import                                |
@@ -145,23 +149,32 @@ could not place, `unattributed`, is gone with the reading by position, and with 
 member above every class, which the parser holds as none.
 
 What a member is, is the parser's as well: a property declaration written `readonly` and with an
-initializer, whatever else it is written with, and what point 4 compares is the whole
-initializer, its whitespace collapsed. Read by a pattern at the margin — two spaces, `readonly`, a
-name, `=` and everything up to the first line ending in `;` — `member-overridden` and
-`member-past-a-semicolon` both passed on main (measured). The first is the `override readonly`
-that `noImplicitOverride` demands of a leaf redeclaring its base's member, which was no member,
-so the base's declaration was compared in its place; `override readonly invalid = input(false)`
-does not compile over a base with `booleanAttribute` (TS2416), so the case writes
-`transform: Boolean`, which compiles and reads `''` false. The second is two transforms written
-with a block body, cut at their first statement, before the `alias` that tells them apart.
+initializer, whatever else it is written with, and what point 4 compares is the initializer's
+tokens — the whitespace and the comments between them aside, and a comma that only closes a list
+dropped, which prettier writes where it wraps one. Read by a pattern at the margin — two spaces,
+`readonly`, a name, an equals sign and everything up to the first line ending in `;` —
+`member-overridden` and `member-past-a-semicolon` both passed main's gate, built on main's
+reference (measured). The first is the `override readonly` that `noImplicitOverride` demands of a
+leaf redeclaring its base's member, which was no member, so the base's declaration was compared in
+its place; `override readonly invalid = input(false)` does not compile over a base with
+`booleanAttribute` (TS2416), so the case writes `transform: Boolean`, which compiles and reads
+`''` false, with a decorator on the line above, so that the line the refusal names is the name's.
+The second is two transforms written with a block body, cut at their first statement, before the
+`alias` that tells them apart.
 
-Four cases at point 3 hold what is no member, each refused as missing: `static`, which ngc refuses
-on an input (NG1100); a parameter property, a parameter on which ngc refuses `input()` (NG8110);
-a computed name, for which Angular reflects no name (NG8002 on a binding); and a member written
-without `readonly`. The pattern refused all four as well: they hold the decision against a
-reading that takes the class as TypeScript does, where Angular does not. `declare` and
-`abstract` have no case: neither takes an initializer that compiles here (TS1254 and TS2416,
-TS1267), which the gate says.
+What else a class declares under a name is no member, and in a leaf it hides its base's:
+TypeScript types the property by the leaf's declaration, and the field written at run time is the
+leaf's. `member-overridden-without-readonly` and `member-overridden-under-a-computed-name` are the
+defect of `member-overridden` written without `readonly` and under `['invalid']`; ngc compiles
+both, and both passed main's gate and the first reading of this one, which read them as nothing
+and let the base's member stand (measured). Four more cases hold what is no member on a control
+with no base: a parameter property, on which ngc refuses `input()` (NG8110); a computed name, a
+template literal there, for which Angular reflects no name (NG8002 on a binding); a member written
+without `readonly`, which Angular takes and this library's rule does not; and `static`, which
+declares no property of an instance — ngc refuses an input so declared (NG1100) — and so is named
+nowhere in the refusal. The pattern refused all four as well. `declare` declares nothing: it says
+the type of a property the class has anyway, which is how a leaf narrows its base's member, and
+the reference's knob carries one.
 
 Which class is a control is the parser's too, off the class's own `implements` clause, and eight
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the
@@ -213,10 +226,12 @@ qualifier, which names no contract, and stops a reading that takes every import 
 
 `PctWidget` writes three members of the block in shapes the pattern at the margin did not read,
 and the reference passing is the proof that they are read: `disabled` under a name in quotes,
-which Angular reflects as `disabled`; `touched` with a type before `=` and its initializer over
-three lines, which point 4 compares equal to the knob's one-line declaration, the type not
-compared and the whitespace collapsed; and `errors` broken after `=`. Measured: under the
-pattern, the reference itself fires `member-missing` on all three.
+which Angular reflects as `disabled`; `touched` with a type before `=`, wrapped as prettier wraps
+it — with the comma it writes after the last property — and a JSDoc comment inside, compared equal
+to the knob's one-line declaration; and `errors` broken after `=`. Measured: under the pattern,
+the reference itself fires `member-missing` on all three, and compared as text, `touched` drifts
+from the knob's. `PctKnob` says the type of its base's `touched` again with `declare`, which hides
+nothing.
 
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on

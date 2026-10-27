@@ -1,4 +1,10 @@
-import { booleanAttribute, input, model, output } from '@angular/core';
+import {
+  booleanAttribute,
+  input,
+  InputSignalWithTransform,
+  model,
+  output,
+} from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 
 /**
@@ -38,4 +44,10 @@ export class PctKnob
 {
   /** The value — the contract's one required member. */
   readonly value = model<number | null>(null);
+
+  /**
+   * The base's `touched`, its type said again: `declare` emits nothing, so this is no
+   * declaration of a property and hides nothing.
+   */
+  declare readonly touched: InputSignalWithTransform<boolean, unknown>;
 }
