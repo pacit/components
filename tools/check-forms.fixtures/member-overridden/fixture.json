@@ -3,5 +3,5 @@
   "check": "shape",
   "rule": "shape-drift",
   "description": "The knob redeclares its base's `invalid` with `Boolean` for `booleanAttribute` — and `noImplicitOverride`, which `libs/components/tsconfig.json` sets, has it written `override readonly` (TS4114 without). It compiles: `Boolean` takes `unknown` like `booleanAttribute`, where `input(false)` would not (TS2416). `<pct-knob invalid>` passes `''`, which `Boolean` reads false. Read by a pattern at the margin, `override readonly` was no member, the base's declaration was the knob's, and the input passed (measured). A decorator stands on the line above, so the line the refusal names is the name's, and the message holds the text as the refusal prints it.",
-  "message": "\n        input(false, { transform: Boolean })\n          libs/components/widget/src/knob.ts:47"
+  "message": "\n        input(false, { transform: Boolean })\n          libs/components/widget/src/knob.ts:52"
 }

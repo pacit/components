@@ -35,4 +35,7 @@ export class PctWidget implements FormValueControl<string> {
 
   /** A member outside the block, so the reading is shown not to demand a closed set. */
   readonly label = input<string>('');
+
+  /** Whether the user has left it once, kept apart: `#touched` is no name of the block. */
+  readonly #touched = false;
 }

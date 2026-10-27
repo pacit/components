@@ -5,7 +5,7 @@ them and **requires every one to be rejected — and rejected by the point AND t
 declares**. An input that passes is a fault; an input that fires for a reason other than the
 one written in its `fixture.json` is a fault just the same, because it proves something other
 than what it declares ([`lesson-50`](../../docs/lessons.md#lesson-50): point 1 alone carries
-six rules).
+seven rules).
 
 The reason it exists is the same as for every other gate here
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
@@ -70,6 +70,7 @@ lead-in on its own line after the last missing member — with what each base st
 | `control-in-a-namespace`                   |     1 | `denominator` | `control-unread`       | a control exported from a namespace, indented                             |
 | `control-in-a-method`                      |     1 | `denominator` | `control-unread`       | a control declared inside a static method of a class that is none         |
 | `every-control-unread`                     |     1 | `denominator` | `control-unread`       | the library's one control nested, refused before `no-controls`            |
+| `name-unread`                              |     1 | `denominator` | `name-unread`          | a leaf's override of `invalid` under a name kept in a constant            |
 | `contract-unreadable`                      |     1 | `denominator` | `no-contract`          | the dependency's declarations missing                                     |
 | `no-controls`                              |     1 | `denominator` | `no-controls`          | classes and members, and not one form control                             |
 | `block-outside-the-contract`               |     2 | `contract`    | `outside-the-contract` | the block names a member `FormUiControl` does not carry                   |
@@ -106,11 +107,11 @@ way is worse, because it IS there — `<pct-widget invalid>` passes the string `
 falsy, so the control is valid for ever and the template that says otherwise is right in
 front of the consumer.
 
-Point 1's six rules are six different ways for the gate to be measuring nothing, and each has a
-case of its own because each arrives from a different direction: the policy deleted, the
+Point 1's seven rules are seven different ways for the gate to be measuring nothing, and each has
+a case of its own because each arrives from a different direction: the policy deleted, the
 sources moved, a class header the parser holds no class for, a control the parser holds and the
-reading has no header for, the dependency's declarations gone, the contract stopped being
-implemented. A gate that reports success over an empty set is the failure mode this whole tree
+reading has no header for, a property under a name the reading cannot tell, the dependency's
+declarations gone, the contract stopped being implemented. A gate that reports success over an empty set is the failure mode this whole tree
 exists against ([`lesson-33`](../../docs/lessons.md#lesson-33)).
 
 `header-without-class` and `control-unread` are the two directions of one pairing: the
@@ -132,8 +133,8 @@ the top level is the header's fault, so `header-without-class` comes first:
 control it has one for. A control with no header is refused before `no-controls`, which would
 tell `every-control-unread` that not one class implements a contract. `no-policy` and
 `no-classes` come before it and can name an input of theirs first that also has a control with
-no header, and `no-contract` comes after it: on an input with both, either message is true, the
-verdict is the same, and which one is named is not held by a case.
+no header, and `name-unread` and `no-contract` come after it: on an input with two of them,
+either message is true, the verdict is the same, and which one is named is not held by a case.
 
 Members need no rule of their own: they are the parser's, each the class's whose name a header
 stands at. A line in a comment is no member, and a member of a class no header stands at
@@ -175,6 +176,12 @@ declares no property of an instance — ngc refuses an input so declared (NG1100
 nowhere in the refusal. The pattern refused all four as well. `declare` declares nothing: it says
 the type of a property the class has anyway, which is how a leaf narrows its base's member, and
 the reference's knob carries one.
+
+A computed name through an expression — `[INVALID]`, `[Names.Invalid]` — is bound by the checker,
+which this gate does not run, so it cannot say which member such a property hides, and point 1
+refuses it (`name-unread`). The same override under `[INVALID]` compiles, the lint says nothing of
+it, and it passed main's gate and the two readings before this one (measured). The library
+declares no computed name in a class, so the rule costs it nothing.
 
 Which class is a control is the parser's too, off the class's own `implements` clause, and eight
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the
@@ -230,8 +237,9 @@ which Angular reflects as `disabled`; `touched` with a type before `=`, wrapped 
 it — with the comma it writes after the last property — and a JSDoc comment inside, compared equal
 to the knob's one-line declaration; and `errors` broken after `=`. Measured: under the pattern,
 the reference itself fires `member-missing` on all three, and compared as text, `touched` drifts
-from the knob's. `PctKnob` says the type of its base's `touched` again with `declare`, which hides
-nothing.
+from the knob's. `PctKnob` says the type of its base's `touched` again with `declare`, and takes
+an `invalid` in its constructor without a modifier, which is no property; `PctWidget` keeps a
+`#touched`, which is no name of the block. All three hide nothing.
 
 The reference's block is four members where the repository's is eight, and its policy says
 why: a name in the policy that no control declares would make the reference fire point 3 on
