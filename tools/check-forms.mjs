@@ -68,8 +68,10 @@ const flagged = (node, kind) =>
  * A computed name through an expression, `[KEY]` or `[Names.Invalid]`, is bound by the checker,
  * which this reading does not run, and point 1 refuses it: under a member's name it hides the
  * base's, and its field is the one the input runs, so what a control carries would not be known.
- * Read as nothing, a leaf's `override readonly [INVALID]` through `Boolean` passed (measured);
- * the library declares no computed name in a class.
+ * Read as nothing, a leaf's `override readonly [INVALID]` through `Boolean` passed (measured).
+ * The rule errs toward refusing: a symbol (`[Symbol.toStringTag]`), a number and an abstract
+ * property name no member of the block and are refused as well, and the library declares no
+ * computed name in a class.
  */
 const declaredName = (node) => {
   if (
@@ -512,8 +514,7 @@ const checkForms = ({
         list(unnamed) +
         `\n    TypeScript binds \`[KEY]\` through its checker, which this gate does not run. ` +
         `Under a member's name, such a property hides the base's member and its field is ` +
-        `the one the input runs, so what a control carries is not known. Write the name, ` +
-        `or a string.`,
+        `the one the input runs, so what a control carries is not known.`,
     );
 
   if (contract === null || contract.size === 0)

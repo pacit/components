@@ -136,8 +136,8 @@ tell `every-control-unread` that not one class implements a contract. `no-policy
 no header, and `name-unread` and `no-contract` come after it: on an input with two of them,
 either message is true, the verdict is the same, and which one is named is not held by a case.
 
-Members need no rule of their own: they are the parser's, each the class's whose name a header
-stands at. A line in a comment is no member, and a member of a class no header stands at
+Members need no rule of their own — the names they are declared under have one, `name-unread` —
+they are the parser's, each the class's whose name a header stands at. A line in a comment is no member, and a member of a class no header stands at
 is that class's: a class no point measures, because it is no control this reading recognises or
 point 1 has refused it, or a base, which hands down nothing — point 3 then refuses the control
 and names the base its chain stopped at (`base-without-a-header`), and never passes it. A class
@@ -181,7 +181,10 @@ A computed name through an expression — `[INVALID]`, `[Names.Invalid]` — is 
 which this gate does not run, so it cannot say which member such a property hides, and point 1
 refuses it (`name-unread`). The same override under `[INVALID]` compiles, the lint says nothing of
 it, and it passed main's gate and the two readings before this one (measured). The library
-declares no computed name in a class, so the rule costs it nothing.
+declares no computed name in a class, so the rule costs it nothing; it errs toward refusing, and
+a symbol, a number or an abstract property under a computed name is refused too. The case names
+two properties, the knob's under a decorator and one of a class expression, so the line it holds
+is the name's and the class it names is `a class with no name`.
 
 Which class is a control is the parser's too, off the class's own `implements` clause, and eight
 cases at point 3 hold that reading: a contract is either of the two names, at any position of the

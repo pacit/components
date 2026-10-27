@@ -38,6 +38,9 @@ const PCT_KNOB_INVALID = new InjectionToken<boolean>('PCT_KNOB_INVALID');
 /** The name of the member the knob redeclares. */
 const INVALID = 'invalid';
 
+/** A decorator of no consequence, on its own line above the member it decorates. */
+const tracked: PropertyDecorator = () => undefined;
+
 /** The tag over that base — one line of its own, and the whole block behind it. */
 @Component({ selector: 'pct-knob', template: '' })
 export class PctKnob
@@ -48,6 +51,7 @@ export class PctKnob
   readonly value = model<number | null>(null);
 
   /** The form's verdict, redeclared through `Boolean` — under a name kept in a constant. */
+  @tracked
   override readonly [INVALID] = input(false, { transform: Boolean });
 
   /**
@@ -64,3 +68,8 @@ export class PctKnob
     super();
   }
 }
+
+/** A class with no name, under the same name: the rule reads every class, at every depth. */
+export const pctKnobState = class {
+  readonly [INVALID] = false;
+};
