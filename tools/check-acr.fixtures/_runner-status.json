@@ -1,0 +1,13 @@
+{
+  "case": "a-pass-not-on-record.json",
+  "pins": [
+    {
+      "says": [
+        "until the assistive-technology pass is on record",
+        "1 row stands below Supports"
+      ]
+    },
+    { "word": "conformant" }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`) for a status sentence, played apart from the cases. `a-pass-not-on-record.json` renders `machine-audited` until the pass is on record, and here its `status` is pinned twice: to its own phrase and the one `a-row-below-supports-with-the-pass-on-record.json` holds, the second phrase of two, and to the other word of the report. The runner has to report each."
+}

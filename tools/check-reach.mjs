@@ -22,10 +22,12 @@ import { lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-reach.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 const POLICY = 'tools/reach.policy.json';
 
 /**
@@ -746,7 +748,7 @@ try {
 }
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 
 if (cases.length === 0)
@@ -767,18 +769,23 @@ try {
   );
 }
 
-for (const name of cases) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and its message names what the case pins. The loop plays every case through it, and so does
+ * the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkReach(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof ReachError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
@@ -791,7 +798,7 @@ for (const name of cases) {
         !fx.names.length ||
         fx.names.some((named) => typeof named !== 'string' || !named.trim()))
     )
-      problems.push(
+      said.push(
         `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
           `what its message names proves nothing about it, and an empty one is named anywhere`,
       );
@@ -800,14 +807,30 @@ for (const name of cases) {
         (named) => !namedIn(error.message, named),
       );
       if (unnamed.length)
-        problems.push(
+        said.push(
           `${name}: point ${fx.point} fired on its own check, and its message does not ` +
             `name ${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that ` +
             `sends a person to the wrong place, or to none`,
         );
     }
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+// The runner refuses `names` it cannot hold a message to as well, so the control pins the
+// case to those shapes beside a name its message lacks.
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-reach.fixtures/${RUNNER}`,
+    control: readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    pin: (fx, names) => ({ ...fx, names }),
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -820,5 +843,6 @@ if (problems.length) {
 
 console.log(
   `✓ Reach: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
+    `case pinned to a name its message lacks, or to no list of names.`,
 );

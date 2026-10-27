@@ -45,6 +45,7 @@ import * as core from '@angular/core';
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
 import { freshInputsFor } from './fresh-inputs.mjs';
+import { runnerControl } from './runner-control.mjs';
 import { valuesOf } from './static-attributes.mjs';
 import { readTree } from './template-comments.mjs';
 
@@ -56,6 +57,7 @@ const SNAPSHOT = `${PROJECT}/parts.snapshot.md`;
 const README = `${PROJECT}/README.md`;
 const FIXTURES = join(ROOT, 'tools/check-parts.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 const WRITE = process.argv.includes('--write');
 
@@ -1581,10 +1583,16 @@ if (cases.length === 0)
   }
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and says what it pins. The loop plays every case through it, and so does the runner's own
+ * control (`runner-control.mjs`).
+ */
+const runCase = async (name, fx) => {
+  const said = [];
   // One check, several refusals: point 1 throws sixteen ways, all of them `denominator`, and the
   // lines of a list say which of two reads or which part disagreed. A case names a fragment of
   // the refusal it declares, and the fragment is held, so a change that moves the case onto a
@@ -1593,33 +1601,50 @@ for (const name of cases) {
   // a case that names none holds its refusal to nothing, and a blank one is in every message.
   const named = typeof fx.message === 'string' && fx.message.trim() !== '';
   if (!named)
-    problems.push(
+    said.push(
       `${name}: \`fixture.json\` names no \`message\` — a fragment of the refusal the case ` +
         `declares, which point ${fx.point} (\`${fx.check}\`) shares with its other refusals`,
     );
   const directory = buildFixture(name, fx);
   try {
     checkParts(await fixtureInput(directory));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof PartsError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
     else if (named && !error.message.includes(fx.message))
-      problems.push(
+      said.push(
         `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
           `refusal of the same check than the one the fixture declares:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases)
+  problems.push(...(await runCase(name, readCase(name))));
+
+// The runner refuses a fragment it cannot hold a refusal to as well, so the control pins the
+// case to the shapes of one beside the neighbour's words: none, and a blank one.
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-parts.fixtures/${RUNNER}`,
+    control: JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    pin: (fx, message) => ({ ...fx, message }),
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1632,5 +1657,6 @@ if (problems.length) {
 
 console.log(
   `✓ Parts: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
+    `case pinned to a phrase its refusal lacks, or to none.`,
 );

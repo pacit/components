@@ -23,10 +23,20 @@ report because the report is green.
 to fail**. Every gate has a test or a documented run proving that it fires after a deliberate
 regression. A gate that always passes is more dangerous than no gate.
 
+The runner that plays a gate's prepared cases is part of its control. Where a case pins what its
+refusal has to carry — a `message`, `says` or `names` — no case can prove the comparison is made,
+since every case pins what its refusal carries, and a runner that stopped comparing passed them
+all in each of the eleven gates that make one (measured 2026-10-27). Each of those gates keeps
+`_runner.json` beside its cases: a case pinned to a value its refusal lacks, which the runner has
+to report, played apart from the cases and counted as none.
+
 **Gate:** `tools/check-docs.mjs` — the **Control** field is required on every requirement,
 exactly like the **Gate** field
 **Control:** `tools/check-docs.fixtures/` — a requirement with a gate but no control must be
-rejected
+rejected; `tools/runner-control.mjs` and the `_runner.json` of `check-acr`, `check-aria`,
+`check-bundle`, `check-files`, `check-forms`, `check-harness`, `check-parts`, `check-reach`,
+`check-texts`, `check-tools` and `check-zoneless` — a runner that no longer compares a refusal
+with what a case pins must be reported
 **Lessons:** [`lesson-38`](../lessons.md#lesson-38), [`lesson-39`](../lessons.md#lesson-39),
 [`lesson-41`](../lessons.md#lesson-41)
 

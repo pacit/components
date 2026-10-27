@@ -23,12 +23,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execSync } from 'node:child_process';
 
 import { COMPONENT_ONLY, decoratorsOf } from './decorators.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
 const FIXTURES = join(ROOT, 'tools/check-zoneless.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 /** Manifest fields where `zone.js` means "it is back". */
 const DEPENDENCY_FIELDS = [
@@ -620,7 +622,7 @@ try {
 }
 
 const cases = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
   .sort();
 
 if (cases.length === 0)
@@ -641,29 +643,48 @@ try {
   );
 }
 
-for (const name of cases) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and says what it pins. The loop plays every case through it, and so does the runner's own
+ * control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkZoneless(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof ZonelessError)) throw error;
     if (error.check !== fx.check)
-      problems.push(
+      said.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
     else if (fx.message !== undefined && !error.message.includes(fx.message))
-      problems.push(
+      said.push(
         `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — another ` +
           `refusal of the same point, or the right one saying something else:\n    ` +
           error.message,
       );
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-zoneless.fixtures/${RUNNER}`,
+    control: readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    pin: (fx, message) => ({ ...fx, message }),
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -676,5 +697,6 @@ if (problems.length) {
 
 console.log(
   `✓ Foundation: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
+    `case pinned to a phrase its refusal lacks.`,
 );

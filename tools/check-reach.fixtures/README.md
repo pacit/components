@@ -37,6 +37,15 @@ file of two, or a file without its directory, sends a person to the wrong place 
 every other check here. The cases of points 1, 6 and 7 below carry it; the older ones do
 not.
 
+Every case names what its message carries, so none of them proves the comparison is made, or
+that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
+through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+`project-roots-nobody-listed.json` once more with its `names` replaced — its roots and the one
+`an-untracked-project-nobody-listed.json` names under the same point; a name that is no list; an
+empty list; a blank name and a name that is no string, each beside a good one; and the words
+before the point's number and after it, which the message holds only with a digit beside them —
+and has to report each. The control is played apart from the cases and counts as none.
+
 ## The three cases the design rests on
 
 | case                                        | what it pins                                                                      |

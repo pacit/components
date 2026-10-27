@@ -25,11 +25,13 @@ import { ESLint } from 'eslint';
 import ts from 'typescript';
 import { createProjectGraphAsync } from '@nx/devkit';
 import { HashPlanInspector } from 'nx/src/hasher/hash-plan-inspector.js';
+import { runnerControl } from './runner-control.mjs';
 import { targetsIn } from './workflow-targets.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = process.argv.includes('--report');
 const FIXTURES = 'tools/check-tools.fixtures';
+const RUNNER = '_runner.json';
 const POLICY = 'tools/tools.policy.json';
 const WORKFLOWS = ['ci.yml', 'nightly.yml'];
 const REPORTED = 'a-name-nothing-declares.mjs';
@@ -855,17 +857,16 @@ const buildFixture = (base, fx) => {
 };
 
 const cases = readdirSync(join(ROOT, FIXTURES))
-  .filter((name) => name.endsWith('.json'))
+  .filter((name) => name.endsWith('.json') && name !== RUNNER)
   .sort();
 if (cases.length === 0)
   problems.push(
     `${FIXTURES}: no prepared inputs — a gate with no proof that it can fail is one more ` +
       'silent defect (`req-quality-negative-control`)',
   );
-const fixtures = cases.map((name) => [
-  name,
-  JSON.parse(readFileSync(join(ROOT, FIXTURES, name), 'utf8')),
-]);
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(ROOT, FIXTURES, name), 'utf8'));
+const fixtures = cases.map((name) => [name, readCase(name)]);
 
 /**
  * A prepared target may carry `inputs` in place of `names`: the patterns are then resolved by
@@ -913,17 +914,23 @@ const namedIn = (message, named) => {
   return false;
 };
 
-for (const [name, fx] of fixtures) {
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own point
+ * and its message names what the case pins. The loop plays every case through it, and so does
+ * the runner's own control (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkTools(buildFixture(live, fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
         `(\`${fx.check}\`/\`${fx.rule}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof ToolsError)) throw error;
     if (error.check !== fx.check || error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: \`${error.check}\`/\`${error.rule}\` fired where point ${fx.point} ` +
           `(\`${fx.check}\`/\`${fx.rule}\`) was meant to — the case proves something other ` +
           'than what it declares',
@@ -937,7 +944,7 @@ for (const [name, fx] of fixtures) {
         !fx.names.length ||
         fx.names.some((named) => typeof named !== 'string' || !named.trim()))
     )
-      problems.push(
+      said.push(
         `${name}: \`names\` is not a list of non-empty strings — a case that cannot say ` +
           'what its message names proves nothing about it, and an empty one is named anywhere',
       );
@@ -946,14 +953,31 @@ for (const [name, fx] of fixtures) {
         (named) => !namedIn(error.message, named),
       );
       if (unnamed.length)
-        problems.push(
+        said.push(
           `${name}: point ${fx.point} fired on its own rule, and its message does not ` +
             `name ${unnamed.map((named) => `\`${named}\``).join(', ')} — a finding that ` +
             'sends a person to the wrong place, or to none',
         );
     }
   }
-}
+  return said;
+};
+
+for (const [name, fx] of fixtures) problems.push(...runCase(name, fx));
+
+// The runner refuses `names` it cannot hold a message to as well, so the control pins the
+// case to those shapes beside a name its message lacks.
+problems.push(
+  ...(await runnerControl({
+    where: `${FIXTURES}/${RUNNER}`,
+    control: readCase(RUNNER),
+    cases,
+    // The case as the loop plays it: a prepared target's `inputs` are resolved onto it above.
+    read: (name) => new Map(fixtures).get(name),
+    run: runCase,
+    pin: (fx, names) => ({ ...fx, names }),
+  })),
+);
 
 // ── the report ────────────────────────────────────────────────────────────────
 
@@ -971,5 +995,6 @@ process.stdout.write(
     `it with what it loads, ${askingOf(live).length} of them asking git for its index and ` +
     `hashing the answer. ` +
     `Negative control: the prepared defect is reported and the prepared browser names are ` +
-    `not, ${cases.length} prepared input(s) rejected on their own points.\n`,
+    `not, ${cases.length} prepared input(s) rejected on their own points, and the runner ` +
+    `reports a case pinned to a name its message lacks, or to no list of names.\n`,
 );

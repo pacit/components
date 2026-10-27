@@ -46,6 +46,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { classesOf, classKey, standsFor } from './class-bases.mjs';
 import { decoratorsOf, hostOf, textOf } from './decorators.mjs';
+import { runnerControl } from './runner-control.mjs';
 import { staticAttributes } from './static-attributes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -53,6 +54,7 @@ const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
 const FIXTURES = join(ROOT, 'tools/check-texts.fixtures');
 const REFERENCE = '_reference';
+const RUNNER = '_runner.json';
 
 /**
  * The attributes whose value a user SEES or HEARS. The list is closed, and that is its
@@ -1906,34 +1908,55 @@ if (cases.length === 0)
   }
 }
 
-for (const name of cases) {
-  const fx = JSON.parse(
-    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
-  );
+const readCase = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'));
+
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own rule
+ * and says what it pins. The loop plays every case through it, and so does the runner's own
+ * control (`runner-control.mjs`).
+ */
+const runCase = async (name, fx) => {
+  const said = [];
   const directory = buildFixture(name, fx);
   try {
     checkTexts(await fixtureInput(directory));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}/${fx.rule}\`) stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof TextsError)) throw error;
     if (error.check !== fx.check || error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: \`${error.check}/${error.rule}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}/${fx.rule}\`) was meant to — the fixture proves something other than what it declares`,
       );
     // A rule that names what it found says it in the message, and a case may hold that too.
     else if (fx.message !== undefined && !error.message.includes(fx.message))
-      problems.push(
+      said.push(
         `${name}: \`${fx.check}/${fx.rule}\` fired without "${fx.message}" — the right rule ` +
           `saying something else:\n    ${error.message}`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-}
+  return said;
+};
+
+for (const name of cases)
+  problems.push(...(await runCase(name, readCase(name))));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-texts.fixtures/${RUNNER}`,
+    control: JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    cases,
+    read: readCase,
+    run: runCase,
+    pin: (fx, message) => ({ ...fx, message }),
+  })),
+);
 
 // ── result ────────────────────────────────────────────────────────────────────
 
@@ -1946,5 +1969,6 @@ if (problems.length) {
 
 console.log(
   `✓ Texts: ${description}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own rules.`,
+    `${cases.length} prepared ones rejected on their own rules, and the runner reports a ` +
+    `case pinned to a phrase its refusal lacks.`,
 );
