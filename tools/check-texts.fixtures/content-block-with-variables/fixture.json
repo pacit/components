@@ -3,5 +3,5 @@
   "check": "denominator",
   "rule": "unreached-node",
   "message": "1 templates hold nodes the walk never reaches:\n      libs/components/widget/src/widget.html: Variable in `ContentBlock.variables`, line 32, Variable in `ContentBlock.variables`, line 32\n",
-  "description": "A `@content` block that declares variables. The compiler's visitor walks the block's content and not its variables, so the walk never reaches them, and point 1 says so before it asks the block's kind: a node the walk never reaches is a kind it never checks. The day `ContentBlock` is added to `KNOWN_NODES`, this is what the walk still has to reach."
+  "description": "A `@content` block that declares variables. The compiler's visitor walks the block's content and not its variables, so the walk never reaches them, and point 1 says so before it asks the block's kind: a node the walk never reaches is a kind it never checks. The day `ContentBlock` is added to `KNOWN_NODES`, this is what the walk still has to reach. The marker draws a template of its own beside the widget's, so that the refusal counts and names the one template of two."
 }

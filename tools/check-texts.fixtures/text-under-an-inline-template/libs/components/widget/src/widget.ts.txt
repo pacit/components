@@ -6,14 +6,14 @@ import {
   isDevMode,
   signal,
 } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { PCT_TEXTS } from '../../core/src/texts';
 
 export type PctWidgetSize = 'sm' | 'md' | 'lg';
 
 @Component({
   selector: 'pct-widget',
-  imports: [NgIf],
+  imports: [NgFor],
   templateUrl: './widget.html',
   host: {
     class: 'pct-widget',

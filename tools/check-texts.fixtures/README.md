@@ -102,14 +102,19 @@ read.
 - `content-block-with-variables` — `denominator/unreached-node`: the same block with variables,
   which the compiler's visitor does not hand on. The gate finds the tree a second time, over
   every node's fields (`nodesOf`), and refuses a node the walk was never handed before it asks a
-  kind: what is never reached is never checked. What the visitor leaves and draws nothing, the
-  walk passes over and reads nothing of, each measured on Angular 22.2.1 through JIT and a render
-  in jsdom: an `<ng-content>`'s attributes, an inline template's own bindings
-  (`text-under-an-inline-template`), the `never` of an exhaustive `@switch`, and what an ICU
-  holds (`icu-in-template`).
+  kind: what is never reached is never checked. The marker draws a template of its own in both
+  cases, so that each refusal counts and names one template of two. What the visitor leaves and
+  draws nothing, the walk passes over and reads nothing of, each measured on Angular 22.2.1
+  through JIT and a render in jsdom: an `<ng-content>`'s attributes, an inline template's own
+  bindings, written and bound (`text-under-an-inline-template`), and the `never` of an
+  exhaustive `@switch`. It passes over what an ICU holds as well, which is drawn, because point 3
+  refuses the ICU whole (`icu-in-template`).
 
 Not held: `Component` and `Directive` are made only under `enableSelectorless`, which this gate's
 parse leaves off as `ngc` does by default, so no input brings one; a library that switched it on
-in `ngc` alone would still be read with it off — a `<Widget>` as an element, a `@Marker(…)` as a
-parse error point 1 refuses. And a `@let`'s value is not read: a literal it holds is drawn wherever
-its name is printed, and no template of the library declares one.
+in `ngc` alone would still be read with it off — a `<Widget>` as an element, a `@Marker(…)` as an
+animation binding, and one with a value in its parentheses, the only form that carries text, as a
+parse error point 1 refuses. And a literal the walk does not read, handed to a name, is drawn
+wherever the name is printed: a `@let`'s value, a block's condition, a loop's collection, an
+inline template's binding (`@let m = 'Delete'`, `@if ('Delete'; as m)`, `*ngFor="let m of
+['Delete']"`, each passed by the gate). The library's blocks hold literals in comparisons alone.

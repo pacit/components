@@ -3,5 +3,5 @@
   "check": "denominator",
   "rule": "unknown-node",
   "message": "1 templates carry a node kind this walk does not know:\n      libs/components/widget/src/widget.html: ContentBlock\n",
-  "description": "A `@content` block, a foreign component's slot: the parser makes it with no error and no flag, and `ngc` refuses it outside a foreign component (`NG8026`), of which the library has none. What a foreign component draws of the block is its render function's, which no reading of this gate follows, so the kind is left out of `KNOWN_NODES`, and the day the library takes one the gate says so."
+  "description": "A `@content` block, a foreign component's slot: the parser makes it with no error and no flag, and `ngc` refuses it outside a foreign component (`NG8026`), of which the library has none. What a foreign component draws of the block is its render function's, which no reading of this gate follows, so the kind is left out of `KNOWN_NODES`, and the day the library takes one the gate says so. The marker draws a template of its own beside the widget's, so that the refusal counts and names the one template of two."
 }

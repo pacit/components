@@ -372,7 +372,8 @@ const KNOWN_NODES = new Set([
   'TextAttribute',
   'BoundAttribute',
   // What holds the rest: the walk enters each, an `@boundary` and its `@error` blocks among
-  // them (measured: the text in both is read), and none draws a string of its own.
+  // them (measured: the text in both is read), and none draws a string of its own — what a
+  // condition or a collection hands a name is the hole the `@let` below stands for.
   'Element',
   'Template',
   'Content',
@@ -396,9 +397,10 @@ const KNOWN_NODES = new Set([
   'SwitchBlockCase',
   'SwitchExhaustiveCheck',
   'DeferredTrigger',
-  // A `@let`, whose value is not read: a literal it holds is drawn wherever its name is
-  // printed, and no binding the walk reads follows the name there. No template of the library
-  // declares one.
+  // A `@let`, whose value is not read, nor is a block's condition, a loop's collection or an
+  // inline template's binding: a literal one of them hands a name is drawn wherever the name is
+  // printed (`@let m = 'Delete'`, `@if ('Delete'; as m)`, `*ngFor="let m of ['Delete']"`), and
+  // the walk follows no name. The library's blocks hold literals in comparisons alone.
   'LetDeclaration',
   // Refused whole by point 3 (`visitIcu`).
   'Icu',
@@ -421,7 +423,7 @@ const kindOf = (node) =>
  * denominator. What the compiler's visitor does not hand on, no method of the walk is handed, and
  * the count could not show it: measured on 22.2.1, an `<ng-content>`'s attributes, an inline
  * template's own bindings, the `never` of an exhaustive `@switch`, the variables of a `@content`
- * block and what an ICU holds.
+ * block and what an ICU holds — and the unknown blocks of an `@switch`, each with a parse error.
  */
 const TEMPLATE_NODES = Object.entries(compiler)
   .filter(
@@ -501,9 +503,10 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    * What the walk reaches and reads nothing of, which the compiler's visitor does not hand on
    * (measured on Angular 22.2.1, through JIT and a render in jsdom): an `<ng-content>`'s
    * attributes, keys an outer `select` matches, of which nothing is drawn or put into `consts`;
-   * an inline template's own bindings (`*pctReveal="…"`), inputs of a directive on the template,
-   * which draws a comment; the `never` of an exhaustive `@switch`, which takes no body; and what
-   * an ICU holds, which point 3 refuses whole.
+   * an inline template's own bindings (`*ngFor="let item of items()"`), inputs of a directive on
+   * the template, which draws a comment, and hands its names what they print (`KNOWN_NODES`); the
+   * `never` of an exhaustive `@switch`, which takes no body; and what an ICU holds, which point 3
+   * refuses whole.
    */
   passOver(nodes) {
     for (const node of nodes) this.seen(node);

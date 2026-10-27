@@ -931,11 +931,11 @@ default value and a read of `PCT_TEXTS` at construction; completeness of the cha
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
 read by `parseTemplate` from `@angular/compiler` and walked by the compiler's visitor, each node of
 the tree, found over every node's fields, reached and of a kind the walk knows, and decorators by
-the TypeScript parser as ngc
-reads them (`tools/decorators.mjs`): a template the decorator carries, under any key ngc reads, is
-refused, as are a `templateUrl` given by an expression, a `host` block composed otherwise than in
-place or in a `const` of the file's own (`hostOf` follows one by name or in a spread), a decorator
-the column-zero pattern did not read and one imported under another name. The list of static
+the TypeScript parser as ngc reads them (`tools/decorators.mjs`): a template the decorator
+carries, under any key ngc reads, is refused, as are a `templateUrl` given by an expression, a
+`host` block composed otherwise than in place or in a `const` of the file's own (`hostOf` follows
+one by name or in a spread), a decorator the column-zero pattern did not read and one imported
+under another name. The list of static
 classes and attributes is built **twice** — from the sources and from the built package, whose
 class is the object an entrypoint exports, under its own name, and a name two objects bear is
 refused; an array of a definition's `consts` is read as attributes only where an instruction takes

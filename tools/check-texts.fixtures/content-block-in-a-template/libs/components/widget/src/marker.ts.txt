@@ -1,0 +1,48 @@
+import { Component, input, isDevMode } from '@angular/core';
+import { PctMarkerBase } from './base';
+
+/**
+ * A slot directive — it exists so that the reference input carries a `host` block
+ * with a static attribute whose key has NO quotes (`role`) beside a binding
+ * whose key does. Prettier writes them exactly like that and the scanner must see
+ * both.
+ *
+ * Its `title` replaces the base's empty one, as Angular merges a chain: the attribute of the
+ * nearest class that writes it, so the package carries `*` alone. Neither value has a letter,
+ * so only a merge other than Angular's can refuse this input — a union would name the base's
+ * `title` as one the package never got.
+ *
+ * Its `[attr.ariaLabel]` sets the attribute `arialabel`, no ARIA attribute: the word in it reaches
+ * no user, as only the property `[ariaLabel]` reaches `aria-label`.
+ *
+ * Here it draws a template of its own (`marker.html`), which holds nothing the walk refuses, so
+ * that the refusal names one template of two and counts the one.
+ */
+@Component({
+  selector: '[pctMarker]',
+  templateUrl: './marker.html',
+  host: {
+    class: 'pct-marker',
+    'data-pct-part': 'widget-marker',
+    title: '*',
+    '[attr.aria-label]': 'description()',
+    '[attr.ariaLabel]': "'Unread'",
+  },
+})
+export class PctMarker extends PctMarkerBase {
+  readonly description = input<string>('');
+}
+
+/**
+ * A developer warning in a FREE FUNCTION rather than in a class method — the shape the
+ * enclosure scanner could not see until D5. A free function's statements sit at the same
+ * two-space indent a class puts its methods at, so `if (` read as the enclosing method and
+ * the guard below was measured from the wrong place.
+ */
+export function pctWarnOnEmptyMarker(description: string): void {
+  if (!isDevMode()) return;
+
+  if (description === '') {
+    console.warn('[pctMarker] Rendered with no description.');
+  }
+}
