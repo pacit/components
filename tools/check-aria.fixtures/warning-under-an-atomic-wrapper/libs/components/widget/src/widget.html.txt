@@ -1,0 +1,23 @@
+<!-- The reference's trigger, and a warning part inside an atomic wrapper that also holds the field's name. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (showWarning()) {
+<div class="pct-widget__messages" aria-atomic="true">
+  <span class="pct-widget__field">{{ label() }}</span>
+  <span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
+</div>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

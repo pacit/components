@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-atomic=\"true\"` on the part sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part with its `status` and the `aria-atomic=\"true\"` Chromium 153 derives from the role, written. It costs nothing measured and is refused by the rule, as a written `aria-live` is: Firefox 158 exposes `container-atomic` for the written one and none for the `status` alone (measured on 2026-10-27), so the engines disagree on what the role gives. A reading that refused `false` alone passed it."
+}

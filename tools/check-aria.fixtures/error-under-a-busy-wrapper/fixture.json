@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\"true\"` on the `<div>` above it sets the live region of `error` otherwise than its role does",
+  "$reason": "An error part inside a wrapper written `aria-busy=\"true\"`. Firefox 158 hands the `alert` `container-busy=\"true\"` (measured on 2026-10-27), and costs it nothing measured: NVDA and Orca read no region of an `alert` Firefox gives no `container-live`, which it does not, and its entry is its `alert` event; Chromium 153 exposes none of it on the part. It is refused by the rule that holds a warning in the same place, where Firefox's busy region is dropped by NVDA: the part's region is its role's. A reading that read what stands above a warning alone passed it. Point 7 read nothing above the part but what may hide it, and passed it."
+}

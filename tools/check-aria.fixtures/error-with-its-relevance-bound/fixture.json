@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a bound `aria-relevant` on the part sets the live region of `error` otherwise than its role does",
+  "$reason": "An error part with its `alert` and an `aria-relevant` an expression writes. Its value is not in the template, so it is refused as a bound role or politeness is, rather than read; in the state where it gives `removals`, NVDA drops the region's events in Chromium. Point 7 read the part's role and politeness and what may hide it, and passed it."
+}
