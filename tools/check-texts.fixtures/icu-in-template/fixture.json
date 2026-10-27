@@ -2,5 +2,5 @@
   "point": 3,
   "check": "template",
   "rule": "icu",
-  "description": "An ICU expression. Its text variants sit in a separate i18n tree this workaround does not reach — measured: `visitText` gets not one node out of an ICU. So the gate does not read it by halves, it forbids it: the same move as forbidding a binding it cannot resolve."
+  "description": "An ICU expression. Its text variants sit in a separate i18n tree this workaround does not reach — measured: `visitText` gets not one node out of an ICU. So the gate does not read it by halves, it forbids it: the same move as forbidding a binding it cannot resolve. What the ICU holds of the template tree — its variable and the interpolation in a case, a placeholder — the walk passes over rather than reads: a walk that left either unreached refuses this case on point 1 instead."
 }

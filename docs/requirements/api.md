@@ -929,19 +929,20 @@ time and therefore cannot be a library string.
 a text node, into a speaking attribute or into an expression literal; prose in a signal's
 default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
-read by `parseTemplate` from `@angular/compiler`, and decorators by the TypeScript parser as ngc
-reads them (`tools/decorators.mjs`): a template the decorator carries, under any key ngc reads, is
-refused, as are a `templateUrl` given by an expression, a `host` block composed otherwise than in
-place or in a `const` of the file's own (`hostOf` follows one by name or in a spread), a decorator
-the column-zero pattern did not read and one imported under another name. The list of static
-classes and attributes is built **twice** — from the sources and from the built package, whose
-class is the object an entrypoint exports, under its own name, and a name two objects bear is
-refused; an array of a definition's `consts` is read as attributes only where an instruction takes
-it as a node's, a local reference or a `@defer` block's timing is placed apart, and one no
-instruction the read knows takes is refused. Plus
+read by `parseTemplate` from `@angular/compiler` and walked by the compiler's visitor, each node of
+the tree, found over every node's fields, reached and of a kind the walk knows, and decorators by
+the TypeScript parser as ngc reads them (`tools/decorators.mjs`): a template the decorator
+carries, under any key ngc reads, is refused, as are a `templateUrl` given by an expression, a
+`host` block composed otherwise than in place or in a `const` of the file's own (`hostOf` follows
+one by name or in a spread), a decorator the column-zero pattern did not read and one imported
+under another name. The list of static classes and attributes is built **twice** — from the
+sources and from the built package, whose class is the object an entrypoint exports, under its own
+name, and a name two objects bear is refused; an array of a definition's `consts` is read as
+attributes only where an instruction takes it as a node's, a local reference or a `@defer` block's
+timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 75 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 79 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
@@ -951,7 +952,10 @@ reference's compiles to the DOM-only ones and holds a local reference on every n
 one), an empty `title` the package draws whose array is a local reference's too, a component
 compiled in full, whose `consts` no instruction places, and a literal bound to
 `aria-label` through the property it reflects, `[ariaLabel]`, in a template and in a `host` block,
-and through `[aria-label]`, which Angular binds without `attr.`; plus nine runs against the repository (a literal in
+and through `[aria-label]`, which Angular binds without `attr.`, a sentence in an `@boundary`
+block's `@error`, and a `@content` block, refused as a kind the walk does not know and, with
+variables, as holding nodes it never reaches, while the reference holds a node of every kind it
+knows but an ICU; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

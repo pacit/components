@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-text",
+  "message": "\"Something went wrong\"",
+  "description": "A sentence in the `@error` block of an `@boundary`, the one place a template most readily says it in words of its own. The compiler's visitor walks a boundary's body and its `@error` blocks through two methods the walk does not write, which counted none of their nodes; their text was read all the same (measured), and it is read now that each node they hold is counted and its kind checked."
+}
