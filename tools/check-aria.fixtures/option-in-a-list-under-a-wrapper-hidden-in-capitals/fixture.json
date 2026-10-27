@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"list\"> (list)",
+  "$reason": "`option-hidden-before-a-list` with the wrapper's `aria-hidden` in capitals, around a `list` holding the option. Chromium hides a subtree at `TRUE` and Firefox does not, hiding at `true` alone, as written, so Firefox exposes the option in the `list`, out of its context (measured on 2026-10-27, Chromium 153 off its own tree and Firefox 158 off its own and WebDriver's computed role, as on 2026-10-20 in Chromium 141 and 155 and Firefox 136 and 158). axe 4.13 reads the value trimmed and in any case and asks the option for no owner, so the audit passes the page too. A reading of the value as axe makes it, or in any case alone, passed it."
+}
