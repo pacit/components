@@ -35,6 +35,7 @@ import {
   TmplAstReference,
   TmplAstTemplate,
   TmplAstTextAttribute,
+  TmplAstVariable,
   visitAll,
 } from '@angular/compiler';
 import * as compiler from '@angular/compiler';
@@ -487,15 +488,18 @@ class ExpressionLiterals extends RecursiveAstVisitor {
 }
 
 /**
- * What a node is handed, written or bound: its attributes, its inputs and an inline template's
- * own bindings. Any of them may be an input of a directive on it, and what a directive does with
- * an input no read here follows: it may put it into the context of a template it draws.
+ * What a node hands the directives on it, as the compiler matches them
+ * (`getAttrsForDirectiveMatching`): an inline template (`*ngIf="…"`) its own bindings alone — the
+ * attributes and inputs it carries beside them are its element's, hoisted, and the element's
+ * directives take them — and an element or an `<ng-template>` its attributes and bindings. A
+ * directive may put any of them into the context of a template it draws. An `attr.`, `class.` or
+ * `style.` binding of an element reaches no directive and is read all the same: the read is never
+ * narrower than the compiler's.
  */
-const handedTo = (node) => [
-  ...node.attributes,
-  ...node.inputs,
-  ...(node.templateAttrs ?? []),
-];
+const handedTo = (node) =>
+  node instanceof TmplAstTemplate && node.tagName !== 'ng-template'
+    ? node.templateAttrs
+    : [...node.attributes, ...node.inputs];
 
 /**
  * What the names of one template stand for, read off the compiler's own binder (`R3TargetBinder`,
@@ -507,71 +511,95 @@ const handedTo = (node) => [
  *  - A `@let` stands for its value, an `@if` branch's alias (`as m`) for the branch's condition,
  *    and a `@for` block's item for the collection. The block's own variables stand for nothing:
  *    `$index` and its kin are the numbers and booleans it makes.
- *  - A template's variable (`let-m`, `*ngIf="… as m"`, `*ngFor="let m of …"`) stands for what is
- *    handed to the template (`handedTo`) and to every node a binding of which names it — an outlet
- *    beside its context, an `*ngIf` with a `then` — whichever input a directive fills the context
- *    from, `let-m="ngIf"` or `let-m`.
- *  - A reference stands for the node it is written on: a template, which a node it is handed to may
- *    draw, or an element, of which nothing is printed here — what a read of its members gives is
- *    the DOM's.
+ *  - A reference to a template stands for the template, and a node a binding of which stands for
+ *    it — an outlet beside its context, an `*ngIf` with a `then` — hands the template what the node
+ *    is handed (`handedTo`).
+ *  - A template's variable (`let-m`, `*ngIf="… as m"`, `*ngFor="let m of …"`) stands for the
+ *    literals handed to the template and by every such node, whichever input a directive fills the
+ *    context from. It stands for no template: the outlet drawing the template names it beside the
+ *    context, and a variable standing for it would make each node reading the variable one more
+ *    that hands the template — a listbox's `[attr.aria-posinset]="i + 1"` with its `role`.
+ *  - A reference to an element stands for nothing: what a read of its members gives is the DOM's.
  *
  * Measured on Angular 22.2.1 through JIT and a render in jsdom: each of these draws the literal
- * its name stands for, and `{{ this.m }}` beside `@let m` draws the member. A name already on the
- * way stands for nothing more, or a tree a template draws of itself — which hands its own variable
- * back to it — is read without end.
+ * its name stands for, and `{{ this.m }}` beside `@let m` draws the member. What every name stands
+ * for is found once per template, the least set that holds what each name's binding gives under
+ * the sets found so far: a tree a template draws of itself hands its variable back to it, and a
+ * read following each name anew grew with the factorial of the variables a template reads.
  */
 class Names {
   constructor(nodes, tree) {
     this.bound = new R3TargetBinder(null).bind({ template: nodes });
-    this.owners = tree.filter(
+    const owners = tree.filter(
       (node) =>
         node instanceof TmplAstElement || node instanceof TmplAstTemplate,
     );
+    const names = tree.filter(
+      (node) =>
+        node instanceof TmplAstLetDeclaration ||
+        node instanceof TmplAstVariable,
+    );
+    this.values = new Map(names.map((name) => [name, new Set()]));
+    for (let grew = true; grew;) {
+      grew = false;
+      const handed = new Map(
+        owners.map((owner) => [owner, this.handed(owner)]),
+      );
+      for (const name of names)
+        for (const value of this.bindingOf(name, handed))
+          if (!this.values.get(name).has(value)) {
+            this.values.get(name).add(value);
+            grew = true;
+          }
+    }
   }
 
   /** The literals a printed read stands for, when it reads a name the template binds. */
   of(read) {
     const entity = this.bound.getExpressionTarget(read);
-    return entity
-      ? this.entity(entity, new Set()).filter((v) => typeof v === 'string')
+    return this.values.has(entity)
+      ? [...this.values.get(entity)].filter((v) => typeof v === 'string')
       : [];
   }
 
-  /** An expression's literals, and the nodes its references name, through every name it reads. */
-  reach(expression, visiting) {
+  /** An expression's literals, and the templates it stands for, under the sets found so far. */
+  valuesOf(expression) {
     const found = [];
     expression.visit(
       new ExpressionLiterals(
         (value) => found.push(value),
         (read) => {
           const entity = this.bound.getExpressionTarget(read);
-          if (entity) found.push(...this.entity(entity, visiting));
+          if (entity instanceof TmplAstReference)
+            found.push(this.bound.getReferenceTarget(entity));
+          else if (entity) found.push(...this.values.get(entity));
         },
       ),
     );
     return found;
   }
 
-  entity(entity, visiting) {
-    if (visiting.has(entity)) return [];
-    visiting = new Set(visiting).add(entity);
-    if (entity instanceof TmplAstReference)
-      return [this.bound.getReferenceTarget(entity)];
-    if (entity instanceof TmplAstLetDeclaration)
-      return this.reach(entity.value, visiting);
-    const node = this.bound.getDefinitionNodeOfSymbol(entity);
+  handed(owner) {
+    return handedTo(owner).flatMap((attribute) =>
+      attribute instanceof TmplAstTextAttribute
+        ? [attribute.value]
+        : this.valuesOf(attribute.value),
+    );
+  }
+
+  /** What binds a name gives under the sets found so far, `handed` holding what each node hands. */
+  bindingOf(name, handed) {
+    if (name instanceof TmplAstLetDeclaration) return this.valuesOf(name.value);
+    const node = this.bound.getDefinitionNodeOfSymbol(name);
     if (node instanceof TmplAstIfBlockBranch)
-      return this.reach(node.expression, visiting);
+      return this.valuesOf(node.expression);
     if (node instanceof TmplAstForLoopBlock)
-      return entity === node.item ? this.reach(node.expression, visiting) : [];
-    return this.owners.flatMap((owner) => {
-      const handed = handedTo(owner).flatMap((attribute) =>
-        attribute instanceof TmplAstTextAttribute
-          ? [attribute.value]
-          : this.reach(attribute.value, visiting),
-      );
-      return owner === node || handed.includes(node) ? handed : [];
-    });
+      return name === node.item ? this.valuesOf(node.expression) : [];
+    return [...handed]
+      .flatMap(([owner, values]) =>
+        owner === node || values.includes(node) ? values : [],
+      )
+      .filter((v) => typeof v === 'string');
   }
 }
 
@@ -591,6 +619,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.expressions = [];
     this.named = [];
     this.names = null;
+    this.taken = new Set();
     this.icu = 0;
     this.nodesSeen = 0;
     this.reached = new Set();
@@ -625,8 +654,22 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
       this.texts.push({ value: node.value.trim(), line: line(node) });
   }
 
+  /**
+   * Whether an attribute or a binding is read here for the first time. An inline template carries
+   * its element's attributes and inputs, the same objects, hoisted for the directives the compiler
+   * matches (`handedTo`), and the walk is handed each twice: once with the template, outside the
+   * element, and once with the element, which decides whether it speaks (`<input
+   * type="submit">`). Read twice, one `title` was two refusals.
+   */
+  first(node) {
+    if (this.taken.has(node)) return false;
+    this.taken.add(node);
+    return true;
+  }
+
   /** What a printed expression draws: its literals, and those the names it reads stand for. */
   print(node, where) {
+    if (!this.first(node)) return;
     node.value.visit(
       new ExpressionLiterals(
         (value) => this.expressions.push({ where, value, line: line(node) }),
@@ -674,7 +717,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitTextAttribute(node) {
-    if (this.speaking(node.name))
+    if (this.speaking(node.name) && this.first(node))
       this.attributes.push({
         name: node.name,
         value: node.value,

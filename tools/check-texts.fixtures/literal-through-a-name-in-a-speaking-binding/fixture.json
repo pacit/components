@@ -2,6 +2,6 @@
   "point": 3,
   "check": "template",
   "rule": "literal-through-a-name",
-  "message": "2 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:36: binding `aria-label` reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:37: binding `title` reads `m` → \"Delete the row\"",
-  "description": "A sentence a `@let` holds, bound by name to `aria-label` and to `title`, the button's name and its tooltip. A speaking binding is printed as an interpolation is, and the name stands for its value in each, so the refusal counts two."
+  "message": "2 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:37: binding `aria-label` reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:38: binding `title` reads `m` → \"Delete the row\"",
+  "description": "A sentence a `@let` holds, bound by name to `aria-label` and to `title`, the button's name and its tooltip, on a button an `*ngIf` wraps. A speaking binding is printed as an interpolation is, and the name stands for its value in each, so the refusal counts two — and not four: the inline template carries the button's bindings hoisted, the same objects, and a walk reading each object twice refused each twice."
 }

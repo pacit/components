@@ -31,6 +31,7 @@
 
 @let m = 'Delete the row';
 <button
+  *ngIf="open()"
   class="pct-widget__remove"
   type="button"
   [attr.aria-label]="m"

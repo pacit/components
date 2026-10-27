@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:37: interpolation reads `label` → \"Delete the row\"",
+  "description": "A sentence an inline outlet's context hands a listbox's row, whose other variable an element reads (`[attr.aria-posinset]=\"i + 1\"`). A template's variable stands for the literals it is handed and for no template: the outlet names the template beside the context, and a variable standing for it made the row's element one more node handing the template, its `class` and `role` two more refusals."
+}

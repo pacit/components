@@ -1,0 +1,69 @@
+{
+  "$comment": "The reference package with `PctWidget` declared over this case's template, the directives its inline templates take among the dependencies, so that point 2's two reads agree and the case is refused by point 3 alone.",
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "declaration": {
+        "selector": "pct-widget",
+        "host": {
+          "attributes": {
+            "role": "group"
+          },
+          "properties": {
+            "attr.data-pct-size": "size()"
+          },
+          "classAttribute": "pct-widget"
+        },
+        "template": "@if (label()) {\n<span class=\"pct-widget__label\" data-pct-part=\"label\">\n  {{ label() }} @if (items().length === 0) {\n  <span class=\"pct-widget__mark\" aria-hidden=\"true\">*</span>\n  }\n</span>\n}\n\n<!--\n  A `value` with a word on a button that is no `<input>`: a `<button>` takes its name from\n  `aria-label` or its content, never from `value`, and only an `<input>` of a button type speaks\n  through it.\n-->\n<button\n  class=\"pct-widget__toggle\"\n  data-pct-part=\"toggle\"\n  type=\"button\"\n  [value]=\"'next'\"\n  [attr.aria-label]=\"collapseText()\"\n  [attr.aria-expanded]=\"open()\"\n  (click)=\"toggle()\"\n></button>\n\n<ul class=\"pct-widget__list\" data-pct-part=\"list\">\n  @for (item of items(); track item) {\n  <li class=\"pct-widget__item\" data-pct-part=\"item\">{{ item }}</li>\n  } @empty {\n  <li class=\"pct-widget__empty\" data-pct-part=\"empty\">{{ emptyText() }}</li>\n  }\n</ul>\n\n<span *ngFor=\"let item of items()\" title=\"Remove the item\"></span>\n<input *ngIf=\"open()\" type=\"submit\" value=\"Send the form\" />\n",
+        "dependencies": [
+          {
+            "kind": "directive",
+            "selector": "[ngFor][ngForOf]"
+          },
+          {
+            "kind": "directive",
+            "selector": "[ngIf]"
+          }
+        ]
+      }
+    },
+    {
+      "className": "PctMarker",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctMark"
+        }
+      ],
+      "attributes": [
+        [
+          "data-pct-part",
+          "widget-marker"
+        ],
+        [
+          "title",
+          "*"
+        ],
+        [
+          "role",
+          "note"
+        ]
+      ]
+    },
+    {
+      "className": "PctBlank",
+      "exports": [
+        {
+          "entrypoint": "./widget",
+          "as": "PctBlank"
+        },
+        {
+          "entrypoint": "./widget",
+          "as": "PctBare"
+        }
+      ],
+      "attributes": []
+    }
+  ]
+}

@@ -2,6 +2,6 @@
   "point": 3,
   "check": "template",
   "rule": "literal-through-a-name",
-  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:32: interpolation reads `x` → \"Delete the row\"",
-  "description": "A sentence an inline template's `ngForOf` binding hands the loop's variable. The variable stands for what the template is handed, whichever key of the context the directive fills (`$implicit` here)."
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `x` → \"Delete the row\"",
+  "description": "A sentence an inline template's `ngForOf` binding hands the loop's variable. The variable stands for what the template is handed, whichever key of the context the directive fills (`$implicit` here) — its own bindings, and not the attributes of its element (`class`), which the template carries hoisted and the element's directives take, so the refusal counts one."
 }
