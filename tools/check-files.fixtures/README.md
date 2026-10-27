@@ -73,14 +73,14 @@ green; the cases of point 8's second rule name the file and the line of every st
 break, two name the excerpt too — one of them a statement of several lines, read by its first —
 and the two with two statements name the count.
 
-Every case names what its message carries, so none of them proves the comparison is made, or
-that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
+A case that lists `names` lists what its message carries, so none of them proves the comparison is
+made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
 through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `types-file-importing-for-its-effect` once more with its `names` replaced — its line and the one
-`types-file-importing-with-type-on-each-name` names under the same rule; a name that is no list;
+`types-file-importing-with-type-on-each-name` names under the same rule, once after its own and once before; a name that is no list;
 an empty list; a blank name and a name that is no string, each beside a good one; and the file
 before its line number and the words after the count, which the message holds only with a digit
-beside them — and has to report each. The control is played apart from the cases and counts as
+beside them — and has to report each, and nothing of the case with its own `names`. The control is played apart from the cases and counts as
 none.
 
 Sources sit in the repository as `*.ts.txt` and become `*.ts` only inside the temporary
@@ -206,8 +206,10 @@ or taken from the last line, a count off by one, by ten or with a digit in front
 statement of two — or, where it strikes an admitted form, by the rows it refuses, and by the
 reference where it holds that form. **Not held:** a form the list does not name, which the allow-list refuses and nothing here
 would notice being admitted, and the control's own rules but the `names` comparison, which
-`_runner.json` holds — the `FORMS` loop switched off leaves the run green, as does a runner that
-stopped reporting a case that passed or fired another point.
+`_runner.json` holds — the `FORMS` loop switched off leaves the run green, as do a runner that
+stopped reporting a case that passed, fired another point or fired another rule, and a search that
+stops at a name's first occurrence, where a digit stands beside it, though it stands free further
+on.
 
 Point 9 keeps two lists — the components excused their inline member, and the types excused
 their absence from an index — and the three cases of each are the whole life cycle of an excuse:

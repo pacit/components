@@ -671,10 +671,11 @@ if (live) {
   problems.push(
     ...(await runnerControl({
       where: `tools/check-harness.fixtures/${RUNNER}`,
-      control: readFixture(RUNNER),
+      load: () => readFixture(RUNNER),
       cases,
       read: readFixture,
       run: runCase,
+      own: (fx) => fx.message,
       pin: (fx, message) => ({ ...fx, message }),
     })),
   );

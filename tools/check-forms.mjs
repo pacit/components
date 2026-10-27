@@ -678,10 +678,11 @@ for (const name of cases) problems.push(...runCase(name, readCase(name)));
 problems.push(
   ...(await runnerControl({
     where: `tools/check-forms.fixtures/${RUNNER}`,
-    control: JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
     cases,
     read: readCase,
     run: runCase,
+    own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
 );

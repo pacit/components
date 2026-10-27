@@ -970,11 +970,12 @@ for (const [name, fx] of fixtures) problems.push(...runCase(name, fx));
 problems.push(
   ...(await runnerControl({
     where: `${FIXTURES}/${RUNNER}`,
-    control: readCase(RUNNER),
+    load: () => readCase(RUNNER),
     cases,
     // The case as the loop plays it: a prepared target's `inputs` are resolved onto it above.
     read: (name) => new Map(fixtures).get(name),
     run: runCase,
+    own: (fx) => fx.names,
     pin: (fx, names) => ({ ...fx, names }),
   })),
 );

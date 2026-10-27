@@ -13,12 +13,14 @@ moves their cases onto a **neighbouring rule in the same point**, and without th
 all nine runs would be green. Where a rule names what it found, a case may also hold a
 `message`: a phrase the refusal has to carry.
 
-Every case pins what its refusal carries, so none of them proves that comparison is made: a
+A case that pins a message pins one its refusal carries, so none of them proves that comparison
+is made: a
 runner that stopped comparing would pass them all. [`_runner.json`](_runner.json) holds it.
 Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `a-name-standing-for-a-class-nobody-exports` once more, pinned to what
-`a-name-another-entrypoint-holds` says of `./other` under the same rule, and has to report it.
-The control is played apart from the cases and counts as none.
+`a-name-another-entrypoint-holds` says of `./other` under the same rule, and has to report it,
+and nothing of the case with its own message. The control is played apart from the cases and
+counts as none.
 
 The reason it exists is the same as for every other gate
 ([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):

@@ -3394,7 +3394,7 @@ const runCase = (name, fx) => {
         `${name}: check \`${error.check}\` fired, and point ${fx.point} (\`${fx.check}\`) ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
-    // One check, several refusals: point 4 throws six ways, all of them `forwarded`. A case
+    // One check, several refusals: point 4 throws eight ways, all of them `forwarded`. A case
     // that names a fragment of its refusal holds it to that one, so a change that moves it to a
     // neighbouring throw is a failure here and not a pass.
     else if (fx.message !== undefined && !error.message.includes(fx.message))
@@ -3413,10 +3413,11 @@ for (const name of cases) problems.push(...runCase(name, readCase(name)));
 problems.push(
   ...(await runnerControl({
     where: `tools/check-aria.fixtures/${RUNNER}`,
-    control: JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
     cases,
     read: readCase,
     run: runCase,
+    own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
 );

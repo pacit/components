@@ -2784,20 +2784,18 @@ if (summary) {
   }
   // A refusal and a status sentence are held to what a case pins by two comparisons, so the
   // runner has two controls: the phrases of a refusal, and the word and phrases of a state.
-  for (const [file, pin] of [
-    [RUNNER, (fx, says) => ({ ...fx, says })],
-    [
-      RUNNER_STATUS,
-      (fx, status) => ({ ...fx, status: { ...fx.status, ...status } }),
-    ],
+  for (const [file, own, pin] of [
+    [RUNNER, (fx) => fx.says, (fx, says) => ({ ...fx, says })],
+    [RUNNER_STATUS, (fx) => fx.status, (fx, status) => ({ ...fx, status })],
   ])
     problems.push(
       ...(await runnerControl({
         where: `tools/check-acr.fixtures/${file}`,
-        control: readFixture(file),
+        load: () => readFixture(file),
         cases,
         read: readFixture,
         run: runCase,
+        own,
         pin,
       })),
     );

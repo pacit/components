@@ -7,14 +7,14 @@ one written in its file is a fault just the same, because it proves something ot
 it declares. A case may also say what its message has to name (`names`): each entry is found
 in the message with no digit on either side, as in `check-files` and `check-reach`.
 
-Every case names what its message carries, so none of them proves the comparison is made, or
-that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
+A case that lists `names` lists what its message carries, so none of them proves the comparison is
+made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
 through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `the-call-reader-skips-a-form.json` once more with its `names` replaced — its lines and those
-`the-call-reader-reads-the-wrong-line.json` names under the same rule; a name that is no list; an
+`the-call-reader-reads-the-wrong-line.json` names under the same rule, once after its own and once before; a name that is no list; an
 empty list; a blank name and a name that is no string, each beside a good one; and the words
 before the first line number and after the last, which the message holds only with a digit
-beside them — and has to report each. The control is played apart from the cases and counts as
+beside them — and has to report each, and nothing of the case with its own `names`. The control is played apart from the cases and counts as
 none.
 
 The reason it exists is the same as for every other gate here

@@ -50,13 +50,13 @@ whole list of where a chain stopped — nothing for a control with no base, one 
 over one base, none for a control that lacks nothing, two lines in order for two bases, and the
 lead-in on its own line after the last missing member — with what each base stands for.
 
-**The runner has a control of its own.** Every case pins what its refusal carries, so none of them
+**The runner has a control of its own.** A case that pins a message pins one its refusal carries, so none of them
 proves the comparison is made: a runner that stopped comparing would pass them all, and every
 pinned message would be free to drift onto a neighbouring refusal. [`_runner.json`](_runner.json)
 holds it. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `control-exported-as-the-default` once more, pinned to the refusal `control-anonymous` holds — the
-same rule at another file — and has to report it. The control is played apart from the cases and
-counts as none.
+same rule at another file — and has to report it, and nothing of the case with its own message. The control is played apart
+from the cases and counts as none.
 
 ## The cases
 

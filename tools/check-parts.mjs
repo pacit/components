@@ -1634,14 +1634,15 @@ for (const name of cases)
   problems.push(...(await runCase(name, readCase(name))));
 
 // The runner refuses a fragment it cannot hold a refusal to as well, so the control pins the
-// case to the shapes of one beside the neighbour's words: none, and a blank one.
+// case to the shapes of one beside the neighbour's words: none, a number and a blank one.
 problems.push(
   ...(await runnerControl({
     where: `tools/check-parts.fixtures/${RUNNER}`,
-    control: JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
+    load: () => JSON.parse(readFileSync(join(FIXTURES, RUNNER), 'utf8')),
     cases,
     read: readCase,
     run: runCase,
+    own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
 );

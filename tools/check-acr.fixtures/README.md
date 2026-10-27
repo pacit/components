@@ -56,8 +56,8 @@ names the place of that write: its line, or the sheet that compiles to it. A rea
 rule itself — a runner that skipped `says` would pass every one — so
 [`_runner.json`](_runner.json) does: through [`runner-control.mjs`](../runner-control.mjs) the
 runner plays `an-orientation-in-a-second-sheet-of-the-themes-folder.json` once more, its phrase
-kept and the one `an-orientation-query-in-the-theme.json` holds added as the second, and has to
-report it.
+kept and the one `an-orientation-query-in-the-theme.json` holds added once after it and once
+before, and has to report each, and nothing of the case with its own phrase.
 
 A case that carries a `status` is read the other way round. It is a state of the report, not
 a defect, and the gate must accept it; what it examines is the rendering — the word after
@@ -76,9 +76,10 @@ of it — so
 [`nothing-holds-the-report-below-supports.json`](nothing-holds-the-report-below-supports.json),
 red on that day with the weaker word against the stronger one it names, is its canary, and
 the two are patched together. The word and the phrases a state pins have a control of their own,
-[`_runner-status.json`](_runner-status.json): `a-pass-not-on-record.json` played with a second
-phrase, `a-row-below-supports-with-the-pass-on-record.json`'s, and with the other word, each of
-which the runner has to report. Both controls are played apart from the cases and count as none.
+[`_runner-status.json`](_runner-status.json): `a-pass-not-on-record.json` played with its `status`
+replaced whole — a second phrase, `a-row-below-supports-with-the-pass-on-record.json`'s, after its
+own and before it, and the other word — each of which the runner has to report, and nothing of the
+case with its own `status`. Both controls are played apart from the cases and count as none.
 A `null` that names no row, no card or no criterion, and a
 `plan` state other than `open` on an item the plan lacks, are authoring faults reported by
 the case's name, and so is a `sources` `null` on a source the live input lacks and a `tree`

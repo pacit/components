@@ -24,16 +24,18 @@ to fail**. Every gate has a test or a documented run proving that it fires after
 regression. A gate that always passes is more dangerous than no gate.
 
 The runner that plays a gate's prepared cases is part of its control. Where a case pins what its
-refusal has to carry — a `message`, `says` or `names` — no case can prove the comparison is made,
-since every case pins what its refusal carries, and a runner that stopped comparing passed them
-all in each of the eleven gates that make one (measured 2026-10-27). Each of those gates keeps
-`_runner.json` beside its cases: a case pinned to a value its refusal lacks, which the runner has
-to report, played apart from the cases and counted as none.
+refusal or its rendering has to carry — a `message`, `says`, `names`, or a state's word and
+phrases — no case can prove the comparison is made, since a case that pins one pins what its
+refusal carries, and a runner that stopped comparing passed them all in each of the eleven gates
+that make one (measured 2026-10-27). Each of those gates keeps `_runner.json` beside its cases
+(`check-acr` a `_runner-status.json` as well): a case played with its own pin, which the runner
+has to pass, and with values its refusal lacks, each of which it has to report — played apart
+from the cases and counted as none.
 
 **Gate:** `tools/check-docs.mjs` — the **Control** field is required on every requirement,
 exactly like the **Gate** field
 **Control:** `tools/check-docs.fixtures/` — a requirement with a gate but no control must be
-rejected; `tools/runner-control.mjs` and the `_runner.json` of `check-acr`, `check-aria`,
+rejected; `tools/runner-control.mjs`, `_runner-status.json` of `check-acr` and the `_runner.json` of `check-acr`, `check-aria`,
 `check-bundle`, `check-files`, `check-forms`, `check-harness`, `check-parts`, `check-reach`,
 `check-texts`, `check-tools` and `check-zoneless` — a runner that no longer compares a refusal
 with what a case pins must be reported

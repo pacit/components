@@ -678,10 +678,11 @@ for (const name of cases) problems.push(...runCase(name, readFixture(name)));
 problems.push(
   ...(await runnerControl({
     where: `tools/check-zoneless.fixtures/${RUNNER}`,
-    control: readFixture(RUNNER),
+    load: () => readFixture(RUNNER),
     cases,
     read: readFixture,
     run: runCase,
+    own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
 );

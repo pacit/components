@@ -5,6 +5,10 @@
       "no listing of `libs/alpha`, `libs/gauge` — point 7",
       "no listing of `libs/draft` — point 7"
     ],
+    [
+      "no listing of `libs/draft` — point 7",
+      "no listing of `libs/alpha`, `libs/gauge` — point 7"
+    ],
     "no listing of `libs/alpha`, `libs/gauge` — point 7",
     [],
     ["no listing of `libs/alpha`, `libs/gauge` — point 7", " "],
@@ -12,5 +16,5 @@
     ["`libs/gauge` — point "],
     [" would then find no dotenv file"]
   ],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `project-roots-nobody-listed.json` is refused by point 1 (`denominator`) for two project roots nobody listed, and here its `names` keeps them and gains the root `an-untracked-project-nobody-listed.json` names under the same point — the drift a pinned name exists to catch, at the second name of two. Then it is pinned to the shapes the runner refuses before it compares anything: a name that is no list, an empty list, a blank name and a name that is no string, each of the last two beside a good one. Last come two names the refusal holds only with a digit beside them, the words before the point's number and those after it: a name is found with no digit on either side, so each is a name the message lacks. The runner has to report each."
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `project-roots-nobody-listed.json` is refused by point 1 (`denominator`) for two project roots nobody listed, and here its `names` keeps them and gains the root `an-untracked-project-nobody-listed.json` names under the same point — the drift a pinned name exists to catch — once after its own and once before it. Then it is pinned to the shapes the runner refuses before it compares anything: a name that is no list, an empty list, a blank name and a name that is no string, each of the last two beside a good one. Last come two names the refusal holds only with a digit beside them, the words before the point's number and those after it: a name is found with no digit on either side, so each is a name the message lacks. The runner has to report each, and nothing of the case pinned to its own `names`."
 }
