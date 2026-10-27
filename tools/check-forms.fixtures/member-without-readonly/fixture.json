@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The widget's `touched` written without `readonly`. Every signal member of this library is `readonly`, which the gate requires of a member of the block: one written without it is missing from the block and point 3 says so.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`"
+}

@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "The widget's `touched` declared as a parameter property. It is a parameter, not a property declaration, and ngc refuses `input()` anywhere but a property's initializer (NG8110), so the widget has no input `touched`, and point 3 says so.",
+  "message": "libs/components/widget/src/widget.ts: PctWidget has no `touched`"
+}

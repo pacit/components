@@ -52,19 +52,44 @@ const CONTRACT_INTERFACE = 'FormUiControl';
  */
 const CONTRACTS = new Set(['FormValueControl', 'FormCheckboxControl']);
 
+const flagged = (node, kind) =>
+  ts.getModifiers(node)?.some((m) => m.kind === kind);
+
 /**
  * A member declaration, as this library and Angular's own guide write them:
  *
  *     readonly invalid = input(false, { transform: booleanAttribute });
  *
- * Anchored at two spaces, where prettier puts a member of a top-level class: the anchor finds the
- * declarations, and the parser says whose each one is (`classesIn`). No list of factories: every
- * `readonly` member is read, whatever it is assigned, so a control cannot leave the
- * denominator by being written in an unusual way. `readonly` itself IS required, which is
- * how every signal member in this library is declared — one written without it is missing
- * from the block and says so.
+ * read off the parser: a property of a class written `readonly` and with an initializer, whatever
+ * else it is written with — `override`, which `noImplicitOverride` demands of a leaf redeclaring
+ * its base's, an access modifier, a type, a decorator — and wherever its lines break. What point 4
+ * compares is the whole initializer: the type before `=` changes nothing at run time, and one the
+ * initializer does not satisfy does not compile. No list of factories: every such member is
+ * read, whatever it is assigned, so a control cannot leave the denominator by being written in
+ * an unusual way. `readonly` itself IS required, which is how every signal member in this
+ * library is declared — one written without it is missing from the block and says so.
+ *
+ * Its name is the one Angular reflects (`reflectClassMember`): an identifier's, or a string's —
+ * `readonly 'disabled'` is the input `disabled`. Not a member, each missing from the block:
+ *   - `static` — the class's own, not an instance's: ngc refuses an input so declared (NG1100),
+ *   - a parameter property, `constructor(readonly touched = input(false))` — a parameter, and
+ *     ngc refuses `input()` anywhere but a property's initializer (NG8110),
+ *   - a computed name, `readonly ['touched']` — Angular reflects no name for it, and a binding to
+ *     it is to no input (NG8002); the test of the name says so, and guards nothing else, a
+ *     computed name having no text of its own.
+ * `declare` and `abstract` need no word: TypeScript takes no initializer on an abstract property
+ * (TS1267), and on an ambient one none but a string or a number (TS1254), which no member of the
+ * contract is typed as (TS2416). Read by a pattern at the margin, an `override` was no member and
+ * a declaration ended at its first line ending in `;`: a leaf's override compared as its base's
+ * and a block-bodied transform cut before it differed passed point 4, and a typed, a wrapped
+ * and a quoted member were refused as missing (measured).
  */
-const MEMBER = /^ {2}readonly (\w+) = ([\s\S]*?);$/dgm;
+const isMember = (node) =>
+  ts.isPropertyDeclaration(node) &&
+  node.initializer !== undefined &&
+  flagged(node, ts.SyntaxKind.ReadonlyKeyword) &&
+  !flagged(node, ts.SyntaxKind.StaticKeyword) &&
+  (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name));
 
 /**
  * `export class X`, `export abstract class X<T> extends Y implements Z {` — the name, and where
@@ -94,44 +119,29 @@ const list = (items) => items.map((t) => `      ${t}`).join('\n');
 // ── the reading ───────────────────────────────────────────────────────────────
 
 /**
- * The classes of one source file the pattern reads a header for, and the members each declares.
- * The pattern finds the declarations and the parser says whose they are (`owners`): a member is
- * the property whose name stands where the pattern reads the member's, of the class whose name
- * the header stands at. A declaration the parser holds as no property, a line in a comment or a
- * string, is no member. One of a class no header stands at is that class's: no control (point 1
- * refuses one that is), and a base no header stands at hands down nothing, which point 3 can
- * refuse a control for and never pass one. By position, the last header above it, a class of
- * no header lent what it declares at two spaces to the control above, a commented line was a
- * member, and a control without `disabled` or `touched` passed on either (measured).
+ * The classes of one source file the pattern reads a header for, and the members each declares:
+ * the parser's (`parsedIn`), of the class whose name the header stands at. A line in a comment or
+ * a string is no member, the parser holding no property there. A member of a class no header
+ * stands at is that class's: no control (point 1 refuses one that is), and a base no header
+ * stands at hands down nothing, which point 3 can refuse a control for and never pass one. By
+ * position, the last header above it, a class of no header lent what it declares at two spaces
+ * to the control above, a commented line was a member, and a control without `disabled` or
+ * `touched` passed on either (measured).
  */
-const classesIn = (file, text, owners) => {
-  const headers = [...text.matchAll(CLASS)].map((m) => ({
+const classesIn = (text, members) =>
+  [...text.matchAll(CLASS)].map((m) => ({
     name: m[1],
     nameAt: m.indices[1][0],
     line: text.slice(0, m.index).split('\n').length,
-    members: new Map(),
+    members: members.get(m.indices[1][0]) ?? new Map(),
   }));
-  for (const m of text.matchAll(MEMBER)) {
-    const owner = headers.find((h) => h.nameAt === owners.get(m.indices[1][0]));
-    const member = {
-      name: m[1],
-      // The declaration, whitespace collapsed: a member wrapped over two lines by prettier
-      // and one written on a single line are the same declaration, and a gate that called
-      // them different would fire on the formatter.
-      text: m[2].replace(/\s+/g, ' ').trim(),
-      file,
-      line: text.slice(0, m.index).split('\n').length,
-    };
-    owner?.members.set(member.name, member);
-  }
-  return headers;
-};
 
 /**
  * What the TypeScript parser holds of one source file, at every depth, exported or not:
  *   `implementers` — the classes implementing a contract, by the offset their name stands at (a
  *                    class with no name: where it starts), to their name and line,
- *   `owners`       — every property of a class, by the offset its name stands at, to its class's.
+ *   `members`      — what each class declares (`isMember`), by the same offset, as a map of
+ *                    names to the initializer's text and the file and line of the name.
  * The pattern sees a header at the margin and nothing else: a control written without `export`,
  * nested in a function, a namespace or a method, or written as a class expression had none, and
  * the gate measured fewer controls than the library has — passing five such inputs, and
@@ -194,7 +204,7 @@ const parsedIn = (file, text) => {
     ) || ts.forEachChild(node, reaches) === true;
   const where = (node) => (node.name ?? node).getStart(source);
   const implementers = new Map();
-  const owners = new Map();
+  const members = new Map();
   const visit = (node) => {
     if (
       ts.isClassLike(node) &&
@@ -209,12 +219,24 @@ const parsedIn = (file, text) => {
         line: source.getLineAndCharacterOfPosition(where(node)).line + 1,
       });
     // A property's parent is the class that declares it, a class expression's included.
-    if (ts.isPropertyDeclaration(node))
-      owners.set(node.name.getStart(source), where(node.parent));
+    if (isMember(node)) {
+      const declared = members.get(where(node.parent)) ?? new Map();
+      declared.set(node.name.text, {
+        // The initializer, whitespace collapsed: a member wrapped over two lines and one
+        // written on a single line are the same declaration, and a gate that called them
+        // different would fire on the formatter.
+        text: node.initializer.getText(source).replace(/\s+/g, ' '),
+        file,
+        line:
+          source.getLineAndCharacterOfPosition(node.name.getStart(source))
+            .line + 1,
+      });
+      members.set(where(node.parent), declared);
+    }
     ts.forEachChild(node, visit);
   };
   visit(source);
-  return { implementers, owners };
+  return { implementers, members };
 };
 
 /**
@@ -245,8 +267,8 @@ const readSources = (root, files) => {
   );
   const bases = classesOf(contents);
   for (const [file, content] of contents) {
-    const { implementers, owners } = parsedIn(file, content);
-    for (const header of classesIn(file, content, owners)) {
+    const { implementers, members } = parsedIn(file, content);
+    for (const header of classesIn(content, members)) {
       const key = classKey(file, header.name);
       const held = bases.get(key);
       if (held?.at !== header.nameAt) {
@@ -317,8 +339,9 @@ const controlsOf = (classes) => {
     const up = classes.has(cls.from)
       ? inherited(cls.from, seen)
       : { members: new Map(), stop: cls.base === undefined ? undefined : cls };
-    // The base FIRST, so a leaf redeclaring a member wins — which is what TypeScript does,
-    // and the file the violation names then has to be the file a reader would edit.
+    // The base FIRST, so a leaf redeclaring a member — `override readonly`, as
+    // `noImplicitOverride` has it written — wins, which is what TypeScript does, and the file
+    // the violation names then has to be the file a reader would edit.
     return { members: new Map([...up.members, ...cls.members]), stop: up.stop };
   };
   return [...classes]

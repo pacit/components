@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "shape",
+  "rule": "shape-drift",
+  "description": "The widget and the knob's base declare `invalid` with the same block-bodied transform, and the base renames it with `alias` after it, so the `Field` directive binds `invalid` on the widget and nothing on the knob. Read by a pattern ending a declaration at its first line ending in `;`, both stopped inside the transform at `const on = booleanAttribute(value);`, read the same, and the input passed (measured).",
+  "message": "return on; }, alias: 'aria-invalid', })\n          libs/components/widget/src/knob.ts:15"
+}
