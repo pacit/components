@@ -1,0 +1,20 @@
+<!-- The reference's trigger, and an error part that says its region is busy. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert" aria-busy="true">{{ error() }}</span>
+} @else if (showWarning()) {
+<span class="pct-widget__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\"true\"` on the `<div>` above it sets the live region of `error` otherwise than its role does",
+  "$reason": "An error part in an `<ng-template>` declared inside a wrapper written `aria-busy=\"true\"`, its outlet beside it in the same wrapper, which stamps the part busy there. What sets a part's region is read where the template is declared, as what may hide it is; point 9's reset of `aria-hidden` at a template is not taken over. Point 7 read nothing above the part but what may hide it."
+}

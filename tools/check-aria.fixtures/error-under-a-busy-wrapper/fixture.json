@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\"true\"` on the `<div>` above it sets the live region of `error` otherwise than its role does",
+  "$reason": "The message line inside a wrapper written `aria-busy=\"true\"`. Firefox 158 hands the part the nearest `aria-busy` up the tree as its own `container-busy`; Chromium 153 reads the part alone, every part being the root of its region (measured on 2026-10-27). A reader handed a busy region holds its changes back. Point 7 read nothing above the part but what may hide it, and passed it."
+}

@@ -10,7 +10,7 @@
  *  4. FORWARDED: both on ONE element per DOM state, not per file, its role one taking a name,
  *  5. SURFACE: the card that names the selector names both inputs,
  *  6. DESCRIPTION: hint, warning and error parts are ALTERNATIVES of one conditional (`req-api-message`), no hint inert,
- *  7. ANNOUNCEMENT: an error part IS the live region, and a warning part the polite one ([0026](../docs/decisions/0026-one-channel-per-politeness.md)), neither hidden,
+ *  7. ANNOUNCEMENT: an error part IS the live region, and a warning part the polite one ([0026](../docs/decisions/0026-one-channel-per-politeness.md)), neither hidden nor retuned,
  *  8. HIDDEN: a component out of the accessibility tree holds nothing to land on and no name,
  *  9. CONTEXT: an `option`, a `tab`, a `treeitem` has nothing but its required context above it.
  *
@@ -162,6 +162,35 @@ const UNREACHABLE = {
   warning: HIDING,
   hint: [INERT],
 };
+/**
+ * What sets a live region besides its politeness — whether it is held back, which of its changes
+ * count, how much of it is read — and which a part that announces takes from its role alone
+ * (measured on 2026-10-27, Chromium 153 off CDP's tree and Firefox 158 off its own; the readers
+ * off their source, Orca 50.2 and NVDA's `master`). Written on the part, each is what the engines
+ * expose in place of the role's: Chromium marks the region busy at any `aria-busy` but the empty
+ * one, `false` and `undefined`, in any case — ` false ` padded is busy — hands an `aria-relevant`
+ * on as written but the empty one and `undefined`, and takes the region's atomicity away at an
+ * `aria-atomic` of `false` in any case; Firefox hands the first two on as written, as
+ * `container-busy` at any value but the empty one and `undefined` (`UNDEFINED` handed on, busy
+ * as a state at `true` alone) and as `container-relevant` at any but the empty one, and the last
+ * as `container-atomic` at `true` alone, which the role does not give it. Above the part it is
+ * Firefox alone: it hands the part the nearest of each up the tree — two elements up, through a
+ * custom element — where Chromium reads the part alone, each part being the root of its region.
+ * What that costs: Chromium fires no change of a busy region, NVDA drops every event of one whose
+ * `container-busy` is `true` or whose relevance is not `all` and names neither `additions` nor
+ * `text`, and a region not atomic is said by the text that changed (Orca, NVDA) — a message
+ * changing while shown, `Required` to `Too short`, is said in a fragment or not at all. An
+ * error's entry is its `alert` event, which none of the three holds back. The value the role
+ * implies (`aria-busy="false"`, `aria-atomic="true"`, `aria-relevant="additions text"`) is refused
+ * as the politeness is (`POLITENESS`): the engines disagree on what the role gives, and a written
+ * one replaces it. One above the part that Firefox does not hand down (`aria-atomic="false"`) says
+ * nothing a template has a reason to say over a message, and the gate does not ask which it is.
+ * An empty one is none to either engine, and none here. An `aria-live` above is not among them:
+ * Firefox hands it to an `alert`, which gives it none of its own, and a `status` stops it there —
+ * `off` leaves a reader where the `alert` alone leaves it, none of them reading a region off a
+ * `container-live` but `polite` or `assertive`.
+ */
+const LIVE_PROPERTIES = ['aria-atomic', 'aria-relevant', 'aria-busy'];
 /**
  * An attribute's name as the DOM takes it from the parsed tree: HTML ignores the case of a name
  * (`ROLE`, `[attr.ARIA-LABEL]`), and only a PROPERTY binding reaches an ARIA attribute through
@@ -930,6 +959,24 @@ const hidingOn = (node) =>
     ),
   );
 /**
+ * Each live property that sets the region of a part on the element or below it
+ * (`LIVE_PROPERTIES`), with how it stands: written at any value but the empty one, or bound by a
+ * binding that writes the attribute. One reading for an element of a template (`overridesOn`)
+ * and for a host block (`hostOverridesOf`).
+ */
+const overriding = (name, written, bound) => [
+  ...(written ? [{ name, as: `\`${name}="${written}"\`` }] : []),
+  ...(bound ? [{ name, as: `a bound \`${name}\`` }] : []),
+];
+const overridesOn = (node) =>
+  LIVE_PROPERTIES.flatMap((name) =>
+    overriding(
+      name,
+      writtenOn(node, name),
+      boundOn(node, name).some(writesAttribute),
+    ),
+  );
+/**
  * Every attribute on a node, written or bound in whatever syntax, by the name the DOM gives it:
  * `ARIA-LABELLEDBY` is `aria-labelledby`, and `[ariaLabel]` reaches `aria-label`. A property
  * binding a component of the library takes as its input reads the same way, as it does in
@@ -1658,6 +1705,11 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
       isElement(node) && !isOwnTag(node)
         ? hidingOn(node).map((h) => ({ ...h, on: localName(node.name) }))
         : [];
+    // And what on it sets the region of a part on it or below it (`LIVE_PROPERTIES`), as that is.
+    const overrides =
+      isElement(node) && !isOwnTag(node)
+        ? overridesOn(node).map((h) => ({ ...h, on: localName(node.name) }))
+        : [];
     // The part and its role were read as the first attribute of that exact name: a
     // `role="status"` after the error's `alert`, a `ROLE="status"`, and a part written
     // `DATA-PCT-PART` — which the DOM holds as the attribute the styling API names — all
@@ -1702,6 +1754,15 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
                 name: h.name,
                 text: `${h.as} on the \`<${h.on}>\` above it`,
               })),
+            ),
+          ],
+          // What sets its region otherwise than its role, on it and above it in this template,
+          // read where it is declared as what may hide it is. The part's role and politeness
+          // were all point 7 read, and `role="alert" aria-busy="true"` passed it.
+          overriddenBy: [
+            ...overrides.map((h) => `${h.as} on the part`),
+            ...ancestors.flatMap((a) =>
+              a.overrides.map((h) => `${h.as} on the \`<${h.on}>\` above it`),
             ),
           ],
         });
@@ -1764,8 +1825,10 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           ariaHidden:
             written('aria-hidden')?.trim().toLowerCase() === 'true' &&
             bindings('aria-hidden').length === 0,
-          // Each attribute that may take it out of the tree, for the message parts below it.
+          // Each attribute that may take it out of the tree, for the message parts below it,
+          // and each that sets their region.
           hides,
+          overrides,
           // A way to land on it, as axe decides it: the line `aria-required-children`
           // draws, which an editing host does not cross (measured, axe 4.13). Read off the
           // template, as for points 4 and 8: an `href` a directive's host binding sets
@@ -1934,6 +1997,32 @@ const outOfReach = (message, kind, owners) =>
   [...message.hiddenBy, ...owners.flatMap(hostHidingOf)]
     .filter((h) => UNREACHABLE[kind].includes(h.name))
     .map((h) => h.text);
+
+/**
+ * What in a host block sets the region of every part in the component's template
+ * (`overriding`), its keys read as `hostKey` reads them — Firefox hands a part the nearest one up
+ * the tree, and the host is above every part.
+ */
+const hostOverridesOf = (component) =>
+  LIVE_PROPERTIES.flatMap((name) => {
+    const key = hostKeysIn(component, [name]).at(-1);
+    return overriding(
+      name,
+      key === undefined ? undefined : component.host.get(key),
+      hostKeysIn(component, [`[attr.${name}]`]).length > 0,
+    ).map((h) => `${h.as} on the host of ${component.className}`);
+  });
+
+/**
+ * What sets an error's or a warning's region otherwise than its role (`LIVE_PROPERTIES`): on
+ * the part, above it in its template, and in the host block of each component drawing that
+ * template. What sets it from another template is not read, as what hides it is not
+ * (`outOfReach`).
+ */
+const overridden = (message, owners) => [
+  ...message.overriddenBy,
+  ...owners.flatMap(hostOverridesOf),
+];
 
 /**
  * A container ARIA names as a whole: the role is named as a whole (the calendar's `grid`, a
@@ -2940,7 +3029,8 @@ const checkAria = ({
   // those words. `aria-live` on a wrapper would satisfy a reader and move the owner off the
   // sentence, and then two components would announce the same fact in two shapes. A region the
   // engines take out of the tree is the owner of nothing: no `aria-hidden` and no `inert` may
-  // stand on the part, above it in its template or in its host block (`UNREACHABLE`).
+  // stand on the part, above it in its template or in its host block (`UNREACHABLE`). And the
+  // region is the role's: nothing there may set it otherwise (`LIVE_PROPERTIES`).
   let announced = 0;
   for (const template of templates) {
     const { said, owners } = byPath.get(template.file);
@@ -2962,10 +3052,24 @@ const checkAria = ({
         message.role === liveRole
       ) {
         const hidden = outOfReach(message, kind, owners);
-        if (hidden.length === 0) {
+        const tuned = overridden(message, owners);
+        if (hidden.length === 0 && tuned.length === 0) {
           announced++;
           continue;
         }
+        if (hidden.length === 0)
+          throw new AriaError(
+            'announcement',
+            `${template.file}: ${tuned[0]} sets the live region of \`${message.part}\` ` +
+              `otherwise than its role does — a reader is told the region is busy, which of its ` +
+              `changes count or how much of it to read, and a message that changes while shown is ` +
+              `said in a fragment or not at all (Chromium fires no change of a busy region; NVDA ` +
+              `drops one that is busy, or whose relevance names neither \`additions\` nor ` +
+              `\`text\`). Firefox hands a part the nearest of these above it. No \`aria-busy\`, ` +
+              `\`aria-relevant\` or \`aria-atomic\` on an error or a warning part, above it in ` +
+              `its template or in its host block, at any value but the empty one, and none bound ` +
+              `(req-a11y-built-in)`,
+          );
         throw new AriaError(
           'announcement',
           `${template.file}: ${hidden[0]} may take \`${message.part}\` out of the ` +

@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-relevant=\"removals\"` on the `<div>` above it sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part two elements under a wrapper written `ARIA-RELEVANT=\"removals\"`: HTML takes the name in any case, and Firefox 158 hands the part the nearest relevance up the tree, two elements up as one (measured on 2026-10-27), as `container-relevant=\"removals\"`; NVDA then announces none of the warning's text. A reading of the parent alone, or of the name as written, passed it; point 7 read none of it."
+}

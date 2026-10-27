@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\"true\"` on the part sets the live region of `error` otherwise than its role does",
+  "$reason": "An error part with its `alert` and `aria-busy=\"true\"` beside it. Both engines tell a reader the region is busy (measured on 2026-10-27: Chromium 153 `busy`, Firefox 158 `container-busy=\"true\"` and the busy state), Chromium fires no change of a busy region and NVDA drops every event of one: a message that changes while shown, `Required` to `Too short`, is announced by neither. Point 7 read the part's role and politeness and what may hide it, and passed it."
+}

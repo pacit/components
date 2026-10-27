@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-atomic=\"true\"` on the part sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part with its `status` and the `aria-atomic=\"true\"` the role implies in Chromium 153, written. Firefox 158 exposes `container-atomic` for the written one and none for the `status` alone (measured on 2026-10-27): the engines disagree on what the role gives, and the part's region is refused anything written beside the role, as its politeness is. A reading that refused `false` alone passed it."
+}
