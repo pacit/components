@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "2 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      rim.spec.ts:16 — reads a positional locator written into the read itself in the window the action at line 15 opened: expect(await $rimOf(page.locator(' ').first())).toBe(' ')\n      rim.spec.ts:23 — reads `$card`, bound at line 21 in the window the action at line 22 opened: expect(await styleOf($card, ' ')).toBe(' ')\n    A",
+  "why": "The hovered card's race twice over, through a reader of the spec's own named `$rimOf` and through a locator bound as `$card`. An identifier may hold a `$`, and a pattern built from the name unescaped takes the `$` for the end of the input, so neither name matches anything: the reader is no reader and the bound locator no positional one, and both reads go by unreported."
+}

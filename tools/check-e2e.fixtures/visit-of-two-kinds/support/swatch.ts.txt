@@ -1,0 +1,5 @@
+import type { Locator } from '@playwright/test';
+
+/** A swatch, picked out of a row of them: a lookup, which reads nothing. */
+export const pick = (locator: Locator) =>
+  locator.locator('[data-part="swatch"]');

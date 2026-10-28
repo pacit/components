@@ -1,0 +1,9 @@
+import type { Locator } from '@playwright/test';
+import { styleOf } from './css';
+
+/** The support tree's readers gathered in one object, called as its members. */
+export const $paint = {
+  styleOf,
+  rimOf: <P extends string>(locator: Locator, property: P) =>
+    styleOf(locator, property),
+};

@@ -2,6 +2,6 @@
   "point": 1,
   "check": "corpus",
   "rule": "helpers",
-  "message": "2 helper(s) imported from a relative module under a name no vocabulary can match:\n      card.spec.ts:2 — `styleOf as colourOf`, imported from `./support/css`\n      tint.spec.ts:2 — `default as colourOf`, imported from `./support/css`\n    Every",
+  "message": "2 helper(s) imported from a relative module under a name no vocabulary can match:\n      card.spec.ts:2 — `styleOf as colourOf`, imported from `./support/css`: an alias, which writes no helper's own name\n      tint.spec.ts:2 — `default as colourOf`, imported from `./support/css`: an alias, which writes no helper's own name\n    Every",
   "why": "The hovered card's race, read through `styleOf` imported as `colourOf`, and the second card's through the module's default export bound as `colourOf` — the name `support/swatch.ts` gives a lookup of its own. A vocabulary matches a helper by the name a call writes, so as far as point 3 can tell both reads are that lookup, which reads nothing, and the races go by unreported. An alias that is called is refused whatever the corpus defines under it, and a default binding is one by construction: neither call writes the helper's own name."
 }

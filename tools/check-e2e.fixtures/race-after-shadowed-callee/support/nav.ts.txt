@@ -1,0 +1,12 @@
+import type { Page } from '@playwright/test';
+
+/** How many animations are still running: a reading of the page, which waits for nothing. */
+export async function settle(page: Page): Promise<number> {
+  return page.evaluate(() => document.getAnimations().length);
+}
+
+/** Entering a page and taking that reading after it: a navigation that waits for nothing. */
+export async function open(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+  await settle(page);
+}

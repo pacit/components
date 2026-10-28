@@ -1,0 +1,5 @@
+/**
+ * The support tree's index, which a spec may import a helper through: a re-export under the
+ * helper's own name leads to the file that defines it.
+ */
+export { boxOf } from './dom';

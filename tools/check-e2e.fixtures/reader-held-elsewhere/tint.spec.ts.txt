@@ -1,0 +1,11 @@
+import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
+import { styleOf } from './support/paint';
+
+/** The tint swatch's colour, with `styleOf` taken through a module that re-exports it. */
+test('the tint swatch is painted the tint', async ({ page }) => {
+  await visit(page, '/swatch');
+  const swatch = page.getByTestId('swatch-tint');
+  await expect(swatch).toBeVisible();
+  expect(await styleOf(swatch, 'background-color')).toBe('rgb(219, 234, 254)');
+});

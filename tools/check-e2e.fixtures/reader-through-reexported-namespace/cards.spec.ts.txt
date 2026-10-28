@@ -1,0 +1,11 @@
+import { expect, test } from '@playwright/test';
+import { Cards } from './support/cards';
+import { visit } from './support/dom';
+
+/** The last card's rim, read through a page object's method. */
+test('the last card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  const cards = new Cards(page);
+  await cards.card(2).hover();
+  expect(await cards.rimOf(2)).toBe('rgb(37, 99, 235)');
+});

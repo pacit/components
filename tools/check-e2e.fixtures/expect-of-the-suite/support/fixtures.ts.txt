@@ -1,0 +1,25 @@
+import {
+  expect as base,
+  mergeTests,
+  test as root,
+  type Locator,
+} from '@playwright/test';
+
+export const suiteTest = mergeTests(root);
+
+/**
+ * The suite's own `expect`, with a matcher that reads the rim once and compares — no
+ * retrying assertion, though every call of it is written `await expect(…)`.
+ */
+export const expect = base.extend({
+  async toHaveRim(locator: Locator, colour: string) {
+    const rim = await locator.evaluate(
+      (el) => getComputedStyle(el).borderColor,
+    );
+    return {
+      pass: rim === colour,
+      message: () => `the rim is ${rim}`,
+      name: 'toHaveRim',
+    };
+  },
+});

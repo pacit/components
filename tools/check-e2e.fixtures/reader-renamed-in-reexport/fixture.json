@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "helpers",
+  "message": "4 helper(s) imported from a relative module under a name no vocabulary can match:\n      card.spec.ts:2 — `default as tint`, imported from `./support`: an alias, which writes no helper's own name\n      card.spec.ts:2 — `colourOf`, imported from `./support`: re-exported under another name\n      tint.spec.ts:3 — `paintOf`, imported from `./support/paint`: re-exported under another name\n      wash.spec.ts:3 — `default as paint`, imported from `./support/paint`: an alias, which writes no helper's own name\n    Every",
+  "why": "Four races read through `styleOf` under names a module of the support tree gives it: `colourOf` and the default, which the index re-exports from `./css`, and `paintOf` and the default, which `support/paint.ts` exports by a list over its own import. A spec imports `colourOf` and `paintOf` by the names they are exported under, so no alias stands in the import, and neither is a name any definition carries: a re-export under another name is an alias one module further on. The defaults are refused as aliases like any, and the module answers for each — by its re-export or by its list, as `export default` would."
+}

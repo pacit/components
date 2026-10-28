@@ -1,0 +1,10 @@
+import type { Locator, Page } from '@playwright/test';
+
+/** Entering a page the way an older suite did: it navigates and waits for nothing. */
+export async function visit(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+}
+
+/** A swatch's colour, the way the older suite took it: a reading. */
+export const pick = (locator: Locator) =>
+  locator.evaluate((el) => getComputedStyle(el).backgroundColor);

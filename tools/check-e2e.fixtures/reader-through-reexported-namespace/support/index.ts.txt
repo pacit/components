@@ -1,0 +1,3 @@
+/** The support tree's index: `css.ts` as a namespace, and everything `dom.ts` exports. */
+export * as css from './css';
+export * from './dom';

@@ -317,15 +317,22 @@ const statements = (masked) => {
 };
 
 /**
- * The definitions a file makes: `const name = (…) => …`, `const name = async (…) => …` and
- * `function name(…) { … }`, each with the text of its body. This is how the three
- * vocabularies below stop being lists somebody typed and become lists this repository's own
- * helpers are read into.
+ * The definitions a file makes: `const name = (…) => …`, with `async` or type parameters
+ * before the list, `const name = function (…) { … }` and `function name(…) { … }`, each with
+ * the text of its body; and `const name = other;`, whatever `other` is, whose body is a call
+ * of it — a second name for a helper is whatever the first is, and one for a value is
+ * nothing. This is how the three vocabularies
+ * below stop being lists somebody typed and become lists this repository's own helpers are
+ * read into — and a shape left out of it is a helper read as no kind at all.
  */
 const definitions = (masked) => {
   const found = [];
   const FUNCTION =
-    /(?:^|[^\w$.])(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]*)?=\s*(?:async\s+)?\(|(?:^|[^\w$.])function\s+([A-Za-z_$][\w$]*)\s*\(/g;
+    /(?:^|[^\w$.])(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]*)?=\s*(?:async\s+)?(?:function\b\s*[\w$]*\s*)?(?:<(?:[^<>()]|<[^<>()]*>)*>\s*)?\(|(?:^|[^\w$.])function\s+([A-Za-z_$][\w$]*)\s*(?:<(?:[^<>()]|<[^<>()]*>)*>\s*)?\(/g;
+  const lineOf = (m) =>
+    masked.slice(0, m.index + m[0].search(/[A-Za-z_$]/)).split('\n').length;
+  for (const m of masked.matchAll(REBINDING))
+    found.push({ name: m[1], body: `${m[2]}()`, line: lineOf(m) });
   for (const m of masked.matchAll(FUNCTION)) {
     const name = m[1] ?? m[2];
     let paren = 0;
@@ -339,18 +346,26 @@ const definitions = (masked) => {
     // regex over the return type: `function styleOf(…): Promise<string> {` is followed by a
     // body whose own first line holds an `=>`, and a pattern that reaches for it takes the
     // callback for the function and reads the body as everything but itself. That is how
-    // `styleOf` came back NOT a reader, which is a silent gate and not a loud one.
-    const after = masked.slice(k + 1, k + 1 + 400);
+    // `styleOf` came back NOT a reader, which is a silent gate and not a loud one. A return
+    // annotation is stepped over first, as its own `{` — `Promise<{ colour: string }>` — is
+    // a type and no body.
+    const from = returned(masked, k + 1, !/\bfunction\b/.test(m[0]));
+    const after = masked.slice(from, from + 400);
     const arrowAt = after.indexOf('=>');
     const braceAt = after.indexOf('{');
+    // An overload's signature, or a `declare`d one, ends at its `;` and has no body: what
+    // follows it is the next signature or the implementation, read on its own match.
+    const ends = after.indexOf(';');
+    if (ends >= 0 && [arrowAt, braceAt].every((at) => at < 0 || ends < at))
+      continue;
     let body = '';
     if (arrowAt >= 0 && (braceAt < 0 || arrowAt < braceAt)) {
-      let at = k + 1 + arrowAt + 2;
+      let at = from + arrowAt + 2;
       while (at < masked.length && /\s/.test(masked[at])) at++;
       body =
         masked[at] === '{' ? braced(masked, at) : upToSemicolon(masked, at);
-    } else if (braceAt >= 0) body = braced(masked, k + 1 + braceAt);
-    found.push({ name, body });
+    } else if (braceAt >= 0) body = braced(masked, from + braceAt);
+    found.push({ name, body, line: lineOf(m) });
   }
   return found;
 };
@@ -368,12 +383,19 @@ const definitions = (masked) => {
  */
 const IMPORT = /^import\s+([\w$*{},\s]+?)\s*from\s*(['"])/gm;
 
-const imports = ({ text, masked }) => {
+/** `.`, `..` or a path under either: a module of the suite's own, and no package. */
+const RELATIVE = /^\.\.?(?:\/|$)/;
+
+const imports = (source) =>
+  bindingsOf(source).filter((i) => RELATIVE.test(i.module));
+
+/** Every binding a file's value imports make, from a package or a relative module alike. */
+const bindingsOf = ({ text, masked }) => {
   const found = [];
   for (const m of masked.matchAll(IMPORT)) {
     const from = m.index + m[0].length;
     const module = text.slice(from, masked.indexOf(m[2], from));
-    if (!/^\.\.?(?:\/|$)/.test(module) || /^type\s/.test(m[1])) continue;
+    if (/^type\s/.test(m[1])) continue;
     const line = masked.slice(0, m.index).split('\n').length;
     const [outside, inside = ''] = m[1].split('{');
     const parts = [
@@ -386,6 +408,7 @@ const imports = ({ text, masked }) => {
     for (const [part, named] of parts) {
       const words = part.trim().split(/\s+/);
       const name = words.at(-1);
+      const imported = named ? words[words[0] === 'type' ? 1 : 0] : 'default';
       const written =
         words.at(-2) === 'as'
           ? words.slice(-3).join(' ')
@@ -397,6 +420,7 @@ const imports = ({ text, masked }) => {
           line,
           module,
           name,
+          imported,
           written,
           namespace: words[0] === '*',
         });
@@ -404,6 +428,144 @@ const imports = ({ text, masked }) => {
   }
   return found;
 };
+
+/**
+ * What a module of the corpus answers for a name another file imports from it: what it
+ * `defined` in a shape the vocabularies read; what it `declared` otherwise (a value, a call's
+ * result, a class) and which of those are `objects` — a `{ … }` or a class, whose helpers
+ * would be called as members; its re-exports by name (`export { a, b as c } from './x'`),
+ * the names it exports by a list of its own (`export { a, b as c };`) with the `bindings` its
+ * imports make, `namespaces` (`export * as ns from './x'`) and `stars` (`export * from
+ * './x'`); and whether it has a default export. Read at column 0, where prettier puts what
+ * a module declares, and on the masked text, the module of a re-export off the source at the
+ * same offsets. `export type` is no value and matches none of it.
+ */
+const exportsOf = ({ text, masked }) => {
+  const NAME = '([A-Za-z_$][\\w$]*)';
+  const at = (pattern) => [...masked.matchAll(new RegExp(pattern, 'gm'))];
+  const out = {
+    defined: new Set(definitions(masked).map((d) => d.name)),
+    declared: new Set(
+      at(
+        `^(?:export\\s+)?(?:async\\s+)?(?:const|let|var|function\\*?|class)\\s+${NAME}`,
+      ).map((m) => m[1]),
+    ),
+    objects: new Set(
+      at(
+        `^(?:export\\s+)?(?:(?:const|let|var)\\s+${NAME}\\s*(?::[^=;]*)?=\\s*\\{|(?:abstract\\s+)?class\\s+${NAME})`,
+      ).map((m) => m[1] ?? m[2]),
+    ),
+    reexports: new Map(),
+    listed: new Map(),
+    bindings: new Map(bindingsOf({ text, masked }).map((b) => [b.name, b])),
+    namespaces: new Set(),
+    stars: [],
+    exportsDefault: at('^export\\s+default\\b').length > 0,
+  };
+  const pairs = (list) =>
+    list
+      .split(',')
+      .map((part) => part.trim().split(/\s+/))
+      .filter((words) => words[0]);
+  for (const m of at(
+    `^export\\s+(\\*(?:\\s+as\\s+[A-Za-z_$][\\w$]*)?|\\{[^}]*\\})\\s*from\\s*(['"])`,
+  )) {
+    const from = m.index + m[0].length;
+    const module = text.slice(from, masked.indexOf(m[2], from));
+    const clause = m[1].trim();
+    if (clause === '*') out.stars.push(module);
+    else if (clause.startsWith('*'))
+      out.namespaces.add(clause.split(/\s+/).at(-1));
+    else
+      for (const words of pairs(clause.slice(1, -1)))
+        out.reexports.set(words.at(-1), { module, imported: words[0] });
+  }
+  for (const m of at('^export\\s+\\{([^}]*)\\}\\s*;'))
+    for (const words of pairs(m[1])) out.listed.set(words.at(-1), words[0]);
+  return out;
+};
+
+/**
+ * Where an import of `name` from `module`, written in `from`, leads: to a file of the corpus
+ * (`x.ts`, or `x/index.ts`), through its re-exports, to what that file answers — `defined`,
+ * `unread`, `object`, `namespace`, `renamed` — or to a `package`, or nowhere: `unheld`, a
+ * module no file of the corpus answers for, `missing`, a file that answers and holds no such
+ * name. `where` is the module the last step named.
+ */
+const lookup = (modules, from, module, name, seen = new Set()) => {
+  if (!RELATIVE.test(module)) return { kind: 'package' };
+  const base = join(dirname(from), module).split('\\').join('/');
+  const file = [`${base}.ts`, `${base}/index.ts`].find((f) => modules.has(f));
+  if (!file) return { kind: 'unheld', where: module };
+  if (seen.has(file)) return { kind: 'missing', where: module };
+  seen.add(file);
+  const m = modules.get(file);
+  if (name === 'default')
+    return m.exportsDefault || m.listed.has(name) || m.reexports.has(name)
+      ? { kind: 'unread' }
+      : { kind: 'missing', where: module };
+  if (m.objects.has(name)) return { kind: 'object' };
+  if (m.defined.has(name)) return { kind: 'defined' };
+  if (m.declared.has(name)) return { kind: 'unread' };
+  const re = m.reexports.get(name);
+  if (re)
+    return re.imported === name
+      ? lookup(modules, file, re.module, name, seen)
+      : { kind: 'renamed' };
+  const local = m.listed.get(name);
+  if (local !== undefined && local !== name) return { kind: 'renamed' };
+  const bound = local === name && m.bindings.get(name);
+  if (bound)
+    return bound.written === name
+      ? lookup(modules, file, bound.module, bound.imported, seen)
+      : { kind: 'renamed' };
+  if (m.namespaces.has(name)) return { kind: 'namespace' };
+  const starred = m.stars.map((star) =>
+    lookup(modules, file, star, name, seen),
+  );
+  return (
+    starred.find((r) => r.kind !== 'missing' && r.kind !== 'unheld') ??
+    starred.find((r) => r.kind === 'unheld') ?? {
+      kind: 'missing',
+      where: module,
+    }
+  );
+};
+
+/**
+ * Where a definition's head ends once the parameters are read, from `at`: past a return
+ * annotation, if one stands there, to the first `{`, `;` or — for an arrow — `=>` outside every
+ * bracket the type opened, after a type that is complete. A `{` where a type is expected (after
+ * the `:`, a `<`, a `|`, an `&`, a `,`) opens an object type and belongs to it; a `=>` in a
+ * declaration's annotation is a function type's.
+ */
+const returned = (text, at, arrow) => {
+  let i = at;
+  while (/\s/.test(text[i] ?? '')) i++;
+  if (text[i] !== ':') return at;
+  let depth = 0;
+  let expecting = true;
+  for (i++; i < text.length; i++) {
+    const c = text[i];
+    if (/\s/.test(c)) continue;
+    if (text.startsWith('=>', i)) {
+      if (depth === 0 && !expecting && arrow) return i;
+      i++;
+      expecting = true;
+    } else if (depth === 0 && !expecting && (c === '{' || c === ';')) return i;
+    else if ('<({['.includes(c)) {
+      depth++;
+      expecting = true;
+    } else if ('>)}]'.includes(c)) {
+      depth--;
+      expecting = false;
+    } else expecting = '|&,:?'.includes(c);
+  }
+  return at;
+};
+
+const REBINDING =
+  /(?:^|[^\w$.])(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]*)?=\s*([A-Za-z_$][\w$]*)\s*;/g;
 
 const braced = (text, at) => {
   let depth = 0;
@@ -431,9 +593,32 @@ const upToSemicolon = (text, at) => {
  * as Playwright's `fill` it turned a plain lookup into an action and reported a race four
  * lines later that is not one.
  */
-const method = (text, name) => new RegExp(`\\.${name}\\s*\\(`).test(text);
+const method = (text, name) =>
+  new RegExp(`\\.${escaped(name)}\\s*${TYPE_ARGUMENTS}\\(`).test(text);
 const free = (text, name) =>
-  new RegExp(`(?:^|[^\\w$.])${name}\\s*\\(`).test(text);
+  new RegExp(`(?:^|[^\\w$.])${escaped(name)}\\s*${TYPE_ARGUMENTS}\\(`).test(
+    text,
+  );
+
+/** A call through a name: `name.member(…)`, which no vocabulary reads as the name's own. */
+const through = (text, name) =>
+  new RegExp(
+    `(?:^|[^\\w$.])${escaped(name)}\\s*\\.\\s*[A-Za-z_$][\\w$]*\\s*${TYPE_ARGUMENTS}\\(`,
+  ).test(text);
+
+/**
+ * A name as it goes into a pattern: an identifier holds nothing a regex reads but `$`, which
+ * is its end-of-input anchor — `$rimOf(` written into a pattern unescaped matches nothing, and
+ * a reader by that name would be a read no rule ever sees.
+ */
+const escaped = (name) => name.replaceAll('$', '\\$');
+
+/**
+ * Type arguments between a name and its call, `styleOf<'color'>(…)`, with one level of
+ * arguments of their own, `pick<Record<string, string>>(…)`. A function type among them holds
+ * parentheses, and is no argument this reads.
+ */
+const TYPE_ARGUMENTS = '(?:<(?:[^<>()]|<[^<>()]*>)*>\\s*)?';
 
 /**
  * A vocabulary: Playwright's own names, closed over the corpus's helpers. A helper that
@@ -444,8 +629,11 @@ const free = (text, name) =>
  * first time somebody writes a helper of their own — and a reader the gate does not know is
  * a race the gate does not see.
  */
-const vocabulary = (base, defined) => {
-  const derived = new Set();
+const vocabulary = (base, defined, under) => {
+  const names = new Set(defined.map((d) => d.name));
+  const derived = new Set(
+    [...(under?.derived ?? [])].filter((n) => !names.has(n)),
+  );
   for (let pass = 0; pass < 8; pass++) {
     let grew = false;
     for (const d of defined) {
@@ -466,6 +654,30 @@ const vocabulary = (base, defined) => {
 const any = (text, vocab) =>
   vocab.base.some((n) => method(text, n)) ||
   [...vocab.derived].some((n) => free(text, n));
+
+/**
+ * The three vocabularies over one set of definitions, or over a spec's own `under` the
+ * shared ones: what the support tree defines is derived once, from the support tree, and a
+ * spec's definitions only add to it — a name the spec defines itself stands for the spec's
+ * definition, and a shared helper is still whatever the support tree made it, whatever the
+ * spec calls its own.
+ */
+const vocabulariesOf = (defined, under) => ({
+  readers: vocabulary(PLAYWRIGHT_READS, defined, under?.readers),
+  waits: vocabulary(PLAYWRIGHT_WAITS, defined, under?.waits),
+  actions: vocabulary(PLAYWRIGHT_ACTIONS, defined, under?.actions),
+});
+
+/** What a definition does, in the vocabularies it is read with: `reads`, `waits`, `acts`. */
+const kindOf = (body, vocabularies) =>
+  [
+    ['reads', vocabularies.readers],
+    ['waits', vocabularies.waits],
+    ['acts', vocabularies.actions],
+  ]
+    .filter(([, vocab]) => any(body, vocab))
+    .map(([word]) => word)
+    .join(', ') || 'nothing';
 
 /** A block of findings, one per line, indented under the sentence that introduces them. */
 const list = (entries) => entries.map((e) => `      ${e}`).join('\n');
@@ -492,12 +704,23 @@ const checkE2e = ({ specs, sources }) => {
   //    first taught the gate that `stage(…)` waits for the page — and a real finding in
   //    the second went quiet behind it, which is a gate passing for a reason that has
   //    nothing to do with the code it was reading.
+  //
+  //    A spec's own definition of a shared name stands in for the shared one within that
+  //    spec, as TypeScript has it: `hero.spec.ts` writes a `styleOf` of its own, and the
+  //    union of the two would read a call to it as whatever either one does.
   const shared = sources
     .filter((s) => !s.file.endsWith('.spec.ts'))
-    .flatMap((s) => definitions(s.masked));
-  const readers = vocabulary(PLAYWRIGHT_READS, shared);
+    .flatMap((s) => definitions(s.masked).map((d) => ({ ...d, file: s.file })));
+  const common = vocabulariesOf(shared);
+  const own = specs.map((spec) => {
+    const defined = definitions(spec.masked).map((d) => ({
+      ...d,
+      file: spec.file,
+    }));
+    return { spec, defined, vocabularies: vocabulariesOf(defined, common) };
+  });
   const denominator =
-    corpus({ specs, sources, shared, readers }) ?? parser(specs);
+    corpus({ specs, sources, shared, common, own }) ?? parser(specs);
   if (denominator) return { description: null, errors: [denominator] };
 
   // 3. and 4. The rules, over every spec in order, each gathering ALL of its own findings:
@@ -507,13 +730,7 @@ const checkE2e = ({ specs, sources }) => {
   let bare = 0;
   const races = [];
   const baselines = [];
-  for (const spec of specs) {
-    const defined = [...shared, ...definitions(spec.masked)];
-    const vocabularies = {
-      readers: vocabulary(PLAYWRIGHT_READS, defined),
-      waits: vocabulary(PLAYWRIGHT_WAITS, defined),
-      actions: vocabulary(PLAYWRIGHT_ACTIONS, defined),
-    };
+  for (const { spec, vocabularies } of own) {
     const found = race(spec, vocabularies);
     positional += found.seen;
     races.push(...found.findings);
@@ -555,9 +772,70 @@ const checkE2e = ({ specs, sources }) => {
 
   const description =
     `${specs.length} specs over ${SUITES.length} suites, ` +
-    `${readers.derived.size} shared readers derived beyond Playwright's own, ` +
+    `${common.readers.derived.size} shared readers derived beyond Playwright's own, ` +
     `${positional} positional locator(s) and ${bare} bare wait(s) ruled on`;
   return { description, errors };
+};
+
+/**
+ * Why a name a file imports from a relative module is one no vocabulary can match, or null.
+ * A namespace import always is; any other binding only once the file calls it — by its name,
+ * or through it as `binding.member(…)`. `test` and `expect` are the two names points 3 and 4
+ * read as themselves: either needs only a file that answers for it, and `expect` has to be
+ * Playwright's, as a matcher of the suite's own is no retrying assertion the gate can see.
+ */
+const unseenWhy = (modules, source, i) => {
+  if (i.namespace)
+    return "a namespace, through which no call writes a helper's own name";
+  const called = free(source.masked, i.name);
+  if (!called && !through(source.masked, i.name)) return null;
+  const found = lookup(modules, source.file, i.module, i.imported);
+  if (found.kind === 'unheld')
+    return `no file of the corpus answers for \`${found.where}\``;
+  if (found.kind === 'missing')
+    return `\`${found.where}\` neither defines nor re-exports \`${i.imported}\``;
+  if (i.name === 'test') return null;
+  if (i.name === 'expect')
+    return found.kind === 'package'
+      ? null
+      : "an `expect` of the suite's own, which points 3 and 4 cannot see is Playwright's retrying one";
+  if (!called)
+    return found.kind === 'object' ||
+      found.kind === 'namespace' ||
+      i.imported === 'default'
+      ? `${UNSEEN[i.imported === 'default' ? 'default' : found.kind]}, called through as \`${i.name}.…(…)\``
+      : null;
+  if (i.written !== i.name)
+    return "an alias, which writes no helper's own name";
+  return UNSEEN[found.kind] ?? null;
+};
+
+/** What a lookup that found something no vocabulary reads found, in a refusal's words. */
+const UNSEEN = {
+  unread: 'defined in a shape the scanner does not read',
+  object: 'an object or a class, whose helpers are its members',
+  namespace: 'a namespace a module of the corpus re-exports',
+  renamed: 're-exported under another name',
+  default: 'a default export, which names nothing the scanner can look into',
+};
+
+/**
+ * Names defined more than once among `defined`, whose definitions disagree on what a call
+ * does in `vocabularies`: one line per name, each definition's kind at its file and line.
+ */
+const namesakes = (defined, vocabularies) => {
+  const byName = Map.groupBy(defined, (d) => d.name);
+  return [...byName]
+    .filter(
+      ([, ds]) => new Set(ds.map((d) => kindOf(d.body, vocabularies))).size > 1,
+    )
+    .map(
+      ([name, ds]) =>
+        `\`${name}\` — ` +
+        ds
+          .map((d) => `${d.file}:${d.line} (${kindOf(d.body, vocabularies)})`)
+          .join('; '),
+    );
 };
 
 /**
@@ -567,7 +845,7 @@ const checkE2e = ({ specs, sources }) => {
  * handed back. Only the denominator short-circuits, and it short-circuits for a reason —
  * a rule over a corpus that is not there proves nothing either way.
  */
-const corpus = ({ specs, sources, shared, readers }) => {
+const corpus = ({ specs, sources, shared, common, own }) => {
   if (!specs.length)
     return new E2eError(
       'corpus',
@@ -577,7 +855,7 @@ const corpus = ({ specs, sources, shared, readers }) => {
       'specs',
     );
 
-  const derived = readers.derived.size;
+  const derived = common.readers.derived.size;
   if (derived <= 0)
     return new E2eError(
       'corpus',
@@ -593,26 +871,19 @@ const corpus = ({ specs, sources, shared, readers }) => {
   // A count of readers says nothing about WHICH ones: a support file of two that drops out
   // leaves the other's readers standing, and every reading through the lost one goes quiet —
   // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
-  // each helper a file calls from a relative module has to be one the corpus defines,
-  // under the name it is called by. An alias that is called is refused, a default import
-  // among them, whatever the corpus defines under it, and a namespace whole: neither call
-  // writes the helper's own name. `test` and `expect` are the two names points 3 and 4 read
-  // as themselves, under whatever binding a fixtures module hands them on; what such a module
-  // puts INTO them, a matcher of `expect.extend`, is not read here.
-  const defined = new Set(shared.map((d) => d.name));
+  // each helper a file takes from a relative module is followed to the file that module
+  // names, through its re-exports, and has to be defined there in a shape the vocabularies
+  // read, under the name it is called by.
+  const modules = new Map(sources.map((s) => [s.file, exportsOf(s)]));
   const unseen = sources.flatMap((source) =>
-    imports(source)
-      .filter(
-        (i) =>
-          i.namespace ||
-          (free(source.masked, i.name) &&
-            !READ_AS_THEMSELVES.has(i.name) &&
-            (i.written !== i.name || !defined.has(i.name))),
-      )
-      .map(
-        (i) =>
-          `${source.file}:${i.line} — \`${i.written}\`, imported from \`${i.module}\``,
-      ),
+    imports(source).flatMap((i) => {
+      const why = unseenWhy(modules, source, i);
+      return why
+        ? [
+            `${source.file}:${i.line} — \`${i.written}\`, imported from \`${i.module}\`: ${why}`,
+          ]
+        : [];
+    }),
   );
   if (unseen.length)
     return new E2eError(
@@ -621,12 +892,31 @@ const corpus = ({ specs, sources, shared, readers }) => {
         `vocabulary can match:\n${list(unseen)}\n    Every vocabulary is Playwright's own ` +
         `names closed over the helpers the corpus defines, matched by the name a call ` +
         `writes — so a call to one of these could read, wait or act and points 3 and 4 ` +
-        `cannot tell which: a race read through it is walked past as agreement. Usual cause: ` +
-        `a support file dropped out of the file list, a helper whose definition the scanner ` +
-        `does not read — a function expression, a class — or one called under an alias, a ` +
-        `default import or through a namespace. Import a helper by its own name, and a ` +
-        `namespace of types with \`import type\``,
+        `cannot tell which: a race read through it is walked past as agreement. Import a ` +
+        `helper by its own name from the file that defines it, define it as a function, and ` +
+        `a namespace of types with \`import type\``,
       'helpers',
+    );
+
+  // A vocabulary matches by name and takes the union of every definition under one: two
+  // support files that define a `visit`, one waiting for the page and one not, make every
+  // call to either a wait, and the race after the second goes quiet. The same holds for a
+  // name a spec defines twice. Definitions of one name that agree are no harm — both
+  // suites' `visit` reads, waits and acts.
+  const clashes = [
+    ...namesakes(shared, common),
+    ...own.flatMap((o) => namesakes(o.defined, o.vocabularies)),
+  ];
+  if (clashes.length)
+    return new E2eError(
+      'corpus',
+      `${clashes.length} helper name(s) defined more than once, by definitions that ` +
+        `disagree on what a call does:\n${list(clashes)}\n    A vocabulary takes the union ` +
+        `of every definition under a name, so a call to any of them is read as doing all ` +
+        `that any of them does: a call to the one that does not wait is a wait, and the race ` +
+        `after it is no race; a locator taken through the one that does not read is a read, ` +
+        `and no rule follows it to the read that comes later. Give each its own name`,
+      'homonyms',
     );
 
   const withPositional = specs.filter((s) => POSITIONAL.test(s.masked));
@@ -716,7 +1006,7 @@ const race = (spec, { readers, waits, actions }) => {
     if (binding && POSITIONAL.test(binding[2]) && !any(binding[2], readers))
       bound.set(binding[1], s.line);
     const named = [...bound.keys()].filter((n) =>
-      new RegExp(`(?:^|[^\\w$.])${n}(?:[^\\w$]|$)`).test(t),
+      new RegExp(`(?:^|[^\\w$.])${escaped(n)}(?:[^\\w$]|$)`).test(t),
     );
 
     if (openedAt !== null && any(t, readers) && (inline || named.length)) {
@@ -795,7 +1085,7 @@ const polled = (spec, statement) =>
 
 /** Does a later statement of this test measure something against `name`? */
 const usedLater = (stream, from, name) => {
-  const mentions = new RegExp(`(?:^|[^\\w$.])${name}(?:[^\\w$]|$)`);
+  const mentions = new RegExp(`(?:^|[^\\w$.])${escaped(name)}(?:[^\\w$]|$)`);
   for (let i = from; i < stream.length; i++) {
     const t = stream[i].text;
     if (/(?:^|[^\w$.])(?:test|describe)\s*(?:\.\w+)?\s*\(/.test(t))

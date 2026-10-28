@@ -1,4 +1,4 @@
-import { mergeTests, test as base } from '@playwright/test';
+import { expect, mergeTests, test as base } from '@playwright/test';
 
 /**
  * The suite's own `test` and Playwright's `expect`, handed on the way Playwright's fixtures
@@ -8,4 +8,4 @@ import { mergeTests, test as base } from '@playwright/test';
  * is never one.
  */
 export const suiteTest = mergeTests(base);
-export { expect } from '@playwright/test';
+export { expect };

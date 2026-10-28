@@ -1,0 +1,7 @@
+{
+  "point": 4,
+  "check": "baseline",
+  "rule": "wait-then-baseline",
+  "message": "1 bare wait(s) standing where a condition belongs:\n      sheen.spec.ts:13 — await page.waitForTimeout(150) and line 14 takes the baseline `$held` straight after it: const $held = await styleOf(shade, ' ')\n    The",
+  "why": "The paused sheen's baseline taken straight after a measured 150 ms, under the name `$held`. Point 4 refuses a baseline only when a later assertion measures against it, and finds that assertion by the name — unescaped, the `$` is the end of the input, the name is never found again, and the bare wait goes by unreported."
+}

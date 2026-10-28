@@ -1,0 +1,24 @@
+import { expect, test, type Locator } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * Two reads of the hovered card under names with a `$` in them: a reader of the spec's own,
+ * `$rimOf`, and a locator bound as `$card`. An identifier may hold a `$`, and a pattern
+ * built from it unescaped reads the `$` as the end of the input.
+ */
+const $rimOf = (locator: Locator) =>
+  locator.evaluate((el) => getComputedStyle(el).borderColor);
+
+test('the hovered card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').first().hover();
+  expect(await $rimOf(page.locator('.card').first())).toBe('rgb(37, 99, 235)');
+});
+
+test('the hovered card keeps its radius', async ({ page }) => {
+  await visit(page, '/');
+  const $card = page.locator('.card').first();
+  await $card.hover();
+  expect(await styleOf($card, 'border-radius')).toBe('8px');
+});

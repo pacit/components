@@ -1,0 +1,9 @@
+import type { Locator } from '@playwright/test';
+
+/**
+ * The `styleOf` of an older support file, which names a property and reads nothing. The
+ * specs import theirs from `./support/css`, which the corpus no longer holds.
+ */
+export function styleOf(locator: Locator, property: string): string {
+  return `${locator}::${property}`;
+}

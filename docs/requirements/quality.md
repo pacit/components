@@ -522,8 +522,8 @@ control of the stage)"`: a row put at the top of the list moves nothing with the
 blanked and moves pixels with it shown, so the first half is a comparison that can fail. Its
 first version appended the row at the bottom of a list that reaches past the frame, and the
 shown half caught it moving nothing ([`lesson-50`](../lessons.md#lesson-50)). The race gate
-has a control of its own: `tools/check-e2e.fixtures/` — twelve prepared corpora, seven for the
-denominator, two for the scanner and three for the rules, each rejected **by the point and
+has a control of its own: `tools/check-e2e.fixtures/` — twenty-four prepared corpora, twelve for
+the denominator, two for the scanner and ten for the rules, each rejected **by the point and
 the rule it declares**, and a reference corpus that must pass. That reference carries the two
 real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
 by the reference refusing to pass rather than out in a spec somebody then rewrites to please

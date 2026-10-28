@@ -1,0 +1,10 @@
+import type { Locator } from '@playwright/test';
+import { styleOf } from './legacy';
+
+/** The support tree's index: everything `dom.ts`, `css.ts` and `paint.ts` export. */
+export * from './dom';
+export * from './css';
+export * from './paint';
+
+/** An element's name as the older support file spells it — `styleOf` used here, not handed on. */
+export const nameOf = (locator: Locator) => styleOf(locator, 'name');

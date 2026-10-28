@@ -1,0 +1,4 @@
+import { styleOf } from './css';
+
+/** The support tree's readers as a module's default export, called as its members. */
+export default { styleOf };
