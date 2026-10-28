@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /** The rectangle of an element; `boundingBox()` has no publicly exported type. */
-type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
+export type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 
 /** The rectangle of an element; throws when the element is not visible. */
 export async function boxOf(locator: Locator): Promise<Box> {

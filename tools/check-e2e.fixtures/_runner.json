@@ -1,5 +1,8 @@
 {
   "case": "hovered-card-race",
+  "pins": [
+    "toast.spec.ts:20 — reads `item`, bound at line 19 in the window the action at line 18 opened"
+  ],
   "variants": [
     {
       "for": "passed",
@@ -22,5 +25,5 @@
       }
     }
   ],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `hovered-card-race` is refused by `race/read-after-action`, and the runner has to report nothing of it as written. It has to report each variant, every one a rule no prepared case can prove, since every case is built to fire its own point alone: over `_reference`, a case that passed; over `_two-points`, its race beside the paused sheen's bare wait, a case that fired more than it declares — the race comes first, so only that rule reports it; with `check` set to `baseline`, another check; with `rule` set to `wait-then-baseline`, another rule."
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `hovered-card-race` is refused by `race/read-after-action` at `card.spec.ts:13`, and here it is pinned to the refusal its neighbour `toast-tone-race` holds, the same rule at `toast.spec.ts:20` — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case as written or pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own point alone: over `_reference`, a case that passed; over `_two-points`, its race beside the paused sheen's bare wait, a case that fired more than it declares — the race comes first, so only that rule reports it; with `check` set to `baseline`, another check; with `rule` set to `wait-then-baseline`, another rule."
 }

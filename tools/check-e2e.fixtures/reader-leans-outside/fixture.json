@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "helpers",
+  "message": "1 helper(s) taken from the suite's own modules by a name no definition in the corpus carries:\n      support/css.ts:2 — `readComputedStyleProperty`, imported from `../computed`\n    Every",
+  "why": "`styleOf` kept as a thin name over a reader that lives outside the corpus, reached by `../`. Its definition is here and reaches no read the scanner can see, so `styleOf` stops being a reader and every colour the specs take goes quiet — the dropped file one hop further away. The import is a support file's, not a spec's, spread over lines as prettier writes it past eighty columns, with a comment between its names."
+}

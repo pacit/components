@@ -4,7 +4,7 @@
  * (`req-quality-e2e`) — a shape a reader can look for, where a green full run of the suite
  * says nothing at all (`lesson-192`).
  *
- *  1. CORPUS: the walk found specs, and a vocabulary derived from their own helpers,
+ *  1. CORPUS: the walk found specs, and a vocabulary derived from every helper they call,
  *  2. PARSER: every spec file read into balanced statements, none of them silently skipped,
  *  3. RACE: a positional locator read after an action with no auto-retrying assertion between,
  *  4. BASELINE: a bare `waitForTimeout` whose next statement takes a later assertion's baseline.
@@ -349,6 +349,32 @@ const definitions = (masked) => {
   return found;
 };
 
+/**
+ * What a file takes from the suite's own modules: every `import … from` whose module is a
+ * RELATIVE path (`./`, `../`), each name its clause binds in this file — `a`, the `b` of
+ * `a as b`, the `ns` of `* as ns` — with the line the import starts on. A package is not the
+ * suite's own: Playwright's names are the base of every vocabulary, and `node:fs` reads no
+ * page. The clause is read on the masked text, where a comment between its names is blank,
+ * and the module off the source at the same offsets, because the mask blanks every string.
+ */
+const IMPORT = /^import\s+([\w$*{},\s]+?)\s*from\s*(['"])/gm;
+
+const imports = ({ text, masked }) => {
+  const found = [];
+  for (const m of masked.matchAll(IMPORT)) {
+    const from = m.index + m[0].length;
+    const module = text.slice(from, masked.indexOf(m[2], from));
+    if (!/^\.\.?\//.test(module)) continue;
+    const line = masked.slice(0, m.index).split('\n').length;
+    for (const part of m[1].replace(/[{}]/g, ',').split(',')) {
+      const words = part.trim().split(/\s+/);
+      const name = words.at(-1);
+      if (name) found.push({ line, module, name, namespace: words[0] === '*' });
+    }
+  }
+  return found;
+};
+
 const braced = (text, at) => {
   let depth = 0;
   for (let i = at; i < text.length; i++) {
@@ -440,7 +466,8 @@ const checkE2e = ({ specs, sources }) => {
     .filter((s) => !s.file.endsWith('.spec.ts'))
     .flatMap((s) => definitions(s.masked));
   const readers = vocabulary(PLAYWRIGHT_READS, shared);
-  const denominator = corpus({ specs, sources, readers }) ?? parser(specs);
+  const denominator =
+    corpus({ specs, sources, shared, readers }) ?? parser(specs);
   if (denominator) return { description: null, errors: [denominator] };
 
   // 3. and 4. The rules, over every spec in order, each gathering ALL of its own findings:
@@ -510,7 +537,7 @@ const checkE2e = ({ specs, sources }) => {
  * handed back. Only the denominator short-circuits, and it short-circuits for a reason —
  * a rule over a corpus that is not there proves nothing either way.
  */
-const corpus = ({ specs, sources, readers }) => {
+const corpus = ({ specs, sources, shared, readers }) => {
   if (!specs.length)
     return new E2eError(
       'corpus',
@@ -531,6 +558,39 @@ const corpus = ({ specs, sources, readers }) => {
         `of them is one that cannot see a single reading the specs actually take. Usual ` +
         `cause: \`support/\` dropped out of the file list`,
       'readers',
+    );
+
+  // A count of readers says nothing about WHICH ones: a support file of two that drops out
+  // leaves the other's readers standing, and every reading through the lost one goes quiet —
+  // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
+  // each helper a file calls from the suite's own modules has to be one the corpus defines,
+  // under the name it is called by; a namespace is refused whole, as no call through one is
+  // a helper's own name.
+  const defined = new Set(shared.map((d) => d.name));
+  const unseen = sources.flatMap((source) =>
+    imports(source)
+      .filter(
+        (i) =>
+          i.namespace || (free(source.masked, i.name) && !defined.has(i.name)),
+      )
+      .map(
+        (i) =>
+          `${source.file}:${i.line} — \`${i.namespace ? `* as ${i.name}` : i.name}\`, ` +
+          `imported from \`${i.module}\``,
+      ),
+  );
+  if (unseen.length)
+    return new E2eError(
+      'corpus',
+      `${unseen.length} helper(s) taken from the suite's own modules by a name no definition ` +
+        `in the corpus carries:\n${list(unseen)}\n    Every vocabulary is Playwright's own ` +
+        `names closed over the helpers the corpus defines, matched by the name a call ` +
+        `writes — so a call to one of these could read, wait or act and points 3 and 4 ` +
+        `cannot tell which: a race read through it is walked past as agreement. Usual cause: ` +
+        `a support file dropped out of the file list, a helper the scanner cannot read the ` +
+        `definition of, or one called under an alias or through a namespace — import it by ` +
+        `its own name`,
+      'helpers',
     );
 
   const withPositional = specs.filter((s) => POSITIONAL.test(s.masked));
@@ -744,7 +804,7 @@ const collectInput = (root, files) => {
         'specs',
       );
     }
-    sources.push({ file, masked: mask(text) });
+    sources.push({ file, text, masked: mask(text) });
   }
   const specs = sources
     .filter((s) => s.file.endsWith('.spec.ts'))
@@ -872,8 +932,8 @@ const readCase = (name) =>
 
 /**
  * What the runner reports of one prepared case: nothing, when it was rejected on its own point
- * alone and, where it declares one, on its own rule. The loop plays every case through it, and
- * so does the runner's own control (`runner-control.mjs`).
+ * alone and, where it declares one, on its own rule, saying what its `message` pins. The loop
+ * plays every case through it, and so does the runner's own control (`runner-control.mjs`).
  */
 const runCase = (name, fx) => {
   const said = [];
@@ -906,6 +966,15 @@ const runCase = (name, fx) => {
           `case is built for \`${fx.rule}\` — one point, two rules, and the one this ` +
           `input exists to prove is the one that stayed silent`,
       );
+    // A rule that names what it found says it in the message, and a case may hold that too.
+    else if (
+      fx.message !== undefined &&
+      !errors[0].message.includes(fx.message)
+    )
+      said.push(
+        `${name}: point ${fx.point} (\`${fx.check}\`) fired without "${fx.message}" — the ` +
+          `right rule saying something else:\n    ${errors[0].message}`,
+      );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -934,6 +1003,8 @@ problems.push(
     read: readCase,
     run: runCase,
     holds: ['passed', 'undeclared', 'check', 'rule'],
+    own: (fx) => fx.message,
+    pin: (fx, message) => ({ ...fx, message }),
   })),
 );
 
@@ -949,5 +1020,5 @@ if (problems.length) {
 console.log(
   `✓ E2E: ${description}. Negative control: the reference corpus passes, ${cases.length} ` +
     `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
-    `fired more than its point, another check or another rule.`,
+    `fired more than its point, another check, another rule or a message it does not pin.`,
 );

@@ -1,0 +1,17 @@
+import { expect, test, type Page } from '@playwright/test';
+import { visit } from './support/dom';
+
+/**
+ * A `colourOf` of this spec's own: a locator, asserted on by a retrying `expect`. A helper
+ * name is file-local, so it says nothing about the `colourOf` the card spec imports.
+ */
+const colourOf = (page: Page, tone: string) =>
+  page.getByTestId(`swatch-${tone}`);
+
+test('the accent swatch shows the accent', async ({ page }) => {
+  await visit(page, '/swatch');
+  await expect(colourOf(page, 'accent')).toHaveCSS(
+    'background-color',
+    'rgb(37, 99, 235)',
+  );
+});
