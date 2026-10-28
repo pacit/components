@@ -2,6 +2,6 @@
   "point": 1,
   "check": "corpus",
   "rule": "helpers",
-  "message": "2 helper(s) imported from a relative module under a name no vocabulary can match:\n      card.spec.ts:2 — `expect`, imported from `./support/fixtures`: an `expect` of the suite's own, whose matchers are no retrying assertion\n      static.spec.ts:4 — `expect`, imported from `./support/fixtures`: an `expect` of the suite's own, whose matchers are no retrying assertion\n    Every",
+  "message": "2 helper(s) imported from a relative module under a name no vocabulary can match:\n      card.spec.ts:2 — `expect`, imported from `./support/fixtures`: an `expect` of the suite's own, which points 3 and 4 cannot see is Playwright's retrying one\n      static.spec.ts:4 — `expect`, imported from `./support/fixtures`: an `expect` of the suite's own, which points 3 and 4 cannot see is Playwright's retrying one\n    Every",
   "why": "The fixtures module's `expect` extended with a matcher of the suite's own, `toHaveRim`, which reads the rim once and compares. Points 3 and 4 take every `await expect(…)` for Playwright's retrying assertion, which closes the window an action opened — this one reads in the window it is taken to close, and the race after the hover goes by unreported. The reference's `static.spec.ts`, which takes its `expect` from the same module, is refused with it."
 }

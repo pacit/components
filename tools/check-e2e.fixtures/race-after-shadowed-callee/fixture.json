@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "1 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      card.spec.ts:20 — reads a positional locator written into the read itself in the window the action at line 19 opened: expect(await styleOf(page.locator(' ').first(), ' ')).toBe( ' ', )\n    A",
+  "why": "The support tree's `open` navigates and then calls the support tree's `settle`, which only reads; the spec defines a `settle` of its own, which waits. Re-derived within the spec over the spec's names, `open` would call the spec's `settle` and be a wait, and the read of the first card after it would go by unreported. What a shared helper does is settled in the support tree, once, and a spec's own name only stands for the spec's own calls."
+}

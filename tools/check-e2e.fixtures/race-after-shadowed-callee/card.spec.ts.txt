@@ -1,0 +1,23 @@
+import { expect, test, type Page } from '@playwright/test';
+import { styleOf } from './support/css';
+import { open } from './support/nav';
+
+/**
+ * A `settle` of this spec's own, which waits for the shell's marker. The support tree's
+ * `open` calls the support tree's `settle`, which only reads — and that stays what `open`
+ * is, whatever this spec calls by the same name.
+ */
+const settle = (page: Page) => page.locator('html[data-ready]').waitFor();
+
+test('the shell marks itself ready', async ({ page }) => {
+  await page.goto('/');
+  await settle(page);
+  await expect(page.locator('html')).toHaveAttribute('data-ready', '');
+});
+
+test('the first card is painted the accent', async ({ page }) => {
+  await open(page, '/cards');
+  expect(await styleOf(page.locator('.card').first(), 'border-color')).toBe(
+    'rgb(37, 99, 235)',
+  );
+});

@@ -319,15 +319,16 @@ const statements = (masked) => {
 /**
  * The definitions a file makes: `const name = (…) => …`, with `async` or type parameters
  * before the list, `const name = function (…) { … }` and `function name(…) { … }`, each with
- * the text of its body; and `const name = other;`, a second name for a helper, whose body is
- * a call of the first, so it is whatever the first is. This is how the three vocabularies
+ * the text of its body; and `const name = other;`, whatever `other` is, whose body is a call
+ * of it — a second name for a helper is whatever the first is, and one for a value is
+ * nothing. This is how the three vocabularies
  * below stop being lists somebody typed and become lists this repository's own helpers are
  * read into — and a shape left out of it is a helper read as no kind at all.
  */
 const definitions = (masked) => {
   const found = [];
   const FUNCTION =
-    /(?:^|[^\w$.])(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]*)?=\s*(?:async\s+)?(?:function\b\s*[\w$]*\s*)?(?:<[^<>()]*>\s*)?\(|(?:^|[^\w$.])function\s+([A-Za-z_$][\w$]*)\s*(?:<[^<>()]*>\s*)?\(/g;
+    /(?:^|[^\w$.])(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]*)?=\s*(?:async\s+)?(?:function\b\s*[\w$]*\s*)?(?:<(?:[^<>()]|<[^<>()]*>)*>\s*)?\(|(?:^|[^\w$.])function\s+([A-Za-z_$][\w$]*)\s*(?:<(?:[^<>()]|<[^<>()]*>)*>\s*)?\(/g;
   const lineOf = (m) =>
     masked.slice(0, m.index + m[0].search(/[A-Za-z_$]/)).split('\n').length;
   for (const m of masked.matchAll(REBINDING))
@@ -349,6 +350,11 @@ const definitions = (masked) => {
     const after = masked.slice(k + 1, k + 1 + 400);
     const arrowAt = after.indexOf('=>');
     const braceAt = after.indexOf('{');
+    // An overload's signature, or a `declare`d one, ends at its `;` and has no body: what
+    // follows it is the next signature or the implementation, read on its own match.
+    const ends = after.indexOf(';');
+    if (ends >= 0 && [arrowAt, braceAt].every((at) => at < 0 || ends < at))
+      continue;
     let body = '';
     if (arrowAt >= 0 && (braceAt < 0 || arrowAt < braceAt)) {
       let at = k + 1 + arrowAt + 2;
@@ -492,7 +498,7 @@ const lookup = (modules, from, module, name, seen = new Set()) => {
   seen.add(file);
   const m = modules.get(file);
   if (name === 'default')
-    return m.exportsDefault
+    return m.exportsDefault || m.listed.has(name) || m.reexports.has(name)
       ? { kind: 'unread' }
       : { kind: 'missing', where: module };
   if (m.objects.has(name)) return { kind: 'object' };
@@ -572,8 +578,12 @@ const through = (text, name) =>
  */
 const escaped = (name) => name.replaceAll('$', '\\$');
 
-/** Type arguments between a name and its call, `styleOf<'color'>(…)`, one level deep. */
-const TYPE_ARGUMENTS = '(?:<[^<>()]*>\\s*)?';
+/**
+ * Type arguments between a name and its call, `styleOf<'color'>(…)`, with one level of
+ * arguments of their own, `pick<Record<string, string>>(…)`. A function type among them holds
+ * parentheses, and is no argument this reads.
+ */
+const TYPE_ARGUMENTS = '(?:<(?:[^<>()]|<[^<>()]*>)*>\\s*)?';
 
 /**
  * A vocabulary: Playwright's own names, closed over the corpus's helpers. A helper that
@@ -584,8 +594,11 @@ const TYPE_ARGUMENTS = '(?:<[^<>()]*>\\s*)?';
  * first time somebody writes a helper of their own — and a reader the gate does not know is
  * a race the gate does not see.
  */
-const vocabulary = (base, defined) => {
-  const derived = new Set();
+const vocabulary = (base, defined, under) => {
+  const names = new Set(defined.map((d) => d.name));
+  const derived = new Set(
+    [...(under?.derived ?? [])].filter((n) => !names.has(n)),
+  );
   for (let pass = 0; pass < 8; pass++) {
     let grew = false;
     for (const d of defined) {
@@ -607,11 +620,17 @@ const any = (text, vocab) =>
   vocab.base.some((n) => method(text, n)) ||
   [...vocab.derived].some((n) => free(text, n));
 
-/** The three vocabularies over one set of definitions. */
-const vocabulariesOf = (defined) => ({
-  readers: vocabulary(PLAYWRIGHT_READS, defined),
-  waits: vocabulary(PLAYWRIGHT_WAITS, defined),
-  actions: vocabulary(PLAYWRIGHT_ACTIONS, defined),
+/**
+ * The three vocabularies over one set of definitions, or over a spec's own `under` the
+ * shared ones: what the support tree defines is derived once, from the support tree, and a
+ * spec's definitions only add to it — a name the spec defines itself stands for the spec's
+ * definition, and a shared helper is still whatever the support tree made it, whatever the
+ * spec calls its own.
+ */
+const vocabulariesOf = (defined, under) => ({
+  readers: vocabulary(PLAYWRIGHT_READS, defined, under?.readers),
+  waits: vocabulary(PLAYWRIGHT_WAITS, defined, under?.waits),
+  actions: vocabulary(PLAYWRIGHT_ACTIONS, defined, under?.actions),
 });
 
 /** What a definition does, in the vocabularies it is read with: `reads`, `waits`, `acts`. */
@@ -663,15 +682,7 @@ const checkE2e = ({ specs, sources }) => {
       ...d,
       file: spec.file,
     }));
-    const names = new Set(defined.map((d) => d.name));
-    return {
-      spec,
-      defined,
-      vocabularies: vocabulariesOf([
-        ...shared.filter((d) => !names.has(d.name)),
-        ...defined,
-      ]),
-    };
+    return { spec, defined, vocabularies: vocabulariesOf(defined, common) };
   });
   const denominator =
     corpus({ specs, sources, shared, common, own }) ?? parser(specs);
@@ -752,10 +763,12 @@ const unseenWhy = (modules, source, i) => {
   if (i.name === 'expect')
     return found.kind === 'package'
       ? null
-      : "an `expect` of the suite's own, whose matchers are no retrying assertion";
+      : "an `expect` of the suite's own, which points 3 and 4 cannot see is Playwright's retrying one";
   if (!called)
-    return found.kind === 'object' || found.kind === 'namespace'
-      ? `${UNSEEN[found.kind]}, called through as \`${i.name}.…(…)\``
+    return found.kind === 'object' ||
+      found.kind === 'namespace' ||
+      i.imported === 'default'
+      ? `${UNSEEN[i.imported === 'default' ? 'default' : found.kind]}, called through as \`${i.name}.…(…)\``
       : null;
   if (i.written !== i.name)
     return "an alias, which writes no helper's own name";
@@ -768,6 +781,7 @@ const UNSEEN = {
   object: 'an object or a class, whose helpers are its members',
   namespace: 'a namespace a module of the corpus re-exports',
   renamed: 're-exported under another name',
+  default: 'a default export, which names nothing the scanner can look into',
 };
 
 /**
@@ -863,8 +877,10 @@ const corpus = ({ specs, sources, shared, common, own }) => {
       'corpus',
       `${clashes.length} helper name(s) defined more than once, by definitions that ` +
         `disagree on what a call does:\n${list(clashes)}\n    A vocabulary takes the union ` +
-        `of every definition under a name, so a call to the one that does not wait is read ` +
-        `as a call that does, and the race after it as no race at all. Give each its own name`,
+        `of every definition under a name, so a call to any of them is read as doing all ` +
+        `that any of them does: a call to the one that does not wait is a wait, and the race ` +
+        `after it is no race; a locator taken through the one that does not read is a read, ` +
+        `and no rule follows it to the read that comes later. Give each its own name`,
       'homonyms',
     );
 

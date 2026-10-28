@@ -4,11 +4,35 @@ import type { Locator } from '@playwright/test';
  * Reading the values COMPUTED by the browser — the reference suite's own `styleOf`, cut
  * down to what this gate has to be able to see: a helper that is a `locator.evaluate`
  * under another name. Point 1 derives the reader vocabulary from definitions like this
- * one, so a corpus without them is a corpus whose readings are invisible.
+ * one, so a corpus without them is a corpus whose readings are invisible. Its two overload
+ * signatures, of the element and of one of its pseudo-elements, have no body: they are no
+ * definitions of their own, and no second `styleOf` to disagree with the first.
  */
-export function styleOf(locator: Locator, property: string): Promise<string> {
+export function styleOf(locator: Locator, property: string): Promise<string>;
+/**
+ * The value a property computes to on one of the element's pseudo-elements — `::before`,
+ * `::after`, `::marker` — which `getComputedStyle` takes as its second argument. The hero's
+ * mask is drawn on `::after`, and a reading of the element itself would answer for the box
+ * rather than for the mask laid over it.
+ */
+export function styleOf(
+  locator: Locator,
+  property: string,
+  pseudo: string,
+): Promise<string>;
+/**
+ * The one body both signatures share: `getComputedStyle` of the element, or of the
+ * pseudo-element when one is named, and the value of the property on it, trimmed of the
+ * whitespace a custom property keeps around its value.
+ */
+export function styleOf(
+  locator: Locator,
+  property: string,
+  pseudo?: string,
+): Promise<string> {
   return locator.evaluate(
-    (el, prop) => getComputedStyle(el).getPropertyValue(prop).trim(),
-    property,
+    (el, [prop, part]) =>
+      getComputedStyle(el, part).getPropertyValue(prop).trim(),
+    [property, pseudo ?? null] as const,
   );
 }

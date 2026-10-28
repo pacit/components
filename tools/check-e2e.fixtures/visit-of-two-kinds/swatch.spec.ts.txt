@@ -1,0 +1,14 @@
+import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
+import { pick } from './support/swatch';
+
+/**
+ * The last swatch, picked through the lookup and read after a click: a positional locator
+ * bound through a name the other support file defines as a reading.
+ */
+test('the last swatch takes the accent once chosen', async ({ page }) => {
+  await visit(page, '/swatch');
+  const chip = pick(page.locator('.row').last());
+  await chip.click();
+  expect(await chip.getAttribute('aria-pressed')).toBe('true');
+});

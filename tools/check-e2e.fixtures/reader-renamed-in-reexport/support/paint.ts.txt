@@ -1,4 +1,4 @@
 import { styleOf } from './css';
 
-/** `styleOf` handed on under another name from inside a module of its own. */
-export { styleOf as paintOf };
+/** `styleOf` handed on under other names from inside a module of its own, the default one. */
+export { styleOf as paintOf, styleOf as default };
