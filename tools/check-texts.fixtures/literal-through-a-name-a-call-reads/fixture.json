@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "2 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:35: interpolation reads `f` → \"Delete \"",
+  "description": "Sentences a call draws through a name the template binds (measured: both drawn): a method of the string a `@let` holds, and a function a `@let` holds, called. A call is the class's — and reads nothing — only when it is read off the class and no name of the template's, so the `@let` called is followed to what it holds, and the refusal counts two."
+}

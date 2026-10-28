@@ -118,20 +118,72 @@ in `ngc` alone would still be read with it off — a `<Widget>` as an element, a
 animation binding beside attributes or as a parse error point 1 refuses, none of them the
 selectorless reading.
 
+## What a template prints
+
+Point 3 reads what reaches the screen from a template — a text node, a speaking attribute, an
+expression printed into either — as far as it is drawn, each shape below measured on Angular 22.2.1
+through JIT and a render in jsdom.
+
+An expression draws the literals that can be its value, and no other (`ExpressionLiterals`): a
+conditional's branches and not its condition, both operands of `+`, `??` and `||` and the right one
+of `&&`, an item or an entry a read takes out of an array or a map, what a method of a value is
+called on and what it is handed, and a pipe's input. A comparison, arithmetic, `!`, `typeof`, `void`
+and a sign give a number or a boolean, a key is no value of the read it keys, and the left of `&&` is
+its value only when it is falsy, which no string with a letter is:
+`{{ state() === 'open' ? '*' : '' }}` draws `*`, and no refusal. A method of the class, called, is
+the class's code, as an input the template hands a directive is the directive's:
+`sortBy(options(), 'label')` gives what the class makes of its arguments. `$any(x)` is `x`, the
+compiler taking the cast off.
+
+- `literal-in-a-value-position` — a conditional's branches and the operators' values, seven
+  refusals.
+- `literal-through-a-read-or-a-call` — an array's item, read and read optionally, a map's entry, a
+  string's own method, an array's method handed a separator, called and called optionally, and
+  `$any`'s argument, seven.
+- `literal-in-a-drawn-property` — the properties that draw their value as the element's content
+  (`DRAWN_PROPERTIES`), seven refusals: `textContent` bound, bound by `bind-` and interpolated,
+  `innerText`, `outerText`, `innerHTML` and `outerHTML`. Angular sets each and Chromium 152 draws it,
+  the last two through the sanitizer. The name is the property's, in its case — `[TEXTCONTENT]` sets
+  nothing (NG0303) — and `[attr.textContent]` writes an attribute, both of which the reference
+  holds.
+- `text-around-an-interpolation`, `speaking-attribute-around-an-interpolation` — the words an
+  interpolation writes around its expressions, in a text node, in a speaking attribute and in a
+  drawn property. The parser makes them the interpolation's `strings`, which the expression visitor
+  never hands on, and point 3 read none of them before. A text node's are its text, the expressions
+  standing in as `{{…}}`, and a binding's are read beside the written attributes and not compared
+  by point 2: no static attribute, they reach the package in the template function.
+
+The reference holds the literals in no position of a value — each operator's operands
+(`size() === 'sm'`, `items().length - 'sm'`, …), the operand of `!`, `typeof`, `void` and a sign, a
+condition, the left of `&&`, a key, and what a method of the class is handed, called by name,
+through `this`, by key and optionally, `this.$any` among them, a member and no cast: a read taking
+any of them for a value refuses it. The library's printed expressions hold two literals, neither
+with a letter, both in a value's position; it binds no drawn property, and its 77 interpolations
+write no word around their expressions.
+
+Not held: what a method of the class makes of a literal it is handed, which the class's code
+decides — `format('Delete')` draws `<Delete>` where `format` wraps its argument (measured); a pipe's
+arguments, read as format markers (`date: 'short'`), no read here knowing which pipe a name is,
+where `i18nSelect` and `i18nPlural` draw the map they are handed (measured); and a `host` block's
+bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison there
+is refused and `'[textContent]'` is read for nothing. Read whole and refused: a tagged template;
+markup handed to `innerHTML`, whose tags are letters as well (`'<hr>'`); and a literal a member is
+read off (`'Delete'.length`).
+
 ## A name stands for what binds it
 
 A literal in an expression no point reads is drawn wherever a name it is handed to is printed —
 `@let m = 'Delete'` and `{{ m }}` draw what `{{ 'Delete' }}` draws (measured on Angular 22.2.1
 through JIT and a render in jsdom, each shape below). Point 3 follows the name:
-`template/literal-through-a-name` reads a name in an interpolation or a speaking binding as what
-binds it, every literal of it, as the point reads every literal of a printed expression. The name
-is resolved by the compiler's own binder (`R3TargetBinder`), so it is the one `ngc` reads in that
+`template/literal-through-a-name` reads a name printed — in an interpolation, a speaking binding or
+a drawn property — as what binds it, the literals that can be its value, as the point reads a
+printed expression (`ExpressionLiterals`). The name is resolved by the compiler's own binder (`R3TargetBinder`), so it is the one `ngc` reads in that
 scope, and `{{ this.m }}` beside a `@let m` reads the class's member, as it draws it.
 
 The decision, and what it is not. Refusing a lettered literal wherever an expression binds a name
 would refuse a correct library: its block headers hold 21 literals, every one a comparison or an
-`@case` value (`@if (half === 'day')`), and `@let narrow = size() === 'sm'` read as a condition
-alone draws no word. A shape test like point 4's `isProse` passes `'close'`, and in a template it
+`@case` value (`@if (half === 'day')`), and `@let narrow = size() === 'sm'` holds a boolean, which
+draws no word wherever it is read. A shape test like point 4's `isProse` passes `'close'`, and in a template it
 is position that decides — a name carries a literal to its position. Followed, the library's 14
 printed reads of a template's name reach no literal with a letter.
 
@@ -174,20 +226,28 @@ printed reads of a template's name reach no literal with a letter.
   attributes and bindings hoisted, the same objects, and the walk is handed each twice; it reads
   each once, as `speaking-attribute-under-an-inline-template` holds of a written `title` and of a
   submit `<input>`'s `value`, which only the visit with its element can tell speaks.
+- `literal-through-a-name-in-a-drawn-property` — the same read in `[textContent]` and
+  `[innerHTML]`, and in `[(textContent)]`, which sets the property as a one-way binding does, three
+  refusals.
+- `literal-through-a-name-a-call-reads` — a method of the string a `@let` holds (`m.trim()`) and a
+  function a `@let` holds, called (`@let f = (count) => 'Delete ' + count`): a call is the class's
+  code only when it is read off the class and is no name of the template's.
+- `literal-through-an-interpolated-template-input` — `ngIf="Delete {{ … }} rows"` handed to
+  `let-m="ngIf"`: an interpolation's value is its words as much as its expressions, two refusals.
 
 The reference holds the names that stand for no such literal: a `@let` holding `*`, a loop's
 `$index` (the block's own variables are its numbers and booleans) beside an item over `['sm', 'md']`
 read in a comparison alone, a `@let` read as a condition, a `@let` holding a template, and a
 template's variable nothing hands a word while the nodes around it are handed some — a read that
 took every node for one handing the template, the index for the collection, or a template for a
-string, refuses it.
+string, refuses it — and, read in no position of a value, a `@let` holding a comparison, printed
+and read as a condition, and a loop's item over what a method of the class makes of its argument.
 
-What a name stands for is every literal of what binds it, as point 3 reads a printed expression:
-`@let open = state() === 'open'` printed through `{{ open ? … : … }}` is refused as
-`{{ state() === 'open' ? … : … }}` is, and so is a literal handed to a call
-(`@for (o of sortBy(options(), 'label'))`). The comparison belongs in a block's condition, which
-draws nothing. And a binding no map literal writes is taken whole by every variable: `let i = index`
-of `*ngFor="let size of ['sm', 'md']"` printed is refused, where `@for`'s `$index` is not.
+A binding no map literal writes is taken whole by every variable: `let i = index` of
+`*ngFor="let size of ['sm', 'md']"` printed is refused, where `@for`'s `$index` is not. Which key a
+directive files its input under is the directive's code — `NgForOf`'s item under `$implicit`, its
+position under `index` — and a variable that took no binding but the one its key names would lose a
+context a name holds (`literal-through-a-context-a-name-holds`), whose keys only the map knows.
 
 Not held: a context the class hands a template (`createEmbeddedView(tpl, { $implicit: 'Delete' })`),
 which no template read sees; a template a component takes as content and draws with a context of
@@ -199,6 +259,4 @@ than its name — `ngIf="Delete" let-m` passes, a written attribute handing only
 name; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
 matches by its inline bindings alone, as `handedTo` does, and which JIT draws all the same; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
-gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`). Beside names, a
-property binding that draws its value as text (`[textContent]`, `[innerHTML]`) is no printed
-position of point 3, with a literal or a name.
+gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`).

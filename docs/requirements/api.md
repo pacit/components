@@ -926,8 +926,9 @@ language without a reload sees the change. An input's default value is a read at
 time and therefore cannot be a library string.
 
 **Gate:** `tools/check-texts.mjs` (target `check-texts`) — six points: a string written into
-a text node, into a speaking attribute or into an expression literal, printed there or through a
-name the template binds; prose in a signal's default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
+a text node, into a speaking attribute, around an interpolation or into an expression literal in a
+position of its value, printed there, through a property that draws it (`textContent`,
+`innerHTML`) or through a name the template binds; prose in a signal's default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
 read by `parseTemplate` from `@angular/compiler` and walked by the compiler's visitor, each node of
 the tree, found over every node's fields, reached and of a kind the walk knows, a printed name read
@@ -943,7 +944,7 @@ attributes only where an instruction takes it as a node's, a local reference or 
 timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 97 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 105 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
@@ -963,7 +964,14 @@ holds it, a map an `ngIf` holds, an `*ngIf`'s `then`, a tree an
 outlet draws of itself, a listbox row whose other variables elements read, a `@let` declared after
 the template it feeds, and two
 speaking bindings an `*ngIf` wraps, read once each, as are the speaking attributes of an element an
-inline template wraps — while the reference's names stand for none; plus nine runs against the repository (a literal in
+inline template wraps — while the reference's names stand for none; a sentence in each position
+of an expression's value, a conditional's branches and an operator's operands, one a read or a
+call takes out of a value, `$any`'s among them, one bound to each property that draws it,
+`textContent` bound, by `bind-` and interpolated, `innerText`, `outerText`, `innerHTML` and
+`outerHTML`, by name and two-way, the words written around an interpolation in a text node, a
+speaking attribute, a drawn property and a template's input, and a sentence a call draws through
+a name — while the reference's comparisons, arithmetic, conditions, keys and calls of the class's
+methods are in no position of a value; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

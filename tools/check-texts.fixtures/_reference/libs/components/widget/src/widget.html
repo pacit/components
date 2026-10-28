@@ -74,9 +74,17 @@
 <!--
   An `attr.` binding sets the attribute under the name it gives, `setAttribute('ariaLabel', …)`
   makes `arialabel`, and no ARIA attribute is set: the word reaches no user. Only a property
-  binding reaches `aria-label` through the reflection.
+  binding reaches `aria-label` through the reflection, and only a property binding draws
+  `textContent`: as an attribute it is one more attribute, `textcontent`, and draws nothing, and
+  a property is named in the DOM's case, so that `TEXTCONTENT` sets nothing (NG0303).
 -->
-<span class="pct-widget__attr" [attr.ariaLabel]="'Unread'"></span>
+<span
+  class="pct-widget__attr"
+  [attr.ariaLabel]="'Unread'"
+  [attr.textContent]="'Unread'"
+  [class.textContent]="open()"
+  [TEXTCONTENT]="'Unread'"
+></span>
 
 <!--
   A node of every kind the walk knows (`KNOWN_NODES`) but an ICU, which point 3 refuses, so that a
@@ -109,3 +117,40 @@
 } @let custom = placeholder;
 <span aria-hidden="true">{{ custom ? '*' : '' }}</span>
 <ng-template #row let-item><span>{{ item }}</span></ng-template>
+
+<!--
+  Literals printed in no position of a value (`ExpressionLiterals`), none drawn: the operands of a
+  comparison and of arithmetic, of `!`, `typeof`, `void` and a sign, a conditional's condition, the
+  left of `&&`, a key read off an object, and what a method of the class is handed — called by
+  name, through `this`, by key and optionally, and `this.$any`, a member and no cast; and the same
+  through names: a `@let` holding a comparison, printed and read as a condition, and a loop's item
+  over what a method of the class makes of its argument.
+-->
+<span aria-hidden="true">{{ size() === 'sm' ? '*' : '' }}</span>
+<span aria-hidden="true"
+  >{{ size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' ||
+  size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ 'sm' in items() || 'sm' instanceof Object || items().length - 'sm' ||
+  items().length * 'sm' || items().length / 'sm' || items().length % 'sm' ||
+  items().length ** 'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ !(label() || 'sm') || typeof (label() || 'sm') || void 'sm' || -'sm' ||
+  +'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ ((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') }}</span
+>
+<span aria-hidden="true">{{ items()['length'] + items()?.['length'] }}</span>
+<span aria-hidden="true"
+  >{{ sortBy(items(), 'name') + this.sortBy(items(), 'name') +
+  this['sortBy'](items(), 'name') + sortBy?.(items(), 'name') +
+  this.$any('name') }}</span
+>
+@let small = size() === 'sm';
+<span aria-hidden="true">{{ small ? '*' : '' }} {{ small }}</span>
+@for (item of sortBy(items(), 'name'); track item) {
+<span aria-hidden="true">{{ item }}</span>
+}
