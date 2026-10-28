@@ -63,16 +63,16 @@ alone, saying what it pins. [`_runner.json`](_runner.json) holds those rules. Th
 [`runner-control.mjs`](../runner-control.mjs) the runner plays `hovered-card-race` as written
 and pinned to its own `message`, which it has to pass; pinned to its own first and last lines,
 once with the site `toast-tone-race` holds between them and once with nothing between, both of
-which it has to report, as a runner comparing a pin line by line or by one end hears neither;
-and once for each other rule — over `_reference`, which the gate passes; over
-[`_two-points/`](_two-points), the card's race beside the paused sheen's bare wait, two points
-of which the race comes first, so that only the rule of one point alone reports it; with
-`check` set to `baseline`; with `rule` set to `wait-then-baseline` — and has to report each.
-`_two-points/` is no case: like `_reference`, its `_` keeps it out of the loop. The control is
-played apart from the cases and counts as none. **Not held:** a `fixture.json` that cannot be
-read, which the loop reports before the runner plays anything; and the wiring of the pins
-itself, as `runner-control.mjs` leaves `pins` unplayed without a word when a gate hands it no
-`pin`.
+which it has to report: a runner comparing a pin by one end hears neither, and one comparing it
+line by line misses the second; and once for each other rule — over `_reference`, which the
+gate passes; over [`_two-points/`](_two-points), the card's race beside the paused sheen's bare
+wait, two points of which the race comes first, so that only the rule of one point alone
+reports it; with `check` set to `baseline`; with `rule` set to `wait-then-baseline` — and has
+to report each. `_two-points/` is no case: like `_reference`, its `_` keeps it out of the loop.
+The control is played apart from the cases and counts as none. **Not held:** a `fixture.json`
+that cannot be read, which the loop reports before the runner plays anything; and the wiring of
+the pins itself, as `runner-control.mjs` leaves `pins` unplayed without a word when a gate
+hands it no `pin`.
 
 ## The cases
 
@@ -124,14 +124,15 @@ an object of helpers called as `css.styleOf(…)`). What a fixtures module puts 
 `expect` is not read either — a matcher of `expect.extend` reads in the window it is meant to
 close, and nothing here says so. Nor is a helper reached through a package name or a path
 alias, a dynamic `import()`, `require`, or a Playwright fixture; one a file defines in a shape
-the scanner does not read (`const x = function …`) and calls itself, or rebinds
-as `const colourOf = styleOf`; a call not written as `name(` — with type arguments, inside `${…}`, a
+the scanner does not read (`const x = function …`) and calls itself, or rebinds as `const
+colourOf = styleOf`; a call not written as `name(` — with type arguments, inside `${…}`, a
 helper handed on as a value (`cells.map(boxOf)`); and a name with a `$`, which the matching
 takes for a regex anchor. Of the import itself, an indented one is not read, which prettier
-never writes. Three shapes are read and no case holds them: a double-quoted module, which
-`.prettierrc` (`singleQuote`) rules out; a default binding beside a namespace
-(`import d, * as css`); and an `import type`, skipped whole, so that a file's own function named
-`type` is never taken for one of its bindings.
+never writes. Two shapes are read and no case holds them: a double-quoted module, which
+`.prettierrc` (`singleQuote`) rules out, and a default binding beside a namespace
+(`import d, * as css`). And no case holds the skip of an `import type` at its edges: dropped, a file's own
+function named `type` would be taken for one of its bindings; widened past the space after
+`type`, a default import named `typeText` would be skipped.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and
