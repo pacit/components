@@ -1,0 +1,10 @@
+import { mergeTests, test as base } from '@playwright/test';
+
+/**
+ * The suite's own `test` and `expect`, the way Playwright's fixtures guide has a suite hand
+ * them on. A spec that takes them from here still calls them by the two names points 3 and 4
+ * read as themselves, so a module of the suite's own that holds no definition of either is
+ * no helper the gate can miss. `mergeTests` is Playwright's, and a package's name is never one.
+ */
+export const test = mergeTests(base);
+export { expect } from '@playwright/test';

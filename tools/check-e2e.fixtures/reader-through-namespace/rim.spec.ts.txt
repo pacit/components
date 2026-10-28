@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import * as css from './support/css';
 import { visit } from './support/dom';
+import * as css from './support/css';
 
 /**
  * The hovered card's race with its reader reached through a namespace: `css.styleOf` is

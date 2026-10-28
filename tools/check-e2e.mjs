@@ -4,7 +4,7 @@
  * (`req-quality-e2e`) — a shape a reader can look for, where a green full run of the suite
  * says nothing at all (`lesson-192`).
  *
- *  1. CORPUS: the walk found specs, and a vocabulary derived from every helper they call,
+ *  1. CORPUS: the walk found specs, and a vocabulary derived from the helpers they import,
  *  2. PARSER: every spec file read into balanced statements, none of them silently skipped,
  *  3. RACE: a positional locator read after an action with no auto-retrying assertion between,
  *  4. BASELINE: a bare `waitForTimeout` whose next statement takes a later assertion's baseline.
@@ -351,8 +351,9 @@ const definitions = (masked) => {
 
 /**
  * What a file takes from the suite's own modules: every `import … from` whose module is a
- * RELATIVE path (`./`, `../`), each name its clause binds in this file — `a`, the `b` of
- * `a as b`, the `ns` of `* as ns` — with the line the import starts on. A package is not the
+ * RELATIVE path (`.`, `..` or under either), the last word of each part of its clause — `a`,
+ * the `b` of `a as b`, the `ns` of `* as ns`, and the `type` of `import type`, which nothing
+ * calls — with the line the import starts on. A package is not the
  * suite's own: Playwright's names are the base of every vocabulary, and `node:fs` reads no
  * page. The clause is read on the masked text, where a comment between its names is blank,
  * and the module off the source at the same offsets, because the mask blanks every string.
@@ -364,7 +365,7 @@ const imports = ({ text, masked }) => {
   for (const m of masked.matchAll(IMPORT)) {
     const from = m.index + m[0].length;
     const module = text.slice(from, masked.indexOf(m[2], from));
-    if (!/^\.\.?\//.test(module)) continue;
+    if (!/^\.\.?(?:\/|$)/.test(module)) continue;
     const line = masked.slice(0, m.index).split('\n').length;
     for (const part of m[1].replace(/[{}]/g, ',').split(',')) {
       const words = part.trim().split(/\s+/);
@@ -565,8 +566,9 @@ const corpus = ({ specs, sources, shared, readers }) => {
   // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
   // each helper a file calls from the suite's own modules has to be one the corpus defines,
   // under the name it is called by; a namespace is refused whole, as no call through one is
-  // a helper's own name.
-  const defined = new Set(shared.map((d) => d.name));
+  // a helper's own name. `test` and `expect` are the two names points 3 and 4 read as
+  // themselves, so a suite's own fixtures module, which hands both on, hides nothing.
+  const defined = new Set([...shared.map((d) => d.name), 'test', 'expect']);
   const unseen = sources.flatMap((source) =>
     imports(source)
       .filter(
@@ -582,14 +584,14 @@ const corpus = ({ specs, sources, shared, readers }) => {
   if (unseen.length)
     return new E2eError(
       'corpus',
-      `${unseen.length} helper(s) taken from the suite's own modules by a name no definition ` +
-        `in the corpus carries:\n${list(unseen)}\n    Every vocabulary is Playwright's own ` +
+      `${unseen.length} helper(s) taken from the suite's own modules by a name no ` +
+        `vocabulary can match:\n${list(unseen)}\n    Every vocabulary is Playwright's own ` +
         `names closed over the helpers the corpus defines, matched by the name a call ` +
         `writes — so a call to one of these could read, wait or act and points 3 and 4 ` +
         `cannot tell which: a race read through it is walked past as agreement. Usual cause: ` +
-        `a support file dropped out of the file list, a helper the scanner cannot read the ` +
-        `definition of, or one called under an alias or through a namespace — import it by ` +
-        `its own name`,
+        `a support file dropped out of the file list, an imported helper defined in a shape ` +
+        `the scanner does not read, or one called under an alias or through a namespace — ` +
+        `import it by its own name`,
       'helpers',
     );
 

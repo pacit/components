@@ -18,7 +18,7 @@ matching. That is what these corpora are for.
 
 ## How a case is built
 
-A case is not a ninth copy of a correct corpus with one thing broken. The gate builds it
+A case is not a thirteenth copy of a correct corpus with one thing broken. The gate builds it
 from two layers:
 
 1. `_reference/` — the reference corpus: a support tree with the helpers every reading goes
@@ -96,20 +96,29 @@ are about. Each of them leaves a repository that looks perfectly sensible.
 
 `helpers` is the third, and it was found by measurement rather than foreseen: on 2026-10-27,
 `hovered-card-race`, `toast-tone-race` and `paused-sheen-baseline`, each built with
-`support/css.ts` dropped, passed — the race and the baseline unreported, and `readers` satisfied by the `boxOf`
-that `support/dom.ts` still defines. A count of readers says nothing about which ones, so the
-rule names them: every helper a corpus file calls from a module of the suite's own (a `./` or
-`../` import) has to be one the corpus defines, under the name the call writes, because that
-name is all a vocabulary matches. `reader-dropped` is the measured case, the other three the
-routes to the same silence: an alias (beside a spec with a `colourOf` of its own, as a helper
-name is file-local), a namespace, refused whole since no call through one is a helper's bare
-name, and a support file whose reader leans on an import from `../`, written over lines with
-a comment between its names. The reference holds the other side: a relative import of a name
-nobody calls — the type `Box` in `static.spec.ts` — is no helper to miss, and neither is any
-name from a package, `@playwright/test` included. **Not held:** a helper reached through a
-package name or a path alias, a dynamic `import()`, or one a Playwright fixture hands to the
-test; and an import that is indented, double-quoted or has `*` past the first word of a
-binding, none of which prettier writes.
+`support/css.ts` dropped, passed — the race and the baseline unreported, and `readers`
+satisfied by the `boxOf` that `support/dom.ts` still defines. A count of readers says nothing
+about which ones, so the rule names them: every helper a corpus file calls from a module of the
+suite's own (`.`, `..` or a path under either) has to be one the corpus defines, under the name
+the call writes, because that name is all a vocabulary matches. `reader-dropped` is the
+measured case, the other three the routes to the same silence: an alias (beside a spec with a
+`colourOf` of its own, as a helper name is file-local), a namespace, refused whole since no
+call through one is a helper's bare name, and a support file whose reader leans on an import
+from `..`, written over lines with a comment between its names. The reference holds the other
+side: `static.spec.ts` takes `test` and `expect` from a fixtures module of the suite's own,
+the two names points 3 and 4 read as themselves, and the support tree's types as a namespace
+no call goes through; and the `mergeTests` the fixtures module calls is Playwright's, as no
+name from a package is a helper.
+
+**Not held** — routes to a helper no vocabulary sees that this rule does not read: one reached
+through a package name or a path alias, a dynamic `import()`, or a Playwright fixture; a call
+through an object of helpers or a namespace a support file re-exports (`css.styleOf(…)` after
+`export * as css`); an alias onto a name the corpus defines for another helper; a helper a file
+defines in a shape the scanner does not read (`const x = function …`) and calls itself; a name
+with a `$`, which the matching takes for a regex anchor; a support file of one suite whose
+helpers the other suite's support defines under the same names, as the pool is one for both.
+And an indented import, which prettier never writes, is not read; a double-quoted module is
+read and no case holds it.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and

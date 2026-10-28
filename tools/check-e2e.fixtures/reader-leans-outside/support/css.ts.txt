@@ -1,12 +1,12 @@
 import type { Locator } from '@playwright/test';
 import {
-  // the one reader of a computed value, kept beside the app rather than the suite
+  // the one reader of a computed value, kept in the suite's root module
   readComputedStyleProperty,
   type ComputedStylePropertyName,
-} from '../computed';
+} from '..';
 
 /**
- * `styleOf` kept, as a thin name over a reader that lives OUTSIDE the corpus. The definition
+ * `styleOf` kept, as a thin name over a reader the corpus does not hold. The definition
  * is here and reaches no Playwright read the scanner can see, so `styleOf` stops being a
  * reader — the dropped file one hop further away.
  */

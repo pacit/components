@@ -2,7 +2,7 @@
   "point": 1,
   "check": "corpus",
   "rule": "helpers",
-  "message": "2 helper(s) taken from the suite's own modules by a name no definition in the corpus carries:\n      sheen.spec.ts:2 — `styleOf`, imported from `./support/css`\n      toast.spec.ts:2 — `styleOf`, imported from `./support/css`\n    Every",
+  "message": "2 helper(s) taken from the suite's own modules by a name no vocabulary can match:\n      sheen.spec.ts:2 — `styleOf`, imported from `./support/css`\n      toast.spec.ts:2 — `styleOf`, imported from `./support/css`\n    Every",
   "why": "`support/css.ts` gone and `support/dom.ts` left standing — measured on 2026-10-27, when the gate said nothing about it. `boxOf` is still derived, so the reader count is one and `readers` is satisfied, while `styleOf`, which takes every colour and offset the two real bugs were about, is no reader at all: over `hovered-card-race`, `toast-tone-race` or `paused-sheen-baseline` with this file dropped the gate passed, the race and the baseline unreported. Every spec still calls `styleOf`; the corpus no longer holds what it is.",
   "drop": ["support/css.ts.txt"]
 }
