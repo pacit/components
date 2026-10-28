@@ -152,7 +152,10 @@
   it (`VALUELESS_INPUTS`), written, one set as a default too, and one an `*ngIf` wraps inside an
   `<output>`, whose `value` is not its; and an `<option>`'s, which shows its text. And words no
   template's variable takes: those an interpolation writes in a `class` beside an outlet, which
-  hand `class` alone, while the row's `let-item` reads the implicit entry.
+  hand `class` alone, while the row's `let-item` reads the implicit entry. And bindings that write
+  no text: a `class.` or `style.` binding named `type`, which leaves the checkbox a checkbox, or
+  named `srcdoc` and `title`, which toggles a class; and an inline template on an `<ng-template>`,
+  which has no tag of its own.
 -->
 <input type="hidden" value="row" />
 <input type="checkbox" value="row" [defaultValue]="'row'" />
@@ -176,3 +179,14 @@
   [ngTemplateOutletContext]="{ $implicit: count }"
   class="pct-widget__row-{{ count }}"
 ></ng-container>
+<input
+  type="checkbox"
+  [class.type]="open()"
+  [style.type]="open()"
+  value="row"
+/>
+<iframe
+  [class.srcdoc]="open() ? 'on' : 'off'"
+  [class.title]="open() ? 'on' : 'off'"
+></iframe>
+<ng-template *ngIf="open()" [ngTemplateOutlet]="row"></ng-template>

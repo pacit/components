@@ -192,6 +192,17 @@ const DRAWN_ON = new Map([
 
 const DOM_SCHEMA = new DomElementSchemaRegistry();
 
+/**
+ * Whether a binding writes the attribute or the property it names: a property, an `attr.` and a
+ * two-way binding do, and a `class.`, `style.` or animation binding toggles a class, sets a style
+ * or runs an animation of that name, and writes no text (`[class.title]` draws no title, and
+ * `[class.type]` sets no field's type).
+ */
+const writes = (binding) =>
+  binding.type === BindingType.Property ||
+  binding.type === BindingType.Attribute ||
+  binding.type === BindingType.TwoWay;
+
 const LETTER = /\p{L}/u;
 
 /**
@@ -549,8 +560,7 @@ const UNDRAWN_OPERATORS = new Set([
  * is falsy, which no string with a letter is; no operand of a comparison or of arithmetic
  * (`UNDRAWN_OPERATORS`), of `!`, `typeof`, `void` or a sign; the object a member is read off, and
  * not the key (`options()['label']`); a map's values and an array's items, which a read takes out;
- * the text a template literal or an interpolation writes around its expressions, and a regular
- * expression's (`{{ /Delete/ }}` draws `/Delete/`, its `source` the word); and a pipe's
+ * the text a template literal or an interpolation writes around its expressions; and a pipe's
  * input, which a text pipe draws transformed (`'Delete' | uppercase` draws `DELETE`), and not its
  * arguments, format markers (`date: 'short'`) — though `i18nSelect` and `i18nPlural` draw the map
  * they are handed, which no read here tells from a marker, not knowing which pipe a name is.
@@ -573,9 +583,6 @@ class ExpressionLiterals extends RecursiveAstVisitor {
   }
   visitTemplateLiteralElement(node) {
     this.collect(node.text);
-  }
-  visitRegularExpressionLiteral(node) {
-    this.collect(node.body);
   }
   visitInterpolation(node, ctx) {
     for (const text of node.strings) this.collect(text);
@@ -689,7 +696,7 @@ class Names {
       const handed = new Map(
         owners.map((owner) => [
           owner,
-          handedTo(owner).map((a) => this.given(a)),
+          handedTo(owner).map((a) => this.given(a, owner)),
         ]),
       );
       for (const name of names)
@@ -727,7 +734,7 @@ class Names {
   }
 
   /** One thing a node hands, by its name, with what each key of a map literal it is stands for. */
-  given(attribute) {
+  given(attribute, owner) {
     if (attribute instanceof TmplAstTextAttribute)
       return { name: attribute.name, values: [attribute.value], bound: false };
     const map = attribute.value.ast;
@@ -741,10 +748,12 @@ class Names {
               map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
             )
           : null,
-      // An interpolation is a string written in the attribute, as a written attribute's value is,
-      // and hands the variable of its name alone: `class="pct-row--{{ n }}"` beside an outlet is no
-      // value of the template's `let-row`.
-      bound: !(map instanceof Interpolation),
+      // An interpolation on an element is a string written in the attribute, as a written
+      // attribute's value is, and hands the variable of its name alone: `class="pct-row--{{ n }}"`
+      // beside an outlet is no value of the template's `let-row`. On an `<ng-template>`, which draws
+      // nothing of its own, every binding is a directive's input (`ngIf="{{ … }}" let-m`).
+      bound:
+        !(map instanceof Interpolation) || owner instanceof TmplAstTemplate,
     };
   }
 
@@ -875,8 +884,9 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    */
   within(node, name, visit) {
     const previous = [this.tag, this.type];
-    this.tag = splitNsName(name)[1].toLowerCase();
-    const types = [...node.attributes, ...node.inputs].filter(
+    // An inline template on an `<ng-template>` has no tag of its own (`<ng-template *ngIf>`).
+    this.tag = splitNsName(name ?? 'ng-template')[1].toLowerCase();
+    const types = [...node.attributes, ...node.inputs.filter(writes)].filter(
       (a) => a.name.toLowerCase() === 'type',
     );
     this.type =
@@ -934,6 +944,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitBoundAttribute(node) {
+    if (!writes(node)) return;
     // A two-way binding holds no literal to read, so a property is the one-way kind.
     const property = node.type === BindingType.Property;
     if (

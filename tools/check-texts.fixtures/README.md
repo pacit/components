@@ -141,8 +141,8 @@ nothing, and passed all three, which main refused (the review, measured). So
 `@for (o of sortBy(options(), 'label'))` is refused, as on main: the key belongs in the class
 (`sortedOptions()`), which is the one way the read could tell it from a word.
 
-- `literal-in-a-value-position` — a conditional's branches, the operators' values and a regular
-  expression, which draws its source between slashes, eight refusals.
+- `literal-in-a-value-position` — a conditional's branches and the operators' values, seven
+  refusals.
 - `literal-through-a-read-or-a-call` — an array's item, read and read optionally, a map's entry, a
   string's own method, an array's method handed a separator, called and called optionally, a
   method of the class handed a sentence, and `$any`'s argument, which the compiler takes off as no
@@ -163,7 +163,7 @@ nothing, and passed all three, which main refused (the review, measured). So
   a text, search, telephone, URL or e-mail field and of an image button with no `alt` or `title`, as
   it shows a button's label: a field draws it but for the types that show none of it
   (`VALUELESS_INPUTS`: `hidden`, `checkbox`, `radio`, `password`, which masks it, and the types that
-  keep no word of it). The type is the one written, alone; a second one or one a binding sets
+  keep no word of it). The type is the one written, alone; a second one or one a binding writes
   leaves it to the render, a text field until it says otherwise (`type="checkbox"` beside `[type]`,
   `type="hidden" type="text"`). Read on a button's alone, as it was, the value passed all ten.
 - `text-around-an-interpolation`, `speaking-attribute-around-an-interpolation` — the words an
@@ -179,8 +179,11 @@ condition, the left of `&&` and a key — and the values no element draws: an `<
 in `VALUELESS_INPUTS`, written, one set as a default too, and one an `*ngIf` wraps inside an
 `<output>`, read under its own tag and not its parent's; and an `<option>`'s, which shows its text.
 And the words an interpolation writes in a `class` beside an outlet, which hand the variable of that
-name alone: taken whole, they were the row's `let-item`. A read taking any of them for a word drawn
-refuses it. The library's printed expressions hold two
+name alone: taken whole, they were the row's `let-item`. And the bindings that write no text
+(`writes`): a `class.` or `style.` binding named `type`, which leaves a checkbox a checkbox, and one
+named `srcdoc` or `title`, which toggles a class, as does an inline template on an `<ng-template>`,
+which has no tag of its own and crashed the read. A read taking any of them for a word drawn refuses
+it. The library's printed expressions hold two
 literals, neither with a letter, both in a value's position; it binds no drawn property and writes
 no value of a text field, and its 77 interpolations write no word around their expressions.
 
@@ -189,13 +192,17 @@ pipe a name is, where `i18nSelect` and `i18nPlural` draw the map they are handed
 keys, which `keyvalue` and `json` draw (`{ Delete: 1 } | keyvalue`, measured), and which no read
 takes for a value — a context's keys (`$implicit`, `label`) would all be refused; and a `host`
 block's bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison
-there is refused and `'[textContent]'` is read for nothing; and an `<option>`'s value in a
-`<datalist>`, which the field it lists for suggests (measured), read nowhere. Read whole and
-refused: a tagged
+there is refused and `'[textContent]'` is read for nothing; an `<option>`'s value in a
+`<datalist>`, which the field it lists for suggests (measured), read nowhere; and a regular
+expression, which draws its source (`{{ /Delete/ }}`) and is read nowhere either: a template hands
+one to a method (`replace(/\s+/g, '-')`), where its letters are a pattern's, and read as a value it
+refused that (the review, measured). Read whole and refused: a tagged
 template; markup handed to `innerHTML`, whose tags are letters as well (`'<hr>'`); a literal a member
 is read off (`'Delete'.length`); an argument the code takes for a key or a locale
-(`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`); and an image button's value beside
-an `alt`, which it then does not show.
+(`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`); an image button's value beside an
+`alt`, which it then does not show; and a binding an element takes as its own property beside an
+outlet (`[id]="'pct-row'"`), taken whole by the template's variables as a directive's input would
+be, as on main — interpolated, it hands its name alone.
 
 ## A name stands for what binds it
 
@@ -232,7 +239,8 @@ printed reads of a template's name reach no literal with a letter.
   (`literal-through-a-map-an-ngif-holds`: `*ngIf="{ … } as vm"`, `[ngIf]="{ … }" let-vm`). Any
   other binding — a map a name holds (`literal-through-a-context-a-name-holds`), a spread, a call,
   an array — is taken whole by every variable. A written attribute hands the variable of its name
-  alone, so a slot's name beside it (`pctWidgetSlot="row"`) is no value of `m`.
+  alone, so a slot's name beside it (`pctWidgetSlot="row"`) is no value of `m`, and so does an
+  interpolation on an element (`class="pct-row--{{ n }}"`).
 - `literal-through-an-outlet-context`, `literal-through-a-then-template`,
   `literal-through-an-outlet-to-a-listbox-row`, `literal-through-a-spread-context` — and the
   literals every node hands it whose binding stands for the template: an outlet beside its context,
@@ -261,7 +269,8 @@ printed reads of a template's name reach no literal with a letter.
   a method of the class (`upper(x)`), and a template handed to one whose result an outlet draws
   (`pick(t)`), four refusals: a call gives what it is handed, names and templates among them.
 - `literal-through-an-interpolated-template-input` — `ngIf="Delete {{ … }} rows"` handed to
-  `let-m="ngIf"`: an interpolation's value is its words as much as its expressions, two refusals.
+  `let-m="ngIf"` and to the implicit `let-m`: an interpolation's value is its words as much as its
+  expressions, and on an `<ng-template>` it is a directive's input, taken whole, four refusals.
 
 The reference holds the names that stand for no such literal: a `@let` holding `*`, a loop's
 `$index` (the block's own variables are its numbers and booleans) beside an item over `['sm', 'md']`
@@ -271,7 +280,8 @@ took every node for one handing the template, the index for the collection, or a
 string, refuses it — and, read in no position of a value, a `@let` holding a comparison, printed
 and read as a condition.
 
-A binding no map literal writes is taken whole by every variable: `let i = index` of
+A binding no map literal writes, but an interpolation on an element, is taken whole by every
+variable: `let i = index` of
 `*ngFor="let size of ['sm', 'md']"` printed is refused, where `@for`'s `$index` is not. Which key a
 directive files its input under is the directive's code — `NgForOf`'s item under `$implicit`, its
 position under `index` — and a variable that took no binding but the one its key names would lose a
@@ -284,7 +294,8 @@ template from outside the file, a consumer's slot among them, which may print it
 handed in a context and drawn by an outlet through a variable (`[ngTemplateOutlet]="m.next"`),
 since a variable stands for no template; a written attribute a directive files under a key other
 than its name — `ngIf="Delete" let-m` passes, a written attribute handing only the variable of its
-name, and so does `ngIf="Delete {{ n }}" let-m`, an interpolation being one; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
+name — while `ngIf="Delete {{ n }}" let-m` is refused, an interpolation on an `<ng-template>` being
+a directive's input, taken whole; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
 matches by its inline bindings alone, as `handedTo` does, and which JIT draws all the same; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
 gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`).
