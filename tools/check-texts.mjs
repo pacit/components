@@ -139,9 +139,9 @@ const reflected = (name) => name.replace(/^aria(?!-)/, 'aria-');
 /**
  * The `<input>` types that draw no `value` as text (measured in Chromium 152: `hidden`, `checkbox`
  * and `radio` keep it and show none of it, `password` masks it, the rest keep no word of it, and
- * `file` refuses it). Any other type draws it: a button's label, a field's text, and the text of
- * a type the browser does not know or a template binds (`[type]`), which is a text field until it
- * says otherwise.
+ * `file` refuses it). Any other type draws it: a button's label, a field's text, an image button's
+ * text where it has no `alt` or `title`, and the text of a type the browser does not know or a
+ * template binds (`[type]`), which is a text field until it says otherwise.
  */
 const VALUELESS_INPUTS = new Set([
   'hidden',
@@ -157,7 +157,6 @@ const VALUELESS_INPUTS = new Set([
   'week',
   'time',
   'file',
-  'image',
 ]);
 
 /**
@@ -180,16 +179,15 @@ const DRAWN_PROPERTIES = new Set([
 
 /**
  * The properties that draw their value on the elements named, measured the same way: an `<a>`'s and
- * an `<option>`'s `text`, which is their content; a `<textarea>`'s and an `<output>`'s `value` and
- * `defaultValue`, the text they show; and an `<iframe>`'s `srcdoc`, the document it draws, through
- * the sanitizer. An `<input>`'s `value` is a speaking attribute's (`speaking`), and its
- * `defaultValue` writes that attribute.
+ * an `<option>`'s `text`, which is their content, and a `<textarea>`'s and an `<output>`'s `value`
+ * and `defaultValue`, the text they show. An `<input>`'s `value` and an `<iframe>`'s `srcdoc` are
+ * attributes as well, written or bound (`speaking`), and an `<input>`'s `defaultValue` writes its
+ * `value`.
  */
 const DRAWN_ON = new Map([
   ['text', new Set(['a', 'option'])],
   ['value', new Set(['textarea', 'output'])],
   ['defaultValue', new Set(['textarea', 'output'])],
-  ['srcdoc', new Set(['iframe'])],
 ]);
 
 const DOM_SCHEMA = new DomElementSchemaRegistry();
@@ -551,7 +549,8 @@ const UNDRAWN_OPERATORS = new Set([
  * is falsy, which no string with a letter is; no operand of a comparison or of arithmetic
  * (`UNDRAWN_OPERATORS`), of `!`, `typeof`, `void` or a sign; the object a member is read off, and
  * not the key (`options()['label']`); a map's values and an array's items, which a read takes out;
- * the text a template literal or an interpolation writes around its expressions; and a pipe's
+ * the text a template literal or an interpolation writes around its expressions, and a regular
+ * expression's (`{{ /Delete/ }}` draws `/Delete/`, its `source` the word); and a pipe's
  * input, which a text pipe draws transformed (`'Delete' | uppercase` draws `DELETE`), and not its
  * arguments, format markers (`date: 'short'`) — though `i18nSelect` and `i18nPlural` draw the map
  * they are handed, which no read here tells from a marker, not knowing which pipe a name is.
@@ -574,6 +573,9 @@ class ExpressionLiterals extends RecursiveAstVisitor {
   }
   visitTemplateLiteralElement(node) {
     this.collect(node.text);
+  }
+  visitRegularExpressionLiteral(node) {
+    this.collect(node.body);
   }
   visitInterpolation(node, ctx) {
     for (const text of node.strings) this.collect(text);
@@ -739,7 +741,10 @@ class Names {
               map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
             )
           : null,
-      bound: true,
+      // An interpolation is a string written in the attribute, as a written attribute's value is,
+      // and hands the variable of its name alone: `class="pct-row--{{ n }}"` beside an outlet is no
+      // value of the template's `let-row`.
+      bound: !(map instanceof Interpolation),
     };
   }
 
@@ -863,26 +868,41 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
    * The tag and its `type` in any case, as the names in `speaking`: `<INPUT TYPE="submit"
    * VALUE="Send">` draws a button labelled "Send" (measured, the same render as `speaks`). The
    * tag in any namespace the template writes, which the parser keeps on the name: `ngc` makes
-   * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`).
+   * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`). The
+   * `type` is the one written, alone: a second one, or one a binding sets (`[type]`,
+   * `[attr.type]`, `type="{{ … }}"`), leaves it to the render, and the field a text field until it
+   * says otherwise (measured: `type="checkbox" [type]="'text'"` shows its value).
    */
-  visitElement(node) {
+  within(node, name, visit) {
     const previous = [this.tag, this.type];
-    this.tag = splitNsName(node.name)[1].toLowerCase();
+    this.tag = splitNsName(name)[1].toLowerCase();
+    const types = [...node.attributes, ...node.inputs].filter(
+      (a) => a.name.toLowerCase() === 'type',
+    );
     this.type =
-      node.attributes
-        .find((a) => a.name.toLowerCase() === 'type')
-        ?.value?.toLowerCase() ?? null;
-    super.visitElement(node);
+      types.length === 1 && types[0] instanceof TmplAstTextAttribute
+        ? types[0].value.toLowerCase()
+        : null;
+    visit();
     [this.tag, this.type] = previous;
   }
 
-  /** An `<input>`'s `value` speaks where its type draws it (`VALUELESS_INPUTS`). */
+  visitElement(node) {
+    this.within(node, node.name, () => super.visitElement(node));
+  }
+
+  /**
+   * An `<input>`'s `value` speaks where its type draws it (`VALUELESS_INPUTS`), and an `<iframe>`'s
+   * `srcdoc` everywhere, the document it draws (measured: written, bound and as an `attr.`).
+   */
   speaking(name) {
+    const lower = name.toLowerCase();
     return (
       speaks(name) ||
-      (name.toLowerCase() === 'value' &&
+      (lower === 'value' &&
         this.tag === 'input' &&
-        !VALUELESS_INPUTS.has(this.type))
+        !VALUELESS_INPUTS.has(this.type)) ||
+      (lower === 'srcdoc' && this.tag === 'iframe')
     );
   }
 
@@ -945,9 +965,14 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.passOver(node.attributes);
     super.visitContent(node);
   }
+  /**
+   * A template is visited under its own tag: an inline template carries its element's attributes
+   * and bindings hoisted, and reads them as its element does, not as the element around it (an
+   * `*ngIf` checkbox's `[value]` inside an `<output>` draws nothing).
+   */
   visitTemplate(node) {
     this.passOver(node.templateAttrs);
-    super.visitTemplate(node);
+    this.within(node, node.tagName, () => super.visitTemplate(node));
   }
   visitSwitchBlock(node) {
     if (node.exhaustiveCheck) this.passOver([node.exhaustiveCheck]);
@@ -1660,7 +1685,7 @@ const checkTexts = (input) => {
         `string written into a node's text — only it looks like code, and so does one ` +
         `bound to a property that draws it (\`[textContent]\`, \`[innerHTML]\`). A literal ` +
         `that cannot be the value does not count — a comparison's operand, a condition, a ` +
-        `key, a pipe's argument: it draws nothing itself.`,
+        `key — and a pipe's argument is read as a format marker.`,
     );
 
   const namedViolations = [];

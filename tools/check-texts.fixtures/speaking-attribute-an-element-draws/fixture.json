@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "message": "8 speaking attributes carry a string written inline:\n      libs/components/widget/src/widget.html:32: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:33: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:34: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:35: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:36: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:37: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:38: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:39: srcdoc=\"<p>Delete the row</p>\"",
+  "description": "Words written where an element draws them (measured in Chromium 152: each shows the word): the `value` of a field with no type, of an e-mail field and of a type the browser does not know, which it makes a text field; of an image button, which shows it where it has no `alt` or `title`; of fields whose written type a binding or a second `type` overrides, `type=\"checkbox\"` beside `[type]` and `[attr.type]` and `type=\"hidden\"` before `type=\"text\"`, a type the template leaves to the render being a text field until it says otherwise; and an `<iframe>`'s `srcdoc`, the document it draws. A written value speaks as a button's does, and the refusal counts eight; a read taking the first written `type` for the field's passed three of them."
+}

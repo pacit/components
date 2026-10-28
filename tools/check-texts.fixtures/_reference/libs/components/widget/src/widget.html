@@ -76,7 +76,8 @@
   makes `arialabel`, and no ARIA attribute is set: the word reaches no user. Only a property
   binding reaches `aria-label` through the reflection, and only a property binding draws
   `textContent`: as an attribute it is one more attribute, `textcontent`, and draws nothing, and
-  a property is named in the DOM's case, so that `TEXTCONTENT` sets nothing (NG0303).
+  a property is named in the DOM's case, so that `TEXTCONTENT` sets nothing (NG0303). A `srcdoc`
+  off an `<iframe>` is one more attribute too.
 -->
 <span
   class="pct-widget__attr"
@@ -84,6 +85,7 @@
   [attr.textContent]="'Unread'"
   [class.textContent]="open()"
   [TEXTCONTENT]="'Unread'"
+  srcdoc="Unread"
 ></span>
 
 <!--
@@ -146,8 +148,11 @@
 <span aria-hidden="true">{{ small ? '*' : '' }} {{ small }}</span>
 
 <!--
-  Values no element draws (measured in Chromium 152): an `<input>`'s of a type that shows none of
-  it (`VALUELESS_INPUTS`), written and set as a default, and an `<option>`'s, which shows its text.
+  Values no element draws (measured in Chromium 152): an `<input>`'s of each type that shows none of
+  it (`VALUELESS_INPUTS`), written, one set as a default too, and one an `*ngIf` wraps inside an
+  `<output>`, whose `value` is not its; and an `<option>`'s, which shows its text. And words no
+  template's variable takes: those an interpolation writes in a `class` beside an outlet, which
+  hand `class` alone, while the row's `let-item` reads the implicit entry.
 -->
 <input type="hidden" value="row" />
 <input type="checkbox" value="row" [defaultValue]="'row'" />
@@ -162,7 +167,12 @@
 <input type="week" value="row" />
 <input type="time" value="row" />
 <input type="file" value="row" />
-<input type="image" value="row" />
 <select>
   <option [value]="'row'">{{ items().length }}</option>
 </select>
+<output><input *ngIf="open()" type="checkbox" [value]="'row'" /></output>
+<ng-container
+  [ngTemplateOutlet]="row"
+  [ngTemplateOutletContext]="{ $implicit: count }"
+  class="pct-widget__row-{{ count }}"
+></ng-container>

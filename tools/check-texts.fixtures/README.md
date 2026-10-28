@@ -141,8 +141,8 @@ nothing, and passed all three, which main refused (the review, measured). So
 `@for (o of sortBy(options(), 'label'))` is refused, as on main: the key belongs in the class
 (`sortedOptions()`), which is the one way the read could tell it from a word.
 
-- `literal-in-a-value-position` — a conditional's branches and the operators' values, seven
-  refusals.
+- `literal-in-a-value-position` — a conditional's branches, the operators' values and a regular
+  expression, which draws its source between slashes, eight refusals.
 - `literal-through-a-read-or-a-call` — an array's item, read and read optionally, a map's entry, a
   string's own method, an array's method handed a separator, called and called optionally, a
   method of the class handed a sentence, and `$any`'s argument, which the compiler takes off as no
@@ -155,15 +155,17 @@ nothing, and passed all three, which main refused (the review, measured). So
   an attribute, both of which the reference holds.
 - `literal-in-a-property-an-element-draws` — the properties that draw their value on the elements
   that have them (`DRAWN_ON`): an `<a>`'s and an `<option>`'s `text`, a `<textarea>`'s and an
-  `<output>`'s `value` and `defaultValue`, an `<iframe>`'s `srcdoc`, and a search field's
+  `<output>`'s `value` and `defaultValue`; and an `<iframe>`'s `srcdoc` and a search field's
   `defaultValue`, which writes the value it shows, eight.
-- `literal-in-a-text-field-value`, `speaking-attribute-in-a-text-field` — the `value` of a text
-  field, bound and written: of no type, of a type the browser does not know, and of a text, search,
-  telephone, URL or e-mail field, Chromium shows it, as it shows a button's label. A field draws it
-  but for the types that show none of it (`VALUELESS_INPUTS`: `hidden`, `checkbox`, `radio`,
-  `password`, which masks it, and the types that keep no word of it), and a type the template binds
-  is a text field until it says otherwise; read on a button's alone, as it was, the value passed
-  all six.
+- `literal-in-a-text-field-value`, `speaking-attribute-an-element-draws` — what an element draws
+  of an attribute, bound and written: an `<input>`'s `value` and an `<iframe>`'s `srcdoc`, the
+  document it draws. Chromium shows the value of a field of no type, of a type it does not know, of
+  a text, search, telephone, URL or e-mail field and of an image button with no `alt` or `title`, as
+  it shows a button's label: a field draws it but for the types that show none of it
+  (`VALUELESS_INPUTS`: `hidden`, `checkbox`, `radio`, `password`, which masks it, and the types that
+  keep no word of it). The type is the one written, alone; a second one or one a binding sets
+  leaves it to the render, a text field until it says otherwise (`type="checkbox"` beside `[type]`,
+  `type="hidden" type="text"`). Read on a button's alone, as it was, the value passed all ten.
 - `text-around-an-interpolation`, `speaking-attribute-around-an-interpolation` — the words an
   interpolation writes around its expressions, in a text node, in a speaking attribute and in a
   drawn property. The parser makes them the interpolation's `strings`, which the expression visitor
@@ -174,8 +176,11 @@ nothing, and passed all three, which main refused (the review, measured). So
 The reference holds the literals in no position of a value — each operator's operands
 (`size() === 'sm'`, `items().length - 'sm'`, …), the operand of `!`, `typeof`, `void` and a sign, a
 condition, the left of `&&` and a key — and the values no element draws: an `<input>`'s of each type
-in `VALUELESS_INPUTS`, written and set as a default, and an `<option>`'s, which shows its text. A
-read taking any of them for a word drawn refuses it. The library's printed expressions hold two
+in `VALUELESS_INPUTS`, written, one set as a default too, and one an `*ngIf` wraps inside an
+`<output>`, read under its own tag and not its parent's; and an `<option>`'s, which shows its text.
+And the words an interpolation writes in a `class` beside an outlet, which hand the variable of that
+name alone: taken whole, they were the row's `let-item`. A read taking any of them for a word drawn
+refuses it. The library's printed expressions hold two
 literals, neither with a letter, both in a value's position; it binds no drawn property and writes
 no value of a text field, and its 77 interpolations write no word around their expressions.
 
@@ -184,10 +189,13 @@ pipe a name is, where `i18nSelect` and `i18nPlural` draw the map they are handed
 keys, which `keyvalue` and `json` draw (`{ Delete: 1 } | keyvalue`, measured), and which no read
 takes for a value — a context's keys (`$implicit`, `label`) would all be refused; and a `host`
 block's bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison
-there is refused and `'[textContent]'` is read for nothing. Read whole and refused: a tagged
+there is refused and `'[textContent]'` is read for nothing; and an `<option>`'s value in a
+`<datalist>`, which the field it lists for suggests (measured), read nowhere. Read whole and
+refused: a tagged
 template; markup handed to `innerHTML`, whose tags are letters as well (`'<hr>'`); a literal a member
-is read off (`'Delete'.length`); and an argument the code takes for a key or a locale
-(`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`).
+is read off (`'Delete'.length`); an argument the code takes for a key or a locale
+(`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`); and an image button's value beside
+an `alt`, which it then does not show.
 
 ## A name stands for what binds it
 
@@ -276,7 +284,7 @@ template from outside the file, a consumer's slot among them, which may print it
 handed in a context and drawn by an outlet through a variable (`[ngTemplateOutlet]="m.next"`),
 since a variable stands for no template; a written attribute a directive files under a key other
 than its name — `ngIf="Delete" let-m` passes, a written attribute handing only the variable of its
-name; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
+name, and so does `ngIf="Delete {{ n }}" let-m`, an interpolation being one; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
 matches by its inline bindings alone, as `handedTo` does, and which JIT draws all the same; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
 gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`).

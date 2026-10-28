@@ -971,12 +971,16 @@ call takes out of a value, a method of the class's and `$any`'s among them, one 
 property that draws it on any element, `textContent` bound, by `bind-` and interpolated,
 `innerText`, `outerText`, `innerHTML` as itself and as `innerHtml`, and `outerHTML`, by name and
 two-way, one bound to what an element draws, an `<a>`'s and an `<option>`'s `text`, a
-`<textarea>`'s and an `<output>`'s `value` and `defaultValue` and an `<iframe>`'s `srcdoc`, the
-`value` of a text field, written and bound, the words written around an interpolation in a text
+`<textarea>`'s and an `<output>`'s `value` and `defaultValue` and an `<iframe>`'s `srcdoc`, bound
+and written, the `value` of a text field or an image button, written and bound, its written type
+overridden by a binding or a second `type`, a regular expression, the words written around an
+interpolation in a text
 node, a speaking attribute, a drawn property and a template's input, and a sentence a call draws
 through a name, a method of the class's handed a loop's item or a template among them — while the
-reference's comparisons, arithmetic, conditions and keys are in no position of a value, and the
-values of the inputs that show none and of an `<option>` are drawn nowhere; plus nine runs against the repository (a literal in
+reference's comparisons, arithmetic, conditions and keys are in no position of a value, the values
+of the inputs that show none, one an inline template wraps inside an `<output>`, and of an
+`<option>` are drawn nowhere, and an interpolated `class` beside an outlet hands its template
+nothing; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)
