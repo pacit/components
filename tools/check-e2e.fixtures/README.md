@@ -78,7 +78,7 @@ before the runner plays anything.
 | [`no-specs`](no-specs)                                 | not one spec to read — the walk found nothing and says nothing           | 1     | `specs`              |
 | [`support-not-read`](support-not-read)                 | the support tree gone, so no reading the specs take is recognisable      | 1     | `readers`            |
 | [`reader-dropped`](reader-dropped)                     | `support/css.ts` gone, `dom.ts` left: one reader counted, `styleOf` lost | 1     | `helpers`            |
-| [`reader-under-alias`](reader-under-alias)             | the card's race read through `styleOf` imported as `colourOf`            | 1     | `helpers`            |
+| [`reader-under-alias`](reader-under-alias)             | the card's race read through `styleOf` imported as another helper's name | 1     | `helpers`            |
 | [`reader-through-namespace`](reader-through-namespace) | the card's race read through `css.styleOf` of `import * as css`          | 1     | `helpers`            |
 | [`reader-leans-outside`](reader-leans-outside)         | `styleOf` a thin name over a reader imported from outside the corpus     | 1     | `helpers`            |
 | [`nothing-to-rule-on`](nothing-to-rule-on)             | specs with neither a positional locator nor a bare wait in them          | 1     | `material`           |
@@ -101,24 +101,25 @@ satisfied by the `boxOf` that `support/dom.ts` still defines. A count of readers
 about which ones, so the rule names them: every helper a corpus file calls from a module of the
 suite's own (`.`, `..` or a path under either) has to be one the corpus defines, under the name
 the call writes, because that name is all a vocabulary matches. `reader-dropped` is the
-measured case, the other three the routes to the same silence: an alias (beside a spec with a
-`colourOf` of its own, as a helper name is file-local), a namespace, refused whole since no
-call through one is a helper's bare name, and a support file whose reader leans on an import
-from `..`, written over lines with a comment between its names. The reference holds the other
-side: `static.spec.ts` takes `test` and `expect` from a fixtures module of the suite's own,
-the two names points 3 and 4 read as themselves, and the support tree's types as a namespace
-no call goes through; and the `mergeTests` the fixtures module calls is Playwright's, as no
-name from a package is a helper.
+measured case, beside a spec with a `styleOf` of its own, as a helper name is file-local. The
+other three are the routes to the same silence: an alias, refused once it is called whatever
+the corpus defines under it (here the name of a lookup `support/swatch.ts` defines), and a
+namespace, refused whole, as neither call writes the helper's own name; and a support file
+whose reader leans on an import from `..`, written over lines with a comment between its names.
+The reference holds the other side: `static.spec.ts` takes `test` and `expect` from a fixtures
+module of the suite's own, the two names points 3 and 4 read as themselves, and the support
+tree's types as a namespace no call goes through; and the `mergeTests` the fixtures module
+calls is Playwright's, as no name from a package is a helper.
 
 **Not held** — routes to a helper no vocabulary sees that this rule does not read: one reached
 through a package name or a path alias, a dynamic `import()`, or a Playwright fixture; a call
 through an object of helpers or a namespace a support file re-exports (`css.styleOf(…)` after
-`export * as css`); an alias onto a name the corpus defines for another helper; a helper a file
-defines in a shape the scanner does not read (`const x = function …`) and calls itself; a name
-with a `$`, which the matching takes for a regex anchor; a support file of one suite whose
-helpers the other suite's support defines under the same names, as the pool is one for both.
-And an indented import, which prettier never writes, is not read; a double-quoted module is
-read and no case holds it.
+`export * as css`); a helper a file defines in a shape the scanner does not read
+(`const x = function …`) and calls itself; a name with a `$`, which the matching takes for a
+regex anchor;
+a support file of one suite whose helpers the other suite's support defines under the same
+names, as the pool is one for both. And an indented import, which prettier never writes, is not
+read; a double-quoted module is read and no case holds it.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and

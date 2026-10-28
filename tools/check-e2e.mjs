@@ -353,8 +353,8 @@ const definitions = (masked) => {
  * What a file takes from the suite's own modules: every `import … from` whose module is a
  * RELATIVE path (`.`, `..` or under either), the last word of each part of its clause — `a`,
  * the `b` of `a as b`, the `ns` of `* as ns`, and the `type` of `import type`, which nothing
- * calls — with the line the import starts on. A package is not the
- * suite's own: Playwright's names are the base of every vocabulary, and `node:fs` reads no
+ * calls — as `name`, the binding as `written`, with the line the import starts on. A package
+ * is not the suite's own: Playwright's names are the base of every vocabulary, and `node:fs` reads no
  * page. The clause is read on the masked text, where a comment between its names is blank,
  * and the module off the source at the same offsets, because the mask blanks every string.
  */
@@ -370,7 +370,15 @@ const imports = ({ text, masked }) => {
     for (const part of m[1].replace(/[{}]/g, ',').split(',')) {
       const words = part.trim().split(/\s+/);
       const name = words.at(-1);
-      if (name) found.push({ line, module, name, namespace: words[0] === '*' });
+      const written = words.at(-2) === 'as' ? words.slice(-3).join(' ') : name;
+      if (name)
+        found.push({
+          line,
+          module,
+          name,
+          written,
+          namespace: words[0] === '*',
+        });
     }
   }
   return found;
@@ -565,20 +573,22 @@ const corpus = ({ specs, sources, shared, readers }) => {
   // leaves the other's readers standing, and every reading through the lost one goes quiet —
   // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
   // each helper a file calls from the suite's own modules has to be one the corpus defines,
-  // under the name it is called by; a namespace is refused whole, as no call through one is
-  // a helper's own name. `test` and `expect` are the two names points 3 and 4 read as
-  // themselves, so a suite's own fixtures module, which hands both on, hides nothing.
+  // under the name it is called by. An alias that is called is refused, whatever the corpus
+  // defines under it, and a namespace whole: neither call writes the helper's own name.
+  // `test` and `expect` are the two names points 3 and 4 read as themselves, so a suite's
+  // own fixtures module, which hands both on, hides nothing.
   const defined = new Set([...shared.map((d) => d.name), 'test', 'expect']);
   const unseen = sources.flatMap((source) =>
     imports(source)
       .filter(
         (i) =>
-          i.namespace || (free(source.masked, i.name) && !defined.has(i.name)),
+          i.namespace ||
+          (free(source.masked, i.name) &&
+            (i.written !== i.name || !defined.has(i.name))),
       )
       .map(
         (i) =>
-          `${source.file}:${i.line} — \`${i.namespace ? `* as ${i.name}` : i.name}\`, ` +
-          `imported from \`${i.module}\``,
+          `${source.file}:${i.line} — \`${i.written}\`, imported from \`${i.module}\``,
       ),
   );
   if (unseen.length)
