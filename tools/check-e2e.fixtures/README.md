@@ -61,9 +61,10 @@ fired another check, one that fired another rule and one whose refusal does not 
 its `message` pins, and no case here proves it does: every case is built to fire its own point
 alone, saying what it pins. [`_runner.json`](_runner.json) holds those rules. Through
 [`runner-control.mjs`](../runner-control.mjs) the runner plays `hovered-card-race` as written
-and pinned to its own `message`, which it has to pass; pinned to its own refusal with the site
-`toast-tone-race` holds in the middle, which it has to report, as only the whole pin tells the
-two apart; and once for each other rule — over `_reference`, which the gate passes; over
+and pinned to its own `message`, which it has to pass; pinned to its own first and last lines,
+once with the site `toast-tone-race` holds between them and once with nothing between, both of
+which it has to report, as a runner comparing a pin line by line or by one end hears neither;
+and once for each other rule — over `_reference`, which the gate passes; over
 [`_two-points/`](_two-points), the card's race beside the paused sheen's bare wait, two points
 of which the race comes first, so that only the rule of one point alone reports it; with
 `check` set to `baseline`; with `rule` set to `wait-then-baseline` — and has to report each.
@@ -111,24 +112,26 @@ writes the helper's own name; and a support file whose reader leans on imports f
 `.`, the first written over lines with a comment between its names and the reader second. The
 reference holds the other side: `static.spec.ts` takes `test` and `expect` from a fixtures
 module of the suite's own, the first under an alias, as points 3 and 4 read both names as
-themselves whatever binding hands them on, and the support tree's types as a namespace no call
-goes through; and the `mergeTests` the fixtures module calls is Playwright's, as no name from a
-package is a helper.
+themselves, whatever a spec binds to them, the support tree's types as a namespace, skipped
+with every `import type`, and `DAY`, a selector it never calls; and the `mergeTests` the
+fixtures module calls is Playwright's, as no name from a package is a helper.
 
 **Not held** — routes to a helper no vocabulary sees that this rule does not read. The import's
-module is not resolved: a name is held to the whole pool of both suites' support trees, so a
-lookup of the same name in another support file stands in for a reader that is gone, and a
-re-export is not read (`export { styleOf as colourOf } from './css'`, `export * as css`, an
-object of helpers called as `css.styleOf(…)`). What a fixtures module puts into `test` or
+module is not resolved: a name is held to the pool of every file of both suites that is not a
+spec, so a lookup of the same name in another support file stands in for a reader that is gone,
+and a re-export is not read (`export { styleOf as colourOf } from './css'`, `export * as css`,
+an object of helpers called as `css.styleOf(…)`). What a fixtures module puts into `test` or
 `expect` is not read either — a matcher of `expect.extend` reads in the window it is meant to
 close, and nothing here says so. Nor is a helper reached through a package name or a path
 alias, a dynamic `import()`, `require`, or a Playwright fixture; one a file defines in a shape
-the scanner does not read (`const x = function …`) and calls itself, or rebinds (`const
-colourOf = styleOf`); a call not written as `name(` — with type arguments, inside `${…}`, a
+the scanner does not read (`const x = function …`) and calls itself, or rebinds
+as `const colourOf = styleOf`; a call not written as `name(` — with type arguments, inside `${…}`, a
 helper handed on as a value (`cells.map(boxOf)`); and a name with a `$`, which the matching
-takes for a regex anchor. Of the import itself: an indented one is not read, which prettier
-never writes, and a double-quoted module is read and no case holds it, as `.prettierrc` sets
-`singleQuote`.
+takes for a regex anchor. Of the import itself, an indented one is not read, which prettier
+never writes. Three shapes are read and no case holds them: a double-quoted module, which
+`.prettierrc` (`singleQuote`) rules out; a default binding beside a namespace
+(`import d, * as css`); and an `import type`, skipped whole, so that a file's own function named
+`type` is never taken for one of its bindings.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and

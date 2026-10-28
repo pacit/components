@@ -360,8 +360,8 @@ const definitions = (masked) => {
  * a path under either, the last word of each part of its clause as `name` — `a`, the `b` of
  * `a as b`, the `ns` of `* as ns`, the default binding — and the binding as `written`: `a`,
  * `a as b`, `* as ns`, and `default as d` for the default, which names no export of its own.
- * `import type * as ns` is no namespace: its first word is `type`, and no call goes through
- * it. The line is the one the import starts on. A package is not read: Playwright's names are
+ * An `import type` is skipped whole, a namespace of types with it: none of its bindings can be
+ * called. The line is the one the import starts on. A package is not read: Playwright's names are
  * the base of every vocabulary, and `node:fs` reads no page. The clause is read on the masked
  * text, where a comment between its names is blank, and the module off the source at the
  * same offsets, because the mask blanks every string.
@@ -373,7 +373,7 @@ const imports = ({ text, masked }) => {
   for (const m of masked.matchAll(IMPORT)) {
     const from = m.index + m[0].length;
     const module = text.slice(from, masked.indexOf(m[2], from));
-    if (!/^\.\.?(?:\/|$)/.test(module)) continue;
+    if (!/^\.\.?(?:\/|$)/.test(module) || /^type\s/.test(m[1])) continue;
     const line = masked.slice(0, m.index).split('\n').length;
     const [outside, inside = ''] = m[1].split('{');
     const parts = [
@@ -593,7 +593,7 @@ const corpus = ({ specs, sources, shared, readers }) => {
   // A count of readers says nothing about WHICH ones: a support file of two that drops out
   // leaves the other's readers standing, and every reading through the lost one goes quiet —
   // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
-  // each helper a file calls from the suite's own modules has to be one the corpus defines,
+  // each helper a file calls from a relative module has to be one the corpus defines,
   // under the name it is called by. An alias that is called is refused, a default import
   // among them, whatever the corpus defines under it, and a namespace whole: neither call
   // writes the helper's own name. `test` and `expect` are the two names points 3 and 4 read

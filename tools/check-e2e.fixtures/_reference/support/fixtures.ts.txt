@@ -1,11 +1,11 @@
 import { mergeTests, test as base } from '@playwright/test';
 
 /**
- * The suite's own `test`, which a spec binds as `test`, and Playwright's `expect`, handed on
- * the way Playwright's fixtures guide has a suite do it. A spec that takes them from here
- * still calls them by the two names points 3 and 4 read as themselves, whatever binding it
- * writes, so neither is a helper the gate can miss. `mergeTests` is Playwright's, and a
- * package's name is never one.
+ * The suite's own `test` and Playwright's `expect`, handed on the way Playwright's fixtures
+ * guide has a suite do it. A spec that binds them to those two names, as `static.spec.ts`
+ * binds `suiteTest` to `test`, calls them by the names points 3 and 4 read as themselves, so
+ * neither is a helper the gate can miss. `mergeTests` is Playwright's, and a package's name
+ * is never one.
  */
 export const suiteTest = mergeTests(base);
 export { expect } from '@playwright/test';
