@@ -1,5 +1,17 @@
 {
   "case": "interpolated-part",
   "pins": ["PctWidget (./widget): 1 in the package", null, 1, " "],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `interpolated-part` is refused by point 3 (`staticness`) for a part bound in the sources, and here it is pinned to the words the same point says of the package's side (`part-bound-in-a-block-in-package` holds them) — the drift a pinned message exists to catch — and then to the shapes the runner refuses before it compares anything: no fragment, a number the refusal would carry were it read as text (`1 in the sources`), and a blank fragment, which every refusal carries. The runner has to report each, and nothing of the case pinned to its own `message`."
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference"
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "denominator"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `interpolated-part` is refused by point 3 (`staticness`) for a part bound in the sources, and here it is pinned to the words the same point says of the package's side (`part-bound-in-a-block-in-package` holds them) — the drift a pinned message exists to catch — and then to the shapes the runner refuses before it compares anything: no fragment, a number the refusal would carry were it read as text (`1 in the sources`), and a blank fragment, which every refusal carries. The runner has to report each, and nothing of the case pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `denominator`, a case that fired another check."
 }

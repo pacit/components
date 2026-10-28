@@ -1,5 +1,23 @@
 {
   "case": "a-name-standing-for-a-class-nobody-exports",
   "pins": ["`./other` exports `PctBlank` under that name"],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-name-standing-for-a-class-nobody-exports` is refused by `artifact/class-without-package`, which says that `./widget` exports `PctBlank` under the name, and here it is pinned to what its neighbour `a-name-another-entrypoint-holds` says of `./other` — the same rule naming another entrypoint, the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`."
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference"
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "denominator"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "class-without-sources"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-name-standing-for-a-class-nobody-exports` is refused by `artifact/class-without-package`, which says that `./widget` exports `PctBlank` under the name, and here it is pinned to what its neighbour `a-name-another-entrypoint-holds` says of `./other` — the same rule naming another entrypoint, the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `denominator`, a case that fired another check; with `rule` set to `class-without-sources`, a case that fired another rule."
 }

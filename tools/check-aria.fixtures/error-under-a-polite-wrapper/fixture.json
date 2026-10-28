@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-live=\"polite\"` on the `<div>` above it sets the live region of `error` otherwise than its role does",
+  "$reason": "The message line inside a wrapper written `aria-live=\"polite\"`, which stands before the error enters. Firefox 158 hands the `alert`, which has no `container-live` of its own there, the wrapper's `polite` (measured on 2026-10-27), and in either engine the wrapper is a live region around the sentence: Orca ignores an insertion into a live region, the `alert`'s entry among them, and leaves it to the region (`web/script.py`), politely. A second region around the one the error is is what 0026 rules out. Point 7 read the part's own politeness alone, and passed it."
+}

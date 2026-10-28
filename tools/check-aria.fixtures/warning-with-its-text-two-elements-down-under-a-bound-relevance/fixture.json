@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "a bound `aria-relevant` on the `<span>` inside it sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part with its `status` whose text sits two elements down, in a `<span>` whose `aria-relevant` an expression writes. Firefox 158 gives such a span an accessible of its own and hands the text below it its relevance, `removals` handed on as written (measured on 2026-10-27), and NVDA drops every event of a region whose relevance names neither `additions` nor `text`; the value is not in the template, so it is refused as a bound role is, rather than read. A reading of what is inside the part that read `aria-live` alone, its child alone or no binding passed it, as point 7 did."
+}

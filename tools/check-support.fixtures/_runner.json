@@ -1,0 +1,16 @@
+{
+  "case": "a-number-that-is-a-sentence.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["policy"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "window"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-number-that-is-a-sentence.json` is refused by `policy`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `policy`, a case that passed; with `check` set to `window`, a case that fired another check."
+}

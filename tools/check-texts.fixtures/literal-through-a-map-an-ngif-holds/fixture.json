@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "2 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:32: interpolation reads `vm` → \"Delete the row\"\n      libs/components/widget/src/widget.html:34: interpolation reads `vm` → \"Delete the row\"",
+  "description": "A sentence in a map literal an `ngIf` holds, read by `as vm` and by the implicit `let-vm` (measured: drawn twice). A map that writes no key a variable reads is no context but a value, taken whole where the variable reads the binding's name or the implicit value, so the refusal counts two."
+}

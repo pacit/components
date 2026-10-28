@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:32: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence a `@let` declared after the template hands it through an outlet's context. What each name stands for is found together, until no set grows: a single pass in the template's order reads the variable before the `@let` it is handed holds anything."
+}

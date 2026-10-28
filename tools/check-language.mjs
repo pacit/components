@@ -28,10 +28,12 @@ import {
   restoreDictionaries,
   DictionaryError,
 } from './restore-dictionaries.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-language.fixtures');
 const REFERENCE = '_reference.json';
+const RUNNER = '_runner.json';
 
 const POLICY = 'tools/language.policy.json';
 const DIST = 'dist/libs/components';
@@ -1124,7 +1126,7 @@ if (!existsSync(FIXTURES))
 
 const cases = existsSync(FIXTURES)
   ? readdirSync(FIXTURES)
-      .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+      .filter((n) => n.endsWith('.json') && n !== REFERENCE && n !== RUNNER)
       .sort()
   : [];
 
@@ -1148,23 +1150,42 @@ if (cases.length) {
   }
 }
 
-for (const name of cases) {
-  const fx = readFixture(name);
+/**
+ * What the runner reports of one prepared case: nothing, when it was rejected on its own rule.
+ * The loop plays every case through it, and so does the runner's own control
+ * (`runner-control.mjs`).
+ */
+const runCase = (name, fx) => {
+  const said = [];
   try {
     checkLanguage(buildFixture(fx));
-    problems.push(
+    said.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `rule \`${fx.check}/${fx.rule}\` stopped examining anything`,
     );
   } catch (error) {
     if (!(error instanceof LanguageError)) throw error;
     if (error.check !== fx.check || error.rule !== fx.rule)
-      problems.push(
+      said.push(
         `${name}: rule \`${error.check}/${error.rule}\` fired, and \`${fx.check}/${fx.rule}\` ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
   }
-}
+  return said;
+};
+
+for (const name of cases) problems.push(...runCase(name, readFixture(name)));
+
+problems.push(
+  ...(await runnerControl({
+    where: `tools/check-language.fixtures/${RUNNER}`,
+    load: () => readFixture(RUNNER),
+    cases,
+    read: readFixture,
+    run: runCase,
+    holds: ['passed', 'check', 'rule'],
+  })),
+);
 
 // ── result ──────────────────────────────────────────────────────────────────────
 
@@ -1180,6 +1201,6 @@ console.log(
     (steppedOver
       ? `, ${steppedOver} index entries carrying no text of their own`
       : '') +
-    `. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own rules.`,
+    `. Negative control: the reference input passes, ${cases.length} prepared ones rejected on ` +
+    `their own rules, and the runner reports a case that passed or fired another check or rule.`,
 );

@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:37: interpolation reads `label` → \"Delete the row\"",
+  "description": "A sentence a spread puts into an outlet's context over a default the map writes under the same key (`label: ''`, measured: the spread's is drawn). A map with a spread may hold any key, and is taken whole: the entry the map writes is not the one the template gets."
+}

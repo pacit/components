@@ -1,0 +1,18 @@
+import { Component, input } from '@angular/core';
+
+/** A message shown under a form, drawn by a component whose host an expression may make busy. */
+@Component({
+  selector: 'pct-pending',
+  templateUrl: './pending.html',
+  host: {
+    class: 'pct-pending',
+    '[ariaBusy]': 'pending()',
+  },
+})
+export class PctPending {
+  protected readonly error = input<string>('');
+  protected readonly showError = input(false);
+  protected readonly warning = input<string>('');
+  protected readonly showWarning = input(false);
+  protected readonly pending = input(false);
+}

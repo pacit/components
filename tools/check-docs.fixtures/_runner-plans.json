@@ -1,0 +1,21 @@
+{
+  "case": "tools/check-docs.fixtures/plan-claims-work-with-no-gate",
+  "variants": [
+    {
+      "for": "passed",
+      "case": "tools/check-docs.fixtures/_reference",
+      "without": ["rule"]
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "open-but-closed"
+      }
+    },
+    {
+      "for": "undeclared",
+      "case": "tools/check-docs.fixtures/_two-rules"
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`) for the plans of point 8, played apart from the cases. `plan-claims-work-with-no-gate` fires `closed-but-open`, and the runner has to report nothing of it as written. It has to report each variant: over `_reference` without its `rule`, a case that passed, which only the PASSED rule reports when the case declares no rule; over `_two-rules`, a plan firing `closed-but-open` and then `open-but-closed`, a case that fired more than it declares, which only the rule that a case fires one rule alone reports; with `rule` set to `open-but-closed`, another rule."
+}

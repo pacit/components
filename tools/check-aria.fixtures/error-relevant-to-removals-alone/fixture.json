@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-relevant=\"removals\"` on the part sets the live region of `error` otherwise than its role does",
+  "$reason": "An error part with its `alert` and `aria-relevant=\"removals\"`. Both engines expose the relevance as written in place of the role's (measured on 2026-10-27: Chromium 153 `relevant`, Firefox 158 `container-relevant`), and NVDA drops every event of a region whose relevance is not `all` and names neither `additions` nor `text` (`ia2LiveRegions.cpp`): in Chromium, where the `alert` is an `assertive` region, a message that changes while shown is not announced as one. Point 7 read the part's role and politeness and what may hide it, and passed it."
+}

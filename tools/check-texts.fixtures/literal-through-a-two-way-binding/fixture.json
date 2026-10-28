@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:34: interpolation reads `m` → \"Delete the row\"",
+  "description": "A sentence a `@let` holds, bound two-way to an input of a directive on an `<ng-template>` (`[(value)]`), which draws the template with the value as the implicit one (measured: drawn). The compiler matches a two-way binding to a directive's input as it matches a property binding, and a template's variable stands for it too."
+}

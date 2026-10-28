@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-text",
+  "message": "\"Remove the item\"",
+  "description": "Text in an element an inline template wraps (`*ngFor`). The template's own bindings — `ngFor`, written, and `ngForOf`, bound — are inputs of the directive on the template, which draws a comment: the compiler's visitor does not hand them on (`templateAttrs`), and the walk passes over them, as it reads the text inside. A walk that left either kind unreached refuses this case on point 1 instead."
+}

@@ -1,0 +1,16 @@
+{
+  "case": "a-header-that-grew.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["headers"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "budget"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-header-that-grew.json` is refused by `exact`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `headers`, a case that passed; with `check` set to `budget`, a case that fired another check."
+}

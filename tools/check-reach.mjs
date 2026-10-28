@@ -828,6 +828,7 @@ problems.push(
     cases,
     read: readFixture,
     run: runCase,
+    holds: ['passed', 'check'],
     own: (fx) => fx.names,
     pin: (fx, names) => ({ ...fx, names }),
   })),
@@ -843,7 +844,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Reach: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
-    `case pinned to a name its message lacks, or to no list of names.`,
+  `✓ Reach: ${summary}. Negative control: the reference input passes, ${cases.length} prepared ` +
+    `ones rejected on their own points, and the runner reports a case that passed or fired ` +
+    `another check, or pinned to a name its message lacks, or to no list of names.`,
 );

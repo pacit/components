@@ -56,11 +56,13 @@
 <span></span>
 }
 <span class="pct-widget__after"></span>
-@defer (on idle) {
+@defer (on idle; when open()) {
 <span></span>
 } @loading (after 100ms) {
 <span></span>
 } @placeholder (minimum 500ms) {
+<span></span>
+} @error {
 <span></span>
 }
 <ng-container class="pct-widget__container" #alt></ng-container>
@@ -75,3 +77,35 @@
   binding reaches `aria-label` through the reflection.
 -->
 <span class="pct-widget__attr" [attr.ariaLabel]="'Unread'"></span>
+
+<!--
+  A node of every kind the walk knows (`KNOWN_NODES`) but an ICU, which point 3 refuses, so that a
+  kind taken off the list refuses this input — a `@defer` block's triggers of two classes — and
+  what the compiler's visitor does not hand on and the walk passes over: a projection's `select`
+  and `ngProjectAs`, and an exhaustive `@switch` block's `never`.
+-->
+@let count = items().length;
+<ng-content select="[pctSlot]" ngProjectAs="span">{{ count }}</ng-content>
+@switch (open()) { @case (true) {
+<span></span>
+} @case (false) {
+<span></span>
+} @default never; }
+
+<!--
+  Names a printed expression reads, none standing for a literal with a letter (`Names`): a mark a
+  `@let` holds, which has none; a loop's index, which the block makes, beside its item, which
+  stands for a collection of axis values and is read in a comparison alone; a `@let` that holds a
+  comparison and is read as a condition alone; a `@let` holding a template, which is no string;
+  and a template's variable, which nothing hands a string, while the nodes around it are handed
+  words.
+-->
+@let mark = '*';
+<span aria-hidden="true">{{ mark }}</span>
+@let narrow = size() === 'sm'; @if (narrow) {
+<span></span>
+} @for (axis of ['sm', 'md']; track axis; let i = $index) {
+<span [class.pct-widget__current]="axis === size()">{{ i }}</span>
+} @let custom = placeholder;
+<span aria-hidden="true">{{ custom ? '*' : '' }}</span>
+<ng-template #row let-item><span>{{ item }}</span></ng-template>

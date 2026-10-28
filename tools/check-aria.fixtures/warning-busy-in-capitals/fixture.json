@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\"TRUE\"` on the part sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part with its `status` and `aria-busy=\"TRUE\"`. Chromium 153 reads it as busy, as it does every value but the empty one, `false` and `undefined` in any case, and fires no change of the region; Firefox 158 hands `TRUE` on as `container-busy` (measured on 2026-10-27). A reading that refused `true` alone, as Firefox's own busy state and NVDA do, passed it. Point 7 read the part's role and politeness and what may hide it, and passed it."
+}

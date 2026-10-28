@@ -32,6 +32,16 @@ the one thing at issue. The reference input is checked separately and first: wer
 defective itself, every case would fire because of it rather than because of its own —
 that is, this whole control would become what it stands against.
 
+## The runner's own control
+
+The runner reports a case that passed, a case that fired another check and a case that fired another
+rule, and no case here proves it does: every case is built to be refused on its own.
+[`_runner.json`](_runner.json) holds those rules. Through
+[`runner-control.mjs`](../runner-control.mjs) the runner plays `dead-entry.json` as written, which
+it has to pass, and once for each rule — without `replaceFile`, the input it is built on, which the
+gate passes; with `check` set to `denominator`; with `rule` set to `entry-without-file` — and has to
+report each. The control is played apart from the cases and counts as none.
+
 ## The six limbs, and why each has a case of its own
 
 Each limb is blind where the next one sees, so a case proving one proves nothing about

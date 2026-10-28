@@ -27,12 +27,15 @@ export abstract class PctToggleBase {
  * presentational, and an image — or decoration, with an empty `alt` — is still no control
  * inside it, by a written role or the tag's. Its name inputs are declared two ways a pattern over
  * the text did not read: `ariaLabel` here, `public`, and `ariaLabelledby` in the base, aliased.
+ * Its host says it is busy, as the library's button does, over a template holding no message
+ * part: what a host sets of a region is read for the parts of its own template alone.
  */
 @Component({
   selector: 'pct-toggle',
   templateUrl: './toggle.html',
   host: {
     class: 'pct-toggle',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
   },
 })
 export class PctToggle extends PctToggleBase {

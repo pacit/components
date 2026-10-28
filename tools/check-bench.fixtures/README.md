@@ -38,6 +38,15 @@ and does not drift from the reference when the repository moves.
 case would fire because of it rather than because of its own defect, and every "rejected"
 would be false.
 
+## The runner's own control
+
+The runner reports a case that passed and a case that fired another check, and no case here proves
+it does: every case is built to be refused on its own. [`_runner.json`](_runner.json) holds those
+rules. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays `a-second-render.json`
+as written, which it has to pass, and once for each rule — without `scenes`, the input it is built
+on, which the gate passes; with `check` set to `denominator` — and has to report each. The control
+is played apart from the cases and counts as none.
+
 ## The cases
 
 | file                                                                   | what it breaks                                                                    | point | check         |

@@ -19,6 +19,15 @@ Each case is built ON A COPY of [`_reference.json`](_reference.json) — a relea
 items, `items` replaces them all, `version` replaces the manifest's. `point` and `check` name
 the point that has to fire and the check it fires as.
 
+## The runner's own control
+
+The runner reports a case that passed and a case that fired another check, and no case here proves
+it does: every case is built to be refused on its own. [`_runner.json`](_runner.json) holds those
+rules. Through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+`a-deprecation-of-what-never-shipped.json` as written, which it has to pass, and once for each rule
+— without `add`, the input it is built on, which the gate passes; with `check` set to `since-value`
+— and has to report each. The control is played apart from the cases and counts as none.
+
 ## The readers have a control of their own
 
 The cases above examine the **judge** — they hand it items and require a rejection. Nothing in

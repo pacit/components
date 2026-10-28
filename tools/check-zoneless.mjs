@@ -682,6 +682,7 @@ problems.push(
     cases,
     read: readFixture,
     run: runCase,
+    holds: ['passed', 'check'],
     own: (fx) => fx.message,
     pin: (fx, message) => ({ ...fx, message }),
   })),
@@ -697,7 +698,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Foundation: ${summary}. Negative control: the reference input passes, ` +
-    `${cases.length} prepared ones rejected on their own points, and the runner reports a ` +
-    `case pinned to a phrase its refusal lacks.`,
+  `✓ Foundation: ${summary}. Negative control: the reference input passes, ${cases.length} ` +
+    `prepared ones rejected on their own points, and the runner reports a case that passed or ` +
+    `fired another check, or pinned to a phrase its refusal lacks.`,
 );

@@ -1,0 +1,16 @@
+{
+  "case": "a-deprecation-of-what-never-shipped.json",
+  "variants": [
+    {
+      "for": "passed",
+      "without": ["add"]
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "since-value"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `a-deprecation-of-what-never-shipped.json` is refused by `since-deprecated`, and the runner has to report nothing of it as written. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: without `add`, a case that passed; with `check` set to `since-value`, a case that fired another check."
+}

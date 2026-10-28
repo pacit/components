@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "message": "`aria-busy=\" false \"` on the part sets the live region of `warning` otherwise than its role does",
+  "$reason": "A warning part with its `status` and `aria-busy=\" false \"`. A `false` is allowed, being busy to neither engine, and this is not one: Chromium 153 does not trim the value and reads it as busy (measured on 2026-10-27), and fires no change of the region. A reading that trimmed the value before asking whether it is `false` passed it. Point 7 read the part's role and politeness and what may hide it, and passed it."
+}

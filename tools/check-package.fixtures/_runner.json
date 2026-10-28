@@ -1,0 +1,59 @@
+{
+  "case": "repository-missing",
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference",
+      "without": ["releaseOnly", "rehearsal"]
+    },
+    {
+      "for": "check",
+      "without": ["releaseOnly", "rehearsal"],
+      "set": {
+        "check": "licence"
+      }
+    },
+    {
+      "for": "rule",
+      "without": ["releaseOnly", "rehearsal"],
+      "set": {
+        "rule": "dead"
+      }
+    },
+    {
+      "for": "unread",
+      "without": ["releaseOnly"]
+    },
+    {
+      "for": "unsaid",
+      "without": ["rehearsal"]
+    },
+    {
+      "for": "unsaid",
+      "set": {
+        "rehearsal": "often"
+      }
+    },
+    {
+      "for": "rehearsal",
+      "set": {
+        "rehearsal": "warns"
+      }
+    },
+    {
+      "for": "rehearsal",
+      "case": "since-next",
+      "set": {
+        "point": 10,
+        "check": "since"
+      }
+    },
+    {
+      "for": "ordinary",
+      "set": {
+        "drop": ["LICENSE"]
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `repository-missing` is refused by `metadata` under `--release`, warned of in an ordinary run and refused under `--rehearsal`, as it declares (`releaseOnly`, `rehearsal: \"blocks\"`), and the runner has to report nothing of it as written. It has to report each variant, every one a rule no prepared case can prove, since every case is built to be refused as it declares: over `_reference` without its two modes, a case that passed; without its modes and with `check` set to `licence`, or `rule` set to `dead`, another check or rule; without `releaseOnly`, a `rehearsal` nothing reads; without `rehearsal`, or with it set to `often`, a case with two modes that does not say what the third reading does; with it set to `warns`, a rehearsal that blocks where the case says it warns, which the rule that a rehearsal warns reports as well; over `since-next` as `since` at point 10, a rehearsal that passes where the case says it blocks; and with `drop` set to `[\"LICENSE\"]`, an ordinary run that blocks beside its warning."
+}

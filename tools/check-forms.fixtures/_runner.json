@@ -1,5 +1,23 @@
 {
   "case": "control-exported-as-the-default",
   "pins": ["libs/components/widget/src/made.ts:8: a class with no name"],
-  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `control-exported-as-the-default` is refused by `denominator/control-unread` at `default.ts:8`, and here it is pinned to the refusal its neighbour `control-anonymous` holds, the same rule at `made.ts:8` — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`."
+  "variants": [
+    {
+      "for": "passed",
+      "case": "_reference"
+    },
+    {
+      "for": "check",
+      "set": {
+        "check": "block"
+      }
+    },
+    {
+      "for": "rule",
+      "set": {
+        "rule": "header-without-class"
+      }
+    }
+  ],
+  "description": "The runner's own control (`tools/runner-control.mjs`), played apart from the cases. `control-exported-as-the-default` is refused by `denominator/control-unread` at `default.ts:8`, and here it is pinned to the refusal its neighbour `control-anonymous` holds, the same rule at `made.ts:8` — the drift a pinned message exists to catch. The runner has to report it, and nothing of the case pinned to its own `message`. It has to report each variant besides, every one a rule no prepared case can prove, since every case is built to fire its own: over `_reference`, a case that passed; with `check` set to `block`, a case that fired another check; with `rule` set to `header-without-class`, a case that fired another rule."
 }

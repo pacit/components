@@ -1,0 +1,4 @@
+<!-- A warning part, alone in a component whose host an expression may make busy. -->
+@if (showWarning()) {
+<span class="pct-pending__warning" data-pct-part="warning" role="status">{{ warning() }}</span>
+}

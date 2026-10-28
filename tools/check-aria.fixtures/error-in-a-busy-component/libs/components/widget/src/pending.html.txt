@@ -1,0 +1,4 @@
+<!-- An error part, alone in a component whose host says its region is busy. -->
+@if (showError()) {
+<span class="pct-pending__error" data-pct-part="error" role="alert">{{ error() }}</span>
+}

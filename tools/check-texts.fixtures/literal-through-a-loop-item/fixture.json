@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "1 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `x` → \"Delete the row\"",
+  "description": "A sentence a `@for` block's collection hands its item, which the body prints. The item stands for the collection; the block's own variables (`$index` and its kin) stand for nothing, which the reference holds."
+}

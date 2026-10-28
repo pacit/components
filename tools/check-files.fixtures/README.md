@@ -74,14 +74,20 @@ break, two name the excerpt too — one of them a statement of several lines, re
 and the two with two statements name the count.
 
 A case that lists `names` lists what its message carries, so none of them proves the comparison is
-made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds both:
-through [`runner-control.mjs`](../runner-control.mjs) the runner plays
+made, or that the runner refuses `names` it cannot compare. [`_runner.json`](_runner.json) holds
+both: through [`runner-control.mjs`](../runner-control.mjs) the runner plays
 `types-file-importing-for-its-effect` once more with its `names` replaced — its line and the one
-`types-file-importing-with-type-on-each-name` names under the same rule, once after its own and once before; a name that is no list;
-an empty list; a blank name and a name that is no string, each beside a good one; and the file
-before its line number and the words after the count, which the message holds only with a digit
-beside them — and has to report each, and nothing of the case with its own `names`. The control is played apart from the cases and counts as
-none.
+`types-file-importing-with-type-on-each-name` names under the same rule, once after its own and once
+before; a name that is no list; an empty list; a blank name and a name that is no string, each
+beside a good one; and the file before its line number and the words after the count, which the
+message holds only with a digit beside them — and has to report each, and nothing of the case with
+its own `names`. The control is played apart from the cases and counts as none. The same control
+holds the runner's other rules, which no case proves either, since every case is built to be refused
+on its own — a case that passed, a case that fired another check and a case that fired another rule:
+it plays the case over `_reference`, which the gate passes; with `check` set to `index`; with `rule`
+set to `not-exported`; and, for the comparison runs both ways, with `rule` set to `null` where one
+fires, and over `a-template-no-declaration-names` as `orphan`, without its `names`, where none
+fires — and has to report each.
 
 Sources sit in the repository as `*.ts.txt` and become `*.ts` only inside the temporary
 directory the case is assembled in. The reason is hard: a `.ts` file under `tools/` belongs to
@@ -205,11 +211,10 @@ alone, a stop after the first, a zero-based line, a line off by a factor of ten,
 or taken from the last line, a count off by one, by ten or with a digit in front, and one
 statement of two — or, where it strikes an admitted form, by the rows it refuses, and by the
 reference where it holds that form. **Not held:** a form the list does not name, which the allow-list refuses and nothing here
-would notice being admitted, and the control's own rules but the `names` comparison, which
-`_runner.json` holds — the `FORMS` loop switched off leaves the run green, as do a runner that
-stopped reporting a case that passed, fired another point or fired another rule, and a search that
-stops at a name's first occurrence, where a digit stands beside it, though it stands free further
-on.
+would notice being admitted, and the control's own rules but those `_runner.json` holds — the
+`names` comparison, and a case that passed, fired another point or fired another rule: the `FORMS`
+loop switched off leaves the run green, as does a search that stops at a name's first occurrence,
+where a digit stands beside it, though it stands free further on.
 
 Point 9 keeps two lists — the components excused their inline member, and the types excused
 their absence from an index — and the three cases of each are the whole life cycle of an excuse:

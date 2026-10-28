@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { targetsIn } from './workflow-targets.mjs';
 import { withoutFences } from './markdown-fences.mjs';
+import { runnerControl } from './runner-control.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
@@ -867,12 +868,17 @@ if (!WRITE) {
         'silent defect (req-quality-negative-control)',
     );
   }
-  for (const fx of fixtures) {
+  /**
+   * What the runner reports of one prepared requirement file: nothing, when a rule of points 1
+   * and 2 refused it. The loop plays every file through it, and so does the runner's own
+   * control (`runner-control.mjs`) — a requirement file the gate passes, `fx` naming the file.
+   */
+  const playRequirements = (fx) => {
     const reqs = parseRequirements(read(fx), fx);
-    if (reqs.length === 0) {
-      fail(fx, 'the fixture holds no requirement — there is nothing to reject');
-      continue;
-    }
+    if (reqs.length === 0)
+      return [
+        `${fx}: the fixture holds no requirement — there is nothing to reject`,
+      ];
     const before = problems.length;
     for (const req of reqs) {
       if (!req.fields.Promise?.trim()) fail(fx, 'x');
@@ -893,12 +899,24 @@ if (!WRITE) {
     }
     const rejected = problems.length > before;
     problems.length = before; // a fixture's errors are EXPECTED — they do not count
-    if (!rejected)
-      fail(
-        fx,
-        'the negative control PASSED and was meant not to — the gate stopped examining anything',
-      );
-  }
+    return rejected
+      ? []
+      : [
+          `${fx}: the negative control PASSED and was meant not to — the gate stopped ` +
+            `examining anything`,
+        ];
+  };
+  for (const fx of fixtures) problems.push(...playRequirements(fx));
+  problems.push(
+    ...(await runnerControl({
+      where: `${FIXTURES}/_runner.json`,
+      load: () => JSON.parse(read(`${FIXTURES}/_runner.json`)),
+      cases: fixtures,
+      read: () => ({}),
+      run: playRequirements,
+      holds: ['passed'],
+    })),
+  );
 
   // Point 3's control is a PAIR OF WORKFLOWS, because "the night runs everything the push
   // line runs" is a statement about two files and neither of them says anything alone. The
@@ -926,7 +944,34 @@ if (!WRITE) {
           `then rejected for the reference's defect and not for its own`,
       );
 
-    let workflowCases = 0;
+    /**
+     * What the runner reports of one case of point 3, the directory `dir` declared by `declared`:
+     * nothing, when the pair fired the one rule the case declares. The loop plays every case
+     * through it, and so does the runner's own control (`runner-control.mjs`).
+     */
+    const playWorkflows = (dir, declared) => {
+      const fired = [];
+      checkWorkflows(
+        readOrNull(`${dir}/ci.yml`) ?? read(refPush),
+        readOrNull(`${dir}/nightly.yml`) ?? read(refNight),
+        (rule) => fired.push(rule),
+      );
+      const unique = [...new Set(fired)];
+      if (!unique.length)
+        return [
+          `${dir}: the negative control PASSED and was meant not to — point 3 rule ` +
+            `\`${declared.rule}\` stopped examining anything`,
+        ];
+      if (unique.length > 1 || unique[0] !== declared.rule)
+        return [
+          `${dir}: the case fired point 3 rule \`${unique.join('`, `')}\` and declares ` +
+            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
+            `rule unproven, which is the fault of the case and not of the gate`,
+        ];
+      return [];
+    };
+
+    const workflowCases = [];
     for (const decl of globSync(`${FIXTURES}/*/fixture.json`, {
       cwd: ROOT,
     }).sort()) {
@@ -937,32 +982,21 @@ if (!WRITE) {
         continue; // point 8's loop below reports an unreadable declaration
       }
       if (declared?.point !== 3) continue;
-      workflowCases++;
-
-      const dir = dirname(decl);
-      const fired = [];
-      checkWorkflows(
-        readOrNull(`${dir}/ci.yml`) ?? read(refPush),
-        readOrNull(`${dir}/nightly.yml`) ?? read(refNight),
-        (rule) => fired.push(rule),
-      );
-      const unique = [...new Set(fired)];
-      if (!unique.length)
-        fail(
-          dir,
-          `the negative control PASSED and was meant not to — point 3 rule ` +
-            `\`${declared.rule}\` stopped examining anything`,
-        );
-      else if (unique.length > 1 || unique[0] !== declared.rule)
-        fail(
-          dir,
-          `the case fired point 3 rule \`${unique.join('`, `')}\` and declares ` +
-            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
-            `rule unproven, which is the fault of the case and not of the gate`,
-        );
+      workflowCases.push(dirname(decl));
+      problems.push(...playWorkflows(dirname(decl), declared));
     }
+    problems.push(
+      ...(await runnerControl({
+        where: `${FIXTURES}/_runner-workflows.json`,
+        load: () => JSON.parse(read(`${FIXTURES}/_runner-workflows.json`)),
+        cases: workflowCases,
+        read: (dir) => JSON.parse(read(`${dir}/fixture.json`)),
+        run: playWorkflows,
+        holds: ['passed', 'rule'],
+      })),
+    );
 
-    if (workflowCases === 0)
+    if (workflowCases.length === 0)
       fail(
         FIXTURES,
         `no negative control for point 3's workflow rules — not one case declares ` +
@@ -980,17 +1014,34 @@ if (!WRITE) {
       'no negative control for point 7 — a gate with no proof that it can fire is one ' +
         'more silent defect (req-quality-negative-control)',
     );
-  for (const fx of cards) {
+  /**
+   * What the runner reports of one prepared card: nothing, when point 7 refused it. The loop
+   * plays every card through it, and so does the runner's own control (`runner-control.mjs`) —
+   * a card the gate passes, `fx` naming the file.
+   */
+  const playCard = (fx) => {
     const before = problems.length;
     checkCardClaims(fx, read(fx), fail);
     const rejected = problems.length > before;
     problems.length = before;
-    if (!rejected)
-      fail(
-        fx,
-        'the negative control PASSED and was meant not to — point 7 stopped examining anything',
-      );
-  }
+    return rejected
+      ? []
+      : [
+          `${fx}: the negative control PASSED and was meant not to — point 7 stopped ` +
+            `examining anything`,
+        ];
+  };
+  for (const fx of cards) problems.push(...playCard(fx));
+  problems.push(
+    ...(await runnerControl({
+      where: `${FIXTURES}/_runner-cards.json`,
+      load: () => JSON.parse(read(`${FIXTURES}/_runner-cards.json`)),
+      cases: cards,
+      read: () => ({}),
+      run: playCard,
+      holds: ['passed'],
+    })),
+  );
 
   // Point 8's controls are DIRECTORIES, because a plan means nothing without the
   // requirements it is read against. Those requirements are shared — `_reference/`, whose
@@ -1045,7 +1096,35 @@ if (!WRITE) {
           `beside it is then rejected for the reference's defect and not for its own`,
       );
 
-    let planCases = 0;
+    /**
+     * What the runner reports of one case of point 8, the directory `dir` declared by
+     * `declared`: nothing, when its plan fired the one rule the case declares. The loop plays
+     * every case through it, and so does the runner's own control (`runner-control.mjs`).
+     */
+    const playPlan = (dir, declared) => {
+      const fired = [];
+      checkPlanClaims(
+        `${dir}/plan.md`,
+        readOrNull(`${dir}/plan.md`),
+        refStates,
+        (rule) => fired.push(rule),
+      );
+      const unique = [...new Set(fired)];
+      if (!unique.length)
+        return [
+          `${dir}: the negative control PASSED and was meant not to — point 8 rule ` +
+            `\`${declared.rule}\` stopped examining anything`,
+        ];
+      if (unique.length > 1 || unique[0] !== declared.rule)
+        return [
+          `${dir}: the case fired point 8 rule \`${unique.join('`, `')}\` and declares ` +
+            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
+            `rule unproven, which is the fault of the case and not of the gate`,
+        ];
+      return [];
+    };
+
+    const planCases = [];
     for (const decl of globSync(`${FIXTURES}/*/fixture.json`, {
       cwd: ROOT,
     }).sort()) {
@@ -1061,33 +1140,21 @@ if (!WRITE) {
         continue;
       }
       if (declared?.point !== 8) continue;
-      planCases++;
-
-      const dir = dirname(decl);
-      const fired = [];
-      checkPlanClaims(
-        `${dir}/plan.md`,
-        readOrNull(`${dir}/plan.md`),
-        refStates,
-        (rule) => fired.push(rule),
-      );
-      const unique = [...new Set(fired)];
-      if (!unique.length)
-        fail(
-          dir,
-          `the negative control PASSED and was meant not to — point 8 rule ` +
-            `\`${declared.rule}\` stopped examining anything`,
-        );
-      else if (unique.length > 1 || unique[0] !== declared.rule)
-        fail(
-          dir,
-          `the case fired point 8 rule \`${unique.join('`, `')}\` and declares ` +
-            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
-            `rule unproven, which is the fault of the case and not of the gate`,
-        );
+      planCases.push(dirname(decl));
+      problems.push(...playPlan(dirname(decl), declared));
     }
+    problems.push(
+      ...(await runnerControl({
+        where: `${FIXTURES}/_runner-plans.json`,
+        load: () => JSON.parse(read(`${FIXTURES}/_runner-plans.json`)),
+        cases: planCases,
+        read: (dir) => JSON.parse(read(`${dir}/fixture.json`)),
+        run: playPlan,
+        holds: ['passed', 'undeclared', 'rule'],
+      })),
+    );
 
-    if (planCases === 0)
+    if (planCases.length === 0)
       fail(
         FIXTURES,
         `no negative control for point 8 — not one case declares \`"point": 8\`, so the ` +
