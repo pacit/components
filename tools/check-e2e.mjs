@@ -134,6 +134,12 @@ const POSITIONAL = /\.(?:last|first)\s*\(\s*\)|\.nth\s*\(/;
 /** `page.waitForTimeout(150)` — the clock standing in for a condition. */
 const BARE_WAIT = /\.waitForTimeout\s*\(/;
 
+/**
+ * The two names points 3 and 4 read as themselves rather than through a vocabulary: a
+ * `test(` opens a new test and an `await expect(` closes the window an action opened.
+ */
+const READ_AS_THEMSELVES = new Set(['test', 'expect']);
+
 // ── the error ─────────────────────────────────────────────────────────────────
 
 /**
@@ -350,13 +356,15 @@ const definitions = (masked) => {
 };
 
 /**
- * What a file takes from the suite's own modules: every `import … from` whose module is a
- * RELATIVE path (`.`, `..` or under either), the last word of each part of its clause — `a`,
- * the `b` of `a as b`, the `ns` of `* as ns`, and the `type` of `import type`, which nothing
- * calls — as `name`, the binding as `written`, with the line the import starts on. A package
- * is not the suite's own: Playwright's names are the base of every vocabulary, and `node:fs` reads no
- * page. The clause is read on the masked text, where a comment between its names is blank,
- * and the module off the source at the same offsets, because the mask blanks every string.
+ * What a file takes from a relative module: every `import … from` whose module is `.`, `..` or
+ * a path under either, the last word of each part of its clause as `name` — `a`, the `b` of
+ * `a as b`, the `ns` of `* as ns`, the default binding — and the binding as `written`: `a`,
+ * `a as b`, `* as ns`, and `default as d` for the default, which names no export of its own.
+ * `import type * as ns` is no namespace: its first word is `type`, and no call goes through
+ * it. The line is the one the import starts on. A package is not read: Playwright's names are
+ * the base of every vocabulary, and `node:fs` reads no page. The clause is read on the masked
+ * text, where a comment between its names is blank, and the module off the source at the
+ * same offsets, because the mask blanks every string.
  */
 const IMPORT = /^import\s+([\w$*{},\s]+?)\s*from\s*(['"])/gm;
 
@@ -367,10 +375,23 @@ const imports = ({ text, masked }) => {
     const module = text.slice(from, masked.indexOf(m[2], from));
     if (!/^\.\.?(?:\/|$)/.test(module)) continue;
     const line = masked.slice(0, m.index).split('\n').length;
-    for (const part of m[1].replace(/[{}]/g, ',').split(',')) {
+    const [outside, inside = ''] = m[1].split('{');
+    const parts = [
+      ...outside.split(',').map((part) => [part, false]),
+      ...inside
+        .replace('}', '')
+        .split(',')
+        .map((part) => [part, true]),
+    ];
+    for (const [part, named] of parts) {
       const words = part.trim().split(/\s+/);
       const name = words.at(-1);
-      const written = words.at(-2) === 'as' ? words.slice(-3).join(' ') : name;
+      const written =
+        words.at(-2) === 'as'
+          ? words.slice(-3).join(' ')
+          : named
+            ? name
+            : `default as ${name}`;
       if (name)
         found.push({
           line,
@@ -573,17 +594,19 @@ const corpus = ({ specs, sources, shared, readers }) => {
   // leaves the other's readers standing, and every reading through the lost one goes quiet —
   // measured on `support/css.ts`, whose `styleOf` takes every colour the races are about. So
   // each helper a file calls from the suite's own modules has to be one the corpus defines,
-  // under the name it is called by. An alias that is called is refused, whatever the corpus
-  // defines under it, and a namespace whole: neither call writes the helper's own name.
-  // `test` and `expect` are the two names points 3 and 4 read as themselves, so a suite's
-  // own fixtures module, which hands both on, hides nothing.
-  const defined = new Set([...shared.map((d) => d.name), 'test', 'expect']);
+  // under the name it is called by. An alias that is called is refused, a default import
+  // among them, whatever the corpus defines under it, and a namespace whole: neither call
+  // writes the helper's own name. `test` and `expect` are the two names points 3 and 4 read
+  // as themselves, under whatever binding a fixtures module hands them on; what such a module
+  // puts INTO them, a matcher of `expect.extend`, is not read here.
+  const defined = new Set(shared.map((d) => d.name));
   const unseen = sources.flatMap((source) =>
     imports(source)
       .filter(
         (i) =>
           i.namespace ||
           (free(source.masked, i.name) &&
+            !READ_AS_THEMSELVES.has(i.name) &&
             (i.written !== i.name || !defined.has(i.name))),
       )
       .map(
@@ -594,14 +617,15 @@ const corpus = ({ specs, sources, shared, readers }) => {
   if (unseen.length)
     return new E2eError(
       'corpus',
-      `${unseen.length} helper(s) taken from the suite's own modules by a name no ` +
+      `${unseen.length} helper(s) imported from a relative module under a name no ` +
         `vocabulary can match:\n${list(unseen)}\n    Every vocabulary is Playwright's own ` +
         `names closed over the helpers the corpus defines, matched by the name a call ` +
         `writes — so a call to one of these could read, wait or act and points 3 and 4 ` +
         `cannot tell which: a race read through it is walked past as agreement. Usual cause: ` +
-        `a support file dropped out of the file list, an imported helper defined in a shape ` +
-        `the scanner does not read, or one called under an alias or through a namespace — ` +
-        `import it by its own name`,
+        `a support file dropped out of the file list, a helper whose definition the scanner ` +
+        `does not read — a function expression, a class — or one called under an alias, a ` +
+        `default import or through a namespace. Import a helper by its own name, and a ` +
+        `namespace of types with \`import type\``,
       'helpers',
     );
 

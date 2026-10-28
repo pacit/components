@@ -1,9 +1,10 @@
 import type { Locator } from '@playwright/test';
 import {
+  type ComputedStylePropertyName,
   // the one reader of a computed value, kept in the suite's root module
   readComputedStyleProperty,
-  type ComputedStylePropertyName,
 } from '..';
+import { cssName } from '.';
 
 /**
  * `styleOf` kept, as a thin name over a reader the corpus does not hold. The definition
@@ -14,5 +15,5 @@ export function styleOf(
   locator: Locator,
   property: ComputedStylePropertyName,
 ): Promise<string> {
-  return readComputedStyleProperty(locator, property);
+  return readComputedStyleProperty(locator, cssName(property));
 }

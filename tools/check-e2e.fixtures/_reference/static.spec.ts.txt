@@ -1,14 +1,14 @@
 import { boxOf, visit } from './support/dom';
 import type * as dom from './support/dom';
-import { expect, test } from './support/fixtures';
+import { expect, suiteTest as test } from './support/fixtures';
 
 /**
  * The common and perfectly safe shape, here so that point 3 has to tell it apart from the
  * two above: an index into a list nothing is appending to, read after an auto-retrying
  * assertion has said how long the list is. A rule that fired on this would fire on most of
  * the real suite and would be switched off within a week. Its `test` and `expect` come from
- * the suite's own fixtures, and the support tree's types as dom (a namespace of types, which
- * no call goes through): neither is a helper to miss.
+ * the suite's own fixtures, the first under an alias, and the support tree's types as dom (a
+ * namespace of types, which no call goes through): none of them is a helper to miss.
  */
 test('the cells of a settled grid stand in a row', async ({ page }) => {
   await visit(page, '/date');
