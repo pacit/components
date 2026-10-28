@@ -32,7 +32,7 @@
     <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
     <div role="option">Poland</div>
   </div>
-  <div aria-hidden=" TRUE">
+  <div aria-hidden="true">
     <div role="option" *ngIf="open()">Anywhere</div>
   </div>
   <div role="list">

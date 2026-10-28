@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "context",
+  "message": "<div role=\"option\"> stands under <div role=\"list\"> (list)",
+  "$reason": "`option-in-a-list-under-a-wrapper-hidden-in-capitals` with the wrapper's `aria-hidden` written ` true`, a space before it. Chromium hides a subtree there and Firefox does not, hiding at `true` alone, as written, so Firefox exposes the option in the `list`, out of its context (measured on 2026-10-27, Chromium 153 off its own tree and Firefox 158 off its own and WebDriver's computed role, a tab or a line break before the value alike). axe 4.13 trims the value and asks the option for no owner, so the audit passes the page too. A reading of the value as axe makes it, or trimmed alone, passed it."
+}
