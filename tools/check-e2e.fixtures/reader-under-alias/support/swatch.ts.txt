@@ -1,0 +1,9 @@
+import type { Locator, Page } from '@playwright/test';
+
+/**
+ * A swatch of the palette page by its tone: a lookup, which reads nothing. It is the name
+ * the card spec gives `styleOf` under an alias, so a vocabulary matching by name would take
+ * that read for this lookup.
+ */
+export const colourOf = (page: Page, tone: string): Locator =>
+  page.getByTestId(`swatch-${tone}`);

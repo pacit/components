@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "helpers",
+  "message": "1 helper(s) imported from a relative module under a name no vocabulary can match:\n      rim.spec.ts:3 — `* as css`, imported from `./support/css`\n    Every",
+  "why": "The hovered card's race, read through `css.styleOf` of `import * as css`. To the scanner a call through a namespace is a method of an object and not a helper by name, so point 3 walks past the race. The namespace is refused whole rather than per call: no call through one is ever the bare name a vocabulary holds."
+}

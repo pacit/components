@@ -1,0 +1,16 @@
+import { expect, test } from '@playwright/test';
+import colourOf from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * The same race through the module's default export, bound as `colourOf`. A default binding
+ * names no export of its own, so it is an alias by construction, and this one lands on the
+ * lookup `support/swatch.ts` defines just as the card spec's does.
+ */
+test('the second card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').nth(1).hover();
+  expect(await colourOf(page.locator('.card').nth(1), 'border-color')).toBe(
+    'rgb(37, 99, 235)',
+  );
+});

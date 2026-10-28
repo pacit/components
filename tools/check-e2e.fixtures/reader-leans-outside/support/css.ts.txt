@@ -1,0 +1,19 @@
+import type { Locator } from '@playwright/test';
+import {
+  type ComputedStylePropertyName,
+  // the one reader of a computed value, kept in the suite's root module
+  readComputedStyleProperty,
+} from '..';
+import { cssName } from '.';
+
+/**
+ * `styleOf` kept, as a thin name over a reader the corpus does not hold. The definition
+ * is here and reaches no Playwright read the scanner can see, so `styleOf` stops being a
+ * reader — the dropped file one hop further away.
+ */
+export function styleOf(
+  locator: Locator,
+  property: ComputedStylePropertyName,
+): Promise<string> {
+  return readComputedStyleProperty(locator, cssName(property));
+}

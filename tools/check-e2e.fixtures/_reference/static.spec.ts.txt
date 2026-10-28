@@ -1,18 +1,22 @@
-import { expect, test } from '@playwright/test';
-import { boxOf, visit } from './support/dom';
+import { boxOf, DAY, visit } from './support/dom';
+import type * as dom from './support/dom';
+import { expect, suiteTest as test } from './support/fixtures';
 
 /**
  * The common and perfectly safe shape, here so that point 3 has to tell it apart from the
  * two above: an index into a list nothing is appending to, read after an auto-retrying
  * assertion has said how long the list is. A rule that fired on this would fire on most of
- * the real suite and would be switched off within a week.
+ * the real suite and would be switched off within a week. Its `test` and `expect` come from
+ * the suite's own fixtures, the first under an alias; the support tree's types come as a
+ * namespace of types, and DAY (the selector of a day cell) is a value it never calls. None
+ * of them is a helper to miss.
  */
 test('the cells of a settled grid stand in a row', async ({ page }) => {
   await visit(page, '/date');
-  const cells = page.locator('[data-part="day"]');
+  const cells = page.locator(DAY);
   await expect(cells).toHaveCount(42);
 
-  const first = await boxOf(cells.nth(0));
-  const second = await boxOf(cells.nth(1));
+  const first: dom.Box = await boxOf(cells.nth(0));
+  const second: dom.Box = await boxOf(cells.nth(1));
   expect(second.y, 'the first two cells are not on one row').toBe(first.y);
 });
