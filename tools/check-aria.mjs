@@ -137,13 +137,16 @@ const BOUND_LIVE = [LIVE_ATTRIBUTE, POLITENESS];
  * (`writesAttribute`) — is what a message part may not stand under (`UNREACHABLE`). `hidden`, a
  * `display: none` and a `visibility: hidden` take a part out of both trees too and are none of
  * these: they hide the text from every user alike, and the part is back in both trees with its
- * role once it is shown (measured), as one an `@if` draws is. Point 9 looks past a role as axe
- * does, the value trimmed and in any case (`ariaHidden`).
+ * role once it is shown (measured), as one an `@if` draws is. Point 9 looks past a role only where
+ * every engine drops it, at `true` as written (`HIDDEN`, measured again on 2026-10-27, Chromium 153
+ * and Firefox 158): axe 4.13 reads the value trimmed and in any case, and asks no owner of an
+ * option under `aria-hidden="TRUE"`, which Firefox keeps in its tree, in whatever stands above it.
  */
 const INERT = 'inert';
 const HIDING = ['aria-hidden', INERT];
 const SHOWN = /^(|false|undefined)$/i;
 const mayHide = (name, value) => name === INERT || !SHOWN.test(value);
+const HIDDEN = 'true';
 /**
  * What takes each message part out of the reader's reach, of what may hide an element (`HIDING`,
  * measured on 2026-10-20). An error and a warning are live regions, and one out of the tree is
@@ -464,7 +467,7 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
  *   `globalAria` — the attributes ARIA lets any element carry (`aria-labelledby`,
  *                  `aria-describedby`, `aria-live`): the ones that keep an element with no
  *                  role in the tree, where point 9 reads them — `aria-hidden` too, unless it
- *                  hides — and the list axe itself asks (`getGlobalAriaAttrs`).
+ *                  hides in every engine — and the list axe itself asks (`getGlobalAriaAttrs`).
  *
  * What the tables do NOT hold is a fact about axe, measured rather than remembered (three
  * engines, 2026-09-05): `iframe`, `audio` and `video` with `controls`, `embed`, `object`, an
@@ -1843,10 +1846,11 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // way to land on it. Static or bound — a binding says the attribute exists in
           // some state.
           names: namesOn(node),
-          // Out of the tree with all it holds, the way axe reads the value; bound, it may
-          // be absent. Written on Angular's own tag, it fails point 1 first.
+          // Out of every engine's tree with all it holds, at the one value Firefox hides at
+          // (`HIDDEN`); bound, it may be absent. Written on Angular's own tag, it fails point
+          // 1 first.
           ariaHidden:
-            written('aria-hidden')?.trim().toLowerCase() === 'true' &&
+            written('aria-hidden') === HIDDEN &&
             bindings('aria-hidden').length === 0,
           // Each attribute that may take it out of the tree, for the message parts below it,
           // and each that sets their region; and the part it carries, for what is inside it.
@@ -3181,7 +3185,7 @@ const checkAria = ({
   // passed, which axe reports in both engines measured, and a named SVG `<g>`, a group to both,
   // with it. Angular's containers are looked through, and so are generic elements and
   // `presentation`/`none` with no global attribute and no way to land on them; a role an
-  // `aria-hidden` takes out of the tree is not asked at all. Where the template runs out, the host answers, and a host with no role hands the
+  // `aria-hidden` takes out of every engine's tree is not asked at all. Where the template runs out, the host answers, and a host with no role hands the
   // question to the consumer's template — reported as such, because a static reader that
   // guessed there would be passing on a relation nobody has seen.
   let examined = 0;
@@ -3203,7 +3207,8 @@ const checkAria = ({
         ...[...required].filter((context) => context !== 'group'),
         ...(OWN_GROUP_ROLES.includes(element.role) ? [element.role] : []),
       ]);
-      // A role an `aria-hidden` takes out of the tree needs no owner, and axe asks it for none.
+      // A role an `aria-hidden` takes out of every engine's tree needs no owner. One Firefox
+      // keeps is asked for its owner, though Chromium drops it and axe asks nothing of it.
       if ([element, ...element.ancestors].some((e) => e.ariaHidden)) continue;
       examined++;
       let settled = false;
@@ -3276,7 +3281,8 @@ const checkAria = ({
               `through, so it is what owns the \`${element.role}\`, and nothing but ` +
               `${contextOf(required)} may. The audit reports it as a critical ` +
               `\`aria-required-children\` naming the wrapper, on a page that opens the ` +
-              `panel and nowhere else`,
+              `panel and nowhere else — and under an \`aria-hidden\` of \`TRUE\` or ` +
+              `\` true \`, which Firefox keeps in its tree, nowhere at all`,
           );
         }
         if (role === 'group' && allowsGroup) {
@@ -3298,7 +3304,9 @@ const checkAria = ({
             `and nothing but ${contextOf(required)} may stand between a ` +
             `\`${element.role}\` and its owner — axe reports this as a critical ` +
             `\`aria-required-children\` where it knows the role in between (it reads the ` +
-            `\`doc-\` ones as none), on a page that opens the panel, and no page has to`,
+            `\`doc-\` ones as none) and keeps the role in its tree (it drops one under an ` +
+            `\`aria-hidden\` of \`TRUE\` or \` true \`, which Firefox keeps), on a page that ` +
+            `opens the panel, and no page has to`,
         );
       }
       if (settled) continue;
