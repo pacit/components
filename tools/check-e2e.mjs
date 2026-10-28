@@ -346,8 +346,11 @@ const definitions = (masked) => {
     // regex over the return type: `function styleOf(…): Promise<string> {` is followed by a
     // body whose own first line holds an `=>`, and a pattern that reaches for it takes the
     // callback for the function and reads the body as everything but itself. That is how
-    // `styleOf` came back NOT a reader, which is a silent gate and not a loud one.
-    const after = masked.slice(k + 1, k + 1 + 400);
+    // `styleOf` came back NOT a reader, which is a silent gate and not a loud one. A return
+    // annotation is stepped over first, as its own `{` — `Promise<{ colour: string }>` — is
+    // a type and no body.
+    const from = returned(masked, k + 1, !/\bfunction\b/.test(m[0]));
+    const after = masked.slice(from, from + 400);
     const arrowAt = after.indexOf('=>');
     const braceAt = after.indexOf('{');
     // An overload's signature, or a `declare`d one, ends at its `;` and has no body: what
@@ -357,11 +360,11 @@ const definitions = (masked) => {
       continue;
     let body = '';
     if (arrowAt >= 0 && (braceAt < 0 || arrowAt < braceAt)) {
-      let at = k + 1 + arrowAt + 2;
+      let at = from + arrowAt + 2;
       while (at < masked.length && /\s/.test(masked[at])) at++;
       body =
         masked[at] === '{' ? braced(masked, at) : upToSemicolon(masked, at);
-    } else if (braceAt >= 0) body = braced(masked, k + 1 + braceAt);
+    } else if (braceAt >= 0) body = braced(masked, from + braceAt);
     found.push({ name, body, line: lineOf(m) });
   }
   return found;
@@ -527,6 +530,38 @@ const lookup = (modules, from, module, name, seen = new Set()) => {
       where: module,
     }
   );
+};
+
+/**
+ * Where a definition's head ends once the parameters are read, from `at`: past a return
+ * annotation, if one stands there, to the first `{`, `;` or — for an arrow — `=>` outside every
+ * bracket the type opened, after a type that is complete. A `{` where a type is expected (after
+ * the `:`, a `<`, a `|`, an `&`, a `,`) opens an object type and belongs to it; a `=>` in a
+ * declaration's annotation is a function type's.
+ */
+const returned = (text, at, arrow) => {
+  let i = at;
+  while (/\s/.test(text[i] ?? '')) i++;
+  if (text[i] !== ':') return at;
+  let depth = 0;
+  let expecting = true;
+  for (i++; i < text.length; i++) {
+    const c = text[i];
+    if (/\s/.test(c)) continue;
+    if (text.startsWith('=>', i)) {
+      if (depth === 0 && !expecting && arrow) return i;
+      i++;
+      expecting = true;
+    } else if (depth === 0 && !expecting && (c === '{' || c === ';')) return i;
+    else if ('<({['.includes(c)) {
+      depth++;
+      expecting = true;
+    } else if ('>)}]'.includes(c)) {
+      depth--;
+      expecting = false;
+    } else expecting = '|&,:?'.includes(c);
+  }
+  return at;
 };
 
 const REBINDING =

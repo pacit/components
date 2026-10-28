@@ -76,32 +76,32 @@ hands it no `pin`.
 
 ## The cases
 
-| directory                                                                    | what it breaks                                                                          | point | rule                 |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----- | -------------------- |
-| [`no-specs`](no-specs)                                                       | not one spec to read — the walk found nothing and says nothing                          | 1     | `specs`              |
-| [`support-not-read`](support-not-read)                                       | the support tree gone, so no reading the specs take is recognisable                     | 1     | `readers`            |
-| [`reader-dropped`](reader-dropped)                                           | `support/css.ts` gone, `dom.ts` left: one reader counted, `styleOf` lost                | 1     | `helpers`            |
-| [`reader-held-elsewhere`](reader-held-elsewhere)                             | the same, with a `styleOf` that reads nothing left in another support file              | 1     | `helpers`            |
-| [`reader-under-alias`](reader-under-alias)                                   | the card's race read through `styleOf` as another helper's name, aliased or the default | 1     | `helpers`            |
-| [`reader-renamed-in-reexport`](reader-renamed-in-reexport)                   | the same, the name or the default given by a module that re-exports `styleOf`           | 1     | `helpers`            |
-| [`reader-through-namespace`](reader-through-namespace)                       | the card's race read through `css.styleOf` of `import * as css`                         | 1     | `helpers`            |
-| [`reader-through-reexported-namespace`](reader-through-reexported-namespace) | the same through a re-exported namespace, an object, a page object and a default        | 1     | `helpers`            |
-| [`reader-leans-outside`](reader-leans-outside)                               | `styleOf` a thin name over helpers imported from `..` and `.`, outside the corpus       | 1     | `helpers`            |
-| [`expect-of-the-suite`](expect-of-the-suite)                                 | an `expect` extended with a matcher that reads once, taken for a retrying one           | 1     | `helpers`            |
-| [`visit-of-two-kinds`](visit-of-two-kinds)                                   | two `visit`s, one waiting and one not, and two `pick`s, one reading and one not         | 1     | `homonyms`           |
-| [`nothing-to-rule-on`](nothing-to-rule-on)                                   | specs with neither a positional locator nor a bare wait in them                         | 1     | `material`           |
-| [`unbalanced-spec`](unbalanced-spec)                                         | a block the file never closes — the scanner loses the rest of it                        | 2     | `unbalanced`         |
-| [`empty-spec`](empty-spec)                                                   | a spec the scanner makes no statement of, counted as examined                           | 2     | `empty-file`         |
-| [`toast-tone-race`](toast-tone-race)                                         | `items(page).last()` read in the instant after the click that fills it                  | 3     | `read-after-action`  |
-| [`hovered-card-race`](hovered-card-race)                                     | the same, with the index written into the read instead of bound                         | 3     | `read-after-action`  |
-| [`race-through-dollar-name`](race-through-dollar-name)                       | the card's race read through `$rimOf` and through a locator bound as `$card`            | 3     | `read-after-action`  |
-| [`race-through-function-expression`](race-through-function-expression)       | the card's race read through `const rimOf = function (…) { … }`                         | 3     | `read-after-action`  |
-| [`race-through-rebinding`](race-through-rebinding)                           | the card's race read through `const colourOf = styleOf;`                                | 3     | `read-after-action`  |
-| [`race-through-type-arguments`](race-through-type-arguments)                 | four cards read through calls with type arguments before the `(`                        | 3     | `read-after-action`  |
-| [`race-after-own-visit`](race-after-own-visit)                               | a spec's own `visit`, which waits for nothing, standing in for the shared one           | 3     | `read-after-action`  |
-| [`race-after-shadowed-callee`](race-after-shadowed-callee)                   | a shared `open` calling the shared `settle`, read as calling the spec's own             | 3     | `read-after-action`  |
-| [`paused-sheen-baseline`](paused-sheen-baseline)                             | a measured 150 ms deciding when the baseline is taken                                   | 4     | `wait-then-baseline` |
-| [`baseline-under-dollar-name`](baseline-under-dollar-name)                   | the same, with the baseline under the name `$held`                                      | 4     | `wait-then-baseline` |
+| directory                                                                    | what it breaks                                                                            | point | rule                 |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----- | -------------------- |
+| [`no-specs`](no-specs)                                                       | not one spec to read — the walk found nothing and says nothing                            | 1     | `specs`              |
+| [`support-not-read`](support-not-read)                                       | the support tree gone, so no reading the specs take is recognisable                       | 1     | `readers`            |
+| [`reader-dropped`](reader-dropped)                                           | `support/css.ts` gone, `dom.ts` left: one reader counted, `styleOf` lost                  | 1     | `helpers`            |
+| [`reader-held-elsewhere`](reader-held-elsewhere)                             | the same, with a `styleOf` that reads nothing left in another support file                | 1     | `helpers`            |
+| [`reader-under-alias`](reader-under-alias)                                   | the card's race read through `styleOf` as another helper's name, aliased or the default   | 1     | `helpers`            |
+| [`reader-renamed-in-reexport`](reader-renamed-in-reexport)                   | the same, the name or the default given by a module that re-exports `styleOf`             | 1     | `helpers`            |
+| [`reader-through-namespace`](reader-through-namespace)                       | the card's race read through `css.styleOf` of `import * as css`                           | 1     | `helpers`            |
+| [`reader-through-reexported-namespace`](reader-through-reexported-namespace) | the same through a re-exported namespace, an object, a page object and a default          | 1     | `helpers`            |
+| [`reader-leans-outside`](reader-leans-outside)                               | `styleOf` a thin name over helpers imported from `..` and `.`, outside the corpus         | 1     | `helpers`            |
+| [`expect-of-the-suite`](expect-of-the-suite)                                 | an `expect` extended with a matcher that reads once, taken for a retrying one             | 1     | `helpers`            |
+| [`visit-of-two-kinds`](visit-of-two-kinds)                                   | two `visit`s, one waiting and one not, and two `pick`s, one reading and one not           | 1     | `homonyms`           |
+| [`nothing-to-rule-on`](nothing-to-rule-on)                                   | specs with neither a positional locator nor a bare wait in them                           | 1     | `material`           |
+| [`unbalanced-spec`](unbalanced-spec)                                         | a block the file never closes — the scanner loses the rest of it                          | 2     | `unbalanced`         |
+| [`empty-spec`](empty-spec)                                                   | a spec the scanner makes no statement of, counted as examined                             | 2     | `empty-file`         |
+| [`toast-tone-race`](toast-tone-race)                                         | `items(page).last()` read in the instant after the click that fills it                    | 3     | `read-after-action`  |
+| [`hovered-card-race`](hovered-card-race)                                     | the same, with the index written into the read instead of bound                           | 3     | `read-after-action`  |
+| [`race-through-dollar-name`](race-through-dollar-name)                       | the card's race read through `$rimOf` and through a locator bound as `$card`              | 3     | `read-after-action`  |
+| [`race-through-function-expression`](race-through-function-expression)       | the card's race read through `const rimOf = function (…) { … }`                           | 3     | `read-after-action`  |
+| [`race-through-rebinding`](race-through-rebinding)                           | the card's race read through `const colourOf = styleOf;`                                  | 3     | `read-after-action`  |
+| [`race-through-type-arguments`](race-through-type-arguments)                 | five cards read through type syntax around the reader: arguments, parameters, annotations | 3     | `read-after-action`  |
+| [`race-after-own-visit`](race-after-own-visit)                               | a spec's own `visit`, which waits for nothing, standing in for the shared one             | 3     | `read-after-action`  |
+| [`race-after-shadowed-callee`](race-after-shadowed-callee)                   | a shared `open` calling the shared `settle`, read as calling the spec's own               | 3     | `read-after-action`  |
+| [`paused-sheen-baseline`](paused-sheen-baseline)                             | a measured 150 ms deciding when the baseline is taken                                     | 4     | `wait-then-baseline` |
+| [`baseline-under-dollar-name`](baseline-under-dollar-name)                   | the same, with the baseline under the name `$held`                                        | 4     | `wait-then-baseline` |
 
 Point 1 has twelve cases over five rules, because there are five different routes by which this
 gate ends a run green having measured nothing: the file list returns no spec, the support tree
@@ -153,29 +153,31 @@ reached through a package name or a path alias, a dynamic `import()`, `require`,
 Playwright fixture handed to the test. A helper a file defines in a shape the scanner still
 does not read and calls itself: a class's method on an instance made in the same file, a
 factory's result (`const rimOf = makeReader(page)`), a destructured name, a member rebound
-(`const colourOf = css.styleOf`), an object a call builds and the file calls through
-(`Object.freeze({ styleOf })`, `makePalette()`). A call not written as `name(`: inside a
-template's `${…}`, which the mask blanks whole — the suites hold some forty, nearly all of them
-diagnostics in an assertion's message, and `regions.spec.ts` nests a template inside one — and
-a helper handed on as a value (`cells.map(boxOf)`), which a bare name cannot be read as without
-scopes: `hero.spec.ts` binds a `settled` of its own and hands it to `toBe`. Type parameters and
-arguments are read with one level of their own inside, `pick<Record<string, string>>(…)`, and
-not deeper, nor with a function type among them. Names are scoped to a spec, not to a block
-within it, and the support tree's block-local helpers pool with the rest: two functions of one
-support file, each with a local `ready` of its own kind, are refused as homonyms, and so is a
-spec that binds a value and a helper under one name (`const position = start;`) — loud, and a
-rename answers both. Of the import itself, an indented one is not read, which prettier never
-writes. Four shapes are read and no case holds them: a double-quoted module, which
-`.prettierrc` (`singleQuote`) rules out; a default binding beside a namespace
-(`import d, * as css`); a default import from a module with no default export, which does not
-compile; and the skip of an `import type` at its edges — dropped, a file's own function named
-`type` would be taken for one of its bindings; widened past the space after `type`, a default
-import named `typeText` would be skipped. A cycle of re-exports is walked once: without that
-guard the gate would crash on one, loudly. A module named with an extension (`./css.js`), or by
-a directory with no `index.ts`, is refused as one no file of the corpus answers for — loud
-where it could be read, and the suites write neither. An `expect` the suite configures
-(`base.configure({ timeout })`) is refused with the extended ones: the gate cannot see that it
-keeps Playwright's retrying matchers.
+(`const colourOf = css.styleOf`), an object a call builds, called through in that file or in
+one that imports it (`Object.freeze({ styleOf })`, `makePalette()`). A call not written as
+`name(`: inside a template's `${…}`, which the mask blanks whole — the suites hold some forty,
+nearly all of them diagnostics in an assertion's message, and `regions.spec.ts` nests a
+template inside one — and a helper handed on as a value (`cells.map(boxOf)`), which a bare name
+cannot be read as without scopes: `hero.spec.ts` binds a `settled` of its own and hands it to
+`toBe`. Type parameters and arguments are read with one level of their own inside,
+`pick<Record<string, string>>(…)`, and not deeper, nor with a function type among them. Names
+are scoped to a spec, not to a block within it, and the support tree's block-local helpers pool
+with the rest: two functions of one support file, each with a local `ready` of its own kind,
+are refused as homonyms, and so is a spec that binds a value and a helper under one name
+(`const position = start;`) — loud, and a rename answers both. Of the import itself, an
+indented one is not read, which prettier never writes. Four shapes are read and no case holds
+them: a double-quoted module, which `.prettierrc` (`singleQuote`) rules out; a default binding
+beside a namespace (`import d, * as css`); a default import from a module with no default
+export, which does not compile; and the skip of an `import type` at its edges — dropped, a
+file's own function named `type` would be taken for one of its bindings; widened past the space
+after `type`, a default import named `typeText` would be skipped. Nor does a case hold three
+edges of the return annotation's reader: an object type right after the `:`, a union with one
+at its top, and a declaration that returns a function type. A cycle of re-exports is walked
+once: without that guard the gate would crash on one, loudly. A module named with an extension
+(`./css.js`), or by a directory with no `index.ts`, is refused as one no file of the corpus
+answers for — loud where it could be read, and the suites write neither. An `expect` the suite
+configures (`base.configure({ timeout })`) is refused with the extended ones: the gate cannot
+see that it keeps Playwright's retrying matchers.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and
@@ -188,9 +190,10 @@ scanner has to read as one: a reader named `$rimOf` and a locator bound as `$car
 unescaped `$` is the end of the input; a function expression, a second name for `styleOf`, and
 calls with type arguments before the `(` — of an arrow with type parameters, plain or holding
 one of their own, of a function declaration with them, and of Playwright's
-`evaluate<string>(…)`; a spec's own `visit`, which waits for nothing; a shared helper whose
-callee a spec names for itself; and a baseline taken under the name `$held`, which point 4 has
-to find again in the assertion that measures against it.
+`evaluate<string>(…)` — and return annotations, one of which holds an object type whose `{` is
+no body; a spec's own `visit`, which waits for nothing; a shared helper whose callee a spec
+names for itself; and a baseline taken under the name `$held`, which point 4 has to find again
+in the assertion that measures against it.
 
 ## Points 1 and 2 are the denominator, not a formality
 
