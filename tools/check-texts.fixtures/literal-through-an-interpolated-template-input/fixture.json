@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "4 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete \"\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \" rows\"\n      libs/components/widget/src/widget.html:36: interpolation reads `m` → \"Remove \"\n      libs/components/widget/src/widget.html:36: interpolation reads `m` → \" rows\"",
+  "description": "Words written around an interpolation in an attribute an `<ng-template>` hands its directive, which sets the input to the string the interpolation makes, read by `let-m=\"ngIf\"` and by the implicit `let-m` (measured: drawn \"Delete 0 rows\" and \"Remove 0 rows\"). A name stands for what binds it, and an interpolation's value is its words as much as its expressions: a read of the expressions alone passed it. An `<ng-template>` sets nothing of its own, so an interpolated binding there reaches a directive or nothing and is taken whole, where on an element it hands the variable of its name alone; taken under its name here, the implicit read lost its two refusals, and the case counts four, the words on either side of each."
+}

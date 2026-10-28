@@ -1,0 +1,39 @@
+@if (label()) {
+<span class="pct-widget__label" data-pct-part="label">
+  {{ label() }} @if (items().length === 0) {
+  <span class="pct-widget__mark" aria-hidden="true">*</span>
+  }
+</span>
+}
+
+<!--
+  A `value` with a word on a button that is no `<input>`: a `<button>` takes its name from
+  `aria-label` or its content, never from `value`, and only an `<input>` of a button type speaks
+  through it.
+-->
+<button
+  class="pct-widget__toggle"
+  data-pct-part="toggle"
+  type="button"
+  [value]="'next'"
+  [attr.aria-label]="collapseText()"
+  [attr.aria-expanded]="open()"
+  (click)="toggle()"
+></button>
+
+<ul class="pct-widget__list" data-pct-part="list">
+  @for (item of items(); track item) {
+  <li class="pct-widget__item" data-pct-part="item">{{ item }}</li>
+  } @empty {
+  <li class="pct-widget__empty" data-pct-part="empty">{{ emptyText() }}</li>
+  }
+</ul>
+
+<input value="Delete the row" />
+<input type="email" value="Delete the row" />
+<input type="Bogus" value="Delete the row" />
+<input type="image" src="row.png" value="Delete the row" />
+<input type="checkbox" [type]="size()" value="Delete the row" />
+<input type="checkbox" [attr.type]="size()" value="Delete the row" />
+<input type="hidden" type="text" value="Delete the row" />
+<iframe srcdoc="<p>Delete the row</p>"></iframe>

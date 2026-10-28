@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "message": "2 speaking attributes carry a string written inline:\n      libs/components/widget/src/widget.html:35: title=\"Delete {{…}} rows\"\n      libs/components/widget/src/widget.html:37: textContent=\"{{…}} rows left\"",
+  "description": "Words written around an interpolation in a speaking attribute and in a drawn property, which Angular binds as a property with the text around the expression (measured: the button's `title` and the span's text drawn). Point 3 reads the words as written ones, beside the literals of the expression and apart from point 2's comparison, which holds static attributes and no binding, so the refusal counts two."
+}

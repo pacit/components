@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "3 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.html:32: binding `value` → \"Delete the row\"\n      libs/components/widget/src/widget.html:33: binding `value` → \"Delete the row\"\n      libs/components/widget/src/widget.html:34: binding `value` → \"Delete the row\"",
+  "description": "Sentences bound to the `value` of text fields: one with no type, a URL field, and one whose type a binding gives (measured: Chromium 152 shows the value of a field of no type, of a type it does not know, and of a text, search, telephone, URL or e-mail field). A field is read as drawing its value but for the types that show none of it (`VALUELESS_INPUTS`), a type the template binds being a text field until it says otherwise; read on a button's alone, as `value` was, it passed all three."
+}

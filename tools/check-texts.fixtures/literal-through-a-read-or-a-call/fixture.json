@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "8 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.html:32: interpolation → \"Delete the row\"\n      libs/components/widget/src/widget.html:33: interpolation → \"Remove the row\"\n      libs/components/widget/src/widget.html:34: interpolation → \"Remove\"\n      libs/components/widget/src/widget.html:35: interpolation → \"Delete\"\n      libs/components/widget/src/widget.html:36: interpolation → \" and \"\n      libs/components/widget/src/widget.html:37: interpolation → \" or \"\n      libs/components/widget/src/widget.html:38: interpolation → \"Delete the row\"\n      libs/components/widget/src/widget.html:39: interpolation → \"Delete the row\"",
+  "description": "Sentences a read or a call takes out of a value and draws (measured: each drawn, the separators between two items, and `format`'s argument where the class's method wraps it): an item read off an array by its index, and read optionally, an entry off a map, a string a method of its own is called on, the separators a method of an array is handed, called and called optionally, an argument a method of the class is handed, and the argument of `$any`, which the compiler takes off as no call. A call gives what it is called on and what it is handed, the code it calls being free to return either, and no read here follows the code; so the refusal counts eight."
+}

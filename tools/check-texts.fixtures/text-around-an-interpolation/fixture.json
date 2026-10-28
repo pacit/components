@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-text",
+  "message": "1 text nodes carry a string written into the template:\n      libs/components/widget/src/widget.html:32: \"Delete {{…}} rows\"",
+  "description": "Words written into a text node around an interpolation: the node is no text the parser makes but an interpolation, and its words are its `strings`, which the expression visitor never hands on. Point 3 reads them as a text node's text, the expression standing in as `{{…}}`, and trims the node's white space as it trims a text's (measured: drawn \"Delete 0 rows\")."
+}

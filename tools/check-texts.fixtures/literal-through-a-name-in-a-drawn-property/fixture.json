@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-through-a-name",
+  "message": "4 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: binding `textContent` reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:34: binding `innerHTML` reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:36: binding `textContent` reads `row` → \"Delete the row\"\n      libs/components/widget/src/widget.html:37: binding `value` reads `row` → \"Delete the row\"",
+  "description": "The sentence of a `@let` bound by name to `textContent` and to `innerHTML`, and the label of a map a `@let` holds bound two-way to `textContent` and to a `<textarea>`'s `value`, which set the property as a one-way binding does (measured: each drawn). A drawn property is printed whether it is bound one way or two, and the name stands for what binds it, so the refusal counts four."
+}

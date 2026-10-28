@@ -6,7 +6,7 @@
  *
  *  1. DENOMINATOR: every decorator parsed, every template owned, every node reached and known,
  *  2. ARTIFACT: the classes and static attributes from the sources match the BUILT package,
- *  3. TEMPLATE: no text node, SPEAKING attribute or printed name holds a literal with a letter,
+ *  3. TEMPLATE: no text node, SPEAKING attribute, DRAWN property or printed name draws a word,
  *  4. TYPESCRIPT: a signal's default is not prose and does not read `PCT_TEXTS`,
  *  5. CHANNEL: the `PctTexts` keys, their defaults and their reads are one set,
  *  6. WARNINGS: `console.*` draws nothing from `PCT_TEXTS` and is quiet outside `isDevMode()`.
@@ -19,6 +19,8 @@
  */
 import {
   BindingType,
+  DomElementSchemaRegistry,
+  Interpolation,
   JitEvaluator,
   LiteralMap,
   outputAst,
@@ -134,8 +136,72 @@ const speaks = (name) =>
  */
 const reflected = (name) => name.replace(/^aria(?!-)/, 'aria-');
 
-/** `<input type="submit">` prints `value` as the button's label. */
-const BUTTONS = new Set(['submit', 'button', 'reset']);
+/**
+ * The `<input>` types that draw no `value` as text (measured in Chromium 152: `hidden`, `checkbox`
+ * and `radio` keep it and show none of it, `password` masks it, the rest keep no word of it, and
+ * `file` refuses it). Any other type draws it: a button's label, a field's text, an image button's
+ * text where it has no `alt` or `title`, and the text of a type the browser does not know or a
+ * template binds (`[type]`), which is a text field until it says otherwise.
+ */
+const VALUELESS_INPUTS = new Set([
+  'hidden',
+  'checkbox',
+  'radio',
+  'password',
+  'number',
+  'range',
+  'color',
+  'date',
+  'datetime-local',
+  'month',
+  'week',
+  'time',
+  'file',
+]);
+
+/**
+ * The properties that draw their value as the element's content, on any element. Angular sets each
+ * (measured on 22.2.1 through JIT and a render in jsdom, the setter recorded where jsdom implements
+ * none), Chromium 152 draws the string, and `innerHTML` and `outerHTML` draw it through the
+ * sanitizer, its markup with it. A binding to one is printed as an interpolation is:
+ * `[textContent]="'Delete'"`, `bind-innerHTML`, `textContent="{{ … }}"`. The name is the property
+ * the compiler sets (`getMappedPropName`: `[innerHtml]` sets `innerHTML`), in the case the DOM gives
+ * it — `[TEXTCONTENT]` sets nothing (NG0303) — and an `attr.`, `class.` or `style.` binding writes
+ * no property.
+ */
+const DRAWN_PROPERTIES = new Set([
+  'textContent',
+  'innerText',
+  'outerText',
+  'innerHTML',
+  'outerHTML',
+]);
+
+/**
+ * The properties that draw their value on the elements named, measured the same way: an `<a>`'s and
+ * an `<option>`'s `text`, which is their content, and a `<textarea>`'s and an `<output>`'s `value`
+ * and `defaultValue`, the text they show. An `<input>`'s `value` and an `<iframe>`'s `srcdoc` are
+ * attributes as well, written or bound (`speaking`), and an `<input>`'s `defaultValue` writes its
+ * `value`.
+ */
+const DRAWN_ON = new Map([
+  ['text', new Set(['a', 'option'])],
+  ['value', new Set(['textarea', 'output'])],
+  ['defaultValue', new Set(['textarea', 'output'])],
+]);
+
+const DOM_SCHEMA = new DomElementSchemaRegistry();
+
+/**
+ * Whether a binding writes the attribute or the property it names: a property, an `attr.` and a
+ * two-way binding do, and a `class.`, `style.` or animation binding toggles a class, sets a style
+ * or runs an animation of that name, and writes no text (`[class.title]` draws no title, and
+ * `[class.type]` sets no field's type).
+ */
+const writes = (binding) =>
+  binding.type === BindingType.Property ||
+  binding.type === BindingType.Attribute ||
+  binding.type === BindingType.TwoWay;
 
 const LETTER = /\p{L}/u;
 
@@ -457,10 +523,54 @@ const nodesOf = (
 };
 
 /**
- * String literals from an expression — pipe arguments excluded (see `visitPipe`) — and every
- * property it reads, each handed to `read`: a read of a name the template binds is followed
- * (`Names`), the rest are the class's. A name is read by a `PropertyRead` alone, the one read the
- * binder resolves (`getExpressionTarget`): `m?.x` reads `m` by one, `this.m` names the class.
+ * The operators whose result is a number or a boolean, whatever their operands: a literal of theirs
+ * is compared, tested or counted, and none is drawn — `{{ state() === 'open' ? '*' : '' }}` draws
+ * `*`, `{{ 'Delete' - n }}` `NaN` (measured on Angular 22.2.1 through JIT and a render in jsdom). An
+ * operator not here gives one of its operands, `+`, `??`, `||` and `&&` among them, and one Angular
+ * adds is read whole until it is listed.
+ */
+const UNDRAWN_OPERATORS = new Set([
+  '==',
+  '!=',
+  '===',
+  '!==',
+  '<',
+  '>',
+  '<=',
+  '>=',
+  'in',
+  'instanceof',
+  '-',
+  '*',
+  '/',
+  '%',
+  '**',
+]);
+
+/**
+ * The string literals an expression can draw — those that can be its value — each handed to
+ * `collect`, and every property read in such a position handed to `read`: a read of a name the
+ * template binds is followed (`Names`), the rest are the class's. A name is read by a
+ * `PropertyRead` alone, the one read the binder resolves (`getExpressionTarget`): `m?.x` reads `m`
+ * by one, `this.m` names the class.
+ *
+ * What stands in a value's position may be drawn, and nothing else is (each measured on Angular
+ * 22.2.1 through JIT and a render in jsdom): a conditional's branches, not its condition; both
+ * operands of `+`, `??` and `||`, and the right one of `&&`, whose left is its value only when it
+ * is falsy, which no string with a letter is; no operand of a comparison or of arithmetic
+ * (`UNDRAWN_OPERATORS`), of `!`, `typeof`, `void` or a sign; the object a member is read off, and
+ * not the key (`options()['label']`); a map's values and an array's items, which a read takes out;
+ * the text a template literal or an interpolation writes around its expressions; and a pipe's
+ * input, which a text pipe draws transformed (`'Delete' | uppercase` draws `DELETE`), and not its
+ * arguments, format markers (`date: 'short'`) — though `i18nSelect` and `i18nPlural` draw the map
+ * they are handed, which no read here tells from a marker, not knowing which pipe a name is.
+ *
+ * A call gives what it is called on and what it is handed, as the code it calls may return either:
+ * `m.trim()`, `names().join(' and ')`, `f('Delete')` of `@let f = (x) => x`, and a method of the
+ * class, `format('Delete')` drawing `<Delete>` and `upper(item)` of an item over `['Delete']`
+ * drawing `DELETE`, each draw their literal, and an outlet draws a template a method is handed
+ * (`pick(t)`). No read here follows the code, so none tells an argument it returns from one it
+ * takes for a key: `sortBy(options(), 'label')` is refused, the key belonging in the class.
  */
 class ExpressionLiterals extends RecursiveAstVisitor {
   constructor(collect, read) {
@@ -474,15 +584,33 @@ class ExpressionLiterals extends RecursiveAstVisitor {
   visitTemplateLiteralElement(node) {
     this.collect(node.text);
   }
+  visitInterpolation(node, ctx) {
+    for (const text of node.strings) this.collect(text);
+    super.visitInterpolation(node, ctx);
+  }
   visitPropertyRead(node, ctx) {
     this.read(node);
     super.visitPropertyRead(node, ctx);
   }
-  /**
-   * A pipe's argument never reaches the DOM — it is a format marker (`date: 'short'`),
-   * not text. The rule speaks of prose landing on screen, so covering it would contradict
-   * the rule itself.
-   */
+  visitConditional(node, ctx) {
+    node.trueExp.visit(this, ctx);
+    node.falseExp.visit(this, ctx);
+  }
+  visitBinary(node, ctx) {
+    if (UNDRAWN_OPERATORS.has(node.operation)) return;
+    if (node.operation !== '&&') node.left.visit(this, ctx);
+    node.right.visit(this, ctx);
+  }
+  visitUnary() {}
+  visitPrefixNot() {}
+  visitTypeofExpression() {}
+  visitVoidExpression() {}
+  visitKeyedRead(node, ctx) {
+    node.receiver.visit(this, ctx);
+  }
+  visitSafeKeyedRead(node, ctx) {
+    node.receiver.visit(this, ctx);
+  }
   visitPipe(node, ctx) {
     node.exp.visit(this, ctx);
   }
@@ -527,8 +655,9 @@ const take = ({ name, values, keys, bound }, key) =>
  * What the names of one template stand for, read off the compiler's own binder (`R3TargetBinder`,
  * with no directive matched), so that a name is the one `ngc` reads in its scope: a name a block
  * binds again is the block's, and `this.m` is the class's member whatever a `@let` is called. A
- * printed name is read as what binds it, every literal of it, as point 3 reads every literal of a
- * printed expression: `@let m = 'Delete'` and `{{ m }}` draw what `{{ 'Delete' }}` draws.
+ * printed name is read as what binds it, the literals that can be its value, as point 3 reads a
+ * printed expression (`ExpressionLiterals`): `@let m = 'Delete'` and `{{ m }}` draw what
+ * `{{ 'Delete' }}` draws.
  *
  *  - A `@let` stands for its value, an `@if` branch's alias (`as m`) for the branch's condition,
  *    and a `@for` block's item for the collection. The block's own variables stand for nothing:
@@ -567,7 +696,7 @@ class Names {
       const handed = new Map(
         owners.map((owner) => [
           owner,
-          handedTo(owner).map((a) => this.given(a)),
+          handedTo(owner).map((a) => this.given(a, owner)),
         ]),
       );
       for (const name of names)
@@ -587,7 +716,7 @@ class Names {
       : [];
   }
 
-  /** An expression's literals, and the templates it stands for, under the sets found so far. */
+  /** The literals that can be an expression's value, and its templates, under the sets so far. */
   valuesOf(expression) {
     const found = [];
     expression.visit(
@@ -605,7 +734,7 @@ class Names {
   }
 
   /** One thing a node hands, by its name, with what each key of a map literal it is stands for. */
-  given(attribute) {
+  given(attribute, owner) {
     if (attribute instanceof TmplAstTextAttribute)
       return { name: attribute.name, values: [attribute.value], bound: false };
     const map = attribute.value.ast;
@@ -619,7 +748,13 @@ class Names {
               map.keys.map((k, i) => [k.key, this.valuesOf(map.values[i])]),
             )
           : null,
-      bound: true,
+      // An interpolation on an element is a string written in the attribute, as a written
+      // attribute's value is, and hands the variable of its name alone: `class="pct-row--{{ n }}"`
+      // beside an outlet is no value of the template's `let-row`. An `<ng-template>` sets nothing of
+      // its own (`id="…"` on one is NG0303), so a binding there reaches a directive or nothing, and
+      // is taken whole (`ngIf="{{ … }}" let-m`).
+      bound:
+        !(map instanceof Interpolation) || owner instanceof TmplAstTemplate,
     };
   }
 
@@ -644,8 +779,9 @@ class Names {
 
 /**
  * One walk over a template's tree. It collects what the user sees: node texts, the values of
- * speaking attributes and the literals from expressions that land in such a place, written there or
- * standing for a name read there (`names`). It counts the nodes it reaches along the way (`seen`) —
+ * speaking attributes, the words an interpolation writes around its expressions, and the literals
+ * that can be the value of an expression printed in such a place or in a drawn property, written
+ * there or standing for a name read there (`names`). It counts the nodes it reaches along the way (`seen`) —
  * point 1 compares that count against zero, because a pass that visited nothing pronounces on
  * everything (`lesson-48`), and holds every node of the tree to having been reached (`nodesOf`).
  */
@@ -655,6 +791,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.file = file;
     this.texts = [];
     this.attributes = [];
+    this.interpolated = [];
     this.expressions = [];
     this.named = [];
     this.names = null;
@@ -706,52 +843,95 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     return true;
   }
 
-  /** What a printed expression draws: its literals, and those the names it reads stand for. */
-  print(node, where) {
+  /**
+   * What a printed expression draws: the text an interpolation writes around its expressions,
+   * handed to `written` whole, its expressions standing in as `{{…}}` (`Delete {{…}} rows`), and the
+   * literals each expression can draw, and those the names it reads stand for (`ExpressionLiterals`).
+   */
+  print(node, where, written) {
     if (!this.first(node)) return;
-    node.value.visit(
-      new ExpressionLiterals(
-        (value) => this.expressions.push({ where, value, line: line(node) }),
-        (read) => {
-          for (const value of this.names.of(read))
-            this.named.push({
-              where,
-              name: read.name,
-              value,
-              line: line(node),
-            });
-        },
-      ),
+    const { ast } = node.value;
+    const literals = new ExpressionLiterals(
+      (value) => this.expressions.push({ where, value, line: line(node) }),
+      (read) => {
+        for (const value of this.names.of(read))
+          this.named.push({
+            where,
+            name: read.name,
+            value,
+            line: line(node),
+          });
+      },
     );
+    if (!(ast instanceof Interpolation)) return ast.visit(literals);
+    written(ast.strings.join('{{…}}'));
+    literals.visitAll(ast.expressions);
   }
 
   visitBoundText(node) {
-    this.print(node, 'interpolation');
+    this.print(node, 'interpolation', (value) =>
+      this.texts.push({ value: value.trim(), line: line(node) }),
+    );
   }
 
   /**
    * The tag and its `type` in any case, as the names in `speaking`: `<INPUT TYPE="submit"
    * VALUE="Send">` draws a button labelled "Send" (measured, the same render as `speaks`). The
    * tag in any namespace the template writes, which the parser keeps on the name: `ngc` makes
-   * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`).
+   * an `<input>` of `<X1:input>` (the schema takes off every prefix but `svg` and `math`). The
+   * `type` is the one written, alone: a second one, or one a binding sets (`[type]`,
+   * `[attr.type]`, `type="{{ … }}"`), leaves it to the render, and the field a text field until it
+   * says otherwise (measured: `type="checkbox" [type]="'text'"` shows its value).
    */
-  visitElement(node) {
+  within(node, name, visit) {
     const previous = [this.tag, this.type];
-    this.tag = splitNsName(node.name)[1].toLowerCase();
+    // An inline template on an `<ng-template>` has no tag of its own (`<ng-template *ngIf>`).
+    this.tag = splitNsName(name ?? 'ng-template')[1].toLowerCase();
+    const types = [...node.attributes, ...node.inputs.filter(writes)].filter(
+      (a) => a.name.toLowerCase() === 'type',
+    );
     this.type =
-      node.attributes
-        .find((a) => a.name.toLowerCase() === 'type')
-        ?.value?.toLowerCase() ?? null;
-    super.visitElement(node);
+      types.length === 1 && types[0] instanceof TmplAstTextAttribute
+        ? types[0].value.toLowerCase()
+        : null;
+    visit();
     [this.tag, this.type] = previous;
   }
 
+  visitElement(node) {
+    this.within(node, node.name, () => super.visitElement(node));
+  }
+
+  /**
+   * An `<input>`'s `value` speaks where its type draws it (`VALUELESS_INPUTS`), and an `<iframe>`'s
+   * `srcdoc` everywhere, the document it draws (measured: written, bound and as an `attr.`).
+   */
   speaking(name) {
+    const lower = name.toLowerCase();
     return (
       speaks(name) ||
-      (name.toLowerCase() === 'value' &&
+      (lower === 'value' &&
         this.tag === 'input' &&
-        BUTTONS.has(this.type))
+        !VALUELESS_INPUTS.has(this.type)) ||
+      (lower === 'srcdoc' && this.tag === 'iframe')
+    );
+  }
+
+  /**
+   * Whether a binding sets a property that draws its value on this element (`DRAWN_PROPERTIES`,
+   * `DRAWN_ON`): a property or a two-way binding, which sets the property as well.
+   */
+  draws(binding) {
+    if (
+      binding.type !== BindingType.Property &&
+      binding.type !== BindingType.TwoWay
+    )
+      return false;
+    const name = DOM_SCHEMA.getMappedPropName(binding.name);
+    return (
+      DRAWN_PROPERTIES.has(name) ||
+      DRAWN_ON.get(name)?.has(this.tag) === true ||
+      (name === 'defaultValue' && this.speaking('value'))
     );
   }
 
@@ -765,10 +945,17 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitBoundAttribute(node) {
+    if (!writes(node)) return;
     // A two-way binding holds no literal to read, so a property is the one-way kind.
     const property = node.type === BindingType.Property;
-    if (!this.speaking(property ? reflected(node.name) : node.name)) return;
-    this.print(node, `binding \`${node.name}\``);
+    if (
+      !this.speaking(property ? reflected(node.name) : node.name) &&
+      !this.draws(node)
+    )
+      return;
+    this.print(node, `binding \`${node.name}\``, (value) =>
+      this.interpolated.push({ name: node.name, value, line: line(node) }),
+    );
   }
 
   /**
@@ -790,9 +977,14 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.passOver(node.attributes);
     super.visitContent(node);
   }
+  /**
+   * A template is visited under its own tag: an inline template carries its element's attributes
+   * and bindings hoisted, and reads them as its element does, not as the element around it (an
+   * `*ngIf` checkbox's `[value]` inside an `<output>` draws nothing).
+   */
   visitTemplate(node) {
     this.passOver(node.templateAttrs);
-    super.visitTemplate(node);
+    this.within(node, node.tagName, () => super.visitTemplate(node));
   }
   visitSwitchBlock(node) {
     if (node.exhaustiveCheck) this.passOver([node.exhaustiveCheck]);
@@ -1447,13 +1639,17 @@ const checkTexts = (input) => {
         list(shorten(textViolations)) +
         `\n    A string the library prints itself goes through \`PCT_TEXTS\`: a field in ` +
         `\`PctTexts\`, a default in \`PCT_DEFAULT_TEXTS\`, a \`texts().key\` read ` +
-        `in the template (req-api-texts). A character with no letter (\`*\`, \`×\`) is not ` +
+        `in the template (req-api-texts). Words written around an interpolation are the ` +
+        `node's text as well. A character with no letter (\`*\`, \`×\`) is not ` +
         `text and does not fire here — there is nothing in it to translate.`,
     );
 
   const attributeViolations = [];
+  // The words a binding writes around an interpolation are read beside the written attributes,
+  // and only here: no static attribute, they reach the package in the template function, not in
+  // `consts`, and point 2 has no pair of theirs to compare.
   for (const s of scans)
-    for (const a of s.scanner.attributes)
+    for (const a of [...s.scanner.attributes, ...s.scanner.interpolated])
       if (LETTER.test(a.value))
         attributeViolations.push(`${s.file}:${a.line}: ${a.name}="${a.value}"`);
   // A class answers here for its own `host` block, in its own file, and not for what its chain
@@ -1471,7 +1667,9 @@ const checkTexts = (input) => {
       `${attributeViolations.length} speaking attributes carry a string written inline:\n` +
         list(shorten(attributeViolations)) +
         `\n    The value of \`aria-label\`, \`title\` or \`placeholder\` is read by the ` +
-        `user — that is text, not a keyword of a specification (like \`role="combobox"\`). ` +
+        `user, and so are the words written around an interpolation there or in a property ` +
+        `that draws its value (\`textContent\`) — that is text, not a keyword of a ` +
+        `specification (like \`role="combobox"\`). ` +
         `It goes through ` +
         `\`PCT_TEXTS\`.`,
     );
@@ -1496,8 +1694,10 @@ const checkTexts = (input) => {
       `${expressionViolations.length} string literals reach the DOM from an expression:\n` +
         list(shorten(expressionViolations)) +
         `\n    \`{{ open() ? 'Close' : 'Open' }}\` bypasses the channel exactly like a ` +
-        `string written into a node's text — only it looks like code. A pipe's argument ` +
-        `does not count: that is a format marker, not text.`,
+        `string written into a node's text — only it looks like code, and so does one ` +
+        `bound to a property that draws it (\`[textContent]\`, \`[innerHTML]\`). A literal ` +
+        `that cannot be the value does not count — a comparison's operand, a condition, a ` +
+        `key — and a pipe's argument is read as a format marker.`,
     );
 
   const namedViolations = [];

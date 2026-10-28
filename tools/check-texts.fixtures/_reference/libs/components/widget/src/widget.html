@@ -74,9 +74,19 @@
 <!--
   An `attr.` binding sets the attribute under the name it gives, `setAttribute('ariaLabel', …)`
   makes `arialabel`, and no ARIA attribute is set: the word reaches no user. Only a property
-  binding reaches `aria-label` through the reflection.
+  binding reaches `aria-label` through the reflection, and only a property binding draws
+  `textContent`: as an attribute it is one more attribute, `textcontent`, and draws nothing, and
+  a property is named in the DOM's case, so that `TEXTCONTENT` sets nothing (NG0303). A `srcdoc`
+  off an `<iframe>` is one more attribute too.
 -->
-<span class="pct-widget__attr" [attr.ariaLabel]="'Unread'"></span>
+<span
+  class="pct-widget__attr"
+  [attr.ariaLabel]="'Unread'"
+  [attr.textContent]="'Unread'"
+  [class.textContent]="open()"
+  [TEXTCONTENT]="'Unread'"
+  srcdoc="Unread"
+></span>
 
 <!--
   A node of every kind the walk knows (`KNOWN_NODES`) but an ICU, which point 3 refuses, so that a
@@ -109,3 +119,74 @@
 } @let custom = placeholder;
 <span aria-hidden="true">{{ custom ? '*' : '' }}</span>
 <ng-template #row let-item><span>{{ item }}</span></ng-template>
+
+<!--
+  Literals printed in no position of a value (`ExpressionLiterals`), none drawn: the operands of a
+  comparison and of arithmetic, of `!`, `typeof`, `void` and a sign, a conditional's condition, the
+  left of `&&` and a key read off an object; and the same through a name, a `@let` holding a
+  comparison, printed and read as a condition.
+-->
+<span aria-hidden="true">{{ size() === 'sm' ? '*' : '' }}</span>
+<span aria-hidden="true"
+  >{{ size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' ||
+  size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ 'sm' in items() || 'sm' instanceof Object || items().length - 'sm' ||
+  items().length * 'sm' || items().length / 'sm' || items().length % 'sm' ||
+  items().length ** 'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ !(label() || 'sm') || typeof (label() || 'sm') || void 'sm' || -'sm' ||
+  +'sm' }}</span
+>
+<span aria-hidden="true"
+  >{{ ((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') }}</span
+>
+<span aria-hidden="true">{{ items()['length'] + items()?.['length'] }}</span>
+@let small = size() === 'sm';
+<span aria-hidden="true">{{ small ? '*' : '' }} {{ small }}</span>
+
+<!--
+  Values no element draws (measured in Chromium 152): an `<input>`'s of each type that shows none of
+  it (`VALUELESS_INPUTS`), written, one set as a default too, and one an `*ngIf` wraps inside an
+  `<output>`, whose `value` is not its; and an `<option>`'s, which shows its text. And words no
+  template's variable takes: those an interpolation writes in a `class` beside an outlet, which
+  hand `class` alone, while the row's `let-item` reads the implicit entry. And bindings that write
+  no text: a `class.` or `style.` binding named `type`, which leaves the checkbox a checkbox, or
+  named `srcdoc` and `title`, which toggles a class; and an inline template on an `<ng-template>`,
+  which has no tag of its own.
+-->
+<input type="hidden" value="row" />
+<input type="checkbox" value="row" [defaultValue]="'row'" />
+<input type="radio" value="row" />
+<input type="password" value="row" />
+<input type="number" value="row" />
+<input type="range" value="row" />
+<input type="color" value="row" />
+<input type="date" value="row" />
+<input type="datetime-local" value="row" />
+<input type="month" value="row" />
+<input type="week" value="row" />
+<input type="time" value="row" />
+<input type="file" value="row" />
+<select>
+  <option [value]="'row'">{{ items().length }}</option>
+</select>
+<output><input *ngIf="open()" type="checkbox" [value]="'row'" /></output>
+<ng-container
+  [ngTemplateOutlet]="row"
+  [ngTemplateOutletContext]="{ $implicit: count }"
+  class="pct-widget__row-{{ count }}"
+></ng-container>
+<input
+  type="checkbox"
+  [class.type]="open()"
+  [style.type]="open()"
+  value="row"
+/>
+<iframe
+  [class.srcdoc]="open() ? 'on' : 'off'"
+  [class.title]="open() ? 'on' : 'off'"
+></iframe>
+<ng-template *ngIf="open()" [ngTemplateOutlet]="row"></ng-template>
