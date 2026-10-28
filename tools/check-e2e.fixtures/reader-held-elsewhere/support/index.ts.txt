@@ -1,0 +1,4 @@
+/** The support tree's index: everything `dom.ts`, `css.ts` and `paint.ts` export. */
+export * from './dom';
+export * from './css';
+export * from './paint';

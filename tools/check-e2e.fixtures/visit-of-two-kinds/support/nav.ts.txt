@@ -1,0 +1,6 @@
+import type { Page } from '@playwright/test';
+
+/** Entering a page the way an older suite did: it navigates and waits for nothing. */
+export async function visit(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+}

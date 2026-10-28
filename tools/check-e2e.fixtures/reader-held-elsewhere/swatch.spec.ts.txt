@@ -1,0 +1,10 @@
+import { expect, test } from '@playwright/test';
+import { styleOf, visit } from './support';
+
+/** The accent swatch's colour, with both helpers taken through the support tree's index. */
+test('the accent swatch is painted the accent', async ({ page }) => {
+  await visit(page, '/swatch');
+  const swatch = page.getByTestId('swatch-accent');
+  await expect(swatch).toBeVisible();
+  expect(await styleOf(swatch, 'background-color')).toBe('rgb(37, 99, 235)');
+});

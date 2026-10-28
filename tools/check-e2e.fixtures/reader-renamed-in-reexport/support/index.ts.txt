@@ -1,0 +1,3 @@
+/** The support tree's index, handing `styleOf` on under another name. */
+export { boxOf } from './dom';
+export { styleOf as colourOf } from './css';

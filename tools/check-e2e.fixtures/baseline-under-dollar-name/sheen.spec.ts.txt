@@ -1,0 +1,17 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * The paused sheen's baseline taken straight after a bare wait, under a name with a `$`: the
+ * rule follows the name to the assertion that measures against it.
+ */
+test('a paused sheen stands still', async ({ page }) => {
+  await visit(page, '/skeleton');
+  const shade = page.getByTestId('sheen');
+  await page.getByTestId('pause').click();
+  await page.waitForTimeout(150);
+  const $held = await styleOf(shade, 'inset-inline-start');
+  await page.waitForTimeout(700);
+  expect(await styleOf(shade, 'inset-inline-start')).toBe($held);
+});

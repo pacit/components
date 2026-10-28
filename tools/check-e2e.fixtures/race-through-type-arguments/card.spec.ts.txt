@@ -1,0 +1,47 @@
+import { expect, test, type Locator } from '@playwright/test';
+import { visit } from './support/dom';
+
+/**
+ * Three reads of a hovered card with type arguments between the name and the call: through
+ * an arrow with type parameters, through a function declaration with them, and through
+ * Playwright's own `evaluate<string>(…)`.
+ */
+const rimOf = <P extends string>(locator: Locator, property: P) =>
+  locator.evaluate(
+    (el, name) => getComputedStyle(el).getPropertyValue(name),
+    property,
+  );
+
+function widthOf<P extends string>(locator: Locator, property: P) {
+  return locator.evaluate(
+    (el, name) => getComputedStyle(el).getPropertyValue(name),
+    property,
+  );
+}
+
+test('the first card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').first().hover();
+  expect(
+    await rimOf<'border-color'>(page.locator('.card').first(), 'border-color'),
+  ).toBe('rgb(37, 99, 235)');
+});
+
+test('the second card thickens its rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').nth(1).hover();
+  expect(
+    await widthOf<'border-width'>(page.locator('.card').nth(1), 'border-width'),
+  ).toBe('2px');
+});
+
+test('the last card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').last().hover();
+  expect(
+    await page
+      .locator('.card')
+      .last()
+      .evaluate<string>((el) => getComputedStyle(el).borderColor),
+  ).toBe('rgb(37, 99, 235)');
+});

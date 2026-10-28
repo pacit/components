@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "3 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      card.spec.ts:25 — reads a positional locator written into the read itself in the window the action at line 24 opened: expect( await rimOf<' '>(page.locator(' ').first(), ' '), ).toBe(' ')\n      card.spec.ts:33 — reads a positional locator written into the read itself in the window the action at line 32 opened: expect( await widthOf<' '>(page.locator(' ').nth(1), ' '), ).toBe(' ')\n      card.spec.ts:41 — reads a positional locator written into the read itself in the window the action at line 40 opened: expect( await page .locator(' ') .last() .evaluate<string>((el) => getComputedStyle(el).bord\n    A",
+  "why": "Three hovered cards, each read with type arguments between the name and its call: `rimOf<'border-color'>(…)`, an arrow with type parameters; `widthOf<'border-width'>(…)`, a function declaration with them; and Playwright's `evaluate<string>(…)`. A name followed by `<…>` and not by its `(` is no call to a pattern that wants the parenthesis next, so each read goes by unreported, and so does a definition whose parameters come after its type parameters."
+}

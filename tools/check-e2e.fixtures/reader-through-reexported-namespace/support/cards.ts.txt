@@ -1,0 +1,14 @@
+import type { Locator, Page } from '@playwright/test';
+
+/** The cards of the landing page as a page object, whose readers are its methods. */
+export class Cards {
+  constructor(private readonly page: Page) {}
+
+  card(n: number): Locator {
+    return this.page.locator('.card').nth(n);
+  }
+
+  rimOf(n: number): Promise<string> {
+    return this.card(n).evaluate((el) => getComputedStyle(el).borderColor);
+  }
+}

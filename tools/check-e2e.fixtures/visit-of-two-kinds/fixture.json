@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "homonyms",
+  "message": "2 helper name(s) defined more than once, by definitions that disagree on what a call does:\n      `visit` — support/dom.ts:25 (waits, acts); support/nav.ts:4 (acts)\n      `ready` — menu.spec.ts:5 (waits); menu.spec.ts:26 (acts)\n    A",
+  "why": "Two definitions under one name that disagree on what a call does: `visit` in `support/dom.ts` waits for the shell's marker and the one in `support/nav.ts` only navigates, and `ready` in this spec waits where the spec defines it and clicks where its third test defines it again. A vocabulary takes the union of every definition under a name, so each call to either is a wait, the action opens no window, and both reads of the first item go by unreported."
+}

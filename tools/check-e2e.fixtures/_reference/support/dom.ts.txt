@@ -3,8 +3,8 @@ import type { Locator, Page } from '@playwright/test';
 /** The rectangle of an element; `boundingBox()` has no publicly exported type. */
 export type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 
-/** The day cells of the date grid, by their part. */
-export const DAY = '[data-part="day"]';
+/** The cells of the date grid, by their parts: the month's days and the days around it. */
+export const CELLS = ['[data-part="day"]', '[data-part="outside"]'];
 
 /** The rectangle of an element; throws when the element is not visible. */
 export async function boxOf(locator: Locator): Promise<Box> {

@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "1 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      card.spec.ts:15 — reads a positional locator written into the read itself in the window the action at line 14 opened: expect(await styleOf(page.locator(' ').first(), ' ')).toBe( ' ', )\n    A",
+  "why": "A spec that defines a `visit` of its own, which only navigates, and reads the first card straight after it. The support tree's `visit` waits for the shell's marker; taken together under one name, every call to `visit` is a wait, the navigation opens no window, and the race goes by unreported. Within the spec the name is its own definition, as TypeScript has it."
+}

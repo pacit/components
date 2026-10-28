@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "1 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      card.spec.ts:15 — reads a positional locator written into the read itself in the window the action at line 14 opened: expect(await rimOf(page.locator(' ').first())).toBe(' ')\n    A",
+  "why": "The hovered card's race, read through `const rimOf = function (…) { … }`. A definition the scanner does not read is a helper of no kind, so a read through it is no read and the race goes by unreported — the function expression is as much a helper as the arrow it could have been."
+}

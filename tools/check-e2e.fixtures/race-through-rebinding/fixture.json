@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "message": "1 positional locator read(s) taken in the window an action opened, with no auto-retrying assertion between:\n      card.spec.ts:14 — reads a positional locator written into the read itself in the window the action at line 13 opened: expect(await colourOf(page.locator(' ').first(), ' ')).toBe( ' ', )\n    A",
+  "why": "The hovered card's race, read through `const colourOf = styleOf;`. The second name is the first helper under another word, and unread it is a call of no kind, so the race goes by unreported. Read as a call of `styleOf`, it is a reader, as `styleOf` is."
+}

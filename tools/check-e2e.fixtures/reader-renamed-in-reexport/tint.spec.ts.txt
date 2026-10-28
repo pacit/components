@@ -1,0 +1,12 @@
+import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
+import { paintOf } from './support/paint';
+
+/** The second card's rim, read through the name `support/paint.ts` gives `styleOf`. */
+test('the second card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').nth(1).hover();
+  expect(await paintOf(page.locator('.card').nth(1), 'border-color')).toBe(
+    'rgb(37, 99, 235)',
+  );
+});

@@ -1,0 +1,3 @@
+/** `styleOf` handed on under its own name, and the index's names with it — a cycle. */
+export { styleOf } from './css';
+export * from '.';

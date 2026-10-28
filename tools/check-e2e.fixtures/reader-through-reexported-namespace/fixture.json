@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "helpers",
+  "message": "3 helper(s) imported from a relative module under a name no vocabulary can match:\n      cards.spec.ts:2 — `Cards`, imported from `./support/cards`: an object or a class, whose helpers are its members\n      rim.spec.ts:2 — `css`, imported from `./support`: a namespace a module of the corpus re-exports, called through as `css.…(…)`\n      tint.spec.ts:3 — `$paint`, imported from `./support/paint`: an object or a class, whose helpers are its members, called through as `$paint.…(…)`\n    Every",
+  "why": "Three races read through `styleOf` as a member: of `css`, a namespace the support tree's index re-exports; of `$paint`, an object `support/paint.ts` gathers it into, called with type arguments as `$paint.rimOf<'border-color'>(…)`; and of `Cards`, a page object whose readers are its methods. A call written `css.styleOf(…)` or `cards.rimOf(2)` is a method of an object to the scanner and no helper by name, so each is refused at the import — the namespace and the object once a call goes through them, the class once it is called. `visit` comes through the index's `export *`, and `boxOf` for the reference's `static.spec.ts` with it: a star re-export is followed to the file that defines the name."
+}
