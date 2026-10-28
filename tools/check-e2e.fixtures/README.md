@@ -170,14 +170,15 @@ them: a double-quoted module, which `.prettierrc` (`singleQuote`) rules out; a d
 beside a namespace (`import d, * as css`); a default import from a module with no default
 export, which does not compile; and the skip of an `import type` at its edges — dropped, a
 file's own function named `type` would be taken for one of its bindings; widened past the space
-after `type`, a default import named `typeText` would be skipped. Nor does a case hold three
+after `type`, a default import named `typeText` would be skipped. Nor does a case hold four
 edges of the return annotation's reader: an object type right after the `:`, a union with one
-at its top, and a declaration that returns a function type. A cycle of re-exports is walked
-once: without that guard the gate would crash on one, loudly. A module named with an extension
-(`./css.js`), or by a directory with no `index.ts`, is refused as one no file of the corpus
-answers for — loud where it could be read, and the suites write neither. An `expect` the suite
-configures (`base.configure({ timeout })`) is refused with the extended ones: the gate cannot
-see that it keeps Playwright's retrying matchers.
+at its top, a declaration that returns a function type, and an arrow whose annotation holds one
+inside its brackets (`Promise<(name: string) => string>`), which the arrow's own `=>` is taken
+at. A cycle of re-exports is walked once: without that guard the gate would crash on one,
+loudly. A module named with an extension (`./css.js`), or by a directory with no `index.ts`, is
+refused as one no file of the corpus answers for — loud where it could be read, and the suites
+write neither. An `expect` the suite configures (`base.configure({ timeout })`) is refused with
+the extended ones: the gate cannot see that it keeps Playwright's retrying matchers.
 
 Points 3 and 4 hold **the two real bugs, reconstructed**. `toast-tone-race` is
 `apps/sandbox-e2e/src/tones.spec.ts` as it stood before 58c1918 and
