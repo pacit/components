@@ -33,3 +33,11 @@
 <span>{{ m.trim() }}</span>
 @let f = (count) => 'Delete ' + count;
 <span>{{ f(items().length) }}</span>
+@for (x of ['Remove the row']; track x) {
+<span>{{ upper(x) }}</span>
+}
+<ng-template #t let-row><span>{{ row }}</span></ng-template>
+<ng-container
+  [ngTemplateOutlet]="pick(t)"
+  [ngTemplateOutletContext]="{ $implicit: 'Close the row' }"
+></ng-container>

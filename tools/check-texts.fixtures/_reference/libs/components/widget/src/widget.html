@@ -121,10 +121,8 @@
 <!--
   Literals printed in no position of a value (`ExpressionLiterals`), none drawn: the operands of a
   comparison and of arithmetic, of `!`, `typeof`, `void` and a sign, a conditional's condition, the
-  left of `&&`, a key read off an object, and what a method of the class is handed — called by
-  name, through `this`, by key and optionally, and `this.$any`, a member and no cast; and the same
-  through names: a `@let` holding a comparison, printed and read as a condition, and a loop's item
-  over what a method of the class makes of its argument.
+  left of `&&` and a key read off an object; and the same through a name, a `@let` holding a
+  comparison, printed and read as a condition.
 -->
 <span aria-hidden="true">{{ size() === 'sm' ? '*' : '' }}</span>
 <span aria-hidden="true"
@@ -144,13 +142,27 @@
   >{{ ((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') }}</span
 >
 <span aria-hidden="true">{{ items()['length'] + items()?.['length'] }}</span>
-<span aria-hidden="true"
-  >{{ sortBy(items(), 'name') + this.sortBy(items(), 'name') +
-  this['sortBy'](items(), 'name') + sortBy?.(items(), 'name') +
-  this.$any('name') }}</span
->
 @let small = size() === 'sm';
 <span aria-hidden="true">{{ small ? '*' : '' }} {{ small }}</span>
-@for (item of sortBy(items(), 'name'); track item) {
-<span aria-hidden="true">{{ item }}</span>
-}
+
+<!--
+  Values no element draws (measured in Chromium 152): an `<input>`'s of a type that shows none of
+  it (`VALUELESS_INPUTS`), written and set as a default, and an `<option>`'s, which shows its text.
+-->
+<input type="hidden" value="row" />
+<input type="checkbox" value="row" [defaultValue]="'row'" />
+<input type="radio" value="row" />
+<input type="password" value="row" />
+<input type="number" value="row" />
+<input type="range" value="row" />
+<input type="color" value="row" />
+<input type="date" value="row" />
+<input type="datetime-local" value="row" />
+<input type="month" value="row" />
+<input type="week" value="row" />
+<input type="time" value="row" />
+<input type="file" value="row" />
+<input type="image" value="row" />
+<select>
+  <option [value]="'row'">{{ items().length }}</option>
+</select>

@@ -2,6 +2,6 @@
   "point": 3,
   "check": "template",
   "rule": "literal-through-a-name",
-  "message": "2 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:35: interpolation reads `f` → \"Delete \"",
-  "description": "Sentences a call draws through a name the template binds (measured: both drawn): a method of the string a `@let` holds, and a function a `@let` holds, called. A call is the class's — and reads nothing — only when it is read off the class and no name of the template's, so the `@let` called is followed to what it holds, and the refusal counts two."
+  "message": "4 string literals reach the DOM through a name the template binds:\n      libs/components/widget/src/widget.html:33: interpolation reads `m` → \"Delete the row\"\n      libs/components/widget/src/widget.html:35: interpolation reads `f` → \"Delete \"\n      libs/components/widget/src/widget.html:37: interpolation reads `x` → \"Remove the row\"\n      libs/components/widget/src/widget.html:39: interpolation reads `row` → \"Close the row\"",
+  "description": "Sentences a call draws through a name the template binds (measured: each drawn): a method of the string a `@let` holds, a function a `@let` holds, called, a loop's item handed to a method of the class (`upper`, which returns it in capitals), and a template handed to a method of the class whose result an outlet draws with a context (`pick`, which returns it). A call gives what it is called on and what it is handed, a name and a template among them, so the refusal counts four; a read that took a method of the class for code that draws nothing passed the last two, and main refused them."
 }

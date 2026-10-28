@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "8 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.html:32: binding `text` → \"Delete the row\"\n      libs/components/widget/src/widget.html:34: binding `text` → \"Delete the row\"\n      libs/components/widget/src/widget.html:36: binding `value` → \"Delete the row\"\n      libs/components/widget/src/widget.html:37: binding `defaultValue` → \"Delete the row\"\n      libs/components/widget/src/widget.html:38: binding `value` → \"Delete the row\"\n      libs/components/widget/src/widget.html:39: binding `defaultValue` → \"Delete the row\"\n      libs/components/widget/src/widget.html:40: binding `srcdoc` → \"<p>Delete the row</p>\"\n      libs/components/widget/src/widget.html:41: binding `defaultValue` → \"Delete the row\"",
+  "description": "Sentences bound to the properties that draw their value on the elements that have them (`DRAWN_ON`): an `<a>`'s and an `<option>`'s `text`, a `<textarea>`'s and an `<output>`'s `value` and `defaultValue`, an `<iframe>`'s `srcdoc`, and the `defaultValue` of a search field, which writes the `value` it shows (measured: Angular 22.2.1 sets each, and Chromium 152 draws each). An `<option>`'s `value` and a checkbox's draw nothing, and the reference holds them; read off any element, a property of these names refused them, and read nowhere, it passed all eight."
+}

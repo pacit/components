@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "message": "3 speaking attributes carry a string written inline:\n      libs/components/widget/src/widget.html:32: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:33: value=\"Delete the row\"\n      libs/components/widget/src/widget.html:34: value=\"Delete the row\"",
+  "description": "The `value` written on text fields: one with no type, an e-mail field, and one of a type the browser does not know, which it makes a text field (measured in Chromium 152: each shows the word). Written, the value is a speaking attribute as a button's is, and the refusal counts three."
+}

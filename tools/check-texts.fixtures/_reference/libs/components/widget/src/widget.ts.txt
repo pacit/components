@@ -60,16 +60,6 @@ export class PctWidget {
 
   protected readonly open = signal(true);
 
-  /** The items by `key`, for a loop and a count over them: the class's code, handed a key. */
-  protected sortBy(
-    items: readonly string[],
-    key: 'name' | 'length',
-  ): readonly string[] {
-    return [...items].sort((a, b) =>
-      key === 'length' ? a.length - b.length : a.localeCompare(b),
-    );
-  }
-
   toggle(): void {
     this.open.set(!this.open());
     if (isDevMode()) this.warnOnMisuse();

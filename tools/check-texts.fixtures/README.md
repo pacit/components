@@ -120,32 +120,50 @@ selectorless reading.
 
 ## What a template prints
 
-Point 3 reads what reaches the screen from a template — a text node, a speaking attribute, an
-expression printed into either — as far as it is drawn, each shape below measured on Angular 22.2.1
-through JIT and a render in jsdom.
+Point 3 reads what reaches the screen from a template — a text node, a speaking attribute, a
+property that draws its value, an expression printed into any of them — as far as it is drawn, each
+shape below measured on Angular 22.2.1 through JIT and a render in jsdom, and in Chromium 152 where
+jsdom draws nothing.
 
 An expression draws the literals that can be its value, and no other (`ExpressionLiterals`): a
 conditional's branches and not its condition, both operands of `+`, `??` and `||` and the right one
-of `&&`, an item or an entry a read takes out of an array or a map, what a method of a value is
-called on and what it is handed, and a pipe's input. A comparison, arithmetic, `!`, `typeof`, `void`
-and a sign give a number or a boolean, a key is no value of the read it keys, and the left of `&&` is
-its value only when it is falsy, which no string with a letter is:
-`{{ state() === 'open' ? '*' : '' }}` draws `*`, and no refusal. A method of the class, called, is
-the class's code, as an input the template hands a directive is the directive's:
-`sortBy(options(), 'label')` gives what the class makes of its arguments. `$any(x)` is `x`, the
-compiler taking the cast off.
+of `&&`, an item or an entry a read takes out of an array or a map, what a call is called on and what
+it is handed, and a pipe's input. A comparison, arithmetic, `!`, `typeof`, `void` and a sign give a
+number or a boolean, a key is no value of the read it keys, and the left of `&&` is its value only
+when it is falsy, which no string with a letter is: `{{ state() === 'open' ? '*' : '' }}` draws `*`,
+and no refusal.
+
+A call is read whole, a method of the class's as any other: the code it calls may return what it is
+handed, and no read here follows the code — `format('Delete')` draws `<Delete>`, `upper(item)` of an
+item over `['Delete']` draws `DELETE`, and an outlet draws the template `pick(t)` returns, with the
+context it is handed. A first version of this read took a method of the class for code that draws
+nothing, and passed all three, which main refused (the review, measured). So
+`@for (o of sortBy(options(), 'label'))` is refused, as on main: the key belongs in the class
+(`sortedOptions()`), which is the one way the read could tell it from a word.
 
 - `literal-in-a-value-position` — a conditional's branches and the operators' values, seven
   refusals.
 - `literal-through-a-read-or-a-call` — an array's item, read and read optionally, a map's entry, a
-  string's own method, an array's method handed a separator, called and called optionally, and
-  `$any`'s argument, seven.
-- `literal-in-a-drawn-property` — the properties that draw their value as the element's content
-  (`DRAWN_PROPERTIES`), seven refusals: `textContent` bound, bound by `bind-` and interpolated,
-  `innerText`, `outerText`, `innerHTML` and `outerHTML`. Angular sets each and Chromium 152 draws it,
-  the last two through the sanitizer. The name is the property's, in its case — `[TEXTCONTENT]` sets
-  nothing (NG0303) — and `[attr.textContent]` writes an attribute, both of which the reference
-  holds.
+  string's own method, an array's method handed a separator, called and called optionally, a
+  method of the class handed a sentence, and `$any`'s argument, which the compiler takes off as no
+  call, eight.
+- `literal-in-a-drawn-property` — the properties that draw their value as any element's content
+  (`DRAWN_PROPERTIES`), eight refusals: `textContent` bound, bound by `bind-` and interpolated,
+  `innerText`, `outerText`, `innerHTML` and `outerHTML`, the last two through the sanitizer, and
+  `innerHtml`, which the compiler sets as `innerHTML` (`getMappedPropName`). The name is the
+  property's, in its case — `[TEXTCONTENT]` sets nothing (NG0303) — and `[attr.textContent]` writes
+  an attribute, both of which the reference holds.
+- `literal-in-a-property-an-element-draws` — the properties that draw their value on the elements
+  that have them (`DRAWN_ON`): an `<a>`'s and an `<option>`'s `text`, a `<textarea>`'s and an
+  `<output>`'s `value` and `defaultValue`, an `<iframe>`'s `srcdoc`, and a search field's
+  `defaultValue`, which writes the value it shows, eight.
+- `literal-in-a-text-field-value`, `speaking-attribute-in-a-text-field` — the `value` of a text
+  field, bound and written: of no type, of a type the browser does not know, and of a text, search,
+  telephone, URL or e-mail field, Chromium shows it, as it shows a button's label. A field draws it
+  but for the types that show none of it (`VALUELESS_INPUTS`: `hidden`, `checkbox`, `radio`,
+  `password`, which masks it, and the types that keep no word of it), and a type the template binds
+  is a text field until it says otherwise; read on a button's alone, as it was, the value passed
+  all six.
 - `text-around-an-interpolation`, `speaking-attribute-around-an-interpolation` — the words an
   interpolation writes around its expressions, in a text node, in a speaking attribute and in a
   drawn property. The parser makes them the interpolation's `strings`, which the expression visitor
@@ -155,20 +173,21 @@ compiler taking the cast off.
 
 The reference holds the literals in no position of a value — each operator's operands
 (`size() === 'sm'`, `items().length - 'sm'`, …), the operand of `!`, `typeof`, `void` and a sign, a
-condition, the left of `&&`, a key, and what a method of the class is handed, called by name,
-through `this`, by key and optionally, `this.$any` among them, a member and no cast: a read taking
-any of them for a value refuses it. The library's printed expressions hold two literals, neither
-with a letter, both in a value's position; it binds no drawn property, and its 77 interpolations
-write no word around their expressions.
+condition, the left of `&&` and a key — and the values no element draws: an `<input>`'s of each type
+in `VALUELESS_INPUTS`, written and set as a default, and an `<option>`'s, which shows its text. A
+read taking any of them for a word drawn refuses it. The library's printed expressions hold two
+literals, neither with a letter, both in a value's position; it binds no drawn property and writes
+no value of a text field, and its 77 interpolations write no word around their expressions.
 
-Not held: what a method of the class makes of a literal it is handed, which the class's code
-decides — `format('Delete')` draws `<Delete>` where `format` wraps its argument (measured); a pipe's
-arguments, read as format markers (`date: 'short'`), no read here knowing which pipe a name is,
-where `i18nSelect` and `i18nPlural` draw the map they are handed (measured); and a `host` block's
-bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison there
-is refused and `'[textContent]'` is read for nothing. Read whole and refused: a tagged template;
-markup handed to `innerHTML`, whose tags are letters as well (`'<hr>'`); and a literal a member is
-read off (`'Delete'.length`).
+Not held: a pipe's arguments, read as format markers (`date: 'short'`), no read here knowing which
+pipe a name is, where `i18nSelect` and `i18nPlural` draw the map they are handed (measured); a map's
+keys, which `keyvalue` and `json` draw (`{ Delete: 1 } | keyvalue`, measured), and which no read
+takes for a value — a context's keys (`$implicit`, `label`) would all be refused; and a `host`
+block's bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison
+there is refused and `'[textContent]'` is read for nothing. Read whole and refused: a tagged
+template; markup handed to `innerHTML`, whose tags are letters as well (`'<hr>'`); a literal a member
+is read off (`'Delete'.length`); and an argument the code takes for a key or a locale
+(`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`).
 
 ## A name stands for what binds it
 
@@ -227,11 +246,12 @@ printed reads of a template's name reach no literal with a letter.
   each once, as `speaking-attribute-under-an-inline-template` holds of a written `title` and of a
   submit `<input>`'s `value`, which only the visit with its element can tell speaks.
 - `literal-through-a-name-in-a-drawn-property` — the same read in `[textContent]` and
-  `[innerHTML]`, and in `[(textContent)]`, which sets the property as a one-way binding does, three
-  refusals.
-- `literal-through-a-name-a-call-reads` — a method of the string a `@let` holds (`m.trim()`) and a
-  function a `@let` holds, called (`@let f = (count) => 'Delete ' + count`): a call is the class's
-  code only when it is read off the class and is no name of the template's.
+  `[innerHTML]`, and in `[(textContent)]` and a `<textarea>`'s `[(value)]`, which set the property
+  as a one-way binding does, four refusals.
+- `literal-through-a-name-a-call-reads` — a method of the string a `@let` holds (`m.trim()`), a
+  function a `@let` holds, called (`@let f = (count) => 'Delete ' + count`), a loop's item handed to
+  a method of the class (`upper(x)`), and a template handed to one whose result an outlet draws
+  (`pick(t)`), four refusals: a call gives what it is handed, names and templates among them.
 - `literal-through-an-interpolated-template-input` — `ngIf="Delete {{ … }} rows"` handed to
   `let-m="ngIf"`: an interpolation's value is its words as much as its expressions, two refusals.
 
@@ -241,7 +261,7 @@ read in a comparison alone, a `@let` read as a condition, a `@let` holding a tem
 template's variable nothing hands a word while the nodes around it are handed some — a read that
 took every node for one handing the template, the index for the collection, or a template for a
 string, refuses it — and, read in no position of a value, a `@let` holding a comparison, printed
-and read as a condition, and a loop's item over what a method of the class makes of its argument.
+and read as a condition.
 
 A binding no map literal writes is taken whole by every variable: `let i = index` of
 `*ngFor="let size of ['sm', 'md']"` printed is refused, where `@for`'s `$index` is not. Which key a
