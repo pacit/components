@@ -750,8 +750,9 @@ class Names {
           : null,
       // An interpolation on an element is a string written in the attribute, as a written
       // attribute's value is, and hands the variable of its name alone: `class="pct-row--{{ n }}"`
-      // beside an outlet is no value of the template's `let-row`. On an `<ng-template>`, which draws
-      // nothing of its own, every binding is a directive's input (`ngIf="{{ … }}" let-m`).
+      // beside an outlet is no value of the template's `let-row`. An `<ng-template>` sets nothing of
+      // its own (`id="…"` on one is NG0303), so a binding there reaches a directive or nothing, and
+      // is taken whole (`ngIf="{{ … }}" let-m`).
       bound:
         !(map instanceof Interpolation) || owner instanceof TmplAstTemplate,
     };

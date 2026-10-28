@@ -181,9 +181,9 @@ in `VALUELESS_INPUTS`, written, one set as a default too, and one an `*ngIf` wra
 And the words an interpolation writes in a `class` beside an outlet, which hand the variable of that
 name alone: taken whole, they were the row's `let-item`. And the bindings that write no text
 (`writes`): a `class.` or `style.` binding named `type`, which leaves a checkbox a checkbox, and one
-named `srcdoc` or `title`, which toggles a class, as does an inline template on an `<ng-template>`,
-which has no tag of its own and crashed the read. A read taking any of them for a word drawn refuses
-it. The library's printed expressions hold two
+named `srcdoc` or `title`, which toggles a class. A read taking any of them for a word drawn refuses
+it. And an inline template on an `<ng-template>`, which has no tag of its own, is read, where a first
+version of the read under the template's tag threw on it. The library's printed expressions hold two
 literals, neither with a letter, both in a value's position; it binds no drawn property and writes
 no value of a text field, and its 77 interpolations write no word around their expressions.
 
@@ -202,7 +202,8 @@ is read off (`'Delete'.length`); an argument the code takes for a key or a local
 (`sortBy(options(), 'label')`, `toLocaleDateString('en-US')`); an image button's value beside an
 `alt`, which it then does not show; and a binding an element takes as its own property beside an
 outlet (`[id]="'pct-row'"`), taken whole by the template's variables as a directive's input would
-be, as on main — interpolated, it hands its name alone.
+be, as on main — interpolated, it hands its name alone; and an interpolation on an `<ng-template>`
+that no directive takes (`id="row-{{ n }}"`, NG0303), taken whole as every binding there is.
 
 ## A name stands for what binds it
 
@@ -270,7 +271,8 @@ printed reads of a template's name reach no literal with a letter.
   (`pick(t)`), four refusals: a call gives what it is handed, names and templates among them.
 - `literal-through-an-interpolated-template-input` — `ngIf="Delete {{ … }} rows"` handed to
   `let-m="ngIf"` and to the implicit `let-m`: an interpolation's value is its words as much as its
-  expressions, and on an `<ng-template>` it is a directive's input, taken whole, four refusals.
+  expressions, and on an `<ng-template>`, which sets nothing of its own, a binding reaches a
+  directive or nothing and is taken whole, four refusals.
 
 The reference holds the names that stand for no such literal: a `@let` holding `*`, a loop's
 `$index` (the block's own variables are its numbers and booleans) beside an item over `['sm', 'md']`
@@ -294,8 +296,8 @@ template from outside the file, a consumer's slot among them, which may print it
 handed in a context and drawn by an outlet through a variable (`[ngTemplateOutlet]="m.next"`),
 since a variable stands for no template; a written attribute a directive files under a key other
 than its name — `ngIf="Delete" let-m` passes, a written attribute handing only the variable of its
-name — while `ngIf="Delete {{ n }}" let-m` is refused, an interpolation on an `<ng-template>` being
-a directive's input, taken whole; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
+name — while `ngIf="Delete {{ n }}" let-m` is refused, an interpolation on an `<ng-template>`, which
+sets nothing of its own, reaching a directive or nothing and being taken whole; an `<ng-template>` inside an `<svg>` (`:svg:ng-template`), whose directives the compiler
 matches by its inline bindings alone, as `handedTo` does, and which JIT draws all the same; a reference to a directive (`#c="pctCell"`), whose target the binder gives as nothing with no
 directive matched; and a reference to an element, which stands for nothing — a read of its members
 gives the DOM's state, any attribute of it among them (`{{ r.dataset.label }}`).
