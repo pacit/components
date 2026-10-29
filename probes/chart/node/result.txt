@@ -1,5 +1,18 @@
-60000 perColumn 43 scan 2.28 pyramid 1.86
-120000 perColumn 86 scan 3.76 pyramid 2.70
-240000 perColumn 171 scan 5.58 pyramid 3.30
-600000 perColumn 429 scan 12.96 pyramid 5.12
-2000000 perColumn 1429 scan 42.14 pyramid 6.50
+16 a column (22400 readings): scan 0.92 ms, pyramid 1.22 ms, pyramid built in 12.3 ms
+32 a column (44800 readings): scan 1.87 ms, pyramid 1.14 ms, pyramid built in 6.9 ms
+43 a column (60200 readings): scan 2.58 ms, pyramid 2.38 ms, pyramid built in 21.6 ms
+64 a column (89600 readings): scan 3.70 ms, pyramid 1.30 ms, pyramid built in 9.7 ms
+86 a column (120400 readings): scan 3.57 ms, pyramid 2.91 ms, pyramid built in 8.7 ms
+171 a column (239400 readings): scan 9.98 ms, pyramid 6.34 ms, pyramid built in 17.6 ms
+429 a column (600600 readings): scan 17.36 ms, pyramid 6.72 ms, pyramid built in 39.8 ms
+1429 a column (2000600 readings): scan 63.27 ms, pyramid 8.23 ms, pyramid built in 143.2 ms
+
+16 a column (22400 readings): scan 0.88 ms, pyramid 1.56 ms, pyramid built in 10.5 ms
+32 a column (44800 readings): scan 2.06 ms, pyramid 1.60 ms, pyramid built in 23.0 ms
+43 a column (60200 readings): scan 1.97 ms, pyramid 4.01 ms, pyramid built in 7.8 ms
+64 a column (89600 readings): scan 2.68 ms, pyramid 1.62 ms, pyramid built in 5.9 ms
+86 a column (120400 readings): scan 4.85 ms, pyramid 4.56 ms, pyramid built in 9.4 ms
+171 a column (239400 readings): scan 6.33 ms, pyramid 4.09 ms, pyramid built in 31.7 ms
+429 a column (600600 readings): scan 13.75 ms, pyramid 6.20 ms, pyramid built in 32.3 ms
+1429 a column (2000600 readings): scan 58.84 ms, pyramid 10.24 ms, pyramid built in 133.7 ms
+

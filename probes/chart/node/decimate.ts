@@ -193,10 +193,15 @@ export function pctDecimate(
   const perColumn = (i1 - i0 + 1) / width;
   const k = Math.min(levels.length, Math.floor(Math.log2(perColumn / 2)));
   visit(i0);
-  if (perColumn < 64 || k < 1) {
+  if (perColumn < (globalThis as { THRESHOLD?: number }).THRESHOLD! || k < 1) {
     for (let i = i0 + 1; i < i1; i++) visit(i);
   } else {
-    for (let b = Math.floor((i0 + 1) / 2 ** k); b <= Math.floor((i1 - 1) / 2 ** k); b++) run(k, b);
+    for (
+      let b = Math.floor((i0 + 1) / 2 ** k);
+      b <= Math.floor((i1 - 1) / 2 ** k);
+      b++
+    )
+      run(k, b);
   }
   if (i1 > i0) visit(i1);
   flush();

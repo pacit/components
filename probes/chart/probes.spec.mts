@@ -139,6 +139,23 @@ test.describe('P6 pointer and touch', () => {
     write(info.project.name, 'P6d-drag-y-control', c, await read());
     await open(page);
     await page.evaluate(() => (window as any).probe.pointerLog(false));
+    await drag({ x: free.x + 50, y: free.y + 130 }, { x: free.x + 350, y: free.y + 130 });
+    write(info.project.name, 'P6c-drag-x-control', c, await read());
+    await open(page);
+    await page.evaluate(() => (window as any).probe.pointerLog(false));
+    {
+      const fx = free.x + 250;
+      const fy = free.y + 130;
+      await touch('touchStart', [{ x: fx - 20, y: fy, id: 1 }, { x: fx + 20, y: fy, id: 2 }]);
+      for (let i = 1; i <= 10; i++) {
+        await touch('touchMove', [{ x: fx - 20 - i * 10, y: fy, id: 1 }, { x: fx + 20 + i * 10, y: fy, id: 2 }]);
+      }
+      await touch('touchEnd', []);
+      await page.waitForTimeout(200);
+      write(info.project.name, 'P6e-pinch-control', c, { ...(await read()), viewportScale: await page.evaluate(() => (window as any).probe.scale()) });
+    }
+    await open(page);
+    await page.evaluate(() => (window as any).probe.pointerLog(false));
     const cx = box.x + 250;
     const cy = box.y + 130;
     await touch('touchStart', [{ x: cx - 20, y: cy, id: 1 }, { x: cx + 20, y: cy, id: 2 }]);
