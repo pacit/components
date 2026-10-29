@@ -52,7 +52,7 @@ before an application ships them.
 ./checkbox 21437 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 15668 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
-./core 12201 - @angular/core,@angular/forms/signals
+./core 12213 - @angular/core,@angular/forms/signals
 ./date 47305 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./datetime 79598 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./dialog 20746 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals

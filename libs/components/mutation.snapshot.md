@@ -105,7 +105,7 @@ libs/components/core/src/digits.ts 100.00 44(0) 0 0 0 0
 libs/components/core/src/field.ts 98.31 58(0) 1 0 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0 0
-libs/components/core/src/instant.ts 100.00 149(0) 0 0 0 0
+libs/components/core/src/instant.ts 100.00 151(0) 0 0 0 0
 libs/components/core/src/list.ts 99.07 107(0) 1 0 0 0
 libs/components/core/src/modal.ts 80.00 48(0) 8 0 4 0
 libs/components/core/src/motion.ts 86.21 50(0) 8 0 0 0
@@ -171,5 +171,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 86.89 7698/8859
+TOTAL 86.90 7700/8861
 ```

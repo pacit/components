@@ -75,7 +75,8 @@ function clockOf(timeZone: string | undefined): Intl.DateTimeFormat {
  * The wall clock `timeZone` shows at `at`. Without a zone, the runtime's own: under SSR that is
  * the server's, so a page rendered on a server and hydrated in a browser passes the zone.
  *
- * Years from 1 to 9999. An invalid zone or instant is the platform's `RangeError`.
+ * Years from 1 on, and a whole number of milliseconds: the formatter writes no era, so a year
+ * before 1 reads as a year after it. An invalid zone or instant is the platform's `RangeError`.
  *
  * @example
  * pctWallClockOf(Date.UTC(2026, 9, 25, 0, 30), 'Europe/Warsaw');
@@ -110,6 +111,8 @@ export function pctWallClockOf(
  *
  * A wall clock a change of clocks skips (02:30 on the spring morning in Warsaw) or shows twice
  * (02:30 on the autumn one) is resolved by `disambiguation`, `compatible` when unset.
+ *
+ * Years from 1 on, as `pctWallClockOf` reads them.
  *
  * @since next
  */
@@ -189,8 +192,9 @@ export interface PctRelativeFormat {
  * The platform writes the words, and it does not choose the unit: this does. Under a day the
  * unit is the largest of seconds, minutes and hours that counts at least one, truncated. From a
  * day on the calendar of `timeZone` counts, because "tomorrow" is a date and not a span of
- * twenty-four hours: under seven days the days, then whole weeks while the month has not
- * turned, then whole months, then whole years.
+ * twenty-four hours: under seven days the days, then whole weeks until a whole month has
+ * passed, then whole months, then whole years. Twenty-four hours that end on the same date,
+ * as they can on a day of twenty-five, are still written in hours.
  *
  * @example
  * const when = pctRelativeFormat('en', { timeZone: 'Europe/Warsaw' });
@@ -229,8 +233,10 @@ function relative(
   if (Math.abs(hours) < 24) return [hours, 'hour'];
   const there = pctWallClockOf(at, timeZone);
   const here = pctWallClockOf(now, timeZone);
-  // Twenty-four hours from late on a day of twenty-five can still be the same date.
-  const days = dateOf(there) - dateOf(here) || Math.sign(span);
+  const days = dateOf(there) - dateOf(here);
+  // Twenty-four hours from early on a day of twenty-five can still be the same date, and a
+  // day written there would be "tomorrow" for today.
+  if (days === 0) return [hours, 'hour'];
   if (Math.abs(days) < 7) return [days, 'day'];
   const months = monthsBetween(here, there);
   if (months === 0) return [Math.trunc(days / 7), 'week'];

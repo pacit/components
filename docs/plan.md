@@ -211,7 +211,7 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     `pctRelativeFormat`, which picks the unit the platform leaves to the caller
   - writing an instant in full stays `Intl.DateTimeFormat` with `timeZone`: a wrapper would
     be a second name for the same call
-  - three suites, two of them sweeps over seven zones; 175 mutants, every one killed
+  - three suites, one of them a sweep over seven zones; 177 mutants, every one killed
 
 - [ ] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
       rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))

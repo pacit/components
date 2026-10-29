@@ -227,18 +227,17 @@ describe('pctRelativeFormat', () => {
     expect(en.format(utc(2025, 12, 26, 10), now)).toBe('6 days ago');
   });
 
-  it('counts a day on the day of twenty-five hours, where a day later is the same date', () => {
-    const warsaw = pctRelativeFormat('en', {
-      timeZone: 'Europe/Warsaw',
-      numeric: 'always',
-    });
+  it('stays in hours on the day of twenty-five, where a day later is the same date', () => {
+    const warsaw = pctRelativeFormat('en', { timeZone: 'Europe/Warsaw' });
     // 00:10 on 2026-10-25 in Warsaw; twenty-four hours later the clock shows 23:10 that day.
     const early = utc(2026, 10, 24, 22, 10);
-    expect(warsaw.format(early + DAY, early)).toBe('in 1 day');
-    expect(warsaw.format(early, early + DAY)).toBe('1 day ago');
+    expect(warsaw.format(early + DAY, early)).toBe('in 24 hours');
+    expect(warsaw.format(early, early + DAY)).toBe('24 hours ago');
+    // Twenty-four hours that do cross midnight are a day, by name.
+    expect(warsaw.format(early + DAY + 3 * HOUR, early)).toBe('tomorrow');
   });
 
-  it('counts whole weeks from seven days until the month turns', () => {
+  it('counts whole weeks from seven days until a whole month has passed', () => {
     expect(en.format(utc(2026, 1, 8), now)).toBe('in 1 week');
     expect(en.format(utc(2025, 12, 25, 10), now)).toBe('1 week ago');
     expect(en.format(utc(2026, 1, 31, 10), now)).toBe('in 4 weeks');
