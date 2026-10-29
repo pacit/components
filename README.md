@@ -332,8 +332,8 @@ repository's license ([CONTRIBUTING.md](CONTRIBUTING.md)), and what that choice 
 The license covers the code, not the name and not the mark: `pacit`, the npm scope `@pacit`,
 the domain `pacit.pl` and the PacIT logo — the drawing inlined in the documentation site's
 topbar and shipped as its favicon — belong to the entity in the `Copyright` line. Releasing
-under MIT cannot be undone, so what goes out under it, and when, is settled by
-[decision 0016](docs/decisions/0016-mit-irreversibility.md).
+under MIT cannot be undone, and every component goes out under it:
+[decision 0095](docs/decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md).
 
 What that means in practice, because a trademark notice that only says "all rights reserved"
 tells a fork nothing it can act on: **the code is yours to fork, the mark is not yours to

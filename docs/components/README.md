@@ -55,7 +55,9 @@ The logic: **first build the machine that makes components correct by constructi
 produce components fast.** The reverse order is why large libraries have 90 components and
 a11y problems in half of them.
 
-The order follows **architectural debt**, not popularity:
+The order followed **architectural debt**, not popularity, up to the table. From there it is
+what the consumers need, weighed against cost ([0095](../decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md)), and the
+[plan](../plan.md) holds it:
 
 1. ~~**Dialog**~~ — **built.** It forced the focus trap, the scroll lock, `inert`, the focus
    restore, the Escape stack and SSR safety; of those, three came from the dependency, one from
@@ -277,7 +279,9 @@ The order follows **architectural debt**, not popularity:
    calendar and the columns; a day without a time is `null` and a sentence on the second
    channel; and the slot predicate 0086 deferred is asked here, per row of the chosen day
    ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md)).
-8. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
+8. **Table** — two layers drawn by who writes the rows: `table[pctTable]` dresses the
+   consumer's markup, `pct-data-table` builds rows from data and renders the first. A datagrid
+   (editing, moving columns, `role="grid"`) is a later entrypoint of its own.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
 in `PctSelect` today), the overlay, focus, the live announcer, templates

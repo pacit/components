@@ -74,7 +74,7 @@ has stopped being complete, and that is a fault of this list, not of the registr
 
 ```
 0  the copy off this machine  DONE — landed 2026-09-01
-1  components             1.6 wheel, 1.7 time panel, then 1.2 — last, by 0016
+1  components             by need (0095): 1.8, 1.2, 1.9, 1.10, 1.11, then 1.6 and 1.7
 2  trust surface          DONE — the site is built; its address is 3.5
 3  publication            DONE — 0.1.0 on npm 2026-09-17; 0.2.0 staged and approved 2026-09-25
 4  open findings          small, good filler between the bigger items
@@ -107,9 +107,10 @@ gives way to trusted publishing in
 [0079](decisions/0079-the-first-release-is-a-measurement-and-the-history-stays.md). This file
 holds only the order.
 
-**What is left.** Section 1 holds the wheel (**1.6**) and the time panel's shape (**1.7**),
-and it still ends at the table (**1.2**), deferred by
-[0016](decisions/0016-mit-irreversibility.md) rather than scheduled. The warnings on a field
+**What is left.** Section 1 holds what the first consumer asked for — numbers and instants
+(**1.8**), the table (**1.2**), the card (**1.9**), an application's frame (**1.10**) and
+charts (**1.11**), ordered by need since [0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md) — and after them the wheel (**1.6**) and the
+time panel's shape (**1.7**). The warnings on a field
 (**1.5**) landed on 2026-10-07, as
 [0087](decisions/0087-a-warning-is-a-verdict-without-a-veto.md) decided them, and the datetime
 field (**1.4**) on 2026-10-12, as
@@ -122,10 +123,10 @@ findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
 
-Ordered by architectural debt, not by popularity — with one reservation from
-[decision 0016](decisions/0016-mit-irreversibility.md): the item with the highest build cost
-goes **last**, because a release under MIT is irreversible and it is better settled with users
-in hand. A library is allowed to grow in public, and a repository that moves is its own
+Ordered by what the consumers need, weighed against what it costs to build: [0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md) took back
+the rule of [0016](decisions/0016-mit-irreversibility.md) that the costliest item goes last.
+A component answers a class of applications, and the first consumer to ask for it is its
+first measurement, not its specification. A library is allowed to grow in public, and a repository that moves is its own
 argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
@@ -202,11 +203,50 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     baselines of `/time` moved, `time-columns.ts` mutated narrowly, and the three readers on
     the `wheel` shape
 
-- [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
-      selection as signals) separated from rendering. **The last item of the phase** — the only
-      one counted in months rather than days; until the decision in
-      [0016](decisions/0016-mit-irreversibility.md) is made it does not exist as a commit either,
-      because the root `LICENSE` covers the whole repository
+- [ ] **1.8 — numbers and instants in `./core`** — the formats a table cell, a chart axis and
+      a description list share, given one home before the second of them reads it
+  - a number with its unit in the reader's locale (in `pl` a decimal comma, and a space between groups from five digits), on
+    `Intl.NumberFormat`: the platform's `style: 'unit'` where it knows the unit, the unit as
+    text beside the number where it does not; the fraction digits asked for, not guessed
+  - an instant, milliseconds since the epoch as a clock and an API give it, written absolute
+    in a named zone and relative (`in 6 days`) on `Intl.DateTimeFormat` and
+    `Intl.RelativeTimeFormat` — a type of its own, because the wall clocks of 0043, 0086 and
+    0090 name no moment
+  - ends with: unit and property suites, `@since next`, a narrow mutation run; the table's
+    columns are the first readers
+
+- [ ] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
+      rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
+  - `table[pctTable]` dresses a `<table>` the consumer writes: the tier `--pct-table-*`, the
+    density axis, a numeric cell, sort headers reporting a press into one `sort` model on the
+    table, and a frame that is a focusable, named region only while the table overflows it
+  - `pct-data-table` builds the rows from data (0033) and renders the first layer: columns as
+    records with a priority, sort and filter as models whose client default the consumer can
+    take back, groups, a details row, the window of 0038 over the body, empty and loading
+    states; a narrow table moves its lowest-priority columns into the details row
+  - not here: editing in a cell, moving columns, ranges, `role="grid"` — a datagrid, its own
+    entrypoint when somebody needs one
+  - ends with: a decision on the two layers, both cards, the sandbox in three engines, the
+    readers' walk
+
+- [ ] **1.9 — the card** `pct-card` in `@pacit/components/card` — a header, a body and a footer
+      that stays down in a row of equal heights; loading, error and muted without `opacity`;
+      a variant where the whole card is one link and the controls inside it still answer on
+      their own, measured in three engines and by three readers before it is promised
+
+- [ ] **1.10 — an application's frame** — a top bar of three slots; a navigation list marking
+      the current page, which an application moves into the drawer (0047) on a narrow screen;
+      a description list on the platform's `<dl>` with a slot for a control. No shell that
+      picks the breakpoint: that is the edge 0057 drew
+
+- [ ] **1.11 — charts** in `@pacit/components/chart` — a time series, grouped bars comparing two
+      periods and a band of states, on one core of pure functions (scales, 1-2-5 ticks, time
+      ticks in a named zone across a change of clocks, decimation to the pixel) and no
+      dependency
+  - the window and the cursor are models the application steers; axes assigned by unit and
+    held while the unit stays; a colour belongs to its series; a table of the data is the
+    alternative to the picture
+  - SVG, unless a measurement under a two-finger zoom says otherwise
 
 ## 3. Publication
 

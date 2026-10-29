@@ -1,6 +1,6 @@
 # 0016 — Releasing under MIT is irreversible, so the order is a decision
 
-**Status:** accepted
+**Status:** accepted — rules 1 and 3 (the default "not yet" and the costliest component last) superseded by 0095
 **Implements:** [`req-project-package`](../requirements/project.md#req-project-package)
 **Evidence:** no measurement in the repository — the decision stands on outside precedent
 (Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch). There is no gate and there
