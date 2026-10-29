@@ -134,4 +134,4 @@ until-found arrangement, carried whole),
   decision of its own the day a real application asks.
 - **No async loading.** `aria-busy` on a loading branch is 0037 at a hierarchy — its own
   future record.
-- **No drag, no virtualization.** Application machinery; the second would reuse the data table's window (0098).
+- **No drag, no virtualization.** Application machinery; the second would need a window of its own, as the select's (0038) and the data table's (0098) each are.
