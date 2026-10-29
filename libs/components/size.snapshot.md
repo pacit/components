@@ -74,8 +74,9 @@ before an application ships them.
 ./stepper 15036 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 20917 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./table 18319 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tabs 16850 ./core @angular/core,@angular/forms/signals
-./testing 8782 - @angular/cdk/testing
+./testing 9302 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./time 50758 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 24420 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
@@ -143,6 +144,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 23799 23801
 ./select PctMultiSelect 2 52064 78251
 ./stepper PctStep 2 14893 14895
+./table PctTable 5 855 18118
 ./tabs PctTab 2 16681 16684
 ./time PctTime 2 48018 48019
 ./tree PctTree 2 12783 12786

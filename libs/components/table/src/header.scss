@@ -1,0 +1,99 @@
+/* A header cell: the cell's padding and line, on the header surface. */
+:host {
+  padding-block: var(--pct-table-padding-y);
+  padding-inline: var(--pct-table-padding-x);
+  border-block-end: 1px solid var(--pct-table-heading-border);
+  background: var(--pct-table-heading-bg);
+  color: var(--pct-table-heading-fg);
+  font-weight: var(--pct-table-heading-font-weight);
+  text-align: start;
+  vertical-align: bottom;
+}
+
+:host([data-pct-numeric]) {
+  text-align: end;
+}
+
+/* A row's own header cell names its row and stands in it like a cell: the row's line and no
+   surface, the weight alone telling it from the cells beside it. */
+:host([scope='row']) {
+  border-block-end-color: var(--pct-table-border);
+  background: none;
+  vertical-align: baseline;
+}
+
+/* On a sortable column the button takes the whole cell, so the target is the header and not
+   the word in it: the cell gives its padding to the button. */
+:host([data-pct-sortable]) {
+  padding: 0;
+}
+
+.pct-table-header__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-table-toggle-gap);
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--pct-table-toggle-target-min);
+  margin: 0;
+  padding-block: var(--pct-table-padding-y);
+  padding-inline: var(--pct-table-padding-x);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+/* A numeric column's label stands at the end edge, and the chevron before it, so the words
+   line up with the digits below them. */
+:host([data-pct-numeric]) .pct-table-header__sort {
+  flex-direction: row-reverse;
+}
+
+.pct-table-header__sort:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* The chevron holds its place on every sortable column, so a press does not move the label,
+   and it shows on the sorted one, and as a hint under the pointer or the focus. It points up
+   for ascending, which is also what the hint shows: the order a first press gives. */
+.pct-table-header__icon {
+  visibility: hidden;
+}
+
+:host([aria-sort]) .pct-table-header__icon {
+  visibility: visible;
+}
+
+:host(:not([aria-sort]))
+  .pct-table-header__sort:is(:hover, :focus-visible)
+  .pct-table-header__icon {
+  visibility: visible;
+  color: var(--pct-table-icon-fg-muted);
+}
+
+:host(:not([aria-sort='descending'])) .pct-table-header__icon {
+  rotate: 180deg;
+}
+
+@media (forced-colors: active) {
+  :host,
+  :host([scope='row']) {
+    border-block-end-color: CanvasText;
+  }
+
+  .pct-table-header__sort:focus-visible {
+    outline-color: Highlight;
+  }
+
+  /* The hint differs from a sorted column by its colour alone, which this mode takes, so the
+     hint goes and a chevron here always means a sorted column. */
+  :host(:not([aria-sort]))
+    .pct-table-header__sort:is(:hover, :focus-visible)
+    .pct-table-header__icon {
+    visibility: hidden;
+  }
+}

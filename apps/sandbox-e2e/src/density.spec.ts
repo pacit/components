@@ -89,6 +89,13 @@ const TARGETS: readonly Target[] = [
     axis: 'block',
   },
   {
+    name: 'table sort toggle',
+    route: '/table',
+    selector:
+      '[data-testid="table-sorted"] thead th:first-child [data-pct-part="toggle"]',
+    axis: 'block',
+  },
+  {
     name: 'checkbox control',
     route: '/checkbox',
     selector: '[data-testid="checkbox-mixed"] [data-pct-part="control"]',

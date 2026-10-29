@@ -3,11 +3,11 @@
 Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token
 theming.
 
-> **Status: early, and the API still moves.** Thirty-one entrypoints ship today: the form
+> **Status: early, and the API still moves.** Thirty-two entrypoints ship today: the form
 > controls (a field wrapper with text, textarea, number, prefix/suffix affixes; checkbox,
 > radio group, select and multi-select, switch, slider, date, time, datetime), the overlays (dialog, tooltip,
 > popover, menu, toast), the page's own structures (tabs, accordion, drawer, pagination,
-> progress, skeleton, chips, avatar, badge, breadcrumb, stepper, tree), the layout
+> progress, skeleton, chips, avatar, badge, breadcrumb, stepper, tree, table), the layout
 > primitives (container, stack, grid), the brand face (hero) and the theme directive. What is already decided, and what is still missing, is written down
 > promise by promise in the
 > [gate registry](https://github.com/pacit/components/blob/main/docs/registry.md), which names
@@ -80,6 +80,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/skeleton`   | `PctSkeleton`                                                                                                                                         |
 | `@pacit/components/slider`     | `PctSlider`                                                                                                                                           |
 | `@pacit/components/switch`     | `PctSwitch`                                                                                                                                           |
+| `@pacit/components/table`      | `PctTable`, `PctTableCaption`, `PctTableHeader`, `PctTableCell`, `PctTableFrame`                                                                      |
 | `@pacit/components/svg-icon`   | `PctSvgIcon`, `svgIcons`, `svgSprite` — SVG drawings as data, and a sprite's `<use>`                                                                  |
 | `@pacit/components/tabs`       | `PctTabs`, `PctTab`                                                                                                                                   |
 | `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                                                             |

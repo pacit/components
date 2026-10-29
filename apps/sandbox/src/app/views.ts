@@ -266,6 +266,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
       ),
   },
   {
+    path: 'table',
+    title: 'Table',
+    summary:
+      'The platform table, dressed element by element — and who orders the rows.',
+    group: 'components',
+    load: () => import('./views/table/table-view').then((m) => m.TableView),
+  },
+  {
     path: 'hero',
     title: 'Hero',
     summary: 'The brand gradient as equipment — a rim, a word, a surface.',

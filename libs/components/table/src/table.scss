@@ -1,0 +1,10 @@
+/* The table's own box. Collapsed borders, so the line under a row is one line and not two
+   cells' edges side by side, and the full width of its container: a table of four rows in a
+   card lines its columns up with the card's edges. The colour and the size reach the cells by
+   inheritance; their padding and their lines are each cell's own stylesheet. */
+:host {
+  inline-size: 100%;
+  border-collapse: collapse;
+  color: var(--pct-table-fg);
+  font-size: var(--pct-table-font-size);
+}

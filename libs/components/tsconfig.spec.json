@@ -21,6 +21,7 @@
     "slider/**/*.ts",
     "toast/**/*.ts",
     "switch/**/*.ts",
+    "table/**/*.ts",
     "tabs/**/*.ts",
     "select/**/*.ts",
     "tooltip/**/*.ts",

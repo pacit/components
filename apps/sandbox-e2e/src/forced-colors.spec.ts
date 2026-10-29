@@ -931,6 +931,39 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A table's header surface is a fill, the first thing the mode drops, so what tells the
+   * header row apart under it is its weight and the line under it, which takes the text word
+   * like every row's line. The sorted column's chevron is a drawing in `currentColor`, so it
+   * stays, and the focus ring on a sort button is the mode's own highlight.
+   */
+  test('a table keeps its lines in CanvasText and its sort focus in Highlight', async ({
+    page,
+  }) => {
+    await visit(page, '/table', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const table = page.getByTestId('table-sorted');
+    const header = table.locator('thead th').first();
+    const cell = table.locator('tbody td').first();
+    expect(await styleOf(header, 'border-block-end-color')).toBe(
+      sys.CanvasText,
+    );
+    expect(await styleOf(cell, 'border-block-end-color')).toBe(sys.CanvasText);
+
+    const button = table.getByRole('button', { name: 'Name', exact: true });
+    // The hint differs from a sorted column by colour alone, so this mode shows none.
+    await button.hover();
+    await expect(header.locator('[data-pct-part="icon"]')).toBeHidden();
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(header).toHaveAttribute('aria-sort', 'ascending');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    expect(await styleOf(button, 'outline-color')).toBe(sys.Highlight);
+    await expect(header.locator('[data-pct-part="icon"]')).toBeVisible();
+  });
+
+  /**
    * A stepper's two filled markers ride on the accent — exactly what this mode drops.
    * What has to stand: every circle's border, the check as a drawing in the text word
    * (done stays visibly done), the connector's line, and the current step's label WEIGHT

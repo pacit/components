@@ -11,6 +11,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   avatar: () => import('./avatar.demo').then((m) => m.AvatarDemo),
   badge: () => import('./badge.demo').then((m) => m.BadgeDemo),
   breadcrumb: () => import('./breadcrumb.demo').then((m) => m.BreadcrumbDemo),
+  table: () => import('./table.demo').then((m) => m.TableDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),
@@ -229,6 +230,12 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'nested',
       load: () => import('./tree.nested.demo').then((m) => m.TreeNestedDemo),
+    },
+  ],
+  table: [
+    {
+      key: 'sorted',
+      load: () => import('./table.sorted.demo').then((m) => m.TableSortedDemo),
     },
   ],
   breadcrumb: [

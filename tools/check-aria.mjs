@@ -1967,7 +1967,8 @@ const readMessages = (file, content, sides, skips, reads, counter, root) => {
 
 // ── documentation ──────────────────────────────────────────────────────────────
 
-const SELECTOR_LINE = /^\*\*Selector:\*\*(.*)$/m;
+/** `Selectors?`: a card naming more than one element writes the plural, and the site reads both. */
+const SELECTOR_LINE = /^\*\*Selectors?:\*\*(.*)$/m;
 /** The selectors a card claims, as whole tokens: `pct-radio` is a part of `pct-radio-group`. */
 const cardSelectors = (content) =>
   new Set(

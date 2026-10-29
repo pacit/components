@@ -751,6 +751,58 @@ export class PctSwitchHarness extends PctHarness<
   ] as const;
 }
 
+// ── @pacit/components/table ─────────────────────────────────────────────────────
+
+/**
+ * `table[pctTable]` — `PctTable`.
+ *
+ * @since next
+ */
+export class PctTableHarness extends PctHarness<never> {
+  static override hostSelector = 'table[pctTable]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `caption[pctCaption]` — `PctTableCaption`.
+ *
+ * @since next
+ */
+export class PctTableCaptionHarness extends PctHarness<never> {
+  static override hostSelector = 'caption[pctCaption]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `th[pctHeader]` — `PctTableHeader`.
+ *
+ * @since next
+ */
+export class PctTableHeaderHarness extends PctHarness<'icon' | 'toggle'> {
+  static override hostSelector = 'th[pctHeader]';
+  static override readonly parts = ['icon', 'toggle'] as const;
+}
+
+/**
+ * `td[pctCell]` — `PctTableCell`.
+ *
+ * @since next
+ */
+export class PctTableCellHarness extends PctHarness<never> {
+  static override hostSelector = 'td[pctCell]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `pct-table-frame` — `PctTableFrame`.
+ *
+ * @since next
+ */
+export class PctTableFrameHarness extends PctHarness<never> {
+  static override hostSelector = 'pct-table-frame';
+  static override readonly parts = [] as const;
+}
+
 // ── @pacit/components/tabs ──────────────────────────────────────────────────────
 
 /**

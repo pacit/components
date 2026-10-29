@@ -133,6 +133,7 @@ const CARD_ORDER = [
   'toast',
   'tooltip',
   // Data & status
+  'table',
   'accordion',
   'tree',
   'stepper',

@@ -3,7 +3,7 @@
   "$comment-coverage": "This list is the contrast gate's DENOMINATOR: a pair with no entry is not counted, so until 2026-08-05 the policy was silent about 27 colours the library really paints (lesson-33). Point 7 of `check-tokens` watches it: every colour token a stylesheet paints as background, text or outline has to stand in at least one entry. Choosing the PARTNER stays a human decision — the machine sees that a colour is unmeasured, it does not see what it lies on.",
   "$comment-partner": "The convention for choosing a partner: text is measured against the surface it stands on; a surface against the text lying on it; a border against the ADJACENT surface — for a control with a fill of its own that is the fill (`pct.checkbox.bg`), while for a button filled across its whole surface the boundary runs against the page (`pct.surface`).",
   "$comment-disabled": "The `disabled` states have severity `warn`, not `error`: SC 1.4.11 explicitly exempts parts of inactive controls, and SC 1.4.3 exempts inactive text. The entry stays, because being exempt from a requirement is no reason to STOP MEASURING — the report is to show how far the disabled state goes down, rather than have no opinion about it.",
-  "$comment-tones": "The toned button: four tones \u00d7 four faces, and the seven pairs per tone mirror the untoned button\u0027s exactly \u2014 a fill with its hover and press, the quiet faces on the page and on the page\u0027s hover tint, and the soft face\u0027s two tints. The ghost face adds no entry: it paints the same colour on the same two grounds as the outline face, and a second name for one pair would be a second place to keep it true. Nor does the disabled state, which drops every tone to the grey pair already measured above \u2014 the rule that makes it grey is the one thing a tone must not be able to outrank.",
+  "$comment-tones": "The toned button: four tones × four faces, and the seven pairs per tone mirror the untoned button's exactly — a fill with its hover and press, the quiet faces on the page and on the page's hover tint, and the soft face's two tints. The ghost face adds no entry: it paints the same colour on the same two grounds as the outline face, and a second name for one pair would be a second place to keep it true. Nor does the disabled state, which drops every tone to the grey pair already measured above — the rule that makes it grey is the one thing a tone must not be able to outrank.",
   "checks": [
     {
       "name": "body text",
@@ -2274,6 +2274,59 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "$comment": "The cells paint no surface of their own (`component.table.json`), so a cell's text stands on whatever holds the table, and the page is the surface measured.",
+      "name": "table — the text of a cell",
+      "fg": "pct.table.fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the caption",
+      "fg": "pct.table.caption-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the text of a header cell",
+      "fg": "pct.table.heading-fg",
+      "bg": "pct.table.heading-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The chevron of a column not yet sorted, shown only under the pointer or the focus, as a hint of the order a press gives. It is an icon that carries meaning while it shows, so it is held to the non-text floor against the header surface it stands on.",
+      "name": "UI: table — the chevron a sortable header hints with",
+      "fg": "pct.table.icon-fg-muted",
+      "bg": "pct.table.heading-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The header surface against the page. Warn, not error: the header row is told apart by its `<th>` and its weight as well, and the fill is one channel of three.",
+      "name": "UI: table — the header surface against the page",
+      "fg": "pct.table.heading-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The line under the header row, against the surface it closes. Warn: a line between rows is a reading aid and identifies no control, so 1.4.11 does not ask for it, and the gate says when a skin thins it past the floor rather than refusing the skin.",
+      "name": "UI: table — the line under the header row",
+      "fg": "pct.table.heading-border",
+      "bg": "pct.table.heading-bg",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: table — the line under a row",
+      "fg": "pct.table.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

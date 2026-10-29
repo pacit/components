@@ -1,0 +1,115 @@
+<h2 class="view__title">Table</h2>
+<p class="muted view__intro">
+  The platform's <code>&lt;table&gt;</code>, written by the view and dressed by
+  the library one element at a time: the table, its caption, the header cells
+  and the cells. Nothing here generates a row. The headers that carry a sort key
+  propose an order, and the view puts its rows in it.
+</p>
+
+<sbx-demo
+  heading="Sorted by the view, proposed by the headers"
+  summary="Name and Address are sortable: the first press sorts a column ascending, the next turns it. The table holds one sort model and the view orders its own rows from it, so the order is the application's to keep in the URL. aria-sort stands on the sorted header alone. Energy is numeric: it stands at the end edge in digits of one width."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-pattern"
+>
+  <table pctTable [(sort)]="sort" data-testid="table-sorted">
+    <caption pctCaption>
+      Polling rules
+    </caption>
+    <thead>
+      <tr>
+        <th pctHeader scope="col" sortKey="name">Name</th>
+        <th pctHeader scope="col" sortKey="address" numeric>Address</th>
+        <th pctHeader scope="col" numeric>Energy</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (rule of rules(); track rule.id) {
+      <tr>
+        <th pctHeader scope="row">{{ rule.name }}</th>
+        <td pctCell numeric>{{ rule.address }}</td>
+        <td pctCell numeric>{{ energy.format(rule.energy) }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</sbx-demo>
+
+<sbx-demo
+  heading="Four rows and nothing else"
+  summary="The case most tables are: a caption, a header row and a few cells, with no sort and no frame. The attributes are the whole cost — no model, no observer, nothing measured."
+  [reqs]="['req-project-tree-shaking']"
+  data-testid="demo-plain"
+>
+  <table pctTable data-testid="table-plain">
+    <caption pctCaption>
+      Devices
+    </caption>
+    <thead>
+      <tr>
+        <th pctHeader scope="col">Device</th>
+        <th pctHeader scope="col">Protocol</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td pctCell>Recuperator</td>
+        <td pctCell>Modbus TCP</td>
+      </tr>
+      <tr>
+        <td pctCell>Inverter</td>
+        <td pctCell>Modbus RTU</td>
+      </tr>
+      <tr>
+        <td pctCell>Heat node</td>
+        <td pctCell>M-Bus</td>
+      </tr>
+      <tr>
+        <td pctCell>Meter</td>
+        <td pctCell>OBIS</td>
+      </tr>
+    </tbody>
+  </table>
+</sbx-demo>
+
+<sbx-demo
+  heading="Wider than its space"
+  summary="The same kind of table in a column too narrow for it. The frame scrolls it along the inline axis, and while it does it is a region named by the caption with a tab stop of its own, so a keyboard can reach it and scroll it with the arrows. Widen the window until the table fits and the stop goes."
+  [reqs]="['req-a11y-wcag', 'req-a11y-built-in']"
+  data-testid="demo-frame"
+>
+  <div class="view__narrow">
+    <pct-table-frame data-testid="frame">
+      <table pctTable>
+        <caption pctCaption>
+          Registers
+        </caption>
+        <thead>
+          <tr>
+            <th pctHeader scope="col" numeric>Address</th>
+            <th pctHeader scope="col">Name</th>
+            <th pctHeader scope="col" numeric>Value</th>
+            <th pctHeader scope="col">Unit</th>
+            <th pctHeader scope="col">Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td pctCell numeric>4096</td>
+            <td pctCell>Supply temperature</td>
+            <td pctCell numeric>21.5</td>
+            <td pctCell>°C</td>
+            <td pctCell>after the exchanger</td>
+          </tr>
+          <tr>
+            <td pctCell numeric>4097</td>
+            <td pctCell>Exhaust temperature</td>
+            <td pctCell numeric>23.0</td>
+            <td pctCell>°C</td>
+            <td pctCell>before the exchanger</td>
+          </tr>
+        </tbody>
+      </table>
+    </pct-table-frame>
+  </div>
+</sbx-demo>

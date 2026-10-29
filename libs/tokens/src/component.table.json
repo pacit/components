@@ -1,0 +1,85 @@
+{
+  "pct": {
+    "table": {
+      "$comment": "A table the consumer writes, dressed element by element: the table, its caption, header cells, cells and the frame it scrolls in. It stands on no control axis, because a cell is not a control: the padding comes off the spacing scale, so the density scope tightens a table with everything else, and the type is the body size. The only colours of its own are the header's surface and the lines: the cells paint nothing, so a table sits on whatever surface holds it.",
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the table."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the cells."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Line under a row."
+      },
+      "$comment-padding": "`space.3` and `space.4`, the two steps the compact density re-points, so a dense page gets dense rows without a table input of its own.",
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of a cell and a header cell."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of a cell and a header cell."
+      },
+      "heading-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a header cell."
+      },
+      "heading-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a header cell."
+      },
+      "heading-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Line under the header row."
+      },
+      "heading-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of a header cell."
+      },
+      "caption-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the caption."
+      },
+      "caption-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the caption."
+      },
+      "caption-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Space between the caption and the table."
+      },
+      "toggle-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between a sortable header's label and its chevron."
+      },
+      "$comment-toggle-target-min": "The floor a finger gets on a sortable header (`req-a11y-touch`). The cell's padding clears it at the body size; this is what a skin that shrinks the padding runs into.",
+      "toggle-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of a sortable header."
+      },
+      "$comment-icon-fg-muted": "The chevron of a column not yet sorted, shown under the pointer or the focus as the order a press would give. The muted text colour, so the hint reads quieter than the sorted column's chevron, which takes the header's own text colour.",
+      "icon-fg-muted": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Colour of the chevron a sortable header shows as a hint."
+      }
+    }
+  }
+}
