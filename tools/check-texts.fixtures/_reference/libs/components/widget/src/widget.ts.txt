@@ -10,6 +10,14 @@ import { PCT_TEXTS } from '../../core/src/texts';
 
 export type PctWidgetSize = 'sm' | 'md' | 'lg';
 
+/**
+ * The host binds literals no position of a value holds, read as a template's are: each operator's
+ * operands, the operand of `!`, `typeof`, `void` and a sign, a condition, the left of `&&` and a
+ * key. And words where nothing draws them: a `class.` or `style.` binding, an `attr.` binding named
+ * as a drawn property or with an `!important` `ngc` leaves on it (an attribute name `setAttribute`
+ * refuses), a property no element draws, a property in a case the DOM does not give it (NG0303),
+ * and a listener.
+ */
 @Component({
   selector: 'pct-widget',
   templateUrl: './widget.html',
@@ -17,6 +25,21 @@ export type PctWidgetSize = 'sm' | 'md' | 'lg';
     class: 'pct-widget',
     role: 'group',
     '[attr.data-pct-size]': 'size()',
+    '[attr.aria-label]':
+      "size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' || size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm'",
+    '[attr.aria-description]':
+      "'sm' in items() || 'sm' instanceof Object || items().length - 'sm' || items().length * 'sm' || items().length / 'sm' || items().length % 'sm' || items().length ** 'sm'",
+    '[attr.aria-roledescription]':
+      "!(label() || 'sm') || typeof (label() || 'sm') || void 'sm' || -'sm' || +'sm'",
+    '[title]':
+      "((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') + items()['length']",
+    '[class.title]': "label() || 'Unread'",
+    '[style.title]': "label() || 'Unread'",
+    '[attr.textContent]': "'Unread'",
+    '[attr.title!important]': "'Unread'",
+    '[TEXTCONTENT]': "'Unread'",
+    '[id]': "'pct-widget-host'",
+    '(focus)': "items().includes('Unread')",
   },
 })
 export class PctWidget {

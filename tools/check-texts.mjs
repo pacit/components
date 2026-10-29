@@ -23,7 +23,12 @@ import {
   Interpolation,
   JitEvaluator,
   LiteralMap,
+  makeBindingParser,
   outputAst,
+  ParseLocation,
+  parseHostBindings,
+  ParseSourceFile,
+  ParseSourceSpan,
   parseTemplate,
   R3Identifiers,
   R3TargetBinder,
@@ -181,7 +186,7 @@ const DRAWN_PROPERTIES = new Set([
  * The properties that draw their value on the elements named, measured the same way: an `<a>`'s and
  * an `<option>`'s `text`, which is their content, and a `<textarea>`'s and an `<output>`'s `value`
  * and `defaultValue`, the text they show. An `<input>`'s `value` and an `<iframe>`'s `srcdoc` are
- * attributes as well, written or bound (`speaking`), and an `<input>`'s `defaultValue` writes its
+ * attributes as well, written or bound (`speakingOn`), and an `<input>`'s `defaultValue` writes its
  * `value`.
  */
 const DRAWN_ON = new Map([
@@ -202,6 +207,66 @@ const writes = (binding) =>
   binding.type === BindingType.Property ||
   binding.type === BindingType.Attribute ||
   binding.type === BindingType.TwoWay;
+
+/**
+ * Whether an attribute speaks on an element `is` names, of the `type` written there: an `<input>`'s
+ * `value` where its type draws it (`VALUELESS_INPUTS`), and an `<iframe>`'s `srcdoc` everywhere, the
+ * document it draws (measured: written, bound and as an `attr.`).
+ */
+const speakingOn = (name, is, type) => {
+  const lower = name.toLowerCase();
+  return (
+    speaks(name) ||
+    (lower === 'value' && is('input') && !VALUELESS_INPUTS.has(type)) ||
+    (lower === 'srcdoc' && is('iframe'))
+  );
+};
+
+/**
+ * Whether a binding sets a property that draws its value on an element `is` names
+ * (`DRAWN_PROPERTIES`, `DRAWN_ON`): a property or a two-way binding, which sets the property as well.
+ */
+const drawsOn = (binding, is, type) => {
+  if (
+    binding.type !== BindingType.Property &&
+    binding.type !== BindingType.TwoWay
+  )
+    return false;
+  const name = DOM_SCHEMA.getMappedPropName(binding.name);
+  return (
+    DRAWN_PROPERTIES.has(name) ||
+    [...(DRAWN_ON.get(name) ?? [])].some(is) ||
+    (name === 'defaultValue' && speakingOn('value', is, type))
+  );
+};
+
+/**
+ * Whether a binding prints its value on an element `is` names: it writes what it names (`writes`),
+ * and that is a speaking attribute — a property by the attribute it reflects (`reflected`) — or a
+ * property that draws. A two-way binding holds no literal to read, so a property is the one-way kind.
+ */
+const printedOn = (binding, is, type) =>
+  writes(binding) &&
+  (speakingOn(
+    binding.type === BindingType.Property
+      ? reflected(binding.name)
+      : binding.name,
+    is,
+    type,
+  ) ||
+    drawsOn(binding, is, type));
+
+/**
+ * The element a `host` block lands on, which the class does not choose: any one. `ngc` checks a
+ * property binding against the elements its selector names (NG8002), and nothing checks it again
+ * where a class extending it carries it onto the element its own selector names (measured through
+ * ngc in partial mode: `a[pctBase]`'s `'[text]'` compiles under an `option[pctSub]` that extends
+ * it, and draws on the option); an `attr.` binding and a written attribute are checked against
+ * nothing (`[pctAttr]` writes `value` and `srcdoc` on whatever takes it). And a field's `type` is
+ * the consumer's, written over the host's (JIT and a render in jsdom: `<input pctH type="text">`
+ * shows the value of a host writing `type: 'checkbox'`).
+ */
+const anyElement = () => true;
 
 const LETTER = /\p{L}/u;
 
@@ -255,12 +320,9 @@ const shorten = (entries, countOf = 8) =>
 const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/dgm;
 
-/** A string literal in an expression (a binding in a `host` block is a string). */
-const LITERAL_IN_EXPRESSION = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
-
 /**
- * The string literals of an expression, with comments stepped over — the same job as
- * `LITERAL_IN_EXPRESSION` where the expression can be several lines long and carry prose.
+ * The string literals of a TypeScript expression, with comments stepped over: the expression can be
+ * several lines long and carry prose.
  *
  * A regular expression cannot do this, and the difference is not academic. A factory's
  * argument in this library is often a whole `computed()` body, a body carries comments,
@@ -309,20 +371,75 @@ const literalsIn = (expression) => {
   return found;
 };
 
+/** What `ngc` takes off a host property binding's name. */
+const IMPORTANT = '!important';
+
 /**
- * The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`, and the property
- * `[ariaLabel]` → `aria-label` (`reflected`).
+ * A `host` block as the compiler reads it: `parseHostBindings` sorts its keys — `[…]` a property
+ * binding, `(…)` a listener, `class` and `style` apart, any other a static attribute — and the
+ * binding parser reads each property binding, as `ngc` does (`verifyHostBindings`), into the binding
+ * a template's element carries (`createBoundElementProperty`): `[attr.title]` an attribute
+ * `title`, `[innerHtml]` the property `innerHTML`, `[class.title]` a class. `ngc` takes a host's
+ * bindings another way (`ingestHostBinding`), and it parts from a template's in two spellings: it
+ * takes `!important` off a property's name, any property's (`parseHostStyleProperties`), which
+ * this read does too — `'[title!important]'` draws a `title` where a schema lets it compile — and
+ * it writes a namespaced `attr.` name unmerged (`xlink:title`, not `:xlink:title`), which no
+ * speaking name is either way. The block is built as `ngc` builds the object it hands over, by
+ * assignment, and each binding parsed under its key, which the parser's message names.
+ *
+ * A binding prints as a template's does on an element of any tag (`printedOn`, `anyElement`), and
+ * draws the literals that can be its value (`ExpressionLiterals`), names here being the class's. A
+ * value the parser refuses — an interpolation, a pipe, which a `host` block takes none of — is
+ * one of `errors`, its messages together, refused at point 1 whether it prints or not: `ngc`
+ * refuses it as well, and what the parser makes of it is no reading of the expression. A listener is not read, as a template's is not: what it draws, it draws
+ * through the code it calls.
  */
-const nameFromKey = (key) => {
-  const bound = /^\[(attr\.)?([^\]]+)\]$/.exec(key);
-  if (!bound) return { name: key, bound: false };
-  return { name: bound[1] ? bound[2] : reflected(bound[2]), bound: true };
+const readHost = (entries) => {
+  const block = {};
+  for (const [key, value] of entries) block[key] = value;
+  const { attributes, properties } = parseHostBindings(block);
+  const parser = makeBindingParser();
+  const literals = [];
+  const errors = [];
+  for (const [name, value] of Object.entries(properties)) {
+    const at = new ParseLocation(new ParseSourceFile('', `[${name}]`), null);
+    const before = parser.errors.length;
+    for (const property of parser.createBoundHostProperties(
+      { [name]: value },
+      new ParseSourceSpan(at, at),
+    )) {
+      const binding = parser.createBoundElementProperty('', property, true);
+      if (
+        binding.type === BindingType.Property &&
+        binding.name.endsWith(IMPORTANT)
+      )
+        binding.name = binding.name.slice(0, -IMPORTANT.length);
+      if (!printedOn(binding, anyElement, null)) continue;
+      property.expression.ast.visit(
+        new ExpressionLiterals(
+          (literal) => literals.push([`[${name}]`, literal]),
+          () => {},
+        ),
+      );
+    }
+    const refused = parser.errors.slice(before);
+    if (refused.length)
+      errors.push(refused.map((error) => error.msg).join('; '));
+  }
+  return {
+    attributes: Object.entries(attributes).map(([key, { value }]) => [
+      key,
+      value,
+    ]),
+    literals,
+    errors,
+  };
 };
 
 /**
  * Decorated classes. `attributes` are the `host` block's static attributes (name/value
- * pairs), `literals` the string literals from the expressions of speaking-attribute
- * bindings. Beside them, what point 1 holds the read to: the decorators the pattern read where
+ * pairs), `literals` the string literals its bindings print, and `errors` what the binding parser
+ * refuses of them (`readHost`). Beside them, what point 1 holds the read to: the decorators the pattern read where
  * the parser holds no class (`unheld`) or no metadata (`unparsed`), the ones it counted and the
  * pattern did not read (`unseen`), and the files taking a decorator under another name
  * (`renamed`).
@@ -370,19 +487,7 @@ const readSources = (root, files) => {
       const path = textOf(url);
       const template = metadata.get('template');
       const host = hostOf(metadata.get('host'));
-      const attributes = [];
-      const literals = [];
-
-      for (const [key, value] of host?.entries ?? []) {
-        const { name, bound } = nameFromKey(key);
-        if (!bound) {
-          attributes.push([name, value]);
-          continue;
-        }
-        if (!speaks(name)) continue;
-        for (const l of value.matchAll(LITERAL_IN_EXPRESSION))
-          literals.push([name, l[1] ?? l[2]]);
-      }
+      const { attributes, literals, errors } = readHost(host?.entries ?? []);
 
       classes.push({
         file,
@@ -418,6 +523,7 @@ const readSources = (root, files) => {
         composed: host === null,
         attributes,
         literals,
+        errors,
       });
     }
     unseen.push(...decorators.unseen());
@@ -902,41 +1008,11 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     this.within(node, node.name, () => super.visitElement(node));
   }
 
-  /**
-   * An `<input>`'s `value` speaks where its type draws it (`VALUELESS_INPUTS`), and an `<iframe>`'s
-   * `srcdoc` everywhere, the document it draws (measured: written, bound and as an `attr.`).
-   */
-  speaking(name) {
-    const lower = name.toLowerCase();
-    return (
-      speaks(name) ||
-      (lower === 'value' &&
-        this.tag === 'input' &&
-        !VALUELESS_INPUTS.has(this.type)) ||
-      (lower === 'srcdoc' && this.tag === 'iframe')
-    );
-  }
-
-  /**
-   * Whether a binding sets a property that draws its value on this element (`DRAWN_PROPERTIES`,
-   * `DRAWN_ON`): a property or a two-way binding, which sets the property as well.
-   */
-  draws(binding) {
-    if (
-      binding.type !== BindingType.Property &&
-      binding.type !== BindingType.TwoWay
-    )
-      return false;
-    const name = DOM_SCHEMA.getMappedPropName(binding.name);
-    return (
-      DRAWN_PROPERTIES.has(name) ||
-      DRAWN_ON.get(name)?.has(this.tag) === true ||
-      (name === 'defaultValue' && this.speaking('value'))
-    );
-  }
+  /** The element the walk stands on (`within`). */
+  is = (tag) => tag === this.tag;
 
   visitTextAttribute(node) {
-    if (this.speaking(node.name) && this.first(node))
+    if (speakingOn(node.name, this.is, this.type) && this.first(node))
       this.attributes.push({
         name: node.name,
         value: node.value,
@@ -945,14 +1021,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
   }
 
   visitBoundAttribute(node) {
-    if (!writes(node)) return;
-    // A two-way binding holds no literal to read, so a property is the one-way kind.
-    const property = node.type === BindingType.Property;
-    if (
-      !this.speaking(property ? reflected(node.name) : node.name) &&
-      !this.draws(node)
-    )
-      return;
+    if (!printedOn(node, this.is, this.type)) return;
     this.print(node, `binding \`${node.name}\``, (value) =>
       this.interpolated.push({ name: node.name, value, line: line(node) }),
     );
@@ -1317,6 +1386,20 @@ const checkTexts = (input) => {
         `the block so.`,
     );
 
+  const unread = classes.flatMap((k) =>
+    k.errors.map((error) => `${k.file}: ${k.className} — ${error}`),
+  );
+  if (unread.length)
+    throw new TextsError(
+      'denominator',
+      'host-unparsed',
+      `${unread.length} \`host\` bindings do not parse:\n` +
+        list(unread) +
+        `\n    ngc refuses each, and what the binding parser makes of it is no reading of the ` +
+        `expression: point 3 would pronounce on literals it never found. A \`host\` binding ` +
+        `takes an expression, with no interpolation and no pipe.`,
+    );
+
   const used = new Map();
   for (const k of classes)
     if (k.template) used.set(k.template, [...(used.get(k.template) ?? []), k]);
@@ -1658,7 +1741,7 @@ const checkTexts = (input) => {
   // extends that base without writing over it.
   for (const k of classes)
     for (const [name, value] of k.attributes)
-      if (speaks(name) && LETTER.test(value))
+      if (speakingOn(name, anyElement, null) && LETTER.test(value))
         attributeViolations.push(`${k.file}: host \`${name}\` = "${value}"`);
   if (attributeViolations.length)
     throw new TextsError(

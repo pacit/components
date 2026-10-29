@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "8 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.ts: host `[attr.title]` → \"Close the row\"\n      libs/components/widget/src/widget.ts: host `[attr.placeholder]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[attr.aria-placeholder]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[attr.aria-valuetext]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[attr.alt]` → \"Delete \"\n      libs/components/widget/src/widget.ts: host `[attr.abbr]` → \"Delete \"\n      libs/components/widget/src/widget.ts: host `[attr.label]` → \" and \"\n      libs/components/widget/src/widget.ts: host `[attr.download]` → \"Delete the row\"",
+  "description": "Sentences in the positions of a value of a `host` block's speaking bindings, read as a template's are (`ExpressionLiterals`): a conditional's branch, the operands of `??` and `||` and the right one of `&&`, a concatenation, the words of a template literal, the separator an array's method is handed, and an item read off an array (measured: each drawn, through JIT and a render in jsdom). The block was read by a regular expression over quotes, which took a comparison's operand for a word and the words of a template literal for none; so the refusal counts eight."
+}

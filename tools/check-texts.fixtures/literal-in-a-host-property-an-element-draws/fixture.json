@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "4 string literals reach the DOM from an expression:\n      libs/components/widget/src/blank.ts: host `[value]` → \"Delete the row\"\n      libs/components/widget/src/blank.ts: host `[defaultValue]` → \"Delete the row\"\n      libs/components/widget/src/blank.ts: host `[attr.value]` → \"Delete the row\"\n      libs/components/widget/src/marker.ts: host `[attr.srcdoc]` → \"<p>Delete the row</p>\"",
+  "description": "Sentences a `host` block binds to what an element of one tag draws: the `value` of a field, bound as a property, as its `defaultValue` and as an attribute, on `PctBlank`, a component on `input[pctBlank]`, and an `<iframe>`'s `srcdoc` as an attribute on `PctMarker`, whose selector `[pctMarker]` names no element, where `ngc` checks an `attr.` binding against nothing (measured through ngc in partial mode: each compiles; JIT and a render in jsdom: each draws on the element named). The block was read by an attribute's name alone, and `value` and `srcdoc` speak on one element each; so all four passed."
+}
