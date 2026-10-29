@@ -205,7 +205,7 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
 
 - [ ] **1.8 — numbers and instants in `./core`** — the formats a table cell, a chart axis and
       a description list share, given one home before the second of them reads it
-  - a number with its unit in the reader's locale (a space between groups and a decimal comma in `pl`), on
+  - a number with its unit in the reader's locale (in `pl` a decimal comma, and a space between groups from five digits), on
     `Intl.NumberFormat`: the platform's `style: 'unit'` where it knows the unit, the unit as
     text beside the number where it does not; the fraction digits asked for, not guessed
   - an instant, milliseconds since the epoch as a clock and an API give it, written absolute

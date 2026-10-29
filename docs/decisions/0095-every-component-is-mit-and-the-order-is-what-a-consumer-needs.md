@@ -4,13 +4,14 @@
 **Implements:** [`req-project-package`](../requirements/project.md#req-project-package)
 **Evidence:** no measurement in the repository — the maintainer's sentence of 2026-10-29, and
 the first consumer's list of what it needs: an application for a house, built on `0.2.0`,
-which asks for a table and a card first, then charts and an application shell
+which asks for a table and a card first, then charts and an application shell (the plan puts
+the shell before the charts, because it costs days and the charts weeks)
 
 ## Context
 
 [0016](0016-mit-irreversibility.md) kept one option open. A component whose distribution
 terms were not settled did not enter a release, the default answer under doubt was "not yet",
-and the most expensive component, the table, was built last so that its terms could be
+and the most expensive component, the table, was to be built last so that its terms could be
 settled with users in hand. The decision named its own price: a slower road to completeness,
 and the risk that the option is never used.
 
@@ -46,8 +47,8 @@ it costs to build.**
 ## What this costs us
 
 - **The option is gone for good.** The first commit of the table puts it under MIT forever,
-  and no later decision can reach back past it. Accepted on purpose: 0016 measured the cost of
-  the mistake as one-sided, and this decision accepts that side.
+  and no later decision can reach back past it. Accepted on purpose: 0016 judged the cost of
+  the mistake one-sided, and this decision accepts that side.
 - **The order loses a rule it had for free.** "Costliest last" needed no judgement; "what a
   consumer needs" does, and one consumer's list can pull the plan towards one application.
   The guard is the plan's own law: a component answers a class of applications, and the
