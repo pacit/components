@@ -21,16 +21,18 @@ const varied = (fx, variant) => {
  * What the control finds, as `{ rule, … }`. `unreadable`: the declaration or its case cannot be
  * read. `no-case`: a `case` the tree does not hold. `unclean`: the runner reported the case as
  * written, or pinned to its own value — the variants then differ from a play that is not clean,
- * and what they report proves nothing. Where the gate hands over a `pin`: `no-pins`, `pins` that
- * are no list of values; `no-own-pin`, a case that pins nothing itself, so no play of it can
- * stand clean beside a pinned one; `unheard`, a value the runner reported nothing of. Where it
- * hands over none: `unpinned`, `pins` declared all the same, which nothing could play. For every
- * rule the gate `holds`: `no-variant`, a rule no variant is `for`; `unplayable`, a variant whose
- * play throws; `unheard`, a variant the runner reported nothing of. `gate.play(name, fx)` plays
- * a declaration over the input named and returns the lines the runner reported; it is asked
- * only of a sound declaration — the case as written first, then pinned to its own value and to
- * every pin, then every variant — and each play gets a copy of the case of its own, so a pin or
- * a runner that writes into what it is handed cannot change the plays after it.
+ * and what they report proves nothing. `half-pinned`: a gate that hands over `own` or `pin`
+ * without the other — the one reads what a case pins, the other writes it. Where the gate hands
+ * over both: `no-pins`, `pins` that are no list of values; `no-own-pin`, a case that pins nothing
+ * itself, so no play of it can stand clean beside a pinned one; `unheard`, a value the runner
+ * reported nothing of. Where it hands over neither: `unpinned`, `pins` declared all the same,
+ * which nothing could play. For every rule the gate `holds`: `no-variant`, a rule no variant is
+ * `for`; `unplayable`, a variant whose play throws; `unheard`, a variant the runner reported
+ * nothing of. `gate.play(name, fx)` plays a declaration over the input named and returns the
+ * lines the runner reported; it is asked only of a sound declaration — the case as written
+ * first, then pinned to its own value and to every pin, then every variant — and each play gets
+ * a copy of the case of its own, so a pin or a runner that writes into what it is handed cannot
+ * change the plays after it.
  */
 const verdict = async (gate) => {
   let control;
@@ -42,6 +44,8 @@ const verdict = async (gate) => {
   if (!gate.cases.includes(control?.case))
     return [{ rule: 'no-case', control }];
   const pinned = gate.pin !== undefined;
+  if ((gate.own !== undefined) !== pinned)
+    return [{ rule: 'half-pinned', handed: pinned ? 'pin' : 'own' }];
   if (!pinned && control.pins !== undefined)
     return [{ rule: 'unpinned', control }];
   if (pinned && (!Array.isArray(control.pins) || control.pins.length === 0))
@@ -162,6 +166,18 @@ const OWN = [
     pin: null,
     control: { ...CONTROL, pins: [] },
     finds: ['unpinned'],
+  },
+  {
+    why: 'a gate that reads what a case pins and hands over nothing to write it',
+    pin: null,
+    own: (prepared) => prepared.pin,
+    control: { ...CONTROL, pins: undefined },
+    finds: ['half-pinned own'],
+  },
+  {
+    why: 'a gate that writes a pin and hands over nothing to read the case’s own',
+    own: null,
+    finds: ['half-pinned pin'],
   },
   {
     why: 'a control naming a case the tree does not hold',
@@ -285,11 +301,13 @@ const OWN = [
 const shown = (f) =>
   f.rule === 'no-variant'
     ? `no-variant ${f.key}`
-    : f.rule !== 'unheard'
-      ? f.rule
-      : f.variant
-        ? `unheard ${f.variant.for}`
-        : `unheard ${JSON.stringify(f.value)}`;
+    : f.rule === 'half-pinned'
+      ? `half-pinned ${f.handed}`
+      : f.rule !== 'unheard'
+        ? f.rule
+        : f.variant
+          ? `unheard ${f.variant.for}`
+          : `unheard ${JSON.stringify(f.value)}`;
 
 const ownControl = async () => {
   const problems = [];
@@ -302,11 +320,15 @@ const ownControl = async () => {
       'pin' in row
         ? (row.pin ?? undefined)
         : (prepared, value) => ({ ...prepared, pin: value });
+    const own =
+      'own' in row
+        ? (row.own ?? undefined)
+        : pin && ((prepared) => prepared.pin);
     const found = await verdict({
       load: row.load ?? (() => control),
       cases: ['a'],
       read: () => fx ?? JSON.parse('{'),
-      own: (prepared) => prepared.pin,
+      own,
       pin,
       holds: ['passed', 'check', 'rule'],
       play: async (name, played) => {
@@ -368,11 +390,18 @@ const said = (where, f) => {
         `${where}: \`pins\` is no list of values — a control that pins nothing plays the ` +
         `runner on nothing`
       );
+    case 'half-pinned':
+      return (
+        `${where}: the gate hands over \`${f.handed}\` without ` +
+        `\`${f.handed === 'pin' ? 'own' : 'pin'}\` — \`own\` reads what a case pins and ` +
+        `\`pin\` writes it, and a control with half of the pair either plays no pin or cannot ` +
+        `read the case's own`
+      );
     case 'unpinned':
       return (
-        `${where}: \`pins\` is declared, and the gate hands over no \`pin\` to write one with — ` +
-        `the control plays none of them, and a runner that no longer holds a case to what it ` +
-        `pins passes in silence`
+        `${where}: \`pins\` is declared, and the gate hands over no \`pin\` to write one ` +
+        `with — the control plays none of them, and a runner that no longer holds a case to ` +
+        `what it pins passes in silence`
       );
     case 'no-own-pin':
       return (
@@ -444,8 +473,9 @@ const said = (where, f) => {
  *
  * Not held here: that a gate calls this at all, as nothing holds that its loop runs, and that
  * `holds` names every rule its runner has. That a gate whose cases pin hands over `pin` is held
- * through its declaration alone: `pins` there and no `pin` in the call is refused, while a gate
- * that drops `pin` and `pins` together leaves nothing a control could read.
+ * through its declaration and its call: `pins` there and no `pin` in the call is refused, and so
+ * is half of the pair `own` and `pin`, while a gate that drops all three together leaves nothing
+ * a control could read.
  */
 export const runnerControl = async ({
   where,
