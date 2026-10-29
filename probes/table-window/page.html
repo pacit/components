@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8" />
+<title>Table window probes</title>
+<style>
+  body { margin: 0; font: 14px/20px system-ui, sans-serif; }
+  .frame { height: 600px; width: 1000px; overflow: auto; position: relative; }
+  table { border-collapse: collapse; }
+  caption { text-align: start; padding: 8px; font-weight: 600; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #ccc; white-space: nowrap; text-align: start; }
+  thead th { position: sticky; top: 0; background: #fff; z-index: 1; }
+  td.num { text-align: end; font-variant-numeric: tabular-nums; }
+  tr.fixed { height: 36px; box-sizing: border-box; }
+  tr.fixed > td { padding-top: 0; padding-bottom: 0; height: 35px; overflow: hidden; text-overflow: ellipsis; max-width: 30ch; }
+  table.layout-fixed { table-layout: fixed; width: 100%; }
+  tbody.pseudo::before, tbody.pseudo::after { content: ''; display: table-row; }
+  tbody.pseudo::before { height: var(--before, 0px); }
+  tbody.pseudo::after { height: var(--after, 0px); }
+  tr.spacer > td { padding: 0; border: 0; }
+  tr.cv { content-visibility: auto; contain-intrinsic-size: auto 37px; }
+  tr.details > td { white-space: normal; }
+  .details-box { height: 120px; }
+  .details-box.frac { height: 120.3px; }
+  tr.frac > td { line-height: 1.4; }
+  .selected { background: #def; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="page.js"></script>
+</body>
+</html>
