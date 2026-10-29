@@ -218,8 +218,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - `table[pctTable]` landed with [0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md):
     five classes dressing five elements, its card, `/table` in three engines
   - `pct-data-table` is one typed engine that grows into a grid by directives, in the same
-    entrypoint ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)); its window is opt-in above 1,000 rows, and the rows it skips
-    are drawn by the body's pseudo-elements ([0098](decisions/0098-a-tables-window-is-opt-in-and-the-rows-it-skips-are-two-pseudo-rows.md))
+    entrypoint
+    ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md));
+    its window is opt-in, recommended above 8,000 cells, and the rows it skips are drawn by the
+    body's pseudo-elements ([0098](decisions/0098-a-tables-window-is-opt-in-and-the-rows-it-skips-are-two-pseudo-rows.md))
   - phases, one pull request each: the pure engine and the type probe; the component with
     columns, sort, filter and states; the window to a million rows; the server's pages and
     blocks; priorities and the details row; groups and aggregates; the selection as a control
