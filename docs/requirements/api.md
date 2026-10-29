@@ -929,7 +929,8 @@ time and therefore cannot be a library string.
 a text node, into a speaking attribute or a text field's value, around an interpolation or into
 an expression literal in a position of its value, printed there, through a property that draws it
 (`textContent`, `innerHTML`, an `<a>`'s `text`, a `<textarea>`'s `value`) or through a name the
-template binds; prose in a signal's default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
+template binds, in a template and in a `host` block alike, which the compiler's `parseHostBindings`
+and binding parser read, a value they refuse refused with them; prose in a signal's default value and a read of `PCT_TEXTS` at construction; completeness of the channel (field ⟷
 default ⟷ read); developer warnings outside the channel and under `isDevMode()`. Templates are
 read by `parseTemplate` from `@angular/compiler` and walked by the compiler's visitor, each node of
 the tree, found over every node's fields, reached and of a kind the walk knows, a printed name read
@@ -945,7 +946,7 @@ attributes only where an instruction takes it as a node's, a local reference or 
 timing is placed apart, and one no instruction the read knows takes is refused. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 108 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 113 doctored inputs, each rejected on its own
 **rule** (not merely its point), the reference exporting a class under two names; among them a
 name standing for a decorated class no entrypoint exports (which passed, read by export key), the
 same with the name in another entrypoint, a class the scanner misses under two names, two
@@ -980,7 +981,12 @@ reference's comparisons, arithmetic, conditions and keys are in no position of a
 of the inputs that show none, one an inline template wraps inside an `<output>`, and of an
 `<option>` are drawn nowhere, an interpolated `class` beside an outlet hands its template
 nothing, a `class.` or `style.` binding writes no text, and an inline template on an
-`<ng-template>` is read; plus nine runs against the repository (a literal in
+`<ng-template>` is read; a sentence in each position of a `host` binding's value, a template
+literal's words among them, one bound to a property that draws it on any element and to what an
+element of one tag draws, bound and written, beside a host's `type`, and a `host` binding that
+does not parse, an interpolation and a pipe — while the reference's `host` holds its comparisons,
+conditions and keys, and words a `class.` or `style.` binding, an `attr.` one named as a drawn
+property, a property no element draws and a listener hold; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead
 field, a literal in an interpolation, a static `aria-label` in a `host` block)

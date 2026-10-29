@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "6 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.ts: host `[text]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[value]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[defaultValue]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[srcdoc]` → \"<p>Delete the row</p>\"\n      libs/components/widget/src/widget.ts: host `[attr.value]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[attr.srcdoc]` → \"<p>Delete the row</p>\"",
+  "description": "Sentences a `host` block binds to what an element of one tag draws: the `text` of an `<a>` or an `<option>`, the `value` and `defaultValue` of a field, a `<textarea>` or an `<output>`, and the `srcdoc` of an `<iframe>`, as a property and as an attribute. A host is any element — a selector may name none, and a consumer's class extending this one takes the block onto the element its own selector names (measured: `<a pctSub>` draws `Delete` from a base's `'[text]'`) — so each counts on `pct-widget` too, six."
+}

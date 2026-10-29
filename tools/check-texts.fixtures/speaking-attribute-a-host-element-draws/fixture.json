@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "message": "2 speaking attributes carry a string written inline:\n      libs/components/widget/src/widget.ts: host `value` = \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `srcdoc` = \"<p>Delete the row</p>\"",
+  "description": "Sentences a `host` block writes as the attributes an element of one tag draws: a field's `value` and an `<iframe>`'s `srcdoc`. The host's `type` decides nothing: the consumer's element writes its own over it (measured: `<input pctH type=\"text\">` shows the value of a host writing `type: 'checkbox'`), and a host is any element. Point 2 compares neither, being no attribute that speaks on every element; so the refusal counts two."
+}

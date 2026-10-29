@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "host-unparsed",
+  "message": "2 `host` bindings do not parse:\n      libs/components/widget/src/widget.ts: PctWidget — Parser Error: Unexpected token '{' at column 8 in [Delete {{ items().length }} rows] in [attr.title]\n      libs/components/widget/src/widget.ts: PctWidget — Parser Error: Host binding expression cannot contain pipes[label() | uppercase] in [attr.placeholder]",
+  "description": "Two `host` bindings the binding parser refuses, as `ngc` does: an interpolation, which a `host` block takes none of, and a pipe, which a host binding cannot contain (measured: JIT throws a parser error on each). What the parser makes of such a value is no reading of the expression, and the first one's words would pass point 3 unread; so point 1 refuses both, by class and by the parser's message."
+}

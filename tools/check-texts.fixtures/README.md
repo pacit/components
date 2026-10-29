@@ -173,6 +173,29 @@ nothing, and passed all three, which main refused (the review, measured). So
   standing in as `{{…}}`, and a binding's are read beside the written attributes and not compared
   by point 2: no static attribute, they reach the package in the template function.
 
+A `host` block prints as a template does (`readHost`). The compiler's own `parseHostBindings` sorts
+its keys, its binding parser reads each property binding into the binding an element carries, and
+that binding prints where a template's would (`printedOn`), drawing the literals that can be its
+value (`ExpressionLiterals`). The block was read by a regular expression over the quotes of a
+speaking binding: a comparison's operand was a word, a template literal's words were none, and a
+drawn property was read for nothing. A host is any element: a selector may name none, a consumer's
+class extending a directive takes its block onto the element its own selector names (measured:
+`<a pctSub>` draws `Delete` from a base's `'[text]'`), and a field's `type` is the consumer's,
+written over the host's (`<input pctH type="text">` shows the value of a host writing
+`type: 'checkbox'`). So what an element of one tag draws counts on every host.
+
+- `literal-in-a-host-value-position` — a conditional's branch, the operands of `??` and `||` and the
+  right one of `&&`, a concatenation, a template literal's words, an array method's separator and
+  an item read off an array, eight refusals.
+- `literal-in-a-drawn-host-property` — the properties that draw on any element
+  (`DRAWN_PROPERTIES`), `innerHtml` among them, six; read by an attribute's name, all six passed.
+- `literal-in-a-host-property-an-element-draws`, `speaking-attribute-a-host-element-draws` — what an
+  element of one tag draws, bound as a property and as an attribute (`text`, `value`,
+  `defaultValue`, `srcdoc`), six, and written beside a host's `type: 'checkbox'`, two.
+- `host-binding-that-does-not-parse` — `denominator/host-unparsed`: an interpolation and a pipe, which
+  a host binding takes neither of. `ngc` refuses both, and what the parser makes of them is no
+  reading of the expression, so point 1 refuses them by class and by the parser's message.
+
 The reference holds the literals in no position of a value — each operator's operands
 (`size() === 'sm'`, `items().length - 'sm'`, …), the operand of `!`, `typeof`, `void` and a sign, a
 condition, the left of `&&` and a key — and the values no element draws: an `<input>`'s of each type
@@ -183,16 +206,20 @@ name alone: taken whole, they were the row's `let-item`. And the bindings that w
 (`writes`): a `class.` or `style.` binding named `type`, which leaves a checkbox a checkbox, and one
 named `srcdoc` or `title`, which toggles a class. A read taking any of them for a word drawn refuses
 it. And an inline template on an `<ng-template>`, which has no tag of its own, is read, where a first
-version of the read under the template's tag threw on it. The library's printed expressions hold two
-literals, neither with a letter, both in a value's position; it binds no drawn property and writes
-no value of a text field, and its 77 interpolations write no word around their expressions.
+version of the read under the template's tag threw on it. Its `host` holds the same literals in no
+position of a value, and words where nothing draws them: a `class.` and a `style.` binding,
+`[attr.textContent]`, `[TEXTCONTENT]`, `[id]` and a listener. The library's printed expressions hold
+two literals, neither with a letter, both in a value's position; it binds no drawn property and
+writes no value of a text field, and its 77 interpolations write no word around their expressions.
+Its `host` blocks print through ten `aria-label` and `aria-valuetext` bindings, the ones the regular
+expression read, with no string literal in any.
 
 Not held: a pipe's arguments, read as format markers (`date: 'short'`), no read here knowing which
 pipe a name is, where `i18nSelect` and `i18nPlural` draw the map they are handed (measured); a map's
 keys, which `keyvalue` and `json` draw (`{ Delete: 1 } | keyvalue`, measured), and which no read
-takes for a value — a context's keys (`$implicit`, `label`) would all be refused; and a `host`
-block's bindings, read apart, every literal of a speaking binding (`literals`), so that a comparison
-there is refused and `'[textContent]'` is read for nothing; an `<option>`'s value in a
+takes for a value — a context's keys (`$implicit`, `label`) would all be refused; a listener's
+literals, in a template and a `host` block alike, which reach the screen only through the code it
+calls (`(click)="toast('Deleted')"`); an `<option>`'s value in a
 `<datalist>`, which the field it lists for suggests (measured), read nowhere; and a regular
 expression, which draws its source (`{{ /Delete/ }}`) and is read nowhere either: a template hands
 one to a method (`replace(/\s+/g, '-')`), where its letters are a pattern's, and read as a value it
@@ -203,7 +230,9 @@ is read off (`'Delete'.length`); an argument the code takes for a key or a local
 `alt`, which it then does not show; and a binding an element takes as its own property beside an
 outlet (`[id]="'pct-row'"`), taken whole by the template's variables as a directive's input would
 be, as on main — interpolated, it hands its name alone; and an interpolation on an `<ng-template>`
-that no directive takes (`id="row-{{ n }}"`, NG0303), taken whole as every binding there is.
+that no directive takes (`id="row-{{ n }}"`, NG0303), taken whole as every binding there is; and what
+an element of one tag draws, bound or written on a host whose selector names another
+(`'[value]'` on `pct-widget`), which a consumer's subclass can still move.
 
 ## A name stands for what binds it
 

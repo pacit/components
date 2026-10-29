@@ -1,0 +1,100 @@
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  isDevMode,
+  signal,
+} from '@angular/core';
+import { PCT_TEXTS } from '../../core/src/texts';
+
+export type PctWidgetSize = 'sm' | 'md' | 'lg';
+
+/**
+ * The host binds literals no position of a value holds, read as a template's are: each operator's
+ * operands, the operand of `!`, `typeof`, `void` and a sign, a condition, the left of `&&` and a
+ * key. And words where nothing draws them: a `class.` or `style.` binding, an `attr.` binding named
+ * as a drawn property, a property no element draws, a property in a case the DOM does not give it
+ * (NG0303), and a listener.
+ */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    role: 'group',
+    '[attr.data-pct-size]': 'size()',
+    '[textContent]': "'Delete the row'",
+    '[innerText]': "'Delete the row'",
+    '[outerText]': "'Delete the row'",
+    '[innerHTML]': "'<b>Delete the row</b>'",
+    '[innerHtml]': "'<b>Remove the row</b>'",
+    '[outerHTML]': "'<b>Delete the row</b>'",
+    '[attr.aria-label]':
+      "size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' || size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm'",
+    '[attr.aria-description]':
+      "'sm' in items() || 'sm' instanceof Object || items().length - 'sm' || items().length * 'sm' || items().length / 'sm' || items().length % 'sm' || items().length ** 'sm'",
+    '[attr.aria-roledescription]':
+      "!(label() || 'sm') || typeof (label() || 'sm') || void 'sm' || -'sm' || +'sm'",
+    '[title]':
+      "((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') + items()['length']",
+    '[class.title]': "label() || 'Unread'",
+    '[style.title]': "label() || 'Unread'",
+    '[attr.textContent]': "'Unread'",
+    '[TEXTCONTENT]': "'Unread'",
+    '[id]': "'pct-widget-host'",
+    '(focus)': "items().includes('Unread')",
+  },
+})
+export class PctWidget {
+  protected readonly texts = inject(PCT_TEXTS);
+
+  readonly label = input<string>('');
+  readonly size = input<PctWidgetSize>('md');
+  // A function key, which is the one capitalised default that is not prose: nobody translates
+  // `KeyboardEvent.key`. Widen `FUNCTION_KEY` to any short capitalised word and the case below
+  // (`literal-in-string-input`) stops firing — the exemption is named, not shaped.
+  readonly hotkey = input('F6');
+  readonly items = input<readonly string[]>([]);
+
+  /** A library string read AT RENDER TIME, not at construction. */
+  protected readonly emptyText = computed(() => this.texts().widgetEmpty);
+  protected readonly collapseText = computed(
+    () => this.texts().widgetCollapse,
+  );
+
+  /**
+   * A generic argument that is a FUNCTION type: the `>` of the arrow is not the one that
+   * closes the type argument, and a scanner counting angle brackets alone stops there. Here
+   * so that the shape is measured and not assumed.
+   */
+  protected readonly visible = computed<(item: string) => boolean>(
+    () => (item) => item !== '',
+  );
+
+  /**
+   * A comment INSIDE a factory's argument, and the apostrophe below is the whole of what this
+   * member is for. Point 4 reads a factory's argument as source text; a scanner pairing quotes
+   * with a regular expression closes a literal that opened in the prose on the `'sm'` in the
+   * code, and hands `isProse` everything between the two — which reads as prose, because half
+   * of it is. Disarm `literalsIn` and this reference input goes red on `prose-in-factory`,
+   * naming a file that did nothing wrong ([`lesson-132`](../../../../../docs/lessons.md#lesson-132)).
+   */
+  protected readonly narrowest = computed(() => {
+    // The widget's narrowest size on the axis.
+    return this.size() === 'sm';
+  });
+
+  protected readonly open = signal(true);
+
+  toggle(): void {
+    this.open.set(!this.open());
+    if (isDevMode()) this.warnOnMisuse();
+  }
+
+  private warnOnMisuse(): void {
+    if (!this.items().length) {
+      console.warn('[pctWidget] Rendered without items.');
+    }
+  }
+}

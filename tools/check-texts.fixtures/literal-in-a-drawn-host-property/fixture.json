@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "message": "6 string literals reach the DOM from an expression:\n      libs/components/widget/src/widget.ts: host `[textContent]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[innerText]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[outerText]` → \"Delete the row\"\n      libs/components/widget/src/widget.ts: host `[innerHTML]` → \"<b>Delete the row</b>\"\n      libs/components/widget/src/widget.ts: host `[innerHtml]` → \"<b>Remove the row</b>\"\n      libs/components/widget/src/widget.ts: host `[outerHTML]` → \"<b>Delete the row</b>\"",
+  "description": "Sentences a `host` block binds to the properties that draw their value as any element's content (`DRAWN_PROPERTIES`): `textContent`, `innerText`, `outerText`, `innerHTML` and `outerHTML`, and `innerHtml`, which the compiler sets as `innerHTML` (measured: Angular 22.2.1 sets each on the host, JIT and a render in jsdom with the setter recorded where jsdom implements none). The block's bindings were read by an attribute's name alone, and none of these is one; so all six passed."
+}

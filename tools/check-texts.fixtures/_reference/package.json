@@ -10,8 +10,20 @@
           "attributes": {
             "role": "group"
           },
+          "listeners": {
+            "focus": "items().includes('Unread')"
+          },
           "properties": {
-            "attr.data-pct-size": "size()"
+            "attr.data-pct-size": "size()",
+            "attr.aria-label": "size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' || size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm'",
+            "attr.aria-description": "'sm' in items() || 'sm' instanceof Object || items().length - 'sm' || items().length * 'sm' || items().length / 'sm' || items().length % 'sm' || items().length ** 'sm'",
+            "attr.aria-roledescription": "!(label() || 'sm') || typeof (label() || 'sm') || void 'sm' || -'sm' || +'sm'",
+            "title": "((label() || 'sm') ? '*' : '') + ((label() || 'sm') && '*') + items()['length']",
+            "class.title": "label() || 'Unread'",
+            "style.title": "label() || 'Unread'",
+            "attr.textContent": "'Unread'",
+            "TEXTCONTENT": "'Unread'",
+            "id": "'pct-widget-host'"
           },
           "classAttribute": "pct-widget"
         },
