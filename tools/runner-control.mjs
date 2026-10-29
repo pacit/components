@@ -171,12 +171,12 @@ const OWN = [
     why: 'a gate that reads what a case pins and hands over nothing to write it',
     pin: null,
     own: (prepared) => prepared.pin,
-    control: { ...CONTROL, pins: undefined },
     finds: ['half-pinned own'],
   },
   {
     why: 'a gate that writes a pin and hands over nothing to read the case’s own',
     own: null,
+    control: { ...CONTROL, pins: undefined },
     finds: ['half-pinned pin'],
   },
   {
