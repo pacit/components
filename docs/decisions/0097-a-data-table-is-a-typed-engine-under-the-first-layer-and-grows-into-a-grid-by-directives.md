@@ -15,8 +15,9 @@ type probe on TypeScript 6.0.3 in which an unknown column id, a number kind on a
 column, a misspelt key and a template reading the wrong value type are each a compile error
 (`probes/table-typing/probe.ts` on `probe/table-window-0098`, commit `cdfcb2e5`). The probe
 stands in for the template check: a declared function takes the cell slot's two inputs and
-returns its context. The phase that builds the engine compiles the same cases in a component
-under `strictTemplates`
+returns its context; the engine's own spec, `table/src/model/columns.types.spec.ts`, keeps
+those cases since the engine landed. The phase that builds the component, where the cell
+directive is born, compiles them in a template under `strictTemplates`
 
 ## Context
 
