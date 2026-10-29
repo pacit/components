@@ -1,6 +1,6 @@
 # 0038 — A window is measured, and its spacer is not an element
 
-**Status:** accepted
+**Status:** accepted — rows of measured heights, the case that would overturn it, are 0098's mechanism, and this window stays for lists of one height
 **Implements:** [`req-a11y-wcag`](../requirements/a11y.md#req-a11y-wcag),
 [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),
 [`req-api-signals`](../requirements/api.md#req-api-signals)
