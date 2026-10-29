@@ -73,6 +73,16 @@ export interface PctTableVisible {
  */
 export type PctScrollAlign = 'start' | 'center' | 'end' | 'nearest';
 
+/**
+ * How `scrollTo` scrolls.
+ *
+ * @since next
+ */
+export interface PctScrollToOptions {
+  /** Where the row stands in the view; `nearest` by default. */
+  readonly align?: PctScrollAlign;
+}
+
 /** How many placeholder rows stand in for rows that are still coming. */
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
 
@@ -95,7 +105,8 @@ interface Row<T> {
   readonly cells: readonly Cell<T>[];
 }
 
-type Writer = (value: unknown) => string;
+/** Writes a value; `now` is handed in at the write, so a relative column counts from the moment the rows were drawn. */
+type Writer = (value: unknown, now: PctInstant) => string;
 
 /**
  * How a kind writes a value as text: the text a cell shows and the quick filter searches. An
@@ -105,7 +116,6 @@ function writerOf(
   kind: PctAnyCellKind | undefined,
   locale: string,
   words: { readonly yes: string; readonly no: string },
-  now: PctInstant,
 ): Writer {
   // `Number.isFinite` takes no string for a number, so it is the whole test of a value to write.
   const finite = (value: unknown): value is number => Number.isFinite(value);
@@ -124,7 +134,7 @@ function writerOf(
         ...(relative as object),
         timeZone,
       });
-      return (value) => (finite(value) ? words.format(value, now) : '');
+      return (value, now) => (finite(value) ? words.format(value, now) : '');
     }
     const clock = new Intl.DateTimeFormat(locale, { timeZone, ...format });
     return (value) => (finite(value) ? clock.format(value) : '');
@@ -340,24 +350,25 @@ export class PctDataTable<
       }),
   );
 
-  /** One writer per column, made when the columns, the locale, the words or `now` change. */
+  /**
+   * One writer per column, made when the columns, the locale or the words change: a formatter
+   * costs far more to make than to call.
+   */
   private readonly writers = computed(() => {
     const locale = this.resolvedLocale();
     const words = { yes: this.texts().tableYes, no: this.texts().tableNo };
-    const now = this.now() ?? Date.now();
     return new Map<string, Writer>(
       this.columns().map((column) => [
         column.id,
-        writerOf(column.kind, locale, words, now),
+        writerOf(column.kind, locale, words),
       ]),
     );
   });
 
-  private readonly textOf = computed(() => {
-    const writers = this.writers();
-    return (column: PctAnyColumn<T>, row: T) =>
-      (writers.get(column.id) as Writer)(column.value(row));
-  });
+  /** The instant a relative column counts from, read with the rows it writes. */
+  private moment(): PctInstant {
+    return this.now() ?? Date.now();
+  }
 
   private readonly filtered = computed(() => {
     const rows = this.rows();
@@ -367,7 +378,10 @@ export class PctDataTable<
     if (own) return rows.filter((row) => own(row, question));
     const words = pctQuestionWords(question);
     const columns = this.columns();
-    const text = this.textOf();
+    const writers = this.writers();
+    const now = this.moment();
+    const text = (column: PctAnyColumn<T>, row: T) =>
+      (writers.get(column.id) as Writer)(column.value(row), now);
     return rows.filter((row) => pctMatches(row, columns, text, words));
   });
 
@@ -458,8 +472,10 @@ export class PctDataTable<
         sortKey: column.sort === false ? null : column.id,
         numeric: pctColumnNumeric(column),
         direction: position < 0 ? null : sort[position].direction,
-        // The first key is `aria-sort`; the rest carry their place in the order to the eye.
+        // The first key is `aria-sort`; the rest carry their place and way to the eye.
         place: position > 0 ? position + 1 : null,
+        arrow:
+          position > 0 && sort[position].direction === 'descending' ? '▼' : '▲',
         slot: templates.get(column.id) ?? null,
       };
     });
@@ -469,6 +485,7 @@ export class PctDataTable<
   protected readonly body = computed<readonly Row<T>[]>(() => {
     const columns = this.columns();
     const writers = this.writers();
+    const now = this.moment();
     const templates = this.cellTemplates();
     const cells = columns.map((column) => ({
       column,
@@ -491,7 +508,7 @@ export class PctDataTable<
         return {
           column,
           value,
-          text: writer(value),
+          text: writer(value, now),
           numeric,
           yes: boolean && typeof value === 'boolean' ? value : null,
           slot,
@@ -510,12 +527,19 @@ export class PctDataTable<
    * The sentence beside an empty table: still loading, nothing there, or nothing answering
    * the question — three facts, three sentences, as the select says them.
    */
+  private readonly emptiness = computed(() => {
+    if (this.lines().length > 0) return null;
+    if (this.loading()) return 'loading';
+    return pctQuestionWords(this.filter()).length > 0 || this.rows().length > 0
+      ? 'no-matches'
+      : 'empty';
+  });
+
   protected readonly message = computed(() => {
-    if (this.lines().length > 0) return '';
-    if (this.loading()) return this.texts().tableLoading;
-    return this.filter() !== '' || this.rows().length > 0
-      ? this.texts().tableNoMatches
-      : this.texts().tableEmpty;
+    const emptiness = this.emptiness();
+    if (emptiness === 'loading') return this.texts().tableLoading;
+    if (emptiness === 'no-matches') return this.texts().tableNoMatches;
+    return emptiness === 'empty' ? this.texts().tableEmpty : '';
   });
 
   /**
@@ -541,21 +565,36 @@ export class PctDataTable<
   } | null>(null);
 
   constructor() {
-    // The question that emptied the table is answered aloud, as the select answers it; an
-    // empty table on arrival is the page's to describe, not a change to announce.
+    // A filter that emptied the table is answered aloud, as the select answers it; a table
+    // with no rows, or rows still coming, is the page's to describe, not a change to announce.
     let announced = '';
     const say = (message: string): void => {
       this.announcer.retract(announced);
       this.announcer.announce(message);
       announced = message;
     };
-    effect(() => say(this.filter() === '' ? '' : this.message()));
+    effect(() =>
+      say(this.emptiness() === 'no-matches' ? this.texts().tableNoMatches : ''),
+    );
+    // An empty template is read whenever it stands, so a dev build does not call it an orphan.
+    effect(() => this.emptySlot()?.read());
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => say(''));
 
     effect(() => {
       const unnamed = this.caption() === '' && this.ariaLabelledby() === '';
       if (unnamed && isDevMode()) this.warnOnNoName();
+    });
+
+    // The header's height, kept clear at the frame's top, so a row scrolled to stands below a
+    // sticky header rather than under it.
+    afterRenderEffect(() => {
+      const sticky = this.stickyHeader();
+      const frame = this.frame().nativeElement as HTMLElement;
+      const head = frame.querySelector('thead') as HTMLElement;
+      frame.style.scrollPaddingBlockStart = sticky
+        ? `${head.getBoundingClientRect().height}px`
+        : '';
     });
 
     afterNextRender(() => {
@@ -595,15 +634,23 @@ export class PctDataTable<
   /** Follows the rows in the view, re-observed whenever the rows drawn change. */
   private watchVisible(destroyRef: DestroyRef): void {
     let observer: IntersectionObserver | null = null;
-    const inView = new Set<number>();
     destroyRef.onDestroy(() => observer?.disconnect());
     afterRenderEffect(() => {
       const body = this.body();
       if (typeof IntersectionObserver === 'undefined') return;
       const frame = this.frame().nativeElement as HTMLElement;
       observer?.disconnect();
-      inView.clear();
-      observer = new IntersectionObserver((entries) => {
+      // A list with no rows has none in view, and an observer of nothing never says so.
+      if (body.length === 0) {
+        untracked(() => this.seen.set({ start: 0, end: 0, rows: [] }));
+        observer = null;
+        return;
+      }
+      // Each observer counts its own rows against its own body, so a report an old one had
+      // queued before it was let go writes nothing into the new one's count.
+      const inView = new Set<number>();
+      const current = new IntersectionObserver((entries) => {
+        if (current !== observer) return;
         for (const entry of entries) {
           const index = Number(
             (entry.target as HTMLElement).dataset['pctIndex'],
@@ -612,29 +659,29 @@ export class PctDataTable<
           else inView.delete(index);
         }
         const indices = [...inView].sort((a, b) => a - b);
-        const start = indices[0] ?? 0;
-        const end = indices.length === 0 ? 0 : (indices.at(-1) as number) + 1;
         this.seen.set({
-          start,
-          end,
+          start: indices[0] ?? 0,
+          end: indices.length === 0 ? 0 : (indices.at(-1) as number) + 1,
           rows: indices.map((index) => body[index].id),
         });
       });
+      observer = current;
       for (const row of Array.from(
         frame.querySelectorAll<HTMLElement>('tbody > tr[data-pct-index]'),
       ))
-        observer.observe(row);
+        current.observe(row);
     });
   }
 
   /**
    * Scrolls the row with `id` into view, once it is drawn: called before the rows arrive, it
    * waits for them, so a position is restored by naming the row right after binding the rows.
+   * A sticky header is not drawn over it: the frame keeps the header's height clear.
    *
    * @since next
    */
-  scrollTo(id: PctRowId, align: PctScrollAlign = 'nearest'): void {
-    this.pending.set({ id, align });
+  scrollTo(id: PctRowId, options: PctScrollToOptions = {}): void {
+    this.pending.set({ id, align: options.align ?? 'nearest' });
   }
 
   /**
@@ -650,8 +697,18 @@ export class PctDataTable<
   /** The shift key's state at the press that is about to write `sort`. */
   private shift = false;
 
-  protected noteShift(event: KeyboardEvent | PointerEvent): void {
+  /** A press by the pointer: its Shift is the press's. */
+  protected notePointer(event: PointerEvent): void {
     this.shift = event.shiftKey;
+  }
+
+  /**
+   * A press by a key: only Enter and Space press a button, so Shift+Tab between the headers
+   * says nothing about the press that may follow without a key of its own — a screen reader's
+   * browse-mode Enter.
+   */
+  protected noteKey(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') this.shift = event.shiftKey;
   }
 
   /**
@@ -676,10 +733,14 @@ export class PctDataTable<
       direction:
         current?.direction === 'ascending' ? 'descending' : 'ascending',
     };
+    // Without Shift the first key turns, or goes; any other column becomes the only key,
+    // ascending, as its hint promised.
     const next = !shift
-      ? remove
-        ? []
-        : [entry]
+      ? at !== 0
+        ? [{ key, direction: 'ascending' as const }]
+        : remove
+          ? []
+          : [entry]
       : remove
         ? list.filter((_, i) => i !== at)
         : at < 0

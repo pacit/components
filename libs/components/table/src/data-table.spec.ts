@@ -512,15 +512,23 @@ describe('PctDataTable — the order', () => {
     expect(names()).toEqual(['Sensor', 'Boiler', 'Lamp']);
     expect(header('Room').getAttribute('aria-sort')).toBe('ascending');
     expect(header('Name').getAttribute('aria-sort')).toBeNull();
-    expect(header('Name').getAttribute('data-pct-sort-place')).toBe('2');
-    expect(header('Room').getAttribute('data-pct-sort-place')).toBeNull();
+    const place = header('Name').querySelector(
+      '[data-pct-part="place"]',
+    ) as HTMLElement;
+    expect(place.textContent).toBe('2▲');
+    expect(place.getAttribute('aria-hidden')).toBe('true');
+    expect(place.closest('[data-pct-part="toggle"]')).not.toBeNull();
+    expect(header('Room').querySelector('[data-pct-part="place"]')).toBeNull();
     await press(fixture, 'Name', true);
     expect(host.sort()).toEqual([
       { key: 'room', direction: 'ascending' },
       { key: 'name', direction: 'descending' },
     ]);
     expect(names()).toEqual(['Sensor', 'Lamp', 'Boiler']);
-    // Without Shift the pressed column becomes the only key, turned from where it stood.
+    expect(
+      header('Name').querySelector('[data-pct-part="place"]')?.textContent,
+    ).toBe('2▼');
+    // Without Shift a column after the first becomes the only key, ascending.
     await press(fixture, 'Name');
     expect(host.sort()).toEqual([{ key: 'name', direction: 'ascending' }]);
   });
@@ -795,7 +803,7 @@ describe('PctDataTable — where the frame stands', () => {
       .mockImplementation(() => undefined);
     const fixture = await render(Host);
     const scroll = Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>;
-    fixture.componentInstance.table().scrollTo(2, 'center');
+    fixture.componentInstance.table().scrollTo(2, { align: 'center' });
     await settle(fixture);
     expect(scroll).toHaveBeenCalledTimes(1);
     expect(scroll.mock.contexts[0]).toBe(body()[1]);
@@ -1142,5 +1150,140 @@ describe('PctDataTable — the slots, at their edges', () => {
       String(text).slice(0, String(text).indexOf(']') + 1),
     );
     expect(slots).toEqual(['[pctCell]', '[pctHeaderCell]', '[pctEmpty]']);
+  });
+});
+
+describe('PctDataTable — after the review', () => {
+  it('turns or drops only the first key on a plain press, and starts any other afresh', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.unsortable.set(true);
+    host.sort.set([
+      { key: 'room', direction: 'descending' },
+      { key: 'name', direction: 'descending' },
+    ]);
+    await settle(fixture);
+    await press(fixture, 'Name');
+    expect(host.sort()).toEqual([{ key: 'name', direction: 'ascending' }]);
+    host.sort.set([
+      { key: 'room', direction: 'descending' },
+      { key: 'name', direction: 'ascending' },
+    ]);
+    await settle(fixture);
+    await press(fixture, 'Room');
+    expect(host.sort()).toEqual([]);
+  });
+
+  it('reads Shift only from the keys that press a button', async () => {
+    const fixture = await render(Host);
+    await press(fixture, 'Room');
+    const button = toggle('Name') as HTMLButtonElement;
+    button.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        key: 'Tab',
+        shiftKey: true,
+      }),
+    );
+    button.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.sort()).toEqual([
+      { key: 'name', direction: 'ascending' },
+    ]);
+    const room = toggle('Room') as HTMLButtonElement;
+    room.dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, key: ' ', shiftKey: true }),
+    );
+    room.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.sort()).toHaveLength(2);
+  });
+
+  it('empties what it reports in view when the rows go', async () => {
+    const fixture = await render(Host);
+    const callback = observed.at(-1) as (typeof observed)[number];
+    callback([{ target: body()[0], isIntersecting: true }]);
+    expect(fixture.componentInstance.table().visible().rows).toEqual([1]);
+    fixture.componentInstance.rows.set([]);
+    await settle(fixture);
+    expect(fixture.componentInstance.table().visible()).toEqual({
+      start: 0,
+      end: 0,
+      rows: [],
+    });
+    // A report the old observer had queued counts for nothing now.
+    callback([{ target: document.createElement('tr'), isIntersecting: true }]);
+    expect(fixture.componentInstance.table().visible()).toEqual({
+      start: 0,
+      end: 0,
+      rows: [],
+    });
+  });
+
+  it('keeps the header’s height clear at the top of the frame while it sticks', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      height: 41,
+    } as DOMRect);
+    const fixture = await render(Host);
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    expect(frame.style.scrollPaddingBlockStart).toBe('41px');
+    fixture.componentInstance.sticky.set(false);
+    await settle(fixture);
+    expect(frame.style.scrollPaddingBlockStart).toBe('');
+  });
+
+  it('counts a relative column from the clock when the rows change', async () => {
+    const relative = col.of([
+      col.key('seen', {
+        header: 'Seen',
+        kind: { instant: { relative: true } },
+      }),
+    ]);
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Seen"
+        locale="en"
+      />`,
+    })
+    class ClockHost {
+      readonly rows = signal<readonly Device[]>([DEVICES[0]]);
+      readonly columns = relative;
+      readonly byId = byId;
+    }
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(12 * HOUR);
+    const fixture = await render(ClockHost);
+    expect(texts()[0][0]).toBe('2 hours ago');
+    clock.mockReturnValue(13 * HOUR);
+    fixture.componentInstance.rows.set([{ ...DEVICES[0] }]);
+    await settle(fixture);
+    expect(texts()[0][0]).toBe('3 hours ago');
+  });
+
+  it('reads a question of spaces as none', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.rows.set([]);
+    fixture.componentInstance.filter.set('   ');
+    await settle(fixture);
+    expect(message()?.textContent?.trim()).toBe('No rows');
+  });
+
+  it('announces an empty table the application’s predicate made, with no question', async () => {
+    const fixture = await render(Host);
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    fixture.componentInstance.filterWith.set(() => false);
+    await settle(fixture);
+    expect(announce).toHaveBeenLastCalledWith('No matches');
+  });
+
+  it('calls no empty template an orphan', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await render(SlotHost);
+    expect(
+      warn.mock.calls.filter(([text]) => String(text).startsWith('[pctEmpty]')),
+    ).toEqual([]);
   });
 });

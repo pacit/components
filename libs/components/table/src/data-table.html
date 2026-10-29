@@ -15,7 +15,7 @@
       {{ caption() }}
     </caption>
     }
-    <thead (keydown)="noteShift($event)" (pointerdown)="noteShift($event)">
+    <thead (keydown)="noteKey($event)" (pointerdown)="notePointer($event)">
       <tr>
         @for (head of heads(); track head.column.id) {
         <th
@@ -23,27 +23,33 @@
           scope="col"
           [sortKey]="head.sortKey"
           [numeric]="head.numeric"
-          [attr.data-pct-sort-place]="head.place"
         >
           @if (head.slot) {
           <ng-container
             [ngTemplateOutlet]="head.slot"
             [ngTemplateOutletContext]="{ $implicit: head.column, direction: head.direction }"
           />
-          } @else { {{ head.column.header }} }
+          } @else { {{ head.column.header }} } @if (head.place) {
+          <span
+            class="pct-data-table__place"
+            data-pct-part="place"
+            aria-hidden="true"
+            >{{ head.place }}{{ head.arrow }}</span
+          >
+          }
         </th>
         }
       </tr>
     </thead>
     <tbody [attr.aria-busy]="loading() ? 'true' : null">
       @for (index of placeholders(); track index) {
-      <tr data-pct-part="placeholder">
+      <tr data-pct-part="placeholder" aria-hidden="true">
         @for (head of heads(); track head.column.id) {
         <td pctCell><pct-skeleton /></td>
         }
       </tr>
       } @for (row of body(); track row.key) {
-      <tr [attr.data-pct-index]="row.index">
+      <tr [attr.data-pct-index]="$index">
         @for (cell of row.cells; track cell.column.id) {
         <td pctCell [numeric]="cell.numeric">
           @if (cell.slot) {

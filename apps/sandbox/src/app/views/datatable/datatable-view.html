@@ -21,9 +21,6 @@
       (input)="question.set($any($event.target).value)"
     />
   </pct-field>
-  <p class="muted" data-testid="rules-count">
-    {{ rulesTable.matched() }} of {{ rules().length }}
-  </p>
   <pct-data-table
     #rulesTable="pctDataTable"
     class="datatable__rules"
@@ -50,6 +47,22 @@
       />
     </ng-template>
   </pct-data-table>
+  <!-- After the table: a binding reads a component's signals once its inputs are set. -->
+  <p class="muted" data-testid="rules-view">
+    @let view = rulesTable.visible(); In view: {{ view.end - view.start }} rows,
+    scrolled {{ rulesTable.scrolled() }} px.
+  </p>
+  <button
+    pctButton
+    type="button"
+    data-testid="rules-reveal"
+    (click)="rulesTable.scrollTo(20, { align: 'start' })"
+  >
+    Show the last rule
+  </button>
+  <p class="muted" data-testid="rules-count">
+    {{ rulesTable.matched() }} of {{ rules().length }}
+  </p>
 </sbx-demo>
 
 <sbx-demo

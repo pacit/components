@@ -40,10 +40,10 @@ readonly columns = col.of([
 |             |                                                                                                                                                                                                      |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Value**   | `sort`: a list of `PctTableSort` keyed by the columns' ids, the first deciding first; `filter`: the quick filter's question                                                                          |
-| **Inputs**  | `rows`, `columns` and `rowId` (required), `caption`, `ariaLabelledby`, `unsortable`, `clientSort`, `clientFilter`, `filterWith`, `loading`, `locale`, `now`, `stickyHeader`                          |
-| **Outputs** | `sortChange` and `filterChange` (the models'); read-only signals `matched`, `lines`, `scrolled` and `visible`; methods `scrollTo(id, align?)` and `reveal(id)`                                       |
+| **Inputs**  | `columns` and `rowId` (required), `rows` (`[]` until bound), `caption`, `ariaLabelledby`, `unsortable`, `clientSort`, `clientFilter`, `filterWith`, `loading`, `locale`, `now`, `stickyHeader`       |
+| **Outputs** | `sortChange` and `filterChange` (the models'); read-only signals `matched`, `lines`, `scrolled` and `visible`; methods `scrollTo(id, { align })` and `reveal(id)`                                    |
 | **Slots**   | `ng-template[pctCell]` (a cell, by column id or a list of ids), `ng-template[pctHeaderCell]` (what stands in a header's label), `ng-template[pctEmpty]` (what stands for the empty table's sentence) |
-| **Parts**   | `message` (the sentence beside an empty table), `placeholder` (a row standing for rows still coming)                                                                                                 |
+| **Parts**   | `message` (the sentence beside an empty table), `placeholder` (a row standing for rows still coming), `place` (the place of a sort key after the first)                                              |
 | **Harness** | `PctDataTableHarness`                                                                                                                                                                                |
 | **Tokens**  | the first layer's `--pct-table-*` tier; the data table adds none                                                                                                                                     |
 | **Strings** | `tableEmpty`, `tableNoMatches`, `tableLoading` (the three sentences an empty table says), `tableYes`, `tableNo` (how a boolean cell is read and searched)                                            |
@@ -70,10 +70,11 @@ out of the order.
 
 ## Parts
 
-| part          | what it is                                                 |
-| ------------- | ---------------------------------------------------------- |
-| `message`     | the sentence beside an empty table, outside the table      |
-| `placeholder` | a row of skeletons standing for rows that are still coming |
+| part          | what it is                                                                      |
+| ------------- | ------------------------------------------------------------------------------- |
+| `message`     | the sentence beside an empty table, outside the table                           |
+| `placeholder` | a row of skeletons standing for rows that are still coming, hidden from readers |
+| `place`       | the place and the way of a sort key after the first, drawn for the eye          |
 
 ## Theming
 
@@ -86,11 +87,11 @@ out of the order.
 
 ## Keyboard map
 
-| key                 | effect                                                       | test                                                                                                                    |
-| ------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `Tab` / `Shift+Tab` | moves between the sort buttons and the controls in the cells | `apps/sandbox-e2e/src/datatable.spec.ts` — "a switch in a cell toggles its row and sorts nothing"                       |
-| `Enter` / `Space`   | sorts by the column as its only key, or turns it             | `apps/sandbox-e2e/src/datatable.spec.ts` — "the keyboard sorts by one key, and Shift adds a second marked by its place" |
-| `Shift+Enter`       | adds the column as the next key, or turns it where it stands | the same case                                                                                                           |
+| key                 | effect                                                       | test                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Tab` / `Shift+Tab` | moves between the sort buttons and the controls in the cells | `apps/sandbox-e2e/src/datatable.spec.ts` — "Tab moves from the sort buttons into the controls in the cells", and `Shift+Tab` in the next      |
+| `Enter` / `Space`   | sorts by the column as its only key, or turns the first key  | `apps/sandbox-e2e/src/datatable.spec.ts` — "the keyboard sorts by one key, Space turns it, and Shift+Enter adds a second marked by its place" |
+| `Shift+Enter`       | adds the column as the next key, or turns it where it stands | the same case                                                                                                                                 |
 
 ## Checks
 
@@ -110,7 +111,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 | RTL — no physical properties + a `dir="rtl"` screenshot    | logical properties only, held by `check-styles`; the screenshot is the first layer's `table-pattern-rtl`                                                                    |
 | SSR + hydration with no `NG05xx`                           | `apps/sandbox-e2e/src/hydration.spec.ts` — `/datatable` in `SBX_ROUTES`; the scroll listener and the observer start after render                                            |
 | Forms                                                      | not applicable — the selection, the one value a form will own, arrives as a control of its own                                                                              |
-| Parts registered in the inventory                          | `libs/components/parts.snapshot.md` — `message`, `placeholder`                                                                                                              |
+| Parts registered in the inventory                          | `libs/components/parts.snapshot.md` — `message`, `placeholder`, `place`                                                                                                     |
 | Tokens registered + an entry in `contrast.policy.json`     | not applicable — the data table adds no token; the first layer's seven pairs hold its paint                                                                                 |
 | Strings through `PCT_TEXTS`                                | `libs/components/core/src/texts.ts` — `tableEmpty`, `tableNoMatches`, `tableLoading`, `tableYes`, `tableNo`                                                                 |
 | Entrypoint size budget                                     | `libs/components/size.snapshot.md` — the `./table` row                                                                                                                      |
@@ -135,12 +136,16 @@ directive).
 - **No window yet.** Every row is in the DOM, which 0098 measured as fluent up to 8,000 cells
   — a thousand rows of eight columns. A longer list waits for the window.
 - **A reader hears the first sort key only.** `aria-sort` stands on one header at a time, as
-  ARIA asks; the place of a key after the first is a digit drawn for the eye.
+  ARIA asks; the place and the way of a key after the first are drawn for the eye and hidden
+  from readers, and a sentence for them is a text of its own still to come.
+- **`visible` counts lines.** `start` and `end` are positions among the lines drawn, the end
+  excluded, so a details row or a group heading, when they come, counts as a line too.
 - **The sticky header needs a height.** The header row stays at the top of a table given a
   block size, where its frame scrolls; a table the page scrolls has no box to stick to.
 - **A cell template does not change what is searched.** The quick filter reads the text the
   column's kind writes, whatever the template draws in its place.
-- **`now` is read once per change.** A relative column counts from the clock when its rows or
-  columns change; an application that wants `in 5 minutes` to tick binds a clock of its own.
+- **`now` is read when the rows are written.** A relative column counts from the clock each
+  time the rows, the order or the filter change; an application that wants `in 5 minutes` to
+  tick between those binds a clock of its own.
 - **NVDA does not say the sort is a control**, as the first layer's card records for the same
   button.

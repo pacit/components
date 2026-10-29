@@ -155,6 +155,8 @@ libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
 libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
+libs/components/table/src/data-table-slots.ts 100.00 9(0) 0 0 0 8
+libs/components/table/src/data-table.ts 99.71 340(1) 1 0 0 6
 libs/components/table/src/model/columns.ts 100.00 18(0) 0 0 0 0
 libs/components/table/src/model/lines.ts 100.00 39(0) 0 0 0 0
 libs/components/table/src/model/order.ts 100.00 89(0) 0 0 0 0
@@ -177,5 +179,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 87.32 7994/9155
+TOTAL 87.77 8343/9505
 ```

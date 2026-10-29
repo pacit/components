@@ -201,8 +201,8 @@ export class PctTableCell {
 }
 
 /**
- * The frame a table scrolls in when it is wider than the space it is given. While the table
- * overflows, the frame is a focusable region named by the table's caption, so a keyboard can
+ * The frame a table scrolls in when it is wider than the space it is given, or taller than a
+ * height it is given. While the table overflows, the frame is a focusable region named by the table's caption, so a keyboard can
  * reach it and scroll it and a reader can say what it holds. While the table fits, the frame
  * is nothing: a stop with nothing to scroll is a stop for nothing.
  *
@@ -278,7 +278,10 @@ export class PctTableFrame {
   }
 
   private measure(frame: HTMLElement): void {
-    const overflows = frame.scrollWidth > frame.clientWidth;
+    // Either axis: a frame given a height scrolls its rows as a wider one scrolls its columns.
+    const overflows =
+      frame.scrollWidth > frame.clientWidth ||
+      frame.scrollHeight > frame.clientHeight;
     this.overflows.set(overflows);
     if (overflows && isDevMode()) this.warnOnUnnamedRegion(frame);
   }

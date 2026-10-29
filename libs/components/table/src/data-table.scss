@@ -13,7 +13,10 @@ pct-table-frame {
   overflow: auto;
 }
 
+/* Positioned, so the hidden word of a boolean cell is clipped and scrolled with the table
+   rather than placed against the page, whose scroll it would stretch. */
 table {
+  position: relative;
   inline-size: 100%;
 }
 
@@ -23,10 +26,9 @@ table {
   z-index: 1;
 }
 
-/* A key after the first carries its place in the order to the eye; `aria-sort` names the
-   first, and ARIA lets one header at a time carry it. */
-th[data-pct-sort-place]::after {
-  content: attr(data-pct-sort-place);
+/* A key after the first carries its place and its way to the eye, beside the label; `aria-sort`
+   names the first, and ARIA lets one header at a time carry it. */
+.pct-data-table__place {
   margin-inline-start: var(--pct-table-toggle-gap);
   font-size: 0.75em;
   vertical-align: super;
