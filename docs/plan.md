@@ -240,14 +240,20 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
       a description list on the platform's `<dl>` with a slot for a control. No shell that
       picks the breakpoint: that is the edge 0057 drew
 
-- [ ] **1.11 — charts** in `@pacit/components/chart` — a time series, grouped bars comparing two
-      periods and a band of states, on one core of pure functions (scales, 1-2-5 ticks, time
-      ticks in a named zone across a change of clocks, decimation to the pixel) and no
-      dependency
-  - the window and the cursor are models the application steers; axes assigned by unit and
-    held while the unit stays; a colour belongs to its series; a table of the data is the
-    alternative to the picture
-  - SVG, unless a measurement under a two-finger zoom says otherwise
+- [~] **1.11 — charts** in `@pacit/components/chart` — a scene and the marks it draws, on one
+  core of pure functions and no dependency ([0099](decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)–[0103](decisions/0103-a-chart-is-a-named-picture-and-its-cursor-is-the-platforms-range.md),
+  decided 2026-10-29 on eight probes, five of them in three engines)
+  - the core: scales, 1-2-5 ticks, time ticks in a named zone across a change of clocks, the
+    window's transform, the value at a position, decimation to the pixel through a pyramid
+  - the scene with a line, its axes by unit, its table and its card; then the cursor as the
+    platform's range, the window with its gestures, their single-pointer buttons and
+    `pctChartSync`, the legend with a second channel per series
+  - then bars with a period compared by position, references and spans, a band of states,
+    points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
+    generated description; a canvas layer only behind a measurement
+  - three promoted layers per scene: the data redrawn only with the data, the window or the
+    size; the axes and annotations; the cursor moved by a transform (0100)
+  - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication
 
