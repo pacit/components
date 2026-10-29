@@ -67,6 +67,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                                                        |
 | `@pacit/components/time`       | `PctTime`, `PctTimeColumns`, the `PctTimeOfDay` helpers — the value, its arithmetic and `pctTimeFormat`                                               |
 | `@pacit/components/datetime`   | `PctDatetime`, the `PctDateTime` helpers — a day and a time of it, two texts under one label, the calendar and the columns in one panel               |
+| `@pacit/components/chart`      | the chart's arithmetic — scales, 1-2-5 and time ticks in a zone, the window, the value at a position, decimation to the pixel, paths                  |
 | `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                                                           |
 | `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                                                       |
 | `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                                                           |
