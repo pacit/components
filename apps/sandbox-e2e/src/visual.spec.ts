@@ -122,6 +122,7 @@ const CARDS: ReadonlyArray<
   ['/badge', 'demo-tones', 'badge-tones'],
   ['/icon', 'demo-tones', 'icon-tones'],
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
+  ['/table', 'demo-pattern', 'table-pattern'],
   ['/stepper', 'demo-journey', 'stepper-journey'],
   ['/tree', 'demo-project', 'tree-project'],
   ['/layout', 'demo-grid', 'layout-grid'],
@@ -547,6 +548,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/badge', 'demo-tones', 'badge-tones'],
   ['/icon', 'demo-tones', 'icon-tones'],
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
+  ['/table', 'demo-pattern', 'table-pattern'],
   ['/stepper', 'demo-journey', 'stepper-journey'],
   ['/tree', 'demo-project', 'tree-project'],
   // The grid writes no direction anywhere — the baseline proves the flow flips anyway.

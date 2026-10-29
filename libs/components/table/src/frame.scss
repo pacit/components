@@ -1,0 +1,18 @@
+/* The frame scrolls along the inline axis and nothing else: a table taller than the page is
+   the page's to scroll. */
+:host {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+}

@@ -1,0 +1,4 @@
+/* Narrow on purpose: the frame demo exists to show a table wider than its space. */
+.view__narrow {
+  max-inline-size: 320px;
+}

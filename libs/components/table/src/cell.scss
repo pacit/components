@@ -1,0 +1,21 @@
+/* A cell: the shared padding and the line under its row. The line is on the cell because this
+   layer dresses no `<tr>`: the row is the consumer's element, and its look is its cells'. */
+:host {
+  padding-block: var(--pct-table-padding-y);
+  padding-inline: var(--pct-table-padding-x);
+  border-block-end: 1px solid var(--pct-table-border);
+  text-align: start;
+  vertical-align: baseline;
+}
+
+/* Numbers stand at the end edge in digits of one width, so a column lines up by place value. */
+:host([data-pct-numeric]) {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+@media (forced-colors: active) {
+  :host {
+    border-block-end-color: CanvasText;
+  }
+}

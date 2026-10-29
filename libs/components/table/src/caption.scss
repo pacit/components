@@ -1,0 +1,9 @@
+/* The caption reads as the table's title: above it, at the start edge, the text colour and a
+   heavier weight. A browser centres it by default, which reads as a title of the page. */
+:host {
+  caption-side: top;
+  padding-block-end: var(--pct-table-caption-gap);
+  color: var(--pct-table-caption-fg);
+  font-weight: var(--pct-table-caption-font-weight);
+  text-align: start;
+}

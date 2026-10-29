@@ -78,6 +78,7 @@
     "libs/components/stepper/src/stepper.ts",
     "libs/components/svg-icon/src/svg-icon.ts",
     "libs/components/switch/src/switch.ts",
+    "libs/components/table/src/table.ts",
     "libs/components/tabs/src/tab.ts",
     "libs/components/tabs/src/tabs.ts",
     "libs/components/testing/src/dom.ts",

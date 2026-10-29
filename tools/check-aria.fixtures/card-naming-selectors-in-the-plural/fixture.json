@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "surface",
+  "message": "is silent about",
+  "$reason": "The card of `card-silent-about-inputs` with its selector line in the plural, the spelling a card naming more than one element writes. Read as the singular only, the card named no selector at all and point 5 said that no card named the component, which is true of no page; read as both, it finds the card and says what it is silent about."
+}

@@ -215,8 +215,8 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - ends with: unit and property suites, `@since next`, a narrow mutation run; the table's
     columns are the first readers
 
-- [ ] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
-      rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
+- [~] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
+  rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
   - `table[pctTable]` dresses a `<table>` the consumer writes: the tier `--pct-table-*`, the
     density axis, a numeric cell, sort headers reporting a press into one `sort` model on the
     table, and a frame that is a focusable, named region only while the table overflows it
@@ -226,8 +226,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     states; a narrow table moves its lowest-priority columns into the details row
   - not here: editing in a cell, moving columns, ranges, `role="grid"` — a datagrid, its own
     entrypoint when somebody needs one
-  - ends with: a decision on the two layers, both cards, the sandbox in three engines, the
-    readers' walk
+  - the first layer landed with [0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md):
+    five classes dressing five elements, its card, `/table` in three engines; the data table
+    is what is left
+  - ends with: both cards, the sandbox in three engines, the readers' walk
 
 - [ ] **1.9 — the card** `pct-card` in `@pacit/components/card` — a header, a body and a footer
       that stays down in a row of equal heights; loading, error and muted without `opacity`;

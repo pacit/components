@@ -1,0 +1,40 @@
+<!--
+  The label is projected once and shown in one of two places, because a component can project
+  its content into one slot only: inside the button on a sortable column, bare on the rest.
+  The chevron points down for descending and is turned for ascending, by the stylesheet: the
+  "same arrow the other way" rule the pagination and the breadcrumb follow.
+-->
+<ng-template #label><ng-content /></ng-template>
+@let key = sortKey(); @if (key === null) {
+<ng-container [ngTemplateOutlet]="label" />
+} @else {
+<button
+  type="button"
+  class="pct-table-header__sort"
+  data-pct-part="toggle"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  (click)="press(key)"
+>
+  <ng-container [ngTemplateOutlet]="label" />
+  <pct-icon
+    name="chevron-down"
+    class="pct-table-header__icon"
+    data-pct-part="icon"
+  >
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  </pct-icon>
+</button>
+}

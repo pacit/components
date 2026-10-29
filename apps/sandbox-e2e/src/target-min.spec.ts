@@ -162,6 +162,17 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-breadcrumb-link-target-min',
   },
   {
+    name: 'table sort toggle',
+    applies: 'libs/components/table/src/header.scss .pct-table-header__sort',
+    route: '/table',
+    selector:
+      '[data-testid="table-sorted"] thead th:first-child [data-pct-part="toggle"]',
+    axis: 'block',
+    zero: ['--pct-table-padding-y', '--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'checkbox control',
     applies:
       'libs/components/checkbox/src/checkbox.scss .pct-checkbox__control',
