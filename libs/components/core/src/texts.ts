@@ -237,6 +237,19 @@ export interface PctTexts {
    * `aria-label`, which would replace the label instead of following it.
    */
   readonly stepDone: string;
+  /** Data table: beside a table with no rows at all. */
+  readonly tableEmpty: string;
+  /**
+   * Data table: beside a table whose rows the quick filter or the application's own filter
+   * has all taken away — the question's state, not the list's, as `selectNoMatches` is.
+   */
+  readonly tableNoMatches: string;
+  /** Data table: beside a table whose rows are still coming, with none yet. */
+  readonly tableLoading: string;
+  /** Data table: how a boolean cell that is true is read, and searched by the quick filter. */
+  readonly tableYes: string;
+  /** Data table: how a boolean cell that is false is read, and searched by the quick filter. */
+  readonly tableNo: string;
 }
 
 /**
@@ -283,6 +296,11 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chipRemove: 'Remove',
   breadcrumbLabel: 'Breadcrumb',
   stepDone: 'Completed',
+  tableEmpty: 'No rows',
+  tableNoMatches: 'No matches',
+  tableLoading: 'Loading…',
+  tableYes: 'Yes',
+  tableNo: 'No',
 };
 
 /**

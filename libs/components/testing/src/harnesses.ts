@@ -794,6 +794,16 @@ export class PctTableCellHarness extends PctHarness<never> {
 }
 
 /**
+ * `pct-data-table` — `PctDataTable`.
+ *
+ * @since next
+ */
+export class PctDataTableHarness extends PctHarness<'message' | 'placeholder'> {
+  static override hostSelector = 'pct-data-table';
+  static override readonly parts = ['message', 'placeholder'] as const;
+}
+
+/**
  * `pct-table-frame` — `PctTableFrame`.
  *
  * @since next

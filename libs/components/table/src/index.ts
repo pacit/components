@@ -1,4 +1,6 @@
 export * from './table';
+export * from './data-table';
+export * from './data-table-slots';
 export * from './model/columns';
 export * from './model/lines';
 export * from './model/order';

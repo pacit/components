@@ -1,0 +1,115 @@
+<h2 class="view__title">Data table</h2>
+<p class="muted view__intro">
+  The first layer drawn from data: a typed list of columns, the order as a list
+  of keys, a quick filter over the text the cells show, and the states of a
+  table with nothing in it. The rows are the view's and are never changed — the
+  table filters and orders a copy.
+</p>
+
+<sbx-demo
+  heading="Rules: sort, filter, a switch in a cell"
+  summary="Press a header to sort by it, again to turn it; Shift adds the column as the next key and marks its place. The filter wants every word in some column of the row, and reads what the cells show — try 'kitchen 4' or '45,8'. The switch is the view's template, typed by the column: toggling it changes the row and sorts nothing."
+  [reqs]="['req-api-platform', 'req-a11y-built-in', 'req-api-generic']"
+  data-testid="demo-rules"
+>
+  <pct-field label="Filter rules" class="datatable__filter">
+    <input
+      pctText
+      type="search"
+      data-testid="rules-filter"
+      [value]="question()"
+      (input)="question.set($any($event.target).value)"
+    />
+  </pct-field>
+  <p class="muted" data-testid="rules-count">
+    {{ rulesTable.matched() }} of {{ rules().length }}
+  </p>
+  <pct-data-table
+    #rulesTable="pctDataTable"
+    class="datatable__rules"
+    data-testid="table-rules"
+    caption="Polling rules"
+    locale="pl"
+    [rows]="rules()"
+    [columns]="columns"
+    [rowId]="byId"
+    [now]="now"
+    [(sort)]="sort"
+    [(filter)]="question"
+  >
+    <ng-template
+      [pctCell]="columns"
+      pctCellOf="enabled"
+      let-rule
+      let-on="value"
+    >
+      <pct-switch
+        [checked]="on"
+        [ariaLabel]="'Enabled: ' + rule.name"
+        (checkedChange)="toggle(rule, $event)"
+      />
+    </ng-template>
+  </pct-data-table>
+</sbx-demo>
+
+<sbx-demo
+  heading="Nothing to show"
+  summary="An empty table says so beside itself, in its frame and not as a row: a reader counting the table's rows counts rows of data."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-empty"
+>
+  <pct-data-table
+    data-testid="table-empty"
+    caption="Alarms"
+    [rows]="[]"
+    [columns]="columns"
+    [rowId]="byId"
+  />
+</sbx-demo>
+
+<sbx-demo
+  heading="Still loading"
+  summary="With no row yet, placeholder rows hold the place and the body is aria-busy; the sentence says the rows are coming."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-loading"
+>
+  <pct-data-table
+    data-testid="table-loading"
+    caption="Registers"
+    loading
+    [rows]="[]"
+    [columns]="columns"
+    [rowId]="byId"
+  />
+</sbx-demo>
+
+<sbx-demo
+  heading="Live readings"
+  summary="Every two seconds the energy moves and the ids stay, so every row keeps its element: a switch with the focus keeps it, and the frame keeps its scroll."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-live"
+>
+  <pct-data-table
+    data-testid="table-live"
+    caption="Live readings"
+    locale="pl"
+    [rows]="live()"
+    [columns]="columns"
+    [rowId]="byId"
+    [now]="now"
+    [(filter)]="liveQuestion"
+  >
+    <ng-template
+      [pctCell]="columns"
+      pctCellOf="enabled"
+      let-rule
+      let-on="value"
+    >
+      <pct-switch
+        [checked]="on"
+        [ariaLabel]="'Enabled: ' + rule.name"
+        (checkedChange)="toggleLive(rule, $event)"
+      />
+    </ng-template>
+  </pct-data-table>
+</sbx-demo>

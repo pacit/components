@@ -274,6 +274,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/table/table-view').then((m) => m.TableView),
   },
   {
+    path: 'datatable',
+    title: 'Data table',
+    summary:
+      'The first layer drawn from data — typed columns, an order of keys, a filter over what is shown.',
+    group: 'components',
+    load: () =>
+      import('./views/datatable/datatable-view').then((m) => m.DatatableView),
+  },
+  {
     path: 'hero',
     title: 'Hero',
     summary: 'The brand gradient as equipment — a rim, a word, a surface.',

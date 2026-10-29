@@ -1,4 +1,7 @@
-import type { PctQuantityOptions } from '@pacit/components/core';
+import type {
+  PctQuantityOptions,
+  PctRelativeOptions,
+} from '@pacit/components/core';
 
 /**
  * What names a row across renders: the key `@for` tracks, and the one selection, details and
@@ -15,9 +18,17 @@ export type PctRowId = string | number;
  * @since next
  */
 export interface PctInstantCellOptions {
-  /** Writes the instant relative to the table's `now`, in the largest unit that fits. */
-  readonly relative?: boolean;
-  /** The wall clock's fields and zone, as `Intl.DateTimeFormat` takes them. */
+  /**
+   * Writes the instant relative to the table's `now`, in the largest unit that fits; an object
+   * says how the words are spelt.
+   */
+  readonly relative?: boolean | Omit<PctRelativeOptions, 'timeZone'>;
+  /** The zone whose wall clock or calendar the instant is read in; the runtime's own when unset. */
+  readonly timeZone?: string;
+  /**
+   * The wall clock's fields, as `Intl.DateTimeFormat` takes them: `{ day, month, hour,
+   * minute }` writes `27.10, 12:30` where a `dateStyle` would add the year.
+   */
   readonly format?: Intl.DateTimeFormatOptions;
 }
 

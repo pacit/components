@@ -220,7 +220,7 @@ export class PctTableCell {
     // where no caption stands, and stays while the frame is no region, rather than going with
     // the first change detection.
     '[attr.aria-labelledby]':
-      'overflows() ? (caption()?.id() ?? labelledBy) : labelledBy',
+      'overflows() ? (caption()?.id() ?? named()) : named()',
   },
 })
 export class PctTableFrame {
@@ -231,6 +231,20 @@ export class PctTableFrame {
   protected readonly labelledBy = inject(
     new HostAttributeToken('aria-labelledby'),
     { optional: true },
+  );
+
+  /**
+   * The id of the element that names the frame when no caption does, for a component that
+   * renders the frame and takes the name as an input: the attribute itself is read once, from
+   * the element the consumer wrote.
+   *
+   * @since next
+   */
+  readonly labelledby = input<string | null>(null);
+
+  /** The name's id: the input's, or the attribute's. */
+  protected readonly named = computed(
+    () => this.labelledby() ?? this.labelledBy,
   );
 
   protected readonly caption = contentChild(PctTableCaption, {
@@ -277,7 +291,7 @@ export class PctTableFrame {
     if (
       this.warned ||
       this.caption() ||
-      this.labelledBy ||
+      this.named() ||
       frame.hasAttribute('aria-label')
     )
       return;
