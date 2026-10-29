@@ -203,17 +203,15 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     baselines of `/time` moved, `time-columns.ts` mutated narrowly, and the three readers on
     the `wheel` shape
 
-- [ ] **1.8 — numbers and instants in `./core`** — the formats a table cell, a chart axis and
-      a description list share, given one home before the second of them reads it
-  - a number with its unit in the reader's locale (in `pl` a decimal comma, and a space between groups from five digits), on
-    `Intl.NumberFormat`: the platform's `style: 'unit'` where it knows the unit, the unit as
-    text beside the number where it does not; the fraction digits asked for, not guessed
-  - an instant, milliseconds since the epoch as a clock and an API give it, written absolute
-    in a named zone and relative (`in 6 days`) on `Intl.DateTimeFormat` and
-    `Intl.RelativeTimeFormat` — a type of its own, because the wall clocks of 0043, 0086 and
-    0090 name no moment
-  - ends with: unit and property suites, `@since next`, a narrow mutation run; the table's
-    columns are the first readers
+- [x] **1.8 — numbers and instants in `./core`** — **closed 2026-10-29**
+  - `pctQuantityFormat`: the platform's unit where it knows one, a symbol after a no-break
+    space where it does not, the fraction digits as one number or a pair
+  - `PctInstant`, `pctWallClockOf` and `pctInstantOf`, the road between an instant and a wall
+    clock in a zone, a skipped or repeated hour resolved by Temporal's three names; and
+    `pctRelativeFormat`, which picks the unit the platform leaves to the caller
+  - writing an instant in full stays `Intl.DateTimeFormat` with `timeZone`: a wrapper would
+    be a second name for the same call
+  - three suites, one of them a sweep over seven zones; 177 mutants, every one killed
 
 - [~] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
   rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
