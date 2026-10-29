@@ -71,20 +71,50 @@ describe('pctWindow', () => {
     expect(pctWindow({ ...base, scrollTop: -25 })).toEqual(pctWindow(base));
   });
 
-  it('keeps the last line under a top at the very end', () => {
-    expect(pctWindow({ ...base, scrollTop: 100 })).toMatchObject({
+  it('reads a top past the last full view as that view', () => {
+    const last = { start: 7, end: 10, lead: 70, tail: 0, total: 100 };
+    expect(pctWindow({ ...base, scrollTop: 70 })).toEqual(last);
+    expect(pctWindow({ ...base, scrollTop: 100 })).toEqual(last);
+    expect(pctWindow({ ...base, scrollTop: 500 })).toEqual(last);
+  });
+
+  it('draws the whole of a list shorter than the view', () => {
+    expect(pctWindow({ ...base, count: 2, scrollTop: 40 })).toEqual({
+      start: 0,
+      end: 2,
+      lead: 0,
+      tail: 0,
+      total: 20,
+    });
+  });
+
+  it('keeps the last line under a view of no height at the very end', () => {
+    expect(pctWindow({ ...base, viewport: 0, scrollTop: 100 })).toMatchObject({
       start: 9,
       end: 10,
     });
   });
 
-  it('keeps the last line under a top past the end', () => {
-    expect(pctWindow({ ...base, scrollTop: 500 })).toEqual({
-      start: 9,
-      end: 10,
-      lead: 90,
+  it('draws the first line of a list of no height, so it can be measured', () => {
+    expect(
+      pctWindow({ ...base, estimate: 0, scrollTop: 40, overscan: 1 }),
+    ).toEqual({
+      start: 0,
+      end: 2,
+      lead: 0,
       tail: 0,
-      total: 100,
+      total: 0,
+    });
+  });
+
+  it('reads the overscan as a whole number of lines, at least none', () => {
+    expect(pctWindow({ ...base, scrollTop: 40, overscan: -3 })).toMatchObject({
+      start: 4,
+      end: 7,
+    });
+    expect(pctWindow({ ...base, scrollTop: 40, overscan: 1.9 })).toMatchObject({
+      start: 3,
+      end: 8,
     });
   });
 

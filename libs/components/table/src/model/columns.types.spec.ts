@@ -20,6 +20,7 @@ interface Register {
   nextAt: number;
   enabled: boolean;
   note?: string;
+  mixed: string | number;
 }
 
 /** A cell slot as the template's type check sees it: the list and the id in, the context out. */
@@ -38,6 +39,12 @@ declare function cellSlot<
   Id extends keyof M & string,
 >(columns: PctColumns<T, M>, of: Id): CellContext<T, M, Id>;
 
+/** Exact equality of two types: assignability alone would accept a narrower one. */
+type Equal<A, B> =
+  (<X>() => X extends A ? 1 : 2) extends <X>() => X extends B ? 1 : 2
+    ? true
+    : false;
+
 const col = pctColumnsOf<Register>();
 const columns = col.of([
   col.key('name', { header: 'Name' }),
@@ -55,6 +62,23 @@ const columns = col.of([
 // Never called: the body is for the compiler.
 export function typeCases(): void {
   const energy = cellSlot(columns, 'energy');
+  const exact: [
+    Equal<typeof energy.value, number | null>,
+    Equal<
+      ReturnType<
+        typeof cellSlot<
+          Register,
+          NonNullable<(typeof columns)['__map']>,
+          'range'
+        >
+      >['value'],
+      string
+    >,
+    Equal<
+      keyof NonNullable<(typeof columns)['__map']>,
+      'name' | 'energy' | 'enabled' | 'range' | 'next'
+    >,
+  ] = [true, true, true];
   const value: number | null = energy.value;
   const row: Register = energy.$implicit;
   const range: string = cellSlot(columns, 'range').value;
@@ -72,12 +96,37 @@ export function typeCases(): void {
   col.key('address', { header: 'Address', kind: 'boolean' });
   // @ts-expect-error — not a key of the row.
   col.key('nmae', { header: 'Name' });
-  col.value(
-    'mixed',
-    (r) => (r.note ?? r.address) as string | number,
-    // @ts-expect-error — a union of a string and a number is not a column of numbers.
-    { header: 'Mixed', kind: { number: {} } },
+  // @ts-expect-error — a union of a string and a number is not a column of numbers.
+  col.key('mixed', { header: 'Mixed', kind: { number: {} } });
+  // @ts-expect-error — nor is an accessor that returns one.
+  col.value('mixed', (r) => r.mixed, { header: 'Mixed', kind: { number: {} } });
+  // @ts-expect-error — a kind is a number kind or an instant kind, never both.
+  col.key('energy', { header: 'E', kind: { number: {}, instant: {} } });
+  // A column built from an accessor outside `of`, as columns generated from a schema are,
+  // takes its kind and types its comparison by the accessor's value.
+  const next = col.value('next', (r) => r.nextAt, {
+    header: 'Next',
+    kind: { instant: {} },
+    sort: (a, b) => a - b,
+  });
+  const generated = col.of(
+    ['a', 'b'].map((id) =>
+      col.value(id, (r) => r.energy, { header: id, kind: { number: {} } }),
+    ),
   );
+  // A generated id is a string, not a literal, so it adds no key a template could name.
+  // @ts-expect-error — and a misspelt one is still refused.
+  cellSlot(col.of([...generated, col.key('name', { header: 'Name' })]), 'nmae');
+  // Spreading a typed list into another keeps its ids.
+  const second = col.of([
+    ...columns,
+    col.key('address', { header: 'Address' }),
+  ]);
+  const spread: number | null = cellSlot(second, 'energy').value;
+  // @ts-expect-error — and refuses a misspelt one.
+  cellSlot(second, 'enrgy');
+  // A comparison never meets an empty value, so it takes the value without `null`.
+  col.key('energy', { header: 'E', sort: (a, b) => a - b });
   // @ts-expect-error — the comparison takes the column's value, a string.
   col.key('name', { header: 'Name', sort: (a: number, b: number) => a - b });
   // An optional field is a column of `T | undefined`, which a kind of its type still takes.
@@ -99,7 +148,19 @@ export function typeCases(): void {
       }),
     ]);
   const fromThunk: number | null = cellSlot(thunk(), 'energy').value;
-  void [value, row, range, on, wrong, view, later, fromThunk];
+  void [
+    exact,
+    value,
+    row,
+    range,
+    on,
+    wrong,
+    view,
+    later,
+    fromThunk,
+    next,
+    spread,
+  ];
 }
 
 describe('pctColumnsOf', () => {
@@ -109,6 +170,7 @@ describe('pctColumnsOf', () => {
     energy: 12.5,
     nextAt: 0,
     enabled: true,
+    mixed: 'x',
   };
 
   it('builds an accessor from a key, and keeps the rest of the spec', () => {

@@ -50,9 +50,12 @@ describe('pctCompareValues', () => {
     expect(pctCompareValues(4n, 4n, text)).toBe(0);
   });
 
-  it('compares a big integer and a number as text, not by size', () => {
-    expect(pctCompareValues(2n, 10, text)).toBeGreaterThan(0);
-    expect(pctCompareValues(10, 2n, text)).toBeLessThan(0);
+  it('compares a big integer, a number and a date by size across the three', () => {
+    expect(pctCompareValues(2n, 10, text)).toBe(-1);
+    expect(pctCompareValues(10, 2n, text)).toBe(1);
+    expect(pctCompareValues(new Date(5), 3, text)).toBe(1);
+    expect(pctCompareValues(Infinity, Infinity, text)).toBe(0);
+    expect(pctCompareValues(-Infinity, 0, text)).toBe(-1);
   });
 
   it('puts false before true', () => {
@@ -61,13 +64,15 @@ describe('pctCompareValues', () => {
   });
 
   it('compares dates by time, to the millisecond', () => {
-    expect(pctCompareValues(new Date(1), new Date(5), text)).toBe(-4);
-    expect(pctCompareValues(new Date(5), new Date(1), text)).toBe(4);
+    expect(pctCompareValues(new Date(1), new Date(2), text)).toBe(-1);
+    expect(pctCompareValues(new Date(2), new Date(1), text)).toBe(1);
+    expect(pctCompareValues(new Date(2), new Date(2), text)).toBe(0);
   });
 
-  it('compares a date and a text as text', () => {
-    expect(pctCompareValues(new Date(0), 'zebra', text)).toBeLessThan(0);
-    expect(pctCompareValues('zebra', new Date(0), text)).toBeGreaterThan(0);
+  it('puts a value with a size before a text, whichever comes first', () => {
+    expect(pctCompareValues(new Date(0), 'a', text)).toBe(-1);
+    expect(pctCompareValues('a', 99, text)).toBe(1);
+    expect(pctCompareValues(5n, 'a', text)).toBe(-1);
   });
 
   it('compares strings by the collator, so a numeric one orders item 9 before item 10', () => {
@@ -191,6 +196,38 @@ describe('pctOrderRows', () => {
         collator,
       ),
     ).toEqual([boiler, fan]);
+  });
+
+  it('asks the next key when two values tie at infinity', () => {
+    const big = col.value(
+      'power',
+      (d) => (d.power === null ? null : Infinity),
+      { header: 'P' },
+    );
+    expect(
+      pctOrderRows(
+        [lamp, boiler],
+        [
+          { column: big, direction: 'ascending' },
+          { column: name, direction: 'ascending' },
+        ],
+        collator,
+      ),
+    ).toEqual([boiler, lamp]);
+  });
+
+  it('reads NaN from a comparison as no order, and asks the next key', () => {
+    const broken = col.key('room', { header: 'Room', sort: () => Number.NaN });
+    expect(
+      pctOrderRows(
+        [lamp, boiler],
+        [
+          { column: broken, direction: 'ascending' },
+          { column: name, direction: 'ascending' },
+        ],
+        collator,
+      ),
+    ).toEqual([boiler, lamp]);
   });
 
   it('reads each value once per key, not once per comparison', () => {

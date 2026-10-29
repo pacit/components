@@ -74,7 +74,7 @@ before an application ships them.
 ./stepper 15036 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 20917 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 20663 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./table 20900 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tabs 16850 ./core @angular/core,@angular/forms/signals
 ./testing 9302 - @angular/cdk/testing
 ./theme 518 - @angular/core

@@ -12,6 +12,7 @@ export function pctQuestionWords(question: string): readonly string[] {
   // `\s` takes the no-break spaces a pasted value carries as well as the ones typed.
   return question
     .toLowerCase()
+    .normalize('NFC')
     .split(/\s/)
     .filter((word) => word !== '');
 }
@@ -23,7 +24,9 @@ export function pctQuestionWords(question: string): readonly string[] {
  * **What is searched is what the user sees.** `text` gives the cell's text as the table
  * writes it — `7 899,7 kWh`, not `7899.7` — so a question copied off the screen finds its
  * row. A word holds no space, so the no-break spaces a locale writes inside a value never stand
- * in its way; the case is folded, and that is all: accents are not folded, for the reason the select's filter gives
+ * in its way, and a number the locale groups with spaces is read as several words. Both
+ * sides are lower-cased and composed (NFC), so an accent typed as one character finds the
+ * same accent stored as two; that is all: accents are not folded, for the reason the select's filter gives
  * ([`lesson-101`](../../../../../docs/lessons.md#lesson-101)). A column whose `filter` is a
  * function is asked that function per word instead; one whose `filter` is `false` is not read.
  *
@@ -46,7 +49,7 @@ export function pctMatches<T>(
     read.some((column, c) => {
       const filter = column.filter;
       if (typeof filter === 'function') return filter(column.value(row), word);
-      texts[c] ??= text(column, row).toLowerCase();
+      texts[c] ??= text(column, row).toLowerCase().normalize('NFC');
       return (texts[c] as string).includes(word);
     }),
   );

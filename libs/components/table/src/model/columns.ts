@@ -38,9 +38,49 @@ export type PctCellKind<V> =
   | 'text'
   | ([V] extends [boolean | null | undefined] ? 'boolean' : never)
   | ([V] extends [number | null | undefined]
-      ? | { readonly number: PctQuantityOptions }
-        | { readonly instant: PctInstantCellOptions }
+      ? PctNumberKind | PctInstantKind
       : never);
+
+/**
+ * The kind that writes a number with its unit; a kind is one of these, never both.
+ *
+ * @since next
+ */
+export interface PctNumberKind {
+  readonly number: PctQuantityOptions;
+  readonly instant?: never;
+}
+
+/**
+ * The kind that writes an instant; a kind is one of these, never both.
+ *
+ * @since next
+ */
+export interface PctInstantKind {
+  readonly instant: PctInstantCellOptions;
+  readonly number?: never;
+}
+
+/**
+ * Every kind, whatever the value: what a column built from an accessor is checked against
+ * before its value's type is known.
+ *
+ * @since next
+ */
+export type PctAnyCellKind =
+  'text' | 'boolean' | PctNumberKind | PctInstantKind;
+
+/**
+ * The values a kind can write: a boolean kind booleans, a number or instant kind numbers, the
+ * text kind anything.
+ *
+ * @since next
+ */
+export type PctValueOfKind<K extends PctAnyCellKind> = K extends 'boolean'
+  ? boolean | null | undefined
+  : K extends 'text'
+    ? unknown
+    : number | null | undefined;
 
 /**
  * A column of a data table: an id, a header, how a row gives its value, and how the value is
@@ -66,10 +106,11 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * comparison, anything else by {@link pctCompareValues}. An empty value stands last in
    * either direction whatever the comparison says.
    */
-  readonly sort?: boolean | ((a: V, b: V) => number);
+  readonly sort?: boolean | ((a: NonNullable<V>, b: NonNullable<V>) => number);
   /**
    * Whether the quick filter reads the column, and how: `false` never, a function asked once
-   * per word of the question, anything else by the text the cell shows.
+   * per word of the question — the word lower-cased and in NFC — anything else by the text
+   * the cell shows.
    */
   readonly filter?: boolean | ((value: V, word: string) => boolean);
   /** Aligns the column to the end with tabular digits; by default only a number kind does. */
@@ -101,13 +142,9 @@ export type PctAnyColumn<T> = PctColumn<T, any>;
  * @since next
  */
 export type PctColumnMap<C extends readonly PctAnyColumn<never>[]> = {
-  readonly [K in C[number] as K['id']]: K extends PctColumn<
-    never,
-    infer V,
-    string
-  >
-    ? V
-    : never;
+  readonly [
+    K in C[number] as string extends K['id'] ? never : K['id']
+  ]: K extends PctColumn<never, infer V, string> ? V : never;
 };
 
 /**
@@ -119,10 +156,9 @@ export type PctColumnMap<C extends readonly PctAnyColumn<never>[]> = {
  *
  * @since next
  */
-export type PctColumns<
-  T,
-  M extends Record<string, unknown>,
-> = readonly PctAnyColumn<T>[] & { readonly __map?: M };
+export type PctColumns<T, M extends Record<string, unknown>> = readonly {
+  readonly [K in keyof M & string]: PctColumn<T, M[K], K>;
+}[keyof M & string][] & { readonly __map?: M };
 
 /**
  * The builder of a typed list of columns for rows of type `T`.
@@ -147,19 +183,27 @@ export function pctColumnsOf<T>(): {
     key: K,
     spec: PctColumnSpec<T[K]>,
   ): PctColumn<T, T[K], K>;
-  value<Id extends string, V>(
+  value<
+    Id extends string,
+    V extends PctValueOfKind<K>,
+    K extends PctAnyCellKind = 'text',
+  >(
     id: Id,
     value: (row: T) => V,
-    spec: PctColumnSpec<V>,
+    spec: Omit<PctColumnSpec<V>, 'kind'> & { readonly kind?: K },
   ): PctColumn<T, V, Id>;
   of<C extends readonly PctAnyColumn<T>[]>(
     columns: C,
   ): PctColumns<T, PctColumnMap<C>>;
 } {
+  // The casts are the builder's whole job: the kind was checked against the value's type by
+  // the signature, and the list against the ids by the map, before the call compiled.
   return {
     key: (key, spec) => ({ ...spec, id: key, value: (row) => row[key] }),
-    value: (id, value, spec) => ({ ...spec, id, value }),
-    of: (columns) => columns,
+    value: <Id extends string, V>(id: Id, value: (row: T) => V, spec: object) =>
+      ({ ...spec, id, value }) as PctColumn<T, V, Id>,
+    of: <C extends readonly PctAnyColumn<T>[]>(columns: C) =>
+      columns as unknown as PctColumns<T, PctColumnMap<C>>,
   };
 }
 

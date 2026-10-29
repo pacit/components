@@ -1,4 +1,4 @@
-import { pctLines } from './lines';
+import { pctLineKey, pctLines } from './lines';
 
 interface Node {
   id: string;
@@ -94,5 +94,34 @@ describe('pctLines', () => {
       details: new Set(['p']),
     });
     expect(lines.map((line) => line.kind)).toEqual(['row', 'details', 'row']);
+  });
+});
+
+describe('pctLineKey', () => {
+  it('holds the kind and the key, so lines of two kinds or two id types never meet', () => {
+    expect(pctLineKey({ kind: 'hole', key: 1, index: 1 })).toBe('hole:1');
+    expect(
+      pctLineKey({
+        kind: 'row',
+        key: 1,
+        row: a,
+        index: 0,
+        level: 0,
+        expanded: null,
+      }),
+    ).toBe('row:1');
+    expect(
+      pctLineKey({
+        kind: 'row',
+        key: '1',
+        row: a,
+        index: 0,
+        level: 0,
+        expanded: null,
+      }),
+    ).toBe('row:"1"');
+    expect(pctLineKey({ kind: 'details', key: '1', row: a, index: 0 })).toBe(
+      'details:"1"',
+    );
   });
 });

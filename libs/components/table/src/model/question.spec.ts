@@ -62,6 +62,26 @@ describe('pctMatches', () => {
     ).toBe(false);
   });
 
+  it('finds an accent stored as two characters by one typed as one', () => {
+    // The combining acute after the letter, and the same word composed into one character.
+    const decomposed = 'Cafe\u0301';
+    const composed = decomposed.normalize('NFC');
+    expect(composed).not.toBe(decomposed);
+    const row = { ...lamp, room: decomposed };
+    expect(pctMatches(row, columns, shown, pctQuestionWords(composed))).toBe(
+      true,
+    );
+    expect(
+      pctMatches(
+        { ...lamp, room: composed },
+        columns,
+        shown,
+        pctQuestionWords(decomposed),
+      ),
+    ).toBe(true);
+    expect(pctQuestionWords(decomposed)).toEqual([composed.toLowerCase()]);
+  });
+
   it('skips a column whose filter is false', () => {
     const hidden = col.key('room', { header: 'Room', filter: false });
     expect(ask('kitchen', [name, hidden])).toBe(false);

@@ -31,13 +31,24 @@ export function pctIsEmptyValue(value: unknown): boolean {
   return false;
 }
 
+/** Numbers, big integers and dates are read by their size; everything else as its text. */
+function hasSize(value: unknown): value is number | bigint | Date {
+  return (
+    typeof value === 'number' ||
+    typeof value === 'bigint' ||
+    value instanceof Date
+  );
+}
+
 /**
  * The default comparison of two values that are not empty.
  *
- * Numbers, big integers and dates by their size; everything else by `collator` over the
- * strings the values print, so text stands in the locale's order, `item 9` comes before
- * `item 10` when the collator is numeric, `false` comes before `true`, and two values of
- * different types still have an order.
+ * A value with a size — a number, a big integer, a date — comes before one without, and two
+ * of them compare by size, across the three types too, so `2n` comes before `10` and two
+ * infinities are equal. Everything else compares by `collator` over the text it prints, so
+ * text stands in the locale's order, `item 9` comes before `item 10` when the collator is
+ * numeric, and `false` before `true`. Sizes first and text after makes the order total, so
+ * a column holding both still sorts the same way whatever order its rows came in.
  *
  * @since next
  */
@@ -46,10 +57,10 @@ export function pctCompareValues(
   b: unknown,
   collator: Intl.Collator,
 ): number {
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
-  if (typeof a === 'bigint' && typeof b === 'bigint')
-    return a < b ? -1 : a > b ? 1 : 0;
-  if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
+  const sizeA = hasSize(a);
+  const sizeB = hasSize(b);
+  if (sizeA && sizeB) return a < b ? -1 : a > b ? 1 : 0;
+  if (sizeA !== sizeB) return sizeA ? -1 : 1;
   return collator.compare(String(a), String(b));
 }
 
@@ -85,23 +96,24 @@ export function pctOrderRows<T>(
       descending: direction === 'descending',
     };
   });
-  // Each value read once, not once per comparison: a sort makes n log n of those.
-  const entries = rows.map((row) => ({
-    row,
-    values: readers.map((reader) => reader.value(row)),
-  }));
+  // Each value read once, and its emptiness with it, not once per comparison: a sort makes
+  // n log n of those.
+  const entries = rows.map((row) => {
+    const values = readers.map((reader) => reader.value(row));
+    return { row, values, empty: values.map(pctIsEmptyValue) };
+  });
   entries.sort((x, y) => {
-    for (const [k, reader] of readers.entries()) {
-      const a = x.values[k];
-      const b = y.values[k];
-      const emptyA = pctIsEmptyValue(a);
-      const emptyB = pctIsEmptyValue(b);
-      if (emptyA || emptyB) {
-        if (emptyA && emptyB) continue;
-        return emptyA ? 1 : -1;
+    for (let k = 0; k < readers.length; k++) {
+      const emptyX = x.empty[k];
+      const emptyY = y.empty[k];
+      if (emptyX || emptyY) {
+        if (emptyX && emptyY) continue;
+        return emptyX ? 1 : -1;
       }
-      const order = reader.compare(a, b);
-      if (order !== 0) return reader.descending ? -order : order;
+      // `NaN` from a comparison is no order, as `Array.prototype.sort` reads it, so the next
+      // key is asked rather than the rows left as they came.
+      const order = readers[k].compare(x.values[k], y.values[k]);
+      if (order) return readers[k].descending ? -order : order;
     }
     // Equal under every key: `Array.prototype.sort` is stable, so the rows keep their order.
     return 0;

@@ -41,24 +41,29 @@ export interface PctWindow {
  * a details row is taller than a row of data and a group heading has a height of its own, so
  * each line counts at its measured height and only a line never drawn at the estimate. The
  * space is a sum over those heights, so `lead + the drawn lines' heights + tail === total`
- * whatever was measured. The line under `scrollTop` is always met, so a view of no height —
- * a frame not yet laid out — still draws it and its overscan; a `scrollTop` past the end is
- * read as the end, where the last line is under it.
+ * whatever was measured, and `total` is the sum of the three. The line under `scrollTop` is
+ * always met, so a view of no height — a frame not yet laid out — still draws it and its
+ * overscan. A `scrollTop` past the last full view reads as that view, where the browser
+ * clamps it. The overscan is a whole number of lines, at least none.
+ *
+ * Each call walks every line, which a thousand lines afford on every scroll; a window over a
+ * million takes its sums from a structure of its own.
  *
  * @since next
  */
 export function pctWindow(of: PctWindowInput): PctWindow {
   const { count, heightOf, estimate, scrollTop, viewport, overscan } = of;
   const height = (index: number) => heightOf(index) ?? estimate;
-  let total = 0;
-  for (let index = 0; index < count; index++) total += height(index);
-  // A negative top reads as the first line's; one past the end meets no line's bottom, so the
-  // last line stays the one under it, and a view of no height or less meets only that line.
-  const top = Math.max(0, scrollTop);
+  let whole = 0;
+  for (let index = 0; index < count; index++) whole += height(index);
+  // A top past the end reads as the last view the frame can show, where the browser will
+  // clamp it, so a list that shrank under a scrolled frame draws a full view, not one line.
+  const top = Math.max(0, Math.min(scrollTop, whole - viewport));
   const bottom = top + viewport;
+  const around = Math.max(0, Math.floor(overscan));
   // The line under the view's top is always met; after it, every line that starts above the
-  // view's bottom. Past the end, the last line is the one under the top.
-  let first = count - 1;
+  // view's bottom.
+  let first = 0;
   let past = count;
   let found = false;
   let y = 0;
@@ -75,11 +80,21 @@ export function pctWindow(of: PctWindowInput): PctWindow {
     }
     y = next;
   }
-  const start = Math.max(0, first - overscan);
-  const end = Math.min(count, past + overscan);
+  if (!found) {
+    // A view of no height at the very end has the last line under it; a list of no height
+    // has the first.
+    first = top > 0 ? count - 1 : 0;
+    past = Math.min(count, first + 1);
+  }
+  const start = Math.max(0, first - around);
+  const end = Math.min(count, past + around);
+  // Each part summed on its own, and the whole as their sum, so the three add up exactly in
+  // floating point as they do on paper.
   let lead = 0;
   for (let index = 0; index < start; index++) lead += height(index);
   let drawn = 0;
   for (let index = start; index < end; index++) drawn += height(index);
-  return { start, end, lead, tail: total - lead - drawn, total };
+  let tail = 0;
+  for (let index = end; index < count; index++) tail += height(index);
+  return { start, end, lead, tail, total: lead + drawn + tail };
 }

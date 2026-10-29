@@ -1,14 +1,15 @@
 import type { PctRowId } from './columns';
 
 /**
- * One line the table draws, in the order it draws them. Each kind has a stable `key` for
- * `@for`; two lines of different kinds may share a key, so a line is tracked by its kind and
- * its key together.
+ * One line the table draws, in the order it draws them. Each kind has a stable `key`; two
+ * lines of different kinds may share one, so `@for` tracks {@link pctLineKey}, which holds
+ * both.
  *
  * - `row`: a row of data. `index` counts the rows and holes drawn before it; `level` is its
  *   depth in a tree, 0 without one, and `expanded` whether its children are shown, `null`
  *   for a row with no children to show.
- * - `hole`: a row a remote source has not delivered yet, keyed by its index.
+ * - `hole`: a row a remote source has not delivered yet, keyed by its index — the index of
+ *   the source's list as long as no tree is expanded above it.
  * - `details`: the details of the row before it, the full width of the table.
  * - `group`: the heading of a group of rows.
  *
@@ -57,7 +58,9 @@ export interface PctLinesOptions<T> {
 /**
  * The lines the table draws for `rows`, in order.
  *
- * A row is followed by its details when its id is in `details`, and by its children, one
+ * `rowId` is unique across the whole list, children included, and the children form a tree:
+ * a row that is its own descendant never ends. A row is followed by its details when its id
+ * is in `details`, and by its children, one
  * level deeper, when it has some and its id is in `expanded`; a collapsed row's children are
  * not lines at all, so the count of lines is the count a reader can reach. An `undefined` in
  * `rows` is a hole: only a remote source writes one, and nothing sorts or filters it.
@@ -98,4 +101,14 @@ export function pctLines<T>(
   };
   walk(rows, 0);
   return lines;
+}
+
+/**
+ * The key `@for` tracks a line by: its kind and its key, so a hole `1` and a row `1`, or a
+ * row and its details, are never one line to Angular, and a row id `1` and `'1'` stay two.
+ *
+ * @since next
+ */
+export function pctLineKey<T>(line: PctTableLine<T>): string {
+  return `${line.kind}:${JSON.stringify(line.key)}`;
 }

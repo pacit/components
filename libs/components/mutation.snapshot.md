@@ -155,11 +155,11 @@ libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
 libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
-libs/components/table/src/model/columns.ts 100.00 19(0) 0 0 0 0
-libs/components/table/src/model/lines.ts 100.00 37(0) 0 0 0 0
-libs/components/table/src/model/order.ts 100.00 90(0) 0 0 0 0
-libs/components/table/src/model/question.ts 100.00 27(0) 0 0 0 0
-libs/components/table/src/model/window.ts 100.00 50(5) 0 0 0 0
+libs/components/table/src/model/columns.ts 100.00 18(0) 0 0 0 0
+libs/components/table/src/model/lines.ts 100.00 39(0) 0 0 0 0
+libs/components/table/src/model/order.ts 100.00 89(0) 0 0 0 0
+libs/components/table/src/model/question.ts 100.00 29(0) 0 0 0 0
+libs/components/table/src/model/window.ts 100.00 68(8) 0 0 0 0
 libs/components/table/src/table.ts 100.00 51(0) 0 0 0 9
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 1 0 1
 libs/components/tabs/src/tabs.ts 93.50 115(0) 7 1 0 2
@@ -177,5 +177,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 87.29 7974/9135
+TOTAL 87.32 7994/9155
 ```

@@ -10,7 +10,8 @@ import { pctWindow } from './window';
 /**
  * The window, swept: what holds for every list of measured and unmeasured lines, wherever the
  * frame stands — the space adds up to the whole, the window lies inside the list, and every
- * line the view meets is drawn. Heights are whole pixels, so the sums are exact.
+ * line the view meets is drawn, and no line further than the overscan from one. Heights are
+ * fractional, as rows are, so the sums are compared as the window adds them.
  */
 function listOf<T>(
   item: PctArbitrary<T>,
@@ -27,8 +28,8 @@ function listOf<T>(
 }
 
 const cases = pctRecord({
-  heights: listOf(pctOneOf([undefined, 0, 12, 36, 137] as const), 40),
-  estimate: pctInt(1, 60),
+  heights: listOf(pctOneOf([undefined, 0, 12, 36.4, 35.59, 137] as const), 40),
+  estimate: pctOneOf([0, 1, 36, 36.4] as const),
   scrollTop: pctInt(-50, 3000),
   viewport: pctInt(0, 400),
   overscan: pctInt(0, 4),
@@ -46,17 +47,18 @@ describe('pctWindow over every list', () => {
         viewport,
         overscan,
       });
-      let total = 0;
       let lead = 0;
       let drawn = 0;
+      let tail = 0;
       heights.forEach((_, i) => {
-        total += height(i);
         if (i < w.start) lead += height(i);
         else if (i < w.end) drawn += height(i);
+        else tail += height(i);
       });
-      expect(w.total).toBe(total);
       expect(w.lead).toBe(lead);
+      expect(w.tail).toBe(tail);
       expect(w.lead + drawn + w.tail).toBe(w.total);
+      expect(w.tail).toBeGreaterThanOrEqual(0);
       expect(0 <= w.start && w.start <= w.end && w.end <= heights.length).toBe(
         true,
       );
@@ -64,7 +66,7 @@ describe('pctWindow over every list', () => {
     });
   });
 
-  it('draws every line the view meets', () => {
+  it('draws every line the view meets, and nothing past the overscan around them', () => {
     pctForAll(cases, ({ heights, estimate, scrollTop, viewport, overscan }) => {
       const w = pctWindow({
         count: heights.length,
@@ -74,15 +76,21 @@ describe('pctWindow over every list', () => {
         viewport,
         overscan,
       });
-      const top = Math.max(0, scrollTop);
+      let whole = 0;
+      heights.forEach((h) => (whole += h ?? estimate));
+      const top = Math.max(0, Math.min(scrollTop, whole - viewport));
+      const met: number[] = [];
       let y = 0;
       heights.forEach((h, i) => {
         const next = y + (h ?? estimate);
-        if (y < top + viewport && next > top) {
-          expect(i >= w.start && i < w.end).toBe(true);
-        }
+        if (y < top + viewport && next > top) met.push(i);
         y = next;
       });
+      for (const i of met) expect(i >= w.start && i < w.end).toBe(true);
+      if (met.length > 0) {
+        expect(w.start).toBeGreaterThanOrEqual(Math.max(0, met[0] - overscan));
+        expect(w.end).toBeLessThanOrEqual(met[met.length - 1] + 1 + overscan);
+      }
     });
   });
 });
