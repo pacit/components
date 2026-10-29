@@ -77,8 +77,8 @@ test.describe('P6 pointer and touch', () => {
         return { events: copy, scrollY: Math.round(scrollY) };
       });
       const counts: Record<string, number> = {};
-      for (const e of r.events as { type: string; pointerType?: string; id?: number; ctrl?: boolean }[]) {
-        const k = `${e.type}${e.pointerType ? ':' + e.pointerType : ''}${e.type === 'wheel' ? ':ctrl=' + e.ctrl : ''}`;
+      for (const e of r.events as { on: string; type: string; pointerType?: string; id?: number; ctrl?: boolean }[]) {
+        const k = `${e.on}:${e.type}${e.pointerType ? ':' + e.pointerType : ''}${e.type === 'wheel' ? ':ctrl=' + e.ctrl : ''}`;
         counts[k] = (counts[k] ?? 0) + 1;
       }
       const ids = [...new Set((r.events as { id?: number }[]).map((e) => e.id).filter((v) => v !== undefined))];
@@ -125,16 +125,22 @@ test.describe('P6 pointer and touch', () => {
       await touch('touchEnd', []);
       await page.waitForTimeout(200);
     };
-    await drag({ x: box.x + 100, y: box.y + 150 }, { x: box.x + 400, y: box.y + 150 });
+    const free = (await page.locator('#free').boundingBox())!;
+    write(info.project.name, 'P6-layout', c, { touch: box, free, viewport: page.viewportSize() });
+    await drag({ x: box.x + 50, y: box.y + 130 }, { x: box.x + 350, y: box.y + 130 });
     write(info.project.name, 'P6c-drag-x', c, await read());
     await open(page);
     await page.evaluate(() => (window as any).probe.pointerLog(false));
-    await drag({ x: box.x + 300, y: box.y + 250 }, { x: box.x + 300, y: box.y + 50 });
+    await drag({ x: box.x + 250, y: box.y + 220 }, { x: box.x + 250, y: box.y + 20 });
     write(info.project.name, 'P6d-drag-y', c, await read());
     await open(page);
     await page.evaluate(() => (window as any).probe.pointerLog(false));
-    const cx = box.x + 300;
-    const cy = box.y + 150;
+    await drag({ x: free.x + 250, y: free.y + 220 }, { x: free.x + 250, y: free.y + 20 });
+    write(info.project.name, 'P6d-drag-y-control', c, await read());
+    await open(page);
+    await page.evaluate(() => (window as any).probe.pointerLog(false));
+    const cx = box.x + 250;
+    const cy = box.y + 130;
     await touch('touchStart', [{ x: cx - 20, y: cy, id: 1 }, { x: cx + 20, y: cy, id: 2 }]);
     for (let i = 1; i <= 10; i++) {
       await touch('touchMove', [{ x: cx - 20 - i * 10, y: cy, id: 1 }, { x: cx + 20 + i * 10, y: cy, id: 2 }]);

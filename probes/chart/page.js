@@ -179,64 +179,63 @@ function buildPyramid(xs, ys) {
   return levels;
 }
 
-const IDX = new Int32Array(1 << 16);
-function decimatePyramid(xs, ys, levels, from, to, width, perPx) {
+// The decimation of chart/src/model/decimate.ts (phase 1), ported: a run of the pyramid that
+// lies in one column and holds no gap gives its first reading, its extremes and its last; any
+// other splits into its halves, down to single readings. Exact: the same output as the scan.
+function decimateExact(xs, ys, levels, from, to, width) {
   const n = xs.length;
-  let i0 = lowerBound(xs, from) - 1;
-  if (i0 < 0) i0 = 0;
-  let i1 = lowerBound(xs, to);
-  if (i1 > n - 1) i1 = n - 1;
-  const perColumn = (i1 - i0) / width;
-  let k = Math.floor(Math.log2(perColumn / 2));
-  if (k < 1 || !levels[k - 1]) return decimateIdx(xs, ys, null, i0, i1, from, to, width, perPx);
-  const { L, H, G } = levels[k - 1];
-  const b0 = i0 >> k, b1 = i1 >> k;
-  let m = 0;
-  IDX[m++] = i0;
-  for (let b = b0; b <= b1; b++) {
-    const l = L[b], h = H[b];
-    if (l >= 0 && h >= 0) {
-      if (l <= h) { IDX[m++] = l; if (h !== l) IDX[m++] = h; } else { IDX[m++] = h; IDX[m++] = l; }
-    }
-    if (G[b]) IDX[m++] = -1 - b; // a gap inside the run
-  }
-  IDX[m++] = i1;
-  return decimateIdx(xs, ys, IDX, 0, m - 1, from, to, width, perPx);
-}
-
-// The column loop over either a range of readings or a list of candidate indices.
-function decimateIdx(xs, ys, idx, a, b, from, to, width, perPx) {
+  const i0 = Math.max(0, lowerBound(xs, from) - 1);
+  const i1 = Math.min(n - 1, lowerBound(xs, to));
   const scale = width / (to - from);
-  let count = 0, col = -2, first = -1, lo = -1, hi = -1, last = -1;
+  let count = 0, column = NaN, first = -1, lo = -1, hi = -1, last = -1;
   const flush = () => {
     if (first < 0) return;
-    const picks = (perPx === 2 ? [lo, hi] : [first, lo, hi, last]).sort((p, q) => p - q);
-    let prev = -1;
-    for (const p of picks) {
-      if (p === prev) continue;
-      prev = p;
-      OUT_X[count] = xs[p]; OUT_Y[count] = ys[p]; count++;
+    const picks = [first, lo, hi, last].sort((a, b) => a - b);
+    for (let p = 0; p < 4; p++) {
+      if (p > 0 && picks[p] === picks[p - 1]) continue;
+      OUT_X[count] = xs[picks[p]]; OUT_Y[count] = ys[picks[p]]; count++;
     }
-    first = lo = hi = last = -1;
+    first = -1;
   };
-  for (let j = a; j <= b; j++) {
-    const i = idx ? idx[j] : j;
-    const y = i < 0 ? NaN : ys[i];
+  const columnOf = (i) => Math.floor((xs[i] - from) * scale);
+  const visit = (i) => {
+    const y = ys[i];
     if (y !== y) {
       flush();
-      if (count > 0 && OUT_Y[count - 1] === OUT_Y[count - 1]) { OUT_X[count] = OUT_X[count - 1]; OUT_Y[count] = NaN; count++; }
-      col = -2;
-      continue;
+      if (count > 0 && OUT_Y[count - 1] === OUT_Y[count - 1]) { OUT_X[count] = xs[i]; OUT_Y[count] = NaN; count++; }
+      column = NaN;
+      return;
     }
-    let c = Math.floor((xs[i] - from) * scale);
-    if (c < -1) c = -1;
-    if (c > width) c = width;
-    if (c !== col) { flush(); col = c; first = lo = hi = last = i; }
-    else { if (y < ys[lo]) lo = i; if (y > ys[hi]) hi = i; last = i; }
-  }
+    const c = columnOf(i);
+    if (c !== column || first < 0) { flush(); column = c; first = lo = hi = last = i; return; }
+    if (y < ys[lo]) lo = i;
+    if (y > ys[hi]) hi = i;
+    last = i;
+  };
+  const run = (k, b) => {
+    const size = 2 ** k;
+    const st = Math.max(i0 + 1, b * size);
+    const en = Math.min(i1 - 1, (b + 1) * size - 1);
+    if (st > en) return;
+    if (k === 0) return visit(st);
+    const level = levels[k - 1];
+    if (st === b * size && en === (b + 1) * size - 1 && !level.G[b] && columnOf(st) === columnOf(en)) {
+      const l = level.L[b], h = level.H[b];
+      visit(st); visit(Math.min(l, h)); visit(Math.max(l, h)); visit(en);
+      return;
+    }
+    run(k - 1, 2 * b);
+    run(k - 1, 2 * b + 1);
+  };
+  const perColumn = (i1 - i0 + 1) / width;
+  const k = Math.max(0, Math.min(levels.length, Math.floor(Math.log2(perColumn / 2))));
+  visit(i0);
+  for (let b = Math.floor((i0 + 1) / 2 ** k); b <= Math.floor((i1 - 1) / 2 ** k); b++) run(k, b);
+  if (i1 > i0) visit(i1);
   flush();
   return count;
 }
+const decimatePyramid = (xs, ys, levels, from, to, width) => decimateExact(xs, ys, levels, from, to, width);
 
 const PYRAMIDS = DATA.map(({ xs, ys }) => buildPyramid(xs, ys));
 
@@ -308,10 +307,14 @@ function stage(mode) {
   host.textContent = '';
   if (mode === 'canvas') {
     const c = document.createElement('canvas');
-    c.width = WIDTH;
-    c.height = HEIGHT;
+    const dpr = devicePixelRatio;
+    c.width = WIDTH * dpr;
+    c.height = HEIGHT * dpr;
+    c.style.width = WIDTH + 'px';
+    c.style.height = HEIGHT + 'px';
     host.append(c);
     const ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -337,6 +340,14 @@ function stage(mode) {
     ticks.push(t);
   }
   host.append(svg);
+  if (mode === 'labels-promoted' || mode === 'layer-transform') svg.style.willChange = 'transform';
+  if (mode === 'labels-split' || mode === 'labels-promoted') {
+    const labels = document.createElementNS(SVG, 'svg');
+    labels.setAttribute('width', String(WIDTH));
+    labels.setAttribute('height', String(HEIGHT));
+    for (const t of ticks) labels.append(t);
+    host.append(labels);
+  }
   let cursor = null;
   if (mode === 'cursor-transform') {
     // An HTML line on its own compositor layer, moved by a transform alone.
@@ -388,7 +399,7 @@ function pinch(mode, seconds = 3) {
   const work = [];
   const stamps = [];
   let maxPoints = 0;
-  if (mode === 'svg-transform' || mode === 'svg-static' || mode.startsWith('cursor-')) {
+  if (mode === 'svg-transform' || mode === 'svg-static' || mode.startsWith('cursor-') || mode.startsWith('labels-') || mode === 'layer-transform') {
     // Paths drawn once for the whole week; the gesture only moves the group.
     for (let k = 0; k < SERIES; k++) {
       const n = decimate(DATA[k].xs, DATA[k].ys, T0, T0 + SPAN, WIDTH);
@@ -431,6 +442,18 @@ function pinch(mode, seconds = 3) {
           s.cursor.setAttribute('x1', x.toFixed(1));
           s.cursor.setAttribute('x2', x.toFixed(1));
         }
+      } else if (mode === 'labels-split' || mode === 'labels-promoted') {
+        // the paths stand still in their own <svg>; every label of the other one changes
+        for (let i = 0; i < s.ticks.length; i++) {
+          s.ticks[i].setAttribute('x', String(((i + 0.5) * WIDTH) / s.ticks.length));
+          s.ticks[i].textContent = fmt.format(from + ((to - from) * (i + 0.5)) / s.ticks.length);
+        }
+      } else if (mode === 'layer-transform') {
+        // the week drawn once; the gesture scales and moves the promoted layer on the compositor
+        const sx = SPAN / (to - from);
+        const tx = (-(from - T0) / SPAN) * WIDTH * sx;
+        s.svg.style.transformOrigin = '0 0';
+        s.svg.style.transform = `translateX(${tx.toFixed(2)}px) scaleX(${sx.toFixed(5)})`;
       } else if (mode === 'svg-static') {
         // the paths stand still; the frame only moves one tick label
         s.ticks[0].textContent = fmt.format(from);
@@ -530,6 +553,21 @@ function decimation() {
       return len;
     }, 30);
     rows.push({ window: name, pyramidIntWithPathMs: intPath.ms, pyramidIntPathChars: intPath.result });
+    // Fidelity: the pyramid's output equals the scan's, point for point, in fifty random windows.
+    let identical = true;
+    const r = rng(77);
+    for (let t = 0; t < 50 && identical; t++) {
+      const a0 = T0 + r() * SPAN, a1 = T0 + r() * SPAN;
+      const f = Math.min(a0, a1), g = Math.max(a0, a1) + 60_000;
+      for (let k = 0; k < SERIES && identical; k++) {
+        const na = decimate(DATA[k].xs, DATA[k].ys, f, g, WIDTH);
+        const ax = OUT_X.slice(0, na), ay = OUT_Y.slice(0, na);
+        const nb = decimateExact(DATA[k].xs, DATA[k].ys, PYRAMIDS[k], f, g, WIDTH);
+        if (na !== nb) identical = false;
+        for (let i = 0; i < nb && identical; i++) if (!Object.is(ax[i], OUT_X[i]) || !Object.is(ay[i], OUT_Y[i])) identical = false;
+      }
+    }
+    rows.push({ window: name, pyramidIdenticalToScan: identical });
     // Fidelity: the extremes of the window must survive the pyramid.
     let exact = true;
     for (let k = 0; k < SERIES; k++) {
@@ -601,11 +639,13 @@ function textWidths() {
 
 const log = [];
 function pointerLog(active) {
-  const el = document.getElementById('touch');
+  for (const id of ['touch', 'free']) attach(document.getElementById(id), active);
+}
+function attach(el, active) {
   if (active) el.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
   for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'touchstart', 'touchmove', 'touchend', 'wheel', 'dblclick', 'click']) {
     el.addEventListener(type, (e) => {
-      log.push({ scale: visualViewport ? +visualViewport.scale.toFixed(3) : null, type, pointerType: e.pointerType, id: e.pointerId, primary: e.isPrimary, ctrl: e.ctrlKey, scrollY: Math.round(scrollY) });
+      log.push({ on: el.id, scale: visualViewport ? +visualViewport.scale.toFixed(3) : null, type, pointerType: e.pointerType, id: e.pointerId, primary: e.isPrimary, ctrl: e.ctrlKey, scrollY: Math.round(scrollY) });
     }, { passive: true });
   }
 }

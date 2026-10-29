@@ -8,7 +8,8 @@
       #stage { position: relative; width: 1400px; height: 500px; }
       #stage svg, #stage canvas { position: absolute; inset: 0; }
       #stage path { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-      #touch { width: 600px; height: 300px; background: #eef; touch-action: pan-y; }
+      #touch, #free { display: inline-block; width: 500px; height: 260px; background: #eef; touch-action: pan-y; }
+      #free { background: #efe; touch-action: auto; }
       #tall { height: 3000px; }
       .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     </style>
@@ -16,9 +17,10 @@
   <body>
     <main id="root">
       <h1>Chart probes</h1>
+      <div id="touch"></div>
+      <div id="free"></div>
       <div id="stage"></div>
       <svg id="labels" width="800" height="40" style="font: 12px system-ui, sans-serif"></svg>
-      <div id="touch"></div>
       <div id="a11y"></div>
       <div id="tall"></div>
     </main>
