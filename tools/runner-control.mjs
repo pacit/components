@@ -23,7 +23,8 @@ const varied = (fx, variant) => {
  * written, or pinned to its own value — the variants then differ from a play that is not clean,
  * and what they report proves nothing. Where the gate hands over a `pin`: `no-pins`, `pins` that
  * are no list of values; `no-own-pin`, a case that pins nothing itself, so no play of it can
- * stand clean beside a pinned one; `unheard`, a value the runner reported nothing of. For every
+ * stand clean beside a pinned one; `unheard`, a value the runner reported nothing of. Where it
+ * hands over none: `unpinned`, `pins` declared all the same, which nothing could play. For every
  * rule the gate `holds`: `no-variant`, a rule no variant is `for`; `unplayable`, a variant whose
  * play throws; `unheard`, a variant the runner reported nothing of. `gate.play(name, fx)` plays
  * a declaration over the input named and returns the lines the runner reported; it is asked
@@ -41,6 +42,8 @@ const verdict = async (gate) => {
   if (!gate.cases.includes(control?.case))
     return [{ rule: 'no-case', control }];
   const pinned = gate.pin !== undefined;
+  if (!pinned && control.pins !== undefined)
+    return [{ rule: 'unpinned', control }];
   if (pinned && (!Array.isArray(control.pins) || control.pins.length === 0))
     return [{ rule: 'no-pins' }];
   let fx;
@@ -127,6 +130,7 @@ const OWN = [
   {
     why: 'a runner reporting the case as written, in a gate that pins nothing',
     pin: null,
+    control: { ...CONTROL, pins: undefined },
     said: { o: ['o'] },
     finds: ['unclean'],
   },
@@ -147,6 +151,17 @@ const OWN = [
     fx: { check: 'c', rule: 'r', defect: 'd' },
     control: { ...CONTROL, pins: undefined },
     finds: [],
+  },
+  {
+    why: 'a control with pins, in a gate that pins nothing',
+    pin: null,
+    finds: ['unpinned'],
+  },
+  {
+    why: 'a control with an empty list of pins, in a gate that pins nothing',
+    pin: null,
+    control: { ...CONTROL, pins: [] },
+    finds: ['unpinned'],
   },
   {
     why: 'a control naming a case the tree does not hold',
@@ -353,6 +368,12 @@ const said = (where, f) => {
         `${where}: \`pins\` is no list of values — a control that pins nothing plays the ` +
         `runner on nothing`
       );
+    case 'unpinned':
+      return (
+        `${where}: \`pins\` is declared, and the gate hands over no \`pin\` to write one with — ` +
+        `the control plays none of them, and a runner that no longer holds a case to what it ` +
+        `pins passes in silence`
+      );
     case 'no-own-pin':
       return (
         `${where}: ${name} pins nothing itself — the control replaces a case's pin, and a case ` +
@@ -422,7 +443,9 @@ const said = (where, f) => {
  * say which rule each variant proves. Played apart from the loop, the control counts as no case.
  *
  * Not held here: that a gate calls this at all, as nothing holds that its loop runs, and that
- * `holds` names every rule its runner has.
+ * `holds` names every rule its runner has. That a gate whose cases pin hands over `pin` is held
+ * through its declaration alone: `pins` there and no `pin` in the call is refused, while a gate
+ * that drops `pin` and `pins` together leaves nothing a control could read.
  */
 export const runnerControl = async ({
   where,

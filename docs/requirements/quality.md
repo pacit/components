@@ -39,7 +39,7 @@ exactly like the **Gate** field
 **Control:** `tools/check-docs.fixtures/` — a requirement with a gate but no control must be
 rejected; `tools/runner-control.mjs` and the `_runner*.json` of every gate's fixtures — a runner
 that no longer reports a case that passed, fired another check or rule, or lacks what it pins,
-must be reported
+must be reported, and so must `pins` a gate hands over no `pin` to play
 **Lessons:** [`lesson-38`](../lessons.md#lesson-38), [`lesson-39`](../lessons.md#lesson-39),
 [`lesson-41`](../lessons.md#lesson-41)
 
