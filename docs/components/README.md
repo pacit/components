@@ -280,8 +280,9 @@ what the consumers need, weighed against cost ([0095](../decisions/0095-every-co
    channel; and the slot predicate 0086 deferred is asked here, per row of the chosen day
    ([0090](../decisions/0090-a-day-with-a-time-is-a-wall-clock-with-a-date.md)).
 8. **Table** — two layers drawn by who writes the rows: `table[pctTable]` dresses the
-   consumer's markup, `pct-data-table` builds rows from data and renders the first. A datagrid
-   (editing, moving columns, `role="grid"`) is a later entrypoint of its own.
+   consumer's markup, `pct-data-table` builds rows from data and renders the first. The data
+   table grows into a grid (editing, moving columns, `role="grid"`) by directives in the same
+   entrypoint ([0097](../decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
 in `PctSelect` today), the overlay, focus, the live announcer, templates
