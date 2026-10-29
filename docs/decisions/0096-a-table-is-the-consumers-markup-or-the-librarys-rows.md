@@ -1,6 +1,6 @@
 # 0096 — A table is the consumer's markup or the library's rows, and the first is dressed element by element
 
-**Status:** accepted
+**Status:** accepted — the third-thing clause (a data grid with an entrypoint of its own) superseded by 0097
 **Implements:** [`req-api-platform`](../requirements/api.md#req-api-platform),
 [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),
 [`req-api-parts`](../requirements/api.md#req-api-parts),

@@ -215,18 +215,17 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
 
 - [~] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
   rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
-  - `table[pctTable]` dresses a `<table>` the consumer writes: the tier `--pct-table-*`, the
-    density axis, a numeric cell, sort headers reporting a press into one `sort` model on the
-    table, and a frame that is a focusable, named region only while the table overflows it
-  - `pct-data-table` builds the rows from data (0033) and renders the first layer: columns as
-    records with a priority, sort and filter as models whose client default the consumer can
-    take back, groups, a details row, the window of 0038 over the body, empty and loading
-    states; a narrow table moves its lowest-priority columns into the details row
-  - not here: editing in a cell, moving columns, ranges, `role="grid"` — a datagrid, its own
-    entrypoint when somebody needs one
-  - the first layer landed with [0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md):
-    five classes dressing five elements, its card, `/table` in three engines; the data table
-    is what is left
+  - `table[pctTable]` landed with [0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md):
+    five classes dressing five elements, its card, `/table` in three engines
+  - `pct-data-table` is one typed engine that grows into a grid by directives, in the same
+    entrypoint ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)); its window is opt-in above 1,000 rows, and the rows it skips
+    are drawn by the body's pseudo-elements ([0098](decisions/0098-a-tables-window-is-opt-in-and-the-rows-it-skips-are-two-pseudo-rows.md))
+  - phases, one pull request each: the pure engine and the type probe; the component with
+    columns, sort, filter and states; the window to a million rows; the server's pages and
+    blocks; priorities and the details row; groups and aggregates; the selection as a control
+  - then what puts it ahead of the grids people know: column filters, the column layout as
+    state, `role="grid"` with the keys, editing in a cell, the clipboard, CSV and xlsx, the
+    tree, header groups, pinned rows, the row menu, a window over columns
   - ends with: both cards, the sandbox in three engines, the readers' walk
 
 - [ ] **1.9 — the card** `pct-card` in `@pacit/components/card` — a header, a body and a footer
