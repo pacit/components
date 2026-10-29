@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "experimentalDecorators": false,
+    "skipLibCheck": true,
+    "outDir": "/tmp/claude-1000/-home-marek-wrk-components/cf82acfe-d3df-4b4b-8752-0edc687040b1/scratchpad/ngc-out",
+    "typeRoots": [
+      "../../../node_modules/@types"
+    ],
+    "paths": {
+      "@angular/*": [
+        "../../../node_modules/@angular/*"
+      ]
+    }
+  },
+  "files": [
+    "probe.ts"
+  ],
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInputAccessModifiers": true,
+    "extendedDiagnostics": {
+      "defaultCategory": "error"
+    }
+  }
+}
