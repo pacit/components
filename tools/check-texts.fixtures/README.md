@@ -178,23 +178,30 @@ its keys, its binding parser reads each property binding into the binding an ele
 that binding prints where a template's would (`printedOn`), drawing the literals that can be its
 value (`ExpressionLiterals`). The block was read by a regular expression over the quotes of a
 speaking binding: a comparison's operand was a word, a template literal's words were none, and a
-drawn property was read for nothing. A host is any element: a selector may name none, a consumer's
-class extending a directive takes its block onto the element its own selector names (measured:
-`<a pctSub>` draws `Delete` from a base's `'[text]'`), and a field's `type` is the consumer's,
-written over the host's (`<input pctH type="text">` shows the value of a host writing
-`type: 'checkbox'`). So what an element of one tag draws counts on every host.
+drawn property was read for nothing. `ngc` takes `!important` off a host property's name, which the
+read does too. A host is any element: `ngc` checks a property binding against the elements its
+selector names (NG8002) and never again where a class extending it carries it onto the element its
+own selector names (`a[pctBase]`'s `'[text]'` compiles under an `option[pctSub]` and draws there);
+an `attr.` binding and a written attribute it checks against nothing; and a field's `type` is the
+consumer's, written over the host's (`<input pctH type="text">` shows the value of a host writing
+`type: 'checkbox'`), each measured through ngc in partial mode and JIT. So what an element of one
+tag draws counts on every host.
 
 - `literal-in-a-host-value-position` — a conditional's branch, the operands of `??` and `||` and the
   right one of `&&`, a concatenation, a template literal's words, an array method's separator and
   an item read off an array, eight refusals.
 - `literal-in-a-drawn-host-property` — the properties that draw on any element
-  (`DRAWN_PROPERTIES`), `innerHtml` among them, six; read by an attribute's name, all six passed.
+  (`DRAWN_PROPERTIES`), `innerHtml` among them, and `textContent!important` under a schema that
+  lets it compile, seven; read by an attribute's name, all seven passed.
 - `literal-in-a-host-property-an-element-draws`, `speaking-attribute-a-host-element-draws` — what an
-  element of one tag draws, bound as a property and as an attribute (`text`, `value`,
-  `defaultValue`, `srcdoc`), six, and written beside a host's `type: 'checkbox'`, two.
-- `host-binding-that-does-not-parse` — `denominator/host-unparsed`: an interpolation and a pipe, which
-  a host binding takes neither of. `ngc` refuses both, and what the parser makes of them is no
-  reading of the expression, so point 1 refuses them by class and by the parser's message.
+  element of one tag draws, a field's `value` on `PctBlank` (`input[pctBlank]`), bound as a
+  property, as its `defaultValue` and as an attribute, and an `<iframe>`'s `srcdoc` as an attribute
+  on `PctMarker`, whose selector names no element, four; and written, the `value` beside a host's
+  `type: 'checkbox'`, two.
+- `host-binding-that-does-not-parse` — `denominator/host-unparsed`: an interpolation, a pipe, two
+  interpolations in one binding and a pipe in a binding that prints nothing, which a host binding
+  takes none of. `ngc` refuses each (NG5001), and what the parser makes of it is no reading of the
+  expression, so point 1 refuses them by class, one line a binding, with the parser's messages.
 
 The reference holds the literals in no position of a value — each operator's operands
 (`size() === 'sm'`, `items().length - 'sm'`, …), the operand of `!`, `typeof`, `void` and a sign, a
@@ -208,7 +215,8 @@ named `srcdoc` or `title`, which toggles a class. A read taking any of them for 
 it. And an inline template on an `<ng-template>`, which has no tag of its own, is read, where a first
 version of the read under the template's tag threw on it. Its `host` holds the same literals in no
 position of a value, and words where nothing draws them: a `class.` and a `style.` binding,
-`[attr.textContent]`, `[TEXTCONTENT]`, `[id]` and a listener. The library's printed expressions hold
+`[attr.textContent]`, `[attr.title!important]`, whose `!important` `ngc` leaves on an attribute's
+name, `[TEXTCONTENT]`, `[id]` and a listener. The library's printed expressions hold
 two literals, neither with a letter, both in a value's position; it binds no drawn property and
 writes no value of a text field, and its 77 interpolations write no word around their expressions.
 Its `host` blocks print through ten `aria-label` and `aria-valuetext` bindings, the ones the regular
@@ -231,8 +239,8 @@ is read off (`'Delete'.length`); an argument the code takes for a key or a local
 outlet (`[id]="'pct-row'"`), taken whole by the template's variables as a directive's input would
 be, as on main — interpolated, it hands its name alone; and an interpolation on an `<ng-template>`
 that no directive takes (`id="row-{{ n }}"`, NG0303), taken whole as every binding there is; and what
-an element of one tag draws, bound or written on a host whose selector names another
-(`'[value]'` on `pct-widget`), which a consumer's subclass can still move.
+an element of one tag draws, bound as an attribute or written on a host whose selector names
+another (`'[attr.value]'` on `pct-widget`), which a consumer's subclass can still move.
 
 ## A name stands for what binds it
 

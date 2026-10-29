@@ -186,7 +186,7 @@ const DRAWN_PROPERTIES = new Set([
  * The properties that draw their value on the elements named, measured the same way: an `<a>`'s and
  * an `<option>`'s `text`, which is their content, and a `<textarea>`'s and an `<output>`'s `value`
  * and `defaultValue`, the text they show. An `<input>`'s `value` and an `<iframe>`'s `srcdoc` are
- * attributes as well, written or bound (`speaking`), and an `<input>`'s `defaultValue` writes its
+ * attributes as well, written or bound (`speakingOn`), and an `<input>`'s `defaultValue` writes its
  * `value`.
  */
 const DRAWN_ON = new Map([
@@ -257,11 +257,14 @@ const printedOn = (binding, is, type) =>
     drawsOn(binding, is, type));
 
 /**
- * The element a `host` block lands on, which the class does not choose: any one. A directive's
- * selector may name none (`[pctMarker]`), a consumer's class extending one takes its `host` block
- * onto the element its own selector names (measured: `<a pctSub>` draws `Delete` from a base's
- * `'[text]': "'Delete'"`), and the element's `type` is the consumer's, written over the host's
- * (`<input pctH type="text">` shows the value of a host writing `type: 'checkbox'`).
+ * The element a `host` block lands on, which the class does not choose: any one. `ngc` checks a
+ * property binding against the elements its selector names (NG8002), and nothing checks it again
+ * where a class extending it carries it onto the element its own selector names (measured through
+ * ngc in partial mode: `a[pctBase]`'s `'[text]'` compiles under an `option[pctSub]` that extends
+ * it, and draws on the option); an `attr.` binding and a written attribute are checked against
+ * nothing (`[pctAttr]` writes `value` and `srcdoc` on whatever takes it). And a field's `type` is
+ * the consumer's, written over the host's (JIT and a render in jsdom: `<input pctH type="text">`
+ * shows the value of a host writing `type: 'checkbox'`).
  */
 const anyElement = () => true;
 
@@ -368,20 +371,27 @@ const literalsIn = (expression) => {
   return found;
 };
 
+/** What `ngc` takes off a host property binding's name. */
+const IMPORTANT = '!important';
+
 /**
  * A `host` block as the compiler reads it: `parseHostBindings` sorts its keys — `[…]` a property
  * binding, `(…)` a listener, `class` and `style` apart, any other a static attribute — and the
  * binding parser reads each property binding, as `ngc` does (`verifyHostBindings`), into the binding
  * a template's element carries (`createBoundElementProperty`): `[attr.title]` an attribute
- * `title`, `[innerHtml]` the property `innerHTML`, `[class.title]` a class. The block is built as
- * `ngc` builds the object it hands over, by assignment, and each binding parsed under its key, which
- * the parser's message names.
+ * `title`, `[innerHtml]` the property `innerHTML`, `[class.title]` a class. `ngc` takes a host's
+ * bindings another way (`ingestHostBinding`), and it parts from a template's in two spellings: it
+ * takes `!important` off a property's name, any property's (`parseHostStyleProperties`), which
+ * this read does too — `'[title!important]'` draws a `title` where a schema lets it compile — and
+ * it writes a namespaced `attr.` name unmerged (`xlink:title`, not `:xlink:title`), which no
+ * speaking name is either way. The block is built as `ngc` builds the object it hands over, by
+ * assignment, and each binding parsed under its key, which the parser's message names.
  *
  * A binding prints as a template's does on an element of any tag (`printedOn`, `anyElement`), and
  * draws the literals that can be its value (`ExpressionLiterals`), names here being the class's. A
  * value the parser refuses — an interpolation, a pipe, which a `host` block takes none of — is
- * `errors`, refused at point 1: `ngc` refuses it as well, and what the parser makes of it is no
- * reading of the expression. A listener is not read, as a template's is not: what it draws, it draws
+ * one of `errors`, its messages together, refused at point 1 whether it prints or not: `ngc`
+ * refuses it as well, and what the parser makes of it is no reading of the expression. A listener is not read, as a template's is not: what it draws, it draws
  * through the code it calls.
  */
 const readHost = (entries) => {
@@ -390,36 +400,39 @@ const readHost = (entries) => {
   const { attributes, properties } = parseHostBindings(block);
   const parser = makeBindingParser();
   const literals = [];
-  const parsed = Object.entries(properties).flatMap(([name, value]) => {
+  const errors = [];
+  for (const [name, value] of Object.entries(properties)) {
     const at = new ParseLocation(new ParseSourceFile('', `[${name}]`), null);
-    return parser.createBoundHostProperties(
+    const before = parser.errors.length;
+    for (const property of parser.createBoundHostProperties(
       { [name]: value },
       new ParseSourceSpan(at, at),
-    );
-  });
-  for (const property of parsed) {
-    if (
-      !printedOn(
-        parser.createBoundElementProperty('', property, true),
-        anyElement,
-        null,
+    )) {
+      const binding = parser.createBoundElementProperty('', property, true);
+      if (
+        binding.type === BindingType.Property &&
+        binding.name.endsWith(IMPORTANT)
       )
-    )
-      continue;
-    property.expression.ast.visit(
-      new ExpressionLiterals(
-        (value) => literals.push([`[${property.name}]`, value]),
-        () => {},
-      ),
-    );
+        binding.name = binding.name.slice(0, -IMPORTANT.length);
+      if (!printedOn(binding, anyElement, null)) continue;
+      property.expression.ast.visit(
+        new ExpressionLiterals(
+          (literal) => literals.push([`[${name}]`, literal]),
+          () => {},
+        ),
+      );
+    }
+    const refused = parser.errors.slice(before);
+    if (refused.length)
+      errors.push(refused.map((error) => error.msg).join('; '));
   }
   return {
-    attributes: Object.entries(attributes).map(([name, { value }]) => [
-      name,
+    attributes: Object.entries(attributes).map(([key, { value }]) => [
+      key,
       value,
     ]),
     literals,
-    errors: parser.errors.map((error) => error.msg),
+    errors,
   };
 };
 

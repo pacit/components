@@ -4,6 +4,7 @@ import {
   inject,
   input,
   isDevMode,
+  NO_ERRORS_SCHEMA,
   signal,
 } from '@angular/core';
 import { PCT_TEXTS } from '../../core/src/texts';
@@ -14,12 +15,14 @@ export type PctWidgetSize = 'sm' | 'md' | 'lg';
  * The host binds literals no position of a value holds, read as a template's are: each operator's
  * operands, the operand of `!`, `typeof`, `void` and a sign, a condition, the left of `&&` and a
  * key. And words where nothing draws them: a `class.` or `style.` binding, an `attr.` binding named
- * as a drawn property, a property no element draws, a property in a case the DOM does not give it
- * (NG0303), and a listener.
+ * as a drawn property or with an `!important` `ngc` leaves on it (an attribute name `setAttribute`
+ * refuses), a property no element draws, a property in a case the DOM does not give it (NG0303),
+ * and a listener.
  */
 @Component({
   selector: 'pct-widget',
   templateUrl: './widget.html',
+  schemas: [NO_ERRORS_SCHEMA],
   host: {
     class: 'pct-widget',
     role: 'group',
@@ -30,6 +33,7 @@ export type PctWidgetSize = 'sm' | 'md' | 'lg';
     '[innerHTML]': "'<b>Delete the row</b>'",
     '[innerHtml]': "'<b>Remove the row</b>'",
     '[outerHTML]': "'<b>Delete the row</b>'",
+    '[textContent!important]': "'Remove the row'",
     '[attr.aria-label]':
       "size() == 'sm' || size() != 'sm' || size() === 'sm' || size() !== 'sm' || size() < 'sm' || size() > 'sm' || size() <= 'sm' || size() >= 'sm'",
     '[attr.aria-description]':
@@ -41,6 +45,7 @@ export type PctWidgetSize = 'sm' | 'md' | 'lg';
     '[class.title]': "label() || 'Unread'",
     '[style.title]': "label() || 'Unread'",
     '[attr.textContent]': "'Unread'",
+    '[attr.title!important]': "'Unread'",
     '[TEXTCONTENT]': "'Unread'",
     '[id]': "'pct-widget-host'",
     '(focus)': "items().includes('Unread')",

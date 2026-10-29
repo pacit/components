@@ -22,6 +22,7 @@
             "class.title": "label() || 'Unread'",
             "style.title": "label() || 'Unread'",
             "attr.textContent": "'Unread'",
+            "attr.title!important": "'Unread'",
             "TEXTCONTENT": "'Unread'",
             "id": "'pct-widget-host'"
           },

@@ -982,9 +982,10 @@ of the inputs that show none, one an inline template wraps inside an `<output>`,
 `<option>` are drawn nowhere, an interpolated `class` beside an outlet hands its template
 nothing, a `class.` or `style.` binding writes no text, and an inline template on an
 `<ng-template>` is read; a sentence in each position of a `host` binding's value, a template
-literal's words among them, one bound to a property that draws it on any element and to what an
-element of one tag draws, bound and written, beside a host's `type`, and a `host` binding that
-does not parse, an interpolation and a pipe — while the reference's `host` holds its comparisons,
+literal's words among them, one bound to a property that draws it on any element, under an
+`!important` too, and to what an element of one tag draws, bound and written, beside a host's
+`type`, and a `host` binding that does not parse, an interpolation and a pipe, one printing nothing
+among them — while the reference's `host` holds its comparisons,
 conditions and keys, and words a `class.` or `style.` binding, an `attr.` one named as a drawn
 property, a property no element draws and a listener hold; plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
