@@ -222,7 +222,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md));
     its window is opt-in, recommended above 8,000 cells, and the rows it skips are drawn by the
     body's pseudo-elements ([0098](decisions/0098-a-tables-window-is-opt-in-and-the-rows-it-skips-are-two-pseudo-rows.md))
-  - phases, one pull request each: the pure engine and the type probe; the component with
+  - the pure engine landed first: typed columns, the order of several keys with empty values
+    last, the quick filter by words over the shown text, the lines, the window over measured
+    heights — functions of data with no Angular, swept by property suites
+  - phases, one pull request each, after it: the component with
     columns, sort, filter and states; the window to a million rows; the server's pages and
     blocks; priorities and the details row; groups and aggregates; the selection as a control
   - then what puts it ahead of the grids people know: column filters, the column layout as

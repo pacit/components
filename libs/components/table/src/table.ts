@@ -15,23 +15,19 @@ import {
   signal,
 } from '@angular/core';
 import { nextPctId } from '@pacit/components/core';
+import type { PctSortDirection } from './model/order';
 import { PctIcon } from '@pacit/components/icon';
-
-/**
- * Which way a column is sorted, in the words `aria-sort` takes, so the value a header holds is
- * the value a reader is told.
- *
- * @since next
- */
-export type PctSortDirection = 'ascending' | 'descending';
 
 /**
  * The column the rows stand sorted by, named by the key its header carries, and which way.
  *
+ * `Id` is `string` here, where the consumer writes the keys; the data table narrows it to the
+ * ids of its columns.
+ *
  * @since next
  */
-export interface PctTableSort {
-  readonly key: string;
+export interface PctTableSort<Id extends string = string> {
+  readonly key: Id;
   readonly direction: PctSortDirection;
 }
 
