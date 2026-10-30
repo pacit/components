@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctTexts } from '@pacit/components/core';
-import { PctAxis, PctChart } from './chart';
+import { PctAxis, PctChart, PctChartTooltip } from './chart';
 import { PctChartTable } from './chart-table';
 import { PctLine, pctSeriesColor } from './line';
 import { pctPyramid } from './model/decimate';
@@ -1878,5 +1878,462 @@ describe('PctChart, with its series bound', () => {
     );
     const fixture = await render(Lone);
     expect(texts(fixture, '[data-pct-unit="%"] .value')).toEqual(['0.5']);
+  });
+});
+
+/** A pointer event jsdom can dispatch: a mouse event with a pointer's fields. */
+function pointer(
+  type: string,
+  init: { x: number; y?: number; kind?: string; id?: number; button?: number },
+): Event {
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    clientX: init.x,
+    clientY: init.y ?? 100,
+    button: init.button ?? 0,
+  });
+  Object.assign(event, {
+    pointerType: init.kind ?? 'mouse',
+    pointerId: init.id ?? 1,
+    isPrimary: true,
+  });
+  return event;
+}
+
+describe('PctChart, its cursor', () => {
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? 600 : 0;
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? 300 : 0;
+      },
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const range = (fixture: ComponentFixture<unknown>) =>
+    query(fixture, 'input[data-pct-part="range"]') as HTMLInputElement;
+  const overlay = (fixture: ComponentFixture<unknown>) =>
+    query(fixture, '.overlay') as HTMLElement;
+  const key = async (
+    fixture: ComponentFixture<unknown>,
+    name: string,
+  ): Promise<KeyboardEvent> => {
+    const event = new KeyboardEvent('keydown', {
+      key: name,
+      bubbles: true,
+      cancelable: true,
+    });
+    range(fixture).dispatchEvent(event);
+    await settle(fixture);
+    return event;
+  };
+  const at = (fixture: ComponentFixture<unknown>, x: number) =>
+    chartOf(fixture).xScale()!.map(x);
+
+  it('is a range beside the picture, named by the chart, its value the middle while there is no cursor', async () => {
+    const fixture = await render(Host);
+    const input = range(fixture);
+    expect(input.type).toBe('range');
+    expect(input.getAttribute('step')).toBe('any');
+    expect(input.getAttribute('dir')).toBe('ltr');
+    expect(input.getAttribute('aria-label')).toBe('Heat recovery');
+    expect(input.closest('[role="img"]')).toBeNull();
+    expect(Number(input.getAttribute('min'))).toBe(T0);
+    expect(Number(input.getAttribute('max'))).toBe(T0 + 24 * H);
+    expect(Number(input.value)).toBe(T0 + 12 * H);
+    expect(input.getAttribute('aria-valuetext')).toBe('No reading selected');
+    const keys = input.getAttribute('aria-describedby')!;
+    expect(query(fixture, `#${keys}`)?.textContent).toContain(
+      'Arrow keys move from reading to reading',
+    );
+    expect(query(fixture, `#${keys}`)?.hasAttribute('hidden')).toBe(true);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    expect(chartOf(fixture).reading()).toBeNull();
+    expect(query(fixture, '[data-pct-part="cursor"]')).toBeNull();
+  });
+
+  it('reads every series under a cursor set from outside, and draws its line and markers', async () => {
+    const fixture = await render(Host);
+    chartOf(fixture).cursor.set(T0 + 6 * H);
+    await settle(fixture);
+    const reading = chartOf(fixture).reading()!;
+    expect(reading.x).toBe(T0 + 6 * H);
+    expect(reading.text).toBe('Oct 28, 06:00 AM');
+    expect(reading.rows.map((r) => [r.id, r.place, r.value, r.text])).toEqual([
+      ['Supply air', 1, 22.5, '22.5 °C'],
+      ['Fan power', 2, 400, '400 W'],
+    ]);
+    expect(range(fixture).getAttribute('aria-valuetext')).toBe(
+      'Oct 28, 2026, 06:00 AM: Supply air 22.5 °C, Fan power 400 W',
+    );
+    expect(Number(range(fixture).value)).toBe(T0 + 6 * H);
+    const line = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
+    expect(line.style.transform).toBe(
+      `translateX(${at(fixture, T0 + 6 * H)}px)`,
+    );
+    const markers = all(fixture, '[data-pct-part="marker"]');
+    expect(markers.map((m) => m.getAttribute('data-pct-series'))).toEqual([
+      '1',
+      '2',
+    ]);
+    expect(texts(fixture, '[data-pct-part="tooltip"] .value')).toEqual([
+      '22.5 °C',
+      '400 W',
+    ]);
+    expect(texts(fixture, '[data-pct-part="tooltip"] .time')).toEqual([
+      'Oct 28, 06:00 AM',
+    ]);
+  });
+
+  it('writes a gap as a gap, draws no marker there, and leaves a hidden series out', async () => {
+    const fixture = await render(Host);
+    chartOf(fixture).cursor.set(T0 + 13 * H);
+    fixture.componentInstance.hidden.set(['Fan power']);
+    await settle(fixture);
+    expect(
+      chartOf(fixture)
+        .reading()!
+        .rows.map((r) => r.text),
+    ).toEqual(['No reading']);
+    expect(all(fixture, '[data-pct-part="marker"]')).toHaveLength(0);
+  });
+
+  it('keeps the cursor when the window moves past it, and draws no line outside', async () => {
+    const fixture = await render(Host);
+    chartOf(fixture).cursor.set(T0 + 2 * H);
+    fixture.componentInstance.window.set({ from: T0 + 6 * H, to: T0 + 18 * H });
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBe(T0 + 2 * H);
+    expect(query(fixture, '[data-pct-part="cursor"]')).toBeNull();
+    expect(query(fixture, '[data-pct-part="tooltip"]')).toBeNull();
+  });
+
+  it('steps from reading to reading on the arrows, and pins the cursor', async () => {
+    const fixture = await render(Host);
+    const right = await key(fixture, 'ArrowRight');
+    expect(right.defaultPrevented).toBe(true);
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    await key(fixture, 'ArrowRight');
+    expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
+    await key(fixture, 'ArrowUp');
+    // the gap at noon is no reading of the supply, and the fan's reading is
+    expect(chartOf(fixture).cursor()).toBe(T0 + 12 * H);
+    await key(fixture, 'ArrowLeft');
+    expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
+    await key(fixture, 'ArrowDown');
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    await key(fixture, 'ArrowDown');
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    // a mouse passing over a pinned cursor leaves it
+    overlay(fixture).dispatchEvent(
+      pointer('pointermove', { x: at(fixture, T0 + 9 * H) }),
+    );
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBe(T0);
+  });
+
+  it('places a first cursor on the last reading from the left arrow', async () => {
+    const fixture = await render(Host);
+    await key(fixture, 'ArrowLeft');
+    expect(chartOf(fixture).cursor()).toBe(T0 + 24 * H);
+  });
+
+  it('goes to the ends on Home and End, and a tenth of the window on the page keys', async () => {
+    const fixture = await render(Host);
+    await key(fixture, 'End');
+    expect(chartOf(fixture).cursor()).toBe(T0 + 24 * H);
+    await key(fixture, 'Home');
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    await key(fixture, 'PageUp');
+    // a tenth is 2.4 hours: the first reading at or past it is 06:00
+    expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
+    await key(fixture, 'PageDown');
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    chartOf(fixture).cursor.set(null);
+    await settle(fixture);
+    await key(fixture, 'PageDown');
+    expect(chartOf(fixture).cursor()).toBe(T0 + 24 * H);
+    chartOf(fixture).cursor.set(null);
+    await settle(fixture);
+    await key(fixture, 'PageUp');
+    expect(chartOf(fixture).cursor()).toBe(T0);
+  });
+
+  it('clears the cursor on Escape and Delete, and leaves Escape to the page without one', async () => {
+    const fixture = await render(Host);
+    await key(fixture, 'Home');
+    const escape = await key(fixture, 'Escape');
+    expect(escape.defaultPrevented).toBe(true);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    expect((await key(fixture, 'Escape')).defaultPrevented).toBe(false);
+    await key(fixture, 'End');
+    await key(fixture, 'Delete');
+    expect(chartOf(fixture).cursor()).toBeNull();
+    expect((await key(fixture, 'Tab')).defaultPrevented).toBe(false);
+    expect((await key(fixture, 'a')).defaultPrevented).toBe(false);
+  });
+
+  it('steps the way a change without a key moved the range, and writes its own value back', async () => {
+    const fixture = await render(Host);
+    const input = range(fixture);
+    input.value = String(T0 + 20 * H);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(fixture);
+    // up from the middle with no cursor: the first reading of the window
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    expect(Number(input.value)).toBe(T0);
+    input.value = String(T0 + 3 * H);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
+    input.value = String(T0 + H);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBe(T0);
+    // the same value again moves nothing
+    input.value = String(T0);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBe(T0);
+  });
+
+  it('follows a mouse over the plot, and lets go when it leaves', async () => {
+    const fixture = await render(Host);
+    const x = at(fixture, T0 + 9 * H);
+    overlay(fixture).dispatchEvent(pointer('pointermove', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 9 * H, -3);
+    // over an axis, off the plot: no cursor
+    overlay(fixture).dispatchEvent(pointer('pointermove', { x: 2 }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    overlay(fixture).dispatchEvent(pointer('pointermove', { x }));
+    overlay(fixture).dispatchEvent(pointer('pointerleave', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+  });
+
+  it('pins on a click, and lets go on a click on its line', async () => {
+    const fixture = await render(Host);
+    const x = at(fixture, T0 + 9 * H);
+    const layer = overlay(fixture);
+    layer.dispatchEvent(pointer('pointerdown', { x }));
+    layer.dispatchEvent(pointer('pointerup', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 9 * H, -3);
+    layer.dispatchEvent(pointer('pointermove', { x: x + 40 }));
+    layer.dispatchEvent(pointer('pointerleave', { x: x + 40 }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 9 * H, -3);
+    layer.dispatchEvent(pointer('pointerdown', { x: x + 12 }));
+    layer.dispatchEvent(pointer('pointerup', { x: x + 12 }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    // a right button is no click of the chart's
+    layer.dispatchEvent(pointer('pointerdown', { x, button: 2 }));
+    layer.dispatchEvent(pointer('pointerup', { x, button: 2 }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+  });
+
+  it('places the cursor on a tap, moves it on a tap away from it, and clears it on one at its line', async () => {
+    const fixture = await render(Host);
+    const layer = overlay(fixture);
+    const tap = async (x: number) => {
+      layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch' }));
+      layer.dispatchEvent(pointer('pointerup', { x, kind: 'touch' }));
+      await settle(fixture);
+    };
+    await tap(at(fixture, T0 + 6 * H));
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 6 * H, -3);
+    await tap(at(fixture, T0 + 18 * H));
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 18 * H, -3);
+    await tap(at(fixture, T0 + 18 * H) - 10);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    // a finger that moves is a scroll or a pan, not a tap
+    const x = at(fixture, T0 + 6 * H);
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch' }));
+    layer.dispatchEvent(pointer('pointermove', { x: x + 20, kind: 'touch' }));
+    layer.dispatchEvent(pointer('pointerup', { x: x + 20, kind: 'touch' }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    // and one the page takes back is nothing
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch' }));
+    layer.dispatchEvent(pointer('pointercancel', { x, kind: 'touch' }));
+    layer.dispatchEvent(pointer('pointerup', { x, kind: 'touch' }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+  });
+
+  it('drags the cursor under a finger held still', async () => {
+    vi.useFakeTimers();
+    const fixture = await render(Host);
+    const layer = overlay(fixture);
+    const x = at(fixture, T0 + 6 * H);
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch' }));
+    vi.advanceTimersByTime(299);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 6 * H, -3);
+    const later = at(fixture, T0 + 15 * H);
+    layer.dispatchEvent(pointer('pointermove', { x: later, kind: 'touch' }));
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 15 * H, -3);
+    layer.dispatchEvent(pointer('pointerup', { x: later, kind: 'touch' }));
+    // lifting it leaves the cursor where it was dragged
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 15 * H, -3);
+  });
+
+  it('does not hold a finger that moved before the time was up', async () => {
+    vi.useFakeTimers();
+    const fixture = await render(Host);
+    const layer = overlay(fixture);
+    const x = at(fixture, T0 + 6 * H);
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch' }));
+    layer.dispatchEvent(pointer('pointermove', { x: x + 9, kind: 'touch' }));
+    vi.advanceTimersByTime(400);
+    expect(chartOf(fixture).cursor()).toBeNull();
+  });
+
+  it('takes no hover in the tap mode, and no cursor and no stop in none', async () => {
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `<pct-chart
+        ariaLabel="Modes"
+        timeZone="UTC"
+        [cursorMode]="mode()"
+      >
+        <pct-line [data]="rows" x="at" y="value" name="Supply" unit="°C" />
+      </pct-chart>`,
+    })
+    class Modes {
+      readonly rows = temperature;
+      readonly mode = signal<'hover' | 'tap' | 'none'>('tap');
+    }
+    const fixture = await render(Modes);
+    const x = at(fixture, T0 + 9 * H);
+    overlay(fixture).dispatchEvent(pointer('pointermove', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+    overlay(fixture).dispatchEvent(pointer('pointerdown', { x }));
+    overlay(fixture).dispatchEvent(pointer('pointerup', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 9 * H, -3);
+    fixture.componentInstance.mode.set('none');
+    chartOf(fixture).cursor.set(null);
+    await settle(fixture);
+    expect(range(fixture)).toBeNull();
+    overlay(fixture).dispatchEvent(pointer('pointerdown', { x }));
+    overlay(fixture).dispatchEvent(pointer('pointerup', { x }));
+    await settle(fixture);
+    expect(chartOf(fixture).cursor()).toBeNull();
+  });
+
+  it("stamps the consumer's tooltip with the reading, and draws none when told", async () => {
+    @Component({
+      imports: [PctChart, PctLine, PctChartTooltip],
+      template: `<pct-chart
+        ariaLabel="Own"
+        timeZone="UTC"
+        [tooltip]="tooltip()"
+      >
+        <pct-line [data]="rows" x="at" y="value" name="Supply" unit="°C" />
+        <ng-template pctChartTooltip let-reading>
+          <b class="own">{{ reading.text }} · {{ reading.rows[0].text }}</b>
+        </ng-template>
+      </pct-chart>`,
+    })
+    class Own {
+      readonly rows = temperature;
+      readonly tooltip = signal<'auto' | 'none'>('auto');
+    }
+    const fixture = await render(Own);
+    chartOf(fixture).cursor.set(T0 + 6 * H);
+    await settle(fixture);
+    expect(texts(fixture, '[data-pct-part="tooltip"] .own')).toEqual([
+      'Oct 28, 06:00 AM · 22.5 °C',
+    ]);
+    expect(query(fixture, '[data-pct-part="tooltip"] .row')).toBeNull();
+    fixture.componentInstance.tooltip.set('none');
+    await settle(fixture);
+    expect(query(fixture, '[data-pct-part="tooltip"]')).toBeNull();
+    expect(query(fixture, '[data-pct-part="cursor"]')).not.toBeNull();
+  });
+
+  it('writes seconds in a window of an hour, the day in a window of days, and numbers on a linear axis', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.window.set({ from: T0, to: T0 + H });
+    chartOf(fixture).cursor.set(T0 + 1_234_000);
+    await settle(fixture);
+    expect(chartOf(fixture).reading()!.text).toBe('12:20:34 AM');
+    fixture.componentInstance.window.set({ from: T0, to: T0 + 48 * H });
+    await settle(fixture);
+    expect(chartOf(fixture).reading()!.text).toBe('Oct 28, 12:20 AM');
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `<pct-chart ariaLabel="Linear" x="linear" locale="en-US">
+        <pct-line [data]="rows" x="at" y="value" name="Level" />
+        <pct-line
+          [data]="rows"
+          x="at"
+          y="on"
+          name="Valve"
+          unit="boolean"
+          curve="step"
+        />
+      </pct-chart>`,
+    })
+    class Linear {
+      readonly rows = [
+        { at: 0, value: 1.5, on: 0 },
+        { at: 1000, value: 2.5, on: 1 },
+      ];
+    }
+    TestBed.resetTestingModule();
+    const linear = await render(Linear);
+    chartOf(linear).cursor.set(1000);
+    await settle(linear);
+    expect(range(linear).getAttribute('aria-valuetext')).toBe(
+      '1,000: Level 2.5, Valve On',
+    );
+    chartOf(linear).cursor.set(500);
+    await settle(linear);
+    expect(chartOf(linear).reading()!.rows[1].text).toBe('Off');
+  });
+
+  it("paints a custom colour's marker and swatch from its own colour", async () => {
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `<pct-chart ariaLabel="Own colour" timeZone="UTC">
+        <pct-line
+          [data]="rows"
+          x="at"
+          y="value"
+          name="Supply"
+          color="rebeccapurple"
+        />
+      </pct-chart>`,
+    })
+    class OwnColour {
+      readonly rows = temperature;
+    }
+    const fixture = await render(OwnColour);
+    chartOf(fixture).cursor.set(T0);
+    await settle(fixture);
+    const marker = query(fixture, '[data-pct-part="marker"]') as HTMLElement;
+    expect(marker.getAttribute('data-pct-series')).toBe('custom');
+    expect(marker.style.getPropertyValue('--_pct-chart-color')).toBe(
+      'rebeccapurple',
+    );
+    const swatch = query(fixture, '.swatch') as HTMLElement;
+    expect(swatch.style.getPropertyValue('--_pct-chart-color')).toBe(
+      'rebeccapurple',
+    );
+    expect(chartOf(fixture).reading()!.rows[0].color).toBe('rebeccapurple');
   });
 });

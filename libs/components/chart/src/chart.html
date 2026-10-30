@@ -1,4 +1,28 @@
 <figure class="figure">
+  @if (measured() && !loading() && range(); as range) {
+  <!--
+    The cursor's range (0103): the chart's one stop, beside the picture and never inside it.
+    Its ends are the window's and its value the cursor's, the value written after the ends (in
+    the scene's render effect) so the browser's clamping never decides where the cursor is; the
+    reading under it is its value text.
+  -->
+  <input
+    #rangeInput
+    class="range"
+    type="range"
+    step="any"
+    dir="ltr"
+    data-pct-part="range"
+    [attr.min]="range.min"
+    [attr.max]="range.max"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-valuetext]="valueText()"
+    [attr.aria-describedby]="ids.keys"
+    (keydown)="onKey($event)"
+    (input)="onInput($event)"
+  />
+  }
   <div
     class="picture"
     data-pct-part="plot"
@@ -109,6 +133,62 @@
       </g>
       }
     </svg>
+    <!-- The cursor's layer: HTML, so the tooltip wraps and writes with the page's type. -->
+    <div
+      class="layer overlay"
+      aria-hidden="true"
+      (pointermove)="onPointerMove($event)"
+      (pointerleave)="onPointerLeave($event)"
+      (pointerdown)="onPointerDown($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerCancel($event)"
+    >
+      @if (cursorView(); as view) {
+      <div
+        class="line"
+        data-pct-part="cursor"
+        [style.transform]="'translateX(' + view.x + 'px)'"
+        [style.inset-block-start.px]="plot().top"
+        [style.block-size.px]="plot().bottom - plot().top"
+      ></div>
+      @for (marker of view.markers; track marker.id) {
+      <div
+        class="marker"
+        data-pct-part="marker"
+        [attr.data-pct-series]="marker.place"
+        [style.--_pct-chart-color]="marker.color"
+        [style.transform]="'translate(' + view.x + 'px, ' + marker.y + 'px)'"
+      ></div>
+      } @if (tooltip() === 'auto' && reading(); as reading) { @if (tooltipAt();
+      as at) {
+      <div
+        #tooltipBox
+        class="tooltip"
+        data-pct-part="tooltip"
+        [class.unmeasured]="!at.measured"
+        [style.transform]="'translate(' + at.x + 'px, ' + at.y + 'px)'"
+      >
+        @if (customTooltip(); as template) {
+        <ng-container
+          [ngTemplateOutlet]="template"
+          [ngTemplateOutletContext]="{ $implicit: reading }"
+        />
+        } @else {
+        <div class="time" [textContent]="reading.text"></div>
+        @for (row of reading.rows; track $index) {
+        <div class="row">
+          <span
+            class="swatch"
+            [attr.data-pct-series]="row.place"
+            [style.--_pct-chart-color]="row.color"
+          ></span>
+          <span class="name" [textContent]="row.name"></span>
+          <span class="value" [textContent]="row.text"></span>
+        </div>
+        } }
+      </div>
+      } } }
+    </div>
     } @else {
     <pct-skeleton shape="block" class="skeleton" />
     }
@@ -122,6 +202,9 @@
   } @if (description()) {
   <!-- Hidden: the picture reads it as its description, and nothing else reads it twice. -->
   <p class="description" hidden [id]="ids.description">{{ description() }}</p>
+  } @if (range()) {
+  <!-- The keys of the cursor, which its range reads as its description. -->
+  <p hidden [id]="ids.keys">{{ texts().chartKeys }}</p>
   }
   <ng-content select="figcaption" />
 </figure>

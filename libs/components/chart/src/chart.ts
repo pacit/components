@@ -5,6 +5,7 @@ import {
   booleanAttribute,
   Component,
   computed,
+  contentChild,
   contentChildren,
   DestroyRef,
   Directive,
@@ -16,6 +17,8 @@ import {
   LOCALE_ID,
   model,
   signal,
+  TemplateRef,
+  viewChild,
 } from '@angular/core';
 import {
   nextPctId,
@@ -23,7 +26,9 @@ import {
   pctQuantityFormat,
 } from '@pacit/components/core';
 import { PctSkeleton } from '@pacit/components/skeleton';
-import { pctThinLabels } from './model/layout';
+import type { PctColumns } from './model/columns';
+import { pctCursorJump, pctCursorStep } from './model/cursor';
+import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import { pctLinear, type PctDomain, type PctScale } from './model/scale';
 import { pctAxisSlots, type PctAxisSlot } from './model/slots';
@@ -113,12 +118,101 @@ interface PctXTick {
   readonly label: PctTimeLabel | 'value';
 }
 
+/**
+ * What the chart reads under its cursor: the position, written as the axis writes it, and
+ * every series shown there. What the tooltip draws and the cursor's range says, and what a
+ * legend of the application's own reads off `reading()`.
+ *
+ * @since next
+ */
+export interface PctChartReading {
+  /** The cursor's position on the horizontal axis. */
+  readonly x: number;
+  /** The position written: a time in the chart's zone, or a number. */
+  readonly text: string;
+  /** Every series shown, in the chart's order. */
+  readonly rows: readonly PctChartReadingRow[];
+}
+
+/**
+ * One series' value under the cursor.
+ *
+ * @since next
+ */
+export interface PctChartReadingRow {
+  readonly id: string;
+  readonly name: string;
+  readonly unit: string;
+  /** The palette place, or `custom` for a colour of the consumer's own. */
+  readonly place: number | 'custom';
+  /** The consumer's own colour, `null` for a palette place. */
+  readonly color: string | null;
+  /** The value, computed as the series is drawn; `null` in a gap. */
+  readonly value: number | null;
+  /** The value written, with its unit: `21.4 °C`, `On`, or the gap's word. */
+  readonly text: string;
+}
+
+/**
+ * The context of a `pctChartTooltip` template: the reading under the cursor.
+ *
+ * @since next
+ */
+export interface PctChartTooltipContext {
+  readonly $implicit: PctChartReading;
+}
+
+/**
+ * A tooltip of the consumer's own: an `<ng-template pctChartTooltip let-reading>` inside the
+ * chart, stamped in place of the default rows, with the reading under the cursor.
+ *
+ * @example
+ * <pct-chart ariaLabel="Supply air">
+ *   <ng-template pctChartTooltip let-reading>{{ reading.text }} · {{ reading.rows[0].text }}</ng-template>
+ * </pct-chart>
+ *
+ * @since next
+ */
+@Directive({
+  // The template is the slot: a tooltip of the consumer's own, stamped by the scene.
+  selector: 'ng-template[pctChartTooltip]',
+})
+export class PctChartTooltip {
+  /**
+   * The template the scene stamps.
+   *
+   * @since next
+   */
+  readonly template = inject<TemplateRef<PctChartTooltipContext>>(TemplateRef);
+
+  /**
+   * Types the template's context for the compiler.
+   *
+   * @since next
+   */
+  static ngTemplateContextGuard(
+    directive: PctChartTooltip,
+    context: unknown,
+  ): context is PctChartTooltipContext {
+    void directive;
+    void context;
+    return true;
+  }
+}
+
 /** The yes/no unit: an axis from 0 to 1 with two labels. */
 const BOOLEAN = 'boolean';
 /** About how far apart the ticks of a value axis stand, in pixels. */
 const ROW = 48;
 /** The space between a plot and the edge where no axis stands. */
 const EDGE = 8;
+/** How long a finger rests before the cursor follows it, in milliseconds. */
+const HOLD = 300;
+/** How far a finger moves before a press is no tap, in pixels. */
+const SLOP = 8;
+/** How near the cursor's line a tap clears it, in pixels. */
+const NEAR = 12;
+const HOUR = 3_600_000;
 
 /** One canvas for every chart's text measurements, made when first needed. */
 let measuring: CanvasRenderingContext2D | null | undefined;
@@ -234,6 +328,32 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   override readonly hiddenSeries = model<readonly string[]>([]);
+  /**
+   * Where the cursor stands on the horizontal axis — an instant or a number, as `x` says — or
+   * `null` for none
+   * ([0101](../../../../docs/decisions/0101-the-window-the-cursor-and-the-selection-are-the-applications-models.md)).
+   * The pointer, the keys and a reader move it; a change of the window or of the data leaves it
+   * where it is.
+   *
+   * @since next
+   */
+  readonly cursor = model<number | null>(null);
+  /**
+   * How the pointer moves the cursor. `hover`: a mouse's cursor follows it and a press pins it,
+   * a tap places it and a finger held still drags it. `tap`: only a press or a tap places it.
+   * `none`: no cursor at all and no tab stop — a picture alone.
+   *
+   * @since next
+   */
+  readonly cursorMode = input<'hover' | 'tap' | 'none'>('hover');
+  /**
+   * The tooltip by the cursor: `auto` writes the time and every series' value, or stamps the
+   * `pctChartTooltip` template when there is one; `none` draws none, for a legend that shows
+   * the reading instead.
+   *
+   * @since next
+   */
+  readonly tooltip = input<'auto' | 'none'>('auto');
 
   protected readonly texts = inject(PCT_TEXTS);
   private readonly appLocale = inject(LOCALE_ID);
@@ -250,9 +370,16 @@ export class PctChart extends PctChartScene {
     descendants: true,
   });
 
+  private readonly tooltipTemplate = contentChild(PctChartTooltip);
+  private readonly tooltipBox =
+    viewChild<ElementRef<HTMLElement>>('tooltipBox');
+  private readonly rangeInput =
+    viewChild<ElementRef<HTMLInputElement>>('rangeInput');
+
   protected readonly ids = {
     clip: nextPctId('pct-chart-clip'),
     description: nextPctId('pct-chart-description'),
+    keys: nextPctId('pct-chart-keys'),
   };
 
   private readonly size = signal({ width: 0, height: 0 });
@@ -542,6 +669,138 @@ export class PctChart extends PctChartScene {
     };
   });
 
+  private readonly valueFormat = computed(() =>
+    pctQuantityFormat(this.effectiveLocale(), { fractionDigits: [0, 3] }),
+  );
+
+  /**
+   * The time under the cursor, as precise as the window asks: seconds in a window of an hour
+   * or less, the day in one of a day or more; `full` writes the day always, for a reader who
+   * cannot glance at the axis.
+   */
+  private readonly timeFormats = computed(() => {
+    const shown = this.shown();
+    const span = shown ? shown.to - shown.from : 0;
+    const clock: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: span <= HOUR ? '2-digit' : undefined,
+      timeZone: this.timeZone(),
+    };
+    const day: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+    const locale = this.effectiveLocale();
+    return {
+      short: new Intl.DateTimeFormat(
+        locale,
+        span >= 24 * HOUR ? { ...day, ...clock } : clock,
+      ),
+      full: new Intl.DateTimeFormat(locale, {
+        ...day,
+        year: 'numeric',
+        ...clock,
+      }),
+    };
+  });
+
+  /**
+   * The reading under the cursor, `null` without one.
+   *
+   * @since next
+   */
+  readonly reading = computed<PctChartReading | null>(() => {
+    const x = this.cursor();
+    if (x === null) return null;
+    const hidden = new Set(this.hiddenSeries());
+    const places = this.places();
+    const rows = this.series()
+      .filter((s) => !hidden.has(s.id))
+      .map((s): PctChartReadingRow => {
+        const value = this.valueAt(s.id, x);
+        const custom = typeof s.color === 'string';
+        return {
+          id: s.id,
+          name: s.name,
+          unit: s.unit,
+          place: custom ? 'custom' : (places.get(s.id) ?? 1),
+          color: custom ? (s.color as string) : null,
+          value,
+          text: this.writeValue(value, s.unit),
+        };
+      });
+    return { x, text: this.writePosition(x, 'short'), rows };
+  });
+
+  /** What the cursor's range says: the full position and every value, or that there is none. */
+  protected readonly valueText = computed(() => {
+    const reading = this.reading();
+    if (!reading) return this.texts().chartNoCursor;
+    const position = this.writePosition(reading.x, 'full');
+    const values = reading.rows.map((r) => `${r.name} ${r.text}`).join(', ');
+    return values ? `${position}: ${values}` : position;
+  });
+
+  /**
+   * The cursor's range: its ends the window's and its value the cursor's, or the middle
+   * while there is none (0103).
+   */
+  protected readonly range = computed(() => {
+    const shown = this.shown();
+    if (!shown || this.cursorMode() === 'none') return null;
+    return {
+      min: shown.from,
+      max: shown.to,
+      value: this.cursor() ?? (shown.from + shown.to) / 2,
+    };
+  });
+
+  /** The cursor as drawn: its line's position and a marker on every series with a value. */
+  protected readonly cursorView = computed(() => {
+    const reading = this.reading();
+    const scale = this.xScale();
+    const shown = this.shown();
+    if (!reading || !scale || !shown) return null;
+    if (reading.x < shown.from || reading.x > shown.to) return null;
+    const scales = this.yScales();
+    const markers = reading.rows.flatMap((row) => {
+      const y =
+        row.value === null ? undefined : scales.get(row.unit)?.map(row.value);
+      return y === undefined
+        ? []
+        : [{ id: row.id, place: row.place, color: row.color, y }];
+    });
+    return { x: scale.map(reading.x), markers };
+  });
+
+  private readonly tooltipWidth = signal(0);
+  /** Where the tooltip stands: beside the line, on whichever side has the room. */
+  protected readonly tooltipAt = computed(() => {
+    const view = this.cursorView();
+    if (!view) return null;
+    const { left, right } = this.columns();
+    const width = this.tooltipWidth();
+    return {
+      x: pctTooltipPlace(view.x, width, left, right).left,
+      y: this.rows().top,
+      measured: width > 0,
+    };
+  });
+
+  protected readonly customTooltip = computed(
+    () => this.tooltipTemplate()?.template ?? null,
+  );
+
+  /** Whether the cursor stays where it was put, rather than following a mouse. */
+  private readonly pinned = signal(false);
+  /** A finger or a button down on the plot, until it lifts. */
+  private press: {
+    readonly id: number;
+    readonly x: number;
+    readonly y: number;
+    timer: ReturnType<typeof setTimeout> | undefined;
+    held: boolean;
+    moved: boolean;
+  } | null = null;
+
   /**
    * Why nothing is drawn: `hidden` when every series is hidden, `empty` when none has a
    * reading in the window, `null` when something is drawn.
@@ -577,6 +836,23 @@ export class PctChart extends PctChartScene {
       observer.observe(this.host);
       destroyRef.onDestroy(() => observer.disconnect());
     });
+    // The range's value after its ends, which the template has written by now: a value set
+    // first is clamped to the ends it had then (0103).
+    afterRenderEffect(() => {
+      const input = this.rangeInput()?.nativeElement;
+      const range = this.range();
+      if (!input || !range) return;
+      input.min = String(range.min);
+      input.max = String(range.max);
+      input.value = String(range.value);
+    });
+    // The tooltip is measured once drawn, and placed by its width: one frame hidden.
+    afterRenderEffect(() => {
+      this.reading();
+      const width = this.tooltipBox()?.nativeElement.offsetWidth ?? 0;
+      if (width !== this.tooltipWidth()) this.tooltipWidth.set(width);
+    });
+    destroyRef.onDestroy(() => clearTimeout(this.press?.timer));
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnnamed());
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnplaced());
     if (isDevMode()) afterRenderEffect(() => this.warnOnTwins());
@@ -599,6 +875,212 @@ export class PctChart extends PctChartScene {
    */
   markOf(id: string): PctMark | undefined {
     return this.marks().find((m) => m.series().some((s) => s.id === id));
+  }
+
+  /** The readings of every series shown, which the keys step along. */
+  private shownColumns(): PctColumns[] {
+    const hidden = new Set(this.hiddenSeries());
+    return this.series()
+      .filter((s) => !hidden.has(s.id))
+      .flatMap((s) => {
+        const readings = this.markOf(s.id)?.readings(s.id);
+        return readings ? [readings] : [];
+      });
+  }
+
+  /** The cursor one key further: the next reading that way, a pixel at least (0103). */
+  private step(from: number | null, direction: 1 | -1): number | null {
+    const shown = this.shown();
+    if (!shown) return from;
+    const pixel = (shown.to - shown.from) / Math.max(1, this.plotWidth());
+    return (
+      pctCursorStep(this.shownColumns(), from, direction, shown, pixel) ?? from
+    );
+  }
+
+  private jump(target: number, direction: 1 | -1): number | null {
+    const shown = this.shown();
+    if (!shown) return this.cursor();
+    return (
+      pctCursorJump(this.shownColumns(), target, direction, shown) ??
+      this.cursor()
+    );
+  }
+
+  private place(x: number | null, pinned: boolean): void {
+    this.pinned.set(pinned && x !== null);
+    this.cursor.set(x);
+  }
+
+  /** The keys of the cursor's range: a range's own, each one landing on a reading (0103). */
+  protected onKey(event: KeyboardEvent): void {
+    const shown = this.shown();
+    if (!shown) return;
+    const from = this.cursor();
+    const tenth = (shown.to - shown.from) / 10;
+    let next: number | null;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+        next = this.step(from, 1);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        next = this.step(from, -1);
+        break;
+      case 'PageUp':
+        next = from === null ? this.step(null, 1) : this.jump(from + tenth, 1);
+        break;
+      case 'PageDown':
+        next =
+          from === null ? this.step(null, -1) : this.jump(from - tenth, -1);
+        break;
+      case 'Home':
+        next = this.jump(shown.from, 1);
+        break;
+      case 'End':
+        next = this.jump(shown.to, -1);
+        break;
+      case 'Escape':
+      case 'Delete':
+        // With no cursor the key is not the chart's: a dialog around it closes on Escape.
+        if (from === null) return;
+        next = null;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    this.place(next, true);
+  }
+
+  /**
+   * A change of the range's value that came without a key — a reader's swipe, an assistive
+   * technology setting it: the cursor steps the way it was moved, and the range takes the
+   * cursor's value back.
+   */
+  protected onInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const range = this.range();
+    if (!range) return;
+    const asked = Number(input.value);
+    if (asked !== range.value)
+      this.place(this.step(this.cursor(), asked > range.value ? 1 : -1), true);
+    input.value = String(this.range()?.value ?? asked);
+  }
+
+  /** The position under the pointer, or `null` off the plot. */
+  private pointedAt(event: PointerEvent): { x: number; px: number } | null {
+    const scale = this.xScale();
+    const layer = event.currentTarget as HTMLElement | null;
+    if (!scale || !layer) return null;
+    const box = layer.getBoundingClientRect();
+    // The layer's own pixels, which a transform on an ancestor does not scale.
+    const px =
+      (event.clientX - box.left) *
+      (box.width > 0 ? layer.offsetWidth / box.width : 1);
+    const { left, right } = this.columns();
+    if (px < left || px > right) return null;
+    return { x: scale.invert(px), px };
+  }
+
+  protected onPointerMove(event: PointerEvent): void {
+    const press = this.press;
+    if (press && press.id === event.pointerId) {
+      if (press.held) {
+        const at = this.pointedAt(event);
+        if (at) this.place(at.x, true);
+      } else if (
+        Math.hypot(event.clientX - press.x, event.clientY - press.y) > SLOP
+      ) {
+        press.moved = true;
+        clearTimeout(press.timer);
+      }
+      return;
+    }
+    if (
+      event.pointerType !== 'mouse' ||
+      this.cursorMode() !== 'hover' ||
+      this.pinned()
+    )
+      return;
+    this.cursor.set(this.pointedAt(event)?.x ?? null);
+  }
+
+  protected onPointerLeave(event: PointerEvent): void {
+    if (
+      event.pointerType === 'mouse' &&
+      this.cursorMode() === 'hover' &&
+      !this.pinned()
+    )
+      this.cursor.set(null);
+  }
+
+  protected onPointerDown(event: PointerEvent): void {
+    if (this.cursorMode() === 'none' || !event.isPrimary || event.button > 0)
+      return;
+    clearTimeout(this.press?.timer);
+    const layer = event.currentTarget as HTMLElement;
+    const press = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      timer: undefined as ReturnType<typeof setTimeout> | undefined,
+      held: false,
+      moved: false,
+    };
+    this.press = press;
+    if (event.pointerType === 'mouse') return;
+    // A finger held still: the cursor follows it until it lifts.
+    const at = this.pointedAt(event);
+    press.timer = setTimeout(() => {
+      if (this.press !== press || press.moved || !at) return;
+      press.held = true;
+      layer.setPointerCapture?.(press.id);
+      this.place(at.x, true);
+    }, HOLD);
+  }
+
+  protected onPointerUp(event: PointerEvent): void {
+    const press = this.press;
+    if (!press || press.id !== event.pointerId) return;
+    clearTimeout(press.timer);
+    this.press = null;
+    if (press.held || press.moved) return;
+    // A tap, or a click: on the pinned cursor's line it lets go, anywhere else it pins.
+    const at = this.pointedAt(event);
+    const scale = this.xScale();
+    const cursor = this.cursor();
+    if (
+      this.pinned() &&
+      cursor !== null &&
+      scale &&
+      at &&
+      Math.abs(scale.map(cursor) - at.px) <= NEAR
+    ) {
+      this.place(null, false);
+      return;
+    }
+    if (at) this.place(at.x, true);
+  }
+
+  protected onPointerCancel(event: PointerEvent): void {
+    if (this.press?.id !== event.pointerId) return;
+    clearTimeout(this.press.timer);
+    this.press = null;
+  }
+
+  private writeValue(value: number | null, unit: string): string {
+    if (value === null) return this.texts().chartGap;
+    if (unit === BOOLEAN)
+      return value >= 0.5 ? this.texts().chartOn : this.texts().chartOff;
+    const number = this.valueFormat().format(value);
+    return unit ? `${number} ${unit}` : number;
+  }
+
+  private writePosition(x: number, form: 'short' | 'full'): string {
+    if (this.x() !== 'time') return this.valueFormat().format(x);
+    return this.timeFormats()[form].format(x);
   }
 
   private readSize(rawWidth: number, rawHeight: number): void {

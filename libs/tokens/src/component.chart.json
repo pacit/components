@@ -1,7 +1,7 @@
 {
   "pct": {
     "chart": {
-      "$comment": "A chart: a scene of scales and the marks drawn on them (0099). The colours are the series palette of the skin, by place, and the lines and words of the axes; the type is the small size, because an axis label sits beside the data rather than being read as prose. The line width and the gap between an axis and its labels are the chart's own.",
+      "$comment": "A chart: a scene of scales and the marks drawn on them (0099). The colours are the series palette of the skin, by place, and the lines and words of the axes; the type is the small size, because an axis label sits beside the data rather than being read as prose. The line width and the gap between an axis and its labels are the chart's own. The cursor's line, its markers and its tooltip (phase 3) stand on the page's own surface rather than an inverted one, as `pct-tooltip`'s do: the tooltip names each series by its palette swatch, and the palette is measured against `surface` alone.",
       "font-size": {
         "$type": "dimension",
         "$value": "{pct.font.size.sm}",
@@ -86,6 +86,56 @@
         "$type": "color",
         "$value": "{pct.text-muted}",
         "$description": "The message of a chart with nothing to draw."
+      },
+      "cursor-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "The line of the cursor across the plot."
+      },
+      "marker-border": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "The ring around a marker on the cursor's line, which parts it from the line it stands on."
+      },
+      "marker-size": {
+        "$type": "dimension",
+        "$value": "10px",
+        "$description": "Diameter of a marker on the cursor's line: a drawing, no target, so it stays off the density axis."
+      },
+      "tooltip-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the tooltip by the cursor."
+      },
+      "tooltip-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text of the tooltip by the cursor."
+      },
+      "tooltip-border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge of the tooltip by the cursor."
+      },
+      "tooltip-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the tooltip."
+      },
+      "tooltip-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the tooltip."
+      },
+      "tooltip-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the tooltip."
+      },
+      "tooltip-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the tooltip."
       }
     }
   }
