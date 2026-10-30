@@ -585,9 +585,7 @@ export class PctDataTable<
   );
 
   /** The ids picked, to look up. */
-  private readonly picked = computed(
-    () => new Set(this.selection()?.value()),
-  );
+  private readonly picked = computed(() => new Set(this.selection()?.value()));
 
   /** The header's checkbox, over the rows the filter left: all of them picked, or some. */
   protected readonly pickedAll = computed(() => {
@@ -659,8 +657,7 @@ export class PctDataTable<
 
   /** The cells a details row spans: every column shown, and the leading ones. */
   protected readonly span = computed(
-    () =>
-      this.columns().length - this.hiddenColumns().length + this.lead(),
+    () => this.columns().length - this.hiddenColumns().length + this.lead(),
   );
 
   /** The cells before a row's data: its checkbox, its disclosure and its number. */

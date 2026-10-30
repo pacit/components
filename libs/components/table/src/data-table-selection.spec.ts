@@ -8,12 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  form,
-  FormField,
-  minLength,
-  required,
-} from '@angular/forms/signals';
+import { form, FormField, minLength, required } from '@angular/forms/signals';
 import { pctWarn } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
@@ -151,7 +146,9 @@ async function press(
   shiftKey = false,
 ): Promise<void> {
   // The click's activation toggles a checkbox, or checks a radio, before it is handled.
-  input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey }));
+  input.dispatchEvent(
+    new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey }),
+  );
   await settle(fixture);
 }
 
@@ -394,7 +391,9 @@ describe('PctTableSelection — the rows picked', () => {
     expect(document.querySelector('[data-pct-part="hint"]')).toBeNull();
     fixture.componentInstance.hint.set('Pick the devices to move');
     await settle(fixture);
-    const hint = document.querySelector('[data-pct-part="hint"]') as HTMLElement;
+    const hint = document.querySelector(
+      '[data-pct-part="hint"]',
+    ) as HTMLElement;
     expect(hint.textContent).toBe('Pick the devices to move');
     expect(hint.id).toMatch(/^pct-table-selection-\d+-hint$/);
     expect(table().getAttribute('aria-describedby')).toBe(hint.id);
@@ -432,7 +431,9 @@ describe('PctTableSelection — the rows picked', () => {
           [loading]="true"
           caption="Devices"
         >
-          <ng-template [pctDetails]="columns" let-device>{{ device.name }}</ng-template>
+          <ng-template [pctDetails]="columns" let-device>{{
+            device.name
+          }}</ng-template>
         </pct-data-table>
       `,
     })
@@ -453,8 +454,12 @@ describe('PctTableSelection — the rows picked', () => {
     ) as HTMLTableCellElement;
     expect(details.colSpan).toBe(5);
     // The checkbox comes before the disclosure.
-    expect(rows()[0].cells[0].querySelector('[data-pct-part="select"]')).not.toBeNull();
-    expect(rows()[0].cells[1].querySelector('[data-pct-part="disclosure"]')).not.toBeNull();
+    expect(
+      rows()[0].cells[0].querySelector('[data-pct-part="select"]'),
+    ).not.toBeNull();
+    expect(
+      rows()[0].cells[1].querySelector('[data-pct-part="disclosure"]'),
+    ).not.toBeNull();
   });
 
   it('counts its column in a group’s heading and in the total', async () => {
@@ -552,7 +557,12 @@ describe('PctTableSelection — the rows picked', () => {
   it('gives a cell no id when nothing picks', async () => {
     @Component({
       imports: [PctDataTable],
-      template: `<pct-data-table [rows]="rows" [columns]="columns" [rowId]="byId" caption="Devices" />`,
+      template: `<pct-data-table
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Devices"
+      />`,
     })
     class PlainHost {
       readonly columns = columns;
@@ -569,7 +579,13 @@ describe('PctTableSelection — its defaults', () => {
   it('picks any number of rows, none at first, enabled, optional, with no hint', async () => {
     @Component({
       imports: [PctDataTable, PctTableSelection],
-      template: `<pct-data-table pctTableSelection [rows]="rows" [columns]="columns" [rowId]="byId" caption="Devices" />`,
+      template: `<pct-data-table
+        pctTableSelection
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Devices"
+      />`,
     })
     class BareHost {
       readonly selection = viewChild.required(PctTableSelection);
@@ -594,7 +610,11 @@ describe('PctTableSelection — its defaults', () => {
     expect(all()?.type).toBe('checkbox');
     expect(all()?.disabled).toBe(false);
     expect(all()?.hasAttribute('aria-invalid')).toBe(false);
-    expect(document.querySelector('pct-data-table')?.hasAttribute('data-pct-invalid')).toBe(false);
+    expect(
+      document
+        .querySelector('pct-data-table')
+        ?.hasAttribute('data-pct-invalid'),
+    ).toBe(false);
   });
 });
 
@@ -700,9 +720,13 @@ describe('PctTableSelection — a field of a form', () => {
     fixture.componentInstance.mode.set('single');
     fixture.componentInstance.f.devices().markAsTouched();
     await settle(fixture);
-    expect(picks().every((input) => input.getAttribute('aria-invalid') === 'true')).toBe(true);
+    expect(
+      picks().every((input) => input.getAttribute('aria-invalid') === 'true'),
+    ).toBe(true);
     await press(fixture, picks()[0]);
     expect(fixture.componentInstance.model().devices).toEqual([1]);
-    expect(picks().some((input) => input.hasAttribute('aria-invalid'))).toBe(false);
+    expect(picks().some((input) => input.hasAttribute('aria-invalid'))).toBe(
+      false,
+    );
   });
 });
