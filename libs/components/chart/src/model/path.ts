@@ -16,6 +16,11 @@ export interface PctPathOptions {
   readonly pixel?: number;
   /** How far the last reading holds on a step; the last reading's own position by default. */
   readonly end?: number;
+  /**
+   * Writes each point as `y x`: for a horizontal chart, where the x scale maps to the layer's
+   * y and the value scale to its x.
+   */
+  readonly transpose?: boolean;
 }
 
 /** On the grid, written to two decimals at most: `1/3` of a pixel is not worth sixteen digits. */
@@ -46,12 +51,13 @@ function runsOf(
   const { xs, ys, length } = columns;
   const runs: Run[] = [];
   let run: Run | null = null;
+  const transpose = options.transpose === true;
   const point = (px: number, py: number) => {
     if (run === null) {
       run = { points: [], first: px, last: px, lastY: NaN };
       runs.push(run);
     } else if (run.last === px && run.lastY === py) return;
-    run.points.push(`${px} ${py}`);
+    run.points.push(transpose ? `${py} ${px}` : `${px} ${py}`);
     run.last = px;
     run.lastY = py;
   };
@@ -133,10 +139,13 @@ export function pctAreaPath(
   options: PctPathOptions = {},
 ): string {
   const base = round(y.map(baseline), options.pixel ?? 1);
+  // The run closed to the baseline at both ends: below it, or beside it when transposed.
+  const edge = (along: number) =>
+    options.transpose ? `${base} ${along}` : `${along} ${base}`;
   return runsOf(columns, x, y, curve, options)
     .map(
       ({ points, first, last }) =>
-        `M${first} ${base}L${points.join('L')}L${last} ${base}Z`,
+        `M${edge(first)}L${points.join('L')}L${edge(last)}Z`,
     )
     .join('');
 }

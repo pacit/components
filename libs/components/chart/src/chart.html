@@ -47,21 +47,21 @@
         </clipPath>
       </defs>
       <g data-pct-part="grid">
-        @for (y of gridLines().rows; track $index) {
+        @for (s of gridLines().rows; track $index) {
         <line
           class="row"
-          [attr.x1]="plot().left"
-          [attr.x2]="plot().right"
-          [attr.y1]="y"
-          [attr.y2]="y"
+          [attr.x1]="s.x1"
+          [attr.x2]="s.x2"
+          [attr.y1]="s.y1"
+          [attr.y2]="s.y2"
         />
-        } @for (x of gridLines().columns; track $index) {
+        } @for (s of gridLines().columns; track $index) {
         <line
           class="column"
-          [attr.x1]="x"
-          [attr.x2]="x"
-          [attr.y1]="plot().top"
-          [attr.y2]="plot().bottom"
+          [attr.x1]="s.x1"
+          [attr.x2]="s.x2"
+          [attr.y1]="s.y1"
+          [attr.y2]="s.y2"
         />
         }
       </g>
@@ -72,65 +72,66 @@
       </g>
     </svg>
     <svg class="layer" aria-hidden="true" data-pct-part="axis">
+      @let xAxis = xAxisView();
       <line
         class="base"
-        [attr.x1]="plot().left"
-        [attr.x2]="plot().right"
-        [attr.y1]="plot().bottom"
-        [attr.y2]="plot().bottom"
+        [attr.x1]="xAxis.base.x1"
+        [attr.x2]="xAxis.base.x2"
+        [attr.y1]="xAxis.base.y1"
+        [attr.y2]="xAxis.base.y2"
       />
-      @for (tick of xTicks(); track $index) {
+      @for (mark of xAxis.marks; track $index) {
       <line
         class="tick"
-        [attr.x1]="tick.x"
-        [attr.x2]="tick.x"
-        [attr.y1]="plot().bottom"
-        [attr.y2]="plot().bottom + 4"
+        [attr.x1]="mark.x1"
+        [attr.x2]="mark.x2"
+        [attr.y1]="mark.y1"
+        [attr.y2]="mark.y2"
       />
-      @if (tick.shown) {
+      } @for (label of xAxis.labels; track $index) {
       <text
         class="time"
-        text-anchor="middle"
-        dominant-baseline="hanging"
-        [attr.x]="tick.middle"
-        [attr.y]="plot().bottom + 6"
-        [attr.data-pct-label]="tick.label"
-        [textContent]="tick.text"
+        [attr.text-anchor]="label.anchor"
+        [attr.dominant-baseline]="label.baseline"
+        [attr.x]="label.x"
+        [attr.y]="label.y"
+        [attr.data-pct-label]="label.label"
+        [textContent]="label.text"
       ></text>
-      } } @for (axis of axes(); track axis.unit) {
+      } @for (axis of axisViews(); track axis.unit) {
       <g [attr.data-pct-slot]="axis.slot" [attr.data-pct-unit]="axis.unit">
         <line
           class="base"
-          [attr.x1]="axis.x"
-          [attr.x2]="axis.x"
-          [attr.y1]="plot().top"
-          [attr.y2]="plot().bottom"
+          [attr.x1]="axis.base.x1"
+          [attr.x2]="axis.base.x2"
+          [attr.y1]="axis.base.y1"
+          [attr.y2]="axis.base.y2"
         />
-        @for (tick of axis.ticks; track tick.at) {
+        @for (label of axis.labels; track $index) {
         <text
           class="value"
-          dominant-baseline="middle"
-          [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
-          [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
-          [attr.y]="tick.y"
-          [textContent]="tick.text"
+          [attr.dominant-baseline]="label.baseline"
+          [attr.text-anchor]="label.anchor"
+          [attr.x]="label.x"
+          [attr.y]="label.y"
+          [textContent]="label.text"
         ></text>
-        } @if (axis.unit && axis.unit !== 'boolean') {
+        } @if (axis.unitLabel; as unitLabel) {
         <text
           data-pct-part="unit"
-          dominant-baseline="hanging"
-          [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
-          [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
-          y="0"
+          [attr.dominant-baseline]="unitLabel.baseline"
+          [attr.text-anchor]="unitLabel.anchor"
+          [attr.x]="unitLabel.x"
+          [attr.y]="unitLabel.y"
           [textContent]="axis.unit"
         ></text>
-        } @for (place of axis.places; track $index) {
+        } @for (dot of axis.dots; track $index) {
         <circle
           class="dot"
           r="3"
-          [attr.data-pct-series]="place"
-          [attr.cx]="axis.side === 'start' ? axis.x - 2 - $index * 8 : axis.x + 2 + $index * 8"
-          [attr.cy]="plot().top - 6"
+          [attr.data-pct-series]="dot.place"
+          [attr.cx]="dot.cx"
+          [attr.cy]="dot.cy"
         />
         }
       </g>
@@ -152,24 +153,28 @@
       <div
         class="selection"
         data-pct-part="selection"
-        [style.transform]="'translateX(' + selection.left + 'px)'"
+        [style.transform]="
+          'translate(' + selection.x + 'px, ' + selection.y + 'px)'
+        "
         [style.inline-size.px]="selection.width"
-        [style.inset-block-start.px]="plot().top"
-        [style.block-size.px]="plot().bottom - plot().top"
+        [style.block-size.px]="selection.height"
       ></div>
       } @if (cursorView(); as view) {
       <div
         class="line"
         data-pct-part="cursor"
-        [style.transform]="'translateX(' + view.x + 'px)'"
-        [style.inset-block-start.px]="plot().top"
-        [style.block-size.px]="plot().bottom - plot().top"
+        [class.across]="horizontal()"
+        [style.transform]="
+          'translate(' + view.line.x + 'px, ' + view.line.y + 'px)'
+        "
+        [style.inline-size.px]="horizontal() ? view.line.width : null"
+        [style.block-size.px]="horizontal() ? null : view.line.height"
       ></div>
       @for (marker of view.markers; track marker.id) {
       <div
         class="marker"
         data-pct-part="marker"
-        [style.transform]="'translate(' + view.x + 'px, ' + marker.y + 'px)'"
+        [style.transform]="'translate(' + marker.x + 'px, ' + marker.y + 'px)'"
       >
         <ng-container
           [ngTemplateOutlet]="swatchOf(marker.id)"

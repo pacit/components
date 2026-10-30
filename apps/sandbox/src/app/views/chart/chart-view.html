@@ -253,6 +253,49 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="The same rooms, the chart turned"
+  summary="orientation set to horizontal lays the band axis down the left side and the value axis along the bottom: the same three rooms and the same stacks, each bar grown to the right from zero, the labels beside the ends, the cursor's line lying across, and a drag up and down panning while the page keeps the horizontal gesture."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-turned"
+>
+  <pct-chart
+    ariaLabel="Energy by room, the chart turned"
+    x="band"
+    orientation="horizontal"
+    [categories]="roomNames"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-turned"
+  >
+    <pct-bars
+      [data]="roomEnergy"
+      x="room"
+      y="pump"
+      name="Heat pump"
+      unit="kWh"
+      stack="net"
+      labels
+    />
+    <pct-bars
+      [data]="roomEnergy"
+      x="room"
+      y="solar"
+      name="Solar"
+      unit="kWh"
+      stack="net"
+    />
+    <pct-bars
+      [data]="roomEnergy"
+      x="room"
+      y="lastYear"
+      name="Last year"
+      unit="kWh"
+      group="before"
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
   heading="An area under one series, on an axis the view fixes"
   summary="One series filled down to zero, on a °C axis the view holds from 0 to 30 with pct-axis. The colour is the palette's first place: the fill is that colour mixed into nothing by the skin's amount."
   [reqs]="['req-api-templates']"

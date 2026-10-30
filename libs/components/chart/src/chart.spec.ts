@@ -16,6 +16,7 @@ import { PCT_SERIES_MARKERS, type PctSwatchContext } from './scene';
 import type { PctColumns } from './model/columns';
 import { pctPyramid } from './model/decimate';
 import type { PctDomain } from './model/scale';
+import { pctTicks } from './model/ticks';
 import { PctMark, type PctSeriesSpec } from './scene';
 
 interface Reading {
@@ -52,6 +53,7 @@ const heater: Reading[] = [
       description="Supply air between 19.5 and 22.5 °C."
       timeZone="UTC"
       locale="en-US"
+      [orientation]="orientation()"
       [(window)]="window"
       [(hiddenSeries)]="hidden"
     >
@@ -104,6 +106,7 @@ class Host {
   readonly showHeater = signal(false);
   readonly area = signal(false);
   readonly fixed = signal(false);
+  readonly orientation = signal<'vertical' | 'horizontal'>('vertical');
 }
 
 @Component({
@@ -820,6 +823,9 @@ describe('PctChartTable', () => {
   });
 });
 
+/** The plot's top in the layer's pixels: the clip rectangle's `y`. */
+const plotTop = (fixture: ComponentFixture<unknown>) =>
+  Number(query(fixture, 'clipPath rect')?.getAttribute('y'));
 const chartOf = (fixture: ComponentFixture<unknown>, index = 0) =>
   fixture.debugElement.queryAll((d) => d.name === 'pct-chart')[index]
     .componentInstance as PctChart;
@@ -959,7 +965,7 @@ describe('PctChart, as laid out', () => {
     // "22.5" and "1,200" at 0.6 of 13 px a character, and the gap of 6 on both sides
     expect(clipOf(fixture)).toEqual([43.2, 25, 505.8, 250]);
     expect(chart.plotWidth()).toBeCloseTo(505.8, 9);
-    expect(chart.axes().map((a) => [a.unit, a.slot, a.x, a.side])).toEqual([
+    expect(chart.axes().map((a) => [a.unit, a.slot, a.line, a.side])).toEqual([
       ['°C', 'left', 43.2, 'start'],
       ['W', 'right', 549, 'end'],
     ]);
@@ -978,7 +984,7 @@ describe('PctChart, as laid out', () => {
       '1,000',
       '1,200',
     ]);
-    expect(chart.axes()[1].ticks.map((t) => t.y)).toEqual([
+    expect(chart.axes()[1].ticks.map((t) => t.px)).toEqual([
       275, 212.5, 150, 87.5, 25,
     ]);
   });
@@ -1005,10 +1011,10 @@ describe('PctChart, as laid out', () => {
       ['mph', 'right-outer', 'end'],
     ]);
     // each axis takes 31.2 for "22.5" and 12 for its gaps
-    expect(axes[0].x).toBeCloseTo(86.4, 9);
-    expect(axes[1].x).toBeCloseTo(513.6, 9);
-    expect(axes[2].x).toBeCloseTo(43.2, 9);
-    expect(axes[3].x).toBeCloseTo(556.8, 9);
+    expect(axes[0].line).toBeCloseTo(86.4, 9);
+    expect(axes[1].line).toBeCloseTo(513.6, 9);
+    expect(axes[2].line).toBeCloseTo(43.2, 9);
+    expect(axes[3].line).toBeCloseTo(556.8, 9);
     const [x, , width] = clipOf(fixture);
     expect(x).toBeCloseTo(86.4, 9);
     expect(width).toBeCloseTo(427.2, 9);
@@ -1182,7 +1188,7 @@ describe('PctChart, as laid out', () => {
     const fixture = await render(Heater);
     const [axis] = chartOf(fixture).axes();
     expect(axis.domain).toEqual([0, 1]);
-    expect(axis.ticks.map((t) => [t.text, t.y])).toEqual([
+    expect(axis.ticks.map((t) => [t.text, t.px])).toEqual([
       ['Off', 275],
       ['On', 25],
     ]);
@@ -1266,7 +1272,7 @@ describe('PctChart, as laid out', () => {
     }
     const fixture = await render(Grid);
     const [celsius, watts] = chartOf(fixture).axes();
-    const ys = (axis: typeof celsius) => axis.ticks.map((t) => String(t.y));
+    const ys = (axis: typeof celsius) => axis.ticks.map((t) => String(t.px));
     const columns = () =>
       attrs(fixture, 'line.column', 'x1').map((x) => Number(x));
     expect(attrs(fixture, 'line.row', 'y1')).toEqual(ys(celsius));
@@ -1384,7 +1390,7 @@ describe('PctChart, as laid out', () => {
       // a line of 28 for 20 px, and the gap of 10 under the units and over the time
       expect(clipOf(fixture)).toEqual([44, 38, 476, 224]);
       // "19" and "1,200" at 0.6 of 20 px a character, and the gap of 10 on both sides
-      expect(chart.axes().map((a) => a.x)).toEqual([44, 520]);
+      expect(chart.axes().map((a) => a.line)).toEqual([44, 520]);
     } finally {
       if (ratio) Object.defineProperty(view, 'devicePixelRatio', ratio);
       else delete (view as { devicePixelRatio?: number }).devicePixelRatio;
@@ -2065,7 +2071,7 @@ describe('PctChart, its cursor', () => {
     expect(Number(range(fixture).value)).toBe(6 * H);
     const line = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
     expect(line.style.transform).toBe(
-      `translateX(${at(fixture, T0 + 6 * H)}px)`,
+      `translate(${at(fixture, T0 + 6 * H)}px, ${plotTop(fixture)}px)`,
     );
     // each marker is the mark's own swatch, in its marker form, with the series' place
     const markers = all(
@@ -2528,7 +2534,9 @@ describe('PctChart, its cursor', () => {
     for (const x of [T0 + 6 * H, T0 + 18 * H]) {
       chartOf(fixture).cursor.set(x);
       await settle(fixture);
-      expect(line()?.style.transform).toBe(`translateX(${at(fixture, x)}px)`);
+      expect(line()?.style.transform).toBe(
+        `translate(${at(fixture, x)}px, ${plotTop(fixture)}px)`,
+      );
     }
     chartOf(fixture).cursor.set(T0 + 20 * H);
     await settle(fixture);
@@ -3745,5 +3753,454 @@ describe('PctChart, its window', () => {
     const chart = chartOf(fixture);
     expect(chart.markOf('second')).toBeInstanceOf(Pair);
     expect(chart.valueAt('second', 5)).toBe(5);
+  });
+});
+
+describe('PctChart, turned', () => {
+  afterEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    size = { width: 600, height: 300 };
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? size.width : 0;
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? size.height : 0;
+      },
+    );
+  });
+
+  /** The plot's edges, read off the clip rectangle. */
+  const plotOf = (fixture: ComponentFixture<unknown>) => {
+    const clip = query(fixture, 'clipPath rect')!;
+    const left = Number(clip.getAttribute('x'));
+    const top = Number(clip.getAttribute('y'));
+    return {
+      left,
+      top,
+      right: left + Number(clip.getAttribute('width')),
+      bottom: top + Number(clip.getAttribute('height')),
+    };
+  };
+  const turned = async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.orientation.set('horizontal');
+    await settle(fixture);
+    return fixture;
+  };
+
+  it('lays the x axis down the left side and the value axes along the bottom and the top, the grid and the lines turned with them', async () => {
+    const fixture = await turned();
+    const chart = chartOf(fixture);
+    const { left, top, right, bottom } = plotOf(fixture);
+    expect(chart.orientation()).toBe('horizontal');
+    // the x scale runs top to bottom, and is the axis's length the marks decimate to
+    expect(chart.xScale()!.map(chart.shown()!.from)).toBe(top);
+    expect(chart.xScale()!.map(chart.shown()!.to)).toBe(bottom);
+    expect(chart.plotWidth()).toBe(bottom - top);
+    // °C along the bottom, W along the top, both from left to right
+    const [celsius, watts] = chart.axes();
+    expect([celsius.slot, celsius.line, celsius.side]).toEqual([
+      'left',
+      bottom,
+      'start',
+    ]);
+    expect([watts.slot, watts.line, watts.side]).toEqual(['right', top, 'end']);
+    expect(celsius.scale.map(celsius.domain[0])).toBe(left);
+    expect(celsius.scale.map(celsius.domain[1])).toBe(right);
+    expect(celsius.ticks.map((t) => t.px)).toEqual(
+      celsius.ticks.map((t) => celsius.scale.map(t.at)),
+    );
+    // the x axis's base line stands on the left; its labels end before their ticks
+    const base = query(fixture, '[data-pct-part="axis"] > line.base')!;
+    expect(['x1', 'x2', 'y1', 'y2'].map((a) => base.getAttribute(a))).toEqual(
+      [left, left, top, bottom].map(String),
+    );
+    const times = all(fixture, 'text.time');
+    expect(times.length).toBeGreaterThan(1);
+    expect(
+      times.map((t) => [
+        t.getAttribute('text-anchor'),
+        t.getAttribute('dominant-baseline'),
+        Number(t.getAttribute('x')),
+      ]),
+    ).toEqual(times.map(() => ['end', 'middle', left - 6]));
+    // a tick mark reaches the base line from the left
+    const mark = query(fixture, '[data-pct-part="axis"] > line.tick')!;
+    expect([mark.getAttribute('x1'), mark.getAttribute('x2')]).toEqual([
+      String(left - 4),
+      String(left),
+    ]);
+    // the value labels hang under the bottom axis and stand over the top one
+    const under = all(fixture, '[data-pct-unit="°C"] text.value');
+    expect(under.length).toBe(celsius.ticks.length);
+    expect(
+      under.map((t) => [
+        t.getAttribute('text-anchor'),
+        t.getAttribute('dominant-baseline'),
+        Number(t.getAttribute('y')),
+      ]),
+    ).toEqual(under.map(() => ['middle', 'hanging', bottom + 6]));
+    const over = all(fixture, '[data-pct-unit="W"] text.value');
+    expect(
+      over.map((t) => [
+        t.getAttribute('dominant-baseline'),
+        Number(t.getAttribute('y')),
+      ]),
+    ).toEqual(over.map(() => ['auto', top - 6]));
+    // the unit after the axis's end, the dots after the unit
+    const unit = query(fixture, '[data-pct-unit="°C"] [data-pct-part="unit"]')!;
+    expect(Number(unit.getAttribute('x'))).toBe(right + 6);
+    expect(unit.getAttribute('text-anchor')).toBe('start');
+    const dot = query(fixture, '[data-pct-unit="°C"] circle.dot')!;
+    expect(Number(dot.getAttribute('cx'))).toBeGreaterThan(right + 6);
+    // the grid: a row stands at a value tick, a column lies at a time tick
+    const rows = all(fixture, 'line.row');
+    expect(rows.length).toBe(celsius.ticks.length);
+    expect(
+      rows.every(
+        (l) =>
+          l.getAttribute('x1') === l.getAttribute('x2') &&
+          l.getAttribute('y1') === String(top) &&
+          l.getAttribute('y2') === String(bottom),
+      ),
+    ).toBe(true);
+    const columns = all(fixture, 'line.column');
+    expect(columns.length).toBe(times.length);
+    expect(
+      columns.every(
+        (l) =>
+          l.getAttribute('y1') === l.getAttribute('y2') &&
+          l.getAttribute('x1') === String(left),
+      ),
+    ).toBe(true);
+    // the lines run down: the first point's y is the window's start, each next one lower
+    const d = query(fixture, '[data-pct-part="data"] path')!.getAttribute('d')!;
+    const ys = [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map((m) =>
+      Number(m[2]),
+    );
+    expect(ys[0]).toBe(top);
+    expect(ys.every((y, i) => i === 0 || y >= ys[i - 1])).toBe(true);
+    // the host says so (the stylesheet hands the page the horizontal gesture by that class;
+    // the browser spec reads the computed `touch-action`)
+    const host = (fixture.nativeElement as HTMLElement).querySelector(
+      'pct-chart',
+    )!;
+    expect(host.classList.contains('horizontal')).toBe(true);
+    // turned back, the axes stand again
+    fixture.componentInstance.orientation.set('vertical');
+    await settle(fixture);
+    expect(chartOf(fixture).axes()[0].line).toBe(plotOf(fixture).left);
+    expect(host.classList.contains('horizontal')).toBe(false);
+  });
+
+  it("lies the cursor's line across the plot, its markers on it and the tooltip under or over it, and pans on a drag up and down", async () => {
+    const fixture = await turned();
+    const chart = chartOf(fixture);
+    const { left, top, right, bottom } = plotOf(fixture);
+    chart.cursor.set(T0 + 6 * H);
+    await settle(fixture);
+    const along = chart.xScale()!.map(T0 + 6 * H);
+    const line = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
+    expect(line.classList.contains('across')).toBe(true);
+    expect(line.style.transform).toBe(`translate(${left}px, ${along}px)`);
+    expect(line.style.inlineSize).toBe(`${right - left}px`);
+    expect(line.style.blockSize).toBe('');
+    // a marker at each series' value along the bottom, on the line
+    const reading = chart.reading()!;
+    const [celsius, watts] = chart.axes();
+    const markers = all(fixture, '[data-pct-part="marker"]') as HTMLElement[];
+    expect(markers.map((m) => m.style.transform)).toEqual([
+      `translate(${celsius.scale.map(reading.rows[0].value!)}px, ${along}px)`,
+      `translate(${watts.scale.map(reading.rows[1].value!)}px, ${along}px)`,
+    ]);
+    // the tooltip under the line, from the plot's left edge
+    const tooltip = query(fixture, '[data-pct-part="tooltip"]') as HTMLElement;
+    expect(tooltip.style.transform).toBe(
+      `translate(${left + 6}px, ${along + 12}px)`,
+    );
+    // and over it where the plot ends under the line
+    chart.cursor.set(chart.shown()!.to);
+    await settle(fixture);
+    const low = chart.xScale()!.map(chart.shown()!.to);
+    expect(low).toBe(bottom);
+    expect(tooltip.style.transform).toBe(
+      `translate(${left + 6}px, ${Math.max(top, low - 12 - tooltip.offsetHeight)}px)`,
+    );
+    chart.cursor.set(null);
+    // a quarter of the plot dragged up is a quarter of the window later
+    chart.zoomBy(2);
+    await settle(fixture);
+    const layer = query(fixture, '.overlay') as HTMLElement;
+    const y = chart.xScale()!.map(T0 + 12 * H);
+    const px = chart.plotWidth();
+    // a mouse over the plot puts the cursor at the pointer's height, not at its x
+    layer.dispatchEvent(pointer('pointermove', { x: 100, y }));
+    await settle(fixture);
+    expect(chart.cursor()).toBeCloseTo(chart.xScale()!.invert(y), -3);
+    expect(chart.cursor()).not.toBeCloseTo(chart.xScale()!.invert(100), -3);
+    layer.dispatchEvent(pointer('pointerleave', { x: 100, y }));
+    await settle(fixture);
+    expect(chart.cursor()).toBeNull();
+    layer.dispatchEvent(pointer('pointerdown', { x: 100, y }));
+    layer.dispatchEvent(pointer('pointermove', { x: 100, y: y - px / 4 }));
+    layer.dispatchEvent(pointer('pointerup', { x: 100, y: y - px / 4 }));
+    await settle(fixture);
+    expect(chart.window()!.from).toBeCloseTo(T0 + 9 * H, -3);
+    // the wheel zooms about the pointer's height
+    const before = chart.shown()!.to - chart.shown()!.from;
+    const ctrl = new WheelEvent('wheel', {
+      deltaY: -100,
+      ctrlKey: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: chart.xScale()!.map(chart.window()!.from),
+    });
+    layer.dispatchEvent(ctrl);
+    await settle(fixture);
+    expect(ctrl.defaultPrevented).toBe(true);
+    expect(chart.shown()!.to - chart.shown()!.from).toBeCloseTo(
+      before * Math.exp(-0.2),
+      -2,
+    );
+    expect(chart.window()!.from).toBeCloseTo(T0 + 9 * H, -3);
+    // a press on the plot pins the cursor at the pointer's height
+    layer.dispatchEvent(pointer('pointerdown', { x: 100, y: y }));
+    layer.dispatchEvent(pointer('pointerup', { x: 100, y: y }));
+    await settle(fixture);
+    expect(chart.cursor()).toBeCloseTo(chart.xScale()!.invert(y), -3);
+  });
+
+  it('measures its room from the lines of labels under and over the plot, the widest time label and the widest unit with its dots', async () => {
+    const fixture = await turned();
+    const chart = chartOf(fixture);
+    const line = chart.lineHeight();
+    const widest = (texts: readonly string[]) =>
+      Math.max(0, ...texts.map((t) => chart.measure(t)));
+    // one value axis under the plot and one over it: a line of labels and the gap each
+    expect(chart.lineHeight()).toBe(19);
+    expect(plotOf(fixture).top).toBe(line + 6);
+    expect(plotOf(fixture).bottom).toBe(300 - line - 6);
+    // the left: the widest time label, the tick and two gaps; the right: the widest unit, the
+    // room of three dots after it and the gap
+    const times = chart['xTickDefs']().map((t) => t.text);
+    const units = ['°C', 'W'].map((u) => chart.measure(u) + 6 + 3 * 8);
+    expect(chart.axisRoom()).toEqual({
+      left: widest(times) + 4 + 12,
+      right: Math.max(...units) + 6,
+    });
+    expect(plotOf(fixture).left).toBe(widest(times) + 16);
+    expect(plotOf(fixture).right).toBe(600 - Math.max(...units) - 6);
+    // the value ticks are spaced by the plot's width: one for every eighty pixels
+    const { left, right } = plotOf(fixture);
+    expect(chart.axes()[0].ticks.length).toBe(
+      pctTicks(
+        chart.axes()[0].domain,
+        Math.max(2, Math.floor((right - left) / 80)),
+      ).length,
+    );
+    // a third series, a boolean on a second axis under the plot: two lines of labels under
+    // it, and a unit that takes no room on the right
+    fixture.componentInstance.showHeater.set(true);
+    await settle(fixture);
+    expect([...chart.slots().values()]).toEqual([
+      'left',
+      'right',
+      'left-outer',
+    ]);
+    expect(plotOf(fixture).top).toBe(line + 6);
+    expect(plotOf(fixture).bottom).toBe(300 - 2 * (line + 6));
+    expect(plotOf(fixture).right).toBe(600 - Math.max(...units) - 6);
+  });
+
+  it('writes the time labels left of their ticks, the value labels under or over their lines, each unit after its line and the dots after the unit, and the other way up again when turned back', async () => {
+    const fixture = await turned();
+    const chart = chartOf(fixture);
+    const { left, top, right, bottom } = plotOf(fixture);
+    const line = chart.lineHeight();
+    const attributesOf = (selector: string, names: readonly string[]) =>
+      all(fixture, selector).map((e) => names.map((n) => e.getAttribute(n)));
+    // the time ticks reach left from the axis, the labels end before them
+    const ticks = chart['xTicks']();
+    expect(attributesOf('line.tick', ['x1', 'x2'])).toEqual(
+      ticks.map(() => [String(left - 4), String(left)]),
+    );
+    expect(
+      attributesOf('text.time', ['x', 'y', 'text-anchor', 'dominant-baseline']),
+    ).toEqual(
+      ticks
+        .filter((t) => t.shown)
+        .map((t) => [String(left - 6), String(t.middle), 'end', 'middle']),
+    );
+    // °C under the plot: labels hanging under the line, the unit after the line's end, the
+    // dot after the unit and down a half line; W over it: the same, upwards
+    const [celsius, watts] = chart.axes();
+    const labels = (unit: string) =>
+      attributesOf(`[data-pct-unit="${unit}"] text.value`, [
+        'x',
+        'y',
+        'text-anchor',
+        'dominant-baseline',
+      ]);
+    expect(labels('°C')).toEqual(
+      celsius.ticks.map((t) => [
+        String(t.px),
+        String(bottom + 6),
+        'middle',
+        'hanging',
+      ]),
+    );
+    expect(labels('W')).toEqual(
+      watts.ticks.map((t) => [String(t.px), String(top - 6), 'middle', 'auto']),
+    );
+    const unitOf = (unit: string) =>
+      attributesOf(`[data-pct-unit="${unit}"] [data-pct-part="unit"]`, [
+        'x',
+        'y',
+        'text-anchor',
+        'dominant-baseline',
+      ])[0];
+    expect(unitOf('°C')).toEqual([
+      String(right + 6),
+      String(bottom + 6),
+      'start',
+      'hanging',
+    ]);
+    expect(unitOf('W')).toEqual([
+      String(right + 6),
+      String(top - 6),
+      'start',
+      'auto',
+    ]);
+    const dotOf = (unit: string) =>
+      attributesOf(`[data-pct-unit="${unit}"] circle.dot`, ['cx', 'cy'])[0];
+    expect(dotOf('°C')).toEqual([
+      String(right + 6 + chart.measure('°C') + 6 + 2),
+      String(bottom + 6 + line / 2),
+    ]);
+    expect(dotOf('W')).toEqual([
+      String(right + 6 + chart.measure('W') + 8),
+      String(top - 6 - line / 2),
+    ]);
+    // turned back: the time axis along the bottom, its ticks down from it and the labels
+    // hanging under them; the value labels beside their lines, the units at the top, the
+    // dots over the plot, before a left line and after a right one
+    fixture.componentInstance.orientation.set('vertical');
+    await settle(fixture);
+    const plot = plotOf(fixture);
+    const base = query(fixture, 'line.base')!;
+    expect(['x1', 'x2', 'y1', 'y2'].map((a) => base.getAttribute(a))).toEqual(
+      [plot.left, plot.right, plot.bottom, plot.bottom].map(String),
+    );
+    const upright = chart['xTicks']();
+    expect(attributesOf('line.tick', ['x1', 'x2', 'y1', 'y2'])).toEqual(
+      upright.map((t) =>
+        [t.px, t.px, plot.bottom, plot.bottom + 4].map(String),
+      ),
+    );
+    expect(
+      attributesOf('text.time', ['x', 'y', 'text-anchor', 'dominant-baseline']),
+    ).toEqual(
+      upright
+        .filter((t) => t.shown)
+        .map((t) => [
+          String(t.middle),
+          String(plot.bottom + 6),
+          'middle',
+          'hanging',
+        ]),
+    );
+    const [c, w] = chart.axes();
+    expect(c.line).toBe(plot.left);
+    expect(w.line).toBe(plot.right);
+    expect(labels('°C')).toEqual(
+      c.ticks.map((t) => [
+        String(plot.left - 6),
+        String(t.px),
+        'end',
+        'middle',
+      ]),
+    );
+    expect(labels('W')).toEqual(
+      w.ticks.map((t) => [
+        String(plot.right + 6),
+        String(t.px),
+        'start',
+        'middle',
+      ]),
+    );
+    expect(unitOf('°C')).toEqual([
+      String(plot.left - 6),
+      '0',
+      'end',
+      'hanging',
+    ]);
+    expect(unitOf('W')).toEqual([
+      String(plot.right + 6),
+      '0',
+      'start',
+      'hanging',
+    ]);
+    expect(dotOf('°C')).toEqual([String(plot.left - 2), String(plot.top - 6)]);
+    expect(dotOf('W')).toEqual([String(plot.right + 2), String(plot.top - 6)]);
+    // and the value ticks are spaced by the plot's height, one for every forty-eight pixels
+    expect(c.ticks.length).toBe(
+      pctTicks(c.domain, Math.max(2, Math.floor((plot.bottom - plot.top) / 48)))
+        .length,
+    );
+  });
+
+  it('lays the selected band across the plot, and keeps the tooltip inside the plot by its measured height', async () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.getAttribute('data-pct-part') === 'tooltip' ? 40 : 0;
+      },
+    );
+    const fixture = await turned();
+    const chart = chartOf(fixture);
+    const { left, top, right, bottom } = plotOf(fixture);
+    const scale = chart.xScale()!;
+    chart.selected.set({ from: T0 + 6 * H, to: T0 + 12 * H });
+    await settle(fixture);
+    const band = query(fixture, '[data-pct-part="selection"]') as HTMLElement;
+    expect(band.style.transform).toBe(
+      `translate(${left}px, ${scale.map(T0 + 6 * H)}px)`,
+    );
+    expect(band.style.inlineSize).toBe(`${right - left}px`);
+    expect(band.style.blockSize).toBe(
+      `${scale.map(T0 + 12 * H) - scale.map(T0 + 6 * H)}px`,
+    );
+    // the tooltip's forty pixels fit under the line where twelve more end at the plot's
+    // bottom, and not a pixel lower
+    const fits = scale.invert(bottom - 12 - 40);
+    chart.cursor.set(fits);
+    await settle(fixture);
+    const tooltip = query(fixture, '[data-pct-part="tooltip"]') as HTMLElement;
+    expect(tooltip.style.transform).toBe(
+      `translate(${left + 6}px, ${bottom - 40}px)`,
+    );
+    chart.cursor.set(scale.invert(bottom - 12 - 40 + 1));
+    await settle(fixture);
+    expect(tooltip.style.transform).toBe(
+      `translate(${left + 6}px, ${bottom - 51 - 12 - 40}px)`,
+    );
+    // turned back, the band stands from the plot's top down its height and the cursor's
+    // line with it
+    fixture.componentInstance.orientation.set('vertical');
+    await settle(fixture);
+    const plot = plotOf(fixture);
+    const upright = chart.xScale()!;
+    expect(band.style.transform).toBe(
+      `translate(${upright.map(T0 + 6 * H)}px, ${plot.top}px)`,
+    );
+    expect(band.style.inlineSize).toBe(
+      `${upright.map(T0 + 12 * H) - upright.map(T0 + 6 * H)}px`,
+    );
+    expect(band.style.blockSize).toBe(`${plot.bottom - plot.top}px`);
+    const cursor = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
+    expect(cursor.style.blockSize).toBe(`${plot.bottom - plot.top}px`);
+    expect(cursor.style.inlineSize).toBe('');
   });
 });

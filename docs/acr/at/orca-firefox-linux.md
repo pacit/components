@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 5 of 595 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2450
-phrases, and 2447 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2452
+phrases, and 2449 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -85,7 +85,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/field`
 
 ```
-arrive  a "Field"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Field · link.
+arrive  a "Field"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Field · visited link.
 enter   input                                                leaving list. · leaving navigation. · main content · E-mail · entry · john@example.com · required. · invalid entry. · A work address. · Focus mode
 tab 1   —                                                    Theme · panel · light · selected radio button. · Browse mode · alert. · The e-mail address is required
 ```
@@ -273,7 +273,7 @@ tab 1   —                                                    leaving panel. ·
 ### `/slider`
 
 ```
-arrive  a "Slider"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Slider · visited link.
+arrive  a "Slider"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Slider · link.
 enter   input[control]                                       Budget · slider · 40 · 66 percent. · Between 20 and 80. · Focus mode
 tab 1   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -351,7 +351,7 @@ the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the ge
 ### `/tooltip`
 
 ```
-arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 36 items · Tooltip · visited link.
+arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 36 items · Tooltip · link.
 enter   button "Delete the project"                          Delete the project · button.
 tab 1   button "Publish"                                     Publish · button. · Runs every check before publishing.
 tab 2   button "Approve the release"                         Approve the release · button.
@@ -380,7 +380,7 @@ tab 4   button "end"                                         end · collapsed bu
 tab 5   button "Open the panel"                              Open the panel · collapsed button. · opens dialog
 tab 6   button "Count up"                                    Count up · button. · Browse mode
 tab 7   button "Count up"                                    Popover · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode
+reach   button "Filters"                                     main content · A panel of content hanging off the control that opened it. It is the   link half of the · Browse mode · Filters · collapsed button. · opens dialog · Focus mode
 open    div[panel] "Filters"                                 Filters  Owner  A name, or part of one · Browse mode
 close   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode · collapsed
 ```
@@ -414,7 +414,7 @@ the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gestu
 ### `/drawer`
 
 ```
-arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · visited link. · Browse mode
+arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · link. · Browse mode
 enter   button "Sections"                                    Sections · collapsed button. · Focus mode
 tab 1   button "Sections, from further down"                 Sections, from further down · collapsed button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -481,7 +481,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · visited link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -515,7 +515,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/toast`
 
 ```
-arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · visited link. · Browse mode
+arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · link. · Browse mode
 enter   button "Save the draft"                              Save the draft · button.
 tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
 tab 2   button "Report something that waits"                 Report something that waits · button.
@@ -580,7 +580,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · visited link.
+arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -610,7 +610,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 36 items · Skeleton · visited link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 36 items · Skeleton · link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -662,7 +662,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/avatar`
 
 ```
-arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Avatar · visited link.
+arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Avatar · link.
 enter   button "Swap the source"                             Swap the source · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -763,7 +763,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/table`
 
 ```
-arrive  a "Table"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Table · visited link. · Browse mode
+arrive  a "Table"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Table · link. · Browse mode
 enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.
@@ -819,7 +819,7 @@ Tab moved nothing — focus had left the page.
 ### `/stepper`
 
 ```
-arrive  a "Stepper"                                          navigation · Sandbox views · List with 36 items · Stepper · visited link. · Browse mode
+arrive  a "Stepper"                                          navigation · Sandbox views · List with 36 items · Stepper · link. · Browse mode
 enter   button "Back"                                        Back · button.
 tab 1   button "Next"                                        Next · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -833,7 +833,7 @@ Tab moved nothing — focus had left the page.
 ### `/tree`
 
 ```
-arrive  a "Tree"                                             navigation · Sandbox views · List with 36 items · Tree · visited link. · Browse mode
+arrive  a "Tree"                                             navigation · Sandbox views · List with 36 items · Tree · link. · Browse mode
 enter   pct-tree-item "README.md"                            README.md. · tree level 1 · Focus mode
 tab 1   pct-tree-item "README.md"                            Tree · @pacit/components · page tab. · JUGGLER <window>.
 ```
@@ -888,7 +888,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/density`
 
 ```
-arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · visited link. · Browse mode
+arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · link. · Browse mode
 enter   input                                                Field sm · entry · Text sm. · Focus mode
 tab 1   button "Button sm"                                   Button sm · button. · Browse mode
 tab 2   button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode

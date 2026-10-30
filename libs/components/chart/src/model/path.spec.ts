@@ -168,6 +168,18 @@ describe('pctAreaPath', () => {
     );
   });
 
+  it('transposed, writes each point as y x and closes the run to the baseline beside it', () => {
+    expect(pctLinePath(three, x, y, 'linear', { transpose: true })).toBe(
+      'M80 10L40 20L60 40',
+    );
+    expect(pctLinePath(three, x, y, 'step', { transpose: true })).toBe(
+      'M80 10L80 20L40 20L40 40L60 40',
+    );
+    expect(pctAreaPath(three, x, y, 'linear', 0, { transpose: true })).toBe(
+      'M100 10L80 10L40 20L60 40L100 40Z',
+    );
+  });
+
   it('leaves no area under a gap', () => {
     const gappy = of([
       [10, 2],

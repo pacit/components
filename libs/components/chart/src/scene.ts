@@ -114,7 +114,8 @@ export abstract class PctChartScene {
    */
   abstract readonly shown: Signal<PctWindow | null>;
   /**
-   * The width of the plot, in CSS pixels.
+   * The x axis's length in pixels — the plot's width, or its height in a horizontal chart:
+   * what a mark decimates its readings to.
    *
    * @since next
    */
@@ -174,6 +175,22 @@ export abstract class PctChartScene {
    * @since next
    */
   abstract readonly interval: Signal<PctInterval | undefined>;
+
+  /**
+   * Which way the x axis runs: along the bottom (`vertical`, the default) or down the left
+   * side (`horizontal`), the value axes turned with it. A mark draws its x pixel as an `x` in
+   * the first and as a `y` in the second.
+   *
+   * @since next
+   */
+  abstract readonly orientation: Signal<'vertical' | 'horizontal'>;
+
+  /**
+   * The height of a line of the chart's text, in pixels: what a label takes across its axis.
+   *
+   * @since next
+   */
+  abstract readonly lineHeight: Signal<number>;
 
   /**
    * The width of a text in the chart's font, in pixels: what a mark thins its labels by.
