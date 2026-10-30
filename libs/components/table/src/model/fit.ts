@@ -43,10 +43,10 @@ export interface PctFit {
  *
  * @since next
  */
-export function pctFit(input: PctFitInput, hysteresis: number): PctFit {
-  const { width, total, order, widthOf } = input;
-  const needed = input.needed.slice(0, input.count);
-  let count = input.count;
+export function pctFit(of: PctFitInput, hysteresis: number): PctFit {
+  const { width, total, order, widthOf } = of;
+  const needed = of.needed.slice(0, of.count);
+  let count = of.count;
   let freed = 0;
   while (count < order.length && total - freed > width) {
     needed.push(total - freed);

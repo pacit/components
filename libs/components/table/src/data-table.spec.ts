@@ -941,8 +941,8 @@ describe('PctDataTable — what is read when nothing is bound', () => {
     await render(BareHost);
     expect(document.querySelector('caption')).toBeNull();
     expect(warn).toHaveBeenCalledWith(
-      '[pct-data-table] The table has no name: give it a caption, or the id of the element ' +
-        'that names it in ariaLabelledby.',
+      '[pct-data-table] The table has no name: give it a caption, the id of the element ' +
+        'that names it in ariaLabelledby, or a name in ariaLabel.',
     );
   });
 
@@ -2669,5 +2669,31 @@ describe('PctTableDetails — its defaults', () => {
     expect(Array.from(document.querySelectorAll('[data-pct-changed]'))).toEqual(
       [body()[1].querySelectorAll('td')[2]],
     );
+  });
+
+  it('names its table, and the frame that scrolls it, with a name in words', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        ariaLabel="Readings"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class Labelled {
+      readonly rows = DEVICES;
+      readonly columns = columns;
+      readonly byId = byId;
+      readonly frame = viewChild.required(PctDataTable);
+    }
+    await render(Labelled);
+    const table = document.querySelector('table') as HTMLElement;
+    expect(table.getAttribute('aria-label')).toBe('Readings');
+    expect(document.querySelector('caption')).toBeNull();
+    expect(
+      warn.mock.calls.filter(([text]) => String(text).includes('has no name')),
+    ).toEqual([]);
   });
 });

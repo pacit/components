@@ -3,12 +3,16 @@
   table stands after it in the frame, outside the table, so a reader counting the table's
   rows counts rows of data (0098, S3).
 -->
-<pct-table-frame [labelledby]="ariaLabelledby() || null">
+<pct-table-frame
+  [labelledby]="ariaLabelledby() || null"
+  [label]="ariaLabel() || null"
+>
   <table
     pctTable
     [sort]="primary()"
     (sortChange)="pressed($event)"
     [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-label]="ariaLabel() || null"
   >
     @if (caption()) {
     <caption pctCaption>

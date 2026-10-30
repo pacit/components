@@ -498,6 +498,26 @@ describe('PctTableFrame — the region that exists while the table overflows', (
     expect(frame().getAttribute('aria-labelledby')).toBe('outside');
   });
 
+  it('takes a name in words from an input, only while it is a region', async () => {
+    @Component({
+      imports: [PctTableFrame, PctTable],
+      template: `<pct-table-frame label="Readings"
+        ><table pctTable></table
+      ></pct-table-frame>`,
+    })
+    class LabelNamed {}
+    const fixture = await render(LabelNamed);
+    expect(frame().hasAttribute('aria-label')).toBe(false);
+    widths(frame(), 301, 300);
+    wake();
+    await settle(fixture);
+    expect(frame().getAttribute('aria-label')).toBe('Readings');
+    widths(frame(), 300, 300);
+    wake();
+    await settle(fixture);
+    expect(frame().hasAttribute('aria-label')).toBe(false);
+  });
+
   it('becomes a focusable region named by the caption while the table overflows', async () => {
     const fixture = await render(FrameHost);
     widths(frame(), 301, 300);

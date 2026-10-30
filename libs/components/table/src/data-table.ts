@@ -307,6 +307,14 @@ export class PctDataTable<
   readonly ariaLabelledby = input<string>('');
 
   /**
+   * The table's name in words, for a table with no caption and no element on the page to name
+   * it. It names the frame too when the frame scrolls.
+   *
+   * @since next
+   */
+  readonly ariaLabel = input<string>('');
+
+  /**
    * The order of the rows: a list of keys, the first deciding first. A press on a sortable
    * header makes that column the only key, ascending, and turns it the other way on the next;
    * with Shift held it adds the column as the last key, or turns it where it stands.
@@ -893,7 +901,10 @@ export class PctDataTable<
     destroyRef.onDestroy(() => say(''));
 
     effect(() => {
-      const unnamed = this.caption() === '' && this.ariaLabelledby() === '';
+      const unnamed =
+        this.caption() === '' &&
+        this.ariaLabelledby() === '' &&
+        this.ariaLabel() === '';
       if (unnamed && isDevMode()) this.warnOnNoName();
     });
     effect(() => {
@@ -1164,8 +1175,8 @@ export class PctDataTable<
     if (this.warnedName) return;
     this.warnedName = true;
     console.warn(
-      `[pct-data-table] The table has no name: give it a caption, or the id of the element ` +
-        `that names it in ariaLabelledby.`,
+      `[pct-data-table] The table has no name: give it a caption, the id of the element ` +
+        `that names it in ariaLabelledby, or a name in ariaLabel.`,
     );
   }
 
