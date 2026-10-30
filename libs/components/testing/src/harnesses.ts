@@ -876,7 +876,8 @@ export class PctDataTableHarness extends PctHarness<
 
   /**
    * The rows of data, in the order the table draws them, each as the texts of its cells: a
-   * boolean cell as its word, the row's number first when the table numbers its rows.
+   * boolean cell as its word, then after any leading cells — the disclosure's, empty, and the
+   * row's number when the table numbers its rows. An open row's details are not a row.
    *
    * @since next
    */

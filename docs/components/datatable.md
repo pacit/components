@@ -169,7 +169,12 @@ directive).
   column's kind writes, whatever the template draws in its place.
 - **A column gives way when the table overflows.** The table squeezes its columns, wrapping
   their text, before it hides one: the frame's overflow is what it reads, not a width it
-  computed, because the cells' content decides the columns' widths.
+  computed, because the cells' content decides the columns' widths. A table whose box grows
+  with its content — in a flex row, in an `auto` grid track — never overflows, and hides
+  nothing.
+- **A column comes back at the width it needed when it hid.** Rows that became shorter since
+  do not bring it back sooner; a resize of the frame does. Under SSR every column is drawn,
+  and the client hides what does not fit once it has laid the table out.
 - **A cut cell's whole text is the pointer's.** The tooltip is the platform's `title`, which a
   keyboard does not open; a reader hears the whole text, because the cut is only paint.
 - **A tone is a tint and a colour.** It is gone in forced colours and for a reader who cannot

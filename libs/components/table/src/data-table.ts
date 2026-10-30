@@ -432,9 +432,14 @@ export class PctDataTable<
   readonly highlightChanges = input(false, { transform: booleanAttribute });
 
   private readonly cellSlots = contentChildren(PctCellTemplate);
-  protected readonly detailsSlot = contentChild(PctDetailsTemplate);
+  // The table's own: a data table nested in a cell template brings templates of its own.
+  protected readonly detailsSlot = contentChild(PctDetailsTemplate, {
+    descendants: false,
+  });
   private readonly headerSlots = contentChildren(PctHeaderCellTemplate);
-  protected readonly emptySlot = contentChild(PctEmptyTemplate);
+  protected readonly emptySlot = contentChild(PctEmptyTemplate, {
+    descendants: false,
+  });
   private readonly table = viewChild.required(PctTable);
   private readonly tableElement = viewChild.required(PctTable, {
     read: ElementRef,
@@ -468,13 +473,22 @@ export class PctDataTable<
   /** The prefix of every details row's id. */
   private readonly uid = nextPctId('pct-data-table');
 
-  private readonly hideOrder = computed(() => pctHideOrder(this.columns()));
+  /**
+   * The columns that may give way, in order. None while the details are disabled: a hidden
+   * column's value would then be in no row at all, and a frame that scrolls keeps it reachable.
+   */
+  private readonly hideOrder = computed(() =>
+    this.detailsOff() ? [] : pctHideOrder(this.columns()),
+  );
 
   /** How many columns of the hide order the frame has no room for. */
   private readonly hiddenCount = signal(0);
 
-  /** The frame's width, written by its observer, so a resize renders the fit again. */
-  private readonly frameWidth = signal(0);
+  /** Counts the frame's and the table's resizes, so each renders the fit again. */
+  private readonly resized = signal(0);
+
+  /** A details row's id for each row, made once and kept while the table lives. */
+  private readonly detailsIds = new Map<string, string>();
 
   /**
    * The columns a narrow table hid, by id, in the order it hid them: the application writes
@@ -785,11 +799,21 @@ export class PctDataTable<
         hidden: all.filter((cell) => hidden.has(cell.column.id)),
         hiddenColumns,
         open: lines[at + 1]?.kind === 'details',
-        detailsId: `${this.uid}-details-${at}`,
+        detailsId: this.detailsIdOf(pctLineKey(line)),
       });
     });
     return rows;
   });
+
+  /** The id of a row's details: the same for the row however the rows above it change. */
+  private detailsIdOf(key: string): string {
+    let id = this.detailsIds.get(key);
+    if (id === undefined) {
+      id = `${this.uid}-details-${this.detailsIds.size + 1}`;
+      this.detailsIds.set(key, id);
+    }
+    return id;
+  }
 
   /** Opens the row's details, or closes them. */
   protected toggleDetails(id: PctRowId): void {
@@ -832,9 +856,10 @@ export class PctDataTable<
   readonly scrolled = this.scrolledTo.asReadonly();
 
   /**
-   * The lines in the view, and the ids of their rows: what an application loads more data for,
-   * or writes `rows 120–160 of 900` from. Read by an `IntersectionObserver`, so it is empty
-   * until the browser has laid the table out, and under SSR.
+   * The lines in the view, and the ids of their rows: what an application loads more data for.
+   * `start` and `end` count lines, an open row's details among them, so a count of rows in view
+   * is `rows.length`. Read by an `IntersectionObserver`, so it is empty until the browser has
+   * laid the table out, and under SSR.
    *
    * @since next
    */
@@ -1026,46 +1051,100 @@ export class PctDataTable<
   }
 
   /**
-   * Hides the columns a narrow frame has no room for, one at a time in the hide order, and
-   * shows them again as it widens. A column goes when the table overflows its frame, and the
-   * frame's width at that moment is kept: the column comes back once the frame is wider than
-   * that by `HYSTERESIS`, so a frame resized across the line does not make the column flicker.
-   * Widths are read off the table drawn, not computed, because the cells' content decides them.
+   * Hides the columns a narrow frame has no room for, in the hide order, and shows them again
+   * as it widens. Widths are read off the table drawn, not computed, because the cells' content
+   * decides them.
+   *
+   * When the table overflows, as many columns go at once as the widths of their headers cover,
+   * so a dozen columns hide in one render, not one per render. Each keeps the width the table
+   * needed while it was shown, and comes back once the frame is that wide and `HYSTERESIS`
+   * more, so a frame resized across the line does not make it come and go. The frame and the
+   * table are both watched: a table that grows inside a frame that does not — a font that
+   * arrives late, a template that fills in — is fitted again too.
    */
   private watchFit(destroyRef: DestroyRef): void {
     let observer: ResizeObserver | null = null;
     destroyRef.onDestroy(() => observer?.disconnect());
-    let order: readonly string[] = [];
-    let hiddenAt: number[] = [];
+    let order = '';
+    let needed: number[] = [];
+    let lost: { readonly element: Element; readonly line: number } | null =
+      null;
     afterRenderEffect(() => {
       const next = this.hideOrder();
       this.body();
-      this.frameWidth();
+      this.resized();
       const count = this.hiddenCount();
+      const table = this.ownTable();
+      // A control that went with its column, or with the disclosures, gives its focus to its
+      // row's disclosure, or to the row's first control, rather than to the page.
+      if (lost !== null && !lost.element.isConnected) this.refocus(lost.line);
+      lost = null;
       // A new order of columns starts with every column shown.
-      if (next.join() !== order.join()) {
-        order = next;
-        hiddenAt = [];
+      const key = JSON.stringify(next);
+      if (key !== order) {
+        order = key;
+        needed = [];
         if (count > 0) {
-          untracked(() => this.hiddenCount.set(0));
+          this.change(0, (focus) => (lost = focus));
           return;
         }
       }
       if (next.length === 0) return;
       const frame = this.frame().nativeElement as HTMLElement;
       if (observer === null && typeof ResizeObserver !== 'undefined') {
-        observer = new ResizeObserver(() =>
-          this.frameWidth.set(frame.clientWidth),
-        );
+        observer = new ResizeObserver(() => this.resized.update((n) => n + 1));
         observer.observe(frame);
+        observer.observe(table);
       }
       const width = frame.clientWidth;
-      if (this.ownTable().scrollWidth > width && count < next.length) {
-        hiddenAt[count] = width;
-        untracked(() => this.hiddenCount.set(count + 1));
-      } else if (count > 0 && width > hiddenAt[count - 1] + HYSTERESIS)
-        untracked(() => this.hiddenCount.set(count - 1));
+      const total = table.scrollWidth;
+      if (total > width && count < next.length) {
+        const shown = this.columns()
+          .map((column) => column.id)
+          .filter((id) => !next.slice(0, count).includes(id));
+        const lead = (this.disclosure() ? 1 : 0) + (this.rowNumbers() ? 1 : 0);
+        const heads = (table.tHead as HTMLTableSectionElement).rows[0].cells;
+        let freed = 0;
+        let k = count;
+        while (k < next.length && freed < total - width) {
+          needed[k] = total - freed;
+          const head = heads[lead + shown.indexOf(next[k])];
+          // A header not drawn frees nothing, and the next one is measured instead.
+          freed += head?.getBoundingClientRect().width ?? 0;
+          k++;
+        }
+        this.change(k, (focus) => (lost = focus));
+        return;
+      }
+      let k = count;
+      while (k > 0 && width >= needed[k - 1] + HYSTERESIS) k--;
+      if (k !== count) this.change(k, (focus) => (lost = focus));
     });
+  }
+
+  /** Writes how many columns are hidden, noting first where the focus stood in the table. */
+  private change(
+    count: number,
+    note: (focus: { readonly element: Element; readonly line: number }) => void,
+  ): void {
+    const focused = this.ownTable().ownerDocument.activeElement;
+    const row = focused?.closest('tr[data-pct-index]');
+    if (focused && row && this.ownTable().contains(row))
+      note({
+        element: focused,
+        line: Number((row as HTMLElement).dataset['pctIndex']),
+      });
+    untracked(() => this.hiddenCount.set(count));
+  }
+
+  /** Focuses the row at `line`: its disclosure, or its first control. */
+  private refocus(line: number): void {
+    const row = this.ownTable().tBodies[0].rows[line] as
+      HTMLElement | undefined;
+    const target = row?.querySelector<HTMLElement>(
+      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+    );
+    target?.focus();
   }
 
   /**

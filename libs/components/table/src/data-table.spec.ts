@@ -2024,7 +2024,7 @@ const fitting = col.of([
       }
       @if (powerSlot()) {
         <ng-template [pctCell]="columns()" pctCellOf="power" let-value="value">
-          <b class="watts">{{ value }}</b>
+          <button type="button" class="watts">{{ value }}</button>
         </ng-template>
       }
     </pct-data-table>
@@ -2077,8 +2077,7 @@ describe('PctDataTable — a row’s details', () => {
     expect(button.getAttribute('aria-label')).toBe('Hide details');
     const [details] = detailsRows();
     expect(button.getAttribute('aria-controls')).toBe(details.id);
-    // Named by its row's place among the lines.
-    expect(details.id).toMatch(/^pct-data-table-\d+-details-1$/);
+    expect(details.id).toMatch(/^pct-data-table-\d+-details-\d+$/);
     // After its row, and counted among the lines.
     expect(
       details.previousElementSibling
@@ -2197,9 +2196,21 @@ describe('PctDataTable — a narrow table hides columns', () => {
         // Nothing to let go.
       }
     };
+    // A header cell is a hundred wide, the disclosures' thirty.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        const width =
+          this.tagName !== 'TH'
+            ? 0
+            : this.classList.contains('pct-data-table__disclosure')
+              ? 30
+              : 100;
+        return { width, height: 0 } as DOMRect;
+      },
+    );
   });
 
-  /** A frame `width` wide, and a table as wide as a hundred per column of data it shows. */
+  /** A frame `width` wide, and a table as wide as its header cells. */
   const lay = (width: { value: number }) => {
     const frame = document.querySelector('pct-table-frame') as HTMLElement;
     const table = document.querySelector('table') as HTMLElement;
@@ -2210,10 +2221,20 @@ describe('PctDataTable — a narrow table hides columns', () => {
     Object.defineProperty(table, 'scrollWidth', {
       configurable: true,
       get: () =>
-        100 *
-        document.querySelectorAll('thead th:not(.pct-data-table__disclosure)')
-          .length,
+        Array.from(table.querySelectorAll('thead th')).reduce(
+          (sum, th) => sum + th.getBoundingClientRect().width,
+          0,
+        ),
     });
+  };
+  const resize = async (
+    fixture: ComponentFixture<unknown>,
+    width: { value: number },
+    to: number,
+  ) => {
+    width.value = to;
+    (resized as () => void)();
+    await settle(fixture);
   };
 
   const labels = () =>
@@ -2221,19 +2242,16 @@ describe('PctDataTable — a narrow table hides columns', () => {
       .filter((th) => !th.classList.contains('pct-data-table__disclosure'))
       .map((th) => (th.textContent ?? '').trim());
 
-  it('hides the highest priority until the table fits, and lists it in the details', async () => {
+  it('hides the highest priorities at once, as many as the overflow needs, and lists them in the details', async () => {
     const fixture = await render(DetailsHost);
     fixture.componentInstance.slotted.set(false);
     await settle(fixture);
     const width = { value: 1000 };
     lay(width);
-    (resized as () => void)();
-    await settle(fixture);
+    await resize(fixture, width, 1000);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(disclosures()).toHaveLength(0);
-    width.value = 250;
-    (resized as () => void)();
-    await settle(fixture);
+    await resize(fixture, width, 250);
     expect(labels()).toEqual(['Name', 'Room']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([
       'seen',
@@ -2257,50 +2275,90 @@ describe('PctDataTable — a narrow table hides columns', () => {
     ]);
   });
 
-  it('shows a column again only once the frame is wider than where it hid it', async () => {
+  it('hides a dozen columns in one render', async () => {
+    const fixture = await render(DetailsHost);
+    const many = col.of([
+      col.key('name', { header: 'Name' }),
+      ...Array.from({ length: 12 }, (_, i) =>
+        col.value(`c${i}`, (device) => device.room, {
+          header: `C${i}`,
+          priority: i + 1,
+        }),
+      ),
+    ]);
+    fixture.componentInstance.columns.set(many as never);
+    await settle(fixture);
+    const width = { value: 2000 };
+    lay(width);
+    await resize(fixture, width, 160);
+    expect(labels()).toEqual(['Name']);
+    expect(fixture.componentInstance.table().hiddenColumns()).toHaveLength(12);
+  });
+
+  it('shows a column again once the frame is as wide as the table needed it, and eight more', async () => {
     const fixture = await render(DetailsHost);
     const width = { value: 350 };
     lay(width);
-    (resized as () => void)();
-    await settle(fixture);
+    // Four columns and the disclosures need 430.
+    await resize(fixture, width, 350);
     expect(labels()).toEqual(['Name', 'Room', 'Power']);
-    width.value = 358;
-    (resized as () => void)();
-    await settle(fixture);
+    await resize(fixture, width, 437);
     expect(labels()).toEqual(['Name', 'Room', 'Power']);
-    width.value = 420;
-    (resized as () => void)();
-    await settle(fixture);
+    await resize(fixture, width, 438);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
+    // Narrow again, two go together, and come back one at a time.
+    await resize(fixture, width, 240);
+    expect(labels()).toEqual(['Name', 'Room']);
+    // Power needs 330 with Seen hidden: the name, the room, itself and the disclosures.
+    await resize(fixture, width, 337);
+    expect(labels()).toEqual(['Name', 'Room']);
+    await resize(fixture, width, 338);
+    expect(labels()).toEqual(['Name', 'Room', 'Power']);
   });
 
   it('starts every column shown when the columns change, and never hides one with no priority', async () => {
     const fixture = await render(DetailsHost);
     const width = { value: 150 };
     lay(width);
-    (resized as () => void)();
-    await settle(fixture);
+    await resize(fixture, width, 150);
     expect(labels()).toEqual(['Name']);
     fixture.componentInstance.columns.set(
       col.of([
         col.key('name', { header: 'Name' }),
-        col.key('room', { header: 'Room' }),
+        col.key('room', { header: 'Room', priority: 5 }),
+        col.key('power', { header: 'Power' }),
       ]) as never,
     );
     await settle(fixture);
-    expect(labels()).toEqual(['Name', 'Room']);
+    expect(labels()).toEqual(['Name', 'Power']);
+    expect(fixture.componentInstance.table().hiddenColumns()).toEqual(['room']);
+  });
+
+  it('hides nothing while the details are disabled, so every value stays in its row', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.off.set(true);
+    await settle(fixture);
+    const width = { value: 150 };
+    lay(width);
+    await resize(fixture, width, 150);
+    expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
   });
 
-  it('draws a hidden column’s template in the details', async () => {
+  it('draws a hidden column’s template in the details, and hands the focus to the row when it goes', async () => {
     const fixture = await render(DetailsHost);
     fixture.componentInstance.powerSlot.set(true);
-    fixture.componentInstance.open.set([2]);
     await settle(fixture);
-    const width = { value: 250 };
+    const width = { value: 1000 };
     lay(width);
-    (resized as () => void)();
+    await resize(fixture, width, 1000);
+    const watts = body()[1].querySelector('.watts') as HTMLButtonElement;
+    watts.focus();
+    expect(document.activeElement).toBe(watts);
+    await resize(fixture, width, 250);
+    expect(document.activeElement).toBe(disclosures()[1]);
+    fixture.componentInstance.open.set([2]);
     await settle(fixture);
     expect(detailsRows()[0].querySelector('dd .watts')?.textContent).toBe(
       '1899.5',
@@ -2308,5 +2366,51 @@ describe('PctDataTable — a narrow table hides columns', () => {
     expect(detailsRows()[0].querySelector('.more')?.textContent).toBe(
       'Boiler|2',
     );
+  });
+
+  it('opens no details for a template of a table nested in a cell, and keeps a details row’s id', async () => {
+    @Component({
+      imports: [PctDataTable, PctCellTemplate, PctDetailsTemplate],
+      template: `<pct-data-table
+        caption="Outer"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      >
+        <ng-template [pctCell]="columns" pctCellOf="name" let-device>
+          <pct-data-table
+            caption="Inner"
+            [rows]="[device]"
+            [columns]="columns"
+            [rowId]="byId"
+          >
+            <ng-template [pctDetails]="columns"><i>inner</i></ng-template>
+          </pct-data-table>
+        </ng-template>
+      </pct-data-table>`,
+    })
+    class Nested {
+      readonly rows = DEVICES;
+      readonly columns = col.of([col.key('name', { header: 'Name' })]);
+      readonly byId = byId;
+    }
+    await render(Nested);
+    const outer = document.querySelector('table') as HTMLTableElement;
+    expect(
+      outer.tHead?.querySelector('.pct-data-table__disclosure'),
+    ).toBeNull();
+    // The inner tables have a template of their own, and open.
+    expect(disclosures()).toHaveLength(3);
+  });
+
+  it('keeps a details row’s id when a row above it opens', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.open.set([3]);
+    await settle(fixture);
+    const id = detailsRows()[0].id;
+    fixture.componentInstance.open.set([3, 1]);
+    await settle(fixture);
+    expect(detailsRows()[1].id).toBe(id);
+    expect(disclosures()[2].getAttribute('aria-controls')).toBe(id);
   });
 });
