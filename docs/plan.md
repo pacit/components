@@ -257,9 +257,11 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     the keys through one transform, `follow`, the zoom bar as their twin, `pctChartSync`; the
     legend, and each series' swatch — colour, dash and marker — drawn by its mark (0102); bars
     in bands of a calendar interval or a category, grouped, stacked, a period compared by
-    position, a selected band and a picked row; the chart turned on its side
-  - then references and spans, a band of states,
-    points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
+    position, a selected band and a picked row; the chart turned on its side; the annotations
+    — a reference line, a band, a note placed clear of the others, the moment of now, and a
+    line cut by its thresholds — which bring no series and which a reader hears in the
+    picture's description
+  - then a band of states, points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
     generated description; a canvas layer only behind a measurement
   - three promoted layers per scene: the data redrawn only with the data, the window or the
     size; the axes and annotations; the cursor moved by a transform (0100)

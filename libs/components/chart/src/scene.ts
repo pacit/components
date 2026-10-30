@@ -1,12 +1,14 @@
 import {
   computed,
   Directive,
+  signal,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
 import type { PctColumns } from './model/columns';
 import type { PctPyramid } from './model/decimate';
 import type { PctInterval } from './model/intervals';
+import type { PctNoteBox, PctNoteFrame, PctPlacedNote } from './model/notes';
 import type { PctDomain, PctScale } from './model/scale';
 import type { PctStacked } from './model/stack';
 import type { PctCurve } from './model/value-at';
@@ -121,6 +123,13 @@ export abstract class PctChartScene {
    */
   abstract readonly plotWidth: Signal<number>;
   /**
+   * The plot's edges in pixels of the picture, whichever way the x axis runs: what a mark that
+   * draws across the whole plot — a reference line, a band — spans.
+   *
+   * @since next
+   */
+  abstract readonly frame: Signal<PctNoteFrame>;
+  /**
    * The grid a path is rounded to: `1 / devicePixelRatio`.
    *
    * @since next
@@ -228,6 +237,47 @@ export abstract class PctChartScene {
     stack: string,
     id: string,
   ): readonly (PctStacked | null)[] | null;
+
+  /**
+   * A value written as the axes and the tooltip write it: the number in the scene's locale
+   * with its unit, `On` or `Off` for a boolean.
+   *
+   * @since next
+   */
+  abstract writeValue(value: number | null, unit: string): string;
+  /**
+   * A position written as the axes and the tooltip write it: a time of the scene's zone, a
+   * band's label, or a number. `short` is the tooltip's form, `full` the range's.
+   *
+   * @since next
+   */
+  abstract writePosition(x: number, form: 'short' | 'full'): string;
+  /**
+   * Where a note's box stands, once the scene has placed every mark's notes together so that
+   * none covers another (`pctPlaceNotes`); `null` for a note the scene does not hold.
+   *
+   * @since next
+   */
+  abstract placedNote(id: string): PctPlacedNote | null;
+}
+
+/**
+ * The layer of the data a mark draws in: `back` under the series (a band of the plot), `data`
+ * among them, `front` over them (a reference line, a note).
+ *
+ * @since next
+ */
+export type PctMarkLayer = 'back' | 'data' | 'front';
+
+/**
+ * An entry a mark adds to the legend beside its series — an annotation with `legend` set. The
+ * legend lists it by its name with the mark's swatch, and its toggle writes the id into the
+ * chart's `hiddenSeries`, which the mark reads to hide.
+ *
+ * @since next
+ */
+export interface PctLegendExtra extends PctSeriesIdentity {
+  readonly name: string;
 }
 
 /**
@@ -367,6 +417,45 @@ export abstract class PctMark {
     void x;
     return [];
   }
+
+  /**
+   * The layer the mark's drawing is stamped into: `data`, among the series, unless the mark
+   * says otherwise.
+   *
+   * @since next
+   */
+  readonly layer: Signal<PctMarkLayer> =
+    signal<PctMarkLayer>('data').asReadonly();
+
+  /**
+   * What the mark adds to the picture's description for a reader, who sees no reference line
+   * and no note: a sentence, or `''` for a mark whose series the data table already gives.
+   *
+   * @since next
+   */
+  describe(): string {
+    return '';
+  }
+
+  /**
+   * The boxes of the mark's notes, for the scene to place together with every other mark's
+   * (`pctPlaceNotes`). A mark with no notes has none.
+   *
+   * @since next
+   */
+  noteBoxes(): readonly PctNoteBox[] {
+    return [];
+  }
+
+  /**
+   * The entries the mark adds to the legend beside its series: none, unless the mark is an
+   * annotation asked to stand there (`legend`).
+   *
+   * @since next
+   */
+  readonly legendEntries: Signal<readonly PctLegendExtra[]> = signal<
+    readonly PctLegendExtra[]
+  >([]).asReadonly();
 }
 
 /**

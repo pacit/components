@@ -1,0 +1,57 @@
+// The element itself draws nothing: its band is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// The band is its colour mixed into nothing by the skin's amount: a tint under the series,
+// never a block over them. The skin's colour, a palette place or the consumer's own.
+.band {
+  fill: color-mix(
+    in srgb,
+    var(--pct-chart-span-bg) var(--pct-chart-span-alpha),
+    transparent
+  );
+}
+
+.label {
+  fill: var(--pct-chart-reference-fg);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] .band {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-span-alpha),
+      transparent
+    );
+  }
+}
+
+[data-pct-series='custom'] .band {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-span-alpha),
+    transparent
+  );
+}
+
+// With the colours gone a band is an empty box with a dotted edge in the text's colour.
+@media (forced-colors: active) {
+  [data-pct-part] .band {
+    fill: none;
+    stroke: CanvasText;
+    stroke-width: 1px;
+    stroke-dasharray: 2 2;
+  }
+
+  .label {
+    fill: CanvasText;
+  }
+}

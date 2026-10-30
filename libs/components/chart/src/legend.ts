@@ -175,7 +175,7 @@ export class PctChartLegend {
     const places = chart.places();
     const reading = chart.reading();
     const units = new Set(chart.series().map((s) => s.unit)).size;
-    return chart.series().map((s) => {
+    const series = chart.series().map((s): PctLegendEntry => {
       const custom = typeof s.color === 'string';
       const isHidden = hidden.has(s.id);
       return {
@@ -192,6 +192,17 @@ export class PctChartLegend {
         swatch: chart.markOf(s.id)?.swatch() ?? null,
       };
     });
+    // The annotations asked to stand here, after the series: no unit and no value of their own.
+    const extras = chart.marks().flatMap((mark) =>
+      mark.legendEntries().map((entry): PctLegendEntry => ({
+        ...entry,
+        unit: '',
+        hidden: hidden.has(entry.id),
+        value: null,
+        swatch: mark.swatch(),
+      })),
+    );
+    return [...series, ...extras];
   });
 
   /** The name of a remove button: the action, then the series. */

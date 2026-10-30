@@ -1,0 +1,47 @@
+// The element itself draws nothing: its line is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// The skin's colour for a reference line, a palette place or the consumer's own; the label in
+// the skin's colour for what is written beside the data.
+.line {
+  stroke: var(--pct-chart-reference-border);
+  stroke-width: 1px;
+}
+
+.line.dashed {
+  stroke-dasharray: 6 4;
+}
+
+.label {
+  fill: var(--pct-chart-reference-fg);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] .line {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+[data-pct-series='custom'] .line {
+  stroke: var(--_pct-chart-color);
+}
+
+// With the colours gone a reference line is a line in the text's colour, dashed or not.
+@media (forced-colors: active) {
+  [data-pct-part] .line {
+    stroke: CanvasText;
+  }
+
+  .label {
+    fill: CanvasText;
+  }
+}

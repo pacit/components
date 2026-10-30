@@ -32,7 +32,7 @@
     role="img"
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || null"
-    [attr.aria-describedby]="description() ? ids.description : null"
+    [attr.aria-describedby]="fullDescription() ? ids.description : null"
   >
     @if (measured() && !loading()) {
     <svg class="layer" aria-hidden="true" data-pct-part="data">
@@ -65,8 +65,13 @@
         />
         }
       </g>
+      <!-- Three layers of marks: under the series (a band), the series, over them (a line, a note). -->
       <g [attr.clip-path]="'url(#' + ids.clip + ')'">
-        @for (mark of marks(); track mark) {
+        @let stamped = layers(); @for (mark of stamped.back; track mark) {
+        <ng-container [ngTemplateOutlet]="mark.template()" />
+        } @for (mark of stamped.data; track mark) {
+        <ng-container [ngTemplateOutlet]="mark.template()" />
+        } @for (mark of stamped.front; track mark) {
         <ng-container [ngTemplateOutlet]="mark.template()" />
         }
       </g>
@@ -226,9 +231,14 @@
     <ng-content select="[pctChartEmpty]">{{ texts().chartEmpty }}</ng-content>
     }
   </p>
-  } @if (description()) {
+  } @if (fullDescription()) {
   <!-- Hidden: the picture reads it as its description, and nothing else reads it twice. -->
-  <p class="description" hidden [id]="ids.description">{{ description() }}</p>
+  <p
+    class="description"
+    hidden
+    [id]="ids.description"
+    [textContent]="fullDescription()"
+  ></p>
   } @if (range()) {
   <!-- The keys of the cursor, which its range reads as its description. -->
   <p hidden [id]="ids.keys">{{ texts().chartKeys }}</p>

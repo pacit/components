@@ -135,3 +135,17 @@ gestures follow; a mark reads its x pixel as a `y` — the bars lie, `pctLinePat
 `pctAreaPath` write their points transposed. The gesture the page keeps turns too, to
 `touch-action: pan-x`. Nothing of the window, the cursor or the selection changes: they are
 positions on the x axis, whichever way it runs (0101).
+
+## Amended 2026-10-30: an annotation is a mark that brings no series
+
+The record made every mark a bearer of series: what the axes, the legend and the data table
+read. A reference line, a band, a note and the line of now are marks too — they draw on the
+scene's scales and nothing else knows them — but they bring no series, so they take no axis
+slot, no column and no legend entry unless asked (`legend`). The contract grows for them, not
+the scene: a mark says the layer it draws in (`layer`: under the series, among them, over
+them), the sentence it adds to the picture's description for a reader who sees no line
+(`describe`), the boxes of its notes for the scene to place together (`noteBoxes`,
+`pctPlaceNotes`) and the entries it adds to the legend (`legendEntries`); the scene writes
+values and positions for them as it writes them for the axes (`writeValue`, `writePosition`)
+and gives them its frame. A line's thresholds are the one change to a mark that bears a
+series: the path drawn once per colour and clipped to a band of values, never re-interpolated.

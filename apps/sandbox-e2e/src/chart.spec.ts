@@ -865,4 +865,121 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       ).toBe('pan-x');
     });
   });
+
+  test.describe('annotations', () => {
+    test('a band under the line, a dashed reference line with its label at the right end, a note in a box on its point, the moment of the report, and the line cut red over 22 °C', async ({
+      page,
+    }) => {
+      const annotated = chart(page, 'chart-annotations');
+      const plot = (await annotated
+        .locator('clipPath rect')
+        .first()
+        .evaluate((r) => ({
+          left: Number(r.getAttribute('x')),
+          right: Number(r.getAttribute('x')) + Number(r.getAttribute('width')),
+          top: Number(r.getAttribute('y')),
+        })))!;
+      // the band from the plot's top, under the series: before the line's path in the layer
+      const band = annotated.locator('[data-pct-part="span"] rect.band');
+      await expect(band).toHaveAttribute('y', String(plot.top));
+      expect(
+        await annotated.locator('[data-pct-part="data"]').evaluate((svg) => {
+          const band = svg.querySelector('[data-pct-part="span"]')!;
+          const path = svg.querySelector('[data-pct-part="series"]')!;
+          return Boolean(
+            band.compareDocumentPosition(path) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+          );
+        }),
+      ).toBe(true);
+      await expect(
+        annotated.locator('[data-pct-part="span"] text.label'),
+      ).toHaveText('Night tariff');
+      // the reference line across the whole plot, dashed, its label ending at the right edge
+      const reference = annotated.locator('[data-pct-part="reference"]');
+      const line = reference.locator('line.line');
+      await expect(line).toHaveClass(/dashed/);
+      await expect(line).toHaveAttribute('x1', String(plot.left));
+      await expect(line).toHaveAttribute('x2', String(plot.right));
+      const label = reference.locator('text.label');
+      await expect(label).toHaveText('Comfort');
+      await expect(label).toHaveAttribute('text-anchor', 'end');
+      await expect(label).toHaveAttribute('x', String(plot.right - 4));
+      expect(
+        await line.evaluate((l) => getComputedStyle(l).strokeDasharray),
+      ).not.toBe('none');
+      // the note: a box wide enough for its text, measured, over its dot, with a leader between
+      const note = annotated.locator('[data-pct-part="note"]');
+      await expect(note.locator('text.text')).toHaveText('Window opened');
+      const geometry = await note.evaluate((g) => {
+        const box = g.querySelector('rect.box')!.getBoundingClientRect();
+        const text = g.querySelector('text.text')!.getBoundingClientRect();
+        const dot = g.querySelector('circle.dot')!.getBoundingClientRect();
+        return {
+          textInside:
+            text.left >= box.left &&
+            text.right <= box.right &&
+            text.top >= box.top &&
+            text.bottom <= box.bottom,
+          boxOverDot: box.bottom <= dot.top,
+        };
+      });
+      expect(geometry).toEqual({ textInside: true, boxOverDot: true });
+      // the moment of the report, pinned, from the plot's top with its label at the top
+      const now = annotated.locator('[data-pct-part="now"]');
+      await expect(now.locator('text.label')).toHaveText('Report taken');
+      await expect(now.locator('line.line')).toHaveAttribute(
+        'y1',
+        String(plot.top),
+      );
+      // the line drawn twice, each clipped to its band: the upper one in tomato
+      const paths = annotated.locator('path[data-pct-part="series"]');
+      await expect(paths).toHaveCount(2);
+      const clips = await paths.evaluateAll((ps) =>
+        ps.map((p) => p.getAttribute('clip-path')),
+      );
+      expect(new Set(clips).size).toBe(2);
+      expect(clips.every((c) => c?.startsWith('url(#pct-line-threshold'))).toBe(
+        true,
+      );
+      expect(
+        await paths.nth(1).evaluate((p) => getComputedStyle(p).stroke),
+      ).toBe('rgb(255, 99, 71)');
+    });
+
+    test('a reader hears the annotations in the description, and the legend hides the ones that stand in it', async ({
+      page,
+    }) => {
+      const annotated = chart(page, 'chart-annotations');
+      const picture = annotated.getByRole('img');
+      await expect(picture).toHaveAccessibleDescription(
+        /^Supply air through the day of the clocks going back\. Night tariff .+ – .+\. Comfort 21 °C\. Window opened \(.+, 21\.9 °C\)\. Report taken .+\.$/,
+      );
+      // the legend: the series, then the two annotations asked to stand there, no unit, no value
+      const legend = page.getByTestId('annotations-legend');
+      const toggles = legend.getByRole('button');
+      await expect(toggles).toContainText([
+        'Supply air',
+        'Night tariff',
+        'Comfort',
+      ]);
+      await toggles.nth(2).click();
+      await expect(toggles.nth(2)).toHaveAttribute('aria-pressed', 'false');
+      await expect(
+        annotated.locator('[data-pct-part="reference"]'),
+      ).toHaveCount(0);
+      await expect(picture).not.toHaveAccessibleDescription(/Comfort/);
+      await toggles.nth(2).click();
+      await expect(
+        annotated.locator('[data-pct-part="reference"]'),
+      ).toHaveCount(1);
+      // the swatches of the annotations: the band's block and the reference's dashed line
+      await expect(
+        legend.locator('[data-pct-part="swatch"] rect.band'),
+      ).toHaveCount(1);
+      await expect(
+        legend.locator('[data-pct-part="swatch"] line.line.dashed'),
+      ).toHaveCount(1);
+    });
+  });
 });

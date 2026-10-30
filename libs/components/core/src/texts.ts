@@ -267,6 +267,12 @@ export interface PctTexts {
   readonly chartMean: string;
   /** Chart: the tooltip's row with the difference between a bar and the compared period's. */
   readonly chartDifference: string;
+  /** Chart: a reference line's name, when the consumer gives it none. */
+  readonly chartReference: string;
+  /** Chart: a band's name, when the consumer gives it none. */
+  readonly chartSpan: string;
+  /** Chart: the line of the present moment, when the consumer gives it no name. */
+  readonly chartNow: string;
   /** Chart: the name of the legend's list of series. */
   readonly chartLegend: string;
   /** Chart: the legend's button that takes a series off the chart, named with the series. */
@@ -398,6 +404,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartSum: 'Sum',
   chartMean: 'Mean',
   chartDifference: 'Difference',
+  chartReference: 'Reference line',
+  chartSpan: 'Band',
+  chartNow: 'Now',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',

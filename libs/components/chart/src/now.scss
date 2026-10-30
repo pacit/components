@@ -1,0 +1,51 @@
+// The element itself draws nothing: its line is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// The skin's colour for the present moment, a palette place or the consumer's own; the label
+// in the same colour, so the word and the line read as one.
+.line {
+  stroke: var(--pct-chart-now-border);
+  stroke-width: 1px;
+}
+
+.label {
+  fill: var(--pct-chart-now-border);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] .line {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-series='#{$i}'] .label {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+[data-pct-series='custom'] .line {
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] .label {
+  fill: var(--_pct-chart-color);
+}
+
+// With the colours gone the line of now is a line in the text's colour, its label the same.
+@media (forced-colors: active) {
+  [data-pct-part] .line {
+    stroke: CanvasText;
+  }
+
+  [data-pct-part] .label {
+    fill: CanvasText;
+  }
+}

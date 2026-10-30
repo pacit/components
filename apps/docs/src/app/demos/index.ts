@@ -179,6 +179,11 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       key: 'bars',
       load: () => import('./chart.bars.demo').then((m) => m.ChartBarsDemo),
     },
+    {
+      key: 'annotations',
+      load: () =>
+        import('./chart.annotations.demo').then((m) => m.ChartAnnotationsDemo),
+    },
   ],
   badge: [
     {

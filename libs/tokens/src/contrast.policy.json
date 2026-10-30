@@ -2463,6 +2463,41 @@
       "severity": "error"
     },
     {
+      "name": "AA: chart — reference label on surface",
+      "fg": "pct.chart.reference-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — note text on its box",
+      "fg": "pct.chart.note-fg",
+      "bg": "pct.chart.note-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the label of now on surface",
+      "fg": "pct.chart.now-border",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — reference line on surface",
+      "fg": "pct.chart.reference-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — note border on surface",
+      "fg": "pct.chart.note-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — series 1 on surface",
       "fg": "pct.chart.series-color-1",
       "bg": "pct.surface",
