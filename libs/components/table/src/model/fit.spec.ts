@@ -33,6 +33,11 @@ describe('pctFit', () => {
       count: 2,
       needed: [400, 340],
     });
+    // The next column would leave the table at the frame's width exactly: it stays.
+    expect(fit({ width: 300, total: 360 })).toEqual({
+      count: 1,
+      needed: [360],
+    });
   });
 
   it('hides more after those already hidden, and stops when the order runs out', () => {

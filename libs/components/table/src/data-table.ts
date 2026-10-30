@@ -1126,12 +1126,13 @@ export class PctDataTable<
 
   /** Writes how many columns are hidden, noting first where the focus stood in the table. */
   private change(count: number): void {
-    const focused = this.ownTable().ownerDocument.activeElement;
-    const row = focused?.closest<HTMLElement>('tbody > tr[data-pct-index]');
+    // A document with a body always has an active element: the body, when nothing else is.
+    const focused = this.ownTable().ownerDocument.activeElement as Element;
+    const row = focused.closest<HTMLElement>('tbody > tr[data-pct-index]');
     // A row of this table's body, not of a table nested in one of its cells.
     if (row?.parentElement === this.ownTable().tBodies[0])
       this.lost = {
-        element: focused as Element,
+        element: focused,
         line: Number(row.dataset['pctIndex']),
       };
     untracked(() => this.hiddenCount.set(count));
@@ -1139,9 +1140,10 @@ export class PctDataTable<
 
   /** Focuses the row at `line`: its disclosure, or its first control. */
   private refocus(line: number): void {
-    const row = this.ownTable().tBodies[0].rows[line] as
-      HTMLElement | undefined;
-    const target = row?.querySelector<HTMLElement>(
+    // The line was a row of the body when the focus was noted, and the render since moved no
+    // row: only the columns changed.
+    const row = this.ownTable().tBodies[0].rows[line];
+    const target = row.querySelector<HTMLElement>(
       '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
     );
     target?.focus();

@@ -2617,4 +2617,57 @@ describe('PctTableDetails — its defaults', () => {
     expect(disclosures()).toHaveLength(0);
     expect(document.activeElement).toBe(document.body);
   });
+
+  it('flashes the right cell past a column hidden before it', async () => {
+    const resizedTo: { fire: (() => void) | null } = { fire: null };
+    globals.ResizeObserver = class {
+      constructor(callback: () => void) {
+        resizedTo.fire = callback;
+      }
+      observe(): void {
+        // The test calls the callback itself.
+      }
+      disconnect(): void {
+        // Nothing to let go.
+      }
+    };
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return { width: this.tagName === 'TH' ? 100 : 0, height: 0 } as DOMRect;
+      },
+    );
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.slotted.set(false);
+    fixture.componentInstance.changes.set(true);
+    fixture.componentInstance.columns.set(
+      col.of([
+        col.key('name', { header: 'Name' }),
+        col.key('room', { header: 'Room', priority: 1 }),
+        col.key('power', { header: 'Power' }),
+        col.key('seen', { header: 'Seen' }),
+      ]) as never,
+    );
+    await settle(fixture);
+    const width = { value: 350 };
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    const table = document.querySelector('table') as HTMLElement;
+    Object.defineProperty(frame, 'clientWidth', { get: () => width.value });
+    Object.defineProperty(table, 'scrollWidth', {
+      get: () =>
+        Math.max(width.value, 100 * table.querySelectorAll('thead th').length),
+    });
+    (resizedTo.fire as () => void)();
+    await settle(fixture);
+    expect(fixture.componentInstance.table().hiddenColumns()).toEqual(['room']);
+    fixture.componentInstance.rows.set([
+      DEVICES[0],
+      { ...DEVICES[1], power: 1 },
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    // The disclosure, the name, then the power.
+    expect(Array.from(document.querySelectorAll('[data-pct-changed]'))).toEqual(
+      [body()[1].querySelectorAll('td')[2]],
+    );
+  });
 });
