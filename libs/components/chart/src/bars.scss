@@ -41,7 +41,7 @@
   [data-pct-part='bar'][data-pct-series='#{$i}'].compared {
     fill: color-mix(
       in srgb,
-      var(--pct-chart-series-color-#{$i}) var(--pct-chart-compare-alpha),
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-bar-alpha),
       transparent
     );
   }
@@ -56,7 +56,7 @@
 [data-pct-part='bar'][data-pct-series='custom'].compared {
   fill: color-mix(
     in srgb,
-    var(--_pct-chart-color) var(--pct-chart-compare-alpha),
+    var(--_pct-chart-color) var(--pct-chart-bar-alpha),
     transparent
   );
 }

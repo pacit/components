@@ -83,7 +83,7 @@ const INNER = 0.8;
  *
  * @example
  * <pct-chart ariaLabel="Energy by day" timeZone="Europe/Warsaw" interval="day">
- *   <pct-bars [data]="days" x="at" y="kwh" name="Heat pump" unit="kWh" [compare]="lastMonth" compareName="Last month" />
+ *   <pct-bars [data]="days" x="at" y="energy" name="Heat pump" unit="kWh" [compare]="lastMonth" compareName="Last month" />
  * </pct-chart>
  *
  * @since next

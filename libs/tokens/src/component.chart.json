@@ -192,15 +192,15 @@
         "$value": "2px",
         "$description": "Gap between the bars of a group."
       },
-      "compare-alpha": {
-        "$type": "dimension",
-        "$value": "55%",
-        "$description": "How much of the series colour fills a compared period's bar."
-      },
       "label-fg": {
         "$type": "color",
         "$value": "{pct.text}",
         "$description": "The value written over a bar."
+      },
+      "bar-alpha": {
+        "$type": "dimension",
+        "$value": "55%",
+        "$description": "How much of the series colour fills a compared period's bar."
       }
     }
   }

@@ -126,6 +126,7 @@ export class PctChartHarness extends PctHarness<
   | 'message'
   | 'plot'
   | 'range'
+  | 'selection'
   | 'tooltip'
   | 'unit'
 > {
@@ -139,6 +140,7 @@ export class PctChartHarness extends PctHarness<
     'message',
     'plot',
     'range',
+    'selection',
     'tooltip',
     'unit',
   ] as const;

@@ -27,6 +27,9 @@ from what the browser really gets.
 ./breadcrumb PctCrumb separator
 ./button PctButton label
 ./button PctButton spinner
+./chart PctBars bar
+./chart PctBars label
+./chart PctBars swatch
 ./chart PctChart axis
 ./chart PctChart cursor
 ./chart PctChart data
@@ -35,6 +38,7 @@ from what the browser really gets.
 ./chart PctChart message
 ./chart PctChart plot
 ./chart PctChart range
+./chart PctChart selection
 ./chart PctChart tooltip
 ./chart PctChart unit
 ./chart PctChartLegend item
