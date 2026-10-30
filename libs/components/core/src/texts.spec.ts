@@ -82,7 +82,7 @@ const ENGLISH: PctTexts = {
   tableYes: 'Yes',
   tableNo: 'No',
   tableRowNumber: 'Row',
-  tableSortKey: 'Sort key',
+  tableSortLater: 'Sort key {place}, {way}',
   tableSortAscending: 'ascending',
   tableSortDescending: 'descending',
 };

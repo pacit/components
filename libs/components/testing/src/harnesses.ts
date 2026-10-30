@@ -835,8 +835,9 @@ const DATA_ROWS =
 /** The header cells of a data table's own table, not of one nested in a cell. */
 const HEADS = ':scope > pct-table-frame > table > thead > tr > th';
 
-/** What a header's label leaves out: the place drawn for the eye and the words for a reader. */
-const NOT_THE_LABEL = '[aria-hidden="true"], .pct-data-table__word, [hidden]';
+/** What a header's label leaves out: a later key's place, and the words only a reader hears. */
+const NOT_THE_LABEL =
+  '[data-pct-part="place"], .pct-data-table__word, [hidden]';
 
 /**
  * `pct-data-table` — `PctDataTable`.
@@ -860,7 +861,7 @@ export class PctDataTableHarness extends PctHarness<
 
   /**
    * The headers' labels, in the order the columns stand: the text a user sees, without the
-   * place of a later sort key. The column of row numbers has the empty label.
+   * place of a later sort key. The column of row numbers is headed `#`.
    *
    * @since next
    */
@@ -925,7 +926,7 @@ export class PctDataTableHarness extends PctHarness<
       column < 0
         ? null
         : await this.locatorForOptional(
-            `${HEADS}:nth-child(${column + 1}) [data-pct-part="toggle"]`,
+            `${HEADS}:nth-child(${column + 1}) > button[data-pct-part="toggle"]`,
           )();
     if (!toggle)
       throw new Error(

@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-untyped-value",
+  "description": "The probe that uses a boolean value as a number failed, but not on the value's type: the compiler's line names no `toFixed`, so the failure says nothing about the value.",
+  "typesValueOutput": "src/typed-value.ts:1:1 - error TS2307: Cannot find module."
+}

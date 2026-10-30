@@ -72,6 +72,12 @@ const BACKGROUND_TOKEN = '--pct-button-bg';
  */
 const WRONG_ID = 'enabld';
 
+/** The compiler's own line for the misspelt id, not the source line it echoes beneath. */
+const WRONG_ID_ERROR = new RegExp(`error TS2820:[^\\n]*"${WRONG_ID}"`);
+
+/** The compiler's line for a boolean cell value used as a number: the value is typed. */
+const UNTYPED_VALUE_ERROR = new RegExp(`error TS2339:[^\\n]*'toFixed'`);
+
 /** The initial `background-color` — what is left after an unresolved `var()`. */
 const INITIAL_BACKGROUND = 'rgba(0, 0, 0, 0)';
 
@@ -345,14 +351,14 @@ const checkConsumer = (input) => {
       'types-refused',
       `the typed probe — a data table with a cell template on a column its columns hold — ` +
         `does not compile in the consumer's application (code ${types.right?.code}).\n` +
-        `    ${(types.right?.output ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}\n` +
+        `    ${(types.right?.output || '(no output)').split('\n').slice(0, 6).join('\n    ')}\n` +
         `    Its twin with a misspelt id is the measurement, and a twin of a template that ` +
         `fails anyway proves nothing about the id`,
     );
 
   if (
     types.wrong?.code === 0 ||
-    !(types.wrong?.output ?? '').includes(WRONG_ID)
+    !WRONG_ID_ERROR.test(types.wrong?.output ?? '')
   )
     fail(
       'build',
@@ -363,6 +369,21 @@ const checkConsumer = (input) => {
           : `failed for another reason than its id.\n`) +
         `    The table's slots promise a misspelt id is the compiler's error, read from the ` +
         `published types (0097)`,
+    );
+
+  if (
+    types.value?.code === 0 ||
+    !UNTYPED_VALUE_ERROR.test(types.value?.output ?? '')
+  )
+    fail(
+      'build',
+      'types-untyped-value',
+      `a boolean cell's value used as a number ` +
+        (types.value?.code === 0
+          ? `compiled in the consumer's application.\n`
+          : `failed for another reason than its type.\n`) +
+        `    A slot that names its column rightly still has to hand the template the ` +
+        `column's type, or \`let-value\` is \`any\` and the id was the only thing checked`,
     );
 
   if (!(build.tokensInCss > 0))
@@ -656,7 +677,7 @@ const writeApp = (app) => {
 
   // The typed probe: a data table whose cell template names a column by id, once rightly and
   // once misspelt, each compiled on its own with `strictTemplates`, as a new application is.
-  const typed = (name, id) => {
+  const typed = (name, id, cell = "{{ on ? 'on' : 'off' }}") => {
     file(`${name}.ts`, [
       `import { Component } from '@angular/core';`,
       `import { PctCellTemplate, PctDataTable, pctColumnsOf } from '${PACKAGE}/table';`,
@@ -668,7 +689,7 @@ const writeApp = (app) => {
       `  selector: 'app-rules',`,
       `  imports: [PctDataTable, PctCellTemplate],`,
       `  template: \`<pct-data-table caption="Rules" [rows]="rules" [columns]="columns" [rowId]="byId">`,
-      `    <ng-template [pctCell]="columns" pctCellOf="${id}" let-on="value">{{ on ? 'on' : 'off' }}</ng-template>`,
+      `    <ng-template [pctCell]="columns" pctCellOf="${id}" let-on="value">${cell}</ng-template>`,
       `  </pct-data-table>\`,`,
       `})`,
       `export class Rules {`,
@@ -696,6 +717,7 @@ const writeApp = (app) => {
   };
   typed('typed-right', 'enabled');
   typed('typed-wrong', WRONG_ID);
+  typed('typed-value', 'enabled', '{{ on.toFixed() }}');
 
   file('index.html', [
     '<!doctype html>',
@@ -1013,6 +1035,11 @@ const measureRepository = async () => {
       ROOT,
       'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js',
     );
+    // A compiler that is not where it was is the gate's to say, not the library's types.
+    if (!existsSync(ngc))
+      throw new Error(
+        `the Angular compiler is not at ${ngc}: point 5's typed probe needs it`,
+      );
     const typedRun = (name) => {
       const result = run(
         process.execPath,
@@ -1031,6 +1058,7 @@ const measureRepository = async () => {
     const types = {
       right: typedRun('typed-right'),
       wrong: typedRun('typed-wrong'),
+      value: typedRun('typed-value'),
     };
     const out = join(app, 'out');
     const bundle = existsSync(join(out, 'browser/main.js'))
@@ -1166,6 +1194,10 @@ const buildFixture = (fx) => {
     we.build.types.wrong.code = fx.typesWrongCode;
   if (fx.typesWrongOutput !== undefined)
     we.build.types.wrong.output = fx.typesWrongOutput;
+  if (fx.typesValueCode !== undefined)
+    we.build.types.value.code = fx.typesValueCode;
+  if (fx.typesValueOutput !== undefined)
+    we.build.types.value.output = fx.typesValueOutput;
 
   if (fx.ssrStatus !== undefined) we.ssr.status = fx.ssrStatus;
   if (fx.ssrContext !== undefined) we.ssr.context = fx.ssrContext;

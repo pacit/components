@@ -1971,8 +1971,24 @@ describe('PctDataTable — a reader hears the later keys', () => {
     await press(fixture, 'Room', true);
     await press(fixture, 'Power', true);
     await press(fixture, 'Power', true);
+    expect(toggle('Name')).not.toBeNull();
+    expect(toggle('Name')?.hasAttribute('aria-describedby')).toBe(false);
     expect(described('Name')).toBeNull();
     expect(described('Room')).toBe('Sort key 2, ascending');
     expect(described('Power')).toBe('Sort key 3, descending');
+  });
+
+  it('takes Shift from the main button only', async () => {
+    const fixture = await render(Host);
+    await press(fixture, 'Name');
+    const button = toggle('Room') as HTMLButtonElement;
+    button.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, shiftKey: true, button: 1 }),
+    );
+    button.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.sort()).toEqual([
+      { key: 'room', direction: 'ascending' },
+    ]);
   });
 });

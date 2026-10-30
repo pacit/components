@@ -261,7 +261,7 @@ describe('PctDataTableHarness', () => {
 
   it('reads the headers’ labels and the rows as their texts, its own table only', async () => {
     const { table } = await outer();
-    expect(await table.headers()).toEqual(['', 'Name', 'Room', 'On']);
+    expect(await table.headers()).toEqual(['#', 'Name', 'Room', 'On']);
     expect(await table.rows()).toEqual([
       // The room's cell holds a whole table, caption and header, and reads as its text.
       ['1', 'Lamp', 'Room  Where  Kitchen', 'Yes'],
@@ -274,7 +274,7 @@ describe('PctDataTableHarness', () => {
     const { table } = await outer();
     expect(await (await table.cell(1, 'Name')).text()).toBe('Spot');
     await expect(table.cell(0, 'Colour')).rejects.toThrow(
-      'PctDataTableHarness: no column is headed "Colour". Headers: , Name, Room, On.',
+      'PctDataTableHarness: no column is headed "Colour". Headers: #, Name, Room, On.',
     );
     await expect(table.cell(3, 'Name')).rejects.toThrow(
       'PctDataTableHarness: no row 3; the table draws 3.',
@@ -290,7 +290,7 @@ describe('PctDataTableHarness', () => {
       { key: 'name', direction: 'ascending' },
     ]);
     // The later key's place is drawn for the eye and left out of the label.
-    expect(await table.headers()).toEqual(['', 'Name', 'Room', 'On']);
+    expect(await table.headers()).toEqual(['#', 'Name', 'Room', 'On']);
     expect((await table.rows()).map((row) => row[1])).toEqual([
       'Spot',
       'Bulb',
@@ -301,7 +301,7 @@ describe('PctDataTableHarness', () => {
       { key: 'room', direction: 'descending' },
     ]);
     await expect(table.sortBy('On')).rejects.toThrow(
-      'PctDataTableHarness: no column headed "On" sorts. Headers: , Name, Room, On.',
+      'PctDataTableHarness: no column headed "On" sorts. Headers: #, Name, Room, On.',
     );
     await expect(table.sortBy('Colour')).rejects.toThrow(
       'PctDataTableHarness: no column headed "Colour" sorts.',

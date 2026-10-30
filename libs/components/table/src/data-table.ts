@@ -597,11 +597,14 @@ export class PctDataTable<
         place: later ? position + 1 : null,
         arrow: later?.direction === 'descending' ? '▼' : '▲',
         said: later
-          ? `${this.texts().tableSortKey} ${position + 1}, ${
-              later.direction === 'descending'
-                ? this.texts().tableSortDescending
-                : this.texts().tableSortAscending
-            }`
+          ? this.texts()
+              .tableSortLater.replace('{place}', String(position + 1))
+              .replace(
+                '{way}',
+                later.direction === 'descending'
+                  ? this.texts().tableSortDescending
+                  : this.texts().tableSortAscending,
+              )
           : '',
         slot: templates.get(column.id) ?? null,
       };
@@ -966,9 +969,13 @@ export class PctDataTable<
   /** The shift key's state at the press that is about to write `sort`. */
   private shift = false;
 
-  /** A press by the pointer: its Shift is the press's. */
+  /**
+   * A press by the pointer: its Shift is the press's. Only the main button presses: a middle
+   * button or a drag that ends elsewhere sends no click, and must leave no Shift behind for a
+   * reader's click that comes later.
+   */
   private notePointer(event: MouseEvent): void {
-    this.shift = event.shiftKey;
+    this.shift = event.button === 0 && event.shiftKey;
   }
 
   /**
