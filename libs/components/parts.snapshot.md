@@ -159,6 +159,9 @@ from what the browser really gets.
 ./switch PctSwitch thumb
 ./switch PctSwitch track
 ./switch PctSwitch warning
+./table PctDataTable message
+./table PctDataTable place
+./table PctDataTable placeholder
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
 ./tabs PctTab panel

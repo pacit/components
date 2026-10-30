@@ -81,7 +81,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/skeleton`   | `PctSkeleton`                                                                                                                                         |
 | `@pacit/components/slider`     | `PctSlider`                                                                                                                                           |
 | `@pacit/components/switch`     | `PctSwitch`                                                                                                                                           |
-| `@pacit/components/table`      | `PctTable`, `PctTableCaption`, `PctTableHeader`, `PctTableCell`, `PctTableFrame`                                                                      |
+| `@pacit/components/table`      | `PctTable`, `PctTableCaption`, `PctTableHeader`, `PctTableCell`, `PctTableFrame`, `PctDataTable` and its slots, `pctColumnsOf`                        |
 | `@pacit/components/svg-icon`   | `PctSvgIcon`, `svgIcons`, `svgSprite` — SVG drawings as data, and a sprite's `<use>`                                                                  |
 | `@pacit/components/tabs`       | `PctTabs`, `PctTab`                                                                                                                                   |
 | `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                                                             |

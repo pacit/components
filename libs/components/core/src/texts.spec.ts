@@ -69,6 +69,11 @@ const ENGLISH: PctTexts = {
   chipRemove: 'Remove',
   breadcrumbLabel: 'Breadcrumb',
   stepDone: 'Completed',
+  tableEmpty: 'No rows',
+  tableNoMatches: 'No matches',
+  tableLoading: 'Loading…',
+  tableYes: 'Yes',
+  tableNo: 'No',
 };
 
 describe('PCT_TEXTS', () => {

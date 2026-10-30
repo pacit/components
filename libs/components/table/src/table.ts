@@ -201,8 +201,8 @@ export class PctTableCell {
 }
 
 /**
- * The frame a table scrolls in when it is wider than the space it is given. While the table
- * overflows, the frame is a focusable region named by the table's caption, so a keyboard can
+ * The frame a table scrolls in when it is wider than the space it is given, or taller than a
+ * height it is given. While the table overflows, the frame is a focusable region named by the table's caption, so a keyboard can
  * reach it and scroll it and a reader can say what it holds. While the table fits, the frame
  * is nothing: a stop with nothing to scroll is a stop for nothing.
  *
@@ -220,7 +220,7 @@ export class PctTableCell {
     // where no caption stands, and stays while the frame is no region, rather than going with
     // the first change detection.
     '[attr.aria-labelledby]':
-      'overflows() ? (caption()?.id() ?? labelledBy) : labelledBy',
+      'overflows() ? (caption()?.id() ?? named()) : named()',
   },
 })
 export class PctTableFrame {
@@ -231,6 +231,20 @@ export class PctTableFrame {
   protected readonly labelledBy = inject(
     new HostAttributeToken('aria-labelledby'),
     { optional: true },
+  );
+
+  /**
+   * The id of the element that names the frame when no caption does, for a component that
+   * renders the frame and takes the name as an input: the attribute itself is read once, from
+   * the element the consumer wrote.
+   *
+   * @since next
+   */
+  readonly labelledby = input<string | null>(null);
+
+  /** The name's id: the input's, or the attribute's. */
+  protected readonly named = computed(
+    () => this.labelledby() ?? this.labelledBy,
   );
 
   protected readonly caption = contentChild(PctTableCaption, {
@@ -264,7 +278,10 @@ export class PctTableFrame {
   }
 
   private measure(frame: HTMLElement): void {
-    const overflows = frame.scrollWidth > frame.clientWidth;
+    // Either axis: a frame given a height scrolls its rows as a wider one scrolls its columns.
+    const overflows =
+      frame.scrollWidth > frame.clientWidth ||
+      frame.scrollHeight > frame.clientHeight;
     this.overflows.set(overflows);
     if (overflows && isDevMode()) this.warnOnUnnamedRegion(frame);
   }
@@ -277,7 +294,7 @@ export class PctTableFrame {
     if (
       this.warned ||
       this.caption() ||
-      this.labelledBy ||
+      this.named() ||
       frame.hasAttribute('aria-label')
     )
       return;

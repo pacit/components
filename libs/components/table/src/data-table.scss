@@ -1,0 +1,59 @@
+/* The data table is the first layer drawn from data, so its look is the first layer's: what
+   stands here is only what the first layer has no element for. */
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A table given a height scrolls in its frame on both axes, which is what lets the header
+   stay at the top; with no height the page scrolls it, as the first layer's frame says. */
+pct-table-frame {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+}
+
+/* Positioned, so the hidden word of a boolean cell is clipped and scrolled with the table
+   rather than placed against the page, whose scroll it would stretch. */
+table {
+  position: relative;
+  inline-size: 100%;
+}
+
+:host([data-pct-sticky]) th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+}
+
+/* A key after the first carries its place and its way to the eye, beside the label; `aria-sort`
+   names the first, and ARIA lets one header at a time carry it. */
+.pct-data-table__place {
+  margin-inline-start: var(--pct-table-toggle-gap);
+  font-size: 0.75em;
+  vertical-align: super;
+}
+
+.pct-data-table__yes {
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+  vertical-align: -0.125em;
+}
+
+/* The word a boolean cell is read as: in the tree for readers and the quick filter, out of
+   the paint, where the check mark says it. */
+.pct-data-table__word {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.pct-data-table__message {
+  padding-block: var(--pct-table-padding-y);
+  padding-inline: var(--pct-table-padding-x);
+  color: var(--pct-table-fg);
+}
