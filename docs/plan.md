@@ -246,8 +246,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
 - [~] **1.11 — charts** in `@pacit/components/chart` — a scene and the marks it draws, on one
   core of pure functions and no dependency ([0099](decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)–[0103](decisions/0103-a-chart-is-a-named-picture-and-its-cursor-is-the-platforms-range.md),
   decided 2026-10-29 on eight probes, five of them in three engines)
-  - the core: scales, 1-2-5 ticks, time ticks in a named zone across a change of clocks, the
-    window's transform, the value at a position, decimation to the pixel through a pyramid
+  - the core, landed 2026-10-29 in `./chart`: scales, 1-2-5 ticks, time ticks in a named zone
+    across a change of clocks, the window's transform, the value at a position, decimation to
+    the pixel through a pyramid, paths, axis slots and label layout
   - the scene with a line, its axes by unit, its table and its card; then the cursor as the
     platform's range, the window with its gestures, their single-pointer buttons and
     `pctChartSync`, the legend with a second channel per series

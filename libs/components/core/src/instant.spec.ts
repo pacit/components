@@ -76,9 +76,13 @@ describe('pctWallClockOf', () => {
       return new Real(...args);
     } as unknown as typeof Intl.DateTimeFormat;
     try {
+      // The first reading of a zone makes its formatter, unless a spec run in the same module
+      // graph already read that zone (`nx test` shares one); the second never does.
       pctWallClockOf(0, 'Pacific/Chatham');
+      const first = made;
       pctWallClockOf(DAY, 'Pacific/Chatham');
-      expect(made).toBe(1);
+      expect(first).toBeLessThanOrEqual(1);
+      expect(made).toBe(first);
     } finally {
       Intl.DateTimeFormat = Real;
     }

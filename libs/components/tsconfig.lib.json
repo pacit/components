@@ -15,6 +15,7 @@
     "checkbox/**/*.ts",
     "date/**/*.ts",
     "time/**/*.ts",
+    "chart/**/*.ts",
     "datetime/**/*.ts",
     "dialog/**/*.ts",
     "drawer/**/*.ts",
