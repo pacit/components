@@ -105,6 +105,8 @@ export interface PctAxisLayout {
 /** A tick of the horizontal axis as the scene draws it. */
 interface PctXTick {
   readonly x: number;
+  /** Where its label's middle stands: on the tick, or inside the box when that is too near an edge. */
+  readonly middle: number;
   readonly text: string;
   readonly shown: boolean;
   readonly label: PctTimeLabel | 'value';
@@ -471,19 +473,20 @@ export class PctChart extends PctChartScene {
         label: 'value',
       }));
     }
+    const { width } = this.size();
     const xs = ticks.map((t) => scale.map(t.at));
     const widths = ticks.map((t) => this.measure(t.text));
-    const shown_ = pctThinLabels(xs, widths, this.gap * 2);
-    const { width } = this.size();
+    // A label that would leave the chart's box stands inside it instead, against the edge.
+    const middles = xs.map((x, i) =>
+      Math.min(width - widths[i] / 2, Math.max(widths[i] / 2, x)),
+    );
+    const visible = pctThinLabels(middles, widths, this.gap * 2);
     return ticks.map((t, i) => ({
       x: xs[i],
+      middle: middles[i],
       text: t.text,
       label: t.label,
-      // A label that would leave the chart's box is not drawn: its tick still is.
-      shown:
-        shown_[i] &&
-        xs[i] - widths[i] / 2 >= 0 &&
-        xs[i] + widths[i] / 2 <= width,
+      shown: visible[i],
     }));
   });
 

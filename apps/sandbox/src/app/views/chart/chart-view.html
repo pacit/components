@@ -1,0 +1,132 @@
+<h2 class="view__title">Chart</h2>
+<p class="muted view__intro">
+  A scene of scales and the marks drawn on them. The marks are elements in the
+  chart; the chart gives each unit an axis, each series a colour that stays, and
+  reads the time on the wall clock of a named zone. The drawing is a named
+  picture, and the data stand beside it as a table.
+</p>
+
+<sbx-demo
+  heading="Two units and a yes/no axis, on the day of twenty-five hours"
+  summary="Supply air in °C on the left, the fan's power in W on the right, the heater on a yes/no axis outside them. Warsaw moves its clocks back on 25 October 2026: the time axis still ticks on 00:00, 06:00, 12:00 and 18:00. The supply air has an hour with no readings, drawn as a gap, not a line across it. The table under the picture holds the same values."
+  [reqs]="['req-a11y-built-in', 'req-api-templates', 'req-project-ssr']"
+  data-testid="demo-pattern"
+>
+  <pct-chart
+    #pattern
+    ariaLabel="Heat recovery on 25 October 2026"
+    description="Supply air between 17.3 and 22.7 °C, highest in the afternoon, no readings from 13:00 to 14:00. The fan between 380 and 640 W. The heater on twice."
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-pattern"
+    [(hiddenSeries)]="hidden"
+  >
+    <pct-line [data]="supply" x="at" y="value" name="Supply air" unit="°C" />
+    <pct-line
+      [data]="fan"
+      x="at"
+      y="value"
+      name="Fan power"
+      unit="W"
+      curve="step"
+      [end]="end"
+    />
+    <pct-line
+      [data]="heater"
+      x="at"
+      y="value"
+      name="Heater"
+      unit="boolean"
+      curve="step"
+      [end]="end"
+    />
+  </pct-chart>
+  <pct-chart-table [chart]="pattern" [rows]="24" data-testid="chart-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="An area under one series, on an axis the view fixes"
+  summary="One series filled down to zero, on a °C axis the view holds from 0 to 30 with pct-axis. The colour is the palette's first place: the fill is that colour mixed into nothing by the skin's amount."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-area"
+>
+  <pct-chart
+    ariaLabel="Supply air on 25 October 2026, from zero"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-area"
+  >
+    <pct-axis unit="°C" [floor]="0" [ceiling]="30" />
+    <pct-line
+      [data]="supply"
+      x="at"
+      y="value"
+      name="Supply air"
+      unit="°C"
+      area
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="Sixty thousand readings"
+  summary="A week at one reading every ten seconds. The line is decimated to the pixel: per column, the first, the lowest, the highest and the last reading, so every peak the eye could see survives and the path holds a few thousand points."
+  [reqs]="['req-quality-benchmark']"
+  data-testid="demo-dense"
+>
+  <pct-chart
+    ariaLabel="A week at one reading every ten seconds"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-dense"
+  >
+    <pct-line
+      [data]="week"
+      [x]="first"
+      [y]="second"
+      name="Pressure"
+      unit="Pa"
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="Numbers along the horizontal axis"
+  summary='x="linear": the horizontal axis holds plain numbers and ticks them 1-2-5, as the value axes do.'
+  [reqs]="['req-api-templates']"
+  data-testid="demo-linear"
+>
+  <pct-chart
+    ariaLabel="Response of the heater to its setting"
+    x="linear"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-linear"
+  >
+    <pct-line [data]="curve" x="at" y="value" name="Response" unit="%" />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="Nothing to draw, and still loading"
+  summary="With no reading the chart says so in the plot; while the data are on their way it shows a skeleton of its shape and tells a reader it is busy."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-states"
+>
+  <div class="view__pair">
+    <pct-chart
+      ariaLabel="A chart with no readings"
+      class="sbx-chart"
+      data-testid="chart-empty"
+    />
+    <pct-chart
+      ariaLabel="A chart whose data are on their way"
+      class="sbx-chart"
+      loading
+      data-testid="chart-loading"
+    />
+  </div>
+</sbx-demo>

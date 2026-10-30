@@ -931,6 +931,40 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A chart's colours are its series' identities, and the mode takes every one of them: the
+   * lines and the axes are drawn in the text word, an area is not filled, and the series are
+   * told apart by their names in the table beside the picture (0102).
+   */
+  test('a chart draws its lines and axes in CanvasText and fills no area', async ({
+    page,
+  }) => {
+    await visit(page, '/chart', { media: FORCED });
+    const sys = await systemColors(page);
+    const pattern = page.getByTestId('chart-pattern');
+    for (const path of await pattern
+      .locator('path[data-pct-part="series"]')
+      .all()) {
+      expect(await styleOf(path, 'stroke')).toBe(sys.CanvasText);
+    }
+    expect(
+      await styleOf(
+        pattern.locator('[data-pct-part="axis"] .base').first(),
+        'stroke',
+      ),
+    ).toBe(sys.CanvasText);
+    expect(
+      await styleOf(
+        pattern.locator('[data-pct-part="axis"] .value').first(),
+        'fill',
+      ),
+    ).toBe(sys.CanvasText);
+    const area = page
+      .getByTestId('chart-area')
+      .locator('path[data-pct-part="area"]');
+    expect(await styleOf(area, 'fill')).toBe('none');
+  });
+
+  /**
    * A table's header surface is a fill, the first thing the mode drops, so what tells the
    * header row apart under it is its weight and the line under it, which takes the text word
    * like every row's line. The sorted column's chevron is a drawing in `currentColor`, so it

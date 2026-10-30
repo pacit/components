@@ -105,7 +105,12 @@ export class PctChartTable {
     const window = chart.shown();
     if (!window) return [];
     const series = this.series();
-    const columns = Math.max(1, Math.floor(this.rows() / 4));
+    // Each series decimated to its share of the rows: four readings a column at most, so the
+    // positions of every series together stay within `rows`.
+    const columns = Math.max(
+      1,
+      Math.floor(this.rows() / (4 * Math.max(1, series.length))),
+    );
     const positions = new Set<number>();
     for (const s of series) {
       const readings = chart.markOf(s.id)?.readings(s.id);

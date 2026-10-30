@@ -65,12 +65,11 @@
         class="time"
         text-anchor="middle"
         dominant-baseline="hanging"
-        [attr.x]="tick.x"
+        [attr.x]="tick.middle"
         [attr.y]="plot().bottom + 6"
         [attr.data-pct-label]="tick.label"
-      >
-        {{ tick.text }}
-      </text>
+        [textContent]="tick.text"
+      ></text>
       } } @for (axis of axes(); track axis.unit) {
       <g [attr.data-pct-slot]="axis.slot" [attr.data-pct-unit]="axis.unit">
         <line
@@ -87,9 +86,8 @@
           [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
           [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
           [attr.y]="tick.y"
-        >
-          {{ tick.text }}
-        </text>
+          [textContent]="tick.text"
+        ></text>
         } @if (axis.unit && axis.unit !== 'boolean') {
         <text
           data-pct-part="unit"
@@ -97,9 +95,8 @@
           [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
           [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
           y="0"
-        >
-          {{ axis.unit }}
-        </text>
+          [textContent]="axis.unit"
+        ></text>
         } @for (place of axis.places; track $index) {
         <circle
           class="dot"

@@ -134,6 +134,7 @@ const CARD_ORDER = [
   'tooltip',
   // Data & status
   'table',
+  'chart',
   'accordion',
   'tree',
   'stepper',

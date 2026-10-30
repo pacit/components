@@ -1,9 +1,12 @@
 // A chart's box: its width from the container, its height from the consumer or from the
 // aspect ratio. The layers stand over each other, each on a compositor layer of its own, so a
 // change in one repaints none of the others (0100).
+// `inline-size: 100%` because an aspect ratio with a height the consumer set would otherwise
+// size the width too, wider than a grid cell holding the chart.
 :host {
   display: block;
   position: relative;
+  inline-size: 100%;
   aspect-ratio: 16 / 9;
   font-size: var(--pct-chart-font-size);
 }
@@ -19,7 +22,10 @@
   inset: 0;
 }
 
+// A chart's axes run left to right in every direction of the page: time and value do not
+// mirror, and an SVG `text-anchor` would, under an inherited `rtl`.
 .layer {
+  direction: ltr;
   position: absolute;
   inset: 0;
   inline-size: 100%;

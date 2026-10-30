@@ -12,6 +12,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   badge: () => import('./badge.demo').then((m) => m.BadgeDemo),
   breadcrumb: () => import('./breadcrumb.demo').then((m) => m.BreadcrumbDemo),
   table: () => import('./table.demo').then((m) => m.TableDemo),
+  chart: () => import('./chart.demo').then((m) => m.ChartDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),

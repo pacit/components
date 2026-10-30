@@ -59,7 +59,7 @@ test.describe('The pages', () => {
     // By the tile's own link and not by every `<a>` under the gallery: the cards run real
     // components now, and breadcrumb's scene brings links of its own.
     const tiles = page.getByTestId('card-link');
-    await expect(tiles).toHaveCount(39);
+    await expect(tiles).toHaveCount(40);
 
     await tiles.filter({ hasText: 'Button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
@@ -84,7 +84,7 @@ test.describe('The pages', () => {
     await visit(page, '/components');
 
     const stages = page.getByTestId('gallery').locator('.card__stage');
-    await expect(stages).toHaveCount(39);
+    await expect(stages).toHaveCount(40);
 
     // Each scene against its own stage, in one evaluation — 39 round trips would be a
     // minute of wall clock to learn the same thing.
@@ -190,10 +190,10 @@ test.describe('The pages', () => {
 
     await filter.fill('');
     await expect(count).toHaveText('39 of 39');
-    await expect(gallery.locator('.card')).toHaveCount(39);
+    await expect(gallery.locator('.card')).toHaveCount(40);
     // The half that costs something: thirty-four stages, each with its component back in it.
-    await expect(gallery.locator('.card__stage')).toHaveCount(39);
-    await expect(gallery.locator('.card__scene > *')).toHaveCount(39);
+    await expect(gallery.locator('.card__stage')).toHaveCount(40);
+    await expect(gallery.locator('.card__scene > *')).toHaveCount(40);
   });
 
   /**
@@ -936,10 +936,10 @@ test.describe('The pages', () => {
       '--pct-surface',
     );
 
-    // The component tier is 32 groups and not one alphabetical run of 622 rows. The
+    // The component tier is 33 groups and not one alphabetical run of 639 rows. The
     // inventory is all still here: opening a group shows the dials it counts.
     const groups = page.getByTestId('token-groups').locator('details');
-    await expect(groups).toHaveCount(32);
+    await expect(groups).toHaveCount(33);
     const button = page.getByTestId('group-button');
     await button.locator('summary').click();
     await expect(button).toContainText('--pct-button-height-sm');
@@ -963,7 +963,7 @@ test.describe('The pages', () => {
     // border colour where the control draws a surface (0087); 642 since the time field and its
     // columns took a tier of their own (0086); 680 since the datetime field did (0090 §6); 695
     // since the table did (0096).
-    await expect(count).toHaveText('695 of 695');
+    await expect(count).toHaveText('720 of 720');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -987,7 +987,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('695 of 695');
+    await expect(count).toHaveText('720 of 720');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

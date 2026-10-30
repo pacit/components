@@ -104,3 +104,11 @@ rows into two `Float64Array`s once per change of data, under a millisecond for s
 | Marks as directives on SVG elements the consumer writes        | the consumer's elements stand in the consumer's template, outside the scene's `<svg>` and its coordinates           |
 | d3 underneath                                                  | a runtime dependency for arithmetic of a few hundred lines that must know named zones and `Intl`, which d3 does not |
 | Sorting the data in the mark                                   | sixty thousand readings sorted on every change, paid by every consumer whose data are already in order              |
+
+## Amended 2026-10-30: a warning in development is a console warning
+
+The record said a mark reports rows out of order "through `pctWarn`". `pctWarn` is a form
+field's warning ([0087](0087-a-warning-is-a-verdict-without-a-veto.md)), shown to a user beside
+a value; rows out of order are a developer's mistake. The mark warns as every component of this
+library warns its developer: `console.warn` under `isDevMode()`, naming the series and the
+first row out of order.

@@ -266,6 +266,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
       ),
   },
   {
+    path: 'chart',
+    title: 'Chart',
+    summary:
+      'A scene of scales and the marks drawn on them — axes by unit, time in a zone, the data as a table.',
+    group: 'components',
+    load: () => import('./views/chart/chart-view').then((m) => m.ChartView),
+  },
+  {
     path: 'table',
     title: 'Table',
     summary:
