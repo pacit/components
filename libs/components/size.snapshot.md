@@ -49,7 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 13997 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 16415 ./core @angular/core,@angular/forms/signals
-./chart 65239 ./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 65314 ./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 21918 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 16149 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -75,7 +75,7 @@ before an application ships them.
 ./stepper 15517 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 21398 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 60660 ./core,./icon,./skeleton @angular/common,@angular/core,@angular/forms/signals
+./table 60893 ./core,./icon,./skeleton @angular/common,@angular/core,@angular/forms/signals
 ./tabs 17331 ./core @angular/core,@angular/forms/signals
 ./testing 10971 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -138,7 +138,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 5189 16165
 ./breadcrumb PctBreadcrumb 3 5289 13835
-./chart PctChart 3 43743 63554
+./chart PctChart 3 43743 63629
 ./chips PctChip 2 16007 16010
 ./date PctCalendar 2 27603 46741
 ./field PctField 3 24691 34421
@@ -146,7 +146,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 24280 24282
 ./select PctMultiSelect 2 52545 78732
 ./stepper PctStep 2 15374 15376
-./table PctDataTable 6 58988 59000
+./table PctDataTable 6 59221 59233
 ./tabs PctTab 2 17162 17165
 ./time PctTime 2 48499 48500
 ./tree PctTree 2 12783 12786
