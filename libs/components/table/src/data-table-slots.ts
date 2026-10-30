@@ -220,3 +220,66 @@ export class PctEmptyTemplate {
     return true;
   }
 }
+
+/**
+ * What a details template is handed.
+ *
+ * @since next
+ */
+export interface PctDetailsContext<T, M extends Record<string, unknown>> {
+  /** The row whose details are open — `let-row`. */
+  readonly $implicit: T;
+  /**
+   * The columns a narrow table has hidden, whose values the details list above the template
+   * — `let-hidden="hidden"`.
+   */
+  readonly hidden: readonly PctColumns<T, M>[number][];
+}
+
+/**
+ * What stands in a row's details, below the values of the columns a narrow table hid: a
+ * chart of the row's history, a form, anything the row has room for only when it is open.
+ * The row that opens and the button that opens it are the table's
+ * ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
+ *
+ * @example
+ * <ng-template [pctDetails]="columns" let-rule>
+ *   <app-rule-history [rule]="rule" />
+ * </ng-template>
+ *
+ * @since next
+ */
+@Directive({
+  selector: 'ng-template[pctDetails]',
+})
+export class PctDetailsTemplate<T, M extends Record<string, unknown>> {
+  /**
+   * The template itself.
+   *
+   * @since next
+   */
+  readonly template = inject<TemplateRef<PctDetailsContext<T, M>>>(TemplateRef);
+
+  /**
+   * The table's list of columns, carrying the row's type into the context.
+   *
+   * @since next
+   */
+  readonly columns = input.required<PctColumns<T, M>>({ alias: 'pctDetails' });
+
+  /**
+   * What the table calls when its content query finds this template.
+   *
+   * @since next
+   */
+  readonly read = pctReportOrphanSlot('pctDetails');
+
+  /** What tells the compiler what `let-row` is. */
+  static ngTemplateContextGuard<T, M extends Record<string, unknown>>(
+    _slot: PctDetailsTemplate<T, M>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    context: unknown,
+  ): context is PctDetailsContext<T, M> {
+    return true;
+  }
+}

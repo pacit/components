@@ -97,6 +97,72 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Details, and a narrow table"
+  summary="Each row opens its details below it, the full width. Narrow the frame and the columns with the highest priority give way, their values moving into the details; a switch keeps working in a row that is open."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-details"
+>
+  <div class="datatable__widths" role="group" aria-label="Width of the table">
+    @for (each of widths; track each) {
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      [attr.data-testid]="'width-' + each"
+      [attr.aria-pressed]="width() === each"
+      (click)="width.set(each)"
+    >
+      {{ each }} px
+    </button>
+    }
+  </div>
+  <div class="datatable__narrow" [style.max-inline-size.px]="width()">
+    <pct-data-table
+      #details="pctDataTable"
+      data-testid="table-details"
+      caption="Rules in detail"
+      locale="pl"
+      pctTableDetails
+      [(details)]="openRules"
+      [rows]="detailRules()"
+      [columns]="detailColumns"
+      [rowId]="byId"
+      [now]="now"
+    >
+      <ng-template
+        [pctCell]="detailColumns"
+        pctCellOf="enabled"
+        let-rule
+        let-on="value"
+      >
+        <pct-switch
+          [checked]="on"
+          [ariaLabel]="'Enabled: ' + rule.name"
+          (checkedChange)="toggleDetail(rule, $event)"
+        />
+      </ng-template>
+      <ng-template [pctDetails]="detailColumns" let-rule>
+        <p class="datatable__more">
+          Register {{ rule.address }}, polled from {{ rule.room }}.
+          <button
+            pctButton
+            variant="ghost"
+            type="button"
+            (click)="ran.set(rule.name)"
+          >
+            Run {{ rule.name }} now
+          </button>
+        </p>
+      </ng-template>
+    </pct-data-table>
+  </div>
+  <p data-testid="details-state">
+    Hidden: {{ details.hiddenColumns().join(', ') || 'none' }}. Open: {{
+    openRules().join(', ') || 'none' }}. Ran: {{ ran() || 'nothing' }}.
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="Devices at a glance"
   summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state toned by its value, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
   [reqs]="['req-a11y-forced-colors']"

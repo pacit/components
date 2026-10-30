@@ -876,8 +876,12 @@ const readTemplate = (
     // controls, and ARIA asks it for no name — so it is no widget of the tables above. It may
     // still be the element a consumer's name is handed to: the datetime field's two texts
     // stand in one, and each takes the group's name with a word of its own (0090, E1 to E3).
-    // Point 4 reads these as carriers beside the widgets.
-    groups: tags.filter((t) => rolesOf(t).every((role) => role === 'group')),
+    // A `table` is read the same way: the data table's name is its table's, and the buttons
+    // in its cells each name themselves (0097). Point 4 reads these as carriers beside the
+    // widgets, by the group's rule.
+    groups: tags.filter((t) =>
+      rolesOf(t).every((role) => role === 'group' || role === 'table'),
+    ),
   };
 };
 

@@ -173,6 +173,18 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table disclosure',
+    applies:
+      'libs/components/table/src/data-table.scss .pct-data-table__toggle',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-details"] tbody tr:first-child [data-pct-part="disclosure"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'checkbox control',
     applies:
       'libs/components/checkbox/src/checkbox.scss .pct-checkbox__control',

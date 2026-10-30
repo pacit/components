@@ -18,9 +18,12 @@ import {
   signal,
   untracked,
   viewChild,
+  type Signal,
   type TemplateRef,
+  type WritableSignal,
 } from '@angular/core';
 import {
+  nextPctId,
   PCT_TEXTS,
   PctAnnouncer,
   type PctInstant,
@@ -32,6 +35,8 @@ import { PctIcon } from '@pacit/components/icon';
 import { PctSkeleton } from '@pacit/components/skeleton';
 import {
   PctCellTemplate,
+  type PctDetailsContext,
+  PctDetailsTemplate,
   PctEmptyTemplate,
   PctHeaderCellTemplate,
 } from './data-table-slots';
@@ -40,8 +45,10 @@ import {
   type PctAnyColumn,
   pctColumnNumeric,
   type PctColumns,
+  pctHideOrder,
   type PctRowId,
 } from './model/columns';
+import { pctFit } from './model/fit';
 import { pctLineKey, pctLines, type PctTableLine } from './model/lines';
 import { pctOrderRows } from './model/order';
 import {
@@ -89,6 +96,24 @@ export interface PctScrollToOptions {
   readonly align?: PctScrollAlign;
 }
 
+/**
+ * What a directive on the table adds to it, given once from its constructor: a hard list, one
+ * field per feature, so the table's own directives grow it and nothing else does
+ * ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
+ *
+ * @since next
+ */
+export interface PctTableFeature {
+  /** The rows' details: which are open, held by the application, and whether any opens. */
+  readonly details: {
+    readonly open: WritableSignal<readonly PctRowId[]>;
+    readonly disabled: Signal<boolean>;
+  };
+}
+
+/** How much wider than where it hid a column the frame grows before the column comes back. */
+const HYSTERESIS = 8;
+
 /** How many placeholder rows stand in for rows that are still coming. */
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
 
@@ -115,10 +140,24 @@ interface Row<T> {
   readonly row: T;
   readonly index: number;
   readonly id: PctRowId;
+  /** The row's position among the lines drawn: its details, when open, are the next one. */
+  readonly line: number;
   readonly tone: PctTone | null;
   /** The row's values, one per column: the array the cache holds, kept while the row is. */
   readonly values: readonly unknown[];
+  /** The cells of the columns shown. */
   readonly cells: readonly Cell<T>[];
+  /** The cells of the columns a narrow table hid, listed in the row's details. */
+  readonly hidden: readonly Cell<T>[];
+  /** Those columns, as the details template is handed them. */
+  readonly hiddenColumns: PctDetailsContext<
+    unknown,
+    Record<string, unknown>
+  >['hidden'];
+  /** The row's details are open below it. */
+  readonly open: boolean;
+  /** The id of the row's details, which its disclosure controls. */
+  readonly detailsId: string;
 }
 
 /**
@@ -268,6 +307,14 @@ export class PctDataTable<
   readonly ariaLabelledby = input<string>('');
 
   /**
+   * The table's name in words, for a table with no caption and no element on the page to name
+   * it. It names the frame too when the frame scrolls.
+   *
+   * @since next
+   */
+  readonly ariaLabel = input<string>('');
+
+  /**
    * The order of the rows: a list of keys, the first deciding first. A press on a sortable
    * header makes that column the only key, ascending, and turns it the other way on the next;
    * with Shift held it adds the column as the last key, or turns it where it stands.
@@ -395,8 +442,14 @@ export class PctDataTable<
   readonly highlightChanges = input(false, { transform: booleanAttribute });
 
   private readonly cellSlots = contentChildren(PctCellTemplate);
+  // The table's own: a data table nested in a cell template brings templates of its own.
+  protected readonly detailsSlot = contentChild(PctDetailsTemplate, {
+    descendants: false,
+  });
   private readonly headerSlots = contentChildren(PctHeaderCellTemplate);
-  protected readonly emptySlot = contentChild(PctEmptyTemplate);
+  protected readonly emptySlot = contentChild(PctEmptyTemplate, {
+    descendants: false,
+  });
   private readonly table = viewChild.required(PctTable);
   private readonly tableElement = viewChild.required(PctTable, {
     read: ElementRef,
@@ -410,6 +463,72 @@ export class PctDataTable<
   private readonly frame = viewChild.required(PctTableFrame, {
     read: ElementRef,
   });
+
+  /** What the table's directive added: the details directive is the one there is yet. */
+  private readonly contributed = signal<PctTableFeature | null>(null);
+
+  /** The open details when no directive holds them: a narrow table opens rows on its own. */
+  private readonly ownDetails = signal<readonly PctRowId[]>([]);
+
+  private readonly openDetails = computed(
+    () => this.contributed()?.details.open ?? this.ownDetails,
+  );
+
+  private readonly detailsOff = computed(
+    () => this.contributed()?.details.disabled() ?? false,
+  );
+
+  /** The prefix of every details row's id. */
+  private readonly uid = nextPctId('pct-data-table');
+
+  /**
+   * The columns that may give way, in order. None while the details are disabled: a hidden
+   * column's value would then be in no row at all, and a frame that scrolls keeps it reachable.
+   */
+  private readonly hideOrder = computed(() =>
+    this.detailsOff() ? [] : pctHideOrder(this.columns()),
+  );
+
+  /** How many columns of the hide order the frame has no room for. */
+  private readonly hiddenCount = signal(0);
+
+  /** A new value at each resize of the frame or the table, so each renders the fit again. */
+  private readonly resized = signal<object>({});
+
+  /** Where the focus stood when a column went, so it can be handed to the row. */
+  private lost: { readonly element: Element; readonly line: number } | null =
+    null;
+
+  /** A details row's id for each row, made once and kept while the table lives. */
+  private readonly detailsIds = new Map<string, string>();
+
+  /**
+   * The columns a narrow table hid, by id, in the order it hid them: the application writes
+   * `2 columns in the details` from this. Their values stand in each row's details.
+   *
+   * @since next
+   */
+  readonly hiddenColumns = computed(
+    () =>
+      this.hideOrder().slice(0, this.hiddenCount()) as readonly (keyof M &
+        string)[],
+  );
+
+  /** Rows open: on a table that hid a column or has a details template, unless disabled. */
+  protected readonly disclosure = computed(
+    () =>
+      !this.detailsOff() &&
+      (this.hiddenColumns().length > 0 || this.detailsSlot() !== undefined),
+  );
+
+  /** The cells a details row spans: every column shown, and the leading ones. */
+  protected readonly span = computed(
+    () =>
+      this.columns().length -
+      this.hiddenColumns().length +
+      (this.rowNumbers() ? 1 : 0) +
+      (this.disclosure() ? 1 : 0),
+  );
 
   private readonly resolvedLocale = computed(
     () => this.locale() || this.appLocale,
@@ -533,7 +652,9 @@ export class PctDataTable<
    */
   readonly lines = computed<readonly PctTableLine<T>[]>(() => {
     const id = this.rowId();
-    const lines = pctLines(this.ordered(), id);
+    const lines = pctLines(this.ordered(), id, {
+      details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
+    });
     if (isDevMode()) this.warnOnTwins(lines);
     return lines;
   });
@@ -545,6 +666,8 @@ export class PctDataTable<
     if (this.warnedTwins) return;
     const seen = new Set<unknown>();
     for (const line of lines) {
+      // A row's details carry the row's key; only rows can be twins.
+      if (line.kind !== 'row') continue;
       if (!seen.has(line.key)) {
         seen.add(line.key);
         continue;
@@ -585,31 +708,34 @@ export class PctDataTable<
     const sort = this.sort();
     const sentence = this.texts().tableSortLater;
     const templates = this.headerTemplates();
-    return this.columns().map((column) => {
-      const position = sort.findIndex((key) => key.key === column.id);
-      const later = position > 0 ? sort[position] : null;
-      return {
-        column,
-        sortKey: column.sort === false ? null : column.id,
-        numeric: pctColumnNumeric(column),
-        direction: position < 0 ? null : sort[position].direction,
-        // The first key is `aria-sort`; the rest carry their place and way to the eye, and to a
-        // reader as the description of the header's button.
-        place: later ? position + 1 : null,
-        arrow: later?.direction === 'descending' ? '▼' : '▲',
-        said: later
-          ? sentence
-              .replace('{place}', String(position + 1))
-              .replace(
-                '{way}',
-                later.direction === 'descending'
-                  ? this.texts().tableSortDescending
-                  : this.texts().tableSortAscending,
-              )
-          : '',
-        slot: templates.get(column.id) ?? null,
-      };
-    });
+    const hidden = new Set<string>(this.hiddenColumns());
+    return this.columns()
+      .filter((column) => !hidden.has(column.id))
+      .map((column) => {
+        const position = sort.findIndex((key) => key.key === column.id);
+        const later = position > 0 ? sort[position] : null;
+        return {
+          column,
+          sortKey: column.sort === false ? null : column.id,
+          numeric: pctColumnNumeric(column),
+          direction: position < 0 ? null : sort[position].direction,
+          // The first key is `aria-sort`; the rest carry their place and way to the eye, and to a
+          // reader as the description of the header's button.
+          place: later ? position + 1 : null,
+          arrow: later?.direction === 'descending' ? '▼' : '▲',
+          said: later
+            ? sentence
+                .replace('{place}', String(position + 1))
+                .replace(
+                  '{way}',
+                  later.direction === 'descending'
+                    ? this.texts().tableSortDescending
+                    : this.texts().tableSortAscending,
+                )
+            : '',
+          slot: templates.get(column.id) ?? null,
+        };
+      });
   });
 
   /** The body: each row line with its cells written. */
@@ -637,21 +763,21 @@ export class PctDataTable<
           words !== null && filter !== false && typeof filter !== 'function',
       };
     });
-    // The base draws rows and nothing else: details, groups and holes are lines that the
-    // features contributing them draw.
-    return (
-      this.lines() as readonly Extract<PctTableLine<T>, { kind: 'row' }>[]
-    ).map((line) => {
+    const hidden = new Set<string>(this.hiddenColumns());
+    // The template's context is typed by the template's own list, which the table cannot name.
+    const hiddenColumns = columns.filter((column) =>
+      hidden.has(column.id),
+    ) as unknown as Row<T>['hiddenColumns'];
+    const lines = this.lines();
+    const rows: Row<T>[] = [];
+    // The base draws rows and their details: groups and holes are lines that the features
+    // contributing them draw.
+    lines.forEach((line, at) => {
+      if (line.kind !== 'row') return;
       const values = cache.get(line.row) as readonly unknown[];
       const texts = written.get(line.row) as readonly string[];
-      return {
-        key: pctLineKey(line),
-        row: line.row,
-        index: line.index,
-        id: line.key,
-        tone: rowTone?.(line.row) ?? null,
-        values,
-        cells: cells.map(({ column, numeric, boolean, slot, marking }, c) => {
+      const all = cells.map(
+        ({ column, numeric, boolean, slot, marking }, c) => {
           const value = values[c];
           const text = texts[c];
           const yes = boolean && typeof value === 'boolean' ? value : null;
@@ -671,10 +797,42 @@ export class PctDataTable<
             title: typeof tooltip === 'function' ? tooltip(line.row) : null,
             clip: tooltip === true && slot === null && yes === null,
           };
-        }),
-      };
+        },
+      );
+      rows.push({
+        key: pctLineKey(line),
+        row: line.row,
+        index: line.index,
+        id: line.key,
+        line: at,
+        tone: rowTone?.(line.row) ?? null,
+        values,
+        cells: all.filter((cell) => !hidden.has(cell.column.id)),
+        hidden: all.filter((cell) => hidden.has(cell.column.id)),
+        hiddenColumns,
+        open: lines[at + 1]?.kind === 'details',
+        detailsId: this.detailsIdOf(pctLineKey(line)),
+      });
     });
+    return rows;
   });
+
+  /** The id of a row's details: the same for the row however the rows above it change. */
+  private detailsIdOf(key: string): string {
+    let id = this.detailsIds.get(key);
+    if (id === undefined) {
+      id = `${this.uid}-details-${this.detailsIds.size + 1}`;
+      this.detailsIds.set(key, id);
+    }
+    return id;
+  }
+
+  /** Opens the row's details, or closes them. */
+  protected toggleDetails(id: PctRowId): void {
+    this.openDetails().update((open) =>
+      open.includes(id) ? open.filter((other) => other !== id) : [...open, id],
+    );
+  }
 
   protected readonly primary = computed(() => this.sort()[0] ?? null);
 
@@ -710,9 +868,10 @@ export class PctDataTable<
   readonly scrolled = this.scrolledTo.asReadonly();
 
   /**
-   * The lines in the view, and the ids of their rows: what an application loads more data for,
-   * or writes `rows 120–160 of 900` from. Read by an `IntersectionObserver`, so it is empty
-   * until the browser has laid the table out, and under SSR.
+   * The lines in the view, and the ids of their rows: what an application loads more data for.
+   * `start` and `end` count lines, an open row's details among them, so a count of rows in view
+   * is `rows.length`. Read by an `IntersectionObserver`, so it is empty until the browser has
+   * laid the table out, and under SSR.
    *
    * @since next
    */
@@ -737,11 +896,15 @@ export class PctDataTable<
     );
     // An empty template is read whenever it stands, so a dev build does not call it an orphan.
     effect(() => this.emptySlot()?.read());
+    effect(() => this.detailsSlot()?.read());
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => say(''));
 
     effect(() => {
-      const unnamed = this.caption() === '' && this.ariaLabelledby() === '';
+      const unnamed =
+        this.caption() === '' &&
+        this.ariaLabelledby() === '' &&
+        this.ariaLabel() === '';
       if (unnamed && isDevMode()) this.warnOnNoName();
     });
     effect(() => {
@@ -790,15 +953,16 @@ export class PctDataTable<
 
     this.watchVisible(destroyRef);
     this.watchChanges();
+    this.watchFit(destroyRef);
 
     afterRenderEffect(() => {
       const target = this.pending();
       if (target === null) return;
-      const index = this.body().findIndex((row) => row.id === target.id);
+      const row = this.body().find((line) => line.id === target.id);
       // A row not in the lines yet is waited for: the call made before the rows arrived is
       // carried out by the render that brings them.
-      if (index < 0) return;
-      this.ownTable().tBodies[0].rows[index].scrollIntoView({
+      if (!row) return;
+      this.ownTable().tBodies[0].rows[row.line].scrollIntoView({
         block: target.align,
       });
       untracked(() => this.pending.set(null));
@@ -873,19 +1037,23 @@ export class PctDataTable<
         return;
       }
       if (!same) before = new Map();
-      const offset = this.rowNumbers() ? 1 : 0;
+      // The shown columns' values are drawn in each row after the leading cells; a hidden
+      // column's stands in the details, and does not flash.
+      const hidden = new Set<string>(this.hiddenColumns());
+      const shown = columns.flatMap((id, c) => (hidden.has(id) ? [] : [c]));
+      const lead = (this.rowNumbers() ? 1 : 0) + (this.disclosure() ? 1 : 0);
       const rows = this.ownTable().tBodies[0].rows;
       const now = new Map<string, readonly unknown[]>();
       const changed: Element[] = [];
-      body.forEach((row, index) => {
+      for (const row of body) {
         const was = before.get(row.key);
         now.set(row.key, row.values);
-        if (!was) return;
-        row.values.forEach((value, c) => {
-          if (!sameValue(was[c], value))
-            changed.push(rows[index].cells[c + offset]);
+        if (!was) continue;
+        shown.forEach((c, place) => {
+          if (!sameValue(was[c], row.values[c]))
+            changed.push(rows[row.line].cells[lead + place]);
         });
-      });
+      }
       before = now;
       if (changed.length === 0) return;
       // Taken off, laid out once, and put back, so a cell that changes again while it still
@@ -897,12 +1065,118 @@ export class PctDataTable<
     });
   }
 
+  /**
+   * Hides the columns a narrow frame has no room for, in the hide order, and shows them again
+   * as it widens. Widths are read off the table drawn, not computed, because the cells' content
+   * decides them.
+   *
+   * When the table overflows, as many columns go at once as the widths of their headers cover,
+   * so a dozen columns hide in one render, not one per render. Each keeps the width the table
+   * needed while it was shown, and comes back once the frame is that wide and `HYSTERESIS`
+   * more, so a frame resized across the line does not make it come and go. The frame and the
+   * table are both watched: a table that grows inside a frame that does not — a font that
+   * arrives late, a template that fills in — is fitted again too.
+   */
+  private watchFit(destroyRef: DestroyRef): void {
+    let observer: ResizeObserver | null = null;
+    destroyRef.onDestroy(() => observer?.disconnect());
+    let order: string | null = null;
+    let needed: readonly number[] = [];
+    afterRenderEffect(() => {
+      const next = this.hideOrder();
+      const heads = this.heads();
+      this.body();
+      this.resized();
+      const count = this.hiddenCount();
+      const table = this.ownTable();
+      // A control that went with its column, or with the disclosures, gives its focus to its
+      // row's disclosure, or to the row's first control, rather than to the page.
+      if (this.lost !== null && !this.lost.element.isConnected)
+        this.refocus(this.lost.line);
+      this.lost = null;
+      // A new order of columns starts with every column shown.
+      const key = JSON.stringify(next);
+      if (key !== order) {
+        order = key;
+        if (count > 0) {
+          this.change(0);
+          return;
+        }
+      }
+      if (next.length === 0) return;
+      const frame = this.frame().nativeElement as HTMLElement;
+      // Only where a column may hide: the frame needs an observer of its own anyway, and a
+      // table with nothing to hide reads no width at all.
+      if (observer === null) {
+        observer = new ResizeObserver(() => this.resized.set({}));
+        observer.observe(frame);
+        observer.observe(table);
+      }
+      // The shown columns' header cells are the row's last ones, after the leading cells.
+      const cells = Array.from(
+        (table.tHead as HTMLTableSectionElement).rows[0].cells,
+      ).slice(-heads.length);
+      const fit = pctFit(
+        {
+          width: frame.clientWidth,
+          total: table.scrollWidth,
+          order: next,
+          count,
+          widthOf: (id) =>
+            cells[
+              heads.findIndex((head) => head.column.id === id)
+            ].getBoundingClientRect().width,
+          needed,
+        },
+        HYSTERESIS,
+      );
+      needed = fit.needed;
+      if (fit.count !== count) this.change(fit.count);
+    });
+  }
+
+  /** Writes how many columns are hidden, noting first where the focus stood in the table. */
+  private change(count: number): void {
+    // A document with a body always has an active element: the body, when nothing else is.
+    const focused = this.ownTable().ownerDocument.activeElement as Element;
+    const row = focused.closest<HTMLElement>('tbody > tr[data-pct-index]');
+    // A row of this table's body, not of a table nested in one of its cells.
+    if (row?.parentElement === this.ownTable().tBodies[0])
+      this.lost = {
+        element: focused,
+        line: Number(row.dataset['pctIndex']),
+      };
+    untracked(() => this.hiddenCount.set(count));
+  }
+
+  /** Focuses the row at `line`: its disclosure, or its first control. */
+  private refocus(line: number): void {
+    // The line was a row of the body when the focus was noted, and the render since moved no
+    // row: only the columns changed.
+    const row = this.ownTable().tBodies[0].rows[line];
+    const target = row.querySelector<HTMLElement>(
+      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+    );
+    target?.focus();
+  }
+
+  /**
+   * What a directive on the table adds to it. Called from the directive's constructor, before
+   * the table has drawn anything, and never taken back: a directive on the host lives as long
+   * as the table does.
+   *
+   * @since next
+   */
+  contribute(feature: PctTableFeature): void {
+    this.contributed.set(feature);
+  }
+
   private warnOnNoName(): void {
     if (this.warnedName) return;
     this.warnedName = true;
     console.warn(
-      `[pct-data-table] The table has no name: give it a caption, or the id of the element ` +
-        `that names it in ariaLabelledby.`,
+      `[pct-data-table] The table has no name: give it a caption, the id of the element ` +
+        `that names it in ariaLabelledby, or a name in ariaLabel.`,
     );
   }
 
@@ -911,11 +1185,11 @@ export class PctDataTable<
     let observer: IntersectionObserver | null = null;
     destroyRef.onDestroy(() => observer?.disconnect());
     afterRenderEffect(() => {
-      const body = this.body();
+      const lines = this.lines();
       if (typeof IntersectionObserver === 'undefined') return;
       observer?.disconnect();
       // A list with no rows has none in view, and an observer of nothing never says so.
-      if (body.length === 0) {
+      if (lines.length === 0) {
         untracked(() => this.seen.set({ start: 0, end: 0, rows: [] }));
         observer = null;
         return;
@@ -936,11 +1210,14 @@ export class PctDataTable<
         this.seen.set({
           start: indices[0] ?? 0,
           end: indices.length === 0 ? 0 : (indices.at(-1) as number) + 1,
-          rows: indices.map((index) => body[index].id),
+          rows: indices.flatMap((index) => {
+            const line = lines[index];
+            return line.kind === 'row' ? [line.key] : [];
+          }),
         });
       });
       observer = current;
-      // With a row to draw there is no placeholder: every row of the body is a row of data.
+      // With a line to draw there is no placeholder: every row of the body is a line.
       for (const row of Array.from(this.ownTable().tBodies[0].rows))
         current.observe(row);
     });
