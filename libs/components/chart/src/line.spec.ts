@@ -197,4 +197,14 @@ describe('PctLine, a line cut by its thresholds', () => {
       [y.map(23), top, right - y.map(23), bottom - top],
     ]);
   });
+
+  it('brings the defaults of a mark that bears series: the data layer, no sentence, no note boxes, no legend entries of its own', async () => {
+    const fixture = await render();
+    const line = fixture.debugElement.query((d) => d.name === 'pct-line')
+      .componentInstance as PctLine<(typeof temperature)[number]>;
+    expect(line.layer()).toBe('data');
+    expect(line.describe()).toBe('');
+    expect(line.noteBoxes()).toEqual([]);
+    expect(line.legendEntries()).toEqual([]);
+  });
 });

@@ -40,6 +40,9 @@ const temperature = Array.from({ length: 25 }, (_, i) => ({
         [color]="color()"
         [legend]="legend()"
       />
+      @if (bare()) {
+        <pct-reference [y]="20" unit="°C" label="Floor" />
+      }
     </pct-chart>
     <pct-chart-legend [chart]="chart" />
   `,
@@ -57,6 +60,7 @@ class Host {
   readonly dash = signal(false);
   readonly color = signal<number | string | undefined>(undefined);
   readonly legend = signal(false);
+  readonly bare = signal(false);
 }
 
 async function render(): Promise<ComponentFixture<Host>> {
@@ -351,5 +355,72 @@ describe('PctReference', () => {
         'dominant-baseline',
       ]),
     ).toEqual([String(right - 4), String(py - 4), 'end', 'auto']);
+  });
+
+  it('is a mark with no series — no extent, value, readings or span — whose identity is its colour; a bare one takes the defaults', async () => {
+    const fixture = await render();
+    const host = fixture.componentInstance;
+    const ref = fixture.debugElement.query((d) => d.name === 'pct-reference')
+      .componentInstance as PctReference;
+    expect(ref.series()).toEqual([]);
+    expect(ref.span()).toBeNull();
+    expect(ref.extent('Supply air', { from: T0, to: T0 + H })).toBeNull();
+    expect(ref.valueAt('Supply air', T0)).toBeNull();
+    expect(ref.readings('Supply air')).toEqual({
+      xs: new Float64Array(0),
+      ys: new Float64Array(0),
+      length: 0,
+    });
+    expect(ref.noteBoxes()).toEqual([]);
+    // the legend's entry carries the identity: the skin's colour is a custom place with no colour
+    expect(ref.legendEntries()).toEqual([]);
+    host.legend.set(true);
+    await settle(fixture);
+    expect(ref.legendEntries()).toEqual([
+      { id: 'Comfort', place: 'custom', color: null, name: 'Comfort' },
+    ]);
+    host.color.set(4);
+    await settle(fixture);
+    expect(ref.legendEntries()).toEqual([
+      { id: 'Comfort', place: 4, color: null, name: 'Comfort' },
+    ]);
+    expect(
+      (group(fixture) as HTMLElement).style.getPropertyValue(
+        '--_pct-chart-color',
+      ),
+    ).toBe('');
+    host.color.set('gold');
+    await settle(fixture);
+    expect(ref.legendEntries()).toEqual([
+      { id: 'Comfort', place: 'custom', color: 'gold', name: 'Comfort' },
+    ]);
+    // a position outside the window, or none at all: nothing drawn and nothing said
+    host.y.set(null);
+    host.x.set(T0 - 1);
+    await settle(fixture);
+    expect(group(fixture)).toBeNull();
+    host.x.set(T0 + 24 * H + 1);
+    await settle(fixture);
+    expect(group(fixture)).toBeNull();
+    host.x.set(null);
+    await settle(fixture);
+    expect(group(fixture)).toBeNull();
+    expect(ref.describe()).toBe('');
+    // a bare reference: solid, in the skin's colour, out of the legend
+    host.legend.set(false);
+    host.bare.set(true);
+    await settle(fixture);
+    const groups = [
+      ...element(fixture).querySelectorAll('[data-pct-part="reference"]'),
+    ];
+    expect(groups.length).toBe(1);
+    expect(
+      groups[0].querySelector('line.line')!.classList.contains('dashed'),
+    ).toBe(false);
+    expect(groups[0].getAttribute('data-pct-series')).toBeNull();
+    expect(
+      element(fixture).querySelectorAll('[data-pct-part="item"]').length,
+    ).toBe(1);
+    expect(described(fixture)).toBe('Floor 20 °C.');
   });
 });

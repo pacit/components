@@ -5,6 +5,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctChart } from './chart';
+import { PctChartLegend } from './legend';
 import { PctLine } from './line';
 import { PctNote } from './note';
 
@@ -17,9 +18,10 @@ const temperature = Array.from({ length: 25 }, (_, i) => ({
 }));
 
 @Component({
-  imports: [PctChart, PctLine, PctNote],
+  imports: [PctChart, PctLine, PctNote, PctChartLegend],
   template: `
     <pct-chart
+      #chart
       ariaLabel="Supply air"
       timeZone="UTC"
       locale="en-US"
@@ -34,11 +36,13 @@ const temperature = Array.from({ length: 25 }, (_, i) => ({
         [text]="text()"
         [position]="position()"
         [color]="color()"
+        [legend]="legend()"
       />
       @if (second()) {
         <pct-note [x]="x() + 1800000" [y]="y()" unit="°C" text="Second" />
       }
     </pct-chart>
+    <pct-chart-legend [chart]="chart" />
   `,
 })
 class Host {
@@ -52,6 +56,7 @@ class Host {
   readonly position = signal<'above' | 'below' | 'auto'>('auto');
   readonly color = signal<number | string | undefined>(undefined);
   readonly second = signal(false);
+  readonly legend = signal(false);
 }
 
 async function render(): Promise<ComponentFixture<Host>> {
@@ -234,5 +239,31 @@ describe('PctNote', () => {
     const across = chart.yScales().get('°C')!.map(21);
     const { dot } = drawnOf(notes(fixture)[0]);
     expect(dot).toEqual([across, along, 3]);
+  });
+
+  it('stands in the legend when asked, its dot as the swatch, and its toggle hides it with its sentence', async () => {
+    const fixture = await render();
+    const host = fixture.componentInstance;
+    const items = () => [
+      ...element(fixture).querySelectorAll('[data-pct-part="item"]'),
+    ];
+    expect(items().length).toBe(1);
+    host.legend.set(true);
+    host.color.set(3);
+    await settle(fixture);
+    expect(items().length).toBe(2);
+    expect(items()[1].querySelector('.name')!.textContent).toBe(
+      'Window opened',
+    );
+    const swatch = items()[1].querySelector('[data-pct-part="swatch"]')!;
+    expect(swatch.getAttribute('data-pct-series')).toBe('3');
+    expect(swatch.querySelector('circle.dot')).not.toBeNull();
+    (
+      items()[1].querySelector('[data-pct-part="toggle"]') as HTMLElement
+    ).click();
+    await settle(fixture);
+    expect(host.hidden()).toEqual(['Window opened']);
+    expect(notes(fixture)).toEqual([]);
+    expect(described(fixture)).toBeNull();
   });
 });

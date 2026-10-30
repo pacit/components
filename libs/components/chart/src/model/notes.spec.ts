@@ -83,6 +83,38 @@ describe('pctPlaceNotes', () => {
       8,
     );
     expect(lower[1].side).toBe('below');
+    // touching from the other side, from below and from above is no overlap either
+    const left = pctPlaceNotes(
+      [box({ id: 'a' }), box({ id: 'b', x: 40 })],
+      frame,
+      8,
+    );
+    expect(left[1]).toEqual({ id: 'b', left: 10, top: 52, side: 'above' });
+    const under = pctPlaceNotes(
+      [box({ id: 'a' }), box({ id: 'b', y: 100 })],
+      frame,
+      8,
+    );
+    expect(under[1]).toEqual({ id: 'b', left: 70, top: 72, side: 'above' });
+    const over = pctPlaceNotes(
+      [box({ id: 'a' }), box({ id: 'b', y: 60 })],
+      frame,
+      8,
+    );
+    expect(over[1]).toEqual({ id: 'b', left: 70, top: 32, side: 'above' });
+    // and a pixel in on each of those sides overlaps
+    expect(
+      pctPlaceNotes([box({ id: 'a' }), box({ id: 'b', x: 41 })], frame, 8)[1]
+        .side,
+    ).toBe('below');
+    expect(
+      pctPlaceNotes([box({ id: 'a' }), box({ id: 'b', y: 99 })], frame, 8)[1]
+        .side,
+    ).toBe('below');
+    expect(
+      pctPlaceNotes([box({ id: 'a' }), box({ id: 'b', y: 64 })], frame, 8)[1]
+        .side,
+    ).toBe('below');
   });
 
   it('pushes a box that fits on neither side back inside the frame', () => {
