@@ -509,7 +509,13 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
       exact: true,
     });
     await expect(table.getByRole('alert')).toHaveCount(0);
+    // Tab between the rows stays in the column; Tab past the last row leaves it.
     await first.focus();
+    await page.keyboard.press('Tab');
+    await expect(table.locator('[data-pct-part="error"]')).toHaveCount(0);
+    await table
+      .getByRole('checkbox', { name: 'Select Blinds 2', exact: true })
+      .focus();
     await page.keyboard.press('Tab');
     const error = table.locator('[data-pct-part="error"]');
     await expect(error).toHaveText('Pick at least one rule to move');
@@ -517,13 +523,32 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     await expect(element).toHaveAccessibleDescription(
       'Pick at least one rule to move',
     );
-    await expect(
-      table.getByRole('checkbox', { name: 'Select all rows', exact: true }),
-    ).toHaveAttribute('aria-invalid', 'true');
+    await expect(first).toHaveAttribute('aria-invalid', 'true');
+    await expect(first).toHaveAccessibleDescription(
+      'Pick at least one rule to move',
+    );
     await first.click();
     await expect(error).toHaveCount(0);
     await expect(element).toHaveAccessibleDescription(
       'Pick the rules to move to the new controller.',
+    );
+  });
+
+  test('a press with Shift on the edge of a checkbox’s target picks the range too', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-selection');
+    await table
+      .getByRole('checkbox', { name: 'Select Heater', exact: true })
+      .click();
+    // The label is the target; a press on its corner is forwarded to the checkbox.
+    await table
+      .locator('tbody tr')
+      .nth(4)
+      .locator('.pct-data-table__target')
+      .click({ position: { x: 1, y: 1 }, modifiers: ['Shift'] });
+    await expect(page.getByTestId('selection-state')).toContainText(
+      'Picked: 2 3 4 5.',
     );
   });
 

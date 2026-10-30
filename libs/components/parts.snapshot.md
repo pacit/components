@@ -174,11 +174,16 @@ from what the browser really gets.
 ./switch PctSwitch warning
 ./table PctDataTable details
 ./table PctDataTable disclosure
+./table PctDataTable error
 ./table PctDataTable group
+./table PctDataTable hint
 ./table PctDataTable mark
 ./table PctDataTable message
 ./table PctDataTable place
 ./table PctDataTable placeholder
+./table PctDataTable select
+./table PctDataTable select-all
+./table PctDataTable warning
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
 ./tabs PctTab panel

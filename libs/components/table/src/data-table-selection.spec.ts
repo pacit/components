@@ -224,6 +224,55 @@ describe('PctTableSelection — the rows picked', () => {
     expect(fixture.componentInstance.value()).toEqual([1, 4]);
   });
 
+  it('a press on the target beside the control is the table’s, Shift and all', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const target = (input: HTMLInputElement) =>
+      input.parentElement as HTMLLabelElement;
+    const pressBeside = async (input: HTMLInputElement, shiftKey = false) => {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        shiftKey,
+      });
+      target(input).dispatchEvent(event);
+      await settle(fixture);
+      return event;
+    };
+    const event = await pressBeside(picks()[0]);
+    // The label hands the press on to nothing: the table took it.
+    expect(event.defaultPrevented).toBe(true);
+    expect(host.value()).toEqual([1]);
+    expect(picks()[0].checked).toBe(true);
+    await pressBeside(picks()[2], true);
+    expect(host.value()).toEqual([1, 2, 3]);
+    await pressBeside(picks()[0]);
+    expect(host.value()).toEqual([2, 3]);
+    expect(picks()[0].checked).toBe(false);
+    // Held or disabled, the press does nothing.
+    host.held.set(true);
+    await settle(fixture);
+    expect((await pressBeside(picks()[3])).defaultPrevented).toBe(true);
+    expect(picks()[3].checked).toBe(false);
+    host.held.set(false);
+    host.off.set(true);
+    await settle(fixture);
+    await pressBeside(picks()[3]);
+    expect(host.value()).toEqual([2, 3]);
+    expect(picks()[3].checked).toBe(false);
+    host.off.set(false);
+    host.mode.set('single');
+    await settle(fixture);
+    await pressBeside(picks()[3]);
+    expect(host.value()).toEqual([4]);
+    expect(picks()[3].checked).toBe(true);
+    // A radio already checked stays: nothing changes.
+    host.value.set([4, 2]);
+    await settle(fixture);
+    await pressBeside(picks()[3]);
+    expect(host.value()).toEqual([4, 2]);
+  });
+
   it('heads the column with a checkbox clear, mixed or checked over the rows the filter left', async () => {
     const fixture = await render(Host);
     const host = fixture.componentInstance;
@@ -316,6 +365,85 @@ describe('PctTableSelection — the rows picked', () => {
     expect(host.value()).toEqual([1]);
   });
 
+  it('picks the first id only in single mode, as its radios can', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.mode.set('single');
+    host.value.set([3, 1]);
+    await settle(fixture);
+    expect(picks().map((input) => input.checked)).toEqual([
+      false,
+      false,
+      true,
+      false,
+    ]);
+    expect(rows().map((row) => row.hasAttribute('data-pct-selected'))).toEqual([
+      false,
+      false,
+      true,
+      false,
+    ]);
+  });
+
+  it('disables the header when the filter leaves no row to pick', async () => {
+    const fixture = await render(Host);
+    expect(all()?.disabled).toBe(false);
+    fixture.componentInstance.filter.set('nothing at all');
+    await settle(fixture);
+    expect(all()?.disabled).toBe(true);
+  });
+
+  it('focuses the first row picked, or the first row, or the header when no row is drawn', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.selection().focus();
+    expect(document.activeElement).toBe(picks()[0]);
+    host.value.set([3]);
+    await settle(fixture);
+    host.selection().focus();
+    expect(document.activeElement).toBe(picks()[2]);
+    host.filter.set('nothing at all');
+    await settle(fixture);
+    host.selection().focus();
+    // The header's is disabled then, and takes no focus: nothing does.
+    expect(document.activeElement).toBe(document.body);
+    host.filter.set('');
+    host.off.set(true);
+    await settle(fixture);
+    (document.activeElement as HTMLElement | null)?.blur();
+    host.selection().focus();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('focuses the header’s checkbox when every group is collapsed', async () => {
+    @Component({
+      imports: [PctDataTable, PctTableSelection, PctTableGroups],
+      template: `
+        <pct-data-table
+          pctTableSelection
+          [pctTableGroups]="columns"
+          [groupBy]="['room']"
+          [collapsed]="closed"
+          [rows]="rows"
+          [columns]="columns"
+          [rowId]="byId"
+          caption="Devices"
+        />
+      `,
+    })
+    class ClosedHost {
+      readonly selection = viewChild.required(PctTableSelection);
+      readonly columns = columns;
+      readonly byId = byId;
+      readonly rows = DEVICES;
+      readonly closed = ['["Kitchen"]', '["Hall"]'];
+    }
+    const fixture = await render(ClosedHost);
+    expect(picks()).toHaveLength(0);
+    fixture.componentInstance.selection().focus();
+    expect(document.activeElement).toBe(all());
+  });
+
   it('disables every control of the column', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.off.set(true);
@@ -346,6 +474,7 @@ describe('PctTableSelection — the rows picked', () => {
       false,
     ]);
     expect(all()?.checked).toBe(false);
+    expect(all()?.indeterminate).toBe(true);
     host.mode.set('single');
     await settle(fixture);
     // A radio has no `aria-readonly`; its press is taken back all the same.
@@ -362,11 +491,12 @@ describe('PctTableSelection — the rows picked', () => {
     const fixture = await render(Host);
     const host = fixture.componentInstance;
     expect(picks()[0].hasAttribute('name')).toBe(false);
-    expect(all()?.hasAttribute('name')).toBe(false);
     host.name.set('rules');
     await settle(fixture);
     expect(picks().every((input) => input.name === 'rules')).toBe(true);
-    expect(all()?.name).toBe('rules');
+    // Each submits its row's id; the header's submits nothing.
+    expect(picks().map((input) => input.value)).toEqual(['1', '2', '3', '4']);
+    expect(all()?.hasAttribute('name')).toBe(false);
     host.mode.set('single');
     await settle(fixture);
     expect(picks().every((input) => input.name === 'rules')).toBe(true);
@@ -376,13 +506,13 @@ describe('PctTableSelection — the rows picked', () => {
     const fixture = await render(Host);
     const th = () => all()?.closest('th') as HTMLElement;
     expect(th().querySelector('.pct-data-table__required')).toBeNull();
-    expect(all()?.hasAttribute('aria-required')).toBe(false);
     fixture.componentInstance.needed.set(true);
     await settle(fixture);
     const sign = th().querySelector('.pct-data-table__required');
     expect(sign?.textContent).toBe('*');
     expect(sign?.getAttribute('aria-hidden')).toBe('true');
-    expect(all()?.getAttribute('aria-required')).toBe('true');
+    // Not on the header's checkbox, which would say every row must be picked.
+    expect(all()?.hasAttribute('aria-required')).toBe(false);
   });
 
   it('writes the hint under the table, which describes the table by it', async () => {
@@ -406,10 +536,26 @@ describe('PctTableSelection — the rows picked', () => {
     picks()[0].dispatchEvent(new FocusEvent('blur'));
     (all() as HTMLInputElement).dispatchEvent(new FocusEvent('blur'));
     expect(fixture.componentInstance.touches).toBe(2);
+    // On to another control of the column: not left yet.
+    picks()[0].dispatchEvent(
+      new FocusEvent('blur', { relatedTarget: picks()[1] }),
+    );
+    picks()[1].dispatchEvent(new FocusEvent('blur', { relatedTarget: all() }));
+    expect(fixture.componentInstance.touches).toBe(2);
+    // On to anything else, a caption's text or another table's checkbox, it is.
+    const other = document.createElement('input');
+    other.setAttribute('data-pct-part', 'select');
+    document.body.append(other);
+    picks()[0].dispatchEvent(new FocusEvent('blur', { relatedTarget: other }));
+    picks()[0].dispatchEvent(
+      new FocusEvent('blur', { relatedTarget: table().caption }),
+    );
+    other.remove();
+    expect(fixture.componentInstance.touches).toBe(4);
     fixture.componentInstance.mode.set('single');
     await settle(fixture);
     picks()[0].dispatchEvent(new FocusEvent('blur'));
-    expect(fixture.componentInstance.touches).toBe(3);
+    expect(fixture.componentInstance.touches).toBe(5);
   });
 
   it('counts its column among the ones a placeholder row and a details row span', async () => {
@@ -670,7 +816,9 @@ describe('PctTableSelection — a field of a form', () => {
       false,
     ]);
     // `required()` reaches the header.
-    expect(all()?.getAttribute('aria-required')).toBe('true');
+    expect(
+      all()?.closest('th')?.querySelector('.pct-data-table__required'),
+    ).not.toBeNull();
   });
 
   it('shows the error only once touched, in place of the hint, and drops it once a row is picked', async () => {
@@ -686,11 +834,24 @@ describe('PctTableSelection — a field of a form', () => {
     expect(error.id).toMatch(/^pct-table-selection-\d+-error$/);
     expect(line('hint')).toBeNull();
     expect(table().getAttribute('aria-describedby')).toBe(error.id);
-    expect(all()?.getAttribute('aria-invalid')).toBe('true');
+    // Each row's control says so too, where a reader in a cell hears it.
+    expect(
+      picks().every((input) => input.getAttribute('aria-invalid') === 'true'),
+    ).toBe(true);
+    expect(
+      picks().every(
+        (input) => input.getAttribute('aria-describedby') === error.id,
+      ),
+    ).toBe(true);
+    expect(all()?.hasAttribute('aria-invalid')).toBe(false);
     expect(host().hasAttribute('data-pct-invalid')).toBe(true);
     await press(fixture, picks()[0]);
     expect(line('error')).toBeNull();
-    expect(all()?.hasAttribute('aria-invalid')).toBe(false);
+    expect(picks().some((input) => input.hasAttribute('aria-invalid'))).toBe(
+      false,
+    );
+    // A hint describes the table, not each row.
+    expect(picks()[0].hasAttribute('aria-describedby')).toBe(false);
     expect(host().hasAttribute('data-pct-invalid')).toBe(false);
     expect(table().getAttribute('aria-describedby')).toBe(line('hint')?.id);
   });
@@ -710,6 +871,7 @@ describe('PctTableSelection — a field of a form', () => {
       'Warning: Moving many takes a while',
     );
     expect(table().getAttribute('aria-describedby')).toBe(warning.id);
+    expect(picks()[0].getAttribute('aria-describedby')).toBe(warning.id);
     expect(host().hasAttribute('data-pct-warning')).toBe(true);
     expect(host().hasAttribute('data-pct-invalid')).toBe(false);
     expect(fixture.componentInstance.f.devices().valid()).toBe(true);

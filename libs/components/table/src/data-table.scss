@@ -86,6 +86,10 @@ tbody > tr[data-pct-index] {
    the eye. */
 tbody > tr[data-pct-selected] {
   --_selected: var(--pct-table-bg-selected);
+}
+
+/* A toned row keeps its tone's text, which its fill was measured against. */
+tbody > tr[data-pct-selected]:not([data-pct-tone]) {
   color: var(--pct-table-fg-selected);
 }
 

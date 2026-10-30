@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   computed,
   Directive,
+  ElementRef,
   inject,
   input,
   model,
@@ -31,8 +32,8 @@ import type { PctRowId } from './model/columns';
  * press on the row, which would take the press from the controls in its cells.
  *
  * **The selection is the application's.** An id stays in `value` when a filter hides its
- * row and when the rows change: the list is what the application said, and only it takes an
- * id out ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
+ * row and when the rows change: the list is what the application said, and a press takes out
+ * only the ids it drops — in `single` mode, the one it replaces ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
  * `selectAll` adds the rows the filter left to it, and `clear` empties it.
  *
  * A list that must not be empty takes `minLength(1)`: the form's `required()` reads an empty
@@ -55,6 +56,7 @@ export class PctTableSelection implements FormValueControl<
   readonly PctRowId[]
 > {
   private readonly table = inject(PctDataTable);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
    * The ids of the rows picked — a required field of the `FormValueControl` contract.
@@ -214,6 +216,26 @@ export class PctTableSelection implements FormValueControl<
       ...this.value(),
       ...this.table.matchedIds().filter((id) => !picked.has(id)),
     ]);
+  }
+
+  /**
+   * Called by signal forms — focuses the checkbox of the first row picked, or the first row's,
+   * or the header's when no row is drawn.
+   *
+   * @since next
+   */
+  focus(options?: FocusOptions): void {
+    const own = this.host.nativeElement.querySelectorAll<HTMLInputElement>(
+      ':scope > pct-table-frame > table > tbody > tr > td > label > [data-pct-part="select"]',
+    );
+    const controls = Array.from(own).filter((input) => !input.disabled);
+    const target =
+      controls.find((input) => input.checked) ??
+      controls[0] ??
+      this.host.nativeElement.querySelector<HTMLInputElement>(
+        ':scope > pct-table-frame > table > thead [data-pct-part="select-all"]',
+      );
+    target?.focus(options);
   }
 
   /**

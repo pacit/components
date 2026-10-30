@@ -33,14 +33,11 @@
               data-pct-part="select-all"
               [checked]="pickedAll().checked"
               [indeterminate]="pickedAll().mixed"
-              [disabled]="selection.disabled()"
+              [disabled]="selection.disabled() || matchedIds().length === 0"
               [attr.aria-label]="texts().tableSelectAll"
-              [attr.aria-invalid]="selection.invalid() ? 'true' : null"
-              [attr.aria-required]="selection.required() ? 'true' : null"
               [attr.aria-readonly]="selection.readonly() ? 'true' : null"
-              [attr.name]="selection.name() || null"
               (click)="pickAll($event)"
-              (blur)="selection.touch()"
+              (blur)="leave($event)"
             />
           </label>
           <span hidden [id]="pickWordId">{{ texts().tableSelectRow }}</span>
@@ -159,33 +156,46 @@
       >
         @if (selection(); as selection) {
         <td pctCell class="pct-data-table__pick">
-          <label class="pct-data-table__target">
-            @if (selection.mode() === 'multiple') {
+          @if (selection.mode() === 'multiple') {
+          <label
+            class="pct-data-table__target"
+            (click)="pressTarget(row, $event)"
+          >
             <input
               type="checkbox"
               data-pct-part="select"
               [checked]="row.selected"
               [disabled]="selection.disabled()"
+              [value]="row.id"
               [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"
+              [attr.aria-describedby]="pickDescribedBy()"
+              [attr.aria-invalid]="selection.invalid() ? 'true' : null"
               [attr.aria-readonly]="selection.readonly() ? 'true' : null"
               [attr.name]="selection.name() || null"
               (click)="pick(row, $event)"
-              (blur)="selection.touch()"
+              (blur)="leave($event)"
             />
-            } @else {
+          </label>
+          } @else {
+          <label
+            class="pct-data-table__target"
+            (click)="pressTarget(row, $event)"
+          >
             <input
               type="radio"
               data-pct-part="select"
               [name]="pickName()"
               [checked]="row.selected"
               [disabled]="selection.disabled()"
+              [value]="row.id"
               [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"
+              [attr.aria-describedby]="pickDescribedBy()"
               [attr.aria-invalid]="selection.invalid() ? 'true' : null"
               (click)="pick(row, $event)"
-              (blur)="selection.touch()"
+              (blur)="leave($event)"
             />
-            }
           </label>
+          }
         </td>
         } @if (disclosure()) {
         <td pctCell class="pct-data-table__disclosure">

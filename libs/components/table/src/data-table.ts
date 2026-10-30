@@ -585,7 +585,21 @@ export class PctDataTable<
   );
 
   /** The ids picked, to look up. */
-  private readonly picked = computed(() => new Set(this.selection()?.value()));
+  private readonly picked = computed(() => {
+    const selection = this.selection();
+    const value = selection?.value() ?? [];
+    // One row is picked in single mode, whatever the list says: a radio group checks one.
+    return new Set(selection?.mode() === 'single' ? value.slice(0, 1) : value);
+  });
+
+  /**
+   * What a row's control is described by: the selection's error or warning, which a reader
+   * would not hear from the table's description once inside a cell. A hint is the table's.
+   */
+  protected readonly pickDescribedBy = computed(() => {
+    const line = this.selection()?.line();
+    return line && line.kind !== 'hint' ? line.id : null;
+  });
 
   /** The header's checkbox, over the rows the filter left: all of them picked, or some. */
   protected readonly pickedAll = computed(() => {
@@ -1152,14 +1166,39 @@ export class PctDataTable<
    * stands, and with Shift every row drawn between it and the row pressed before.
    */
   protected pick(row: Row<T>, event: MouseEvent): void {
-    const selection = this.selection() as NonNullable<
-      PctTableFeature['selection']
-    >;
     // A held selection takes the press back: the control's own toggle is the platform's.
-    if (selection.readonly()) {
+    if (this.selection()?.readonly()) {
       event.preventDefault();
       return;
     }
+    this.pickRow(
+      row,
+      (event.target as HTMLInputElement).checked,
+      event.shiftKey,
+    );
+  }
+
+  /**
+   * A press on the target around a row's control, beside the control itself. The engines part
+   * here: Chromium hands a press with Shift on to the control, Firefox and WebKit hand it to
+   * nothing. So the label hands on no press, and the press is the table's in all three.
+   */
+  protected pressTarget(row: Row<T>, event: MouseEvent): void {
+    const label = event.currentTarget as HTMLLabelElement;
+    const input = label.querySelector('input') as HTMLInputElement;
+    if (event.target === input) return;
+    event.preventDefault();
+    if (input.disabled || this.selection()?.readonly()) return;
+    if (input.type === 'radio' && input.checked) return;
+    input.checked = input.type === 'radio' || !input.checked;
+    this.pickRow(row, input.checked, event.shiftKey);
+  }
+
+  /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
+  private pickRow(row: Row<T>, on: boolean, shift: boolean): void {
+    const selection = this.selection() as NonNullable<
+      PctTableFeature['selection']
+    >;
     const anchor = this.anchor;
     this.anchor = row.id;
     if (selection.mode() === 'single') {
@@ -1167,15 +1206,29 @@ export class PctDataTable<
       return;
     }
     const drawn = this.body().map((other) => other.id);
-    const from = event.shiftKey && anchor !== null ? drawn.indexOf(anchor) : -1;
+    const from = shift && anchor !== null ? drawn.indexOf(anchor) : -1;
     const to = drawn.indexOf(row.id);
     const range = new Set(
       from < 0
         ? [row.id]
         : drawn.slice(Math.min(from, to), Math.max(from, to) + 1),
     );
-    const on = (event.target as HTMLInputElement).checked;
     selection.value.update((value) => adding(value, range, on));
+  }
+
+  /**
+   * A control of the column lost the focus: the form hears the column was left, unless the
+   * focus went on to another of its controls — an arrow between radios, a Tab to the next row.
+   */
+  protected leave(event: FocusEvent): void {
+    const next = event.relatedTarget;
+    if (
+      next instanceof Element &&
+      this.ownTable().contains(next) &&
+      next.matches('[data-pct-part="select"], [data-pct-part="select-all"]')
+    )
+      return;
+    this.selection()?.touch();
   }
 
   /** The header's checkbox was pressed: every row the filter left is picked, or dropped. */

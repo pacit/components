@@ -93,8 +93,8 @@ checkbox, named `Select` and the row's first text, and heads the column with one
 clear, mixed or checked over the rows the filter left. Shift with a press picks the rows
 drawn between it and the row pressed before. The directive is a `FormValueControl` of the
 rows' ids, so `[formField]` binds it like any field: its error, once touched, its warning
-and its hint stand under the table, which they describe. An id stays picked while the
-filter hides its row and when the rows change — the list is the application's. A list
+and its hint stand under the table, which they describe, and an error or a warning describes each row's checkbox too, where a reader inside a cell hears it. An id stays picked while the
+filter hides its row and when the rows change — the list is the application's, and a press takes out only what it drops. A list
 that must not be empty takes `minLength(1)`, because the form's `required()` reads an empty
 list as filled. `mode="single"` picks one row with radios.
 
