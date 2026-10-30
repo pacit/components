@@ -3,6 +3,10 @@
   table stands after it in the frame, outside the table, so a reader counting the table's
   rows counts rows of data (0098, S3).
 -->
+@if (selection(); as selection) {
+<!-- The selection's parts, made in this view: their templates are drawn below. -->
+<ng-container [ngComponentOutlet]="selection.parts" />
+}
 <pct-table-frame
   [labelledby]="ariaLabelledby() || null"
   [label]="ariaLabel() || null"
@@ -13,7 +17,7 @@
     (sortChange)="pressed($event)"
     [attr.aria-labelledby]="ariaLabelledby() || null"
     [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-describedby]="selection()?.line()?.id ?? null"
+    [attr.aria-describedby]="selection()?.describedBy() ?? null"
   >
     @if (caption()) {
     <caption pctCaption>
@@ -23,31 +27,9 @@
     <thead>
       <tr>
         @if (selection(); as selection) {
-        <!-- The column of picks: a checkbox over the rows the filter left, or, for one row, the
-             word the radios are named by. -->
+        <!-- The column of picks: what is in it is the selection's to draw. -->
         <th pctHeader scope="col" class="pct-data-table__pick">
-          @if (selection.mode() === 'multiple') {
-          <label class="pct-data-table__target">
-            <input
-              type="checkbox"
-              data-pct-part="select-all"
-              [checked]="pickedAll().checked"
-              [indeterminate]="pickedAll().mixed"
-              [disabled]="selection.disabled() || matchedIds().length === 0"
-              [attr.aria-label]="texts().tableSelectAll"
-              [attr.aria-readonly]="selection.readonly() ? 'true' : null"
-              (click)="pickAll($event)"
-              (blur)="leave($event)"
-            />
-          </label>
-          <span hidden [id]="pickWordId">{{ texts().tableSelectRow }}</span>
-          } @else {
-          <span class="pct-data-table__word" [id]="pickWordId"
-            >{{ texts().tableSelectRow }}</span
-          >
-          } @if (selection.required()) {
-          <span class="pct-data-table__required" aria-hidden="true">*</span>
-          }
+          <ng-container [ngTemplateOutlet]="selection.head()" />
         </th>
         } @if (disclosure()) {
         <th pctHeader scope="col" class="pct-data-table__disclosure">
@@ -156,40 +138,10 @@
       >
         @if (selection(); as selection) {
         <td pctCell class="pct-data-table__pick">
-          @if (selection.mode() === 'multiple') {
-          <label class="pct-data-table__target">
-            <input
-              type="checkbox"
-              data-pct-part="select"
-              [checked]="row.selected"
-              [disabled]="selection.disabled()"
-              [value]="row.id"
-              [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"
-              [attr.aria-describedby]="pickDescribedBy()"
-              [attr.aria-invalid]="selection.invalid() ? 'true' : null"
-              [attr.aria-readonly]="selection.readonly() ? 'true' : null"
-              [attr.name]="selection.name() || null"
-              (click)="pick(row, $event)"
-              (blur)="leave($event)"
-            />
-          </label>
-          } @else {
-          <label class="pct-data-table__target">
-            <input
-              type="radio"
-              data-pct-part="select"
-              [name]="pickName()"
-              [checked]="row.selected"
-              [disabled]="selection.disabled()"
-              [value]="row.id"
-              [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"
-              [attr.aria-describedby]="pickDescribedBy()"
-              [attr.aria-invalid]="selection.invalid() ? 'true' : null"
-              (click)="pick(row, $event)"
-              (blur)="leave($event)"
-            />
-          </label>
-          }
+          <ng-container
+            [ngTemplateOutlet]="selection.cell()"
+            [ngTemplateOutletContext]="{ $implicit: row }"
+          />
         </td>
         } @if (disclosure()) {
         <td pctCell class="pct-data-table__disclosure">
@@ -345,45 +297,7 @@
   </div>
   }
 </pct-table-frame>
-<!-- The selection's one line, as a field draws it (`req-api-message`): the error, else the
-     warning, else the hint — outside the frame, so a scrolled table keeps it in view. -->
-@if (selection()?.line(); as line) { @if (line.kind === 'error') {
-<span
-  class="pct-data-table__error"
-  data-pct-part="error"
-  [id]="line.id"
-  role="alert"
-  >{{ line.text }}</span
->
-} @else if (line.kind === 'warning') {
-<span
-  class="pct-data-table__warning"
-  data-pct-part="warning"
-  [id]="line.id"
-  role="status"
->
-  <pct-icon class="pct-data-table__warning-icon" name="warning">
-    <svg
-      viewBox="0 0 16 16"
-      width="100%"
-      height="100%"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      focusable="false"
-    >
-      <path d="M8 2.6L14.5 13.4h-13z" />
-      <path d="M8 6.6v2.6" />
-      <path d="M8 11.4h.01" />
-    </svg>
-  </pct-icon>
-  <span class="pct-data-table__word">{{ texts().fieldWarning }}</span>
-  {{ line.text }}
-</span>
-} @else {
-<span class="pct-data-table__hint" data-pct-part="hint" [id]="line.id"
-  >{{ line.text }}</span
->
-} }
+<!-- What a feature draws under the table, outside the frame: the selection's line. -->
+@if (selection(); as selection) {
+<ng-container [ngTemplateOutlet]="selection.below()" />
+}

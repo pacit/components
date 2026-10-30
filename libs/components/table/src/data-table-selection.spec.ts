@@ -365,7 +365,7 @@ describe('PctTableSelection — the rows picked', () => {
       'radio',
     ]);
     expect(new Set(radios.map((input) => input.name)).size).toBe(1);
-    expect(radios[0].name).toMatch(/^pct-data-table-\d+-pick$/);
+    expect(radios[0].name).toMatch(/^pct-table-selection-\d+-pick$/);
     // The word the radios are named by is the header's, read as its text.
     const word = document.getElementById(
       (radios[0].getAttribute('aria-labelledby') as string).split(' ')[0],

@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
   afterNextRender,
@@ -21,6 +21,7 @@ import {
   viewChild,
   type Signal,
   type TemplateRef,
+  type Type,
   type WritableSignal,
 } from '@angular/core';
 import {
@@ -104,26 +105,6 @@ export interface PctScrollToOptions {
 }
 
 /**
- * How many rows a selection holds: one, picked with a radio, or any, with a checkbox each and
- * one in the header over all the rows the filter left.
- *
- * @since next
- */
-export type PctSelectionMode = 'single' | 'multiple';
-
-/**
- * The line a selection writes under the table: its error, its warning or its hint, and the id
- * the table describes itself by.
- *
- * @since next
- */
-export interface PctTableSelectionLine {
-  readonly kind: 'error' | 'warning' | 'hint';
-  readonly id: string;
-  readonly text: string;
-}
-
-/**
  * What a directive on the table adds to it, given once from its constructor: a hard list, one
  * field per feature, so the table's own directives grow it and nothing else does
  * ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
@@ -142,17 +123,19 @@ export interface PctTableFeature {
     readonly collapsed: WritableSignal<readonly string[]>;
     readonly disabled: Signal<boolean>;
   };
-  /** The rows picked, held by the application, and the selection's state as a field. */
+  /**
+   * The rows picked: the component the table makes for them, out of the paint, and what it
+   * draws in the table's places — the header of its column, a row's control, the line under
+   * the table — and what the table paints by. The table makes the component in its own view,
+   * so a server's rendering of its templates is the one the browser takes over.
+   */
   readonly selection?: {
-    readonly value: WritableSignal<readonly PctRowId[]>;
-    readonly mode: Signal<PctSelectionMode>;
-    readonly disabled: Signal<boolean>;
-    readonly readonly: Signal<boolean>;
-    readonly name: Signal<string>;
-    readonly required: Signal<boolean>;
-    readonly invalid: Signal<boolean>;
-    readonly line: Signal<PctTableSelectionLine | null>;
-    readonly touch: () => void;
+    readonly parts: Type<unknown>;
+    readonly head: Signal<TemplateRef<unknown> | null>;
+    readonly cell: Signal<TemplateRef<unknown> | null>;
+    readonly below: Signal<TemplateRef<unknown> | null>;
+    readonly picked: Signal<ReadonlySet<PctRowId>>;
+    readonly describedBy: Signal<string | null>;
   };
 }
 
@@ -255,19 +238,6 @@ function sameValue(a: unknown, b: unknown): boolean {
   return Object.is(a, b);
 }
 
-/**
- * A selection with `ids` added, after the ids it held in their order, or with `ids` taken out.
- */
-function adding(
-  value: readonly PctRowId[],
-  ids: ReadonlySet<PctRowId>,
-  on: boolean,
-): readonly PctRowId[] {
-  if (!on) return value.filter((id) => !ids.has(id));
-  const had = new Set(value);
-  return [...value, ...[...ids].filter((id) => !had.has(id))];
-}
-
 /** Writes a value; `now` is handed in at the write, so a relative column counts from the moment the rows were drawn. */
 type Writer = (value: unknown, now: PctInstant) => string;
 
@@ -339,6 +309,7 @@ function writerOf(
   selector: 'pct-data-table',
   exportAs: 'pctDataTable',
   imports: [
+    NgComponentOutlet,
     NgTemplateOutlet,
     PctIcon,
     PctSkeleton,
@@ -584,50 +555,10 @@ export class PctDataTable<
     () => this.contributed().selection ?? null,
   );
 
-  /** The selection, where only a table that picks rows reads it: its column, its handlers. */
-  private chosen(): NonNullable<PctTableFeature['selection']> {
-    return this.selection() as NonNullable<PctTableFeature['selection']>;
-  }
-
   /** The ids picked, to look up. */
-  private readonly picked = computed(() => {
-    const selection = this.selection();
-    if (selection === null) return new Set<PctRowId>();
-    const value = selection.value();
-    // One row is picked in single mode, whatever the list says: a radio group checks one.
-    return new Set(selection.mode() === 'single' ? value.slice(0, 1) : value);
-  });
-
-  /**
-   * What a row's control is described by: the selection's error or warning, which a reader
-   * would not hear from the table's description once inside a cell. A hint is the table's.
-   */
-  protected readonly pickDescribedBy = computed(() => {
-    const line = this.chosen().line();
-    return line && line.kind !== 'hint' ? line.id : null;
-  });
-
-  /** The header's checkbox, over the rows the filter left: all of them picked, or some. */
-  protected readonly pickedAll = computed(() => {
-    const picked = this.picked();
-    const ids = this.matchedIds();
-    const count = ids.filter((id) => picked.has(id)).length;
-    return {
-      checked: count > 0 && count === ids.length,
-      mixed: count > 0 && count < ids.length,
-    };
-  });
-
-  /** The name the radios of a single selection share, which makes them one group. */
-  protected readonly pickName = computed(
-    () => this.chosen().name() || `${this.uid}-pick`,
+  private readonly picked = computed(
+    () => this.selection()?.picked() ?? new Set<PctRowId>(),
   );
-
-  /** The id of the word a row's checkbox is named by, before the row's first text. */
-  protected readonly pickWordId = `${this.uid}-pick-word`;
-
-  /** The row pressed last: the other end of the range a press with Shift picks. */
-  private anchor: PctRowId | null = null;
 
   /**
    * The columns that may give way, in order. None while the details are disabled: a hidden
@@ -1167,96 +1098,6 @@ export class PctDataTable<
     return id;
   }
 
-  /**
-   * A row's checkbox or radio was pressed: the row is picked or dropped as the control now
-   * stands, and with Shift every row drawn between it and the row pressed before.
-   */
-  protected pick(row: Row<T>, event: MouseEvent): void {
-    // A held selection takes the press back: the control's own toggle is the platform's.
-    if (this.chosen().readonly()) {
-      event.preventDefault();
-      return;
-    }
-    this.pickRow(
-      row,
-      (event.target as HTMLInputElement).checked,
-      event.shiftKey,
-    );
-  }
-
-  /**
-   * A press on the target around a row's control, beside the control itself. The engines part
-   * here: Chromium hands a press with Shift on to the control, Firefox and WebKit hand it to
-   * nothing. So the label hands on no press, and the press is the table's in all three.
-   */
-  private pressTarget(event: MouseEvent): void {
-    const label = (event.target as Element).closest(
-      'td > .pct-data-table__target',
-    );
-    // A table nested in a cell picks its own rows.
-    if (label === null || label.closest('table') !== this.ownTable()) return;
-    const control = label.querySelector('input') as HTMLInputElement;
-    if (event.target === control) return;
-    event.preventDefault();
-    if (control.disabled || this.chosen().readonly()) return;
-    // A radio checked stays checked; any other press turns the control.
-    if (control.type === 'radio' && control.checked) return;
-    const line = Number(
-      (label.closest('tr') as HTMLTableRowElement).dataset['pctIndex'],
-    );
-    const row = this.body().find((other) => other.line === line) as Row<T>;
-    control.checked = !control.checked;
-    this.pickRow(row, control.checked, event.shiftKey);
-  }
-
-  /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
-  private pickRow(row: Row<T>, on: boolean, shift: boolean): void {
-    const selection = this.chosen();
-    const anchor = this.anchor;
-    this.anchor = row.id;
-    if (selection.mode() === 'single') {
-      selection.value.set([row.id]);
-      return;
-    }
-    const drawn = this.body().map((other) => other.id);
-    // No row pressed before is no row drawn: `indexOf` finds none.
-    const from = shift ? drawn.indexOf(anchor as PctRowId) : -1;
-    const to = drawn.indexOf(row.id);
-    const range = new Set(
-      from < 0
-        ? [row.id]
-        : drawn.slice(Math.min(from, to), Math.max(from, to) + 1),
-    );
-    selection.value.update((value) => adding(value, range, on));
-  }
-
-  /**
-   * A control of the column lost the focus: the form hears the column was left, unless the
-   * focus went on to another of its controls — an arrow between radios, a Tab to the next row.
-   */
-  protected leave(event: FocusEvent): void {
-    const next = event.relatedTarget;
-    if (
-      next instanceof Element &&
-      this.ownTable().contains(next) &&
-      next.matches('[data-pct-part="select"], [data-pct-part="select-all"]')
-    )
-      return;
-    this.chosen().touch();
-  }
-
-  /** The header's checkbox was pressed: every row the filter left is picked, or dropped. */
-  protected pickAll(event: MouseEvent): void {
-    const selection = this.chosen();
-    if (selection.readonly()) {
-      event.preventDefault();
-      return;
-    }
-    const ids = new Set(this.matchedIds());
-    const all = this.pickedAll().checked;
-    selection.value.update((value) => adding(value, ids, !all));
-  }
-
   /** Opens the row's details, or closes them. */
   protected toggleDetails(id: PctRowId): void {
     this.openDetails().update((open) =>
@@ -1391,9 +1232,6 @@ export class PctDataTable<
         this.noteFocus(event.target as Element),
       );
       table.addEventListener('pointerover', (event) => this.noteCut(event));
-      // A press beside a row's control, on the target around it: no handler in the template,
-      // where a label with one would read as a control of its own.
-      table.addEventListener('click', (event) => this.pressTarget(event));
       table.addEventListener('pointerout', (event) => this.leaveCut(event));
       table.addEventListener('animationend', (event) =>
         (event.target as HTMLElement).removeAttribute('data-pct-changed'),

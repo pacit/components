@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "message": "declares no selector, so no consumer names it",
+  "$reason": "ngc compiles `selector: ''` as it compiles no selector at all, under its default `ng-component` (`resolved === \"\" ? defaultSelector`, measured through ngc 22.2.1), so an empty one is no selector to point 3 either. Its button names nothing of its own: refused for that, and not for the inputs a component under a selector of its own is asked for."
+}

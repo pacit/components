@@ -175,57 +175,6 @@ td[data-pct-changed] {
   vertical-align: middle;
 }
 
-/* The label around a native checkbox or radio is its target: a press anywhere on it presses
-   the control, whose box keeps the platform's size. */
-.pct-data-table__target {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  min-inline-size: var(--pct-table-toggle-target-min);
-  min-block-size: var(--pct-table-toggle-target-min);
-  cursor: pointer;
-}
-
-.pct-data-table__target > input {
-  margin: 0;
-  accent-color: var(--pct-primary);
-  cursor: inherit;
-}
-
-.pct-data-table__target:has(> input:disabled) {
-  cursor: not-allowed;
-}
-
-.pct-data-table__required {
-  color: var(--pct-table-hint-fg-invalid);
-}
-
-/* The selection's line under the table, at the size a field writes its own. */
-.pct-data-table__hint,
-.pct-data-table__error,
-.pct-data-table__warning {
-  margin-block-start: var(--pct-space-2);
-  font-size: var(--pct-font-size-sm);
-  color: var(--pct-table-hint-fg);
-}
-
-.pct-data-table__error {
-  color: var(--pct-table-hint-fg-invalid);
-}
-
-/* The tone's glyph before the text, which survives the palette's absence (0087). */
-.pct-data-table__warning {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--pct-space-2);
-  color: var(--pct-table-hint-fg-warning);
-}
-
-.pct-data-table__warning-icon {
-  align-self: center;
-}
-
 .pct-data-table__toggle {
   display: inline-flex;
   align-items: center;

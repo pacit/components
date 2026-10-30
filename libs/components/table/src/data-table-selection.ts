@@ -1,5 +1,6 @@
 import {
   booleanAttribute,
+  Component,
   computed,
   Directive,
   ElementRef,
@@ -7,19 +8,62 @@ import {
   input,
   model,
   output,
+  signal,
+  type TemplateRef,
+  viewChild,
+  type WritableSignal,
 } from '@angular/core';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
+  PCT_TEXTS,
   pctFieldMessages,
   pctFieldWarnings,
 } from '@pacit/components/core';
-import {
-  PctDataTable,
-  type PctSelectionMode,
-  type PctTableSelectionLine,
-} from './data-table';
+import { PctIcon } from '@pacit/components/icon';
+import { PctDataTable } from './data-table';
 import type { PctRowId } from './model/columns';
+
+/**
+ * How many rows a selection holds: one, picked with a radio, or any, with a checkbox each and
+ * one in the header over all the rows the filter left.
+ *
+ * @since next
+ */
+export type PctSelectionMode = 'single' | 'multiple';
+
+/** The line a selection writes under the table: its error, its warning or its hint. */
+interface Line {
+  readonly kind: 'error' | 'warning' | 'hint';
+  readonly id: string;
+  readonly text: string;
+}
+
+/**
+ * A selection with `ids` added, after the ids it held in their order, or with `ids` taken out.
+ */
+function adding(
+  value: readonly PctRowId[],
+  ids: ReadonlySet<PctRowId>,
+  on: boolean,
+): readonly PctRowId[] {
+  if (!on) return value.filter((id) => !ids.has(id));
+  const had = new Set(value);
+  return [...value, ...[...ids].filter((id) => !had.has(id))];
+}
+
+/**
+ * Where the directive and the parts the table makes for it meet: the parts hand themselves in,
+ * and the directive hands over the line, which it reads off its own `[formField]`. Kept by
+ * the directive in a map of this module's own, not in `providers`, which would keep the
+ * directive in every bundle that imports the table (`lesson-173`).
+ */
+interface Link {
+  readonly parts: WritableSignal<PctTableSelectionParts | null>;
+  readonly line: () => Line | null;
+}
+
+const LINKS = /* @__PURE__ */ new WeakMap<PctTableSelection, Link>();
 
 /**
  * The rows picked, as a form control: `[(value)]` binds the ids of the rows picked, and
@@ -50,6 +94,7 @@ import type { PctRowId } from './model/columns';
   host: {
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-warning]': 'warningLit() ? "" : null',
+    '(click)': 'press($event)',
   },
 })
 export class PctTableSelection implements FormValueControl<
@@ -150,8 +195,6 @@ export class PctTableSelection implements FormValueControl<
    */
   readonly touch = output<void>();
 
-  private readonly uid = nextPctId('pct-table-selection');
-
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
     touched: this.touched,
@@ -169,8 +212,10 @@ export class PctTableSelection implements FormValueControl<
   /** The warning is lit: the host says so for a stylesheet to paint by. */
   protected readonly warningLit = this.messages.showWarning;
 
+  private readonly uid = nextPctId('pct-table-selection');
+
   /** The line under the table: the error, else the warning, else the hint. */
-  private readonly line = computed((): PctTableSelectionLine | null => {
+  private readonly line = computed((): Line | null => {
     const messages = this.messages;
     if (messages.showError())
       return {
@@ -188,20 +233,27 @@ export class PctTableSelection implements FormValueControl<
     return hint ? { kind: 'hint', id: `${this.uid}-hint`, text: hint } : null;
   });
 
+  /** The parts, once the table has made them. */
+  private readonly parts = signal<PctTableSelectionParts | null>(null);
+
   constructor() {
+    LINKS.set(this, { parts: this.parts, line: this.line });
+    const parts = this.parts;
     this.table.contribute({
       selection: {
-        value: this.value,
-        mode: this.mode,
-        disabled: this.disabled,
-        readonly: this.readonly,
-        name: this.name,
-        required: this.required,
-        invalid: this.showInvalid,
-        line: this.line,
-        touch: () => this.touch.emit(),
+        parts: PctTableSelectionParts,
+        head: computed(() => parts()?.head() ?? null),
+        cell: computed(() => parts()?.cell() ?? null),
+        below: computed(() => parts()?.below() ?? null),
+        picked: computed(() => parts()?.picked() ?? new Set<PctRowId>()),
+        describedBy: computed(() => this.line()?.id ?? null),
       },
     });
+  }
+
+  /** A press on the table: the parts tell one beside a row's control from the rest. */
+  protected press(event: MouseEvent): void {
+    this.parts()?.press(event);
   }
 
   /**
@@ -246,5 +298,200 @@ export class PctTableSelection implements FormValueControl<
    */
   clear(): void {
     this.value.set([]);
+  }
+}
+
+/**
+ * The selection's parts: templates the table draws in the places it keeps for them, and the
+ * handlers of the controls in them. Declared here, rendered there: the bindings are read in
+ * this component, the elements stand in the table. `pctTableSelection` makes it, so it has
+ * no selector: there is no tag to write.
+ *
+ * @since next
+ */
+@Component({
+  imports: [PctIcon],
+  // Its element is the table's child and draws nothing: the templates stand where they are put.
+  host: { hidden: '' },
+  templateUrl: './data-table-selection.html',
+  styleUrl: './data-table-selection.scss',
+})
+export class PctTableSelectionParts {
+  protected readonly selection = inject(PctTableSelection);
+  protected readonly table = inject(PctDataTable);
+  protected readonly texts = inject(PCT_TEXTS);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** The table's element: the parts' own stands in it, out of the paint. */
+  private host(): Element | null {
+    return this.element.nativeElement.closest('pct-data-table');
+  }
+
+  private readonly link = LINKS.get(this.selection) as Link;
+
+  /**
+   * What the header of the column of picks holds.
+   *
+   * @since next
+   */
+  readonly head = viewChild.required<TemplateRef<unknown>>('head');
+
+  /**
+   * What a row's cell of the column holds, given the row.
+   *
+   * @since next
+   */
+  readonly cell = viewChild.required<TemplateRef<unknown>>('cell');
+
+  /**
+   * What stands under the table: the selection's line.
+   *
+   * @since next
+   */
+  readonly below = viewChild.required<TemplateRef<unknown>>('below');
+
+  protected readonly line = computed(() => this.link.line());
+
+  constructor() {
+    this.link.parts.set(this);
+  }
+
+  /**
+   * The ids picked, to look up: one in `single` mode, whatever the list says.
+   *
+   * @since next
+   */
+  readonly picked = computed(() => {
+    const value = this.selection.value();
+    // One row is picked in single mode, whatever the list says: a radio group checks one.
+    return new Set(
+      this.selection.mode() === 'single' ? value.slice(0, 1) : value,
+    );
+  });
+
+  private readonly uid = nextPctId('pct-table-selection');
+
+  /** The id of the word a row's control is named by, before the row's first text. */
+  protected readonly wordId = `${this.uid}-word`;
+
+  /**
+   * What a row's control is described by: the selection's error or warning, which a reader
+   * would not hear from the table's description once inside a cell. A hint is the table's.
+   */
+  protected readonly describedBy = computed(() => {
+    const line = this.line();
+    return line && line.kind !== 'hint' ? line.id : null;
+  });
+
+  /** The header's checkbox, over the rows the filter left: all of them picked, or some. */
+  protected readonly pickedAll = computed(() => {
+    const picked = this.picked();
+    const ids = this.table.matchedIds();
+    const count = ids.filter((id) => picked.has(id)).length;
+    return {
+      checked: count > 0 && count === ids.length,
+      mixed: count > 0 && count < ids.length,
+    };
+  });
+
+  /** The name the radios of a single selection share, which makes them one group. */
+  protected readonly radioName = computed(
+    () => this.selection.name() || `${this.uid}-pick`,
+  );
+
+  /** The row pressed last: the other end of the range a press with Shift picks. */
+  private anchor: PctRowId | null = null;
+
+  /**
+   * A row's checkbox or radio was pressed: the row is picked or dropped as the control now
+   * stands, and with Shift every row drawn between it and the row pressed before.
+   */
+  protected pick(id: PctRowId, event: MouseEvent): void {
+    // A held selection takes the press back: the control's own toggle is the platform's.
+    if (this.selection.readonly()) {
+      event.preventDefault();
+      return;
+    }
+    this.pickRow(
+      id,
+      (event.target as HTMLInputElement).checked,
+      event.shiftKey,
+    );
+  }
+
+  /**
+   * A press on the table, heard by the directive's host: one on the target around a row's
+   * control, beside the control itself, is the selection's. The engines part here: Chromium
+   * hands a press with Shift on to the control, Firefox and WebKit hand it to nothing. So the
+   * label hands on no press, and the press is the selection's in all three.
+   *
+   * @since next
+   */
+  press(event: MouseEvent): void {
+    const label = (event.target as Element).closest(
+      'td > .pct-data-table__target',
+    );
+    // A table nested in a cell picks its own rows.
+    if (label === null || label.closest('pct-data-table') !== this.host())
+      return;
+    const control = label.querySelector('input') as HTMLInputElement;
+    if (event.target === control) return;
+    event.preventDefault();
+    if (control.disabled || this.selection.readonly()) return;
+    // A radio checked stays checked; any other press turns the control.
+    if (control.type === 'radio' && control.checked) return;
+    const line = Number(
+      (label.closest('tr') as HTMLTableRowElement).dataset['pctIndex'],
+    );
+    control.checked = !control.checked;
+    this.pickRow(this.table.lines()[line].key, control.checked, event.shiftKey);
+  }
+
+  /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
+  private pickRow(id: PctRowId, on: boolean, shift: boolean): void {
+    const selection = this.selection;
+    const anchor = this.anchor;
+    this.anchor = id;
+    if (selection.mode() === 'single') {
+      selection.value.set([id]);
+      return;
+    }
+    const drawn = this.table
+      .lines()
+      .flatMap((line) => (line.kind === 'row' ? [line.key] : []));
+    // No row pressed before is no row drawn: `indexOf` finds none.
+    const from = shift ? drawn.indexOf(anchor as PctRowId) : -1;
+    const to = drawn.indexOf(id);
+    const range = new Set(
+      from < 0 ? [id] : drawn.slice(Math.min(from, to), Math.max(from, to) + 1),
+    );
+    selection.value.update((value) => adding(value, range, on));
+  }
+
+  /**
+   * A control of the column lost the focus: the form hears the column was left, unless the
+   * focus went on to another of its controls — an arrow between radios, a Tab to the next row.
+   */
+  protected leave(event: FocusEvent): void {
+    const next = event.relatedTarget;
+    if (
+      next instanceof Element &&
+      next.closest('pct-data-table') === this.host() &&
+      next.matches('[data-pct-part="select"], [data-pct-part="select-all"]')
+    )
+      return;
+    this.selection.touch.emit();
+  }
+
+  /** The header's checkbox was pressed: every row the filter left is picked, or dropped. */
+  protected pickAll(event: MouseEvent): void {
+    const selection = this.selection;
+    if (selection.readonly()) {
+      event.preventDefault();
+      return;
+    }
+    const ids = new Set(this.table.matchedIds());
+    const all = this.pickedAll().checked;
+    selection.value.update((value) => adding(value, ids, !all));
   }
 }

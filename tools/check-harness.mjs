@@ -6,14 +6,14 @@
  *
  *  1. SET: `./testing` is exported, every harness a `PctHarness`, no two of one name, distinct parts,
  *  2. HOST: a `hostSelector` is verbatim one exported class's list, and no class has two,
- *  3. EVERY: every class that draws a part has a harness,
- *  4. PARTS: a harness names exactly the parts its class draws, neither more nor fewer,
+ *  3. EVERY: every class that draws a part has a harness; one with no selector draws into a
+ *     host of its entrypoint, so a harness of that entrypoint names each of its parts,
+ *  4. PARTS: a harness names exactly the parts its class draws, and may name such a class's,
  *  5. TYPES: the union offered after `part(` is that same list, one inventory read twice,
  *  6. CARDS: a card's **Harness** row names existing harnesses of classes its own entrypoint
  *     exports, and every harness stands on some card.
  *
- * The package is read as `check-parts` reads it, after linking, and a class (a harness too) is
- * the object exported, with every name and entrypoint it is exported under.
+ * The package is read as `check-parts` reads it, after linking; a class is the object exported.
  *
  * Usage: node tools/check-harness.mjs
  */
@@ -32,6 +32,8 @@ const REFERENCE = '_reference.json';
 const RUNNER = '_runner.json';
 const TESTING = './testing';
 const ATTRIBUTE = 'data-pct-part';
+// The selector Angular gives a component that declares none, and the tag it makes for it.
+const UNTAGGED = 'ng-component';
 // A form to copy and a directory note — neither is a card (the same two `check-parts` leaves out).
 const NOT_A_CARD = new Set(['_template.md', 'README.md']);
 
@@ -295,12 +297,21 @@ const checkHarness = (input) => {
         `hold both to one \`declare class\`.`,
     );
 
+  // A class with no selector of its own, as Angular names it: no tag stands for it.
+  const untagged = classes.filter((c) => c.selector === UNTAGGED);
+  const tagged = classes.filter((c) => c.selector !== UNTAGGED);
+  /** The parts the untagged classes draw into the hosts of an entrypoint `c` is exported by. */
+  const drawnInto = (c) =>
+    untagged
+      .filter((u) => u.entrypoints.some((e) => c.entrypoints.includes(e)))
+      .flatMap((u) => u.parts);
+
   // 2. The host — one harness, one class, the selector verbatim. A harness finds its class by
   // the selector and nothing else, and the harnesses are kept per class the package exports —
   // the object, not its name: two entrypoints are two modules and may each declare a class of
   // one name, and by name the harness of one answered for the other at point 3.
   const bySelector = new Map();
-  for (const c of classes)
+  for (const c of tagged)
     bySelector.set(c.selector, [...(bySelector.get(c.selector) ?? []), c]);
   const classOf = new Map();
   const harnessesOfClass = new Map();
@@ -336,13 +347,27 @@ const checkHarness = (input) => {
     );
 
   // 3. Every class that draws a part — the denominator a consumer's suite reaches for.
-  const orphaned = classes
+  const orphaned = tagged
     .filter((c) => c.parts.length && !harnessesOfClass.has(c))
     .map(
       (c) =>
         `${c.className} (${c.entrypoints.join(', ')}): draws ${c.parts.length} parts ` +
         `(${c.parts.join(', ')}) and has no harness`,
     );
+  // An untagged class's part is reached through the harness of a host it draws into.
+  for (const u of untagged) {
+    const named = harnesses.list
+      .filter((h) =>
+        classOf.get(h).entrypoints.some((e) => u.entrypoints.includes(e)),
+      )
+      .flatMap((h) => h.parts);
+    const unnamed = u.parts.filter((p) => !named.includes(p));
+    if (unnamed.length)
+      orphaned.push(
+        `${u.className} (${u.entrypoints.join(', ')}): has no selector, and draws ` +
+          `${quoted(unnamed)}, which no harness of its entrypoint names`,
+      );
+  }
   if (orphaned.length)
     throw new HarnessError(
       'every',
@@ -353,11 +378,15 @@ const checkHarness = (input) => {
   const drift = [];
   for (const h of harnesses.list) {
     const c = classOf.get(h);
-    const extra = h.parts.filter((p) => !c.parts.includes(p));
+    const into = drawnInto(c);
+    const extra = h.parts.filter(
+      (p) => !c.parts.includes(p) && !into.includes(p),
+    );
     const missing = c.parts.filter((p) => !h.parts.includes(p));
     if (extra.length)
       drift.push(
-        `${h.className}: names ${quoted(extra)}, which ${c.className} does not draw`,
+        `${h.className}: names ${quoted(extra)}, which ${c.className} does not draw, ` +
+          `nor a class with no selector of its entrypoint`,
       );
     if (missing.length)
       drift.push(

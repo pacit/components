@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "message": "declares no selector, so no consumer names it",
+  "$reason": "A component with no selector is named by no consumer, which writes no tag for it, so point 3 does not ask it for `ariaLabel` / `ariaLabelledby`. That leaves its template as the one place a control in it can be named: a checkbox there with no `aria-label` or `aria-labelledby` of its own names nothing, and is refused as the inputs would be in a component a consumer writes."
+}

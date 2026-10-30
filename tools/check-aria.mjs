@@ -6,7 +6,7 @@
  *
  *  1. DENOMINATOR: every decorator parsed, every base found, every template owned and tag read,
  *  2. HOST: an ARIA name written into a `host` block needs a role on the host to carry it,
- *  3. INPUTS: a widget inside the template means `ariaLabel` and `ariaLabelledby` are declared,
+ *  3. INPUTS: a widget inside the template means `ariaLabel` and `ariaLabelledby` are declared, or, with no selector, that it names itself,
  *  4. FORWARDED: both on ONE element per DOM state, not per file, its role one taking a name,
  *  5. SURFACE: the card that names the selector names both inputs,
  *  6. DESCRIPTION: hint, warning and error parts are ALTERNATIVES of one conditional (`req-api-message`), no hint inert,
@@ -404,6 +404,8 @@ const readSources = (root, files) => {
         // below read off it is one no point could know. Read as no selector, the host passed
         // point 4 as a custom element, which may carry a name (measured).
         unselected: selector !== undefined && textOf(selector) === undefined,
+        // No selector, or an empty one, which ngc reads as none (point 3).
+        tagless: selector === undefined || textOf(selector) === '',
         template: textOf(url) ?? null,
         // A path the scanner does not read as written: ngc evaluates the expression, a
         // constant or a concatenation, and compiles a file this walk never opens.
@@ -2757,8 +2759,21 @@ const checkAria = ({
         );
       element.path = path;
     }
-    component.needsName =
+    // A component that declares no selector is one the library puts on the page by code
+    // (`NgComponentOutlet`, `createComponent`), and no card names a tag for it: a consumer hands it no name, so the
+    // points that follow the consumer's name through the inputs — 3, the carriers of 4, and 5 —
+    // do not ask it, and point 3 asks each control it draws to name itself instead (`ownName`).
+    // Every other point reads its template as any other's, and point 2 its host block: it has a
+    // host all the same, the element the code makes for it. ngc compiles `selector: ''` as it
+    // compiles none, under its default, `ng-component` (`resolved === "" ? defaultSelector`,
+    // measured through ngc 22.2.1: `selectors: [["ng-component"]]` for both), so this read
+    // takes both for none (`tagless`). That default is a tag all the same: a consumer that
+    // imports the class and writes `<ng-component>` gets it, and ngc refuses the tag only where
+    // two such classes are imported (NG8023). Not read: whether a consumer can import the class.
+    const drawsWidgets =
       !component.hostIsWidget && component.widgets.length > 0;
+    component.needsName = drawsWidgets && !component.tagless;
+    component.ownName = drawsWidgets && component.tagless;
   }
 
   // ── 2. an ARIA name in a host block ──────────────────────────────────────────
@@ -2785,6 +2800,21 @@ const checkAria = ({
         `${component.className} (${component.file}) keeps its widget inside the template ` +
           `and declares no ${missing.join(' / ')} — a consumer's \`aria-label\` lands on the ` +
           `roleless host, so with this missing the control cannot be named at all`,
+      );
+  }
+  // With no selector, nobody outside names the component, so the name of each control comes
+  // from the template, an `aria-label` or an `aria-labelledby` written or bound on it — the
+  // test point 4 puts to a control inside a group that carries the consumer's name. A name the
+  // control takes from its own text or from a `<label>` around it is not read here either.
+  for (const component of components.filter((c) => c.ownName)) {
+    const unnamed = component.widgets.filter((widget) => !widget.namesItself);
+    if (unnamed.length)
+      throw new AriaError(
+        'inputs',
+        `${component.className} (${component.file}) declares no selector, so no consumer ` +
+          `names it, and ${unnamed.map((t) => `<${t.tag}>`).join(', ')} in its template ` +
+          `name(s) nothing of their own — with no \`aria-label\` or \`aria-labelledby\` ` +
+          `written or bound on it, nothing names the control`,
       );
   }
 
@@ -3397,7 +3427,9 @@ const checkAria = ({
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
-      `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} message pair(s) ` +
+      `own (${sorted(naming.map((c) => c.selector)).join(', ')}) and ` +
+      `${components.filter((c) => c.ownName).length} with no selector naming each control ` +
+      `in its template; ${pairs} message pair(s) ` +
       `on separate branches, ${announced} error/warning part(s) announcing themselves, ` +
       `${hidden.length} hidden from the tree with nothing to land on; ${examined} role(s) ` +
       `requiring a context — ${ownedHere} owned in their own template, ${leftToHost} by ` +

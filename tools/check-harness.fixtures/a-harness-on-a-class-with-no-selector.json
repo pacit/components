@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "host",
+  "why": "PctDataTableHarness stands on ng-component, the selector Angular gives a component that declares none — no such tag stands in a page, so a test finds nothing.",
+  "harnesses": {
+    "PctDataTableHarness": {
+      "hostSelector": "ng-component"
+    }
+  }
+}
