@@ -17,7 +17,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 283 steps over 42 views, at most 12 stops of a view's own
+- 271 steps over 42 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -26,7 +26,7 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 71 of 283 here. 3 view(s) hit the cap, and each says so.
+at — 72 of 271 here. 3 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 42 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
@@ -49,7 +49,7 @@ tab 1   button "Outline"                                     Outline button
 tab 2   button "Ghost"                                       Ghost button
 tab 3   button "Soft"                                        Soft button
 tab 4   button "Hero"                                        Hero button
-tab 5   input[control]                                       You are currently on a selected radio button, 1 of 2.
+tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 8   button "danger"                                      danger button main
@@ -158,39 +158,19 @@ tab 6   —                                                    (silence)
 ### `/date`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Date
 enter   input[control]                                       (silence)
-tab 1   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   input[control]                                       27/08/2026 Insertion on word: 27/ , between characters: and Day The sandbox runs under fr-FR, so the format hint reads jj/mm/aaaa edit text main
-tab 6   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 7   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 8   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 9   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 10  input[control]                                       27/08/2026 Insertion on word: 27/ , between characters: and Within August 2026, weekdays only edit text main
-tab 11  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 12  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 13  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 14  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 15  input[control]                                       27.08.2026 Insertion on word: 27.08.2026 , between characters: and Polish edit text main
-tab 16  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 17  input[control]                                       2026/08/27 Insertion on word: 2026/ , between characters: and Japanese edit text
-tab 18  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 19  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 20  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 21  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 22  button[nav] "Mois précédent"                         Mois précédent button main
-tab 23  button[nav] "Mois suivant"                           Mois suivant button
+tab 1   input[control]                                       2026
 reach   button[toggle] "Choisir une date"                    (silence)
 open    td[day] "jeudi 27 août 2026"                         (silence)
-close   input[control]                                       27
+close   input[control]                                       2026
 ```
 
-the act: `Enter` on `[data-testid="date-standalone"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
+Tab moved nothing — focus had left the page.
 
-The cap bit here: 12 stops of this view's own were read, and it has more.
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
+the act: `Enter` on `[data-testid="date-standalone"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
 
 ### `/time`
 
@@ -232,7 +212,7 @@ tab 15  input[date-control]                                  01.12.2026 Insertio
 tab 16  input[time-control]                                  13:05 Insertion on word: 13: , between characters: and Polish Heure edit text
 tab 17  button[toggle] "Choisir une date et une heure"       Choisir une date et une heure dialog pop up button
 reach   button[toggle] "Choisir une date et une heure"       (silence)
-open    td[day] "mardi 1 décembre 2026"                      (silence)
+open    td[day] "mardi 1 décembre 2026"                      Choisir une date et une heure web dialog with 5 items mardi 1 décembre 2026 1 décembre 2026 table 7 columns, 7 rows
 close   input[date-control]                                  01
 ```
 
@@ -377,8 +357,8 @@ tab 9   input[control]                                       ltr selected radio 
 tab 10  button "Open the bare one"                           Open the bare one collapsed button main
 tab 11  —                                                    (silence)
 reach   button "Sections"                                    (silence)
-open    button "Sections"                                    (silence)
-close   button "Sections"                                    Sections expanded button
+open    button "Sections"                                    Sections expanded button
+close   button "Sections"                                    (silence)
 ```
 
 the act: `Enter` on `[data-testid="trigger-nav"]`, to open a named region beside the page (the gesture belongs to `apps/sandbox-e2e/src/drawer.spec.ts`).
@@ -409,8 +389,8 @@ arrive  —                                                    heading level 1 @
 enter   button[tab] "General"                                (silence)
 tab 1   button[tab] "General"                                General selected tab, 1 of 3 Account settings tab group
 reach   button[tab] "General"                                (silence)
-open    button[tab] "General"                                General selected tab, 1 of 3
-close   button[tab] "General"                                (silence)
+open    button[tab] "General"                                (silence)
+close   button[tab] "General"                                You are currently on a selected tab, 1 of 3.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -459,9 +439,9 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    In Skeleton · @pacit/components web content heading level 1 @pacit/components — sandbox banner
 enter   button "The content arrives"                         (silence)
-tab 1   button "The content arrives"                         The content arrives button main
+tab 1   button "The content arrives"                         You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -491,7 +471,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 1   input[control]                                       You are currently on a selected radio button, 1 of 2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -509,7 +489,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Breadcrumb
 enter   a "Home"                                             (silence)
 tab 1   a "Home"                                             link Home list 3 items
 ```
@@ -547,17 +527,27 @@ tab 9   —                                                    (silence)
 ```
 arrive  —                                                    heading level 2 Data table
 enter   input                                                (silence)
-tab 1   input                                                Filter rules search text field
+tab 1   pct-table-frame "Polling rules"                      Filter rules search text field
+tab 2   button[toggle] "Name"                                Polling rules region
+tab 3   button[toggle] "Room"                                Room button
+tab 4   button[toggle] "Address"                             You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
+tab 5   button[toggle] "Energy"                              Address button
+tab 6   button[toggle] "Next run"                            Next run button
+tab 7   input[control] "Enabled: Supply fan"                 (silence)
+tab 8   input[control] "Enabled: Heater"                     Enabled: Heater off switch
+tab 9   input[control] "Enabled: Bypass"                     (silence)
+tab 10  input[control] "Enabled: Exhaust fan"                You are currently on a switch, inside of a cell. To toggle this switch, press Control-Option-Space.
+tab 11  input[control] "Enabled: Boiler"                     Enabled: Exhaust fan on switch
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/hero`
 
 ```
-arrive  —                                                    heading level 2 Hero
+arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   a "Under attention"                                  (silence)
-tab 1   a "Under attention"                                  link heading level 3 Under attention The rim is drawn and hidden, so the reveal is an opacity.
+tab 1   a "Under attention"                                  You are currently on a link. To click this link, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -565,9 +555,9 @@ Tab moved nothing — focus had left the page.
 ### `/stepper`
 
 ```
-arrive  —                                                    heading level 2 Stepper
+arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   button "Back"                                        (silence)
-tab 1   button "Back"                                        Back button
+tab 1   button "Back"                                        You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -575,9 +565,9 @@ Tab moved nothing — focus had left the page.
 ### `/tree`
 
 ```
-arrive  —                                                    heading level 2 Tree
+arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   pct-tree-item "README.md"                            (silence)
-tab 1   —                                                    README.md outline row (1 of 5)
+tab 1   —                                                    README.md outline row (1 of 5) main
 ```
 
 ### `/layout`
@@ -595,7 +585,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 2 Size
 enter   input                                                (silence)
-tab 1   input                                                You are currently on a text field. To enter text in this field, type.
+tab 1   input                                                sm
 ```
 
 Tab moved nothing — focus had left the page.
@@ -635,7 +625,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    Form controls built as a pct-field wrapper with a control inside.
 enter   button "Solid"                                       (silence)
-tab 1   button "Solid"                                       Solid button
+tab 1   button "Solid"                                       You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
