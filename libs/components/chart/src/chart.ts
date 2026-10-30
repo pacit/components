@@ -50,6 +50,7 @@ import { PctChartScene, PctMark, type PctSeriesSpec } from './scene';
  * @since next
  */
 @Directive({
+  // eslint-disable-next-line @angular-eslint/directive-selector -- an element beside the marks: it configures the scene, draws nothing and holds no content, so a component's template and sheet would be empty
   selector: 'pct-axis',
 })
 export class PctAxis {

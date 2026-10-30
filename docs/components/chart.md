@@ -1,6 +1,6 @@
 # `PctChart` — a scene of scales and the marks drawn on them
 
-**Summary:** A chart you compose in the template: a scene that measures itself and owns the axes, and marks inside it — lines, steps and areas for now — that draw your rows. Each unit gets an axis, each series a colour that stays, and the data stand beside the picture as a table.
+**Summary:** A chart you compose in the template: a scene that owns the axes and the colours, and marks inside it that draw your rows. The data stand beside the picture as a table.
 **Entrypoint:** `@pacit/components/chart`
 **Selectors:** `pct-chart`, `pct-line`, `pct-axis`, `pct-chart-table`
 **Status:** released

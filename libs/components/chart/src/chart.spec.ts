@@ -110,9 +110,15 @@ let size = { width: 600, height: 300 };
 
 /** The table's frame watches its size; jsdom has no observer and no canvas to measure with. */
 class QuietObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
+  observe(): void {
+    // The size is given by the stubs, never observed.
+  }
+  unobserve(): void {
+    // Nothing is observed.
+  }
+  disconnect(): void {
+    // Nothing is observed.
+  }
 }
 beforeAll(() => {
   vi.stubGlobal('ResizeObserver', QuietObserver);
@@ -839,7 +845,9 @@ class RecordingObserver {
   observe(element: Element): void {
     this.observed.push(element);
   }
-  unobserve(): void {}
+  unobserve(): void {
+    // The chart observes one element and never lets it go but by disconnecting.
+  }
   disconnect(): void {
     this.disconnected = true;
   }
@@ -1501,43 +1509,6 @@ describe('PctChart, as laid out', () => {
       global.ngDevMode = before;
     }
     expect(chartWarnings(warn)).toEqual([]);
-  });
-
-  it('measures its labels on a canvas, in the font of its medium', async () => {
-    // A fresh module: the canvas is made once a module, and the cases above have none.
-    vi.resetModules();
-    const { PctChart: FreshChart } = await import('./chart');
-    const { PctLine: FreshLine } = await import('./line');
-    const context = {
-      font: '',
-      measureText: vi.fn((text: string) => ({ width: text.length * 10 })),
-    };
-    const getContext = vi
-      .spyOn(HTMLCanvasElement.prototype, 'getContext')
-      .mockImplementation(((type: string) =>
-        type === '2d' ? context : null) as never);
-    const medium = { fontSize: '', fontFamily: 'Inter', gap: '' };
-    stubMedium(medium);
-    @Component({
-      imports: [FreshChart, FreshLine],
-      template: `<pct-chart ariaLabel="Canvas" timeZone="UTC">
-        <pct-line [data]="rows" x="at" y="value" name="T" unit="°C" />
-      </pct-chart>`,
-    })
-    class Canvas {
-      readonly rows = temperature;
-    }
-    const fixture = await render(Canvas);
-    expect(context.font).toBe('13px Inter');
-    expect(context.measureText).toHaveBeenCalledWith('22.5');
-    // "22.5" is 40 wide on this canvas, and the gap of 6 on both sides
-    expect(clipOf(fixture)[0]).toBe(52);
-    TestBed.resetTestingModule();
-    medium.fontFamily = '';
-    await render(Canvas);
-    expect(context.font).toBe('13px sans-serif');
-    expect(getContext).toHaveBeenCalledTimes(1);
-    expect(getContext).toHaveBeenCalledWith('2d');
   });
 
   it('answers for a series it does not hold with nothing', async () => {

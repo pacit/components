@@ -107,6 +107,8 @@ played apart from the cases and counts as none.
 | `prefix-without-coverage`      |     2 | `surface`    | —                           | a private prefix no token uses                              |
 | `state-before-property`        |     3 | `schema`     | —                           | `disabled-bg` instead of `bg-disabled`                      |
 | `word-outside-dictionary`      |     3 | `schema`     | —                           | `bg-over` — right order, wrong word                         |
+| `an-ordinal-on-another-part`   |     3 | `schema`     | —                           | `bg-1` — an ordinal on a name with no part that takes one   |
+| `an-ordinal-on-another-role`   |     3 | `schema`     | —                           | `text-1` — an ordinal on a role that takes none             |
 | `component-without-entrypoint` |     3 | `schema`     | —                           | `component.dialog.json` with no `dialog` entrypoint         |
 | `file-unlike-prefix`           |     3 | `schema`     | —                           | `component.button.json` carrying a `pct.knob.*` token       |
 | `dead-word`                    |     4 | `dictionary` | —                           | a state declared and unused                                 |
