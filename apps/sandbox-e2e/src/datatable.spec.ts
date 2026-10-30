@@ -96,7 +96,7 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     for (const room of await table
       .locator('tbody tr td:nth-child(2)')
       .allTextContents())
-      expect(room).toBe('Kitchen');
+      expect(room.trim()).toBe('Kitchen');
   });
 
   test('a filter that leaves nothing says so beside the table, not in it', async ({

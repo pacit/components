@@ -467,15 +467,15 @@ export class PctDataTable<
     const templates = this.headerTemplates();
     return this.columns().map((column) => {
       const position = sort.findIndex((key) => key.key === column.id);
+      const later = position > 0 ? sort[position] : null;
       return {
         column,
         sortKey: column.sort === false ? null : column.id,
         numeric: pctColumnNumeric(column),
         direction: position < 0 ? null : sort[position].direction,
         // The first key is `aria-sort`; the rest carry their place and way to the eye.
-        place: position > 0 ? position + 1 : null,
-        arrow:
-          position > 0 && sort[position].direction === 'descending' ? '▼' : '▲',
+        place: later ? position + 1 : null,
+        arrow: later?.direction === 'descending' ? '▼' : '▲',
         slot: templates.get(column.id) ?? null,
       };
     });
