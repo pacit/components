@@ -978,11 +978,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-<<<<<<< HEAD
-    await expect(count).toHaveText(/^\d+ of 755$/);
-=======
-    await expect(count).toHaveText(/^\d+ of 756$/);
->>>>>>> origin/main
+    await expect(count).toHaveText(/^\d+ of 761$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -998,11 +994,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-<<<<<<< HEAD
-    await expect(count).toHaveText('755 of 755');
-=======
-    await expect(count).toHaveText('756 of 756');
->>>>>>> origin/main
+    await expect(count).toHaveText('761 of 761');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({
