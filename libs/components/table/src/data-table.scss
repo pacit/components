@@ -3,6 +3,11 @@
 :host {
   display: flex;
   flex-direction: column;
+  /* A row's surfaces are this table's: a data table in a cell of another starts with none of
+     the outer row's, which would otherwise be inherited by every row inside it. */
+  --_tone: initial;
+  --_hover: initial;
+  --_stripe: initial;
 }
 
 /* A table given a height scrolls in its frame on both axes, which is what lets the header
@@ -56,4 +61,92 @@ table {
   padding-block: var(--pct-table-padding-y);
   padding-inline: var(--pct-table-padding-x);
   color: var(--pct-table-fg);
+}
+
+/* A row's surface is one of three, in a fixed order: its tone over the pointer's tint, the
+   pointer's over the stripe. The order is said by the fallbacks of one value rather than by
+   the specificity of three rules, which the stripe's `:host()` would win. A cell's tone and a
+   flash paint the cell, over any of them. */
+tbody > tr[data-pct-index] {
+  background-color: var(--_tone, var(--_hover, var(--_stripe)));
+}
+
+/* Only where a pointer hovers: a tap would otherwise leave its row tinted. */
+@media (hover: hover) {
+  tbody > tr[data-pct-index]:hover {
+    --_hover: var(--pct-table-bg-hover);
+  }
+}
+
+:host([data-pct-striped]) tbody > tr[data-pct-index]:nth-child(even) {
+  --_stripe: var(--pct-table-bg-striped);
+}
+
+td[data-pct-tone] {
+  background-color: var(--_tone);
+}
+
+/* The tones wear their quiet fill and the text paired with it. */
+[data-pct-tone='success'] {
+  --_tone: var(--pct-table-bg-success);
+  color: var(--pct-table-fg-success);
+}
+
+[data-pct-tone='warning'] {
+  --_tone: var(--pct-table-bg-warning);
+  color: var(--pct-table-fg-warning);
+}
+
+[data-pct-tone='danger'] {
+  --_tone: var(--pct-table-bg-danger);
+  color: var(--pct-table-fg-danger);
+}
+
+[data-pct-tone='info'] {
+  --_tone: var(--pct-table-bg-info);
+  color: var(--pct-table-fg-info);
+}
+
+/* The number is quieter than the data beside it, but in a toned row it takes the tone's text,
+   which is the colour measured on the tone's fill. */
+tr:not([data-pct-tone]) > .pct-data-table__number {
+  color: var(--pct-table-fg-muted);
+}
+
+/* One line, cut with an ellipsis at the column's widest: a block inside the cell, because a
+   cell of an automatic table takes no maximum width of its own. */
+.pct-data-table__clip {
+  display: block;
+  max-inline-size: var(--pct-table-column-max-width);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+mark {
+  background-color: var(--pct-table-mark-bg);
+  color: var(--pct-table-mark-fg);
+}
+
+/* The flash of a changed value: on at once, fading back. Its length is the transition token's,
+   so a user who asked for less motion sees none. */
+td[data-pct-changed] {
+  animation: pct-data-table-changed
+    calc(var(--pct-motion-transition-duration) * 8) ease-out;
+}
+
+/* The flash wears the table's own text over its fill, whatever tone the cell wore: a tone's
+   text is measured on the tone's fill, not on the flash's. */
+@keyframes pct-data-table-changed {
+  from {
+    background-color: var(--pct-table-bg-changed);
+    color: var(--pct-table-fg);
+  }
+}
+
+@media (forced-colors: active) {
+  mark {
+    background-color: Mark;
+    color: MarkText;
+  }
 }

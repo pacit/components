@@ -962,8 +962,10 @@ test.describe('The pages', () => {
     // the field and the six footers learned the warning tone — a line colour each, and a
     // border colour where the control draws a surface (0087); 642 since the time field and its
     // columns took a tier of their own (0086); 680 since the datetime field did (0090 §6); 695
-    // since the table did (0096).
-    await expect(count).toHaveText('720 of 720');
+    // since the table did (0096); 720 since the chart's series, axes and grid did (0099–0103);
+    // 735 since the data table's rows took their surfaces, the four tones, the mark and the cut
+    // column's width (0097).
+    await expect(count).toHaveText('735 of 735');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -971,7 +973,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 720$/);
+    await expect(count).toHaveText(/^\d+ of 735$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -987,7 +989,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('720 of 720');
+    await expect(count).toHaveText('735 of 735');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

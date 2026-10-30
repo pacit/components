@@ -132,6 +132,30 @@ export function typeCases(): void {
   // An optional field is a column of `T | undefined`, which a kind of its type still takes.
   col.key('note', { header: 'Note', kind: 'text' });
 
+  // A tone reads the value and the row, a tooltip the row, both typed by the builder.
+  col.key('energy', {
+    header: 'Energy',
+    tone: (energy, register) =>
+      energy !== null && energy > register.address ? 'warning' : null,
+    tooltip: (register) => register.name.toUpperCase(),
+  });
+  col.value('next', (r) => r.nextAt, {
+    header: 'Next',
+    tone: (next) => (next > 0 ? 'info' : null),
+  });
+  // @ts-expect-error — a tone is one of the four, not any word.
+  col.key('name', { header: 'Name', tone: () => 'loud' });
+  col.key('name', {
+    header: 'Name',
+    // @ts-expect-error — the tone's value is the column's, a string.
+    tone: (name: number) => (name ? null : null),
+  });
+  col.key('name', {
+    header: 'Name',
+    // @ts-expect-error — the tooltip's row is the table's row.
+    tooltip: (row: { title: string }) => row.title,
+  });
+
   // The engine's view takes any typed list.
   const view: readonly PctAnyColumn<Register>[] = columns;
   // A list built first and handed to `of` later, and one built in a thunk, as a `computed` does.

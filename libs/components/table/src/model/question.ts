@@ -54,3 +54,73 @@ export function pctMatches<T>(
     }),
   );
 }
+
+/**
+ * A piece of a cell's text, and whether a word of the question found it.
+ *
+ * @since next
+ */
+export interface PctTextPart {
+  readonly text: string;
+  readonly match: boolean;
+}
+
+/**
+ * A cell's text cut where the words of a quick-filter question were found, so the table can
+ * mark them: every place every word stands, folded as {@link pctMatches} folds, the places
+ * that overlap or touch drawn as one.
+ *
+ * A text whose folding changes its length at either step — a letter whose lower case is two,
+ * an accent stored as two characters — is returned whole and unmarked: a place found in the folded
+ * text would not be the same place in the text drawn, and a mark in the wrong place says
+ * the wrong thing.
+ *
+ * @example
+ * pctMatchParts('Kitchen lamp', ['kitch']); // [{ text: 'Kitch', match: true }, { text: 'en lamp', match: false }]
+ *
+ * @since next
+ */
+export function pctMatchParts(
+  text: string,
+  words: readonly string[],
+): readonly PctTextPart[] {
+  const lower = text.toLowerCase();
+  const folded = lower.normalize('NFC');
+  const places: [number, number][] = [];
+  // Both steps keep the length, or neither moved a place: a lower case that grew and a
+  // composition that shrank it back would leave the length and shift every place between.
+  if (lower.length === text.length && folded.length === text.length)
+    for (const word of words) {
+      // An empty word stands everywhere and marks nothing; `pctQuestionWords` writes none.
+      if (word === '') continue;
+      for (
+        let at = folded.indexOf(word);
+        at >= 0;
+        at = folded.indexOf(word, at + 1)
+      )
+        places.push([at, at + word.length]);
+    }
+  places.sort((a, b) => a[0] - b[0]);
+  const parts: PctTextPart[] = [];
+  let from = 0;
+  for (const [start, end] of places) {
+    const last = parts.at(-1);
+    // A place that overlaps the last mark or starts where it ends grows it.
+    if (last && start <= from) {
+      // A place inside the mark adds nothing: its slice past the mark's end is empty.
+      parts[parts.length - 1] = {
+        text: last.text + text.slice(from, end),
+        match: true,
+      };
+      from = Math.max(from, end);
+      continue;
+    }
+    if (start > from)
+      parts.push({ text: text.slice(from, start), match: false });
+    parts.push({ text: text.slice(start, end), match: true });
+    from = end;
+  }
+  if (from < text.length || parts.length === 0)
+    parts.push({ text: text.slice(from), match: false });
+  return parts;
+}

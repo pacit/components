@@ -84,6 +84,7 @@ const ENGLISH: PctTexts = {
   tableLoading: 'Loading…',
   tableYes: 'Yes',
   tableNo: 'No',
+  tableRowNumber: 'Row',
 };
 
 describe('PCT_TEXTS', () => {

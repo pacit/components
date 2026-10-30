@@ -845,10 +845,15 @@ export class PctTableCellHarness extends PctHarness<never> {
  * @since next
  */
 export class PctDataTableHarness extends PctHarness<
-  'message' | 'place' | 'placeholder'
+  'mark' | 'message' | 'place' | 'placeholder'
 > {
   static override hostSelector = 'pct-data-table';
-  static override readonly parts = ['message', 'place', 'placeholder'] as const;
+  static override readonly parts = [
+    'mark',
+    'message',
+    'place',
+    'placeholder',
+  ] as const;
 }
 
 /**

@@ -202,4 +202,112 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
       'In view: 0 rows',
     );
   });
+
+  test('the filter marks the words it found, in the cells it read them in', async ({
+    page,
+  }) => {
+    const table = rules(page);
+    await page.getByTestId('rules-filter').fill('kitch');
+    const rooms = table.locator('tbody tr td:nth-child(2)');
+    await expect(rooms.first().locator('mark')).toHaveText('Kitch');
+    const count = await table.locator('tbody tr').count();
+    await expect(rooms.locator('mark')).toHaveCount(count);
+    await expect(rooms.first()).toHaveText('Kitchen');
+    await expect(table.locator('tbody tr td:first-child mark')).toHaveCount(0);
+  });
+
+  test('striped rows numbered from 1, a toned row and toned cells', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-devices');
+    // The eye sees a number sign, a reader hears the word.
+    await expect(
+      table.getByRole('columnheader', { name: 'Row', exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      table.locator('thead th').first().locator('[aria-hidden="true"]'),
+    ).toHaveText('#');
+    await expect(table.locator('tbody tr td:first-child')).toHaveText([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+    ]);
+    const surface = (row: number) =>
+      table
+        .locator('tbody tr')
+        .nth(row)
+        .evaluate((tr) => getComputedStyle(tr).backgroundColor);
+    // The second row is striped and the first is not; the third wears the danger tone.
+    expect(await surface(1)).not.toBe(await surface(0));
+    await expect(table.locator('tbody tr').nth(2)).toHaveAttribute(
+      'data-pct-tone',
+      'danger',
+    );
+    expect(await surface(2)).not.toBe(await surface(0));
+    expect(await surface(2)).not.toBe(await surface(1));
+    // A state is toned by its value: the word says it, the tint repeats it.
+    const motion = table.locator('tbody tr').nth(3);
+    await expect(motion.locator('td').nth(2)).toHaveText('Offline');
+    await expect(motion.locator('td').nth(2)).toHaveAttribute(
+      'data-pct-tone',
+      'warning',
+    );
+    await expect(motion.locator('td').nth(3)).not.toHaveAttribute(
+      'data-pct-tone',
+      /.*/,
+    );
+    // The pointer tints the row under it.
+    const resting = await surface(0);
+    await table.locator('tbody tr').first().hover();
+    await expect.poll(() => surface(0)).not.toBe(resting);
+  });
+
+  test('a long name is cut to one line, and shows whole under the pointer', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-devices');
+    const long = table.locator('tbody tr').nth(1).locator('td').nth(1);
+    const clip = long.locator('.pct-data-table__clip');
+    const cut = await clip.evaluate(
+      (span) => span.scrollWidth > span.clientWidth,
+    );
+    expect(cut).toBe(true);
+    await clip.hover();
+    await expect(long).toHaveAttribute(
+      'title',
+      'Window contact, the bedroom’s south window by the wardrobe',
+    );
+    const short = table.locator('tbody tr').first().locator('td').nth(1);
+    await short.locator('.pct-data-table__clip').hover();
+    await expect(short).not.toHaveAttribute('title', /.*/);
+    // A column's own tooltip stands on every cell.
+    await expect(
+      table.locator('tbody tr').first().locator('td').nth(4),
+    ).toHaveAttribute('title', 'Supply fan, Attic');
+  });
+
+  test('a live value that changed flashes, and the flash is the motion token’s', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-live');
+    await expect(table.locator('td[data-pct-changed]').first()).toBeAttached({
+      timeout: 5000,
+    });
+    const duration = async () =>
+      table
+        .locator('tbody td')
+        .first()
+        .evaluate((td) => {
+          td.setAttribute('data-pct-changed', '');
+          const seconds = parseFloat(getComputedStyle(td).animationDuration);
+          td.removeAttribute('data-pct-changed');
+          return seconds;
+        });
+    expect(await duration()).toBeGreaterThan(0.5);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await duration()).toBeLessThan(0.001);
+  });
 });
