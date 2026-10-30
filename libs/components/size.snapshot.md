@@ -49,7 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 14594 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 17012 ./core @angular/core,@angular/forms/signals
-./chart 136586 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 139671 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 22515 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 16746 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -138,7 +138,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 5786 16762
 ./breadcrumb PctBreadcrumb 3 5886 14432
-./chart PctBars 6 111770 134832
+./chart PctBars 6 114849 137916
 ./chips PctChip 2 16604 16607
 ./date PctCalendar 2 28200 47338
 ./field PctField 3 25288 35018
