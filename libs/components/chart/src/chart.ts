@@ -121,22 +121,26 @@ export interface PctAxisLayout {
   readonly slot: PctAxisSlot;
   readonly domain: PctDomain;
   readonly scale: PctScale;
-  /** The ticks: where each stands, and its text. */
+  /** The ticks: each one's value, its pixel along the axis, and its text. */
   readonly ticks: readonly {
     readonly at: number;
-    readonly y: number;
+    readonly px: number;
     readonly text: string;
   }[];
-  /** Where the axis line stands, and the side its labels are on. */
-  readonly x: number;
+  /**
+   * The pixel the axis line stands at across the plot — an x in a vertical chart, a y in a
+   * horizontal one — and the side its labels are on: `start` is left or below.
+   */
+  readonly line: number;
   readonly side: 'start' | 'end';
   /** The palette places of the series on this axis, at most three, for the dots by the unit. */
   readonly places: readonly number[];
 }
 
-/** A tick of the horizontal axis as the scene draws it. */
+/** A tick of the x axis as the scene draws it. */
 interface PctXTick {
-  readonly x: number;
+  /** The pixel along the axis. */
+  readonly px: number;
   /** Where its label's middle stands: on the tick, or inside the box when that is too near an edge. */
   readonly middle: number;
   readonly text: string;
@@ -234,6 +238,20 @@ const BOOLEAN = 'boolean';
 const ROW = 48;
 /** The space between a plot and the edge where no axis stands. */
 const EDGE = 8;
+/** The length of a tick mark, in pixels. */
+const TICK = 4;
+/** A value label's room along a horizontal axis. */
+const LABEL = 80;
+/** The dots of the series by a unit, at most. */
+const DOTS = 3;
+
+/** A line of the drawing, in the layer's pixels. */
+interface PctSegment {
+  readonly x1: number;
+  readonly y1: number;
+  readonly x2: number;
+  readonly y2: number;
+}
 /** How long a finger rests before the cursor follows it, in milliseconds. */
 const HOLD = 300;
 /** How near the cursor's line a tap clears it, in pixels. */
@@ -286,6 +304,7 @@ let measuring: CanvasRenderingContext2D | null | undefined;
   styleUrl: './chart.scss',
   providers: [{ provide: PctChartScene, useExisting: PctChart }],
   host: {
+    '[class.horizontal]': 'horizontal()',
     class: 'pct-chart',
     '[attr.aria-busy]': 'loading() || !measured() ? "true" : null',
   },
@@ -340,6 +359,19 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly timeZone = input<string | undefined>(undefined);
+
+  /**
+   * Which way the x axis runs. `vertical`, the default, lays it along the bottom with the
+   * values up the sides; `horizontal` lays it down the left side with the values along the
+   * bottom — bars grow to the right, the cursor's line lies across, a drag up and down pans.
+   *
+   * @since next
+   */
+  override readonly orientation = input<'vertical' | 'horizontal'>('vertical');
+
+  protected readonly horizontal = computed(
+    () => this.orientation() === 'horizontal',
+  );
   /**
    * Overrides the application's `LOCALE_ID` for the numbers and times the axes write.
    *
@@ -656,7 +688,9 @@ export class PctChart extends PctChartScene {
     return at < 0 ? null : found.stacked[at];
   }
 
-  private readonly lineHeight = computed(() => Math.ceil(this.font().px * 1.4));
+  override readonly lineHeight = computed(() =>
+    Math.ceil(this.font().px * 1.4),
+  );
 
   /**
    * What each series shows in the window, read once per window and per set of hidden series:
@@ -674,10 +708,22 @@ export class PctChart extends PctChartScene {
     return extents;
   });
 
-  /** The plot's top and bottom: room for the units above it and the time below it. */
+  /**
+   * The plot's top and bottom. Vertical: room for the units above it and the time below it.
+   * Horizontal: a line of labels for each value axis along the bottom (`left` slots) and the
+   * top (`right` slots).
+   */
   private readonly rows = computed(() => {
     const { height } = this.size();
     const line = this.lineHeight();
+    if (this.horizontal()) {
+      const slots = [...this.slots().values()];
+      const room = (side: 'left' | 'right') =>
+        slots.filter((s) => s.startsWith(side)).length * (line + this.gap());
+      const top = Math.max(EDGE, room('right'));
+      const bottom = height - Math.max(EDGE, room('left'));
+      return { top, bottom: Math.max(top + 1, bottom) };
+    }
     const top = this.slots().size > 0 ? line + this.gap() : EDGE;
     const bottom = height - line - this.gap();
     return { top, bottom: Math.max(top + 1, bottom) };
@@ -687,7 +733,10 @@ export class PctChart extends PctChartScene {
   private readonly valueAxes = computed(() => {
     const extents = this.extents();
     const { top, bottom } = this.rows();
-    const target = Math.max(2, Math.floor((bottom - top) / ROW));
+    // A tick every ROW pixels up the side, or every LABEL pixels along the bottom.
+    const target = this.horizontal()
+      ? Math.max(2, Math.floor(this.acrossLength() / LABEL))
+      : Math.max(2, Math.floor((bottom - top) / ROW));
     const format = (digits: number) =>
       pctQuantityFormat(this.effectiveLocale(), {
         fractionDigits: [0, digits],
@@ -749,6 +798,23 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly axisRoom = computed(() => {
+    if (this.horizontal()) {
+      // The x axis's labels on the left; on the right each value axis's unit and its dots.
+      const labels = Math.max(
+        0,
+        ...this.xTickDefs().map((t) => this.measure(t.text)),
+      );
+      const units = Math.max(
+        0,
+        ...[...this.slots().keys()].map((unit) =>
+          unit === BOOLEAN ? 0 : this.measure(unit) + 6 + DOTS * 8,
+        ),
+      );
+      return {
+        left: Math.max(EDGE, labels + TICK + this.gap() * 2),
+        right: Math.max(EDGE, units + this.gap()),
+      };
+    }
     const room = (slot: PctAxisSlot) => {
       const axis = this.valueAxes().find((a) => a.slot === slot);
       return axis ? axis.width + this.gap() * 2 : 0;
@@ -771,9 +837,24 @@ export class PctChart extends PctChartScene {
     return { left, right: Math.max(left + 1, right) };
   });
 
-  override readonly plotWidth = computed(
-    () => this.columns().right - this.columns().left,
+  /** The pixels the value axes run across: the plot's height, or its width when horizontal. */
+  private readonly acrossLength = computed(() =>
+    this.horizontal()
+      ? this.columns().right - this.columns().left
+      : this.rows().bottom - this.rows().top,
   );
+
+  /** The x axis's pixel range, in its own direction: left to right, or top to bottom. */
+  private readonly alongRange = computed<readonly [number, number]>(() =>
+    this.horizontal()
+      ? [this.rows().top, this.rows().bottom]
+      : [this.columns().left, this.columns().right],
+  );
+
+  override readonly plotWidth = computed(() => {
+    const [start, end] = this.alongRange();
+    return end - start;
+  });
 
   /**
    * The value axes as drawn.
@@ -783,28 +864,39 @@ export class PctChart extends PctChartScene {
   readonly axes = computed<readonly PctAxisLayout[]>(() => {
     const { top, bottom } = this.rows();
     const { left, right } = this.columns();
+    const horizontal = this.horizontal();
     // An outer axis stands beyond the inner one's room, and on the plot's edge without one.
     const widthOf = (slot: PctAxisSlot) => {
       const axis = this.valueAxes().find((a) => a.slot === slot);
-      return axis ? axis.width + this.gap() * 2 : 0;
+      if (!axis) return 0;
+      return horizontal
+        ? this.lineHeight() + this.gap()
+        : axis.width + this.gap() * 2;
     };
+    // The inner edges: left and right, or, turned, bottom (`left` slots) and top.
+    const start = horizontal ? bottom : left;
+    const end = horizontal ? top : right;
+    const out = horizontal ? 1 : -1;
     return this.valueAxes().map((axis) => {
-      const scale = pctLinear(axis.domain, [bottom, top]);
-      const x =
+      const scale = pctLinear(
+        axis.domain,
+        horizontal ? [left, right] : [bottom, top],
+      );
+      const line =
         axis.slot === 'left'
-          ? left
+          ? start
           : axis.slot === 'left-outer'
-            ? left - widthOf('left')
+            ? start + out * widthOf('left')
             : axis.slot === 'right'
-              ? right
-              : right + widthOf('right');
+              ? end
+              : end - out * widthOf('right');
       return {
         unit: axis.unit,
         slot: axis.slot,
         domain: axis.domain,
         scale,
-        ticks: axis.ticks.map((t) => ({ ...t, y: scale.map(t.at) })),
-        x,
+        ticks: axis.ticks.map((t) => ({ ...t, px: scale.map(t.at) })),
+        line,
         side: axis.slot.startsWith('left')
           ? ('start' as const)
           : ('end' as const),
@@ -820,15 +912,15 @@ export class PctChart extends PctChartScene {
   override readonly xScale = computed<PctScale | null>(() => {
     const shown = this.shown();
     if (!shown || !this.measured()) return null;
-    const { left, right } = this.columns();
-    return pctLinear([shown.from, shown.to], [left, right]);
+    return pctLinear([shown.from, shown.to], this.alongRange());
   });
 
-  /** The ticks of the horizontal axis, thinned so no two labels touch. */
-  protected readonly xTicks = computed<readonly PctXTick[]>(() => {
-    const scale = this.xScale();
+  /** The ticks of the x axis before their pixels: where each stands and what it says. */
+  private readonly xTickDefs = computed<
+    readonly { at: number; text: string; label: PctTimeLabel | 'value' }[]
+  >(() => {
     const shown = this.shown();
-    if (!scale || !shown) return [];
+    if (!shown || !this.measured()) return [];
     const locale = this.effectiveLocale();
     let ticks: { at: number; text: string; label: PctTimeLabel | 'value' }[];
     const interval = this.interval();
@@ -868,16 +960,33 @@ export class PctChart extends PctChartScene {
         label: 'value',
       }));
     }
-    const { width } = this.size();
-    const xs = ticks.map((t) => scale.map(t.at));
-    const widths = ticks.map((t) => this.measure(t.text));
-    // A label that would leave the chart's box stands inside it instead, against the edge.
-    const middles = xs.map((x, i) =>
-      Math.min(width - widths[i] / 2, Math.max(widths[i] / 2, x)),
+    return ticks;
+  });
+
+  /** The ticks of the x axis, thinned so no two labels touch. */
+  protected readonly xTicks = computed<readonly PctXTick[]>(() => {
+    const scale = this.xScale();
+    const ticks = this.xTickDefs();
+    if (!scale) return [];
+    const horizontal = this.horizontal();
+    const { width, height } = this.size();
+    const pxs = ticks.map((t) => scale.map(t.at));
+    // A label takes its width along the bottom, and a line's height down the side.
+    const sizes = ticks.map((t) =>
+      horizontal ? this.lineHeight() : this.measure(t.text),
     );
-    const visible = pctThinLabels(middles, widths, this.gap() * 2);
+    const edge = horizontal ? height : width;
+    // A label that would leave the chart's box stands inside it instead, against the edge.
+    const middles = pxs.map((px, i) =>
+      Math.min(edge - sizes[i] / 2, Math.max(sizes[i] / 2, px)),
+    );
+    const visible = pctThinLabels(
+      middles,
+      sizes,
+      horizontal ? 0 : this.gap() * 2,
+    );
     return ticks.map((t, i) => ({
-      x: xs[i],
+      px: pxs[i],
       middle: middles[i],
       text: t.text,
       label: t.label,
@@ -901,11 +1010,127 @@ export class PctChart extends PctChartScene {
         : this.axes()
             .filter((a) => a.slot === 'left')
             .slice(0, 1);
+    const { top, bottom, left, right } = this.plot();
+    const horizontal = this.horizontal();
+    // A `row` follows a value tick, a `column` an x tick, whichever way each runs.
+    const across = (px: number): PctSegment =>
+      horizontal
+        ? { x1: px, x2: px, y1: top, y2: bottom }
+        : { x1: left, x2: right, y1: px, y2: px };
+    const along = (px: number): PctSegment =>
+      horizontal
+        ? { x1: left, x2: right, y1: px, y2: px }
+        : { x1: px, x2: px, y1: top, y2: bottom };
     return {
-      rows: axes.flatMap((a) => a.ticks.map((t) => t.y)),
-      columns: this.xTicks().map((t) => t.x),
+      rows: axes.flatMap((a) => a.ticks.map((t) => across(t.px))),
+      columns: this.xTicks().map((t) => along(t.px)),
     };
   });
+
+  /** The x axis as drawn: its base line, a tick mark per tick, and the labels shown. */
+  protected readonly xAxisView = computed(() => {
+    const { top, bottom, left, right } = this.plot();
+    const horizontal = this.horizontal();
+    const base: PctSegment = horizontal
+      ? { x1: left, x2: left, y1: top, y2: bottom }
+      : { x1: left, x2: right, y1: bottom, y2: bottom };
+    const ticks = this.xTicks();
+    return {
+      base,
+      marks: ticks.map((t): PctSegment =>
+        horizontal
+          ? { x1: left - TICK, x2: left, y1: t.px, y2: t.px }
+          : { x1: t.px, x2: t.px, y1: bottom, y2: bottom + TICK },
+      ),
+      labels: ticks
+        .filter((t) => t.shown)
+        .map((t) =>
+          horizontal
+            ? {
+                x: left - TICK - 2,
+                y: t.middle,
+                anchor: 'end' as const,
+                baseline: 'middle' as const,
+                text: t.text,
+                label: t.label,
+              }
+            : {
+                x: t.middle,
+                y: bottom + TICK + 2,
+                anchor: 'middle' as const,
+                baseline: 'hanging' as const,
+                text: t.text,
+                label: t.label,
+              },
+        ),
+    };
+  });
+
+  /** The value axes as drawn: base line, labels, the unit and the dots of the series. */
+  protected readonly axisViews = computed(() =>
+    this.axes().map((axis) => {
+      const { top, bottom, left, right } = this.plot();
+      const horizontal = this.horizontal();
+      const below = axis.side === 'start';
+      const base: PctSegment = horizontal
+        ? { x1: left, x2: right, y1: axis.line, y2: axis.line }
+        : { x1: axis.line, x2: axis.line, y1: top, y2: bottom };
+      // Horizontal: the labels under (or over) the line, the unit after its end.
+      const labelY = below ? axis.line + TICK + 2 : axis.line - TICK - 2;
+      const baseline = below ? ('hanging' as const) : ('auto' as const);
+      const named = axis.unit && axis.unit !== BOOLEAN;
+      return {
+        unit: axis.unit,
+        slot: axis.slot,
+        base,
+        labels: axis.ticks.map((t) =>
+          horizontal
+            ? {
+                x: t.px,
+                y: labelY,
+                anchor: 'middle' as const,
+                baseline,
+                text: t.text,
+              }
+            : {
+                x: below ? axis.line - 6 : axis.line + 6,
+                y: t.px,
+                anchor: below ? ('end' as const) : ('start' as const),
+                baseline: 'middle' as const,
+                text: t.text,
+              },
+        ),
+        unitLabel: named
+          ? horizontal
+            ? { x: right + 6, y: labelY, anchor: 'start' as const, baseline }
+            : {
+                x: below ? axis.line - 6 : axis.line + 6,
+                y: 0,
+                anchor: below ? ('end' as const) : ('start' as const),
+                baseline: 'hanging' as const,
+              }
+          : null,
+        dots: axis.places.map((place, i) =>
+          horizontal
+            ? {
+                place,
+                cx:
+                  right +
+                  6 +
+                  (named ? this.measure(axis.unit) + 6 : 0) +
+                  2 +
+                  i * 8,
+                cy: labelY + (below ? 1 : -1) * (this.lineHeight() / 2),
+              }
+            : {
+                place,
+                cx: below ? axis.line - 2 - i * 8 : axis.line + 2 + i * 8,
+                cy: top - 6,
+              },
+        ),
+      };
+    }),
+  );
 
   private readonly valueFormat = computed(() =>
     pctQuantityFormat(this.effectiveLocale(), { fractionDigits: [0, 3] }),
@@ -996,7 +1221,7 @@ export class PctChart extends PctChartScene {
     };
   });
 
-  private readonly tooltipWidth = signal(0);
+  private readonly tooltipSize = signal({ width: 0, height: 0 });
 
   /**
    * The cursor as drawn: its line's position, a marker on every series with a value, and where
@@ -1009,24 +1234,44 @@ export class PctChart extends PctChartScene {
     if (!reading || !scale || !shown) return null;
     if (reading.x < shown.from || reading.x > shown.to) return null;
     const scales = this.yScales();
+    const horizontal = this.horizontal();
+    const along = scale.map(reading.x);
     const markers = reading.rows.flatMap((row) => {
-      const y =
+      const across =
         row.value === null ? undefined : scales.get(row.unit)?.map(row.value);
-      return y === undefined
+      return across === undefined
         ? []
-        : [{ id: row.id, place: row.place, color: row.color, y }];
+        : [
+            {
+              id: row.id,
+              place: row.place,
+              color: row.color,
+              x: horizontal ? across : along,
+              y: horizontal ? along : across,
+            },
+          ];
     });
-    const x = scale.map(reading.x);
     const { left, right } = this.columns();
-    const width = this.tooltipWidth();
+    const { top, bottom } = this.rows();
+    const { width, height } = this.tooltipSize();
+    // The line across the plot at the cursor; the tooltip beside it, on the side with room.
+    const line = horizontal
+      ? { x: left, y: along, width: right - left, height: 0 }
+      : { x: along, y: top, width: 0, height: bottom - top };
+    const tooltip = horizontal
+      ? {
+          x: left + this.gap(),
+          y:
+            along + NEAR + height <= bottom
+              ? along + NEAR
+              : Math.max(top, along - NEAR - height),
+        }
+      : { x: pctTooltipPlace(along, width, left, right).left, y: top };
     return {
-      x,
+      along,
+      line,
       markers,
-      tooltip: {
-        x: pctTooltipPlace(x, width, left, right).left,
-        y: this.rows().top,
-        measured: width > 0,
-      },
+      tooltip: { ...tooltip, measured: width > 0 },
     };
   });
 
@@ -1092,8 +1337,12 @@ export class PctChart extends PctChartScene {
     // The tooltip is measured once drawn, and placed by its width: one frame hidden.
     afterRenderEffect(() => {
       this.reading();
-      const width = this.tooltipBox()?.nativeElement.offsetWidth ?? 0;
-      if (width !== this.tooltipWidth()) this.tooltipWidth.set(width);
+      const box = this.tooltipBox()?.nativeElement;
+      const width = box?.offsetWidth ?? 0;
+      const height = box?.offsetHeight ?? 0;
+      const now = this.tooltipSize();
+      if (width !== now.width || height !== now.height)
+        this.tooltipSize.set({ width, height });
     });
     destroyRef.onDestroy(() => {
       clearTimeout(this.holdTimer);
@@ -1348,8 +1597,8 @@ export class PctChart extends PctChartScene {
   /** The position under a pixel of the layer, or `null` off the plot. */
   private positionAt(px: number): number | null {
     const scale = this.xScale();
-    const { left, right } = this.columns();
-    if (!scale || px < left || px > right) return null;
+    const [start, end] = this.alongRange();
+    if (!scale || px < start || px > end) return null;
     return scale.invert(px);
   }
 
@@ -1359,11 +1608,13 @@ export class PctChart extends PctChartScene {
   ): void {
     const point = this.layerPoint(event);
     if (!point) return;
+    // The machine reads `x` along the x axis, whichever way it runs.
+    const horizontal = this.horizontal();
     const { state, action } = pctGestureStep(this.gesture, {
       type,
       id: event.pointerId,
-      x: point.x,
-      y: point.y,
+      x: horizontal ? point.y : point.x,
+      y: horizontal ? point.x : point.y,
       mouse: event.pointerType === 'mouse',
       at: event.timeStamp,
     });
@@ -1379,6 +1630,7 @@ export class PctChart extends PctChartScene {
     pointer: number,
   ): void {
     const width = Math.max(1, this.plotWidth());
+    const [start] = this.alongRange();
     const moves = this.zoom() !== 'none';
     const cursors = this.cursorMode() !== 'none';
     switch (action.type) {
@@ -1389,7 +1641,7 @@ export class PctChart extends PctChartScene {
         if (moves)
           this.move({
             factor: action.factor,
-            anchor: (action.about - this.columns().left) / width,
+            anchor: (action.about - start) / width,
             shift: -action.dx / width,
           });
         return;
@@ -1412,9 +1664,12 @@ export class PctChart extends PctChartScene {
         // A press on a bar picks it, and on a band selects it, whatever the cursor does.
         const at = this.positionAt(action.x);
         if (at !== null) {
+          // The marks read the layer's own pixels, not the machine's.
+          const [px, py] = this.horizontal()
+            ? [action.y, action.x]
+            : [action.x, action.y];
           for (const mark of this.marks())
-            for (const s of mark.series())
-              if (mark.pickAt(s.id, action.x, action.y)) break;
+            for (const s of mark.series()) if (mark.pickAt(s.id, px, py)) break;
           this.select(at);
         }
         if (!cursors) return;
@@ -1507,13 +1762,14 @@ export class PctChart extends PctChartScene {
     const point = this.layerPoint(event);
     if (!point) return;
     event.preventDefault();
-    const { left } = this.columns();
+    const [start] = this.alongRange();
     const width = Math.max(1, this.plotWidth());
+    const along = this.horizontal() ? point.y : point.x;
     // A line of the wheel is about sixteen pixels of a pad's.
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : 1);
     this.move({
       factor: Math.exp(-delta * 0.002),
-      anchor: Math.min(1, Math.max(0, (point.x - left) / width)),
+      anchor: Math.min(1, Math.max(0, (along - start) / width)),
     });
   }
 
@@ -1570,9 +1826,14 @@ export class PctChart extends PctChartScene {
     const scale = this.xScale();
     const shown = this.shown();
     if (!selected || !scale || !shown) return null;
-    const left = Math.max(scale.map(selected.from), this.columns().left);
-    const right = Math.min(scale.map(selected.to), this.columns().right);
-    return right > left ? { left, width: right - left } : null;
+    const [start, end] = this.alongRange();
+    const from = Math.max(scale.map(selected.from), start);
+    const to = Math.min(scale.map(selected.to), end);
+    if (to <= from) return null;
+    const { top, bottom, left, right } = this.plot();
+    return this.horizontal()
+      ? { x: left, y: from, width: right - left, height: to - from }
+      : { x: from, y: top, width: to - from, height: bottom - top };
   });
 
   private readSize(rawWidth: number, rawHeight: number): void {

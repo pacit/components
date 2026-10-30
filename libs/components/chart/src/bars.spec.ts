@@ -602,7 +602,13 @@ describe('PctBars', () => {
     const band = element(fixture).querySelector(
       '[data-pct-part="selection"]',
     ) as HTMLElement;
-    expect(band.style.transform).toBe(`translateX(${scale.map(MARCH + D)}px)`);
+    // the band stands from the plot's top (the clip's) down its height
+    const top = element(fixture)
+      .querySelector('clipPath rect')!
+      .getAttribute('y');
+    expect(band.style.transform).toBe(
+      `translate(${scale.map(MARCH + D)}px, ${top}px)`,
+    );
     expect(band.style.inlineSize).toBe(
       `${scale.map(MARCH + 2 * D) - scale.map(MARCH + D)}px`,
     );

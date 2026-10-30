@@ -820,6 +820,9 @@ describe('PctChartTable', () => {
   });
 });
 
+/** The plot's top in the layer's pixels: the clip rectangle's `y`. */
+const plotTop = (fixture: ComponentFixture<unknown>) =>
+  Number(query(fixture, 'clipPath rect')?.getAttribute('y'));
 const chartOf = (fixture: ComponentFixture<unknown>, index = 0) =>
   fixture.debugElement.queryAll((d) => d.name === 'pct-chart')[index]
     .componentInstance as PctChart;
@@ -959,7 +962,7 @@ describe('PctChart, as laid out', () => {
     // "22.5" and "1,200" at 0.6 of 13 px a character, and the gap of 6 on both sides
     expect(clipOf(fixture)).toEqual([43.2, 25, 505.8, 250]);
     expect(chart.plotWidth()).toBeCloseTo(505.8, 9);
-    expect(chart.axes().map((a) => [a.unit, a.slot, a.x, a.side])).toEqual([
+    expect(chart.axes().map((a) => [a.unit, a.slot, a.line, a.side])).toEqual([
       ['°C', 'left', 43.2, 'start'],
       ['W', 'right', 549, 'end'],
     ]);
@@ -978,7 +981,7 @@ describe('PctChart, as laid out', () => {
       '1,000',
       '1,200',
     ]);
-    expect(chart.axes()[1].ticks.map((t) => t.y)).toEqual([
+    expect(chart.axes()[1].ticks.map((t) => t.px)).toEqual([
       275, 212.5, 150, 87.5, 25,
     ]);
   });
@@ -1005,10 +1008,10 @@ describe('PctChart, as laid out', () => {
       ['mph', 'right-outer', 'end'],
     ]);
     // each axis takes 31.2 for "22.5" and 12 for its gaps
-    expect(axes[0].x).toBeCloseTo(86.4, 9);
-    expect(axes[1].x).toBeCloseTo(513.6, 9);
-    expect(axes[2].x).toBeCloseTo(43.2, 9);
-    expect(axes[3].x).toBeCloseTo(556.8, 9);
+    expect(axes[0].line).toBeCloseTo(86.4, 9);
+    expect(axes[1].line).toBeCloseTo(513.6, 9);
+    expect(axes[2].line).toBeCloseTo(43.2, 9);
+    expect(axes[3].line).toBeCloseTo(556.8, 9);
     const [x, , width] = clipOf(fixture);
     expect(x).toBeCloseTo(86.4, 9);
     expect(width).toBeCloseTo(427.2, 9);
@@ -1182,7 +1185,7 @@ describe('PctChart, as laid out', () => {
     const fixture = await render(Heater);
     const [axis] = chartOf(fixture).axes();
     expect(axis.domain).toEqual([0, 1]);
-    expect(axis.ticks.map((t) => [t.text, t.y])).toEqual([
+    expect(axis.ticks.map((t) => [t.text, t.px])).toEqual([
       ['Off', 275],
       ['On', 25],
     ]);
@@ -1266,7 +1269,7 @@ describe('PctChart, as laid out', () => {
     }
     const fixture = await render(Grid);
     const [celsius, watts] = chartOf(fixture).axes();
-    const ys = (axis: typeof celsius) => axis.ticks.map((t) => String(t.y));
+    const ys = (axis: typeof celsius) => axis.ticks.map((t) => String(t.px));
     const columns = () =>
       attrs(fixture, 'line.column', 'x1').map((x) => Number(x));
     expect(attrs(fixture, 'line.row', 'y1')).toEqual(ys(celsius));
@@ -1384,7 +1387,7 @@ describe('PctChart, as laid out', () => {
       // a line of 28 for 20 px, and the gap of 10 under the units and over the time
       expect(clipOf(fixture)).toEqual([44, 38, 476, 224]);
       // "19" and "1,200" at 0.6 of 20 px a character, and the gap of 10 on both sides
-      expect(chart.axes().map((a) => a.x)).toEqual([44, 520]);
+      expect(chart.axes().map((a) => a.line)).toEqual([44, 520]);
     } finally {
       if (ratio) Object.defineProperty(view, 'devicePixelRatio', ratio);
       else delete (view as { devicePixelRatio?: number }).devicePixelRatio;
@@ -2065,7 +2068,7 @@ describe('PctChart, its cursor', () => {
     expect(Number(range(fixture).value)).toBe(6 * H);
     const line = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
     expect(line.style.transform).toBe(
-      `translateX(${at(fixture, T0 + 6 * H)}px)`,
+      `translate(${at(fixture, T0 + 6 * H)}px, ${plotTop(fixture)}px)`,
     );
     // each marker is the mark's own swatch, in its marker form, with the series' place
     const markers = all(
@@ -2528,7 +2531,9 @@ describe('PctChart, its cursor', () => {
     for (const x of [T0 + 6 * H, T0 + 18 * H]) {
       chartOf(fixture).cursor.set(x);
       await settle(fixture);
-      expect(line()?.style.transform).toBe(`translateX(${at(fixture, x)}px)`);
+      expect(line()?.style.transform).toBe(
+        `translate(${at(fixture, x)}px, ${plotTop(fixture)}px)`,
+      );
     }
     chartOf(fixture).cursor.set(T0 + 20 * H);
     await settle(fixture);

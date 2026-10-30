@@ -195,6 +195,7 @@ export class PctLine<T> extends PctMark {
     return pctLinePath(drawn, scales.x, scales.y, this.curve(), {
       end: this.held(),
       pixel: this.scene.pixel(),
+      transpose: this.scene.orientation() === 'horizontal',
     });
   });
 
@@ -212,6 +213,7 @@ export class PctLine<T> extends PctMark {
       {
         end: this.held(),
         pixel: this.scene.pixel(),
+        transpose: this.scene.orientation() === 'horizontal',
       },
     );
   });
