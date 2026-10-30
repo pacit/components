@@ -2421,6 +2421,48 @@
       "severity": "error"
     },
     {
+      "name": "table — a picked row",
+      "fg": "pct.table.fg-selected",
+      "bg": "pct.table.bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — a picked row under the pointer",
+      "fg": "pct.table.fg-selected",
+      "bg": "pct.table.bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — a picked row's number",
+      "fg": "pct.table.fg-muted",
+      "bg": "pct.table.bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the hint under a selection",
+      "fg": "pct.table.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the error under a selection",
+      "fg": "pct.table.hint-fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the warning under a selection",
+      "fg": "pct.table.hint-fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — series 1 on surface",
       "fg": "pct.chart.series-color-1",
       "bg": "pct.surface",

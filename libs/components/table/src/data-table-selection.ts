@@ -1,0 +1,209 @@
+import {
+  booleanAttribute,
+  computed,
+  Directive,
+  inject,
+  input,
+  model,
+  output,
+} from '@angular/core';
+import type { FormValueControl, ValidationError } from '@angular/forms/signals';
+import {
+  nextPctId,
+  pctFieldMessages,
+  pctFieldWarnings,
+} from '@pacit/components/core';
+import {
+  PctDataTable,
+  type PctSelectionMode,
+  type PctTableSelectionLine,
+} from './data-table';
+import type { PctRowId } from './model/columns';
+
+/**
+ * The rows picked, as a form control: `[(value)]` binds the ids of the rows picked, and
+ * `[formField]` makes the selection a field like any other — its errors, its warnings and its
+ * hint stand under the table, and `aria-describedby` on the `<table>` names the one shown.
+ *
+ * A leading column holds a native checkbox per row and one in the header, which is checked,
+ * mixed or clear over the rows the filter left; Shift with a press picks or drops the rows
+ * between the last one pressed and this one, as the lines stand. A row is not picked by a
+ * press on the row, which would take the press from the controls in its cells.
+ *
+ * **The selection is the application's.** An id stays in `value` when a filter hides its
+ * row and when the rows change: the list is what the application said, and only it takes an
+ * id out ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
+ * `selectAll` adds the rows the filter left to it, and `clear` empties it.
+ *
+ * A list that must not be empty takes `minLength(1)`: the form's `required()` reads an empty
+ * list as filled, and still marks the column's header with the required sign.
+ *
+ * @example
+ * <pct-data-table pctTableSelection [formField]="form.devices" [rows]="devices()" [columns]="columns" [rowId]="byId" />
+ *
+ * @since next
+ */
+@Directive({
+  selector: 'pct-data-table[pctTableSelection]',
+  exportAs: 'pctTableSelection',
+  host: {
+    '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-warning]': 'warningLit() ? "" : null',
+  },
+})
+export class PctTableSelection implements FormValueControl<
+  readonly PctRowId[]
+> {
+  private readonly table = inject(PctDataTable);
+
+  /**
+   * The ids of the rows picked — a required field of the `FormValueControl` contract.
+   *
+   * @since next
+   */
+  readonly value = model<readonly PctRowId[]>([]);
+
+  /**
+   * One row or any: a radio per row, or a checkbox per row and one over them all.
+   *
+   * @since next
+   */
+  readonly mode = input<PctSelectionMode>('multiple');
+
+  /**
+   * No row is picked or dropped: every control of the column is disabled. With `[formField]`
+   * the directive writes it.
+   *
+   * @since next
+   */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /**
+   * The form's verdict; shown only once `touched`, so a form opens with no error under it.
+   *
+   * @since next
+   */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /**
+   * Whether the user has left the column's controls once; with `invalid` it gates the error.
+   *
+   * @since next
+   */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /**
+   * Marks the column's header with the required sign; with `[formField]` it follows the
+   * schema's `required()`.
+   *
+   * @since next
+   */
+  readonly required = input(false, { transform: booleanAttribute });
+
+  /**
+   * The form's errors; the first one's `message` stands under the table once touched.
+   *
+   * @since next
+   */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /**
+   * A verdict without a veto (0087): shown after the error and before the hint once touched.
+   * Left unbound, the selection reads what `pctWarn()` wrote for its own `[formField]`.
+   *
+   * @since next
+   */
+  readonly warnings = input<
+    readonly ValidationError.WithOptionalFieldTree[] | undefined
+  >(undefined);
+
+  /**
+   * A line of help under the table; the error or the warning takes its place.
+   *
+   * @since next
+   */
+  readonly hint = input<string>('');
+
+  /**
+   * Emitted when the focus leaves a control of the column — lets the form mark the field as
+   * touched.
+   *
+   * @since next
+   */
+  readonly touch = output<void>();
+
+  private readonly uid = nextPctId('pct-table-selection');
+
+  private readonly messages = pctFieldMessages({
+    invalid: this.invalid,
+    touched: this.touched,
+    errors: this.errors,
+    warnings: pctFieldWarnings(this.warnings),
+  });
+
+  /**
+   * Whether the selection reads as invalid right now: invalid and touched.
+   *
+   * @since next
+   */
+  readonly showInvalid = this.messages.showInvalid;
+
+  /** The warning is lit: the host says so for a stylesheet to paint by. */
+  protected readonly warningLit = this.messages.showWarning;
+
+  /** The line under the table: the error, else the warning, else the hint. */
+  private readonly line = computed((): PctTableSelectionLine | null => {
+    const messages = this.messages;
+    if (messages.showError())
+      return {
+        kind: 'error',
+        id: `${this.uid}-error`,
+        text: messages.errorText(),
+      };
+    if (messages.showWarning())
+      return {
+        kind: 'warning',
+        id: `${this.uid}-warning`,
+        text: messages.warningText(),
+      };
+    const hint = this.hint();
+    return hint ? { kind: 'hint', id: `${this.uid}-hint`, text: hint } : null;
+  });
+
+  constructor() {
+    this.table.contribute({
+      selection: {
+        value: this.value,
+        mode: this.mode,
+        disabled: this.disabled,
+        required: this.required,
+        invalid: this.showInvalid,
+        line: this.line,
+        touch: () => this.touch.emit(),
+      },
+    });
+  }
+
+  /**
+   * Picks every row the filter left, keeping the ids already picked; in `single` mode, nothing.
+   *
+   * @since next
+   */
+  selectAll(): void {
+    if (this.mode() === 'single') return;
+    const picked = new Set(this.value());
+    this.value.set([
+      ...this.value(),
+      ...this.table.matchedIds().filter((id) => !picked.has(id)),
+    ]);
+  }
+
+  /**
+   * Drops every row picked, the ones the filter hides among them.
+   *
+   * @since next
+   */
+  clear(): void {
+    this.value.set([]);
+  }
+}

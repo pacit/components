@@ -7,6 +7,7 @@
      the outer row's, which would otherwise be inherited by every row inside it. */
   --_tone: initial;
   --_hover: initial;
+  --_selected: initial;
   --_stripe: initial;
 }
 
@@ -63,12 +64,15 @@ table {
   color: var(--pct-table-fg);
 }
 
-/* A row's surface is one of three, in a fixed order: its tone over the pointer's tint, the
-   pointer's over the stripe. The order is said by the fallbacks of one value rather than by
+/* A row's surface is one of four, in a fixed order: its tone over the pointer's tint, the
+   pointer's over the pick's, the pick's over the stripe. The order is said by the fallbacks of one value rather than by
    the specificity of three rules, which the stripe's `:host()` would win. A cell's tone and a
    flash paint the cell, over any of them. */
 tbody > tr[data-pct-index] {
-  background-color: var(--_tone, var(--_hover, var(--_stripe)));
+  background-color: var(
+    --_tone,
+    var(--_hover, var(--_selected, var(--_stripe)))
+  );
 }
 
 /* Only where a pointer hovers: a tap would otherwise leave its row tinted. */
@@ -76,6 +80,13 @@ tbody > tr[data-pct-index] {
   tbody > tr[data-pct-index]:hover {
     --_hover: var(--pct-table-bg-hover);
   }
+}
+
+/* A picked row: its checkbox says so in every tone and in forced colours; the fill says it to
+   the eye. */
+tbody > tr[data-pct-selected] {
+  --_selected: var(--pct-table-bg-selected);
+  color: var(--pct-table-fg-selected);
 }
 
 :host([data-pct-striped]) tbody > tr.pct-data-table__even {
@@ -151,12 +162,64 @@ td[data-pct-changed] {
   }
 }
 
-/* The column of disclosures: as narrow as its button, which is the whole target. */
+/* The columns of picks and of disclosures: as narrow as their control's target. */
+.pct-data-table__pick,
 .pct-data-table__disclosure {
   inline-size: 0;
   padding-block: 0;
   padding-inline: 0;
   vertical-align: middle;
+}
+
+/* The label around a native checkbox or radio is its target: a press anywhere on it presses
+   the control, whose box keeps the platform's size. */
+.pct-data-table__target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: var(--pct-table-toggle-target-min);
+  min-block-size: var(--pct-table-toggle-target-min);
+  cursor: pointer;
+}
+
+.pct-data-table__target > input {
+  margin: 0;
+  accent-color: var(--pct-primary);
+  cursor: inherit;
+}
+
+.pct-data-table__target:has(> input:disabled) {
+  cursor: not-allowed;
+}
+
+.pct-data-table__required {
+  color: var(--pct-table-hint-fg-invalid);
+}
+
+/* The selection's line under the table, at the size a field writes its own. */
+.pct-data-table__hint,
+.pct-data-table__error,
+.pct-data-table__warning {
+  margin-block-start: var(--pct-space-2);
+  font-size: var(--pct-font-size-sm);
+  color: var(--pct-table-hint-fg);
+}
+
+.pct-data-table__error {
+  color: var(--pct-table-hint-fg-invalid);
+}
+
+/* The tone's glyph before the text, which survives the palette's absence (0087). */
+.pct-data-table__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-table-hint-fg-warning);
+}
+
+.pct-data-table__warning-icon {
+  align-self: center;
 }
 
 .pct-data-table__toggle {
