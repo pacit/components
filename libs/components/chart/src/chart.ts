@@ -65,6 +65,7 @@ import {
   PctMark,
   type PctSeriesSpec,
   type PctSwatchContext,
+  type PctMarkNote,
 } from './scene';
 
 /**
@@ -157,6 +158,8 @@ export interface PctChartReading {
   readonly text: string;
   /** Every series shown, in the chart's order. */
   readonly rows: readonly PctChartReadingRow[];
+  /** What the marks add after the rows — a compared period's difference — or none. */
+  readonly notes: readonly PctMarkNote[];
 }
 
 /**
@@ -962,7 +965,8 @@ export class PctChart extends PctChartScene {
           text: this.writeValue(value, s.unit),
         };
       });
-    return { x, text: this.writePosition(x, 'short'), rows };
+    const notes = this.marks().flatMap((m) => m.notesAt(x));
+    return { x, text: this.writePosition(x, 'short'), rows, notes };
   });
 
   /** What the cursor's range says: the full position and every value, or that there is none. */
@@ -970,7 +974,9 @@ export class PctChart extends PctChartScene {
     const reading = this.reading();
     if (!reading) return this.texts().chartNoCursor;
     const position = this.writePosition(reading.x, 'full');
-    const values = reading.rows.map((r) => `${r.name} ${r.text}`).join(', ');
+    const values = [...reading.rows, ...reading.notes]
+      .map((r) => `${r.name} ${r.text}`)
+      .join(', ');
     return values ? `${position}: ${values}` : position;
   });
 

@@ -15,6 +15,7 @@
   <svg:text
     data-pct-part="label"
     text-anchor="middle"
+    [class.selected]="bar.selected"
     [attr.dominant-baseline]="bar.value >= 0 ? 'auto' : 'hanging'"
     [attr.x]="bar.labelX"
     [attr.y]="bar.labelY"

@@ -197,6 +197,11 @@
         "$value": "{pct.text}",
         "$description": "The value written over a bar."
       },
+      "label-font-weight-selected": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the label over the selected bar."
+      },
       "bar-alpha": {
         "$type": "dimension",
         "$value": "55%",

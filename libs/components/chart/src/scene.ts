@@ -339,6 +339,30 @@ export abstract class PctMark {
     void y;
     return false;
   }
+
+  /**
+   * The notes the mark adds to the reading at `x`, after the series' rows: a bars mark with a
+   * compared period writes the difference between the two. The default has none.
+   *
+   * @since next
+   */
+  notesAt(x: number): readonly PctMarkNote[] {
+    void x;
+    return [];
+  }
+}
+
+/**
+ * A line of the tooltip that is no series' value: a name and a text, written by a mark beside
+ * the rows (`PctMark.notesAt`). It draws no swatch and the legend does not list it.
+ *
+ * @since next
+ */
+export interface PctMarkNote {
+  /** Unique among the notes of the chart: the series' key and what the note is about. */
+  readonly id: string;
+  readonly name: string;
+  readonly text: string;
 }
 
 /**

@@ -428,6 +428,51 @@ describe('PctBars', () => {
       '15.5 kWh',
       '20 kWh',
     ]);
+    // the difference between the bar and the compared one, in percent of the compared, as a
+    // note after the rows: in the tooltip without a swatch, and in the range's value text
+    expect(chart.reading()!.notes).toEqual([
+      { id: 'Heat pump:difference', name: 'Difference', text: '-22.5%' },
+    ]);
+    const note = element(fixture).querySelector(
+      '[data-pct-part="tooltip"] .row.note',
+    )!;
+    expect(note.querySelector('[data-pct-part="swatch"]')).toBeNull();
+    expect(texts(fixture, '[data-pct-part="tooltip"] .row.note .name')).toEqual(
+      ['Difference'],
+    );
+    expect(
+      texts(fixture, '[data-pct-part="tooltip"] .row.note .value'),
+    ).toEqual(['-22.5%']);
+    expect(
+      element(fixture)
+        .querySelector('input[data-pct-part="range"]')
+        ?.getAttribute('aria-valuetext'),
+    ).toContain(', February 20 kWh, Difference -22.5%');
+    // no note without a bar (a gap), without a compared bar, over a compared zero, or with
+    // either series hidden; none off the bands
+    chart.cursor.set(MARCH + 2 * D);
+    await settle(fixture);
+    expect(chart.reading()!.notes).toEqual([]);
+    chart.cursor.set(MARCH + 3 * D);
+    await settle(fixture);
+    expect(chart.reading()!.notes).toEqual([]);
+    chart.cursor.set(MARCH);
+    await settle(fixture);
+    expect(chart.reading()!.notes[0].text).toBe('+20%');
+    fixture.componentInstance.compare.set([{ at: FEBRUARY, energy: 0 }]);
+    await settle(fixture);
+    expect(chart.reading()!.notes).toEqual([]);
+    fixture.componentInstance.compare.set(february);
+    fixture.componentInstance.hidden.set(['Heat pump:compare']);
+    await settle(fixture);
+    expect(chart.reading()!.notes).toEqual([]);
+    fixture.componentInstance.hidden.set(['Heat pump']);
+    await settle(fixture);
+    expect(chart.reading()!.notes).toEqual([]);
+    fixture.componentInstance.hidden.set([]);
+    await settle(fixture);
+    expect(marksOf(fixture)[0].notesAt(MARCH - 1)).toEqual([]);
+    expect(marksOf(fixture)[0].notesAt(MARCH)[0].text).toBe('+20%');
     expect(texts(fixture, 'pct-chart-table thead th')).toEqual([
       'Time',
       'Heat pump (kWh)',
@@ -501,6 +546,28 @@ describe('PctBars', () => {
     expect(
       element(fixture).querySelectorAll('text[data-pct-part="label"]').length,
     ).toBeLessThan(4);
+    // the selected band's label is never thinned away, and it is the bold one
+    const shownBefore = texts(fixture, 'text[data-pct-part="label"]');
+    expect(shownBefore).not.toContain('9');
+    fixture.componentInstance.selected.set({
+      from: MARCH + 4 * D,
+      to: MARCH + 5 * D,
+    });
+    await settle(fixture);
+    const labels = [
+      ...element(fixture).querySelectorAll('text[data-pct-part="label"]'),
+    ];
+    expect(labels.map((l) => l.textContent)).toEqual([...shownBefore, '9']);
+    expect(labels.map((l) => l.classList.contains('selected'))).toEqual([
+      ...shownBefore.map(() => false),
+      true,
+    ]);
+    // a band that is not a bar's selects nothing bold
+    fixture.componentInstance.selected.set({ from: 1, to: 2 });
+    await settle(fixture);
+    expect(
+      element(fixture).querySelectorAll('text[data-pct-part="label"].selected'),
+    ).toHaveLength(0);
   });
 
   it('selects the band under a press and lets it go on the next, and picks the bar', async () => {

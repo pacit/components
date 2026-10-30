@@ -10,7 +10,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { pctQuantityFormat } from '@pacit/components/core';
+import { PCT_TEXTS, pctQuantityFormat } from '@pacit/components/core';
 import {
   pctColumnsOf,
   pctRead,
@@ -27,6 +27,7 @@ import {
   PCT_SERIES_MARKERS,
   PctChartScene,
   PctMark,
+  type PctMarkNote,
   type PctSeriesSpec,
   type PctSwatchContext,
 } from './scene';
@@ -58,6 +59,8 @@ interface PctBar {
   readonly labelX: number;
   readonly labelY: number;
   readonly labelShown: boolean;
+  /** Whether the bar's band is the chart's selection: its label is shown and bold. */
+  readonly selected: boolean;
   /** The compared period's bar, drawn lighter. */
   readonly compared: boolean;
 }
@@ -371,13 +374,18 @@ export class PctBars<T> extends PctMark {
           labelX: bx + (compared ? each : width) / 2,
           labelY: value >= 0 ? top - 4 : bottom + 4,
           labelShown: false,
+          selected: false,
           compared: isCompared,
         });
       });
     });
     if (!this.labels()) return bars;
     // The labels of the current bars, thinned where they would touch; the compared bars carry
-    // none, their value is the tooltip's.
+    // none, their value is the tooltip's. The selected band's label is never thinned away.
+    const selected = this.scene.selected();
+    const chosen = selected
+      ? bands.findIndex((b) => b.from === selected.from && b.to === selected.to)
+      : -1;
     const labelled = bars.filter((b) => !b.compared);
     const shown = pctThinLabels(
       labelled.map((b) => b.labelX),
@@ -385,8 +393,57 @@ export class PctBars<T> extends PctMark {
       4,
     );
     const visible = new Set(labelled.filter((_, i) => shown[i]));
-    return bars.map((b) => ({ ...b, labelShown: visible.has(b) }));
+    return bars.map((b) => {
+      const isChosen = b.index === chosen && !b.compared;
+      return {
+        ...b,
+        selected: isChosen,
+        labelShown: isChosen || visible.has(b),
+      };
+    });
   });
+
+  private readonly texts = inject(PCT_TEXTS);
+
+  /** The difference between a bar and the compared period's, as a signed percentage. */
+  private readonly percent = computed(() =>
+    pctQuantityFormat(this.scene.effectiveLocale(), {
+      unit: 'percent',
+      signDisplay: 'exceptZero',
+      fractionDigits: [0, 1],
+    }),
+  );
+
+  /**
+   * See `PctMark.notesAt`: with a compared period, the difference between the bar under `x`
+   * and the compared one, in percent of the compared — none where either is missing or the
+   * compared is zero.
+   *
+   * @since next
+   */
+  override notesAt(x: number): readonly PctMarkNote[] {
+    const hidden = new Set(this.scene.hiddenSeries());
+    if (
+      !this.compare() ||
+      hidden.has(this.key()) ||
+      hidden.has(this.compareKey())
+    )
+      return [];
+    const i = this.scene.bands().findIndex((b) => x >= b.from && x < b.to);
+    if (i < 0) return [];
+    const own = this.values()[i];
+    const compared = this.comparedValues()[i];
+    if (own === null || compared === null || compared === 0) return [];
+    return [
+      {
+        id: `${this.key()}:difference`,
+        name: this.texts().chartDifference,
+        text: this.percent().format(
+          ((own - compared) / Math.abs(compared)) * 100,
+        ),
+      },
+    ];
+  }
 
   /** The marker's path: the bars' swatch is a square, the second place's shape. */
   protected readonly squarePath = PCT_SERIES_MARKERS[1];

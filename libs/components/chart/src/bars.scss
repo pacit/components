@@ -13,6 +13,10 @@
   fill: var(--pct-chart-label-fg);
 }
 
+[data-pct-part='label'].selected {
+  font-weight: var(--pct-chart-label-font-weight-selected);
+}
+
 [data-pct-part='swatch'] {
   display: block;
   inline-size: var(--pct-chart-swatch-width);

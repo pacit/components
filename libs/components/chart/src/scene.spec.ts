@@ -76,6 +76,7 @@ describe('PctMark, what a mark that draws no bars answers', () => {
     ).toBeNull();
     expect(PctMark.prototype.bandAt.call(mark, 'Supply', T0)).toBeNull();
     expect(PctMark.prototype.pickAt.call(mark, 'Supply', 10, 10)).toBe(false);
+    expect(PctMark.prototype.notesAt.call(mark, T0)).toEqual([]);
     expect(PctMark.prototype.pyramidOf.call(mark, 'Supply')).toBeNull();
     // the line itself keeps a pyramid, which the base's answer is not
     expect(mark.pyramidOf('Supply')).not.toBeNull();
