@@ -1601,7 +1601,8 @@ describe('PctChart, as laid out', () => {
     expect(ramp.valueAt('Ramp', 3)).toBeNull();
     const first = fixture.nativeElement.querySelector('pct-chart');
     expect(
-      [...first.querySelectorAll('path[data-pct-part="series"]')].map(
+      // the data layer's paths, the area's and the line's; the zoom bar's icons draw beside it
+      [...first.querySelectorAll('[data-pct-part="data"] path')].map(
         (p: Element) => p.getAttribute('d'),
       ),
     ).toEqual([
