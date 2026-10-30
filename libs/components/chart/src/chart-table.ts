@@ -177,11 +177,11 @@ export class PctChartTable {
     const separator = decimal === ',' ? ';' : ',';
     // A field is quoted when it holds the separator, a quote or a line break, and only then.
     const quote = (text: string) =>
-      text.includes(separator) || /["\n\r]/.test(text)
-        ? `"${text.replace(/"/g, '""')}"`
+      text.includes(separator) || text.includes('"') || /[\n\r]/.test(text)
+        ? `"${text.replaceAll('"', '""')}"`
         : text;
     const text = (value: string) =>
-      quote(/^[=+\-@\t\r]/.test(value) ? `'${value}` : value);
+      quote(/^[=+\-@\t\r]/.test(value) ? "'" + value : value);
     const number = (v: number | null) =>
       v === null ? '' : String(Number(v.toPrecision(15))).replace('.', decimal);
     const time = this.chart().x() === 'time';

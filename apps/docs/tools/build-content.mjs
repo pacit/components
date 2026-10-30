@@ -685,7 +685,8 @@ const inferType = (dflt) =>
 /** Inputs, models and outputs of one class body, each with the JSDoc line above it. */
 const membersOf = (body, file, id) => {
   const members = [];
-  const re = /readonly (\w+) = (input|model|output)(\.required)?/g;
+  const re =
+    /(?:override )?readonly (\w+) = (input|model|output)(\.required)?/g;
   let m;
   while ((m = re.exec(body))) {
     let at = m.index + m[0].length;

@@ -157,6 +157,12 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
         ),
     },
   ],
+  chart: [
+    {
+      key: 'area',
+      load: () => import('./chart.area.demo').then((m) => m.ChartAreaDemo),
+    },
+  ],
   badge: [
     {
       key: 'tones',
