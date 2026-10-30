@@ -273,9 +273,8 @@ async function press(
   shift = false,
 ) {
   const button = toggle(label) as HTMLButtonElement;
-  // jsdom has no PointerEvent; a MouseEvent of the same type carries the same shiftKey.
   button.dispatchEvent(
-    new MouseEvent('pointerdown', { bubbles: true, shiftKey: shift }),
+    new MouseEvent('mousedown', { bubbles: true, shiftKey: shift }),
   );
   button.click();
   await settle(fixture);
@@ -1958,5 +1957,38 @@ describe('PctDataTable — after the review of the rows’ look', () => {
     await settle(fixture);
     expect(layout).toHaveBeenCalledTimes(1);
     expect(document.querySelectorAll('[data-pct-changed]')).toHaveLength(3);
+  });
+});
+
+describe('PctDataTable — a reader hears the later keys', () => {
+  it('describes a later key’s button by its place and its way, and the first by nothing', async () => {
+    const fixture = await render(Host);
+    const described = (label: string) => {
+      const id = toggle(label)?.getAttribute('aria-describedby');
+      return id ? document.getElementById(id)?.textContent : null;
+    };
+    await press(fixture, 'Name');
+    await press(fixture, 'Room', true);
+    await press(fixture, 'Power', true);
+    await press(fixture, 'Power', true);
+    expect(toggle('Name')).not.toBeNull();
+    expect(toggle('Name')?.hasAttribute('aria-describedby')).toBe(false);
+    expect(described('Name')).toBeNull();
+    expect(described('Room')).toBe('Sort key 2, ascending');
+    expect(described('Power')).toBe('Sort key 3, descending');
+  });
+
+  it('takes Shift from the main button only', async () => {
+    const fixture = await render(Host);
+    await press(fixture, 'Name');
+    const button = toggle('Room') as HTMLButtonElement;
+    button.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, shiftKey: true, button: 1 }),
+    );
+    button.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.sort()).toEqual([
+      { key: 'room', direction: 'ascending' },
+    ]);
   });
 });

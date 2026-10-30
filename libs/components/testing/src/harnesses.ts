@@ -1,9 +1,11 @@
+import type { TestElement } from '@angular/cdk/testing';
 import { PctHarness } from './harness';
 
 /*
  * One harness per component and directive a card names, as declarations over the parts
  * inventory: the host selector, verbatim the component's own, and the parts it draws. The
- * behaviour is all in `PctHarness`; what stands here is held to the built package by
+ * behaviour is in `PctHarness`, but for the reads a component's own shape asks for — the data
+ * table's rows, cells and sort presses; what stands here is held to the built package by
  * `tools/check-harness.mjs` in both directions, and the union in each `extends` clause —
  * what a consumer's editor offers after `part(` — is held to the same list.
  */
@@ -826,8 +828,23 @@ export class PctTableCellHarness extends PctHarness<never> {
   static override readonly parts = [] as const;
 }
 
+/** The rows of data a data table draws: a placeholder row carries no index. */
+const DATA_ROWS =
+  ':scope > pct-table-frame > table > tbody > tr[data-pct-index]';
+
+/** The header cells of a data table's own table, not of one nested in a cell. */
+const HEADS = ':scope > pct-table-frame > table > thead > tr > th';
+
+/** What a header's label leaves out: a later key's place, and the words only a reader hears. */
+const NOT_THE_LABEL =
+  '[data-pct-part="place"], .pct-data-table__word, [hidden]';
+
 /**
  * `pct-data-table` — `PctDataTable`.
+ *
+ * Beside the parts, the table read as a user reads it: the rows in the order they stand, a
+ * cell by its row and its header's label, and a press on a header — the table's own, not those
+ * of a data table nested in one of its cells, which a harness of its own reads.
  *
  * @since next
  */
@@ -841,6 +858,86 @@ export class PctDataTableHarness extends PctHarness<
     'place',
     'placeholder',
   ] as const;
+
+  /**
+   * The headers' labels, in the order the columns stand: the text a user sees, without the
+   * place of a later sort key. The column of row numbers is headed `#`.
+   *
+   * @since next
+   */
+  async headers(): Promise<string[]> {
+    const heads = await this.locatorForAll(HEADS)();
+    return Promise.all(
+      heads.map((head) => head.text({ exclude: NOT_THE_LABEL })),
+    );
+  }
+
+  /**
+   * The rows of data, in the order the table draws them, each as the texts of its cells: a
+   * boolean cell as its word, the row's number first when the table numbers its rows.
+   *
+   * @since next
+   */
+  async rows(): Promise<string[][]> {
+    const rows = await this.locatorForAll(DATA_ROWS)();
+    return Promise.all(
+      rows.map(async (_, row) =>
+        Promise.all((await this.cellsOf(row)).map((cell) => cell.text())),
+      ),
+    );
+  }
+
+  /**
+   * The cell of the row at `row`, counted from 0 among the rows drawn, under the header whose
+   * label is `header`; throws naming the labels or the count when there is none.
+   *
+   * @since next
+   */
+  async cell(row: number, header: string): Promise<TestElement> {
+    const labels = await this.headers();
+    const column = labels.indexOf(header);
+    if (column < 0)
+      throw new Error(
+        `PctDataTableHarness: no column is headed "${header}". ` +
+          `Headers: ${labels.join(', ')}.`,
+      );
+    const cells = await this.cellsOf(row);
+    if (cells.length === 0)
+      throw new Error(
+        `PctDataTableHarness: no row ${row}; the table draws ` +
+          `${(await this.locatorForAll(DATA_ROWS)()).length}.`,
+      );
+    return cells[column];
+  }
+
+  /**
+   * Presses the sort button of the column headed `header`, with Shift held when `shift` is
+   * set — the press that adds the column as a later key. Throws when the column does not sort.
+   *
+   * @since next
+   */
+  async sortBy(
+    header: string,
+    options: { shift?: boolean } = {},
+  ): Promise<void> {
+    const labels = await this.headers();
+    const column = labels.indexOf(header);
+    // A label no header has is column -1, and `:nth-child(0)` matches nothing.
+    const toggle = await this.locatorForOptional(
+      `${HEADS}:nth-child(${column + 1}) > button[data-pct-part="toggle"]`,
+    )();
+    if (!toggle)
+      throw new Error(
+        `PctDataTableHarness: no column headed "${header}" sorts. ` +
+          `Headers: ${labels.join(', ')}.`,
+      );
+    await toggle.click(options.shift ? { shift: true } : {});
+  }
+
+  /** The cells of the row at `row`, in the columns' order. */
+  private cellsOf(row: number): Promise<TestElement[]> {
+    return this.locatorForAll(`${DATA_ROWS.replace(']', `="${row}"]`)} > td`)();
+  }
 }
 
 /**

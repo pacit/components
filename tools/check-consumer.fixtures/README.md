@@ -48,7 +48,7 @@ each. The control is played apart from the cases and counts as none.
 ## What these cases do NOT exercise
 
 The measurement arrives as **data**, not from a real run. Starting the registry, the
-install, the SSR build and the browser for each of the twenty-eight cases would cost
+install, the SSR build and the browser for each of the thirty-five cases would cost
 quarters of an hour, and the gate runs on every commit — the same choice as in
 `check-bundle` and `check-parts`. The price is outright: **the measuring code is not
 exercised here once.** It is exercised instead by every run against the real repository,
@@ -58,37 +58,43 @@ rule, described in
 
 ## The cases
 
-| case                            | point | check      | rule                        | defect                                                 |
-| ------------------------------- | ----: | ---------- | --------------------------- | ------------------------------------------------------ |
-| `empty-tarball`                 |     1 | `tarball`  | `empty`                     | `npm pack` with not one file                           |
-| `tarball-without-theme`         |     1 | `tarball`  | `theme-missing`             | the theme is in `dist`, not in the archive             |
-| `tarball-without-entrypoint`    |     1 | `tarball`  | `entrypoint-missing`        | `exports` promises a file that was not packed          |
-| `tarball-without-factory`       |     1 | `tarball`  | `schematic-missing`         | the collection is there, the factory is not            |
-| `tarball-without-licence`       |     1 | `tarball`  | `licence-missing`           | the LICENSE is in `dist`, not in the archive           |
-| `registry-publish-failed`       |     2 | `registry` | `publish`                   | `npm publish` ended in an error                        |
-| `registry-version-differs`      |     2 | `registry` | `version`                   | the registry does not know the packed version          |
-| `registry-integrity-differs`    |     2 | `registry` | `integrity`                 | the registry serves a different archive                |
-| `registry-not-local`            |     2 | `registry` | `not-local`                 | the archive's address leads to npmjs                   |
-| `install-without-entry`         |     3 | `install`  | `entry-missing`             | no entry in the application's lock file                |
-| `install-outside-the-registry`  |     3 | `install`  | `outside-the-registry`      | the package came from the uplink                       |
-| `install-integrity-differs`     |     3 | `install`  | `integrity-differs`         | installed ≠ packed                                     |
-| `install-outside-the-app`       |     3 | `install`  | `outside-the-app`           | the module resolves to the repository's `node_modules` |
-| `ng-add-failed`                 |     4 | `ng-add`   | `schematic-failed`          | the schematic cannot be run                            |
-| `ng-add-without-change`         |     4 | `ng-add`   | `no-change`                 | it passed and changed nothing                          |
-| `ng-add-without-theme`          |     4 | `ng-add`   | `theme-missing-from-styles` | it added something other than the package's theme      |
-| `build-failed`                  |     5 | `build`    | `build-failed`              | the consumer application's build errored               |
-| `build-without-server`          |     5 | `build`    | `server-missing`            | the build passed, there is no server bundle            |
-| `build-without-library`         |     5 | `build`    | `library-absent`            | no trace of the library in the bundle                  |
-| `build-without-theme`           |     5 | `build`    | `theme-absent`              | the application's sheet has no `--pct-*` declaration   |
-| `ssr-status`                    |     6 | `ssr`      | `status`                    | the server answers with an error                       |
-| `ssr-without-render`            |     6 | `ssr`      | `no-render`                 | the response is from a prerender, not the server       |
-| `ssr-without-component`         |     6 | `ssr`      | `no-component`              | no component class in the HTML from the server         |
-| `ssr-without-parts`             |     6 | `ssr`      | `no-parts`                  | no `data-pct-part` in the HTML from the server         |
-| `e2e-without-element`           |     7 | `e2e`      | `element-missing`           | the browser did not find the button                    |
-| `e2e-without-theme`             |     7 | `e2e`      | `no-theme`                  | the background token on the button is empty            |
-| `e2e-background-initial`        |     7 | `e2e`      | `background-initial`        | the background fell back to its initial value          |
-| `e2e-background-not-from-token` |     7 | `e2e`      | `background-not-from-token` | the button is painted with something else              |
-| `e2e-console-error`             |     7 | `e2e`      | `console-error`             | an error in the browser console (a hydration drift)    |
+| case                             | point | check      | rule                        | defect                                                 |
+| -------------------------------- | ----: | ---------- | --------------------------- | ------------------------------------------------------ |
+| `empty-tarball`                  |     1 | `tarball`  | `empty`                     | `npm pack` with not one file                           |
+| `tarball-without-theme`          |     1 | `tarball`  | `theme-missing`             | the theme is in `dist`, not in the archive             |
+| `tarball-without-entrypoint`     |     1 | `tarball`  | `entrypoint-missing`        | `exports` promises a file that was not packed          |
+| `tarball-without-factory`        |     1 | `tarball`  | `schematic-missing`         | the collection is there, the factory is not            |
+| `tarball-without-licence`        |     1 | `tarball`  | `licence-missing`           | the LICENSE is in `dist`, not in the archive           |
+| `registry-publish-failed`        |     2 | `registry` | `publish`                   | `npm publish` ended in an error                        |
+| `registry-version-differs`       |     2 | `registry` | `version`                   | the registry does not know the packed version          |
+| `registry-integrity-differs`     |     2 | `registry` | `integrity`                 | the registry serves a different archive                |
+| `registry-not-local`             |     2 | `registry` | `not-local`                 | the archive's address leads to npmjs                   |
+| `install-without-entry`          |     3 | `install`  | `entry-missing`             | no entry in the application's lock file                |
+| `install-outside-the-registry`   |     3 | `install`  | `outside-the-registry`      | the package came from the uplink                       |
+| `install-integrity-differs`      |     3 | `install`  | `integrity-differs`         | installed ≠ packed                                     |
+| `install-outside-the-app`        |     3 | `install`  | `outside-the-app`           | the module resolves to the repository's `node_modules` |
+| `ng-add-failed`                  |     4 | `ng-add`   | `schematic-failed`          | the schematic cannot be run                            |
+| `ng-add-without-change`          |     4 | `ng-add`   | `no-change`                 | it passed and changed nothing                          |
+| `ng-add-without-theme`           |     4 | `ng-add`   | `theme-missing-from-styles` | it added something other than the package's theme      |
+| `build-failed`                   |     5 | `build`    | `build-failed`              | the consumer application's build errored               |
+| `build-without-server`           |     5 | `build`    | `server-missing`            | the build passed, there is no server bundle            |
+| `build-without-library`          |     5 | `build`    | `library-absent`            | no trace of the library in the bundle                  |
+| `build-without-theme`            |     5 | `build`    | `theme-absent`              | the application's sheet has no `--pct-*` declaration   |
+| `build-types-refused`            |     5 | `build`    | `types-refused`             | the right typed probe does not compile                 |
+| `build-types-unchecked`          |     5 | `build`    | `types-unchecked`           | a slot on a misspelt id compiled                       |
+| `build-types-wrong-reason`       |     5 | `build`    | `types-unchecked`           | the misspelt probe failed on another line              |
+| `build-types-wrong-line`         |     5 | `build`    | `types-unchecked`           | it failed on its line, but not on the id               |
+| `build-types-untyped-value`      |     5 | `build`    | `types-untyped-value`       | a boolean value used as a number compiled              |
+| `build-types-value-other-reason` |     5 | `build`    | `types-untyped-value`       | that probe failed, but not on the value                |
+| `ssr-status`                     |     6 | `ssr`      | `status`                    | the server answers with an error                       |
+| `ssr-without-render`             |     6 | `ssr`      | `no-render`                 | the response is from a prerender, not the server       |
+| `ssr-without-component`          |     6 | `ssr`      | `no-component`              | no component class in the HTML from the server         |
+| `ssr-without-parts`              |     6 | `ssr`      | `no-parts`                  | no `data-pct-part` in the HTML from the server         |
+| `e2e-without-element`            |     7 | `e2e`      | `element-missing`           | the browser did not find the button                    |
+| `e2e-without-theme`              |     7 | `e2e`      | `no-theme`                  | the background token on the button is empty            |
+| `e2e-background-initial`         |     7 | `e2e`      | `background-initial`        | the background fell back to its initial value          |
+| `e2e-background-not-from-token`  |     7 | `e2e`      | `background-not-from-token` | the button is painted with something else              |
+| `e2e-console-error`              |     7 | `e2e`      | `console-error`             | an error in the browser console (a hydration drift)    |
 
 `e2e-without-theme` and `e2e-background-initial` describe the same failure from two sides
 and are kept apart on purpose: the first measures whether the theme **arrived**, the

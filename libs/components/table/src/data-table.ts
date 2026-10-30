@@ -583,6 +583,7 @@ export class PctDataTable<
   /** The header row: each column with its sort state and its template. */
   protected readonly heads = computed(() => {
     const sort = this.sort();
+    const sentence = this.texts().tableSortLater;
     const templates = this.headerTemplates();
     return this.columns().map((column) => {
       const position = sort.findIndex((key) => key.key === column.id);
@@ -592,9 +593,20 @@ export class PctDataTable<
         sortKey: column.sort === false ? null : column.id,
         numeric: pctColumnNumeric(column),
         direction: position < 0 ? null : sort[position].direction,
-        // The first key is `aria-sort`; the rest carry their place and way to the eye.
+        // The first key is `aria-sort`; the rest carry their place and way to the eye, and to a
+        // reader as the description of the header's button.
         place: later ? position + 1 : null,
         arrow: later?.direction === 'descending' ? '▼' : '▲',
+        said: later
+          ? sentence
+              .replace('{place}', String(position + 1))
+              .replace(
+                '{way}',
+                later.direction === 'descending'
+                  ? this.texts().tableSortDescending
+                  : this.texts().tableSortAscending,
+              )
+          : '',
         slot: templates.get(column.id) ?? null,
       };
     });
@@ -756,9 +768,11 @@ export class PctDataTable<
       const table = this.ownTable();
       const head = table.tHead as HTMLElement;
       const onKey = (event: KeyboardEvent) => this.noteKey(event);
-      const onPointer = (event: PointerEvent) => this.notePointer(event);
+      const onPointer = (event: MouseEvent) => this.notePointer(event);
       head.addEventListener('keydown', onKey);
-      head.addEventListener('pointerdown', onPointer);
+      // `mousedown` and not `pointerdown`: both carry Shift from a real pointer, and only the
+      // first carries it from the CDK's harness, which sends `pointerdown` bare.
+      head.addEventListener('mousedown', onPointer);
       const onScroll = () => this.scrolledTo.set(frame.scrollTop);
       frame.addEventListener('scroll', onScroll, { passive: true });
       destroyRef.onDestroy(() => frame.removeEventListener('scroll', onScroll));
@@ -956,9 +970,13 @@ export class PctDataTable<
   /** The shift key's state at the press that is about to write `sort`. */
   private shift = false;
 
-  /** A press by the pointer: its Shift is the press's. */
-  private notePointer(event: PointerEvent): void {
-    this.shift = event.shiftKey;
+  /**
+   * A press by the pointer: its Shift is the press's. Only the main button presses: a middle
+   * button or a drag that ends elsewhere sends no click, and must leave no Shift behind for a
+   * reader's click that comes later.
+   */
+  private notePointer(event: MouseEvent): void {
+    this.shift = event.button === 0 && event.shiftKey;
   }
 
   /**
