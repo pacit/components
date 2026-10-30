@@ -12,6 +12,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctAnnouncer } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
+import { PctTableGroups } from './data-table-groups';
 import {
   PctCellTemplate,
   PctDetailsTemplate,
@@ -2447,7 +2448,26 @@ describe('PctDataTable — a narrow table hides columns', () => {
     );
   });
 
-  it('moves no focus when nothing hides, even if the focused row goes', async () => {
+  it('follows a row that moved when its focused control went with its column', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.powerSlot.set(true);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 1000);
+    (body()[1].querySelector('.watts') as HTMLButtonElement).focus();
+    // In one render the boiler moves to the end and its power column hides.
+    fixture.componentInstance
+      .table()
+      .sort.set([{ key: 'name', direction: 'descending' }]);
+    await resize(fixture, width, 250);
+    expect(body()[2].querySelectorAll('td')[1].textContent?.trim()).toBe(
+      'Boiler',
+    );
+    expect(document.activeElement).toBe(disclosures()[2]);
+  });
+
+  it('hands the focus to the row that takes the place of a row that went', async () => {
     const fixture = await render(DetailsHost);
     fixture.componentInstance.powerSlot.set(true);
     await settle(fixture);
@@ -2459,7 +2479,8 @@ describe('PctDataTable — a narrow table hides columns', () => {
     await resize(fixture, width, 999);
     fixture.componentInstance.rows.set([DEVICES[0], DEVICES[2]]);
     await settle(fixture);
-    expect(document.activeElement).toBe(document.body);
+    // The sensor stands where the boiler stood, and its disclosure takes the focus.
+    expect(document.activeElement).toBe(disclosures()[1]);
   });
 
   it('flashes no cell for a hidden column’s value, which stands in the details', async () => {
@@ -2695,5 +2716,541 @@ describe('PctTableDetails — its defaults', () => {
     expect(
       warn.mock.calls.filter(([text]) => String(text).includes('has no name')),
     ).toEqual([]);
+  });
+});
+
+const summed = col.of([
+  col.key('name', { header: 'Name', aggregate: 'count' }),
+  col.key('room', { header: 'Room' }),
+  col.key('power', {
+    header: 'Power',
+    kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+    aggregate: 'sum',
+  }),
+  col.key('on', { header: 'On', kind: 'boolean' }),
+  col.key('seen', { header: 'Seen' }),
+]);
+const MORE: Device[] = [
+  ...DEVICES,
+  { id: 4, name: 'Fan', room: 'Hall', power: 40, on: false, seen: 13 * HOUR },
+];
+
+@Component({
+  imports: [PctDataTable, PctTableGroups, PctTableDetails, PctDetailsTemplate],
+  template: `
+    <pct-data-table
+      [pctTableGroups]="columns"
+      #groups="pctTableGroups"
+      [groupBy]="by()"
+      [(collapsed)]="collapsed"
+      [disabled]="off()"
+      pctTableDetails
+      [(details)]="open"
+      [rows]="rows()"
+      [columns]="columns"
+      [rowId]="byId"
+      caption="Devices"
+      locale="pl"
+      [(filter)]="filter"
+      [highlightChanges]="changes()"
+      [rowNumbers]="numbers()"
+    >
+      @if (slotted()) {
+        <ng-template [pctDetails]="columns" let-device>
+          <i class="more">{{ device.name }}</i>
+        </ng-template>
+      }
+    </pct-data-table>
+  `,
+})
+class GroupsHost {
+  readonly table = viewChild.required(PctDataTable<Device>);
+  readonly groups = viewChild.required(PctTableGroups);
+  readonly columns = summed;
+  readonly byId = byId;
+  readonly rows = signal<readonly Device[]>(MORE);
+  readonly by = signal<readonly ('name' | 'room' | 'power' | 'on')[]>(['room']);
+  readonly collapsed = signal<readonly string[]>([]);
+  readonly off = signal(false);
+  readonly open = signal<readonly PctRowId[]>([]);
+  readonly filter = signal('');
+  readonly changes = signal(false);
+  readonly slotted = signal(false);
+  readonly numbers = signal(false);
+}
+
+const bodies = () =>
+  Array.from(
+    (document.querySelector('table') as HTMLTableElement).tBodies,
+  ) as HTMLTableSectionElement[];
+const headings = () =>
+  Array.from(
+    document.querySelectorAll('tr[data-pct-part="group"]'),
+  ) as HTMLTableRowElement[];
+const groupToggle = (heading: HTMLTableRowElement) =>
+  heading.querySelector('[data-pct-part="disclosure"]') as HTMLButtonElement;
+const lineOf = () =>
+  Array.from(document.querySelectorAll('tbody > tr')).map((tr) =>
+    tr.getAttribute('data-pct-index'),
+  );
+
+describe('PctDataTable — groups', () => {
+  /** The first cell of each row of data, the headings left out. */
+  const rowNames = () =>
+    Array.from(
+      document.querySelectorAll('tbody > tr:not([data-pct-part]) > td'),
+    )
+      .filter((td) => td.classList.contains('pct-data-table__first'))
+      .map((td) => td.textContent?.trim());
+
+  it('draws a body per group, headed by a rowgroup header with its label, its count and its sums', async () => {
+    await render(GroupsHost);
+    expect(bodies()).toHaveLength(2);
+    const [kitchen, hall] = headings();
+    expect(kitchen.parentElement).toBe(bodies()[0]);
+    expect(kitchen).toBe(bodies()[0].rows[0]);
+    const th = kitchen.querySelector('th') as HTMLTableCellElement;
+    expect(th.getAttribute('scope')).toBe('rowgroup');
+    expect(th.colSpan).toBe(1);
+    const button = groupToggle(kitchen);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.textContent?.replace(/\s+/g, ' ').trim()).toBe('Kitchen (2)');
+    // The name column counts, beside the label; the power sums under its column.
+    expect(th.querySelector('.pct-data-table__sum')?.textContent).toBe('2');
+    expect(
+      Array.from(kitchen.querySelectorAll('td')).map((td) =>
+        td.textContent?.trim(),
+      ),
+    ).toEqual(['', `1911,5${NBSP}kWh`, '', '']);
+    expect(groupToggle(hall).textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Hall (2)',
+    );
+    // The rows below their heading, one level deep, every line counted.
+    expect(bodies()[0].rows[1].style.getPropertyValue('--_level')).toBe('1');
+    expect(
+      bodies()[0]
+        .rows[1].querySelector('td')
+        ?.classList.contains('pct-data-table__first'),
+    ).toBe(true);
+    expect(lineOf()).toEqual(['0', '1', '2', '3', '4', '5']);
+    expect(rowNames()).toEqual(['Lamp', 'Boiler', 'Sensor', 'Fan']);
+  });
+
+  it('sums every row in view in the foot, and follows the filter', async () => {
+    const fixture = await render(GroupsHost);
+    const foot = () =>
+      Array.from(document.querySelectorAll('tfoot th, tfoot td')).map((cell) =>
+        cell.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+    // Spaces of every kind read as one: the sum's no-break space too.
+    expect(foot()).toEqual(['Total 4', '', '1951,5 kWh', '', '']);
+    expect(document.querySelector('tfoot th')?.getAttribute('scope')).toBe(
+      'row',
+    );
+    fixture.componentInstance.filter.set('kitchen');
+    await settle(fixture);
+    expect(foot()).toEqual(['Total 2', '', '1911,5 kWh', '', '']);
+    expect(headings()).toHaveLength(1);
+  });
+
+  it('collapses a group, and every group, and opens them again', async () => {
+    const fixture = await render(GroupsHost);
+    groupToggle(headings()[0]).click();
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual(['["Kitchen"]']);
+    expect(groupToggle(headings()[0]).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
+    expect(bodies()[0].rows).toHaveLength(1);
+    expect(rowNames()).toEqual(['Sensor', 'Fan']);
+    groupToggle(headings()[0]).click();
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual([]);
+    fixture.componentInstance.by.set(['room', 'on']);
+    await settle(fixture);
+    fixture.componentInstance.groups().collapseAll();
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual([
+      '["Kitchen"]',
+      '["Kitchen",true]',
+      '["Kitchen",false]',
+      '["Hall"]',
+      '["Hall",true]',
+      '["Hall",false]',
+    ]);
+    expect(headings()).toHaveLength(2);
+    fixture.componentInstance.groups().expandAll();
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual([]);
+    expect(headings()).toHaveLength(6);
+    expect(headings()[1].style.getPropertyValue('--_level')).toBe('1');
+  });
+
+  it('closes one group of several and leaves the others closed', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.collapsed.set(['["Kitchen"]', '["Hall"]']);
+    await settle(fixture);
+    groupToggle(headings()[0]).click();
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual(['["Hall"]']);
+  });
+
+  it('groups nothing while disabled or grouped by nothing, and draws one body', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.off.set(true);
+    await settle(fixture);
+    expect(bodies()).toHaveLength(1);
+    expect(headings()).toHaveLength(0);
+    fixture.componentInstance.off.set(false);
+    fixture.componentInstance.by.set([]);
+    await settle(fixture);
+    expect(bodies()).toHaveLength(1);
+    expect(rowNames()).toEqual(['Lamp', 'Boiler', 'Sensor', 'Fan']);
+  });
+
+  it('opens a row’s details inside its group, and reads the lines across the bodies', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.open.set([2]);
+    await settle(fixture);
+    const details = document.querySelector('tr[data-pct-part="details"]');
+    expect(details?.parentElement).toBe(bodies()[0]);
+    // The heading spans the disclosures and the first column.
+    expect(
+      (headings()[0].querySelector('th') as HTMLTableCellElement).colSpan,
+    ).toBe(2);
+    expect(lineOf()).toEqual(['0', '1', '2', '3', '4', '5', '6']);
+    const report = observed.at(-1) as (typeof observed)[number];
+    report(
+      Array.from(document.querySelectorAll('tbody > tr')).map((target) => ({
+        target,
+        isIntersecting: true,
+      })),
+    );
+    expect(fixture.componentInstance.table().visible()).toEqual({
+      start: 0,
+      end: 7,
+      rows: [1, 2, 3, 4],
+    });
+    fixture.componentInstance.table().scrollTo(4);
+    await settle(fixture);
+    expect(
+      vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1),
+    ).toBe(bodies()[1].rows[2]);
+  });
+
+  it('flashes a changed cell in the second group’s body', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.changes.set(true);
+    await settle(fixture);
+    fixture.componentInstance.rows.set([
+      ...MORE.slice(0, 3),
+      { ...MORE[3], power: 41 },
+    ]);
+    await settle(fixture);
+    expect(Array.from(document.querySelectorAll('[data-pct-changed]'))).toEqual(
+      [bodies()[1].rows[2].querySelectorAll('td')[2]],
+    );
+  });
+
+  it('measures the header and a heading for the headings that stick below it', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        const height =
+          this.tagName === 'THEAD'
+            ? 40
+            : this.getAttribute('data-pct-part') === 'group'
+              ? 30
+              : 0;
+        return { width: 0, height } as DOMRect;
+      },
+    );
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.rows.set([...MORE]);
+    await settle(fixture);
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    expect(frame.style.getPropertyValue('--_head')).toBe('40px');
+    expect(frame.style.getPropertyValue('--_group')).toBe('30px');
+    expect(frame.style.scrollPaddingBlockStart).toBe('40px');
+  });
+
+  it('names the group of no value, and numbers the rows across the groups', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.numbers.set(true);
+    fixture.componentInstance.rows.set([
+      ...MORE,
+      { ...MORE[3], id: 5, room: '' },
+    ]);
+    await settle(fixture);
+    expect(
+      groupToggle(headings()[2]).textContent?.replace(/\s+/g, ' ').trim(),
+    ).toBe('No value (1)');
+    expect(
+      Array.from(document.querySelectorAll('td.pct-data-table__number')).map(
+        (td) => td.textContent?.trim(),
+      ),
+    ).toEqual(['1', '2', '3', '4', '5']);
+  });
+
+  it('names a heading inside another by the group it stands in', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.by.set(['room', 'on']);
+    await settle(fixture);
+    expect(groupToggle(headings()[0]).hasAttribute('aria-label')).toBe(false);
+    expect(groupToggle(headings()[1]).getAttribute('aria-label')).toBe(
+      'Yes (1), in Kitchen',
+    );
+  });
+
+  it('opens the groups above a row it reveals, and scrolls to the row', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.by.set(['room', 'on']);
+    await settle(fixture);
+    fixture.componentInstance.groups().collapseAll();
+    await settle(fixture);
+    fixture.componentInstance.table().reveal(4);
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual([
+      '["Kitchen"]',
+      '["Kitchen",true]',
+      '["Kitchen",false]',
+      '["Hall",true]',
+    ]);
+    const fan = Array.from(document.querySelectorAll('tbody > tr')).find(
+      (tr) => tr.querySelector('td')?.textContent?.trim() === 'Fan',
+    );
+    expect(
+      vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1),
+    ).toBe(fan);
+  });
+
+  it('hands the focus to the heading of the group that hid its row', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    await settle(fixture);
+    disclosures()[1].focus();
+    fixture.componentInstance.groups().collapseAll();
+    await settle(fixture);
+    expect(document.activeElement).toBe(groupToggle(headings()[0]));
+  });
+
+  it('sums nothing in a foot of no rows, and writes a mean of no number kind in the locale', async () => {
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        caption="Ids"
+        locale="pl"
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class Mean {
+      readonly rows = signal<readonly Device[]>(DEVICES);
+      readonly columns = col.of([
+        col.key('name', { header: 'Name' }),
+        col.key('id', { header: 'Id', aggregate: 'avg' }),
+        col.key('power', {
+          header: 'Power',
+          kind: { number: { unit: 'kWh' } },
+          aggregate: 'count',
+        }),
+        col.key('room', {
+          header: 'Room',
+          aggregate: (rooms) => [...new Set(rooms)].join(' & '),
+        }),
+      ]);
+      readonly byId = byId;
+    }
+    const fixture = await render(Mean);
+    const foot = () =>
+      Array.from(document.querySelectorAll('tfoot td')).map((td) =>
+        td.textContent?.trim(),
+      );
+    // A count of a number column is a count, not a reading in its unit; a function's text is
+    // written as it is.
+    expect(foot()).toEqual(['2', '2', 'Kitchen & Hall']);
+    fixture.componentInstance.rows.set([DEVICES[0], DEVICES[1]]);
+    await settle(fixture);
+    expect(foot()[0]).toBe('1,5');
+    fixture.componentInstance.rows.set([]);
+    await settle(fixture);
+    expect(document.querySelector('tfoot')).toBeNull();
+  });
+
+  it('groups by the first column, and by nothing for an id no column holds', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.by.set(['name']);
+    await settle(fixture);
+    expect(headings()).toHaveLength(4);
+    expect(
+      groupToggle(headings()[0]).textContent?.replace(/\s+/g, ' ').trim(),
+    ).toBe('Lamp (1)');
+    fixture.componentInstance.by.set(['nope' as never]);
+    await settle(fixture);
+    expect(headings()).toHaveLength(0);
+    // A row no list holds opens nothing, and breaks nothing.
+    fixture.componentInstance.by.set(['room']);
+    fixture.componentInstance.collapsed.set(['["Hall"]']);
+    await settle(fixture);
+    fixture.componentInstance.table().reveal(999);
+    await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual(['["Hall"]']);
+  });
+
+  it('sums the columns shown, beside a label of no sum, and nothing of a column hidden', async () => {
+    const resizedTo: { fire: (() => void) | null } = { fire: null };
+    globals.ResizeObserver = class {
+      constructor(callback: () => void) {
+        resizedTo.fire = callback;
+      }
+      observe(): void {
+        // The test calls the callback itself.
+      }
+      disconnect(): void {
+        // Nothing to let go.
+      }
+    };
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return { width: this.tagName === 'TH' ? 100 : 0, height: 0 } as DOMRect;
+      },
+    );
+    @Component({
+      imports: [PctDataTable, PctTableGroups],
+      template: `<pct-data-table
+        [pctTableGroups]="columns"
+        [groupBy]="['room']"
+        caption="Devices"
+        locale="pl"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class Hidden {
+      readonly rows = MORE;
+      readonly byId = byId;
+      readonly columns = col.of([
+        col.key('room', { header: 'Room' }),
+        col.key('name', { header: 'Name', aggregate: 'count' }),
+        col.key('power', { header: 'Power', aggregate: 'sum', priority: 1 }),
+      ]);
+    }
+    const fixture = await render(Hidden);
+    // The room sums nothing: the label stands alone.
+    expect(headings()[0].querySelector('.pct-data-table__sum')).toBeNull();
+    expect(
+      Array.from(headings()[0].querySelectorAll('td')).map((td) =>
+        td.textContent?.trim(),
+      ),
+    ).toEqual(['2', '1911,5']);
+    const width = { value: 250 };
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    const table = document.querySelector('table') as HTMLElement;
+    Object.defineProperty(frame, 'clientWidth', { get: () => width.value });
+    Object.defineProperty(table, 'scrollWidth', {
+      get: () =>
+        Math.max(width.value, 100 * table.querySelectorAll('thead th').length),
+    });
+    (resizedTo.fire as () => void)();
+    await settle(fixture);
+    expect(
+      Array.from(headings()[0].querySelectorAll('td')).map((td) =>
+        td.textContent?.trim(),
+      ),
+    ).toEqual(['2']);
+  });
+
+  it('spans a heading over the disclosures, the numbers and the first column', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.numbers.set(true);
+    await settle(fixture);
+    expect(
+      (headings()[0].querySelector('th') as HTMLTableCellElement).colSpan,
+    ).toBe(3);
+    expect(
+      (document.querySelector('tfoot th') as HTMLTableCellElement).colSpan,
+    ).toBe(3);
+  });
+
+  it('hands the focus to the deepest heading that hides its row', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.by.set(['room', 'on']);
+    await settle(fixture);
+    // The boiler: Kitchen, then not running; a row's disclosure, not a heading's.
+    (
+      document.querySelectorAll(
+        'tbody > tr:not([data-pct-part]) [data-pct-part="disclosure"]',
+      )[1] as HTMLButtonElement
+    ).focus();
+    fixture.componentInstance.collapsed.set(['["Kitchen",false]']);
+    await settle(fixture);
+    expect(document.activeElement).toBe(groupToggle(headings()[2]));
+    expect(groupToggle(headings()[2]).getAttribute('aria-label')).toBe(
+      'No (1), in Kitchen',
+    );
+  });
+
+  it('hands the focus to the new last row, and breaks nothing when every row goes', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.by.set([]);
+    await settle(fixture);
+    disclosures()[3].focus();
+    fixture.componentInstance.rows.set(MORE.slice(0, 3));
+    await settle(fixture);
+    expect(document.activeElement).toBe(disclosures()[2]);
+    fixture.componentInstance.rows.set([]);
+    await settle(fixture);
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('notes no focus outside its rows, or in a table nested in a cell', async () => {
+    const fixture = await render(GroupsHost);
+    const header = document.querySelector(
+      'thead [data-pct-part="toggle"]',
+    ) as HTMLButtonElement;
+    header.focus();
+    fixture.componentInstance.rows.set(MORE.slice(0, 2));
+    await settle(fixture);
+    expect(document.activeElement).toBe(header);
+  });
+
+  it('draws no placeholders for rows the filter left out while more are coming', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.loading.set(true);
+    fixture.componentInstance.filter.set('nothing-answers');
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-part="placeholder"]')).toBeNull();
+  });
+});
+
+describe('PctTableGroups — its defaults', () => {
+  it('groups by nothing, collapses nothing and is on until told', async () => {
+    @Component({
+      imports: [PctDataTable, PctTableGroups],
+      template: `<pct-data-table
+        [pctTableGroups]="columns"
+        caption="Devices"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class BareGroups {
+      readonly groups = viewChild.required(PctTableGroups);
+      readonly rows = MORE;
+      readonly columns = summed;
+      readonly byId = byId;
+    }
+    const fixture = await render(BareGroups);
+    const groups = fixture.componentInstance.groups();
+    expect(groups.groupBy()).toEqual([]);
+    expect(groups.collapsed()).toEqual([]);
+    expect(groups.disabled()).toBe(false);
+    expect(headings()).toHaveLength(0);
   });
 });

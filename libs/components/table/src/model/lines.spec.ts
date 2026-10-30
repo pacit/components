@@ -1,4 +1,4 @@
-import { pctLineKey, pctLines } from './lines';
+import { pctGroupKey, pctLineKey, pctLines } from './lines';
 
 interface Node {
   id: string;
@@ -94,6 +94,131 @@ describe('pctLines', () => {
       details: new Set(['p']),
     });
     expect(lines.map((line) => line.kind)).toEqual(['row', 'details', 'row']);
+  });
+});
+
+describe('pctLines — groups', () => {
+  interface Light {
+    id: string;
+    floor: number;
+    room: string;
+  }
+  const l1: Light = { id: '1', floor: 0, room: 'Hall' };
+  const l2: Light = { id: '2', floor: 1, room: 'Bath' };
+  const l3: Light = { id: '3', floor: 0, room: 'Kitchen' };
+  const l4: Light = { id: '4', floor: 0, room: 'Hall' };
+  const byId = (light: Light) => light.id;
+  const floor = {
+    value: (light: Light) => light.floor,
+    label: (light: Light) => `Floor ${light.floor}`,
+  };
+  const room = {
+    value: (light: Light) => light.room,
+    label: (light: Light) => light.room,
+  };
+  const shape = (lines: ReturnType<typeof pctLines<Light>>) =>
+    lines.map((line) =>
+      line.kind === 'group'
+        ? `${'  '.repeat(line.level)}${line.label} ${line.count}${line.collapsed ? ' closed' : ''} ${line.key}`
+        : line.kind === 'row'
+          ? `${'  '.repeat(line.level)}row ${line.key} #${line.index}`
+          : `${line.kind} ${line.key}`,
+    );
+
+  it('heads each group with a line, in the order its first row stands, its rows below one level deeper', () => {
+    expect(
+      shape(pctLines([l1, l2, l3, l4], byId, { groups: [floor] })),
+    ).toEqual([
+      'Floor 0 3 [0]',
+      '  row 1 #0',
+      '  row 3 #1',
+      '  row 4 #2',
+      'Floor 1 1 [1]',
+      '  row 2 #3',
+    ]);
+  });
+
+  it('groups within groups, each key the path of its values', () => {
+    const lines = pctLines([l1, l2, l3, l4], byId, { groups: [floor, room] });
+    expect(shape(lines)).toEqual([
+      'Floor 0 3 [0]',
+      '  Hall 2 [0,"Hall"]',
+      '    row 1 #0',
+      '    row 4 #1',
+      '  Kitchen 1 [0,"Kitchen"]',
+      '    row 3 #2',
+      'Floor 1 1 [1]',
+      '  Bath 1 [1,"Bath"]',
+      '    row 2 #3',
+    ]);
+    const hall = lines[1];
+    expect(hall.kind === 'group' && hall.rows).toEqual([l1, l4]);
+  });
+
+  it('hides a collapsed group’s rows and the groups inside it, and keeps its heading', () => {
+    expect(
+      shape(
+        pctLines([l1, l2, l3, l4], byId, {
+          groups: [floor, room],
+          collapsed: new Set(['[0]', '[1,"Bath"]']),
+        }),
+      ),
+    ).toEqual([
+      'Floor 0 3 closed [0]',
+      'Floor 1 1 [1]',
+      '  Bath 1 closed [1,"Bath"]',
+    ]);
+  });
+
+  it('opens details below a grouped row, and puts holes after the groups', () => {
+    const empty = {
+      value: (light: Light) =>
+        light.room === 'Hall'
+          ? undefined
+          : light.room === 'Bath'
+            ? null
+            : light.room,
+      label: (light: Light) => light.room,
+    };
+    expect(
+      shape(
+        pctLines([l1, undefined, l3, l2], byId, {
+          groups: [empty],
+          details: new Set(['3']),
+        }),
+      ),
+    ).toEqual([
+      // No value and a null are one group.
+      'Hall 2 [null]',
+      '  row 1 #0',
+      '  row 2 #1',
+      'Kitchen 1 ["Kitchen"]',
+      '  row 3 #2',
+      'details 3',
+      'hole 3',
+    ]);
+  });
+});
+
+describe('pctGroupKey', () => {
+  it('writes a path of values as JSON, outermost first', () => {
+    expect(pctGroupKey([0, 'Hall'])).toBe('[0,"Hall"]');
+    expect(pctGroupKey([1])).not.toBe(pctGroupKey(['1']));
+  });
+
+  it('reads no value, null and NaN as one, and keeps every other kind of value apart', () => {
+    expect(pctGroupKey([undefined])).toBe('[null]');
+    expect(pctGroupKey([Number.NaN])).toBe('[null]');
+    expect(pctGroupKey([1n])).toBe('[{"bigint":"1"}]');
+    const day = new Date(Date.UTC(2026, 9, 30));
+    expect(pctGroupKey([day])).toBe(`[{"date":${day.getTime()}}]`);
+    expect(pctGroupKey([day])).not.toBe(pctGroupKey([day.toISOString()]));
+    expect(pctGroupKey([Symbol('a')])).toBe('[{"symbol":"Symbol(a)"}]');
+    const named = function name() {
+      return 1;
+    };
+    expect(pctGroupKey([named])).toContain('"function":');
+    expect(pctGroupKey([named])).not.toBe('[null]');
   });
 });
 

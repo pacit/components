@@ -99,6 +99,10 @@ const ENGLISH: PctTexts = {
   tableDetails: 'Details',
   tableDetailsOpen: 'Show details',
   tableDetailsClose: 'Hide details',
+  tableGroupCount: '({count})',
+  tableTotal: 'Total',
+  tableGroupEmpty: 'No value',
+  tableGroupWithin: '{group}, in {outer}',
 };
 
 describe('PCT_TEXTS', () => {

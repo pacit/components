@@ -2414,6 +2414,13 @@
       "severity": "error"
     },
     {
+      "name": "data table — the text of a group's heading",
+      "fg": "pct.table.group-fg",
+      "bg": "pct.table.group-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — series 1 on surface",
       "fg": "pct.chart.series-color-1",
       "bg": "pct.surface",

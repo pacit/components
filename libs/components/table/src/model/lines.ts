@@ -42,17 +42,62 @@ export type PctTableLine<T> =
     };
 
 /**
- * What opens below or inside a row: its details, and its children in a tree.
+ * One level of grouping: the value rows are grouped by, and the label a group is headed with,
+ * written from its first row.
+ *
+ * @since next
+ */
+export interface PctGroupBy<T> {
+  readonly value: (row: T) => unknown;
+  readonly label: (row: T) => string;
+}
+
+/**
+ * What opens below or inside a row: its details, and its children in a tree; and the groups
+ * the rows stand in.
  *
  * @since next
  */
 export interface PctLinesOptions<T> {
+  /**
+   * The levels the rows are grouped by, outermost first. A group's key is the path of its
+   * values, written as JSON, so it stays the same however the rows change.
+   */
+  readonly groups?: readonly PctGroupBy<T>[];
+  /** The groups whose rows are hidden, by key. */
+  readonly collapsed?: ReadonlySet<string>;
   /** The rows whose details are open, by id. */
   readonly details?: ReadonlySet<PctRowId>;
   /** A row's children, for a tree; `undefined` or an empty list for a leaf. */
   readonly children?: (row: T) => readonly T[] | undefined;
   /** The rows whose children are shown, by id. */
   readonly expanded?: ReadonlySet<PctRowId>;
+}
+
+/**
+ * A value as a group's key holds it: a big integer, a date, a symbol and a function are tagged,
+ * so `1n` stays apart from `"1"`, a date from its ISO text, and two of them never write the same
+ * key — or none, which JSON would give a symbol. JSON itself writes no value, a `null` and `NaN`
+ * in a list as one `null`.
+ */
+function keyed(value: unknown): unknown {
+  if (typeof value === 'bigint') return { bigint: String(value) };
+  if (value instanceof Date) return { date: value.getTime() };
+  if (typeof value === 'symbol' || typeof value === 'function')
+    return { [typeof value]: String(value) };
+  return value;
+}
+
+/**
+ * The key of the group a path of values names, outermost first: what `collapsed` holds.
+ *
+ * @example
+ * pctGroupKey([0, 'Hall']); // '[0,"Hall"]'
+ *
+ * @since next
+ */
+export function pctGroupKey(values: readonly unknown[]): string {
+  return JSON.stringify(values.map(keyed));
 }
 
 /**
@@ -72,7 +117,7 @@ export function pctLines<T>(
   rowId: (row: T) => PctRowId,
   options: PctLinesOptions<T> = {},
 ): readonly PctTableLine<T>[] {
-  const { details, children, expanded } = options;
+  const { details, children, expanded, groups = [], collapsed } = options;
   const lines: PctTableLine<T>[] = [];
   let index = 0;
   const walk = (list: readonly (T | undefined)[], level: number): void => {
@@ -99,7 +144,55 @@ export function pctLines<T>(
       if (open) walk(kids as readonly T[], level + 1);
     }
   };
-  walk(rows, 0);
+  // The groups are one more level above the rows, walked by the same recursion: a group is a
+  // node made of a value, a row a node of the data. A group stands where its first row stood,
+  // so the order inside and across groups is the rows' own.
+  const group = (
+    list: readonly T[],
+    level: number,
+    path: readonly unknown[],
+  ): void => {
+    if (level === groups.length) {
+      walk(list, level);
+      return;
+    }
+    const by = new Map<string, { value: unknown; rows: T[] }>();
+    for (const row of list) {
+      const value = groups[level].value(row);
+      const at = pctGroupKey([value]);
+      const found = by.get(at);
+      if (found) found.rows.push(row);
+      else by.set(at, { value, rows: [row] });
+    }
+    for (const { value, rows: members } of by.values()) {
+      const values = [...path, value];
+      const key = pctGroupKey(values);
+      const closed = collapsed?.has(key) ?? false;
+      lines.push({
+        kind: 'group',
+        key,
+        level,
+        label: groups[level].label(members[0]),
+        count: members.length,
+        rows: members,
+        collapsed: closed,
+      });
+      if (!closed) group(members, level + 1, values);
+    }
+  };
+  if (groups.length === 0) walk(rows, 0);
+  else {
+    // Holes have no value to be grouped by: they stand after the groups, as they came.
+    group(
+      rows.filter((row): row is T => row !== undefined),
+      0,
+      [],
+    );
+    walk(
+      rows.filter((row) => row === undefined),
+      0,
+    );
+  }
   return lines;
 }
 
