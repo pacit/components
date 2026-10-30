@@ -592,9 +592,10 @@ export class PctDataTable<
   /** The ids picked, to look up. */
   private readonly picked = computed(() => {
     const selection = this.selection();
-    const value = selection?.value();
+    if (selection === null) return new Set<PctRowId>();
+    const value = selection.value();
     // One row is picked in single mode, whatever the list says: a radio group checks one.
-    return new Set(selection?.mode() === 'single' ? value?.slice(0, 1) : value);
+    return new Set(selection.mode() === 'single' ? value.slice(0, 1) : value);
   });
 
   /**

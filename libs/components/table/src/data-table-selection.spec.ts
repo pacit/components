@@ -784,7 +784,8 @@ describe('PctTableSelection — the rows picked', () => {
       readonly byId = byId;
       readonly rows = DEVICES.slice(0, 2);
       readonly outer = signal<readonly PctRowId[]>([]);
-      readonly inner = signal<readonly PctRowId[]>([]);
+      // Picked first, so the press drops it: an outer table turning it back would pick its own.
+      readonly inner = signal<readonly PctRowId[]>([1]);
     }
     const fixture = await render(NestedHost);
     const label = document
@@ -794,8 +795,11 @@ describe('PctTableSelection — the rows picked', () => {
       new MouseEvent('click', { bubbles: true, cancelable: true }),
     );
     await settle(fixture);
-    expect(fixture.componentInstance.inner()).toEqual([1]);
+    expect(fixture.componentInstance.inner()).toEqual([]);
     expect(fixture.componentInstance.outer()).toEqual([]);
+    expect((label.querySelector('input') as HTMLInputElement).checked).toBe(
+      false,
+    );
   });
 
   it('gives a cell no id when nothing picks', async () => {
