@@ -303,6 +303,13 @@ export interface PctTexts {
   readonly tableGroupCount: string;
   /** Data table: the label of the foot that sums up every row in view. */
   readonly tableTotal: string;
+  /** Data table: the label of the group of rows with no value in the column grouped by. */
+  readonly tableGroupEmpty: string;
+  /**
+   * Data table: how a reader hears the heading of a group inside another. `{group}` stands
+   * for its label and count, `{outer}` for the label of the group it stands in.
+   */
+  readonly tableGroupWithin: string;
 }
 
 /**
@@ -373,6 +380,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableDetailsClose: 'Hide details',
   tableGroupCount: '({count})',
   tableTotal: 'Total',
+  tableGroupEmpty: 'No value',
+  tableGroupWithin: '{group}, in {outer}',
 };
 
 /**

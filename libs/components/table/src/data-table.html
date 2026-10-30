@@ -88,6 +88,7 @@
             class="pct-data-table__toggle pct-data-table__heading"
             data-pct-part="disclosure"
             [attr.aria-expanded]="!group.collapsed"
+            [attr.aria-label]="group.name"
             (click)="toggleGroup(group.key)"
           >
             <pct-icon name="chevron-down" class="pct-data-table__chevron">
@@ -119,6 +120,7 @@
       <tr
         [attr.data-pct-index]="row.line"
         [attr.data-pct-tone]="row.tone"
+        [class.pct-data-table__even]="row.index % 2 === 1"
         [style.--_level]="row.level || null"
       >
         @if (disclosure()) {
@@ -150,7 +152,9 @@
           </button>
         </td>
         } @if (rowNumbers()) {
-        <td pctCell numeric class="pct-data-table__number">{{ $index + 1 }}</td>
+        <td pctCell numeric class="pct-data-table__number">
+          {{ row.index + 1 }}
+        </td>
         } @for (cell of row.cells; track cell.column.id) {
         <td
           pctCell

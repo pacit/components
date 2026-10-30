@@ -75,6 +75,32 @@ export interface PctLinesOptions<T> {
 }
 
 /**
+ * A value as a group's key holds it: no value, a `null` and `NaN` are one; a big integer, a date,
+ * a symbol and a function are tagged, so `1n` stays apart from `"1"`, a date from its ISO text,
+ * and two of them never write the same key — or none, which JSON would give a symbol.
+ */
+function keyed(value: unknown): unknown {
+  if (value === null || value === undefined || Number.isNaN(value)) return null;
+  if (typeof value === 'bigint') return { bigint: String(value) };
+  if (value instanceof Date) return { date: value.getTime() };
+  if (typeof value === 'symbol' || typeof value === 'function')
+    return { [typeof value]: String(value) };
+  return value;
+}
+
+/**
+ * The key of the group a path of values names, outermost first: what `collapsed` holds.
+ *
+ * @example
+ * pctGroupKey([0, 'Hall']); // '[0,"Hall"]'
+ *
+ * @since next
+ */
+export function pctGroupKey(values: readonly unknown[]): string {
+  return JSON.stringify(values.map(keyed));
+}
+
+/**
  * The lines the table draws for `rows`, in order.
  *
  * `rowId` is unique across the whole list, children included, and the children form a tree:
@@ -133,15 +159,14 @@ export function pctLines<T>(
     const by = new Map<string, { value: unknown; rows: T[] }>();
     for (const row of list) {
       const value = groups[level].value(row);
-      // `undefined` and `null` are both no value, and one group: their keys would be one too.
-      const at = JSON.stringify(value ?? null);
+      const at = pctGroupKey([value]);
       const found = by.get(at);
       if (found) found.rows.push(row);
       else by.set(at, { value, rows: [row] });
     }
     for (const { value, rows: members } of by.values()) {
       const values = [...path, value];
-      const key = JSON.stringify(values);
+      const key = pctGroupKey(values);
       const closed = collapsed?.has(key) ?? false;
       lines.push({
         kind: 'group',

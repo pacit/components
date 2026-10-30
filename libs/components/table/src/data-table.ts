@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterEveryRender,
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
@@ -50,7 +51,12 @@ import {
 } from './model/columns';
 import { pctAggregate } from './model/aggregate';
 import { pctFit } from './model/fit';
-import { pctLineKey, pctLines, type PctTableLine } from './model/lines';
+import {
+  pctGroupKey,
+  pctLineKey,
+  pctLines,
+  type PctTableLine,
+} from './model/lines';
 import { pctOrderRows } from './model/order';
 import {
   pctMatches,
@@ -138,6 +144,8 @@ interface Heading extends Summary {
   readonly level: number;
   readonly label: string;
   readonly countText: string;
+  /** The heading's name for a reader, naming the group it stands in; `null` at the top. */
+  readonly name: string | null;
   readonly collapsed: boolean;
 }
 
@@ -534,9 +542,16 @@ export class PctDataTable<
   /** A new value at each resize of the frame or the table, so each renders the fit again. */
   private readonly resized = signal<object>({});
 
-  /** Where the focus stood when a column went, so it can be handed to the row. */
-  private lost: { readonly element: Element; readonly line: number } | null =
-    null;
+  /**
+   * Where the focus last stood in the table's body: its element, its line, and the row or the
+   * group that line was, so the focus can be handed on when its element goes.
+   */
+  private focusAt: {
+    readonly element: Element;
+    readonly line: number;
+    readonly row: PctRowId | null;
+    readonly group: string | null;
+  } | null = null;
 
   /** A details row's id for each row, made once and kept while the table lives. */
   private readonly detailsIds = new Map<string, string>();
@@ -708,15 +723,19 @@ export class PctDataTable<
     const groups = this.contributed().groups;
     if (!groups || groups.disabled()) return [];
     const columns: readonly PctAnyColumn<T>[] = this.columns();
+    const values = this.values();
     const written = this.written();
+    const empty = this.texts().tableGroupEmpty;
     return groups.by().flatMap((id) => {
       const c = columns.findIndex((column) => column.id === id);
       return c < 0
         ? []
         : [
             {
-              value: columns[c].value,
-              label: (row: T) => (written.get(row) as readonly string[])[c],
+              value: (row: T) => (values.get(row) as readonly unknown[])[c],
+              // A group of no value is named all the same: its button needs a name.
+              label: (row: T) =>
+                (written.get(row) as readonly string[])[c] || empty,
             },
           ];
     });
@@ -746,7 +765,10 @@ export class PctDataTable<
         aggregate,
       );
       if (result === null) return '';
-      return aggregate === 'count'
+      // A count is a count whatever the column holds, and a number summed from a column with
+      // no number kind is written in the locale's digits, not as JavaScript prints it.
+      return aggregate === 'count' ||
+        (typeof result === 'number' && typeof column.kind !== 'object')
         ? count.format(result as number)
         : (writers.get(column.id) as Writer)(result, now);
     };
@@ -770,11 +792,15 @@ export class PctDataTable<
     const summarize = this.summarize();
     const count = new Intl.NumberFormat(this.resolvedLocale());
     const said = this.texts().tableGroupCount;
+    const within = this.texts().tableGroupWithin;
+    const labels: string[] = [];
     const sections: Section<T>[] = [];
     let current: Section<T> | null = null;
     for (let at = 0; at < lines.length; at++) {
       const line = lines[at];
       if (line.kind === 'group') {
+        labels[line.level] = line.label;
+        const countText = said.replace('{count}', count.format(line.count));
         current = {
           key: pctLineKey(line),
           group: {
@@ -783,7 +809,13 @@ export class PctDataTable<
             line: at,
             level: line.level,
             label: line.label,
-            countText: said.replace('{count}', count.format(line.count)),
+            countText,
+            name:
+              line.level === 0
+                ? null
+                : within
+                    .replace('{group}', `${line.label} ${countText}`)
+                    .replace('{outer}', labels[line.level - 1]),
             collapsed: line.collapsed,
           },
           rows: [],
@@ -808,6 +840,7 @@ export class PctDataTable<
    * the filter left, not all the application holds: the foot sums what the table shows.
    */
   protected readonly totals = computed(() =>
+    this.ordered().length > 0 &&
     this.shown().some(({ column }) => column.aggregate !== undefined)
       ? this.summarize()(this.ordered() as readonly T[])
       : null,
@@ -1092,12 +1125,25 @@ export class PctDataTable<
     // sticky header rather than under it.
     afterRenderEffect(() => {
       const sticky = this.stickyHeader();
+      // Measured again whenever the header or the bodies render, or the table resizes: a late
+      // font or a wrapped label changes the header's height.
+      this.heads();
+      this.sections();
+      this.resized();
       const frame = this.frame().nativeElement as HTMLElement;
-      const head = this.ownTable().tHead as HTMLElement;
-      const height = sticky ? `${head.getBoundingClientRect().height}px` : '';
+      const table = this.ownTable();
+      const height = sticky
+        ? `${(table.tHead as HTMLElement).getBoundingClientRect().height}px`
+        : '';
       frame.style.scrollPaddingBlockStart = height;
-      // A group's heading sticks below the header, at the header's height.
+      // A group's heading sticks below the header and below the headings of the groups it
+      // stands in, a heading's height for each level above it.
       frame.style.setProperty('--_head', height);
+      const heading = table.querySelector('tr[data-pct-part="group"]');
+      frame.style.setProperty(
+        '--_group',
+        `${heading?.getBoundingClientRect().height ?? 0}px`,
+      );
     });
 
     afterNextRender(() => {
@@ -1120,6 +1166,9 @@ export class PctDataTable<
       // whether the text is cut is known only once it is laid out, and measuring every cell on
       // every render to learn it would cost far more than measuring the one under the pointer.
       // The body is this component's element too.
+      table.addEventListener('focusin', (event) =>
+        this.noteFocus(event.target as Element),
+      );
       table.addEventListener('pointerover', (event) => this.noteCut(event));
       table.addEventListener('pointerout', (event) => this.leaveCut(event));
       table.addEventListener('animationend', (event) =>
@@ -1130,6 +1179,7 @@ export class PctDataTable<
     this.watchVisible(destroyRef);
     this.watchChanges();
     this.watchFit(destroyRef);
+    this.watchFocus();
 
     afterRenderEffect(() => {
       const target = this.pending();
@@ -1272,11 +1322,6 @@ export class PctDataTable<
       this.resized();
       const count = this.hiddenCount();
       const table = this.ownTable();
-      // A control that went with its column, or with the disclosures, gives its focus to its
-      // row's disclosure, or to the row's first control, rather than to the page.
-      if (this.lost !== null && !this.lost.element.isConnected)
-        this.refocus(this.lost.line);
-      this.lost = null;
       // A new order of columns starts with every column shown.
       const key = JSON.stringify(next);
       if (key !== order) {
@@ -1318,29 +1363,72 @@ export class PctDataTable<
     });
   }
 
-  /** Writes how many columns are hidden, noting first where the focus stood in the table. */
+  /** Writes how many columns are hidden. */
   private change(count: number): void {
-    // A document with a body always has an active element: the body, when nothing else is.
-    const focused = this.ownTable().ownerDocument.activeElement as Element;
-    const row = focused.closest<HTMLElement>('tbody > tr[data-pct-index]');
-    // A row of this table's body, not of a table nested in one of its cells.
-    if (row?.closest('table') === this.ownTable())
-      this.lost = {
-        element: focused,
-        line: Number(row.dataset['pctIndex']),
-      };
     untracked(() => this.hiddenCount.set(count));
   }
 
-  /** Focuses the row at `line`: its disclosure, or its first control. */
-  private refocus(line: number): void {
-    // The line was a row of the body when the focus was noted, and the render since moved no
-    // row: only the columns changed.
-    const row = this.lineRows()[line];
-    const target = row.querySelector<HTMLElement>(
-      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+  /** Notes where the focus stands, when it stands in a line of this table's body. */
+  private noteFocus(target: Element): void {
+    const tr = target.closest<HTMLElement>('tbody > tr[data-pct-index]');
+    // A row of a table nested in a cell is that table's to look after.
+    if (tr?.closest('table') !== this.ownTable()) {
+      this.focusAt = null;
+      return;
+    }
+    const line = Number(tr.dataset['pctIndex']);
+    const found = this.lines()[line];
+    this.focusAt = {
+      element: target,
+      line,
+      row: found.kind === 'row' || found.kind === 'details' ? found.key : null,
+      group: found.kind === 'group' ? found.key : null,
+    };
+  }
+
+  /**
+   * Hands the focus on when its element went — with a column, a collapsed group, a row the
+   * application took away — rather than leaving it to the page: to its row's first control
+   * if the row is still drawn, to the heading of the group that hides it if not, to the
+   * group's own heading, or to the line that now stands where it stood.
+   */
+  private watchFocus(): void {
+    // After every render, not on a signal: a write inside another render hook reruns effects
+    // before the view has drawn it, and the element would still be there to find.
+    afterEveryRender(() => {
+      const at = this.focusAt;
+      if (at === null || at.element.isConnected) return;
+      this.focusAt = null;
+      untracked(() => this.handFocus(at));
+    });
+  }
+
+  /** Focuses the line that takes over from the focus that was at `at`. */
+  private handFocus(at: NonNullable<PctDataTable<T, M>['focusAt']>): void {
+    const lines = this.lines();
+    const rowId = this.rowId();
+    let line = lines.findIndex(
+      (other) => other.kind === 'row' && other.key === at.row,
     );
-    target?.focus();
+    // The deepest heading in view whose group holds the row: a collapsed group hides it.
+    for (let back = lines.length - 1; line < 0 && back >= 0; back--) {
+      const other = lines[back];
+      if (
+        other.kind === 'group' &&
+        other.rows.some((row) => rowId(row) === at.row)
+      )
+        line = back;
+    }
+    if (line < 0)
+      line = lines.findIndex(
+        (other) => other.kind === 'group' && other.key === at.group,
+      );
+    if (line < 0) line = Math.min(at.line, lines.length - 1);
+    this.lineRows()
+      [line]?.querySelector<HTMLElement>(
+        '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+      )
+      ?.focus();
   }
 
   /**
@@ -1423,6 +1511,25 @@ export class PctDataTable<
    * @since next
    */
   reveal(id: PctRowId): void {
+    const groups = this.contributed().groups;
+    const grouping = this.grouping();
+    const rowId = this.rowId();
+    const row = (this.ordered() as readonly T[]).find(
+      (other) => rowId(other) === id,
+    );
+    // Every group above the row opens: the path of its values, one level at a time.
+    if (groups && row !== undefined) {
+      const path: unknown[] = [];
+      const above = new Set(
+        grouping.map((level) => {
+          path.push(level.value(row));
+          return pctGroupKey(path);
+        }),
+      );
+      groups.collapsed.update((collapsed) =>
+        collapsed.filter((key) => !above.has(key)),
+      );
+    }
     this.scrollTo(id);
   }
 

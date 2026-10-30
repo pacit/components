@@ -1,4 +1,4 @@
-import { pctLineKey, pctLines } from './lines';
+import { pctGroupKey, pctLineKey, pctLines } from './lines';
 
 interface Node {
   id: string;
@@ -197,6 +197,28 @@ describe('pctLines — groups', () => {
       'details 3',
       'hole 3',
     ]);
+  });
+});
+
+describe('pctGroupKey', () => {
+  it('writes a path of values as JSON, outermost first', () => {
+    expect(pctGroupKey([0, 'Hall'])).toBe('[0,"Hall"]');
+    expect(pctGroupKey([1])).not.toBe(pctGroupKey(['1']));
+  });
+
+  it('reads no value, null and NaN as one, and keeps every other kind of value apart', () => {
+    expect(pctGroupKey([undefined])).toBe('[null]');
+    expect(pctGroupKey([Number.NaN])).toBe('[null]');
+    expect(pctGroupKey([1n])).toBe('[{"bigint":"1"}]');
+    const day = new Date(Date.UTC(2026, 9, 30));
+    expect(pctGroupKey([day])).toBe(`[{"date":${day.getTime()}}]`);
+    expect(pctGroupKey([day])).not.toBe(pctGroupKey([day.toISOString()]));
+    expect(pctGroupKey([Symbol('a')])).toBe('[{"symbol":"Symbol(a)"}]');
+    const named = function name() {
+      return 1;
+    };
+    expect(pctGroupKey([named])).toContain('"function":');
+    expect(pctGroupKey([named])).not.toBe('[null]');
   });
 });
 

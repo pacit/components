@@ -25,10 +25,10 @@ table {
   inline-size: 100%;
 }
 
-:host([data-pct-sticky]) th {
+:host([data-pct-sticky]) thead th {
   position: sticky;
   inset-block-start: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* A key after the first carries its place and its way to the eye, beside the label; `aria-sort`
@@ -78,7 +78,7 @@ tbody > tr[data-pct-index] {
   }
 }
 
-:host([data-pct-striped]) tbody > tr[data-pct-index]:nth-child(even) {
+:host([data-pct-striped]) tbody > tr.pct-data-table__even {
   --_stripe: var(--pct-table-bg-striped);
 }
 
@@ -248,7 +248,10 @@ tr[data-pct-part='group'] > th {
 /* Under a sticky header, a group's heading sticks below it while its rows scroll by. */
 :host([data-pct-sticky]) tr[data-pct-part='group'] > * {
   position: sticky;
-  inset-block-start: var(--_head, 0);
+  inset-block-start: calc(
+    var(--_head, 0px) + (var(--_level, 0) * var(--_group, 0px))
+  );
+  z-index: 1;
 }
 
 .pct-data-table__heading {
