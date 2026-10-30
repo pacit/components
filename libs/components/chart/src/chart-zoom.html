@@ -1,0 +1,15 @@
+@for (button of buttons; track button.name) {
+<button
+  pctButton
+  variant="outline"
+  size="sm"
+  iconOnly
+  type="button"
+  data-pct-part="zoom"
+  [attr.tabindex]="active() === $index ? 0 : -1"
+  [attr.aria-label]="names()[$index]"
+  (click)="press($index)"
+>
+  <span aria-hidden="true">{{ button.glyph }}</span>
+</button>
+}

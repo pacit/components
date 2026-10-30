@@ -35,6 +35,19 @@
   will-change: transform;
 }
 
+// The zoom bar's place: the whole box, which the pointer passes through to the plot, and the
+// bar itself, which takes it.
+.zoom-place {
+  pointer-events: none;
+}
+
+.zoom-place > * {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  pointer-events: auto;
+}
+
 .skeleton {
   display: block;
   block-size: 100%;
@@ -97,6 +110,11 @@
 // to scrolling, and a horizontal one is the chart's.
 .overlay {
   touch-action: pan-y;
+}
+
+// A chart whose window stays where the application puts it leaves every drag to the page.
+.overlay.still {
+  touch-action: auto;
 }
 
 .overlay > * {

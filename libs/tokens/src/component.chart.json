@@ -136,6 +136,11 @@
         "$type": "shadow",
         "$value": "{pct.shadow-panel}",
         "$description": "Shadow of the tooltip."
+      },
+      "zoom-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between the buttons of the zoom bar."
       }
     }
   }

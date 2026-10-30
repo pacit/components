@@ -145,6 +145,8 @@
       (pointerdown)="onPointerDown($event)"
       (pointerup)="onPointerUp($event)"
       (pointercancel)="onPointerCancel($event)"
+      (wheel)="onWheel($event)"
+      [class.still]="zoom() === 'none'"
     >
       @if (cursorView(); as view) {
       <div
@@ -212,5 +214,16 @@
   }
   <ng-content select="figcaption" />
 </figure>
+@if (zoom() === 'x' && zoomButtons() && measured() && !loading()) {
+<!-- The zoom bar over the plot's top corner: after the figure, so it stands over the cursor's layer. -->
+<div class="layer zoom-place">
+  <pct-chart-zoom
+    [chart]="self"
+    [style.transform]="
+      'translate(calc(' + plot().right + 'px - 100% - 4px), ' + (plot().top + 4) + 'px)'
+    "
+  />
+</div>
+}
 <!-- The marks' own elements, which draw nothing where they stand: their drawings are stamped into the layers above. -->
 <ng-content />

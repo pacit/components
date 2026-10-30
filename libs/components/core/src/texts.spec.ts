@@ -79,6 +79,12 @@ const ENGLISH: PctTexts = {
   chartNoCursor: 'No reading selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
+  chartZoom: 'Zoom',
+  chartZoomIn: 'Zoom in',
+  chartZoomOut: 'Zoom out',
+  chartEarlier: 'Earlier',
+  chartLater: 'Later',
+  chartZoomReset: 'Back to the default view',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',

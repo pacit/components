@@ -23,11 +23,19 @@ import {
 import {
   nextPctId,
   PCT_TEXTS,
+  PctAnnouncer,
   pctQuantityFormat,
 } from '@pacit/components/core';
 import { PctSkeleton } from '@pacit/components/skeleton';
+import { PctChartZoom } from './chart-zoom';
 import type { PctColumns } from './model/columns';
 import { pctCursorJump, pctCursorStep } from './model/cursor';
+import {
+  PCT_GESTURE_IDLE,
+  pctGestureStep,
+  type PctGestureAction,
+  type PctGestureState,
+} from './model/gestures';
 import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import { pctLinear, type PctDomain, type PctScale } from './model/scale';
@@ -39,8 +47,18 @@ import {
   pctTimeTickText,
   type PctTimeLabel,
 } from './model/time-ticks';
-import type { PctWindow } from './model/window';
-import { PctChartScene, PctMark, type PctSeriesSpec } from './scene';
+import {
+  pctWindowFollow,
+  pctWindowTransform,
+  type PctWindow,
+  type PctWindowChange,
+} from './model/window';
+import {
+  PctChartAlign,
+  PctChartScene,
+  PctMark,
+  type PctSeriesSpec,
+} from './scene';
 
 /**
  * A value axis the consumer configures by its unit. Without one, an axis takes its domain
@@ -208,11 +226,15 @@ const ROW = 48;
 const EDGE = 8;
 /** How long a finger rests before the cursor follows it, in milliseconds. */
 const HOLD = 300;
-/** How far a finger moves before a press is no tap, in pixels. */
-const SLOP = 8;
 /** How near the cursor's line a tap clears it, in pixels. */
 const NEAR = 12;
 const HOUR = 3_600_000;
+/** How long the window rests before its new range is announced, in milliseconds. */
+const SETTLE = 300;
+/** The shortest window on a time axis unless the consumer says otherwise: two minutes. */
+const MIN_SPAN_TIME = 120_000;
+/** How much of the window the arrows with Shift move it. */
+const STEP = 0.1;
 
 /** One canvas for every chart's text measurements, made when first needed. */
 let measuring: CanvasRenderingContext2D | null | undefined;
@@ -249,7 +271,7 @@ let measuring: CanvasRenderingContext2D | null | undefined;
  */
 @Component({
   selector: 'pct-chart',
-  imports: [NgTemplateOutlet, PctSkeleton],
+  imports: [NgTemplateOutlet, PctSkeleton, PctChartZoom],
   templateUrl: './chart.html',
   styleUrl: './chart.scss',
   providers: [{ provide: PctChartScene, useExisting: PctChart }],
@@ -354,8 +376,61 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly tooltip = input<'auto' | 'none'>('auto');
+  /**
+   * How the window moves: `x` — a drag and a wheel with Ctrl pan and zoom it along the
+   * horizontal axis, two fingers pinch it, a double tap returns it, the keys and the zoom
+   * buttons do the same; `none` — it stays where the application puts it, and a drag across
+   * the plot is the page's.
+   *
+   * @since next
+   */
+  readonly zoom = input<'x' | 'none'>('x');
+  /**
+   * Where the window returns on a double tap, the `0` key and the zoom buttons' last one: a
+   * window, or `null` for all the data.
+   *
+   * @since next
+   */
+  readonly defaultWindow = input<PctWindow | null>(null);
+  /**
+   * The chart draws its zoom buttons over the plot's corner while `zoom` is `x`: the
+   * single-pointer twin of the pinch and the drag. Off, render `pct-chart-zoom` elsewhere, or
+   * buttons of your own on `zoomBy`, `panBy` and `home` — removing them removes the twin.
+   *
+   * @since next
+   */
+  readonly zoomButtons = input(true, { transform: booleanAttribute });
+  /**
+   * How far the window can go: it stops at a limit and keeps its span. The data's own span
+   * when unset.
+   *
+   * @since next
+   */
+  readonly limits = input<PctWindow | null>(null);
+  /**
+   * The narrowest window, in the axis's units: two minutes on a time axis, a millionth of the
+   * data's span on a numeric one, when unset.
+   *
+   * @since next
+   */
+  readonly minSpan = input<number | undefined>(undefined);
+  /**
+   * The window follows the present: while its end touches `now()`, it moves with the clock
+   * every second and keeps its span. A window the reader moved back stays where it was put.
+   *
+   * @since next
+   */
+  readonly follow = input(false, { transform: booleanAttribute });
+  /**
+   * The clock `follow` reads: `Date.now` unless a test or a replay gives another.
+   *
+   * @since next
+   */
+  readonly now = input<() => number>(() => Date.now());
 
   protected readonly texts = inject(PCT_TEXTS);
+  /** The chart itself, for the zoom bar it draws. */
+  protected readonly self = this;
   private readonly appLocale = inject(LOCALE_ID);
   private readonly document = inject(DOCUMENT);
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
@@ -436,9 +511,13 @@ export class PctChart extends PctChartScene {
    */
   readonly slots = this.slotsState.asReadonly();
 
-  override readonly shown = computed<PctWindow | null>(() => {
-    const window = this.window();
-    if (window) return window;
+  /**
+   * The span of every series' data, from the first reading to the last (or the end a step is
+   * held to); `null` while there is none.
+   *
+   * @since next
+   */
+  readonly dataSpan = computed<PctWindow | null>(() => {
     let from = Infinity;
     let to = -Infinity;
     for (const mark of this.marks()) {
@@ -450,6 +529,10 @@ export class PctChart extends PctChartScene {
     if (!(from <= to)) return null;
     return from === to ? { from: from - 1, to: to + 1 } : { from, to };
   });
+
+  override readonly shown = computed<PctWindow | null>(
+    () => this.window() ?? this.dataSpan(),
+  );
 
   private readonly lineHeight = computed(() => Math.ceil(this.font().px * 1.4));
 
@@ -537,14 +620,32 @@ export class PctChart extends PctChartScene {
   });
 
   /** The plot's left and right, after the value axes have taken their room. */
-  private readonly columns = computed(() => {
-    const { width } = this.size();
+  /**
+   * The room this chart's value axes take on each side of the plot, in pixels — what
+   * `pctChartSync` reads to give charts on one time axis the same plot edges.
+   *
+   * @since next
+   */
+  readonly axisRoom = computed(() => {
     const room = (slot: PctAxisSlot) => {
       const axis = this.valueAxes().find((a) => a.slot === slot);
       return axis ? axis.width + this.gap() * 2 : 0;
     };
-    const left = Math.max(EDGE, room('left') + room('left-outer'));
-    const right = width - Math.max(EDGE, room('right') + room('right-outer'));
+    return {
+      left: Math.max(EDGE, room('left') + room('left-outer')),
+      right: Math.max(EDGE, room('right') + room('right-outer')),
+    };
+  });
+
+  /** Charts aligned by `pctChartSync` around this one. */
+  private readonly align = inject(PctChartAlign, { optional: true });
+
+  private readonly columns = computed(() => {
+    const { width } = this.size();
+    const own = this.axisRoom();
+    const shared = this.align?.room();
+    const left = Math.max(own.left, shared?.left ?? 0);
+    const right = width - Math.max(own.right, shared?.right ?? 0);
     return { left, right: Math.max(left + 1, right) };
   });
 
@@ -795,15 +896,13 @@ export class PctChart extends PctChartScene {
 
   /** Whether the cursor stays where it was put, rather than following a mouse. */
   private readonly pinned = signal(false);
-  /** A finger or a button down on the plot, until it lifts. */
-  private press: {
-    readonly id: number;
-    readonly x: number;
-    readonly y: number;
-    timer: ReturnType<typeof setTimeout> | undefined;
-    held: boolean;
-    moved: boolean;
-  } | null = null;
+  /** The gesture under way on the plot, and the timer that raises a held finger. */
+  private gesture: PctGestureState = PCT_GESTURE_IDLE;
+  private holdTimer: ReturnType<typeof setTimeout> | undefined;
+  private settleTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly announcer = inject(PctAnnouncer);
+  /** The window's range as last said, so the same one is not said twice. */
+  private announced = '';
 
   /**
    * Why nothing is drawn: `hidden` when every series is hidden, `empty` when none has a
@@ -856,7 +955,26 @@ export class PctChart extends PctChartScene {
       const width = this.tooltipBox()?.nativeElement.offsetWidth ?? 0;
       if (width !== this.tooltipWidth()) this.tooltipWidth.set(width);
     });
-    destroyRef.onDestroy(() => clearTimeout(this.press?.timer));
+    destroyRef.onDestroy(() => {
+      clearTimeout(this.holdTimer);
+      clearTimeout(this.settleTimer);
+    });
+    // The present, in the browser alone: a window that touches it moves with the clock.
+    afterRenderEffect((onCleanup) => {
+      if (!this.follow()) return;
+      const clock = this.now();
+      let before = clock();
+      const timer = setInterval(() => {
+        const now = clock();
+        const window = this.window();
+        if (window) {
+          const next = pctWindowFollow(window, before, now);
+          if (next !== window) this.window.set(next);
+        }
+        before = now;
+      }, 1000);
+      onCleanup(() => clearInterval(timer));
+    });
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnnamed());
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnplaced());
     if (isDevMode()) afterRenderEffect(() => this.warnOnTwins());
@@ -922,6 +1040,10 @@ export class PctChart extends PctChartScene {
     if (!shown) return;
     const from = this.cursor();
     const tenth = (shown.to - shown.from) / 10;
+    if (this.onWindowKey(event)) {
+      event.preventDefault();
+      return;
+    }
     let next: number | null;
     switch (event.key) {
       case 'ArrowRight':
@@ -973,33 +1095,220 @@ export class PctChart extends PctChartScene {
     input.value = String(this.range()?.value ?? asked);
   }
 
-  /** The position under the pointer, or `null` off the plot. */
-  private pointedAt(event: PointerEvent): { x: number; px: number } | null {
-    const scale = this.xScale();
+  /**
+   * Zooms the window by `factor` — 2 shows half as much — about `anchor`, a position on the
+   * horizontal axis: the cursor when it is in the window, the middle otherwise.
+   *
+   * @since next
+   */
+  zoomBy(factor: number, anchor?: number): void {
+    const shown = this.shown();
+    if (!shown) return;
+    const cursor = this.cursor();
+    const about =
+      anchor ??
+      (cursor !== null && cursor >= shown.from && cursor <= shown.to
+        ? cursor
+        : (shown.from + shown.to) / 2);
+    this.move({
+      factor,
+      anchor: (about - shown.from) / (shown.to - shown.from),
+    });
+  }
+
+  /**
+   * Moves the window by `fraction` of its span: −0.1 a tenth earlier, 1 a whole window later.
+   *
+   * @since next
+   */
+  panBy(fraction: number): void {
+    this.move({ shift: fraction });
+  }
+
+  /**
+   * Returns the window to `defaultWindow`.
+   *
+   * @since next
+   */
+  home(): void {
+    this.window.set(this.defaultWindow());
+    this.announceWindow();
+  }
+
+  /** The window after a change, held to the limits and the narrowest span. */
+  private move(change: PctWindowChange): void {
+    const shown = this.shown();
+    if (!shown) return;
+    const limits = this.limits() ?? this.dataSpan();
+    const minSpan =
+      this.minSpan() ??
+      (this.x() === 'time'
+        ? MIN_SPAN_TIME
+        : ((limits ?? shown).to - (limits ?? shown).from) / 1e6);
+    this.window.set(pctWindowTransform(shown, change, limits, minSpan));
+    this.announceWindow();
+  }
+
+  /**
+   * The window's range, said once it rests: a reader hears where the window went, not every
+   * step of the way there.
+   */
+  private announceWindow(): void {
+    clearTimeout(this.settleTimer);
+    this.settleTimer = setTimeout(() => {
+      const shown = this.shown();
+      if (!shown) return;
+      const range = `${this.writePosition(shown.from, 'full')} – ${this.writePosition(shown.to, 'full')}`;
+      if (range === this.announced) return;
+      if (this.announced) this.announcer.retract(this.announced);
+      this.announced = range;
+      this.announcer.announce(range);
+    }, SETTLE);
+  }
+
+  /** The keys of the window, on the cursor's range (0103): zoom, pan, home. */
+  private onWindowKey(event: KeyboardEvent): boolean {
+    if (this.zoom() === 'none') return false;
+    if (event.shiftKey && event.key === 'ArrowLeft') this.panBy(-STEP);
+    else if (event.shiftKey && event.key === 'ArrowRight') this.panBy(STEP);
+    else if (event.key === '+' || event.key === '=') this.zoomBy(2);
+    else if (event.key === '-' || event.key === '_') this.zoomBy(0.5);
+    else if (event.key === '0') this.home();
+    else return false;
+    return true;
+  }
+
+  /** Where the pointer is in the layer's own pixels, which a transform on an ancestor does not scale. */
+  private layerPoint(event: PointerEvent | WheelEvent): {
+    x: number;
+    y: number;
+  } | null {
     const layer = event.currentTarget as HTMLElement | null;
-    if (!scale || !layer) return null;
+    if (!layer) return null;
     const box = layer.getBoundingClientRect();
-    // The layer's own pixels, which a transform on an ancestor does not scale.
-    const px =
-      (event.clientX - box.left) *
-      (box.width > 0 ? layer.offsetWidth / box.width : 1);
+    const scale = box.width > 0 ? layer.offsetWidth / box.width : 1;
+    return {
+      x: (event.clientX - box.left) * scale,
+      y: (event.clientY - box.top) * scale,
+    };
+  }
+
+  /** The position under a pixel of the layer, or `null` off the plot. */
+  private positionAt(px: number): number | null {
+    const scale = this.xScale();
     const { left, right } = this.columns();
-    if (px < left || px > right) return null;
-    return { x: scale.invert(px), px };
+    if (!scale || px < left || px > right) return null;
+    return scale.invert(px);
+  }
+
+  private feed(
+    event: PointerEvent,
+    type: 'down' | 'move' | 'up' | 'cancel',
+  ): void {
+    const point = this.layerPoint(event);
+    if (!point) return;
+    const { state, action } = pctGestureStep(this.gesture, {
+      type,
+      id: event.pointerId,
+      x: point.x,
+      y: point.y,
+      mouse: event.pointerType === 'mouse',
+      at: event.timeStamp,
+    });
+    this.gesture = state;
+    if (action)
+      this.act(action, event.currentTarget as HTMLElement, event.pointerId);
+  }
+
+  /** What a gesture asked for, done. */
+  private act(
+    action: PctGestureAction,
+    layer: HTMLElement,
+    pointer: number,
+  ): void {
+    const width = Math.max(1, this.plotWidth());
+    const moves = this.zoom() !== 'none';
+    const cursors = this.cursorMode() !== 'none';
+    switch (action.type) {
+      case 'pan':
+        if (moves) this.move({ shift: -action.dx / width });
+        return;
+      case 'pinch':
+        if (moves)
+          this.move({
+            factor: action.factor,
+            anchor: (action.about - this.columns().left) / width,
+            shift: -action.dx / width,
+          });
+        return;
+      case 'double':
+        if (moves) this.home();
+        return;
+      case 'hold': {
+        const x = this.positionAt(action.x);
+        if (!cursors || x === null) return;
+        layer.setPointerCapture?.(pointer);
+        this.place(x, true);
+        return;
+      }
+      case 'drag': {
+        const x = this.positionAt(action.x);
+        if (cursors && x !== null) this.place(x, true);
+        return;
+      }
+      case 'tap': {
+        if (!cursors) return;
+        // On the pinned cursor's line a tap lets go; anywhere else on the plot it pins.
+        const scale = this.xScale();
+        const cursor = this.cursor();
+        if (
+          this.pinned() &&
+          cursor !== null &&
+          scale &&
+          Math.abs(scale.map(cursor) - action.x) <= NEAR
+        ) {
+          this.place(null, false);
+          return;
+        }
+        const x = this.positionAt(action.x);
+        if (x !== null) this.place(x, true);
+      }
+    }
+  }
+
+  protected onPointerDown(event: PointerEvent): void {
+    if (this.cursorMode() === 'none' && this.zoom() === 'none') return;
+    if (event.pointerType === 'mouse' && event.button > 0) return;
+    clearTimeout(this.holdTimer);
+    this.feed(event, 'down');
+    const layer = event.currentTarget as HTMLElement;
+    // A mouse's drag pans past the plot's edge as well: the layer keeps the button.
+    if (event.pointerType === 'mouse') {
+      layer.setPointerCapture?.(event.pointerId);
+      return;
+    }
+    // A finger held still: the gesture machine hears of it when the time is up.
+    const point = this.layerPoint(event);
+    const id = event.pointerId;
+    this.holdTimer = setTimeout(() => {
+      if (!point) return;
+      const { state, action } = pctGestureStep(this.gesture, {
+        type: 'hold',
+        id,
+        x: point.x,
+        y: point.y,
+        mouse: false,
+        at: event.timeStamp + HOLD,
+      });
+      this.gesture = state;
+      if (action) this.act(action, layer, id);
+    }, HOLD);
   }
 
   protected onPointerMove(event: PointerEvent): void {
-    const press = this.press;
-    if (press && press.id === event.pointerId) {
-      if (press.held) {
-        const at = this.pointedAt(event);
-        if (at) this.place(at.x, true);
-      } else if (
-        Math.hypot(event.clientX - press.x, event.clientY - press.y) > SLOP
-      ) {
-        press.moved = true;
-        clearTimeout(press.timer);
-      }
+    if (this.gesture.pointers.has(event.pointerId)) {
+      this.feed(event, 'move');
+      if (this.gesture.mode !== 'pending') clearTimeout(this.holdTimer);
       return;
     }
     if (
@@ -1008,70 +1317,44 @@ export class PctChart extends PctChartScene {
       this.pinned()
     )
       return;
-    this.cursor.set(this.pointedAt(event)?.x ?? null);
+    const point = this.layerPoint(event);
+    this.cursor.set(point ? this.positionAt(point.x) : null);
+  }
+
+  protected onPointerUp(event: PointerEvent): void {
+    clearTimeout(this.holdTimer);
+    this.feed(event, 'up');
+  }
+
+  protected onPointerCancel(event: PointerEvent): void {
+    clearTimeout(this.holdTimer);
+    this.feed(event, 'cancel');
   }
 
   protected onPointerLeave(event: PointerEvent): void {
     if (
       event.pointerType === 'mouse' &&
       this.cursorMode() === 'hover' &&
-      !this.pinned()
+      !this.pinned() &&
+      this.gesture.mode === 'idle'
     )
       this.cursor.set(null);
   }
 
-  protected onPointerDown(event: PointerEvent): void {
-    if (this.cursorMode() === 'none' || !event.isPrimary || event.button > 0)
-      return;
-    clearTimeout(this.press?.timer);
-    const layer = event.currentTarget as HTMLElement;
-    const press = {
-      id: event.pointerId,
-      x: event.clientX,
-      y: event.clientY,
-      timer: undefined as ReturnType<typeof setTimeout> | undefined,
-      held: false,
-      moved: false,
-    };
-    this.press = press;
-    if (event.pointerType === 'mouse') return;
-    // A finger held still: the cursor follows it until it lifts.
-    const at = this.pointedAt(event);
-    press.timer = setTimeout(() => {
-      if (this.press !== press || press.moved || !at) return;
-      press.held = true;
-      layer.setPointerCapture?.(press.id);
-      this.place(at.x, true);
-    }, HOLD);
-  }
-
-  protected onPointerUp(event: PointerEvent): void {
-    const press = this.press;
-    if (!press || press.id !== event.pointerId) return;
-    clearTimeout(press.timer);
-    this.press = null;
-    if (press.held || press.moved) return;
-    // A tap, or a click: on the pinned cursor's line it lets go, anywhere else it pins.
-    const at = this.pointedAt(event);
-    const scale = this.xScale();
-    const cursor = this.cursor();
-    if (
-      this.pinned() &&
-      cursor !== null &&
-      scale &&
-      at &&
-      Math.abs(scale.map(cursor) - at.px) <= NEAR
-    ) {
-      this.place(null, false);
-      return;
-    }
-    if (at) this.place(at.x, true);
-  }
-
-  protected onPointerCancel(event: PointerEvent): void {
-    if (this.press?.id !== event.pointerId) return;
-    clearTimeout(this.press.timer);
-    this.press = null;
+  /** Ctrl with the wheel — and a touchpad's pinch, which arrives as one — zooms about the pointer. */
+  protected onWheel(event: WheelEvent): void {
+    if (!event.ctrlKey || this.zoom() === 'none') return;
+    const point = this.layerPoint(event);
+    if (!point) return;
+    event.preventDefault();
+    const { left } = this.columns();
+    const width = Math.max(1, this.plotWidth());
+    // A line of the wheel is about sixteen pixels of a touchpad's.
+    const delta = event.deltaY * (event.deltaMode === 1 ? 16 : 1);
+    this.move({
+      factor: Math.exp(-delta * 0.002),
+      anchor: Math.min(1, Math.max(0, (point.x - left) / width)),
+    });
   }
 
   private writeValue(value: number | null, unit: string): string {
