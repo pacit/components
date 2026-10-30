@@ -3089,8 +3089,77 @@ describe('PctDataTable — groups', () => {
     fixture.componentInstance.by.set(['nope' as never]);
     await settle(fixture);
     expect(headings()).toHaveLength(0);
+    // A row no list holds opens nothing, and breaks nothing.
+    fixture.componentInstance.by.set(['room']);
+    fixture.componentInstance.collapsed.set(['["Hall"]']);
+    await settle(fixture);
     fixture.componentInstance.table().reveal(999);
     await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual(['["Hall"]']);
+  });
+
+  it('sums the columns shown, beside a label of no sum, and nothing of a column hidden', async () => {
+    const resizedTo: { fire: (() => void) | null } = { fire: null };
+    globals.ResizeObserver = class {
+      constructor(callback: () => void) {
+        resizedTo.fire = callback;
+      }
+      observe(): void {
+        // The test calls the callback itself.
+      }
+      disconnect(): void {
+        // Nothing to let go.
+      }
+    };
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return { width: this.tagName === 'TH' ? 100 : 0, height: 0 } as DOMRect;
+      },
+    );
+    @Component({
+      imports: [PctDataTable, PctTableGroups],
+      template: `<pct-data-table
+        [pctTableGroups]="columns"
+        [groupBy]="['room']"
+        caption="Devices"
+        locale="pl"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class Hidden {
+      readonly rows = MORE;
+      readonly byId = byId;
+      readonly columns = col.of([
+        col.key('room', { header: 'Room' }),
+        col.key('name', { header: 'Name', aggregate: 'count' }),
+        col.key('power', { header: 'Power', aggregate: 'sum', priority: 1 }),
+      ]);
+    }
+    const fixture = await render(Hidden);
+    // The room sums nothing: the label stands alone.
+    expect(headings()[0].querySelector('.pct-data-table__sum')).toBeNull();
+    expect(
+      Array.from(headings()[0].querySelectorAll('td')).map((td) =>
+        td.textContent?.trim(),
+      ),
+    ).toEqual(['2', '1911,5']);
+    const width = { value: 250 };
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    const table = document.querySelector('table') as HTMLElement;
+    Object.defineProperty(frame, 'clientWidth', { get: () => width.value });
+    Object.defineProperty(table, 'scrollWidth', {
+      get: () =>
+        Math.max(width.value, 100 * table.querySelectorAll('thead th').length),
+    });
+    (resizedTo.fire as () => void)();
+    await settle(fixture);
+    expect(
+      Array.from(headings()[0].querySelectorAll('td')).map((td) =>
+        td.textContent?.trim(),
+      ),
+    ).toEqual(['2']);
   });
 
   it('spans a heading over the disclosures, the numbers and the first column', async () => {

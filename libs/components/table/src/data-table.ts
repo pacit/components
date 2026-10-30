@@ -1388,8 +1388,9 @@ export class PctDataTable<
     this.focusAt = {
       element: target,
       line,
-      // A heading has no row: a group's focus goes to the line that takes its place.
-      row: found.kind === 'group' ? null : (found.key as PctRowId),
+      // A heading's key is a JSON path no row's id is: its focus goes to the line that takes
+      // its place.
+      row: found.key,
     };
   }
 
@@ -1414,11 +1415,10 @@ export class PctDataTable<
   private handFocus(at: NonNullable<PctDataTable<T, M>['focusAt']>): void {
     const lines = this.lines();
     const rowId = this.rowId();
-    let line = lines.findIndex(
-      (other) => other.kind === 'row' && other.key === at.row,
-    );
+    // A row's line stands before its details', which carry its key too.
+    let line = lines.findIndex((other) => other.key === at.row);
     // The deepest heading in view whose group holds the row: a collapsed group hides it.
-    for (let back = lines.length - 1; line < 0 && back >= 0; back--) {
+    for (let back = lines.length - 1; back >= 0 && line === -1; back--) {
       const other = lines[back];
       if (
         other.kind === 'group' &&
