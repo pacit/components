@@ -131,12 +131,9 @@ const PRIMARY = '.';
  *              metafile read (points 6 and 8) is the one that holds it.
  * A plain entrypoint not declared here fires point 4 — which is the friction intended: the
  * package cannot grow a componentless entrypoint without a sentence here saying why.
- * `./chart` is silent for a reason with an end: its arithmetic ships ahead of the scene that
- * draws with it (0099), and the declaration goes stale with the first component.
  */
 const PLAIN = {
   [PRIMARY]: 'silent',
-  './chart': 'silent',
   './testing': 'quotes',
 };
 

@@ -15,7 +15,7 @@ import {
   type PctAccessor,
   type PctColumns,
 } from './model/columns';
-import { pctDecimate, pctPyramid } from './model/decimate';
+import { pctDecimate, pctPyramid, type PctPyramid } from './model/decimate';
 import { pctExtent } from './model/extent';
 import { pctAreaPath, pctLinePath } from './model/path';
 import type { PctDomain } from './model/scale';
@@ -105,10 +105,15 @@ export class PctLine<T> extends PctMark {
    * The colour: a palette place from 1 to 8, or any CSS colour. The next free place when
    * unset, kept while the series stays
    * ([0102](../../../../docs/decisions/0102-a-series-owns-its-colour-and-the-colour-is-never-its-only-channel.md)).
+   * A place written as text (`color="3"`) is the place; a number outside 1 to 8 is no place,
+   * and the series takes the next free one.
    *
    * @since next
    */
-  readonly color = input<number | string | undefined>(undefined);
+  readonly color = input<
+    number | string | undefined,
+    number | string | undefined
+  >(undefined, { transform: pctSeriesColor });
   /**
    * How far the last reading of a step holds: `now`, for data written when they change, whose
    * last value is still the value. Unset, a step ends at its last reading.
@@ -194,7 +199,10 @@ export class PctLine<T> extends PctMark {
     );
   });
 
-  /** The palette place, or `custom` for a colour of the consumer's own, which no palette rule reads. */
+  /**
+   * The palette place, or `custom` for a colour of the consumer's own: the stylesheet paints
+   * it from a private property, so the rule of forced colours still outranks it.
+   */
   protected readonly place = computed(() =>
     typeof this.color() === 'string'
       ? 'custom'
@@ -220,7 +228,13 @@ export class PctLine<T> extends PctMark {
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     return id === this.key()
-      ? pctExtent(this.readingsOf(), window, this.curve(), this.held())
+      ? pctExtent(
+          this.readingsOf(),
+          window,
+          this.curve(),
+          this.held(),
+          this.pyramid(),
+        )
       : null;
   }
 
@@ -243,6 +257,14 @@ export class PctLine<T> extends PctMark {
   override readings(): PctColumns {
     return this.readingsOf();
   }
+  /**
+   * See `PctMark.pyramid`.
+   *
+   * @since next
+   */
+  override pyramidOf(): PctPyramid {
+    return this.pyramid();
+  }
 
   private warnOnUnordered(): void {
     const at = pctFirstUnordered(this.readingsOf());
@@ -252,4 +274,29 @@ export class PctLine<T> extends PctMark {
         'before the one ahead of it. A chart reads its rows in order and does not sort them.',
     );
   }
+}
+
+/**
+ * Reads a series' `color`: a whole number from 1 to 8, or its text, is a palette place; any
+ * other text is a CSS colour; anything else is no colour, and the series takes a free place.
+ *
+ * @since next
+ */
+export function pctSeriesColor(
+  value: number | string | null | undefined,
+): number | string | undefined {
+  const place =
+    typeof value === 'string' && /^\s*\d+\s*$/.test(value)
+      ? Number(value)
+      : value;
+  if (typeof place === 'number') {
+    if (Number.isInteger(place) && place >= 1 && place <= 8) return place;
+    if (isDevMode())
+      console.warn(
+        `[pct-line] \`color\` ${String(value)} is no place of the palette, which runs from 1 to 8: ` +
+          'the series takes the next free place.',
+      );
+    return undefined;
+  }
+  return typeof place === 'string' && place.trim() !== '' ? place : undefined;
 }

@@ -58,8 +58,8 @@ export class PctChartTable {
    */
   readonly chart = input.required<PctChart>();
   /**
-   * The table's caption: the chart's `ariaLabel` when unset, which a chart named by
-   * `ariaLabelledby` does not have; give the caption then.
+   * The table's caption: the chart's `ariaLabel` when unset. A chart named by
+   * `ariaLabelledby` and no caption names its table by the same element.
    *
    * @since next
    */
@@ -75,6 +75,16 @@ export class PctChartTable {
 
   protected readonly captionText = computed(
     () => this.caption() || this.chart().ariaLabel(),
+  );
+  /** The element naming the chart, which names the table when it has no caption. */
+  protected readonly labelledby = computed(() =>
+    this.captionText() ? null : this.chart().ariaLabelledby() || null,
+  );
+  /** The header of the first column: the time, or the position along a numeric axis. */
+  protected readonly positionHeader = computed(() =>
+    this.chart().x() === 'time'
+      ? this.texts().chartTime
+      : this.texts().chartPosition,
   );
 
   /** The series shown, in the chart's order. */
@@ -112,10 +122,20 @@ export class PctChartTable {
       Math.floor(this.rows() / (4 * Math.max(1, series.length))),
     );
     const positions = new Set<number>();
+    // Both edges of the window are rows wherever a series holds a value there, so a window
+    // between two readings, or inside a step's hold, still has a row to read.
+    for (const edge of [window.from, window.to])
+      if (series.some((s) => chart.valueAt(s.id, edge) !== null))
+        positions.add(edge);
     for (const s of series) {
-      const readings = chart.markOf(s.id)?.readings(s.id);
-      if (!readings) continue;
-      const drawn = pctDecimate(readings, window, columns);
+      const mark = chart.markOf(s.id);
+      if (!mark) continue;
+      const drawn = pctDecimate(
+        mark.readings(s.id),
+        window,
+        columns,
+        mark.pyramidOf(s.id) ?? undefined,
+      );
       for (let i = 0; i < drawn.length; i++) {
         const x = drawn.xs[i];
         if (x >= window.from && x <= window.to) positions.add(x);
@@ -138,8 +158,11 @@ export class PctChartTable {
 
   /**
    * The table as CSV, for a spreadsheet in the chart's locale: the separator is a semicolon
-   * where the locale's decimal mark is a comma, values are written with that mark and no
-   * grouping, and a gap is an empty field.
+   * where the locale's decimal mark is a comma, numbers are written with that mark (a comma or
+   * a point, never another script's), no grouping and fifteen significant digits at most, and
+   * a gap is an empty field. A time is written as the table writes it, a position as a number.
+   * A text that a spreadsheet would read as a formula (`=`, `+`, `-`, `@`) is written after a
+   * quote mark, as text.
    *
    * @since next
    */
@@ -148,24 +171,34 @@ export class PctChartTable {
     const decimal =
       new Intl.NumberFormat(locale)
         .formatToParts(1.5)
-        .find((p) => p.type === 'decimal')?.value ?? '.';
+        .find((p) => p.type === 'decimal')?.value === ','
+        ? ','
+        : '.';
     const separator = decimal === ',' ? ';' : ',';
     // A field is quoted when it holds the separator, a quote or a line break, and only then.
     const quote = (text: string) =>
       text.includes(separator) || /["\n\r]/.test(text)
         ? `"${text.replace(/"/g, '""')}"`
         : text;
+    const text = (value: string) =>
+      quote(/^[=+\-@\t\r]/.test(value) ? `'${value}` : value);
     const number = (v: number | null) =>
-      v === null ? '' : String(v).replace('.', decimal);
+      v === null ? '' : String(Number(v.toPrecision(15))).replace('.', decimal);
+    const time = this.chart().x() === 'time';
     const head = [
-      this.chart().x() === 'time' ? this.texts().chartTime : '',
+      this.positionHeader(),
       ...this.series().map((s) =>
         s.unit && s.unit !== 'boolean' ? `${s.name} (${s.unit})` : s.name,
       ),
     ];
-    const lines = [head.map(quote).join(separator)];
+    const lines = [head.map(text).join(separator)];
     for (const row of this.table()) {
-      lines.push([quote(row.label), ...row.values.map(number)].join(separator));
+      lines.push(
+        [
+          time ? text(row.label) : number(row.x),
+          ...row.values.map(number),
+        ].join(separator),
+      );
     }
     return lines.join('\r\n');
   }

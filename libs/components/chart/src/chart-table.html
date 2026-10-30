@@ -1,14 +1,14 @@
 <pct-table-frame>
-  <table pctTable>
+  <table pctTable [attr.aria-labelledby]="labelledby()">
+    @if (captionText()) {
     <caption pctCaption>
       {{ captionText() }}
     </caption>
+    }
     <thead>
       <tr>
-        <th pctHeader scope="col">
-          {{ chart().x() === 'time' ? texts().chartTime : '' }}
-        </th>
-        @for (s of series(); track s.id) {
+        <th pctHeader scope="col">{{ positionHeader() }}</th>
+        @for (s of series(); track $index) {
         <th pctHeader scope="col" numeric>
           {{ s.name }}@if (s.unit && s.unit !== 'boolean') { ({{ s.unit }})}
         </th>

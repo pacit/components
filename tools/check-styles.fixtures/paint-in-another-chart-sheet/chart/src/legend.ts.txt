@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'fx-legend',
+  template: '<span class="legend__swatch"><ng-content /></span>',
+  styleUrls: ['./legend.scss'],
+})
+export class FxLegend {}

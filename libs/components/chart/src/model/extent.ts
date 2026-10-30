@@ -1,7 +1,8 @@
 import type { PctColumns } from './columns';
+import { pctRangeExtent, type PctPyramid } from './decimate';
 import type { PctDomain } from './scale';
 import { pctNice } from './ticks';
-import { pctIndexAt, pctValueAt, type PctCurve } from './value-at';
+import { pctValueAt, type PctCurve } from './value-at';
 import type { PctWindow } from './window';
 
 /**
@@ -10,7 +11,8 @@ import type { PctWindow } from './window';
  * the interpolation at the edge on a line. `null` when the series shows nothing there.
  *
  * Decimated columns give the same answer as the readings they came from, because decimation
- * keeps every column's extremes and one reading beyond each edge (0100).
+ * keeps every column's extremes and one reading beyond each edge (0100). With the readings'
+ * `pyramid` the inside is read from its runs, at the cost of a logarithm.
  *
  * @since next
  */
@@ -19,8 +21,8 @@ export function pctExtent(
   window: PctWindow,
   curve: PctCurve,
   end?: number,
+  pyramid?: PctPyramid,
 ): PctDomain | null {
-  const { xs, ys, length } = columns;
   let min = Infinity;
   let max = -Infinity;
   const take = (y: number | null) => {
@@ -31,12 +33,10 @@ export function pctExtent(
   take(pctValueAt(columns, window.from, curve, end));
   take(pctValueAt(columns, window.to, curve, end));
   // The readings strictly inside; those on an edge are the edge's value, already taken.
-  for (
-    let i = pctIndexAt(columns, window.from) + 1;
-    i < length && xs[i] < window.to;
-    i++
-  ) {
-    take(ys[i]);
+  const inside = pctRangeExtent(columns, window.from, window.to, pyramid);
+  if (inside) {
+    take(inside[0]);
+    take(inside[1]);
   }
   return min <= max ? [min, max] : null;
 }

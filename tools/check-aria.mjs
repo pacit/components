@@ -1281,21 +1281,48 @@ const parts = (drawn, parsed) =>
   drawn.name !== parsed.name;
 
 /**
- * The first element a list of template nodes draws, through the blocks around it (`@if`,
- * `@for`, `@switch`, `@defer`), or `null` when it draws none.
+ * The elements a list of template nodes writes at its top: through every block around them —
+ * each branch of `@if` and `@switch`, the body and `@empty` of `@for`, the body and every side
+ * of `@defer` — through an `<ng-container>` and a directive's template, but not into a nested
+ * `<ng-template>`, which is stamped elsewhere. A projection (`<ng-content>`) is `null`: what it
+ * brings is the consumer's, in whatever space it was written.
  */
-const firstElementOf = (nodes) => {
-  for (const node of nodes) {
-    if (node instanceof TmplAstElement) return node;
-    const inner = [
+const topElementsOf = (nodes) =>
+  nodes.flatMap((node) => {
+    if (node instanceof TmplAstElement)
+      return splitNsName(node.name)[1] === 'ng-container'
+        ? topElementsOf(node.children)
+        : [node];
+    if (typeof node.selector === 'string' && 'children' in node) return [null];
+    if (typeof node.tagName === 'string' || node.tagName === null)
+      return isTemplateTag(node) ? [] : topElementsOf(node.children ?? []);
+    const branches = node.branches ?? node.cases ?? node.groups ?? [];
+    const sides = SIDE_BLOCKS.flatMap((name) => node[name] ?? []);
+    return topElementsOf([
       ...(node.children ?? []),
-      ...(node.branches ?? []).flatMap((b) => b.children ?? []),
-      ...(node.cases ?? []).flatMap((c) => c.children ?? []),
-    ];
-    const found = firstElementOf(inner);
-    if (found) return found;
-  }
-  return null;
+      ...[...branches, ...sides].flatMap((b) => b.children ?? []),
+    ]);
+  });
+
+/**
+ * A `<ng-template>` is a fragment of a drawing when every element at its top is written in
+ * SVG and none of them is an `<svg>`: it is stamped into an `<svg>` elsewhere (a chart's
+ * marks, 0099), where the parser reads it. A template with an element of HTML at its top, a
+ * projection, or an `<svg>` of its own stands in its host, and an SVG element in it is read as
+ * written outside a drawing.
+ */
+const isDrawingFragment = (node) => {
+  if (!isTemplateTag(node)) return false;
+  const top = topElementsOf(node.children);
+  return (
+    top.length > 0 &&
+    top.every(
+      (element) =>
+        element !== null &&
+        spaceOf(element) === 'SVG' &&
+        splitNsName(element.name)[1] !== 'svg',
+    )
+  );
 };
 
 /** Where the parser stands inside a drawing: the content of an `<svg>`. */
@@ -1638,11 +1665,8 @@ class TagReader extends TmplAstRecursiveVisitor {
     this.kinds.set(node.sourceSpan.start.offset, 'template');
     if (isTemplateTag(node) && allWrittenOn(node, PART_ATTRIBUTE).length)
       this.templateParts.push(node.sourceSpan.start.offset);
-    // A `<ng-template>` whose first element is written in SVG is a fragment for a drawing: it
-    // is stamped into an `<svg>` elsewhere (a chart's marks, 0099), and the parser reads it
-    // there, so it is read as standing in one. A template that opens in HTML stands in its host.
-    const first = isTemplateTag(node) ? firstElementOf(node.children) : null;
-    const fragment = first !== null && spaceOf(first) === 'SVG';
+    // A fragment of a drawing is read as standing in an `<svg>` (`isDrawingFragment`).
+    const fragment = isDrawingFragment(node);
     if (fragment) this.context.push(DRAWING);
     super.visitTemplate(node);
     if (fragment) this.context.pop();

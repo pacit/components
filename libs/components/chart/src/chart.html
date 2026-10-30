@@ -113,12 +113,15 @@
     <pct-skeleton shape="block" class="skeleton" />
     }
   </div>
-  @if (measured() && !loading() && empty()) {
+  @if (measured() && !loading() && nothing(); as nothing) {
   <p class="empty" data-pct-part="message">
+    @if (nothing === 'hidden') { {{ texts().chartAllHidden }} } @else {
     <ng-content select="[pctChartEmpty]">{{ texts().chartEmpty }}</ng-content>
+    }
   </p>
   } @if (description()) {
-  <p class="description" [id]="ids.description">{{ description() }}</p>
+  <!-- Hidden: the picture reads it as its description, and nothing else reads it twice. -->
+  <p class="description" hidden [id]="ids.description">{{ description() }}</p>
   }
   <ng-content select="figcaption" />
 </figure>

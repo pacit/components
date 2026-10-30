@@ -58,16 +58,21 @@ const LITERAL = /'([^']*)'/g;
 const ICON = 'pct-icon';
 const DRAWING = 'svg';
 /**
- * The two places a bare `<svg>` is the mechanism and not a drawing. The SVG renderer's own
+ * The places a bare `<svg>` is the mechanism and not a drawing. The SVG renderer's own
  * templates, where a drawing given as DATA is rendered element by element (0083): every
  * template there is the renderer of what a source answered, so nothing in it is a picture
- * a consumer would want to swap — the swap already happened one level up. And a chart's,
- * where the drawing IS the data, scaled and decimated (0099): a picture of the consumer's
- * numbers is nothing a set could hold. Narrow on purpose: two entrypoints' templates, and the
- * reference input carries one of the renderer's so that the exemption is exercised and not
- * merely written.
+ * a consumer would want to swap — the swap already happened one level up. And two of a
+ * chart's, named one by one: the scene's layers and the line's drawing, where the drawing IS
+ * the data, scaled and decimated (0099), and a picture of the consumer's numbers is nothing a
+ * set could hold. Any other template of the chart — a legend, a marker — draws what a set
+ * could, and answers to point 2. Narrow on purpose, and the reference input carries one
+ * template of each kind, so both exemptions are exercised and not merely written.
  */
-const RENDERER = new RegExp(`^${PROJECT}/(svg-icon|chart)/src/[^/]+\\.html$`);
+const RENDERER = new RegExp(`^${PROJECT}/svg-icon/src/[^/]+\\.html$`);
+const DATA_DRAWINGS = new Set([
+  `${PROJECT}/chart/src/chart.html`,
+  `${PROJECT}/chart/src/line.html`,
+]);
 const PART = 'data-pct-part';
 
 /**
@@ -373,7 +378,12 @@ const checkIcons = ({ templates, names }) => {
 
   // ── 2. a drawing stands inside an icon ───────────────────────────────────────
   const loose = drawings
-    .filter((d) => d.inside === null && !RENDERER.test(d.file))
+    .filter(
+      (d) =>
+        d.inside === null &&
+        !RENDERER.test(d.file) &&
+        !DATA_DRAWINGS.has(d.file),
+    )
     .map((d) => d.file)
     .filter((file, i, all) => all.indexOf(file) === i);
   if (loose.length)

@@ -4,7 +4,7 @@
 }
 
 // The line of a series and the area under it. The colour is the palette's place the scene
-// gave the series (0102), or the consumer's own colour as an inline style.
+// gave the series (0102), or the consumer's own colour, handed in as a private property.
 [data-pct-part='series'] {
   fill: none;
   stroke-width: var(--pct-chart-series-width);
@@ -32,10 +32,40 @@
   }
 }
 
-// Every path carries `data-pct-series` (a place or `custom`), so these win by order.
+// The consumer's own colour, handed in as a private property.
+[data-pct-part='series'][data-pct-series='custom'] {
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-part='area'][data-pct-series='custom'] {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-area-alpha),
+    transparent
+  );
+}
+
+// Every path carries `data-pct-series` (a place or `custom`), so these win by order. With the
+// colours gone, each place keeps a dash of its own: the second channel of 0102.
 @media (forced-colors: active) {
   [data-pct-part='series'][data-pct-series] {
     stroke: CanvasText;
+  }
+
+  $dashes: (
+    2: 8 4,
+    3: 2 4,
+    4: 8 4 2 4,
+    5: 14 5,
+    6: 2 8,
+    7: 8 4 2 4 2 4,
+    8: 5 5,
+  );
+
+  @each $place, $dash in $dashes {
+    [data-pct-part='series'][data-pct-series='#{$place}'] {
+      stroke-dasharray: $dash;
+    }
   }
 
   [data-pct-part='area'][data-pct-series] {

@@ -1,0 +1,25 @@
+{
+  "$comment": "A dictionary with ordinals for the part `label` alone \u2014 so that this case's only defect is an ordinal on a name with no such part.",
+  "private": {
+    "prefixes": ["pct.blue.", "pct.slate."]
+  },
+  "primitive": {
+    "axes": ["blue", "slate", "space", "target", "control", "motion"]
+  },
+  "semantic": {
+    "roles": ["primary", "surface", "text"],
+    "variants": ["hover", "muted"]
+  },
+  "component": {
+    "parts": ["close", "label"],
+    "properties": ["bg", "fg", "height", "padding-x", "size", "z-index"],
+    "states": ["hover"],
+    "sizes": {
+      "list": ["sm"]
+    },
+    "ordinals": {
+      "parts": ["label"],
+      "list": ["1"]
+    }
+  }
+}

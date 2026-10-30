@@ -1,5 +1,6 @@
 import { Directive, type Signal, type TemplateRef } from '@angular/core';
 import type { PctColumns } from './model/columns';
+import type { PctPyramid } from './model/decimate';
 import type { PctDomain, PctScale } from './model/scale';
 import type { PctCurve } from './model/value-at';
 import type { PctWindow } from './model/window';
@@ -132,4 +133,15 @@ export abstract class PctMark {
    * @since next
    */
   abstract readings(id: string): PctColumns;
+
+  /**
+   * The pyramid of a series' readings, which decimates them at the cost of the pixels; `null`
+   * when the mark keeps none, and the readings are scanned.
+   *
+   * @since next
+   */
+  pyramidOf(id: string): PctPyramid | null {
+    void id;
+    return null;
+  }
 }

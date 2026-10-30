@@ -253,6 +253,10 @@ export interface PctTexts {
   readonly chartOff: string;
   /** Chart: the header of the data table's first column on a time axis. */
   readonly chartTime: string;
+  /** Chart: the header of the data table's first column on a numeric axis. */
+  readonly chartPosition: string;
+  /** Chart: the message of a chart whose every series is hidden. */
+  readonly chartAllHidden: string;
 }
 
 /**
@@ -304,6 +308,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartOn: 'On',
   chartOff: 'Off',
   chartTime: 'Time',
+  chartPosition: 'Position',
+  chartAllHidden: 'Every series is hidden',
 };
 
 /**

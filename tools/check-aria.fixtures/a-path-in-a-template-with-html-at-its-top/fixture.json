@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "message": "is `<path>` in the SVG namespace to Angular, which draws it in the browser, and `<path>` in HTML",
+  "$reason": "A template read as a fragment of a drawing by its first element alone: it opens with `<svg:path>`, so the path and the link after it were read as standing in an `<svg>`, and the link carried the name. But a `<span>` stands at its top too, so the template is no fragment — wherever it is stamped, the span, the path and the link land in the same parent, an HTML one, and the path is drawn outside any drawing. A fragment is a template whose every top element is SVG and none an `<svg>` (`isDrawingFragment`)."
+}

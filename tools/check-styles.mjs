@@ -190,14 +190,6 @@ const REDUCED = /@media[^{]*prefers-reduced-motion/g;
  * `fill-opacity` and `stroke-opacity` are NOT here — they are in `OPACITY` above, where
  * they answer to a promise of their own.
  */
-/**
- * The one library whose sheets paint an `<svg>` of their own: a chart's, where the drawing is
- * the consumer's data, scaled and decimated (0099), and no set could hold it — there is no
- * drawing for a consumer to replace, so painting it is the component's job and not a reach
- * into an icon. Narrow on purpose: one entrypoint's sheets.
- */
-const DRAWS_DATA = /^libs\/components\/chart\/src\/[^/]+\.scss$/;
-
 const PAINT = new Set([
   'fill',
   'fill-rule',
@@ -210,6 +202,19 @@ const PAINT = new Set([
   'stroke-miterlimit',
   'paint-order',
 ]);
+
+/**
+ * The two sheets that paint an `<svg>` of their own: a chart's scene and its line, where the
+ * drawing is the consumer's data, scaled and decimated (0099), and no set could hold it —
+ * there is no drawing for a consumer to replace, so painting it is the component's job and
+ * not a reach into an icon. Named one by one, relative to the library: any other sheet of the
+ * chart — a legend's, a marker's — paints what a set could, and answers to point 8.
+ */
+const DRAWS_DATA = new Set(['chart/src/chart.scss', 'chart/src/line.scss']);
+const drawsData = (file) =>
+  DRAWS_DATA.has(
+    file.startsWith(`${PROJECT}/`) ? file.slice(PROJECT.length + 1) : file,
+  );
 
 /**
  * The scanner: turns a stylesheet's text into a list of declarations and comments, each
@@ -1123,7 +1128,7 @@ const checkStyles = ({
         translucent.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }
-      if (PAINT.has(d.property) && !DRAWS_DATA.test(sheet.file)) {
+      if (PAINT.has(d.property) && !drawsData(sheet.file)) {
         painted.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }

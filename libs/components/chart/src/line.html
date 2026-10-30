@@ -4,14 +4,14 @@
     data-pct-part="area"
     [attr.d]="fill()"
     [attr.data-pct-series]="place()"
-    [style.fill]="custom()"
+    [style.--_pct-chart-color]="custom()"
   />
   }
   <svg:path
     data-pct-part="series"
     [attr.d]="line()"
     [attr.data-pct-series]="place()"
-    [style.stroke]="custom()"
+    [style.--_pct-chart-color]="custom()"
   />
   }
 </ng-template>

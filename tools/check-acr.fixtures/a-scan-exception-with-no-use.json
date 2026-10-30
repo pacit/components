@@ -1,0 +1,19 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "says": ["the scan finds nothing there — an exception with no use"],
+  "description": "1.4.5 answers by name for a template the scan finds no SVG `<text>` in. An exception that excuses nothing widens the claim in silence: the day that template gains a `<text>`, it is already excused, by a reason written for another file.",
+  "criteria": {
+    "1.4.5": {
+      "evidence": [
+        {
+          "scan": "no-svg-text",
+          "beside": {
+            "libs/components/chart/src/chart.html": "the chart's axis labels",
+            "libs/components/avatar/src/avatar.html": "the initials"
+          }
+        }
+      ]
+    }
+  }
+}

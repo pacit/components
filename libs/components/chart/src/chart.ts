@@ -256,7 +256,10 @@ export class PctChart extends PctChartScene {
 
   private readonly size = signal({ width: 0, height: 0 });
   private readonly font = signal({ family: 'sans-serif', px: 13 });
-  override readonly pixel = signal(1);
+  /** The gap between an axis and its labels: the `axis-gap` token, read with the font. */
+  private readonly gap = signal(6);
+  private readonly pixelState = signal(1);
+  override readonly pixel = this.pixelState.asReadonly();
   /** The scene knows its size: before that, on the server and in the first frame, a skeleton. */
   protected readonly measured = computed(
     () => this.size().width > 0 && this.size().height > 0,
@@ -278,23 +281,18 @@ export class PctChart extends PctChartScene {
     this.marks().flatMap((mark) => mark.series()),
   );
 
-  override readonly places = linkedSignal<
+  private readonly placesState = linkedSignal<
     readonly PctSeriesSpec[],
     ReadonlyMap<string, number>
   >({
     source: this.series,
     computation: (series, previous) => placesOf(series, previous?.value),
   });
+  override readonly places = this.placesState.asReadonly();
 
   private readonly units = computed(() => this.series().map((s) => s.unit));
 
-  /**
-   * Where the value axis of each unit stands. A unit keeps its slot while a series of it
-   * stays on the chart.
-   *
-   * @since next
-   */
-  readonly slots = linkedSignal<
+  private readonly slotsState = linkedSignal<
     readonly string[],
     ReadonlyMap<string, PctAxisSlot>
   >({
@@ -302,6 +300,13 @@ export class PctChart extends PctChartScene {
     computation: (units, previous) =>
       pctAxisSlots(units, previous?.value ?? new Map()),
   });
+  /**
+   * Where the value axis of each unit stands. A unit keeps its slot while a series of it
+   * stays on the chart.
+   *
+   * @since next
+   */
+  readonly slots = this.slotsState.asReadonly();
 
   override readonly shown = computed<PctWindow | null>(() => {
     const window = this.window();
@@ -319,27 +324,41 @@ export class PctChart extends PctChartScene {
   });
 
   private readonly lineHeight = computed(() => Math.ceil(this.font().px * 1.4));
-  private readonly gap = 6;
+
+  /**
+   * What each series shows in the window, read once per window and per set of hidden series:
+   * neither the height nor the width of the chart changes it.
+   */
+  private readonly extents = computed(() => {
+    const shown = this.shown();
+    const hidden = new Set(this.hiddenSeries());
+    const extents = new Map<string, PctDomain | null>();
+    if (!shown) return extents;
+    for (const s of this.series()) {
+      if (hidden.has(s.id)) continue;
+      extents.set(s.id, this.markOf(s.id)?.extent(s.id, shown) ?? null);
+    }
+    return extents;
+  });
 
   /** The plot's top and bottom: room for the units above it and the time below it. */
   private readonly rows = computed(() => {
     const { height } = this.size();
     const line = this.lineHeight();
-    const top = this.slots().size > 0 ? line + this.gap : EDGE;
-    const bottom = height - line - this.gap;
+    const top = this.slots().size > 0 ? line + this.gap() : EDGE;
+    const bottom = height - line - this.gap();
     return { top, bottom: Math.max(top + 1, bottom) };
   });
 
   /** The value axes: domain, ticks and labels, before their horizontal place is known. */
   private readonly valueAxes = computed(() => {
-    const shown = this.shown();
+    const extents = this.extents();
     const { top, bottom } = this.rows();
     const target = Math.max(2, Math.floor((bottom - top) / ROW));
     const format = (digits: number) =>
       pctQuantityFormat(this.effectiveLocale(), {
         fractionDigits: [0, digits],
       });
-    const hidden = new Set(this.hiddenSeries());
     const configs = new Map(this.axisConfigs().map((c) => [c.unit(), c]));
     const places = this.places();
     return [...this.slots()].map(([unit, slot]) => {
@@ -354,23 +373,27 @@ export class PctChart extends PctChartScene {
         ];
       } else {
         const config = configs.get(unit);
-        const extents = shown
-          ? series
-              .filter((s) => !hidden.has(s.id))
-              .map((s) => this.markOf(s.id)?.extent(s.id, shown) ?? null)
-          : [];
-        domain = pctDomainOf(extents, {
-          target,
-          includeZero: config?.includeZero() || series.some((s) => s.fromZero),
-          floor: config?.floor(),
-          ceiling: config?.ceiling(),
-        });
+        domain = pctDomainOf(
+          series.map((s) => extents.get(s.id) ?? null),
+          {
+            target,
+            includeZero:
+              config?.includeZero() || series.some((s) => s.fromZero),
+            floor: config?.floor(),
+            ceiling: config?.ceiling(),
+          },
+        );
         const values = pctTicks(domain, target);
         const step = values.length > 1 ? values[1] - values[0] : 0;
         const writer = format(pctFractionDigits(step));
         ticks = values.map((at) => ({ at, text: writer.format(at) }));
       }
-      const width = Math.max(0, ...ticks.map((t) => this.measure(t.text)));
+      // The room of an axis: its widest label, or its unit written above it when that is wider.
+      const width = Math.max(
+        0,
+        ...ticks.map((t) => this.measure(t.text)),
+        unit === BOOLEAN ? 0 : this.measure(unit),
+      );
       const dots = series
         .map((s) =>
           typeof s.color === 'string' ? null : (places.get(s.id) ?? null),
@@ -386,7 +409,7 @@ export class PctChart extends PctChartScene {
     const { width } = this.size();
     const room = (slot: PctAxisSlot) => {
       const axis = this.valueAxes().find((a) => a.slot === slot);
-      return axis ? axis.width + this.gap * 2 : 0;
+      return axis ? axis.width + this.gap() * 2 : 0;
     };
     const left = Math.max(EDGE, room('left') + room('left-outer'));
     const right = width - Math.max(EDGE, room('right') + room('right-outer'));
@@ -405,9 +428,11 @@ export class PctChart extends PctChartScene {
   readonly axes = computed<readonly PctAxisLayout[]>(() => {
     const { top, bottom } = this.rows();
     const { left, right } = this.columns();
-    const widthOf = (slot: PctAxisSlot) =>
-      (this.valueAxes().find((a) => a.slot === slot)?.width ?? 0) +
-      this.gap * 2;
+    // An outer axis stands beyond the inner one's room, and on the plot's edge without one.
+    const widthOf = (slot: PctAxisSlot) => {
+      const axis = this.valueAxes().find((a) => a.slot === slot);
+      return axis ? axis.width + this.gap() * 2 : 0;
+    };
     return this.valueAxes().map((axis) => {
       const scale = pctLinear(axis.domain, [bottom, top]);
       const x =
@@ -480,7 +505,7 @@ export class PctChart extends PctChartScene {
     const middles = xs.map((x, i) =>
       Math.min(width - widths[i] / 2, Math.max(widths[i] / 2, x)),
     );
-    const visible = pctThinLabels(middles, widths, this.gap * 2);
+    const visible = pctThinLabels(middles, widths, this.gap() * 2);
     return ticks.map((t, i) => ({
       x: xs[i],
       middle: middles[i],
@@ -512,33 +537,44 @@ export class PctChart extends PctChartScene {
     };
   });
 
-  /** Nothing to draw: no series, or none with a reading in the window. */
-  protected readonly empty = computed(() => {
-    const shown = this.shown();
-    if (!shown) return true;
-    const hidden = new Set(this.hiddenSeries());
-    return !this.series().some(
-      (s) =>
-        !hidden.has(s.id) && this.markOf(s.id)?.extent(s.id, shown) !== null,
-    );
+  /**
+   * Why nothing is drawn: `hidden` when every series is hidden, `empty` when none has a
+   * reading in the window, `null` when something is drawn.
+   */
+  protected readonly nothing = computed<'empty' | 'hidden' | null>(() => {
+    const series = this.series();
+    const extents = this.extents();
+    if ([...extents.values()].some((e) => e !== null)) return null;
+    return series.length > 0 && extents.size === 0 ? 'hidden' : 'empty';
   });
 
   constructor() {
     super();
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
-      const view = this.document.defaultView;
-      this.pixel.set(1 / (view?.devicePixelRatio || 1));
-      this.readFont();
-      this.readSize();
+      this.readMedium();
+      this.readSize(this.host.clientWidth, this.host.clientHeight);
+      // A web font that arrives after the first frame changes every label's width.
+      const fonts = this.document.fonts;
+      const onFonts = () => this.readMedium();
+      fonts?.addEventListener?.('loadingdone', onFonts);
+      destroyRef.onDestroy(() =>
+        fonts?.removeEventListener?.('loadingdone', onFonts),
+      );
       // Without an observer the size is read once: a chart in such an engine does not follow
       // its container, and draws at the size it first had.
       if (typeof ResizeObserver === 'undefined') return;
-      const observer = new ResizeObserver(() => this.readSize());
+      // The content box, which a transform on an ancestor does not scale.
+      const observer = new ResizeObserver(([entry]) => {
+        this.readMedium();
+        this.readSize(entry.contentRect.width, entry.contentRect.height);
+      });
       observer.observe(this.host);
       destroyRef.onDestroy(() => observer.disconnect());
     });
     if (isDevMode()) effect(() => this.warnOnUnnamed());
+    if (isDevMode()) effect(() => this.warnOnUnplaced());
+    if (isDevMode()) effect(() => this.warnOnTwins());
   }
 
   /**
@@ -560,19 +596,27 @@ export class PctChart extends PctChartScene {
     return this.marks().find((m) => m.series().some((s) => s.id === id));
   }
 
-  private readSize(): void {
-    const box = this.host.getBoundingClientRect();
-    const width = Math.round(box.width);
-    const height = Math.round(box.height);
+  private readSize(rawWidth: number, rawHeight: number): void {
+    const width = Math.round(rawWidth);
+    const height = Math.round(rawHeight);
     const now = this.size();
     if (now.width !== width || now.height !== height)
       this.size.set({ width, height });
   }
 
-  private readFont(): void {
-    const style = this.document.defaultView?.getComputedStyle(this.host);
+  /** The font, the gap and the pixel ratio: what the skin and the screen decide. */
+  private readMedium(): void {
+    const view = this.document.defaultView;
+    const style = view?.getComputedStyle(this.host);
     const px = parseFloat(style?.fontSize ?? '') || 13;
-    this.font.set({ family: style?.fontFamily || 'sans-serif', px });
+    const family = style?.fontFamily || 'sans-serif';
+    const now = this.font();
+    if (now.px !== px || now.family !== family) this.font.set({ family, px });
+    const gap = parseFloat(
+      style?.getPropertyValue('--pct-chart-axis-gap') ?? '',
+    );
+    if (gap >= 0) this.gap.set(gap);
+    this.pixelState.set(1 / (view?.devicePixelRatio || 1));
   }
 
   /** A label's width: `measureText`, which matches the SVG's own width (0100, P3). */
@@ -585,6 +629,28 @@ export class PctChart extends PctChartScene {
     if (!measuring) return text.length * px * 0.6;
     measuring.font = `${px}px ${family}`;
     return measuring.measureText(text).width;
+  }
+
+  private warnOnUnplaced(): void {
+    const slots = this.slots();
+    const lost = this.series().filter((s) => !slots.has(s.unit));
+    if (lost.length === 0) return;
+    console.warn(
+      `[pct-chart] ${lost.map((s) => `"${s.name}" (${s.unit || 'no unit'})`).join(', ')} ` +
+        'has no axis: a chart holds four units at most, and the series is not drawn. Ask ' +
+        '`pctAxisFits` before adding one.',
+    );
+  }
+
+  private warnOnTwins(): void {
+    const seen = new Set<string>();
+    const twins = new Set<string>();
+    for (const s of this.series()) (seen.has(s.id) ? twins : seen).add(s.id);
+    if (twins.size === 0) return;
+    console.warn(
+      `[pct-chart] Two series share the id ${[...twins].map((id) => `"${id}"`).join(', ')}. ` +
+        'A series is told apart by its `id` (its `name` when unset): give each its own.',
+    );
   }
 
   private warnOnUnnamed(): void {
@@ -606,16 +672,21 @@ function placesOf(
   previous: ReadonlyMap<string, number> | undefined,
 ): ReadonlyMap<string, number> {
   const places = new Map<string, number>();
-  for (const s of series) {
+  // A place the consumer gives wins; a place kept from before stays unless one of those took
+  // it; every other series takes the lowest free place, and round again past eight.
+  for (const s of series)
     if (typeof s.color === 'number') places.set(s.id, s.color);
-    else if (previous?.has(s.id)) places.set(s.id, previous.get(s.id)!);
+  const given = new Set(places.values());
+  for (const s of series) {
+    const kept = previous?.get(s.id);
+    if (!places.has(s.id) && kept !== undefined && !given.has(kept))
+      places.set(s.id, kept);
   }
   for (const s of series) {
     if (places.has(s.id)) continue;
     const taken = new Set(places.values());
-    let place = 1;
-    while (taken.has(place) && place < 8) place++;
-    places.set(s.id, taken.has(place) ? (places.size % 8) + 1 : place);
+    const free = [1, 2, 3, 4, 5, 6, 7, 8].find((p) => !taken.has(p));
+    places.set(s.id, free ?? (places.size % 8) + 1);
   }
   return places;
 }

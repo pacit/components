@@ -1,0 +1,8 @@
+<!--
+  A chart's line: the drawing is the consumer's data, scaled and decimated (0099), stamped
+  into the scene's `<svg>`. It is in the reference so that point 2's exemption for the
+  chart's two named templates is exercised.
+-->
+<svg aria-hidden="true" data-pct-part="data">
+  <path data-pct-part="series" [attr.d]="line()" />
+</svg>

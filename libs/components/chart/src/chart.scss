@@ -22,9 +22,10 @@
   inset: 0;
 }
 
-// A chart's axes run left to right in every direction of the page: time and value do not
-// mirror, and an SVG `text-anchor` would, under an inherited `rtl`.
 .layer {
+  /* pct-exception direction: a chart's axes run left to right in every direction of the page —
+     time and value do not mirror (the `chart-area-rtl` screenshot), and an SVG `text-anchor`
+     under an inherited `rtl` would turn every label over its tick. */
   direction: ltr;
   position: absolute;
   inset: 0;
@@ -83,16 +84,6 @@
   margin: 0;
   color: var(--pct-chart-message-fg);
   pointer-events: none;
-}
-
-// The description is for a reader: the picture is what the eye reads.
-.description {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 @media (forced-colors: active) {

@@ -2159,7 +2159,34 @@ const checkAcr = (input) => {
         const over = Object.entries(sources).filter(([path]) =>
           scan.over.includes(path.split('.').pop()),
         );
+        // `beside`: a file the scan finds a match in that the claim answers for by name, with
+        // its reason — a chart's axis labels are SVG `<text>`, live text and no image of it.
+        // Each must exist and hold a match: an exception with no use widens the claim without
+        // anybody seeing it, and one that names a moved file would excuse nothing it says.
+        const beside = e.beside ?? {};
+        for (const [path, why] of Object.entries(beside)) {
+          const text = Object.hasOwn(sources, path) ? sources[path] : undefined;
+          if (
+            typeof text !== 'string' ||
+            typeof why !== 'string' ||
+            !why.trim()
+          )
+            throw new AcrError(
+              'evidence',
+              `${where} sets \`${path}\` beside scan \`${e.scan}\` ` +
+                (typeof text !== 'string'
+                  ? 'and there is no such source file'
+                  : 'with no reason'),
+            );
+          if (scan.find(path, text, context) === undefined)
+            throw new AcrError(
+              'evidence',
+              `${where} sets \`${path}\` beside scan \`${e.scan}\` (${scan.means}), and the ` +
+                `scan finds nothing there — an exception with no use`,
+            );
+        }
         for (const [path, text] of over) {
+          if (Object.hasOwn(beside, path)) continue;
           const found = scan.find(path, text, context);
           if (found !== undefined)
             throw new AcrError(
@@ -2314,8 +2341,14 @@ const renderEvidence = (e, ids, aggregates, scanned) => {
     return `\`${e.spec}\`${(e.titles ?? []).length ? ` › ${e.titles.map((t) => `"${t}"`).join(', ')}` : ''}`;
   if (e.source !== undefined)
     return `\`${e.source}\`${e.says !== undefined ? ` ("${e.says.replace(/`/g, '')}")` : ''}`;
-  if (e.scan !== undefined)
-    return `scan \`${e.scan}\` — no match in ${scanned.get(e.scan)} source files`;
+  if (e.scan !== undefined) {
+    const beside = Object.entries(e.beside ?? {});
+    const total = scanned.get(e.scan);
+    return beside.length === 0
+      ? `scan \`${e.scan}\` — no match in ${total} source files`
+      : `scan \`${e.scan}\` — no match in ${total - beside.length} of ${total} source files; ` +
+          beside.map(([path, why]) => `\`${path}\`: ${why}`).join('; ');
+  }
   if (e.cards !== undefined) {
     const a = aggregates[e.cards];
     const total =

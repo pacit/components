@@ -932,20 +932,26 @@ test.describe('forced-colors: active', () => {
 
   /**
    * A chart's colours are its series' identities, and the mode takes every one of them: the
-   * lines and the axes are drawn in the text word, an area is not filled, and the series are
-   * told apart by their names in the table beside the picture (0102).
+   * lines and the axes are drawn in the text word, an area is not filled, and each place of
+   * the palette keeps a dash of its own, so three lines are still three (0102).
    */
-  test('a chart draws its lines and axes in CanvasText and fills no area', async ({
+  test('a chart draws its lines and axes in CanvasText, dashed by place, and fills no area', async ({
     page,
   }) => {
     await visit(page, '/chart', { media: FORCED });
     const sys = await systemColors(page);
     const pattern = page.getByTestId('chart-pattern');
+    const dashes: string[] = [];
     for (const path of await pattern
       .locator('path[data-pct-part="series"]')
       .all()) {
       expect(await styleOf(path, 'stroke')).toBe(sys.CanvasText);
+      dashes.push(await styleOf(path, 'stroke-dasharray'));
     }
+    // the first place solid, the next two dashed, and no two alike
+    expect(dashes).toHaveLength(3);
+    expect(dashes[0]).toBe('none');
+    expect(new Set(dashes).size).toBe(3);
     expect(
       await styleOf(
         pattern.locator('[data-pct-part="axis"] .base').first(),
