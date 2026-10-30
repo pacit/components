@@ -445,4 +445,152 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
       1,
     );
   });
+  test('rules to move: a checkbox per row named by its rule, and one over them all', async ({
+    page,
+  }) => {
+    const table = page.getByRole('table', { name: 'Rules to move' });
+    await expect(table.getByRole('checkbox')).toHaveCount(21);
+    await expect(
+      table.getByRole('checkbox', { name: 'Select all rows', exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      table.getByRole('checkbox', { name: 'Select Supply fan', exact: true }),
+    ).toHaveCount(1);
+    // The table is described by the hint until something else takes its line.
+    await expect(table).toHaveAccessibleDescription(
+      'Pick the rules to move to the new controller.',
+    );
+  });
+
+  test('the keyboard picks a row, Shift with a press picks the rows between, and the header reads clear, mixed and checked', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-selection');
+    const all = table.getByRole('checkbox', {
+      name: 'Select all rows',
+      exact: true,
+    });
+    const mixed = () =>
+      all.evaluate((input) => (input as HTMLInputElement).indeterminate);
+    const state = page.getByTestId('selection-state');
+    expect(await mixed()).toBe(false);
+    await expect(all).not.toBeChecked();
+    const heater = table.getByRole('checkbox', {
+      name: 'Select Heater',
+      exact: true,
+    });
+    await heater.focus();
+    await page.keyboard.press('Space');
+    await expect(heater).toBeChecked();
+    await expect(state).toContainText('Picked: 2.');
+    expect(await mixed()).toBe(true);
+    await expect(heater.locator('xpath=ancestor::tr')).toHaveAttribute(
+      'data-pct-selected',
+      '',
+    );
+    await table
+      .getByRole('checkbox', { name: 'Select Boiler', exact: true })
+      .click({ modifiers: ['Shift'] });
+    await expect(state).toContainText('Picked: 2 3 4 5.');
+    await all.click();
+    await expect(all).toBeChecked();
+    expect(await mixed()).toBe(false);
+    await all.click();
+    await expect(state).toContainText('Picked: none.');
+  });
+
+  test('the error stands under the table once the column is left empty, and goes with the first pick', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-selection');
+    const element = table.getByRole('table');
+    const first = table.getByRole('checkbox', {
+      name: 'Select Supply fan',
+      exact: true,
+    });
+    await expect(table.getByRole('alert')).toHaveCount(0);
+    await first.focus();
+    await page.keyboard.press('Tab');
+    const error = table.locator('[data-pct-part="error"]');
+    await expect(error).toHaveText('Pick at least one rule to move');
+    await expect(error).toHaveAttribute('role', 'alert');
+    await expect(element).toHaveAccessibleDescription(
+      'Pick at least one rule to move',
+    );
+    await expect(
+      table.getByRole('checkbox', { name: 'Select all rows', exact: true }),
+    ).toHaveAttribute('aria-invalid', 'true');
+    await first.click();
+    await expect(error).toHaveCount(0);
+    await expect(element).toHaveAccessibleDescription(
+      'Pick the rules to move to the new controller.',
+    );
+  });
+
+  test('more than ten rules warn and let the form through', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-selection');
+    await table
+      .getByRole('checkbox', { name: 'Select all rows', exact: true })
+      .click();
+    const warning = table.locator('[data-pct-part="warning"]');
+    await page.getByTestId('selection-move').click();
+    await expect(warning).toHaveAttribute('role', 'status');
+    await expect(warning).toContainText(
+      'More than ten rules — the move takes a while',
+    );
+    await expect(table.getByRole('table')).toHaveAccessibleDescription(
+      /More than ten rules/,
+    );
+    await expect(page.getByTestId('selection-state')).toContainText(
+      'Moved: 1 2 3',
+    );
+  });
+
+  test('a rule the filter hides stays picked, the header counts the rows left, and a change of the rows keeps the picks', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-selection');
+    const state = page.getByTestId('selection-state');
+    await table
+      .getByRole('checkbox', { name: 'Select Supply fan', exact: true })
+      .click();
+    await page.getByTestId('selection-filter').fill('Heater');
+    await expect(table.locator('tbody tr')).toHaveCount(2);
+    const all = table.getByRole('checkbox', {
+      name: 'Select all rows',
+      exact: true,
+    });
+    await expect(all).not.toBeChecked();
+    await all.click();
+    await expect(state).toContainText('Picked: 1 2 12.');
+    await page.getByTestId('selection-filter').fill('');
+    // The rules table writes new rows: the ids picked stay, and so do their checks.
+    await page.getByTestId('table-rules').getByRole('switch').first().click();
+    await expect(state).toContainText('Picked: 1 2 12.');
+    await expect(
+      table.getByRole('checkbox', { name: 'Select Supply fan', exact: true }),
+    ).toBeChecked();
+  });
+
+  test('one rule to copy: radios in one group, the arrows move the pick', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-single');
+    await expect(table.getByRole('checkbox')).toHaveCount(0);
+    const radios = table.getByRole('radio');
+    await expect(radios).toHaveCount(12);
+    const bypass = table.getByRole('radio', {
+      name: 'Select Bypass',
+      exact: true,
+    });
+    await expect(bypass).toBeChecked();
+    await bypass.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(
+      table.getByRole('radio', { name: 'Select Exhaust fan', exact: true }),
+    ).toBeChecked();
+    await expect(page.getByTestId('single-state')).toHaveText('Copied: 4.');
+  });
 });

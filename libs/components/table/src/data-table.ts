@@ -147,6 +147,8 @@ export interface PctTableFeature {
     readonly value: WritableSignal<readonly PctRowId[]>;
     readonly mode: Signal<PctSelectionMode>;
     readonly disabled: Signal<boolean>;
+    readonly readonly: Signal<boolean>;
+    readonly name: Signal<string>;
     readonly required: Signal<boolean>;
     readonly invalid: Signal<boolean>;
     readonly line: Signal<PctTableSelectionLine | null>;
@@ -599,7 +601,9 @@ export class PctDataTable<
   });
 
   /** The name the radios of a single selection share, which makes them one group. */
-  protected readonly pickName = `${this.uid}-pick`;
+  protected readonly pickName = computed(
+    () => this.selection()?.name() || `${this.uid}-pick`,
+  );
 
   /** The id of the word a row's checkbox is named by, before the row's first text. */
   protected readonly pickWordId = `${this.uid}-pick-word`;
@@ -1154,6 +1158,11 @@ export class PctDataTable<
     const selection = this.selection() as NonNullable<
       PctTableFeature['selection']
     >;
+    // A held selection takes the press back: the control's own toggle is the platform's.
+    if (selection.readonly()) {
+      event.preventDefault();
+      return;
+    }
     const anchor = this.anchor;
     this.anchor = row.id;
     if (selection.mode() === 'single') {
@@ -1173,10 +1182,14 @@ export class PctDataTable<
   }
 
   /** The header's checkbox was pressed: every row the filter left is picked, or dropped. */
-  protected pickAll(): void {
+  protected pickAll(event: MouseEvent): void {
     const selection = this.selection() as NonNullable<
       PctTableFeature['selection']
     >;
+    if (selection.readonly()) {
+      event.preventDefault();
+      return;
+    }
     const ids = new Set(this.matchedIds());
     const all = this.pickedAll().checked;
     selection.value.update((value) => adding(value, ids, !all));

@@ -37,7 +37,9 @@
               [attr.aria-label]="texts().tableSelectAll"
               [attr.aria-invalid]="selection.invalid() ? 'true' : null"
               [attr.aria-required]="selection.required() ? 'true' : null"
-              (click)="pickAll()"
+              [attr.aria-readonly]="selection.readonly() ? 'true' : null"
+              [attr.name]="selection.name() || null"
+              (click)="pickAll($event)"
               (blur)="selection.touch()"
             />
           </label>
@@ -165,6 +167,8 @@
               [checked]="row.selected"
               [disabled]="selection.disabled()"
               [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"
+              [attr.aria-readonly]="selection.readonly() ? 'true' : null"
+              [attr.name]="selection.name() || null"
               (click)="pick(row, $event)"
               (blur)="selection.touch()"
             />
@@ -172,7 +176,7 @@
             <input
               type="radio"
               data-pct-part="select"
-              [name]="pickName"
+              [name]="pickName()"
               [checked]="row.selected"
               [disabled]="selection.disabled()"
               [attr.aria-labelledby]="pickWordId + ' ' + row.nameId"

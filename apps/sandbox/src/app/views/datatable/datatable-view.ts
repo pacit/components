@@ -1,5 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { form, FormField, minLength, submit } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
+import { pctWarn } from '@pacit/components/core';
 import { PctField, PctText } from '@pacit/components/field';
 import { PctSwitch } from '@pacit/components/switch';
 import {
@@ -10,6 +12,7 @@ import {
   type PctRowId,
   PctTableDetails,
   PctTableGroups,
+  PctTableSelection,
   type PctTableSort,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
@@ -115,6 +118,8 @@ const dev = pctColumnsOf<Device>();
     PctTableDetails,
     PctDetailsTemplate,
     PctTableGroups,
+    PctTableSelection,
+    FormField,
   ],
   templateUrl: './datatable-view.html',
   styleUrl: './datatable-view.scss',
@@ -207,6 +212,36 @@ export class DatatableView {
   protected readonly deviceTone = (device: Device) =>
     device.state === 'Fault' ? ('danger' as const) : null;
   protected readonly liveQuestion = signal('');
+
+  /**
+   * The rules to move, as a field of a form: at least one, and more than ten move slowly —
+   * a warning that lets the form through.
+   */
+  protected readonly moveModel = signal<{ rules: readonly PctRowId[] }>({
+    rules: [],
+  });
+  protected readonly moveForm = form(this.moveModel, (p) => {
+    minLength(p.rules, 1, { message: 'Pick at least one rule to move' });
+    pctWarn(p.rules, ({ value }) =>
+      value().length > 10
+        ? {
+            kind: 'many',
+            message: 'More than ten rules — the move takes a while',
+          }
+        : undefined,
+    );
+  });
+  protected readonly moveQuestion = signal('');
+  protected readonly moved = signal('');
+  /** The rule a new device copies: one row, out of a form. */
+  protected readonly template = signal<readonly PctRowId[]>([3]);
+
+  protected move(): void {
+    void submit(this.moveForm, async () => {
+      this.moved.set(this.moveModel().rules.join(' '));
+      return undefined;
+    });
+  }
 
   constructor() {
     // Every two seconds the readings move and the ids stay: the rows keep their elements.

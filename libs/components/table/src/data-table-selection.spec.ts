@@ -52,6 +52,8 @@ const DEVICES: Device[] = [
       [(value)]="value"
       [mode]="mode()"
       [disabled]="off()"
+      [readonly]="held()"
+      [name]="name()"
       [required]="needed()"
       [hint]="hint()"
       (touch)="touches = touches + 1"
@@ -72,6 +74,8 @@ class Host {
   readonly value = signal<readonly PctRowId[]>([]);
   readonly mode = signal<'single' | 'multiple'>('multiple');
   readonly off = signal(false);
+  readonly held = signal(false);
+  readonly name = signal('');
   readonly needed = signal(false);
   readonly hint = signal('');
   readonly filter = signal('');
@@ -147,7 +151,7 @@ async function press(
   shiftKey = false,
 ): Promise<void> {
   // The click's activation toggles a checkbox, or checks a radio, before it is handled.
-  input.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey }));
+  input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey }));
   await settle(fixture);
 }
 
@@ -324,6 +328,51 @@ describe('PctTableSelection — the rows picked', () => {
     fixture.componentInstance.mode.set('single');
     await settle(fixture);
     expect(picks().every((input) => input.disabled)).toBe(true);
+  });
+
+  it('holds the selection when read-only: a press changes nothing, and the checkbox stays as it was', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.value.set([1]);
+    host.held.set(true);
+    await settle(fixture);
+    expect(all()?.getAttribute('aria-readonly')).toBe('true');
+    expect(picks()[0].getAttribute('aria-readonly')).toBe('true');
+    await press(fixture, picks()[0]);
+    await press(fixture, picks()[1]);
+    await press(fixture, all() as HTMLInputElement);
+    expect(host.value()).toEqual([1]);
+    expect(picks().map((input) => input.checked)).toEqual([
+      true,
+      false,
+      false,
+      false,
+    ]);
+    expect(all()?.checked).toBe(false);
+    host.mode.set('single');
+    await settle(fixture);
+    // A radio has no `aria-readonly`; its press is taken back all the same.
+    expect(picks()[1].hasAttribute('aria-readonly')).toBe(false);
+    await press(fixture, picks()[1]);
+    expect(host.value()).toEqual([1]);
+    expect(picks()[1].checked).toBe(false);
+    host.held.set(false);
+    await settle(fixture);
+    expect(picks()[0].hasAttribute('aria-readonly')).toBe(false);
+  });
+
+  it('names the native controls by the name given, the radios by a generated one otherwise', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    expect(picks()[0].hasAttribute('name')).toBe(false);
+    expect(all()?.hasAttribute('name')).toBe(false);
+    host.name.set('rules');
+    await settle(fixture);
+    expect(picks().every((input) => input.name === 'rules')).toBe(true);
+    expect(all()?.name).toBe('rules');
+    host.mode.set('single');
+    await settle(fixture);
+    expect(picks().every((input) => input.name === 'rules')).toBe(true);
   });
 
   it('marks the header with the required sign', async () => {
@@ -533,6 +582,8 @@ describe('PctTableSelection — its defaults', () => {
     expect(selection.value()).toEqual([]);
     expect(selection.mode()).toBe('multiple');
     expect(selection.disabled()).toBe(false);
+    expect(selection.readonly()).toBe(false);
+    expect(selection.name()).toBe('');
     expect(selection.invalid()).toBe(false);
     expect(selection.touched()).toBe(false);
     expect(selection.required()).toBe(false);
