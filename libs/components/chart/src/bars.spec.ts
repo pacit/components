@@ -65,6 +65,7 @@ class QuietObserver {
       timeZone="Europe/Warsaw"
       locale="en-GB"
       interval="day"
+      [orientation]="orientation()"
       [(window)]="window"
       [(selected)]="selected"
       [(hiddenSeries)]="hidden"
@@ -91,6 +92,7 @@ class QuietObserver {
           unit="kWh"
           [stack]="stack()"
           [group]="group()"
+          [labels]="labels()"
         />
       }
     </pct-chart>
@@ -111,6 +113,7 @@ class Host {
   readonly group = signal('');
   readonly second = signal(false);
   readonly summary = signal<'sum' | 'mean' | 'none'>('none');
+  readonly orientation = signal<'vertical' | 'horizontal'>('vertical');
   readonly picked: PctPick<Day>[] = [];
 }
 
@@ -525,6 +528,83 @@ describe('PctBars', () => {
     fixture.componentInstance.group.set('Heat pump');
     await settle(fixture);
     expect(chart.groupOf('Heat pump')).toEqual({ index: 0, count: 1 });
+  });
+
+  it('lies the bars when the chart is turned: from zero to the right, a group under the other, the labels beside the ends, the selection a band across', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.orientation.set('horizontal');
+    fixture.componentInstance.labels.set(true);
+    fixture.componentInstance.second.set(true);
+    await settle(fixture);
+    const chart = chartOf(fixture);
+    const scale = chart.xScale()!;
+    const value = chart.yScales().get('kWh')!;
+    const drawn = bars(fixture);
+    const pump = drawn.filter((b) => b.place === '1');
+    const solar = drawn.filter((b) => b.place === '2');
+    // the first of March: 12 kWh from zero to the right, inside its band down the side
+    expect(pump[0].x).toBe(value.map(0));
+    expect(pump[0].width).toBeCloseTo(value.map(12) - value.map(0), 6);
+    expect(pump[0].y).toBeGreaterThan(scale.map(MARCH));
+    expect(pump[0].y + pump[0].height).toBeLessThan(scale.map(MARCH + D));
+    // the second group under the first, in the same band; a negative bar to the left of zero
+    expect(solar[0].y).toBeGreaterThan(pump[0].y + pump[0].height);
+    expect(solar[0].y + solar[0].height).toBeLessThan(scale.map(MARCH + D));
+    expect(solar[0].x + solar[0].width).toBeCloseTo(value.map(0), 6);
+    expect(solar[0].width).toBeCloseTo(value.map(0) - value.map(-3), 6);
+    // the labels beside the ends, in the bar's middle: after a positive, before a negative
+    const texts = [
+      ...element(fixture).querySelectorAll('text[data-pct-part="label"]'),
+    ];
+    const twelve = texts.find((t) => t.textContent === '12')!;
+    expect(twelve.getAttribute('text-anchor')).toBe('start');
+    expect(twelve.getAttribute('dominant-baseline')).toBe('middle');
+    expect(Number(twelve.getAttribute('x'))).toBeCloseTo(
+      pump[0].x + pump[0].width + 4,
+      6,
+    );
+    expect(Number(twelve.getAttribute('y'))).toBeCloseTo(
+      pump[0].y + pump[0].height / 2,
+      6,
+    );
+    // the locale's minus sign may not be the hyphen
+    const minus = texts.find(
+      (t) => Number(t.textContent!.replace('\u2212', '-')) === -3,
+    )!;
+    expect(minus.getAttribute('text-anchor')).toBe('end');
+    expect(Number(minus.getAttribute('x'))).toBeCloseTo(solar[0].x - 4, 6);
+    // a press on a lying bar picks it, and the selection lies across the plot
+    const layer = element(fixture).querySelector('.overlay')!;
+    for (const type of ['pointerdown', 'pointerup']) {
+      const event = new MouseEvent(type, {
+        bubbles: true,
+        clientX: pump[1].x + pump[1].width / 2,
+        clientY: pump[1].y + pump[1].height / 2,
+      });
+      Object.assign(event, {
+        pointerType: 'mouse',
+        pointerId: 1,
+        isPrimary: true,
+      });
+      Object.defineProperty(event, 'timeStamp', { value: 5000 });
+      layer.dispatchEvent(event);
+    }
+    await settle(fixture);
+    expect(fixture.componentInstance.picked).toEqual([
+      { series: 'Heat pump', index: 1, row: march[1], x: MARCH + D, y: 15.5 },
+    ]);
+    const left = Number(
+      element(fixture).querySelector('clipPath rect')!.getAttribute('x'),
+    );
+    const band = element(fixture).querySelector(
+      '[data-pct-part="selection"]',
+    ) as HTMLElement;
+    expect(band.style.transform).toBe(
+      `translate(${left}px, ${scale.map(MARCH + D)}px)`,
+    );
+    expect(band.style.blockSize).toBe(
+      `${scale.map(MARCH + 2 * D) - scale.map(MARCH + D)}px`,
+    );
   });
 
   it('writes the values over the bars when asked, thinned where they would touch', async () => {
