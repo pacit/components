@@ -137,6 +137,7 @@
     ],
     "states": [
       "active",
+      "changed",
       "checked",
       "current",
       "danger",
@@ -149,6 +150,7 @@
       "last",
       "muted",
       "selected",
+      "striped",
       "success",
       "today",
       "warning"

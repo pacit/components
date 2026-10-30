@@ -48,6 +48,49 @@ const RULES: readonly Rule[] = Array.from({ length: 20 }, (_, i) => ({
 
 const col = pctColumnsOf<Rule>();
 
+interface Device {
+  readonly id: number;
+  readonly name: string;
+  readonly state: 'Online' | 'Offline' | 'Fault';
+  readonly battery: number | null;
+  readonly room: string;
+}
+
+const DEVICES: readonly Device[] = [
+  { id: 1, name: 'Supply fan', state: 'Online', battery: null, room: 'Attic' },
+  {
+    id: 2,
+    name: 'Window contact, the bedroom’s south window by the wardrobe',
+    state: 'Online',
+    battery: 64,
+    room: 'Bedroom',
+  },
+  { id: 3, name: 'Door lock', state: 'Fault', battery: 9, room: 'Hall' },
+  {
+    id: 4,
+    name: 'Motion sensor',
+    state: 'Offline',
+    battery: 0,
+    room: 'Garage',
+  },
+  {
+    id: 5,
+    name: 'Smoke detector',
+    state: 'Online',
+    battery: 15,
+    room: 'Kitchen',
+  },
+  {
+    id: 6,
+    name: 'Thermostat',
+    state: 'Online',
+    battery: 88,
+    room: 'Living room',
+  },
+];
+
+const dev = pctColumnsOf<Device>();
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -95,6 +138,27 @@ export class DatatableView {
   protected readonly question = signal('');
 
   protected readonly live = signal<readonly Rule[]>(RULES.slice(0, 6));
+
+  protected readonly devices = DEVICES;
+  protected readonly deviceColumns = dev.of([
+    dev.key('name', { header: 'Device', tooltip: true }),
+    dev.key('state', {
+      header: 'State',
+      tone: (state) =>
+        state === 'Fault' ? 'danger' : state === 'Offline' ? 'warning' : null,
+    }),
+    dev.key('battery', {
+      header: 'Battery',
+      kind: { number: { unit: 'percent' } },
+    }),
+    dev.key('room', {
+      header: 'Room',
+      tooltip: (device) => `${device.name}, ${device.room}`,
+    }),
+  ]);
+  protected readonly deviceId = (device: Device) => device.id;
+  protected readonly deviceTone = (device: Device) =>
+    device.state === 'Fault' ? ('danger' as const) : null;
   protected readonly liveQuestion = signal('');
 
   constructor() {

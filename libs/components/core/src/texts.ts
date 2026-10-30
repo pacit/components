@@ -270,6 +270,11 @@ export interface PctTexts {
   readonly tableYes: string;
   /** Data table: how a boolean cell that is false is read, and searched by the quick filter. */
   readonly tableNo: string;
+  /**
+   * Data table: the header of the column that numbers the rows, as a reader hears it; the eye
+   * sees `#`, which a reader would call a number sign.
+   */
+  readonly tableRowNumber: string;
 }
 
 /**
@@ -328,6 +333,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableLoading: 'Loading…',
   tableYes: 'Yes',
   tableNo: 'No',
+  tableRowNumber: 'Row',
 };
 
 /**

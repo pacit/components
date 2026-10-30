@@ -79,6 +79,86 @@
         "$type": "color",
         "$value": "{pct.text-muted}",
         "$description": "Colour of the chevron a sortable header shows as a hint."
+      },
+      "$comment-rows": "The data table's surfaces, which the first layer has no row of its own for (0096 dressed no `<tr>`). A row's surface is one of three — its tone, the pointer's tint, the stripe — and the stripe is the header's own surface, so a striped table reads as one surface with every other row lifted. The pointer takes the primary's second fill: not the stripe's, or a striped row under the pointer would show nothing, and not the first, which is the info tone's colour in both themes.",
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{pct.primary-200}",
+        "$description": "Background of a data table's row under the pointer."
+      },
+      "bg-striped": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of every other row of a striped data table."
+      },
+      "$comment-changed": "A changed value's flash starts on the warning's second fill and fades to the row's surface: the colour a reading that moved is caught in, not a warning of anything. The second fill and not the first, which the warning tone wears, or a flash on a warning row would fade from its own colour to itself.",
+      "bg-changed": {
+        "$type": "color",
+        "$value": "{pct.warning-200}",
+        "$description": "Background a data table's cell flashes in when its value changes."
+      },
+      "$comment-tones": "The four tones a row or a cell wears: each tone's quietest fill and the text paired with it (`on-<tone>-100`), the pair the palette already measures, so a toned row keeps the contrast of its words.",
+      "bg-success": {
+        "$type": "color",
+        "$value": "{pct.success-100}",
+        "$description": "Background of a data table's row or cell in the success tone."
+      },
+      "fg-success": {
+        "$type": "color",
+        "$value": "{pct.on-success-100}",
+        "$description": "Text colour of a data table's row or cell in the success tone."
+      },
+      "bg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning-100}",
+        "$description": "Background of a data table's row or cell in the warning tone."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.on-warning-100}",
+        "$description": "Text colour of a data table's row or cell in the warning tone."
+      },
+      "bg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger-100}",
+        "$description": "Background of a data table's row or cell in the danger tone."
+      },
+      "fg-danger": {
+        "$type": "color",
+        "$value": "{pct.on-danger-100}",
+        "$description": "Text colour of a data table's row or cell in the danger tone."
+      },
+      "bg-info": {
+        "$type": "color",
+        "$value": "{pct.info-100}",
+        "$description": "Background of a data table's row or cell in the info tone."
+      },
+      "fg-info": {
+        "$type": "color",
+        "$value": "{pct.on-info-100}",
+        "$description": "Text colour of a data table's row or cell in the info tone."
+      },
+      "fg-muted": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the numbers of a data table's rows."
+      },
+      "$comment-column-max-width": "The widest a column whose cells are cut to one line grows before it cuts: in rem, so a reader who raises the root size widens it with the type.",
+      "column-max-width": {
+        "$type": "dimension",
+        "$value": "20rem",
+        "$description": "Maximum width of a data table's column whose cells are cut to one line."
+      },
+      "$comment-mark": "A word the quick filter found: the warning's second fill under its paired text, which shows on every tone's quiet fill. A flash shares the fill for its moment, and the mark's words keep their own colour through it.",
+      "mark-bg": {
+        "$type": "color",
+        "$value": "{pct.warning-200}",
+        "$description": "Background of a word the quick filter found."
+      },
+      "mark-fg": {
+        "$type": "color",
+        "$value": "{pct.on-warning-100}",
+        "$description": "Text colour of a word the quick filter found."
       }
     }
   }

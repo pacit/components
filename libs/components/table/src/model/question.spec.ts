@@ -1,5 +1,5 @@
 import { type PctAnyColumn, pctColumnsOf } from './columns';
-import { pctMatches, pctQuestionWords } from './question';
+import { pctMatches, pctMatchParts, pctQuestionWords } from './question';
 
 interface Device {
   name: string;
@@ -113,5 +113,73 @@ describe('pctMatches', () => {
     };
     expect(pctMatches(lamp, [name], counting, ['ceiling', 'lamp'])).toBe(true);
     expect(reads).toBe(1);
+  });
+});
+
+describe('pctMatchParts', () => {
+  const marked = (text: string, words: readonly string[]) =>
+    pctMatchParts(text, words).map((part) =>
+      part.match ? `[${part.text}]` : part.text,
+    );
+
+  it('returns the text whole and unmarked for no words, or none found', () => {
+    expect(pctMatchParts('Kitchen', [])).toEqual([
+      { text: 'Kitchen', match: false },
+    ]);
+    expect(pctMatchParts('Kitchen', ['hall'])).toEqual([
+      { text: 'Kitchen', match: false },
+    ]);
+    expect(pctMatchParts('', ['hall'])).toEqual([{ text: '', match: false }]);
+  });
+
+  it('marks a word at the start, inside and at the end, in the case the text has', () => {
+    expect(pctMatchParts('Kitchen lamp', ['kitch'])).toEqual([
+      { text: 'Kitch', match: true },
+      { text: 'en lamp', match: false },
+    ]);
+    expect(marked('Kitchen lamp', ['chen'])).toEqual([
+      'Kit',
+      '[chen]',
+      ' lamp',
+    ]);
+    expect(marked('Kitchen lamp', ['lamp'])).toEqual(['Kitchen ', '[lamp]']);
+    expect(marked('LAMP', ['lamp'])).toEqual(['[LAMP]']);
+  });
+
+  it('marks every place a word stands, and every word', () => {
+    expect(marked('a lamp, a lamp', ['lamp'])).toEqual([
+      'a ',
+      '[lamp]',
+      ', a ',
+      '[lamp]',
+    ]);
+    expect(marked('Kitchen lamp', ['lamp', 'kit'])).toEqual([
+      '[Kit]',
+      'chen ',
+      '[lamp]',
+    ]);
+  });
+
+  it('draws places that overlap or touch as one mark, and one inside another as the outer', () => {
+    expect(marked('Kitchen', ['kit', 'itch'])).toEqual(['[Kitch]', 'en']);
+    expect(marked('Kitchen', ['kit', 'chen'])).toEqual(['[Kitchen]']);
+    expect(marked('aaa', ['aa'])).toEqual(['[aaa]']);
+    expect(marked('Kitchen!', ['kitchen', 'tch'])).toEqual(['[Kitchen]', '!']);
+    expect(marked('1 899,5', ['9'])).toEqual(['1 8', '[99]', ',5']);
+  });
+
+  it('leaves a text whose folding changes its length unmarked', () => {
+    // A capital dotted I lower-cases to two characters; an accent stored as two composes to one.
+    expect(marked('İstanbul', ['stan'])).toEqual(['İstanbul']);
+    const decomposed = `Resume${String.fromCharCode(0x301)}`;
+    expect(marked(decomposed, ['resum'])).toEqual([decomposed]);
+    // A lower case that grows by one and a composition that shrinks by one keep the length.
+    const shifted = `İe${String.fromCharCode(0x301)}x`;
+    expect(shifted.toLowerCase().normalize('NFC')).toHaveLength(shifted.length);
+    expect(marked(shifted, ['x'])).toEqual([shifted]);
+  });
+
+  it('skips an empty word rather than stopping on it', () => {
+    expect(marked('Kitchen', ['', 'kit'])).toEqual(['[Kit]', 'chen']);
   });
 });

@@ -70,6 +70,7 @@ what it holds. While the table fits, it writes none of the three.
 | ------------- | --------------------------------------------------------------------------- |
 | `toggle`      | the button that fills a sortable header cell                                |
 | `icon`        | the chevron beside a sortable header's label                                |
+| `mark`        | the data table's word the quick filter found                                |
 | `message`     | the data table's sentence beside an empty table — see the data table's card |
 | `place`       | the data table's place of a sort key after the first                        |
 | `placeholder` | the data table's row standing for rows still coming                         |
