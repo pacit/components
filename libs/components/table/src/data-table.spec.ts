@@ -1,6 +1,7 @@
 import {
   ApplicationRef,
   Component,
+  ErrorHandler,
   LOCALE_ID,
   provideZonelessChangeDetection,
   signal,
@@ -222,10 +223,15 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
+/** Every error the application's handler was given: an effect that throws fails its case. */
+let errors: unknown[] = [];
+
 afterEach(() => {
   delete globals.ResizeObserver;
   delete globals.IntersectionObserver;
   vi.restoreAllMocks();
+  expect(errors).toEqual([]);
+  errors = [];
 });
 
 async function render<T>(
@@ -236,6 +242,10 @@ async function render<T>(
     providers: [
       provideZonelessChangeDetection(),
       { provide: LOCALE_ID, useValue: locale },
+      {
+        provide: ErrorHandler,
+        useValue: { handleError: (error: unknown) => errors.push(error) },
+      },
     ],
   });
   const fixture = TestBed.createComponent(type);
@@ -2388,7 +2398,9 @@ describe('PctDataTable — a narrow table hides columns', () => {
     await settle(fixture);
     const width = { value: 1000 };
     lay(width);
-    await resize(fixture, width, 150);
+    width.value = 150;
+    fixture.componentInstance.rows.set([...DEVICES]);
+    await settle(fixture);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
   });
@@ -2443,9 +2455,10 @@ describe('PctDataTable — a narrow table hides columns', () => {
     lay(width);
     await resize(fixture, width, 1000);
     (body()[1].querySelector('.watts') as HTMLButtonElement).focus();
+    // A fit that changes nothing, with the focus in the row, then the row goes.
+    await resize(fixture, width, 999);
     fixture.componentInstance.rows.set([DEVICES[0], DEVICES[2]]);
     await settle(fixture);
-    await resize(fixture, width, 999);
     expect(document.activeElement).toBe(document.body);
   });
 
@@ -2563,5 +2576,45 @@ describe('PctTableDetails — its defaults', () => {
         String(text).startsWith('[pctDetails]'),
       ),
     ).toEqual([]);
+  });
+
+  it('hands the focus to nothing, and breaks nothing, when the row has no control left', async () => {
+    const resizedTo: { fire: (() => void) | null } = { fire: null };
+    globals.ResizeObserver = class {
+      constructor(callback: () => void) {
+        resizedTo.fire = callback;
+      }
+      observe(): void {
+        // The test calls the callback itself.
+      }
+      disconnect(): void {
+        // Nothing to let go.
+      }
+    };
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return { width: this.tagName === 'TH' ? 100 : 0, height: 0 } as DOMRect;
+      },
+    );
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.slotted.set(false);
+    await settle(fixture);
+    const width = { value: 250 };
+    const frame = document.querySelector('pct-table-frame') as HTMLElement;
+    const table = document.querySelector('table') as HTMLElement;
+    Object.defineProperty(frame, 'clientWidth', { get: () => width.value });
+    Object.defineProperty(table, 'scrollWidth', {
+      get: () =>
+        Math.max(width.value, 100 * table.querySelectorAll('thead th').length),
+    });
+    (resizedTo.fire as () => void)();
+    await settle(fixture);
+    disclosures()[0].focus();
+    width.value = 1000;
+    (resizedTo.fire as () => void)();
+    await settle(fixture);
+    // The disclosures went with the last hidden column, and the row has no control.
+    expect(disclosures()).toHaveLength(0);
+    expect(document.activeElement).toBe(document.body);
   });
 });

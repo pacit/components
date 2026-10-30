@@ -1026,11 +1026,11 @@ export class PctDataTable<
         return;
       }
       if (!same) before = new Map();
-      // Where each column's value is drawn in a row: after the leading cells, or nowhere when
-      // the column is hidden and its value stands in the details.
+      // The shown columns' values are drawn in each row after the leading cells; a hidden
+      // column's stands in the details, and does not flash.
       const hidden = new Set<string>(this.hiddenColumns());
-      let place = (this.rowNumbers() ? 1 : 0) + (this.disclosure() ? 1 : 0);
-      const drawn = columns.map((id) => (hidden.has(id) ? -1 : place++));
+      const shown = columns.flatMap((id, c) => (hidden.has(id) ? [] : [c]));
+      const lead = (this.rowNumbers() ? 1 : 0) + (this.disclosure() ? 1 : 0);
       const rows = this.ownTable().tBodies[0].rows;
       const now = new Map<string, readonly unknown[]>();
       const changed: Element[] = [];
@@ -1038,9 +1038,9 @@ export class PctDataTable<
         const was = before.get(row.key);
         now.set(row.key, row.values);
         if (!was) continue;
-        row.values.forEach((value, c) => {
-          if (drawn[c] >= 0 && !sameValue(was[c], value))
-            changed.push(rows[row.line].cells[drawn[c]]);
+        shown.forEach((c, place) => {
+          if (!sameValue(was[c], row.values[c]))
+            changed.push(rows[row.line].cells[lead + place]);
         });
       }
       before = now;
@@ -1127,11 +1127,12 @@ export class PctDataTable<
   /** Writes how many columns are hidden, noting first where the focus stood in the table. */
   private change(count: number): void {
     const focused = this.ownTable().ownerDocument.activeElement;
-    const row = focused?.closest('tr[data-pct-index]');
-    if (focused && row && this.ownTable().contains(row))
+    const row = focused?.closest<HTMLElement>('tbody > tr[data-pct-index]');
+    // A row of this table's body, not of a table nested in one of its cells.
+    if (row?.parentElement === this.ownTable().tBodies[0])
       this.lost = {
-        element: focused,
-        line: Number((row as HTMLElement).dataset['pctIndex']),
+        element: focused as Element,
+        line: Number(row.dataset['pctIndex']),
       };
     untracked(() => this.hiddenCount.set(count));
   }

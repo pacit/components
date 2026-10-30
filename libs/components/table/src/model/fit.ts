@@ -53,8 +53,9 @@ export function pctFit(input: PctFitInput, hysteresis: number): PctFit {
     freed += widthOf(order[count]);
     count++;
   }
-  if (count > input.count) return { count, needed };
-  while (count > 0 && width >= needed[count - 1] + hysteresis) {
+  // A column just hidden needed more than the frame has, so none comes back in the same answer;
+  // with none hidden, `at(-1)` is nothing, and no width is at least `NaN`.
+  while (width >= (needed.at(-1) as number) + hysteresis) {
     needed.pop();
     count--;
   }
