@@ -591,3 +591,51 @@ describe('PctTableFrame — the region that exists while the table overflows', (
     expect(stop).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('PctTableHeader — a description for its button', () => {
+  @Component({
+    imports: PARTS,
+    template: `
+      <table pctTable>
+        <thead>
+          <tr>
+            <th pctHeader scope="col" sortKey="name" [description]="said()">
+              Name
+            </th>
+            <th pctHeader scope="col" description="Not a button">Note</th>
+          </tr>
+        </thead>
+      </table>
+    `,
+  })
+  class DescribedHost {
+    readonly said = signal('');
+  }
+
+  it('describes the sort button by a hidden sentence, and says nothing while it is empty', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DescribedHost);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    const button = document.querySelector(
+      '[data-pct-part="toggle"]',
+    ) as HTMLButtonElement;
+    expect(button.hasAttribute('aria-describedby')).toBe(false);
+    expect(document.querySelector('th [hidden]')).toBeNull();
+    fixture.componentInstance.said.set('Sort key 2, ascending');
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    const id = button.getAttribute('aria-describedby') as string;
+    expect(id).toMatch(/^pct-table-header-\d+$/);
+    const sentence = document.getElementById(id) as HTMLElement;
+    expect(sentence.hidden).toBe(true);
+    expect(sentence.textContent).toBe('Sort key 2, ascending');
+    // Outside the button, beside it: the button's own name stays its label.
+    expect(button.contains(sentence)).toBe(false);
+    // A header with no sort key has no button to describe.
+    const note = document.querySelectorAll('th')[1];
+    expect(note.querySelector('[hidden]')).toBeNull();
+  });
+});

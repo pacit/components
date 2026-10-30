@@ -82,6 +82,9 @@ const ENGLISH: PctTexts = {
   tableYes: 'Yes',
   tableNo: 'No',
   tableRowNumber: 'Row',
+  tableSortKey: 'Sort key',
+  tableSortAscending: 'ascending',
+  tableSortDescending: 'descending',
 };
 
 describe('PCT_TEXTS', () => {

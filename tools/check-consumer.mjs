@@ -9,6 +9,7 @@
  *   3. `install`  — installing BY NAME pulls our version into the app's `node_modules`,
  *   4. `ng-add`      — the schematic from the INSTALLED package runs and adds the skin,
  *   5. `build`       — the app builds with SSR, its bundles hold the library and the tokens,
+ *                      and a cell template on a column the columns lack is a compile error,
  *   6. `ssr`         — the built server renders the component ON THE SERVER,
  *   7. `e2e`         — the browser sees a button painted with a token from the skin.
  *
@@ -63,6 +64,14 @@ const MARKERS = ['data-pct-part', 'pct-button'];
 
 /** The token the library paints the button's background with, measured on both sides. */
 const BACKGROUND_TOKEN = '--pct-button-bg';
+
+/**
+ * The id a cell template names wrongly in the typed probe: one letter short of `enabled`, so
+ * the compiler's answer names it — `TS2820`, `Did you mean`. The table's typed slots promise
+ * that a misspelt id is the consumer's compile error, read through the PUBLISHED `.d.ts` with
+ * `strictTemplates` on, as a new application has it (0097).
+ */
+const WRONG_ID = 'enabld';
 
 /** The initial `background-color` — what is left after an unresolved `var()`. */
 const INITIAL_BACKGROUND = 'rgba(0, 0, 0, 0)';
@@ -328,6 +337,33 @@ const checkConsumer = (input) => {
       `the browser bundle holds no trace of the library: ${list(missingMarkers)}.\n` +
         `    This is the DENOMINATOR: an application that never pulled the library in ` +
         `passes every assertion about its behaviour, having nothing to notice`,
+    );
+
+  const types = build.types ?? {};
+  if (types.right?.code !== 0)
+    fail(
+      'build',
+      'types-refused',
+      `the typed probe — a data table with a cell template on a column its columns hold — ` +
+        `does not compile in the consumer's application (code ${types.right?.code}).\n` +
+        `    ${(types.right?.output ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}\n` +
+        `    Its twin with a misspelt id is the measurement, and a twin of a template that ` +
+        `fails anyway proves nothing about the id`,
+    );
+
+  if (
+    types.wrong?.code === 0 ||
+    !(types.wrong?.output ?? '').includes(WRONG_ID)
+  )
+    fail(
+      'build',
+      'types-unchecked',
+      `a cell template on \`${WRONG_ID}\`, an id the columns do not hold, ` +
+        (types.wrong?.code === 0
+          ? `compiled in the consumer's application.\n`
+          : `failed for another reason than its id.\n`) +
+        `    The table's slots promise a misspelt id is the compiler's error, read from the ` +
+        `published types (0097)`,
     );
 
   if (!(build.tokensInCss > 0))
@@ -618,6 +654,49 @@ const writeApp = (app) => {
 
   const file = (name, content) =>
     writeFileSync(join(app, 'src', name), content.join('\n') + '\n');
+
+  // The typed probe: a data table whose cell template names a column by id, once rightly and
+  // once misspelt, each compiled on its own with `strictTemplates`, as a new application is.
+  const typed = (name, id) => {
+    file(`${name}.ts`, [
+      `import { Component } from '@angular/core';`,
+      `import { PctCellTemplate, PctDataTable, pctColumnsOf } from '${PACKAGE}/table';`,
+      ``,
+      `interface Rule { id: number; name: string; enabled: boolean }`,
+      `const col = pctColumnsOf<Rule>();`,
+      ``,
+      `@Component({`,
+      `  selector: 'app-rules',`,
+      `  imports: [PctDataTable, PctCellTemplate],`,
+      `  template: \`<pct-data-table caption="Rules" [rows]="rules" [columns]="columns" [rowId]="byId">`,
+      `    <ng-template [pctCell]="columns" pctCellOf="${id}" let-on="value">{{ on ? 'on' : 'off' }}</ng-template>`,
+      `  </pct-data-table>\`,`,
+      `})`,
+      `export class Rules {`,
+      `  readonly rules: Rule[] = [];`,
+      `  readonly columns = col.of([`,
+      `    col.key('name', { header: 'Name' }),`,
+      `    col.key('enabled', { header: 'On', kind: 'boolean' }),`,
+      `  ]);`,
+      `  readonly byId = (rule: Rule) => rule.id;`,
+      `}`,
+    ]);
+    writeFileSync(
+      join(app, `tsconfig.${name}.json`),
+      JSON.stringify(
+        {
+          extends: './tsconfig.json',
+          compilerOptions: { noEmit: true },
+          angularCompilerOptions: { strictTemplates: true },
+          files: [`src/${name}.ts`],
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+  };
+  typed('typed-right', 'enabled');
+  typed('typed-wrong', WRONG_ID);
 
   file('index.html', [
     '<!doctype html>',
@@ -930,6 +1009,25 @@ const measureRepository = async () => {
       cwd: app,
       maxBuffer: 32 * 1024 * 1024,
     });
+    // 5b. the typed probe, through the compiler the application builds with.
+    const ngc = join(
+      ROOT,
+      'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js',
+    );
+    const typedRun = (name) => {
+      const result = run(
+        process.execPath,
+        [ngc, '-p', `tsconfig.${name}.json`],
+        {
+          cwd: app,
+        },
+      );
+      return { code: result.code, output: result.output.slice(0, 2000) };
+    };
+    const types = {
+      right: typedRun('typed-right'),
+      wrong: typedRun('typed-wrong'),
+    };
     const out = join(app, 'out');
     const bundle = existsSync(join(out, 'browser/main.js'))
       ? readFileSync(join(out, 'browser/main.js'), 'utf8')
@@ -998,6 +1096,7 @@ const measureRepository = async () => {
           MARKERS.map((m) => [m, bundle.includes(m)]),
         ),
         tokensInCss: [...sheet.matchAll(/--pct-[a-z0-9-]+\s*:/g)].length,
+        types,
       },
       ssr,
       e2e,
@@ -1057,6 +1156,12 @@ const buildFixture = (fx) => {
   if (fx.withoutServer) we.build.server = false;
   if (fx.buildMarker) we.build.markers[fx.buildMarker] = false;
   if (fx.tokensInCss !== undefined) we.build.tokensInCss = fx.tokensInCss;
+  if (fx.typesRightCode !== undefined)
+    we.build.types.right.code = fx.typesRightCode;
+  if (fx.typesWrongCode !== undefined)
+    we.build.types.wrong.code = fx.typesWrongCode;
+  if (fx.typesWrongOutput !== undefined)
+    we.build.types.wrong.output = fx.typesWrongOutput;
 
   if (fx.ssrStatus !== undefined) we.ssr.status = fx.ssrStatus;
   if (fx.ssrContext !== undefined) we.ssr.context = fx.ssrContext;

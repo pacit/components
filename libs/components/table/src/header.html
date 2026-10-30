@@ -14,6 +14,7 @@
   data-pct-part="toggle"
   [attr.aria-label]="ariaLabel() || null"
   [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-describedby]="description() ? descriptionId : null"
   (click)="press(key)"
 >
   <ng-container [ngTemplateOutlet]="label" />
@@ -37,4 +38,7 @@
     </svg>
   </pct-icon>
 </button>
-}
+@if (description(); as sentence) {
+<!-- Hidden and still read: a description is computed from the element it names, shown or not. -->
+<span [id]="descriptionId" hidden>{{ sentence }}</span>
+} }

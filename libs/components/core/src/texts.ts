@@ -275,6 +275,15 @@ export interface PctTexts {
    * sees `#`, which a reader would call a number sign.
    */
   readonly tableRowNumber: string;
+  /**
+   * Data table: the words before the place of a sort key after the first, which a reader
+   * hears as the description of its header — `Sort key 2, descending`.
+   */
+  readonly tableSortKey: string;
+  /** Data table: the way of a sort key after the first, ascending. */
+  readonly tableSortAscending: string;
+  /** Data table: the way of a sort key after the first, descending. */
+  readonly tableSortDescending: string;
 }
 
 /**
@@ -334,6 +343,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableYes: 'Yes',
   tableNo: 'No',
   tableRowNumber: 'Row',
+  tableSortKey: 'Sort key',
+  tableSortAscending: 'ascending',
+  tableSortDescending: 'descending',
 };
 
 /**
