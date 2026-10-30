@@ -116,15 +116,28 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
  * @since next
  */
 export class PctChartHarness extends PctHarness<
-  'axis' | 'data' | 'grid' | 'message' | 'plot' | 'unit'
+  | 'axis'
+  | 'cursor'
+  | 'data'
+  | 'grid'
+  | 'marker'
+  | 'message'
+  | 'plot'
+  | 'range'
+  | 'tooltip'
+  | 'unit'
 > {
   static override hostSelector = 'pct-chart';
   static override readonly parts = [
     'axis',
+    'cursor',
     'data',
     'grid',
+    'marker',
     'message',
     'plot',
+    'range',
+    'tooltip',
     'unit',
   ] as const;
 }

@@ -46,6 +46,50 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A cursor the application sets and reads"
+  summary="The cursor is a model in the axis's own terms: the buttons set it, the line under it reads it back from reading(), and a change of the data leaves it where it is. The tooltip here is the view's own pctChartTooltip template; the mouse, a tap and the keys move the same cursor."
+  [reqs]="['req-a11y-built-in', 'req-api-templates']"
+  data-testid="demo-cursor"
+>
+  <pct-chart
+    #shared
+    ariaLabel="Supply air and fan power, the cursor shared"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-cursor"
+    [(cursor)]="cursor"
+  >
+    <pct-line [data]="supply" x="at" y="value" name="Supply air" unit="°C" />
+    <pct-line
+      [data]="fan"
+      x="at"
+      y="value"
+      name="Fan power"
+      unit="W"
+      curve="step"
+      [end]="end"
+    />
+    <ng-template pctChartTooltip let-reading>
+      <strong data-testid="own-tooltip">{{ reading.text }}</strong>
+    </ng-template>
+  </pct-chart>
+  <p class="sbx-chart-controls">
+    <button pctButton (click)="cursor.set(ten)" data-testid="cursor-ten">
+      Put the cursor at 10:00
+    </button>
+    <button pctButton (click)="cursor.set(null)" data-testid="cursor-clear">
+      Clear it
+    </button>
+  </p>
+  <p data-testid="cursor-reading">
+    @if (shared.reading(); as reading) { {{ reading.text }} — @for (row of
+    reading.rows; track row.id) { {{ row.name }} {{ row.text }}{{ $last ? '' :
+    ', ' }} } } @else { No cursor }
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="An area under one series, on an axis the view fixes"
   summary="One series filled down to zero, on a °C axis the view holds from 0 to 30 with pct-axis. The colour is the palette's first place: the fill is that colour mixed into nothing by the skin's amount."
   [reqs]="['req-api-templates']"

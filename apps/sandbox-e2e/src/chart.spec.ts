@@ -222,4 +222,204 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await xOf(area.locator('[data-pct-part="axis"] .time').last()),
     ).toBeLessThan(width);
   });
+
+  test.describe('the cursor', () => {
+    const NAME = 'Heat recovery on 25 October 2026';
+    const rangeOf = (page: import('@playwright/test').Page) =>
+      page.getByRole('slider', { name: NAME });
+    const text = (range: Locator) => range.getAttribute('aria-valuetext');
+
+    test("the cursor is the chart's one stop, a range named by the chart", async ({
+      page,
+    }) => {
+      const range = rangeOf(page);
+      await expect(range).toHaveCount(1);
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+      await expect(range).toHaveAccessibleDescription(
+        /Arrow keys move from reading to reading/,
+      );
+      // the picture is no stop: Tab from the stop before lands on the range
+      await range.focus();
+      await page.keyboard.press('Shift+Tab');
+      await expect(range).not.toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(range).toBeFocused();
+      await expect(
+        chart(page, 'chart-pattern').getByRole('img', { name: NAME }),
+      ).not.toHaveAttribute('tabindex', /.*/);
+    });
+
+    test('the arrows walk the cursor from reading to reading, Home and End go to the ends', async ({
+      page,
+    }) => {
+      const range = rangeOf(page);
+      await range.focus();
+      await page.keyboard.press('ArrowRight');
+      await expect
+        .poll(() => text(range))
+        .toMatch(/^25 Oct 2026, 00:00: Supply air /);
+      await page.keyboard.press('ArrowRight');
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 00:10: /);
+      await page.keyboard.press('ArrowUp');
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 00:20: /);
+      await page.keyboard.press('ArrowLeft');
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 00:10: /);
+      await page.keyboard.press('ArrowDown');
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 00:00: /);
+      await page.keyboard.press('End');
+      await expect.poll(() => text(range)).toMatch(/^26 Oct 2026, 00:00: /);
+      await page.keyboard.press('Home');
+      await expect
+        .poll(() => text(range))
+        .toMatch(
+          /^25 Oct 2026, 00:00: Supply air [\d.]+ °C, Fan power 380 W, Heater Off$/,
+        );
+      // the line stands where the reading is, and its value is the range's
+      await expect(
+        chart(page, 'chart-pattern').locator('[data-pct-part="cursor"]'),
+      ).toHaveCount(1);
+      await expect(
+        chart(page, 'chart-pattern').locator('[data-pct-part="marker"]'),
+      ).toHaveCount(3);
+    });
+
+    test('Page Up and Page Down move a tenth of the window', async ({
+      page,
+    }) => {
+      const range = rangeOf(page);
+      await range.focus();
+      await page.keyboard.press('Home');
+      await page.keyboard.press('PageUp');
+      // a tenth of twenty-five hours is two and a half
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 02:30: /);
+      await page.keyboard.press('PageDown');
+      await expect.poll(() => text(range)).toMatch(/^25 Oct 2026, 00:00: /);
+    });
+
+    test('Escape and Delete clear the cursor, and Escape passes on when there is none', async ({
+      page,
+    }) => {
+      const range = rangeOf(page);
+      await range.focus();
+      await page.evaluate(() => {
+        (window as unknown as { escapes: boolean[] }).escapes = [];
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape')
+            (window as unknown as { escapes: boolean[] }).escapes.push(
+              e.defaultPrevented,
+            );
+        });
+      });
+      await page.keyboard.press('Home');
+      await page.keyboard.press('Escape');
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+      await page.keyboard.press('Escape');
+      expect(
+        await page.evaluate(
+          () => (window as unknown as { escapes: boolean[] }).escapes,
+        ),
+      ).toEqual([true, false]);
+      await page.keyboard.press('End');
+      await page.keyboard.press('Delete');
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+    });
+
+    test('a mouse over the plot draws the line under it and the tooltip beside it', async ({
+      page,
+    }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const box = (await pattern.boundingBox())!;
+      const x = box.x + box.width * 0.4;
+      await page.mouse.move(x, box.y + box.height / 2);
+      const line = pattern.locator('[data-pct-part="cursor"]');
+      const tooltip = pattern.locator('[data-pct-part="tooltip"]');
+      await expect(tooltip).toBeVisible();
+      const lineBox = (await line.boundingBox())!;
+      expect(Math.abs(lineBox.x - x)).toBeLessThanOrEqual(1);
+      const tipBox = (await tooltip.boundingBox())!;
+      // to the right of the line, eight pixels away
+      expect(tipBox.x - lineBox.x).toBeCloseTo(8, 0);
+      await expect(tooltip.locator('.row')).toHaveCount(3);
+      // near the right edge it turns to the left
+      const near = box.x + box.width - 60;
+      await page.mouse.move(near, box.y + box.height / 2);
+      await expect
+        .poll(async () => {
+          const l = (await line.boundingBox())!;
+          const t = (await tooltip.boundingBox())!;
+          return Math.round(l.x - (t.x + t.width));
+        })
+        .toBe(8);
+      // leaving the chart takes the cursor away
+      await page.mouse.move(box.x + box.width / 2, box.y - 40);
+      await expect(line).toHaveCount(0);
+    });
+
+    test('a click pins the cursor, and a click on its line lets it go', async ({
+      page,
+    }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const box = (await pattern.boundingBox())!;
+      const x = box.x + box.width * 0.5;
+      const y = box.y + box.height / 2;
+      await page.mouse.click(x, y);
+      await page.mouse.move(box.x + box.width / 2, box.y - 40);
+      const line = pattern.locator('[data-pct-part="cursor"]');
+      await expect(line).toHaveCount(1);
+      await page.mouse.click(x + 5, y);
+      await page.mouse.move(box.x + box.width / 2, box.y - 40);
+      await expect(line).toHaveCount(0);
+    });
+
+    test('a cursor the application sets draws with no event, and reads back', async ({
+      page,
+    }) => {
+      const shared = chart(page, 'chart-cursor');
+      await page.getByTestId('cursor-ten').click();
+      await expect(page.getByTestId('cursor-reading')).toHaveText(
+        /10:00\s+—\s+Supply air [\d.]+ °C,\s+Fan power 640 W/,
+      );
+      await expect(shared.locator('[data-pct-part="cursor"]')).toHaveCount(1);
+      await expect(shared.getByTestId('own-tooltip')).toHaveText(
+        '25 Oct, 10:00',
+      );
+      await page.getByTestId('cursor-clear').click();
+      await expect(page.getByTestId('cursor-reading')).toHaveText('No cursor');
+      await expect(shared.locator('[data-pct-part="cursor"]')).toHaveCount(0);
+    });
+  });
+
+  test.describe('the cursor under a finger', () => {
+    test.use({ hasTouch: true });
+    test.skip(
+      ({ browserName }) => browserName === 'firefox',
+      'Playwright has no touch in Firefox',
+    );
+
+    test('a tap places the cursor, and a tap on its line clears it', async ({
+      page,
+    }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const box = (await pattern.boundingBox())!;
+      const x = box.x + box.width * 0.5;
+      const y = box.y + box.height / 2;
+      const line = pattern.locator('[data-pct-part="cursor"]');
+      await page.touchscreen.tap(x, y);
+      await expect(line).toHaveCount(1);
+      expect(Math.abs((await line.boundingBox())!.x - x)).toBeLessThanOrEqual(
+        1,
+      );
+      await page.touchscreen.tap(x + 6, y);
+      await expect(line).toHaveCount(0);
+    });
+  });
 });
