@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
+  PctBars,
   PctChart,
   PctChartLegend,
   PctChartSync,
   PctChartTable,
   PctChartTooltip,
+  pctIntervalStart,
   PctLine,
 } from '@pacit/components/chart';
 import { SbxDemo } from '../../ui/demo';
@@ -66,6 +68,30 @@ const heater: Reading[] = [
   { at: START + 19 * HOUR, value: 1 },
   { at: START + 21 * HOUR, value: 0 },
 ];
+
+/** The days of a month in Warsaw, each with the heat pump's energy. */
+function daysOf(
+  year: number,
+  monthIndex: number,
+  seed: number,
+  gap = 0,
+): { at: number; energy: number | null }[] {
+  const random = seeded(seed);
+  const rows: { at: number; energy: number | null }[] = [];
+  const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  for (let day = 1; day <= days; day++) {
+    // Midnight of the day in Warsaw, whichever side of the change of clocks it stands on.
+    const at = pctIntervalStart(
+      Date.UTC(year, monthIndex, day, 12),
+      'day',
+      'Europe/Warsaw',
+    );
+    const energy =
+      day === gap ? null : Math.round((8 + random() * 10) * 10) / 10;
+    rows.push({ at, energy });
+  }
+  return rows;
+}
 
 /** Eight rooms through the day, each its own swing, named so the legend has eight names. */
 function rooms(): { name: string; rows: Reading[] }[] {
@@ -130,6 +156,7 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctChartTooltip,
     PctChartSync,
     PctChartLegend,
+    PctBars,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -145,6 +172,29 @@ export class ChartView {
   protected readonly hidden = signal<readonly string[]>([]);
   protected readonly cursor = signal<number | null>(null);
   protected readonly rooms = signal(rooms());
+  protected readonly marchDays = daysOf(2026, 2, 31, 14);
+  protected readonly februaryDays = daysOf(2026, 1, 28);
+  protected readonly selectedDay = signal<{ from: number; to: number } | null>(
+    null,
+  );
+  protected readonly pickedDay = signal<number | null>(null);
+  /** The picked day written in Warsaw's calendar: the app's locale has no date data of its own. */
+  protected readonly pickedText = computed(() => {
+    const at = this.pickedDay();
+    if (at === null) return 'Nothing picked';
+    const text = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Europe/Warsaw',
+    }).format(at);
+    return `Picked ${text}`;
+  });
+  protected readonly roomNames = ['Kitchen', 'Hall', 'Study'];
+  protected readonly roomEnergy = [
+    { room: 0, pump: 12.4, solar: -3.1, lastYear: 14 },
+    { room: 1, pump: 6.2, solar: -1.5, lastYear: 7.5 },
+    { room: 2, pump: 9.8, solar: -4, lastYear: 8.1 },
+  ];
   protected dropRoom(name: string): void {
     this.rooms.update((all) => all.filter((room) => room.name !== name));
   }

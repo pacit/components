@@ -148,7 +148,16 @@
       (wheel)="onWheel($event)"
       [class.still]="zoom() === 'none'"
     >
-      @if (cursorView(); as view) {
+      @if (selectionView(); as selection) {
+      <div
+        class="selection"
+        data-pct-part="selection"
+        [style.transform]="'translateX(' + selection.left + 'px)'"
+        [style.inline-size.px]="selection.width"
+        [style.inset-block-start.px]="plot().top"
+        [style.block-size.px]="plot().bottom - plot().top"
+      ></div>
+      } @if (cursorView(); as view) {
       <div
         class="line"
         data-pct-part="cursor"
@@ -192,6 +201,11 @@
           />
           <span class="name" [textContent]="row.name"></span>
           <span class="value" [textContent]="row.text"></span>
+        </div>
+        } @for (note of reading.notes; track note.id) {
+        <div class="row note">
+          <span class="name" [textContent]="note.name"></span>
+          <span class="value" [textContent]="note.text"></span>
         </div>
         } }
       </div>

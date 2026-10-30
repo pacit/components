@@ -1,0 +1,86 @@
+// The element itself draws nothing: its bars are stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A bar in its series' colour (0102), its far end rounded; a compared period's bar the same
+// colour mixed into nothing, so the two periods read as one series twice.
+[data-pct-part='bar'] {
+  rx: var(--pct-chart-bar-radius);
+}
+
+[data-pct-part='label'] {
+  fill: var(--pct-chart-label-fg);
+}
+
+[data-pct-part='label'].selected {
+  font-weight: var(--pct-chart-label-font-weight-selected);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.shape {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 2px;
+  paint-order: stroke;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-part='bar'][data-pct-series='#{$i}'],
+  [data-pct-series='#{$i}'] .block,
+  [data-pct-series='#{$i}'] .shape {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-part='bar'][data-pct-series='#{$i}'].compared {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-bar-alpha),
+      transparent
+    );
+  }
+}
+
+[data-pct-part='bar'][data-pct-series='custom'],
+[data-pct-series='custom'] .block,
+[data-pct-series='custom'] .shape {
+  fill: var(--_pct-chart-color);
+}
+
+[data-pct-part='bar'][data-pct-series='custom'].compared {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-bar-alpha),
+    transparent
+  );
+}
+
+// With the colours gone a bar is a filled box in the text's colour and a compared bar an
+// empty one: two periods, two fills.
+@media (forced-colors: active) {
+  [data-pct-part='bar'][data-pct-series],
+  [data-pct-series] .block,
+  [data-pct-series] .shape {
+    fill: CanvasText;
+  }
+
+  [data-pct-part='bar'][data-pct-series].compared {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-part='label'] {
+    fill: CanvasText;
+  }
+}

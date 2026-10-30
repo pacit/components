@@ -61,8 +61,8 @@ const DRAWING = 'svg';
  * The places a bare `<svg>` is the mechanism and not a drawing. The SVG renderer's own
  * templates, where a drawing given as DATA is rendered element by element (0083): every
  * template there is the renderer of what a source answered, so nothing in it is a picture
- * a consumer would want to swap — the swap already happened one level up. And two of a
- * chart's, named one by one: the scene's layers and the line's drawing, where the drawing IS
+ * a consumer would want to swap — the swap already happened one level up. And a chart's
+ * marks', named one by one: the scene's layers, the line's and the bars' drawings, where the drawing IS
  * the data, scaled and decimated (0099), and a picture of the consumer's numbers is nothing a
  * set could hold. Any other template of the chart — a legend, a marker — draws what a set
  * could, and answers to point 2. Narrow on purpose, and the reference input carries one
@@ -72,6 +72,7 @@ const RENDERER = new RegExp(`^${PROJECT}/svg-icon/src/[^/]+\\.html$`);
 const DATA_DRAWINGS = new Set([
   `${PROJECT}/chart/src/chart.html`,
   `${PROJECT}/chart/src/line.html`,
+  `${PROJECT}/chart/src/bars.html`,
 ]);
 const PART = 'data-pct-part';
 

@@ -676,4 +676,132 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(removes).toHaveCount(7);
     });
   });
+
+  test.describe('bars', () => {
+    test('a bar per day stands in four fifths of its band, February beside March by position', async ({
+      page,
+    }) => {
+      const daily = chart(page, 'chart-bars');
+      const own = daily.locator('rect[data-pct-part="bar"]:not(.compared)');
+      const compared = daily.locator('rect[data-pct-part="bar"].compared');
+      // the 14th has no reading: thirty bars of March, twenty-eight of February
+      await expect(own).toHaveCount(30);
+      await expect(compared).toHaveCount(28);
+      const widths = await own.evaluateAll((rs) =>
+        rs.map((r) => Number(r.getAttribute('width'))),
+      );
+      // one width for every day but the 29th, which has twenty-three hours and a narrower band
+      const distinct = [...new Set(widths.map((w) => Math.round(w * 10)))];
+      expect(distinct).toHaveLength(2);
+      expect(Math.min(...distinct) / Math.max(...distinct)).toBeCloseTo(
+        23 / 24,
+        1,
+      );
+      const ticks = daily.locator('[data-pct-part="axis"] .tick');
+      await expect(ticks).toHaveCount(31);
+      const band =
+        (await ticks.nth(1).evaluate((t) => Number(t.getAttribute('x1')))) -
+        (await ticks.nth(0).evaluate((t) => Number(t.getAttribute('x1'))));
+      // a band holds March's bar and February's, each half of four fifths less the gaps
+      expect(widths[0] * 2 + 2 * 2).toBeCloseTo(band * 0.8, 0);
+      const firstOwn = await own
+        .first()
+        .evaluate((r) => Number(r.getAttribute('x')));
+      const firstCompared = await compared
+        .first()
+        .evaluate((r) => Number(r.getAttribute('x')));
+      expect(firstCompared).toBeLessThan(firstOwn);
+      // the labels never touch
+      const boxes = await daily
+        .locator('text[data-pct-part="label"]')
+        .evaluateAll((ts) =>
+          ts.map((t) => {
+            const b = (t as SVGGraphicsElement).getBBox();
+            return [b.x, b.x + b.width];
+          }),
+        );
+      expect(boxes.length).toBeGreaterThan(0);
+      for (let i = 1; i < boxes.length; i++)
+        expect(boxes[i][0]).toBeGreaterThan(boxes[i - 1][1]);
+    });
+
+    test("a press selects a bar's band, and Enter at the cursor does the same", async ({
+      page,
+    }) => {
+      const daily = chart(page, 'chart-bars');
+      await daily.scrollIntoViewIfNeeded();
+      const third = daily
+        .locator('rect[data-pct-part="bar"]:not(.compared)')
+        .nth(2);
+      const box = (await third.boundingBox())!;
+      await page.waitForTimeout(350);
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      const selection = daily.locator('[data-pct-part="selection"]');
+      await expect(selection).toHaveCount(1);
+      await expect(page.getByTestId('bars-picked')).toHaveText(
+        'Picked 3 March',
+      );
+      // the band spans the whole day: from half a band before its tick, which stands in its
+      // middle, to half a band after it
+      const sel = (await selection.boundingBox())!;
+      const ticks = daily.locator('[data-pct-part="axis"] .tick');
+      const middle = (await ticks.nth(2).boundingBox())!.x;
+      const band =
+        (await ticks.nth(2).boundingBox())!.x -
+        (await ticks.nth(1).boundingBox())!.x;
+      expect(Math.abs(sel.x - (middle - band / 2))).toBeLessThanOrEqual(1.5);
+      expect(
+        Math.abs(sel.x + sel.width - (middle + band / 2)),
+      ).toBeLessThanOrEqual(1.5);
+      await page.waitForTimeout(350);
+      await page.mouse.click(box.x + box.width / 2, box.y - 10);
+      await expect(selection).toHaveCount(0);
+      const range = page.getByRole('slider', {
+        name: 'Heat pump energy by day, March 2026',
+      });
+      await range.focus();
+      await page.keyboard.press('Home');
+      await expect(range).toHaveAttribute('aria-valuetext', /^Sun 1: March/);
+      await page.keyboard.press('Enter');
+      await expect(selection).toHaveCount(1);
+      await page.keyboard.press('Space');
+      await expect(selection).toHaveCount(0);
+      const table = page.getByTestId('bars-table');
+      await expect(table.locator('tbody tr')).toHaveCount(31);
+      await expect(table.locator('tfoot th')).toHaveText('Sum');
+      await expect(table.locator('tfoot td')).toHaveCount(2);
+    });
+
+    test('stacked bars stand on each other in a band of categories, a third group beside them', async ({
+      page,
+    }) => {
+      const stack = chart(page, 'chart-stack');
+      await expect(stack.locator('[data-pct-part="axis"] .time')).toHaveText([
+        'Kitchen',
+        'Hall',
+        'Study',
+      ]);
+      const bars = stack.locator('rect[data-pct-part="bar"]');
+      await expect(bars).toHaveCount(9);
+      const read = (i: number) =>
+        bars.nth(i).evaluate((r) => ({
+          x: Number(r.getAttribute('x')),
+          y: Number(r.getAttribute('y')),
+          h: Number(r.getAttribute('height')),
+          place: r.getAttribute('data-pct-series'),
+        }));
+      const pump = await read(0);
+      const solar = await read(3);
+      const before = await read(6);
+      expect(pump.place).toBe('1');
+      expect(solar.place).toBe('2');
+      expect(before.place).toBe('3');
+      expect(solar.x).toBeCloseTo(pump.x, 0);
+      expect(solar.y).toBeGreaterThanOrEqual(pump.y + pump.h - 1);
+      expect(before.x).toBeGreaterThan(pump.x);
+      await expect(
+        stack.locator('[data-pct-unit="kWh"] .value').first(),
+      ).toHaveText(/^-/);
+    });
+  });
 });

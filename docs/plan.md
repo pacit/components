@@ -254,8 +254,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - landed 2026-10-30: the cursor as the platform's range, moved from reading to reading by the
     pointer, the keys and a reader, with a tooltip; the window by a drag, a pinch, the wheel and
     the keys through one transform, `follow`, the zoom bar as their twin, `pctChartSync`; the
-    legend, and each series' swatch — colour, dash and marker — drawn by its mark (0102)
-  - then bars with a period compared by position, references and spans, a band of states,
+    legend, and each series' swatch — colour, dash and marker — drawn by its mark (0102); bars
+    in bands of a calendar interval or a category, grouped, stacked, a period compared by
+    position, a selected band and a picked row
+  - then references and spans, a band of states,
     points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
     generated description; a canvas layer only behind a measurement
   - three promoted layers per scene: the data redrawn only with the data, the window or the

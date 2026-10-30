@@ -115,7 +115,9 @@
       "tooltip",
       "zoom",
       "legend",
-      "swatch"
+      "swatch",
+      "bar",
+      "selection"
     ],
     "properties": [
       "alpha",

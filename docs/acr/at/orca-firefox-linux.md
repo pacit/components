@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 5 of 595 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2452
-phrases, and 2449 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2450
+phrases, and 2447 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -380,7 +380,7 @@ tab 4   button "end"                                         end · collapsed bu
 tab 5   button "Open the panel"                              Open the panel · collapsed button. · opens dialog
 tab 6   button "Count up"                                    Count up · button. · Browse mode
 tab 7   button "Count up"                                    Popover · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Filters"                                     main content · A panel of content hanging off the control that opened it. It is the   link half of the · Browse mode · Filters · collapsed button. · opens dialog · Focus mode
+reach   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode
 open    div[panel] "Filters"                                 Filters  Owner  A name, or part of one · Browse mode
 close   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode · collapsed
 ```
@@ -481,7 +481,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · visited link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -610,7 +610,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 36 items · Skeleton · link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 36 items · Skeleton · visited link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -633,7 +633,7 @@ Tab moved nothing — focus had left the page.
 ### `/chips`
 
 ```
-arrive  a "Chips"                                            navigation · Sandbox views · List with 36 items · Chips · visited link. · Browse mode
+arrive  a "Chips"                                            navigation · Sandbox views · List with 36 items · Chips · link. · Browse mode
 enter   button[remove] "Remove"                              Active filters · List with 5 items · Remove In stock · button.
 tab 1   button[remove] "Remove"                              Remove Under 50 · button.
 tab 2   button[remove] "Remove"                              Remove Free shipping · button.
@@ -701,7 +701,7 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · visited link. · Browse mode
+arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · link. · Browse mode
 enter   input[control]                                       Done · check box checked.
 tab 1   input[control]                                       Done · check box checked.
 tab 2   input[control]                                       Icon · @pacit/components · page tab. · JUGGLER <window>.
@@ -738,7 +738,7 @@ Tab moved nothing — focus had left the page.
 
 ```
 arrive  a "Chart"                                            navigation · Sandbox views · List with 36 items · Chart · link. · Browse mode
-enter   input[range] "Heat recovery on 25 October 2026"      Heat recovery on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+enter   input[range] "Heat recovery on 25 October 2026"      Heat recovery on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. · Focus mode
 tab 1   button[zoom] "Zoom in"                               Zoom in · button.
 tab 2   button[toggle] "Supply air"                          Series · List with 3 items · Supply air °C · toggle button pressed. · Browse mode
 tab 3   button[toggle] "Fan power"                           Fan power W · toggle button pressed.
@@ -746,16 +746,16 @@ tab 4   button[toggle] "Heater"                              Heater boolean · t
 tab 5   input[control]                                       leaving list. · Theme · panel · light · selected radio button.
 tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 8   input[range] "Supply air and fan power, the cursor…" leaving panel. · Supply air and fan power, the cursor shared · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 8   input[range] "Supply air and fan power, the cursor…" leaving panel. · Supply air and fan power, the cursor shared · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. · Focus mode
 tab 9   button[zoom] "Zoom in"                               Zoom in · button.
 tab 10  button "Put the cursor at 10:00"                     Put the cursor at 10:00 · button. · Browse mode
 tab 11  button "Clear it"                                    Clear it · button.
 tab 12  input[control]                                       Theme · panel · light · selected radio button.
 tab 13  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 14  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 15  input[range] "Fan power on 25 October 2026"          leaving panel. · Fan power on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 15  input[range] "Fan power on 25 October 2026"          leaving panel. · Fan power on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. · Focus mode
 tab 16  button[zoom] "Zoom in"                               Zoom in · button.
-tab 17  input[range] "Heater on 25 October 2026"             Heater on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.
+tab 17  input[range] "Heater on 25 October 2026"             Heater on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.
 ```
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
@@ -888,7 +888,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/density`
 
 ```
-arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · link. · Browse mode
+arrive  a "Density"                                          leaving main content. · navigation · Sandbox views · List with 6 items · Density · visited link. · Browse mode
 enter   input                                                Field sm · entry · Text sm. · Focus mode
 tab 1   button "Button sm"                                   Button sm · button. · Browse mode
 tab 2   button[trigger] "Poland"                             List sm · combo box. · opens listbox · Focus mode

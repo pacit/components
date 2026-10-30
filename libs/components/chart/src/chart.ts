@@ -31,6 +31,12 @@ import { PctChartZoom } from './chart-zoom';
 import type { PctColumns } from './model/columns';
 import { pctCursorJump, pctCursorStep } from './model/cursor';
 import {
+  pctIntervals,
+  pctIntervalText,
+  type PctInterval,
+} from './model/intervals';
+import { pctStack, type PctStacked } from './model/stack';
+import {
   PCT_GESTURE_IDLE,
   pctGestureStep,
   type PctGestureAction,
@@ -59,6 +65,7 @@ import {
   PctMark,
   type PctSeriesSpec,
   type PctSwatchContext,
+  type PctMarkNote,
 } from './scene';
 
 /**
@@ -151,6 +158,8 @@ export interface PctChartReading {
   readonly text: string;
   /** Every series shown, in the chart's order. */
   readonly rows: readonly PctChartReadingRow[];
+  /** What the marks add after the rows — a compared period's difference — or none. */
+  readonly notes: readonly PctMarkNote[];
 }
 
 /**
@@ -309,7 +318,21 @@ export class PctChart extends PctChartScene {
    *
    * @since next
    */
-  readonly x = input<'time' | 'linear'>('time');
+  readonly x = input<'time' | 'linear' | 'band'>('time');
+  /**
+   * The categories of a `band` axis, in order: each a band the bars stand in, labelled by it.
+   * A series on such an axis gives `x` as the category's index (its middle is `index + 0.5`).
+   *
+   * @since next
+   */
+  readonly categories = input<readonly string[]>([]);
+  /**
+   * The calendar interval the bars of a time axis stand in — each bar a whole hour, day,
+   * week, month or year of `timeZone`. A time axis without one holds no bars.
+   *
+   * @since next
+   */
+  override readonly interval = input<PctInterval | undefined>(undefined);
   /**
    * The zone whose wall clock the time axis reads: its ticks fall on its whole hours and
    * midnights. The runtime's own when unset — under SSR the server's, so pass it.
@@ -361,6 +384,14 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly cursor = model<number | null>(null);
+  /**
+   * The interval selected on the chart, or `null`: a tap on a bar's band selects it and a
+   * second lets it go, as Enter and Space do at the cursor; the application sets it too
+   * ([0101](../../../../docs/decisions/0101-the-window-the-cursor-and-the-selection-are-the-applications-models.md)).
+   *
+   * @since next
+   */
+  override readonly selected = model<PctWindow | null>(null);
   /**
    * How the pointer moves the cursor. `hover`: a mouse's cursor follows it and a press pins it,
    * a tap places it and a finger held still drags it. `tap`: only a press or a tap places it.
@@ -540,9 +571,90 @@ export class PctChart extends PctChartScene {
     return from === to ? { from: from - 1, to: to + 1 } : { from, to };
   });
 
-  override readonly shown = computed<PctWindow | null>(
-    () => this.window() ?? this.dataSpan(),
-  );
+  override readonly shown = computed<PctWindow | null>(() => {
+    const window = this.window();
+    if (window) return window;
+    // A band axis is as wide as its categories, whatever the data say.
+    if (this.x() === 'band') {
+      const count = this.categories().length;
+      return count > 0 ? { from: 0, to: count } : null;
+    }
+    return this.dataSpan();
+  });
+
+  override readonly bands = computed<readonly PctWindow[]>(() => {
+    const shown = this.shown();
+    if (!shown) return [];
+    if (this.x() === 'band')
+      return this.categories().map((_, i) => ({ from: i, to: i + 1 }));
+    const interval = this.interval();
+    if (this.x() !== 'time' || !interval) return [];
+    return pctIntervals(shown, interval, this.timeZone());
+  });
+
+  /** The groups of bars on the scene, in the order of their marks: side by side in a band. */
+  private readonly groups = computed(() => {
+    const groups: string[] = [];
+    for (const mark of this.marks()) {
+      const band = mark.band();
+      if (band && !groups.includes(band.group)) groups.push(band.group);
+    }
+    return groups;
+  });
+
+  /**
+   * See `PctChartScene.groupOf`.
+   *
+   * @since next
+   */
+  override groupOf(group: string): {
+    readonly index: number;
+    readonly count: number;
+  } {
+    const groups = this.groups();
+    return { index: Math.max(0, groups.indexOf(group)), count: groups.length };
+  }
+
+  /** The stacks on the scene: for each, the series on it in order, and their stacked values. */
+  private readonly stacks = computed(() => {
+    const bands = this.bands();
+    const hidden = new Set(this.hiddenSeries());
+    const members = new Map<string, string[]>();
+    const values = new Map<string, (readonly (number | null)[])[]>();
+    for (const mark of this.marks()) {
+      const stack = mark.band()?.stack;
+      if (!stack) continue;
+      for (const s of mark.series()) {
+        if (hidden.has(s.id)) continue;
+        members.set(stack, [...(members.get(stack) ?? []), s.id]);
+        values.set(stack, [
+          ...(values.get(stack) ?? []),
+          mark.valuesIn(s.id, bands),
+        ]);
+      }
+    }
+    return new Map(
+      [...members].map(([stack, ids]) => [
+        stack,
+        { ids, stacked: pctStack(values.get(stack) ?? []) },
+      ]),
+    );
+  });
+
+  /**
+   * See `PctChartScene.stackedOf`.
+   *
+   * @since next
+   */
+  override stackedOf(
+    stack: string,
+    id: string,
+  ): readonly (PctStacked | null)[] | null {
+    const found = this.stacks().get(stack);
+    if (!found) return null;
+    const at = found.ids.indexOf(id);
+    return at < 0 ? null : found.stacked[at];
+  }
 
   private readonly lineHeight = computed(() => Math.ceil(this.font().px * 1.4));
 
@@ -719,7 +831,22 @@ export class PctChart extends PctChartScene {
     if (!scale || !shown) return [];
     const locale = this.effectiveLocale();
     let ticks: { at: number; text: string; label: PctTimeLabel | 'value' }[];
-    if (this.x() === 'time') {
+    const interval = this.interval();
+    if (this.x() === 'band') {
+      // One tick in the middle of each band, labelled with its category.
+      ticks = this.categories().map((text, i) => ({
+        at: i + 0.5,
+        text,
+        label: 'value',
+      }));
+    } else if (this.x() === 'time' && interval && this.bands().length > 0) {
+      // Bars: one tick per interval, in its middle, labelled as the interval is.
+      ticks = this.bands().map((band) => ({
+        at: (band.from + band.to) / 2,
+        text: pctIntervalText(band.from, interval, locale, this.timeZone()),
+        label: 'time',
+      }));
+    } else if (this.x() === 'time') {
       const step = pctTimeStep(shown.to - shown.from, this.plotWidth());
       ticks = pctTimeTicks(shown, step, this.timeZone()).map((t) => ({
         at: t.at,
@@ -838,7 +965,8 @@ export class PctChart extends PctChartScene {
           text: this.writeValue(value, s.unit),
         };
       });
-    return { x, text: this.writePosition(x, 'short'), rows };
+    const notes = this.marks().flatMap((m) => m.notesAt(x));
+    return { x, text: this.writePosition(x, 'short'), rows, notes };
   });
 
   /** What the cursor's range says: the full position and every value, or that there is none. */
@@ -846,7 +974,9 @@ export class PctChart extends PctChartScene {
     const reading = this.reading();
     if (!reading) return this.texts().chartNoCursor;
     const position = this.writePosition(reading.x, 'full');
-    const values = reading.rows.map((r) => `${r.name} ${r.text}`).join(', ');
+    const values = [...reading.rows, ...reading.notes]
+      .map((r) => `${r.name} ${r.text}`)
+      .join(', ');
     return values ? `${position}: ${values}` : position;
   });
 
@@ -1088,6 +1218,13 @@ export class PctChart extends PctChartScene {
         if (from === null) return;
         next = null;
         break;
+      case 'Enter':
+      case ' ':
+        // Selects the band under the cursor, where a bar stands; without one the key passes.
+        if (from === null || !this.bandAt(from)) return;
+        event.preventDefault();
+        this.select(from);
+        return;
       default:
         return;
     }
@@ -1272,6 +1409,14 @@ export class PctChart extends PctChartScene {
         return;
       }
       case 'tap': {
+        // A press on a bar picks it, and on a band selects it, whatever the cursor does.
+        const at = this.positionAt(action.x);
+        if (at !== null) {
+          for (const mark of this.marks())
+            for (const s of mark.series())
+              if (mark.pickAt(s.id, action.x, action.y)) break;
+          this.select(at);
+        }
         if (!cursors) return;
         // On the pinned cursor's line a tap lets go; anywhere else on the plot it pins.
         const scale = this.xScale();
@@ -1381,9 +1526,54 @@ export class PctChart extends PctChartScene {
   }
 
   private writePosition(x: number, form: 'short' | 'full'): string {
+    if (this.x() === 'band')
+      return this.categories()[Math.floor(x)] ?? this.valueFormat().format(x);
     if (this.x() !== 'time') return this.valueFormat().format(x);
+    const interval = this.interval();
+    if (interval && this.bands().length > 0) {
+      // Under bars the position is the bar's band, written as its label is.
+      const band = this.bands().find((b) => x >= b.from && x < b.to);
+      if (band)
+        return pctIntervalText(
+          band.from,
+          interval,
+          this.effectiveLocale(),
+          this.timeZone(),
+        );
+    }
     return this.timeFormats()[form].format(x);
   }
+
+  /** The band of the bars at `x`: the first mark's answer. */
+  private bandAt(x: number): PctWindow | null {
+    for (const mark of this.marks())
+      for (const s of mark.series()) {
+        const band = mark.bandAt(s.id, x);
+        if (band) return band;
+      }
+    return null;
+  }
+
+  /** Selects the band at `x`, or lets the selected one go when it is the same. */
+  private select(x: number): void {
+    const band = this.bandAt(x);
+    if (!band) return;
+    const now = this.selected();
+    this.selected.set(
+      now && now.from === band.from && now.to === band.to ? null : band,
+    );
+  }
+
+  /** The selection as drawn: the band's pixels inside the plot, or `null`. */
+  protected readonly selectionView = computed(() => {
+    const selected = this.selected();
+    const scale = this.xScale();
+    const shown = this.shown();
+    if (!selected || !scale || !shown) return null;
+    const left = Math.max(scale.map(selected.from), this.columns().left);
+    const right = Math.min(scale.map(selected.to), this.columns().right);
+    return right > left ? { left, width: right - left } : null;
+  });
 
   private readSize(rawWidth: number, rawHeight: number): void {
     const width = Math.round(rawWidth);
@@ -1408,8 +1598,12 @@ export class PctChart extends PctChartScene {
     this.pixelState.set(1 / (view?.devicePixelRatio || 1));
   }
 
-  /** A label's width: `measureText`, which matches the SVG's own width (0100, P3). */
-  private measure(text: string): number {
+  /**
+   * A label's width: `measureText`, which matches the SVG's own width (0100, P3).
+   *
+   * @since next
+   */
+  override measure(text: string): number {
     if (measuring === undefined) {
       measuring =
         this.document.createElement('canvas').getContext?.('2d') ?? null;
