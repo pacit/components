@@ -1341,7 +1341,7 @@ export class PctChart extends PctChartScene {
       this.cursor.set(null);
   }
 
-  /** Ctrl with the wheel — and a touchpad's pinch, which arrives as one — zooms about the pointer. */
+  /** Ctrl with the wheel — and a pinch on a laptop's pad, which arrives as one — zooms about the pointer. */
   protected onWheel(event: WheelEvent): void {
     if (!event.ctrlKey || this.zoom() === 'none') return;
     const point = this.layerPoint(event);
@@ -1349,7 +1349,7 @@ export class PctChart extends PctChartScene {
     event.preventDefault();
     const { left } = this.columns();
     const width = Math.max(1, this.plotWidth());
-    // A line of the wheel is about sixteen pixels of a touchpad's.
+    // A line of the wheel is about sixteen pixels of a pad's.
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : 1);
     this.move({
       factor: Math.exp(-delta * 0.002),

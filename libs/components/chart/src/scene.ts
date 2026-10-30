@@ -152,6 +152,9 @@ export abstract class PctMark {
  *
  * @since next
  */
+@Directive({
+  // A base: no selector and no host of its own; `pctChartSync` extends it and has both.
+})
 export abstract class PctChartAlign {
   /**
    * The room on each side, in pixels.

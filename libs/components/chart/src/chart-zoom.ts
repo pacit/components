@@ -10,24 +10,18 @@ import { PctButton } from '@pacit/components/button';
 import { PCT_TEXTS } from '@pacit/components/core';
 import type { PctChart } from './chart';
 
-/** One button of the bar: what it does, the text it is named by and the glyph it shows. */
+/** One button of the bar: what it does, and the glyph it shows; its name is read in order. */
 interface PctZoomButton {
   readonly act: (chart: PctChart) => void;
-  readonly name:
-    | 'chartZoomIn'
-    | 'chartZoomOut'
-    | 'chartEarlier'
-    | 'chartLater'
-    | 'chartZoomReset';
   readonly glyph: string;
 }
 
 const BUTTONS: readonly PctZoomButton[] = [
-  { act: (c) => c.zoomBy(2), name: 'chartZoomIn', glyph: '+' },
-  { act: (c) => c.zoomBy(0.5), name: 'chartZoomOut', glyph: '−' },
-  { act: (c) => c.panBy(-0.25), name: 'chartEarlier', glyph: '‹' },
-  { act: (c) => c.panBy(0.25), name: 'chartLater', glyph: '›' },
-  { act: (c) => c.home(), name: 'chartZoomReset', glyph: '⟲' },
+  { act: (c) => c.zoomBy(2), glyph: '+' },
+  { act: (c) => c.zoomBy(0.5), glyph: '−' },
+  { act: (c) => c.panBy(-0.25), glyph: '‹' },
+  { act: (c) => c.panBy(0.25), glyph: '›' },
+  { act: (c) => c.home(), glyph: '⟲' },
 ];
 
 /**
@@ -73,9 +67,14 @@ export class PctChartZoom {
   protected readonly buttons = BUTTONS;
   /** The button the bar's one stop stands on. */
   protected readonly active = signal(0);
-  protected readonly names = computed(() =>
-    BUTTONS.map((b) => this.texts()[b.name]),
-  );
+  /** The buttons' names, in the order of `BUTTONS`. */
+  protected readonly names = computed(() => [
+    this.texts().chartZoomIn,
+    this.texts().chartZoomOut,
+    this.texts().chartEarlier,
+    this.texts().chartLater,
+    this.texts().chartZoomReset,
+  ]);
 
   protected press(index: number): void {
     this.active.set(index);
