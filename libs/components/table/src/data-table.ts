@@ -116,19 +116,18 @@ interface Row<T> {
   readonly index: number;
   readonly id: PctRowId;
   readonly tone: PctTone | null;
+  /** The row's values, one per column: the array the cache holds, kept while the row is. */
+  readonly values: readonly unknown[];
   readonly cells: readonly Cell<T>[];
 }
 
-/** A row's values and texts, one per column, in the columns' order. */
-interface Written {
-  readonly values: readonly unknown[];
-  readonly texts: readonly string[];
-}
-
-/** Whether a cell's value stayed what it was: a date by its time, anything else as itself. */
+/**
+ * Whether a cell's value stayed what it was: a date by its time, anything else as itself. Both
+ * read as `Object.is`, so an invalid date is the same invalid date and `NaN` the same `NaN`.
+ */
 function sameValue(a: unknown, b: unknown): boolean {
   if (a instanceof Date && b instanceof Date)
-    return a.getTime() === b.getTime();
+    return Object.is(a.getTime(), b.getTime());
   return Object.is(a, b);
 }
 
@@ -399,6 +398,9 @@ export class PctDataTable<
   private readonly headerSlots = contentChildren(PctHeaderCellTemplate);
   protected readonly emptySlot = contentChild(PctEmptyTemplate);
   private readonly table = viewChild.required(PctTable);
+  private readonly tableElement = viewChild.required(PctTable, {
+    read: ElementRef,
+  });
   private readonly scrolledTo = signal(0);
   private readonly seen = signal<PctTableVisible>({
     start: 0,
@@ -442,23 +444,37 @@ export class PctDataTable<
   }
 
   /**
-   * Every row's values and texts, read and written once when the rows, the columns, the words
-   * or the moment change: the filter searches the texts the body draws, not a second writing of
-   * them.
+   * Every row's values, one per column, read once when the rows or the columns change: the
+   * filter, the order of the body and the flash read the same values, and a locale or a clock
+   * that changes the texts reads none of them again.
+   */
+  private readonly values = computed(() => {
+    const columns = this.columns();
+    const map = new Map<T, readonly unknown[]>();
+    for (const row of this.rows())
+      map.set(
+        row,
+        columns.map((column) => column.value(row)),
+      );
+    return map;
+  });
+
+  /**
+   * Every row's texts, written once when the values, the words or the moment change: the
+   * filter searches the texts the body draws, not a second writing of them.
    */
   private readonly written = computed(() => {
-    const columns = this.columns();
     const writers = this.writers();
     const now = this.moment();
-    const write = columns.map((column) => writers.get(column.id) as Writer);
-    const map = new Map<T, Written>();
-    for (const row of this.rows()) {
-      const values = columns.map((column) => column.value(row));
-      map.set(row, {
-        values,
-        texts: values.map((value, c) => write[c](value, now)),
-      });
-    }
+    const write = this.columns().map(
+      (column) => writers.get(column.id) as Writer,
+    );
+    const map = new Map<T, readonly string[]>();
+    for (const [row, values] of this.values())
+      map.set(
+        row,
+        values.map((value, c) => write[c](value, now)),
+      );
     return map;
   });
 
@@ -473,7 +489,7 @@ export class PctDataTable<
     const written = this.written();
     const place = new Map(columns.map((column, c) => [column, c]));
     const text = (column: PctAnyColumn<T>, row: T) =>
-      (written.get(row) as Written).texts[place.get(column) as number];
+      (written.get(row) as readonly string[])[place.get(column) as number];
     return rows.filter((row) => pctMatches(row, columns, text, words));
   });
 
@@ -582,6 +598,7 @@ export class PctDataTable<
 
   /** The body: each row line with its cells written. */
   protected readonly body = computed<readonly Row<T>[]>(() => {
+    const cache = this.values();
     const written = this.written();
     const templates = this.cellTemplates();
     const words = this.marked();
@@ -612,13 +629,15 @@ export class PctDataTable<
     return (
       this.lines() as readonly Extract<PctTableLine<T>, { kind: 'row' }>[]
     ).map((line) => {
-      const { values, texts } = written.get(line.row) as Written;
+      const values = cache.get(line.row) as readonly unknown[];
+      const texts = written.get(line.row) as readonly string[];
       return {
         key: pctLineKey(line),
         row: line.row,
         index: line.index,
         id: line.key,
         tone: rowTone?.(line.row) ?? null,
+        values,
         cells: cells.map(({ column, numeric, boolean, slot, marking }, c) => {
           const value = values[c];
           const text = texts[c];
@@ -720,7 +739,7 @@ export class PctDataTable<
     afterRenderEffect(() => {
       const sticky = this.stickyHeader();
       const frame = this.frame().nativeElement as HTMLElement;
-      const head = frame.querySelector('thead') as HTMLElement;
+      const head = this.ownTable().tHead as HTMLElement;
       frame.style.scrollPaddingBlockStart = sticky
         ? `${head.getBoundingClientRect().height}px`
         : '';
@@ -731,7 +750,8 @@ export class PctDataTable<
       // The press's Shift, read where the press starts: a listener of the header row's own,
       // since the row is no control and its template carries no handler. The row is this
       // component's element and goes with it, listeners and all.
-      const head = frame.querySelector('thead') as HTMLElement;
+      const table = this.ownTable();
+      const head = table.tHead as HTMLElement;
       const onKey = (event: KeyboardEvent) => this.noteKey(event);
       const onPointer = (event: PointerEvent) => this.notePointer(event);
       head.addEventListener('keydown', onKey);
@@ -739,12 +759,13 @@ export class PctDataTable<
       const onScroll = () => this.scrolledTo.set(frame.scrollTop);
       frame.addEventListener('scroll', onScroll, { passive: true });
       destroyRef.onDestroy(() => frame.removeEventListener('scroll', onScroll));
-      // A cut cell's tooltip, written when the pointer comes to it: whether the text is cut is
-      // known only once it is laid out, and measuring every cell on every render to learn it
-      // would cost far more than measuring the one under the pointer. The body is this
-      // component's element too.
-      const body = frame.querySelector('tbody') as HTMLElement;
+      // A cut cell's tooltip, written when the pointer comes to it and taken off when it goes:
+      // whether the text is cut is known only once it is laid out, and measuring every cell on
+      // every render to learn it would cost far more than measuring the one under the pointer.
+      // The body is this component's element too.
+      const body = table.tBodies[0];
       body.addEventListener('pointerover', (event) => this.noteCut(event));
+      body.addEventListener('pointerout', (event) => this.leaveCut(event));
       body.addEventListener('animationend', (event) =>
         (event.target as HTMLElement).removeAttribute('data-pct-changed'),
       );
@@ -760,9 +781,9 @@ export class PctDataTable<
       // A row not in the lines yet is waited for: the call made before the rows arrived is
       // carried out by the render that brings them.
       if (index < 0) return;
-      const frame = this.frame().nativeElement as HTMLElement;
-      const row = frame.querySelector(`tbody > tr[data-pct-index="${index}"]`);
-      (row as HTMLElement).scrollIntoView({ block: target.align });
+      this.ownTable().tBodies[0].rows[index].scrollIntoView({
+        block: target.align,
+      });
       untracked(() => this.pending.set(null));
     });
   }
@@ -785,54 +806,74 @@ export class PctDataTable<
     );
   }
 
-  /** Writes the tooltip of the cut cell under the pointer, and takes it off one not cut. */
+  /** The `<table>` this component draws: its own, not one a cell template nests in it. */
+  private ownTable(): HTMLTableElement {
+    return this.tableElement().nativeElement as HTMLTableElement;
+  }
+
+  /** The cell whose tooltip the pointer wrote, so the tooltip leaves with the pointer. */
+  private titled: Element | null = null;
+
+  /** Writes the tooltip of the cut cell under the pointer, and none on one that is not cut. */
   private noteCut(event: Event): void {
     const cell = (event.target as Element).closest('td[data-pct-tooltip]');
-    if (!cell) return;
+    if (!cell || cell === this.titled) return;
     const clip = cell.firstElementChild as HTMLElement;
-    if (clip.scrollWidth > clip.clientWidth)
-      cell.setAttribute('title', (clip.textContent as string).trim());
-    else cell.removeAttribute('title');
+    if (clip.scrollWidth <= clip.clientWidth) return;
+    cell.setAttribute('title', (clip.textContent as string).trim());
+    this.titled = cell;
+  }
+
+  /**
+   * Takes the tooltip off when the pointer leaves its cell, so a text that changed or a column
+   * that stopped cutting never keeps an old one.
+   */
+  private leaveCut(event: PointerEvent): void {
+    const cell = this.titled;
+    if (!cell || cell.contains(event.relatedTarget as Node | null)) return;
+    cell.removeAttribute('title');
+    this.titled = null;
   }
 
   /**
    * Flashes the cells whose values changed since the last render. A row is followed by its key
-   * and a cell by its column's id, so a row that moved is compared with itself, and a row or a
-   * column that was not there before has nothing to differ from.
+   * and a cell by its column's place, so a row that moved is compared with itself; a row that
+   * was not there before, and every row when the columns change, has nothing to differ from.
+   * A row whose values the cache kept is the same array and is not read at all.
    */
   private watchChanges(): void {
-    let before = new Map<string, ReadonlyMap<string, unknown>>();
+    let ids: readonly string[] = [];
+    let before = new Map<string, readonly unknown[]>();
     afterRenderEffect(() => {
       const body = this.body();
-      if (!this.highlightChanges()) {
-        before = new Map();
-        return;
-      }
+      const columns = this.columns().map((column) => column.id);
+      const same =
+        columns.length === ids.length &&
+        columns.every((id, c) => id === ids[c]);
+      ids = columns;
+      if (!this.highlightChanges() || !same) before = new Map();
+      if (!this.highlightChanges()) return;
       const offset = this.rowNumbers() ? 1 : 0;
-      const frame = this.frame().nativeElement as HTMLElement;
-      const now = new Map<string, ReadonlyMap<string, unknown>>();
+      const rows = this.ownTable().tBodies[0].rows;
+      const now = new Map<string, readonly unknown[]>();
+      const changed: Element[] = [];
       body.forEach((row, index) => {
         const was = before.get(row.key);
-        now.set(
-          row.key,
-          new Map(row.cells.map((cell) => [cell.column.id, cell.value])),
-        );
-        if (!was) return;
-        const tr = frame.querySelector(
-          `tbody > tr[data-pct-index="${index}"]`,
-        ) as HTMLTableRowElement;
-        row.cells.forEach((cell, c) => {
-          const id = cell.column.id;
-          if (!was.has(id) || sameValue(was.get(id), cell.value)) return;
-          const td = tr.cells[c + offset];
-          // Taken off and laid out before it goes back on, so a cell that changes again while
-          // it still flashes starts its flash again rather than finishing the first.
-          td.removeAttribute('data-pct-changed');
-          td.getBoundingClientRect();
-          td.setAttribute('data-pct-changed', '');
+        now.set(row.key, row.values);
+        if (!was || was === row.values) return;
+        row.values.forEach((value, c) => {
+          if (!sameValue(was[c], value))
+            changed.push(rows[index].cells[c + offset]);
         });
       });
       before = now;
+      if (changed.length === 0) return;
+      // Taken off, laid out once, and put back, so a cell that changes again while it still
+      // flashes starts its flash again rather than finishing the first — and a poll that moved
+      // five hundred values lays the table out once, not five hundred times.
+      for (const cell of changed) cell.removeAttribute('data-pct-changed');
+      this.ownTable().getBoundingClientRect();
+      for (const cell of changed) cell.setAttribute('data-pct-changed', '');
     });
   }
 
@@ -852,7 +893,6 @@ export class PctDataTable<
     afterRenderEffect(() => {
       const body = this.body();
       if (typeof IntersectionObserver === 'undefined') return;
-      const frame = this.frame().nativeElement as HTMLElement;
       observer?.disconnect();
       // A list with no rows has none in view, and an observer of nothing never says so.
       if (body.length === 0) {
@@ -880,9 +920,8 @@ export class PctDataTable<
         });
       });
       observer = current;
-      for (const row of Array.from(
-        frame.querySelectorAll<HTMLElement>('tbody > tr[data-pct-index]'),
-      ))
+      // With a row to draw there is no placeholder: every row of the body is a row of data.
+      for (const row of Array.from(this.ownTable().tBodies[0].rows))
         current.observe(row);
     });
   }

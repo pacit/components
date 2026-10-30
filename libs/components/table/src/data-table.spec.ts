@@ -1413,7 +1413,11 @@ describe('PctDataTable — the look of the rows', () => {
     ]);
     await settle(fixture);
     const first = headers()[0];
-    expect((first.textContent ?? '').trim()).toBe('#');
+    // The eye sees a number sign, a reader hears the word.
+    expect(first.querySelector('[aria-hidden="true"]')?.textContent).toBe('#');
+    expect(first.querySelector('.pct-data-table__word')?.textContent).toBe(
+      'Row',
+    );
     expect(first.getAttribute('scope')).toBe('col');
     expect(first.hasAttribute('data-pct-numeric')).toBe(true);
     expect(first.querySelector('[data-pct-part="toggle"]')).toBeNull();
@@ -1464,7 +1468,7 @@ describe('PctDataTable — the look of the rows', () => {
     expect(cells(0)[0].hasAttribute('data-pct-tooltip')).toBe(false);
   });
 
-  it('shows a cut cell’s whole text under the pointer, and takes it off when it fits', async () => {
+  it('shows a cut cell’s whole text under the pointer, and takes it off when the pointer leaves', async () => {
     await render(LookHost);
     const name = cells(1)[0];
     const clip = name.firstElementChild as HTMLElement;
@@ -1478,15 +1482,34 @@ describe('PctDataTable — the look of the rows', () => {
         value: 40,
       });
     };
-    width(41);
-    clip.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
-    expect(name.getAttribute('title')).toBe('Boiler');
+    const over = () =>
+      clip.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    const out = (to: Element | null) =>
+      clip.dispatchEvent(
+        new MouseEvent('pointerout', { bubbles: true, relatedTarget: to }),
+      );
     width(40);
-    clip.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    over();
+    expect(name.hasAttribute('title')).toBe(false);
+    width(41);
+    over();
+    expect(name.getAttribute('title')).toBe('Boiler');
+    // Moving inside the cell keeps it, and coming back over it writes nothing new.
+    out(name);
+    expect(name.getAttribute('title')).toBe('Boiler');
+    name.setAttribute('title', 'kept');
+    over();
+    expect(name.getAttribute('title')).toBe('kept');
+    out(document.body);
+    expect(name.hasAttribute('title')).toBe(false);
+    out(null);
     expect(name.hasAttribute('title')).toBe(false);
     // A cell with no tooltip of its kind is left as it is.
     const room = cells(1)[1];
     room.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    room.dispatchEvent(
+      new MouseEvent('pointerout', { bubbles: true, relatedTarget: null }),
+    );
     expect(room.getAttribute('title')).toBe('Boiler in Kitchen');
   });
 
@@ -1568,6 +1591,16 @@ describe('PctDataTable — the look of the rows', () => {
     ]);
     await settle(fixture);
     expect(cells(1)[3].hasAttribute('data-pct-changed')).toBe(true);
+    // Changed again while it still flashes: taken off and put back, so the flash starts again.
+    const seen: (string | null)[] = [];
+    const watch = new MutationObserver((records) =>
+      seen.push(...records.map((record) => record.oldValue)),
+    );
+    watch.observe(cells(1)[3], {
+      attributes: true,
+      attributeFilter: ['data-pct-changed'],
+      attributeOldValue: true,
+    });
     fixture.componentInstance.rows.set([
       DEVICES[1],
       { ...DEVICES[0], power: 15 },
@@ -1575,7 +1608,15 @@ describe('PctDataTable — the look of the rows', () => {
       extra,
     ]);
     await settle(fixture);
+    // Off from '' (it was on), then on from nothing.
+    expect(seen).toEqual(['', null]);
+    watch.disconnect();
     expect(cells(1)[3].hasAttribute('data-pct-changed')).toBe(true);
+    // Columns that change are new columns: nothing to differ from, so nothing flashes.
+    cells(1)[3].removeAttribute('data-pct-changed');
+    fixture.componentInstance.numbers.set(false);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
   });
 
   it('compares a date by its time, and forgets the values while it is off', async () => {
@@ -1704,5 +1745,142 @@ describe('PctDataTable — the look of the rows', () => {
     await render(CountHost);
     expect(names()).toEqual(['Boiler', 'Sensor']);
     expect(reads).toBe(DEVICES.length);
+  });
+});
+
+describe('PctDataTable — after the review of the rows’ look', () => {
+  it('flashes an invalid date only when it becomes another value', async () => {
+    interface Reading {
+      id: number;
+      at: Date;
+    }
+    const of = pctColumnsOf<Reading>();
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Readings"
+        highlightChanges
+        [(filter)]="filter"
+      />`,
+    })
+    class InvalidHost {
+      readonly rows = signal<readonly Reading[]>([
+        { id: 1, at: new Date(Number.NaN) },
+      ]);
+      readonly columns = of.of([of.key('at', { header: 'At' })]);
+      readonly byId = (reading: Reading) => reading.id;
+      readonly filter = signal('');
+    }
+    const fixture = await render(InvalidHost);
+    fixture.componentInstance.rows.set([{ id: 1, at: new Date(Number.NaN) }]);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+    fixture.componentInstance.rows.set([{ id: 1, at: new Date(HOUR) }]);
+    await settle(fixture);
+    expect(cells(0)[0].hasAttribute('data-pct-changed')).toBe(true);
+  });
+
+  it('reads the values again for new rows, not for a new clock, and flashes nothing on a tick', async () => {
+    let reads = 0;
+    interface Spot {
+      id: number;
+      x: number;
+      at: number;
+    }
+    const of = pctColumnsOf<Spot>();
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Spots"
+        locale="en"
+        highlightChanges
+        [now]="now()"
+      />`,
+    })
+    class TickHost {
+      readonly rows = signal<readonly Spot[]>([{ id: 1, x: 1, at: HOUR }]);
+      readonly columns = of.of([
+        of.value(
+          'pos',
+          (spot) => {
+            reads++;
+            return [spot.x];
+          },
+          { header: 'Position' },
+        ),
+        of.key('at', {
+          header: 'At',
+          kind: { instant: { relative: true } },
+        }),
+      ]);
+      readonly byId = (spot: Spot) => spot.id;
+      readonly now = signal(2 * HOUR);
+    }
+    const fixture = await render(TickHost);
+    expect(reads).toBe(1);
+    expect(texts()[0][1]).toBe('1 hour ago');
+    fixture.componentInstance.now.set(3 * HOUR);
+    await settle(fixture);
+    expect(texts()[0][1]).toBe('2 hours ago');
+    expect(reads).toBe(1);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+    fixture.componentInstance.rows.set([{ id: 1, x: 1, at: HOUR }]);
+    await settle(fixture);
+    expect(reads).toBe(2);
+  });
+
+  it('works on its own rows when a cell holds another data table', async () => {
+    @Component({
+      imports: [PctDataTable, PctCellTemplate],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Outer"
+        highlightChanges
+      >
+        <ng-template [pctCell]="columns" pctCellOf="name">
+          <pct-data-table
+            [rows]="inner"
+            [columns]="columns"
+            [rowId]="byId"
+            caption="Inner"
+          />
+        </ng-template>
+      </pct-data-table>`,
+    })
+    class NestHost {
+      readonly table = viewChild.required(PctDataTable<Device>);
+      readonly rows = signal<readonly Device[]>(DEVICES);
+      readonly inner = DEVICES;
+      readonly columns = col.of([
+        col.key('name', { header: 'Name' }),
+        col.key('room', { header: 'Room' }),
+      ]);
+      readonly byId = byId;
+    }
+    const fixture = await render(NestHost);
+    const outer = document.querySelector('table') as HTMLTableElement;
+    const own = () => Array.from(outer.tBodies[0].rows);
+    fixture.componentInstance.rows.set([
+      DEVICES[0],
+      { ...DEVICES[1], room: 'Hall' },
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    const flashed = Array.from(document.querySelectorAll('[data-pct-changed]'));
+    expect(flashed).toEqual([own()[1].cells[1]]);
+    fixture.componentInstance.table().scrollTo(3);
+    await settle(fixture);
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts[0]).toBe(
+      own()[2],
+    );
   });
 });

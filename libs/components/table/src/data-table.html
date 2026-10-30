@@ -19,7 +19,10 @@
       <tr>
         @if (rowNumbers()) {
         <th pctHeader scope="col" numeric class="pct-data-table__number">
-          {{ texts().tableRowNumber }}
+          <span aria-hidden="true">#</span
+          ><span class="pct-data-table__word"
+            >{{ texts().tableRowNumber }}</span
+          >
         </th>
         } @for (head of heads(); track head.column.id) {
         <th

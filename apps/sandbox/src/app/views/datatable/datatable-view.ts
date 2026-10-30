@@ -150,7 +150,6 @@ export class DatatableView {
     dev.key('battery', {
       header: 'Battery',
       kind: { number: { unit: 'percent' } },
-      tone: (battery) => (battery !== null && battery < 20 ? 'warning' : null),
     }),
     dev.key('room', {
       header: 'Room',

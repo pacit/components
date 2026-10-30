@@ -70,8 +70,8 @@ export interface PctTextPart {
  * mark them: every place every word stands, folded as {@link pctMatches} folds, the places
  * that overlap or touch drawn as one.
  *
- * A text whose folding changes its length — a letter whose lower case is two, an accent
- * stored as two characters — is returned whole and unmarked: a place found in the folded
+ * A text whose folding changes its length at either step — a letter whose lower case is two,
+ * an accent stored as two characters — is returned whole and unmarked: a place found in the folded
  * text would not be the same place in the text drawn, and a mark in the wrong place says
  * the wrong thing.
  *
@@ -84,9 +84,12 @@ export function pctMatchParts(
   text: string,
   words: readonly string[],
 ): readonly PctTextPart[] {
-  const folded = text.toLowerCase().normalize('NFC');
+  const lower = text.toLowerCase();
+  const folded = lower.normalize('NFC');
   const places: [number, number][] = [];
-  if (folded.length === text.length)
+  // Both steps keep the length, or neither moved a place: a lower case that grew and a
+  // composition that shrank it back would leave the length and shift every place between.
+  if (lower.length === text.length && folded.length === text.length)
     for (const word of words) {
       // An empty word stands everywhere and marks nothing; `pctQuestionWords` writes none.
       if (word === '') continue;

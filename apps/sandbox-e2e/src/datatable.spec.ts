@@ -220,7 +220,13 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     page,
   }) => {
     const table = page.getByTestId('table-devices');
-    await expect(table.locator('thead th').first()).toHaveText('#');
+    // The eye sees a number sign, a reader hears the word.
+    await expect(
+      table.getByRole('columnheader', { name: 'Row', exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      table.locator('thead th').first().locator('[aria-hidden="true"]'),
+    ).toHaveText('#');
     await expect(table.locator('tbody tr td:first-child')).toHaveText([
       '1',
       '2',
@@ -242,13 +248,14 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     );
     expect(await surface(2)).not.toBe(await surface(0));
     expect(await surface(2)).not.toBe(await surface(1));
-    // A state and a low battery are toned by their values.
-    const smoke = table.locator('tbody tr').nth(4);
-    await expect(smoke.locator('td').nth(3)).toHaveAttribute(
+    // A state is toned by its value: the word says it, the tint repeats it.
+    const motion = table.locator('tbody tr').nth(3);
+    await expect(motion.locator('td').nth(2)).toHaveText('Offline');
+    await expect(motion.locator('td').nth(2)).toHaveAttribute(
       'data-pct-tone',
       'warning',
     );
-    await expect(smoke.locator('td').nth(2)).not.toHaveAttribute(
+    await expect(motion.locator('td').nth(3)).not.toHaveAttribute(
       'data-pct-tone',
       /.*/,
     );

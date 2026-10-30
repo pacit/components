@@ -173,6 +173,10 @@ describe('pctMatchParts', () => {
     expect(marked('İstanbul', ['stan'])).toEqual(['İstanbul']);
     const decomposed = `Resume${String.fromCharCode(0x301)}`;
     expect(marked(decomposed, ['resum'])).toEqual([decomposed]);
+    // A lower case that grows by one and a composition that shrinks by one keep the length.
+    const shifted = `İe${String.fromCharCode(0x301)}x`;
+    expect(shifted.toLowerCase().normalize('NFC')).toHaveLength(shifted.length);
+    expect(marked(shifted, ['x'])).toEqual([shifted]);
   });
 
   it('skips an empty word rather than stopping on it', () => {
