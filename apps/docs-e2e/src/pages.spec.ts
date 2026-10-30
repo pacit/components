@@ -971,7 +971,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 695$/);
+    await expect(count).toHaveText(/^\d+ of 720$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');

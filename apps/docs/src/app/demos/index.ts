@@ -468,6 +468,7 @@ export const CARD_DEMOS: Readonly<
   button: () => import('./cards/button.card').then((m) => m.ButtonCardScene),
   calendar: () =>
     import('./cards/calendar.card').then((m) => m.CalendarCardScene),
+  chart: () => import('./cards/chart.card').then((m) => m.ChartCardScene),
   chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
   columns: () =>
     import('./cards/columns.card').then((m) => m.TimeColumnsCardScene),
