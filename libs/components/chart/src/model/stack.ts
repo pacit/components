@@ -29,8 +29,8 @@ export function pctStack(
   return values.map((series) =>
     Array.from({ length: positions }, (_, i) => {
       const value = series[i];
-      if (value === null || value === undefined || !Number.isFinite(value))
-        return null;
+      // `null`, `undefined`, `NaN` and an infinity are no value alike.
+      if (!Number.isFinite(value)) return null;
       if (value >= 0) {
         const from = up[i];
         up[i] += value;

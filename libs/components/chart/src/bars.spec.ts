@@ -133,6 +133,108 @@ class Rooms {
   ];
 }
 
+interface Reading {
+  readonly at: number;
+  readonly energy: number | null;
+}
+
+/** Four days of March, the third missing: a value to three decimals, a negative and a zero. */
+const boiler: Reading[] = [
+  { at: MARCH, energy: 7.125 },
+  { at: MARCH + D, energy: -2.5 },
+  { at: MARCH + 3 * D, energy: 0 },
+  { at: MARCH + 4 * D, energy: 4 },
+];
+/** A compared period: three values that are no bar, then a nine. */
+const lastYear: Reading[] = [
+  { at: FEBRUARY, energy: NaN },
+  { at: FEBRUARY + D, energy: Infinity },
+  { at: FEBRUARY + 2 * D, energy: null },
+  { at: FEBRUARY + 3 * D, energy: 9 },
+];
+
+@Component({
+  imports: [PctChart, PctBars],
+  template: `
+    <pct-chart
+      ariaLabel="Boiler by day"
+      timeZone="Europe/Warsaw"
+      locale="en-GB"
+      interval="day"
+    >
+      <pct-bars
+        [data]="data()"
+        x="at"
+        y="energy"
+        name="Boiler"
+        unit="kWh"
+        [compare]="compare()"
+        compareName="Last year"
+        [labels]="labels()"
+        [color]="color()"
+        (pick)="picked.push($event)"
+      />
+    </pct-chart>
+  `,
+})
+class Boiler {
+  readonly data = signal<readonly Reading[]>(boiler);
+  readonly compare = signal<readonly Reading[] | undefined>(undefined);
+  readonly labels = signal(false);
+  readonly color = signal<number | string | undefined>(undefined);
+  readonly picked: PctPick<Reading>[] = [];
+}
+
+/** The bars with nothing set but what is required, and a compared period. */
+@Component({
+  imports: [PctChart, PctBars],
+  template: `
+    <pct-chart ariaLabel="Plain" timeZone="Europe/Warsaw" interval="day">
+      <pct-bars
+        [data]="rows"
+        x="at"
+        y="energy"
+        name="Plain"
+        [compare]="compare"
+      />
+    </pct-chart>
+  `,
+})
+class Plain {
+  readonly rows = boiler;
+  readonly compare = lastYear;
+}
+
+/** Bars on a time axis with no interval: nowhere to stand. */
+@Component({
+  imports: [PctChart, PctBars],
+  template: `
+    <pct-chart ariaLabel="No interval" timeZone="UTC">
+      <pct-bars [data]="rows()" x="at" y="energy" name="Stray" />
+    </pct-chart>
+  `,
+})
+class Stray {
+  readonly rows = signal<readonly Reading[]>([]);
+}
+
+/** Five units on a chart with four value axes: the fifth series has none. */
+@Component({
+  imports: [PctChart, PctBars],
+  template: `
+    <pct-chart ariaLabel="Five units" timeZone="Europe/Warsaw" interval="day">
+      <pct-bars [data]="rows" x="at" y="energy" name="Heat" unit="kWh" />
+      <pct-bars [data]="rows" x="at" y="energy" name="Warmth" unit="°C" />
+      <pct-bars [data]="rows" x="at" y="energy" name="Damp" unit="%" />
+      <pct-bars [data]="rows" x="at" y="energy" name="Flow" unit="l/h" />
+      <pct-bars [data]="rows" x="at" y="energy" name="Power" unit="W" />
+    </pct-chart>
+  `,
+})
+class FiveUnits {
+  readonly rows = boiler;
+}
+
 async function render<T>(type: new () => T): Promise<ComponentFixture<T>> {
   TestBed.configureTestingModule({
     providers: [provideZonelessChangeDetection()],
@@ -170,6 +272,28 @@ const texts = (fixture: ComponentFixture<unknown>, selector: string) =>
   [...element(fixture).querySelectorAll(selector)].map((e) =>
     e.textContent?.trim(),
   );
+/** The `pct-bars` marks on the fixture, in their order. */
+const marksOf = <T>(fixture: ComponentFixture<unknown>) =>
+  fixture.debugElement
+    .queryAll((d) => d.name === 'pct-bars')
+    .map((d) => d.componentInstance as PctBars<T>);
+/** The labels over the bars: their text, their place and their baseline. */
+const labelsOf = (fixture: ComponentFixture<unknown>) =>
+  [...element(fixture).querySelectorAll('text[data-pct-part="label"]')].map(
+    (t) => ({
+      text: t.textContent?.trim(),
+      x: Number(t.getAttribute('x')),
+      y: Number(t.getAttribute('y')),
+      baseline: t.getAttribute('dominant-baseline'),
+    }),
+  );
+/** The private colour each bar is painted with: `''` for a palette place. */
+const paints = (fixture: ComponentFixture<unknown>) =>
+  [
+    ...element(fixture).querySelectorAll<SVGElement>(
+      'rect[data-pct-part="bar"]',
+    ),
+  ].map((r) => r.style.getPropertyValue('--_pct-chart-color'));
 
 describe('PctBars', () => {
   beforeAll(() => vi.stubGlobal('ResizeObserver', QuietObserver));
@@ -477,5 +601,302 @@ describe('PctBars', () => {
         String(m).includes('has no band to stand in'),
       ),
     ).toBe(true);
+  });
+
+  it('reads its defaults: a plain number stepped from zero, the name as the id and as the compared name, no labels, the compared half before the own', async () => {
+    const fixture = await render(Plain);
+    const chart = chartOf(fixture);
+    const own = {
+      id: 'Plain',
+      name: 'Plain',
+      unit: '',
+      curve: 'step',
+      color: undefined,
+      fromZero: true,
+    };
+    expect(chart.series()).toEqual([own, { ...own, id: 'Plain:compare' }]);
+    expect(chart.groupOf('Plain')).toEqual({ index: 0, count: 1 });
+    expect(marksOf(fixture)[0].band()).toEqual({ group: 'Plain', stack: null });
+    expect(labelsOf(fixture)).toEqual([]);
+    // the band's four fifths less a gap, split in two halves a gap apart: the compared first
+    const scale = chart.xScale()!;
+    const band = scale.map(MARCH + D) - scale.map(MARCH);
+    const each = (band * 0.8 - 2 - 2) / 2;
+    const drawn = bars(fixture);
+    const bars0 = drawn.filter((b) => !b.compared);
+    const compared = drawn.filter((b) => b.compared);
+    expect(bars0).toHaveLength(4);
+    expect(compared).toHaveLength(1);
+    const start = scale.map(MARCH + 3 * D) + band * 0.1 + 1;
+    expect(compared[0].x).toBeCloseTo(start, 6);
+    expect(compared[0].width).toBeCloseTo(each, 6);
+    expect(bars0[2].x).toBeCloseTo(start + each + 2, 6);
+    expect(bars0[2].width).toBeCloseTo(each, 6);
+    expect(bars0[0].x).toBeCloseTo(
+      scale.map(MARCH) + band * 0.1 + 1 + each + 2,
+      6,
+    );
+  });
+
+  it('reads a compared value that is no finite number as no bar, and answers nothing for a series it has not', async () => {
+    const fixture = await render(Boiler);
+    const [mark] = marksOf<Reading>(fixture);
+    const chart = chartOf(fixture);
+    const shown = chart.shown()!;
+    const bands = chart.bands();
+    expect(bands).toHaveLength(5);
+    // without a compared period the compared series has no value anywhere
+    expect(mark.valuesIn('Boiler:compare', bands)).toEqual([
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
+    expect(mark.valueAt('Boiler:compare', MARCH)).toBeNull();
+    expect([...mark.readings('Nobody').ys]).toEqual([NaN, NaN, NaN, NaN, NaN]);
+    fixture.componentInstance.compare.set(lastYear);
+    await settle(fixture);
+    expect(bars(fixture).filter((b) => b.compared)).toHaveLength(1);
+    expect(mark.valuesIn('Boiler:compare', bands)).toEqual([
+      null,
+      null,
+      null,
+      9,
+      null,
+    ]);
+    expect(mark.valuesIn('Boiler', bands)).toEqual([7.125, -2.5, null, 0, 4]);
+    expect(mark.valueAt('Boiler:compare', MARCH + 3 * D + H)).toBe(9);
+    expect(mark.valueAt('Boiler:compare', MARCH)).toBeNull();
+    expect(mark.extent('Boiler:compare', shown)).toEqual([0, 9]);
+    expect(mark.extent('Boiler', shown)).toEqual([-2.5, 7.125]);
+    expect(mark.extent('Nobody', shown)).toBeNull();
+    expect(mark.valueAt('Nobody', MARCH + 3 * D)).toBeNull();
+    const compared = mark.readings('Boiler:compare');
+    expect([...compared.xs]).toEqual(bands.map((b) => b.from));
+    expect([...compared.ys]).toEqual([NaN, NaN, NaN, 9, NaN]);
+    expect(compared.length).toBe(5);
+    const own = mark.readings('Boiler');
+    expect([...own.xs]).toEqual(bands.map((b) => b.from));
+    expect([...own.ys]).toEqual([7.125, -2.5, NaN, 0, 4]);
+  });
+
+  it("answers the value, the band and the rows of a window on the bands' edges, and nothing beyond them", async () => {
+    const fixture = await render(Host);
+    const [mark] = marksOf<Day>(fixture);
+    const bands = chartOf(fixture).bands();
+    const id = 'Heat pump';
+    expect(mark.valueAt(id, MARCH - H)).toBeNull();
+    expect(mark.valueAt(id, MARCH)).toBe(12);
+    expect(mark.valueAt(id, MARCH + D)).toBe(15.5);
+    expect(mark.valueAt(id, MARCH + 2 * D + H)).toBeNull();
+    expect(mark.valueAt(id, MARCH + 5 * D)).toBeNull();
+    expect(mark.bandAt(id, MARCH - H)).toBeNull();
+    expect(mark.bandAt(id, MARCH)).toEqual({ from: MARCH, to: MARCH + D });
+    expect(mark.bandAt(id, MARCH + D)).toEqual({
+      from: MARCH + D,
+      to: MARCH + 2 * D,
+    });
+    expect(mark.bandAt(id, MARCH + 5 * D)).toBeNull();
+    // the rows of a window: the starts of the bands it cuts into, not of the ones it touches
+    expect(mark.rowsIn(id, { from: MARCH + D, to: MARCH + 3 * D })).toEqual([
+      MARCH + D,
+      MARCH + 2 * D,
+    ]);
+    expect(
+      mark.rowsIn(id, { from: MARCH + D + H, to: MARCH + 2 * D + H }),
+    ).toEqual([MARCH + D, MARCH + 2 * D]);
+    expect(mark.rowsIn(id, { from: MARCH + D, to: MARCH + D })).toEqual([]);
+    const readings = mark.readings(id);
+    expect([...readings.xs]).toEqual(bands.map((b) => b.from));
+    expect([...readings.ys]).toEqual([12, 15.5, NaN, 0, 9]);
+    expect(readings.length).toBe(5);
+    // a band after the rows holds none of them; a band over two days holds the last
+    expect(
+      mark.valuesIn(id, [{ from: MARCH + 5 * D, to: MARCH + 6 * D }]),
+    ).toEqual([null]);
+    expect(
+      mark.valuesIn(id, [
+        { from: MARCH, to: MARCH + 2 * D },
+        { from: MARCH + 2 * D, to: MARCH + 5 * D },
+      ]),
+    ).toEqual([15.5, 9]);
+    expect(mark.valuesIn(id, [{ from: MARCH + D, to: MARCH + 2 * D }])).toEqual(
+      [15.5],
+    );
+    // the extent of a window: the bands it cuts into, zero among them, none without a value
+    expect(mark.extent(id, { from: MARCH, to: MARCH + D })).toEqual([0, 12]);
+    expect(mark.extent(id, { from: MARCH + D, to: MARCH + 2 * D })).toEqual([
+      0, 15.5,
+    ]);
+    expect(mark.extent(id, { from: MARCH + 2 * D, to: MARCH + 3 * D })).toBe(
+      null,
+    );
+    expect(
+      mark.extent(id, { from: MARCH + 2 * D + H, to: MARCH + 2 * D + 2 * H }),
+    ).toBeNull();
+    expect(mark.extent(id, { from: MARCH + 3 * D, to: MARCH + 4 * D })).toEqual(
+      [0, 0],
+    );
+    expect(mark.extent(id, { from: MARCH - D, to: MARCH })).toBeNull();
+  });
+
+  it('splits a band between the groups in equal slots a gap apart, and the stacked extent holds the negatives', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.second.set(true);
+    await settle(fixture);
+    const chart = chartOf(fixture);
+    const scale = chart.xScale()!;
+    const band = scale.map(MARCH + D) - scale.map(MARCH);
+    const drawn = bars(fixture);
+    const pump = drawn.filter((b) => b.place === '1')[0];
+    const solar = drawn.filter((b) => b.place === '2')[0];
+    expect(pump.x).toBeCloseTo(scale.map(MARCH) + band * 0.1 + 1, 6);
+    expect(pump.width).toBeCloseTo(band * 0.4 - 2, 6);
+    expect(solar.x).toBeCloseTo(pump.x + band * 0.4, 6);
+    expect(solar.width).toBeCloseTo(band * 0.4 - 2, 6);
+    const solarMark = marksOf<Day>(fixture)[1];
+    expect(solarMark.extent('Solar', chart.shown()!)).toEqual([-4, 2]);
+    fixture.componentInstance.stack.set('energy');
+    await settle(fixture);
+    expect(solarMark.extent('Solar', chart.shown()!)).toEqual([-4, 11]);
+    expect(solarMark.extent('Solar', { from: MARCH, to: MARCH + D })).toEqual([
+      -3, 0,
+    ]);
+  });
+
+  it("writes each label in its bar's middle, four pixels over a positive or a zero and under a negative, to two decimals, and none over the compared bars", async () => {
+    const fixture = await render(Boiler);
+    fixture.componentInstance.labels.set(true);
+    fixture.componentInstance.compare.set(lastYear);
+    await settle(fixture);
+    const own = bars(fixture).filter((b) => !b.compared);
+    const shown = labelsOf(fixture);
+    expect(shown.map((l) => l.text)).toEqual(['7.13', '-2.5', '0', '4']);
+    expect(shown.map((l) => l.baseline)).toEqual([
+      'auto',
+      'hanging',
+      'auto',
+      'auto',
+    ]);
+    shown.forEach((label, i) =>
+      expect(label.x).toBeCloseTo(own[i].x + own[i].width / 2, 6),
+    );
+    expect(shown[0].y).toBeCloseTo(own[0].y - 4, 6);
+    expect(shown[1].y).toBeCloseTo(own[1].y + own[1].height + 4, 6);
+    expect(shown[2].y).toBeCloseTo(own[2].y - 4, 6);
+    expect(shown[3].y).toBeCloseTo(own[3].y - 4, 6);
+  });
+
+  it('picks the bar under a press, its edges included, and nothing beside, over or under it, nor a compared bar', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.compare.set(february);
+    await settle(fixture);
+    const [mark] = marksOf<Day>(fixture);
+    const picked = fixture.componentInstance.picked;
+    const own = bars(fixture).filter((b) => !b.compared);
+    const compared = bars(fixture).filter((b) => b.compared);
+    const [first, second] = own;
+    expect(mark.pickAt('Heat pump', first.x, first.y)).toBe(true);
+    expect(picked).toEqual([
+      { series: 'Heat pump', index: 0, row: march[0], x: MARCH, y: 12 },
+    ]);
+    expect(
+      mark.pickAt(
+        'Heat pump',
+        second.x + second.width,
+        second.y + second.height,
+      ),
+    ).toBe(true);
+    expect(picked[1]).toEqual({
+      series: 'Heat pump',
+      index: 1,
+      row: march[1],
+      x: MARCH + D,
+      y: 15.5,
+    });
+    const beside: [number, number][] = [
+      [second.x - 0.5, second.y],
+      [second.x + second.width + 0.5, second.y],
+      [second.x, second.y - 0.5],
+      [second.x, second.y + second.height + 0.5],
+      [compared[1].x + compared[1].width / 2, second.y + 1],
+    ];
+    for (const [x, y] of beside)
+      expect(mark.pickAt('Heat pump', x, y)).toBe(false);
+    expect(mark.pickAt('Heat pump:compare', second.x, second.y)).toBe(false);
+    expect(mark.pickAt('Nobody', second.x, second.y)).toBe(false);
+    expect(picked).toHaveLength(2);
+  });
+
+  it('draws nothing before the chart has a size', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0);
+    const fixture = await render(Host);
+    const chart = chartOf(fixture);
+    expect(chart.bands()).toHaveLength(5);
+    expect(chart.xScale()).toBeNull();
+    expect(bars(fixture)).toHaveLength(0);
+    expect(marksOf<Day>(fixture)[0].pickAt('Heat pump', 10, 10)).toBe(false);
+  });
+
+  it('draws nothing for a series whose unit has no axis, the other four their bars', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = await render(FiveUnits);
+    const chart = chartOf(fixture);
+    expect(chart.yScales().has('W')).toBe(false);
+    expect(bars(fixture)).toHaveLength(16);
+    expect(marksOf<Reading>(fixture)[4].pickAt('Power', 10, 10)).toBe(false);
+  });
+
+  it("warns with the series' name and the two ways to a band once there are rows, and spans their days with no interval", async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    const fixture = await render(Stray);
+    const ours = () =>
+      warn.mock.calls
+        .map(([m]) => String(m))
+        .filter((m) => m.startsWith('[pct-bars]'));
+    expect(ours()).toEqual([]);
+    expect(marksOf<Reading>(fixture)[0].span()).toBeNull();
+    fixture.componentInstance.rows.set(boiler);
+    await settle(fixture);
+    expect(ours()).toEqual([
+      '[pct-bars] "Stray" has no band to stand in: a time axis holds bars only with an `interval` on the chart, and a `band` axis with its `categories`.',
+    ]);
+    expect(marksOf<Reading>(fixture)[0].span()).toEqual([MARCH, MARCH + 4 * D]);
+    expect(chartOf(fixture).bands()).toEqual([]);
+    expect(bars(fixture)).toHaveLength(0);
+  });
+
+  it('keeps quiet where its bars have bands or it has no rows, and spans nothing without rows', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    const fixture = await render(Boiler);
+    const [mark] = marksOf<Reading>(fixture);
+    expect(mark.span()).toEqual([MARCH, MARCH + 5 * D]);
+    fixture.componentInstance.data.set([]);
+    await settle(fixture);
+    expect(mark.span()).toBeNull();
+    expect(chartOf(fixture).bands()).toEqual([]);
+    expect(bars(fixture)).toHaveLength(0);
+    expect(
+      warn.mock.calls.filter(([m]) => String(m).startsWith('[pct-bars]')),
+    ).toEqual([]);
+  });
+
+  it("paints a colour of the consumer's own on each bar, and a palette place otherwise", async () => {
+    const fixture = await render(Boiler);
+    const places = () => bars(fixture).map((b) => b.place);
+    expect(places()).toEqual(['1', '1', '1', '1']);
+    expect(paints(fixture)).toEqual(['', '', '', '']);
+    fixture.componentInstance.color.set('tomato');
+    await settle(fixture);
+    expect(places()).toEqual(['custom', 'custom', 'custom', 'custom']);
+    expect(paints(fixture)).toEqual(['tomato', 'tomato', 'tomato', 'tomato']);
+    fixture.componentInstance.color.set(3);
+    await settle(fixture);
+    expect(places()).toEqual(['3', '3', '3', '3']);
+    expect(paints(fixture)).toEqual(['', '', '', '']);
   });
 });

@@ -512,16 +512,19 @@ export class PctBars<T> extends PctMark {
     );
     if (!bar) return false;
     const band = this.scene.bands()[bar.index];
-    const { xs, length } = this.readingsOf();
-    // The last row in the band: the one the bar was drawn from.
-    let row = -1;
-    for (let i = 0; i < length && xs[i] < band.to; i++)
-      if (xs[i] >= band.from) row = i;
-    if (row < 0) return false;
+    // The last row in the band, read off the rows themselves: the columns leave out a row
+    // with no finite position, so their index is not the rows'.
+    const position = pctRead(this.x());
+    let row: T | undefined;
+    this.data().forEach((r, i) => {
+      const at = position(r, i);
+      if (at >= band.from && at < band.to) row = r;
+    });
+    if (row === undefined) return false;
     this.pick.emit({
       series: this.key(),
       index: bar.index,
-      row: this.data()[row],
+      row,
       x: band.from,
       y: bar.value,
     });

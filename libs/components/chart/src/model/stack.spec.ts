@@ -67,6 +67,21 @@ describe('pctStack', () => {
     ]);
   });
 
+  it('stacks a zero with the positives: on them, and not on a negative under it', () => {
+    expect(pctStack([[2], [0]])).toEqual([
+      [{ from: 0, to: 2 }],
+      [{ from: 2, to: 2 }],
+    ]);
+    expect(pctStack([[-1], [0]])).toEqual([
+      [{ from: 0, to: -1 }],
+      [{ from: 0, to: 0 }],
+    ]);
+    expect(pctStack([[-0], [1]])).toEqual([
+      [{ from: 0, to: 0 }],
+      [{ from: 0, to: 1 }],
+    ]);
+  });
+
   it('gives series of different lengths the longest, and nothing from nothing', () => {
     expect(pctStack([[1], [2, 3]])).toEqual([
       [{ from: 0, to: 1 }, null],
@@ -106,5 +121,11 @@ describe('pctStackExtent', () => {
   it('answers nothing for no bars', () => {
     expect(pctStackExtent([])).toBeNull();
     expect(pctStackExtent([[null, null]])).toBeNull();
+  });
+
+  it('spans a single zero as zero to zero, and a single negative down to it', () => {
+    expect(pctStackExtent([[{ from: 0, to: 0 }]])).toEqual([0, 0]);
+    expect(pctStackExtent(pctStack([[0]]))).toEqual([0, 0]);
+    expect(pctStackExtent([[null, { from: 0, to: -2 }]])).toEqual([-2, 0]);
   });
 });
