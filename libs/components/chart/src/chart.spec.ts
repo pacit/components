@@ -2653,9 +2653,9 @@ describe('PctChart, its cursor', () => {
     const capture = vi.fn();
     layer.setPointerCapture = capture;
     const x = at(fixture, T0 + 6 * H);
-    const finger = (type: string, dx: number, dy: number) =>
+    const finger = (type: string, across: number, down: number) =>
       layer.dispatchEvent(
-        pointer(type, { x: x + dx, y: 100 + dy, kind: 'touch', id: 5 }),
+        pointer(type, { x: x + across, y: 100 + down, kind: 'touch', id: 5 }),
       );
     finger('pointerdown', 0, 0);
     finger('pointermove', 8, 0);

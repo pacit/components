@@ -28,10 +28,14 @@ from what the browser really gets.
 ./button PctButton label
 ./button PctButton spinner
 ./chart PctChart axis
+./chart PctChart cursor
 ./chart PctChart data
 ./chart PctChart grid
+./chart PctChart marker
 ./chart PctChart message
 ./chart PctChart plot
+./chart PctChart range
+./chart PctChart tooltip
 ./chart PctChart unit
 ./chart PctLine area
 ./chart PctLine series
