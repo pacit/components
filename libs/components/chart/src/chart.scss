@@ -113,6 +113,11 @@
   user-select: none;
 }
 
+// Turned, the chart's own gesture is the vertical one and the page keeps the horizontal.
+:host(.horizontal) .overlay {
+  touch-action: pan-x;
+}
+
 // A chart whose window stays where the application puts it leaves every drag to the page.
 .overlay.still {
   touch-action: auto;
@@ -128,6 +133,12 @@
 [data-pct-part='cursor'] {
   inline-size: 1px;
   background: var(--pct-chart-cursor-border);
+}
+
+// Turned, the cursor's line lies across the plot.
+[data-pct-part='cursor'].across {
+  inline-size: auto;
+  block-size: 1px;
 }
 
 // The selected band: the skin's colour mixed into nothing, under the data, across the plot.

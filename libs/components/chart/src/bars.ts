@@ -59,6 +59,9 @@ interface PctBar {
   readonly labelX: number;
   readonly labelY: number;
   readonly labelShown: boolean;
+  /** How the label is set against its point: over a bar that stands, beside one that lies. */
+  readonly labelAnchor: 'middle' | 'start' | 'end';
+  readonly labelBaseline: 'auto' | 'hanging' | 'middle';
   /** Whether the bar's band is the chart's selection: its label is shown and bold. */
   readonly selected: boolean;
   /** The compared period's bar, drawn lighter. */
@@ -336,18 +339,20 @@ export class PctBars<T> extends PctMark {
       : null;
     const compared = this.compare() && !hidden.has(this.compareKey());
     const own = !hidden.has(this.key());
+    const horizontal = this.scene.orientation() === 'horizontal';
     const gap = 2;
     const bars: PctBar[] = [];
     bands.forEach((band, i) => {
-      const x0 = scale.map(band.from);
-      const x1 = scale.map(band.to);
-      const slot = (x1 - x0) * INNER;
-      const start = x0 + ((x1 - x0) * (1 - INNER)) / 2;
+      // Along the x axis: the band, its slot of INNER, the group's share, the compared halves.
+      const a0 = scale.map(band.from);
+      const a1 = scale.map(band.to);
+      const slot = (a1 - a0) * INNER;
+      const start = a0 + ((a1 - a0) * (1 - INNER)) / 2;
       const sub = slot / count;
-      const left = start + index * sub + gap / 2;
-      const width = Math.max(1, sub - gap);
+      const first = start + index * sub + gap / 2;
+      const thickness = Math.max(1, sub - gap);
       const halves = compared ? 2 : 1;
-      const each = Math.max(1, (width - (halves - 1) * gap) / halves);
+      const each = Math.max(1, (thickness - (halves - 1) * gap) / halves);
       const sides =
         this.compareSide() === 'before'
           ? ['compared', 'own']
@@ -360,23 +365,49 @@ export class PctBars<T> extends PctMark {
         const column = isCompared ? comparedStacked : stacked;
         const from = column?.[i]?.from ?? 0;
         const to = column?.[i]?.to ?? value;
-        const top = Math.min(y.map(from), y.map(to));
-        const bottom = Math.max(y.map(from), y.map(to));
-        const bx = compared ? left + s * (each + gap) : left;
-        bars.push({
-          index: i,
-          x: bx,
-          width: compared ? each : width,
-          y: top,
-          height: Math.max(1, bottom - top),
-          value,
-          label: this.format().format(value),
-          labelX: bx + (compared ? each : width) / 2,
-          labelY: value >= 0 ? top - 4 : bottom + 4,
-          labelShown: false,
-          selected: false,
-          compared: isCompared,
-        });
+        // Across: from the stack's foot to the bar's end, in the value scale's pixels.
+        const near = Math.min(y.map(from), y.map(to));
+        const far = Math.max(y.map(from), y.map(to));
+        const length = Math.max(1, far - near);
+        const along = compared ? first + s * (each + gap) : first;
+        const breadth = compared ? each : thickness;
+        const label = this.format().format(value);
+        bars.push(
+          horizontal
+            ? {
+                index: i,
+                x: near,
+                width: length,
+                y: along,
+                height: breadth,
+                value,
+                label,
+                // Beside the bar's end: after a positive one, before a negative one.
+                labelX: value >= 0 ? far + 4 : near - 4,
+                labelY: along + breadth / 2,
+                labelAnchor: value >= 0 ? 'start' : 'end',
+                labelBaseline: 'middle',
+                labelShown: false,
+                selected: false,
+                compared: isCompared,
+              }
+            : {
+                index: i,
+                x: along,
+                width: breadth,
+                y: near,
+                height: length,
+                value,
+                label,
+                labelX: along + breadth / 2,
+                labelY: value >= 0 ? near - 4 : far + 4,
+                labelAnchor: 'middle',
+                labelBaseline: value >= 0 ? 'auto' : 'hanging',
+                labelShown: false,
+                selected: false,
+                compared: isCompared,
+              },
+        );
       });
     });
     if (!this.labels()) return bars;
@@ -386,11 +417,14 @@ export class PctBars<T> extends PctMark {
     const chosen = selected
       ? bands.findIndex((b) => b.from === selected.from && b.to === selected.to)
       : -1;
+    // Lying bars' labels stack down the side: each takes a line's height along the axis.
     const labelled = bars.filter((b) => !b.compared);
     const shown = pctThinLabels(
-      labelled.map((b) => b.labelX),
-      labelled.map((b) => this.scene.measure(b.label)),
-      4,
+      labelled.map((b) => (horizontal ? b.labelY : b.labelX)),
+      labelled.map((b) =>
+        horizontal ? this.scene.lineHeight() : this.scene.measure(b.label),
+      ),
+      horizontal ? 0 : 4,
     );
     const visible = new Set(labelled.filter((_, i) => shown[i]));
     return bars.map((b) => {
