@@ -5,7 +5,11 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctChart } from './chart';
-import { PctChartLegend, PctLegendItem } from './legend';
+import {
+  PctChartLegend,
+  PctLegendItem,
+  type PctLegendItemContext,
+} from './legend';
 import { PctLine } from './line';
 import { PCT_SERIES_MARKERS } from './scene';
 
@@ -372,5 +376,160 @@ describe('PctChartLegend', () => {
     expect(element(fixture).querySelector('.own')?.textContent?.trim()).toBe(
       'Supply air off',
     );
+  });
+
+  it('reads its defaults when nothing binds them: no value, a row, not removable', async () => {
+    const fixture = await render(OwnRows);
+    const legend = legendOf(fixture);
+    expect(legend.value()).toBe('none');
+    expect(legend.layout()).toBe('row');
+    expect(legend.removable()).toBe(false);
+    const host = element(fixture).querySelector('pct-chart-legend')!;
+    expect(host.classList.contains('column')).toBe(false);
+    expect(host.querySelector('[data-pct-part="remove"]')).toBeNull();
+    expect(host.querySelector('.value')).toBeNull();
+  });
+
+  it('writes a value to three decimals at most, and the first free place to each palette series', async () => {
+    @Component({
+      imports: [PctChart, PctLine, PctChartLegend],
+      template: `
+        <pct-chart
+          #chart
+          ariaLabel="Two places"
+          timeZone="UTC"
+          locale="en-US"
+          [(window)]="window"
+        >
+          <pct-line
+            [data]="temperature"
+            x="at"
+            y="value"
+            name="Supply air"
+            unit="°C"
+          />
+          <pct-line [data]="power" x="at" y="value" name="Fan power" unit="W" />
+        </pct-chart>
+        <pct-chart-legend [chart]="chart" value="mean" />
+      `,
+    })
+    class TwoPlaces {
+      readonly temperature = temperature;
+      readonly power = power;
+      readonly window = signal<{ from: number; to: number } | null>({
+        from: T0,
+        to: T0 + 18 * H,
+      });
+    }
+    const fixture = await render(TwoPlaces);
+    const swatches = [
+      ...element(fixture).querySelectorAll(
+        '[data-pct-part="toggle"] [data-pct-part="swatch"]',
+      ),
+    ];
+    expect(swatches.map((s) => s.getAttribute('data-pct-series'))).toEqual([
+      '1',
+      '2',
+    ]);
+    // 20, 22.5 and 21, the gap left out: 21.1666…, written to three decimals
+    expect(values(fixture)).toEqual(['21.167 °C', '800 W']);
+  });
+
+  it('shows one of two hidden series and leaves the other hidden', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.hidden.set(['Supply air', 'Fan power']);
+    await settle(fixture);
+    toggles(fixture)[0].click();
+    await settle(fixture);
+    expect(fixture.componentInstance.hidden()).toEqual(['Fan power']);
+    expect(toggles(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(
+      ['true', 'false'],
+    );
+  });
+
+  it('writes a yes/no series as on from one half up, and off below', async () => {
+    @Component({
+      imports: [PctChart, PctLine, PctChartLegend],
+      template: `
+        <pct-chart #chart ariaLabel="Heater" x="linear" [(window)]="window">
+          <pct-line
+            [data]="rows"
+            x="at"
+            y="on"
+            name="Heater"
+            unit="boolean"
+            curve="step"
+          />
+        </pct-chart>
+        <pct-chart-legend [chart]="chart" [value]="value()" />
+      `,
+    })
+    class Heater {
+      readonly rows = [
+        { at: 0, on: 0 },
+        { at: 10, on: 1 },
+        { at: 20, on: 0 },
+        { at: 30, on: 1 },
+      ];
+      readonly window = signal<{ from: number; to: number } | null>(null);
+      readonly value = signal<'latest' | 'sum' | 'mean' | 'none'>('mean');
+    }
+    const fixture = await render(Heater);
+    // the mean of 0, 1, 0, 1 is one half: on
+    expect(values(fixture)).toEqual(['On']);
+    fixture.componentInstance.window.set({ from: 0, to: 20 });
+    await settle(fixture);
+    // 0, 1, 0: a third, off
+    expect(values(fixture)).toEqual(['Off']);
+    fixture.componentInstance.value.set('latest');
+    await settle(fixture);
+    expect(values(fixture)).toEqual(['Off']);
+    fixture.componentInstance.window.set({ from: 0, to: 15 });
+    await settle(fixture);
+    expect(values(fixture)).toEqual(['On']);
+  });
+
+  it('types the context of its row template, and keeps the eight marker shapes', () => {
+    const context: unknown = { $implicit: null, toggle: () => undefined };
+    expect(
+      PctLegendItem.ngTemplateContextGuard(
+        null as unknown as PctLegendItem,
+        context,
+      ),
+    ).toBe(true);
+    expect(context as PctLegendItemContext).toBe(context);
+    expect(PCT_SERIES_MARKERS).toEqual([
+      'M6 1a5 5 0 1 1 0 10a5 5 0 1 1 0-10z',
+      'M1.5 1.5h9v9h-9z',
+      'M6 1l5.5 10h-11z',
+      'M6 0.5l5.5 5.5-5.5 5.5-5.5-5.5z',
+      'M6 11l-5.5-10h11z',
+      'M4.5 1h3v3.5h3.5v3h-3.5v3.5h-3v-3.5h-3.5v-3h3.5z',
+      'M6 0.8l4.5 2.6v5.2l-4.5 2.6-4.5-2.6v-5.2z',
+      'M6 0.5l1.6 3.4 3.7 0.5-2.7 2.6 0.7 3.7-3.3-1.8-3.3 1.8 0.7-3.7-2.7-2.6 3.7-0.5z',
+    ]);
+  });
+
+  it('dashes the lines only when the chart asks for it', async () => {
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `
+        <pct-chart ariaLabel="Dashed" timeZone="UTC" [distinct]="distinct()">
+          <pct-line [data]="temperature" x="at" y="value" name="Supply air" />
+        </pct-chart>
+      `,
+    })
+    class Dashed {
+      readonly temperature = temperature;
+      readonly distinct = signal<'color' | 'all'>('color');
+    }
+    const fixture = await render(Dashed);
+    const path = () =>
+      element(fixture).querySelector('path[data-pct-part="series"]')!;
+    expect(chartOf(fixture).distinct()).toBe('color');
+    expect(path().classList.contains('dashed')).toBe(false);
+    fixture.componentInstance.distinct.set('all');
+    await settle(fixture);
+    expect(path().classList.contains('dashed')).toBe(true);
   });
 });

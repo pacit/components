@@ -251,14 +251,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     the pixel through a pyramid, paths, axis slots and label layout
   - the scene with a line, its axes by unit, its table and its card, landed 2026-10-30 (`PctChart`,
     `PctLine`, `PctAxis`, `PctChartTable`, the palette across three tiers)
-  - the cursor as the platform's range, landed 2026-10-30: a model the pointer, the keys and a
-    reader move from reading to reading, the reading as its value text, a tooltip beside its line
-  - the window, landed 2026-10-30: a drag, a pinch, Ctrl with the wheel and the keys through one
-    transform, `follow`, the zoom bar as their single-pointer twin, `pctChartSync`
-  - the legend and the second channel, landed 2026-10-30: a mark draws its series' swatch —
-    colour, dash and marker — for the legend, the tooltip and the cursor's markers; the legend
-    toggles the hidden series and writes a value beside each
-  - then
+  - landed 2026-10-30: the cursor as the platform's range, moved from reading to reading by the
+    pointer, the keys and a reader, with a tooltip; the window by a drag, a pinch, the wheel and
+    the keys through one transform, `follow`, the zoom bar as their twin, `pctChartSync`; the
+    legend, and each series' swatch — colour, dash and marker — drawn by its mark (0102)
   - then bars with a period compared by position, references and spans, a band of states,
     points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
     generated description; a canvas layer only behind a measurement
