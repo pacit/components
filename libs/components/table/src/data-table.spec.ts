@@ -1295,3 +1295,414 @@ describe('PctDataTable — after the review', () => {
     ).toEqual([]);
   });
 });
+
+const looks = col.of([
+  col.key('name', { header: 'Name', tooltip: true }),
+  col.key('room', {
+    header: 'Room',
+    tooltip: (device) => `${device.name} in ${device.room}`,
+  }),
+  col.key('power', {
+    header: 'Power',
+    kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+    tone: (power, device) =>
+      power !== null && power > 1000 && device.room === 'Kitchen'
+        ? 'danger'
+        : null,
+  }),
+  col.key('on', { header: 'On', kind: 'boolean', tooltip: true }),
+  col.key('seen', { header: 'Seen', filter: false }),
+  col.key('id', {
+    header: 'Id',
+    filter: (id, word) => String(id) === word,
+  }),
+]);
+
+@Component({
+  imports: [PctDataTable, PctCellTemplate],
+  template: `
+    <pct-data-table
+      [rows]="rows()"
+      [columns]="columns"
+      [rowId]="byId"
+      caption="Devices"
+      locale="pl"
+      [(filter)]="filter"
+      [(sort)]="sort"
+      [striped]="striped()"
+      [rowNumbers]="numbers()"
+      [rowTone]="rowTone()"
+      [highlightMatches]="marks()"
+      [highlightChanges]="changes()"
+      [clientFilter]="clientFilter()"
+      [filterWith]="filterWith()"
+      [loading]="loading()"
+    >
+      @if (slotted()) {
+        <ng-template [pctCell]="columns" pctCellOf="name" let-value="value">
+          <b>{{ value }}</b>
+        </ng-template>
+      }
+    </pct-data-table>
+  `,
+})
+class LookHost {
+  readonly table = viewChild.required(PctDataTable<Device>);
+  readonly columns = looks;
+  readonly byId = byId;
+  readonly rows = signal<readonly Device[]>(DEVICES);
+  readonly filter = signal('');
+  readonly sort = signal<
+    readonly PctTableSort<'name' | 'room' | 'power' | 'on' | 'seen' | 'id'>[]
+  >([]);
+  readonly striped = signal(false);
+  readonly numbers = signal(false);
+  readonly rowTone = signal<((row: Device) => 'info' | null) | null>(null);
+  readonly marks = signal(true);
+  readonly changes = signal(false);
+  readonly clientFilter = signal(true);
+  readonly filterWith = signal<((row: Device) => boolean) | null>(null);
+  readonly loading = signal(false);
+  readonly slotted = signal(false);
+}
+
+const host = () => document.querySelector('pct-data-table') as HTMLElement;
+const cells = (row: number) =>
+  Array.from(body()[row].querySelectorAll('td')) as HTMLElement[];
+const marks = (cell: Element) =>
+  Array.from(cell.querySelectorAll('mark')).map((mark) => mark.textContent);
+
+describe('PctDataTable — the look of the rows', () => {
+  it('stripes, numbers, tones, marks and flashes nothing unless asked, but marks by default', async () => {
+    const fixture = await render(Host);
+    expect(host().hasAttribute('data-pct-striped')).toBe(false);
+    expect(headers()).toHaveLength(5);
+    expect(document.querySelector('[data-pct-tone]')).toBeNull();
+    expect(document.querySelector('[title]')).toBeNull();
+    expect(document.querySelector('[data-pct-tooltip]')).toBeNull();
+    expect(document.querySelector('mark')).toBeNull();
+    fixture.componentInstance.filter.set('kit');
+    await settle(fixture);
+    expect(marks(cells(0)[1])).toEqual(['Kit']);
+    expect(
+      cells(0)[1].querySelector('mark')?.getAttribute('data-pct-part'),
+    ).toBe('mark');
+    fixture.componentInstance.rows.set([
+      { ...DEVICES[0], power: 99 },
+      DEVICES[1],
+    ]);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+  });
+
+  it('stripes the rows on the host’s word', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.striped.set(true);
+    await settle(fixture);
+    expect(host().getAttribute('data-pct-striped')).toBe('');
+    fixture.componentInstance.striped.set(false);
+    await settle(fixture);
+    expect(host().hasAttribute('data-pct-striped')).toBe(false);
+  });
+
+  it('numbers the rows as they stand, in a column of its own that does not sort', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.numbers.set(true);
+    fixture.componentInstance.sort.set([
+      { key: 'name', direction: 'ascending' },
+    ]);
+    await settle(fixture);
+    const first = headers()[0];
+    expect((first.textContent ?? '').trim()).toBe('#');
+    expect(first.getAttribute('scope')).toBe('col');
+    expect(first.hasAttribute('data-pct-numeric')).toBe(true);
+    expect(first.querySelector('[data-pct-part="toggle"]')).toBeNull();
+    expect(texts().map((row) => row.slice(0, 2))).toEqual([
+      ['1', 'Boiler'],
+      ['2', 'Lamp'],
+      ['3', 'Sensor'],
+    ]);
+    expect(cells(0)[0].tagName).toBe('TD');
+    expect(cells(0)[0].hasAttribute('data-pct-numeric')).toBe(true);
+    fixture.componentInstance.rows.set([]);
+    fixture.componentInstance.loading.set(true);
+    await settle(fixture);
+    expect(body()[0].querySelectorAll('td')).toHaveLength(7);
+  });
+
+  it('tones a row by its own function and a cell by its value and its row', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.rowTone.set((device) =>
+      device.on ? 'info' : null,
+    );
+    await settle(fixture);
+    expect(body().map((tr) => tr.getAttribute('data-pct-tone'))).toEqual([
+      'info',
+      null,
+      'info',
+    ]);
+    expect(cells(1)[2].getAttribute('data-pct-tone')).toBe('danger');
+    expect(cells(0)[2].hasAttribute('data-pct-tone')).toBe(false);
+    fixture.componentInstance.rows.set([{ ...DEVICES[1], room: 'Hall' }]);
+    await settle(fixture);
+    expect(cells(0)[2].hasAttribute('data-pct-tone')).toBe(false);
+  });
+
+  it('writes a column’s own tooltip on every cell, and cuts a text column to one line', async () => {
+    const fixture = await render(LookHost);
+    expect(cells(0)[1].getAttribute('title')).toBe('Lamp in Kitchen');
+    expect(cells(0)[0].getAttribute('title')).toBeNull();
+    const name = cells(0)[0];
+    expect(name.getAttribute('data-pct-tooltip')).toBe('');
+    const clip = name.firstElementChild as HTMLElement;
+    expect(clip.className).toBe('pct-data-table__clip');
+    expect(clip.textContent).toBe('Lamp');
+    // A boolean draws a mark and a word, and a template its own content: neither is cut.
+    expect(cells(0)[3].hasAttribute('data-pct-tooltip')).toBe(false);
+    fixture.componentInstance.slotted.set(true);
+    await settle(fixture);
+    expect(cells(0)[0].hasAttribute('data-pct-tooltip')).toBe(false);
+  });
+
+  it('shows a cut cell’s whole text under the pointer, and takes it off when it fits', async () => {
+    await render(LookHost);
+    const name = cells(1)[0];
+    const clip = name.firstElementChild as HTMLElement;
+    const width = (scroll: number) => {
+      Object.defineProperty(clip, 'scrollWidth', {
+        configurable: true,
+        value: scroll,
+      });
+      Object.defineProperty(clip, 'clientWidth', {
+        configurable: true,
+        value: 40,
+      });
+    };
+    width(41);
+    clip.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    expect(name.getAttribute('title')).toBe('Boiler');
+    width(40);
+    clip.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    expect(name.hasAttribute('title')).toBe(false);
+    // A cell with no tooltip of its kind is left as it is.
+    const room = cells(1)[1];
+    room.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+    expect(room.getAttribute('title')).toBe('Boiler in Kitchen');
+  });
+
+  it('marks the words the filter found in the text it read, and only there', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.filter.set('kitchen 9');
+    await settle(fixture);
+    expect(names()).toEqual(['Boiler']);
+    const [name, room, power, , seen] = cells(0);
+    expect(marks(room)).toEqual(['Kitchen']);
+    expect(marks(power)).toEqual(['99']);
+    expect((power.textContent ?? '').trim()).toBe(`1899,5${NBSP}kWh`);
+    // A column the filter does not read, and one it asks a function of, mark nothing.
+    expect(marks(seen)).toEqual([]);
+    expect(marks(name)).toEqual([]);
+    fixture.componentInstance.filter.set('2');
+    await settle(fixture);
+    expect(names()).toEqual(['Lamp', 'Boiler']);
+    expect(marks(cells(1)[5])).toEqual([]);
+    expect(marks(cells(0)[2])).toEqual(['2']);
+  });
+
+  it('marks a cut cell too, inside its one line', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.filter.set('oil');
+    await settle(fixture);
+    const clip = cells(0)[0].firstElementChild as HTMLElement;
+    expect(clip.className).toBe('pct-data-table__clip');
+    expect(marks(clip)).toEqual(['oil']);
+    expect(clip.textContent).toBe('Boiler');
+  });
+
+  it('marks nothing where the table’s own filter did not decide', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.filter.set('kit');
+    fixture.componentInstance.marks.set(false);
+    await settle(fixture);
+    expect(document.querySelector('mark')).toBeNull();
+    fixture.componentInstance.marks.set(true);
+    fixture.componentInstance.clientFilter.set(false);
+    await settle(fixture);
+    expect(document.querySelector('mark')).toBeNull();
+    fixture.componentInstance.clientFilter.set(true);
+    fixture.componentInstance.filterWith.set(() => true);
+    await settle(fixture);
+    expect(document.querySelector('mark')).toBeNull();
+    fixture.componentInstance.filterWith.set(null);
+    fixture.componentInstance.slotted.set(true);
+    await settle(fixture);
+    expect(marks(cells(0)[0])).toEqual([]);
+    expect(marks(cells(0)[1])).toEqual(['Kit']);
+  });
+
+  it('flashes a cell whose value changed, and nothing on the first render, a new row or the same date', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.changes.set(true);
+    fixture.componentInstance.numbers.set(true);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+    const extra: Device = { ...DEVICES[2], id: 4, name: 'Fan' };
+    fixture.componentInstance.rows.set([
+      DEVICES[1],
+      { ...DEVICES[0], power: 13 },
+      DEVICES[2],
+      extra,
+    ]);
+    await settle(fixture);
+    const changed = Array.from(document.querySelectorAll('[data-pct-changed]'));
+    // The lamp moved to the second line, and its power is its fourth cell after the number.
+    expect(changed).toEqual([cells(1)[3]]);
+    expect(changed[0].getAttribute('data-pct-changed')).toBe('');
+    changed[0].dispatchEvent(new Event('animationend', { bubbles: true }));
+    expect(changed[0].hasAttribute('data-pct-changed')).toBe(false);
+    fixture.componentInstance.rows.set([
+      DEVICES[1],
+      { ...DEVICES[0], power: 14 },
+      DEVICES[2],
+      extra,
+    ]);
+    await settle(fixture);
+    expect(cells(1)[3].hasAttribute('data-pct-changed')).toBe(true);
+    fixture.componentInstance.rows.set([
+      DEVICES[1],
+      { ...DEVICES[0], power: 15 },
+      DEVICES[2],
+      extra,
+    ]);
+    await settle(fixture);
+    expect(cells(1)[3].hasAttribute('data-pct-changed')).toBe(true);
+  });
+
+  it('compares a date by its time, and forgets the values while it is off', async () => {
+    interface Reading {
+      id: number;
+      at: Date;
+      value: number;
+    }
+    const of = pctColumnsOf<Reading>();
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Readings"
+        [highlightChanges]="changes()"
+      />`,
+    })
+    class DateHost {
+      readonly rows = signal<readonly Reading[]>([
+        { id: 1, at: new Date(HOUR), value: 1 },
+      ]);
+      readonly columns = of.of([
+        of.key('at', { header: 'At' }),
+        of.key('value', { header: 'Value' }),
+      ]);
+      readonly byId = (reading: Reading) => reading.id;
+      readonly changes = signal(true);
+    }
+    const fixture = await render(DateHost);
+    fixture.componentInstance.rows.set([
+      { id: 1, at: new Date(HOUR), value: 1 },
+    ]);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+    fixture.componentInstance.rows.set([
+      { id: 1, at: new Date(2 * HOUR), value: 1 },
+    ]);
+    await settle(fixture);
+    expect(cells(0)[0].hasAttribute('data-pct-changed')).toBe(true);
+    expect(cells(0)[1].hasAttribute('data-pct-changed')).toBe(false);
+    cells(0)[0].removeAttribute('data-pct-changed');
+    fixture.componentInstance.changes.set(false);
+    await settle(fixture);
+    fixture.componentInstance.rows.set([
+      { id: 1, at: new Date(2 * HOUR), value: 2 },
+    ]);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+    fixture.componentInstance.changes.set(true);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
+  });
+
+  it('says once that two columns share an id', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows"
+        [columns]="columns()"
+        [rowId]="byId"
+        caption="Twins"
+      />`,
+    })
+    class TwinHost {
+      readonly rows = DEVICES;
+      readonly columns = signal(
+        col.of([
+          col.key('name', { header: 'Name' }),
+          col.key('room', { header: 'Room' }),
+        ]),
+      );
+      readonly byId = byId;
+    }
+    const fixture = await render(TwinHost);
+    const twins = () =>
+      warn.mock.calls.filter(([text]) =>
+        String(text).includes('columns share'),
+      );
+    expect(twins()).toEqual([]);
+    const twin = col.of([
+      col.key('name', { header: 'Name' }),
+      col.key('room', { header: 'Room' }),
+      col.key('name', { header: 'Name again' }),
+    ]);
+    fixture.componentInstance.columns.set(twin as never);
+    await settle(fixture);
+    fixture.componentInstance.columns.set([...twin] as never);
+    await settle(fixture);
+    expect(twins()).toEqual([
+      [
+        '[pct-data-table] Two columns share the id "name": a cell template, the sort and the filter name a column by its id, so each needs its own.',
+      ],
+    ]);
+  });
+
+  it('reads each value once for the filter and the body together', async () => {
+    let reads = 0;
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Counted"
+        [(filter)]="filter"
+      />`,
+    })
+    class CountHost {
+      readonly rows = DEVICES;
+      readonly columns = col.of([
+        col.value(
+          'name',
+          (device) => {
+            reads++;
+            return device.name;
+          },
+          { header: 'Name' },
+        ),
+      ]);
+      readonly byId = byId;
+      readonly filter = signal('o');
+    }
+    await render(CountHost);
+    expect(names()).toEqual(['Boiler', 'Sensor']);
+    expect(reads).toBe(DEVICES.length);
+  });
+});

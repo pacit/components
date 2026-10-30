@@ -2327,6 +2327,77 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "$comment": "The data table's row surfaces, each under the text of a cell, which keeps its colour on them.",
+      "name": "data table — the text of a cell on a row under the pointer",
+      "fg": "pct.table.fg",
+      "bg": "pct.table.bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a cell on a striped row",
+      "fg": "pct.table.fg",
+      "bg": "pct.table.bg-striped",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a cell as it flashes",
+      "fg": "pct.table.fg",
+      "bg": "pct.table.bg-changed",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a row or a cell in the success tone",
+      "fg": "pct.table.fg-success",
+      "bg": "pct.table.bg-success",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a row or a cell in the warning tone",
+      "fg": "pct.table.fg-warning",
+      "bg": "pct.table.bg-warning",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a row or a cell in the danger tone",
+      "fg": "pct.table.fg-danger",
+      "bg": "pct.table.bg-danger",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the text of a row or a cell in the info tone",
+      "fg": "pct.table.fg-info",
+      "bg": "pct.table.bg-info",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the number of a row",
+      "fg": "pct.table.fg-muted",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — the number of a row on a striped row",
+      "fg": "pct.table.fg-muted",
+      "bg": "pct.table.bg-striped",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "data table — a word the quick filter found",
+      "fg": "pct.table.mark-fg",
+      "bg": "pct.table.mark-bg",
+      "level": "AA",
+      "severity": "error"
     }
   ]
 }

@@ -26,7 +26,7 @@ checkbox 17 6 7 1
 chips 22 6 6 1
 columns 79 3 78 1
 container 2 2 0 1
-datatable 34 10 7 1
+datatable 34 10 9 1
 date 10 6 4 1
 datetime 13 6 8 1
 dialog 3 2 3 1
@@ -71,44 +71,44 @@ day as the counts beside them. jsdom lays nothing out, so this is the library's 
 work — templates, signals, listeners — and not a browser's.
 
 ```
-accordion 8298
-avatar 3174
-badge 2195
-breadcrumb 5762
-button 5656
-calendar 18030
-checkbox 5483
-chips 4886
-columns 17851
-container 1003
-datatable 17317
-date 4601
-datetime 6898
-dialog 3446
-drawer 4713
-field 5898
-grid 1496
-hero 2297
-icon 11944
-menu 4752
-number 5888
-pagination 6323
-popover 3527
-progress 3945
-radio 5068
-select 5878
-skeleton 3435
-slider 5039
-stack 1020
-stepper 5865
-switch 2368
-table 6591
-tabs 4093
-text 3455
-textarea 11339
-theme 2304
-time 4378
-toast 2689
-tooltip 2462
-tree 5680
+accordion 9892
+avatar 3783
+badge 2179
+breadcrumb 5363
+button 5261
+calendar 18186
+checkbox 5261
+chips 5459
+columns 18816
+container 1020
+datatable 18759
+date 4801
+datetime 7560
+dialog 3175
+drawer 4861
+field 5737
+grid 1634
+hero 2131
+icon 11449
+menu 4370
+number 5944
+pagination 5765
+popover 3864
+progress 3910
+radio 4558
+select 5720
+skeleton 3601
+slider 5034
+stack 1150
+stepper 6190
+switch 2625
+table 6815
+tabs 4477
+text 3695
+textarea 12456
+theme 2089
+time 4374
+toast 2589
+tooltip 2657
+tree 5200
 ```

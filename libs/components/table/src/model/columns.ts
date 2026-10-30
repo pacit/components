@@ -1,6 +1,7 @@
 import type {
   PctQuantityOptions,
   PctRelativeOptions,
+  PctTone,
 } from '@pacit/components/core';
 
 /**
@@ -126,14 +127,33 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
   readonly filter?: boolean | ((value: V, word: string) => boolean);
   /** Aligns the column to the end with tabular digits; by default only a number kind does. */
   readonly numeric?: boolean;
+  /**
+   * The tone a cell wears, from its value and its row: a tint behind the cell. A tone repeats
+   * what the cell says and never says it alone — a tint is gone for a reader who cannot tell
+   * the colours apart and in forced colours
+   * ([0076](../../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)) — so
+   * a column of states wears the tone of the word it writes.
+   */
+  readonly tone?: (value: V, row: T) => PctTone | null;
+  /**
+   * A cell's text in a tooltip: `true` keeps the cell to one line, cut with an ellipsis at the
+   * column's widest, and shows the whole text under the pointer when it is cut; a function
+   * writes the tooltip of every cell itself. The text is whole in the tree either way, so a
+   * reader hears all of it.
+   */
+  readonly tooltip?: boolean | ((row: T) => string);
 }
 
 /**
- * What a consumer writes beside the key or the accessor when building a column.
+ * What a consumer writes beside the key or the accessor when building a column: `V` the
+ * value's type, `T` the row's, which a tone and a tooltip read.
  *
  * @since next
  */
-export type PctColumnSpec<V> = Omit<PctColumn<unknown, V>, 'id' | 'value'>;
+export type PctColumnSpec<V, T = unknown> = Omit<
+  PctColumn<T, V>,
+  'id' | 'value'
+>;
 
 /**
  * The engine's view of one column of any value type.
@@ -192,7 +212,7 @@ export type PctColumns<T, M extends Record<string, unknown>> = readonly {
 export function pctColumnsOf<T>(): {
   key<K extends keyof T & string>(
     key: K,
-    spec: PctColumnSpec<T[K]>,
+    spec: PctColumnSpec<T[K], T>,
   ): PctColumn<T, T[K], K>;
   value<
     Id extends string,
@@ -201,7 +221,7 @@ export function pctColumnsOf<T>(): {
   >(
     id: Id,
     value: (row: T) => V,
-    spec: Omit<PctColumnSpec<V>, 'kind'> & { readonly kind?: K },
+    spec: Omit<PctColumnSpec<V, T>, 'kind'> & { readonly kind?: K },
   ): PctColumn<T, V, Id>;
   of<C extends readonly PctAnyColumn<T>[]>(
     columns: C,

@@ -17,7 +17,11 @@
     }
     <thead>
       <tr>
-        @for (head of heads(); track head.column.id) {
+        @if (rowNumbers()) {
+        <th pctHeader scope="col" numeric class="pct-data-table__number">
+          {{ texts().tableRowNumber }}
+        </th>
+        } @for (head of heads(); track head.column.id) {
         <th
           pctHeader
           scope="col"
@@ -44,14 +48,24 @@
     <tbody [attr.aria-busy]="loading() ? 'true' : null">
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
-        @for (head of heads(); track head.column.id) {
+        @if (rowNumbers()) {
+        <td pctCell></td>
+        } @for (head of heads(); track head.column.id) {
         <td pctCell><pct-skeleton /></td>
         }
       </tr>
       } @for (row of body(); track row.key) {
-      <tr [attr.data-pct-index]="$index">
-        @for (cell of row.cells; track cell.column.id) {
-        <td pctCell [numeric]="cell.numeric">
+      <tr [attr.data-pct-index]="$index" [attr.data-pct-tone]="row.tone">
+        @if (rowNumbers()) {
+        <td pctCell numeric class="pct-data-table__number">{{ $index + 1 }}</td>
+        } @for (cell of row.cells; track cell.column.id) {
+        <td
+          pctCell
+          [numeric]="cell.numeric"
+          [attr.data-pct-tone]="cell.tone"
+          [attr.title]="cell.title"
+          [attr.data-pct-tooltip]="cell.clip ? '' : null"
+        >
           @if (cell.slot) {
           <ng-container
             [ngTemplateOutlet]="cell.slot"
@@ -62,8 +76,7 @@
                     index: row.index,
                   }"
           />
-          } @else if (cell.yes === null) { {{ cell.text }} } @else { @if
-          (cell.yes) {
+          } @else if (cell.yes !== null) { @if (cell.yes) {
           <pct-icon name="check" class="pct-data-table__yes">
             <svg
               viewBox="0 0 16 16"
@@ -81,7 +94,17 @@
           </pct-icon>
           }
           <span class="pct-data-table__word">{{ cell.text }}</span>
-          }
+          } @else if (cell.clip || cell.parts) {
+          <!-- One line cut at the column's widest, or a text with the found words marked: the
+               span holds either, so the marks are drawn by one loop. -->
+          <span [class.pct-data-table__clip]="cell.clip"
+            >@if (cell.parts) { @for (part of cell.parts; track $index) { @if
+            (part.match) {<mark data-pct-part="mark">{{ part.text }}</mark>}
+            @else {<ng-container>{{ part.text }}</ng-container>} } } @else {
+            <ng-container>{{ cell.text }}</ng-container>
+            }</span
+          >
+          } @else { {{ cell.text }} }
         </td>
         }
       </tr>

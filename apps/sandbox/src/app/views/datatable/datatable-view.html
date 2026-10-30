@@ -97,6 +97,25 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Devices at a glance"
+  summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state and a low battery toned by their values, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
+  [reqs]="['req-a11y-forced-colors']"
+  data-testid="demo-devices"
+>
+  <pct-data-table
+    data-testid="table-devices"
+    caption="Devices"
+    locale="en"
+    striped
+    rowNumbers
+    [rows]="devices"
+    [columns]="deviceColumns"
+    [rowId]="deviceId"
+    [rowTone]="deviceTone"
+  />
+</sbx-demo>
+
+<sbx-demo
   heading="Live readings"
   summary="Every two seconds the energy moves and the ids stay, so every row keeps its element: a switch with the focus keeps it, and the frame keeps its scroll."
   [reqs]="['req-api-platform']"
@@ -110,6 +129,7 @@
     [columns]="columns"
     [rowId]="byId"
     [now]="now"
+    highlightChanges
     [(filter)]="liveQuestion"
   >
     <ng-template
