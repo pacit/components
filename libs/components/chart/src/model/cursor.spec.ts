@@ -133,6 +133,94 @@ describe('pctCursorStep', () => {
   });
 });
 
+describe('pctCursorStep, at the edges of its arithmetic', () => {
+  it('moves to the very next reading when a pixel is nothing', () => {
+    const twice = of([
+      [0, 1],
+      [5, 2],
+      [5, 3],
+      [9, 4],
+    ]);
+    expect(pctCursorStep([twice], 5, -1, all, 0)).toBe(0);
+    expect(pctCursorStep([twice], 5, 1, all, 0)).toBe(9);
+    expect(pctCursorStep([sparse], 0, 1, all, 0)).toBe(10);
+    expect(pctCursorStep([sparse], 40, -1, all, 0)).toBe(30);
+  });
+
+  it('takes the first of two readings at one position, a gap the other', () => {
+    const half = of([
+      [0, 1],
+      [5, 2],
+      [5, NaN],
+      [9, 4],
+    ]);
+    expect(pctCursorStep([half], null, 1, { from: 5, to: 9 }, 1)).toBe(5);
+    expect(pctCursorStep([half], 9, -1, all, 0)).toBe(5);
+    expect(pctCursorJump([half], 5, 1, all)).toBe(5);
+    expect(pctCursorJump([half], 5, -1, all)).toBe(5);
+  });
+
+  it('holds to the window whichever series has the nearer reading', () => {
+    const early = of([
+      [-5, 1],
+      [2, 1],
+    ]);
+    const late = of([
+      [3, 1],
+      [60, 1],
+    ]);
+    expect(pctCursorStep([early, late], null, 1, all, 1)).toBe(2);
+    expect(pctCursorStep([late, early], null, -1, all, 1)).toBe(3);
+    expect(pctCursorStep([early, late], 3, -1, { from: 0, to: 50 }, 1)).toBe(2);
+    expect(pctCursorStep([late, early], 2, 1, { from: 0, to: 50 }, 1)).toBe(3);
+  });
+
+  it('walks a gap at either end of the readings off the end', () => {
+    expect(
+      pctCursorStep(
+        [
+          of([
+            [0, NaN],
+            [1, NaN],
+          ]),
+        ],
+        null,
+        1,
+        all,
+        1,
+      ),
+    ).toBeNull();
+    expect(
+      pctCursorStep(
+        [
+          of([
+            [0, NaN],
+            [1, NaN],
+          ]),
+        ],
+        null,
+        -1,
+        all,
+        1,
+      ),
+    ).toBeNull();
+    expect(
+      pctCursorStep(
+        [
+          of([
+            [0, 1],
+            [1, NaN],
+          ]),
+        ],
+        0,
+        1,
+        all,
+        0,
+      ),
+    ).toBe(0);
+  });
+});
+
 describe('pctCursorJump', () => {
   it('goes to the first reading at the target or beyond it', () => {
     expect(pctCursorJump([sparse, other], 12, 1, all)).toBe(25);

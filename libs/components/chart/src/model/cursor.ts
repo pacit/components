@@ -12,28 +12,31 @@ function beyond(
   direction: 1 | -1,
   inclusive: boolean,
 ): number | null {
-  const { xs, ys, length } = columns;
-  // The last index at or before `x`; the walk starts one step past it in the direction asked.
+  const { xs, ys } = columns;
+  // The last index at or before `x`, and the first of the run of readings on `x` itself when
+  // there is one: the walk starts on it (taken) or steps back from it (passed). An index off
+  // either end reads `undefined`, which is no position and no gap, so the walk stops there.
   const at = pctIndexAt(columns, x);
+  const on = xs[at] === x ? firstAt(columns, at) : null;
   let i =
     direction === 1
-      ? inclusive && at >= 0 && xs[at] === x
-        ? firstAt(columns, at)
+      ? inclusive && on !== null
+        ? on
         : at + 1
       : inclusive
         ? at
-        : at >= 0 && xs[at] === x
-          ? firstAt(columns, at) - 1
+        : on !== null
+          ? on - 1
           : at;
   // A gap is no reading: the walk steps over it, as many as there are.
-  while (i >= 0 && i < length && Number.isNaN(ys[i])) i += direction;
-  return i >= 0 && i < length ? xs[i] : null;
+  while (Number.isNaN(ys[i])) i += direction;
+  return xs[i] ?? null;
 }
 
 /** The first index of the run of readings at the position of `at`. */
 function firstAt(columns: PctColumns, at: number): number {
   let i = at;
-  while (i > 0 && columns.xs[i - 1] === columns.xs[at]) i--;
+  while (columns.xs[i - 1] === columns.xs[at]) i--;
   return i;
 }
 
