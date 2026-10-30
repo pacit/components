@@ -619,3 +619,224 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     await expect(page.getByTestId('single-state')).toHaveText('Copied: 4.');
   });
 });
+
+/**
+ * The window over a hundred thousand registers and a million, in three engines: how many rows
+ * it draws, what it tells a reader, where the last row is, that a scroll up through rows of
+ * two heights moves what is read by the scroll alone, that the columns keep their widths, and
+ * that the live values keep the focus and the scroll.
+ */
+test.describe('PctTableWindow — a hundred thousand registers', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const registers = (page: Page) => page.getByTestId('table-registers');
+  const frameOf = (table: Locator) =>
+    table.locator(':scope > pct-table-frame');
+
+  /** Two frames: what a scroll writes has been measured and drawn by then. */
+  const settle = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<void>((done) =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => requestAnimationFrame(() => done())),
+          ),
+        ),
+    );
+
+  const choose = async (page: Page, count: number) => {
+    await page.getByTestId(`registers-${count}`).click();
+    await expect(registers(page).locator('table')).toHaveAttribute(
+      'aria-rowcount',
+      String(count + 1),
+    );
+    await settle(page);
+  };
+
+  /** The row stands whole in the frame's view, below the sticky header. */
+  const expectInFrame = async (frame: Locator, row: Locator) => {
+    await expect
+      .poll(() =>
+        row.evaluate((tr, element) => {
+          const box = tr.getBoundingClientRect();
+          const view = (element as HTMLElement).getBoundingClientRect();
+          const head = (
+            (element as HTMLElement).querySelector('thead') as HTMLElement
+          ).getBoundingClientRect().bottom;
+          return box.top >= head - 1 && box.bottom <= view.bottom + 1;
+        }, await frame.elementHandle()),
+      )
+      .toBe(true);
+  };
+
+  /** The row at the top of the view, under the sticky header, and where it stands. */
+  const atTop = (frame: Locator) =>
+    frame.evaluate((element) => {
+      const head = (element.querySelector('thead') as HTMLElement)
+        .getBoundingClientRect().bottom;
+      const row = Array.from(
+        element.querySelectorAll<HTMLElement>('tbody tr'),
+      ).find((tr) => tr.getBoundingClientRect().bottom > head + 1);
+      if (!row) throw new Error('no row under the header');
+      return {
+        index: row.dataset['pctIndex'] as string,
+        y: row.getBoundingClientRect().top,
+      };
+    });
+
+  test('draws the rows its frame shows, tells a reader the count, and reaches the last row', async ({
+    page,
+  }) => {
+    await choose(page, 100_000);
+    const table = registers(page);
+    const frame = frameOf(table);
+    const drawn = table.locator('tbody tr');
+    await expect.poll(() => drawn.count()).toBeLessThanOrEqual(60);
+    expect(await drawn.count()).toBeGreaterThan(5);
+    await expect(table.locator('thead tr')).toHaveAttribute(
+      'aria-rowindex',
+      '1',
+    );
+    await expect(drawn.first()).toHaveAttribute('aria-rowindex', '2');
+    // The scrollbar is the whole list's: a hundred thousand rows of the height most rows have,
+    // and every twenty-fifth one taller.
+    const { height, scroll } = await frame.evaluate((element) => {
+      const heights = Array.from(element.querySelectorAll('tbody tr'))
+        .map((tr) => tr.getBoundingClientRect().height)
+        .sort((a, b) => a - b);
+      return {
+        height: heights[Math.floor(heights.length / 2)],
+        scroll: element.scrollHeight,
+      };
+    });
+    expect(scroll).toBeGreaterThan(100_000 * height * 0.99);
+    expect(scroll).toBeLessThan(100_000 * height * 1.1);
+    // A jump to the end draws the last row, numbered as ARIA counts the rows.
+    await frame.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    const last = table.locator('tbody tr').last();
+    await expect(last).toHaveAttribute('aria-rowindex', '100001');
+    await expect(last.locator('td').first()).toHaveText('140000');
+    await expectInFrame(frame, last);
+  });
+
+  test('a scroll up through rows of two heights moves what is on screen by the scroll, and no more', async ({
+    page,
+  }) => {
+    await choose(page, 100_000);
+    const frame = frameOf(registers(page));
+    await frame.evaluate((element) => {
+      element.scrollTop = element.scrollHeight / 2;
+    });
+    await settle(page);
+    for (let step = 0; step < 30; step++) {
+      const before = await atTop(frame);
+      await frame.evaluate((element) => {
+        element.scrollTop -= 200;
+      });
+      await settle(page);
+      const y = await frame
+        .locator(`tbody tr[data-pct-index="${before.index}"]`)
+        .evaluate((tr) => tr.getBoundingClientRect().top);
+      expect(Math.abs(y - before.y - 200)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('the columns keep the widths of the first frame, wherever the frame stands', async ({
+    page,
+  }) => {
+    await choose(page, 100_000);
+    const frame = frameOf(registers(page));
+    const widths = () =>
+      frame.evaluate((element) =>
+        Array.from(element.querySelectorAll('thead th')).map(
+          (th) => th.getBoundingClientRect().width,
+        ),
+      );
+    const first = await widths();
+    for (const at of [0.5, 1]) {
+      await frame.evaluate((element, share) => {
+        element.scrollTop = element.scrollHeight * share;
+      }, at);
+      await settle(page);
+      const now = await widths();
+      now.forEach((width, c) =>
+        expect(Math.abs(width - first[c])).toBeLessThanOrEqual(0.5),
+      );
+    }
+  });
+
+  test('a million rows: the space under the tallest box, the last row reached, the middle in the middle', async ({
+    page,
+  }) => {
+    await choose(page, 1_000_000);
+    const table = registers(page);
+    const frame = frameOf(table);
+    const { scroll, client } = await frame.evaluate((element) => ({
+      scroll: element.scrollHeight,
+      client: element.clientHeight,
+    }));
+    expect(scroll).toBeLessThanOrEqual(16_000_000 + 200);
+    expect(scroll).toBeGreaterThan(15_000_000);
+    await frame.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(table.locator('tbody tr').last()).toHaveAttribute(
+      'aria-rowindex',
+      '1000001',
+    );
+    await frame.evaluate(
+      (element, top) => {
+        element.scrollTop = top;
+      },
+      (scroll - client) / 2,
+    );
+    await settle(page);
+    const first = Number((await atTop(frame)).index);
+    expect(Math.abs(first - 500_000)).toBeLessThanOrEqual(5_000);
+    // `scrollTo` reaches a row the window has not drawn.
+    await frame.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await settle(page);
+    await page.getByTestId('registers-last').click();
+    await expectInFrame(
+      frame,
+      table.locator('tbody tr[aria-rowindex="1000001"]'),
+    );
+  });
+
+  test('live values on a hundred thousand rows keep the focus in a switch, and the scroll', async ({
+    page,
+  }) => {
+    await choose(page, 100_000);
+    await page.getByTestId('registers-live').getByRole('switch').click();
+    const table = registers(page);
+    const frame = frameOf(table);
+    await frame.evaluate((element) => {
+      element.scrollTop = 40_000 * 40;
+    });
+    await settle(page);
+    const top = await frame.evaluate((element) => element.scrollTop);
+    const row = table.locator('tbody tr').nth(10);
+    const value = row.locator('td').nth(2);
+    const was = await value.textContent();
+    const toggle = row.getByRole('switch');
+    await toggle.focus();
+    const name = await toggle.getAttribute('aria-label');
+    await expect.poll(() => value.textContent(), { timeout: 6000 }).not.toBe(
+      was,
+    );
+    await expect(
+      table.getByRole('switch', { name: name as string, exact: true }),
+    ).toBeFocused();
+    expect(
+      Math.abs(
+        (await frame.evaluate((element) => element.scrollTop)) - top,
+      ),
+    ).toBeLessThanOrEqual(1);
+  });
+});

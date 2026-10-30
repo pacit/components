@@ -14,6 +14,7 @@ import {
   PctTableGroups,
   PctTableSelection,
   type PctTableSort,
+  PctTableWindow,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
 
@@ -98,6 +99,37 @@ const DEVICES: readonly Device[] = [
 
 const dev = pctColumnsOf<Device>();
 
+interface Register {
+  readonly id: number;
+  readonly address: number;
+  readonly name: string;
+  readonly value: number;
+  readonly unit: string;
+  readonly enabled: boolean;
+}
+
+const UNITS = ['°C', '%', 'Pa', 'kWh'];
+
+/**
+ * `count` registers of a controller. Every twenty-fifth has a name long enough to wrap in its
+ * column, so the list holds rows of two heights, as real lists do.
+ */
+function registersOf(count: number): readonly Register[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    address: 40_001 + i,
+    name:
+      i % 25 === 12
+        ? `${NAMES[i % NAMES.length]} ${i + 1}, the setpoint the schedule writes at night and the one a person writes by hand`
+        : `${NAMES[i % NAMES.length]} ${i + 1}`,
+    value: ((i * 7919) % 100_000) / 100,
+    unit: UNITS[i % UNITS.length],
+    enabled: i % 5 !== 2,
+  }));
+}
+
+const reg = pctColumnsOf<Register>();
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -119,6 +151,7 @@ const dev = pctColumnsOf<Device>();
     PctDetailsTemplate,
     PctTableGroups,
     PctTableSelection,
+    PctTableWindow,
     FormField,
   ],
   templateUrl: './datatable-view.html',
@@ -213,6 +246,25 @@ export class DatatableView {
     device.state === 'Fault' ? ('danger' as const) : null;
   protected readonly liveQuestion = signal('');
 
+  /** The registers' list sizes: the first with no window would do, the last is past the scaling. */
+  protected readonly counts = [900, 10_000, 100_000, 1_000_000] as const;
+  protected readonly count = signal<number>(10_000);
+  protected readonly registers = signal<readonly Register[]>(
+    registersOf(10_000),
+  );
+  protected readonly registerColumns = reg.of([
+    reg.key('address', { header: 'Address', numeric: true }),
+    reg.key('name', { header: 'Name' }),
+    reg.key('value', {
+      header: 'Value',
+      kind: { number: { fractionDigits: 2 } },
+    }),
+    reg.key('unit', { header: 'Unit' }),
+    reg.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
+  ]);
+  protected readonly registerId = (register: Register) => register.id;
+  protected readonly liveRegisters = signal(false);
+
   /**
    * The rules to move, as a field of a form: at least one, and more than ten move slowly —
    * a warning that lets the form through.
@@ -243,11 +295,32 @@ export class DatatableView {
     });
   }
 
+  /** Makes a list of `count` registers. */
+  protected countRegisters(count: number): void {
+    this.count.set(count);
+    this.registers.set(registersOf(count));
+  }
+
+  protected toggleRegister(register: Register, enabled: boolean): void {
+    this.registers.update((registers) =>
+      registers.map((other) =>
+        other.id === register.id ? { ...other, enabled } : other,
+      ),
+    );
+  }
+
   constructor() {
     // Every two seconds the readings move and the ids stay: the rows keep their elements.
     let tick = 0;
     const timer = setInterval(() => {
       tick++;
+      if (this.liveRegisters())
+        this.registers.update((registers) =>
+          registers.map((register) => ({
+            ...register,
+            value: Math.round((register.value + 0.25) * 100) / 100,
+          })),
+        );
       this.live.update((rules) =>
         rules.map((rule) => ({
           ...rule,
