@@ -102,3 +102,13 @@ the twin, and the card says so. A span is selected with two clicks as well as wi
 | Nested charts sharing a parent scene             | ties a band of states to a series chart; the directive ties any two scenes                      |
 | Touch events and a direction threshold by hand   | the platform already decides the vertical drag under `touch-action` (P6d)                       |
 | Gestures alone, the buttons left to the consumer | a chart that zooms would fail 2.5.1 and 2.5.7 out of the box                                    |
+
+## Amended 2026-10-30: what the window's phase settled
+
+Building the window (phase 4 of 1.11) settled three details the record left open. **The zoom
+bar stands over the plot's top corner** and follows the APG toolbar pattern — one stop, the
+arrows between its five buttons — so a reader who tabs past a chart meets two stops, the
+cursor's range and the bar, not six. **A double tap wins over a tap on the cursor's line**: two
+presses within 300 ms and 24 px return the window, and the second does not clear the cursor
+the first placed. **The gestures are a pure machine** (`pctGestureStep`), tested without a
+browser; the scene keeps its state, raises a held finger on a timer and acts on what it asks.

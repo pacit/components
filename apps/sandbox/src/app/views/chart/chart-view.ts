@@ -3,6 +3,7 @@ import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
   PctChart,
+  PctChartSync,
   PctChartTable,
   PctChartTooltip,
   PctLine,
@@ -98,6 +99,7 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctAxis,
     PctChartTable,
     PctChartTooltip,
+    PctChartSync,
     PctButton,
   ],
   templateUrl: './chart-view.html',

@@ -15,7 +15,7 @@ const glyph = (source: PctIconSource, id: string) =>
 
 /**
  * The font adapters: what classes an id becomes, what the span reads, which axes it carries
- * — and the library's eleven roles in each font's own spelling, the whole map, because a map
+ * — and the library's sixteen roles in each font's own spelling, the whole map, because a map
  * is read by a component the consumer never looks at and a wrong entry there is a wrong
  * arrow on every select (`req-api-icons`).
  */
@@ -32,6 +32,11 @@ describe('@pacit/components/icon — fonts', () => {
     'success',
     'user',
     'warning',
+    'zoom-in',
+    'zoom-out',
+    'previous',
+    'next',
+    'reset',
   ];
 
   describe('iconFont', () => {
@@ -105,7 +110,7 @@ describe('@pacit/components/icon — fonts', () => {
       ).toEqual({ kind: 'font', class: 'far fa-x' });
     });
 
-    it("carries the library's eleven roles in version 6's names", () => {
+    it("carries the library's sixteen roles in version 6's names", () => {
       expect(fontAwesome().roles).toEqual({
         calendar: 'calendar',
         check: 'check',
@@ -118,6 +123,11 @@ describe('@pacit/components/icon — fonts', () => {
         success: 'circle-check',
         user: 'user',
         warning: 'triangle-exclamation',
+        'zoom-in': 'magnifying-glass-plus',
+        'zoom-out': 'magnifying-glass-minus',
+        previous: 'chevron-left',
+        next: 'chevron-right',
+        reset: 'rotate-left',
       });
     });
 
@@ -164,7 +174,7 @@ describe('@pacit/components/icon — fonts', () => {
       });
     });
 
-    it("carries the library's eleven roles in PrimeIcons' names", () => {
+    it("carries the library's sixteen roles in PrimeIcons' names", () => {
       expect(primeIcons().roles).toEqual({
         calendar: 'calendar',
         check: 'check',
@@ -177,6 +187,11 @@ describe('@pacit/components/icon — fonts', () => {
         success: 'check-circle',
         user: 'user',
         warning: 'exclamation-triangle',
+        'zoom-in': 'search-plus',
+        'zoom-out': 'search-minus',
+        previous: 'chevron-left',
+        next: 'chevron-right',
+        reset: 'replay',
       });
       expect(primeIcons({ roles: { user: 'users' } }).roles?.user).toBe(
         'users',
@@ -192,7 +207,7 @@ describe('@pacit/components/icon — fonts', () => {
       });
     });
 
-    it("carries the library's eleven roles in Bootstrap Icons' names", () => {
+    it("carries the library's sixteen roles in Bootstrap Icons' names", () => {
       expect(bootstrapIcons().roles).toEqual({
         calendar: 'calendar',
         check: 'check-lg',
@@ -205,6 +220,11 @@ describe('@pacit/components/icon — fonts', () => {
         success: 'check-circle-fill',
         user: 'person-fill',
         warning: 'exclamation-triangle-fill',
+        'zoom-in': 'zoom-in',
+        'zoom-out': 'zoom-out',
+        previous: 'chevron-left',
+        next: 'chevron-right',
+        reset: 'arrow-counterclockwise',
       });
       expect(bootstrapIcons({ roles: { close: 'x' } }).roles?.close).toBe('x');
     });
@@ -234,7 +254,7 @@ describe('@pacit/components/icon — fonts', () => {
       );
     });
 
-    it("carries the library's eleven roles in Material's names", () => {
+    it("carries the library's sixteen roles in Material's names", () => {
       expect(materialIcons().roles).toEqual({
         calendar: 'calendar_today',
         check: 'check',
@@ -247,6 +267,11 @@ describe('@pacit/components/icon — fonts', () => {
         success: 'check_circle',
         user: 'person',
         warning: 'warning',
+        'zoom-in': 'zoom_in',
+        'zoom-out': 'zoom_out',
+        previous: 'chevron_left',
+        next: 'chevron_right',
+        reset: 'restart_alt',
       });
       expect(materialIcons({ roles: { user: 'face' } }).roles?.user).toBe(
         'face',
@@ -287,7 +312,7 @@ describe('@pacit/components/icon — fonts', () => {
       );
     });
 
-    it('carries the same eleven roles as the Icons font', () => {
+    it('carries the same sixteen roles as the Icons font', () => {
       expect(materialSymbols().roles).toEqual(materialIcons().roles);
       expect(materialSymbols({ roles: { close: 'cancel' } }).roles?.close).toBe(
         'cancel',

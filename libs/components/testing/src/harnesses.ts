@@ -145,6 +145,16 @@ export class PctChartHarness extends PctHarness<
 }
 
 /**
+ * `pct-chart-zoom` — `PctChartZoom`: the five buttons of a chart's window.
+ *
+ * @since next
+ */
+export class PctChartZoomHarness extends PctHarness<'zoom'> {
+  static override hostSelector = 'pct-chart-zoom';
+  static override readonly parts = ['zoom'] as const;
+}
+
+/**
  * `pct-line` — `PctLine`. Its drawing is stamped into the chart's data layer, so its parts are
  * found in the document rather than under its own element.
  *

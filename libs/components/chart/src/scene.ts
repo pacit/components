@@ -145,3 +145,24 @@ export abstract class PctMark {
     return null;
   }
 }
+
+/**
+ * What aligns the plots of charts that share a time axis: the room the widest value axes take
+ * on each side. `pctChartSync` provides it; a scene takes the larger of its own room and this.
+ *
+ * @since next
+ */
+@Directive({
+  // A base: no selector and no host of its own; `pctChartSync` extends it and has both.
+})
+export abstract class PctChartAlign {
+  /**
+   * The room on each side, in pixels.
+   *
+   * @since next
+   */
+  abstract readonly room: Signal<{
+    readonly left: number;
+    readonly right: number;
+  }>;
+}

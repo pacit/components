@@ -261,6 +261,18 @@ export interface PctTexts {
   readonly chartNoCursor: string;
   /** Chart: the keys of the cursor, one sentence, read as the range's description. */
   readonly chartKeys: string;
+  /** Chart: the name of the bar of zoom buttons. */
+  readonly chartZoom: string;
+  /** Chart: the button that shows half as much of the horizontal axis. */
+  readonly chartZoomIn: string;
+  /** Chart: the button that shows twice as much. */
+  readonly chartZoomOut: string;
+  /** Chart: the button that moves the window a quarter earlier. */
+  readonly chartEarlier: string;
+  /** Chart: the button that moves the window a quarter later. */
+  readonly chartLater: string;
+  /** Chart: the button that returns the window to its default. */
+  readonly chartZoomReset: string;
   /** Data table: beside a table with no rows at all. */
   readonly tableEmpty: string;
   /**
@@ -352,6 +364,12 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartNoCursor: 'No reading selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
+  chartZoom: 'Zoom',
+  chartZoomIn: 'Zoom in',
+  chartZoomOut: 'Zoom out',
+  chartEarlier: 'Earlier',
+  chartLater: 'Later',
+  chartZoomReset: 'Back to the default view',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',

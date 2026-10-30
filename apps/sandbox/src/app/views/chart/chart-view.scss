@@ -14,3 +14,8 @@
   flex-wrap: wrap;
   gap: var(--pct-space-3);
 }
+
+.sbx-chart-stack {
+  display: grid;
+  gap: var(--pct-space-2);
+}
