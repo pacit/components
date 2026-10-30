@@ -2498,6 +2498,13 @@
       "severity": "error"
     },
     {
+      "name": "UI: chart — band on surface",
+      "fg": "pct.chart.span-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — series 1 on surface",
       "fg": "pct.chart.series-color-1",
       "bg": "pct.surface",

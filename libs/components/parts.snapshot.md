@@ -48,6 +48,14 @@ from what the browser really gets.
 ./chart PctLine area
 ./chart PctLine series
 ./chart PctLine swatch
+./chart PctNote note
+./chart PctNote swatch
+./chart PctNow now
+./chart PctNow swatch
+./chart PctReference reference
+./chart PctReference swatch
+./chart PctSpan span
+./chart PctSpan swatch
 ./checkbox PctCheckbox box
 ./checkbox PctCheckbox control
 ./checkbox PctCheckbox error

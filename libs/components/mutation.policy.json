@@ -17,6 +17,7 @@
     "libs/components/badge/src/badge.ts",
     "libs/components/breadcrumb/src/breadcrumb.ts",
     "libs/components/button/src/button.ts",
+    "libs/components/chart/src/annotation.ts",
     "libs/components/chart/src/bars.ts",
     "libs/components/chart/src/chart-table.ts",
     "libs/components/chart/src/chart-zoom.ts",
@@ -30,6 +31,7 @@
     "libs/components/chart/src/model/gestures.ts",
     "libs/components/chart/src/model/intervals.ts",
     "libs/components/chart/src/model/layout.ts",
+    "libs/components/chart/src/model/notes.ts",
     "libs/components/chart/src/model/path.ts",
     "libs/components/chart/src/model/scale.ts",
     "libs/components/chart/src/model/slots.ts",
@@ -40,7 +42,11 @@
     "libs/components/chart/src/model/time-ticks.ts",
     "libs/components/chart/src/model/value-at.ts",
     "libs/components/chart/src/model/window.ts",
+    "libs/components/chart/src/note.ts",
+    "libs/components/chart/src/now.ts",
+    "libs/components/chart/src/reference.ts",
     "libs/components/chart/src/scene.ts",
+    "libs/components/chart/src/span.ts",
     "libs/components/chart/src/sync.ts",
     "libs/components/checkbox/src/checkbox.ts",
     "libs/components/chips/src/chips.ts",
@@ -170,7 +176,7 @@
       "reason": "Instrumented, the file brings the INITIAL TEST RUN down, and with it the whole run rather than its own score. Measured: with `affix.ts` in `mutate`, `field.spec.ts` reads `data-pct-fit=\"inset\"` where the fixture writes `pctPrefix=\"fill\"`. Stryker instruments the `input()` configuration object BEFORE the `angular` ignorer strikes its mutants out of the score, so the alias stops being a literal the compiler can read, and a static attribute carrying a value stops being an input binding — it stays an attribute and the input keeps its default. The library's other aliased inputs (`icon`, `popover`, `tooltip`, `overlay`) are measured because no spec of theirs sets one as a plain attribute with a value. This is not a file with a low score; it is a file the measurement cannot hold, and 14 mutants is what it costs."
     }
   ],
-  "// coversNothing": "A spec the mutation run never SELECTS. Stryker drives Vitest in related mode over the mutated inventory, so a spec whose module graph reaches nothing mutated is never chosen and never reaches the report \u2014 an absence point 3 cannot tell apart from a spec the configuration dropped (`lesson-235`). The register is empty again as of 2026-09-21: its one entry was the badge-tone migration's spec, and it came out the moment `schematics/migrations/**` entered `mutate`, because what that spec reaches is now mutated and the filter selects it. An entry left behind would fire `excuse-that-runs`, which is the check that makes the register expire with its reason.",
+  "// coversNothing": "A spec the mutation run never SELECTS. Stryker drives Vitest in related mode over the mutated inventory, so a spec whose module graph reaches nothing mutated is never chosen and never reaches the report — an absence point 3 cannot tell apart from a spec the configuration dropped (`lesson-235`). The register is empty again as of 2026-09-21: its one entry was the badge-tone migration's spec, and it came out the moment `schematics/migrations/**` entered `mutate`, because what that spec reaches is now mutated and the filter selects it. An entry left behind would fire `excuse-that-runs`, which is the check that makes the register expire with its reason.",
   "coversNothing": [],
   "// equivalent": "The fourth register, and the only one about a MUTANT rather than a file: a survivor the suite cannot tell from the original. It is keyed on the operator, the span and the replacement, so an entry dies with the line it excuses rather than drifting onto the next mutant to take that place. Nothing here excuses a score: a registered mutant is still counted as surviving, because it is. What the entry buys is that the next reader does not re-derive the argument — and proving one by hand has two traps, both met in this repository (`lesson-199`): the edit must be one the compiler accepts, and a kill by hand can still be reported as a survivor. An entry is red the day the run kills the mutant, the day the line moves, and the day it carries no sentence.",
   "equivalent": [

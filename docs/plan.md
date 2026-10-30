@@ -255,14 +255,12 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - landed 2026-10-30: the cursor as the platform's range, moved from reading to reading by the
     pointer, the keys and a reader, with a tooltip; the window by a drag, a pinch, the wheel and
     the keys through one transform, `follow`, the zoom bar as their twin, `pctChartSync`; the
-    legend, and each series' swatch — colour, dash and marker — drawn by its mark (0102); bars
-    in bands of a calendar interval or a category, grouped, stacked, a period compared by
-    position, a selected band and a picked row; the chart turned on its side; the annotations
-    — a reference line, a band, a note placed clear of the others, the moment of now, and a
-    line cut by its thresholds — which bring no series and which a reader hears in the
-    picture's description
-  - then a band of states, points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
-    generated description; a canvas layer only behind a measurement
+    legend and each series' swatch drawn by its mark (0102); bars in bands of an interval or a
+    category, grouped, stacked, a period compared, a selected band, a picked row; the chart
+    turned on its side; the annotations — a reference line, a band, a note placed clear of the
+    others, the moment of now, a line cut by its thresholds — with no series, read in the description
+  - then a band of states, points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a
+    brush, export and a generated description; a canvas layer only behind a measurement
   - three promoted layers per scene: the data redrawn only with the data, the window or the
     size; the axes and annotations; the cursor moved by a transform (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
