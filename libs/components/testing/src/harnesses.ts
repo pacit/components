@@ -166,6 +166,17 @@ export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
 }
 
 /**
+ * `pct-bars` — `PctBars`. Its bars and labels are stamped into the chart's data layer, so its
+ * parts are found in the document rather than under its own element.
+ *
+ * @since next
+ */
+export class PctBarsHarness extends PctHarness<'bar' | 'label' | 'swatch'> {
+  static override hostSelector = 'pct-bars';
+  static override readonly parts = ['bar', 'label', 'swatch'] as const;
+}
+
+/**
  * `pct-chart-legend` — `PctChartLegend`: the list of a chart's series, a toggle per entry.
  *
  * @since next

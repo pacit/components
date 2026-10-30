@@ -25,5 +25,15 @@
       </tr>
       }
     </tbody>
+    @if (foot(); as foot) {
+    <tfoot>
+      <tr>
+        <th pctHeader scope="row">{{ foot.label }}</th>
+        @for (text of foot.texts; track $index) {
+        <td pctCell numeric>{{ text }}</td>
+        }
+      </tr>
+    </tfoot>
+    }
   </table>
 </pct-table-frame>

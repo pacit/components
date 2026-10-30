@@ -1,7 +1,9 @@
 import { Component, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
+  PctBars,
   PctChart,
   PctChartLegend,
   PctChartSync,
@@ -67,6 +69,29 @@ const heater: Reading[] = [
   { at: START + 21 * HOUR, value: 0 },
 ];
 
+/** The days of a month in Warsaw, each with the heat pump's energy. */
+function daysOf(
+  year: number,
+  monthIndex: number,
+  seed: number,
+): { at: number; kwh: number | null }[] {
+  const random = seeded(seed);
+  const rows: { at: number; kwh: number | null }[] = [];
+  const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  for (let day = 1; day <= days; day++) {
+    // Midnight of the day in Warsaw: 23:00 UTC the day before in winter, 22:00 in summer.
+    const at = Date.UTC(
+      year,
+      monthIndex,
+      day - 1,
+      monthIndex >= 2 && monthIndex <= 9 ? 22 : 23,
+    );
+    const kwh = day === 14 ? null : Math.round((8 + random() * 10) * 10) / 10;
+    rows.push({ at, kwh });
+  }
+  return rows;
+}
+
 /** Eight rooms through the day, each its own swing, named so the legend has eight names. */
 function rooms(): { name: string; rows: Reading[] }[] {
   const names = [
@@ -130,7 +155,9 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctChartTooltip,
     PctChartSync,
     PctChartLegend,
+    PctBars,
     PctButton,
+    DatePipe,
   ],
   templateUrl: './chart-view.html',
   styleUrl: './chart-view.scss',
@@ -145,6 +172,18 @@ export class ChartView {
   protected readonly hidden = signal<readonly string[]>([]);
   protected readonly cursor = signal<number | null>(null);
   protected readonly rooms = signal(rooms());
+  protected readonly marchDays = daysOf(2026, 2, 31);
+  protected readonly februaryDays = daysOf(2026, 1, 28);
+  protected readonly selectedDay = signal<{ from: number; to: number } | null>(
+    null,
+  );
+  protected readonly pickedDay = signal<number | null>(null);
+  protected readonly roomNames = ['Kitchen', 'Hall', 'Study'];
+  protected readonly roomEnergy = [
+    { room: 0, pump: 12.4, solar: -3.1, lastYear: 14 },
+    { room: 1, pump: 6.2, solar: -1.5, lastYear: 7.5 },
+    { room: 2, pump: 9.8, solar: -4, lastYear: 8.1 },
+  ];
   protected dropRoom(name: string): void {
     this.rooms.update((all) => all.filter((room) => room.name !== name));
   }

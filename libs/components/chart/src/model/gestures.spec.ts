@@ -50,7 +50,7 @@ describe('pctGestureStep', () => {
       { type: 'move', x: 108, y: 92 },
       { type: 'up', x: 108 },
     ]);
-    expect(actions).toEqual([null, null, { type: 'tap', x: 108 }]);
+    expect(actions).toEqual([null, null, { type: 'tap', x: 108, y: 100 }]);
     expect(state.mode).toBe('idle');
     expect(state.tap).toEqual({ x: 108, at: 0 });
   });
@@ -105,8 +105,8 @@ describe('pctGestureStep', () => {
     ]);
     expect(held.actions).toEqual([
       null,
-      { type: 'hold', x: 100 },
-      { type: 'drag', x: 150 },
+      { type: 'hold', x: 100, y: 100 },
+      { type: 'drag', x: 150, y: 140 },
       null,
     ]);
     expect(
@@ -179,7 +179,7 @@ describe('pctGestureStep', () => {
       ],
       first.state,
     );
-    expect(second.actions[1]).toEqual({ type: 'double', x: 124 });
+    expect(second.actions[1]).toEqual({ type: 'double', x: 124, y: 100 });
     expect(second.state.tap).toBeNull();
     // a third tap is a tap again
     expect(
@@ -190,7 +190,7 @@ describe('pctGestureStep', () => {
         ],
         second.state,
       ).actions[1],
-    ).toEqual({ type: 'tap', x: 100 });
+    ).toEqual({ type: 'tap', x: 100, y: 100 });
   });
 
   it('keeps two taps too far apart in time or place apart', () => {
@@ -206,7 +206,7 @@ describe('pctGestureStep', () => {
         ],
         first,
       ).actions[1],
-    ).toEqual({ type: 'tap', x: 100 });
+    ).toEqual({ type: 'tap', x: 100, y: 100 });
     expect(
       play(
         [
@@ -215,7 +215,7 @@ describe('pctGestureStep', () => {
         ],
         first,
       ).actions[1],
-    ).toEqual({ type: 'tap', x: 125 });
+    ).toEqual({ type: 'tap', x: 125, y: 100 });
   });
 
   it('reads nothing of a pointer it never saw pressed, nor of one the page took back', () => {

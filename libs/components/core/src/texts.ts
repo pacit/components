@@ -261,6 +261,10 @@ export interface PctTexts {
   readonly chartNoCursor: string;
   /** Chart: the keys of the cursor, one sentence, read as the range's description. */
   readonly chartKeys: string;
+  /** Chart: the data table's foot that sums the columns. */
+  readonly chartSum: string;
+  /** Chart: the data table's foot that averages the columns. */
+  readonly chartMean: string;
   /** Chart: the name of the legend's list of series. */
   readonly chartLegend: string;
   /** Chart: the legend's button that takes a series off the chart, named with the series. */
@@ -381,7 +385,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartAllHidden: 'Every series is hidden',
   chartNoCursor: 'No reading selected',
   chartKeys:
-    'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
+    'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.',
+  chartSum: 'Sum',
+  chartMean: 'Mean',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',

@@ -1,0 +1,43 @@
+<ng-template #drawing>
+  @for (bar of drawn(); track bar.index + (bar.compared ? 'c' : '')) {
+  <svg:rect
+    data-pct-part="bar"
+    [class.compared]="bar.compared"
+    [class.zero]="bar.value === 0"
+    [attr.x]="bar.x"
+    [attr.y]="bar.y"
+    [attr.width]="bar.width"
+    [attr.height]="bar.height"
+    [attr.data-pct-series]="placeOf()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  @if (bar.labelShown) {
+  <svg:text
+    data-pct-part="label"
+    text-anchor="middle"
+    [attr.dominant-baseline]="bar.value >= 0 ? 'auto' : 'hanging'"
+    [attr.x]="bar.labelX"
+    [attr.y]="bar.labelY"
+    [textContent]="bar.label"
+  ></svg:text>
+  } }
+</ng-template>
+
+<!-- The series drawn small: a square in its colour, the bars' own shape; the marker alone the same. -->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'swatch') {
+    <svg:rect class="block" x="1" y="2" width="22" height="8" />
+    } @else {
+    <svg:path class="shape" [attr.d]="squarePath" />
+    }
+  </svg>
+</ng-template>

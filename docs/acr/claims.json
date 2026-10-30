@@ -264,12 +264,13 @@
     {
       "id": "1.4.5",
       "conformance": "Not Applicable",
-      "remarks": "The library ships no image of text: icons are glyph drawings without a `<text>` element, and every word is live text — a chart's axis labels among them, SVG `<text>` the browser lays out in the skin's font and the reader's zoom. The gate scans the templates, the drawings and the scripts for any other one.",
+      "remarks": "The library ships no image of text: icons are glyph drawings without a `<text>` element, and every word is live text — a chart's axis labels and the values over its bars among them, SVG `<text>` the browser lays out in the skin's font and the reader's zoom. The gate scans the templates, the drawings and the scripts for any other one.",
       "evidence": [
         {
           "scan": "no-svg-text",
           "beside": {
-            "libs/components/chart/src/chart.html": "the chart's axis labels, live SVG text written from the data, in the skin's font (0100)"
+            "libs/components/chart/src/chart.html": "the chart's axis labels, live SVG text written from the data, in the skin's font (0100)",
+            "libs/components/chart/src/bars.html": "the values written over bars, live SVG text from the data, in the skin's font (0099)"
           }
         }
       ]

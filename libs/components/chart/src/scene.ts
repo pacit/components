@@ -1,7 +1,14 @@
-import { Directive, type Signal, type TemplateRef } from '@angular/core';
+import {
+  computed,
+  Directive,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
 import type { PctColumns } from './model/columns';
 import type { PctPyramid } from './model/decimate';
+import type { PctInterval } from './model/intervals';
 import type { PctDomain, PctScale } from './model/scale';
+import type { PctStacked } from './model/stack';
 import type { PctCurve } from './model/value-at';
 import type { PctWindow } from './model/window';
 
@@ -138,6 +145,72 @@ export abstract class PctChartScene {
    * @since next
    */
   abstract readonly distinct: Signal<'color' | 'all'>;
+
+  /**
+   * The zone whose wall clock the time axis reads, and the locale the chart writes in.
+   *
+   * @since next
+   */
+  abstract readonly timeZone: Signal<string | undefined>;
+  /**
+   * The locale the chart writes in.
+   *
+   * @since next
+   */
+  abstract readonly effectiveLocale: Signal<string>;
+
+  /**
+   * The bands of the horizontal axis the bars stand in: the calendar intervals of the window
+   * (`interval` on the scene) or one per category (`categories`); empty on a scene with
+   * neither, where no bar can stand.
+   *
+   * @since next
+   */
+  abstract readonly bands: Signal<readonly PctWindow[]>;
+
+  /**
+   * The calendar interval the bars of a time axis stand in, `undefined` without bars.
+   *
+   * @since next
+   */
+  abstract readonly interval: Signal<PctInterval | undefined>;
+
+  /**
+   * The width of a text in the chart's font, in pixels: what a mark thins its labels by.
+   *
+   * @since next
+   */
+  abstract measure(text: string): number;
+
+  /**
+   * The interval selected on the chart, or `null`: a bar's band, or a span the application
+   * set (0101).
+   *
+   * @since next
+   */
+  abstract readonly selected: Signal<PctWindow | null>;
+
+  /**
+   * Where a bar mark's group stands among the groups on the scene: its index, and how many
+   * there are, so the groups of one band stand side by side.
+   *
+   * @since next
+   */
+  abstract groupOf(group: string): {
+    readonly index: number;
+    readonly count: number;
+  };
+
+  /**
+   * Where a stacked series' bars stand in their stack at each band: `from` and `to` per band,
+   * `null` where the series has no bar (`pctStack`).
+   *
+   * @since next
+   */
+  abstract stackedOf(
+    stack: string,
+    id: string,
+  ): readonly (PctStacked | null)[] | null;
 }
 
 /**
@@ -204,6 +277,67 @@ export abstract class PctMark {
   pyramidOf(id: string): PctPyramid | null {
     void id;
     return null;
+  }
+
+  /**
+   * The group and the stack a mark's bars stand in, or `null` for a mark that draws no bars.
+   * Marks of one group stand side by side in a band; marks of one stack stand on each other.
+   *
+   * @since next
+   */
+  readonly band: Signal<{
+    readonly group: string;
+    readonly stack: string | null;
+  } | null> = computed(() => null);
+
+  /**
+   * A series' values, one per band of the scene, for the stacks: `null` where it has none.
+   *
+   * @since next
+   */
+  valuesIn(
+    id: string,
+    bands: readonly PctWindow[],
+  ): readonly (number | null)[] {
+    void id;
+    return bands.map(() => null);
+  }
+
+  /**
+   * The positions worth a row of the data table, or `null` for a mark whose readings are
+   * decimated into rows: a bar mark answers its bands' starts.
+   *
+   * @since next
+   */
+  rowsIn(id: string, window: PctWindow): readonly number[] | null {
+    void id;
+    void window;
+    return null;
+  }
+
+  /**
+   * The band at `x`, for the selection: the interval a bar stands in, or `null` where nothing
+   * of this mark is to select.
+   *
+   * @since next
+   */
+  bandAt(id: string, x: number): PctWindow | null {
+    void id;
+    void x;
+    return null;
+  }
+
+  /**
+   * What a press at a position of the plot picks of this series: the index of the bar there
+   * when the press is on it, or `null`. The mark emits its `pick`.
+   *
+   * @since next
+   */
+  pickAt(id: string, x: number, y: number): boolean {
+    void id;
+    void x;
+    void y;
+    return false;
   }
 }
 

@@ -32,7 +32,11 @@ export type PctGestureAction =
       readonly about: number;
       readonly dx: number;
     }
-  | { readonly type: 'tap' | 'double' | 'hold' | 'drag'; readonly x: number };
+  | {
+      readonly type: 'tap' | 'double' | 'hold' | 'drag';
+      readonly x: number;
+      readonly y: number;
+    };
 
 /**
  * Where a gesture stands: the pointers down, and what they are doing — nothing yet
@@ -156,7 +160,7 @@ export function pctGestureStep(
       if (state.mode !== 'pending' || state.mouse || !own) break;
       return {
         state: { ...state, mode: 'hold' },
-        action: { type: 'hold', x: own.x },
+        action: { type: 'hold', x: own.x, y: own.y },
       };
     }
     case 'move': {
@@ -180,7 +184,10 @@ export function pctGestureStep(
       if (state.mode === 'pan')
         return { state: next, action: { type: 'pan', dx: input.x - own.x } };
       if (state.mode === 'hold')
-        return { state: next, action: { type: 'drag', x: input.x } };
+        return {
+          state: next,
+          action: { type: 'drag', x: input.x, y: input.y },
+        };
       if (state.mode !== 'pending') return { state: next, action: null };
       const across = Math.abs(input.x - own.startX);
       const along = Math.abs(input.y - own.startY);
@@ -212,7 +219,7 @@ export function pctGestureStep(
         Math.abs(input.x - tap.x) <= rules.doubleDistance;
       return {
         state: { ...rest, tap: double ? null : { x: input.x, at: input.at } },
-        action: { type: double ? 'double' : 'tap', x: input.x },
+        action: { type: double ? 'double' : 'tap', x: input.x, y: input.y },
       };
     }
   }
