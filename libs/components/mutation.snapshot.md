@@ -110,6 +110,7 @@ libs/components/chart/src/model/path.ts 96.43 108(1) 4 0 0 0
 libs/components/chart/src/model/scale.ts 98.55 68(0) 1 0 0 0
 libs/components/chart/src/model/slots.ts 100.00 23(0) 0 0 0 0
 libs/components/chart/src/model/steps.ts 100.00 15(0) 0 0 0 0
+libs/components/chart/src/model/summarize.ts 93.94 31(0) 2 0 0 0
 libs/components/chart/src/model/ticks.ts 100.00 63(0) 0 0 0 0
 libs/components/chart/src/model/time-ticks.ts 98.44 253(0) 4 0 0 0
 libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
@@ -199,5 +200,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 89.78 11135/12402
+TOTAL 89.79 11166/12435
 ```
