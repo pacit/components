@@ -375,6 +375,8 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await page.mouse.move(box.x + box.width / 2, box.y - 40);
       const line = pattern.locator('[data-pct-part="cursor"]');
       await expect(line).toHaveCount(1);
+      // apart in time: two clicks within 300 ms are a double click, which returns the window
+      await page.waitForTimeout(350);
       await page.mouse.click(x + 5, y);
       await page.mouse.move(box.x + box.width / 2, box.y - 40);
       await expect(line).toHaveCount(0);
@@ -418,6 +420,7 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       expect(Math.abs((await line.boundingBox())!.x - x)).toBeLessThanOrEqual(
         1,
       );
+      await page.waitForTimeout(350);
       await page.touchscreen.tap(x + 6, y);
       await expect(line).toHaveCount(0);
     });
@@ -492,13 +495,14 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       page,
     }) => {
       const pattern = chart(page, 'chart-pattern');
-      const box = (await pattern.boundingBox())!;
-      const y = box.y + box.height / 2;
       await pattern.scrollIntoViewIfNeeded();
       const range = page.getByRole('slider', { name: NAME });
       await range.focus();
       await page.keyboard.press('+');
       await expect.poll(() => spanOf(page)).toBe(12.5 * H);
+      // measured after the focus, which may scroll the page
+      const box = (await pattern.boundingBox())!;
+      const y = box.y + box.height / 2;
       const before = await firstLabel(page);
       const start = box.x + box.width * 0.6;
       await page.mouse.move(start, y);

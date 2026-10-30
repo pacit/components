@@ -110,6 +110,7 @@
 // to scrolling, and a horizontal one is the chart's.
 .overlay {
   touch-action: pan-y;
+  user-select: none;
 }
 
 // A chart whose window stays where the application puts it leaves every drag to the page.

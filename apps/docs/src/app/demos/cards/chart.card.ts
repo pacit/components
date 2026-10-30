@@ -29,6 +29,7 @@ const supply = [
       ariaLabel="Supply air on 28 October 2026"
       timeZone="Europe/Warsaw"
       cursorMode="none"
+      zoom="none"
       style="height: 9rem"
     >
       <pct-line
