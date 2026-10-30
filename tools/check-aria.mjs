@@ -1894,7 +1894,8 @@ const walkTemplate = (nodes, path, state, ancestors = []) => {
           // has (`aria-label`, `ARIA-LABEL`).
           takenAs: taking.flat().map((b) => b.name),
           // A name of its own, written or bound — what point 4 asks of each control inside a
-          // group that carries the consumer's name.
+          // group that carries the consumer's name, and point 3 of each in a component with no
+          // selector. Not read: what a bound name evaluates to, `null` or an id nobody wears.
           namesItself: NAME_TARGETS.some(
             (name) =>
               (written(name) ?? '').trim() !== '' || bindings(name).length > 0,

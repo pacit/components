@@ -131,9 +131,9 @@ export interface PctTableFeature {
    */
   readonly selection?: {
     readonly parts: Type<unknown>;
-    readonly head: Signal<TemplateRef<unknown> | null>;
-    readonly cell: Signal<TemplateRef<unknown> | null>;
-    readonly below: Signal<TemplateRef<unknown> | null>;
+    readonly head: Signal<TemplateRef<unknown>>;
+    readonly cell: Signal<TemplateRef<unknown>>;
+    readonly below: Signal<TemplateRef<unknown>>;
     readonly picked: Signal<ReadonlySet<PctRowId>>;
     readonly describedBy: Signal<string | null>;
   };

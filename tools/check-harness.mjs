@@ -6,9 +6,9 @@
  *
  *  1. SET: `./testing` is exported, every harness a `PctHarness`, no two of one name, distinct parts,
  *  2. HOST: a `hostSelector` is verbatim one exported class's list, and no class has two,
- *  3. EVERY: every class that draws a part has a harness; one with no selector draws into a
- *     host of its entrypoint, so a harness of that entrypoint names each of its parts,
- *  4. PARTS: a harness names exactly the parts its class draws, and may name such a class's,
+ *  3. EVERY: every class that draws a part has a harness; one with no selector is drawn into
+ *     a class of its entrypoint that makes components, whose harness names each of its parts,
+ *  4. PARTS: a harness names exactly the parts its class draws, and those of the ones it makes,
  *  5. TYPES: the union offered after `part(` is that same list, one inventory read twice,
  *  6. CARDS: a card's **Harness** row names existing harnesses of classes its own entrypoint
  *     exports, and every harness stands on some card.
@@ -95,6 +95,13 @@ const partsOf = (def) => {
   );
 };
 
+/** What a definition's template uses, as the linker leaves it: a list, or a function of one. */
+const dependenciesOf = (def) =>
+  (typeof def.dependencies === 'function'
+    ? def.dependencies()
+    : (def.dependencies ?? [])
+  ).flat();
+
 const isClass = (v) =>
   typeof v === 'function' &&
   /^class[\s{]/.test(Function.prototype.toString.call(v));
@@ -142,6 +149,7 @@ const readPackage = async () => {
         `    The target needs a \`dependsOn\` on the library's build.`,
     );
   await import('@angular/compiler');
+  const { NgComponentOutlet } = await import('@angular/common');
   const exportsMap = JSON.parse(read(`${DIST}/package.json`)).exports ?? {};
   const exported = [];
   let harnesses = null;
@@ -168,6 +176,9 @@ const readPackage = async () => {
         class: value,
         selector,
         parts: partsOf(def),
+        // A template that makes components by their class: the host a class with no selector
+        // is drawn into.
+        makes: dependenciesOf(def).includes(NgComponentOutlet),
       });
     }
   }
@@ -300,11 +311,13 @@ const checkHarness = (input) => {
   // A class with no selector of its own, as Angular names it: no tag stands for it.
   const untagged = classes.filter((c) => c.selector === UNTAGGED);
   const tagged = classes.filter((c) => c.selector !== UNTAGGED);
-  /** The parts the untagged classes draw into the hosts of an entrypoint `c` is exported by. */
+  /** The parts the untagged classes of its entrypoints draw into `c`, a class that makes them. */
   const drawnInto = (c) =>
-    untagged
-      .filter((u) => u.entrypoints.some((e) => c.entrypoints.includes(e)))
-      .flatMap((u) => u.parts);
+    !c.makes
+      ? []
+      : untagged
+          .filter((u) => u.entrypoints.some((e) => c.entrypoints.includes(e)))
+          .flatMap((u) => u.parts);
 
   // 2. The host — one harness, one class, the selector verbatim. A harness finds its class by
   // the selector and nothing else, and the harnesses are kept per class the package exports —
@@ -357,15 +370,19 @@ const checkHarness = (input) => {
   // An untagged class's part is reached through the harness of a host it draws into.
   for (const u of untagged) {
     const named = harnesses.list
-      .filter((h) =>
-        classOf.get(h).entrypoints.some((e) => u.entrypoints.includes(e)),
-      )
+      .filter((h) => {
+        const host = classOf.get(h);
+        return (
+          host.makes && host.entrypoints.some((e) => u.entrypoints.includes(e))
+        );
+      })
       .flatMap((h) => h.parts);
     const unnamed = u.parts.filter((p) => !named.includes(p));
     if (unnamed.length)
       orphaned.push(
         `${u.className} (${u.entrypoints.join(', ')}): has no selector, and draws ` +
-          `${quoted(unnamed)}, which no harness of its entrypoint names`,
+          `${quoted(unnamed)}, which no harness names of a class of its entrypoint that ` +
+          `makes components`,
       );
   }
   if (orphaned.length)
@@ -386,7 +403,7 @@ const checkHarness = (input) => {
     if (extra.length)
       drift.push(
         `${h.className}: names ${quoted(extra)}, which ${c.className} does not draw, ` +
-          `nor a class with no selector of its entrypoint`,
+          `nor a class with no selector it makes`,
       );
     if (missing.length)
       drift.push(

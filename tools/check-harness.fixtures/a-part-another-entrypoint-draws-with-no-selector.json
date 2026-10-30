@@ -1,10 +1,15 @@
 {
   "point": 4,
   "check": "parts",
-  "why": "PctButtonHarness offers a select part: a class with no selector draws one, but into a host of `./table`, never into a button.",
+  "why": "PctButtonHarness offers a select part: the button makes components here, and a class with no selector draws a select, but into a host of `./table`, never into a button.",
   "harnesses": {
     "PctButtonHarness": {
       "parts": ["label", "select", "spinner"]
+    }
+  },
+  "classes": {
+    "PctButton": {
+      "makes": true
     }
   }
 }

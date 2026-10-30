@@ -1,7 +1,9 @@
 import {
+  afterNextRender,
   booleanAttribute,
   Component,
   computed,
+  DestroyRef,
   Directive,
   ElementRef,
   inject,
@@ -61,6 +63,7 @@ function adding(
 interface Link {
   readonly parts: WritableSignal<PctTableSelectionParts | null>;
   readonly line: () => Line | null;
+  readonly picked: () => ReadonlySet<PctRowId>;
 }
 
 const LINKS = /* @__PURE__ */ new WeakMap<PctTableSelection, Link>();
@@ -94,7 +97,6 @@ const LINKS = /* @__PURE__ */ new WeakMap<PctTableSelection, Link>();
   host: {
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-warning]': 'warningLit() ? "" : null',
-    '(click)': 'press($event)',
   },
 })
 export class PctTableSelection implements FormValueControl<
@@ -236,24 +238,44 @@ export class PctTableSelection implements FormValueControl<
   /** The parts, once the table has made them. */
   private readonly parts = signal<PctTableSelectionParts | null>(null);
 
+  /**
+   * The ids picked, to look up: one in `single` mode, whatever the list says, as a radio group
+   * checks one. Here and not in the parts, so the table's rows read it from their first render.
+   */
+  private readonly picked = computed(() => {
+    const value = this.value();
+    return new Set(this.mode() === 'single' ? value.slice(0, 1) : value);
+  });
+
   constructor() {
-    LINKS.set(this, { parts: this.parts, line: this.line });
+    LINKS.set(this, {
+      parts: this.parts,
+      line: this.line,
+      picked: this.picked,
+    });
     const parts = this.parts;
     this.table.contribute({
       selection: {
         parts: PctTableSelectionParts,
-        head: computed(() => parts()?.head() ?? null),
-        cell: computed(() => parts()?.cell() ?? null),
-        below: computed(() => parts()?.below() ?? null),
-        picked: computed(() => parts()?.picked() ?? new Set<PctRowId>()),
+        // Read once the table has made the parts, in the render that draws them: the outlet
+        // stands before every place they are drawn in.
+        head: computed(() => (parts() as PctTableSelectionParts).head()),
+        cell: computed(() => (parts() as PctTableSelectionParts).cell()),
+        below: computed(() => (parts() as PctTableSelectionParts).below()),
+        picked: this.picked,
         describedBy: computed(() => this.line()?.id ?? null),
       },
     });
-  }
-
-  /** A press on the table: the parts tell one beside a row's control from the rest. */
-  protected press(event: MouseEvent): void {
-    this.parts()?.press(event);
+    // A press on the table, which the parts tell apart: one beside a row's control is theirs.
+    // Listened to once the page is live, not from the template: a listener there is one the
+    // server marks for replay, and a press replayed before hydration cannot be taken back.
+    const host = this.host.nativeElement;
+    const press = (event: MouseEvent) =>
+      (this.parts() as PctTableSelectionParts).press(event);
+    afterNextRender(() => host.addEventListener('click', press));
+    inject(DestroyRef).onDestroy(() =>
+      host.removeEventListener('click', press),
+    );
   }
 
   /**
@@ -356,18 +378,8 @@ export class PctTableSelectionParts {
     this.link.parts.set(this);
   }
 
-  /**
-   * The ids picked, to look up: one in `single` mode, whatever the list says.
-   *
-   * @since next
-   */
-  readonly picked = computed(() => {
-    const value = this.selection.value();
-    // One row is picked in single mode, whatever the list says: a radio group checks one.
-    return new Set(
-      this.selection.mode() === 'single' ? value.slice(0, 1) : value,
-    );
-  });
+  /** The ids picked, to look up. */
+  private readonly picked = this.link.picked;
 
   private readonly uid = nextPctId('pct-table-selection');
 

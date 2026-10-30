@@ -1,7 +1,7 @@
 {
   "point": 3,
   "check": "every",
-  "why": "PctTableSelectionParts draws its warning into a host of `./table`, and the only harness naming a warning is the button's — of `./button`, whose test never reaches a table.",
+  "why": "PctTableSelectionParts draws its warning into a host of `./table`, and the only harness naming a warning is the button's — of a class that makes components here, but of `./button`, whose test never reaches a table.",
   "harnesses": {
     "PctDataTableHarness": {
       "parts": [
@@ -20,6 +20,11 @@
     },
     "PctButtonHarness": {
       "parts": ["label", "spinner", "warning"]
+    }
+  },
+  "classes": {
+    "PctButton": {
+      "makes": true
     }
   }
 }

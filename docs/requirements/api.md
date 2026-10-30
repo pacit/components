@@ -732,13 +732,13 @@ with every name and entrypoint it is exported under, and a harness is named by i
 its declaration is, so two harness classes of one name are refused at point 1. A class two
 entrypoints export is one class, and the card of either may name its harness, one card naming it being enough, as point 6 asks for every harness on some card and not on every card of its entrypoints
 (`check-parts`, which counts a class's parts in each entrypoint, holds both cards to them). A
-component that declares no selector has no tag — code makes it, and its templates draw into the
-host of a class of its entrypoint, as the data table's selection does — so no harness stands on
-it and it needs none of its own; each of its parts is named by a harness of its entrypoint, which
-may name it. Plus `libs/components/testing/src/harness.spec.ts` — the base class
+component that declares no selector has no tag — a class of its entrypoint whose template makes
+components (`ngComponentOutlet`) draws it, as the data table draws its selection — so no harness
+stands on it and it needs none of its own; each of its parts is named by the harness of a class
+of its entrypoint that makes components, which may name it. Plus `libs/components/testing/src/harness.spec.ts` — the base class
 driven over a button, an accordion item whose host is its own part, and a select whose panel
 is drawn in an overlay outside the host
-**Control:** `tools/check-harness.fixtures/` — 32 prepared inputs, each rejected on its own
+**Control:** `tools/check-harness.fixtures/` — 34 prepared inputs, each rejected on its own
 point: the entrypoint gone, a harness off the base, one with no host, a part named twice, two
 harness classes of one name, a selector nobody answers to, one wider than the class, two harnesses for one class, a class
 the package lost, a selector two namesakes answer to (the refusal naming each once with the
@@ -753,9 +753,10 @@ entrypoints export (the card of the second standing), one borrowing a harness ex
 names (the button card naming it by the other), a card naming a harness by a name it is no longer
 exported under (the harness, then on no card, named by the key it is exported under), a harness on no card,
 a harness standing on a component with no selector, a part such a component draws that no harness
-of its entrypoint names (the last of its five) and one only another entrypoint's harness names, a
-harness naming such a part of another entrypoint, and one naming a part its entrypoint's tagged
-neighbour draws
+of its entrypoint names (the last of its five), one only a harness of another entrypoint names and
+one only the harness of a class that makes no component names, a harness offering such a part of
+another entrypoint and one offering it on a class that makes none, and one naming a part its
+entrypoint's tagged neighbour draws
 **Decision:** [0068 — a harness is a declaration over the parts contract](../decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)
 
 ---

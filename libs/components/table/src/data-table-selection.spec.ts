@@ -664,6 +664,35 @@ describe('PctTableSelection — the rows picked', () => {
     ).toBeNull();
   });
 
+  it('with Shift across a group’s heading picks the rows between, and no heading', async () => {
+    @Component({
+      imports: [PctDataTable, PctTableSelection, PctTableGroups],
+      template: `
+        <pct-data-table
+          pctTableSelection
+          [(value)]="value"
+          [pctTableGroups]="columns"
+          [groupBy]="['room']"
+          [rows]="rows"
+          [columns]="columns"
+          [rowId]="byId"
+          caption="Devices"
+        />
+      `,
+    })
+    class AcrossHost {
+      readonly columns = columns;
+      readonly byId = byId;
+      readonly rows = DEVICES;
+      readonly value = signal<readonly PctRowId[]>([]);
+    }
+    const fixture = await render(AcrossHost);
+    // Kitchen's heading, the lamp, the boiler; the hall's heading, the sensor, the fan.
+    await press(fixture, picks()[1]);
+    await press(fixture, picks()[2], true);
+    expect(fixture.componentInstance.value()).toEqual([2, 3]);
+  });
+
   it('names a row by its first cell of text, past a template', async () => {
     @Component({
       imports: [PctDataTable, PctTableSelection, PctCellTemplate],
