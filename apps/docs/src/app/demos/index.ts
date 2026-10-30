@@ -12,6 +12,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   badge: () => import('./badge.demo').then((m) => m.BadgeDemo),
   breadcrumb: () => import('./breadcrumb.demo').then((m) => m.BreadcrumbDemo),
   table: () => import('./table.demo').then((m) => m.TableDemo),
+  chart: () => import('./chart.demo').then((m) => m.ChartDemo),
   datatable: () => import('./datatable.demo').then((m) => m.DatatableDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
@@ -155,6 +156,12 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
         import('./accordion.exclusive.demo').then(
           (m) => m.AccordionExclusiveDemo,
         ),
+    },
+  ],
+  chart: [
+    {
+      key: 'area',
+      load: () => import('./chart.area.demo').then((m) => m.ChartAreaDemo),
     },
   ],
   badge: [
@@ -471,6 +478,7 @@ export const CARD_DEMOS: Readonly<
   button: () => import('./cards/button.card').then((m) => m.ButtonCardScene),
   calendar: () =>
     import('./cards/calendar.card').then((m) => m.CalendarCardScene),
+  chart: () => import('./cards/chart.card').then((m) => m.ChartCardScene),
   chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
   columns: () =>
     import('./cards/columns.card').then((m) => m.TimeColumnsCardScene),

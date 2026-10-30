@@ -248,7 +248,8 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - the core, landed 2026-10-29 in `./chart`: scales, 1-2-5 ticks, time ticks in a named zone
     across a change of clocks, the window's transform, the value at a position, decimation to
     the pixel through a pyramid, paths, axis slots and label layout
-  - the scene with a line, its axes by unit, its table and its card; then the cursor as the
+  - the scene with a line, its axes by unit, its table and its card, landed 2026-10-30 (`PctChart`,
+    `PctLine`, `PctAxis`, `PctChartTable`, the palette across three tiers); then the cursor as the
     platform's range, the window with its gestures, their single-pointer buttons and
     `pctChartSync`, the legend with a second channel per series
   - then bars with a period compared by position, references and spans, a band of states,

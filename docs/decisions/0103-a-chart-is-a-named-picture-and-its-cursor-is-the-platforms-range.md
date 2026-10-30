@@ -105,3 +105,12 @@ and a value text it reads when the value changes.
 | `role="slider"` on a `<div>`               | the platform's range gives the same role, the keys and the change of value without our code (0042) |
 | A slider inside the picture                | an image's children are presentational: `nested-interactive`                                       |
 | A live region for every move of the cursor | a second voice for what the range's value text already says                                        |
+
+## Amended 2026-10-30: the name is `ariaLabel` or `ariaLabelledby`
+
+The record called the picture's name `label`. A component that keeps its widget inside its
+template is named in this library by `ariaLabel` and `ariaLabelledby` — the pair a consumer
+writes on every other one, and the pair `check-aria` asks of a host that does not carry the
+role itself. The chart takes the same two: `ariaLabel` names the picture and captions the data
+table; a chart named by a heading on the page takes `ariaLabelledby`, and its table a
+`caption` of its own.

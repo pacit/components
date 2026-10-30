@@ -2405,6 +2405,153 @@
       "bg": "pct.table.bg-hover",
       "level": "AA",
       "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 1 on surface",
+      "fg": "pct.chart.series-color-1",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 1 on surface-100",
+      "fg": "pct.chart.series-color-1",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 2 on surface",
+      "fg": "pct.chart.series-color-2",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 2 on surface-100",
+      "fg": "pct.chart.series-color-2",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 3 on surface",
+      "fg": "pct.chart.series-color-3",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 3 on surface-100",
+      "fg": "pct.chart.series-color-3",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 4 on surface",
+      "fg": "pct.chart.series-color-4",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 4 on surface-100",
+      "fg": "pct.chart.series-color-4",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 5 on surface",
+      "fg": "pct.chart.series-color-5",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 5 on surface-100",
+      "fg": "pct.chart.series-color-5",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 6 on surface",
+      "fg": "pct.chart.series-color-6",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 6 on surface-100",
+      "fg": "pct.chart.series-color-6",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 7 on surface",
+      "fg": "pct.chart.series-color-7",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 7 on surface-100",
+      "fg": "pct.chart.series-color-7",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 8 on surface",
+      "fg": "pct.chart.series-color-8",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 8 on surface-100",
+      "fg": "pct.chart.series-color-8",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — the line of an axis",
+      "fg": "pct.chart.axis-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: chart — the grid behind the data",
+      "fg": "pct.chart.grid-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "chart — the labels of the ticks",
+      "fg": "pct.chart.axis-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "chart — the unit over an axis",
+      "fg": "pct.chart.unit-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "chart — the message with nothing to draw",
+      "fg": "pct.chart.message-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
     }
   ]
 }

@@ -1,0 +1,10 @@
+/* A height the demos share; a chart takes its width from its container. */
+.sbx-chart {
+  block-size: 280px;
+}
+
+.view__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--pct-space-4);
+}

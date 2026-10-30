@@ -931,6 +931,46 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A chart's colours are its series' identities, and the mode takes every one of them: the
+   * lines and the axes are drawn in the text word, an area is not filled, and each place of
+   * the palette keeps a dash of its own, so three lines are still three (0102).
+   */
+  test('a chart draws its lines and axes in CanvasText, dashed by place, and fills no area', async ({
+    page,
+  }) => {
+    await visit(page, '/chart', { media: FORCED });
+    const sys = await systemColors(page);
+    const pattern = page.getByTestId('chart-pattern');
+    const dashes: string[] = [];
+    for (const path of await pattern
+      .locator('path[data-pct-part="series"]')
+      .all()) {
+      expect(await styleOf(path, 'stroke')).toBe(sys.CanvasText);
+      dashes.push(await styleOf(path, 'stroke-dasharray'));
+    }
+    // the first place solid, the next two dashed, and no two alike
+    expect(dashes).toHaveLength(3);
+    expect(dashes[0]).toBe('none');
+    expect(new Set(dashes).size).toBe(3);
+    expect(
+      await styleOf(
+        pattern.locator('[data-pct-part="axis"] .base').first(),
+        'stroke',
+      ),
+    ).toBe(sys.CanvasText);
+    expect(
+      await styleOf(
+        pattern.locator('[data-pct-part="axis"] .value').first(),
+        'fill',
+      ),
+    ).toBe(sys.CanvasText);
+    const area = page
+      .getByTestId('chart-area')
+      .locator('path[data-pct-part="area"]');
+    expect(await styleOf(area, 'fill')).toBe('none');
+  });
+
+  /**
    * A table's header surface is a fill, the first thing the mode drops, so what tells the
    * header row apart under it is its weight and the line under it, which takes the text word
    * like every row's line. The sorted column's chevron is a drawing in `currentColor`, so it

@@ -283,6 +283,73 @@
         "$type": "color",
         "$value": "#0e7490"
       }
+    },
+    "series": {
+      "$comment": "The eight series colours of a chart, once per theme (0102). Not a ramp: each step is a hue of its own, chosen by a search (probe P7 on `probe/chart-0`) under three rules — every colour at least 3:1 on both surfaces of its theme, series N keeping its hue in both themes, and the closest pair at least 0.08 apart in OKLab as a reader with each of the three colour-vision deficiencies sees it (0.146 among the first four). The semantic tier picks the theme's eight; nothing reads these directly.",
+      "light-1": {
+        "$type": "color",
+        "$value": "#3848b7"
+      },
+      "light-2": {
+        "$type": "color",
+        "$value": "#8f312c"
+      },
+      "light-3": {
+        "$type": "color",
+        "$value": "#029b98"
+      },
+      "light-4": {
+        "$type": "color",
+        "$value": "#af8002"
+      },
+      "light-5": {
+        "$type": "color",
+        "$value": "#773c6f"
+      },
+      "light-6": {
+        "$type": "color",
+        "$value": "#058066"
+      },
+      "light-7": {
+        "$type": "color",
+        "$value": "#7a73d2"
+      },
+      "light-8": {
+        "$type": "color",
+        "$value": "#ab501f"
+      },
+      "dark-1": {
+        "$type": "color",
+        "$value": "#708afb"
+      },
+      "dark-2": {
+        "$type": "color",
+        "$value": "#de655c"
+      },
+      "dark-3": {
+        "$type": "color",
+        "$value": "#42dcd8"
+      },
+      "dark-4": {
+        "$type": "color",
+        "$value": "#f6b925"
+      },
+      "dark-5": {
+        "$type": "color",
+        "$value": "#c36cb7"
+      },
+      "dark-6": {
+        "$type": "color",
+        "$value": "#1cbf9a"
+      },
+      "dark-7": {
+        "$type": "color",
+        "$value": "#a7a5f3"
+      },
+      "dark-8": {
+        "$type": "color",
+        "$value": "#ea8e62"
+      }
     }
   }
 }

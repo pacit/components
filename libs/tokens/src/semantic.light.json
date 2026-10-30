@@ -225,6 +225,39 @@
     "shadow-panel": {
       "$type": "shadow",
       "$value": "0 8px 24px rgba(15, 23, 42, 0.14)"
+    },
+    "$comment-series": "A chart's series colours, by place: series 1 to 8 (0102). An ordinal is the whole of their meaning — a chart gives a series the next one and keeps it — so unlike a tone they are numbered. Each stands at 3:1 on both surfaces of the theme, and series N keeps its hue across the two themes, so a stored index names one colour.",
+    "series-1": {
+      "$type": "color",
+      "$value": "{pct.series.light-1}"
+    },
+    "series-2": {
+      "$type": "color",
+      "$value": "{pct.series.light-2}"
+    },
+    "series-3": {
+      "$type": "color",
+      "$value": "{pct.series.light-3}"
+    },
+    "series-4": {
+      "$type": "color",
+      "$value": "{pct.series.light-4}"
+    },
+    "series-5": {
+      "$type": "color",
+      "$value": "{pct.series.light-5}"
+    },
+    "series-6": {
+      "$type": "color",
+      "$value": "{pct.series.light-6}"
+    },
+    "series-7": {
+      "$type": "color",
+      "$value": "{pct.series.light-7}"
+    },
+    "series-8": {
+      "$type": "color",
+      "$value": "{pct.series.light-8}"
     }
   }
 }

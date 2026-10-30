@@ -1,0 +1,17 @@
+<ng-template #drawing>
+  @if (!hidden()) { @if (area()) {
+  <svg:path
+    data-pct-part="area"
+    [attr.d]="fill()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  }
+  <svg:path
+    data-pct-part="series"
+    [attr.d]="line()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  }
+</ng-template>

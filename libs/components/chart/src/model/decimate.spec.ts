@@ -1,5 +1,5 @@
 import type { PctColumns } from './columns';
-import { pctDecimate, pctPyramid } from './decimate';
+import { pctDecimate, pctPyramid, pctRangeExtent } from './decimate';
 import {
   pctForAll,
   pctInt,
@@ -304,5 +304,97 @@ describe('pctDecimate', () => {
     expect(pairs(pctDecimate(c, window, 100, stale))).toEqual(
       reference(c, window.from, window.to, 100),
     );
+  });
+});
+
+describe('pctRangeExtent', () => {
+  const scan = (c: PctColumns, from: number, to: number) => {
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 0; i < c.length; i++)
+      if (c.xs[i] > from && c.xs[i] < to && !Number.isNaN(c.ys[i])) {
+        min = Math.min(min, c.ys[i]);
+        max = Math.max(max, c.ys[i]);
+      }
+    return min <= max ? [min, max] : null;
+  };
+
+  it('takes the readings strictly inside, a gap none, and nothing from nothing', () => {
+    const c = of([
+      [0, 5],
+      [1, NaN],
+      [2, 7],
+      [3, -1],
+      [4, 3],
+    ]);
+    expect(pctRangeExtent(c, 0, 4)).toEqual([-1, 7]);
+    expect(pctRangeExtent(c, 0.5, 1.5)).toBeNull();
+    expect(pctRangeExtent(c, 2, 3)).toBeNull();
+    expect(pctRangeExtent(of([]), 0, 1)).toBeNull();
+  });
+
+  it('equals the scan, with a pyramid and without, in any range', () => {
+    pctForAll(
+      pctRecord({
+        length: pctInt(0, 300),
+        from: pctInt(-5, 305),
+        span: pctInt(0, 310),
+        seed: pctInt(0, 1_000_000),
+      }),
+      ({ length, from, span, seed }) => {
+        const random = pctRandom(seed);
+        const c = of(
+          Array.from({ length }, (_, i) => [
+            i,
+            random() < 0.1 ? NaN : Math.round(random() * 100),
+          ]),
+        );
+        const pyramid = pctPyramid(c);
+        const expected = scan(c, from, from + span);
+        expect(pctRangeExtent(c, from, from + span)).toEqual(expected);
+        expect(pctRangeExtent(c, from, from + span, pyramid)).toEqual(expected);
+      },
+    );
+  });
+
+  it('reads whole runs of the pyramid, so the cost follows the logarithm', () => {
+    const readsFor = (n: number) => {
+      const c = noisy(n, 3, 0);
+      const pyramid = pctPyramid(c);
+      let reads = 0;
+      const ys = new Proxy(c.ys, {
+        get(target, key) {
+          if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+          return Reflect.get(target, key);
+        },
+      }) as Float64Array;
+      pctRangeExtent(
+        { xs: c.xs, ys, length: c.length },
+        1.5,
+        c.length - 2.5,
+        pyramid,
+      );
+      return reads;
+    };
+    expect(readsFor(100_000)).toBeLessThan(400);
+    expect(readsFor(400_000)).toBeLessThan(450);
+  });
+
+  it('reads no pyramid built over other columns', () => {
+    const c = of([
+      [0, 1],
+      [1, 9],
+      [2, 3],
+      [3, 4],
+    ]);
+    const other = pctPyramid(
+      of([
+        [0, 100],
+        [1, -100],
+        [2, 0],
+        [3, 0],
+      ]),
+    );
+    expect(pctRangeExtent(c, -1, 4, other)).toEqual([1, 9]);
   });
 });

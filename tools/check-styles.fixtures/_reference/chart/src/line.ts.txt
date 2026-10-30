@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'fx-line',
+  template: '<ng-template><svg:path class="line__path" /></ng-template>',
+  styleUrls: ['./line.scss'],
+})
+export class FxLine {}

@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "paint",
+  "description": "The chart's exemption read as a directory: a legend beside the scene paints its swatch with `fill` from its own sheet. Only the scene's and the line's sheets draw the consumer's data; a swatch or a marker is a drawing a set could hold, so the sheet of any other chart component answers to point 8 like every sheet of the library."
+}
