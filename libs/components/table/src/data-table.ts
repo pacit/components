@@ -35,6 +35,7 @@ import { PctIcon } from '@pacit/components/icon';
 import { PctSkeleton } from '@pacit/components/skeleton';
 import {
   PctCellTemplate,
+  type PctDetailsContext,
   PctDetailsTemplate,
   PctEmptyTemplate,
   PctHeaderCellTemplate,
@@ -147,7 +148,10 @@ interface Row<T> {
   /** The cells of the columns a narrow table hid, listed in the row's details. */
   readonly hidden: readonly Cell<T>[];
   /** Those columns, as the details template is handed them. */
-  readonly hiddenColumns: readonly PctAnyColumn<T>[];
+  readonly hiddenColumns: PctDetailsContext<
+    unknown,
+    Record<string, unknown>
+  >['hidden'];
   /** The row's details are open below it. */
   readonly open: boolean;
   /** The id of the row's details, which its disclosure controls. */
@@ -734,7 +738,10 @@ export class PctDataTable<
       };
     });
     const hidden = new Set<string>(this.hiddenColumns());
-    const hiddenColumns = columns.filter((column) => hidden.has(column.id));
+    // The template's context is typed by the template's own list, which the table cannot name.
+    const hiddenColumns = columns.filter((column) =>
+      hidden.has(column.id),
+    ) as unknown as Row<T>['hiddenColumns'];
     const lines = this.lines();
     const rows: Row<T>[] = [];
     // The base draws rows and their details: groups and holes are lines that the features

@@ -185,14 +185,14 @@ td[data-pct-changed] {
   block-size: 1em;
 }
 
-/* The chevron points along the line, to the end edge, while closed, and down while open:
-   turned the other way under `:dir(rtl)`, the calendar's selector, where the end edge is on
-   the left. */
-.pct-data-table__chevron:dir(rtl) {
-  scale: -1 1;
+/* The library's one chevron points down, which is open; closed, it is turned to point along
+   the line to the end edge — the left under `:dir(rtl)`, the calendar's selector. */
+.pct-data-table__toggle[aria-expanded='false'] .pct-data-table__chevron {
+  rotate: -90deg;
 }
 
-.pct-data-table__toggle[aria-expanded='true'] .pct-data-table__chevron {
+.pct-data-table__toggle[aria-expanded='false']
+  .pct-data-table__chevron:dir(rtl) {
   rotate: 90deg;
 }
 
