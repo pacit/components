@@ -1,0 +1,10 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctTableCaptionHarness offers select: a class with no selector of `./table` draws one, but into the data table, which makes it; the caption makes no component.",
+  "harnesses": {
+    "PctTableCaptionHarness": {
+      "parts": ["select"]
+    }
+  }
+}

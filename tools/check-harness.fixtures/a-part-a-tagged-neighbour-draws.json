@@ -1,0 +1,24 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctDataTableHarness offers the toggle the header cell draws: a class of its entrypoint, but one with a selector and a harness of its own, so the toggle is that harness's to name.",
+  "harnesses": {
+    "PctDataTableHarness": {
+      "parts": [
+        "details",
+        "disclosure",
+        "error",
+        "group",
+        "hint",
+        "mark",
+        "message",
+        "place",
+        "placeholder",
+        "select",
+        "select-all",
+        "toggle",
+        "warning"
+      ]
+    }
+  }
+}

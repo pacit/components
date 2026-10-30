@@ -1,0 +1,9 @@
+<!-- The checkbox over the rows names nothing of its own, and no consumer can name it. -->
+<ng-template #head>
+  <input class="pct-picks__all" type="checkbox" />
+  <span hidden [id]="wordId">Pick</span>
+</ng-template>
+
+<ng-template #cell let-row>
+  <input class="pct-picks__one" type="checkbox" [attr.aria-labelledby]="wordId + ' ' + row.nameId" />
+</ng-template>

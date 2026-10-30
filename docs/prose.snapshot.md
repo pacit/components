@@ -29,7 +29,7 @@ the points, and a number copied here would be a second home for a number 0017 al
 at-pass.mjs 2 14 175
 changelog-renderer.mjs 4 16 157
 check-acr.mjs 8 20 218
-check-aria.mjs 9 21 271
+check-aria.mjs 9 21 279
 check-bench.mjs 6 18 191
 check-bridge.mjs 7 19 200
 check-browsers.mjs 6 18 172
@@ -42,7 +42,7 @@ check-e2e.mjs 4 15 143
 check-files.mjs 10 22 232
 check-flake.mjs 5 17 206
 check-forms.mjs 4 16 140
-check-harness.mjs 6 18 179
+check-harness.mjs 6 18 191
 check-icons.mjs 6 18 170
 check-index.mjs 5 17 150
 check-language.mjs 7 19 196

@@ -1,0 +1,25 @@
+{
+  "point": 3,
+  "check": "every",
+  "why": "Only PctTableCaptionHarness names the warning PctTableSelectionParts draws: a harness of `./table`, but the caption makes no component, so the warning never stands in it, and part(\"warning\") finds nothing.",
+  "harnesses": {
+    "PctDataTableHarness": {
+      "parts": [
+        "details",
+        "disclosure",
+        "error",
+        "group",
+        "hint",
+        "mark",
+        "message",
+        "place",
+        "placeholder",
+        "select",
+        "select-all"
+      ]
+    },
+    "PctTableCaptionHarness": {
+      "parts": ["warning"]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+/** No selector, and a name written onto the roleless host the code makes. */
+@Component({
+  templateUrl: './picks.html',
+  host: {
+    'aria-label': 'Picks',
+  },
+})
+export class PctPicks {
+  protected readonly wordId = 'pct-picks-word';
+}

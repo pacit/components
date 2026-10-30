@@ -1,0 +1,113 @@
+<!--
+  What a picking table draws, in the places the table keeps for it: the header of the column of
+  picks, a row's control, and the line under the table. Drawn by the table, declared here, so a
+  table that picks nothing carries none of it (0097).
+-->
+<ng-template #head>
+  <!-- A checkbox over the rows the filter left, or, for one row, the word the radios are
+       named by. -->
+  @if (selection.mode() === 'multiple') {
+  <label class="pct-data-table__target">
+    <input
+      type="checkbox"
+      data-pct-part="select-all"
+      [checked]="pickedAll().checked"
+      [indeterminate]="pickedAll().mixed"
+      [disabled]="selection.disabled() || table.matchedIds().length === 0"
+      [attr.aria-label]="texts().tableSelectAll"
+      [attr.aria-readonly]="selection.readonly() ? 'true' : null"
+      (click)="pickAll($event)"
+      (blur)="leave($event)"
+    />
+  </label>
+  <span hidden [id]="wordId">{{ texts().tableSelectRow }}</span>
+  } @else {
+  <span class="pct-data-table__word" [id]="wordId"
+    >{{ texts().tableSelectRow }}</span
+  >
+  } @if (selection.required()) {
+  <span class="pct-data-table__required" aria-hidden="true">*</span>
+  }
+</ng-template>
+
+<ng-template #cell let-row>
+  @if (selection.mode() === 'multiple') {
+  <label class="pct-data-table__target">
+    <input
+      type="checkbox"
+      data-pct-part="select"
+      [checked]="row.selected"
+      [disabled]="selection.disabled()"
+      [value]="row.id"
+      [attr.aria-labelledby]="wordId + ' ' + row.nameId"
+      [attr.aria-describedby]="describedBy()"
+      [attr.aria-invalid]="selection.showInvalid() ? 'true' : null"
+      [attr.aria-readonly]="selection.readonly() ? 'true' : null"
+      [attr.name]="selection.name() || null"
+      (click)="pick(row.id, $event)"
+      (blur)="leave($event)"
+    />
+  </label>
+  } @else {
+  <label class="pct-data-table__target">
+    <input
+      type="radio"
+      data-pct-part="select"
+      [name]="radioName()"
+      [checked]="row.selected"
+      [disabled]="selection.disabled()"
+      [value]="row.id"
+      [attr.aria-labelledby]="wordId + ' ' + row.nameId"
+      [attr.aria-describedby]="describedBy()"
+      [attr.aria-invalid]="selection.showInvalid() ? 'true' : null"
+      (click)="pick(row.id, $event)"
+      (blur)="leave($event)"
+    />
+  </label>
+  }
+</ng-template>
+
+<!-- The selection's one line, as a field draws it (`req-api-message`): the error, else the
+     warning, else the hint — outside the frame, so a scrolled table keeps it in view. -->
+<ng-template #below>
+  @if (line(); as line) { @if (line.kind === 'error') {
+  <span
+    class="pct-data-table__error"
+    data-pct-part="error"
+    [id]="line.id"
+    role="alert"
+    >{{ line.text }}</span
+  >
+  } @else if (line.kind === 'warning') {
+  <span
+    class="pct-data-table__warning"
+    data-pct-part="warning"
+    [id]="line.id"
+    role="status"
+  >
+    <pct-icon class="pct-data-table__warning-icon" name="warning">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <path d="M8 2.6L14.5 13.4h-13z" />
+        <path d="M8 6.6v2.6" />
+        <path d="M8 11.4h.01" />
+      </svg>
+    </pct-icon>
+    <span class="pct-data-table__word">{{ texts().fieldWarning }}</span>
+    {{ line.text }}
+  </span>
+  } @else {
+  <span class="pct-data-table__hint" data-pct-part="hint" [id]="line.id"
+    >{{ line.text }}</span
+  >
+  } }
+</ng-template>
