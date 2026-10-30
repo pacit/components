@@ -42,6 +42,11 @@
       [end]="end"
     />
   </pct-chart>
+  <pct-chart-legend
+    [chart]="pattern"
+    value="latest"
+    data-testid="chart-legend"
+  />
   <pct-chart-table [chart]="pattern" [rows]="24" data-testid="chart-table" />
 </sbx-demo>
 
@@ -133,6 +138,39 @@
       />
     </pct-chart>
   </section>
+</sbx-demo>
+
+<sbx-demo
+  heading="Eight series, told apart by colour, dash and marker"
+  summary="The palette's eight places on one chart, with distinct set to all so every line draws its dash as well as its colour; the legend draws each series' swatch — line, dash and marker — and a remove button beside it. Under forced colours the dashes and the markers are what remains."
+  [reqs]="['req-a11y-forced-colors', 'req-token-contrast']"
+  data-testid="demo-eight"
+>
+  <pct-chart
+    #eight
+    ariaLabel="Eight rooms on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    distinct="all"
+    class="sbx-chart"
+    data-testid="chart-eight"
+  >
+    @for (room of rooms(); track room.name) {
+    <pct-line
+      [data]="room.rows"
+      x="at"
+      y="value"
+      [name]="room.name"
+      unit="°C"
+    />
+    }
+  </pct-chart>
+  <pct-chart-legend
+    [chart]="eight"
+    removable
+    (remove)="dropRoom($event)"
+    data-testid="chart-eight-legend"
+  />
 </sbx-demo>
 
 <sbx-demo

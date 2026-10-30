@@ -45,27 +45,89 @@
   );
 }
 
-// Every path carries `data-pct-series` (a place or `custom`), so these win by order. With the
-// colours gone, each place keeps a dash of its own: the second channel of 0102.
-@media (forced-colors: active) {
-  [data-pct-part='series'][data-pct-series] {
-    stroke: CanvasText;
+// The second channel of 0102: each place keeps a dash of its own, drawn on the lines where
+// the colours are gone (forced colours) or when the scene asks for it (`distinct="all"`),
+// and always on a swatch's line. The place's marker is a shape (`PCT_SERIES_MARKERS`), its
+// ring the surface's colour, so it stands out on the line it marks.
+$dashes: (
+  2: 8 4,
+  3: 2 4,
+  4: 8 4 2 4,
+  5: 14 5,
+  6: 2 8,
+  7: 8 4 2 4 2 4,
+  8: 5 5,
+);
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.dash {
+  stroke-width: var(--pct-chart-series-width);
+  stroke-linecap: round;
+}
+
+.shape {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 2px;
+  paint-order: stroke;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] .dash,
+  [data-pct-series='#{$i}'] .shape {
+    stroke: var(--pct-chart-series-color-#{$i});
   }
 
-  $dashes: (
-    2: 8 4,
-    3: 2 4,
-    4: 8 4 2 4,
-    5: 14 5,
-    6: 2 8,
-    7: 8 4 2 4 2 4,
-    8: 5 5,
-  );
+  [data-pct-series='#{$i}'] .shape {
+    fill: var(--pct-chart-series-color-#{$i});
+    stroke: var(--pct-chart-marker-border);
+  }
+}
+
+[data-pct-series='custom'] .dash {
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] .shape {
+  fill: var(--_pct-chart-color);
+}
+
+// `.dashed` stands on the series' path alone, so the rule weighs what the forced-colours one
+// does and the later of the two, the mode's, wins.
+@each $place, $dash in $dashes {
+  .dashed[data-pct-series='#{$place}'],
+  [data-pct-series='#{$place}'] .dash {
+    stroke-dasharray: $dash;
+  }
+}
+
+// Every path carries `data-pct-series` (a place or `custom`), so these win by order. With the
+// colours gone, the dashes and the shapes are what tells the series apart.
+@media (forced-colors: active) {
+  [data-pct-part='series'][data-pct-series],
+  [data-pct-series] .dash {
+    stroke: CanvasText;
+  }
 
   @each $place, $dash in $dashes {
     [data-pct-part='series'][data-pct-series='#{$place}'] {
       stroke-dasharray: $dash;
     }
+  }
+
+  [data-pct-series] .shape {
+    fill: CanvasText;
+    stroke: Canvas;
   }
 
   [data-pct-part='area'][data-pct-series] {

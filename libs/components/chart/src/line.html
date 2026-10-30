@@ -9,9 +9,36 @@
   }
   <svg:path
     data-pct-part="series"
+    [class.dashed]="dashed()"
     [attr.d]="line()"
     [attr.data-pct-series]="place()"
     [style.--_pct-chart-color]="custom()"
   />
   }
+</ng-template>
+
+<!--
+  The series drawn small, where its name stands (0102): its line with its dash and its marker
+  for a legend, the marker alone for the cursor's line and the tooltip. The marker's ring is the
+  surface's colour under the shape, so it stands out on the line it marks.
+-->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'swatch') {
+    <svg:line class="dash" x1="1" y1="6" x2="23" y2="6" />
+    }
+    <svg:path
+      class="shape"
+      [attr.d]="markerOf(series.place)"
+      [attr.transform]="form === 'marker' ? null : 'translate(6 0)'"
+    />
+  </svg>
 </ng-template>

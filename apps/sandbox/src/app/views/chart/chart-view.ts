@@ -3,6 +3,7 @@ import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
   PctChart,
+  PctChartLegend,
   PctChartSync,
   PctChartTable,
   PctChartTooltip,
@@ -66,6 +67,34 @@ const heater: Reading[] = [
   { at: START + 21 * HOUR, value: 0 },
 ];
 
+/** Eight rooms through the day, each its own swing, named so the legend has eight names. */
+function rooms(): { name: string; rows: Reading[] }[] {
+  const names = [
+    'Kitchen',
+    'Hall',
+    'Bedroom',
+    'Study',
+    'Bathroom',
+    'Loft',
+    'Garage',
+    'Cellar',
+  ];
+  return names.map((name, i) => {
+    const random = seeded(20 + i);
+    const rows: Reading[] = [];
+    for (let at = START; at <= START + 25 * HOUR; at += 30 * MINUTE) {
+      const hours = (at - START) / HOUR;
+      const value =
+        16 +
+        i * 0.8 +
+        2 * Math.sin((hours / 25) * 2 * Math.PI - i * 0.7) +
+        (random() - 0.5) * 0.3;
+      rows.push({ at, value: Math.round(value * 10) / 10 });
+    }
+    return { name, rows };
+  });
+}
+
 /** A week of one reading every ten seconds. */
 function aWeek(): (readonly [number, number])[] {
   const random = seeded(11);
@@ -100,6 +129,7 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctChartTable,
     PctChartTooltip,
     PctChartSync,
+    PctChartLegend,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -114,6 +144,10 @@ export class ChartView {
   protected readonly end = START + 25 * HOUR;
   protected readonly hidden = signal<readonly string[]>([]);
   protected readonly cursor = signal<number | null>(null);
+  protected readonly rooms = signal(rooms());
+  protected dropRoom(name: string): void {
+    this.rooms.update((all) => all.filter((room) => room.name !== name));
+  }
   /** 10:00 on the wall clock of Warsaw, on the day of twenty-five hours (the clocks went back at 03:00). */
   protected readonly ten = START + 11 * HOUR;
   protected readonly first = (row: readonly [number, number]) => row[0];

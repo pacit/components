@@ -1,6 +1,7 @@
 export * from './chart';
 export * from './chart-table';
 export * from './chart-zoom';
+export * from './legend';
 export * from './line';
 export * from './model/columns';
 export * from './model/cursor';
@@ -11,6 +12,7 @@ export * from './model/layout';
 export * from './model/path';
 export * from './model/scale';
 export * from './model/slots';
+export * from './model/summarize';
 export * from './model/ticks';
 export * from './model/time-ticks';
 export * from './model/value-at';

@@ -2624,6 +2624,13 @@
       "severity": "error"
     },
     {
+      "name": "chart — the name of a hidden series in the legend",
+      "fg": "pct.chart.legend-fg-muted",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

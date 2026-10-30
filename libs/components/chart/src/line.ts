@@ -21,7 +21,13 @@ import { pctAreaPath, pctLinePath } from './model/path';
 import type { PctDomain } from './model/scale';
 import { pctValueAt, type PctCurve } from './model/value-at';
 import type { PctWindow } from './model/window';
-import { PctChartScene, PctMark, type PctSeriesSpec } from './scene';
+import {
+  PCT_SERIES_MARKERS,
+  PctChartScene,
+  PctMark,
+  type PctSeriesSpec,
+  type PctSwatchContext,
+} from './scene';
 
 /**
  * A series drawn as a line, a step or an area, on the chart it stands in
@@ -126,6 +132,17 @@ export class PctLine<T> extends PctMark {
 
   override readonly template =
     viewChild.required<TemplateRef<unknown>>('drawing');
+  override readonly swatch =
+    viewChild.required<TemplateRef<PctSwatchContext>>('swatch');
+
+  /** The marker's path, by the series' place: the eighth and on round again. */
+  protected markerOf(place: number | 'custom'): string {
+    return PCT_SERIES_MARKERS[
+      place === 'custom' ? 0 : (place - 1) % PCT_SERIES_MARKERS.length
+    ];
+  }
+  /** The lines draw their dashes always when the scene says so. */
+  protected readonly dashed = computed(() => this.scene.distinct() === 'all');
 
   private readonly key = computed(() => this.id() || this.name());
 

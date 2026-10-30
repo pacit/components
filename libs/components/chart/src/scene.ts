@@ -14,6 +14,50 @@ import type { PctWindow } from './model/window';
  */
 
 /**
+ * What a series is told apart by on the picture: its palette place, or a colour of the
+ * consumer's own (`place` `custom`, `color` set). The rows of a reading and the entries of a
+ * legend carry it, and a mark's swatch draws it.
+ *
+ * @since next
+ */
+export interface PctSeriesIdentity {
+  readonly id: string;
+  /** The palette place, or `custom` for a colour of the consumer's own. */
+  readonly place: number | 'custom';
+  /** The consumer's own colour, `null` for a palette place. */
+  readonly color: string | null;
+}
+
+/**
+ * The context of a mark's swatch template: the series, and the form asked for.
+ *
+ * @since next
+ */
+export interface PctSwatchContext {
+  readonly $implicit: PctSeriesIdentity;
+  /** `swatch` draws the line with its dash and its marker; `marker` the marker alone. */
+  readonly form: 'swatch' | 'marker';
+}
+
+/**
+ * The marker of each palette place, as a path in a box of twelve: a circle, a square, a
+ * triangle, a diamond, a triangle on its point, a plus, a hexagon and a star — eight shapes a
+ * reader with no colour tells apart, and the dash patterns of `line.scss` their twins (0102).
+ *
+ * @since next
+ */
+export const PCT_SERIES_MARKERS: readonly string[] = [
+  'M6 1a5 5 0 1 1 0 10a5 5 0 1 1 0-10z',
+  'M1.5 1.5h9v9h-9z',
+  'M6 1l5.5 10h-11z',
+  'M6 0.5l5.5 5.5-5.5 5.5-5.5-5.5z',
+  'M6 11l-5.5-10h11z',
+  'M4.5 1h3v3.5h3.5v3h-3.5v3.5h-3v-3.5h-3.5v-3h3.5z',
+  'M6 0.8l4.5 2.6v5.2l-4.5 2.6-4.5-2.6v-5.2z',
+  'M6 0.5l1.6 3.4 3.7 0.5-2.7 2.6 0.7 3.7-3.3-1.8-3.3 1.8 0.7-3.7-2.7-2.6 3.7-0.5z',
+];
+
+/**
  * A series as a mark declares it.
  *
  * @since next
@@ -86,6 +130,14 @@ export abstract class PctChartScene {
    * @since next
    */
   abstract readonly hiddenSeries: Signal<readonly string[]>;
+
+  /**
+   * Whether the lines draw their dash patterns always (`all`) or only where the colours are
+   * gone, under forced colours (`color`, the default): the second channel of 0102.
+   *
+   * @since next
+   */
+  abstract readonly distinct: Signal<'color' | 'all'>;
 }
 
 /**
@@ -115,6 +167,15 @@ export abstract class PctMark {
    * @since next
    */
   abstract readonly span: Signal<PctDomain | null>;
+
+  /**
+   * The template that draws a series' identity small — its colour, its dash and its marker
+   * — for the legend (`form` `swatch`) and for a marker on the cursor's line or in the tooltip
+   * (`form` `marker`). Stamped with a `PctSwatchContext`.
+   *
+   * @since next
+   */
+  abstract readonly swatch: Signal<TemplateRef<PctSwatchContext>>;
   /**
    * The lowest and highest value a series shows in `window`, as drawn.
    *
