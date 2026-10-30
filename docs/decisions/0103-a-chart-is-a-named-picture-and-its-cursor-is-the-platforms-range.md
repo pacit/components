@@ -114,3 +114,14 @@ writes on every other one, and the pair `check-aria` asks of a host that does no
 role itself. The chart takes the same two: `ariaLabel` names the picture and captions the data
 table; a chart named by a heading on the page takes `ariaLabelledby`, and its table a
 `caption` of its own.
+
+## Amended 2026-10-30: the range stands before the figure, counted from the window's start
+
+The readers' walk of the cursor (phase 3) changed two details of the range, and kept the
+decision. **It stands before the `<figure>`, not in it**: inside, NVDA with Firefox announced
+the figure it entered and nothing of the range. **It runs from 0 to the window's span**, its
+value the cursor's distance from the window's start, rather than from the window's instants:
+Orca works a percentage out of a range's numbers and announced `1992138 percent` for instants
+since 1970; counted from the window's start it says the percentage of the window, which is
+true, though nobody asked for it — the cost this record named. The value text is unchanged, and
+every reader reads it.

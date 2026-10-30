@@ -1571,7 +1571,7 @@ const textsChannel = (() => {
         source.match(
           /export const PCT_DEFAULT_TEXTS[^=]*=\s*\{([\s\S]*?)^\};/m,
         )?.[1] ?? ''
-      ).matchAll(/^\s*(\w+): '((?:[^'\\]|\\.)*)',?$/gm),
+      ).matchAll(/^\s*(\w+):\s*'((?:[^'\\]|\\.)*)',?$/gm),
     ].map(([, k, v]) => [k, v]),
   );
   if (keys.length === 0)

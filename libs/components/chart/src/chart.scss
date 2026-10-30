@@ -76,6 +76,98 @@
   }
 }
 
+// The cursor's range is the chart's stop, and the pointer never lands on it (0103): it is
+// hidden from the eye, and its focus is drawn around the picture it reads, in the figure after it.
+.range {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.range:focus-visible + .figure .picture {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+// The layer the pointer moves the cursor on. A vertical drag is the page's: `pan-y` leaves it
+// to scrolling, and a horizontal one is the chart's.
+.overlay {
+  touch-action: pan-y;
+}
+
+.overlay > * {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  pointer-events: none;
+}
+
+[data-pct-part='cursor'] {
+  inline-size: 1px;
+  background: var(--pct-chart-cursor-border);
+}
+
+[data-pct-part='marker'] {
+  box-sizing: border-box;
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+  border: 2px solid var(--pct-chart-marker-border);
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+[data-pct-part='tooltip'] {
+  display: grid;
+  gap: var(--pct-space-2);
+  padding: var(--pct-chart-tooltip-padding-y) var(--pct-chart-tooltip-padding-x);
+  border: 1px solid var(--pct-chart-tooltip-border);
+  border-radius: var(--pct-chart-tooltip-radius);
+  background: var(--pct-chart-tooltip-bg);
+  color: var(--pct-chart-tooltip-fg);
+  box-shadow: var(--pct-chart-tooltip-shadow);
+  white-space: nowrap;
+}
+
+// Placed by its width, so it waits a frame unseen until that is measured.
+.unmeasured {
+  visibility: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+}
+
+.swatch {
+  inline-size: var(--pct-space-2);
+  block-size: var(--pct-space-2);
+  border-radius: 50%;
+}
+
+.value {
+  margin-inline-start: auto;
+  padding-inline-start: var(--pct-space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+// The palette's place of each series, or the consumer's own colour.
+@for $i from 1 through 8 {
+  [data-pct-part='marker'][data-pct-series='#{$i}'],
+  .swatch[data-pct-series='#{$i}'] {
+    background: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+[data-pct-part='marker'][data-pct-series='custom'],
+.swatch[data-pct-series='custom'] {
+  background: var(--_pct-chart-color);
+}
+
 .empty {
   position: absolute;
   inset: 0;
@@ -101,5 +193,25 @@
 
   .dot[data-pct-series] {
     fill: CanvasText;
+  }
+
+  .range:focus-visible + .figure .picture {
+    outline-color: Highlight;
+  }
+
+  [data-pct-part='cursor'] {
+    background: CanvasText;
+  }
+
+  // The colours are gone, and a marker and a swatch are rings: the name beside each says
+  // which series it is.
+  [data-pct-part='marker'][data-pct-series],
+  .swatch[data-pct-series] {
+    border: 2px solid CanvasText;
+    background: Canvas;
+  }
+
+  [data-pct-part='tooltip'] {
+    border-color: CanvasText;
   }
 }

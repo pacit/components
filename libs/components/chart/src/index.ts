@@ -2,6 +2,7 @@ export * from './chart';
 export * from './chart-table';
 export * from './line';
 export * from './model/columns';
+export * from './model/cursor';
 export * from './model/decimate';
 export * from './model/extent';
 export * from './model/layout';
