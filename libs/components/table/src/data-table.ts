@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterEveryRender,
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
@@ -48,8 +49,14 @@ import {
   pctHideOrder,
   type PctRowId,
 } from './model/columns';
+import { pctAggregate } from './model/aggregate';
 import { pctFit } from './model/fit';
-import { pctLineKey, pctLines, type PctTableLine } from './model/lines';
+import {
+  pctGroupKey,
+  pctLineKey,
+  pctLines,
+  type PctTableLine,
+} from './model/lines';
 import { pctOrderRows } from './model/order';
 import {
   pctMatches,
@@ -105,10 +112,48 @@ export interface PctScrollToOptions {
  */
 export interface PctTableFeature {
   /** The rows' details: which are open, held by the application, and whether any opens. */
-  readonly details: {
+  readonly details?: {
     readonly open: WritableSignal<readonly PctRowId[]>;
     readonly disabled: Signal<boolean>;
   };
+  /** The groups: the columns the rows are grouped by, the groups collapsed, and whether on. */
+  readonly groups?: {
+    readonly by: Signal<readonly string[]>;
+    readonly collapsed: WritableSignal<readonly string[]>;
+    readonly disabled: Signal<boolean>;
+  };
+}
+
+/** What a group's heading or the table's foot sums up: a label's span and the columns' sums. */
+interface Summary {
+  /** The cells the label spans: the leading ones and the first column's. */
+  readonly span: number;
+  /** The first column's sum, written beside the label. */
+  readonly first: string;
+  /** The other columns' sums, one cell each. */
+  readonly cells: readonly {
+    readonly text: string;
+    readonly numeric: boolean;
+  }[];
+}
+
+/** A group's heading. */
+interface Heading extends Summary {
+  readonly key: string;
+  readonly line: number;
+  readonly level: number;
+  readonly label: string;
+  readonly countText: string;
+  /** The heading's name for a reader, naming the group it stands in; `null` at the top. */
+  readonly name: string | null;
+  readonly collapsed: boolean;
+}
+
+/** A body of the table: a group's heading and the rows below it, or the rows of no group. */
+interface Section<T> {
+  readonly key: string;
+  readonly group: Heading | null;
+  readonly rows: Row<T>[];
 }
 
 /** How much wider than where it hid a column the frame grows before the column comes back. */
@@ -142,6 +187,8 @@ interface Row<T> {
   readonly id: PctRowId;
   /** The row's position among the lines drawn: its details, when open, are the next one. */
   readonly line: number;
+  /** How deep the row stands: in its groups, and in a tree. */
+  readonly level: number;
   readonly tone: PctTone | null;
   /** The row's values, one per column: the array the cache holds, kept while the row is. */
   readonly values: readonly unknown[];
@@ -465,17 +512,17 @@ export class PctDataTable<
   });
 
   /** What the table's directive added: the details directive is the one there is yet. */
-  private readonly contributed = signal<PctTableFeature | null>(null);
+  private readonly contributed = signal<PctTableFeature>({});
 
   /** The open details when no directive holds them: a narrow table opens rows on its own. */
   private readonly ownDetails = signal<readonly PctRowId[]>([]);
 
   private readonly openDetails = computed(
-    () => this.contributed()?.details.open ?? this.ownDetails,
+    () => this.contributed().details?.open ?? this.ownDetails,
   );
 
   private readonly detailsOff = computed(
-    () => this.contributed()?.details.disabled() ?? false,
+    () => this.contributed().details?.disabled() ?? false,
   );
 
   /** The prefix of every details row's id. */
@@ -495,9 +542,15 @@ export class PctDataTable<
   /** A new value at each resize of the frame or the table, so each renders the fit again. */
   private readonly resized = signal<object>({});
 
-  /** Where the focus stood when a column went, so it can be handed to the row. */
-  private lost: { readonly element: Element; readonly line: number } | null =
-    null;
+  /**
+   * Where the focus last stood in the table's body: its element, its line, and the row or the
+   * group that line was, so the focus can be handed on when its element goes.
+   */
+  private focusAt: {
+    readonly element: Element;
+    readonly line: number;
+    readonly row: PctRowId | null;
+  } | null = null;
 
   /** A details row's id for each row, made once and kept while the table lives. */
   private readonly detailsIds = new Map<string, string>();
@@ -654,10 +707,167 @@ export class PctDataTable<
     const id = this.rowId();
     const lines = pctLines(this.ordered(), id, {
       details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
+      groups: this.grouping(),
+      collapsed: new Set(this.contributed().groups?.collapsed()),
     });
     if (isDevMode()) this.warnOnTwins(lines);
     return lines;
   });
+
+  /**
+   * The levels the rows are grouped by: the groups directive's columns, while it is on. A
+   * group is headed by the text its column writes for the group's first row.
+   */
+  private readonly grouping = computed(() => {
+    const groups = this.contributed().groups;
+    if (!groups || groups.disabled()) return [];
+    const columns: readonly PctAnyColumn<T>[] = this.columns();
+    const values = this.values();
+    const written = this.written();
+    const empty = this.texts().tableGroupEmpty;
+    return groups.by().flatMap((id) => {
+      const c = columns.findIndex((column) => column.id === id);
+      return c < 0
+        ? []
+        : [
+            {
+              value: (row: T) => (values.get(row) as readonly unknown[])[c],
+              // A group of no value is named all the same: its button needs a name.
+              label: (row: T) =>
+                (written.get(row) as readonly string[])[c] || empty,
+            },
+          ];
+    });
+  });
+
+  /** The columns shown, each with its place among all the columns. */
+  private readonly shown = computed(() => {
+    const hidden = new Set<string>(this.hiddenColumns());
+    return (this.columns() as readonly PctAnyColumn<T>[])
+      .map((column, c) => ({ column, c }))
+      .filter(({ column }) => !hidden.has(column.id));
+  });
+
+  /** How a set of rows is summed up under the columns shown. */
+  private readonly summarize = computed(() => {
+    const writers = this.writers();
+    const now = this.moment();
+    const values = this.values();
+    const count = new Intl.NumberFormat(this.resolvedLocale());
+    const shown = this.shown();
+    const span = (this.disclosure() ? 1 : 0) + (this.rowNumbers() ? 1 : 0) + 1;
+    const sum = (rows: readonly T[], column: PctAnyColumn<T>, c: number) => {
+      const aggregate = column.aggregate;
+      if (aggregate === undefined) return '';
+      const result = pctAggregate(
+        rows.map((row) => (values.get(row) as readonly unknown[])[c]),
+        aggregate,
+      );
+      // No result is written as nothing by every kind.
+      // A count is a count whatever the column holds, and a number summed from a column with
+      // no number kind is written in the locale's digits, not as JavaScript prints it.
+      return aggregate === 'count' ||
+        (typeof result === 'number' && typeof column.kind !== 'object')
+        ? count.format(result as number)
+        : (writers.get(column.id) as Writer)(result, now);
+    };
+    return (rows: readonly T[]): Summary => {
+      const [first, ...rest] = shown;
+      return {
+        span,
+        first: first ? sum(rows, first.column, first.c) : '',
+        cells: rest.map(({ column, c }) => ({
+          text: sum(rows, column, c),
+          numeric: pctColumnNumeric(column),
+        })),
+      };
+    };
+  });
+
+  /** The body in its bodies: a section per group heading, with the rows it heads. */
+  protected readonly sections = computed(() => {
+    const rows = new Map(this.body().map((row) => [row.line, row]));
+    const lines = this.lines();
+    const summarize = this.summarize();
+    const count = new Intl.NumberFormat(this.resolvedLocale());
+    const said = this.texts().tableGroupCount;
+    const within = this.texts().tableGroupWithin;
+    const labels = new Map<number, string>();
+    const sections: Section<T>[] = [];
+    let current: Section<T> | null = null;
+    for (let at = 0; at < lines.length; at++) {
+      const line = lines[at];
+      if (line.kind === 'group') {
+        labels.set(line.level, line.label);
+        const countText = said.replace('{count}', count.format(line.count));
+        current = {
+          key: pctLineKey(line),
+          group: {
+            ...summarize(line.rows),
+            key: line.key,
+            line: at,
+            level: line.level,
+            label: line.label,
+            countText,
+            name:
+              line.level === 0
+                ? null
+                : within
+                    .replace('{group}', `${line.label} ${countText}`)
+                    .replace('{outer}', labels.get(line.level - 1) as string),
+            collapsed: line.collapsed,
+          },
+          rows: [],
+        };
+        sections.push(current);
+        continue;
+      }
+      const row = rows.get(at);
+      // A row's details are drawn with the row.
+      if (row === undefined) continue;
+      if (current === null) {
+        current = { key: 'rows', group: null, rows: [] };
+        sections.push(current);
+      }
+      current.rows.push(row);
+    }
+    return sections;
+  });
+
+  /**
+   * The table's foot: every row in view summed up, when a column shown sums at all. The rows
+   * the filter left, not all the application holds: the foot sums what the table shows.
+   */
+  protected readonly totals = computed(() =>
+    this.ordered().length > 0 &&
+    this.shown().some(({ column }) => column.aggregate !== undefined)
+      ? this.summarize()(this.ordered() as readonly T[])
+      : null,
+  );
+
+  /** Collapses a group, or opens it. */
+  protected toggleGroup(key: string): void {
+    // Only a heading calls this, and headings stand only while the groups do.
+    (
+      this.contributed().groups as NonNullable<PctTableFeature['groups']>
+    ).collapsed.update((collapsed) =>
+      collapsed.includes(key)
+        ? collapsed.filter((other) => other !== key)
+        : [...collapsed, key],
+    );
+  }
+
+  /**
+   * Every group's key, those inside a collapsed group too: what the groups directive's
+   * `collapseAll` collapses.
+   *
+   * @since next
+   */
+  groupKeys(): readonly string[] {
+    return pctLines(this.ordered(), this.rowId(), {
+      groups: this.grouping(),
+    }).flatMap((line) => (line.kind === 'group' ? [line.key] : []));
+  }
 
   private warnedTwins = false;
 
@@ -769,52 +979,57 @@ export class PctDataTable<
       hidden.has(column.id),
     ) as unknown as Row<T>['hiddenColumns'];
     const lines = this.lines();
-    const rows: Row<T>[] = [];
     // The base draws rows and their details: groups and holes are lines that the features
     // contributing them draw.
-    lines.forEach((line, at) => {
-      if (line.kind !== 'row') return;
-      const values = cache.get(line.row) as readonly unknown[];
-      const texts = written.get(line.row) as readonly string[];
-      const all = cells.map(
-        ({ column, numeric, boolean, slot, marking }, c) => {
-          const value = values[c];
-          const text = texts[c];
-          const yes = boolean && typeof value === 'boolean' ? value : null;
-          const parts = marking
-            ? pctMatchParts(text, words as readonly string[])
-            : null;
-          const tooltip = column.tooltip;
-          return {
-            column,
-            value,
-            text,
-            numeric,
-            yes,
-            slot,
-            parts,
-            tone: column.tone?.(value, line.row) ?? null,
-            title: typeof tooltip === 'function' ? tooltip(line.row) : null,
-            clip: tooltip === true && slot === null && yes === null,
-          };
-        },
-      );
-      rows.push({
-        key: pctLineKey(line),
-        row: line.row,
-        index: line.index,
-        id: line.key,
-        line: at,
-        tone: rowTone?.(line.row) ?? null,
-        values,
-        cells: all.filter((cell) => !hidden.has(cell.column.id)),
-        hidden: all.filter((cell) => hidden.has(cell.column.id)),
-        hiddenColumns,
-        open: lines[at + 1]?.kind === 'details',
-        detailsId: this.detailsIdOf(pctLineKey(line)),
+    type RowLine = Extract<PctTableLine<T>, { kind: 'row' }>;
+    return lines
+      .map((line, at) => ({ line, at }))
+      .filter(
+        (item): item is { line: RowLine; at: number } =>
+          item.line.kind === 'row',
+      )
+      .map(({ line, at }): Row<T> => {
+        const values = cache.get(line.row) as readonly unknown[];
+        const texts = written.get(line.row) as readonly string[];
+        const all = cells.map(
+          ({ column, numeric, boolean, slot, marking }, c) => {
+            const value = values[c];
+            const text = texts[c];
+            const yes = boolean && typeof value === 'boolean' ? value : null;
+            const parts = marking
+              ? pctMatchParts(text, words as readonly string[])
+              : null;
+            const tooltip = column.tooltip;
+            return {
+              column,
+              value,
+              text,
+              numeric,
+              yes,
+              slot,
+              parts,
+              tone: column.tone?.(value, line.row) ?? null,
+              title: typeof tooltip === 'function' ? tooltip(line.row) : null,
+              clip: tooltip === true && slot === null && yes === null,
+            };
+          },
+        );
+        return {
+          key: pctLineKey(line),
+          row: line.row,
+          index: line.index,
+          id: line.key,
+          line: at,
+          level: line.level,
+          tone: rowTone?.(line.row) ?? null,
+          values,
+          cells: all.filter((cell) => !hidden.has(cell.column.id)),
+          hidden: all.filter((cell) => hidden.has(cell.column.id)),
+          hiddenColumns,
+          open: lines[at + 1]?.kind === 'details',
+          detailsId: this.detailsIdOf(pctLineKey(line)),
+        };
       });
-    });
-    return rows;
   });
 
   /** The id of a row's details: the same for the row however the rows above it change. */
@@ -916,11 +1131,25 @@ export class PctDataTable<
     // sticky header rather than under it.
     afterRenderEffect(() => {
       const sticky = this.stickyHeader();
+      // Measured again whenever the header or the bodies render, or the table resizes: a late
+      // font or a wrapped label changes the header's height.
+      this.heads();
+      this.sections();
+      this.resized();
       const frame = this.frame().nativeElement as HTMLElement;
-      const head = this.ownTable().tHead as HTMLElement;
-      frame.style.scrollPaddingBlockStart = sticky
-        ? `${head.getBoundingClientRect().height}px`
+      const table = this.ownTable();
+      const height = sticky
+        ? `${(table.tHead as HTMLElement).getBoundingClientRect().height}px`
         : '';
+      frame.style.scrollPaddingBlockStart = height;
+      // A group's heading sticks below the header and below the headings of the groups it
+      // stands in, a heading's height for each level above it.
+      frame.style.setProperty('--_head', height);
+      const heading = table.querySelector('tr[data-pct-part="group"]');
+      frame.style.setProperty(
+        '--_group',
+        `${heading?.getBoundingClientRect().height ?? 0}px`,
+      );
     });
 
     afterNextRender(() => {
@@ -943,10 +1172,12 @@ export class PctDataTable<
       // whether the text is cut is known only once it is laid out, and measuring every cell on
       // every render to learn it would cost far more than measuring the one under the pointer.
       // The body is this component's element too.
-      const body = table.tBodies[0];
-      body.addEventListener('pointerover', (event) => this.noteCut(event));
-      body.addEventListener('pointerout', (event) => this.leaveCut(event));
-      body.addEventListener('animationend', (event) =>
+      table.addEventListener('focusin', (event) =>
+        this.noteFocus(event.target as Element),
+      );
+      table.addEventListener('pointerover', (event) => this.noteCut(event));
+      table.addEventListener('pointerout', (event) => this.leaveCut(event));
+      table.addEventListener('animationend', (event) =>
         (event.target as HTMLElement).removeAttribute('data-pct-changed'),
       );
     });
@@ -954,6 +1185,7 @@ export class PctDataTable<
     this.watchVisible(destroyRef);
     this.watchChanges();
     this.watchFit(destroyRef);
+    this.watchFocus();
 
     afterRenderEffect(() => {
       const target = this.pending();
@@ -962,7 +1194,7 @@ export class PctDataTable<
       // A row not in the lines yet is waited for: the call made before the rows arrived is
       // carried out by the render that brings them.
       if (!row) return;
-      this.ownTable().tBodies[0].rows[row.line].scrollIntoView({
+      this.lineRows()[row.line].scrollIntoView({
         block: target.align,
       });
       untracked(() => this.pending.set(null));
@@ -984,6 +1216,13 @@ export class PctDataTable<
     console.warn(
       `[pct-data-table] Two columns share the id ${JSON.stringify(twin.id)}: a cell ` +
         `template, the sort and the filter name a column by its id, so each needs its own.`,
+    );
+  }
+
+  /** The rows the table draws, a line each, across its bodies. */
+  private lineRows(): readonly HTMLTableRowElement[] {
+    return Array.from(this.ownTable().tBodies).flatMap((body) =>
+      Array.from(body.rows),
     );
   }
 
@@ -1042,7 +1281,7 @@ export class PctDataTable<
       const hidden = new Set<string>(this.hiddenColumns());
       const shown = columns.flatMap((id, c) => (hidden.has(id) ? [] : [c]));
       const lead = (this.rowNumbers() ? 1 : 0) + (this.disclosure() ? 1 : 0);
-      const rows = this.ownTable().tBodies[0].rows;
+      const rows = this.lineRows();
       const now = new Map<string, readonly unknown[]>();
       const changed: Element[] = [];
       for (const row of body) {
@@ -1089,11 +1328,6 @@ export class PctDataTable<
       this.resized();
       const count = this.hiddenCount();
       const table = this.ownTable();
-      // A control that went with its column, or with the disclosures, gives its focus to its
-      // row's disclosure, or to the row's first control, rather than to the page.
-      if (this.lost !== null && !this.lost.element.isConnected)
-        this.refocus(this.lost.line);
-      this.lost = null;
       // A new order of columns starts with every column shown.
       const key = JSON.stringify(next);
       if (key !== order) {
@@ -1131,33 +1365,73 @@ export class PctDataTable<
         HYSTERESIS,
       );
       needed = fit.needed;
-      if (fit.count !== count) this.change(fit.count);
+      // The same count again is no change to a signal.
+      this.change(fit.count);
     });
   }
 
-  /** Writes how many columns are hidden, noting first where the focus stood in the table. */
+  /** Writes how many columns are hidden. */
   private change(count: number): void {
-    // A document with a body always has an active element: the body, when nothing else is.
-    const focused = this.ownTable().ownerDocument.activeElement as Element;
-    const row = focused.closest<HTMLElement>('tbody > tr[data-pct-index]');
-    // A row of this table's body, not of a table nested in one of its cells.
-    if (row?.parentElement === this.ownTable().tBodies[0])
-      this.lost = {
-        element: focused,
-        line: Number(row.dataset['pctIndex']),
-      };
     untracked(() => this.hiddenCount.set(count));
   }
 
-  /** Focuses the row at `line`: its disclosure, or its first control. */
-  private refocus(line: number): void {
-    // The line was a row of the body when the focus was noted, and the render since moved no
-    // row: only the columns changed.
-    const row = this.ownTable().tBodies[0].rows[line];
-    const target = row.querySelector<HTMLElement>(
-      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
-    );
-    target?.focus();
+  /** Notes where the focus stands, when it stands in a line of this table's body. */
+  private noteFocus(target: Element): void {
+    const tr = target.closest<HTMLElement>('tbody > tr[data-pct-index]');
+    // A row of a table nested in a cell is that table's to look after.
+    if (tr?.closest('table') !== this.ownTable()) {
+      this.focusAt = null;
+      return;
+    }
+    const line = Number(tr.dataset['pctIndex']);
+    const found = this.lines()[line];
+    this.focusAt = {
+      element: target,
+      line,
+      // A heading's key is a JSON path no row's id is: its focus goes to the line that takes
+      // its place.
+      row: found.key,
+    };
+  }
+
+  /**
+   * Hands the focus on when its element went — with a column, a collapsed group, a row the
+   * application took away — rather than leaving it to the page: to its row's first control
+   * if the row is still drawn, to the heading of the group that hides it if not, to the
+   * group's own heading, or to the line that now stands where it stood.
+   */
+  private watchFocus(): void {
+    // After every render, not on a signal: a write inside another render hook reruns effects
+    // before the view has drawn it, and the element would still be there to find.
+    afterEveryRender(() => {
+      const at = this.focusAt;
+      if (at === null || at.element.isConnected) return;
+      this.focusAt = null;
+      untracked(() => this.handFocus(at));
+    });
+  }
+
+  /** Focuses the line that takes over from the focus that was at `at`. */
+  private handFocus(at: NonNullable<PctDataTable<T, M>['focusAt']>): void {
+    const lines = this.lines();
+    const rowId = this.rowId();
+    // A row's line stands before its details', which carry its key too.
+    let line = lines.findIndex((other) => other.key === at.row);
+    // The deepest heading in view whose group holds the row: a collapsed group hides it.
+    for (let back = lines.length - 1; back >= 0 && line === -1; back--) {
+      const other = lines[back];
+      if (
+        other.kind === 'group' &&
+        other.rows.some((row) => rowId(row) === at.row)
+      )
+        line = back;
+    }
+    if (line < 0) line = Math.min(at.line, lines.length - 1);
+    this.lineRows()
+      [line]?.querySelector<HTMLElement>(
+        '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+      )
+      ?.focus();
   }
 
   /**
@@ -1168,7 +1442,7 @@ export class PctDataTable<
    * @since next
    */
   contribute(feature: PctTableFeature): void {
-    this.contributed.set(feature);
+    this.contributed.update((features) => ({ ...features, ...feature }));
   }
 
   private warnOnNoName(): void {
@@ -1218,8 +1492,7 @@ export class PctDataTable<
       });
       observer = current;
       // With a line to draw there is no placeholder: every row of the body is a line.
-      for (const row of Array.from(this.ownTable().tBodies[0].rows))
-        current.observe(row);
+      for (const row of this.lineRows()) current.observe(row);
     });
   }
 
@@ -1241,6 +1514,25 @@ export class PctDataTable<
    * @since next
    */
   reveal(id: PctRowId): void {
+    const groups = this.contributed().groups;
+    const grouping = this.grouping();
+    const rowId = this.rowId();
+    const row = (this.ordered() as readonly T[]).find(
+      (other) => rowId(other) === id,
+    );
+    // Every group above the row opens: the path of its values, one level at a time.
+    if (groups && row !== undefined) {
+      const path: unknown[] = [];
+      const above = new Set(
+        grouping.map((level) => {
+          path.push(level.value(row));
+          return pctGroupKey(path);
+        }),
+      );
+      groups.collapsed.update((collapsed) =>
+        collapsed.filter((key) => !above.has(key)),
+      );
+    }
     this.scrollTo(id);
   }
 

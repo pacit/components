@@ -380,4 +380,69 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     await expect(toggle).not.toHaveAttribute('aria-checked', before ?? '');
     await expect(table.locator('tr[data-pct-part="details"]')).toHaveCount(1);
   });
+
+  test('rules by room: a body per room, a rowgroup header on each, a second level, collapsed and opened', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-groups');
+    const bodies = table.locator('tbody');
+    const headings = table.locator('tr[data-pct-part="group"]');
+    const count = await headings.count();
+    expect(count).toBeGreaterThan(1);
+    await expect(bodies).toHaveCount(count);
+    await expect(
+      table.locator('tr[data-pct-part="group"] > th[scope="rowgroup"]'),
+    ).toHaveCount(count);
+    // Each heading's button names the group, its state in aria-expanded.
+    const first = headings.first().getByRole('button');
+    await expect(first).toHaveAttribute('aria-expanded', 'true');
+    const rowsIn = (body: number) =>
+      bodies.nth(body).locator('tr:not([data-pct-part])');
+    const before = await rowsIn(0).count();
+    expect(before).toBeGreaterThan(0);
+    await first.click();
+    await expect(first).toHaveAttribute('aria-expanded', 'false');
+    await expect(rowsIn(0)).toHaveCount(0);
+    await expect(page.getByTestId('groups-state')).not.toContainText(
+      'Collapsed: none',
+    );
+    await first.click();
+    await expect(rowsIn(0)).toHaveCount(before);
+
+    await page.getByTestId('groups-levels').click();
+    await expect(headings).not.toHaveCount(count);
+    await page.getByTestId('groups-collapse').click();
+    await expect(headings).toHaveCount(count);
+    await expect(table.locator('tbody tr:not([data-pct-part])')).toHaveCount(0);
+    await page.getByTestId('groups-expand').click();
+    await expect(table.locator('tbody tr:not([data-pct-part])')).toHaveCount(
+      12,
+    );
+  });
+
+  test('the foot sums the energy of every rule in view, and a group heading its own', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-groups');
+    const number = (text: string) =>
+      Number(text.replace(/[^\d,]/g, '').replace(',', '.'));
+    const energies = await table
+      .locator('tbody tr:not([data-pct-part]) td:nth-child(3)')
+      .allTextContents();
+    const sum = energies.reduce((total, text) => total + number(text), 0);
+    const foot = await table.locator('tfoot td').nth(1).textContent();
+    expect(number(foot ?? '')).toBeCloseTo(sum, 1);
+    const firstBody = table.locator('tbody').first();
+    const inGroup = await firstBody
+      .locator('tr:not([data-pct-part]) td:nth-child(3)')
+      .allTextContents();
+    const heading = await firstBody
+      .locator('tr[data-pct-part="group"] td')
+      .nth(1)
+      .textContent();
+    expect(number(heading ?? '')).toBeCloseTo(
+      inGroup.reduce((total, text) => total + number(text), 0),
+      1,
+    );
+  });
 });

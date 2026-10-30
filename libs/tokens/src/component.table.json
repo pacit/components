@@ -165,6 +165,22 @@
         "$type": "color",
         "$value": "{pct.surface-100}",
         "$description": "Background of a data table's details row."
+      },
+      "$comment-group": "A group's heading stands on the primary's quietest fill under its paired text, apart from the header's surface and from the stripes, so a heading reads as a heading in a striped table too. The indent is one step of the spacing scale per level, the same step for a group, a row in it and, later, a node of a tree.",
+      "group-bg": {
+        "$type": "color",
+        "$value": "{pct.primary-100}",
+        "$description": "Background of a data table's group heading."
+      },
+      "group-fg": {
+        "$type": "color",
+        "$value": "{pct.on-primary-100}",
+        "$description": "Text colour of a data table's group heading."
+      },
+      "indent": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "How far a data table indents each level of its groups."
       }
     }
   }

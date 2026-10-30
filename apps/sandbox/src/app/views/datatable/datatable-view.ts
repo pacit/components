@@ -9,6 +9,7 @@ import {
   pctColumnsOf,
   type PctRowId,
   PctTableDetails,
+  PctTableGroups,
   type PctTableSort,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
@@ -113,6 +114,7 @@ const dev = pctColumnsOf<Device>();
     PctButton,
     PctTableDetails,
     PctDetailsTemplate,
+    PctTableGroups,
   ],
   templateUrl: './datatable-view.html',
   styleUrl: './datatable-view.scss',
@@ -151,6 +153,22 @@ export class DatatableView {
     }),
     col.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
   ]);
+  /** The rules summed up: a count of names, the energy summed, in groups of rooms. */
+  protected readonly groupColumns = col.of([
+    col.key('name', { header: 'Name', aggregate: 'count' }),
+    col.key('room', { header: 'Room' }),
+    col.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+      aggregate: 'sum',
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean' }),
+  ]);
+  protected readonly groupBy = signal<readonly ('room' | 'enabled')[]>([
+    'room',
+  ]);
+  protected readonly closedGroups = signal<readonly string[]>([]);
+  protected readonly groupRules = RULES.slice(0, 12);
   protected readonly widths = [1200, 720, 360] as const;
   protected readonly width = signal<number>(1200);
   protected readonly detailRules = signal<readonly Rule[]>(RULES.slice(0, 8));

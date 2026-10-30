@@ -97,6 +97,59 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Rules by room"
+  summary="Each room is a body of the table, headed by its name, its count and the energy its rules use; a second level groups them by whether they run. The foot sums every rule in view."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-groups"
+>
+  <div class="datatable__widths" role="group" aria-label="Groups">
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="groups-levels"
+      (click)="groupBy.set(groupBy().length === 1 ? ['room', 'enabled'] : ['room'])"
+    >
+      {{ groupBy().length === 1 ? 'Group by running too' : 'Group by room only'
+      }}
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="groups-collapse"
+      (click)="grouped.collapseAll()"
+    >
+      Collapse all
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="groups-expand"
+      (click)="grouped.expandAll()"
+    >
+      Expand all
+    </button>
+  </div>
+  <pct-data-table
+    #grouped="pctTableGroups"
+    data-testid="table-groups"
+    caption="Rules by room"
+    locale="pl"
+    [pctTableGroups]="groupColumns"
+    [groupBy]="groupBy()"
+    [(collapsed)]="closedGroups"
+    [rows]="groupRules"
+    [columns]="groupColumns"
+    [rowId]="byId"
+  />
+  <p data-testid="groups-state">
+    Collapsed: {{ closedGroups().join(' ') || 'none' }}.
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="Details, and a narrow table"
   summary="Each row opens its details below it, the full width. Narrow the frame and the columns with the highest priority give way, their values moving into the details; a switch keeps working in a row that is open."
   [reqs]="['req-api-platform']"

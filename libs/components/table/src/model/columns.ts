@@ -3,6 +3,7 @@ import type {
   PctRelativeOptions,
   PctTone,
 } from '@pacit/components/core';
+import type { PctAggregate } from './aggregate';
 
 /**
  * What names a row across renders: the key `@for` tracks, and the one selection, details and
@@ -148,6 +149,11 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * into the row's details. A column with none is never hidden.
    */
   readonly priority?: number;
+  /**
+   * How the column sums up a group of rows, in the group's heading, and every row in view, in
+   * the table's foot: a number kind writes the sum in its unit, `count` writes a count.
+   */
+  readonly aggregate?: PctAggregate<V>;
 }
 
 /**

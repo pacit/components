@@ -677,11 +677,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-fg-success color component public
 --pct-table-fg-warning color component public
 --pct-table-font-size dimension component public
+--pct-table-group-bg color component public
+--pct-table-group-fg color component public
 --pct-table-heading-bg color component public
 --pct-table-heading-border color component public
 --pct-table-heading-fg color component public
 --pct-table-heading-font-weight fontWeight component public
 --pct-table-icon-fg-muted color component public
+--pct-table-indent dimension component public
 --pct-table-mark-bg color component public
 --pct-table-mark-fg color component public
 --pct-table-padding-x dimension component public
