@@ -229,7 +229,8 @@ describe('PctChart', () => {
       'Heat recovery unit',
     );
     expect(
-      all(fixture, 'svg').every(
+      // the picture's own drawings: the zoom bar beside it draws its icons for a reader
+      all(fixture, '[data-pct-part="plot"] svg').every(
         (svg) => svg.getAttribute('aria-hidden') === 'true',
       ),
     ).toBe(true);
