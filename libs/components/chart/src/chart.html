@@ -1,28 +1,31 @@
+@if (measured() && !loading() && range(); as range) {
+<!--
+  The cursor's range (0103): the chart's one stop, beside the picture and never inside it —
+  nor inside the figure, whose entry a reader announces in place of the range (NVDA, 2026-10-30).
+  It runs from 0 to the window's span and its value is the cursor's distance from the window's
+  start: a reader that works out a percentage from the numbers gets one of the window, where
+  instants since 1970 overflowed it (Orca, 2026-10-30). The value is written after the ends, in
+  the scene's render effect, so the browser's clamping never decides where the cursor is; the
+  reading under it is its value text.
+-->
+<input
+  #rangeInput
+  class="range"
+  type="range"
+  step="any"
+  dir="ltr"
+  data-pct-part="range"
+  [attr.min]="range.min"
+  [attr.max]="range.max"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-valuetext]="valueText()"
+  [attr.aria-describedby]="ids.keys"
+  (keydown)="onKey($event)"
+  (input)="onInput($event)"
+/>
+}
 <figure class="figure">
-  @if (measured() && !loading() && range(); as range) {
-  <!--
-    The cursor's range (0103): the chart's one stop, beside the picture and never inside it.
-    Its ends are the window's and its value the cursor's, the value written after the ends (in
-    the scene's render effect) so the browser's clamping never decides where the cursor is; the
-    reading under it is its value text.
-  -->
-  <input
-    #rangeInput
-    class="range"
-    type="range"
-    step="any"
-    dir="ltr"
-    data-pct-part="range"
-    [attr.min]="range.min"
-    [attr.max]="range.max"
-    [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || null"
-    [attr.aria-valuetext]="valueText()"
-    [attr.aria-describedby]="ids.keys"
-    (keydown)="onKey($event)"
-    (input)="onInput($event)"
-  />
-  }
   <div
     class="picture"
     data-pct-part="plot"
@@ -159,14 +162,15 @@
         [style.--_pct-chart-color]="marker.color"
         [style.transform]="'translate(' + view.x + 'px, ' + marker.y + 'px)'"
       ></div>
-      } @if (tooltip() === 'auto' && reading(); as reading) { @if (tooltipAt();
-      as at) {
+      } @if (tooltip() === 'auto' && reading(); as reading) {
       <div
         #tooltipBox
         class="tooltip"
         data-pct-part="tooltip"
-        [class.unmeasured]="!at.measured"
-        [style.transform]="'translate(' + at.x + 'px, ' + at.y + 'px)'"
+        [class.unmeasured]="!view.tooltip.measured"
+        [style.transform]="
+          'translate(' + view.tooltip.x + 'px, ' + view.tooltip.y + 'px)'
+        "
       >
         @if (customTooltip(); as template) {
         <ng-container
@@ -187,7 +191,7 @@
         </div>
         } }
       </div>
-      } } }
+      } }
     </div>
     } @else {
     <pct-skeleton shape="block" class="skeleton" />

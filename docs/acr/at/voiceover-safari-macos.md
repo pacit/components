@@ -409,8 +409,8 @@ arrive  —                                                    heading level 1 @
 enter   button[tab] "General"                                (silence)
 tab 1   button[tab] "General"                                General selected tab, 1 of 3 Account settings tab group
 reach   button[tab] "General"                                (silence)
-open    button[tab] "General"                                (silence)
-close   button[tab] "General"                                You are currently on a selected tab, 1 of 3.
+open    button[tab] "General"                                General selected tab, 1 of 3
+close   button[tab] "General"                                (silence)
 ```
 
 Tab moved nothing — focus had left the page.
@@ -499,9 +499,9 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  —                                                    heading level 2 Icon
+arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Done checked checkbox
+tab 1   input[control]                                       Done checked checkbox main
 ```
 
 Tab moved nothing — focus had left the page.
@@ -509,7 +509,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 2 Breadcrumb
+arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   a "Home"                                             (silence)
 tab 1   a "Home"                                             link Home list 3 items
 ```
@@ -520,8 +520,8 @@ Tab moved nothing — focus had left the page.
 
 ```
 arrive  —                                                    heading level 2 Chart
-enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+enter   input[range] "Heat recovery on 25 October 2026"      (silence)
+tab 1   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. slider
 ```
 
 Tab moved nothing — focus had left the page.
@@ -567,7 +567,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 2 Stepper
 enter   button "Back"                                        (silence)
-tab 1   button "Back"                                        You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "Back"                                        Back button
 ```
 
 Tab moved nothing — focus had left the page.

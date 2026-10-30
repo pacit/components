@@ -740,20 +740,27 @@ export class PctChart extends PctChartScene {
   });
 
   /**
-   * The cursor's range: its ends the window's and its value the cursor's, or the middle
-   * while there is none (0103).
+   * The cursor's range, in distances from the window's start: its ends the window's and its
+   * value the cursor's, or the middle while there is none (0103).
    */
   protected readonly range = computed(() => {
     const shown = this.shown();
     if (!shown || this.cursorMode() === 'none') return null;
+    const cursor = this.cursor();
+    const span = shown.to - shown.from;
     return {
-      min: shown.from,
-      max: shown.to,
-      value: this.cursor() ?? (shown.from + shown.to) / 2,
+      min: 0,
+      max: span,
+      value: cursor === null ? span / 2 : cursor - shown.from,
     };
   });
 
-  /** The cursor as drawn: its line's position and a marker on every series with a value. */
+  private readonly tooltipWidth = signal(0);
+
+  /**
+   * The cursor as drawn: its line's position, a marker on every series with a value, and where
+   * the tooltip stands — beside the line, on whichever side has the room.
+   */
   protected readonly cursorView = computed(() => {
     const reading = this.reading();
     const scale = this.xScale();
@@ -768,20 +775,17 @@ export class PctChart extends PctChartScene {
         ? []
         : [{ id: row.id, place: row.place, color: row.color, y }];
     });
-    return { x: scale.map(reading.x), markers };
-  });
-
-  private readonly tooltipWidth = signal(0);
-  /** Where the tooltip stands: beside the line, on whichever side has the room. */
-  protected readonly tooltipAt = computed(() => {
-    const view = this.cursorView();
-    if (!view) return null;
+    const x = scale.map(reading.x);
     const { left, right } = this.columns();
     const width = this.tooltipWidth();
     return {
-      x: pctTooltipPlace(view.x, width, left, right).left,
-      y: this.rows().top,
-      measured: width > 0,
+      x,
+      markers,
+      tooltip: {
+        x: pctTooltipPlace(x, width, left, right).left,
+        y: this.rows().top,
+        measured: width > 0,
+      },
     };
   });
 

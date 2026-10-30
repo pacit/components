@@ -1970,9 +1970,11 @@ describe('PctChart, its cursor', () => {
     expect(input.getAttribute('dir')).toBe('ltr');
     expect(input.getAttribute('aria-label')).toBe('Heat recovery');
     expect(input.closest('[role="img"]')).toBeNull();
-    expect(Number(input.getAttribute('min'))).toBe(T0);
-    expect(Number(input.getAttribute('max'))).toBe(T0 + 24 * H);
-    expect(Number(input.value)).toBe(T0 + 12 * H);
+    // nor in the figure, whose entry a reader announces in its place
+    expect(input.closest('figure')).toBeNull();
+    expect(Number(input.getAttribute('min'))).toBe(0);
+    expect(Number(input.getAttribute('max'))).toBe(24 * H);
+    expect(Number(input.value)).toBe(12 * H);
     expect(input.getAttribute('aria-valuetext')).toBe('No reading selected');
     const keys = input.getAttribute('aria-describedby')!;
     expect(query(fixture, `#${keys}`)?.textContent).toContain(
@@ -1998,7 +2000,7 @@ describe('PctChart, its cursor', () => {
     expect(range(fixture).getAttribute('aria-valuetext')).toBe(
       'Oct 28, 2026, 06:00 AM: Supply air 22.5 °C, Fan power 400 W',
     );
-    expect(Number(range(fixture).value)).toBe(T0 + 6 * H);
+    expect(Number(range(fixture).value)).toBe(6 * H);
     const line = query(fixture, '[data-pct-part="cursor"]') as HTMLElement;
     expect(line.style.transform).toBe(
       `translateX(${at(fixture, T0 + 6 * H)}px)`,
@@ -2108,22 +2110,22 @@ describe('PctChart, its cursor', () => {
   it('steps the way a change without a key moved the range, and writes its own value back', async () => {
     const fixture = await render(Host);
     const input = range(fixture);
-    input.value = String(T0 + 20 * H);
+    input.value = String(20 * H);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await settle(fixture);
     // up from the middle with no cursor: the first reading of the window
     expect(chartOf(fixture).cursor()).toBe(T0);
-    expect(Number(input.value)).toBe(T0);
-    input.value = String(T0 + 3 * H);
+    expect(Number(input.value)).toBe(0);
+    input.value = String(3 * H);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await settle(fixture);
     expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
-    input.value = String(T0 + H);
+    input.value = String(H);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await settle(fixture);
     expect(chartOf(fixture).cursor()).toBe(T0);
     // the same value again moves nothing
-    input.value = String(T0);
+    input.value = String(0);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await settle(fixture);
     expect(chartOf(fixture).cursor()).toBe(T0);
@@ -2533,14 +2535,14 @@ describe('PctChart, its cursor', () => {
     const input = range(fixture);
     chartOf(fixture).cursor.set(T0 + 6 * H);
     await settle(fixture);
-    input.value = String(T0 + 6 * H);
+    input.value = String(6 * H);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await settle(fixture);
     expect(chartOf(fixture).cursor()).toBe(T0 + 6 * H);
-    input.value = String(T0 + 7 * H);
+    input.value = String(7 * H);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     // the range takes the cursor's value back at once, before the next frame
-    expect(Number(input.value)).toBe(T0 + 12 * H);
+    expect(Number(input.value)).toBe(12 * H);
     await settle(fixture);
     expect(chartOf(fixture).cursor()).toBe(T0 + 12 * H);
     overlay(fixture).dispatchEvent(
