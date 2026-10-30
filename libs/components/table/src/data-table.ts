@@ -584,12 +584,17 @@ export class PctDataTable<
     () => this.contributed().selection ?? null,
   );
 
+  /** The selection, where only a table that picks rows reads it: its column, its handlers. */
+  private chosen(): NonNullable<PctTableFeature['selection']> {
+    return this.selection() as NonNullable<PctTableFeature['selection']>;
+  }
+
   /** The ids picked, to look up. */
   private readonly picked = computed(() => {
     const selection = this.selection();
-    const value = selection?.value() ?? [];
+    const value = selection?.value();
     // One row is picked in single mode, whatever the list says: a radio group checks one.
-    return new Set(selection?.mode() === 'single' ? value.slice(0, 1) : value);
+    return new Set(selection?.mode() === 'single' ? value?.slice(0, 1) : value);
   });
 
   /**
@@ -597,7 +602,7 @@ export class PctDataTable<
    * would not hear from the table's description once inside a cell. A hint is the table's.
    */
   protected readonly pickDescribedBy = computed(() => {
-    const line = this.selection()?.line();
+    const line = this.chosen().line();
     return line && line.kind !== 'hint' ? line.id : null;
   });
 
@@ -614,7 +619,7 @@ export class PctDataTable<
 
   /** The name the radios of a single selection share, which makes them one group. */
   protected readonly pickName = computed(
-    () => this.selection()?.name() || `${this.uid}-pick`,
+    () => this.chosen().name() || `${this.uid}-pick`,
   );
 
   /** The id of the word a row's checkbox is named by, before the row's first text. */
@@ -1167,7 +1172,7 @@ export class PctDataTable<
    */
   protected pick(row: Row<T>, event: MouseEvent): void {
     // A held selection takes the press back: the control's own toggle is the platform's.
-    if (this.selection()?.readonly()) {
+    if (this.chosen().readonly()) {
       event.preventDefault();
       return;
     }
@@ -1192,19 +1197,20 @@ export class PctDataTable<
     const control = label.querySelector('input') as HTMLInputElement;
     if (event.target === control) return;
     event.preventDefault();
-    if (control.disabled || this.selection()?.readonly()) return;
+    if (control.disabled || this.chosen().readonly()) return;
+    // A radio checked stays checked; any other press turns the control.
     if (control.type === 'radio' && control.checked) return;
-    const line = Number(label.closest('tr')?.getAttribute('data-pct-index'));
+    const line = Number(
+      (label.closest('tr') as HTMLTableRowElement).dataset['pctIndex'],
+    );
     const row = this.body().find((other) => other.line === line) as Row<T>;
-    control.checked = control.type === 'radio' || !control.checked;
+    control.checked = !control.checked;
     this.pickRow(row, control.checked, event.shiftKey);
   }
 
   /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
   private pickRow(row: Row<T>, on: boolean, shift: boolean): void {
-    const selection = this.selection() as NonNullable<
-      PctTableFeature['selection']
-    >;
+    const selection = this.chosen();
     const anchor = this.anchor;
     this.anchor = row.id;
     if (selection.mode() === 'single') {
@@ -1212,7 +1218,8 @@ export class PctDataTable<
       return;
     }
     const drawn = this.body().map((other) => other.id);
-    const from = shift && anchor !== null ? drawn.indexOf(anchor) : -1;
+    // No row pressed before is no row drawn: `indexOf` finds none.
+    const from = shift ? drawn.indexOf(anchor as PctRowId) : -1;
     const to = drawn.indexOf(row.id);
     const range = new Set(
       from < 0
@@ -1234,14 +1241,12 @@ export class PctDataTable<
       next.matches('[data-pct-part="select"], [data-pct-part="select-all"]')
     )
       return;
-    this.selection()?.touch();
+    this.chosen().touch();
   }
 
   /** The header's checkbox was pressed: every row the filter left is picked, or dropped. */
   protected pickAll(event: MouseEvent): void {
-    const selection = this.selection() as NonNullable<
-      PctTableFeature['selection']
-    >;
+    const selection = this.chosen();
     if (selection.readonly()) {
       event.preventDefault();
       return;

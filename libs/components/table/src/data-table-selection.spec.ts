@@ -436,6 +436,7 @@ describe('PctTableSelection — the rows picked', () => {
       template: `
         <pct-data-table
           pctTableSelection
+          [mode]="mode()"
           [pctTableGroups]="columns"
           [groupBy]="['room']"
           [collapsed]="closed"
@@ -452,11 +453,18 @@ describe('PctTableSelection — the rows picked', () => {
       readonly byId = byId;
       readonly rows = DEVICES;
       readonly closed = ['["Kitchen"]', '["Hall"]'];
+      readonly mode = signal<'single' | 'multiple'>('multiple');
     }
     const fixture = await render(ClosedHost);
     expect(picks()).toHaveLength(0);
     fixture.componentInstance.selection().focus();
     expect(document.activeElement).toBe(all());
+    // In single mode there is no header's to take it: nothing does, and nothing throws.
+    (document.activeElement as HTMLElement).blur();
+    fixture.componentInstance.mode.set('single');
+    await settle(fixture);
+    fixture.componentInstance.selection().focus();
+    expect(document.activeElement).toBe(document.body);
   });
 
   it('disables every control of the column', async () => {
@@ -713,6 +721,81 @@ describe('PctTableSelection — the rows picked', () => {
       ' ',
     )[1];
     expect(document.getElementById(name)?.textContent?.trim()).toBe('Lamp');
+  });
+
+  it('names a row past a check mark, a boolean column’s', async () => {
+    const flagged = col.of([
+      col.key('on', { header: 'On', kind: 'boolean' }),
+      col.key('name', { header: 'Name' }),
+    ]);
+    @Component({
+      imports: [PctDataTable, PctTableSelection],
+      template: `<pct-data-table
+        pctTableSelection
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+        caption="Devices"
+      />`,
+    })
+    class FlagHost {
+      readonly columns = flagged;
+      readonly byId = byId;
+      readonly rows = DEVICES;
+    }
+    await render(FlagHost);
+    const name = (picks()[0].getAttribute('aria-labelledby') as string).split(
+      ' ',
+    )[1];
+    expect(document.getElementById(name)?.textContent?.trim()).toBe('Lamp');
+  });
+
+  it('leaves a press in a table nested in a cell to that table', async () => {
+    const inner = col.of([col.key('room', { header: 'Where' })]);
+    @Component({
+      imports: [PctDataTable, PctTableSelection, PctCellTemplate],
+      template: `
+        <pct-data-table
+          class="outer"
+          pctTableSelection
+          [(value)]="outer"
+          [rows]="rows"
+          [columns]="columns"
+          [rowId]="byId"
+          caption="Devices"
+        >
+          <ng-template [pctCell]="columns" pctCellOf="room" let-device>
+            <pct-data-table
+              class="inner"
+              pctTableSelection
+              [(value)]="inner"
+              [rows]="[device]"
+              [columns]="nested"
+              [rowId]="byId"
+              caption="Room"
+            />
+          </ng-template>
+        </pct-data-table>
+      `,
+    })
+    class NestedHost {
+      readonly columns = columns;
+      readonly nested = inner;
+      readonly byId = byId;
+      readonly rows = DEVICES.slice(0, 2);
+      readonly outer = signal<readonly PctRowId[]>([]);
+      readonly inner = signal<readonly PctRowId[]>([]);
+    }
+    const fixture = await render(NestedHost);
+    const label = document
+      .querySelector('.inner [data-pct-part="select"]')
+      ?.closest('label') as HTMLLabelElement;
+    label.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true }),
+    );
+    await settle(fixture);
+    expect(fixture.componentInstance.inner()).toEqual([1]);
+    expect(fixture.componentInstance.outer()).toEqual([]);
   });
 
   it('gives a cell no id when nothing picks', async () => {

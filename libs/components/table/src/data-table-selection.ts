@@ -228,7 +228,8 @@ export class PctTableSelection implements FormValueControl<
     const own = this.host.nativeElement.querySelectorAll<HTMLInputElement>(
       ':scope > pct-table-frame > table > tbody > tr > td > label > [data-pct-part="select"]',
     );
-    const controls = Array.from(own).filter((input) => !input.disabled);
+    // A disabled selection disables every control, the header's too: none takes the focus.
+    const controls = Array.from(own);
     const target =
       controls.find((input) => input.checked) ??
       controls[0] ??
