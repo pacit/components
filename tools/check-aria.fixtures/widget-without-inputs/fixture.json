@@ -1,5 +1,6 @@
 {
   "point": 3,
   "check": "inputs",
-  "$reason": "The exact state `pct-select` was in: the role on the trigger inside, no way for a consumer to name it. An unnamed combobox that every other gate passes."
+  "message": "keeps its widget inside the template and declares no ariaLabel / ariaLabelledby",
+  "$reason": "The exact state `pct-select` was in: the role on the trigger inside, no way for a consumer to name it. An unnamed combobox that every other gate passes. Under a selector of its own, a tag a consumer writes, it is refused for the inputs and not as a component with no selector is, for the control naming nothing itself."
 }

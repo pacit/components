@@ -1,0 +1,10 @@
+<!-- Declared here, drawn where another component stamps the templates: each control is named
+     by the template itself. -->
+<ng-template #head>
+  <input class="pct-picks__all" type="checkbox" aria-label="Every row" />
+  <span hidden [id]="wordId">Pick</span>
+</ng-template>
+
+<ng-template #cell let-row>
+  <input class="pct-picks__one" type="checkbox" [attr.aria-labelledby]="wordId + ' ' + row.nameId" />
+</ng-template>

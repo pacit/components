@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+/**
+ * A component under an empty selector, which ngc compiles as it compiles none, under its default
+ * `ng-component` (measured through ngc 22.2.1): point 3 reads it as declaring no selector, so it
+ * declares no `ariaLabel` / `ariaLabelledby`, and its control names itself.
+ */
+@Component({
+  selector: '',
+  templateUrl: './marks.html',
+})
+export class PctMarks {}

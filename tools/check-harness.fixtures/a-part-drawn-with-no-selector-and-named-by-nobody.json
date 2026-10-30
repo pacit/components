@@ -1,0 +1,22 @@
+{
+  "point": 3,
+  "check": "every",
+  "why": "PctTableSelectionParts has no selector and draws its warning into the data table, and PctDataTableHarness, the one harness of `./table` that could reach it, leaves the warning out — the last of five, so a rule that reads fewer than all of them lets it through.",
+  "harnesses": {
+    "PctDataTableHarness": {
+      "parts": [
+        "details",
+        "disclosure",
+        "error",
+        "group",
+        "hint",
+        "mark",
+        "message",
+        "place",
+        "placeholder",
+        "select",
+        "select-all"
+      ]
+    }
+  }
+}

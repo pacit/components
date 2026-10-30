@@ -1,0 +1,14 @@
+import { Component } from '@angular/core';
+
+/**
+ * A component with no selector, which the library makes by code (`createComponent`) and draws
+ * through another one's outlet, as `data-table-selection.ts` does: no consumer names it, so it
+ * declares no `ariaLabel` / `ariaLabelledby`, and each control its templates hold names itself —
+ * one by an `aria-label` written, one by an `aria-labelledby` bound (point 3).
+ */
+@Component({
+  templateUrl: './picks.html',
+})
+export class PctPicks {
+  protected readonly wordId = 'pct-picks-word';
+}

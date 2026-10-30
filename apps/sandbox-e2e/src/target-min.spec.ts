@@ -210,7 +210,7 @@ const CONTROLS: readonly Control[] = [
   {
     name: 'data table pick',
     applies:
-      'libs/components/table/src/data-table.scss .pct-data-table__target',
+      'libs/components/table/src/data-table-selection.scss .pct-data-table__target',
     route: '/datatable',
     selector:
       '[data-testid="table-selection"] tbody tr:first-child .pct-data-table__target',

@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "host",
+  "$reason": "A component with no selector has a host all the same, the element `createComponent` makes, and a name its host block writes there lands on that element with no role, as on any other host. Point 3 not asking it for the inputs leaves point 2 reading its host block as it reads every one."
+}
