@@ -37,6 +37,7 @@ from what the browser really gets.
 ./chart PctChart range
 ./chart PctChart tooltip
 ./chart PctChart unit
+./chart PctChartZoom zoom
 ./chart PctLine area
 ./chart PctLine series
 ./checkbox PctCheckbox box

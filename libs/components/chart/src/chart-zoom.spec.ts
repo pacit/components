@@ -75,6 +75,31 @@ describe('PctChartZoom', () => {
     expect(chart.window()).toEqual({ from: T0 + 6 * H, to: T0 + 18 * H });
   });
 
+  it('shows a glyph on each button, hidden from a reader, who hears the name', async () => {
+    const fixture = await render();
+    const buttons = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll(
+        'pct-chart-zoom button',
+      ),
+    ];
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual([
+      '+',
+      '−',
+      '‹',
+      '›',
+      '⟲',
+    ]);
+    // the glyph is drawn for an eye and hidden from the tree: the name is what is read
+    expect(
+      buttons.map((b) =>
+        b.querySelector('[aria-hidden="true"]')?.textContent?.trim(),
+      ),
+    ).toEqual(['+', '−', '‹', '›', '⟲']);
+    expect(
+      buttons.every((b) => b.getAttribute('data-pct-part') === 'zoom'),
+    ).toBe(true);
+  });
+
   it('is one stop, and the arrows, Home and End move it and the focus', async () => {
     const fixture = await render();
     const bar = (fixture.nativeElement as HTMLElement).querySelector(
