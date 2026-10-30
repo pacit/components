@@ -70,6 +70,13 @@ export class PctChartTable {
    * @since next
    */
   readonly rows = input(200);
+  /**
+   * A foot under the rows with the sum or the mean of each series' column, or none: what a
+   * table of bars by day says about the month.
+   *
+   * @since next
+   */
+  readonly summary = input<'sum' | 'mean' | 'none'>('none');
 
   protected readonly texts = inject(PCT_TEXTS);
 
@@ -122,14 +129,23 @@ export class PctChartTable {
       Math.floor(this.rows() / (4 * Math.max(1, series.length))),
     );
     const positions = new Set<number>();
+    // Bars give their bands' starts as rows; a series of readings is decimated into its rows.
+    let banded = false;
+    for (const s of series) {
+      const rows = chart.markOf(s.id)?.rowsIn(s.id, window);
+      if (!rows) continue;
+      banded = true;
+      for (const x of rows) positions.add(x);
+    }
     // Both edges of the window are rows wherever a series holds a value there, so a window
     // between two readings, or inside a step's hold, still has a row to read.
-    for (const edge of [window.from, window.to])
-      if (series.some((s) => chart.valueAt(s.id, edge) !== null))
-        positions.add(edge);
+    if (!banded)
+      for (const edge of [window.from, window.to])
+        if (series.some((s) => chart.valueAt(s.id, edge) !== null))
+          positions.add(edge);
     for (const s of series) {
       const mark = chart.markOf(s.id);
-      if (!mark) continue;
+      if (!mark || banded) continue;
       const drawn = pctDecimate(
         mark.readings(s.id),
         window,
@@ -154,6 +170,28 @@ export class PctChartTable {
         texts: values.map((v, i) => this.write(v, series[i].unit)),
       };
     });
+  });
+
+  /** The foot: each column's sum or mean over the rows, written as the cells are. */
+  protected readonly foot = computed<{
+    readonly label: string;
+    readonly texts: readonly string[];
+  } | null>(() => {
+    const summary = this.summary();
+    if (summary === 'none') return null;
+    const rows = this.table();
+    const texts = this.series().map((s, i) => {
+      const values = rows
+        .map((r) => r.values[i])
+        .filter((v): v is number => v !== null);
+      if (values.length === 0) return this.texts().chartGap;
+      const sum = values.reduce((a, b) => a + b, 0);
+      return this.write(summary === 'sum' ? sum : sum / values.length, s.unit);
+    });
+    return {
+      label: summary === 'sum' ? this.texts().chartSum : this.texts().chartMean,
+      texts,
+    };
   });
 
   /**

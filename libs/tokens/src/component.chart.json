@@ -171,6 +171,41 @@
         "$type": "dimension",
         "$value": "{pct.target.min}",
         "$description": "Touch-target floor of a legend entry's remove button."
+      },
+      "selection-bg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Colour of the selected band across the plot, before the mix."
+      },
+      "selection-alpha": {
+        "$type": "dimension",
+        "$value": "16%",
+        "$description": "How much of the selection colour fills the band."
+      },
+      "bar-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of a bar's far end."
+      },
+      "bar-gap": {
+        "$type": "dimension",
+        "$value": "2px",
+        "$description": "Gap between the bars of a group."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "The value written over a bar."
+      },
+      "label-font-weight-selected": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the label over the selected bar."
+      },
+      "bar-alpha": {
+        "$type": "dimension",
+        "$value": "55%",
+        "$description": "How much of the series colour fills a compared period's bar."
       }
     }
   }

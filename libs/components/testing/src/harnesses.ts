@@ -126,6 +126,7 @@ export class PctChartHarness extends PctHarness<
   | 'message'
   | 'plot'
   | 'range'
+  | 'selection'
   | 'tooltip'
   | 'unit'
 > {
@@ -139,6 +140,7 @@ export class PctChartHarness extends PctHarness<
     'message',
     'plot',
     'range',
+    'selection',
     'tooltip',
     'unit',
   ] as const;
@@ -163,6 +165,17 @@ export class PctChartZoomHarness extends PctHarness<'zoom'> {
 export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
   static override hostSelector = 'pct-line';
   static override readonly parts = ['area', 'series', 'swatch'] as const;
+}
+
+/**
+ * `pct-bars` — `PctBars`. Its bars and labels are stamped into the chart's data layer, so its
+ * parts are found in the document rather than under its own element.
+ *
+ * @since next
+ */
+export class PctBarsHarness extends PctHarness<'bar' | 'label' | 'swatch'> {
+  static override hostSelector = 'pct-bars';
+  static override readonly parts = ['bar', 'label', 'swatch'] as const;
 }
 
 /**

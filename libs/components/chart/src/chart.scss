@@ -130,6 +130,15 @@
   background: var(--pct-chart-cursor-border);
 }
 
+// The selected band: the skin's colour mixed into nothing, under the data, across the plot.
+[data-pct-part='selection'] {
+  background: color-mix(
+    in srgb,
+    var(--pct-chart-selection-bg) var(--pct-chart-selection-alpha),
+    transparent
+  );
+}
+
 // The marker is the mark's own drawing of its series, stamped here and centred on the point.
 [data-pct-part='marker'] {
   inline-size: var(--pct-chart-marker-size);
@@ -199,6 +208,12 @@
 
   [data-pct-part='cursor'] {
     background: CanvasText;
+  }
+
+  // A selection with no colour is a band bordered in the highlight's colour.
+  [data-pct-part='selection'] {
+    border-inline: 2px solid Highlight;
+    background: none;
   }
 
   [data-pct-part='tooltip'] {

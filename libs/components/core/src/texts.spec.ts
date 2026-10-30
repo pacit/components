@@ -78,7 +78,10 @@ const ENGLISH: PctTexts = {
   chartAllHidden: 'Every series is hidden',
   chartNoCursor: 'No reading selected',
   chartKeys:
-    'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
+    'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.',
+  chartSum: 'Sum',
+  chartMean: 'Mean',
+  chartDifference: 'Difference',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',
