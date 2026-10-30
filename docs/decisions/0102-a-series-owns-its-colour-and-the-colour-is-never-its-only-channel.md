@@ -98,3 +98,15 @@ meaning; a series place has none. The component tier keeps the name the record g
 `--pct-chart-series-color-3`, pointing at `--pct-series-3`, and the dictionary's `ordinals`
 list holds the variants there. A skin re-points a place in one theme at the semantic name, or
 in one chart at the component name.
+
+## Amended 2026-10-30: the second channel's tables, and who draws the swatch
+
+Building the legend (phase 5 of 1.11) settled two details. **The dash patterns and the
+marker shapes are tables, not tokens.** A dash pattern is a `strokeStyle` in DTCG, a type the
+design tool's bridge does not read (`check-bridge` measures seven), and a marker shape has no
+type at all; so the eight dashes stand in `line.scss` and the eight shapes in the contract
+(`PCT_SERIES_MARKERS`), and the dictionary gained the property `color` alone. A ninth series
+starts over at the first of each. **A mark draws its own swatch.** `PctMark.swatch` is a
+template that draws the series small — its line with its dash and its marker, or the marker
+alone — and the legend, the tooltip and the markers on the cursor's line stamp it, so a bar
+will draw a bar's swatch and nothing beside the mark knows what a series looks like.

@@ -160,10 +160,13 @@
       <div
         class="marker"
         data-pct-part="marker"
-        [attr.data-pct-series]="marker.place"
-        [style.--_pct-chart-color]="marker.color"
         [style.transform]="'translate(' + view.x + 'px, ' + marker.y + 'px)'"
-      ></div>
+      >
+        <ng-container
+          [ngTemplateOutlet]="swatchOf(marker.id)"
+          [ngTemplateOutletContext]="{ $implicit: marker, form: 'marker' }"
+        />
+      </div>
       } @if (tooltip() === 'auto' && reading(); as reading) {
       <div
         #tooltipBox
@@ -183,11 +186,10 @@
         <div class="time" [textContent]="reading.text"></div>
         @for (row of reading.rows; track $index) {
         <div class="row">
-          <span
-            class="swatch"
-            [attr.data-pct-series]="row.place"
-            [style.--_pct-chart-color]="row.color"
-          ></span>
+          <ng-container
+            [ngTemplateOutlet]="swatchOf(row.id)"
+            [ngTemplateOutletContext]="{ $implicit: row, form: 'marker' }"
+          />
           <span class="name" [textContent]="row.name"></span>
           <span class="value" [textContent]="row.text"></span>
         </div>

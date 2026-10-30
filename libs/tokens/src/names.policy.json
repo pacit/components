@@ -113,7 +113,9 @@
       "area",
       "cursor",
       "tooltip",
-      "zoom"
+      "zoom",
+      "legend",
+      "swatch"
     ],
     "properties": [
       "alpha",

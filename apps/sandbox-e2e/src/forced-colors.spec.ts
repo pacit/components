@@ -971,6 +971,43 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * Eight series at once, where the colours are gone: eight dash patterns on the lines, eight
+   * marker shapes in the legend, every one in the text word — the second channel of 0102,
+   * measured on the whole palette.
+   */
+  test('eight series keep eight dashes and eight markers in CanvasText', async ({
+    page,
+  }) => {
+    await visit(page, '/chart', { media: FORCED });
+    const sys = await systemColors(page);
+    const paths = page
+      .getByTestId('chart-eight')
+      .locator('path[data-pct-part="series"]');
+    await expect(paths).toHaveCount(8);
+    const dashes: string[] = [];
+    for (const path of await paths.all()) {
+      expect(await styleOf(path, 'stroke')).toBe(sys.CanvasText);
+      dashes.push(await styleOf(path, 'stroke-dasharray'));
+    }
+    expect(new Set(dashes).size).toBe(8);
+    const shapes = page
+      .getByTestId('chart-eight-legend')
+      .locator('[data-pct-part="swatch"] .shape');
+    await expect(shapes).toHaveCount(8);
+    const drawn = new Set<string>();
+    for (const shape of await shapes.all()) {
+      expect(await styleOf(shape, 'fill')).toBe(sys.CanvasText);
+      drawn.add((await shape.getAttribute('d'))!);
+    }
+    expect(drawn.size).toBe(8);
+    const pressed = page
+      .getByTestId('chart-eight-legend')
+      .locator('[data-pct-part="toggle"]')
+      .first();
+    expect(await styleOf(pressed, 'border-top-style')).toBe('solid');
+  });
+
+  /**
    * A table's header surface is a fill, the first thing the mode drops, so what tells the
    * header row apart under it is its weight and the line under it, which takes the text word
    * like every row's line. The sorted column's chevron is a drawing in `currentColor`, so it

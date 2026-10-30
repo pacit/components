@@ -141,6 +141,36 @@
         "$type": "dimension",
         "$value": "{pct.space.2}",
         "$description": "Gap between the buttons of the zoom bar."
+      },
+      "swatch-width": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Width of a series' swatch in a legend: its line with its dash, its marker on it."
+      },
+      "swatch-height": {
+        "$type": "dimension",
+        "$value": "12px",
+        "$description": "Height of a series' swatch in a legend."
+      },
+      "legend-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the entries of a legend."
+      },
+      "legend-fg-muted": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "The name of a hidden series in a legend."
+      },
+      "toggle-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of a legend entry's toggle."
+      },
+      "remove-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of a legend entry's remove button."
       }
     }
   }

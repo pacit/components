@@ -58,6 +58,7 @@ import {
   PctChartScene,
   PctMark,
   type PctSeriesSpec,
+  type PctSwatchContext,
 } from './scene';
 
 /**
@@ -385,6 +386,15 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly zoom = input<'x' | 'none'>('x');
+  /**
+   * The lines draw their dash patterns always (`all`), or only where the colours are gone,
+   * under forced colours (`color`, the default): eight dashed lines are noise where the
+   * colours tell them apart, and the legend and the tooltip draw the pattern beside each name
+   * either way ([0102](../../../../docs/decisions/0102-a-series-owns-its-colour-and-the-colour-is-never-its-only-channel.md)).
+   *
+   * @since next
+   */
+  override readonly distinct = input<'color' | 'all'>('color');
   /**
    * Where the window returns on a double tap, the `0` key and the zoom buttons' last one: a
    * window, or `null` for all the data.
@@ -997,6 +1007,11 @@ export class PctChart extends PctChartScene {
    */
   markOf(id: string): PctMark | undefined {
     return this.marks().find((m) => m.series().some((s) => s.id === id));
+  }
+
+  /** The swatch template of the mark that declares a series, for the tooltip and the markers. */
+  protected swatchOf(id: string): TemplateRef<PctSwatchContext> | null {
+    return this.markOf(id)?.swatch() ?? null;
   }
 
   /** The readings of every series shown, which the keys step along. */

@@ -1,0 +1,91 @@
+// A legend: the host is the list of the series, in a row that wraps or in a column. The
+// entries are buttons, so a skin's focus ring and the pressed state come from the platform.
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-chart-legend-gap);
+  font-size: var(--pct-chart-font-size);
+}
+
+:host(.column) {
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+  min-block-size: var(--pct-chart-toggle-target-min);
+  margin: 0;
+  padding: 0 var(--pct-space-2);
+  border: 0;
+  border-radius: var(--pct-radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+// A hidden series keeps its place and its swatch, and its name goes quiet: the toggle says
+// the rest, pressed while the series is shown.
+.hidden .name,
+.hidden .unit {
+  color: var(--pct-chart-legend-fg-muted);
+}
+
+.unit {
+  color: var(--pct-chart-legend-fg-muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.remove {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--pct-chart-remove-target-min);
+  block-size: var(--pct-chart-remove-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--pct-radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.remove:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .toggle:focus-visible,
+  .remove:focus-visible {
+    outline-color: Highlight;
+  }
+
+  // The pressed state is the mode's own: the button's border says it.
+  .toggle[aria-pressed='true'] {
+    border: 1px solid ButtonText;
+  }
+
+  .hidden .name,
+  .hidden .unit,
+  .unit {
+    color: GrayText;
+  }
+}
