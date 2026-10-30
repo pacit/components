@@ -152,6 +152,7 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     const energy = table.locator('tbody tr').first().locator('td:nth-child(4)');
     const target = table.getByRole('switch').nth(1);
     await target.focus();
+    await expect(target).toBeFocused();
     const before = await energy.textContent();
     await expect(energy).not.toHaveText(before ?? '', { timeout: 5000 });
     await expect(target).toBeFocused();

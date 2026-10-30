@@ -195,8 +195,12 @@ const globals = globalThis as {
 beforeEach(() => {
   observed = [];
   globals.ResizeObserver = class {
-    observe(): void {}
-    disconnect(): void {}
+    observe(): void {
+      // Nothing to observe in jsdom.
+    }
+    disconnect(): void {
+      // Nothing to let go.
+    }
   };
   globals.IntersectionObserver = class {
     constructor(
@@ -206,8 +210,12 @@ beforeEach(() => {
     ) {
       observed.push(callback);
     }
-    observe(): void {}
-    disconnect(): void {}
+    observe(): void {
+      // Nothing to observe in jsdom.
+    }
+    disconnect(): void {
+      // Nothing to let go.
+    }
   };
   Element.prototype.scrollIntoView = vi.fn();
 });

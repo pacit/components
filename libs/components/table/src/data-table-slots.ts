@@ -71,7 +71,7 @@ export class PctCellTemplate<
    *
    * @since next
    */
-  readonly of = input.required<Id | readonly Id[]>({ alias: 'pctCellOf' });
+  readonly pctCellOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the table calls when its content query finds this template.
@@ -153,9 +153,7 @@ export class PctHeaderCellTemplate<
    *
    * @since next
    */
-  readonly of = input.required<Id | readonly Id[]>({
-    alias: 'pctHeaderCellOf',
-  });
+  readonly pctHeaderCellOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the table calls when its content query finds this template.

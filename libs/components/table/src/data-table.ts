@@ -443,7 +443,7 @@ export class PctDataTable<
     const map = new Map<string, TemplateRef<unknown>>();
     for (const slot of this.cellSlots()) {
       slot.read();
-      const ids = slot.of();
+      const ids = slot.pctCellOf();
       for (const id of typeof ids === 'string' ? [ids] : ids)
         if (!map.has(id)) map.set(id, slot.template as TemplateRef<unknown>);
     }
@@ -454,7 +454,7 @@ export class PctDataTable<
     const map = new Map<string, TemplateRef<unknown>>();
     for (const slot of this.headerSlots()) {
       slot.read();
-      const ids = slot.of();
+      const ids = slot.pctHeaderCellOf();
       for (const id of typeof ids === 'string' ? [ids] : ids)
         if (!map.has(id)) map.set(id, slot.template as TemplateRef<unknown>);
     }
@@ -599,6 +599,14 @@ export class PctDataTable<
 
     afterNextRender(() => {
       const frame = this.frame().nativeElement as HTMLElement;
+      // The press's Shift, read where the press starts: a listener of the header row's own,
+      // since the row is no control and its template carries no handler. The row is this
+      // component's element and goes with it, listeners and all.
+      const head = frame.querySelector('thead') as HTMLElement;
+      const onKey = (event: KeyboardEvent) => this.noteKey(event);
+      const onPointer = (event: PointerEvent) => this.notePointer(event);
+      head.addEventListener('keydown', onKey);
+      head.addEventListener('pointerdown', onPointer);
       const onScroll = () => this.scrolledTo.set(frame.scrollTop);
       frame.addEventListener('scroll', onScroll, { passive: true });
       destroyRef.onDestroy(() => frame.removeEventListener('scroll', onScroll));
@@ -698,7 +706,7 @@ export class PctDataTable<
   private shift = false;
 
   /** A press by the pointer: its Shift is the press's. */
-  protected notePointer(event: PointerEvent): void {
+  private notePointer(event: PointerEvent): void {
     this.shift = event.shiftKey;
   }
 
@@ -707,7 +715,7 @@ export class PctDataTable<
    * says nothing about the press that may follow without a key of its own — a screen reader's
    * browse-mode Enter.
    */
-  protected noteKey(event: KeyboardEvent): void {
+  private noteKey(event: KeyboardEvent): void {
     if (event.key === 'Enter' || event.key === ' ') this.shift = event.shiftKey;
   }
 

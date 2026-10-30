@@ -15,7 +15,7 @@
       {{ caption() }}
     </caption>
     }
-    <thead (keydown)="noteKey($event)" (pointerdown)="notePointer($event)">
+    <thead>
       <tr>
         @for (head of heads(); track head.column.id) {
         <th
