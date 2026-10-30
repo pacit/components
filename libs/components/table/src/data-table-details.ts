@@ -48,8 +48,7 @@ export class PctTableDetails {
     // Called here, where the table is already made and has drawn nothing yet: what it draws
     // first already reads the application's list.
     inject(PctDataTable).contribute({
-      details: this.details,
-      detailsDisabled: this.disabled,
+      details: { open: this.details, disabled: this.disabled },
     });
   }
 }

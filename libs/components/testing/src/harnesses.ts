@@ -945,7 +945,6 @@ export class PctDataTableHarness extends PctHarness<
     const line = await (
       await this.locatorForAll(DATA_ROWS)()
     )[row]?.getAttribute('data-pct-index');
-    if (line === undefined) return [];
     return this.locatorForAll(
       `${DATA_ROWS.replace('[data-pct-index]', `[data-pct-index="${line}"]`)} > td`,
     )();

@@ -100,6 +100,7 @@
     "libs/components/table/src/data-table-slots.ts",
     "libs/components/table/src/data-table.ts",
     "libs/components/table/src/model/columns.ts",
+    "libs/components/table/src/model/fit.ts",
     "libs/components/table/src/model/lines.ts",
     "libs/components/table/src/model/order.ts",
     "libs/components/table/src/model/question.ts",

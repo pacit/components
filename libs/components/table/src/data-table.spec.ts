@@ -1137,18 +1137,27 @@ describe('PctDataTable — the slots, at their edges', () => {
       true,
     );
     expect(PctEmptyTemplate.ngTemplateContextGuard({} as never, {})).toBe(true);
+    expect(PctDetailsTemplate.ngTemplateContextGuard({} as never, {})).toBe(
+      true,
+    );
   });
 
   it('names itself when it stands where no table reads it', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     @Component({
-      imports: [PctCellTemplate, PctHeaderCellTemplate, PctEmptyTemplate],
+      imports: [
+        PctCellTemplate,
+        PctHeaderCellTemplate,
+        PctEmptyTemplate,
+        PctDetailsTemplate,
+      ],
       template: `
         <ng-template [pctCell]="columns" pctCellOf="name">x</ng-template>
         <ng-template [pctHeaderCell]="columns" pctHeaderCellOf="name"
           >x</ng-template
         >
         <ng-template pctEmpty>x</ng-template>
+        <ng-template [pctDetails]="columns">x</ng-template>
       `,
     })
     class Orphans {
@@ -1158,7 +1167,12 @@ describe('PctDataTable — the slots, at their edges', () => {
     const slots = warn.mock.calls.map(([text]) =>
       String(text).slice(0, String(text).indexOf(']') + 1),
     );
-    expect(slots).toEqual(['[pctCell]', '[pctHeaderCell]', '[pctEmpty]']);
+    expect(slots).toEqual([
+      '[pctCell]',
+      '[pctHeaderCell]',
+      '[pctEmpty]',
+      '[pctDetails]',
+    ]);
   });
 });
 
@@ -2183,34 +2197,42 @@ describe('PctDataTable — a row’s details', () => {
 
 describe('PctDataTable — a narrow table hides columns', () => {
   let resized: (() => void) | null = null;
+  let observedTables = 0;
+  let disconnected = 0;
   beforeEach(() => {
     resized = null;
+    observedTables = 0;
+    disconnected = 0;
     (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
       constructor(callback: () => void) {
         resized = callback;
       }
-      observe(): void {
-        // The test calls the callback itself.
+      observe(target: Element): void {
+        if (target.tagName === 'TABLE') observedTables++;
       }
       disconnect(): void {
-        // Nothing to let go.
+        disconnected++;
       }
     };
-    // A header cell is a hundred wide, the disclosures' thirty.
+    // Header cells as wide as their labels say, the disclosures' thirty, the numbers' forty.
+    const WIDTHS: Record<string, number> = {
+      Name: 100,
+      Room: 80,
+      Power: 120,
+      Seen: 60,
+      '#Row': 40,
+      Details: 30,
+    };
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
       function (this: HTMLElement) {
-        const width =
-          this.tagName !== 'TH'
-            ? 0
-            : this.classList.contains('pct-data-table__disclosure')
-              ? 30
-              : 100;
+        const label = (this.textContent ?? '').replace(/\s+/g, '');
+        const width = this.tagName !== 'TH' ? 0 : (WIDTHS[label] ?? 100);
         return { width, height: 0 } as DOMRect;
       },
     );
   });
 
-  /** A frame `width` wide, and a table as wide as its header cells. */
+  /** A frame `width` wide, and a table as wide as its header cells, the frame at least. */
   const lay = (width: { value: number }) => {
     const frame = document.querySelector('pct-table-frame') as HTMLElement;
     const table = document.querySelector('table') as HTMLElement;
@@ -2221,9 +2243,12 @@ describe('PctDataTable — a narrow table hides columns', () => {
     Object.defineProperty(table, 'scrollWidth', {
       configurable: true,
       get: () =>
-        Array.from(table.querySelectorAll('thead th')).reduce(
-          (sum, th) => sum + th.getBoundingClientRect().width,
-          0,
+        Math.max(
+          width.value,
+          Array.from(table.querySelectorAll('thead th')).reduce(
+            (sum, th) => sum + th.getBoundingClientRect().width,
+            0,
+          ),
         ),
     });
   };
@@ -2240,7 +2265,7 @@ describe('PctDataTable — a narrow table hides columns', () => {
   const labels = () =>
     headers()
       .filter((th) => !th.classList.contains('pct-data-table__disclosure'))
-      .map((th) => (th.textContent ?? '').trim());
+      .map((th) => (th.textContent ?? '').replace(/\s+/g, ''));
 
   it('hides the highest priorities at once, as many as the overflow needs, and lists them in the details', async () => {
     const fixture = await render(DetailsHost);
@@ -2251,18 +2276,20 @@ describe('PctDataTable — a narrow table hides columns', () => {
     await resize(fixture, width, 1000);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(disclosures()).toHaveLength(0);
+    // 360 wide, 250 of room: Seen (60) and Power (120) go, and the disclosures (30) come.
     await resize(fixture, width, 250);
     expect(labels()).toEqual(['Name', 'Room']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([
       'seen',
       'power',
     ]);
-    // Something is hidden, so rows open even with no template.
     expect(disclosures()).toHaveLength(3);
     expect(body()[0].querySelectorAll('td')).toHaveLength(3);
     disclosures()[1].click();
     await settle(fixture);
-    const list = detailsRows()[0].querySelector('dl') as HTMLElement;
+    const cell = detailsRows()[0].querySelector('td') as HTMLTableCellElement;
+    expect(cell.colSpan).toBe(3);
+    const list = cell.querySelector('dl') as HTMLElement;
     expect(
       Array.from(list.querySelectorAll('div')).map((pair) => [
         pair.querySelector('dt')?.textContent?.trim(),
@@ -2273,6 +2300,17 @@ describe('PctDataTable — a narrow table hides columns', () => {
       ['Power', '1899.5'],
       ['Seen', String(11 * HOUR)],
     ]);
+  });
+
+  it('measures the shown columns past the leading cells', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.numbers.set(true);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    // 30 + 40 + 360 = 430 wide, 350 of room: Seen (60) and Power (120) go.
+    await resize(fixture, width, 350);
+    expect(labels()).toEqual(['#Row', 'Name', 'Room']);
   });
 
   it('hides a dozen columns in one render', async () => {
@@ -2297,20 +2335,19 @@ describe('PctDataTable — a narrow table hides columns', () => {
 
   it('shows a column again once the frame is as wide as the table needed it, and eight more', async () => {
     const fixture = await render(DetailsHost);
-    const width = { value: 350 };
+    const width = { value: 1000 };
     lay(width);
-    // Four columns and the disclosures need 430.
+    // The disclosures and four columns need 390.
     await resize(fixture, width, 350);
     expect(labels()).toEqual(['Name', 'Room', 'Power']);
-    await resize(fixture, width, 437);
+    await resize(fixture, width, 397);
     expect(labels()).toEqual(['Name', 'Room', 'Power']);
-    await resize(fixture, width, 438);
+    await resize(fixture, width, 398);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
-    // Narrow again, two go together, and come back one at a time.
+    // Narrow again, two go together, and come back one at a time: Power needs 330.
     await resize(fixture, width, 240);
     expect(labels()).toEqual(['Name', 'Room']);
-    // Power needs 330 with Seen hidden: the name, the room, itself and the disclosures.
     await resize(fixture, width, 337);
     expect(labels()).toEqual(['Name', 'Room']);
     await resize(fixture, width, 338);
@@ -2319,31 +2356,61 @@ describe('PctDataTable — a narrow table hides columns', () => {
 
   it('starts every column shown when the columns change, and never hides one with no priority', async () => {
     const fixture = await render(DetailsHost);
-    const width = { value: 150 };
+    const width = { value: 1000 };
     lay(width);
-    await resize(fixture, width, 150);
-    expect(labels()).toEqual(['Name']);
+    await resize(fixture, width, 240);
+    expect(labels()).toEqual(['Name', 'Room']);
+    // The new columns need 330 and the frame has 335, short of the 338 the old ones would ask.
+    width.value = 335;
     fixture.componentInstance.columns.set(
       col.of([
         col.key('name', { header: 'Name' }),
-        col.key('room', { header: 'Room', priority: 5 }),
-        col.key('power', { header: 'Power' }),
+        col.key('room', { header: 'Room', priority: 1 }),
+        col.key('power', { header: 'Power', priority: 2 }),
       ]) as never,
     );
     await settle(fixture);
-    expect(labels()).toEqual(['Name', 'Power']);
-    expect(fixture.componentInstance.table().hiddenColumns()).toEqual(['room']);
+    expect(labels()).toEqual(['Name', 'Room', 'Power']);
+    fixture.componentInstance.columns.set(
+      col.of([
+        col.key('name', { header: 'Name' }),
+        col.key('room', { header: 'Room' }),
+      ]) as never,
+    );
+    await resize(fixture, width, 100);
+    expect(labels()).toEqual(['Name', 'Room']);
+    expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
   });
 
   it('hides nothing while the details are disabled, so every value stays in its row', async () => {
     const fixture = await render(DetailsHost);
     fixture.componentInstance.off.set(true);
     await settle(fixture);
-    const width = { value: 150 };
+    const width = { value: 1000 };
     lay(width);
     await resize(fixture, width, 150);
     expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen']);
     expect(fixture.componentInstance.table().hiddenColumns()).toEqual([]);
+  });
+
+  it('watches the table once, lets it go with the table, and only when a column may hide', async () => {
+    // The frame watches the table too: what the frame alone does is the floor.
+    const plain = await render(Host);
+    const floor = observedTables;
+    plain.destroy();
+    TestBed.resetTestingModule();
+    observedTables = 0;
+    disconnected = 0;
+    const fixture = await render(DetailsHost);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 900);
+    await resize(fixture, width, 800);
+    expect(observedTables).toBe(floor + 1);
+    const before = disconnected;
+    fixture.destroy();
+    // The frame's observer and the fit's.
+    expect(disconnected - before).toBe(2);
   });
 
   it('draws a hidden column’s template in the details, and hands the focus to the row when it goes', async () => {
@@ -2366,6 +2433,36 @@ describe('PctDataTable — a narrow table hides columns', () => {
     expect(detailsRows()[0].querySelector('.more')?.textContent).toBe(
       'Boiler|2',
     );
+  });
+
+  it('moves no focus when nothing hides, even if the focused row goes', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.powerSlot.set(true);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 1000);
+    (body()[1].querySelector('.watts') as HTMLButtonElement).focus();
+    fixture.componentInstance.rows.set([DEVICES[0], DEVICES[2]]);
+    await settle(fixture);
+    await resize(fixture, width, 999);
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('flashes no cell for a hidden column’s value, which stands in the details', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.changes.set(true);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 250);
+    fixture.componentInstance.rows.set([
+      DEVICES[0],
+      { ...DEVICES[1], power: 1 },
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-changed]')).toBeNull();
   });
 
   it('opens no details for a template of a table nested in a cell, and keeps a details row’s id', async () => {
@@ -2412,5 +2509,59 @@ describe('PctDataTable — a narrow table hides columns', () => {
     await settle(fixture);
     expect(detailsRows()[1].id).toBe(id);
     expect(disclosures()[2].getAttribute('aria-controls')).toBe(id);
+  });
+
+  it('closes one row and leaves the others open, and gives every details row an id of its own', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.open.set([1, 2, 3]);
+    await settle(fixture);
+    const ids = detailsRows().map((row) => row.id);
+    expect(new Set(ids).size).toBe(3);
+    for (const id of ids)
+      expect(id).toMatch(/^pct-data-table-\d+-details-[1-9]\d*$/);
+    disclosures()[1].click();
+    await settle(fixture);
+    expect(fixture.componentInstance.open()).toEqual([1, 3]);
+    expect(detailsRows().map((row) => row.id)).toEqual([ids[0], ids[2]]);
+  });
+});
+
+describe('PctTableDetails — its defaults', () => {
+  it('opens nothing and disables nothing until told, and calls no template of the table an orphan', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      imports: [PctDataTable, PctTableDetails, PctDetailsTemplate],
+      template: `<pct-data-table
+        pctTableDetails
+        #details="pctTableDetails"
+        caption="Devices"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      >
+        <ng-template [pctDetails]="columns"
+          ><i class="more">more</i></ng-template
+        >
+      </pct-data-table>`,
+    })
+    class BareDetails {
+      readonly details = viewChild.required(PctTableDetails);
+      readonly rows = DEVICES;
+      readonly columns = columns;
+      readonly byId = byId;
+    }
+    const fixture = await render(BareDetails);
+    expect(fixture.componentInstance.details().details()).toEqual([]);
+    expect(fixture.componentInstance.details().disabled()).toBe(false);
+    expect(disclosures()).toHaveLength(3);
+    expect(detailsRows()).toHaveLength(0);
+    disclosures()[0].click();
+    await settle(fixture);
+    expect(fixture.componentInstance.details().details()).toEqual([1]);
+    expect(
+      warn.mock.calls.filter(([text]) =>
+        String(text).startsWith('[pctDetails]'),
+      ),
+    ).toEqual([]);
   });
 });

@@ -48,6 +48,7 @@ import {
   pctHideOrder,
   type PctRowId,
 } from './model/columns';
+import { pctFit } from './model/fit';
 import { pctLineKey, pctLines, type PctTableLine } from './model/lines';
 import { pctOrderRows } from './model/order';
 import {
@@ -103,10 +104,11 @@ export interface PctScrollToOptions {
  * @since next
  */
 export interface PctTableFeature {
-  /** The ids of the rows whose details are open, held by the application. */
-  readonly details?: WritableSignal<readonly PctRowId[]>;
-  /** No row opens its details. */
-  readonly detailsDisabled?: Signal<boolean>;
+  /** The rows' details: which are open, held by the application, and whether any opens. */
+  readonly details: {
+    readonly open: WritableSignal<readonly PctRowId[]>;
+    readonly disabled: Signal<boolean>;
+  };
 }
 
 /** How much wider than where it hid a column the frame grows before the column comes back. */
@@ -454,20 +456,18 @@ export class PctDataTable<
     read: ElementRef,
   });
 
-  /** What the table's directives added, in the order they were made. */
-  private readonly features = signal<readonly PctTableFeature[]>([]);
+  /** What the table's directive added: the details directive is the one there is yet. */
+  private readonly contributed = signal<PctTableFeature | null>(null);
 
   /** The open details when no directive holds them: a narrow table opens rows on its own. */
   private readonly ownDetails = signal<readonly PctRowId[]>([]);
 
   private readonly openDetails = computed(
-    () =>
-      this.features().find((feature) => feature.details)?.details ??
-      this.ownDetails,
+    () => this.contributed()?.details.open ?? this.ownDetails,
   );
 
-  private readonly detailsOff = computed(() =>
-    this.features().some((feature) => feature.detailsDisabled?.()),
+  private readonly detailsOff = computed(
+    () => this.contributed()?.details.disabled() ?? false,
   );
 
   /** The prefix of every details row's id. */
@@ -484,8 +484,12 @@ export class PctDataTable<
   /** How many columns of the hide order the frame has no room for. */
   private readonly hiddenCount = signal(0);
 
-  /** Counts the frame's and the table's resizes, so each renders the fit again. */
-  private readonly resized = signal(0);
+  /** A new value at each resize of the frame or the table, so each renders the fit again. */
+  private readonly resized = signal<object>({});
+
+  /** Where the focus stood when a column went, so it can be handed to the row. */
+  private lost: { readonly element: Element; readonly line: number } | null =
+    null;
 
   /** A details row's id for each row, made once and kept while the table lives. */
   private readonly detailsIds = new Map<string, string>();
@@ -1065,75 +1069,70 @@ export class PctDataTable<
   private watchFit(destroyRef: DestroyRef): void {
     let observer: ResizeObserver | null = null;
     destroyRef.onDestroy(() => observer?.disconnect());
-    let order = '';
-    let needed: number[] = [];
-    let lost: { readonly element: Element; readonly line: number } | null =
-      null;
+    let order: string | null = null;
+    let needed: readonly number[] = [];
     afterRenderEffect(() => {
       const next = this.hideOrder();
+      const heads = this.heads();
       this.body();
       this.resized();
       const count = this.hiddenCount();
       const table = this.ownTable();
       // A control that went with its column, or with the disclosures, gives its focus to its
       // row's disclosure, or to the row's first control, rather than to the page.
-      if (lost !== null && !lost.element.isConnected) this.refocus(lost.line);
-      lost = null;
+      if (this.lost !== null && !this.lost.element.isConnected)
+        this.refocus(this.lost.line);
+      this.lost = null;
       // A new order of columns starts with every column shown.
       const key = JSON.stringify(next);
       if (key !== order) {
         order = key;
-        needed = [];
         if (count > 0) {
-          this.change(0, (focus) => (lost = focus));
+          this.change(0);
           return;
         }
       }
       if (next.length === 0) return;
       const frame = this.frame().nativeElement as HTMLElement;
-      if (observer === null && typeof ResizeObserver !== 'undefined') {
-        observer = new ResizeObserver(() => this.resized.update((n) => n + 1));
+      // Only where a column may hide: the frame needs an observer of its own anyway, and a
+      // table with nothing to hide reads no width at all.
+      if (observer === null) {
+        observer = new ResizeObserver(() => this.resized.set({}));
         observer.observe(frame);
         observer.observe(table);
       }
-      const width = frame.clientWidth;
-      const total = table.scrollWidth;
-      if (total > width && count < next.length) {
-        const shown = this.columns()
-          .map((column) => column.id)
-          .filter((id) => !next.slice(0, count).includes(id));
-        const lead = (this.disclosure() ? 1 : 0) + (this.rowNumbers() ? 1 : 0);
-        const heads = (table.tHead as HTMLTableSectionElement).rows[0].cells;
-        let freed = 0;
-        let k = count;
-        while (k < next.length && freed < total - width) {
-          needed[k] = total - freed;
-          const head = heads[lead + shown.indexOf(next[k])];
-          // A header not drawn frees nothing, and the next one is measured instead.
-          freed += head?.getBoundingClientRect().width ?? 0;
-          k++;
-        }
-        this.change(k, (focus) => (lost = focus));
-        return;
-      }
-      let k = count;
-      while (k > 0 && width >= needed[k - 1] + HYSTERESIS) k--;
-      if (k !== count) this.change(k, (focus) => (lost = focus));
+      // The shown columns' header cells are the row's last ones, after the leading cells.
+      const cells = Array.from(
+        (table.tHead as HTMLTableSectionElement).rows[0].cells,
+      ).slice(-heads.length);
+      const fit = pctFit(
+        {
+          width: frame.clientWidth,
+          total: table.scrollWidth,
+          order: next,
+          count,
+          widthOf: (id) =>
+            cells[
+              heads.findIndex((head) => head.column.id === id)
+            ].getBoundingClientRect().width,
+          needed,
+        },
+        HYSTERESIS,
+      );
+      needed = fit.needed;
+      if (fit.count !== count) this.change(fit.count);
     });
   }
 
   /** Writes how many columns are hidden, noting first where the focus stood in the table. */
-  private change(
-    count: number,
-    note: (focus: { readonly element: Element; readonly line: number }) => void,
-  ): void {
+  private change(count: number): void {
     const focused = this.ownTable().ownerDocument.activeElement;
     const row = focused?.closest('tr[data-pct-index]');
     if (focused && row && this.ownTable().contains(row))
-      note({
+      this.lost = {
         element: focused,
         line: Number((row as HTMLElement).dataset['pctIndex']),
-      });
+      };
     untracked(() => this.hiddenCount.set(count));
   }
 
@@ -1155,7 +1154,7 @@ export class PctDataTable<
    * @since next
    */
   contribute(feature: PctTableFeature): void {
-    this.features.update((features) => [...features, feature]);
+    this.contributed.set(feature);
   }
 
   private warnOnNoName(): void {
