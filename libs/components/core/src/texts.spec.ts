@@ -69,6 +69,13 @@ const ENGLISH: PctTexts = {
   chipRemove: 'Remove',
   breadcrumbLabel: 'Breadcrumb',
   stepDone: 'Completed',
+  chartEmpty: 'No data to show',
+  chartGap: 'No reading',
+  chartOn: 'On',
+  chartOff: 'Off',
+  chartTime: 'Time',
+  chartPosition: 'Position',
+  chartAllHidden: 'Every series is hidden',
 };
 
 describe('PCT_TEXTS', () => {

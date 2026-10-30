@@ -17,7 +17,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 290 steps over 40 views, at most 12 stops of a view's own
+- 381 steps over 41 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -26,16 +26,16 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 72 of 290 here. 3 view(s) hit the cap, and each says so.
+at — 74 of 381 here. 4 view(s) hit the cap, and each says so.
 
-**Every view spoke.** No view of the 40 went unread, so nothing below is
+**Every view spoke.** No view of the 41 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-3 view(s) have more stops than the 12 taken, and each says so where it bit.
+4 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    In Start · @pacit/components web content Guidepup Marker Guidepup Marker clickable text
 enter   a "Button"                                           (silence)
 tab 1   —                                                    link Button The variants, sizes and states of the button. main
 ```
@@ -119,78 +119,39 @@ tab 13  —                                                    (silence)
 ### `/textarea`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Textarea
 enter   textarea                                             (silence)
-tab 1   textarea                                             A plain textarea, for comparison This one keeps its two lines and scrolls. text entry area
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   textarea                                             Note text entry area A value that was already here at the first paint.
-Four lines of it, so that the height is
-visibly not the floor the rows attribute
-asks for. Insertion on word: A main
-tab 6   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 7   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 8   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 9   textarea                                             Comment Grows to four lines, then scrolls. text entry area main
-tab 10  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 11  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 12  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 13  textarea                                             Old forms text entry area main
-tab 14  button "patchValue three lines"                      patchValue three lines button
-tab 15  button "patchValue empty"                            patchValue empty button
-tab 16  —                                                    (silence)
+tab 1   textarea                                             About you Type — the box follows. text entry area
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/number`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Number
 enter   input                                                (silence)
-tab 1   button[field-suffix-item] "Clear the price"          Clear the price button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   input                                                1 Number of seats The range is 1–500; a fraction is rounded on commit required stepper main
-tab 6   —                                                    (silence)
+tab 1   input                                                1 499,90
 ```
+
+Tab moved nothing — focus had left the page.
 
 ### `/date`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Date
 enter   input[control]                                       (silence)
-tab 1   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   input[control]                                       27/08/2026 Insertion on word: 27/ , between characters: and Day The sandbox runs under fr-FR, so the format hint reads jj/mm/aaaa edit text main
-tab 6   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 7   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 8   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 9   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 10  input[control]                                       27/08/2026 Insertion on word: 27/ , between characters: and Within August 2026, weekdays only edit text main
-tab 11  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 12  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 13  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 14  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 15  input[control]                                       27.08.2026 Insertion on word: 27.08.2026 , between characters: and Polish edit text main
-tab 16  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 17  input[control]                                       2026/08/27 Insertion on word: 2026/ , between characters: and Japanese edit text
-tab 18  button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 19  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 20  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 21  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 22  button[nav] "Mois précédent"                         Mois précédent button main
-tab 23  button[nav] "Mois suivant"                           Mois suivant button
+tab 1   input[control]                                       2026
 reach   button[toggle] "Choisir une date"                    (silence)
 open    td[day] "jeudi 27 août 2026"                         (silence)
-close   input[control]                                       27
+close   input[control]                                       2026
 ```
 
-the act: `Enter` on `[data-testid="date-standalone"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
+Tab moved nothing — focus had left the page.
 
-The cap bit here: 12 stops of this view's own were read, and it has more.
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
+the act: `Enter` on `[data-testid="date-standalone"] [data-pct-part="toggle"]`, to open a month grid (the gesture belongs to `apps/sandbox-e2e/src/date.spec.ts`).
 
 ### `/time`
 
@@ -212,134 +173,156 @@ the act: `Enter` on `[data-testid="time-standalone"] [data-pct-part="toggle"]`, 
 ### `/datetime`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Datetime
 enter   input[date-control]                                  (silence)
-tab 1   input[time-control]                                  09:30 Insertion on word: 09: , between characters: and Starts Heure Type it, or pick it in the panel required edit text
-tab 2   button[toggle] "Choisir une date et une heure"       Choisir une date et une heure dialog pop up button
-tab 3   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 4   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 5   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 6   input[date-control]                                  01/12/2026 Insertion on word: 01/ , between characters: and Starts Jour The sandbox runs under fr-FR, so the clock counts to 24 edit text Starts group
-tab 7   input[time-control]                                  13:05 Insertion on word: 13: , between characters: and Starts Heure The sandbox runs under fr-FR, so the clock counts to 24 edit text
-tab 8   button[toggle] "Choisir une date et une heure"       Choisir une date et une heure dialog pop up button
-tab 9   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 10  input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 11  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 12  input[date-control]                                  12/01/2026 Insertion on word: 12/ , between characters: and American English Jour edit text American English group
-tab 13  input[time-control]                                  1:05 PM Insertion on word: 1: , between characters: and American English Heure edit text
-tab 14  button[toggle] "Choisir une date et une heure"       Choisir une date et une heure dialog pop up button
-tab 15  input[date-control]                                  01.12.2026 Insertion on word: 01.12.2026 , between characters: and Polish Jour edit text Polish group
-tab 16  input[time-control]                                  13:05 Insertion on word: 13: , between characters: and Polish Heure edit text
-tab 17  button[toggle] "Choisir une date et une heure"       You are currently on a button. To display a list of options, press Control-Option-Space.
+tab 1   input[date-control]                                  2026
 reach   button[toggle] "Choisir une date et une heure"       (silence)
-open    td[day] "mardi 1 décembre 2026"                      (silence)
-close   input[date-control]                                  01
+open    td[day] "mardi 1 décembre 2026"                      Choisir une date et une heure web dialog with 5 items mardi 1 décembre 2026 1 décembre 2026 table 7 columns, 7 rows
+close   input[date-control]                                  2026
 ```
 
-the act: `Enter` on `[data-testid="datetime-standalone"] [data-pct-part="toggle"]`, to open a calendar and the columns of a time (the gesture belongs to `apps/sandbox-e2e/src/datetime.spec.ts`).
+Tab moved nothing — focus had left the page.
 
-The cap bit here: 12 stops of this view's own were read, and it has more.
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
+
+the act: `Enter` on `[data-testid="datetime-standalone"] [data-pct-part="toggle"]`, to open a calendar and the columns of a time (the gesture belongs to `apps/sandbox-e2e/src/datetime.spec.ts`).
 
 ### `/checkbox`
 
 ```
-arrive  —                                                    heading level 2 Checkbox
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Consents Required to open an account required invalid data unchecked checkbox
+tab 1   input[control]                                       You have to accept the terms
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       The indeterminate state, read as mixed mixed checkbox main
+tab 5   input[control]                                       Read-only — focusable, but not changeable checked checkbox
+tab 6   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/radio`
 
 ```
-arrive  —                                                    heading level 2 Radio
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Free radio button, 1 of 3 Plan You can change it at any time required radio group
+tab 1   input[control]                                       Pick a plan
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       Option A selected radio button, 1 of 2 Horizontal layout radio group
+tab 5   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/slider`
 
 ```
-arrive  —                                                    heading level 2 Slider
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       40 Budget Between 20 and 80 slider
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       30 Volume Nothing is formatted, so nothing is written slider main
+tab 5   input[control]                                       15 % Discount slider
+tab 6   input[control]                                       Medium Size slider
+tab 7   input[control]                                       70 Read-only — focusable, but not movable slider
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  input[control]                                       60 Gain slider main
+tab 12  —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/switch`
 
 ```
-arrive  —                                                    heading level 2 Switch
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Backups Runs every night at 03:00 required invalid data off switch
+tab 1   input[control]                                       Backups have to stay on
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       Wi-Fi Turns off when you leave the house on switch main
+tab 5   input[control]                                       Read-only — focusable, but not changeable on switch
+tab 6   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/select`
 
 ```
-arrive  —                                                    heading level 2 Select
+arrive  —                                                    banner
 enter   button[trigger] "Sélectionner…"                      (silence)
-tab 1   button[trigger] "Sélectionner…"                      , Sélectionn Country A list with a panel of its own (CDK Overlay) list box pop up collapsed combo box
+tab 1   button[trigger] "Polish"                             , Pol field (the default) list box pop up collapsed combo box
+tab 2   button[trigger] "Polish"                             , Pol auto — out to the longest option list box pop up collapsed combo box
+tab 3   button[trigger] "Polish"                             , Pol 320px, aligned to the end list box pop up collapsed combo box
+tab 4   button[trigger] "Sélectionner…"                      , Sélectionn Country (in the dark theme) list box pop up collapsed combo box
+tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 8   button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box main
+tab 9   button[trigger] "Sélectionner…"                      , Sélectionn Country (nothing to pick) list box pop up collapsed combo box
+tab 10  button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box
+tab 11  button[trigger] "Poland, Slovakia"                   , Poland, Slova Countries list box pop up collapsed combo box
+tab 12  input[trigger]                                       Lithuania Country list box pop up collapsed combo box
+tab 13  input[trigger]                                       Poland, Slovakia Countries list box pop up collapsed combo box
+tab 14  button[trigger] "Poland"                             , Pol Country list box pop up collapsed combo box
 reach   button[trigger] "Sélectionner…"                      (silence)
-open    button[trigger] "Sélectionner…"                      (silence)
-close   button[trigger] "Sélectionner…"                      (silence)
+open    —                                                    expanded list 6 items
+close   —                                                    (silence)
 ```
 
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
-
 the act: `Enter` on `[data-testid="select-country"] [data-pct-part="trigger"]`, to open a listbox (the gesture belongs to `apps/sandbox-e2e/src/select.spec.ts`).
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/dialog`
 
 ```
-arrive  —                                                    heading level 2 Dialog
+arrive  —                                                    banner
 enter   button "Open the dialog"                             (silence)
-tab 1   button "Open the dialog"                             Open the dialog button
+tab 1   button "Delete the project"                          Delete the project button
+tab 2   button "Open the insistent one"                      Open the insistent one button
+tab 3   button "Open a form dialog"                          Open a form dialog button
+tab 4   button "Open a long one"                             Open a long one button
+tab 5   —                                                    (silence)
 reach   button "Open the dialog"                             (silence)
-open    button[close] "Close"                                Project settings web dialog with 4 items Close button
-close   button[close] "Close"                                (silence)
+open    button[close] "Close"                                (silence)
+close   button "Open the dialog"                             Open the dialog button main
 ```
-
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the gesture belongs to `apps/sandbox-e2e/src/dialog.spec.ts`).
 
 ### `/tooltip`
 
 ```
-arrive  —                                                    heading level 2 Tooltip
+arrive  —                                                    banner
 enter   button "Delete the project"                          (silence)
-tab 1   button "Delete the project"                          Delete the project Removes the project and everything in it button
+tab 1   button "Publish"                                     Publish Runs every check before publishing button
+tab 2   button "Approve the release"                         Approve the release button
+tab 3   button "Close the panel"                             Close the panel button
+tab 4   button "start"                                       start On the starting side button
+tab 5   button "top"                                         top Above the control button
+tab 6   button "bottom"                                      bottom Below the control button
+tab 7   button "end"                                         end On the ending side button
+tab 8   input                                                Release note Shown in the changelog Markdown is allowed here edit text
+tab 9   button "Hover me"                                    Hover me This one can be taken away button
+tab 10  button "Take it away"                                Take it away button
+tab 11  —                                                    (silence)
 ```
-
-the pointer's way to the nav stood under `div` when this view was asked for, and the link was reached through its own click event.
-
-Tab moved nothing — focus had left the page.
 
 ### `/popover`
 
 ```
-arrive  —                                                    heading level 2 Popover
+arrive  —                                                    banner
 enter   button "Filters"                                     (silence)
-tab 1   button "Filters"                                     Filters dialog pop up button
+tab 1   button "start"                                       start dialog pop up button
+tab 2   button "top"                                         top dialog pop up button
+tab 3   button "bottom"                                      bottom dialog pop up button
+tab 4   button "end"                                         end dialog pop up button
+tab 5   button "Open the panel"                              Open the panel dialog pop up button
+tab 6   button "Count up"                                    Count up button
+tab 7   —                                                    You are currently on a button. To click this button, press Control-Option-Space.
 reach   button "Filters"                                     (silence)
 open    div[panel] "Filters"                                 Filters web dialog with 5 items heading level 2 Filters
-close   div[panel] "Filters"                                 (silence)
+close   button "Filters"                                     Filters dialog pop up button
 ```
-
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog (the gesture belongs to `apps/sandbox-e2e/src/popover.spec.ts`).
 
@@ -363,32 +346,47 @@ the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gestu
 ### `/drawer`
 
 ```
-arrive  —                                                    banner
+arrive  —                                                    heading level 2 Drawer
 enter   button "Sections"                                    (silence)
-tab 1   button "Sections, from further down"                 Sections, from further down collapsed button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   button "From the end edge"                           From the end edge collapsed button main
-tab 6   button "From the bottom"                             From the bottom collapsed button
-tab 7   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 8   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 9   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 10  button "Open the bare one"                           Open the bare one collapsed button main
-tab 11  —                                                    (silence)
+tab 1   button "Sections"                                    Sections collapsed button
 reach   button "Sections"                                    (silence)
 open    button "Sections"                                    Sections expanded button
 close   button "Sections"                                    (silence)
 ```
+
+Tab moved nothing — focus had left the page.
+
+the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="trigger-nav"]`, to open a named region beside the page (the gesture belongs to `apps/sandbox-e2e/src/drawer.spec.ts`).
 
 ### `/accordion`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    banner
 enter   summary[heading] "Shipping"                          (silence)
-tab 1   summary[heading] "Shipping"                          Shipping expanded summary main
+tab 1   summary[heading] "Payment"                           Payment collapsed summary
+tab 2   summary[heading] "Returns"                           Returns collapsed summary
+tab 3   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 4   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 5   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 6   summary[heading] "First"                             First collapsed summary main
+tab 7   summary[heading] "Second"                            Second collapsed summary
+tab 8   summary[heading] "Third"                             Third collapsed summary
+tab 9   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 10  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 11  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 12  summary[heading] "Open to anyone"                    Open to anyone collapsed summary main
+tab 13  summary[heading] "Not yours to open"                 Not yours to open dimmed collapsed summary
+tab 14  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 15  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 16  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 17  summary[heading] "An h4 section"                     An h4 section collapsed summary main
+tab 18  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 19  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 20  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 21  summary[heading] "More about this"                   More about this collapsed summary main
+tab 22  —                                                    (silence)
 reach   summary[heading] "Payment"                           (silence)
 open    summary[heading] "Payment"                           expanded
 close   summary[heading] "Payment"                           You are currently on a summary. To expand or collapse the contents of this item, press Control-Option-Space.
@@ -396,81 +394,146 @@ close   summary[heading] "Payment"                           You are currently o
 
 the pointer's way to the nav stood under `pct-drawer (drawer-nav)` when this view was asked for, and the link was reached through its own click event.
 
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
-
 the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to open a revealed section (the gesture belongs to `apps/sandbox-e2e/src/accordion.spec.ts`).
 
 ### `/tabs`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    banner
 enter   button[tab] "General"                                (silence)
-tab 1   button[tab] "General"                                General selected tab, 1 of 3 Account settings tab group
+tab 1   pct-tab[panel] "The general settings, and a word that…" main General tab panel
+tab 2   pct-tab[panel]                                       Network tab panel
+tab 3   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 4   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 5   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 6   button[tab] "Overview"                               Overview selected tab, 1 of 2 Report tab group
+tab 7   pct-tab[panel] "A summary nobody had to fetch."      main Overview tab panel
+tab 8   pct-tab[panel]                                       Details tab panel
+tab 9   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 10  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 11  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 12  button[tab] "Profile"                                Profile selected tab, 1 of 2 Profile tab group
+tab 13  pct-tab[panel] "Who you are."                        main Profile tab panel
+tab 14  pct-tab[panel]                                       Keys tab panel
+tab 15  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 16  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 17  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 18  button[tab] "Week"                                   Week selected tab, 2 of 3 Period tab group
+tab 19  pct-tab[panel]                                       Day tab panel main
+tab 20  pct-tab[panel] "Seven days side by side."            Week tab panel
 reach   button[tab] "General"                                (silence)
-open    button[tab] "General"                                (silence)
-close   button[tab] "General"                                You are currently on a selected tab, 1 of 3.
+open    button[tab] "Network"                                Network selected tab, 2 of 3
+close   button[tab] "Network"                                You are currently on a selected tab, 2 of 3.
 ```
 
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
-
 the act: `ArrowRight` on `[data-testid="tabs-basic"] [data-pct-part="tab"][aria-selected="true"]`, to open the panel behind the next tab (the gesture belongs to `apps/sandbox-e2e/src/tabs.spec.ts`).
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/toast`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    banner
 enter   button "Save the draft"                              (silence)
-tab 1   button "Save the draft"                              Save the draft button main
+tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) button
+tab 2   button "Report something that waits"                 Report something that waits button
+tab 3   button "Clear the stack"                             Clear the stack button
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       (silence)
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   button "Fail to save"                                Fail to save button main
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  button "Success"                                     Success button main
+tab 12  button "Warning"                                     Warning button
+tab 13  button "Danger"                                      Danger button
+tab 14  button "Info"                                        Info button
+tab 15  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 16  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 17  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 18  button "Delete the message"                          Delete the message button main
+tab 19  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 20  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 21  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 22  button "Open the settings"                           Open the settings button main
+tab 23  —                                                    (silence)
 reach   button "Copy (a shorter clock)"                      (silence)
-open    button "Copy (a shorter clock)"                      (silence)
-close   button "Copy (a shorter clock)"                      You are currently on a button. To click this button, press Control-Option-Space.
+open    button "Copy (a shorter clock)"                      Copied to the clipboard. Dismiss Dismiss
+close   button "Copy (a shorter clock)"                      (silence)
 ```
-
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="raise-brief"]`, to open a message in a live region (the gesture belongs to `apps/sandbox-e2e/src/toast.spec.ts`).
 
 ### `/pagination`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    banner
 enter   button[page] "1"                                     (silence)
-tab 1   button[page] "1"                                     1 current page button list 5 items
+tab 1   button[page] "2"                                     2 button
+tab 2   button[page] "3"                                     3 button
+tab 3   button[next] "Next page"                             Next page button
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   button[previous] "Previous page"                     Previous page button list 7 items
+tab 8   button[page] "1"                                     1 button
+tab 9   button[page] "6"                                     6 button
+tab 10  button[page] "7"                                     7 current page button
+tab 11  button[page] "8"                                     8 button
+tab 12  button[page] "20"                                    20 button
+tab 13  button[next] "Next page"                             Next page button
+tab 14  input[control]                                       You are currently on a selected radio button, 1 of 2.
+tab 15  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 16  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 17  button[page] "1"                                     1 current page button list 7 items
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/progress`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    banner
 enter   button "−10"                                         (silence)
-tab 1   button "−10"                                         −10 button main
+tab 1   button "+10"                                         +10 button
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  button "A number arrives"                            A number arrives button main
+tab 12  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 13  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 14  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 15  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 16  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 17  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 18  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 19  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 20  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 21  —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/skeleton`
 
 ```
 arrive  —                                                    Skeleton · @pacit/components web content
 enter   button "The content arrives"                         (silence)
-tab 1   input[control]                                       (silence)
-tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 3   input[control]                                       (silence)
+tab 1   input[control]                                       The content arrives button main
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       (silence)
 tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 9   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 10  input[control]                                       (silence)
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 11  input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 12  input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 13  button "Stop the sheen"                              ltr selected radio button, 1 of 2 Direction radio group
@@ -480,7 +543,7 @@ tab 14  —                                                    Stop the sheen bu
 ### `/chips`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Chips
 enter   button[remove] "Remove"                              (silence)
 tab 1   button[remove] "Remove"                              Remove In stock button list Active filters 5 items
 ```
@@ -490,9 +553,9 @@ Tab moved nothing — focus had left the page.
 ### `/avatar`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Avatar
 enter   button "Swap the source"                             (silence)
-tab 1   button "Swap the source"                             You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "Swap the source"                             Swap the source button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -500,9 +563,9 @@ Tab moved nothing — focus had left the page.
 ### `/badge`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Badge
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       You are currently on a selected radio button, 1 of 2.
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
 
 Tab moved nothing — focus had left the page.
@@ -510,9 +573,9 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Icon
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       You are currently on a checkbox. To select or deselect this checkbox, press Control-Option-Space.
+tab 1   input[control]                                       Done checked checkbox
 ```
 
 Tab moved nothing — focus had left the page.
@@ -520,9 +583,19 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Breadcrumb
 enter   a "Home"                                             (silence)
-tab 1   a "Home"                                             You are currently on a link. To click this link, press Control-Option-Space.
+tab 1   a "Home"                                             link Home list 3 items
+```
+
+Tab moved nothing — focus had left the page.
+
+### `/chart`
+
+```
+arrive  —                                                    heading level 2 Chart
+enter   input[control]                                       (silence)
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
 
 Tab moved nothing — focus had left the page.
@@ -530,10 +603,10 @@ Tab moved nothing — focus had left the page.
 ### `/table`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Table
 enter   button[toggle] "Name"                                (silence)
 tab 1   button[toggle] "Address"                             Address button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       You are currently on a selected radio button, 1 of 2.
 tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
@@ -558,7 +631,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 2 Stepper
 enter   button "Back"                                        (silence)
-tab 1   button "Back"                                        Back button
+tab 1   button "Back"                                        You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -626,7 +699,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    Form controls built as a pct-field wrapper with a control inside.
 enter   button "Solid"                                       (silence)
-tab 1   button "Solid"                                       Solid button
+tab 1   button "Solid"                                       You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.

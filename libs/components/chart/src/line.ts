@@ -1,8 +1,8 @@
 import {
+  afterRenderEffect,
   booleanAttribute,
   Component,
   computed,
-  effect,
   inject,
   input,
   isDevMode,
@@ -218,7 +218,7 @@ export class PctLine<T> extends PctMark {
 
   constructor() {
     super();
-    if (isDevMode()) effect(() => this.warnOnUnordered());
+    if (isDevMode()) afterRenderEffect(() => this.warnOnUnordered());
   }
 
   /**

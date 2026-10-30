@@ -88,13 +88,26 @@ const version = (command, args) => {
  */
 const distinct = (phrases) => [...new Set(phrases)];
 
+/**
+ * A phrase with the automation's own noise taken out. Firefox under Playwright titles its
+ * window `JUGGLER <uuid>`, a new one every run, and a reader that names the window says it: a
+ * record that changes on every pass for nothing a person would hear, and whose hexadecimal
+ * runs the language gate reads as words (2026-10-30).
+ */
+const quiet = (phrase) =>
+  phrase.replace(
+    /\bJUGGLER [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/gi,
+    'JUGGLER <window>',
+  );
+
 const spokenOf = (step, said, fromLog) =>
-  fromLog
+  (fromLog
     ? said
         .filter((u) => u.at >= step.from && u.at <= step.to)
         .map((u) => u.said.trim())
         .filter(Boolean)
-    : (step.said ?? []);
+    : (step.said ?? [])
+  ).map(quiet);
 
 const render = (stepsFile, debugFile, slug, reader) => {
   const { cap, steps, browser, stack } = JSON.parse(

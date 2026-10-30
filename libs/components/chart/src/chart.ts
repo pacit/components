@@ -1,6 +1,7 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  afterRenderEffect,
   booleanAttribute,
   Component,
   computed,
@@ -14,7 +15,6 @@ import {
   linkedSignal,
   LOCALE_ID,
   model,
-  effect,
   signal,
 } from '@angular/core';
 import {
@@ -27,7 +27,7 @@ import { pctThinLabels } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import { pctLinear, type PctDomain, type PctScale } from './model/scale';
 import { pctAxisSlots, type PctAxisSlot } from './model/slots';
-import { pctFractionDigits, pctTicks } from './model/ticks';
+import { pctFractionDigits, pctNiceStep, pctTicks } from './model/ticks';
 import {
   pctTimeStep,
   pctTimeTicks,
@@ -160,7 +160,7 @@ let measuring: CanvasRenderingContext2D | null | undefined;
   providers: [{ provide: PctChartScene, useExisting: PctChart }],
   host: {
     class: 'pct-chart',
-    '[attr.aria-busy]': 'loading() ? "true" : null',
+    '[attr.aria-busy]': 'loading() || !measured() ? "true" : null',
   },
 })
 export class PctChart extends PctChartScene {
@@ -384,7 +384,11 @@ export class PctChart extends PctChartScene {
           },
         );
         const values = pctTicks(domain, target);
-        const step = values.length > 1 ? values[1] - values[0] : 0;
+        // A lone tick is written to the step the axis would have had: 0.5, not 1.
+        const step =
+          values.length > 1
+            ? values[1] - values[0]
+            : pctNiceStep(domain[1] - domain[0], target);
         const writer = format(pctFractionDigits(step));
         ticks = values.map((at) => ({ at, text: writer.format(at) }));
       }
@@ -572,9 +576,9 @@ export class PctChart extends PctChartScene {
       observer.observe(this.host);
       destroyRef.onDestroy(() => observer.disconnect());
     });
-    if (isDevMode()) effect(() => this.warnOnUnnamed());
-    if (isDevMode()) effect(() => this.warnOnUnplaced());
-    if (isDevMode()) effect(() => this.warnOnTwins());
+    if (isDevMode()) afterRenderEffect(() => this.warnOnUnnamed());
+    if (isDevMode()) afterRenderEffect(() => this.warnOnUnplaced());
+    if (isDevMode()) afterRenderEffect(() => this.warnOnTwins());
   }
 
   /**
