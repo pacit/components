@@ -201,10 +201,7 @@
       (pick)="pickedDay.set($event.row.at)"
     />
   </pct-chart>
-  <p data-testid="bars-picked">
-    @if (pickedDay(); as at) { Picked {{ at | date: 'd MMMM' : '+0100' }} }
-    @else { Nothing picked }
-  </p>
+  <p data-testid="bars-picked">{{ pickedText() }}</p>
   <pct-chart-table
     [chart]="daily"
     summary="sum"

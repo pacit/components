@@ -1,5 +1,4 @@
-import { DatePipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import {
   PctBars,
   PctChart,
@@ -32,7 +31,7 @@ const lastMonth = [
  */
 @Component({
   selector: 'demo-chart-bars',
-  imports: [PctChart, PctBars, PctChartTable, DatePipe],
+  imports: [PctChart, PctBars, PctChartTable],
   styles: `
     p {
       margin: var(--pct-space-3) 0;
@@ -58,13 +57,7 @@ const lastMonth = [
         compareName="February"
       />
     </pct-chart>
-    <p>
-      @if (selected(); as band) {
-        Selected: {{ band.from | date: 'd MMMM' : 'Europe/Warsaw' }}
-      } @else {
-        Nothing selected.
-      }
-    </p>
+    <p>{{ selectedText() }}</p>
     <pct-chart-table [chart]="chart" summary="sum" [rows]="31" />
   `,
 })
@@ -72,4 +65,14 @@ export class ChartBarsDemo {
   protected readonly march = march;
   protected readonly lastMonth = lastMonth;
   protected readonly selected = signal<PctWindow | null>(null);
+  protected readonly selectedText = computed(() => {
+    const band = this.selected();
+    if (!band) return 'Nothing selected.';
+    const day = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Europe/Warsaw',
+    }).format(band.from);
+    return `Selected: ${day}`;
+  });
 }

@@ -1,5 +1,4 @@
-import { Component, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
@@ -74,6 +73,7 @@ function daysOf(
   year: number,
   monthIndex: number,
   seed: number,
+  gap = 0,
 ): { at: number; kwh: number | null }[] {
   const random = seeded(seed);
   const rows: { at: number; kwh: number | null }[] = [];
@@ -86,7 +86,7 @@ function daysOf(
       day - 1,
       monthIndex >= 2 && monthIndex <= 9 ? 22 : 23,
     );
-    const kwh = day === 14 ? null : Math.round((8 + random() * 10) * 10) / 10;
+    const kwh = day === gap ? null : Math.round((8 + random() * 10) * 10) / 10;
     rows.push({ at, kwh });
   }
   return rows;
@@ -157,7 +157,6 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctChartLegend,
     PctBars,
     PctButton,
-    DatePipe,
   ],
   templateUrl: './chart-view.html',
   styleUrl: './chart-view.scss',
@@ -172,12 +171,23 @@ export class ChartView {
   protected readonly hidden = signal<readonly string[]>([]);
   protected readonly cursor = signal<number | null>(null);
   protected readonly rooms = signal(rooms());
-  protected readonly marchDays = daysOf(2026, 2, 31);
+  protected readonly marchDays = daysOf(2026, 2, 31, 14);
   protected readonly februaryDays = daysOf(2026, 1, 28);
   protected readonly selectedDay = signal<{ from: number; to: number } | null>(
     null,
   );
   protected readonly pickedDay = signal<number | null>(null);
+  /** The picked day written in Warsaw's calendar: the app's locale has no date data of its own. */
+  protected readonly pickedText = computed(() => {
+    const at = this.pickedDay();
+    if (at === null) return 'Nothing picked';
+    const text = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Europe/Warsaw',
+    }).format(at);
+    return `Picked ${text}`;
+  });
   protected readonly roomNames = ['Kitchen', 'Hall', 'Study'];
   protected readonly roomEnergy = [
     { room: 0, pump: 12.4, solar: -3.1, lastYear: 14 },
