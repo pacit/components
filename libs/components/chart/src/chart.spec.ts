@@ -1601,8 +1601,8 @@ describe('PctChart, as laid out', () => {
     expect(ramp.valueAt('Ramp', 3)).toBeNull();
     const first = fixture.nativeElement.querySelector('pct-chart');
     expect(
-      [...first.querySelectorAll('path')].map((p: Element) =>
-        p.getAttribute('d'),
+      [...first.querySelectorAll('path[data-pct-part="series"]')].map(
+        (p: Element) => p.getAttribute('d'),
       ),
     ).toEqual([
       'M35 275L35 192L175 192L175 25L314 25L314 108L592 108L592 275Z',
