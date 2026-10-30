@@ -49,6 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 13622 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 16040 ./core @angular/core,@angular/forms/signals
+./chart 14555 ./core @angular/core,@angular/forms/signals
 ./checkbox 21543 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 15774 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
