@@ -331,13 +331,15 @@ describe('PctBars', () => {
     const axis = texts(fixture, '[data-pct-unit="kWh"] .value');
     expect(axis[0]).toBe('0');
     // the time axis labels each band in its middle
-    expect(texts(fixture, '[data-pct-part="axis"] .time')).toEqual([
-      'Sun 1',
-      'Mon 2',
-      'Tue 3',
-      'Wed 4',
-      'Thu 5',
-    ]);
+    // the labels as the locale writes the weekday and the day
+    const label = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      timeZone: 'Europe/Warsaw',
+    });
+    expect(texts(fixture, '[data-pct-part="axis"] .time')).toEqual(
+      [0, 1, 2, 3, 4].map((d) => label.format(MARCH + d * D)),
+    );
   });
 
   it('reads the bar under the cursor, writes its band, and gives the table a row per day', async () => {

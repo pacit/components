@@ -94,7 +94,7 @@ describe('pctIntervalNext', () => {
     expect(pctIntervalNext(SPRING, 'day', 'Europe/Warsaw')).toBe(
       SPRING + 23 * H,
     );
-    // the hour the clocks go back is shown twice: 02:00 CEST, then 02:00 CET an hour later
+    // the hour the clocks go back is shown twice: 02:00 of summer time, then 02:00 of winter time an hour later
     const two = DST + 2 * H;
     expect(pctIntervalNext(two, 'hour', 'Europe/Warsaw')).toBe(two + H);
     expect(pctIntervalNext(two + H, 'hour', 'Europe/Warsaw')).toBe(two + 2 * H);
