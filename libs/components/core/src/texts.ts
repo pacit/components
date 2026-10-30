@@ -296,6 +296,13 @@ export interface PctTexts {
   readonly tableDetailsOpen: string;
   /** Data table: the name of a row's button while its details are open. */
   readonly tableDetailsClose: string;
+  /**
+   * Data table: how many rows a group holds, beside its label. `{count}` stands for the number
+   * in the table's locale.
+   */
+  readonly tableGroupCount: string;
+  /** Data table: the label of the foot that sums up every row in view. */
+  readonly tableTotal: string;
 }
 
 /**
@@ -364,6 +371,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableDetails: 'Details',
   tableDetailsOpen: 'Show details',
   tableDetailsClose: 'Hide details',
+  tableGroupCount: '({count})',
+  tableTotal: 'Total',
 };
 
 /**

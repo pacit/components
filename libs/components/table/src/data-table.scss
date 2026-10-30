@@ -222,3 +222,52 @@ tr[data-pct-part='details'] > td {
     outline-color: Highlight;
   }
 }
+
+/* A row in a group stands as deep as its group: its first cell is indented by its level. */
+td.pct-data-table__first {
+  padding-inline-start: calc(
+    var(--pct-table-padding-x) + var(--_level, 0) * var(--pct-table-indent)
+  );
+}
+
+/* A group's heading: on its own surface, its label indented by its level. */
+tr[data-pct-part='group'] > * {
+  background-color: var(--pct-table-group-bg);
+  color: var(--pct-table-group-fg);
+}
+
+tr[data-pct-part='group'] > th {
+  padding-block: 0;
+  padding-inline-start: calc(
+    var(--pct-table-padding-x) + var(--_level, 0) * var(--pct-table-indent)
+  );
+  font-weight: var(--pct-table-heading-font-weight);
+  text-align: start;
+}
+
+/* Under a sticky header, a group's heading sticks below it while its rows scroll by. */
+:host([data-pct-sticky]) tr[data-pct-part='group'] > * {
+  position: sticky;
+  inset-block-start: var(--_head, 0);
+}
+
+.pct-data-table__heading {
+  justify-content: flex-start;
+  gap: var(--pct-table-toggle-gap);
+  font: inherit;
+}
+
+.pct-data-table__sum {
+  margin-inline-start: var(--pct-table-toggle-gap);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The foot sums up the rows in view, set off from them by the header's line. */
+tfoot > tr > * {
+  border-block-start: 1px solid var(--pct-table-heading-border);
+  font-weight: var(--pct-table-heading-font-weight);
+}
+
+tfoot > tr > th {
+  text-align: start;
+}

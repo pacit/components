@@ -57,6 +57,7 @@
         }
       </tr>
     </thead>
+    @if (sections().length === 0) {
     <tbody [attr.aria-busy]="loading() ? 'true' : null">
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
@@ -68,8 +69,58 @@
         <td pctCell><pct-skeleton /></td>
         }
       </tr>
-      } @for (row of body(); track row.key) {
-      <tr [attr.data-pct-index]="row.line" [attr.data-pct-tone]="row.tone">
+      }
+    </tbody>
+    }
+    <!-- A tbody per group, because a rowgroup header names the rest of its tbody (0097, D8). -->
+    @for (section of sections(); track section.key) {
+    <tbody [attr.aria-busy]="loading() ? 'true' : null">
+      @if (section.group; as group) {
+      <tr
+        data-pct-part="group"
+        class="pct-data-table__group"
+        [attr.data-pct-index]="group.line"
+        [style.--_level]="group.level"
+      >
+        <th scope="rowgroup" [attr.colspan]="group.span">
+          <button
+            type="button"
+            class="pct-data-table__toggle pct-data-table__heading"
+            data-pct-part="disclosure"
+            [attr.aria-expanded]="!group.collapsed"
+            (click)="toggleGroup(group.key)"
+          >
+            <pct-icon name="chevron-down" class="pct-data-table__chevron">
+              <svg
+                viewBox="0 0 16 16"
+                width="100%"
+                height="100%"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                focusable="false"
+              >
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </pct-icon>
+            <span>{{ group.label }} {{ group.countText }}</span>
+          </button>
+          @if (group.first) {
+          <span class="pct-data-table__sum">{{ group.first }}</span>
+          }
+        </th>
+        @for (cell of group.cells; track $index) {
+        <td pctCell [numeric]="cell.numeric">{{ cell.text }}</td>
+        }
+      </tr>
+      } @for (row of section.rows; track row.key) {
+      <tr
+        [attr.data-pct-index]="row.line"
+        [attr.data-pct-tone]="row.tone"
+        [style.--_level]="row.level || null"
+      >
         @if (disclosure()) {
         <td pctCell class="pct-data-table__disclosure">
           <button
@@ -103,6 +154,7 @@
         } @for (cell of row.cells; track cell.column.id) {
         <td
           pctCell
+          [class.pct-data-table__first]="$first"
           [numeric]="cell.numeric"
           [attr.data-pct-tone]="cell.tone"
           [attr.title]="cell.title"
@@ -190,6 +242,24 @@
       </tr>
       } }
     </tbody>
+    } @if (totals(); as total) {
+    <tfoot>
+      <tr>
+        <th
+          scope="row"
+          [attr.colspan]="total.span"
+          class="pct-data-table__total"
+        >
+          {{ texts().tableTotal }} @if (total.first) {
+          <span class="pct-data-table__sum">{{ total.first }}</span>
+          }
+        </th>
+        @for (cell of total.cells; track $index) {
+        <td pctCell [numeric]="cell.numeric">{{ cell.text }}</td>
+        }
+      </tr>
+    </tfoot>
+    }
   </table>
   @if (message(); as sentence) {
   <div class="pct-data-table__message" data-pct-part="message">
