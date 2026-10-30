@@ -8,8 +8,7 @@
  *   2. `registry`     — the publish worked and the registry serves THAT archive, locally,
  *   3. `install`  — installing BY NAME pulls our version into the app's `node_modules`,
  *   4. `ng-add`      — the schematic from the INSTALLED package runs and adds the skin,
- *   5. `build`       — the app builds with SSR, its bundles hold the library and the tokens,
- *                      and a cell template on a column the columns lack is a compile error,
+ *   5. `build`       — an SSR build holding the library and tokens; a slot on no column fails it,
  *   6. `ssr`         — the built server renders the component ON THE SERVER,
  *   7. `e2e`         — the browser sees a button painted with a token from the skin.
  *

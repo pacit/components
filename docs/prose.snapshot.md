@@ -34,7 +34,7 @@ check-bench.mjs 6 18 191
 check-bridge.mjs 7 19 200
 check-browsers.mjs 6 18 172
 check-bundle.mjs 13 25 269
-check-consumer.mjs 7 19 197
+check-consumer.mjs 7 19 199
 check-coverage.mjs 6 18 183
 check-distance.mjs 5 17 190
 check-docs.mjs 8 20 213
@@ -91,7 +91,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 1.6 open 20 249
 1.7 open 13 164
 1.8 closed 9 116
-1.2 open 18 210
+1.2 open 19 229
 1.9 open 4 64
 1.10 open 4 59
 1.11 open 16 216
