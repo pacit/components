@@ -181,6 +181,33 @@
         "$type": "dimension",
         "$value": "{pct.space.4}",
         "$description": "How far a data table indents each level of its groups."
+      },
+      "$comment-selected": "A picked row's surface: the primary's first fill, under the pointer's second, so a picked row under the pointer still answers it. A tone outranks it, and the row's checkbox says it was picked in every tone. The text is the table's own, which the fill was measured against.",
+      "bg-selected": {
+        "$type": "color",
+        "$value": "{pct.primary-100}",
+        "$description": "Background of a data table's picked row."
+      },
+      "fg-selected": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a data table's picked row."
+      },
+      "$comment-hint": "The line a selection writes under the table, as a field writes it: the hint muted, the error in the danger's colour and the warning in the warning's, each against the page's surface.",
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint under a data table that picks rows."
+      },
+      "hint-fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the error under a data table that picks rows."
+      },
+      "hint-fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning under a data table that picks rows."
       }
     }
   }

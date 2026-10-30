@@ -106,6 +106,8 @@ const ENGLISH: PctTexts = {
   tableTotal: 'Total',
   tableGroupEmpty: 'No value',
   tableGroupWithin: '{group}, in {outer}',
+  tableSelectAll: 'Select all rows',
+  tableSelectRow: 'Select',
 };
 
 describe('PCT_TEXTS', () => {

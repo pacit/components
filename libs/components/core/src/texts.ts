@@ -332,6 +332,13 @@ export interface PctTexts {
    * for its label and count, `{outer}` for the label of the group it stands in.
    */
   readonly tableGroupWithin: string;
+  /** Data table: the name of the header's checkbox, which picks every row the filter left. */
+  readonly tableSelectAll: string;
+  /**
+   * Data table: the word a row's checkbox is named by, before the text of the row's first
+   * cell — `Select Kitchen lamp`.
+   */
+  readonly tableSelectRow: string;
 }
 
 /**
@@ -415,6 +422,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableTotal: 'Total',
   tableGroupEmpty: 'No value',
   tableGroupWithin: '{group}, in {outer}',
+  tableSelectAll: 'Select all rows',
+  tableSelectRow: 'Select',
 };
 
 /**
