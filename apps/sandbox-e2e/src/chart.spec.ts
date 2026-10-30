@@ -843,7 +843,9 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(
         turned.locator('text[data-pct-part="label"]').first(),
       ).toHaveAttribute('text-anchor', 'start');
-      // the pointer on the plot: the cursor's line lies across, wider than tall
+      // the pointer on the plot: the cursor's line lies across, wider than tall — the demo
+      // sits below the fold, and a mouse moved to a point outside the viewport reaches nothing
+      await turned.scrollIntoViewIfNeeded();
       const box = (await turned
         .locator('[data-pct-part="plot"]')
         .boundingBox())!;

@@ -138,7 +138,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 5843 16819
 ./breadcrumb PctBreadcrumb 3 5943 14489
-./chart PctBars 6 114906 137986
+./chart PctBars 6 114928 138008
 ./chips PctChip 2 16661 16664
 ./date PctCalendar 2 28257 47395
 ./field PctField 3 25345 35075
