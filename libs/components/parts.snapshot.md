@@ -27,6 +27,14 @@ from what the browser really gets.
 ./breadcrumb PctCrumb separator
 ./button PctButton label
 ./button PctButton spinner
+./chart PctChart axis
+./chart PctChart data
+./chart PctChart grid
+./chart PctChart message
+./chart PctChart plot
+./chart PctChart unit
+./chart PctLine area
+./chart PctLine series
 ./checkbox PctCheckbox box
 ./checkbox PctCheckbox control
 ./checkbox PctCheckbox error

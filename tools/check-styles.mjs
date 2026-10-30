@@ -204,6 +204,19 @@ const PAINT = new Set([
 ]);
 
 /**
+ * The two sheets that paint an `<svg>` of their own: a chart's scene and its line, where the
+ * drawing is the consumer's data, scaled and decimated (0099), and no set could hold it —
+ * there is no drawing for a consumer to replace, so painting it is the component's job and
+ * not a reach into an icon. Named one by one, relative to the library: any other sheet of the
+ * chart — a legend's, a marker's — paints what a set could, and answers to point 8.
+ */
+const DRAWS_DATA = new Set(['chart/src/chart.scss', 'chart/src/line.scss']);
+const drawsData = (file) =>
+  DRAWS_DATA.has(
+    file.startsWith(`${PROJECT}/`) ? file.slice(PROJECT.length + 1) : file,
+  );
+
+/**
  * The scanner: turns a stylesheet's text into a list of declarations and comments, each
  * with a line number. It is not a CSS parser and need not be — the gate asks only about
  * `property: value` pairs and about the comments that carry exceptions.
@@ -1115,7 +1128,7 @@ const checkStyles = ({
         translucent.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }
-      if (PAINT.has(d.property)) {
+      if (PAINT.has(d.property) && !drawsData(sheet.file)) {
         painted.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }

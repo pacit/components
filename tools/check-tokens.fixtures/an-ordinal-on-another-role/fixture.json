@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "schema",
+  "description": "`--pct-text-1`, an ordinal on a role that takes none. Were the places of a chart's palette variants like `hover`, `--pct-danger-3` would pass as a name of the semantic tier: an ordinal belongs to the roles that name it (`series`), and nowhere else."
+}

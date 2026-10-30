@@ -85,3 +85,16 @@ complement to it.
 | A different hue per theme for the same index | an index would not name a colour                                                          |
 | Named colours (`series-blue`)                | the name would lie in a skin that paints series one green                                 |
 | Dash patterns on every line, always          | eight patterns at once read as noise; the swatch carries them where they are read         |
+
+## Amended 2026-10-30: the palette crosses three tiers
+
+The record put the eight colours in the component tier alone, and the token build answered
+otherwise: a component file holds one value for both themes, and only the semantic tier is
+swapped between them. So the palette stands in three tiers. The primitive axis `series` holds
+the sixteen colours, `light-1` to `light-8` and `dark-1` to `dark-8`, private like every ramp.
+The semantic tier gains the role `series` with the ordinals 1 to 8 as variants, each theme
+pointing at its own eight — the refusal of `--pct-tone-2` still stands for a tone, which has a
+meaning; a series place has none. The component tier keeps the name the record gave,
+`--pct-chart-series-color-3`, pointing at `--pct-series-3`, and the dictionary's `ordinals`
+list holds the variants there. A skin re-points a place in one theme at the semantic name, or
+in one chart at the component name.

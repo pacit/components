@@ -1,0 +1,26 @@
+<!--
+  The trigger alone, a link written in the SVG namespace inside a template that opens with a
+  path and holds an HTML element beside it: no fragment of a drawing, so it stands in its host.
+-->
+<span class="pct-widget__box">
+  <ng-template #trigger>
+    <svg:path d="M0 0h4" />
+    <span class="pct-widget__label">{{ label() }}</span>
+    <svg:a
+      href="#"
+      role="combobox"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || null"
+    >
+      {{ label() }}
+    </svg:a>
+  </ng-template>
+  <ng-container [ngTemplateOutlet]="trigger" />
+</span>
+
+<!-- One message line: the error takes it, the hint gives way (req-api-message). -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error" role="alert">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

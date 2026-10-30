@@ -1,0 +1,129 @@
+<figure class="figure">
+  <div
+    class="picture"
+    data-pct-part="plot"
+    role="img"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-describedby]="description() ? ids.description : null"
+  >
+    @if (measured() && !loading()) {
+    <svg class="layer" aria-hidden="true" data-pct-part="data">
+      <defs>
+        <clipPath [id]="ids.clip">
+          <rect
+            [attr.x]="plot().left"
+            [attr.y]="plot().top"
+            [attr.width]="plot().right - plot().left"
+            [attr.height]="plot().bottom - plot().top"
+          />
+        </clipPath>
+      </defs>
+      <g data-pct-part="grid">
+        @for (y of gridLines().rows; track $index) {
+        <line
+          class="row"
+          [attr.x1]="plot().left"
+          [attr.x2]="plot().right"
+          [attr.y1]="y"
+          [attr.y2]="y"
+        />
+        } @for (x of gridLines().columns; track $index) {
+        <line
+          class="column"
+          [attr.x1]="x"
+          [attr.x2]="x"
+          [attr.y1]="plot().top"
+          [attr.y2]="plot().bottom"
+        />
+        }
+      </g>
+      <g [attr.clip-path]="'url(#' + ids.clip + ')'">
+        @for (mark of marks(); track mark) {
+        <ng-container [ngTemplateOutlet]="mark.template()" />
+        }
+      </g>
+    </svg>
+    <svg class="layer" aria-hidden="true" data-pct-part="axis">
+      <line
+        class="base"
+        [attr.x1]="plot().left"
+        [attr.x2]="plot().right"
+        [attr.y1]="plot().bottom"
+        [attr.y2]="plot().bottom"
+      />
+      @for (tick of xTicks(); track $index) {
+      <line
+        class="tick"
+        [attr.x1]="tick.x"
+        [attr.x2]="tick.x"
+        [attr.y1]="plot().bottom"
+        [attr.y2]="plot().bottom + 4"
+      />
+      @if (tick.shown) {
+      <text
+        class="time"
+        text-anchor="middle"
+        dominant-baseline="hanging"
+        [attr.x]="tick.middle"
+        [attr.y]="plot().bottom + 6"
+        [attr.data-pct-label]="tick.label"
+        [textContent]="tick.text"
+      ></text>
+      } } @for (axis of axes(); track axis.unit) {
+      <g [attr.data-pct-slot]="axis.slot" [attr.data-pct-unit]="axis.unit">
+        <line
+          class="base"
+          [attr.x1]="axis.x"
+          [attr.x2]="axis.x"
+          [attr.y1]="plot().top"
+          [attr.y2]="plot().bottom"
+        />
+        @for (tick of axis.ticks; track tick.at) {
+        <text
+          class="value"
+          dominant-baseline="middle"
+          [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
+          [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
+          [attr.y]="tick.y"
+          [textContent]="tick.text"
+        ></text>
+        } @if (axis.unit && axis.unit !== 'boolean') {
+        <text
+          data-pct-part="unit"
+          dominant-baseline="hanging"
+          [attr.text-anchor]="axis.side === 'start' ? 'end' : 'start'"
+          [attr.x]="axis.side === 'start' ? axis.x - 6 : axis.x + 6"
+          y="0"
+          [textContent]="axis.unit"
+        ></text>
+        } @for (place of axis.places; track $index) {
+        <circle
+          class="dot"
+          r="3"
+          [attr.data-pct-series]="place"
+          [attr.cx]="axis.side === 'start' ? axis.x - 2 - $index * 8 : axis.x + 2 + $index * 8"
+          [attr.cy]="plot().top - 6"
+        />
+        }
+      </g>
+      }
+    </svg>
+    } @else {
+    <pct-skeleton shape="block" class="skeleton" />
+    }
+  </div>
+  @if (measured() && !loading() && nothing(); as nothing) {
+  <p class="empty" data-pct-part="message">
+    @if (nothing === 'hidden') { {{ texts().chartAllHidden }} } @else {
+    <ng-content select="[pctChartEmpty]">{{ texts().chartEmpty }}</ng-content>
+    }
+  </p>
+  } @if (description()) {
+  <!-- Hidden: the picture reads it as its description, and nothing else reads it twice. -->
+  <p class="description" hidden [id]="ids.description">{{ description() }}</p>
+  }
+  <ng-content select="figcaption" />
+</figure>
+<!-- The marks' own elements, which draw nothing where they stand: their drawings are stamped into the layers above. -->
+<ng-content />

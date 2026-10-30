@@ -1,0 +1,19 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "says": ["and there is no such source file"],
+  "description": "1.4.5 answers by name for a template that is not on disk — a file moved or renamed, and the exception left behind. It excuses nothing today and anything written at that path tomorrow.",
+  "criteria": {
+    "1.4.5": {
+      "evidence": [
+        {
+          "scan": "no-svg-text",
+          "beside": {
+            "libs/components/chart/src/chart.html": "the chart's axis labels",
+            "libs/components/chart/src/axes.html": "the axes"
+          }
+        }
+      ]
+    }
+  }
+}

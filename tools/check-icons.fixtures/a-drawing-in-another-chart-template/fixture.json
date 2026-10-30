@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "swappable",
+  "why": "The chart's exemption read as a directory: a legend beside the scene writes its swatch as a bare `<svg>`. Only the scene's and the line's templates draw the consumer's data; a swatch is a picture a set could hold, so any other template of the chart answers to point 2."
+}

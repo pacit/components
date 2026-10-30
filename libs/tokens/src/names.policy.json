@@ -9,7 +9,8 @@
       "pct.violet.",
       "pct.cyan.",
       "pct.green.",
-      "pct.amber."
+      "pct.amber.",
+      "pct.series."
     ]
   },
   "primitive": {
@@ -27,7 +28,8 @@
       "target",
       "control",
       "motion",
-      "font"
+      "font",
+      "series"
     ]
   },
   "semantic": {
@@ -45,7 +47,8 @@
       "info",
       "focus-ring",
       "scrim",
-      "shadow-panel"
+      "shadow-panel",
+      "series"
     ],
     "variants": [
       "hover",
@@ -58,7 +61,12 @@
       "200",
       "via",
       "to"
-    ]
+    ],
+    "ordinals": {
+      "$comment": "A variant that is a place in a sequence and nothing more, of the roles named here alone: the palette of a chart's series, 1 to 8 (0102). `series-3` is a name; `danger-3` is not.",
+      "roles": ["series"],
+      "list": ["1", "2", "3", "4", "5", "6", "7", "8"]
+    }
   },
   "component": {
     "$comment": "The component tier: `--pct-{component}[-{part}]-{property}[-{variant}]`. The component is not listed, because it is not a dictionary — it has to be a real package entrypoint (`libs/components/<name>/ng-package.json`), and point 3 watches that. The variant stands ALWAYS at the end: `--pct-button-bg-hover`, never `--pct-button-hover-bg`. That order is the only reason why knowing one name lets you guess its sibling.",
@@ -95,7 +103,12 @@
       "thumb",
       "toggle",
       "track",
-      "weekday"
+      "weekday",
+      "series",
+      "grid",
+      "axis",
+      "unit",
+      "area"
     ],
     "properties": [
       "alpha",
@@ -119,7 +132,8 @@
       "size",
       "target-min",
       "width",
-      "z-index"
+      "z-index",
+      "color"
     ],
     "states": [
       "active",
@@ -142,6 +156,11 @@
     "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",
       "list": ["sm", "lg"]
+    },
+    "ordinals": {
+      "$comment": "A variant that is a place in a sequence and nothing more, of the parts named here alone: a chart's series 1 to 8 (0102). It stands at the end like a state — `--pct-chart-series-color-3` — and `--pct-button-bg-3` is no name.",
+      "parts": ["series"],
+      "list": ["1", "2", "3", "4", "5", "6", "7", "8"]
     }
   }
 }

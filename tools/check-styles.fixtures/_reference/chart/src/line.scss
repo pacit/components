@@ -1,0 +1,12 @@
+/* A chart's line paints the path it draws into the scene's own `<svg>`: the drawing is the
+   consumer's data, which no set could hold — point 8's exemption, exercised here. */
+.line__path {
+  fill: none;
+  stroke: var(--pct-field-bg);
+}
+
+@media (forced-colors: active) {
+  .line__path {
+    stroke: CanvasText;
+  }
+}

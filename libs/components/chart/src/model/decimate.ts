@@ -95,6 +95,55 @@ function lowerBound(xs: Float64Array, length: number, x: number): number {
 }
 
 /**
+ * The lowest and the highest reading strictly between `from` and `to`, or `null` when none is
+ * there. With the `pyramid` of `columns` the range is read from whole runs, so the cost follows
+ * the logarithm of the readings rather than the readings: an axis that rescales on every frame
+ * of a pan does not walk the series (0100). A gap is no reading.
+ *
+ * @since next
+ */
+export function pctRangeExtent(
+  columns: PctColumns,
+  from: number,
+  to: number,
+  pyramid?: PctPyramid,
+): readonly [number, number] | null {
+  const { xs, ys, length } = columns;
+  const levels = (pyramid?.length === length && LEVELS.get(pyramid)) || [];
+  const end = lowerBound(xs, length, to);
+  let i = lowerBound(xs, length, from);
+  while (i < end && xs[i] === from) i++;
+  let min = Infinity;
+  let max = -Infinity;
+  const take = (j: number) => {
+    // A gap's NaN is neither lower nor higher than anything.
+    if (ys[j] < min) min = ys[j];
+    if (ys[j] > max) max = ys[j];
+  };
+  while (i < end) {
+    // The longest run that starts at `i` and ends before `end`.
+    let k = 0;
+    while (
+      k < levels.length &&
+      i % 2 ** (k + 1) === 0 &&
+      i + 2 ** (k + 1) <= end
+    )
+      k++;
+    if (k === 0) take(i);
+    else {
+      const b = i / 2 ** k;
+      const lo = levels[k - 1].lo[b];
+      if (lo >= 0) {
+        take(lo);
+        take(levels[k - 1].hi[b]);
+      }
+    }
+    i += 2 ** k;
+  }
+  return min <= max ? [min, max] : null;
+}
+
+/**
  * The readings of `columns` worth drawing in `window` across `width` pixels: per column of
  * pixels the first, the lowest, the highest and the last, in the order taken; a gap kept as a
  * gap (a `NaN` at the position the gap starts); and the reading just outside each edge, so a

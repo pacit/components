@@ -128,8 +128,13 @@ const prefixesOf = (words, text) =>
  * property has two readings, and the one that closes completely is the one to take.
  */
 const parseComponent = (rest, policy) => {
-  const { parts, properties, states, sizes } = policy.component;
+  const { parts, properties, states, sizes, ordinals } = policy.component;
   const variants = new Set([...states, ...sizes.list]);
+  // An ordinal is a variant of the parts that name it alone (`series`): the place of a series
+  // is no word for the size of a button.
+  const ordinalOf = (part, tail) =>
+    (ordinals?.parts ?? []).includes(part) &&
+    (ordinals?.list ?? []).includes(tail);
 
   for (const part of [null, ...prefixesOf(parts, rest)]) {
     const afterPart = part === null ? rest : rest.slice(part.length + 1);
@@ -139,6 +144,8 @@ const parseComponent = (rest, policy) => {
         afterPart === property ? '' : afterPart.slice(property.length + 1);
       if (tail === '') return { part, property, variant: null };
       if (variants.has(tail)) return { part, property, variant: tail };
+      if (ordinalOf(part, tail))
+        return { part, property, variant: tail, ordinal: true };
     }
   }
   return null;
@@ -146,7 +153,7 @@ const parseComponent = (rest, policy) => {
 
 /** `[on-]{role}[-{variant}]`. */
 const parseSemantic = (rest, policy) => {
-  const { roles, variants } = policy.semantic;
+  const { roles, variants, ordinals } = policy.semantic;
   const pair = rest.startsWith('on-');
   const withoutPair = pair ? rest.slice(3) : rest;
 
@@ -154,6 +161,12 @@ const parseSemantic = (rest, policy) => {
     const tail = withoutPair === role ? '' : withoutPair.slice(role.length + 1);
     if (tail === '') return { role, variant: null, pair };
     if (variants.includes(tail)) return { role, variant: tail, pair };
+    // An ordinal of the roles that name it alone: `series-3`, never `danger-3`.
+    if (
+      (ordinals?.roles ?? []).includes(role) &&
+      (ordinals?.list ?? []).includes(tail)
+    )
+      return { role, variant: tail, pair, ordinal: true };
   }
   return null;
 };
@@ -452,7 +465,7 @@ const checkTokens = (input) => {
       const p = parseSemantic(segments[1], policy);
       if (!p) continue;
       record('semantic.roles', p.role);
-      record('semantic.variants', p.variant);
+      record(p.ordinal ? 'semantic.ordinals' : 'semantic.variants', p.variant);
     } else {
       const p = segments.length === 3 && parseComponent(segments[2], policy);
       if (!p) continue;
@@ -460,9 +473,11 @@ const checkTokens = (input) => {
       record('component.properties', p.property);
       if (p.variant !== null)
         record(
-          policy.component.states.includes(p.variant)
-            ? 'component.states'
-            : 'component.sizes',
+          p.ordinal
+            ? 'component.ordinals'
+            : policy.component.states.includes(p.variant)
+              ? 'component.states'
+              : 'component.sizes',
           p.variant,
         );
     }
@@ -471,10 +486,12 @@ const checkTokens = (input) => {
     'primitives.axes': policy.primitive.axes,
     'semantic.roles': policy.semantic.roles,
     'semantic.variants': policy.semantic.variants,
+    'semantic.ordinals': policy.semantic.ordinals?.list ?? [],
     'component.parts': policy.component.parts,
     'component.properties': policy.component.properties,
     'component.states': policy.component.states,
     'component.sizes': policy.component.sizes.list,
+    'component.ordinals': policy.component.ordinals?.list ?? [],
   };
   const dead = Object.entries(declared).flatMap(([category, words]) =>
     words
@@ -1320,9 +1337,10 @@ const withoutMixAmounts = (value) => {
     if (end <= start) return out; // unbalanced — leave it to the CSS parser to complain
     const call = out
       .slice(start, end)
-      // The second of two adjacent `var()`s is the amount; the first is the colour.
+      // The second of two adjacent `var()`s is the amount; the first is the colour — a token,
+      // or a component's private property (`--_pct-chart-color`, a colour the consumer gave).
       .replace(
-        /(var\(\s*--pct-[a-z0-9-]+\s*\))(\s+)var\(\s*--pct-[a-z0-9-]+\s*\)/g,
+        /(var\(\s*--_?pct-[a-z0-9-]+\s*\))(\s+)var\(\s*--pct-[a-z0-9-]+\s*\)/g,
         '$1$2',
       );
     out =
