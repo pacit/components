@@ -239,12 +239,16 @@ interface Row<T> {
   readonly selected: boolean;
 }
 
-/** `read`, asked once for each row and answered from then on with what it gave. */
+/**
+ * `read`, asked once for each row and answered from then on with what it gave. Asked outside
+ * the reactive context: the first to ask for a row would otherwise be the only one to depend
+ * on what `read` reads, so what depends on the answers names its signals itself.
+ */
 function kept<T, V>(read: (row: T) => V): (row: T) => V {
   const answers = new Map<T, V>();
   return (row) => {
     if (answers.has(row)) return answers.get(row) as V;
-    const answer = read(row);
+    const answer = untracked(() => read(row));
     answers.set(row, answer);
     return answer;
   };
@@ -1039,9 +1043,7 @@ export class PctDataTable<
   });
 
   /** The window, while the window directive draws one. */
-  protected readonly window = computed(
-    () => this.contributed().window ?? null,
-  );
+  protected readonly window = computed(() => this.contributed().window ?? null);
 
   /** The lines drawn, `[start, end)`: the window's, or every line. */
   private readonly drawn = computed(
@@ -1113,55 +1115,55 @@ export class PctDataTable<
       if (line.kind === 'row') drawn.push({ line, at });
     }
     return drawn.map(({ line, at }): Row<T> => {
-        const number = this.lineIdOf(pctLineKey(line));
-        const values = cache(line.row);
-        const texts = written(line.row);
-        const all = cells.map(
-          ({ column, numeric, boolean, slot, marking }, c) => {
-            const value = values[c];
-            const text = texts[c];
-            const yes = boolean && typeof value === 'boolean' ? value : null;
-            const parts = marking
-              ? pctMatchParts(text, words as readonly string[])
-              : null;
-            const tooltip = column.tooltip;
-            return {
-              column,
-              value,
-              text,
-              numeric,
-              yes,
-              slot,
-              parts,
-              tone: column.tone?.(value, line.row) ?? null,
-              title: typeof tooltip === 'function' ? tooltip(line.row) : null,
-              clip: tooltip === true && slot === null && yes === null,
-            };
-          },
-        );
-        const shown = all.filter((cell) => !hidden.has(cell.column.id));
-        return {
-          key: pctLineKey(line),
-          row: line.row,
-          index: line.index,
-          id: line.key,
-          line: at,
-          level: line.level,
-          tone: rowTone?.(line.row) ?? null,
-          values,
-          cells: shown,
-          hidden: all.filter((cell) => hidden.has(cell.column.id)),
-          hiddenColumns,
-          open: lines[at + 1]?.kind === 'details',
-          detailsId: `${this.uid}-details-${number}`,
-          nameId: `${this.uid}-name-${number}`,
-          nameAt: Math.max(
-            0,
-            shown.findIndex((cell) => cell.slot === null && cell.yes === null),
-          ),
-          selected: picked.has(line.key),
-        };
-      });
+      const number = this.lineIdOf(pctLineKey(line));
+      const values = cache(line.row);
+      const texts = written(line.row);
+      const all = cells.map(
+        ({ column, numeric, boolean, slot, marking }, c) => {
+          const value = values[c];
+          const text = texts[c];
+          const yes = boolean && typeof value === 'boolean' ? value : null;
+          const parts = marking
+            ? pctMatchParts(text, words as readonly string[])
+            : null;
+          const tooltip = column.tooltip;
+          return {
+            column,
+            value,
+            text,
+            numeric,
+            yes,
+            slot,
+            parts,
+            tone: column.tone?.(value, line.row) ?? null,
+            title: typeof tooltip === 'function' ? tooltip(line.row) : null,
+            clip: tooltip === true && slot === null && yes === null,
+          };
+        },
+      );
+      const shown = all.filter((cell) => !hidden.has(cell.column.id));
+      return {
+        key: pctLineKey(line),
+        row: line.row,
+        index: line.index,
+        id: line.key,
+        line: at,
+        level: line.level,
+        tone: rowTone?.(line.row) ?? null,
+        values,
+        cells: shown,
+        hidden: all.filter((cell) => hidden.has(cell.column.id)),
+        hiddenColumns,
+        open: lines[at + 1]?.kind === 'details',
+        detailsId: `${this.uid}-details-${number}`,
+        nameId: `${this.uid}-name-${number}`,
+        nameAt: Math.max(
+          0,
+          shown.findIndex((cell) => cell.slot === null && cell.yes === null),
+        ),
+        selected: picked.has(line.key),
+      };
+    });
   });
 
   /** The number a row's ids are made of: the same however the rows above it change. */
@@ -1542,7 +1544,9 @@ export class PctDataTable<
    * Hands the focus on when its element went — with a column, a collapsed group, a row the
    * application took away — rather than leaving it to the page: to its row's first control
    * if the row is still drawn, to the heading of the group that hides it if not, to the
-   * group's own heading, or to the line that now stands where it stood.
+   * group's own heading, or to the line that now stands where it stood. A line a window
+   * does not draw hands it to the frame, which scrolls with the keys, so the focus stays in
+   * the table rather than going to the page.
    */
   private watchFocus(): void {
     // After every render, not on a signal: a write inside another render hook reruns effects
@@ -1571,7 +1575,12 @@ export class PctDataTable<
         line = back;
     }
     if (line < 0) line = Math.min(at.line, lines.length - 1);
-    this.rowOf(line)
+    const row = this.rowOf(line);
+    if (row === undefined && this.window() !== null) {
+      this.frame().nativeElement.focus({ preventScroll: true });
+      return;
+    }
+    row
       ?.querySelector<HTMLElement>(
         '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
       )

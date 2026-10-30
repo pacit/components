@@ -97,10 +97,11 @@ export class PctLineHeights {
   private reach(y: number, strict: boolean): number {
     let at = 0;
     let left = y;
-    for (let step = this.step; step > 0; step /= 2) {
+    for (let step = this.step; step > 0; step >>= 1) {
       const node = at + step;
       if (node > this.count) continue;
-      const height = this.sums[node] + (step - this.counts[node]) * this.estimate;
+      const height =
+        this.sums[node] + (step - this.counts[node]) * this.estimate;
       if (strict ? height < left : height <= left) {
         at = node;
         left -= height;
@@ -125,7 +126,7 @@ export class PctLineHeights {
    * @since next
    */
   firstFrom(y: number): number {
-    return y <= 0 ? 0 : this.reach(y, true) + 1;
+    return y <= 0 ? 0 : Math.min(this.count, this.reach(y, true) + 1);
   }
 }
 
@@ -150,7 +151,7 @@ export interface PctWindowInput {
 /**
  * The lines to draw, `[start, end)`, and the space around them: `lead` above, `tail` below,
  * `space` for all of it. `total` is the lines' own height, which `space` is unless it is over
- * the limit.
+ * the limit, and `top` is where the view's top stands among the lines.
  *
  * @since next
  */
@@ -161,6 +162,7 @@ export interface PctWindow {
   readonly tail: number;
   readonly space: number;
   readonly total: number;
+  readonly top: number;
 }
 
 /** Where the view's top stands among the lines, for a top in the space drawn. */
@@ -201,7 +203,7 @@ export function pctWindow(of: PctWindowInput): PctWindow {
   const top = linesTop(domTop, total, space, view);
   const around = Math.max(0, Math.floor(overscan));
   if (count === 0)
-    return { start: 0, end: 0, lead: 0, tail: 0, space: 0, total: 0 };
+    return { start: 0, end: 0, lead: 0, tail: 0, space: 0, total: 0, top: 0 };
   // The line under the top, or, past every line's end, the last line — or the first of a list
   // of no height.
   const under = heights.indexAt(top);
@@ -215,20 +217,24 @@ export function pctWindow(of: PctWindowInput): PctWindow {
   // In a scaled space the lines above the top have only `domTop` of room, and those below
   // the rest: the overscan goes no further.
   const above = space === total ? 0 : heights.firstFrom(top - domTop);
-  const below =
-    space === total ? count : heights.indexAt(top + space - domTop);
+  const below = space === total ? count : heights.indexAt(top + space - domTop);
   const start = Math.min(first, Math.max(first - around, above));
   const end = Math.max(past, Math.min(count, past + around, below));
   const from = heights.offsetOf(start);
   const drawn = heights.offsetOf(end) - from;
   if (space === total) {
     const tail = total - from - drawn;
-    return { start, end, lead: from, tail: Math.max(0, tail), space, total };
+    return {
+      start,
+      end,
+      lead: from,
+      tail: Math.max(0, tail),
+      space,
+      total,
+      top,
+    };
   }
-  const lead = Math.max(
-    0,
-    Math.min(space - drawn, domTop - top + from),
-  );
+  const lead = Math.max(0, Math.min(space - drawn, domTop - top + from));
   return {
     start,
     end,
@@ -236,6 +242,7 @@ export function pctWindow(of: PctWindowInput): PctWindow {
     tail: Math.max(0, space - lead - drawn),
     space,
     total,
+    top,
   };
 }
 
@@ -251,12 +258,17 @@ export type PctWindowAlign = 'start' | 'center' | 'end' | 'nearest';
  * Where to scroll so that line `index` stands in the view as `align` says: a top in the space
  * drawn, through the same map {@link pctWindow} reads the top with, so the window at the top
  * returned has the line where it was asked for. A line taller than the view stands at its top
- * for `nearest`; the top is never past the last full view.
+ * for `nearest`; the top is never past the last full view. `within` moves a `start` that many
+ * pixels into the line: what keeps the line the view's top is in where it was.
  *
  * @since next
  */
 export function pctWindowScroll(
-  of: PctWindowInput & { readonly index: number; readonly align: PctWindowAlign },
+  of: PctWindowInput & {
+    readonly index: number;
+    readonly align: PctWindowAlign;
+    readonly within?: number;
+  },
 ): number {
   const { heights, index, align } = of;
   const total = heights.total;
@@ -268,7 +280,7 @@ export function pctWindowScroll(
   const height = heights.heightOf(index);
   const target =
     align === 'start'
-      ? start
+      ? start + (of.within ?? 0)
       : align === 'end'
         ? start + height - view
         : align === 'center'

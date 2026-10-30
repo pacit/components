@@ -10,7 +10,10 @@
 written with the conditions it was taken under — the "Measurement" section below. The probes
 and their readings stand on `probe/table-window-0098` (commit `cdfcb2e5`, never merged), in
 three runs: P1 and P4 from the first, P5 from the second, P2 and P3 from the third, each run
-after the probe it repeats was corrected, as the branch's README says.
+after the probe it repeats was corrected, as the branch's README says. The window built on
+it, `pctTableWindow`, is held by `apps/sandbox-e2e/src/datatable.spec.ts` in the same engines —
+a hundred thousand rows and a million, the scroll up through rows of two heights, the columns'
+widths — and its own numbers, read on 2026-10-31, stand in the card's "How much it holds".
 
 ## Context
 

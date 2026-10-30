@@ -632,8 +632,7 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
   });
 
   const registers = (page: Page) => page.getByTestId('table-registers');
-  const frameOf = (table: Locator) =>
-    table.locator(':scope > pct-table-frame');
+  const frameOf = (table: Locator) => table.locator(':scope > pct-table-frame');
 
   /** Two frames: what a scroll writes has been measured and drawn by then. */
   const settle = (page: Page) =>
@@ -657,6 +656,7 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
 
   /** The row stands whole in the frame's view, below the sticky header. */
   const expectInFrame = async (frame: Locator, row: Locator) => {
+    const handle = await frame.elementHandle();
     await expect
       .poll(() =>
         row.evaluate((tr, element) => {
@@ -666,7 +666,7 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
             (element as HTMLElement).querySelector('thead') as HTMLElement
           ).getBoundingClientRect().bottom;
           return box.top >= head - 1 && box.bottom <= view.bottom + 1;
-        }, await frame.elementHandle()),
+        }, handle),
       )
       .toBe(true);
   };
@@ -674,8 +674,9 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
   /** The row at the top of the view, under the sticky header, and where it stands. */
   const atTop = (frame: Locator) =>
     frame.evaluate((element) => {
-      const head = (element.querySelector('thead') as HTMLElement)
-        .getBoundingClientRect().bottom;
+      const head = (
+        element.querySelector('thead') as HTMLElement
+      ).getBoundingClientRect().bottom;
       const row = Array.from(
         element.querySelectorAll<HTMLElement>('tbody tr'),
       ).find((tr) => tr.getBoundingClientRect().bottom > head + 1);
@@ -823,20 +824,20 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
     const top = await frame.evaluate((element) => element.scrollTop);
     const row = table.locator('tbody tr').nth(10);
     const value = row.locator('td').nth(2);
+    // The scroll drew rows past the ten thousandth: five digits of place.
+    await expect(row).toHaveAttribute('aria-rowindex', /^\d{5}$/);
     const was = await value.textContent();
     const toggle = row.getByRole('switch');
     await toggle.focus();
     const name = await toggle.getAttribute('aria-label');
-    await expect.poll(() => value.textContent(), { timeout: 6000 }).not.toBe(
-      was,
-    );
+    await expect
+      .poll(() => value.textContent(), { timeout: 6000 })
+      .not.toBe(was);
     await expect(
       table.getByRole('switch', { name: name as string, exact: true }),
     ).toBeFocused();
     expect(
-      Math.abs(
-        (await frame.evaluate((element) => element.scrollTop)) - top,
-      ),
+      Math.abs((await frame.evaluate((element) => element.scrollTop)) - top),
     ).toBeLessThanOrEqual(1);
   });
 });

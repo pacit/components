@@ -56,8 +56,9 @@ function median(values: readonly number[]): number {
  * - **Heights are measured.** Each drawn line's height is read and kept by its key, so a row
  *   measured once counts at its height wherever a sort takes it; a line never drawn counts at
  *   the median of the first lines measured. A line above the one the reader is at that turns
- *   out taller or shorter than it was counted moves the scroll by the difference, so what is on
- *   screen stays where it is.
+ *   out taller or shorter than it was counted moves the scroll, so what is on screen stays where
+ *   it is, in a scaled space too. A focused row the window scrolls away hands the focus to the
+ *   frame, which keeps the keys.
  * - **Columns keep their widths.** The widths of the first frame are fixed on the header's
  *   cells, so a longer text further down wraps in its column rather than moving the columns
  *   while the user reads; a new set of columns or a resized frame measures them again.
@@ -136,9 +137,18 @@ export class PctTableWindow {
     );
   });
 
-  /** The row the table asked to scroll to, until it has been drawn and measured. */
-  private reaching: { readonly line: number; readonly align: PctScrollAlign } | null =
-    null;
+  /**
+   * The row the table asked to scroll to, until its own row has been drawn and measured: of
+   * the lines it was asked among, so other lines drop it.
+   */
+  private reaching: {
+    readonly line: number;
+    readonly align: PctScrollAlign;
+    readonly lines: readonly unknown[];
+  } | null = null;
+
+  /** The lines the rows observed were drawn for: a report on other lines' rows is stale. */
+  private observed: readonly unknown[] | null = null;
 
   /** What the header's cells were last measured for: the columns and the frame's width. */
   private pinned = '';
@@ -152,7 +162,7 @@ export class PctTableWindow {
         lead: computed(() => this.current().lead),
         tail: computed(() => this.current().tail),
         reach: (line, align) => {
-          this.reaching = { line, align };
+          this.reaching = { line, align, lines: untracked(this.table.lines) };
           this.scrollToLine();
         },
       },
@@ -174,14 +184,13 @@ export class PctTableWindow {
         // Its own anchoring corrects nothing under a sticky header, and adds to the window's.
         element.style.overflowAnchor = 'none';
         rows = new ResizeObserver((entries) => this.measure(entries));
-        frame = new ResizeObserver(() => this.place());
+        // A frame of another width lays the columns out again, as other columns do.
+        frame = new ResizeObserver(() => this.fit(element));
         frame.observe(element);
       }
-      untracked(() => {
-        this.pin(JSON.stringify([element.clientWidth, columns, hidden]));
-        this.place();
-      });
+      untracked(() => this.fit(element, columns, hidden));
       rows.disconnect();
+      this.observed = untracked(this.table.lines);
       // Lines, not the placeholders that stand in for rows still coming.
       for (const row of Array.from(
         this.tableOf(element).querySelectorAll(
@@ -190,6 +199,18 @@ export class PctTableWindow {
       ))
         rows.observe(row);
     });
+  }
+
+  /** Pins the header's cells for the columns and the frame's width, and reads the view. */
+  private fit(
+    element: HTMLElement,
+    columns: readonly string[] = this.table
+      .columns()
+      .map((column) => column.id),
+    hidden: unknown = this.table.hiddenColumns(),
+  ): void {
+    this.pin(JSON.stringify([element.clientWidth, columns, hidden]));
+    this.place();
   }
 
   /** The table's frame: the host's own, not one a cell template nests in it. */
@@ -229,19 +250,32 @@ export class PctTableWindow {
   }
 
   /**
-   * Writes the heights the observer read into the sums, and moves the scroll by what the lines
-   * above the reader's place grew; then finishes a scroll to a row, now that it is drawn.
+   * Writes the heights the observer read into the sums and keeps the line the view's top is
+   * in where it was, as far into it as it was; then finishes a scroll to a row, now that its
+   * row is drawn and measured.
    */
   private measure(entries: readonly ResizeObserverEntry[]): void {
     const lines = this.table.lines();
-    const heights = this.heights();
+    // Rows drawn for lines since gone: the render of the new ones observes its rows afresh.
+    if (lines !== this.observed || lines.length === 0) return;
+    const before = this.heights();
     const frame = this.frame();
-    const { offset } = this.geometry();
-    // The line at the view's top: what is above it moves what is read.
-    const anchor = heights.indexAt(frame.scrollTop - offset);
+    const { offset, view } = this.geometry();
+    const scrollTop = frame.scrollTop - offset;
+    // Where the top stands among the lines, in the sums before the heights read.
+    const { top } = pctWindow({
+      heights: before,
+      scrollTop,
+      viewport: view,
+      overscan: 0,
+      limit: LIMIT,
+    });
+    const anchor = Math.min(lines.length - 1, before.indexAt(top));
+    const within = top - before.offsetOf(anchor);
+    const reaching = this.reaching?.lines === lines ? this.reaching : null;
     const rows: number[] = [];
-    let shift = 0;
     let changed = false;
+    let reached = false;
     for (const entry of entries) {
       const row = entry.target as HTMLElement;
       if (!row.isConnected) continue;
@@ -249,28 +283,39 @@ export class PctTableWindow {
       const line = lines[index];
       const height = entry.borderBoxSize[0].blockSize;
       if (line.kind === 'row') rows.push(height);
+      if (index === reaching?.line) reached = true;
       const key = pctLineKey(line);
       if (Math.abs((this.measured.get(key) ?? -1) - height) < TOLERANCE)
         continue;
       this.measured.set(key, height);
-      const change = heights.set(index, height);
+      before.set(index, height);
       changed = true;
-      if (index < anchor) shift += change;
     }
     if (!this.estimated && rows.length > 0) {
-      // The first rows measured set what every row not drawn counts at, once: the sums are made
-      // again with it, and what is on screen is where it was.
+      // The first rows measured set what every row not drawn counts at, once: the sums are
+      // made again with it.
       this.estimated = true;
       this.estimate.set(median(rows));
-      return;
     }
-    // A scaled space maps the scroll to the lines in proportion: a line that grew moves it by
-    // no pixel the reader would see.
-    if (shift !== 0 && heights.total <= LIMIT) frame.scrollTop += shift;
-    if (changed) this.version.update((version) => version + 1);
-    const reaching = this.reaching;
-    const { start, end } = untracked(this.current);
-    if (reaching !== null && reaching.line >= start && reaching.line < end) {
+    if (changed) {
+      // One path for a space scaled or not: the top the line and the pixels into it map to.
+      const target =
+        pctWindowScroll({
+          heights: this.heights(),
+          scrollTop,
+          viewport: view,
+          overscan: OVERSCAN,
+          limit: LIMIT,
+          index: anchor,
+          align: 'start',
+          within,
+        }) + offset;
+      if (Math.abs(target - frame.scrollTop) >= TOLERANCE)
+        frame.scrollTop = target;
+      this.version.update((version) => version + 1);
+    }
+    if (reaching === null) this.reaching = null;
+    else if (reached) {
       this.reaching = null;
       this.scrollToLine(reaching);
     }

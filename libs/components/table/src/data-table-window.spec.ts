@@ -49,7 +49,7 @@ function registersOf(count: number): readonly Register[] {
     @if (grouped()) {
       <pct-data-table
         pctTableWindow
-        pctTableGroups
+        [pctTableGroups]="columns()"
         [groupBy]="['room']"
         caption="Registers"
         [stickyHeader]="sticky()"
@@ -79,7 +79,7 @@ function registersOf(count: number): readonly Register[] {
 class WindowHost {
   readonly table = viewChild.required(PctDataTable);
   readonly rows = signal<readonly Register[]>(registersOf(1000));
-  readonly columns = signal<typeof columns | typeof fewer>(columns);
+  readonly columns = signal(columns);
   readonly sticky = signal(true);
   readonly grouped = signal(false);
   readonly open = signal<readonly PctRowId[]>([]);
@@ -190,7 +190,8 @@ function frameOf(fixture: ComponentFixture<unknown>): HTMLElement {
   ) as HTMLElement;
 }
 
-async function render(
+/** The table drawn and its frame laid out, with no line measured yet. */
+async function start(
   configure: (host: WindowHost) => void = () => undefined,
 ): Promise<ComponentFixture<WindowHost>> {
   TestBed.configureTestingModule({
@@ -208,6 +209,14 @@ async function render(
   lay(fixture);
   // An observer reports the size of what it starts on: the frame's, laid out.
   resize();
+  await fixture.whenStable();
+  return fixture;
+}
+
+async function render(
+  configure: (host: WindowHost) => void = () => undefined,
+): Promise<ComponentFixture<WindowHost>> {
+  const fixture = await start(configure);
   await settle(fixture);
   return fixture;
 }
@@ -227,14 +236,23 @@ function lay(fixture: ComponentFixture<unknown>): void {
     clientHeight: { configurable: true, get: () => view },
     clientWidth: { configurable: true, get: () => 600 },
     clientTop: { configurable: true, get: () => 0 },
+    scrollHeight: { configurable: true, get: () => 40_000 },
   });
 }
 
-/** Reports every line observed at its height, as the browser does after a layout. */
-function measure(): void {
+/**
+ * Reports every line observed at its height, as the browser does after a layout, or only the
+ * lines `only` holds.
+ */
+function measure(only?: readonly number[]): void {
   for (const observer of observers) {
     const entries = [...observer.targets]
       .filter((target) => target.localName === 'tr')
+      .filter(
+        (target) =>
+          only === undefined ||
+          only.includes(Number((target as HTMLElement).dataset['pctIndex'])),
+      )
       .map((target) => ({
         target,
         borderBoxSize: [
@@ -285,6 +303,22 @@ function drawn(fixture: ComponentFixture<unknown>): number[] {
   ).map((tr) => Number(tr.dataset['pctIndex']));
 }
 
+/** The line the view's top stands in, and how far into it, as the space draws them. */
+function standing(fixture: ComponentFixture<unknown>): {
+  line: number;
+  into: number;
+} {
+  const element = table(fixture);
+  let at = parseFloat(element.style.getPropertyValue('--_lead'));
+  const top = frameOf(fixture).scrollTop;
+  for (const line of drawn(fixture)) {
+    const height = heightOf(line);
+    if (top < at + height) return { line, into: top - at };
+    at += height;
+  }
+  return { line: -1, into: 0 };
+}
+
 function range(start: number, end: number): number[] {
   return Array.from({ length: end - start }, (_, i) => start + i);
 }
@@ -310,7 +344,7 @@ describe('PctTableWindow', () => {
     expect(element.tHead?.rows[0].getAttribute('aria-rowindex')).toBe('1');
     expect(element.tBodies[0].rows[0].getAttribute('aria-rowindex')).toBe('2');
     expect(element.tFoot?.rows[0].getAttribute('aria-rowindex')).toBe('1002');
-    fixture.componentInstance.columns.set(fewer);
+    fixture.componentInstance.columns.set(fewer as unknown as typeof columns);
     await settle(fixture);
     expect(element.getAttribute('aria-rowcount')).toBe('1001');
   });
@@ -322,9 +356,9 @@ describe('PctTableWindow', () => {
     expect(table(fixture).style.getPropertyValue('--_lead')).toBe(
       `${92 * 40}px`,
     );
-    expect(table(fixture).tBodies[0].rows[0].getAttribute('aria-rowindex')).toBe(
-      '94',
-    );
+    expect(
+      table(fixture).tBodies[0].rows[0].getAttribute('aria-rowindex'),
+    ).toBe('94');
   });
 
   it('counts the lines not drawn at the median of the first rows measured', async () => {
@@ -351,6 +385,22 @@ describe('PctTableWindow', () => {
     measure();
     expect(frame.scrollTop).toBe(4060);
     await settle(fixture);
+  });
+
+  it('keeps the line at the top where it was when the first rows set the estimate', async () => {
+    heightOf = () => 30;
+    const fixture = await start();
+    const frame = frameOf(fixture);
+    frame.scrollTop = 4010;
+    frame.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    // At 40 px a line, the top was 10 px into line 100; at the median of 30, still so.
+    measure();
+    expect(frame.scrollTop).toBe(100 * 30 + 10);
+    // The browser tells the frame's listener of the scroll written.
+    frame.dispatchEvent(new Event('scroll'));
+    await settle(fixture);
+    expect(standing(fixture)).toEqual({ line: 100, into: 10 });
   });
 
   it('takes a height within a sixty-fourth of a pixel of the last as the same', async () => {
@@ -402,6 +452,49 @@ describe('PctTableWindow', () => {
     expect(drawn(fixture)).toEqual(range(92, 118));
   });
 
+  it('waits for the row it scrolls to, not for any row, before the second pass', async () => {
+    const fixture = await render();
+    const frame = frameOf(fixture);
+    fixture.componentInstance.table().scrollTo(501, { align: 'center' });
+    await fixture.whenStable();
+    // Row 501 is line 500: its centre at 20,020 px, in a view of 360.
+    expect(frame.scrollTop).toBe(19_840);
+    frame.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    heightOf = (index) => (index === 498 ? 70 : index === 500 ? 100 : 40);
+    // Line 498 reports first, below the top: nothing moves yet.
+    measure([498]);
+    expect(frame.scrollTop).toBe(19_840);
+    // Then line 500 itself, 100 px tall: centred where it was measured.
+    measure();
+    expect(frame.scrollTop).toBe(20_030 + 50 - 180);
+    await settle(fixture);
+  });
+
+  it('drops a scroll to a line once the lines are others', async () => {
+    const fixture = await render();
+    const frame = frameOf(fixture);
+    fixture.componentInstance.table().scrollTo(501, { align: 'end' });
+    await fixture.whenStable();
+    expect(frame.scrollTop).toBe(20_040 - 360);
+    fixture.componentInstance.rows.update((rows) => [...rows].reverse());
+    heightOf = (index) => (index === 500 ? 100 : 40);
+    frame.dispatchEvent(new Event('scroll'));
+    await settle(fixture);
+    // Line 500 is another row now: nothing scrolls to it.
+    expect(frame.scrollTop).toBe(20_040 - 360);
+  });
+
+  it('reads no report on the rows of lines since gone', async () => {
+    const fixture = await render();
+    await scroll(fixture, 4000);
+    fixture.componentInstance.rows.set(registersOf(50));
+    // The rows drawn are lines 92 and on, which fifty lines do not have.
+    measure();
+    await settle(fixture);
+    expect(drawn(fixture).at(-1)).toBe(49);
+  });
+
   it('scrolls to a row it has not drawn, then once more where the row measured', async () => {
     const fixture = await render();
     const frame = frameOf(fixture);
@@ -438,10 +531,12 @@ describe('PctTableWindow', () => {
     // The widths are read with none fixed: the automatic layout's.
     const seen: string[] = [];
     widthOf = (th) => {
-      seen.push(`${(th as HTMLElement).style.inlineSize}|${element.style.tableLayout}`);
+      seen.push(
+        `${(th as HTMLElement).style.inlineSize}|${element.style.tableLayout}`,
+      );
       return 80;
     };
-    fixture.componentInstance.columns.set(fewer);
+    fixture.componentInstance.columns.set(fewer as unknown as typeof columns);
     await settle(fixture);
     expect(seen).toEqual(['|', '|']);
     expect(cells().map((cell) => cell.style.inlineSize)).toEqual([
@@ -462,11 +557,16 @@ describe('PctTableWindow', () => {
       get: () => 500,
     });
     resize();
-    fixture.componentInstance.rows.update((rows) => [...rows]);
-    await settle(fixture);
     expect(table(fixture).tHead!.rows[0].cells[0].style.inlineSize).toBe(
       '70px',
     );
+    // Resized to the same width: nothing is measured again.
+    widthOf = () => 90;
+    resize();
+    expect(table(fixture).tHead!.rows[0].cells[0].style.inlineSize).toBe(
+      '70px',
+    );
+    await settle(fixture);
   });
 
   it('reads a frame taller than the page as the page’s view, and says the table needs a height', async () => {
@@ -498,7 +598,7 @@ describe('PctTableWindow', () => {
     expect(drawn(fixture)).toEqual(range(0, 22));
   });
 
-  it('scales a space past 16,000,000 px, and moves no scroll for a line that grew', async () => {
+  it('scales a space past 16,000,000 px, and keeps the line at the top where a line above it grew', async () => {
     const fixture = await render((host) => host.rows.set(registersOf(500_000)));
     const element = table(fixture);
     const space = () =>
@@ -509,20 +609,31 @@ describe('PctTableWindow', () => {
     await scroll(fixture, 8_000_000);
     const frame = frameOf(fixture);
     expect(drawn(fixture)[8]).toBeGreaterThan(240_000);
-    heightOf = (index) => (index === drawn(fixture)[0] ? 100 : 40);
+    const before = standing(fixture);
+    const grown = drawn(fixture)[0];
+    heightOf = (index) => (index === grown ? 100 : 40);
     measure();
-    expect(frame.scrollTop).toBe(8_000_000);
+    frame.dispatchEvent(new Event('scroll'));
     await settle(fixture);
+    // The scroll moves by the map's share of the 60 px, and what the reader sees stays.
+    expect(frame.scrollTop).not.toBe(8_000_000);
+    const after = standing(fixture);
+    expect(after.line).toBe(before.line);
+    expect(after.into).toBeCloseTo(before.into, 3);
   }, 20_000);
 
   it('keeps a group’s body when the window leaves its heading behind', async () => {
     const fixture = await render((host) => host.grouped.set(true));
     const element = table(fixture);
     expect(element.tBodies).toHaveLength(1);
-    expect(element.querySelectorAll('tr[data-pct-part="group"]')).toHaveLength(1);
+    expect(element.querySelectorAll('tr[data-pct-part="group"]')).toHaveLength(
+      1,
+    );
     const body = element.tBodies[0];
     await scroll(fixture, 4000);
-    expect(element.querySelectorAll('tr[data-pct-part="group"]')).toHaveLength(0);
+    expect(element.querySelectorAll('tr[data-pct-part="group"]')).toHaveLength(
+      0,
+    );
     expect(element.tBodies[0]).toBe(body);
     // The kitchen's heading is line 501: the window over it draws a second body under it.
     await scroll(fixture, 499 * 40);
@@ -539,12 +650,12 @@ describe('PctTableWindow', () => {
     await settle(fixture);
     const flashed = table(fixture).querySelectorAll('[data-pct-changed]');
     expect(flashed).toHaveLength(1);
-    expect(
-      (flashed[0].closest('tr') as HTMLElement).dataset['pctIndex'],
-    ).toBe('100');
+    expect((flashed[0].closest('tr') as HTMLElement).dataset['pctIndex']).toBe(
+      '100',
+    );
   });
 
-  it('hands the focus to no row when its row left with the window', async () => {
+  it('hands the focus to the frame when its row left with the window', async () => {
     const fixture = await render((host) => host.open.set([]));
     const button = table(fixture).querySelector<HTMLElement>(
       'tr[data-pct-index="3"] button',
@@ -552,13 +663,14 @@ describe('PctTableWindow', () => {
     // A table with no hidden column and no template has no disclosure: a row holds no control,
     // so one is made to hold the focus.
     const holder = document.createElement('button');
-    (button ?? table(fixture).querySelector('tr[data-pct-index="3"] td'))!.append(
+    (button ??
+      table(fixture).querySelector('tr[data-pct-index="3"] td'))!.append(
       holder,
     );
     holder.focus();
     holder.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     await scroll(fixture, 8000);
-    expect(document.activeElement).toBe(document.body);
+    expect(document.activeElement).toBe(frameOf(fixture));
   });
 });
 

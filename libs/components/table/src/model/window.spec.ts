@@ -29,11 +29,12 @@ interface Old extends Omit<PctWindowInput, 'heights'> {
 /** The window over the old shape's input, with no limit: `space` is `total`. */
 function windowOf(of: Old) {
   const { count, estimate, heightOf, ...rest } = of;
-  const { space, ...window } = pctWindow({
+  const { space, top, ...window } = pctWindow({
     ...rest,
     heights: heightsOf(count, estimate, heightOf),
   });
   expect(space).toBe(window.total);
+  expect(top).toBeGreaterThanOrEqual(0);
   return window;
 }
 
@@ -234,6 +235,7 @@ describe('PctLineHeights', () => {
     expect(heights.firstFrom(11)).toBe(4);
     expect(heights.firstFrom(30)).toBe(4);
     expect(heights.firstFrom(31)).toBe(5);
+    expect(heights.firstFrom(400)).toBe(5);
   });
 
   it('searches a count that is no power of two, and one line, and none', () => {
@@ -246,9 +248,7 @@ describe('PctLineHeights', () => {
       0, 1, 1,
     ]);
     const none = new PctLineHeights(0, 4);
-    expect([none.total, none.indexAt(1), none.firstFrom(1)]).toEqual([
-      0, 0, 1,
-    ]);
+    expect([none.total, none.indexAt(1), none.firstFrom(1)]).toEqual([0, 0, 0]);
   });
 });
 
@@ -270,6 +270,7 @@ describe('pctWindow past the limit', () => {
       tail: 16_000_000 - 12 * 36,
       space: 16_000_000,
       total: 36_000_000,
+      top: 0,
     });
   });
 
@@ -279,9 +280,9 @@ describe('pctWindow past the limit', () => {
     expect(last.lead).toBeCloseTo(16_000_000 - 12 * 36, 3);
     const middle = pctWindow({ ...million, scrollTop: (16_000_000 - 360) / 2 });
     expect(middle.start).toBe(499_995 - 2);
+    expect(middle.top).toBeCloseTo((36_000_000 - 360) / 2, 3);
     // The line under the view's top stands at the view's top.
-    const firstOnScreen =
-      middle.lead + 2 * 36 - (16_000_000 - 360) / 2;
+    const firstOnScreen = middle.lead + 2 * 36 - (16_000_000 - 360) / 2;
     expect(firstOnScreen).toBeCloseTo(0, 3);
     expect(middle.lead + 14 * 36 + middle.tail).toBeCloseTo(16_000_000, 3);
   });
@@ -334,6 +335,15 @@ describe('pctWindowScroll', () => {
   it('never scrolls past the last full view, nor above the first', () => {
     expect(pctWindowScroll({ ...ten, index: 9, align: 'start' })).toBe(70);
     expect(pctWindowScroll({ ...ten, index: 0, align: 'end' })).toBe(0);
+  });
+
+  it('moves a start into the line by `within`, and nothing else by it', () => {
+    expect(
+      pctWindowScroll({ ...ten, index: 4, align: 'start', within: 3 }),
+    ).toBe(43);
+    expect(pctWindowScroll({ ...ten, index: 4, align: 'end', within: 3 })).toBe(
+      20,
+    );
   });
 
   it('maps a line past the limit through the window’s own map', () => {
