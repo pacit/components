@@ -2596,6 +2596,13 @@
       "severity": "error"
     },
     {
+      "name": "UI: chart — the selected band, before the mix",
+      "fg": "pct.chart.selection-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

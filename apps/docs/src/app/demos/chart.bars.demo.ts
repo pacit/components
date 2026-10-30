@@ -14,12 +14,12 @@ const march = [
   11.2, 12.8, 9.4, 14.1, 13.3, 10.7, 8.9, 12.2, 15.6, 13.9, 11.8, 10.1, 9.7,
   12.5, 14.8, 13.1, 11.4, 10.9, 9.2, 8.6, 10.4, 11.9, 12.7, 9.8, 8.3, 7.9, 9.1,
   10.6, 8.8, 7.4, 6.9,
-].map((kwh, i) => ({ at: day(i + 1), kwh }));
+].map((energy, i) => ({ at: day(i + 1), energy }));
 const lastMonth = [
   14.2, 15.1, 13.8, 16.4, 15.9, 14.7, 13.2, 15.8, 17.1, 16.3, 14.9, 13.6, 12.8,
   14.4, 16.2, 15.7, 14.1, 13.3, 12.6, 11.9, 13.5, 14.8, 15.3, 12.9, 11.4, 10.8,
   12.2, 13.1,
-].map((kwh, i) => ({ at: february(i + 1), kwh }));
+].map((energy, i) => ({ at: february(i + 1), energy }));
 
 /**
  * Bars by day, compared with the month before
@@ -50,7 +50,7 @@ const lastMonth = [
       <pct-bars
         [data]="march"
         x="at"
-        y="kwh"
+        y="energy"
         name="March"
         unit="kWh"
         [compare]="lastMonth"

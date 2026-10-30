@@ -18,28 +18,28 @@ const FEBRUARY = Date.UTC(2026, 0, 31, 23);
 
 interface Day {
   readonly at: number;
-  readonly kwh: number | null;
+  readonly energy: number | null;
 }
 
 /** Five days of March, one with no reading and one at zero. */
 const march: Day[] = [
-  { at: MARCH, kwh: 12 },
-  { at: MARCH + D, kwh: 15.5 },
-  { at: MARCH + 2 * D, kwh: null },
-  { at: MARCH + 3 * D, kwh: 0 },
-  { at: MARCH + 4 * D, kwh: 9 },
+  { at: MARCH, energy: 12 },
+  { at: MARCH + D, energy: 15.5 },
+  { at: MARCH + 2 * D, energy: null },
+  { at: MARCH + 3 * D, energy: 0 },
+  { at: MARCH + 4 * D, energy: 9 },
 ];
 /** February's first days, to compare by position. */
 const february: Day[] = [
-  { at: FEBRUARY, kwh: 10 },
-  { at: FEBRUARY + D, kwh: 20 },
-  { at: FEBRUARY + 2 * D, kwh: 8 },
+  { at: FEBRUARY, energy: 10 },
+  { at: FEBRUARY + D, energy: 20 },
+  { at: FEBRUARY + 2 * D, energy: 8 },
 ];
 const solar: Day[] = [
-  { at: MARCH, kwh: -3 },
-  { at: MARCH + D, kwh: -4 },
-  { at: MARCH + 3 * D, kwh: -1 },
-  { at: MARCH + 4 * D, kwh: 2 },
+  { at: MARCH, energy: -3 },
+  { at: MARCH + D, energy: -4 },
+  { at: MARCH + 3 * D, energy: -1 },
+  { at: MARCH + 4 * D, energy: 2 },
 ];
 
 class QuietObserver {
@@ -70,7 +70,7 @@ class QuietObserver {
       <pct-bars
         [data]="march"
         x="at"
-        y="kwh"
+        y="energy"
         name="Heat pump"
         unit="kWh"
         [compare]="compare()"
@@ -84,7 +84,7 @@ class QuietObserver {
         <pct-bars
           [data]="solar"
           x="at"
-          y="kwh"
+          y="energy"
           name="Solar"
           unit="kWh"
           [stack]="stack()"
@@ -115,21 +115,21 @@ class Host {
   imports: [PctChart, PctBars, PctLine],
   template: `
     <pct-chart ariaLabel="Rooms" x="band" [categories]="rooms" locale="en-US">
-      <pct-bars [data]="rows" x="room" y="kwh" name="Energy" unit="kWh" />
-      <pct-line [data]="mean" x="at" y="kwh" name="Mean" unit="kWh" />
+      <pct-bars [data]="rows" x="room" y="energy" name="Energy" unit="kWh" />
+      <pct-line [data]="mean" x="at" y="energy" name="Mean" unit="kWh" />
     </pct-chart>
   `,
 })
 class Rooms {
   readonly rooms = ['Kitchen', 'Hall', 'Study'];
   readonly rows = [
-    { room: 0, kwh: 5 },
-    { room: 1, kwh: 2 },
-    { room: 2, kwh: 7 },
+    { room: 0, energy: 5 },
+    { room: 1, energy: 2 },
+    { room: 2, energy: 7 },
   ];
   readonly mean = [
-    { at: 0.5, kwh: 4.67 },
-    { at: 2.5, kwh: 4.67 },
+    { at: 0.5, energy: 4.67 },
+    { at: 2.5, energy: 4.67 },
   ];
 }
 
@@ -589,7 +589,7 @@ describe('PctBars', () => {
     @Component({
       imports: [PctChart, PctBars],
       template: `<pct-chart ariaLabel="No interval" timeZone="UTC">
-        <pct-bars [data]="rows" x="at" y="kwh" name="Lost" />
+        <pct-bars [data]="rows" x="at" y="energy" name="Lost" />
       </pct-chart>`,
     })
     class Lost {

@@ -75,9 +75,9 @@ function daysOf(
   monthIndex: number,
   seed: number,
   gap = 0,
-): { at: number; kwh: number | null }[] {
+): { at: number; energy: number | null }[] {
   const random = seeded(seed);
-  const rows: { at: number; kwh: number | null }[] = [];
+  const rows: { at: number; energy: number | null }[] = [];
   const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
   for (let day = 1; day <= days; day++) {
     // Midnight of the day in Warsaw, whichever side of the change of clocks it stands on.
@@ -86,8 +86,9 @@ function daysOf(
       'day',
       'Europe/Warsaw',
     );
-    const kwh = day === gap ? null : Math.round((8 + random() * 10) * 10) / 10;
-    rows.push({ at, kwh });
+    const energy =
+      day === gap ? null : Math.round((8 + random() * 10) * 10) / 10;
+    rows.push({ at, energy });
   }
   return rows;
 }
