@@ -1,0 +1,42 @@
+<ul class="list" data-pct-part="legend" [attr.aria-label]="texts().chartLegend">
+  @for (entry of entries(); track entry.id) {
+  <li class="item" data-pct-part="item" [class.hidden]="entry.hidden">
+    @if (custom(); as template) {
+    <ng-container
+      [ngTemplateOutlet]="template"
+      [ngTemplateOutletContext]="{ $implicit: entry, toggle: toggler(entry) }"
+    />
+    } @else {
+    <!-- The button is named by the series, and pressed while the series is shown. -->
+    <button
+      type="button"
+      class="toggle"
+      data-pct-part="toggle"
+      [attr.aria-pressed]="!entry.hidden"
+      (click)="toggle(entry)"
+    >
+      <ng-container
+        [ngTemplateOutlet]="entry.swatch"
+        [ngTemplateOutletContext]="{ $implicit: entry, form: 'swatch' }"
+      />
+      <span class="name">{{ entry.name }}</span>
+      @if (entry.unit) {
+      <span class="unit">{{ entry.unit }}</span>
+      }
+    </button>
+    @if (entry.value !== null) {
+    <span class="value">{{ entry.value }}</span>
+    } @if (removable()) {
+    <button
+      type="button"
+      class="remove"
+      data-pct-part="remove"
+      [attr.aria-label]="removeName(entry)"
+      (click)="remove.emit(entry.id)"
+    >
+      <span aria-hidden="true">×</span>
+    </button>
+    } }
+  </li>
+  }
+</ul>

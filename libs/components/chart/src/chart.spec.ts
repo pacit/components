@@ -12,6 +12,7 @@ import { PctAnnouncer, providePctTexts } from '@pacit/components/core';
 import { PctAxis, PctChart, PctChartTooltip } from './chart';
 import { PctChartTable } from './chart-table';
 import { PctLine, pctSeriesColor } from './line';
+import { PCT_SERIES_MARKERS } from './scene';
 import type { PctColumns } from './model/columns';
 import { pctPyramid } from './model/decimate';
 import type { PctDomain } from './model/scale';
@@ -2063,11 +2064,24 @@ describe('PctChart, its cursor', () => {
     expect(line.style.transform).toBe(
       `translateX(${at(fixture, T0 + 6 * H)}px)`,
     );
-    const markers = all(fixture, '[data-pct-part="marker"]');
+    // each marker is the mark's own swatch, in its marker form, with the series' place
+    const markers = all(
+      fixture,
+      '[data-pct-part="marker"] [data-pct-part="swatch"]',
+    );
     expect(markers.map((m) => m.getAttribute('data-pct-series'))).toEqual([
       '1',
       '2',
     ]);
+    expect(markers.every((m) => m.classList.contains('marker'))).toBe(true);
+    expect(markers.map((m) => m.getAttribute('viewBox'))).toEqual([
+      '0 0 12 12',
+      '0 0 12 12',
+    ]);
+    expect(markers.map((m) => m.querySelector('.dash'))).toEqual([null, null]);
+    expect(
+      markers.map((m) => m.querySelector('.shape')?.getAttribute('d')),
+    ).toEqual([PCT_SERIES_MARKERS[0], PCT_SERIES_MARKERS[1]]);
     expect(texts(fixture, '[data-pct-part="tooltip"] .value')).toEqual([
       '22.5 °C',
       '400 W',
@@ -2411,12 +2425,22 @@ describe('PctChart, its cursor', () => {
     const fixture = await render(OwnColour);
     chartOf(fixture).cursor.set(T0);
     await settle(fixture);
-    const marker = query(fixture, '[data-pct-part="marker"]') as HTMLElement;
+    const marker = query(
+      fixture,
+      '[data-pct-part="marker"] [data-pct-part="swatch"]',
+    ) as HTMLElement;
     expect(marker.getAttribute('data-pct-series')).toBe('custom');
     expect(marker.style.getPropertyValue('--_pct-chart-color')).toBe(
       'rebeccapurple',
     );
-    const swatch = query(fixture, '.swatch') as HTMLElement;
+    // a custom colour draws the first place's shape
+    expect(marker.querySelector('.shape')?.getAttribute('d')).toBe(
+      PCT_SERIES_MARKERS[0],
+    );
+    const swatch = query(
+      fixture,
+      '[data-pct-part="tooltip"] .row [data-pct-part="swatch"]',
+    ) as HTMLElement;
     expect(swatch.style.getPropertyValue('--_pct-chart-color')).toBe(
       'rebeccapurple',
     );
@@ -2539,7 +2563,11 @@ describe('PctChart, its cursor', () => {
       '22.5 e',
     ]);
     expect(
-      attrs(fixture, '[data-pct-part="marker"]', 'data-pct-series'),
+      attrs(
+        fixture,
+        '[data-pct-part="marker"] [data-pct-part="swatch"]',
+        'data-pct-series',
+      ),
     ).toEqual(['1', '2', '3', '4']);
   });
 

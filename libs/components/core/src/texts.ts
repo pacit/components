@@ -261,6 +261,10 @@ export interface PctTexts {
   readonly chartNoCursor: string;
   /** Chart: the keys of the cursor, one sentence, read as the range's description. */
   readonly chartKeys: string;
+  /** Chart: the name of the legend's list of series. */
+  readonly chartLegend: string;
+  /** Chart: the legend's button that takes a series off the chart, named with the series. */
+  readonly chartRemove: string;
   /** Chart: the name of the bar of zoom buttons. */
   readonly chartZoom: string;
   /** Chart: the button that shows half as much of the horizontal axis. */
@@ -364,6 +368,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartNoCursor: 'No reading selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
+  chartLegend: 'Series',
+  chartRemove: 'Remove',
   chartZoom: 'Zoom',
   chartZoomIn: 'Zoom in',
   chartZoomOut: 'Zoom out',

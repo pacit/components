@@ -255,7 +255,10 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     reader move from reading to reading, the reading as its value text, a tooltip beside its line
   - the window, landed 2026-10-30: a drag, a pinch, Ctrl with the wheel and the keys through one
     transform, `follow`, the zoom bar as their single-pointer twin, `pctChartSync`
-  - then the legend with a second channel per series
+  - the legend and the second channel, landed 2026-10-30: a mark draws its series' swatch —
+    colour, dash and marker — for the legend, the tooltip and the cursor's markers; the legend
+    toggles the hidden series and writes a value beside each
+  - then
   - then bars with a period compared by position, references and spans, a band of states,
     points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
     generated description; a canvas layer only behind a measurement

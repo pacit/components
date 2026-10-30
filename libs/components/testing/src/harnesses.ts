@@ -160,9 +160,26 @@ export class PctChartZoomHarness extends PctHarness<'zoom'> {
  *
  * @since next
  */
-export class PctLineHarness extends PctHarness<'area' | 'series'> {
+export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
   static override hostSelector = 'pct-line';
-  static override readonly parts = ['area', 'series'] as const;
+  static override readonly parts = ['area', 'series', 'swatch'] as const;
+}
+
+/**
+ * `pct-chart-legend` — `PctChartLegend`: the list of a chart's series, a toggle per entry.
+ *
+ * @since next
+ */
+export class PctChartLegendHarness extends PctHarness<
+  'item' | 'legend' | 'remove' | 'toggle'
+> {
+  static override hostSelector = 'pct-chart-legend';
+  static override readonly parts = [
+    'item',
+    'legend',
+    'remove',
+    'toggle',
+  ] as const;
 }
 
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────

@@ -586,4 +586,94 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect.poll(span).toBe(25 * 3_600_000);
     });
   });
+
+  test.describe('the legend', () => {
+    test('the legend hides a series on a press and shows it on the next', async ({
+      page,
+    }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const legend = page.getByTestId('chart-legend');
+      const list = legend.getByRole('list', { name: 'Series' });
+      await expect(list).toHaveCount(1);
+      const fan = legend.getByRole('button', { name: 'Fan power' });
+      await expect(fan).toHaveAttribute('aria-pressed', 'true');
+      await expect(pattern.locator('path[data-pct-part="series"]')).toHaveCount(
+        3,
+      );
+      const before = await pattern
+        .locator('[data-pct-unit="W"] .value')
+        .allTextContents();
+      await fan.click();
+      await expect(fan).toHaveAttribute('aria-pressed', 'false');
+      await expect(pattern.locator('path[data-pct-part="series"]')).toHaveCount(
+        2,
+      );
+      // the axis keeps its slot, and reads [0, 1] with no series on it
+      await expect(pattern.locator('[data-pct-unit="W"]')).toHaveAttribute(
+        'data-pct-slot',
+        'right',
+      );
+      await expect
+        .poll(() =>
+          pattern.locator('[data-pct-unit="W"] .value').allTextContents(),
+        )
+        .not.toEqual(before);
+      await fan.focus();
+      await page.keyboard.press('Space');
+      await expect(fan).toHaveAttribute('aria-pressed', 'true');
+      await expect(pattern.locator('path[data-pct-part="series"]')).toHaveCount(
+        3,
+      );
+    });
+
+    test('the legend writes the latest reading, and the reading under the cursor as the tooltip does', async ({
+      page,
+    }) => {
+      const legend = page.getByTestId('chart-legend');
+      await expect(legend.locator('.value')).toHaveText([
+        /°C$/,
+        '380 W',
+        'Off',
+      ]);
+      const pattern = chart(page, 'chart-pattern');
+      await pattern.scrollIntoViewIfNeeded();
+      const box = (await pattern.boundingBox())!;
+      await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2);
+      const tooltip = pattern.locator('[data-pct-part="tooltip"] .row .value');
+      await expect(tooltip).toHaveCount(3);
+      await expect(legend.locator('.value')).toHaveText(
+        await tooltip.allTextContents(),
+      );
+      // each entry carries the series' swatch, drawn by its mark
+      await expect(
+        legend.locator('[data-pct-part="toggle"] [data-pct-part="swatch"]'),
+      ).toHaveCount(3);
+    });
+
+    test('eight series are told apart by their dashes and markers as well as their colours', async ({
+      page,
+    }) => {
+      const eight = chart(page, 'chart-eight');
+      const paths = eight.locator('path[data-pct-part="series"]');
+      await expect(paths).toHaveCount(8);
+      const dashes = await paths.evaluateAll((ps) =>
+        ps.map((p) => getComputedStyle(p).strokeDasharray),
+      );
+      expect(new Set(dashes).size).toBe(8);
+      expect(dashes[0]).toBe('none');
+      const shapes = await page
+        .getByTestId('chart-eight-legend')
+        .locator('[data-pct-part="swatch"] .shape')
+        .evaluateAll((ss) => ss.map((s) => s.getAttribute('d')));
+      expect(shapes).toHaveLength(8);
+      expect(new Set(shapes).size).toBe(8);
+      const removes = page
+        .getByTestId('chart-eight-legend')
+        .getByRole('button', { name: /^Remove: / });
+      await expect(removes).toHaveCount(8);
+      await removes.first().click();
+      await expect(paths).toHaveCount(7);
+      await expect(removes).toHaveCount(7);
+    });
+  });
 });
