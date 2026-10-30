@@ -165,10 +165,13 @@ describe('PctChartLegend', () => {
 
   it('lists the series as a named list, each a pressed button with its swatch, name and unit', async () => {
     const fixture = await render(Host);
-    const list = element(fixture).querySelector('[data-pct-part="legend"]')!;
-    expect(list.tagName).toBe('UL');
+    const list = element(fixture).querySelector('pct-chart-legend')!;
+    expect(list.getAttribute('role')).toBe('list');
     expect(list.getAttribute('aria-label')).toBe('Series');
-    expect(list.querySelectorAll('li[data-pct-part="item"]')).toHaveLength(2);
+    expect(list.getAttribute('aria-labelledby')).toBeNull();
+    expect(
+      list.querySelectorAll('[role="listitem"][data-pct-part="item"]'),
+    ).toHaveLength(2);
     const buttons = toggles(fixture);
     expect(buttons.map((b) => b.getAttribute('aria-pressed'))).toEqual([
       'true',
@@ -211,6 +214,33 @@ describe('PctChartLegend', () => {
     expect(legendOf(fixture).value()).toBe('none');
     expect(legendOf(fixture).layout()).toBe('row');
     expect(legendOf(fixture).removable()).toBe(false);
+  });
+
+  it("takes a name of the consumer's own, or an element that names it", async () => {
+    @Component({
+      imports: [PctChart, PctLine, PctChartLegend],
+      template: `
+        <h3 id="rooms">Rooms</h3>
+        <pct-chart #chart ariaLabel="Named" timeZone="UTC">
+          <pct-line [data]="temperature" x="at" y="value" name="Supply air" />
+        </pct-chart>
+        <pct-chart-legend [chart]="chart" ariaLabel="Lines on the chart" />
+        <pct-chart-legend [chart]="chart" ariaLabelledby="rooms" />
+      `,
+    })
+    class Named {
+      readonly temperature = temperature;
+    }
+    const fixture = await render(Named);
+    const lists = [...element(fixture).querySelectorAll('pct-chart-legend')];
+    expect(lists.map((l) => l.getAttribute('aria-label'))).toEqual([
+      'Lines on the chart',
+      null,
+    ]);
+    expect(lists.map((l) => l.getAttribute('aria-labelledby'))).toEqual([
+      null,
+      'rooms',
+    ]);
   });
 
   it('writes no unit when the chart holds one', async () => {

@@ -144,7 +144,8 @@ const CONTROLS: readonly Control[] = [
     name: "legend entry's toggle",
     applies: 'libs/components/chart/src/legend.scss .toggle',
     route: '/chart',
-    selector: '[data-testid="chart-legend"] [data-pct-part="toggle"]',
+    selector:
+      '[data-testid="chart-legend"] [data-pct-part="item"]:first-child [data-pct-part="toggle"]',
     axis: 'block',
     // No padding on the block axis to take away: the floor token is the height.
     zero: [],
@@ -155,7 +156,8 @@ const CONTROLS: readonly Control[] = [
     name: "legend entry's remove button",
     applies: 'libs/components/chart/src/legend.scss .remove',
     route: '/chart',
-    selector: '[data-testid="chart-eight-legend"] [data-pct-part="remove"]',
+    selector:
+      '[data-testid="chart-eight-legend"] [data-pct-part="item"]:first-child [data-pct-part="remove"]',
     axis: 'both',
     zero: [],
     ceiling: 24,

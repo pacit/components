@@ -79,7 +79,7 @@ export class PctLegendItem {
 /**
  * The legend of a chart
  * ([0102](../../../../docs/decisions/0102-a-series-owns-its-colour-and-the-colour-is-never-its-only-channel.md)):
- * a list with an entry per series — its swatch, drawn by its mark with its colour, its dash
+ * a list (the host) with an entry per series — its swatch, drawn by its mark with its colour, its dash
  * and its marker, its name, its unit where the chart holds more than one, and a value — and a
  * button per entry that hides the series or shows it again, writing the chart's
  * `hiddenSeries`. The value is the reading under the cursor while there is one, and otherwise
@@ -100,7 +100,11 @@ export class PctLegendItem {
   styleUrl: './legend.scss',
   host: {
     class: 'pct-chart-legend',
+    role: 'list',
     '[class.column]': 'layout() === "column"',
+    '[attr.aria-label]':
+      'ariaLabelledby() ? null : ariaLabel() || texts().chartLegend',
+    '[attr.aria-labelledby]': 'ariaLabelledby() || null',
   },
 })
 export class PctChartLegend {
@@ -110,6 +114,19 @@ export class PctChartLegend {
    * @since next
    */
   readonly chart = input.required<PctChart>();
+  /**
+   * The list's name, which a reader announces on entering it: `chartLegend` ("Series") when
+   * unset. Two legends on one page take names that tell them apart.
+   *
+   * @since next
+   */
+  readonly ariaLabel = input('');
+  /**
+   * As `ariaLabel`, for a name that already stands on the page: the chart's heading.
+   *
+   * @since next
+   */
+  readonly ariaLabelledby = input('');
   /**
    * What stands beside a name while no cursor is on the chart: the latest reading in the
    * window, the sum or the mean of the readings there, or nothing.

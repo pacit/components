@@ -171,15 +171,10 @@ export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
  * @since next
  */
 export class PctChartLegendHarness extends PctHarness<
-  'item' | 'legend' | 'remove' | 'toggle'
+  'item' | 'remove' | 'toggle'
 > {
   static override hostSelector = 'pct-chart-legend';
-  static override readonly parts = [
-    'item',
-    'legend',
-    'remove',
-    'toggle',
-  ] as const;
+  static override readonly parts = ['item', 'remove', 'toggle'] as const;
 }
 
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────

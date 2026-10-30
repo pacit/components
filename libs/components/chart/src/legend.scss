@@ -1,20 +1,13 @@
-// A legend: a list of the series, in a row that wraps or in a column. The entries are
-// buttons, so a skin's focus ring and the pressed state come from the platform.
+// A legend: the host is the list of the series, in a row that wraps or in a column. The
+// entries are buttons, so a skin's focus ring and the pressed state come from the platform.
 :host {
-  display: block;
-  font-size: var(--pct-chart-font-size);
-}
-
-.list {
   display: flex;
   flex-wrap: wrap;
   gap: var(--pct-chart-legend-gap);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  font-size: var(--pct-chart-font-size);
 }
 
-:host(.column) .list {
+:host(.column) {
   flex-direction: column;
 }
 

@@ -593,8 +593,8 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
     }) => {
       const pattern = chart(page, 'chart-pattern');
       const legend = page.getByTestId('chart-legend');
-      const list = legend.getByRole('list', { name: 'Series' });
-      await expect(list).toHaveCount(1);
+      await expect(legend).toHaveRole('list');
+      await expect(legend).toHaveAccessibleName('Series');
       const fan = legend.getByRole('button', { name: 'Fan power' });
       await expect(fan).toHaveAttribute('aria-pressed', 'true');
       await expect(pattern.locator('path[data-pct-part="series"]')).toHaveCount(
