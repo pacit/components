@@ -17,7 +17,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 299 steps over 42 views, at most 12 stops of a view's own
+- 370 steps over 42 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -26,11 +26,11 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 70 of 299 here. 2 view(s) hit the cap, and each says so.
+at — 79 of 370 here. 5 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 42 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-2 view(s) have more stops than the 12 taken, and each says so where it bit.
+5 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -47,7 +47,7 @@ arrive  —                                                    banner
 enter   button "Solid"                                       (silence)
 tab 1   button "Outline"                                     Outline button
 tab 2   button "Ghost"                                       Ghost button
-tab 3   button "Soft"                                        Soft button
+tab 3   button "Soft"                                        You are currently on a button. To click this button, press Control-Option-Space.
 tab 4   button "Hero"                                        Hero button
 tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
@@ -55,7 +55,7 @@ tab 7   input[control]                                       ltr selected radio 
 tab 8   button "danger"                                      danger button main
 tab 9   button "danger"                                      danger button
 tab 10  button "danger"                                      (silence)
-tab 11  button "danger"                                      danger button
+tab 11  button "danger"                                      You are currently on a button. To click this button, press Control-Option-Space.
 tab 12  button "warning"                                     warning button
 tab 13  button "warning"                                     (silence)
 tab 14  button "warning"                                     warning button
@@ -80,7 +80,7 @@ tab 9   input                                                1 499,90 Price Th
 tab 10  button[field-suffix-item] "Clear the price"          Clear the price button
 tab 11  input                                                Search the catalogue The icon belongs to the surface of the field; the button is welded into the corner of the border edit text
 tab 12  button[field-suffix-item] "Search"                   Search button
-tab 13  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 13  input[control]                                       You are currently on a selected radio button, 1 of 2.
 tab 14  input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 15  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 16  button[trigger] "Sélectionner…"                      , Sélectionn Country A click in the padding opens the list list box pop up collapsed combo box main
@@ -184,7 +184,7 @@ tab 21  input[control]                                       ltr selected radio 
 tab 22  button[nav] "Mois précédent"                         Mois précédent button main
 tab 23  button[nav] "Mois suivant"                           Mois suivant button
 reach   button[toggle] "Choisir une date"                    (silence)
-open    td[day] "jeudi 27 août 2026"                         (silence)
+open    td[day] "jeudi 27 août 2026"                         Choisir une date web dialog with 4 items jeudi 27 août 2026 27 août 2026 table 7 columns, 7 rows
 close   input[control]                                       27
 ```
 
@@ -419,7 +419,7 @@ the act: `ArrowRight` on `[data-testid="tabs-basic"] [data-pct-part="tab"][aria-
 ```
 arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   button "Save the draft"                              (silence)
-tab 1   button "Save the draft"                              Save the draft button main
+tab 1   button "Save the draft"                              You are currently on a button. To click this button, press Control-Option-Space.
 reach   button "Copy (a shorter clock)"                      (silence)
 open    button "Copy (a shorter clock)"                      (silence)
 close   button "Copy (a shorter clock)"                      You are currently on a button. To click this button, press Control-Option-Space.
@@ -454,20 +454,20 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    Skeleton · @pacit/components web content
 enter   button "The content arrives"                         (silence)
-tab 1   input[control]                                       You are currently on a button. To click this button, press Control-Option-Space.
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       (silence)
 tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
-tab 5   input[control]                                       Playwright is not responding
-tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
-tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 5   input[control]                                       (silence)
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   input[control]                                       (silence)
 tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 11  input[control]                                       light selected radio button, 1 of 2 Theme radio group
-tab 12  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 12  input[control]                                       Playwright is not responding
 tab 13  button "Stop the sheen"                              ltr selected radio button, 1 of 2 Direction radio group
 tab 14  —                                                    Stop the sheen button main
 ```
@@ -475,67 +475,120 @@ tab 14  —                                                    Stop the sheen bu
 ### `/chips`
 
 ```
-arrive  —                                                    heading level 2 Chips
+arrive  —                                                    banner
 enter   button[remove] "Remove"                              (silence)
-tab 1   button[remove] "Remove"                              Remove In stock button list Active filters 5 items
+tab 1   button[remove] "Remove"                              Remove Under 50 button
+tab 2   button[remove] "Remove"                              Remove Free shipping button
+tab 3   button[remove] "Remove"                              Remove New button
+tab 4   button[remove] "Remove"                              Remove Local button
+tab 5   button "Restore everything"                          Restore everything button main
+tab 6   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 7   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 8   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 9   button[remove] "Remove"                              Remove draft button list Statuses 3 items
+tab 10  button[remove] "Remove"                              Remove archived button
+tab 11  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 12  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 13  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 14  button[remove] "Remove"                              Remove Ada button list People 3 items
+tab 15  button[remove] "Remove"                              Remove Grace button
+tab 16  button[remove] "Remove"                              Remove Edsger button
+tab 17  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 18  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 19  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 20  button[remove] "Remove"                              Remove removable button list Small 2 items
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/avatar`
 
 ```
-arrive  —                                                    heading level 2 Avatar
+arrive  —                                                    banner
 enter   button "Swap the source"                             (silence)
-tab 1   button "Swap the source"                             Swap the source button
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   button "A control of the same size"                  A control of the same size button main
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  button "Account: Ada Lovelace"                       Account: Ada Lovelace button main
+tab 12  —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/badge`
 
 ```
-arrive  —                                                    heading level 2 Badge
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 1   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 2   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 3   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 4   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 5   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 6   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 7   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 8   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 9   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/icon`
 
 ```
-arrive  —                                                    heading level 2 Icon
+arrive  —                                                    banner
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       Done checked checkbox
+tab 2   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 2 Breadcrumb
+arrive  —                                                    banner
 enter   a "Home"                                             (silence)
-tab 1   a "Home"                                             link Home list 3 items
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 3   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 4   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 5   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   —                                                    (silence)
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/chart`
 
 ```
-arrive  —                                                    heading level 2 Chart
+arrive  —                                                    banner
 enter   input[range] "Heat recovery on 25 October 2026"      (silence)
-tab 1   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider
+tab 1   button[zoom] "Zoom in"                               Zoom in button
+tab 2   button[toggle] "Supply air"                          Supply air °C selected toggle button list Series 3 items
+tab 3   button[toggle] "Fan power"                           Fan power W selected toggle button
+tab 4   button[toggle] "Heater"                              Heater boolean selected toggle button
+tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 6   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 7   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 8   input[range] "Supply air and fan power, the cursor…" No reading selected Supply air and fan power, the cursor shared Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider main
+tab 9   button[zoom] "Zoom in"                               Zoom in button
+tab 10  button "Put the cursor at 10:00"                     You are currently on a button. To click this button, press Control-Option-Space.
+tab 11  button "Clear it"                                    Clear it button
+tab 12  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 13  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 14  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 15  input[range] "Fan power on 25 October 2026"          No reading selected Fan power on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider main
+tab 16  button[zoom] "Zoom in"                               Zoom in button
+tab 17  input[range] "Heater on 25 October 2026"             No reading selected Heater on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/table`
 
 ```
-arrive  —                                                    heading level 2 Table
+arrive  —                                                    banner
 enter   button[toggle] "Name"                                (silence)
 tab 1   button[toggle] "Address"                             Address button
 tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
@@ -551,12 +604,22 @@ tab 9   —                                                    (silence)
 ### `/datatable`
 
 ```
-arrive  —                                                    Data table · @pacit/components web content
+arrive  —                                                    In Data table · @pacit/components web content heading level 2 Data table main
 enter   input                                                (silence)
-tab 1   input                                                Filter rules search text field
+tab 1   pct-table-frame "Polling rules"                      Filter rules search text field
+tab 2   button[toggle] "Name"                                Polling rules region
+tab 3   button[toggle] "Room"                                You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
+tab 4   button[toggle] "Address"                             (silence)
+tab 5   button[toggle] "Energy"                              Address button
+tab 6   button[toggle] "Next run"                            You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
+tab 7   input[control] "Enabled: Supply fan"                 Enabled: Supply fan on switch
+tab 8   input[control] "Enabled: Heater"                     (silence)
+tab 9   input[control] "Enabled: Bypass"                     Enabled: Heater off switch
+tab 10  input[control] "Enabled: Exhaust fan"                (silence)
+tab 11  input[control] "Enabled: Boiler"                     Enabled: Exhaust fan on switch
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/hero`
 

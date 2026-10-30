@@ -62,9 +62,10 @@ const DRAWING = 'svg';
  * templates, where a drawing given as DATA is rendered element by element (0083): every
  * template there is the renderer of what a source answered, so nothing in it is a picture
  * a consumer would want to swap — the swap already happened one level up. And a chart's
- * marks', named one by one: the scene's layers, the line's and the bars' drawings, where the drawing IS
- * the data, scaled and decimated (0099), and a picture of the consumer's numbers is nothing a
- * set could hold. Any other template of the chart — a legend, a marker — draws what a set
+ * marks', named one by one: the scene's layers, the line's and the bars' drawings, where the
+ * drawing IS the data, scaled and decimated (0099), the annotations' lines, bands, notes and
+ * the moment of now, drawn on the same scales, and a picture of the consumer's numbers is
+ * nothing a set could hold. Any other template of the chart — a legend, a marker — draws what a set
  * could, and answers to point 2. Narrow on purpose, and the reference input carries one
  * template of each kind, so both exemptions are exercised and not merely written.
  */
@@ -73,6 +74,10 @@ const DATA_DRAWINGS = new Set([
   `${PROJECT}/chart/src/chart.html`,
   `${PROJECT}/chart/src/line.html`,
   `${PROJECT}/chart/src/bars.html`,
+  `${PROJECT}/chart/src/reference.html`,
+  `${PROJECT}/chart/src/span.html`,
+  `${PROJECT}/chart/src/note.html`,
+  `${PROJECT}/chart/src/now.html`,
 ]);
 const PART = 'data-pct-part';
 

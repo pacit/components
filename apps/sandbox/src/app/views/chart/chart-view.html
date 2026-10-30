@@ -344,6 +344,37 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Annotations: a band, reference lines, a note, a moment and a threshold"
+  summary="The marks that bring no series: a band of the night tariff under the supply air, a dashed reference line at the comfort setting, a note on the hour the window was opened, the moment the report was taken, and the line itself red over 22 °C. A reader hears the annotations in the picture's description; the legend lists the two asked to stand there, and their toggles hide them."
+  [reqs]="['req-a11y-built-in', 'req-api-templates']"
+  data-testid="demo-annotations"
+>
+  <pct-chart
+    #annotated
+    ariaLabel="Supply air on 25 October 2026, annotated"
+    description="Supply air through the day of the clocks going back."
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-annotations"
+  >
+    <pct-span [from]="night.from" [to]="night.to" label="Night tariff" legend />
+    <pct-line
+      [data]="supply"
+      x="at"
+      y="value"
+      name="Supply air"
+      unit="°C"
+      [threshold]="hot"
+    />
+    <pct-reference [y]="21" unit="°C" label="Comfort" dash legend />
+    <pct-note [x]="opened" [y]="21.9" unit="°C" text="Window opened" />
+    <pct-now [at]="reported" label="Report taken" />
+  </pct-chart>
+  <pct-chart-legend [chart]="annotated" data-testid="annotations-legend" />
+</sbx-demo>
+
+<sbx-demo
   heading="Numbers along the horizontal axis"
   summary='x="linear": the horizontal axis holds plain numbers and ticks them 1-2-5, as the value axes do.'
   [reqs]="['req-api-templates']"

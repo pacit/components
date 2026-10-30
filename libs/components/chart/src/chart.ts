@@ -46,6 +46,7 @@ import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import { pctLinear, type PctDomain, type PctScale } from './model/scale';
 import { pctAxisSlots, type PctAxisSlot } from './model/slots';
+import { pctPlaceNotes, type PctPlacedNote } from './model/notes';
 import { pctFractionDigits, pctNiceStep, pctTicks } from './model/ticks';
 import {
   pctTimeStep,
@@ -63,6 +64,7 @@ import {
   PctChartAlign,
   PctChartScene,
   PctMark,
+  type PctMarkLayer,
   type PctSeriesSpec,
   type PctSwatchContext,
   type PctMarkNote,
@@ -256,6 +258,8 @@ interface PctSegment {
 const HOLD = 300;
 /** How near the cursor's line a tap clears it, in pixels. */
 const NEAR = 12;
+/** The gap between a note's point and its box. */
+const NOTE_GAP = 8;
 const HOUR = 3_600_000;
 /** How long the window rests before its new range is announced, in milliseconds. */
 const SETTLE = 300;
@@ -555,6 +559,33 @@ export class PctChart extends PctChartScene {
    */
   readonly series = computed<readonly PctSeriesSpec[]>(() =>
     this.marks().flatMap((mark) => mark.series()),
+  );
+
+  /** The marks by the layer they draw in: under the series, among them, over them. */
+  protected readonly layers = computed(() => {
+    const marks = this.marks();
+    const of = (layer: PctMarkLayer) =>
+      marks.filter((mark) => mark.layer() === layer);
+    return { back: of('back'), data: of('data'), front: of('front') };
+  });
+
+  /**
+   * The picture's description for a reader: the consumer's `description`, then what each mark
+   * adds for what a reader cannot see — a reference line, a band, a note, the moment of now.
+   */
+  protected readonly fullDescription = computed(() =>
+    [this.description(), ...this.marks().map((mark) => mark.describe())]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  /** Every mark's notes placed together, so that none covers another (`pctPlaceNotes`). */
+  private readonly notePlacement = computed(() =>
+    pctPlaceNotes(
+      this.marks().flatMap((mark) => mark.noteBoxes()),
+      this.plot(),
+      NOTE_GAP,
+    ),
   );
 
   private readonly placesState = linkedSignal<
@@ -999,6 +1030,7 @@ export class PctChart extends PctChartScene {
     ...this.rows(),
     ...this.columns(),
   }));
+  override readonly frame = this.plot;
 
   /** The lines of the grid: along the first axis's ticks (or every axis's), and the time's. */
   protected readonly gridLines = computed(() => {
@@ -1386,6 +1418,15 @@ export class PctChart extends PctChartScene {
    */
   markOf(id: string): PctMark | undefined {
     return this.marks().find((m) => m.series().some((s) => s.id === id));
+  }
+
+  /**
+   * Where the scene put a note's box, by the box's id — `null` for a box no mark offered.
+   *
+   * @since next
+   */
+  override placedNote(id: string): PctPlacedNote | null {
+    return this.notePlacement().find((n) => n.id === id) ?? null;
   }
 
   /** The swatch template of the mark that declares a series, for the tooltip and the markers. */
@@ -1776,7 +1817,12 @@ export class PctChart extends PctChartScene {
     });
   }
 
-  private writeValue(value: number | null, unit: string): string {
+  /**
+   * A value written with its unit as the tooltip writes it; `null` is the gap's word.
+   *
+   * @since next
+   */
+  override writeValue(value: number | null, unit: string): string {
     if (value === null) return this.texts().chartGap;
     if (unit === BOOLEAN)
       return value >= 0.5 ? this.texts().chartOn : this.texts().chartOff;
@@ -1784,7 +1830,12 @@ export class PctChart extends PctChartScene {
     return unit ? `${number} ${unit}` : number;
   }
 
-  private writePosition(x: number, form: 'short' | 'full'): string {
+  /**
+   * A position written as the axis writes it (`short`) or as the tooltip's title does (`full`).
+   *
+   * @since next
+   */
+  override writePosition(x: number, form: 'short' | 'full'): string {
     if (this.x() === 'band')
       return this.categories()[Math.floor(x)] ?? this.valueFormat().format(x);
     if (this.x() !== 'time') return this.valueFormat().format(x);

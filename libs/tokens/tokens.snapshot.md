@@ -124,6 +124,12 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-marker-border color component public
 --pct-chart-marker-size dimension component public
 --pct-chart-message-fg color component public
+--pct-chart-note-bg color component public
+--pct-chart-note-border color component public
+--pct-chart-note-fg color component public
+--pct-chart-now-border color component public
+--pct-chart-reference-border color component public
+--pct-chart-reference-fg color component public
 --pct-chart-remove-target-min dimension component public
 --pct-chart-selection-alpha dimension component public
 --pct-chart-selection-bg color component public
@@ -136,6 +142,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-series-color-7 color component public
 --pct-chart-series-color-8 color component public
 --pct-chart-series-width dimension component public
+--pct-chart-span-alpha dimension component public
+--pct-chart-span-bg color component public
 --pct-chart-swatch-height dimension component public
 --pct-chart-swatch-width dimension component public
 --pct-chart-toggle-target-min dimension component public

@@ -204,7 +204,8 @@ const PAINT = new Set([
 ]);
 
 /**
- * The sheets that paint an `<svg>` of their own: a chart's scene, its line and its bars, where the
+ * The sheets that paint an `<svg>` of their own: a chart's scene, its line, its bars and its
+ * annotations (a reference line, a band, a note, the moment of now), where the
  * drawing is the consumer's data, scaled and decimated (0099), and no set could hold it —
  * there is no drawing for a consumer to replace, so painting it is the component's job and
  * not a reach into an icon. Named one by one, relative to the library: any other sheet of the
@@ -214,6 +215,10 @@ const DRAWS_DATA = new Set([
   'chart/src/chart.scss',
   'chart/src/line.scss',
   'chart/src/bars.scss',
+  'chart/src/reference.scss',
+  'chart/src/span.scss',
+  'chart/src/note.scss',
+  'chart/src/now.scss',
 ]);
 const drawsData = (file) =>
   DRAWS_DATA.has(

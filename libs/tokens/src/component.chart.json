@@ -206,6 +206,46 @@
         "$type": "dimension",
         "$value": "55%",
         "$description": "How much of the series colour fills a compared period's bar."
+      },
+      "reference-border": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "A reference line across the plot, when its mark names no colour."
+      },
+      "reference-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "The label written by a reference line or a band."
+      },
+      "span-bg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "A band across the plot, before the mix, when its mark names no colour."
+      },
+      "span-alpha": {
+        "$type": "dimension",
+        "$value": "12%",
+        "$description": "How much of the band colour fills a band across the plot."
+      },
+      "note-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of a note's box on the plot."
+      },
+      "note-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text of a note on the plot."
+      },
+      "note-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge of a note's box, its leader and the dot on its point."
+      },
+      "now-border": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "The line of the present moment across the plot, and its label."
       }
     }
   }

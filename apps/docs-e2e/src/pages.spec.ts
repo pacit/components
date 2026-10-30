@@ -969,8 +969,9 @@ test.describe('The pages', () => {
     // (0097); 747 since the zoom bar took its gap (0101); 750 since the data table's groups took
     // a heading's colours and a level's indent (0097); 756 since the legend and the swatches did
     // (0102); 763 since the bars took their radius, gap, alpha, label and selection; 768 since a
-    // data table's selection took a picked row's colours and the three of its line (0097).
-    await expect(count).toHaveText('768 of 768');
+    // data table's selection took a picked row's colours and the three of its line (0097); 776
+    // since the annotations took the reference line, the band, the note and the moment of now.
+    await expect(count).toHaveText('776 of 776');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -978,7 +979,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 768$/);
+    await expect(count).toHaveText(/^\d+ of 776$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -994,7 +995,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('768 of 768');
+    await expect(count).toHaveText('776 of 776');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

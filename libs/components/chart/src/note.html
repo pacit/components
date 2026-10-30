@@ -1,0 +1,52 @@
+<ng-template #drawing>
+  @if (drawn(); as drawn) {
+  <svg:g
+    data-pct-part="note"
+    [attr.data-pct-series]="seriesAttr()"
+    [style.--_pct-chart-color]="custom()"
+  >
+    <svg:line
+      class="leader"
+      [attr.x1]="drawn.leader.x1"
+      [attr.y1]="drawn.leader.y1"
+      [attr.x2]="drawn.leader.x2"
+      [attr.y2]="drawn.leader.y2"
+    />
+    <svg:circle
+      class="dot"
+      [attr.cx]="drawn.dot.cx"
+      [attr.cy]="drawn.dot.cy"
+      [attr.r]="drawn.dot.r"
+    />
+    <svg:rect
+      class="box"
+      [attr.x]="drawn.box.x"
+      [attr.y]="drawn.box.y"
+      [attr.width]="drawn.box.width"
+      [attr.height]="drawn.box.height"
+    />
+    <svg:text
+      class="text"
+      text-anchor="start"
+      dominant-baseline="middle"
+      [attr.x]="drawn.text.x"
+      [attr.y]="drawn.text.y"
+      [textContent]="text()"
+    ></svg:text>
+  </svg:g>
+  }
+</ng-template>
+
+<!-- The note drawn small for the legend: its dot in its colour. -->
+<ng-template #swatch let-series>
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    viewBox="0 0 24 12"
+    [attr.data-pct-series]="seriesAttr()"
+    [style.--_pct-chart-color]="series.color"
+  >
+    <svg:circle class="dot" cx="12" cy="6" r="3" />
+  </svg>
+</ng-template>

@@ -1,0 +1,39 @@
+<ng-template #drawing>
+  @if (drawn(); as drawn) {
+  <svg:g
+    data-pct-part="now"
+    [attr.data-pct-series]="seriesAttr()"
+    [style.--_pct-chart-color]="custom()"
+  >
+    <svg:line
+      class="line"
+      [attr.x1]="drawn.line.x1"
+      [attr.x2]="drawn.line.x2"
+      [attr.y1]="drawn.line.y1"
+      [attr.y2]="drawn.line.y2"
+    />
+    <svg:text
+      class="label"
+      [attr.text-anchor]="drawn.label.anchor"
+      [attr.dominant-baseline]="drawn.label.baseline"
+      [attr.x]="drawn.label.x"
+      [attr.y]="drawn.label.y"
+      [textContent]="name()"
+    ></svg:text>
+  </svg:g>
+  }
+</ng-template>
+
+<!-- The line drawn small for the legend: a stroke in its colour. -->
+<ng-template #swatch let-series>
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    viewBox="0 0 24 12"
+    [attr.data-pct-series]="seriesAttr()"
+    [style.--_pct-chart-color]="series.color"
+  >
+    <svg:line class="line" x1="1" y1="6" x2="23" y2="6" />
+  </svg>
+</ng-template>

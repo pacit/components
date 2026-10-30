@@ -190,6 +190,50 @@ export class PctChartLegendHarness extends PctHarness<
   static override readonly parts = ['item', 'remove', 'toggle'] as const;
 }
 
+/**
+ * `pct-reference` — `PctReference`: a line across the plot at a value or a position. Its
+ * drawing is stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctReferenceHarness extends PctHarness<'reference' | 'swatch'> {
+  static override hostSelector = 'pct-reference';
+  static override readonly parts = ['reference', 'swatch'] as const;
+}
+
+/**
+ * `pct-span` — `PctSpan`: a band across the plot between two values or two positions. Its
+ * drawing is stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctSpanHarness extends PctHarness<'span' | 'swatch'> {
+  static override hostSelector = 'pct-span';
+  static override readonly parts = ['span', 'swatch'] as const;
+}
+
+/**
+ * `pct-note` — `PctNote`: a text on a point of the plot. Its drawing is stamped into the
+ * chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctNoteHarness extends PctHarness<'note' | 'swatch'> {
+  static override hostSelector = 'pct-note';
+  static override readonly parts = ['note', 'swatch'] as const;
+}
+
+/**
+ * `pct-now` — `PctNow`: the line of the present moment across the plot. Its drawing is
+ * stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctNowHarness extends PctHarness<'now' | 'swatch'> {
+  static override hostSelector = 'pct-now';
+  static override readonly parts = ['now', 'swatch'] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**

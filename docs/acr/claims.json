@@ -270,7 +270,11 @@
           "scan": "no-svg-text",
           "beside": {
             "libs/components/chart/src/chart.html": "the chart's axis labels, live SVG text written from the data, in the skin's font (0100)",
-            "libs/components/chart/src/bars.html": "the values written over bars, live SVG text from the data, in the skin's font (0099)"
+            "libs/components/chart/src/bars.html": "the values written over bars, live SVG text from the data, in the skin's font (0099)",
+            "libs/components/chart/src/reference.html": "a reference line's label, live SVG text from the consumer's value, in the skin's font (0099)",
+            "libs/components/chart/src/span.html": "a band's label, live SVG text from the consumer's value, in the skin's font (0099)",
+            "libs/components/chart/src/note.html": "a note's text, live SVG text set by the consumer, in the skin's font (0099)",
+            "libs/components/chart/src/now.html": "the label of the present moment, live SVG text, in the skin's font (0099)"
           }
         }
       ]
