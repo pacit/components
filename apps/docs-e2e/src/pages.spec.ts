@@ -59,7 +59,7 @@ test.describe('The pages', () => {
     // By the tile's own link and not by every `<a>` under the gallery: the cards run real
     // components now, and breadcrumb's scene brings links of its own.
     const tiles = page.getByTestId('card-link');
-    await expect(tiles).toHaveCount(40);
+    await expect(tiles).toHaveCount(41);
 
     await tiles.filter({ hasText: 'Button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
@@ -84,9 +84,9 @@ test.describe('The pages', () => {
     await visit(page, '/components');
 
     const stages = page.getByTestId('gallery').locator('.card__stage');
-    await expect(stages).toHaveCount(40);
+    await expect(stages).toHaveCount(41);
 
-    // Each scene against its own stage, in one evaluation — 39 round trips would be a
+    // Each scene against its own stage, in one evaluation — 41 round trips would be a
     // minute of wall clock to learn the same thing.
     const overflowing = await page.evaluate(() => {
       const bad: {
@@ -125,7 +125,7 @@ test.describe('The pages', () => {
       .evaluateAll(
         (nodes) => nodes.filter((n) => !n.closest('[inert]')).length,
       );
-    expect(stops).toBe(39);
+    expect(stops).toBe(41);
   });
 
   /**
@@ -169,11 +169,11 @@ test.describe('The pages', () => {
     const gallery = page.getByTestId('gallery');
     const count = page.getByTestId('gallery-count');
     const filter = page.getByTestId('gallery-filter');
-    await expect(count).toHaveText('39 of 39');
+    await expect(count).toHaveText('41 of 41');
 
     await filter.fill('date');
     // The date field and the datetime field, both in one bucket.
-    await expect(count).toHaveText('2 of 39');
+    await expect(count).toHaveText('2 of 41');
     await expect(gallery.locator('.card__name')).toHaveText([
       'Date',
       'Datetime',
@@ -182,18 +182,18 @@ test.describe('The pages', () => {
     await expect(gallery.locator('.bucket')).toHaveCount(1);
 
     await filter.fill('nothing answers to this');
-    await expect(count).toHaveText('0 of 39');
+    await expect(count).toHaveText('0 of 41');
     await expect(gallery.locator('.card')).toHaveCount(0);
     await expect(page.getByTestId('gallery-empty')).toHaveText(
       'No component answers to that.',
     );
 
     await filter.fill('');
-    await expect(count).toHaveText('39 of 39');
-    await expect(gallery.locator('.card')).toHaveCount(40);
+    await expect(count).toHaveText('41 of 41');
+    await expect(gallery.locator('.card')).toHaveCount(41);
     // The half that costs something: thirty-four stages, each with its component back in it.
-    await expect(gallery.locator('.card__stage')).toHaveCount(40);
-    await expect(gallery.locator('.card__scene > *')).toHaveCount(40);
+    await expect(gallery.locator('.card__stage')).toHaveCount(41);
+    await expect(gallery.locator('.card__scene > *')).toHaveCount(41);
   });
 
   /**

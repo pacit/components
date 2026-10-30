@@ -59,16 +59,20 @@ Bind `[(sort)]` and order the rows from it, which is also what lets an applicati
 order in its URL.
 
 **The frame is a region only while it scrolls.** `pct-table-frame` measures its table with a
-`ResizeObserver`. While the table is wider than the frame, the frame is `role="region"` with a
+`ResizeObserver`. While the table is wider than the frame, or taller than a height the frame
+is given, the frame is `role="region"` with a
 tab stop and the caption's id as its name, so a keyboard can reach it and a reader can say
 what it holds. While the table fits, it writes none of the three.
 
 ## Parts
 
-| part     | what it is                                   |
-| -------- | -------------------------------------------- |
-| `toggle` | the button that fills a sortable header cell |
-| `icon`   | the chevron beside a sortable header's label |
+| part          | what it is                                                                  |
+| ------------- | --------------------------------------------------------------------------- |
+| `toggle`      | the button that fills a sortable header cell                                |
+| `icon`        | the chevron beside a sortable header's label                                |
+| `message`     | the data table's sentence beside an empty table — see the data table's card |
+| `place`       | the data table's place of a sort key after the first                        |
+| `placeholder` | the data table's row standing for rows still coming                         |
 
 ## Theming
 

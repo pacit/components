@@ -1,0 +1,101 @@
+<!--
+  The first layer, drawn from data. The frame scrolls the table; the sentence of an empty
+  table stands after it in the frame, outside the table, so a reader counting the table's
+  rows counts rows of data (0098, S3).
+-->
+<pct-table-frame [labelledby]="ariaLabelledby() || null">
+  <table
+    pctTable
+    [sort]="primary()"
+    (sortChange)="pressed($event)"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    @if (caption()) {
+    <caption pctCaption>
+      {{ caption() }}
+    </caption>
+    }
+    <thead>
+      <tr>
+        @for (head of heads(); track head.column.id) {
+        <th
+          pctHeader
+          scope="col"
+          [sortKey]="head.sortKey"
+          [numeric]="head.numeric"
+        >
+          @if (head.slot) {
+          <ng-container
+            [ngTemplateOutlet]="head.slot"
+            [ngTemplateOutletContext]="{ $implicit: head.column, direction: head.direction }"
+          />
+          } @else { {{ head.column.header }} } @if (head.place) {
+          <span
+            class="pct-data-table__place"
+            data-pct-part="place"
+            aria-hidden="true"
+            >{{ head.place }}{{ head.arrow }}</span
+          >
+          }
+        </th>
+        }
+      </tr>
+    </thead>
+    <tbody [attr.aria-busy]="loading() ? 'true' : null">
+      @for (index of placeholders(); track index) {
+      <tr data-pct-part="placeholder" aria-hidden="true">
+        @for (head of heads(); track head.column.id) {
+        <td pctCell><pct-skeleton /></td>
+        }
+      </tr>
+      } @for (row of body(); track row.key) {
+      <tr [attr.data-pct-index]="$index">
+        @for (cell of row.cells; track cell.column.id) {
+        <td pctCell [numeric]="cell.numeric">
+          @if (cell.slot) {
+          <ng-container
+            [ngTemplateOutlet]="cell.slot"
+            [ngTemplateOutletContext]="{
+                    $implicit: row.row,
+                    value: cell.value,
+                    column: cell.column,
+                    index: row.index,
+                  }"
+          />
+          } @else if (cell.yes === null) { {{ cell.text }} } @else { @if
+          (cell.yes) {
+          <pct-icon name="check" class="pct-data-table__yes">
+            <svg
+              viewBox="0 0 16 16"
+              width="100%"
+              height="100%"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              focusable="false"
+            >
+              <path d="M3 8.5l3 3 7-7" />
+            </svg>
+          </pct-icon>
+          }
+          <span class="pct-data-table__word">{{ cell.text }}</span>
+          }
+        </td>
+        }
+      </tr>
+      }
+    </tbody>
+  </table>
+  @if (message(); as sentence) {
+  <div class="pct-data-table__message" data-pct-part="message">
+    @if (emptySlot(); as slot) {
+    <ng-container
+      [ngTemplateOutlet]="slot.template"
+      [ngTemplateOutletContext]="{ $implicit: filter(), loading: loading() }"
+    />
+    } @else { {{ sentence }} }
+  </div>
+  }
+</pct-table-frame>

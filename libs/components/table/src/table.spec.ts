@@ -460,6 +460,44 @@ describe('PctTableFrame — the region that exists while the table overflows', (
     expect(frame().hasAttribute('aria-labelledby')).toBe(false);
   });
 
+  function heights(element: HTMLElement, scroll: number, client: number): void {
+    Object.defineProperty(element, 'scrollHeight', {
+      value: scroll,
+      configurable: true,
+    });
+    Object.defineProperty(element, 'clientHeight', {
+      value: client,
+      configurable: true,
+    });
+  }
+
+  it('becomes a region too while a table taller than a height it is given overflows it', async () => {
+    const fixture = await render(FrameHost);
+    widths(frame(), 300, 300);
+    heights(frame(), 401, 400);
+    wake();
+    await settle(fixture);
+    expect(frame().getAttribute('role')).toBe('region');
+    heights(frame(), 400, 400);
+    wake();
+    await settle(fixture);
+    expect(frame().hasAttribute('role')).toBe(false);
+  });
+
+  it('takes the name an input gives it where no caption names it', async () => {
+    @Component({
+      imports: [PctTableFrame, PctTable],
+      template: `<pct-table-frame [labelledby]="name"
+        ><table pctTable></table
+      ></pct-table-frame>`,
+    })
+    class InputNamed {
+      readonly name = 'outside';
+    }
+    await render(InputNamed);
+    expect(frame().getAttribute('aria-labelledby')).toBe('outside');
+  });
+
   it('becomes a focusable region named by the caption while the table overflows', async () => {
     const fixture = await render(FrameHost);
     widths(frame(), 301, 300);

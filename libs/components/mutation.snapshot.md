@@ -97,12 +97,9 @@ libs/components/avatar/src/avatar.ts 87.50 28(0) 3 0 1 0
 libs/components/badge/src/badge.ts 81.82 9(0) 2 0 0 0
 libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0 0
 libs/components/button/src/button.ts 92.54 124(0) 10 0 0 3
-libs/components/chart/src/chart-table.ts 95.68 133(1) 6 0 0 0
-libs/components/chart/src/chart.ts 94.88 426(0) 21 0 2 6
-libs/components/chart/src/line.ts 96.99 129(0) 4 0 0 2
 libs/components/chart/src/model/columns.ts 97.06 33(1) 1 0 0 0
-libs/components/chart/src/model/decimate.ts 90.43 274(88) 29 0 0 0
-libs/components/chart/src/model/extent.ts 94.12 80(0) 5 0 0 0
+libs/components/chart/src/model/decimate.ts 90.68 214(84) 22 0 0 0
+libs/components/chart/src/model/extent.ts 90.32 84(0) 9 0 0 0
 libs/components/chart/src/model/layout.ts 90.79 69(5) 7 0 0 0
 libs/components/chart/src/model/path.ts 96.43 108(1) 4 0 0 0
 libs/components/chart/src/model/scale.ts 98.55 68(0) 1 0 0 0
@@ -112,7 +109,6 @@ libs/components/chart/src/model/ticks.ts 100.00 63(0) 0 0 0 0
 libs/components/chart/src/model/time-ticks.ts 98.44 253(0) 4 0 0 0
 libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
 libs/components/chart/src/model/window.ts 97.22 35(0) 1 0 0 0
-libs/components/chart/src/scene.ts 0.00 0(0) 0 0 1 0
 libs/components/checkbox/src/checkbox.ts 96.83 61(0) 2 0 0 6
 libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
@@ -171,12 +167,14 @@ libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
 libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
+libs/components/table/src/data-table-slots.ts 100.00 9(0) 0 0 0 4
+libs/components/table/src/data-table.ts 99.75 397(0) 1 0 0 6
 libs/components/table/src/model/columns.ts 100.00 18(0) 0 0 0 0
 libs/components/table/src/model/lines.ts 100.00 39(0) 0 0 0 0
 libs/components/table/src/model/order.ts 100.00 89(0) 0 0 0 0
 libs/components/table/src/model/question.ts 100.00 29(0) 0 0 0 0
 libs/components/table/src/model/window.ts 100.00 68(8) 0 0 0 0
-libs/components/table/src/table.ts 100.00 51(0) 0 0 0 9
+libs/components/table/src/table.ts 100.00 58(0) 0 0 0 9
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 1 0 1
 libs/components/tabs/src/tabs.ts 93.50 115(0) 7 1 0 2
 libs/components/testing/src/dom.ts 100.00 26(0) 0 0 0 0
@@ -193,5 +191,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 88.70 9794/11042
+TOTAL 88.65 9463/10675
 ```

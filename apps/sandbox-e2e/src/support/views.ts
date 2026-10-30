@@ -39,6 +39,7 @@ export const SBX_ROUTES = [
   '/breadcrumb',
   '/chart',
   '/table',
+  '/datatable',
   '/hero',
   '/stepper',
   '/tree',

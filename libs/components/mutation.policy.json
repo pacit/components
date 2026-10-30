@@ -96,6 +96,8 @@
     "libs/components/stepper/src/stepper.ts",
     "libs/components/svg-icon/src/svg-icon.ts",
     "libs/components/switch/src/switch.ts",
+    "libs/components/table/src/data-table-slots.ts",
+    "libs/components/table/src/data-table.ts",
     "libs/components/table/src/model/columns.ts",
     "libs/components/table/src/model/lines.ts",
     "libs/components/table/src/model/order.ts",

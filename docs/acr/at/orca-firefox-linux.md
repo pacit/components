@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 580 steps over 41 views, at most 12 stops of a view's own
+- 576 steps over 41 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -27,17 +27,17 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 5 of 580 here. 13 view(s) hit the cap, and each says so.
+at — 6 of 576 here. 14 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2402
-phrases, and 2399 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2368
+phrases, and 2365 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
 
 **Every view spoke.** No view of the 41 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-13 view(s) have more stops than the 12 taken, and each says so where it bit.
+14 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -93,7 +93,7 @@ tab 1   —                                                    Theme · panel ·
 ### `/text`
 
 ```
-arrive  a "Text"                                             leaving main content. · navigation · Sandbox views · List with 35 items · Text · link.
+arrive  a "Text"                                             leaving main content. · navigation · Sandbox views · List with 35 items · Text · visited link.
 enter   input                                                First name · entry · John. · Focus mode
 tab 1   input                                                E-mail · entry · john@example.com.
 tab 2   input                                                Password · password text.
@@ -107,7 +107,7 @@ tab 9   input[control]                                       leaving panel. · S
 tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 11  input                                                leaving panel. · Reactive forms ([formControl]) · entry · Ada · selected. · Focus mode
 tab 12  input                                                Template-driven ([(ngModel)]) · entry · Lovelace · selected.
-tab 13  input                                                Text · @pacit/components · page tab. · JUGGLER <window>.
+tab 13  input                                                Text · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -115,7 +115,7 @@ Tab moved nothing — focus had left the page.
 ### `/textarea`
 
 ```
-arrive  a "Textarea"                                         navigation · Sandbox views · List with 35 items · Textarea · link. · Browse mode
+arrive  a "Textarea"                                         navigation · Sandbox views · List with 35 items · Textarea · visited link. · Browse mode
 enter   textarea                                             About you · entry · A few words… · Type — the box follows. · Focus mode
 tab 1   textarea                                             A plain textarea, for comparison · entry · This one keeps its two lines and scrolls.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -132,7 +132,7 @@ tab 12  input[control]                                       leaving panel. · D
 tab 13  textarea                                             leaving panel. · Old forms · entry. · Focus mode
 tab 14  button "patchValue three lines"                      patchValue three lines · button. · Browse mode
 tab 15  button "patchValue empty"                            patchValue empty · button.
-tab 16  button "patchValue empty"                            Textarea · @pacit/components · page tab. · JUGGLER <window>.
+tab 16  button "patchValue empty"                            Textarea · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -147,7 +147,7 @@ tab 2   input[control]                                       Theme · panel · l
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 4   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 5   input                                                leaving panel. · Number of seats · spin button · 1 · required. · The range is 1–500; a fraction is rounded on commit. · Focus mode
-tab 6   input                                                Number · @pacit/components · page tab. · JUGGLER <window>.
+tab 6   input                                                Number · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -213,7 +213,7 @@ tab 16  input[control]                                       Theme · panel · l
 tab 17  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 18  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 19  input[control]                                       leaving panel. · Quarter hours · entry · 13:15 · selected. · Focus mode
-tab 20  button[toggle] "Choisir une heure"                   Choisir une heure · collapsed button. · opens dialog
+tab 20  button[toggle] "Choisir une heure"                   (silence)
 reach   button[toggle] "Choisir une heure"                   Choisir une heure · collapsed button. · opens dialog
 open    div[column] "Heures"                                 Choisir une heure · dialog · Heures · List with 24 items · 13
 close   input[control]                                       Time · entry · 13:05. · The sandbox runs under fr-FR, so the clock counts to 24.
@@ -273,7 +273,7 @@ tab 1   —                                                    leaving panel. ·
 ### `/slider`
 
 ```
-arrive  a "Slider"                                           leaving main content. · navigation · Sandbox views · List with 35 items · Slider · link.
+arrive  a "Slider"                                           leaving main content. · navigation · Sandbox views · List with 35 items · Slider · visited link.
 enter   input[control]                                       Budget · slider · 40 · 66 percent. · Between 20 and 80. · Focus mode
 tab 1   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -286,7 +286,7 @@ tab 8   input[control]                                       Theme · panel · l
 tab 9   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 11  input[control]                                       leaving panel. · Gain · slider · 60 · 60 percent. · Focus mode
-tab 12  input[control]                                       Slider · @pacit/components · page tab. · JUGGLER <window>.
+tab 12  input[control]                                       Slider · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -336,8 +336,8 @@ tab 1   button "Delete the project"                          Delete the project 
 tab 2   button "Open the insistent one"                      Open the insistent one · button.
 tab 3   button "Open a form dialog"                          Open a form dialog · button.
 tab 4   button "Open a long one"                             Open a long one · button.
-tab 5   button "Open a long one"                             Dialog · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Open the dialog"                             main content · A modal: focus is trapped in the panel and given back on close, the background goes   link. · Browse mode · Open the dialog · button.
+tab 5   button "Open a long one"                             Dialog · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
+reach   button "Open the dialog"                             main content · Open the dialog · button. · Browse mode
 open    button[close] "Close"                                Project settings  The panel is an overlay, so it inherits nothing from the tree — the theme, the typeface and the writing direction are carried over by hand. · Close · button.
 close   button "Open the dialog"                             main content · Open the dialog · button.
 ```
@@ -363,7 +363,7 @@ tab 7   button "end"                                         end · button. · O
 tab 8   input                                                Release note · entry. · Shown in the changelog Markdown is allowed here. · Focus mode
 tab 9   button "Hover me"                                    Hover me · button. · This one can be taken away. · Browse mode
 tab 10  button "Take it away"                                Take it away · button.
-tab 11  button "Take it away"                                Tooltip · @pacit/components · page tab. · JUGGLER <window>.
+tab 11  button "Take it away"                                Tooltip · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -379,7 +379,7 @@ tab 3   button "bottom"                                      bottom · collapsed
 tab 4   button "end"                                         end · collapsed button. · opens dialog
 tab 5   button "Open the panel"                              Open the panel · collapsed button. · opens dialog
 tab 6   button "Count up"                                    Count up · button. · Browse mode
-tab 7   button "Count up"                                    Popover · @pacit/components · page tab. · JUGGLER <window>.
+tab 7   button "Count up"                                    Popover · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 reach   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode
 open    div[panel] "Filters"                                 Filters  Owner  A name, or part of one · Browse mode
 close   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode · collapsed
@@ -399,7 +399,7 @@ enter   button "Actions"                                     Actions · collapse
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
 tab 3   button "Language"                                    Language · collapsed button. · opens menu
-tab 4   button "Language"                                    Menu · @pacit/components · page tab. · JUGGLER <window>.
+tab 4   button "Language"                                    Menu · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 reach   button "Actions"                                     main content · Actions · collapsed button. · opens menu · Focus mode
 open    button[item] "Rename"                                leaving main content. · Actions · menu · Rename.
 close   button "Actions"                                     main content · Actions · collapsed button. · opens menu · collapsed
@@ -426,8 +426,8 @@ tab 7   input[control]                                       Theme · panel · l
 tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 10  button "Open the bare one"                           leaving panel. · Open the bare one · collapsed button. · Focus mode
-tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Sections"                                    main content · Sections · collapsed button. · Focus mode
+tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
+reach   button "Sections"                                    main content · A panel docked to an edge of the window. It is not an overlay: it is drawn where it stands in · Browse mode · Sections · collapsed button. · Focus mode
 open    button "Sections"                                    expanded
 close   button "Sections"                                    (silence)
 ```
@@ -464,7 +464,7 @@ tab 18  input[control]                                       Theme · panel · l
 tab 19  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 20  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 21  summary[heading] "More about this"                   leaving panel. · More about this · collapsed button. · Focus mode
-tab 22  summary[heading] "More about this"                   Accordion · @pacit/components · page tab. · JUGGLER <window>.
+tab 22  summary[heading] "More about this"                   Accordion · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 reach   summary[heading] "Payment"                           main content · Payment · collapsed button. · Focus mode
 open    summary[heading] "Payment"                           expanded
 close   summary[heading] "Payment"                           (silence)
@@ -481,7 +481,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 35 items · Tabs · link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 35 items · Tabs · visited link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -539,8 +539,8 @@ tab 19  input[control]                                       Theme · panel · l
 tab 20  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 22  button "Open the settings"                           leaving panel. · Open the settings · button.
-tab 23  button "Open the settings"                           Toast · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Copy (a shorter clock)"                      main content · A message that arrives on top of the page. There is no   link to put in a template — · Browse mode · Copy (a shorter clock) · button.
+tab 23  button "Open the settings"                           Toast · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
+reach   button "Copy (a shorter clock)"                      main content · Copy (a shorter clock) · button. · Browse mode
 open    button "Copy (a shorter clock)"                      Notifications. Copied to the clipboard.
 close   button "Copy (a shorter clock)"                      (silence)
 ```
@@ -580,7 +580,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 35 items · Progress · link.
+arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 35 items · Progress · visited link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -602,7 +602,7 @@ tab 17  input[control]                                       leaving panel. · D
 tab 18  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 19  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 20  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 21  input[control]                                       Progress · @pacit/components · page tab. · JUGGLER <window>.
+tab 21  input[control]                                       Progress · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -610,7 +610,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 35 items · Skeleton · link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 35 items · Skeleton · visited link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -625,7 +625,7 @@ tab 10  input[control]                                       leaving panel. · T
 tab 11  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 12  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 13  button "Stop the sheen"                              leaving panel. · Stop the sheen · button.
-tab 14  button "Stop the sheen"                              Skeleton · @pacit/components · page tab. · JUGGLER <window>.
+tab 14  button "Stop the sheen"                              Skeleton · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -675,7 +675,7 @@ tab 8   input[control]                                       Theme · panel · l
 tab 9   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 10  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 11  button "Account: Ada Lovelace"                       leaving panel. · Account: Ada Lovelace · button.
-tab 12  button "Account: Ada Lovelace"                       Avatar · @pacit/components · page tab. · JUGGLER <window>.
+tab 12  button "Account: Ada Lovelace"                       Avatar · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -683,7 +683,7 @@ Tab moved nothing — focus had left the page.
 ### `/badge`
 
 ```
-arrive  a "Badge"                                            navigation · Sandbox views · List with 35 items · Badge · link. · Browse mode
+arrive  a "Badge"                                            navigation · Sandbox views · List with 35 items · Badge · visited link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -693,7 +693,7 @@ tab 5   input[control]                                       leaving panel. · D
 tab 6   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 9   input[control]                                       Badge · @pacit/components · page tab. · JUGGLER <window>.
+tab 9   input[control]                                       Badge · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -704,7 +704,7 @@ Tab moved nothing — focus had left the page.
 arrive  a "Icon"                                             navigation · Sandbox views · List with 35 items · Icon · link. · Browse mode
 enter   input[control]                                       Done · check box checked.
 tab 1   input[control]                                       Done · check box checked.
-tab 2   input[control]                                       Icon · @pacit/components · page tab. · JUGGLER <window>.
+tab 2   input[control]                                       Icon · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -729,31 +729,7 @@ tab 12  a "Departments"                                      Departments · link
 tab 13  a "Engineering"                                      Engineering · link.
 tab 14  a "Platform"                                         Platform · link.
 tab 15  a "Observability"                                    Observability · link. · (Current page)
-tab 16  a "Observability"                                    Breadcrumb · @pacit/components · page tab. · JUGGLER <window>.
-```
-
-Tab moved nothing — focus had left the page.
-
-### `/chart`
-
-```
-arrive  a "Chart"                                            navigation · Sandbox views · List with 35 items · Chart · link. · Browse mode
-enter   input[control]                                       Theme · panel · light · selected radio button.
-tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 3   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 4   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 5   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 6   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 7   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 8   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 9   input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 12  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
-tab 13  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 14  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 15  input[control]                                       Chart · @pacit/components · page tab. · JUGGLER <window>.
+tab 16  a "Observability"                                    Breadcrumb · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -771,15 +747,35 @@ tab 5   input[control]                                       leaving panel. · T
 tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 8   pct-table-frame "Registers"                          Registers. · clickable.
-tab 9   pct-table-frame "Registers"                          Table · @pacit/components · page tab. · JUGGLER <window>.
+tab 9   pct-table-frame "Registers"                          Table · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
 
+### `/datatable`
+
+```
+arrive  a "Data table"                                       navigation · Sandbox views · List with 35 items · Data table · link. · Browse mode
+enter   input                                                Filter rules · entry. · Focus mode
+tab 1   pct-table-frame "Polling rules"                      Polling rules. · clickable. · Browse mode
+tab 2   button[toggle] "Name"                                table with 21 rows 6 columns · column header. · row 1. · column 1 · Name · button.
+tab 3   button[toggle] "Room"                                column header. · column 2 · Room · button.
+tab 4   button[toggle] "Address"                             column header. · column 3 · Address · button.
+tab 5   button[toggle] "Energy"                              column header. · column 4 · Energy · button.
+tab 6   button[toggle] "Next run"                            column header. · column 5 · Next run · button.
+tab 7   input[control] "Enabled: Supply fan"                 Enabled  column header. · row 2. · column 6 · Enabled: Supply fan · switch pressed.
+tab 8   input[control] "Enabled: Heater"                     row 3. · Enabled: Heater · switch not pressed.
+tab 9   input[control] "Enabled: Bypass"                     row 4. · Enabled: Bypass · switch pressed.
+tab 10  input[control] "Enabled: Exhaust fan"                row 5. · Enabled: Exhaust fan · switch pressed.
+tab 11  input[control] "Enabled: Boiler"                     row 6. · Enabled: Boiler · switch not pressed.
+```
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
+
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             navigation · Sandbox views · List with 35 items · Hero · link. · Browse mode
+arrive  a "Hero"                                             leaving table. · leaving main content. · navigation · Sandbox views · List with 35 items · Hero · visited link.
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -789,7 +785,7 @@ tab 5   input[control]                                       leaving panel. · T
 tab 6   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 7   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 8   button "Stop the sweep"                              leaving panel. · Stop the sweep · button.
-tab 9   button "Stop the sweep"                              Hero · @pacit/components · page tab. · JUGGLER <window>.
+tab 9   button "Stop the sweep"                              Hero · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -803,7 +799,7 @@ tab 1   button "Next"                                        Next · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 4   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 5   input[control]                                       Stepper · @pacit/components · page tab. · JUGGLER <window>.
+tab 5   input[control]                                       Stepper · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -813,7 +809,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  a "Tree"                                             navigation · Sandbox views · List with 35 items · Tree · visited link. · Browse mode
 enter   pct-tree-item "README.md"                            README.md. · tree level 1 · Focus mode
-tab 1   pct-tree-item "README.md"                            Tree · @pacit/components · page tab. · JUGGLER <window>.
+tab 1   pct-tree-item "README.md"                            Tree · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -821,7 +817,7 @@ Tab moved nothing — focus had left the page.
 ### `/layout`
 
 ```
-arrive  a "Layout"                                           navigation · Sandbox views · List with 35 items · Layout · link. · Browse mode
+arrive  a "Layout"                                           navigation · Sandbox views · List with 35 items · Layout · visited link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -837,7 +833,7 @@ tab 11  input[control]                                       leaving panel. · D
 tab 12  input[control]                                       leaving panel. · Theme · panel · light · selected radio button.
 tab 13  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 14  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 15  input[control]                                       Layout · @pacit/components · page tab. · JUGGLER <window>.
+tab 15  input[control]                                       Layout · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -909,7 +905,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 arrive  a "Live regions"                                     leaving panel. · leaving main content. · navigation · Sandbox views · List with 6 items · Live regions · visited link. · Browse mode
 enter   button "Announce politely"                           Announce politely · button.
 tab 1   button "Interrupt"                                   Interrupt · button.
-tab 2   button "Interrupt"                                   Live regions · @pacit/components · page tab. · JUGGLER <window>.
+tab 2   button "Interrupt"                                   Live regions · @pacit/components · page tab. · JUGGLER 91dfa24d-506d-4fcf-82b3-2629e45fabd2.
 ```
 
 Tab moved nothing — focus had left the page.

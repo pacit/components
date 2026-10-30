@@ -135,6 +135,7 @@ const CARD_ORDER = [
   // Data & status
   'table',
   'chart',
+  'datatable',
   'accordion',
   'tree',
   'stepper',

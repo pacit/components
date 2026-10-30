@@ -76,6 +76,11 @@ const ENGLISH: PctTexts = {
   chartTime: 'Time',
   chartPosition: 'Position',
   chartAllHidden: 'Every series is hidden',
+  tableEmpty: 'No rows',
+  tableNoMatches: 'No matches',
+  tableLoading: 'Loading…',
+  tableYes: 'Yes',
+  tableNo: 'No',
 };
 
 describe('PCT_TEXTS', () => {

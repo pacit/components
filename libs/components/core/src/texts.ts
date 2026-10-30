@@ -257,6 +257,19 @@ export interface PctTexts {
   readonly chartPosition: string;
   /** Chart: the message of a chart whose every series is hidden. */
   readonly chartAllHidden: string;
+  /** Data table: beside a table with no rows at all. */
+  readonly tableEmpty: string;
+  /**
+   * Data table: beside a table whose rows the quick filter or the application's own filter
+   * has all taken away — the question's state, not the list's, as `selectNoMatches` is.
+   */
+  readonly tableNoMatches: string;
+  /** Data table: beside a table whose rows are still coming, with none yet. */
+  readonly tableLoading: string;
+  /** Data table: how a boolean cell that is true is read, and searched by the quick filter. */
+  readonly tableYes: string;
+  /** Data table: how a boolean cell that is false is read, and searched by the quick filter. */
+  readonly tableNo: string;
 }
 
 /**
@@ -310,6 +323,11 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartTime: 'Time',
   chartPosition: 'Position',
   chartAllHidden: 'Every series is hidden',
+  tableEmpty: 'No rows',
+  tableNoMatches: 'No matches',
+  tableLoading: 'Loading…',
+  tableYes: 'Yes',
+  tableNo: 'No',
 };
 
 /**

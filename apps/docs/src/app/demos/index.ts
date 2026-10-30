@@ -13,6 +13,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   breadcrumb: () => import('./breadcrumb.demo').then((m) => m.BreadcrumbDemo),
   table: () => import('./table.demo').then((m) => m.TableDemo),
   chart: () => import('./chart.demo').then((m) => m.ChartDemo),
+  datatable: () => import('./datatable.demo').then((m) => m.DatatableDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),
@@ -237,6 +238,15 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'nested',
       load: () => import('./tree.nested.demo').then((m) => m.TreeNestedDemo),
+    },
+  ],
+  datatable: [
+    {
+      key: 'filtered',
+      load: () =>
+        import('./datatable.filtered.demo').then(
+          (m) => m.DatatableFilteredDemo,
+        ),
     },
   ],
   table: [
