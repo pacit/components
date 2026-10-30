@@ -11,8 +11,8 @@ const supply = [
 ].map((value, hour) => ({ at: START + hour * HOUR, value }));
 
 /**
- * The card's still frame: one day of one series, filled to its axis, and no table — the
- * stage is a thumbnail, and the demo on the page holds the rest. The width is stated, as
+ * The card's still frame: one day of one series, filled to its axis, and no table and no
+ * cursor — the stage is a thumbnail and no stop, and the demo on the page holds the rest. The width is stated, as
  * the stage centres a `max-content` scene and a chart takes its width from its container.
  */
 @Component({
@@ -28,6 +28,7 @@ const supply = [
     <pct-chart
       ariaLabel="Supply air on 28 October 2026"
       timeZone="Europe/Warsaw"
+      cursorMode="none"
       style="height: 9rem"
     >
       <pct-line
