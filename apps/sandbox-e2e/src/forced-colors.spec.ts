@@ -975,6 +975,39 @@ test.describe('forced-colors: active', () => {
    * marker shapes in the legend, every one in the text word — the second channel of 0102,
    * measured on the whole palette.
    */
+  /**
+   * Bars with no colour: March's filled in the text word, February's an empty box beside each,
+   * and the selected band a strip bordered in the highlight.
+   */
+  test('bars fill in CanvasText, a compared period an empty box, the selection a bordered band', async ({
+    page,
+  }) => {
+    await visit(page, '/chart', { media: FORCED });
+    const sys = await systemColors(page);
+    const daily = page.getByTestId('chart-bars');
+    const own = daily
+      .locator('rect[data-pct-part="bar"]:not(.compared)')
+      .first();
+    const compared = daily
+      .locator('rect[data-pct-part="bar"].compared')
+      .first();
+    expect(await styleOf(own, 'fill')).toBe(sys.CanvasText);
+    expect(await styleOf(compared, 'fill')).toBe(sys.Canvas);
+    expect(await styleOf(compared, 'stroke')).toBe(sys.CanvasText);
+    expect(
+      await styleOf(
+        daily.locator('text[data-pct-part="label"]').first(),
+        'fill',
+      ),
+    ).toBe(sys.CanvasText);
+    await daily.scrollIntoViewIfNeeded();
+    const box = (await own.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    const selection = daily.locator('[data-pct-part="selection"]');
+    await expect(selection).toHaveCount(1);
+    expect(await styleOf(selection, 'border-left-color')).toBe(sys.Highlight);
+  });
+
   test('eight series keep eight dashes and eight markers in CanvasText', async ({
     page,
   }) => {
