@@ -112,7 +112,8 @@
       "unit",
       "area",
       "cursor",
-      "tooltip"
+      "tooltip",
+      "zoom"
     ],
     "properties": [
       "alpha",

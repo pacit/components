@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 600 steps over 42 views, at most 12 stops of a view's own
+- 601 steps over 42 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -27,17 +27,17 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 5 of 600 here. 14 view(s) hit the cap, and each says so.
+at — 5 of 601 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2492
-phrases, and 2489 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2487
+phrases, and 2484 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
 
 **Every view spoke.** No view of the 42 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-14 view(s) have more stops than the 12 taken, and each says so where it bit.
+15 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -515,7 +515,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/toast`
 
 ```
-arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · link. · Browse mode
+arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · visited link. · Browse mode
 enter   button "Save the draft"                              Save the draft · button.
 tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
 tab 2   button "Report something that waits"                 Report something that waits · button.
@@ -540,7 +540,7 @@ tab 20  input[control]                                       leaving panel. · S
 tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 22  button "Open the settings"                           leaving panel. · Open the settings · button.
 tab 23  button "Open the settings"                           Toast · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Copy (a shorter clock)"                      main content · A message that arrives on top of the page. There is no   link to put in a template — · Browse mode · Copy (a shorter clock) · button.
+reach   button "Copy (a shorter clock)"                      main content · Copy (a shorter clock) · button. · Browse mode
 open    button "Copy (a shorter clock)"                      Notifications. Copied to the clipboard.
 close   button "Copy (a shorter clock)"                      (silence)
 ```
@@ -739,36 +739,37 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  a "Chart"                                            navigation · Sandbox views · List with 36 items · Chart · link. · Browse mode
 enter   input[range] "Heat recovery on 25 October 2026"      Heat recovery on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
-tab 1   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 3   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 4   input[range] "Supply air and fan power, the cursor…" leaving panel. · Supply air and fan power, the cursor shared · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
-tab 5   button "Put the cursor at 10:00"                     Put the cursor at 10:00 · button. · Browse mode
-tab 6   button "Clear it"                                    Clear it · button.
-tab 7   input[control]                                       Theme · panel · light · selected radio button.
-tab 8   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 10  input[range] "Supply air on 25 October 2026, from zero" leaving panel. · Supply air on 25 October 2026, from zero · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
-tab 11  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 12  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 13  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 14  input[range] "A week at one reading every ten seconds" leaving panel. · A week at one reading every ten seconds · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 1   button[zoom] "Zoom in"                               Zoom in · button.
+tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 4   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 5   input[range] "Supply air and fan power, the cursor…" leaving panel. · Supply air and fan power, the cursor shared · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 6   button[zoom] "Zoom in"                               Zoom in · button.
+tab 7   button "Put the cursor at 10:00"                     Put the cursor at 10:00 · button. · Browse mode
+tab 8   button "Clear it"                                    Clear it · button.
+tab 9   input[control]                                       Theme · panel · light · selected radio button.
+tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 12  input[range] "Fan power on 25 October 2026"          leaving panel. · Fan power on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 13  button[zoom] "Zoom in"                               Zoom in · button.
+tab 14  input[range] "Heater on 25 October 2026"             Heater on 25 October 2026 · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.
 tab 15  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
 tab 16  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 17  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 18  input[range] "Response of the heater to its setting" leaving panel. · Response of the heater to its setting · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
-tab 19  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 20  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 22  input[control]                                       Chart · @pacit/components · page tab. · JUGGLER <window>.
+tab 18  input[range] "Supply air on 25 October 2026, from zero" leaving panel. · Supply air on 25 October 2026, from zero · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
+tab 19  button[zoom] "Zoom in"                               Zoom in · button.
+tab 20  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+tab 21  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 22  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
+tab 23  input[range] "A week at one reading every ten seconds" leaving panel. · A week at one reading every ten seconds · slider · No reading selected · 50 percent. · Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor. · Focus mode
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/table`
 
 ```
-arrive  a "Table"                                            navigation · Sandbox views · List with 36 items · Table · visited link. · Browse mode
+arrive  a "Table"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Table · visited link. · Browse mode
 enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.

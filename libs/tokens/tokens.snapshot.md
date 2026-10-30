@@ -134,6 +134,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-tooltip-radius dimension component public
 --pct-chart-tooltip-shadow shadow component public
 --pct-chart-unit-fg color component public
+--pct-chart-zoom-gap dimension component public
 --pct-checkbox-bg color component public
 --pct-checkbox-bg-checked color component public
 --pct-checkbox-bg-disabled color component public

@@ -1,0 +1,5 @@
+// A row of the five buttons, close together: a toolbar, not a sentence of controls.
+:host {
+  display: inline-flex;
+  gap: var(--pct-chart-zoom-gap);
+}
