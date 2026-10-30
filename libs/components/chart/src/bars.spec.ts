@@ -8,6 +8,7 @@ import { PctBars, type PctPick } from './bars';
 import { PctAxis, PctChart } from './chart';
 import { PctChartTable } from './chart-table';
 import { PctLine } from './line';
+import { PCT_SERIES_MARKERS } from './scene';
 
 const H = 3_600_000;
 const D = 24 * H;
@@ -353,9 +354,17 @@ describe('PctBars', () => {
         rows: [expect.objectContaining({ value: 15.5, text: '15.5 kWh' })],
       }),
     );
+    // the marker on the cursor's line is the bars' own swatch in its marker form: a square
+    const marker = element(fixture).querySelector(
+      '[data-pct-part="marker"] [data-pct-part="swatch"].marker path.shape',
+    );
+    expect(marker?.getAttribute('d')).toBe(PCT_SERIES_MARKERS[1]);
     chart.cursor.set(MARCH + 2 * D + H);
     await settle(fixture);
     expect(chart.reading()!.rows[0].text).toBe('No reading');
+    expect(
+      element(fixture).querySelectorAll('[data-pct-part="marker"]'),
+    ).toHaveLength(0);
     expect(texts(fixture, 'pct-chart-table tbody th')).toEqual([
       '01/03/2026, 00:00:00',
       '02/03/2026, 00:00:00',
