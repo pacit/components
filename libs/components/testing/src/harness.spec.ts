@@ -14,6 +14,8 @@ import {
   PctCellTemplate,
   PctDataTable,
   pctColumnsOf,
+  PctTableSelection,
+  type PctRowId,
   type PctTableSort,
 } from '@pacit/components/table';
 
@@ -231,6 +233,27 @@ class TableHost {
   readonly sort = signal<readonly PctTableSort<'name' | 'room' | 'on'>[]>([]);
 }
 
+@Component({
+  imports: [PctDataTable, PctTableSelection],
+  template: `<pct-data-table
+    caption="Lights"
+    pctTableSelection
+    [mode]="mode()"
+    required
+    [(value)]="picked"
+    [rows]="rows"
+    [columns]="columns"
+    [rowId]="byId"
+  />`,
+})
+class PickHost {
+  readonly rows = LIGHTS;
+  readonly columns = lights.of([lights.key('name', { header: 'Name' })]);
+  readonly byId = (light: Light) => light.id;
+  readonly picked = signal<readonly PctRowId[]>([]);
+  readonly mode = signal<'single' | 'multiple'>('multiple');
+}
+
 describe('PctDataTableHarness', () => {
   const globals = globalThis as { ResizeObserver?: unknown };
   beforeEach(() => {
@@ -306,6 +329,29 @@ describe('PctDataTableHarness', () => {
     );
     await expect(table.sortBy('Colour')).rejects.toThrow(
       'PctDataTableHarness: no column headed "Colour" sorts.',
+    );
+  });
+  it('picks a row, a range with Shift and every row, reads the rows picked, and refuses a table that picks none', async () => {
+    const { fixture, loader } = await mount(PickHost);
+    const table = await loader.getHarness(PctDataTableHarness);
+    // The column of picks is headed by nothing a user reads, the required sign left out.
+    expect(await table.headers()).toEqual(['', 'Name']);
+    await table.toggleSelection(0);
+    await table.toggleSelection(2, { shift: true });
+    expect(fixture.componentInstance.picked()).toEqual([1, 2, 3]);
+    expect(await table.selectedRows()).toEqual([0, 1, 2]);
+    await table.selectAll();
+    expect(await table.selectedRows()).toEqual([]);
+    await expect(table.toggleSelection(3)).rejects.toThrow(
+      'PctDataTableHarness: row 3 has no checkbox; the table draws 3 rows, and picks them only with pctTableSelection.',
+    );
+    fixture.componentInstance.mode.set('single');
+    await expect(table.selectAll()).rejects.toThrow(
+      'PctDataTableHarness: no checkbox heads the table; it picks rows only with pctTableSelection, and one at a time in single mode.',
+    );
+    const { table: plain } = await outer();
+    await expect(plain.toggleSelection(0)).rejects.toThrow(
+      'PctDataTableHarness: row 0 has no checkbox',
     );
   });
 });

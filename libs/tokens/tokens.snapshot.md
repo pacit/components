@@ -674,6 +674,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-bg-danger color component public
 --pct-table-bg-hover color component public
 --pct-table-bg-info color component public
+--pct-table-bg-selected color component public
 --pct-table-bg-striped color component public
 --pct-table-bg-success color component public
 --pct-table-bg-warning color component public
@@ -687,6 +688,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-fg-danger color component public
 --pct-table-fg-info color component public
 --pct-table-fg-muted color component public
+--pct-table-fg-selected color component public
 --pct-table-fg-success color component public
 --pct-table-fg-warning color component public
 --pct-table-font-size dimension component public
@@ -696,6 +698,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-heading-border color component public
 --pct-table-heading-fg color component public
 --pct-table-heading-font-weight fontWeight component public
+--pct-table-hint-fg color component public
+--pct-table-hint-fg-invalid color component public
+--pct-table-hint-fg-warning color component public
 --pct-table-icon-fg-muted color component public
 --pct-table-indent dimension component public
 --pct-table-mark-bg color component public

@@ -3,6 +3,7 @@ export * from './data-table';
 export * from './data-table-slots';
 export * from './data-table-details';
 export * from './data-table-groups';
+export * from './data-table-selection';
 export * from './model/aggregate';
 export * from './model/columns';
 export * from './model/fit';

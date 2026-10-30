@@ -216,6 +216,80 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Rules to move"
+  summary="The selection is a field of a form: a checkbox per row and one in the header over the rows the filter left, Shift with a press for the rows between. Leave the column with nothing picked and the error takes the hint's place; pick more than ten and a warning says so and lets the form through. A rule the filter hides stays picked."
+  [reqs]="['req-api-signal-forms', 'req-api-message', 'req-api-warning']"
+  data-testid="demo-selection"
+>
+  <pct-field label="Filter rules" class="datatable__filter">
+    <input
+      pctText
+      type="search"
+      data-testid="selection-filter"
+      [value]="moveQuestion()"
+      (input)="moveQuestion.set($any($event.target).value)"
+    />
+  </pct-field>
+  <pct-data-table
+    #picks="pctTableSelection"
+    data-testid="table-selection"
+    caption="Rules to move"
+    locale="pl"
+    pctTableSelection
+    [formField]="moveForm.rules"
+    hint="Pick the rules to move to the new controller."
+    [rows]="rules()"
+    [columns]="columns"
+    [rowId]="byId"
+    [filter]="moveQuestion()"
+  />
+  <div class="datatable__widths" role="group" aria-label="Rules to move">
+    <button
+      pctButton
+      type="button"
+      data-testid="selection-move"
+      (click)="move()"
+    >
+      Move
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="selection-all"
+      (click)="picks.selectAll()"
+    >
+      Pick every rule in view
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="selection-clear"
+      (click)="picks.clear()"
+    >
+      Clear
+    </button>
+  </div>
+  <p data-testid="selection-state">
+    Picked: {{ moveModel().rules.join(' ') || 'none' }}. Moved: {{ moved() ||
+    'nothing yet' }}.
+  </p>
+  <pct-data-table
+    data-testid="table-single"
+    caption="The rule a new device copies"
+    locale="pl"
+    pctTableSelection
+    mode="single"
+    [(value)]="template"
+    [rows]="groupRules"
+    [columns]="groupColumns"
+    [rowId]="byId"
+  />
+  <p data-testid="single-state">Copied: {{ template().join(' ') }}.</p>
+</sbx-demo>
+
+<sbx-demo
   heading="Devices at a glance"
   summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state toned by its value, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
   [reqs]="['req-a11y-forced-colors']"

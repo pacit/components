@@ -885,7 +885,7 @@ const HEADS = ':scope > pct-table-frame > table > thead > tr > th';
 
 /** What a header's label leaves out: a later key's place, and the words only a reader hears. */
 const NOT_THE_LABEL =
-  '[data-pct-part="place"], .pct-data-table__word, [hidden]';
+  '[data-pct-part="place"], .pct-data-table__word, [hidden], .pct-data-table__required';
 
 /**
  * `pct-data-table` — `PctDataTable`.
@@ -899,21 +899,31 @@ const NOT_THE_LABEL =
 export class PctDataTableHarness extends PctHarness<
   | 'details'
   | 'disclosure'
+  | 'error'
   | 'group'
+  | 'hint'
   | 'mark'
   | 'message'
   | 'place'
   | 'placeholder'
+  | 'select'
+  | 'select-all'
+  | 'warning'
 > {
   static override hostSelector = 'pct-data-table';
   static override readonly parts = [
     'details',
     'disclosure',
+    'error',
     'group',
+    'hint',
     'mark',
     'message',
     'place',
     'placeholder',
+    'select',
+    'select-all',
+    'warning',
   ] as const;
 
   /**
@@ -931,8 +941,9 @@ export class PctDataTableHarness extends PctHarness<
 
   /**
    * The rows of data, in the order the table draws them, each as the texts of its cells: a
-   * boolean cell as its word, then after any leading cells — the disclosure's, empty, and the
-   * row's number when the table numbers its rows. An open row's details are not a row.
+   * boolean cell as its word, then after any leading cells — the checkbox's and the
+   * disclosure's, empty, and the row's number when the table numbers its rows. An open row's
+   * details are not a row.
    *
    * @since next
    */
@@ -993,13 +1004,74 @@ export class PctDataTableHarness extends PctHarness<
   }
 
   /**
+   * Presses the checkbox of the row at `row`, counted from 0 among the rows drawn, with Shift
+   * held when `shift` is set — the press that picks the rows between it and the last one
+   * pressed. Throws when the table picks no rows.
+   *
+   * @since next
+   */
+  async toggleSelection(
+    row: number,
+    options: { shift?: boolean } = {},
+  ): Promise<void> {
+    const line = await this.lineOf(row);
+    // A row the table does not draw has no line, and the selector then matches nothing.
+    const input = await this.locatorForOptional(
+      `${DATA_ROWS.replace('[data-pct-index]', `[data-pct-index="${line}"]`)} > td > label > [data-pct-part="select"]`,
+    )();
+    if (!input)
+      throw new Error(
+        `PctDataTableHarness: row ${row} has no checkbox; the table draws ` +
+          `${(await this.locatorForAll(DATA_ROWS)()).length} rows, and picks them ` +
+          `only with pctTableSelection.`,
+      );
+    await input.click(options.shift ? { shift: true } : {});
+  }
+
+  /**
+   * Presses the header's checkbox, which picks every row the filter left, or drops them when
+   * all are picked. Throws when the table picks no rows, or one row at a time.
+   *
+   * @since next
+   */
+  async selectAll(): Promise<void> {
+    const input = await this.locatorForOptional(
+      `${HEADS} [data-pct-part="select-all"]`,
+    )();
+    if (!input)
+      throw new Error(
+        'PctDataTableHarness: no checkbox heads the table; it picks rows only with ' +
+          'pctTableSelection, and one at a time in single mode.',
+      );
+    await input.click();
+  }
+
+  /**
+   * The rows picked, as their places among the rows drawn, counted from 0.
+   *
+   * @since next
+   */
+  async selectedRows(): Promise<number[]> {
+    const rows = await this.locatorForAll(DATA_ROWS)();
+    const picked = await Promise.all(
+      rows.map((row) => row.getAttribute('data-pct-selected')),
+    );
+    return picked.flatMap((value, row) => (value === null ? [] : [row]));
+  }
+
+  /** The line of the row at `row`: its place among the lines, which counts open details too. */
+  private async lineOf(row: number): Promise<string | null | undefined> {
+    return (await this.locatorForAll(DATA_ROWS)())[row]?.getAttribute(
+      'data-pct-index',
+    );
+  }
+
+  /**
    * The cells of the row at `row`, in the columns' order. A row's index is its place among the
    * lines, which counts open details too, so it is read off the row rather than assumed.
    */
   private async cellsOf(row: number): Promise<TestElement[]> {
-    const line = await (
-      await this.locatorForAll(DATA_ROWS)()
-    )[row]?.getAttribute('data-pct-index');
+    const line = await this.lineOf(row);
     return this.locatorForAll(
       `${DATA_ROWS.replace('[data-pct-index]', `[data-pct-index="${line}"]`)} > td`,
     )();
