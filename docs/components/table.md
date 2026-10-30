@@ -66,17 +66,22 @@ what it holds. While the table fits, it writes none of the three.
 
 ## Parts
 
-| part          | what it is                                                                  |
-| ------------- | --------------------------------------------------------------------------- |
-| `toggle`      | the button that fills a sortable header cell                                |
-| `icon`        | the chevron beside a sortable header's label                                |
-| `details`     | the data table's row of details below a row                                 |
-| `group`       | the data table's heading of a group of rows                                 |
-| `disclosure`  | the data table's button that opens a row's details                          |
-| `mark`        | the data table's word the quick filter found                                |
-| `message`     | the data table's sentence beside an empty table — see the data table's card |
-| `place`       | the data table's place of a sort key after the first                        |
-| `placeholder` | the data table's row standing for rows still coming                         |
+| part          | what it is                                                                   |
+| ------------- | ---------------------------------------------------------------------------- |
+| `toggle`      | the button that fills a sortable header cell                                 |
+| `icon`        | the chevron beside a sortable header's label                                 |
+| `details`     | the data table's row of details below a row                                  |
+| `group`       | the data table's heading of a group of rows                                  |
+| `disclosure`  | the data table's button that opens a row's details                           |
+| `mark`        | the data table's word the quick filter found                                 |
+| `message`     | the data table's sentence beside an empty table — see the data table's card  |
+| `place`       | the data table's place of a sort key after the first                         |
+| `placeholder` | the data table's row standing for rows still coming                          |
+| `select`      | the data table's checkbox or radio that picks a row                          |
+| `select-all`  | the data table's checkbox in the header that picks every row the filter left |
+| `error`       | the data table's error under the table, from its selection's form field      |
+| `warning`     | the data table's warning under the table                                     |
+| `hint`        | the data table's hint under the table                                        |
 
 ## Theming
 

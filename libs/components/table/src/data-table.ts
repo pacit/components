@@ -1183,15 +1183,21 @@ export class PctDataTable<
    * here: Chromium hands a press with Shift on to the control, Firefox and WebKit hand it to
    * nothing. So the label hands on no press, and the press is the table's in all three.
    */
-  protected pressTarget(row: Row<T>, event: MouseEvent): void {
-    const label = event.currentTarget as HTMLLabelElement;
-    const input = label.querySelector('input') as HTMLInputElement;
-    if (event.target === input) return;
+  private pressTarget(event: MouseEvent): void {
+    const label = (event.target as Element).closest(
+      'td > .pct-data-table__target',
+    );
+    // A table nested in a cell picks its own rows.
+    if (label === null || label.closest('table') !== this.ownTable()) return;
+    const control = label.querySelector('input') as HTMLInputElement;
+    if (event.target === control) return;
     event.preventDefault();
-    if (input.disabled || this.selection()?.readonly()) return;
-    if (input.type === 'radio' && input.checked) return;
-    input.checked = input.type === 'radio' || !input.checked;
-    this.pickRow(row, input.checked, event.shiftKey);
+    if (control.disabled || this.selection()?.readonly()) return;
+    if (control.type === 'radio' && control.checked) return;
+    const line = Number(label.closest('tr')?.getAttribute('data-pct-index'));
+    const row = this.body().find((other) => other.line === line) as Row<T>;
+    control.checked = control.type === 'radio' || !control.checked;
+    this.pickRow(row, control.checked, event.shiftKey);
   }
 
   /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
@@ -1379,6 +1385,9 @@ export class PctDataTable<
         this.noteFocus(event.target as Element),
       );
       table.addEventListener('pointerover', (event) => this.noteCut(event));
+      // A press beside a row's control, on the target around it: no handler in the template,
+      // where a label with one would read as a control of its own.
+      table.addEventListener('click', (event) => this.pressTarget(event));
       table.addEventListener('pointerout', (event) => this.leaveCut(event));
       table.addEventListener('animationend', (event) =>
         (event.target as HTMLElement).removeAttribute('data-pct-changed'),

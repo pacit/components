@@ -271,6 +271,21 @@ describe('PctTableSelection — the rows picked', () => {
     await settle(fixture);
     await pressBeside(picks()[3]);
     expect(host.value()).toEqual([4, 2]);
+    // A press elsewhere in a row is no pick, and the header's target is the platform's.
+    host.mode.set('multiple');
+    host.value.set([]);
+    await settle(fixture);
+    const cell = rows()[0].cells[1];
+    const away = new MouseEvent('click', { bubbles: true, cancelable: true });
+    cell.dispatchEvent(away);
+    await settle(fixture);
+    expect(away.defaultPrevented).toBe(false);
+    expect(host.value()).toEqual([]);
+    const head = new MouseEvent('click', { bubbles: true, cancelable: true });
+    (all()?.parentElement as HTMLElement).dispatchEvent(head);
+    await settle(fixture);
+    expect(head.defaultPrevented).toBe(false);
+    expect(host.value()).toEqual([1, 2, 3, 4]);
   });
 
   it('heads the column with a checkbox clear, mixed or checked over the rows the filter left', async () => {

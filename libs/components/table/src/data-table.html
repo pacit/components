@@ -157,10 +157,7 @@
         @if (selection(); as selection) {
         <td pctCell class="pct-data-table__pick">
           @if (selection.mode() === 'multiple') {
-          <label
-            class="pct-data-table__target"
-            (click)="pressTarget(row, $event)"
-          >
+          <label class="pct-data-table__target">
             <input
               type="checkbox"
               data-pct-part="select"
@@ -177,10 +174,7 @@
             />
           </label>
           } @else {
-          <label
-            class="pct-data-table__target"
-            (click)="pressTarget(row, $event)"
-          >
+          <label class="pct-data-table__target">
             <input
               type="radio"
               data-pct-part="select"

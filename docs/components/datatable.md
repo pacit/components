@@ -113,6 +113,11 @@ list as filled. `mode="single"` picks one row with radios.
 | `disclosure`  | the button that opens a row's details, in the leading column                    |
 | `details`     | the row of details below a row, the full width of the table                     |
 | `group`       | a group's heading, the first row of its body                                    |
+| `select`      | a row's checkbox, or its radio in single mode, in the leading column            |
+| `select-all`  | the header's checkbox, over the rows the filter left                            |
+| `error`       | the selection's error under the table, once touched                             |
+| `warning`     | the selection's warning under the table, with its glyph                         |
+| `hint`        | the selection's hint under the table                                            |
 | `toggle`      | the first layer's button in a sortable header — see the table's card            |
 | `icon`        | its chevron                                                                     |
 
