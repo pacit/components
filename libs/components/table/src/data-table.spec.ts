@@ -1381,6 +1381,8 @@ describe('PctDataTable — the look of the rows', () => {
     expect(document.querySelector('[title]')).toBeNull();
     expect(document.querySelector('[data-pct-tooltip]')).toBeNull();
     expect(document.querySelector('mark')).toBeNull();
+    // With no question a text cell is its text, with no element around it.
+    expect(cells(0)[1].children).toHaveLength(0);
     fixture.componentInstance.filter.set('kit');
     await settle(fixture);
     expect(marks(cells(0)[1])).toEqual(['Kit']);

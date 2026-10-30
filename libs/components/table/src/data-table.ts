@@ -100,7 +100,7 @@ interface Cell<T> {
   readonly numeric: boolean;
   readonly yes: boolean | null;
   readonly slot: TemplateRef<unknown> | null;
-  /** The text cut where the quick filter's words stand, or `null` when nothing is marked. */
+  /** The text cut where the quick filter's words stand, or `null` when there is no question to mark. */
   readonly parts: readonly PctTextPart[] | null;
   readonly tone: PctTone | null;
   /** The tooltip a column's function wrote. */
@@ -654,7 +654,7 @@ export class PctDataTable<
             numeric,
             yes,
             slot,
-            parts: parts?.some((part) => part.match) ? parts : null,
+            parts,
             tone: column.tone?.(value, line.row) ?? null,
             title: typeof tooltip === 'function' ? tooltip(line.row) : null,
             clip: tooltip === true && slot === null && yes === null,
