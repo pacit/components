@@ -7,6 +7,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctBars, type PctPick } from './bars';
 import { PctAxis, PctChart } from './chart';
 import { PctChartTable } from './chart-table';
+import { PctChartLegend } from './legend';
 import { PctLine } from './line';
 import { PCT_SERIES_MARKERS } from './scene';
 
@@ -56,7 +57,7 @@ class QuietObserver {
 }
 
 @Component({
-  imports: [PctChart, PctBars, PctChartTable, PctAxis],
+  imports: [PctChart, PctBars, PctChartTable, PctAxis, PctChartLegend],
   template: `
     <pct-chart
       #chart
@@ -94,6 +95,7 @@ class QuietObserver {
       }
     </pct-chart>
     <pct-chart-table [chart]="chart" [summary]="summary()" />
+    <pct-chart-legend [chart]="chart" />
   `,
 })
 class Host {
@@ -354,6 +356,14 @@ describe('PctBars', () => {
         rows: [expect.objectContaining({ value: 15.5, text: '15.5 kWh' })],
       }),
     );
+    // the legend's swatch is the bars' own, in its swatch form: a block in the series' place
+    const block = element(fixture).querySelector(
+      'pct-chart-legend [data-pct-part="swatch"]:not(.marker) rect.block',
+    );
+    expect(block?.getAttribute('width')).toBe('22');
+    expect(
+      block?.closest('[data-pct-part="swatch"]')?.getAttribute('viewBox'),
+    ).toBe('0 0 24 12');
     // the marker on the cursor's line is the bars' own swatch in its marker form: a square
     const marker = element(fixture).querySelector(
       '[data-pct-part="marker"] [data-pct-part="swatch"].marker path.shape',
