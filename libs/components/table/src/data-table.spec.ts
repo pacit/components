@@ -1807,7 +1807,7 @@ describe('PctDataTable — after the review of the rows’ look', () => {
       readonly rows = signal<readonly Spot[]>([{ id: 1, x: 1, at: HOUR }]);
       readonly columns = of.of([
         of.value(
-          'pos',
+          'place',
           (spot) => {
             reads++;
             return [spot.x];

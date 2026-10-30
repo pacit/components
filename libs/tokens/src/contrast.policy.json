@@ -2405,34 +2405,6 @@
       "bg": "pct.table.bg-hover",
       "level": "AA",
       "severity": "error"
-    },
-    {
-      "name": "data table — the text of a success row or cell as it flashes",
-      "fg": "pct.table.fg-success",
-      "bg": "pct.table.bg-changed",
-      "level": "AA",
-      "severity": "error"
-    },
-    {
-      "name": "data table — the text of a warning row or cell as it flashes",
-      "fg": "pct.table.fg-warning",
-      "bg": "pct.table.bg-changed",
-      "level": "AA",
-      "severity": "error"
-    },
-    {
-      "name": "data table — the text of a danger row or cell as it flashes",
-      "fg": "pct.table.fg-danger",
-      "bg": "pct.table.bg-changed",
-      "level": "AA",
-      "severity": "error"
-    },
-    {
-      "name": "data table — the text of a info row or cell as it flashes",
-      "fg": "pct.table.fg-info",
-      "bg": "pct.table.bg-changed",
-      "level": "AA",
-      "severity": "error"
     }
   ]
 }

@@ -222,7 +222,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
   - landed: the pure engine (typed columns, the order of several keys, the quick filter by
     words, lines, the window over measured heights), then v1 on it — typed cell, header and
     empty slots, Shift for a second key, `matched`, empty and loading states beside the table,
-    `scrolled`, `visible`, `scrollTo`; its card, `/datatable` in three engines
+    `scrolled`, `visible`, `scrollTo`; its card, `/datatable` in three engines; rows that say
+    more — stripes, numbers, tones by value or row, a cut cell's tooltip, marked matches,
+    a flash on a changed value
   - phases, one pull request each, after it: priorities and the details row; groups and
     aggregates; the selection as a control; the window to a million rows; the server's pages
     and blocks; then column filters, the column layout as state, `role="grid"` with the keys,

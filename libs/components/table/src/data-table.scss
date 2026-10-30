@@ -135,9 +135,12 @@ td[data-pct-changed] {
     calc(var(--pct-motion-transition-duration) * 8) ease-out;
 }
 
+/* The flash wears the table's own text over its fill, whatever tone the cell wore: a tone's
+   text is measured on the tone's fill, not on the flash's. */
 @keyframes pct-data-table-changed {
   from {
     background-color: var(--pct-table-bg-changed);
+    color: var(--pct-table-fg);
   }
 }
 
