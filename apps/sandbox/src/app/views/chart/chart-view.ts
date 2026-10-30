@@ -8,6 +8,7 @@ import {
   PctChartSync,
   PctChartTable,
   PctChartTooltip,
+  pctIntervalStart,
   PctLine,
 } from '@pacit/components/chart';
 import { SbxDemo } from '../../ui/demo';
@@ -79,12 +80,11 @@ function daysOf(
   const rows: { at: number; kwh: number | null }[] = [];
   const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
   for (let day = 1; day <= days; day++) {
-    // Midnight of the day in Warsaw: 23:00 UTC the day before in winter, 22:00 in summer.
-    const at = Date.UTC(
-      year,
-      monthIndex,
-      day - 1,
-      monthIndex >= 2 && monthIndex <= 9 ? 22 : 23,
+    // Midnight of the day in Warsaw, whichever side of the change of clocks it stands on.
+    const at = pctIntervalStart(
+      Date.UTC(year, monthIndex, day, 12),
+      'day',
+      'Europe/Warsaw',
     );
     const kwh = day === gap ? null : Math.round((8 + random() * 10) * 10) / 10;
     rows.push({ at, kwh });
