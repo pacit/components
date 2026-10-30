@@ -966,15 +966,10 @@ test.describe('The pages', () => {
     // 735 since the data table's rows took their surfaces, the four tones, the mark and the cut
     // column's width (0097); 745 since the chart's cursor took its line, its markers and its
     // tooltip (0103); 746 since a data table's row opened its details on a surface of its own
-<<<<<<< HEAD
-    // (0097); 747 since the zoom bar took its gap (0101); 753 since the legend and the swatches
-    // did (0102).
-    await expect(count).toHaveText('753 of 753');
-=======
     // (0097); 747 since the zoom bar took its gap (0101); 750 since the data table's groups took
-    // a heading's colours and a level's indent (0097).
-    await expect(count).toHaveText('750 of 750');
->>>>>>> origin/main
+    // a heading's colours and a level's indent (0097); 756 since the legend and the swatches did
+    // (0102).
+    await expect(count).toHaveText('756 of 756');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -982,11 +977,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-<<<<<<< HEAD
-    await expect(count).toHaveText(/^\d+ of 753$/);
-=======
-    await expect(count).toHaveText(/^\d+ of 750$/);
->>>>>>> origin/main
+    await expect(count).toHaveText(/^\d+ of 756$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -1002,11 +993,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-<<<<<<< HEAD
-    await expect(count).toHaveText('753 of 753');
-=======
-    await expect(count).toHaveText('750 of 750');
->>>>>>> origin/main
+    await expect(count).toHaveText('756 of 756');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({
