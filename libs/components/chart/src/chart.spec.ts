@@ -3936,6 +3936,14 @@ describe('PctChart, turned', () => {
     const layer = query(fixture, '.overlay') as HTMLElement;
     const y = chart.xScale()!.map(T0 + 12 * H);
     const px = chart.plotWidth();
+    // a mouse over the plot puts the cursor at the pointer's height, not at its x
+    layer.dispatchEvent(pointer('pointermove', { x: 100, y }));
+    await settle(fixture);
+    expect(chart.cursor()).toBeCloseTo(chart.xScale()!.invert(y), -3);
+    expect(chart.cursor()).not.toBeCloseTo(chart.xScale()!.invert(100), -3);
+    layer.dispatchEvent(pointer('pointerleave', { x: 100, y }));
+    await settle(fixture);
+    expect(chart.cursor()).toBeNull();
     layer.dispatchEvent(pointer('pointerdown', { x: 100, y }));
     layer.dispatchEvent(pointer('pointermove', { x: 100, y: y - px / 4 }));
     layer.dispatchEvent(pointer('pointerup', { x: 100, y: y - px / 4 }));

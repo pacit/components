@@ -1733,7 +1733,10 @@ export class PctChart extends PctChartScene {
     )
       return;
     const point = this.layerPoint(event);
-    this.cursor.set(point ? this.positionAt(point.x) : null);
+    // Along the x axis, whichever way it runs: the pointer's height on a turned chart.
+    this.cursor.set(
+      point ? this.positionAt(this.horizontal() ? point.y : point.x) : null,
+    );
   }
 
   protected onPointerUp(event: PointerEvent): void {
