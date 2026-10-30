@@ -76,6 +76,9 @@ const ENGLISH: PctTexts = {
   chartTime: 'Time',
   chartPosition: 'Position',
   chartAllHidden: 'Every series is hidden',
+  chartNoCursor: 'No reading selected',
+  chartKeys:
+    'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Escape clears the cursor.',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',

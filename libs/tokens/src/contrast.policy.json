@@ -2552,6 +2552,139 @@
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
+    },
+    {
+      "name": "UI: chart — the line of the cursor",
+      "fg": "pct.chart.cursor-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "chart — the text of the tooltip",
+      "fg": "pct.chart.tooltip-fg",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — the edge of the tooltip",
+      "fg": "pct.chart.tooltip-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: chart — series 1 in the tooltip",
+      "fg": "pct.chart.series-color-1",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 2 in the tooltip",
+      "fg": "pct.chart.series-color-2",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 3 in the tooltip",
+      "fg": "pct.chart.series-color-3",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 4 in the tooltip",
+      "fg": "pct.chart.series-color-4",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 5 in the tooltip",
+      "fg": "pct.chart.series-color-5",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 6 in the tooltip",
+      "fg": "pct.chart.series-color-6",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 7 in the tooltip",
+      "fg": "pct.chart.series-color-7",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 8 in the tooltip",
+      "fg": "pct.chart.series-color-8",
+      "bg": "pct.chart.tooltip-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 1 inside the ring of a marker",
+      "fg": "pct.chart.series-color-1",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 2 inside the ring of a marker",
+      "fg": "pct.chart.series-color-2",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 3 inside the ring of a marker",
+      "fg": "pct.chart.series-color-3",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 4 inside the ring of a marker",
+      "fg": "pct.chart.series-color-4",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 5 inside the ring of a marker",
+      "fg": "pct.chart.series-color-5",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 6 inside the ring of a marker",
+      "fg": "pct.chart.series-color-6",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 7 inside the ring of a marker",
+      "fg": "pct.chart.series-color-7",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — series 8 inside the ring of a marker",
+      "fg": "pct.chart.series-color-8",
+      "bg": "pct.chart.marker-border",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

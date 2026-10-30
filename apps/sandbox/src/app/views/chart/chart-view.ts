@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
+import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
   PctChart,
   PctChartTable,
+  PctChartTooltip,
   PctLine,
 } from '@pacit/components/chart';
 import { SbxDemo } from '../../ui/demo';
@@ -89,7 +91,15 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
  */
 @Component({
   selector: 'sbx-chart-view',
-  imports: [SbxDemo, PctChart, PctLine, PctAxis, PctChartTable],
+  imports: [
+    SbxDemo,
+    PctChart,
+    PctLine,
+    PctAxis,
+    PctChartTable,
+    PctChartTooltip,
+    PctButton,
+  ],
   templateUrl: './chart-view.html',
   styleUrl: './chart-view.scss',
 })
@@ -101,6 +111,9 @@ export class ChartView {
   protected readonly curve = curve;
   protected readonly end = START + 25 * HOUR;
   protected readonly hidden = signal<readonly string[]>([]);
+  protected readonly cursor = signal<number | null>(null);
+  /** 10:00 on the wall clock of Warsaw, on the day of twenty-five hours (the clocks went back at 03:00). */
+  protected readonly ten = START + 11 * HOUR;
   protected readonly first = (row: readonly [number, number]) => row[0];
   protected readonly second = (row: readonly [number, number]) => row[1];
 }

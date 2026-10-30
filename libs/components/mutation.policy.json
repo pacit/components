@@ -21,6 +21,7 @@
     "libs/components/chart/src/chart.ts",
     "libs/components/chart/src/line.ts",
     "libs/components/chart/src/model/columns.ts",
+    "libs/components/chart/src/model/cursor.ts",
     "libs/components/chart/src/model/decimate.ts",
     "libs/components/chart/src/model/extent.ts",
     "libs/components/chart/src/model/layout.ts",

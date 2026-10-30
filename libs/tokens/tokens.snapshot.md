@@ -111,8 +111,11 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-axis-border color component public
 --pct-chart-axis-fg color component public
 --pct-chart-axis-gap dimension component public
+--pct-chart-cursor-border color component public
 --pct-chart-font-size dimension component public
 --pct-chart-grid-border color component public
+--pct-chart-marker-border color component public
+--pct-chart-marker-size dimension component public
 --pct-chart-message-fg color component public
 --pct-chart-series-color-1 color component public
 --pct-chart-series-color-2 color component public
@@ -123,6 +126,13 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-series-color-7 color component public
 --pct-chart-series-color-8 color component public
 --pct-chart-series-width dimension component public
+--pct-chart-tooltip-bg color component public
+--pct-chart-tooltip-border color component public
+--pct-chart-tooltip-fg color component public
+--pct-chart-tooltip-padding-x dimension component public
+--pct-chart-tooltip-padding-y dimension component public
+--pct-chart-tooltip-radius dimension component public
+--pct-chart-tooltip-shadow shadow component public
 --pct-chart-unit-fg color component public
 --pct-checkbox-bg color component public
 --pct-checkbox-bg-checked color component public

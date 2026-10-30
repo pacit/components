@@ -8,3 +8,9 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--pct-space-4);
 }
+
+.sbx-chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-space-3);
+}

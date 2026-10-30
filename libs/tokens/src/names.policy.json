@@ -108,7 +108,9 @@
       "grid",
       "axis",
       "unit",
-      "area"
+      "area",
+      "cursor",
+      "tooltip"
     ],
     "properties": [
       "alpha",
