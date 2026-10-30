@@ -690,7 +690,13 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       const widths = await own.evaluateAll((rs) =>
         rs.map((r) => Number(r.getAttribute('width'))),
       );
-      expect(new Set(widths.map((w) => Math.round(w * 100))).size).toBe(1);
+      // one width for every day but the 29th, which has twenty-three hours and a narrower band
+      const distinct = [...new Set(widths.map((w) => Math.round(w * 10)))];
+      expect(distinct).toHaveLength(2);
+      expect(Math.min(...distinct) / Math.max(...distinct)).toBeCloseTo(
+        23 / 24,
+        1,
+      );
       const ticks = daily.locator('[data-pct-part="axis"] .tick');
       await expect(ticks).toHaveCount(31);
       const band =
@@ -735,12 +741,18 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(page.getByTestId('bars-picked')).toHaveText(
         'Picked 3 March',
       );
+      // the band spans the whole day: from half a band before its tick, which stands in its
+      // middle, to half a band after it
       const sel = (await selection.boundingBox())!;
       const ticks = daily.locator('[data-pct-part="axis"] .tick');
-      const left = (await ticks.nth(2).boundingBox())!.x;
-      const right = (await ticks.nth(3).boundingBox())!.x;
-      expect(Math.abs(sel.x - left)).toBeLessThanOrEqual(1.5);
-      expect(Math.abs(sel.x + sel.width - right)).toBeLessThanOrEqual(1.5);
+      const middle = (await ticks.nth(2).boundingBox())!.x;
+      const band =
+        (await ticks.nth(2).boundingBox())!.x -
+        (await ticks.nth(1).boundingBox())!.x;
+      expect(Math.abs(sel.x - (middle - band / 2))).toBeLessThanOrEqual(1.5);
+      expect(
+        Math.abs(sel.x + sel.width - (middle + band / 2)),
+      ).toBeLessThanOrEqual(1.5);
       await page.waitForTimeout(350);
       await page.mouse.click(box.x + box.width / 2, box.y - 10);
       await expect(selection).toHaveCount(0);
