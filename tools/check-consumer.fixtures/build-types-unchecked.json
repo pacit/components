@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-unchecked",
+  "description": "A cell template on a column id the columns do not hold compiled in the consumer's application: the typed slots promise a compile error and the published types gave none.",
+  "typesWrongCode": 0
+}

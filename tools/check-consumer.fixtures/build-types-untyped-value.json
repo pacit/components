@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-untyped-value",
+  "description": "A boolean cell's value used as a number compiled: the slot checked the id and handed the template `any`, so `let-value` carries no type at all.",
+  "typesValueCode": 0
+}

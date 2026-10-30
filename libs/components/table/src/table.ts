@@ -162,6 +162,18 @@ export class PctTableHeader {
    */
   readonly ariaLabelledby = input<string>('');
 
+  /**
+   * A sentence a reader hears after the sort button's name, as its description: what the
+   * header says to the eye beside its label and nowhere in the tree. The data table writes the
+   * place and the way of a sort key after the first here, which `aria-sort` cannot carry.
+   *
+   * @since next
+   */
+  readonly description = input<string>('');
+
+  /** The id of the element the description stands in. */
+  protected readonly descriptionId = nextPctId('pct-table-header');
+
   /** Which way the rows stand sorted by this column, or `null` when they stand by another or by none. */
   protected readonly direction = computed(() => {
     const sort = this.table.sort();

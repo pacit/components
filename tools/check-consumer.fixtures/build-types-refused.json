@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-refused",
+  "description": "The typed probe with a cell template on a column its columns hold did not compile — the library's published types are broken for every consumer, and the twin with a misspelt id would fail for that reason rather than its own.",
+  "typesRightCode": 1
+}

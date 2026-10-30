@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-unchecked",
+  "description": "The probe with a misspelt id failed on its line, but for a binding of that line rather than the id: the compiler echoes the source line under any error on it, so a check for the id anywhere in the output would read the echo as the answer.",
+  "typesWrongOutput": "src/typed-wrong.ts:11:38 - error NG8002: Can't bind to 'pctCell' since it isn't a known property of 'ng-template'.\n\n11     <ng-template [pctCell]=\"columns\" pctCellOf=\"enabld\" let-on=\"value\">{{ on ? 'on' : 'off' }}</ng-template>"
+}

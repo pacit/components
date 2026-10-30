@@ -1,0 +1,7 @@
+{
+  "point": 5,
+  "check": "build",
+  "rule": "types-unchecked",
+  "description": "The probe with a misspelt id failed, but for another reason than the id: the compiler's output does not name it, so the failure proves nothing about the slots.",
+  "typesWrongOutput": "src/typed-wrong.ts:1:1 - error TS2307: Cannot find module."
+}
