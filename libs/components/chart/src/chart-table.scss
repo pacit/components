@@ -1,0 +1,5 @@
+// The data table is the first layer's table in a frame of its own: the table's own tokens
+// dress it, and the box only takes the width it is given.
+:host {
+  display: block;
+}

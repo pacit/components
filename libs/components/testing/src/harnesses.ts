@@ -107,6 +107,39 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
   static override readonly parts = ['label', 'spinner'] as const;
 }
 
+// ── @pacit/components/chart ─────────────────────────────────────────────────────
+
+/**
+ * `pct-chart` — `PctChart`: the plot, its two layers, the grid, the value axes' units and the
+ * message of an empty chart.
+ *
+ * @since next
+ */
+export class PctChartHarness extends PctHarness<
+  'axis' | 'data' | 'grid' | 'message' | 'plot' | 'unit'
+> {
+  static override hostSelector = 'pct-chart';
+  static override readonly parts = [
+    'axis',
+    'data',
+    'grid',
+    'message',
+    'plot',
+    'unit',
+  ] as const;
+}
+
+/**
+ * `pct-line` — `PctLine`. Its drawing is stamped into the chart's data layer, so its parts are
+ * found in the document rather than under its own element.
+ *
+ * @since next
+ */
+export class PctLineHarness extends PctHarness<'area' | 'series'> {
+  static override hostSelector = 'pct-line';
+  static override readonly parts = ['area', 'series'] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**

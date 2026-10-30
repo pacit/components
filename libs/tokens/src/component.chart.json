@@ -1,0 +1,92 @@
+{
+  "pct": {
+    "chart": {
+      "$comment": "A chart: a scene of scales and the marks drawn on them (0099). The colours are the series palette of the skin, by place, and the lines and words of the axes; the type is the small size, because an axis label sits beside the data rather than being read as prose. The line width and the gap between an axis and its labels are the chart's own.",
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the axis labels, the units and the empty message."
+      },
+      "series-color-1": {
+        "$type": "color",
+        "$value": "{pct.series-1}",
+        "$description": "Colour of series 1: its line, its area and its swatch."
+      },
+      "series-color-2": {
+        "$type": "color",
+        "$value": "{pct.series-2}",
+        "$description": "Colour of series 2: its line, its area and its swatch."
+      },
+      "series-color-3": {
+        "$type": "color",
+        "$value": "{pct.series-3}",
+        "$description": "Colour of series 3: its line, its area and its swatch."
+      },
+      "series-color-4": {
+        "$type": "color",
+        "$value": "{pct.series-4}",
+        "$description": "Colour of series 4: its line, its area and its swatch."
+      },
+      "series-color-5": {
+        "$type": "color",
+        "$value": "{pct.series-5}",
+        "$description": "Colour of series 5: its line, its area and its swatch."
+      },
+      "series-color-6": {
+        "$type": "color",
+        "$value": "{pct.series-6}",
+        "$description": "Colour of series 6: its line, its area and its swatch."
+      },
+      "series-color-7": {
+        "$type": "color",
+        "$value": "{pct.series-7}",
+        "$description": "Colour of series 7: its line, its area and its swatch."
+      },
+      "series-color-8": {
+        "$type": "color",
+        "$value": "{pct.series-8}",
+        "$description": "Colour of series 8: its line, its area and its swatch."
+      },
+      "series-width": {
+        "$type": "dimension",
+        "$value": "2px",
+        "$description": "Width of a line."
+      },
+      "area-alpha": {
+        "$type": "dimension",
+        "$value": "20%",
+        "$description": "How much of the series colour fills the area under a line."
+      },
+      "grid-border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Lines of the grid behind the data."
+      },
+      "axis-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Line of an axis and its ticks."
+      },
+      "axis-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Labels of the ticks."
+      },
+      "axis-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between an axis and its labels."
+      },
+      "unit-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "The unit written over a value axis."
+      },
+      "message-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "The message of a chart with nothing to draw."
+      }
+    }
+  }
+}

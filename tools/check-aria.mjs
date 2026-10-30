@@ -1281,6 +1281,27 @@ const parts = (drawn, parsed) =>
   drawn.name !== parsed.name;
 
 /**
+ * The first element a list of template nodes draws, through the blocks around it (`@if`,
+ * `@for`, `@switch`, `@defer`), or `null` when it draws none.
+ */
+const firstElementOf = (nodes) => {
+  for (const node of nodes) {
+    if (node instanceof TmplAstElement) return node;
+    const inner = [
+      ...(node.children ?? []),
+      ...(node.branches ?? []).flatMap((b) => b.children ?? []),
+      ...(node.cases ?? []).flatMap((c) => c.children ?? []),
+    ];
+    const found = firstElementOf(inner);
+    if (found) return found;
+  }
+  return null;
+};
+
+/** Where the parser stands inside a drawing: the content of an `<svg>`. */
+const DRAWING = { space: 'SVG', name: 'svg' };
+
+/**
  * Where a template's root stands to the parser: in its host. A host is an element of the page,
  * HTML, unless the tag a selector names is an element of SVG or of MathML and of no HTML, by
  * Angular's own schema — `g[pctLayer]` a group a consumer draws in an `<svg>`, `svg[pctChart]` a
@@ -1617,7 +1638,14 @@ class TagReader extends TmplAstRecursiveVisitor {
     this.kinds.set(node.sourceSpan.start.offset, 'template');
     if (isTemplateTag(node) && allWrittenOn(node, PART_ATTRIBUTE).length)
       this.templateParts.push(node.sourceSpan.start.offset);
+    // A `<ng-template>` whose first element is written in SVG is a fragment for a drawing: it
+    // is stamped into an `<svg>` elsewhere (a chart's marks, 0099), and the parser reads it
+    // there, so it is read as standing in one. A template that opens in HTML stands in its host.
+    const first = isTemplateTag(node) ? firstElementOf(node.children) : null;
+    const fragment = first !== null && spaceOf(first) === 'SVG';
+    if (fragment) this.context.push(DRAWING);
     super.visitTemplate(node);
+    if (fragment) this.context.pop();
   }
   visitContent(node) {
     this.attributes.set(node.sourceSpan.start.offset, new Map());

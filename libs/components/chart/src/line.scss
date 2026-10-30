@@ -1,0 +1,44 @@
+// The element itself draws nothing: its drawing is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// The line of a series and the area under it. The colour is the palette's place the scene
+// gave the series (0102), or the consumer's own colour as an inline style.
+[data-pct-part='series'] {
+  fill: none;
+  stroke-width: var(--pct-chart-series-width);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-pct-part='area'] {
+  stroke: none;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-part='series'][data-pct-series='#{$i}'] {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+
+  // The area is the series' colour mixed into nothing, by the skin's amount: a tint under the
+  // line, never a second colour.
+  [data-pct-part='area'][data-pct-series='#{$i}'] {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-area-alpha),
+      transparent
+    );
+  }
+}
+
+// Every path carries `data-pct-series` (a place or `custom`), so these win by order.
+@media (forced-colors: active) {
+  [data-pct-part='series'][data-pct-series] {
+    stroke: CanvasText;
+  }
+
+  [data-pct-part='area'][data-pct-series] {
+    fill: none;
+  }
+}

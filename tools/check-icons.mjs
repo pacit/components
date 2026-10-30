@@ -58,14 +58,16 @@ const LITERAL = /'([^']*)'/g;
 const ICON = 'pct-icon';
 const DRAWING = 'svg';
 /**
- * The one place a bare `<svg>` is the mechanism and not a drawing: the SVG renderer's own
- * templates, where a drawing given as DATA is rendered element by element (0083). Every
+ * The two places a bare `<svg>` is the mechanism and not a drawing. The SVG renderer's own
+ * templates, where a drawing given as DATA is rendered element by element (0083): every
  * template there is the renderer of what a source answered, so nothing in it is a picture
- * a consumer would want to swap — the swap already happened one level up. Narrow on
- * purpose: one entrypoint's templates, and the reference input carries one of them so that
- * the exemption is exercised and not merely written.
+ * a consumer would want to swap — the swap already happened one level up. And a chart's,
+ * where the drawing IS the data, scaled and decimated (0099): a picture of the consumer's
+ * numbers is nothing a set could hold. Narrow on purpose: two entrypoints' templates, and the
+ * reference input carries one of the renderer's so that the exemption is exercised and not
+ * merely written.
  */
-const RENDERER = new RegExp(`^${PROJECT}/svg-icon/src/[^/]+\\.html$`);
+const RENDERER = new RegExp(`^${PROJECT}/(svg-icon|chart)/src/[^/]+\\.html$`);
 const PART = 'data-pct-part';
 
 /**

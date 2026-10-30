@@ -190,6 +190,14 @@ const REDUCED = /@media[^{]*prefers-reduced-motion/g;
  * `fill-opacity` and `stroke-opacity` are NOT here — they are in `OPACITY` above, where
  * they answer to a promise of their own.
  */
+/**
+ * The one library whose sheets paint an `<svg>` of their own: a chart's, where the drawing is
+ * the consumer's data, scaled and decimated (0099), and no set could hold it — there is no
+ * drawing for a consumer to replace, so painting it is the component's job and not a reach
+ * into an icon. Narrow on purpose: one entrypoint's sheets.
+ */
+const DRAWS_DATA = /^libs\/components\/chart\/src\/[^/]+\.scss$/;
+
 const PAINT = new Set([
   'fill',
   'fill-rule',
@@ -1115,7 +1123,7 @@ const checkStyles = ({
         translucent.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }
-      if (PAINT.has(d.property)) {
+      if (PAINT.has(d.property) && !DRAWS_DATA.test(sheet.file)) {
         painted.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }

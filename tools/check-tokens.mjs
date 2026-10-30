@@ -128,8 +128,12 @@ const prefixesOf = (words, text) =>
  * property has two readings, and the one that closes completely is the one to take.
  */
 const parseComponent = (rest, policy) => {
-  const { parts, properties, states, sizes } = policy.component;
-  const variants = new Set([...states, ...sizes.list]);
+  const { parts, properties, states, sizes, ordinals } = policy.component;
+  const variants = new Set([
+    ...states,
+    ...sizes.list,
+    ...(ordinals?.list ?? []),
+  ]);
 
   for (const part of [null, ...prefixesOf(parts, rest)]) {
     const afterPart = part === null ? rest : rest.slice(part.length + 1);
@@ -462,7 +466,9 @@ const checkTokens = (input) => {
         record(
           policy.component.states.includes(p.variant)
             ? 'component.states'
-            : 'component.sizes',
+            : policy.component.sizes.list.includes(p.variant)
+              ? 'component.sizes'
+              : 'component.ordinals',
           p.variant,
         );
     }
@@ -475,6 +481,7 @@ const checkTokens = (input) => {
     'component.properties': policy.component.properties,
     'component.states': policy.component.states,
     'component.sizes': policy.component.sizes.list,
+    'component.ordinals': policy.component.ordinals?.list ?? [],
   };
   const dead = Object.entries(declared).flatMap(([category, words]) =>
     words

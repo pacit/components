@@ -1,3 +1,6 @@
+export * from './chart';
+export * from './chart-table';
+export * from './line';
 export * from './model/columns';
 export * from './model/decimate';
 export * from './model/extent';
@@ -9,3 +12,4 @@ export * from './model/ticks';
 export * from './model/time-ticks';
 export * from './model/value-at';
 export * from './model/window';
+export * from './scene';

@@ -237,6 +237,22 @@ export interface PctTexts {
    * `aria-label`, which would replace the label instead of following it.
    */
   readonly stepDone: string;
+  /**
+   * Chart: the message standing in the plot while it has nothing to draw — no series, or none
+   * with a reading in the window. The axes stay, so the reader sees where the data would be.
+   * An application with a better sentence ("No measurements in this range") projects it.
+   */
+  readonly chartEmpty: string;
+  /**
+   * Chart: what the data table writes where a series has no reading — a gap, not a zero.
+   */
+  readonly chartGap: string;
+  /** Chart: the label of the upper end of a yes/no axis, and of a yes in the data table. */
+  readonly chartOn: string;
+  /** Chart: the label of the lower end of a yes/no axis, and of a no in the data table. */
+  readonly chartOff: string;
+  /** Chart: the header of the data table's first column on a time axis. */
+  readonly chartTime: string;
 }
 
 /**
@@ -283,6 +299,11 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chipRemove: 'Remove',
   breadcrumbLabel: 'Breadcrumb',
   stepDone: 'Completed',
+  chartEmpty: 'No data to show',
+  chartGap: 'No reading',
+  chartOn: 'On',
+  chartOff: 'Off',
+  chartTime: 'Time',
 };
 
 /**

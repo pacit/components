@@ -1,0 +1,108 @@
+// A chart's box: its width from the container, its height from the consumer or from the
+// aspect ratio. The layers stand over each other, each on a compositor layer of its own, so a
+// change in one repaints none of the others (0100).
+:host {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  font-size: var(--pct-chart-font-size);
+}
+
+.figure {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+}
+
+.picture {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  will-change: transform;
+}
+
+.skeleton {
+  display: block;
+  block-size: 100%;
+}
+
+[data-pct-part='grid'] line {
+  stroke: var(--pct-chart-grid-border);
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+
+// The lines across time are fainter than those across values: a thinner stroke, not a
+// lighter colour, because a state never paints with opacity.
+[data-pct-part='grid'] .column {
+  stroke-width: 0.5px;
+}
+
+[data-pct-part='axis'] {
+  .base,
+  .tick {
+    stroke: var(--pct-chart-axis-border);
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+  }
+
+  .value,
+  .time {
+    fill: var(--pct-chart-axis-fg);
+  }
+}
+
+[data-pct-part='unit'] {
+  fill: var(--pct-chart-unit-fg);
+}
+
+@for $i from 1 through 8 {
+  .dot[data-pct-series='#{$i}'] {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--pct-chart-message-fg);
+  pointer-events: none;
+}
+
+// The description is for a reader: the picture is what the eye reads.
+.description {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  [data-pct-part='axis'] .value,
+  [data-pct-part='axis'] .time,
+  [data-pct-part='unit'] {
+    fill: CanvasText;
+  }
+
+  [data-pct-part='axis'] .base,
+  [data-pct-part='axis'] .tick,
+  [data-pct-part='grid'] line {
+    stroke: CanvasText;
+  }
+
+  .dot[data-pct-series] {
+    fill: CanvasText;
+  }
+}
