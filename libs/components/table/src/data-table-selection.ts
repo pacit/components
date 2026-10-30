@@ -3,7 +3,6 @@ import {
   booleanAttribute,
   Component,
   computed,
-  DestroyRef,
   Directive,
   ElementRef,
   inject,
@@ -269,12 +268,12 @@ export class PctTableSelection implements FormValueControl<
     // A press on the table, which the parts tell apart: one beside a row's control is theirs.
     // Listened to once the page is live, not from the template: a listener there is one the
     // server marks for replay, and a press replayed before hydration cannot be taken back.
+    // Never removed: it stands on the host, which goes with the directive.
     const host = this.host.nativeElement;
-    const press = (event: MouseEvent) =>
-      (this.parts() as PctTableSelectionParts).press(event);
-    afterNextRender(() => host.addEventListener('click', press));
-    inject(DestroyRef).onDestroy(() =>
-      host.removeEventListener('click', press),
+    afterNextRender(() =>
+      host.addEventListener('click', (event: MouseEvent) =>
+        (this.parts() as PctTableSelectionParts).press(event),
+      ),
     );
   }
 
