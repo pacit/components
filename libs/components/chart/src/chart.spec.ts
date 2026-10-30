@@ -12,7 +12,7 @@ import { PctAnnouncer, providePctTexts } from '@pacit/components/core';
 import { PctAxis, PctChart, PctChartTooltip } from './chart';
 import { PctChartTable } from './chart-table';
 import { PctLine, pctSeriesColor } from './line';
-import { PCT_SERIES_MARKERS } from './scene';
+import { PCT_SERIES_MARKERS, type PctSwatchContext } from './scene';
 import type { PctColumns } from './model/columns';
 import { pctPyramid } from './model/decimate';
 import type { PctDomain } from './model/scale';
@@ -121,6 +121,9 @@ class Empty {}
 class Pair extends PctMark {
   override readonly template =
     viewChild.required<TemplateRef<unknown>>('drawing');
+  // A probe draws no swatch: the drawing's template stands in for it.
+  override readonly swatch =
+    viewChild.required<TemplateRef<PctSwatchContext>>('drawing');
   override readonly series = signal<readonly PctSeriesSpec[]>(
     ['first', 'second'].map((id) => ({
       id,

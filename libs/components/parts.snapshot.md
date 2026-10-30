@@ -37,9 +37,13 @@ from what the browser really gets.
 ./chart PctChart range
 ./chart PctChart tooltip
 ./chart PctChart unit
+./chart PctChartLegend item
+./chart PctChartLegend remove
+./chart PctChartLegend toggle
 ./chart PctChartZoom zoom
 ./chart PctLine area
 ./chart PctLine series
+./chart PctLine swatch
 ./checkbox PctCheckbox box
 ./checkbox PctCheckbox control
 ./checkbox PctCheckbox error
