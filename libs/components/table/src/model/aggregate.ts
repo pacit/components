@@ -35,15 +35,15 @@ export function pctAggregate<V>(
   if (typeof aggregate === 'function') return aggregate(present);
   if (aggregate === 'count') return present.length;
   const numbers = present.filter(
-    (value): value is NonNullable<V> & number => typeof value === 'number',
-  );
+    (value) => typeof value === 'number',
+  ) as unknown as number[];
   if (numbers.length === 0) return null;
   // A reduce and not `Math.min(...numbers)`: a spread of a hundred thousand arguments
   // overflows the stack.
   if (aggregate === 'min')
-    return numbers.reduce((least, value) => (value < least ? value : least));
+    return numbers.reduce((least, value) => Math.min(least, value));
   if (aggregate === 'max')
-    return numbers.reduce((most, value) => (value > most ? value : most));
+    return numbers.reduce((most, value) => Math.max(most, value));
   const sum = numbers.reduce((total, value) => total + value, 0);
   return aggregate === 'sum' ? sum : sum / numbers.length;
 }

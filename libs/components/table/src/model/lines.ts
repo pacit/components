@@ -75,12 +75,12 @@ export interface PctLinesOptions<T> {
 }
 
 /**
- * A value as a group's key holds it: no value, a `null` and `NaN` are one; a big integer, a date,
- * a symbol and a function are tagged, so `1n` stays apart from `"1"`, a date from its ISO text,
- * and two of them never write the same key — or none, which JSON would give a symbol.
+ * A value as a group's key holds it: a big integer, a date, a symbol and a function are tagged,
+ * so `1n` stays apart from `"1"`, a date from its ISO text, and two of them never write the same
+ * key — or none, which JSON would give a symbol. JSON itself writes no value, a `null` and `NaN`
+ * in a list as one `null`.
  */
 function keyed(value: unknown): unknown {
-  if (value === null || value === undefined || Number.isNaN(value)) return null;
   if (typeof value === 'bigint') return { bigint: String(value) };
   if (value instanceof Date) return { date: value.getTime() };
   if (typeof value === 'symbol' || typeof value === 'function')

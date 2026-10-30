@@ -2448,6 +2448,25 @@ describe('PctDataTable — a narrow table hides columns', () => {
     );
   });
 
+  it('follows a row that moved when its focused control went with its column', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.powerSlot.set(true);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 1000);
+    (body()[1].querySelector('.watts') as HTMLButtonElement).focus();
+    // In one render the boiler moves to the end and its power column hides.
+    fixture.componentInstance
+      .table()
+      .sort.set([{ key: 'name', direction: 'descending' }]);
+    await resize(fixture, width, 250);
+    expect(body()[2].querySelectorAll('td')[1].textContent?.trim()).toBe(
+      'Boiler',
+    );
+    expect(document.activeElement).toBe(disclosures()[2]);
+  });
+
   it('hands the focus to the row that takes the place of a row that went', async () => {
     const fixture = await render(DetailsHost);
     fixture.componentInstance.powerSlot.set(true);
@@ -2709,6 +2728,7 @@ const summed = col.of([
     aggregate: 'sum',
   }),
   col.key('on', { header: 'On', kind: 'boolean' }),
+  col.key('seen', { header: 'Seen' }),
 ]);
 const MORE: Device[] = [
   ...DEVICES,
@@ -2801,7 +2821,7 @@ describe('PctDataTable — groups', () => {
       Array.from(kitchen.querySelectorAll('td')).map((td) =>
         td.textContent?.trim(),
       ),
-    ).toEqual(['', `1911,5${NBSP}kWh`, '']);
+    ).toEqual(['', `1911,5${NBSP}kWh`, '', '']);
     expect(groupToggle(hall).textContent?.replace(/\s+/g, ' ').trim()).toBe(
       'Hall (2)',
     );
@@ -2823,13 +2843,13 @@ describe('PctDataTable — groups', () => {
         cell.textContent?.replace(/\s+/g, ' ').trim(),
       );
     // Spaces of every kind read as one: the sum's no-break space too.
-    expect(foot()).toEqual(['Total 4', '', '1951,5 kWh', '']);
+    expect(foot()).toEqual(['Total 4', '', '1951,5 kWh', '', '']);
     expect(document.querySelector('tfoot th')?.getAttribute('scope')).toBe(
       'row',
     );
     fixture.componentInstance.filter.set('kitchen');
     await settle(fixture);
-    expect(foot()).toEqual(['Total 2', '', '1911,5 kWh', '']);
+    expect(foot()).toEqual(['Total 2', '', '1911,5 kWh', '', '']);
     expect(headings()).toHaveLength(1);
   });
 
@@ -2861,6 +2881,7 @@ describe('PctDataTable — groups', () => {
     expect(headings()).toHaveLength(2);
     fixture.componentInstance.groups().expandAll();
     await settle(fixture);
+    expect(fixture.componentInstance.collapsed()).toEqual([]);
     expect(headings()).toHaveLength(6);
     expect(headings()[1].style.getPropertyValue('--_level')).toBe('1');
   });
@@ -3029,16 +3050,138 @@ describe('PctDataTable — groups', () => {
       readonly columns = col.of([
         col.key('name', { header: 'Name' }),
         col.key('id', { header: 'Id', aggregate: 'avg' }),
+        col.key('power', {
+          header: 'Power',
+          kind: { number: { unit: 'kWh' } },
+          aggregate: 'count',
+        }),
+        col.key('room', {
+          header: 'Room',
+          aggregate: (rooms) => [...new Set(rooms)].join(' & '),
+        }),
       ]);
       readonly byId = byId;
     }
     const fixture = await render(Mean);
-    expect(document.querySelector('tfoot td')?.textContent?.trim()).toBe('2');
+    const foot = () =>
+      Array.from(document.querySelectorAll('tfoot td')).map((td) =>
+        td.textContent?.trim(),
+      );
+    // A count of a number column is a count, not a reading in its unit; a function's text is
+    // written as it is.
+    expect(foot()).toEqual(['2', '2', 'Kitchen & Hall']);
     fixture.componentInstance.rows.set([DEVICES[0], DEVICES[1]]);
     await settle(fixture);
-    expect(document.querySelector('tfoot td')?.textContent?.trim()).toBe('1,5');
+    expect(foot()[0]).toBe('1,5');
     fixture.componentInstance.rows.set([]);
     await settle(fixture);
     expect(document.querySelector('tfoot')).toBeNull();
+  });
+
+  it('groups by the first column, and by nothing for an id no column holds', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.by.set(['name']);
+    await settle(fixture);
+    expect(headings()).toHaveLength(4);
+    expect(
+      groupToggle(headings()[0]).textContent?.replace(/\s+/g, ' ').trim(),
+    ).toBe('Lamp (1)');
+    fixture.componentInstance.by.set(['nope' as never]);
+    await settle(fixture);
+    expect(headings()).toHaveLength(0);
+    fixture.componentInstance.table().reveal(999);
+    await settle(fixture);
+  });
+
+  it('spans a heading over the disclosures, the numbers and the first column', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.numbers.set(true);
+    await settle(fixture);
+    expect(
+      (headings()[0].querySelector('th') as HTMLTableCellElement).colSpan,
+    ).toBe(3);
+    expect(
+      (document.querySelector('tfoot th') as HTMLTableCellElement).colSpan,
+    ).toBe(3);
+  });
+
+  it('hands the focus to the deepest heading that hides its row', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.by.set(['room', 'on']);
+    await settle(fixture);
+    // The boiler: Kitchen, then not running; a row's disclosure, not a heading's.
+    (
+      document.querySelectorAll(
+        'tbody > tr:not([data-pct-part]) [data-pct-part="disclosure"]',
+      )[1] as HTMLButtonElement
+    ).focus();
+    fixture.componentInstance.collapsed.set(['["Kitchen",false]']);
+    await settle(fixture);
+    expect(document.activeElement).toBe(groupToggle(headings()[2]));
+    expect(groupToggle(headings()[2]).getAttribute('aria-label')).toBe(
+      'No (1), in Kitchen',
+    );
+  });
+
+  it('hands the focus to the new last row, and breaks nothing when every row goes', async () => {
+    const fixture = await render(GroupsHost);
+    fixture.componentInstance.slotted.set(true);
+    fixture.componentInstance.by.set([]);
+    await settle(fixture);
+    disclosures()[3].focus();
+    fixture.componentInstance.rows.set(MORE.slice(0, 3));
+    await settle(fixture);
+    expect(document.activeElement).toBe(disclosures()[2]);
+    fixture.componentInstance.rows.set([]);
+    await settle(fixture);
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('notes no focus outside its rows, or in a table nested in a cell', async () => {
+    const fixture = await render(GroupsHost);
+    const header = document.querySelector(
+      'thead [data-pct-part="toggle"]',
+    ) as HTMLButtonElement;
+    header.focus();
+    fixture.componentInstance.rows.set(MORE.slice(0, 2));
+    await settle(fixture);
+    expect(document.activeElement).toBe(header);
+  });
+
+  it('draws no placeholders for rows the filter left out while more are coming', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.loading.set(true);
+    fixture.componentInstance.filter.set('nothing-answers');
+    await settle(fixture);
+    expect(document.querySelector('[data-pct-part="placeholder"]')).toBeNull();
+  });
+});
+
+describe('PctTableGroups — its defaults', () => {
+  it('groups by nothing, collapses nothing and is on until told', async () => {
+    @Component({
+      imports: [PctDataTable, PctTableGroups],
+      template: `<pct-data-table
+        [pctTableGroups]="columns"
+        caption="Devices"
+        [rows]="rows"
+        [columns]="columns"
+        [rowId]="byId"
+      />`,
+    })
+    class BareGroups {
+      readonly groups = viewChild.required(PctTableGroups);
+      readonly rows = MORE;
+      readonly columns = summed;
+      readonly byId = byId;
+    }
+    const fixture = await render(BareGroups);
+    const groups = fixture.componentInstance.groups();
+    expect(groups.groupBy()).toEqual([]);
+    expect(groups.collapsed()).toEqual([]);
+    expect(groups.disabled()).toBe(false);
+    expect(headings()).toHaveLength(0);
   });
 });

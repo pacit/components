@@ -550,7 +550,6 @@ export class PctDataTable<
     readonly element: Element;
     readonly line: number;
     readonly row: PctRowId | null;
-    readonly group: string | null;
   } | null = null;
 
   /** A details row's id for each row, made once and kept while the table lives. */
@@ -764,7 +763,7 @@ export class PctDataTable<
         rows.map((row) => (values.get(row) as readonly unknown[])[c]),
         aggregate,
       );
-      if (result === null) return '';
+      // No result is written as nothing by every kind.
       // A count is a count whatever the column holds, and a number summed from a column with
       // no number kind is written in the locale's digits, not as JavaScript prints it.
       return aggregate === 'count' ||
@@ -793,13 +792,13 @@ export class PctDataTable<
     const count = new Intl.NumberFormat(this.resolvedLocale());
     const said = this.texts().tableGroupCount;
     const within = this.texts().tableGroupWithin;
-    const labels: string[] = [];
+    const labels = new Map<number, string>();
     const sections: Section<T>[] = [];
     let current: Section<T> | null = null;
     for (let at = 0; at < lines.length; at++) {
       const line = lines[at];
       if (line.kind === 'group') {
-        labels[line.level] = line.label;
+        labels.set(line.level, line.label);
         const countText = said.replace('{count}', count.format(line.count));
         current = {
           key: pctLineKey(line),
@@ -815,7 +814,7 @@ export class PctDataTable<
                 ? null
                 : within
                     .replace('{group}', `${line.label} ${countText}`)
-                    .replace('{outer}', labels[line.level - 1]),
+                    .replace('{outer}', labels.get(line.level - 1) as string),
             collapsed: line.collapsed,
           },
           rows: [],
@@ -848,7 +847,10 @@ export class PctDataTable<
 
   /** Collapses a group, or opens it. */
   protected toggleGroup(key: string): void {
-    this.contributed().groups?.collapsed.update((collapsed) =>
+    // Only a heading calls this, and headings stand only while the groups do.
+    (
+      this.contributed().groups as NonNullable<PctTableFeature['groups']>
+    ).collapsed.update((collapsed) =>
       collapsed.includes(key)
         ? collapsed.filter((other) => other !== key)
         : [...collapsed, key],
@@ -977,53 +979,57 @@ export class PctDataTable<
       hidden.has(column.id),
     ) as unknown as Row<T>['hiddenColumns'];
     const lines = this.lines();
-    const rows: Row<T>[] = [];
     // The base draws rows and their details: groups and holes are lines that the features
     // contributing them draw.
-    lines.forEach((line, at) => {
-      if (line.kind !== 'row') return;
-      const values = cache.get(line.row) as readonly unknown[];
-      const texts = written.get(line.row) as readonly string[];
-      const all = cells.map(
-        ({ column, numeric, boolean, slot, marking }, c) => {
-          const value = values[c];
-          const text = texts[c];
-          const yes = boolean && typeof value === 'boolean' ? value : null;
-          const parts = marking
-            ? pctMatchParts(text, words as readonly string[])
-            : null;
-          const tooltip = column.tooltip;
-          return {
-            column,
-            value,
-            text,
-            numeric,
-            yes,
-            slot,
-            parts,
-            tone: column.tone?.(value, line.row) ?? null,
-            title: typeof tooltip === 'function' ? tooltip(line.row) : null,
-            clip: tooltip === true && slot === null && yes === null,
-          };
-        },
-      );
-      rows.push({
-        key: pctLineKey(line),
-        row: line.row,
-        index: line.index,
-        id: line.key,
-        line: at,
-        level: line.level,
-        tone: rowTone?.(line.row) ?? null,
-        values,
-        cells: all.filter((cell) => !hidden.has(cell.column.id)),
-        hidden: all.filter((cell) => hidden.has(cell.column.id)),
-        hiddenColumns,
-        open: lines[at + 1]?.kind === 'details',
-        detailsId: this.detailsIdOf(pctLineKey(line)),
+    type RowLine = Extract<PctTableLine<T>, { kind: 'row' }>;
+    return lines
+      .map((line, at) => ({ line, at }))
+      .filter(
+        (item): item is { line: RowLine; at: number } =>
+          item.line.kind === 'row',
+      )
+      .map(({ line, at }): Row<T> => {
+        const values = cache.get(line.row) as readonly unknown[];
+        const texts = written.get(line.row) as readonly string[];
+        const all = cells.map(
+          ({ column, numeric, boolean, slot, marking }, c) => {
+            const value = values[c];
+            const text = texts[c];
+            const yes = boolean && typeof value === 'boolean' ? value : null;
+            const parts = marking
+              ? pctMatchParts(text, words as readonly string[])
+              : null;
+            const tooltip = column.tooltip;
+            return {
+              column,
+              value,
+              text,
+              numeric,
+              yes,
+              slot,
+              parts,
+              tone: column.tone?.(value, line.row) ?? null,
+              title: typeof tooltip === 'function' ? tooltip(line.row) : null,
+              clip: tooltip === true && slot === null && yes === null,
+            };
+          },
+        );
+        return {
+          key: pctLineKey(line),
+          row: line.row,
+          index: line.index,
+          id: line.key,
+          line: at,
+          level: line.level,
+          tone: rowTone?.(line.row) ?? null,
+          values,
+          cells: all.filter((cell) => !hidden.has(cell.column.id)),
+          hidden: all.filter((cell) => hidden.has(cell.column.id)),
+          hiddenColumns,
+          open: lines[at + 1]?.kind === 'details',
+          detailsId: this.detailsIdOf(pctLineKey(line)),
+        };
       });
-    });
-    return rows;
   });
 
   /** The id of a row's details: the same for the row however the rows above it change. */
@@ -1359,7 +1365,8 @@ export class PctDataTable<
         HYSTERESIS,
       );
       needed = fit.needed;
-      if (fit.count !== count) this.change(fit.count);
+      // The same count again is no change to a signal.
+      this.change(fit.count);
     });
   }
 
@@ -1381,8 +1388,8 @@ export class PctDataTable<
     this.focusAt = {
       element: target,
       line,
-      row: found.kind === 'row' || found.kind === 'details' ? found.key : null,
-      group: found.kind === 'group' ? found.key : null,
+      // A heading has no row: a group's focus goes to the line that takes its place.
+      row: found.kind === 'group' ? null : (found.key as PctRowId),
     };
   }
 
@@ -1419,10 +1426,6 @@ export class PctDataTable<
       )
         line = back;
     }
-    if (line < 0)
-      line = lines.findIndex(
-        (other) => other.kind === 'group' && other.key === at.group,
-      );
     if (line < 0) line = Math.min(at.line, lines.length - 1);
     this.lineRows()
       [line]?.querySelector<HTMLElement>(
