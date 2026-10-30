@@ -803,5 +803,64 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
         stack.locator('[data-pct-unit="kWh"] .value').first(),
       ).toHaveText(/^-/);
     });
+
+    test('a turned chart lays the bands down the side: the bars grow to the right, the labels stand beside their ends, the cursor lies across and the page keeps the horizontal gesture', async ({
+      page,
+    }) => {
+      const turned = chart(page, 'chart-turned');
+      await expect(turned).toHaveClass(/horizontal/);
+      const bars = turned.locator('rect[data-pct-part="bar"]');
+      await expect(bars).toHaveCount(9);
+      const boxes = await bars.evaluateAll((rs) =>
+        rs.map((r) => ({
+          x: Number(r.getAttribute('x')),
+          y: Number(r.getAttribute('y')),
+          w: Number(r.getAttribute('width')),
+          h: Number(r.getAttribute('height')),
+          place: r.getAttribute('data-pct-series'),
+        })),
+      );
+      // the pump's bars start at zero and run right; the solar's, negative, end at zero
+      const pump = boxes.filter((b) => b.place === '1');
+      const solar = boxes.filter((b) => b.place === '2');
+      expect(new Set(pump.map((b) => Math.round(b.x))).size).toBe(1);
+      solar.forEach((s, i) => expect(s.x + s.w).toBeCloseTo(pump[i].x, 0));
+      expect(pump.every((b) => b.w > b.h)).toBe(true);
+      // the rooms down the side in their order, labelled to the left of the axis
+      const names = turned.locator('[data-pct-part="axis"] .time');
+      await expect(names).toHaveText(['Kitchen', 'Hall', 'Study']);
+      const ys = await names.evaluateAll((ts) =>
+        ts.map((t) => Number(t.getAttribute('y'))),
+      );
+      expect(ys[0]).toBeLessThan(ys[1]);
+      expect(ys[1]).toBeLessThan(ys[2]);
+      await expect(names.first()).toHaveAttribute('text-anchor', 'end');
+      // the value labels along the bottom
+      await expect(
+        turned.locator('[data-pct-unit="kWh"] .value').first(),
+      ).toHaveAttribute('dominant-baseline', 'hanging');
+      // the bars' labels beside their ends
+      await expect(
+        turned.locator('text[data-pct-part="label"]').first(),
+      ).toHaveAttribute('text-anchor', 'start');
+      // the pointer on the plot: the cursor's line lies across, wider than tall
+      const box = (await turned
+        .locator('[data-pct-part="plot"]')
+        .boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      const line = turned.locator('[data-pct-part="cursor"]');
+      await expect(line).toHaveClass(/across/);
+      const size = await line.evaluate((l) => {
+        const r = l.getBoundingClientRect();
+        return { w: r.width, h: r.height };
+      });
+      expect(size.w).toBeGreaterThan(size.h);
+      // the page keeps the horizontal gesture
+      expect(
+        await turned
+          .locator('.overlay')
+          .evaluate((o) => getComputedStyle(o).touchAction),
+      ).toBe('pan-x');
+    });
   });
 });

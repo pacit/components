@@ -123,3 +123,15 @@ pixels of that span, four fifths of them. So the cursor, the window, its gesture
 the bands' middles at `i + 0.5`, and the day of twenty-five hours is a wider bar, as it is a
 longer day. `pctBand` of the core stays for what cuts a range into equal slots with nothing
 to measure them by.
+
+## Amended 2026-10-30: the x axis has a direction, and the scene turns with it
+
+The record laid the x axis along the bottom. Bars by category read better lying down when the
+categories are many or their names long, so the scene takes `orientation`: `horizontal` lays
+the x axis down the left side and the value axes along the bottom (the `left` slots) and the
+top (the `right` slots). It is the scene's turn, not a mark's: the scales map into the turned
+ranges, and the grid, the cursor's line, the markers, the tooltip, the selection and the
+gestures follow; a mark reads its x pixel as a `y` — the bars lie, `pctLinePath` and
+`pctAreaPath` write their points transposed. The gesture the page keeps turns too, to
+`touch-action: pan-x`. Nothing of the window, the cursor or the selection changes: they are
+positions on the x axis, whichever way it runs (0101).
