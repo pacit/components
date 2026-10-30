@@ -241,4 +241,43 @@ describe('pctGestureStep', () => {
     expect(before.pointers.size).toBe(size);
     expect(before.pointers.get(1)!.x).toBe(100);
   });
+  it('gives the rest to the page when one of three fingers lifts, and keeps it so when a third presses again', () => {
+    const { actions, state } = play([
+      { type: 'down', id: 1, x: 100 },
+      { type: 'down', id: 2, x: 200 },
+      { type: 'down', id: 3, x: 300 },
+      { type: 'up', id: 3, x: 300 },
+    ]);
+    expect(actions).toEqual([null, null, null, null]);
+    expect(state.mode).toBe('page');
+    expect(state.pointers.size).toBe(2);
+    const again = play([{ type: 'down', id: 3, x: 300 }], state);
+    expect(again.state.mode).toBe('page');
+    expect(again.state.pointers.size).toBe(3);
+  });
+
+  it('leaves the state as it was for a pointer it never saw move', () => {
+    const { state } = play([{ type: 'move', id: 7 }]);
+    expect(state).toBe(PCT_GESTURE_IDLE);
+  });
+
+  it('reads no pinch of a pinch left with one finger', () => {
+    const lone: PctGestureState = {
+      mode: 'pinch',
+      pointers: new Map([[1, { x: 100, y: 100, startX: 100, startY: 100 }]]),
+      tap: null,
+      mouse: false,
+    };
+    const { state, action } = pctGestureStep(lone, {
+      type: 'move',
+      id: 1,
+      x: 140,
+      y: 100,
+      mouse: false,
+      at: 0,
+    });
+    expect(action).toBeNull();
+    expect(state.mode).toBe('pinch');
+    expect(state.pointers.get(1)!.x).toBe(140);
+  });
 });

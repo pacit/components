@@ -158,4 +158,39 @@ describe('PctChartSync', () => {
     expect(third.window()).toEqual({ from: T0 + 2 * H, to: T0 + 4 * H });
     expect(wide.window()).toEqual({ from: T0 + 2 * H, to: T0 + 4 * H });
   });
+  it('follows a cursor moved from one reading to another', async () => {
+    const fixture = await render();
+    const [wide, narrow] = charts(fixture);
+    wide.cursor.set(T0 + 3 * H);
+    await settle(fixture);
+    wide.cursor.set(T0 + 4 * H);
+    await settle(fixture);
+    expect(narrow.cursor()).toBe(T0 + 4 * H);
+  });
+
+  it('takes a window moved at one end only as moved', async () => {
+    const fixture = await render();
+    const [wide, narrow] = charts(fixture);
+    wide.window.set({ from: T0 + 6 * H, to: T0 + 18 * H });
+    await settle(fixture);
+    narrow.window.set({ from: T0 + 2 * H, to: T0 + 18 * H });
+    await settle(fixture);
+    expect(wide.window()).toEqual({ from: T0 + 2 * H, to: T0 + 18 * H });
+    narrow.window.set({ from: T0 + 2 * H, to: T0 + 20 * H });
+    await settle(fixture);
+    expect(wide.window()).toEqual({ from: T0 + 2 * H, to: T0 + 20 * H });
+  });
+
+  it('takes an equal window given anew as no move, so the move of another chart wins', async () => {
+    const fixture = await render();
+    const [wide, narrow] = charts(fixture);
+    wide.window.set({ from: T0 + 6 * H, to: T0 + 18 * H });
+    await settle(fixture);
+    // the first chart is given the same window again, the second a new one, at once
+    wide.window.set({ from: T0 + 6 * H, to: T0 + 18 * H });
+    narrow.window.set({ from: T0 + 8 * H, to: T0 + 20 * H });
+    await settle(fixture);
+    expect(wide.window()).toEqual({ from: T0 + 8 * H, to: T0 + 20 * H });
+    expect(narrow.window()).toEqual({ from: T0 + 8 * H, to: T0 + 20 * H });
+  });
 });
