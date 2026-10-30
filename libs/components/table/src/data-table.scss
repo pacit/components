@@ -150,3 +150,75 @@ td[data-pct-changed] {
     color: MarkText;
   }
 }
+
+/* The column of disclosures: as narrow as its button, which is the whole target. */
+.pct-data-table__disclosure {
+  inline-size: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  vertical-align: middle;
+}
+
+.pct-data-table__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: var(--pct-table-toggle-target-min);
+  min-block-size: var(--pct-table-toggle-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pct-data-table__toggle:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+.pct-data-table__chevron {
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+/* The library's one chevron points down, which is open; closed, it is turned to point along
+   the line to the end edge — the left under `:dir(rtl)`, the calendar's selector. */
+.pct-data-table__toggle[aria-expanded='false'] .pct-data-table__chevron {
+  rotate: -90deg;
+}
+
+.pct-data-table__toggle[aria-expanded='false']
+  .pct-data-table__chevron:dir(rtl) {
+  rotate: 90deg;
+}
+
+/* A row's details, on their own surface below the row they belong to. */
+tr[data-pct-part='details'] > td {
+  background-color: var(--pct-table-details-bg);
+}
+
+/* The hidden columns' values, each label above its value, as many to a line as fit. */
+.pct-data-table__hidden {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-table-padding-y) var(--pct-table-padding-x);
+  margin: 0;
+}
+
+.pct-data-table__hidden dt {
+  font-weight: var(--pct-table-heading-font-weight);
+}
+
+.pct-data-table__hidden dd {
+  margin: 0;
+}
+
+@media (forced-colors: active) {
+  .pct-data-table__toggle:focus-visible {
+    outline-color: Highlight;
+  }
+}

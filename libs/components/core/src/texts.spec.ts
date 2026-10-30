@@ -94,6 +94,9 @@ const ENGLISH: PctTexts = {
   tableSortLater: 'Sort key {place}, {way}',
   tableSortAscending: 'ascending',
   tableSortDescending: 'descending',
+  tableDetails: 'Details',
+  tableDetailsOpen: 'Show details',
+  tableDetailsClose: 'Hide details',
 };
 
 describe('PCT_TEXTS', () => {

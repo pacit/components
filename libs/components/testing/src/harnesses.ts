@@ -851,9 +851,9 @@ export class PctTableCellHarness extends PctHarness<never> {
   static override readonly parts = [] as const;
 }
 
-/** The rows of data a data table draws: a placeholder row carries no index. */
+/** The rows of data a data table draws: a placeholder row carries no index, a details row a part. */
 const DATA_ROWS =
-  ':scope > pct-table-frame > table > tbody > tr[data-pct-index]';
+  ':scope > pct-table-frame > table > tbody > tr[data-pct-index]:not([data-pct-part])';
 
 /** The header cells of a data table's own table, not of one nested in a cell. */
 const HEADS = ':scope > pct-table-frame > table > thead > tr > th';
@@ -872,10 +872,12 @@ const NOT_THE_LABEL =
  * @since next
  */
 export class PctDataTableHarness extends PctHarness<
-  'mark' | 'message' | 'place' | 'placeholder'
+  'details' | 'disclosure' | 'mark' | 'message' | 'place' | 'placeholder'
 > {
   static override hostSelector = 'pct-data-table';
   static override readonly parts = [
+    'details',
+    'disclosure',
     'mark',
     'message',
     'place',
@@ -897,7 +899,8 @@ export class PctDataTableHarness extends PctHarness<
 
   /**
    * The rows of data, in the order the table draws them, each as the texts of its cells: a
-   * boolean cell as its word, the row's number first when the table numbers its rows.
+   * boolean cell as its word, then after any leading cells — the disclosure's, empty, and the
+   * row's number when the table numbers its rows. An open row's details are not a row.
    *
    * @since next
    */
@@ -957,9 +960,17 @@ export class PctDataTableHarness extends PctHarness<
     await toggle.click(options.shift ? { shift: true } : {});
   }
 
-  /** The cells of the row at `row`, in the columns' order. */
-  private cellsOf(row: number): Promise<TestElement[]> {
-    return this.locatorForAll(`${DATA_ROWS.replace(']', `="${row}"]`)} > td`)();
+  /**
+   * The cells of the row at `row`, in the columns' order. A row's index is its place among the
+   * lines, which counts open details too, so it is read off the row rather than assumed.
+   */
+  private async cellsOf(row: number): Promise<TestElement[]> {
+    const line = await (
+      await this.locatorForAll(DATA_ROWS)()
+    )[row]?.getAttribute('data-pct-index');
+    return this.locatorForAll(
+      `${DATA_ROWS.replace('[data-pct-index]', `[data-pct-index="${line}"]`)} > td`,
+    )();
   }
 }
 

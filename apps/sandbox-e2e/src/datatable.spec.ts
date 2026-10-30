@@ -310,4 +310,74 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     expect(await duration()).toBeLessThan(0.001);
   });
+
+  test('a narrow table hides the columns of the highest priority, and its details list them', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-details');
+    const state = page.getByTestId('details-state');
+    const frame = table.locator('pct-table-frame');
+    const fits = () =>
+      frame.evaluate((element) => {
+        const inner = element.querySelector('table') as HTMLElement;
+        return inner.scrollWidth <= element.clientWidth;
+      });
+    await page.getByTestId('width-1200').click();
+    await expect(state).toContainText('Hidden: none');
+    await page.getByTestId('width-360').click();
+    await expect(state).not.toContainText('Hidden: none');
+    await expect.poll(fits).toBe(true);
+    const hidden = ((await state.textContent()) ?? '')
+      .match(/Hidden: ([^.]*)\./)?.[1]
+      .split(', ') as string[];
+    expect(hidden.length).toBeGreaterThan(0);
+    // The columns with no priority never give way.
+    await expect(
+      table.getByRole('columnheader', { name: 'Name', exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      table.getByRole('columnheader', { name: 'Enabled', exact: true }),
+    ).toHaveCount(1);
+
+    const disclosure = table.locator('[data-pct-part="disclosure"]').first();
+    await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+    await disclosure.click();
+    await expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+    const details = table.locator('tr[data-pct-part="details"]');
+    await expect(details).toHaveCount(1);
+    await expect(disclosure).toHaveAttribute(
+      'aria-controls',
+      (await details.getAttribute('id')) as string,
+    );
+    await expect(details.locator('dt')).toHaveCount(hidden.length);
+    await expect(state).toContainText('Open: 1.');
+
+    // Wider again, the columns come back and the details list nothing.
+    await page.getByTestId('width-1200').click();
+    await expect(state).toContainText('Hidden: none');
+    await expect(details.locator('dl')).toHaveCount(0);
+  });
+
+  test('Tab goes from a row’s disclosure to its controls, into its details, then on to the next row', async ({
+    page,
+  }) => {
+    const table = page.getByTestId('table-details');
+    const disclosure = table.locator('[data-pct-part="disclosure"]');
+    await disclosure.first().click();
+    await expect(disclosure.first()).toBeFocused();
+    await page.keyboard.press('Tab');
+    const toggle = table.getByRole('switch', { name: 'Enabled: Supply fan' });
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(
+      table.getByRole('button', { name: 'Run Supply fan now' }),
+    ).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(disclosure.nth(1)).toBeFocused();
+    // A switch in an open row still answers.
+    const before = await toggle.getAttribute('aria-checked');
+    await toggle.click();
+    await expect(toggle).not.toHaveAttribute('aria-checked', before ?? '');
+    await expect(table.locator('tr[data-pct-part="details"]')).toHaveCount(1);
+  });
 });

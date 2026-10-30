@@ -302,6 +302,12 @@ export interface PctTexts {
   readonly tableSortAscending: string;
   /** Data table: the way of a sort key after the first, descending. */
   readonly tableSortDescending: string;
+  /** Data table: the header of the column of buttons that open the rows' details. */
+  readonly tableDetails: string;
+  /** Data table: the name of a row's button while its details are closed. */
+  readonly tableDetailsOpen: string;
+  /** Data table: the name of a row's button while its details are open. */
+  readonly tableDetailsClose: string;
 }
 
 /**
@@ -373,6 +379,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableSortLater: 'Sort key {place}, {way}',
   tableSortAscending: 'ascending',
   tableSortDescending: 'descending',
+  tableDetails: 'Details',
+  tableDetailsOpen: 'Show details',
+  tableDetailsClose: 'Hide details',
 };
 
 /**

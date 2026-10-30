@@ -225,9 +225,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     `scrolled`, `visible`, `scrollTo`; its card, `/datatable` in three engines; rows that say
     more — stripes, numbers, tones by value or row, a cut cell's tooltip, marked matches,
     a flash on a changed value; a harness that reads rows, a later key a reader hears, the
-    slots' types held in a consumer's build
-  - phases, one pull request each, after it: priorities and the details row; groups and
-    aggregates; the selection as a control; the window to a million rows; the server's pages
+    slots' types held in a consumer's build; a row's details, and columns that give way on a
+    narrow frame by priority
+  - phases, one pull request each, after it: groups and aggregates; the selection as a control; the window to a million rows; the server's pages
     and blocks; then column filters, the column layout as state, `role="grid"` with the keys,
     editing in a cell, the clipboard, CSV and xlsx, the tree, header groups, pinned rows, the
     row menu, a window over columns

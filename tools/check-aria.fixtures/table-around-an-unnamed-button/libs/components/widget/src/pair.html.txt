@@ -1,0 +1,12 @@
+<!-- A table named by the consumer around a button with no name of its own: the table may carry
+     the name only for controls that name themselves. -->
+<table
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  <tbody>
+    <tr>
+      <td><button type="button" class="pct-pair__open"></button></td>
+    </tr>
+  </tbody>
+</table>

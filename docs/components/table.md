@@ -42,16 +42,16 @@ thousand rows, is the next layer, `pct-data-table`, which renders this one.
 
 ## Contract
 
-|             |                                                                                                                                                                                                 |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value**   | `sort` on `table[pctTable]`: a `PctTableSort` (`key`, `direction`), or `null` while the rows stand in their own order                                                                           |
-| **Inputs**  | `sortKey`, `numeric`, `ariaLabel`, `ariaLabelledby` and `description` (on the sort button) on `th[pctHeader]`; `numeric` on `td[pctCell]`; `id` on `caption[pctCaption]` (generated when unset) |
-| **Outputs** | `sortChange` (the model's): a header's press proposes the next order, and the consumer puts the rows in it                                                                                      |
-| **Slots**   | the consumer's own `<caption>`, `<thead>`, `<tbody>` and cells; the frame's table                                                                                                               |
-| **Parts**   | `toggle` (the button in a sortable header), `icon` (its chevron)                                                                                                                                |
-| **Harness** | `PctTableHarness`, `PctTableCaptionHarness`, `PctTableHeaderHarness`, `PctTableCellHarness`, `PctTableFrameHarness`                                                                             |
-| **Tokens**  | the `--pct-table-*` prefix plus seven entries in `contrast.policy.json`                                                                                                                         |
-| **Strings** | none — every word in a table is the consumer's, and the frame is named by the caption                                                                                                           |
+|             |                                                                                                                                                                                                                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Value**   | `sort` on `table[pctTable]`: a `PctTableSort` (`key`, `direction`), or `null` while the rows stand in their own order                                                                                                                                                                      |
+| **Inputs**  | `sortKey`, `numeric`, `ariaLabel`, `ariaLabelledby` and `description` (on the sort button) on `th[pctHeader]`; `numeric` on `td[pctCell]`; `id` on `caption[pctCaption]` (generated when unset); `labelledby` and `label` on `pct-table-frame` (its name, for a component that renders it) |
+| **Outputs** | `sortChange` (the model's): a header's press proposes the next order, and the consumer puts the rows in it                                                                                                                                                                                 |
+| **Slots**   | the consumer's own `<caption>`, `<thead>`, `<tbody>` and cells; the frame's table                                                                                                                                                                                                          |
+| **Parts**   | `toggle` (the button in a sortable header), `icon` (its chevron)                                                                                                                                                                                                                           |
+| **Harness** | `PctTableHarness`, `PctTableCaptionHarness`, `PctTableHeaderHarness`, `PctTableCellHarness`, `PctTableFrameHarness`                                                                                                                                                                        |
+| **Tokens**  | the `--pct-table-*` prefix plus seven entries in `contrast.policy.json`                                                                                                                                                                                                                    |
+| **Strings** | none — every word in a table is the consumer's, and the frame is named by the caption                                                                                                                                                                                                      |
 
 **The sort is a proposal.** A header with a `sortKey` writes `sort` when pressed: a column not
 yet sorted starts ascending, the sorted one turns the other way. The table orders nothing.
@@ -70,6 +70,8 @@ what it holds. While the table fits, it writes none of the three.
 | ------------- | --------------------------------------------------------------------------- |
 | `toggle`      | the button that fills a sortable header cell                                |
 | `icon`        | the chevron beside a sortable header's label                                |
+| `details`     | the data table's row of details below a row                                 |
+| `disclosure`  | the data table's button that opens a row's details                          |
 | `mark`        | the data table's word the quick filter found                                |
 | `message`     | the data table's sentence beside an empty table — see the data table's card |
 | `place`       | the data table's place of a sort key after the first                        |

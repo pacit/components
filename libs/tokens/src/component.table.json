@@ -159,6 +159,12 @@
         "$type": "color",
         "$value": "{pct.on-warning-100}",
         "$description": "Text colour of a word the quick filter found."
+      },
+      "$comment-details": "A row's details stand on the header's surface, so the line that opened below a row reads as the row's own and not as the next row of data.",
+      "details-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a data table's details row."
       }
     }
   }

@@ -233,6 +233,9 @@ export class PctTableCell {
     // the first change detection.
     '[attr.aria-labelledby]':
       'overflows() ? (caption()?.id() ?? named()) : named()',
+    // A name in words, for a region with no element to name it: only while it is a region,
+    // since ARIA lets no name stand on a generic element.
+    '[attr.aria-label]': 'overflows() ? label() : null',
   },
 })
 export class PctTableFrame {
@@ -253,6 +256,14 @@ export class PctTableFrame {
    * @since next
    */
   readonly labelledby = input<string | null>(null);
+
+  /**
+   * The frame's name in words, for a component that renders the frame and names its table
+   * with a label rather than an element: the region takes it while the table overflows.
+   *
+   * @since next
+   */
+  readonly label = input<string | null>(null);
 
   /** The name's id: the input's, or the attribute's. */
   protected readonly named = computed(
