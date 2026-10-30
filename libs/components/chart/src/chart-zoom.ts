@@ -7,21 +7,17 @@ import {
   signal,
 } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
+import { PctIcon } from '@pacit/components/icon';
 import { PCT_TEXTS } from '@pacit/components/core';
 import type { PctChart } from './chart';
 
-/** One button of the bar: what it does, and the glyph it shows; its name is read in order. */
-interface PctZoomButton {
-  readonly act: (chart: PctChart) => void;
-  readonly glyph: string;
-}
-
-const BUTTONS: readonly PctZoomButton[] = [
-  { act: (c) => c.zoomBy(2), glyph: '+' },
-  { act: (c) => c.zoomBy(0.5), glyph: '−' },
-  { act: (c) => c.panBy(-0.25), glyph: '‹' },
-  { act: (c) => c.panBy(0.25), glyph: '›' },
-  { act: (c) => c.home(), glyph: '⟲' },
+/** What each button does, in the bar's order; the template draws each by its role. */
+const BUTTONS: readonly ((chart: PctChart) => void)[] = [
+  (c) => c.zoomBy(2),
+  (c) => c.zoomBy(0.5),
+  (c) => c.panBy(-0.25),
+  (c) => c.panBy(0.25),
+  (c) => c.home(),
 ];
 
 /**
@@ -43,7 +39,7 @@ const BUTTONS: readonly PctZoomButton[] = [
  */
 @Component({
   selector: 'pct-chart-zoom',
-  imports: [PctButton],
+  imports: [PctButton, PctIcon],
   templateUrl: './chart-zoom.html',
   styleUrl: './chart-zoom.scss',
   host: {
@@ -64,7 +60,6 @@ export class PctChartZoom {
   protected readonly texts = inject(PCT_TEXTS);
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
 
-  protected readonly buttons = BUTTONS;
   /** The button the bar's one stop stands on. */
   protected readonly active = signal(0);
   /** The buttons' names, in the order of `BUTTONS`. */
@@ -78,7 +73,7 @@ export class PctChartZoom {
 
   protected press(index: number): void {
     this.active.set(index);
-    BUTTONS[index].act(this.chart());
+    BUTTONS[index](this.chart());
   }
 
   /** The toolbar's keys: the arrows, Home and End move the stop and the focus with it. */

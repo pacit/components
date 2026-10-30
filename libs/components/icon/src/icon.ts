@@ -49,6 +49,10 @@ import type {
  * time by whoever needed the first
  * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
  *
+ * **The five of the chart's zoom bar** — `zoom-in`, `zoom-out`, `previous`, `next`, `reset` —
+ * arrived with the window (0101): what a bar of five buttons shows, each a drawing a font
+ * swaps, where a glyph from the page's font drew differently on every machine without it.
+ *
  * @since 0.1.0
  */
 export type PctIconName =
@@ -62,7 +66,12 @@ export type PctIconName =
   | 'info'
   | 'success'
   | 'user'
-  | 'warning';
+  | 'warning'
+  | 'zoom-in'
+  | 'zoom-out'
+  | 'previous'
+  | 'next'
+  | 'reset';
 
 /**
  * What `providePctIcons` takes, any number of times: a set component, or a source.

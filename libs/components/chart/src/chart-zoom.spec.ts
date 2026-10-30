@@ -75,26 +75,19 @@ describe('PctChartZoom', () => {
     expect(chart.window()).toEqual({ from: T0 + 6 * H, to: T0 + 18 * H });
   });
 
-  it('shows a glyph on each button, hidden from a reader, who hears the name', async () => {
+  it('draws each button by a role of the icons, a drawing a font swaps', async () => {
     const fixture = await render();
     const buttons = [
       ...(fixture.nativeElement as HTMLElement).querySelectorAll(
         'pct-chart-zoom button',
       ),
     ];
-    expect(buttons.map((b) => b.textContent?.trim())).toEqual([
-      '+',
-      '−',
-      '‹',
-      '›',
-      '⟲',
-    ]);
-    // the glyph is drawn for an eye and hidden from the tree: the name is what is read
     expect(
-      buttons.map((b) =>
-        b.querySelector('[aria-hidden="true"]')?.textContent?.trim(),
-      ),
-    ).toEqual(['+', '−', '‹', '›', '⟲']);
+      buttons.map((b) => b.querySelector('pct-icon')?.getAttribute('name')),
+    ).toEqual(['zoom-in', 'zoom-out', 'previous', 'next', 'reset']);
+    expect(buttons.every((b) => b.querySelector('pct-icon svg') !== null)).toBe(
+      true,
+    );
     expect(
       buttons.every((b) => b.getAttribute('data-pct-part') === 'zoom'),
     ).toBe(true);
