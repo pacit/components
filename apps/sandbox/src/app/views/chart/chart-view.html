@@ -90,6 +90,52 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Two charts in step"
+  summary="pctChartSync on the section ties the window and the cursor of the two charts in it, and gives both plots the same edges: the fan's power has a wide axis in W, the heater a narrow yes/no one, and their time axes still line up. Zoom or drag either; the other follows."
+  [reqs]="['req-a11y-built-in', 'req-api-templates']"
+  data-testid="demo-sync"
+>
+  <section pctChartSync class="sbx-chart-stack">
+    <pct-chart
+      ariaLabel="Fan power on 25 October 2026"
+      timeZone="Europe/Warsaw"
+      locale="en-GB"
+      class="sbx-chart"
+      data-testid="chart-sync-power"
+    >
+      <pct-line
+        [data]="fan"
+        x="at"
+        y="value"
+        name="Fan power"
+        unit="W"
+        curve="step"
+        [end]="end"
+      />
+    </pct-chart>
+    <pct-chart
+      ariaLabel="Heater on 25 October 2026"
+      timeZone="Europe/Warsaw"
+      locale="en-GB"
+      style="height: 110px"
+      [zoomButtons]="false"
+      data-testid="chart-sync-heater"
+    >
+      <pct-line
+        [data]="heater"
+        x="at"
+        y="value"
+        name="Heater"
+        unit="boolean"
+        curve="step"
+        [end]="end"
+        area
+      />
+    </pct-chart>
+  </section>
+</sbx-demo>
+
+<sbx-demo
   heading="An area under one series, on an axis the view fixes"
   summary="One series filled down to zero, on a °C axis the view holds from 0 to 30 with pct-axis. The colour is the palette's first place: the fill is that colour mixed into nothing by the skin's amount."
   [reqs]="['req-api-templates']"

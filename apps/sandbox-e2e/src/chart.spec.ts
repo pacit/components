@@ -422,4 +422,161 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(line).toHaveCount(0);
     });
   });
+
+  test.describe('the window', () => {
+    const NAME = 'Heat recovery on 25 October 2026';
+    const H = 3_600_000;
+    const spanOf = (page: import('@playwright/test').Page) =>
+      page
+        .getByRole('slider', { name: NAME })
+        .evaluate((e) => Number((e as HTMLInputElement).max));
+    const firstLabel = (page: import('@playwright/test').Page) =>
+      chart(page, 'chart-pattern')
+        .locator('[data-pct-part="axis"] .time')
+        .first()
+        .textContent();
+
+    test('the keys zoom, pan and return the window', async ({ page }) => {
+      const range = page.getByRole('slider', { name: NAME });
+      await range.focus();
+      expect(await spanOf(page)).toBe(25 * H);
+      await page.keyboard.press('+');
+      await expect.poll(() => spanOf(page)).toBe(12.5 * H);
+      const before = await firstLabel(page);
+      await page.keyboard.press('Shift+ArrowRight');
+      await expect.poll(() => firstLabel(page)).not.toBe(before);
+      expect(await spanOf(page)).toBe(12.5 * H);
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+      await page.keyboard.press('-');
+      await expect.poll(() => spanOf(page)).toBe(25 * H);
+      await page.keyboard.press('+');
+      await page.keyboard.press('0');
+      await expect.poll(() => spanOf(page)).toBe(25 * H);
+      await expect.poll(() => firstLabel(page)).toBe('25/10');
+    });
+
+    test('the zoom bar is one stop whose buttons move the window', async ({
+      page,
+    }) => {
+      const range = page.getByRole('slider', { name: NAME });
+      const bar = chart(page, 'chart-pattern').getByRole('toolbar', {
+        name: 'Zoom',
+      });
+      await range.focus();
+      await page.keyboard.press('Tab');
+      const zoomIn = bar.getByRole('button', { name: 'Zoom in' });
+      await expect(zoomIn).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await expect(bar.getByRole('button', { name: 'Zoom out' })).toBeFocused();
+      await page.keyboard.press('Home');
+      await page.keyboard.press('Enter');
+      await expect.poll(() => spanOf(page)).toBe(12.5 * H);
+      // one stop: Tab leaves the bar
+      await page.keyboard.press('Tab');
+      await expect(bar.locator(':focus')).toHaveCount(0);
+      await bar
+        .getByRole('button', { name: 'Back to the default view' })
+        .click();
+      await expect.poll(() => spanOf(page)).toBe(25 * H);
+      for (const button of await bar.getByRole('button').all()) {
+        const box = (await button.boundingBox())!;
+        expect(box.width).toBeGreaterThanOrEqual(24);
+        expect(box.height).toBeGreaterThanOrEqual(24);
+      }
+    });
+
+    test('a drag pans the window, and Ctrl with the wheel zooms it while the wheel alone scrolls the page', async ({
+      page,
+    }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const box = (await pattern.boundingBox())!;
+      const y = box.y + box.height / 2;
+      await pattern.scrollIntoViewIfNeeded();
+      const range = page.getByRole('slider', { name: NAME });
+      await range.focus();
+      await page.keyboard.press('+');
+      await expect.poll(() => spanOf(page)).toBe(12.5 * H);
+      const before = await firstLabel(page);
+      const start = box.x + box.width * 0.6;
+      await page.mouse.move(start, y);
+      await page.mouse.down();
+      await page.mouse.move(start - 40, y, { steps: 4 });
+      await page.mouse.move(start - 120, y, { steps: 4 });
+      await page.mouse.up();
+      await expect.poll(() => firstLabel(page)).not.toBe(before);
+      expect(await spanOf(page)).toBe(12.5 * H);
+      const scrolled = await page.evaluate(() => window.scrollY);
+      await page.mouse.move(box.x + box.width / 2, y);
+      await page.keyboard.down('Control');
+      await page.mouse.wheel(0, -200);
+      await page.keyboard.up('Control');
+      await expect.poll(() => spanOf(page)).toBeLessThan(12.5 * H);
+      expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+      const zoomed = await spanOf(page);
+      await page.mouse.wheel(0, 200);
+      await expect
+        .poll(() => page.evaluate(() => window.scrollY))
+        .toBeGreaterThan(scrolled);
+      expect(await spanOf(page)).toBe(zoomed);
+    });
+
+    test('two charts in step share the window and the cursor, and line their plots up', async ({
+      page,
+    }) => {
+      const power = chart(page, 'chart-sync-power');
+      const heater = chart(page, 'chart-sync-heater');
+      const edge = (c: Locator) =>
+        c.locator('clipPath rect').evaluate((r) => Number(r.getAttribute('x')));
+      expect(await edge(power)).toBe(await edge(heater));
+      await power.scrollIntoViewIfNeeded();
+      const box = (await power.boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(heater.locator('[data-pct-part="cursor"]')).toHaveCount(1);
+      const at = async (c: Locator) =>
+        (await c.locator('[data-pct-part="cursor"]').boundingBox())!.x;
+      expect(
+        Math.abs((await at(power)) - (await at(heater))),
+      ).toBeLessThanOrEqual(1);
+      await page
+        .getByRole('slider', { name: 'Fan power on 25 October 2026' })
+        .focus();
+      await page.keyboard.press('+');
+      const max = (name: string) =>
+        page
+          .getByRole('slider', { name })
+          .evaluate((e) => Number((e as HTMLInputElement).max));
+      await expect
+        .poll(() => max('Heater on 25 October 2026'))
+        .toBe(await max('Fan power on 25 October 2026'));
+    });
+  });
+
+  test.describe('the window under fingers', () => {
+    test.use({ hasTouch: true });
+    test.skip(
+      ({ browserName }) => browserName === 'firefox',
+      'Playwright has no touch in Firefox',
+    );
+
+    test('a double tap returns the window to its default', async ({ page }) => {
+      const pattern = chart(page, 'chart-pattern');
+      const range = page.getByRole('slider', {
+        name: 'Heat recovery on 25 October 2026',
+      });
+      await range.focus();
+      await page.keyboard.press('+');
+      const span = () =>
+        range.evaluate((e) => Number((e as HTMLInputElement).max));
+      await expect.poll(span).toBe(12.5 * 3_600_000);
+      const box = (await pattern.boundingBox())!;
+      const x = box.x + box.width / 2;
+      const y = box.y + box.height / 2;
+      await page.touchscreen.tap(x, y);
+      await page.touchscreen.tap(x, y);
+      await expect.poll(span).toBe(25 * 3_600_000);
+    });
+  });
 });
