@@ -1,7 +1,7 @@
 {
   "tarball": {
     "version": "0.2.0",
-    "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
+    "integrity": "sha512-the-packed-archive",
     "files": [
       "LICENSE",
       "README.md",
@@ -365,7 +365,7 @@
     "output": "(npm publish output)",
     "metadata": {
       "versions": ["0.2.0"],
-      "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
+      "integrity": "sha512-the-packed-archive",
       "tarball": "http://localhost:4873/@pacit/components/-/components-0.2.0.tgz"
     }
   },
@@ -374,7 +374,7 @@
     "entry": {
       "version": "0.2.0",
       "resolved": "http://localhost:4873/@pacit/components/-/components-0.2.0.tgz",
-      "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
+      "integrity": "sha512-the-packed-archive",
       "license": "MIT",
       "dependencies": {
         "tslib": "^2.3.0"
@@ -421,6 +421,10 @@
       "wrong": {
         "code": 1,
         "output": "src/typed-wrong.ts:11:38 - error TS2820: Type '\"enabld\"' is not assignable to type '\"name\" | \"enabled\" | readonly (\"name\" | \"enabled\")[]'. Did you mean '\"enabled\"'?\n\n11     <ng-template [pctCell]=\"columns\" pctCellOf=\"enabld\" let-on=\"value\">{{ on ? 'on' : 'off' }}</ng-template>\n                                        ~~~~~~~~~\n\n\n"
+      },
+      "value": {
+        "code": 1,
+        "output": "src/typed-value.ts:11:79 - error TS2339: Property 'toFixed' does not exist on type 'boolean'.\n\n11     <ng-template [pctCell]=\"columns\" pctCellOf=\"enabled\" let-on=\"value\">{{ on.toFixed() }}</ng-template>\n                                                                                 ~~~~~~~\n\n\n"
       }
     }
   },

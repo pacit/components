@@ -922,12 +922,10 @@ export class PctDataTableHarness extends PctHarness<
   ): Promise<void> {
     const labels = await this.headers();
     const column = labels.indexOf(header);
-    const toggle =
-      column < 0
-        ? null
-        : await this.locatorForOptional(
-            `${HEADS}:nth-child(${column + 1}) > button[data-pct-part="toggle"]`,
-          )();
+    // A label no header has is column -1, and `:nth-child(0)` matches nothing.
+    const toggle = await this.locatorForOptional(
+      `${HEADS}:nth-child(${column + 1}) > button[data-pct-part="toggle"]`,
+    )();
     if (!toggle)
       throw new Error(
         `PctDataTableHarness: no column headed "${header}" sorts. ` +

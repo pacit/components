@@ -1234,12 +1234,15 @@ if (WRITE_REFERENCE) {
   measurement.ngAdd.output = '(ng generate output)';
   measurement.build.output = '(ng build output)';
   measurement.ssr.content = '(start of the HTML)';
-  // The registry's port and the repository's path differ on every run and every machine.
-  // The checks compare them WITHIN the measurement (the archive's address starts with the
-  // registry's, the resolution lies inside the application's directory), so substituting
-  // fixed values weakens nothing and takes noise and somebody's home path out of a
-  // versioned file.
+  // The registry's port, the repository's path and the archive's digest differ on every run
+  // and every machine. The checks compare them WITHIN the measurement (the archive's address
+  // starts with the registry's, the resolution lies inside the application's directory, the
+  // digest packed is the one served and installed), so substituting fixed values weakens
+  // nothing and takes noise, somebody's home path and a base64 blob the language gate reads
+  // as words out of a versioned file.
   const fixed = JSON.stringify(measurement)
+    .split(measurement.tarball.integrity)
+    .join('sha512-the-packed-archive')
     .split(measurement.registry.url)
     .join('http://localhost:4873')
     .split(measurement.install.directory)

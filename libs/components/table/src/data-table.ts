@@ -583,6 +583,7 @@ export class PctDataTable<
   /** The header row: each column with its sort state and its template. */
   protected readonly heads = computed(() => {
     const sort = this.sort();
+    const sentence = this.texts().tableSortLater;
     const templates = this.headerTemplates();
     return this.columns().map((column) => {
       const position = sort.findIndex((key) => key.key === column.id);
@@ -597,8 +598,8 @@ export class PctDataTable<
         place: later ? position + 1 : null,
         arrow: later?.direction === 'descending' ? '▼' : '▲',
         said: later
-          ? this.texts()
-              .tableSortLater.replace('{place}', String(position + 1))
+          ? sentence
+              .replace('{place}', String(position + 1))
               .replace(
                 '{way}',
                 later.direction === 'descending'

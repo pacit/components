@@ -639,3 +639,19 @@ describe('PctTableHeader — a description for its button', () => {
     expect(note.querySelector('[hidden]')).toBeNull();
   });
 });
+
+describe('PctTableHeader — no description unless given', () => {
+  it('leaves a sort button undescribed by default', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    const toggles = document.querySelectorAll('[data-pct-part="toggle"]');
+    expect(toggles).toHaveLength(2);
+    for (const button of Array.from(toggles))
+      expect(button.hasAttribute('aria-describedby')).toBe(false);
+    expect(document.querySelector('th [hidden]')).toBeNull();
+  });
+});

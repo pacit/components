@@ -273,6 +273,7 @@ describe('PctDataTableHarness', () => {
   it('finds a cell by its row and its header, and says why when there is none', async () => {
     const { table } = await outer();
     expect(await (await table.cell(1, 'Name')).text()).toBe('Spot');
+    expect(await (await table.cell(2, '#')).text()).toBe('3');
     await expect(table.cell(0, 'Colour')).rejects.toThrow(
       'PctDataTableHarness: no column is headed "Colour". Headers: #, Name, Room, On.',
     );
