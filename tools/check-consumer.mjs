@@ -1022,7 +1022,12 @@ const measureRepository = async () => {
           cwd: app,
         },
       );
-      return { code: result.code, output: result.output.slice(0, 2000) };
+      // The compiler colours its words whatever it is told, and the record keeps the words.
+      const colour = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+      return {
+        code: result.code,
+        output: result.output.replace(colour, '').slice(0, 2000),
+      };
     };
     const types = {
       right: typedRun('typed-right'),

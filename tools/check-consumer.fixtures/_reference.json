@@ -1,42 +1,143 @@
 {
   "tarball": {
-    "version": "0.0.1",
-    "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
+    "version": "0.2.0",
+    "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
     "files": [
       "LICENSE",
       "README.md",
+      "fesm2022/pacit-components-accordion.mjs",
+      "fesm2022/pacit-components-accordion.mjs.map",
+      "fesm2022/pacit-components-avatar.mjs",
+      "fesm2022/pacit-components-avatar.mjs.map",
+      "fesm2022/pacit-components-badge.mjs",
+      "fesm2022/pacit-components-badge.mjs.map",
+      "fesm2022/pacit-components-breadcrumb.mjs",
+      "fesm2022/pacit-components-breadcrumb.mjs.map",
       "fesm2022/pacit-components-button.mjs",
       "fesm2022/pacit-components-button.mjs.map",
+      "fesm2022/pacit-components-chart.mjs",
+      "fesm2022/pacit-components-chart.mjs.map",
       "fesm2022/pacit-components-checkbox.mjs",
       "fesm2022/pacit-components-checkbox.mjs.map",
+      "fesm2022/pacit-components-chips.mjs",
+      "fesm2022/pacit-components-chips.mjs.map",
+      "fesm2022/pacit-components-container.mjs",
+      "fesm2022/pacit-components-container.mjs.map",
       "fesm2022/pacit-components-core.mjs",
       "fesm2022/pacit-components-core.mjs.map",
+      "fesm2022/pacit-components-date.mjs",
+      "fesm2022/pacit-components-date.mjs.map",
+      "fesm2022/pacit-components-datetime.mjs",
+      "fesm2022/pacit-components-datetime.mjs.map",
+      "fesm2022/pacit-components-dialog.mjs",
+      "fesm2022/pacit-components-dialog.mjs.map",
+      "fesm2022/pacit-components-drawer.mjs",
+      "fesm2022/pacit-components-drawer.mjs.map",
       "fesm2022/pacit-components-field.mjs",
       "fesm2022/pacit-components-field.mjs.map",
+      "fesm2022/pacit-components-grid.mjs",
+      "fesm2022/pacit-components-grid.mjs.map",
+      "fesm2022/pacit-components-hero.mjs",
+      "fesm2022/pacit-components-hero.mjs.map",
+      "fesm2022/pacit-components-icon.mjs",
+      "fesm2022/pacit-components-icon.mjs.map",
+      "fesm2022/pacit-components-menu.mjs",
+      "fesm2022/pacit-components-menu.mjs.map",
+      "fesm2022/pacit-components-pagination.mjs",
+      "fesm2022/pacit-components-pagination.mjs.map",
+      "fesm2022/pacit-components-popover.mjs",
+      "fesm2022/pacit-components-popover.mjs.map",
+      "fesm2022/pacit-components-progress.mjs",
+      "fesm2022/pacit-components-progress.mjs.map",
       "fesm2022/pacit-components-radio.mjs",
       "fesm2022/pacit-components-radio.mjs.map",
+      "fesm2022/pacit-components-regions.mjs",
+      "fesm2022/pacit-components-regions.mjs.map",
       "fesm2022/pacit-components-select.mjs",
       "fesm2022/pacit-components-select.mjs.map",
+      "fesm2022/pacit-components-skeleton.mjs",
+      "fesm2022/pacit-components-skeleton.mjs.map",
+      "fesm2022/pacit-components-slider.mjs",
+      "fesm2022/pacit-components-slider.mjs.map",
+      "fesm2022/pacit-components-stack.mjs",
+      "fesm2022/pacit-components-stack.mjs.map",
+      "fesm2022/pacit-components-stepper.mjs",
+      "fesm2022/pacit-components-stepper.mjs.map",
+      "fesm2022/pacit-components-svg-icon.mjs",
+      "fesm2022/pacit-components-svg-icon.mjs.map",
+      "fesm2022/pacit-components-switch.mjs",
+      "fesm2022/pacit-components-switch.mjs.map",
+      "fesm2022/pacit-components-table.mjs",
+      "fesm2022/pacit-components-table.mjs.map",
+      "fesm2022/pacit-components-tabs.mjs",
+      "fesm2022/pacit-components-tabs.mjs.map",
+      "fesm2022/pacit-components-testing.mjs",
+      "fesm2022/pacit-components-testing.mjs.map",
+      "fesm2022/pacit-components-theme.mjs",
+      "fesm2022/pacit-components-theme.mjs.map",
+      "fesm2022/pacit-components-time.mjs",
+      "fesm2022/pacit-components-time.mjs.map",
+      "fesm2022/pacit-components-toast.mjs",
+      "fesm2022/pacit-components-toast.mjs.map",
+      "fesm2022/pacit-components-tooltip.mjs",
+      "fesm2022/pacit-components-tooltip.mjs.map",
+      "fesm2022/pacit-components-tree.mjs",
+      "fesm2022/pacit-components-tree.mjs.map",
       "fesm2022/pacit-components.mjs",
       "fesm2022/pacit-components.mjs.map",
       "package.json",
       "schematics/collection.json",
       "schematics/migration.json",
+      "schematics/migrations/badge-tone/index.js",
+      "schematics/migrations/control-reset/index.js",
       "schematics/ng-add/index.js",
       "schematics/ng-add/schema.json",
       "schematics/package.json",
       "themes/pct.css",
+      "types/pacit-components-accordion.d.ts",
+      "types/pacit-components-avatar.d.ts",
+      "types/pacit-components-badge.d.ts",
+      "types/pacit-components-breadcrumb.d.ts",
       "types/pacit-components-button.d.ts",
+      "types/pacit-components-chart.d.ts",
       "types/pacit-components-checkbox.d.ts",
+      "types/pacit-components-chips.d.ts",
+      "types/pacit-components-container.d.ts",
       "types/pacit-components-core.d.ts",
+      "types/pacit-components-date.d.ts",
+      "types/pacit-components-datetime.d.ts",
+      "types/pacit-components-dialog.d.ts",
+      "types/pacit-components-drawer.d.ts",
       "types/pacit-components-field.d.ts",
+      "types/pacit-components-grid.d.ts",
+      "types/pacit-components-hero.d.ts",
+      "types/pacit-components-icon.d.ts",
+      "types/pacit-components-menu.d.ts",
+      "types/pacit-components-pagination.d.ts",
+      "types/pacit-components-popover.d.ts",
+      "types/pacit-components-progress.d.ts",
       "types/pacit-components-radio.d.ts",
+      "types/pacit-components-regions.d.ts",
       "types/pacit-components-select.d.ts",
+      "types/pacit-components-skeleton.d.ts",
+      "types/pacit-components-slider.d.ts",
+      "types/pacit-components-stack.d.ts",
+      "types/pacit-components-stepper.d.ts",
+      "types/pacit-components-svg-icon.d.ts",
+      "types/pacit-components-switch.d.ts",
+      "types/pacit-components-table.d.ts",
+      "types/pacit-components-tabs.d.ts",
+      "types/pacit-components-testing.d.ts",
+      "types/pacit-components-theme.d.ts",
+      "types/pacit-components-time.d.ts",
+      "types/pacit-components-toast.d.ts",
+      "types/pacit-components-tooltip.d.ts",
+      "types/pacit-components-tree.d.ts",
       "types/pacit-components.d.ts"
     ],
     "manifest": {
       "name": "@pacit/components",
-      "version": "0.0.1",
+      "version": "0.2.0",
       "description": "Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token theming.",
       "license": "MIT",
       "author": "PacIT - Marek Pac",
@@ -44,6 +145,8 @@
         "type": "git",
         "url": "git+https://github.com/pacit/components.git"
       },
+      "homepage": "https://components.pacit.pl",
+      "bugs": "https://github.com/pacit/components/issues",
       "keywords": [
         "angular",
         "components",
@@ -55,10 +158,18 @@
         "zoneless",
         "ssr"
       ],
+      "// peerDependencies": "The four the package imports, plus one it does NOT: `@angular/compiler` is reached only by the `ng update` migration, at the consumer's, through a dynamic `import()` — nothing in the shipped bundle names it. It is declared because the truth is that the code can call it, and `peerDependenciesMeta` marks it OPTIONAL because the truth is also that the call is allowed to fail: a workspace without it gets a migration that writes nowhere and reports every file worth a look. Declaring it costs a consumer nothing they do not already have: `@angular/build` requires `@angular/compiler` as a peer, and an install brings a required peer, so every workspace that builds an Angular application has it — and `req-project-dependencies` is satisfied by the shape rather than by silence: this is not build tooling entering a runtime tree, it is a one-off tool borrowing the parser that is already installed beside it.",
       "peerDependencies": {
         "@angular/cdk": "^22.0.0",
+        "@angular/common": "^22.0.0",
+        "@angular/compiler": "^22.0.0",
         "@angular/core": "^22.0.0",
         "@angular/forms": "^22.0.0"
+      },
+      "peerDependenciesMeta": {
+        "@angular/compiler": {
+          "optional": true
+        }
       },
       "sideEffects": false,
       "schematics": "./schematics/collection.json",
@@ -78,29 +189,161 @@
           "types": "./types/pacit-components.d.ts",
           "default": "./fesm2022/pacit-components.mjs"
         },
+        "./accordion": {
+          "types": "./types/pacit-components-accordion.d.ts",
+          "default": "./fesm2022/pacit-components-accordion.mjs"
+        },
+        "./avatar": {
+          "types": "./types/pacit-components-avatar.d.ts",
+          "default": "./fesm2022/pacit-components-avatar.mjs"
+        },
+        "./badge": {
+          "types": "./types/pacit-components-badge.d.ts",
+          "default": "./fesm2022/pacit-components-badge.mjs"
+        },
+        "./breadcrumb": {
+          "types": "./types/pacit-components-breadcrumb.d.ts",
+          "default": "./fesm2022/pacit-components-breadcrumb.mjs"
+        },
         "./button": {
           "types": "./types/pacit-components-button.d.ts",
           "default": "./fesm2022/pacit-components-button.mjs"
+        },
+        "./chart": {
+          "types": "./types/pacit-components-chart.d.ts",
+          "default": "./fesm2022/pacit-components-chart.mjs"
         },
         "./checkbox": {
           "types": "./types/pacit-components-checkbox.d.ts",
           "default": "./fesm2022/pacit-components-checkbox.mjs"
         },
+        "./chips": {
+          "types": "./types/pacit-components-chips.d.ts",
+          "default": "./fesm2022/pacit-components-chips.mjs"
+        },
+        "./container": {
+          "types": "./types/pacit-components-container.d.ts",
+          "default": "./fesm2022/pacit-components-container.mjs"
+        },
         "./core": {
           "types": "./types/pacit-components-core.d.ts",
           "default": "./fesm2022/pacit-components-core.mjs"
+        },
+        "./date": {
+          "types": "./types/pacit-components-date.d.ts",
+          "default": "./fesm2022/pacit-components-date.mjs"
+        },
+        "./datetime": {
+          "types": "./types/pacit-components-datetime.d.ts",
+          "default": "./fesm2022/pacit-components-datetime.mjs"
+        },
+        "./dialog": {
+          "types": "./types/pacit-components-dialog.d.ts",
+          "default": "./fesm2022/pacit-components-dialog.mjs"
+        },
+        "./drawer": {
+          "types": "./types/pacit-components-drawer.d.ts",
+          "default": "./fesm2022/pacit-components-drawer.mjs"
         },
         "./field": {
           "types": "./types/pacit-components-field.d.ts",
           "default": "./fesm2022/pacit-components-field.mjs"
         },
+        "./grid": {
+          "types": "./types/pacit-components-grid.d.ts",
+          "default": "./fesm2022/pacit-components-grid.mjs"
+        },
+        "./hero": {
+          "types": "./types/pacit-components-hero.d.ts",
+          "default": "./fesm2022/pacit-components-hero.mjs"
+        },
+        "./icon": {
+          "types": "./types/pacit-components-icon.d.ts",
+          "default": "./fesm2022/pacit-components-icon.mjs"
+        },
+        "./menu": {
+          "types": "./types/pacit-components-menu.d.ts",
+          "default": "./fesm2022/pacit-components-menu.mjs"
+        },
+        "./pagination": {
+          "types": "./types/pacit-components-pagination.d.ts",
+          "default": "./fesm2022/pacit-components-pagination.mjs"
+        },
+        "./popover": {
+          "types": "./types/pacit-components-popover.d.ts",
+          "default": "./fesm2022/pacit-components-popover.mjs"
+        },
+        "./progress": {
+          "types": "./types/pacit-components-progress.d.ts",
+          "default": "./fesm2022/pacit-components-progress.mjs"
+        },
         "./radio": {
           "types": "./types/pacit-components-radio.d.ts",
           "default": "./fesm2022/pacit-components-radio.mjs"
         },
+        "./regions": {
+          "types": "./types/pacit-components-regions.d.ts",
+          "default": "./fesm2022/pacit-components-regions.mjs"
+        },
         "./select": {
           "types": "./types/pacit-components-select.d.ts",
           "default": "./fesm2022/pacit-components-select.mjs"
+        },
+        "./skeleton": {
+          "types": "./types/pacit-components-skeleton.d.ts",
+          "default": "./fesm2022/pacit-components-skeleton.mjs"
+        },
+        "./slider": {
+          "types": "./types/pacit-components-slider.d.ts",
+          "default": "./fesm2022/pacit-components-slider.mjs"
+        },
+        "./stack": {
+          "types": "./types/pacit-components-stack.d.ts",
+          "default": "./fesm2022/pacit-components-stack.mjs"
+        },
+        "./stepper": {
+          "types": "./types/pacit-components-stepper.d.ts",
+          "default": "./fesm2022/pacit-components-stepper.mjs"
+        },
+        "./svg-icon": {
+          "types": "./types/pacit-components-svg-icon.d.ts",
+          "default": "./fesm2022/pacit-components-svg-icon.mjs"
+        },
+        "./switch": {
+          "types": "./types/pacit-components-switch.d.ts",
+          "default": "./fesm2022/pacit-components-switch.mjs"
+        },
+        "./table": {
+          "types": "./types/pacit-components-table.d.ts",
+          "default": "./fesm2022/pacit-components-table.mjs"
+        },
+        "./tabs": {
+          "types": "./types/pacit-components-tabs.d.ts",
+          "default": "./fesm2022/pacit-components-tabs.mjs"
+        },
+        "./testing": {
+          "types": "./types/pacit-components-testing.d.ts",
+          "default": "./fesm2022/pacit-components-testing.mjs"
+        },
+        "./theme": {
+          "types": "./types/pacit-components-theme.d.ts",
+          "default": "./fesm2022/pacit-components-theme.mjs"
+        },
+        "./time": {
+          "types": "./types/pacit-components-time.d.ts",
+          "default": "./fesm2022/pacit-components-time.mjs"
+        },
+        "./toast": {
+          "types": "./types/pacit-components-toast.d.ts",
+          "default": "./fesm2022/pacit-components-toast.mjs"
+        },
+        "./tooltip": {
+          "types": "./types/pacit-components-tooltip.d.ts",
+          "default": "./fesm2022/pacit-components-tooltip.mjs"
+        },
+        "./tree": {
+          "types": "./types/pacit-components-tree.d.ts",
+          "default": "./fesm2022/pacit-components-tree.mjs"
         }
       },
       "module": "fesm2022/pacit-components.mjs",
@@ -110,32 +353,43 @@
         "tslib": "^2.3.0"
       }
     },
-    "factories": ["schematics/ng-add/index.js"]
+    "factories": [
+      "schematics/ng-add/index.js",
+      "schematics/migrations/badge-tone/index.js",
+      "schematics/migrations/control-reset/index.js"
+    ]
   },
   "registry": {
     "url": "http://localhost:4873",
     "published": true,
     "output": "(npm publish output)",
     "metadata": {
-      "versions": ["0.0.1"],
-      "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
-      "tarball": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz"
+      "versions": ["0.2.0"],
+      "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
+      "tarball": "http://localhost:4873/@pacit/components/-/components-0.2.0.tgz"
     }
   },
   "install": {
     "directory": "/repository/tmp/check-consumer/app",
     "entry": {
-      "version": "0.0.1",
-      "resolved": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz",
-      "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
+      "version": "0.2.0",
+      "resolved": "http://localhost:4873/@pacit/components/-/components-0.2.0.tgz",
+      "integrity": "sha512-h1bulYHCT61dDnASlU5/vca7dBreHaA/BH8vqqzdlo773/Dwob6SghD/8EkeTI/szHhVGq7MabnmxyXAXhRxFA==",
       "license": "MIT",
       "dependencies": {
         "tslib": "^2.3.0"
       },
       "peerDependencies": {
         "@angular/cdk": "^22.0.0",
+        "@angular/common": "^22.0.0",
+        "@angular/compiler": "^22.0.0",
         "@angular/core": "^22.0.0",
         "@angular/forms": "^22.0.0"
+      },
+      "peerDependenciesMeta": {
+        "@angular/compiler": {
+          "optional": true
+        }
       }
     },
     "output": "(npm install output)",
@@ -158,7 +412,17 @@
       "data-pct-part": true,
       "pct-button": true
     },
-    "tokensInCss": 424
+    "tokensInCss": 2221,
+    "types": {
+      "right": {
+        "code": 0,
+        "output": ""
+      },
+      "wrong": {
+        "code": 1,
+        "output": "src/typed-wrong.ts:11:38 - error TS2820: Type '\"enabld\"' is not assignable to type '\"name\" | \"enabled\" | readonly (\"name\" | \"enabled\")[]'. Did you mean '\"enabled\"'?\n\n11     <ng-template [pctCell]=\"columns\" pctCellOf=\"enabld\" let-on=\"value\">{{ on ? 'on' : 'off' }}</ng-template>\n                                        ~~~~~~~~~\n\n\n"
+      }
+    }
   },
   "ssr": {
     "status": 200,
