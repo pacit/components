@@ -112,3 +112,12 @@ cursor's range and the bar, not six. **A double tap wins over a tap on the curso
 presses within 300 ms and 24 px return the window, and the second does not clear the cursor
 the first placed. **The gestures are a pure machine** (`pctGestureStep`), tested without a
 browser; the scene keeps its state, raises a held finger on a timer and acts on what it asks.
+
+## Amended 2026-10-30: what a press picks is the mark's output
+
+The record made `picked` the fifth model. The bars (phase 6 of 1.11) made it an output
+instead: `pick` on `pct-bars` emits the series, the band and the row a press landed on, and
+the application keeps what it picked, as it keeps a table's row. A model on the scene would
+have to name a row of a mark the scene does not read, and nothing on the scene draws a
+picked row — the selected band does that, and `selected` stays a model: a tap on a band
+selects it, a second lets it go, Enter and Space do the same at the cursor.

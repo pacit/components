@@ -112,3 +112,14 @@ field's warning ([0087](0087-a-warning-is-a-verdict-without-a-veto.md)), shown t
 a value; rows out of order are a developer's mistake. The mark warns as every component of this
 library warns its developer: `console.warn` under `isDevMode()`, naming the series and the
 first row out of order.
+
+## Amended 2026-10-30: a band is a span on the continuous scale
+
+The bars (phase 6 of 1.11) brought no band scale to the scene. A bar's band is a span on the
+horizontal axis the scene already has — a calendar interval of the zone when the chart names
+an `interval`, or `[i, i + 1]` for the i-th of its `categories` — and the bar takes the
+pixels of that span, four fifths of them. So the cursor, the window, its gestures and
+`pctChartSync` work under bars exactly as under lines, a line on the same scene draws through
+the bands' middles at `i + 0.5`, and the day of twenty-five hours is a wider bar, as it is a
+longer day. `pctBand` of the core stays for what cuts a range into equal slots with nothing
+to measure them by.
