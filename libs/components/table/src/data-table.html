@@ -17,7 +17,11 @@
     }
     <thead>
       <tr>
-        @if (rowNumbers()) {
+        @if (disclosure()) {
+        <th pctHeader scope="col" class="pct-data-table__disclosure">
+          <span class="pct-data-table__word">{{ texts().tableDetails }}</span>
+        </th>
+        } @if (rowNumbers()) {
         <th pctHeader scope="col" numeric class="pct-data-table__number">
           <span aria-hidden="true">#</span
           ><span class="pct-data-table__word"
@@ -52,15 +56,45 @@
     <tbody [attr.aria-busy]="loading() ? 'true' : null">
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
-        @if (rowNumbers()) {
+        @if (disclosure()) {
+        <td pctCell></td>
+        } @if (rowNumbers()) {
         <td pctCell></td>
         } @for (head of heads(); track head.column.id) {
         <td pctCell><pct-skeleton /></td>
         }
       </tr>
       } @for (row of body(); track row.key) {
-      <tr [attr.data-pct-index]="$index" [attr.data-pct-tone]="row.tone">
-        @if (rowNumbers()) {
+      <tr [attr.data-pct-index]="row.line" [attr.data-pct-tone]="row.tone">
+        @if (disclosure()) {
+        <td pctCell class="pct-data-table__disclosure">
+          <button
+            type="button"
+            class="pct-data-table__toggle"
+            data-pct-part="disclosure"
+            [attr.aria-expanded]="row.open"
+            [attr.aria-controls]="row.open ? row.detailsId : null"
+            [attr.aria-label]="row.open ? texts().tableDetailsClose : texts().tableDetailsOpen"
+            (click)="toggleDetails(row.id)"
+          >
+            <pct-icon name="chevron-right" class="pct-data-table__chevron">
+              <svg
+                viewBox="0 0 16 16"
+                width="100%"
+                height="100%"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                focusable="false"
+              >
+                <path d="M6 4l4 4-4 4" />
+              </svg>
+            </pct-icon>
+          </button>
+        </td>
+        } @if (rowNumbers()) {
         <td pctCell numeric class="pct-data-table__number">{{ $index + 1 }}</td>
         } @for (cell of row.cells; track cell.column.id) {
         <td
@@ -112,7 +146,45 @@
         </td>
         }
       </tr>
-      }
+      @if (row.open) {
+      <!-- The row's details: the full width, the hidden columns' values as a list, then the
+           consumer's template. -->
+      <tr
+        data-pct-part="details"
+        [id]="row.detailsId"
+        [attr.data-pct-index]="row.line + 1"
+      >
+        <td pctCell [attr.colspan]="span()">
+          @if (row.hidden.length > 0) {
+          <dl class="pct-data-table__hidden">
+            @for (cell of row.hidden; track cell.column.id) {
+            <div>
+              <dt>{{ cell.column.header }}</dt>
+              <dd>
+                @if (cell.slot) {
+                <ng-container
+                  [ngTemplateOutlet]="cell.slot"
+                  [ngTemplateOutletContext]="{
+                    $implicit: row.row,
+                    value: cell.value,
+                    column: cell.column,
+                    index: row.index,
+                  }"
+                />
+                } @else { {{ cell.text }} }
+              </dd>
+            </div>
+            }
+          </dl>
+          } @if (detailsSlot(); as slot) {
+          <ng-container
+            [ngTemplateOutlet]="slot.template"
+            [ngTemplateOutletContext]="{ $implicit: row.row, hidden: row.hiddenColumns }"
+          />
+          }
+        </td>
+      </tr>
+      } }
     </tbody>
   </table>
   @if (message(); as sentence) {

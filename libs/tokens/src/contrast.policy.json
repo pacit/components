@@ -2407,6 +2407,13 @@
       "severity": "error"
     },
     {
+      "name": "data table — the text of a row's details",
+      "fg": "pct.table.fg",
+      "bg": "pct.table.details-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — series 1 on surface",
       "fg": "pct.chart.series-color-1",
       "bg": "pct.surface",

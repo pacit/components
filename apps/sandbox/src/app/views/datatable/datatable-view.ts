@@ -5,7 +5,10 @@ import { PctSwitch } from '@pacit/components/switch';
 import {
   PctCellTemplate,
   PctDataTable,
+  PctDetailsTemplate,
   pctColumnsOf,
+  type PctRowId,
+  PctTableDetails,
   type PctTableSort,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
@@ -107,6 +110,9 @@ const dev = pctColumnsOf<Device>();
     PctField,
     PctText,
     PctSwitch,
+    PctButton,
+    PctTableDetails,
+    PctDetailsTemplate,
   ],
   templateUrl: './datatable-view.html',
   styleUrl: './datatable-view.scss',
@@ -127,6 +133,29 @@ export class DatatableView {
     col.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
   ]);
   protected readonly byId = (rule: Rule) => rule.id;
+
+  /** The same rules with priorities: on a narrow frame the later columns give way first. */
+  protected readonly detailColumns = col.of([
+    col.key('name', { header: 'Name' }),
+    col.key('room', { header: 'Room', priority: 2 }),
+    col.key('address', { header: 'Address', numeric: true, priority: 4 }),
+    col.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+      priority: 3,
+    }),
+    col.key('nextAt', {
+      header: 'Next run',
+      kind: { instant: { relative: true, timeZone: 'Europe/Warsaw' } },
+      priority: 1,
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
+  ]);
+  protected readonly widths = [1200, 720, 360] as const;
+  protected readonly width = signal<number>(1200);
+  protected readonly detailRules = signal<readonly Rule[]>(RULES.slice(0, 8));
+  protected readonly openRules = signal<readonly PctRowId[]>([]);
+  protected readonly ran = signal('');
   protected readonly now = NOW;
 
   protected readonly rules = signal<readonly Rule[]>(RULES);
@@ -181,6 +210,14 @@ export class DatatableView {
 
   protected toggle(rule: Rule, enabled: boolean): void {
     this.rules.update((rules) =>
+      rules.map((other) =>
+        other.id === rule.id ? { ...other, enabled } : other,
+      ),
+    );
+  }
+
+  protected toggleDetail(rule: Rule, enabled: boolean): void {
+    this.detailRules.update((rules) =>
       rules.map((other) =>
         other.id === rule.id ? { ...other, enabled } : other,
       ),

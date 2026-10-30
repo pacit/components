@@ -4,6 +4,7 @@ import {
   type PctColumns,
   pctColumnNumeric,
   pctColumnsOf,
+  pctHideOrder,
 } from './columns';
 
 /**
@@ -253,5 +254,24 @@ describe('pctColumnNumeric', () => {
         }),
       ),
     ).toBe(false);
+  });
+});
+
+describe('pctHideOrder', () => {
+  const at = (id: string, priority?: number) =>
+    col.value(id, (r) => r.name, { header: id, priority });
+
+  it('hides the highest priority first, and of equals the later column', () => {
+    expect(
+      pctHideOrder([at('a', 1), at('b'), at('c', 3), at('d', 1), at('e', 2)]),
+    ).toEqual(['c', 'e', 'd', 'a']);
+  });
+
+  it('never hides a column with no priority, or one that is no number', () => {
+    expect(
+      pctHideOrder([at('a'), at('b', Number.NaN), at('c', Infinity)]),
+    ).toEqual([]);
+    expect(pctHideOrder([])).toEqual([]);
+    expect(pctHideOrder([at('a', 0), at('b', -1)])).toEqual(['a', 'b']);
   });
 });

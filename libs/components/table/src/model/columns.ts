@@ -142,6 +142,12 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * reader hears all of it.
    */
   readonly tooltip?: boolean | ((row: T) => string);
+  /**
+   * How readily the column gives way on a narrow table: a column with a priority is hidden
+   * when the table no longer fits its frame, the highest number first, and its value moves
+   * into the row's details. A column with none is never hidden.
+   */
+  readonly priority?: number;
 }
 
 /**
@@ -248,4 +254,26 @@ export function pctColumnNumeric<T>(column: PctAnyColumn<T>): boolean {
   if (column.numeric !== undefined) return column.numeric;
   const kind = column.kind;
   return typeof kind === 'object' && 'number' in kind;
+}
+
+/**
+ * The ids of the columns a narrow table may hide, in the order it hides them: the highest
+ * `priority` first, and of two equal ones the later column, so the columns a reader meets
+ * first stay longest. A column with no priority, or one that is not a finite number, never
+ * hides.
+ *
+ * @since next
+ */
+export function pctHideOrder<T>(
+  columns: readonly PctAnyColumn<T>[],
+): readonly string[] {
+  return columns
+    .map((column, place) => ({ column, place }))
+    .filter(({ column }) => Number.isFinite(column.priority))
+    .sort(
+      (a, b) =>
+        (b.column.priority as number) - (a.column.priority as number) ||
+        b.place - a.place,
+    )
+    .map(({ column }) => column.id);
 }
