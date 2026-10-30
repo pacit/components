@@ -835,7 +835,12 @@ export class PctDataTableHarness extends PctHarness<
   'mark' | 'message' | 'place' | 'placeholder'
 > {
   static override hostSelector = 'pct-data-table';
-  static override readonly parts = ['mark', 'message', 'place', 'placeholder'] as const;
+  static override readonly parts = [
+    'mark',
+    'message',
+    'place',
+    'placeholder',
+  ] as const;
 }
 
 /**
