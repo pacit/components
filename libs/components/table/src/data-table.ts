@@ -493,12 +493,16 @@ export class PctDataTable<
     return rows.filter((row) => pctMatches(row, columns, text, words));
   });
 
-  /** The words to mark: the quick filter's, where the table's own filter decided. */
-  private readonly marked = computed(() =>
-    this.highlightMatches() && this.clientFilter() && !this.filterWith()
-      ? pctQuestionWords(this.filter())
-      : [],
-  );
+  /**
+   * The words to mark: the quick filter's, where the table's own filter decided, or `null`
+   * where there is nothing to mark — then no cell's text is cut at all.
+   */
+  private readonly marked = computed(() => {
+    if (!this.highlightMatches() || !this.clientFilter() || this.filterWith())
+      return null;
+    const words = pctQuestionWords(this.filter());
+    return words.length > 0 ? words : null;
+  });
 
   /**
    * How many rows the filter let through: the application writes `12 of 900` from this and
@@ -615,13 +619,10 @@ export class PctDataTable<
         boolean,
         slot,
         // A word is marked only in the text it was found in: a column the filter reads by its
-        // text, drawn as that text.
+        // text. A template or a check mark draws in its place, and the template reads which
+        // first.
         marking:
-          words.length > 0 &&
-          slot === null &&
-          !boolean &&
-          filter !== false &&
-          typeof filter !== 'function',
+          words !== null && filter !== false && typeof filter !== 'function',
       };
     });
     // The base draws rows and nothing else: details, groups and holes are lines that the
@@ -642,7 +643,9 @@ export class PctDataTable<
           const value = values[c];
           const text = texts[c];
           const yes = boolean && typeof value === 'boolean' ? value : null;
-          const parts = marking ? pctMatchParts(text, words) : null;
+          const parts = marking
+            ? pctMatchParts(text, words as readonly string[])
+            : null;
           const tooltip = column.tooltip;
           return {
             column,
@@ -820,7 +823,7 @@ export class PctDataTable<
     if (!cell || cell === this.titled) return;
     const clip = cell.firstElementChild as HTMLElement;
     if (clip.scrollWidth <= clip.clientWidth) return;
-    cell.setAttribute('title', (clip.textContent as string).trim());
+    cell.setAttribute('title', clip.textContent as string);
     this.titled = cell;
   }
 
@@ -839,20 +842,23 @@ export class PctDataTable<
    * Flashes the cells whose values changed since the last render. A row is followed by its key
    * and a cell by its column's place, so a row that moved is compared with itself; a row that
    * was not there before, and every row when the columns change, has nothing to differ from.
-   * A row whose values the cache kept is the same array and is not read at all.
    */
   private watchChanges(): void {
-    let ids: readonly string[] = [];
+    let ids: readonly string[] | null = null;
     let before = new Map<string, readonly unknown[]>();
     afterRenderEffect(() => {
       const body = this.body();
       const columns = this.columns().map((column) => column.id);
+      // Columns that changed are new columns, and the old values say nothing about them; a
+      // column taken off the end leaves the rest where they were.
       const same =
-        columns.length === ids.length &&
-        columns.every((id, c) => id === ids[c]);
+        ids !== null && columns.every((id, c) => id === (ids as string[])[c]);
       ids = columns;
-      if (!this.highlightChanges() || !same) before = new Map();
-      if (!this.highlightChanges()) return;
+      if (!this.highlightChanges()) {
+        before = new Map();
+        return;
+      }
+      if (!same) before = new Map();
       const offset = this.rowNumbers() ? 1 : 0;
       const rows = this.ownTable().tBodies[0].rows;
       const now = new Map<string, readonly unknown[]>();
@@ -860,7 +866,7 @@ export class PctDataTable<
       body.forEach((row, index) => {
         const was = before.get(row.key);
         now.set(row.key, row.values);
-        if (!was || was === row.values) return;
+        if (!was) return;
         row.values.forEach((value, c) => {
           if (!sameValue(was[c], value))
             changed.push(rows[index].cells[c + offset]);

@@ -1612,7 +1612,7 @@ describe('PctDataTable — the look of the rows', () => {
     expect(seen).toEqual(['', null]);
     watch.disconnect();
     expect(cells(1)[3].hasAttribute('data-pct-changed')).toBe(true);
-    // Columns that change are new columns: nothing to differ from, so nothing flashes.
+    // The numbers coming off move every cell one to the left, and nothing flashes for it.
     cells(1)[3].removeAttribute('data-pct-changed');
     fixture.componentInstance.numbers.set(false);
     await settle(fixture);
@@ -1659,6 +1659,13 @@ describe('PctDataTable — the look of the rows', () => {
     await settle(fixture);
     expect(cells(0)[0].hasAttribute('data-pct-changed')).toBe(true);
     expect(cells(0)[1].hasAttribute('data-pct-changed')).toBe(false);
+    cells(0)[0].removeAttribute('data-pct-changed');
+    // A date that becomes no date at all changed too.
+    fixture.componentInstance.rows.set([
+      { id: 1, at: null as unknown as Date, value: 1 },
+    ]);
+    await settle(fixture);
+    expect(cells(0)[0].hasAttribute('data-pct-changed')).toBe(true);
     cells(0)[0].removeAttribute('data-pct-changed');
     fixture.componentInstance.changes.set(false);
     await settle(fixture);
@@ -1882,5 +1889,72 @@ describe('PctDataTable — after the review of the rows’ look', () => {
     expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts[0]).toBe(
       own()[2],
     );
+  });
+
+  it('reads changed columns as new ones, and a column taken off the end as no change', async () => {
+    const two = col.of([
+      col.key('name', { header: 'Name' }),
+      col.key('room', { header: 'Room' }),
+    ]);
+    const swapped = col.of([
+      col.key('name', { header: 'Name' }),
+      col.key('power', { header: 'Power' }),
+    ]);
+    const three = col.of([
+      col.key('name', { header: 'Name' }),
+      col.key('power', { header: 'Power' }),
+      col.key('room', { header: 'Room' }),
+    ]);
+    @Component({
+      imports: [PctDataTable],
+      template: `<pct-data-table
+        [rows]="rows()"
+        [columns]="columns()"
+        [rowId]="byId"
+        caption="Swapped"
+        highlightChanges
+      />`,
+    })
+    class SwapHost {
+      readonly rows = signal<readonly Device[]>(DEVICES);
+      readonly columns = signal(two as never);
+      readonly byId = byId;
+    }
+    const fixture = await render(SwapHost);
+    const flashed = () => document.querySelectorAll('[data-pct-changed]');
+    fixture.componentInstance.columns.set(swapped as never);
+    await settle(fixture);
+    expect(flashed()).toHaveLength(0);
+    fixture.componentInstance.columns.set(three as never);
+    await settle(fixture);
+    expect(flashed()).toHaveLength(0);
+    // The last column off: the two before it are the same columns, and they still compare.
+    fixture.componentInstance.columns.set(swapped as never);
+    fixture.componentInstance.rows.set([
+      { ...DEVICES[0], power: 99 },
+      DEVICES[1],
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    expect(Array.from(flashed())).toEqual([cells(0)[1]]);
+  });
+
+  it('lays the table out once for a poll that changed values, and not at all for one that did not', async () => {
+    const fixture = await render(LookHost);
+    fixture.componentInstance.changes.set(true);
+    await settle(fixture);
+    const table = document.querySelector('table') as HTMLTableElement;
+    const layout = vi.spyOn(table, 'getBoundingClientRect');
+    fixture.componentInstance.rows.set([...DEVICES]);
+    await settle(fixture);
+    expect(layout).not.toHaveBeenCalled();
+    fixture.componentInstance.rows.set([
+      { ...DEVICES[0], power: 1, room: 'Attic' },
+      { ...DEVICES[1], power: 2 },
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    expect(layout).toHaveBeenCalledTimes(1);
+    expect(document.querySelectorAll('[data-pct-changed]')).toHaveLength(3);
   });
 });

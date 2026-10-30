@@ -107,13 +107,12 @@ export function pctMatchParts(
     const last = parts.at(-1);
     // A place that overlaps the last mark or starts where it ends grows it.
     if (last && start <= from) {
-      if (end > from) {
-        parts[parts.length - 1] = {
-          text: last.text + text.slice(from, end),
-          match: true,
-        };
-        from = end;
-      }
+      // A place inside the mark adds nothing: its slice past the mark's end is empty.
+      parts[parts.length - 1] = {
+        text: last.text + text.slice(from, end),
+        match: true,
+      };
+      from = Math.max(from, end);
       continue;
     }
     if (start > from)
