@@ -187,11 +187,11 @@ describe('@pacit/components/icon — fonts', () => {
         success: 'check-circle',
         user: 'user',
         warning: 'exclamation-triangle',
-        'zoom-in': 'magnifying-glass-plus',
-        'zoom-out': 'magnifying-glass-minus',
+        'zoom-in': 'search-plus',
+        'zoom-out': 'search-minus',
         previous: 'chevron-left',
         next: 'chevron-right',
-        reset: 'rotate-left',
+        reset: 'replay',
       });
       expect(primeIcons({ roles: { user: 'users' } }).roles?.user).toBe(
         'users',
