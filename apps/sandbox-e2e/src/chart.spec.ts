@@ -27,7 +27,10 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
     await expect(picture).toHaveAccessibleDescription(
       /Supply air between 17\.3 and 22\.7 °C/,
     );
-    for (const svg of await pattern.locator('svg').all()) {
+    // the picture's own drawings: the zoom bar beside it draws its icons for a reader
+    for (const svg of await pattern
+      .locator('[data-pct-part="plot"] svg')
+      .all()) {
       await expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
   });
