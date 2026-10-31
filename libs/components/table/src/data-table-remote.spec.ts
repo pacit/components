@@ -72,7 +72,7 @@ const load = (
     @if (picking()) {
       <pct-data-table
         pctTableWindow
-        [pctTableRemote]="load"
+        [pctTableRemote]="loader()"
         pctTableSelection
         [(value)]="selected"
         blockSize="50"
@@ -133,7 +133,7 @@ class NoWindowHost {
     pctTableWindow
     [pctTableRemote]="load"
     [pctTableGroups]="columns"
-    [groupBy]="['name']"
+    [groupBy]="by()"
     blockSize="50"
     caption="Registers"
     [columns]="columns"
@@ -141,6 +141,7 @@ class NoWindowHost {
   />`,
 })
 class GroupsHost {
+  readonly by = signal<readonly string[]>(['name']);
   readonly columns = columns;
   readonly load = load;
   readonly byId = (register: Register) => register.id;
@@ -430,7 +431,8 @@ describe('PctTableRemote', () => {
 
   it('says it in the first hole of a failed block that starts below the view’s top', async () => {
     const fixture = await answered();
-    await goTo(fixture, 100);
+    await goTo(fixture, 90);
+    expect(froms()).toEqual([0, 50, 100]);
     asked[2].fail('down');
     await stable(fixture);
     const retry = tableOf(fixture).querySelector('[data-pct-part="retry"]');
@@ -628,17 +630,22 @@ describe('PctTableRemote', () => {
     asked[1].answer();
     asked[2].answer();
     await stable(fixture);
-    await goTo(fixture, 0);
     const remote = fixture.componentInstance.remote();
     remote.refresh();
     await stable(fixture);
-    // Block 0 is asked again; 1 and 2 are let go.
-    expect(froms()).toEqual([0, 50, 100, 0]);
+    // Blocks 1 and 2 are asked again; block 0, out of the view, is let go.
+    expect(froms()).toEqual([0, 50, 100, 50, 100]);
     expect(remote.loading()).toBe(true);
-    expect(lines(fixture)[0]).toBe('Register 0');
-    await goTo(fixture, 100);
+    expect(lines(fixture)[0]).toBe('Register 92');
+    // Rows in the body and blocks in flight: the holes would say so, not the body.
+    expect(
+      (tableOf(fixture).querySelector('tbody') as HTMLElement).getAttribute(
+        'aria-busy',
+      ),
+    ).toBeNull();
+    await goTo(fixture, 0);
     expect(lines(fixture)[0]).toBe('hole');
-    expect(froms()).toEqual([0, 50, 100, 0, 50, 100]);
+    expect(froms()).toEqual([0, 50, 100, 50, 100, 0]);
   });
 
   it('keeps the rows of a refreshed block whose new answer failed', async () => {
@@ -775,6 +782,77 @@ describe('PctTableRemote', () => {
     }
   });
 
+  it('goes back to the top under a new order by default', async () => {
+    const fixture = await answered((host) => host.picking.set(true));
+    await goTo(fixture, 100);
+    fixture.componentInstance.table().sort.set([
+      { key: 'name', direction: 'ascending' },
+    ]);
+    await stable(fixture);
+    expect(frameOf(fixture).scrollTop).toBe(0);
+  });
+
+  it('asks for the block the last row drawn and half a block reach', async () => {
+    const fixture = await answered();
+    // Lines 100 to 125 are drawn: row 125 and 25 more reach row 150, the first of block 3.
+    await goTo(fixture, 108);
+    expect(froms()).toEqual([0, 50, 100, 150]);
+  });
+
+  it('writes nothing when the view moves within the blocks it has', async () => {
+    const fixture = await answered();
+    await goTo(fixture, 100);
+    const table = fixture.componentInstance.table();
+    const before = table.lines();
+    await goTo(fixture, 101);
+    expect(table.lines()).toBe(before);
+  });
+
+  it('takes no word from a block let go: neither its count nor its failure', async () => {
+    const fixture = await answered();
+    await goTo(fixture, 100);
+    await goTo(fixture, 0);
+    asked[1].answer(5);
+    asked[2].fail('down');
+    await stable(fixture);
+    const remote = fixture.componentInstance.remote();
+    expect(remote.total()).toBe(1000);
+    expect(remote.error()).toBeNull();
+  });
+
+  it('hands the focus to the frame, not to a row whose id is the hole’s place', async () => {
+    // Each row's id is its place and five: the row at line 95 is the id 100.
+    const fixture = await answered((host) => {
+      host.picking.set(true);
+      host.loader.set((request, signal) =>
+        load(request, signal).then((answer) => ({
+          total: answer.total,
+          rows: answer.rows.map((row) => ({ ...row, id: row.id + 5 })),
+        })),
+      );
+    });
+    await goTo(fixture, 90);
+    asked[1].answer();
+    asked[2].fail('down');
+    await stable(fixture);
+    const frame = frameOf(fixture);
+    const focus = vi.spyOn(frame, 'focus');
+    const retry = tableOf(fixture).querySelector(
+      '[data-pct-part="retry"]',
+    ) as HTMLButtonElement;
+    expect(retry.closest('tr')?.dataset['pctIndex']).toBe('100');
+    retry.focus();
+    retry.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    retry.click();
+    await stable(fixture);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(
+      (document.activeElement as HTMLElement | null)?.closest('tr')?.dataset[
+        'pctIndex'
+      ],
+    ).not.toBe('95');
+  });
+
   it('numbers a hole by its place', async () => {
     const fixture = await answered((host) => host.numbers.set(true));
     await goTo(fixture, 100);
@@ -831,9 +909,17 @@ describe('PctTableRemote', () => {
     await stable(fixture);
     expect(tableOf(fixture).querySelector('[data-pct-part="group"]')).toBeNull();
     expect(lines(fixture)[0]).toBe('Register 0');
+    fixture.componentInstance.by.set(['value']);
+    await stable(fixture);
     const said = warn.mock.calls.filter(([text]) =>
       String(text).includes('pctTableRemote'),
     );
-    expect(said).toHaveLength(1);
+    expect(said).toEqual([
+      [
+        '[pct-data-table] pctTableGroups does not group the rows of pctTableRemote: a group ' +
+          'of rows the source has not sent cannot be counted or summed here, so the rows stay ' +
+          'in the order the source gave them.',
+      ],
+    ]);
   });
 });

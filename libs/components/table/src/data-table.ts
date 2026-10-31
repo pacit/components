@@ -998,8 +998,8 @@ export class PctDataTable<
           index: line.index,
           line: at,
           failed: block,
-          first:
-            block !== null && (block !== before ? at >= top : at === top),
+          // Read only of a failed hole: the first in view of its block.
+          first: block !== before ? at >= top : at === top,
         };
         before = block;
       } else {
@@ -1712,10 +1712,9 @@ export class PctDataTable<
       '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
     );
     // A line not drawn, or one with nothing to focus — a hole whose retry was pressed —
-    // hands it to a window's frame, which keeps the keys.
+    // hands it to the frame, which keeps the keys when it scrolls.
     if (control) control.focus();
-    else if (this.window() !== null)
-      this.frame().nativeElement.focus({ preventScroll: true });
+    else this.frame().nativeElement.focus({ preventScroll: true });
   }
 
   /**

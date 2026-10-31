@@ -134,11 +134,11 @@ export class PctTableRemote<T, Id extends string = string> {
   /** The requests in flight, by block, so a block let go aborts its own. */
   private readonly flying = new Map<number, AbortController>();
 
-  /** The count the last answer gave, under any question: the length of the rows drawn. */
+  /**
+   * The count the last answer gave, under any question: the length of the rows drawn. Until
+   * a block of a new question answers, the count is the last question's.
+   */
   private readonly count = signal(0);
-
-  /** Whether a block has answered under the current question: until one has, the count is the last question's. */
-  private readonly answered = signal(false);
 
   /**
    * The size the blocks held were asked at: a new `blockSize` is a new list, and until the
@@ -198,16 +198,10 @@ export class PctTableRemote<T, Id extends string = string> {
   });
 
   /** The blocks the rows drawn need. */
-  private readonly wanted = computed(
-    () => {
-      const { from, to } = this.drawnRows();
-      return this.blocksFor(from, to);
-    },
-    {
-      equal: (a, b) =>
-        a.length === b.length && a.every((block, at) => block === b[at]),
-    },
-  );
+  private readonly wanted = computed(() => {
+    const { from, to } = this.drawnRows();
+    return this.blocksFor(from, to);
+  });
 
   /** The question the blocks held were asked under, and the source that answered it. */
   private asked: {
@@ -238,10 +232,11 @@ export class PctTableRemote<T, Id extends string = string> {
         untracked(() => {
           this.asked = { query, load };
           // A new list: the old one's blocks go, and the new ones are of the new size.
-          if (asked !== null) this.clear();
+          this.clear();
           this.size.set(this.blockSize());
         });
-      if (asked !== null && !same && !untracked(this.keepScroll)) {
+      // The first list starts at the top too, where the frame stands.
+      if (!same && !untracked(this.keepScroll)) {
         // Back to the top, where the new list starts: the blocks of as many rows as the view
         // and the lines below it draw. The window follows the scroll, and the view with it.
         untracked(() => {
@@ -249,7 +244,8 @@ export class PctTableRemote<T, Id extends string = string> {
           const top = this.table.lines().at(this.window.first()) as
             | { readonly index: number }
             | undefined;
-          this.frame().scrollTop = 0;
+          // The first list finds the frame not drawn yet, and at the top.
+          if (asked !== null) this.frame().scrollTop = 0;
           this.follow(this.blocksFor(0, to - (top?.index ?? 0)));
         });
         // Read all the same, so the view the scroll brings is followed.
@@ -268,9 +264,7 @@ export class PctTableRemote<T, Id extends string = string> {
    * @since next
    */
   refresh(): void {
-    const drawn = this.wanted();
-    // A source that had no rows is asked for its first block: rows may have come since.
-    const wanted = drawn.length > 0 ? drawn : [0];
+    const wanted = this.wanted();
     this.letGo(
       [...this.blocks().keys()].filter((block) => !wanted.includes(block)),
     );
@@ -287,20 +281,22 @@ export class PctTableRemote<T, Id extends string = string> {
     this.follow(this.wanted());
   }
 
-  /** The blocks rows `[from, to)` need under the count known, or the first while none is. */
+  /**
+   * The blocks rows `[from, to)` need under the count known; the first while there is none,
+   * so a source that had no rows is asked again.
+   */
   private blocksFor(from: number, to: number): readonly number[] {
     const count = this.count();
     return pctBlocksFor(
       { start: from, end: to },
-      this.answered() || count > 0 ? count : null,
+      count > 0 ? count : null,
       this.size(),
     );
   }
 
-  /** Lets every block go, under a question no block has answered yet. */
+  /** Lets every block go. */
   private clear(): void {
     this.letGo([...this.blocks().keys()]);
-    this.answered.set(false);
   }
 
   /**
@@ -357,40 +353,39 @@ export class PctTableRemote<T, Id extends string = string> {
       sort: this.table.sort() as readonly PctTableSort<Id>[],
       filter: this.table.filter(),
     };
-    const settle = (state: PctBlock<T>): void => {
-      if (controller.signal.aborted) return;
+    /**
+     * Writes what came of the block, unless it was let go: a block let go is no longer the
+     * table's, and one asked again is a request of its own.
+     */
+    const settle = (state: (rows: readonly T[] | null) => PctBlock<T>): boolean => {
+      if (controller.signal.aborted) return false;
       this.flying.delete(block);
-      this.blocks.update((blocks) => new Map(blocks).set(block, state));
+      this.blocks.update((blocks) =>
+        new Map(blocks).set(
+          block,
+          state((blocks.get(block) as PctBlock<T>).rows),
+        ),
+      );
+      return true;
     };
+    // A failed block keeps the rows it had: a refresh that failed draws them as they were.
+    const fail = (error: unknown) =>
+      settle((rows) => ({ state: 'failed', error, rows }));
     // A load that throws rather than rejects fails its block all the same.
     new Promise<PctTableAnswer<T>>((resolve) =>
       resolve(this.load()(request, controller.signal)),
-    ).then(
-      (answer) => {
-        if (controller.signal.aborted) return;
-        const { total } = answer;
-        // A count that is no count of rows fails the block, as a load that threw would.
-        if (!Number.isInteger(total) || total < 0) {
-          settle({
-            state: 'failed',
-            error: new RangeError(
-              `[pct-data-table] pctTableRemote: a block's total must be a whole number of rows, not ${String(total)}.`,
-            ),
-            rows: this.blocks().get(block)?.rows ?? null,
-          });
-          return;
-        }
+    ).then((answer) => {
+      const { total } = answer;
+      // A count that is no count of rows fails the block, as a load that threw would.
+      if (!Number.isInteger(total) || total < 0)
+        fail(
+          new RangeError(
+            `[pct-data-table] pctTableRemote: a block's total must be a whole number of rows, not ${String(total)}.`,
+          ),
+        );
+      else if (settle(() => ({ state: 'loaded', rows: answer.rows })))
         this.count.set(total);
-        this.answered.set(true);
-        settle({ state: 'loaded', rows: answer.rows });
-      },
-      (error: unknown) =>
-        settle({
-          state: 'failed',
-          error,
-          rows: this.blocks().get(block)?.rows ?? null,
-        }),
-    );
+    }, fail);
   }
 
   private frame(): HTMLElement {

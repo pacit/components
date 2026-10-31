@@ -178,13 +178,10 @@ export class PctTableWindow {
    *
    * @since next
    */
-  readonly drawn = computed(
-    () => {
-      const { start, end } = this.current();
-      return { start, end };
-    },
-    { equal: (a, b) => a.start === b.start && a.end === b.end },
-  );
+  readonly drawn = computed(() => {
+    const { start, end } = this.current();
+    return { start, end };
+  });
 
   /**
    * The line at the view's top: the first a reader sees, under a sticky header. 0 for a
@@ -192,13 +189,7 @@ export class PctTableWindow {
    *
    * @since next
    */
-  readonly first = computed(() => {
-    const heights = this.heights();
-    return Math.min(
-      heights.indexAt(this.current().top),
-      Math.max(0, heights.count - 1),
-    );
-  });
+  readonly first = computed(() => this.heights().indexAt(this.current().top));
 
   /**
    * The row the table asked to scroll to, until its own row has been drawn and measured: of
