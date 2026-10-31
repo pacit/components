@@ -125,13 +125,15 @@ export class PctBand<T> extends PctMark {
    */
   readonly id = input('');
   /**
-   * Where the band draws: `plot`, a tint across the whole plot behind the series; any other
-   * name, a lane of its own beside the plot — `below`, the default — which bands that name
-   * alike share.
+   * Where the band draws: `plot`, a tint across the whole plot behind the series, which the
+   * scene reads as no lane; any other name, a lane of its own beside the plot — `below`, the
+   * default — which bands that name alike share.
    *
    * @since next
    */
-  readonly laneName = input('below', { alias: 'lane' });
+  override readonly lane = input<string | null, string>('below', {
+    transform: (name: string) => (name === 'plot' ? null : name),
+  });
   /**
    * The states stand in the legend, each with a toggle that hides its segments; set by default.
    *
@@ -149,12 +151,8 @@ export class PctBand<T> extends PctMark {
 
   override readonly series = computed(() => []);
   override readonly layer = computed<PctMarkLayer>(() =>
-    this.laneName() === 'plot' ? 'back' : 'data',
+    this.lane() === null ? 'back' : 'data',
   );
-  override readonly lane = computed(() => {
-    const lane = this.laneName();
-    return lane === 'plot' ? null : lane;
-  });
 
   /** The identity: `id`, the label, or the kind's name. */
   private readonly key = computed(
@@ -250,7 +248,7 @@ export class PctBand<T> extends PctMark {
   }
 
   /** Whether the band is a tint across the plot, behind the series. */
-  protected readonly tinted = computed(() => this.laneName() === 'plot');
+  protected readonly tinted = computed(() => this.lane() === null);
 
   /** The segments as drawn: cut to the window, in the lane's strip or across the plot. */
   protected readonly drawn = computed(() => {

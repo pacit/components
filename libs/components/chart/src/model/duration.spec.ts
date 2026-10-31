@@ -16,8 +16,8 @@ describe('pctWriteDuration', () => {
     expect(pctWriteDuration(DAY + 20 * MINUTE, 'en-US')).toBe('1 day, 20 min');
     expect(pctWriteDuration(HOUR, 'en-US')).toBe('1 hr');
     expect(pctWriteDuration(90 * 1000, 'en-US')).toBe('1 min, 30 sec');
-    expect(pctWriteDuration(2 * HOUR + 15 * MINUTE, 'pl')).toBe(
-      '2 godz. i 15 min',
+    expect(pctWriteDuration(2 * HOUR + 15 * MINUTE, 'de')).toBe(
+      '2 Std., 15 Min.',
     );
   });
 

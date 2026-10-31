@@ -46,7 +46,7 @@ the legend and the table tell the states apart.
 
 **A duration is written by `Intl.DurationFormat`.** Measured 2026-10-31: Chromium 153,
 Firefox 155 and WebKit 26.6 all have it and write `2 hr, 15 min`, `1 day, 3 hr`, `45 min`
-for `en`, `2 godz. i 15 min` for `pl`, `2 Std., 15 Min.` for `de`; a zero duration is `0 sec`
+for `en`, `2 Std., 15 Min.` for `de`; a zero duration is `0 sec`
 when the seconds are asked to show, and an empty string otherwise. The band writes the two
 largest parts that are not zero. A runtime without the API — none of the three — gets the
 same parts as `2 h 15 min`, so the fallback guards and never decides what the engines show.
