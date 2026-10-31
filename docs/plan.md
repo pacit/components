@@ -247,11 +247,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
 - [~] **1.11 — charts** in `@pacit/components/chart` — a scene and the marks it draws, on one
   core of pure functions and no dependency ([0099](decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)–[0103](decisions/0103-a-chart-is-a-named-picture-and-its-cursor-is-the-platforms-range.md),
   decided 2026-10-29 on eight probes, five of them in three engines)
-  - the core, landed 2026-10-29 in `./chart`: scales, 1-2-5 ticks, time ticks in a named zone
-    across a change of clocks, the window's transform, the value at a position, decimation to
-    the pixel through a pyramid, paths, axis slots and label layout
-  - the scene with a line, its axes by unit, its table and its card, landed 2026-10-30 (`PctChart`,
-    `PctLine`, `PctAxis`, `PctChartTable`, the palette across three tiers)
+  - the core (2026-10-29) and the scene with a line, its axes by unit, its table and its card
+    (2026-10-30): scales, 1-2-5 ticks, time ticks in a named zone across a change of clocks,
+    the window's transform, the value at a position, decimation to the pixel, paths, layout
   - landed 2026-10-30: the cursor as the platform's range, moved from reading to reading by the
     pointer, the keys and a reader, with a tooltip; the window by a drag, a pinch, the wheel and
     the keys through one transform, `follow`, the zoom bar as their twin, `pctChartSync`; the
@@ -259,10 +257,12 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     category, grouped, stacked, a period compared, a selected band, a picked row; the chart
     turned on its side; the annotations — a reference line, a band, a note, the moment of now, a
     line cut by its thresholds — read in the description; a band of states in a lane (0104);
-    points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105)
-  - then stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
-    generated description; a canvas layer only behind a measurement; three promoted layers
-    per scene: the data, the axes and annotations, the cursor moved by a transform (0100)
+    points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105);
+    areas on a stack or as shares, a monotone curve the tooltip reads too, a histogram recipe,
+    a range band and candles, boxes with whiskers and outliers (0106)
+  - then a heatmap, pie and gauge, a sparkline, a brush, export and a generated description; a
+    canvas layer only behind a measurement; three promoted layers per scene: the data, the
+    axes and annotations, the cursor moved by a transform (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication

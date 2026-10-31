@@ -1,0 +1,151 @@
+// The element itself draws nothing: its drawing is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A band is the series' colour mixed into nothing, by the skin's amount, with no edge of its
+// own: two values and the space between them (0106).
+[data-pct-part='spread'] {
+  stroke: none;
+}
+
+// A candle: its wick in the series' colour, its body in the skin's rise or fall colour.
+[data-pct-part='wick'] {
+  stroke-width: var(--pct-chart-edge-width);
+  stroke-linecap: butt;
+}
+
+[data-pct-part='body'] {
+  stroke-width: 1px;
+}
+
+.rise [data-pct-part='body'] {
+  fill: var(--pct-chart-body-bg-rise);
+  stroke: var(--pct-chart-body-bg-rise);
+}
+
+.fall [data-pct-part='body'] {
+  fill: var(--pct-chart-body-bg-fall);
+  stroke: var(--pct-chart-body-bg-fall);
+}
+
+@for $i from 1 through 8 {
+  [data-pct-part='spread'][data-pct-series='#{$i}'],
+  [data-pct-series='#{$i}'] .tint {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-area-alpha),
+      transparent
+    );
+  }
+
+  [data-pct-series='#{$i}'] [data-pct-part='wick'],
+  [data-pct-series='#{$i}'] .dash,
+  [data-pct-series='#{$i}'] .wick {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-series='#{$i}'] .shape {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+// The consumer's own colour, handed in as a private property.
+[data-pct-part='spread'][data-pct-series='custom'],
+[data-pct-series='custom'] .tint {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-area-alpha),
+    transparent
+  );
+}
+
+[data-pct-series='custom'] [data-pct-part='wick'],
+[data-pct-series='custom'] .dash,
+[data-pct-series='custom'] .wick {
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] .shape {
+  fill: var(--_pct-chart-color);
+}
+
+// The second channel of 0102: the place's dash on a band's edges in its swatch.
+$dashes: (
+  2: 8 4,
+  3: 2 4,
+  4: 8 4 2 4,
+  5: 14 5,
+  6: 2 8,
+  7: 8 4 2 4 2 4,
+  8: 5 5,
+);
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.dash,
+.wick {
+  stroke-width: var(--pct-chart-series-width);
+  stroke-linecap: round;
+}
+
+.body {
+  fill: var(--pct-chart-body-bg-rise);
+  stroke: var(--pct-chart-body-bg-rise);
+  stroke-width: 1px;
+}
+
+.shape {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 2px;
+  paint-order: stroke;
+}
+
+@each $place, $dash in $dashes {
+  [data-pct-series='#{$place}'] .dash {
+    stroke-dasharray: $dash;
+  }
+}
+
+// With the colours gone, a band keeps its outline only, and a candle tells its rise from its
+// fall by a hollow body against a filled one.
+@media (forced-colors: active) {
+  [data-pct-part='spread'][data-pct-series],
+  [data-pct-series] .tint {
+    fill: none;
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-series] [data-pct-part='wick'],
+  [data-pct-series] .dash,
+  [data-pct-series] .wick {
+    stroke: CanvasText;
+  }
+
+  .rise [data-pct-part='body'],
+  [data-pct-series] .body {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .fall [data-pct-part='body'] {
+    fill: CanvasText;
+    stroke: CanvasText;
+  }
+
+  [data-pct-series] .shape {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+}

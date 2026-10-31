@@ -189,7 +189,12 @@ export class PctChartTable {
           ? this.timeFormat().format(x)
           : this.numberFormat().format(x),
         values,
-        texts: values.map((v, i) => this.write(v, series[i].unit)),
+        // The mark's own text where a number does not say it (a range's `low – high`).
+        texts: values.map(
+          (v, i) =>
+            chart.markOf(series[i].id)?.readAt(series[i].id, x, true) ??
+            this.write(v, series[i].unit),
+        ),
         words: words.map(
           (w) => w.mark.textAt(w.id, x) ?? this.texts().chartGap,
         ),

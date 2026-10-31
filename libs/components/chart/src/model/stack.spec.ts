@@ -1,4 +1,4 @@
-import { pctStack, pctStackExtent } from './stack';
+import { pctStack, pctStackColumns, pctStackExtent } from './stack';
 
 describe('pctStack', () => {
   it('stacks positives up from zero in the order of the series', () => {
@@ -127,5 +127,72 @@ describe('pctStackExtent', () => {
     expect(pctStackExtent([[{ from: 0, to: 0 }]])).toEqual([0, 0]);
     expect(pctStackExtent(pctStack([[0]]))).toEqual([0, 0]);
     expect(pctStackExtent([[null, { from: 0, to: -2 }]])).toEqual([-2, 0]);
+  });
+});
+
+describe('pctStackColumns', () => {
+  const columns = (
+    values: readonly (readonly number[])[],
+    normalize?: boolean,
+  ) =>
+    pctStackColumns(
+      values.map((v) => Float64Array.from(v)),
+      normalize,
+    ).map((c) => ({ from: [...c.from], to: [...c.to] }));
+
+  it('stacks positives up and negatives down, in the order of the series', () => {
+    expect(
+      columns([
+        [1, -1],
+        [2, -2],
+        [3, 3],
+      ]),
+    ).toEqual([
+      { from: [0, 0], to: [1, -1] },
+      { from: [1, -1], to: [3, -3] },
+      { from: [3, 0], to: [6, 3] },
+    ]);
+  });
+
+  it('leaves a gap where a series has none, and the ones above stand as on a zero', () => {
+    expect(
+      columns([
+        [1, NaN, 1],
+        [2, 2, NaN],
+        [3, 3],
+      ]),
+    ).toEqual([
+      { from: [0, NaN, 0], to: [1, NaN, 1] },
+      { from: [1, 0, NaN], to: [3, 2, NaN] },
+      { from: [3, 2, NaN], to: [6, 5, NaN] },
+    ]);
+  });
+
+  it('normalized, makes each value its share of the position’s total in percent, and a total of nothing a gap', () => {
+    expect(
+      columns(
+        [
+          [1, 0, NaN],
+          [3, 0, 2],
+        ],
+        true,
+      ),
+    ).toEqual([
+      { from: [0, NaN, NaN], to: [25, NaN, NaN] },
+      { from: [25, NaN, 0], to: [100, NaN, 100] },
+    ]);
+    // A negative counts by its size, and stands down from zero by its share.
+    expect(columns([[-1], [3]], true)).toEqual([
+      { from: [0], to: [-25] },
+      { from: [0], to: [75] },
+    ]);
+  });
+
+  it('gives nothing for no series, and an empty series of the longest length', () => {
+    expect(columns([])).toEqual([]);
+    expect(columns([[], [1]])).toEqual([
+      { from: [NaN], to: [NaN] },
+      { from: [0], to: [1] },
+    ]);
   });
 });

@@ -258,6 +258,56 @@ export class PctBandHarness extends PctHarness<'band' | 'segment' | 'swatch'> {
   static override readonly parts = ['band', 'segment', 'swatch'] as const;
 }
 
+/**
+ * `pct-area` — `PctArea`: a series drawn as an area, alone from zero or on a stack. Its drawing
+ * is stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctAreaHarness extends PctHarness<'area' | 'series' | 'swatch'> {
+  static override hostSelector = 'pct-area';
+  static override readonly parts = ['area', 'series', 'swatch'] as const;
+}
+
+/**
+ * `pct-range` — `PctRange`: a band between a low and a high, or candles with an open and a
+ * close. Its drawing is stamped into the chart's data layer, so its parts are found in the
+ * document.
+ *
+ * @since next
+ */
+export class PctRangeHarness extends PctHarness<
+  'spread' | 'candle' | 'wick' | 'body' | 'swatch'
+> {
+  static override hostSelector = 'pct-range';
+  static override readonly parts = [
+    'spread',
+    'candle',
+    'wick',
+    'body',
+    'swatch',
+  ] as const;
+}
+
+/**
+ * `pct-box` — `PctBox`: a distribution per position as a box with whiskers and outliers. Its
+ * drawing is stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctBoxHarness extends PctHarness<
+  'box' | 'median' | 'whisker' | 'outlier' | 'swatch'
+> {
+  static override hostSelector = 'pct-box';
+  static override readonly parts = [
+    'box',
+    'median',
+    'whisker',
+    'outlier',
+    'swatch',
+  ] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**

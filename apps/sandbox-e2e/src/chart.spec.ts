@@ -1279,4 +1279,195 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(window).toHaveText('Every value');
     });
   });
+
+  test.describe('areas, a monotone curve, a histogram, a range, candles and boxes', () => {
+    const hoverMiddle = async (c: Locator) => {
+      await c.scrollIntoViewIfNeeded();
+      const box = (await c.boundingBox())!;
+      await c.page().mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      const tooltip = c.locator('[data-pct-part="tooltip"]');
+      await expect(tooltip).toBeVisible();
+      return tooltip;
+    };
+
+    test('stacked areas stand on each other, the markers on the drawing, and a hidden series leaves the stack', async ({
+      page,
+    }) => {
+      const stacked = chart(page, 'chart-area-stack');
+      const areas = stacked.locator('[data-pct-part="area"]');
+      await expect(areas).toHaveCount(3);
+      await expect(stacked.locator('path[data-pct-part="series"]')).toHaveCount(
+        3,
+      );
+      // the curve is monotone: cubic commands in every area
+      for (const d of await areas.evaluateAll((ps) =>
+        ps.map((p) => p.getAttribute('d') ?? ''),
+      ))
+        expect(d).toContain('C');
+      // At midday every source draws: the three markers stand one over the other, each
+      // series' own value read beside its name.
+      const tooltip = await hoverMiddle(stacked);
+      const read = await tooltip.innerText();
+      expect(read).toMatch(/Gas boiler\s+\d+(\.\d+)? kW/);
+      expect(read).toMatch(/Heat pump\s+\d+(\.\d+)? kW/);
+      expect(read).toMatch(/Solar\s+\d+(\.\d+)? kW/);
+      const markers = stacked.locator('[data-pct-part="marker"]');
+      await expect(markers).toHaveCount(3);
+      const tops = await markers.evaluateAll((ms) =>
+        ms.map((m) => m.getBoundingClientRect().top),
+      );
+      expect(tops[0]).toBeGreaterThan(tops[1]);
+      expect(tops[1]).toBeGreaterThan(tops[2]);
+      // the legend hides the boiler: two areas, the heat pump now from zero
+      await page
+        .getByTestId('area-stack-legend')
+        .getByRole('button', { name: 'Gas boiler' })
+        .click();
+      await expect(areas).toHaveCount(2);
+    });
+
+    test('a normalized stack is a hundred tall, and reads the share with the value in brackets', async ({
+      page,
+    }) => {
+      const normalized = chart(page, 'chart-area-normalized');
+      await normalized.scrollIntoViewIfNeeded();
+      const labels = normalized.locator('[data-pct-unit="%"] text.value');
+      const texts = await labels.allTextContents();
+      expect(texts[0]).toBe('0');
+      expect(texts.at(-1)).toBe('100');
+      const tooltip = await hoverMiddle(normalized);
+      expect(await tooltip.innerText()).toMatch(
+        /Solar\s+\d+(\.\d+)?\s?% \(\d+(\.\d+)? kW\)/,
+      );
+    });
+
+    test('a monotone line is a cubic through its readings, its area too', async ({
+      page,
+    }) => {
+      const monotone = chart(page, 'chart-monotone');
+      await monotone.scrollIntoViewIfNeeded();
+      const line = monotone.locator('path[data-pct-part="series"]');
+      await expect(line).toHaveAttribute('d', /^M[\d. ]+C/);
+      await expect(line).not.toHaveAttribute('d', /L/);
+      await expect(monotone.locator('[data-pct-part="area"]')).toHaveAttribute(
+        'd',
+        /C.*Z$/,
+      );
+    });
+
+    test('a histogram is a bar per bin on a band axis labelled by the bins', async ({
+      page,
+    }) => {
+      const histogram = chart(page, 'chart-histogram');
+      await histogram.scrollIntoViewIfNeeded();
+      const bars = histogram.locator('[data-pct-part="bar"]');
+      const count = await bars.count();
+      // four hundred values: Sturges asks ten bins, the nice step gives about that many
+      expect(count).toBeGreaterThanOrEqual(8);
+      expect(count).toBeLessThanOrEqual(14);
+      const labels = await histogram
+        .locator('svg[data-pct-part="axis"] text')
+        .allTextContents();
+      expect(labels.some((l) => /^\d+–\d+ ms$/.test(l))).toBe(true);
+    });
+
+    test('a range is a band between its lows and highs, read as low – high, and the table reads the same', async ({
+      page,
+    }) => {
+      const ranged = chart(page, 'chart-range');
+      const band = ranged.locator('[data-pct-part="spread"]');
+      await expect(band).toHaveCount(1);
+      await expect(band).toHaveAttribute('d', /^M.*Z$/);
+      const tooltip = await hoverMiddle(ranged);
+      expect(await tooltip.innerText()).toMatch(
+        /Day's range\s+-?\d+(\.\d+)? °C – -?\d+(\.\d+)? °C/,
+      );
+      const table = page.getByTestId('range-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Time',
+        "Day's range (°C)",
+        'Mean (°C)',
+      ]);
+      // the position is the row's header; a cell is bare, the column's header carries the unit
+      await expect(
+        table.locator('tbody tr').first().locator('td').first(),
+      ).toHaveText(/^-?\d+(\.\d+)? – -?\d+(\.\d+)?$/);
+    });
+
+    test('candles rise and fall, their bodies of one width, the open, high and low on lines and in columns', async ({
+      page,
+    }) => {
+      const candles = chart(page, 'chart-candles');
+      await candles.scrollIntoViewIfNeeded();
+      const all = candles.locator('[data-pct-part="candle"]');
+      await expect(all).toHaveCount(30);
+      const rising = await candles
+        .locator('.rise[data-pct-part="candle"]')
+        .count();
+      const falling = await candles
+        .locator('.fall[data-pct-part="candle"]')
+        .count();
+      expect(rising).toBeGreaterThan(0);
+      expect(falling).toBeGreaterThan(0);
+      expect(rising + falling).toBe(30);
+      const widths = await candles
+        .locator('[data-pct-part="body"]')
+        .evaluateAll((rs) => rs.map((r) => Number(r.getAttribute('width'))));
+      expect(new Set(widths).size).toBe(1);
+      expect(widths[0]).toBeGreaterThanOrEqual(2);
+      expect(widths[0]).toBeLessThanOrEqual(24);
+      // a rising body is the skin's rise colour, a falling one its fall colour
+      const fills = await candles
+        .locator('[data-pct-part="body"]')
+        .evaluateAll((rs) => rs.map((r) => getComputedStyle(r).fill));
+      expect(new Set(fills).size).toBe(2);
+      const tooltip = await hoverMiddle(candles);
+      const read = await tooltip.innerText();
+      expect(read).toMatch(/PCT\s+€?\s?\d+(\.\d+)?/);
+      for (const name of ['Open', 'High', 'Low']) expect(read).toContain(name);
+      const table = page.getByTestId('candles-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Time',
+        'PCT (€)',
+        'Open',
+        'High',
+        'Low',
+      ]);
+      await expect(table.locator('tbody tr')).toHaveCount(30);
+    });
+
+    test('a box per hour with its median, whiskers and outliers, the five numbers on lines and in columns', async ({
+      page,
+    }) => {
+      const boxed = chart(page, 'chart-box');
+      await boxed.scrollIntoViewIfNeeded();
+      await expect(boxed.locator('[data-pct-part="box"]')).toHaveCount(24);
+      await expect(boxed.locator('[data-pct-part="median"]')).toHaveCount(24);
+      await expect(boxed.locator('[data-pct-part="whisker"]')).toHaveCount(96);
+      expect(
+        await boxed.locator('[data-pct-part="outlier"]').count(),
+      ).toBeGreaterThan(0);
+      const tooltip = await hoverMiddle(boxed);
+      const read = await tooltip.innerText();
+      for (const name of [
+        'Response time',
+        'Low',
+        'Lower quartile',
+        'Upper quartile',
+        'High',
+      ])
+        expect(read).toContain(name);
+      const table = page.getByTestId('box-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Time',
+        'Response time (ms)',
+        'Low',
+        'Lower quartile',
+        'Upper quartile',
+        'High',
+        'Outliers',
+      ]);
+      await expect(table.locator('tbody tr')).toHaveCount(24);
+    });
+  });
 });

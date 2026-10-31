@@ -149,3 +149,67 @@ describe('pctValueAt', () => {
     expect(pctValueAt(series, 40, 'step-middle')).toBe(7);
   });
 });
+
+describe('pctValueAt, monotone', () => {
+  const rising = of([
+    [0, 0],
+    [1, 1],
+    [2, 3],
+  ]);
+
+  it('reads the cubic the path draws: through the readings, bent by the monotone tangents', () => {
+    expect(pctValueAt(rising, 0, 'monotone')).toBe(0);
+    expect(pctValueAt(rising, 1, 'monotone')).toBe(1);
+    expect(pctValueAt(rising, 0.5, 'monotone')).toBe(0.40625);
+  });
+
+  it('reads two readings as a line', () => {
+    const two = of([
+      [0, 0],
+      [2, 4],
+    ]);
+    expect(pctValueAt(two, 1, 'monotone')).toBe(2);
+    expect(pctValueAt(two, 0.5, 'monotone')).toBe(1);
+  });
+
+  it('bends by the neighbours on both sides, and not past a gap', () => {
+    const four = of([
+      [0, 0],
+      [1, 1],
+      [2, 3],
+      [3, 3],
+    ]);
+    // The fourth reading changes the tangent at the third, so the stretch before it.
+    expect(pctValueAt(four, 1.5, 'monotone')).not.toBe(
+      pctValueAt(rising, 1.5, 'monotone'),
+    );
+    // Not the stretch before the second, whose tangents the fourth does not reach.
+    expect(pctValueAt(four, 0.5, 'monotone')).toBe(0.40625);
+    // Past a gap, the fourth reading is no neighbour.
+    const gapped = of([
+      [0, 0],
+      [1, 1],
+      [2, 3],
+      [3, NaN],
+      [4, 3],
+    ]);
+    expect(pctValueAt(gapped, 1.5, 'monotone')).toBe(
+      pctValueAt(rising, 1.5, 'monotone'),
+    );
+    expect(pctValueAt(gapped, 3.5, 'monotone')).toBeNull();
+  });
+
+  it('never overshoots: between two readings the value stays between them', () => {
+    const hump = of([
+      [0, 0],
+      [1, 10],
+      [2, 10.5],
+      [3, 0],
+    ]);
+    for (let x = 1; x <= 2; x += 0.05) {
+      const v = pctValueAt(hump, x, 'monotone')!;
+      expect(v).toBeGreaterThanOrEqual(10);
+      expect(v).toBeLessThanOrEqual(10.5);
+    }
+  });
+});

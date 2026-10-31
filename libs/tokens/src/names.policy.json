@@ -123,7 +123,9 @@
       "note",
       "now",
       "band",
-      "bubble"
+      "bubble",
+      "edge",
+      "body"
     ],
     "properties": [
       "alpha",
@@ -168,7 +170,9 @@
       "striped",
       "success",
       "today",
-      "warning"
+      "warning",
+      "rise",
+      "fall"
     ],
     "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",

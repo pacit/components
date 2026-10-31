@@ -35,7 +35,7 @@ import {
   pctIntervalText,
   type PctInterval,
 } from './model/intervals';
-import { pctStack, type PctStacked } from './model/stack';
+import { pctStack, pctStackColumns, type PctStacked } from './model/stack';
 import {
   PCT_GESTURE_IDLE,
   pctGestureStep,
@@ -207,7 +207,15 @@ export interface PctChartReadingRow {
   readonly color: string | null;
   /** The value, computed as the series is drawn; `null` in a gap. */
   readonly value: number | null;
-  /** The value written, with its unit: `21.4 °C`, `On`, or the gap's word. */
+  /**
+   * Where the series is drawn, in its unit — the value, or the top of its stack for a stacked
+   * area — so the cursor's marker stands on the drawing; `null` in a gap.
+   */
+  readonly at: number | null;
+  /**
+   * The value written: with its unit (`21.4 °C`), `On`, the gap's word, or the mark's own
+   * text where a number does not say it (a range's `3 °C – 11 °C`).
+   */
   readonly text: string;
 }
 
@@ -790,6 +798,91 @@ export class PctChart extends PctChartScene {
     if (!found) return null;
     const at = found.ids.indexOf(id);
     return at < 0 ? null : found.stacked[at];
+  }
+
+  /**
+   * The stacks of areas on the scene: for each, the positions any member has a reading at and
+   * every member's start and end there, its value at the position read as the mark draws it.
+   * A hidden series leaves its stack, and the ones above it come down.
+   */
+  private readonly areaStacks = computed(() => {
+    const hidden = new Set(this.hiddenSeries());
+    const members = new Map<
+      string,
+      { ids: string[]; marks: PctMark[]; normalize: boolean }
+    >();
+    for (const mark of this.marks()) {
+      const stacked = mark.stacked();
+      if (!stacked) continue;
+      const entry = members.get(stacked.stack) ?? {
+        ids: [],
+        marks: [],
+        normalize: false,
+      };
+      entry.normalize ||= stacked.normalize;
+      for (const s of mark.series()) {
+        if (hidden.has(s.id)) continue;
+        entry.ids.push(s.id);
+        entry.marks.push(mark);
+      }
+      members.set(stacked.stack, entry);
+    }
+    return new Map(
+      [...members].map(([stack, { ids, marks, normalize }]) => {
+        const positions = new Set<number>();
+        ids.forEach((id, i) => {
+          const { xs, length } = marks[i].readings(id);
+          for (let k = 0; k < length; k++) positions.add(xs[k]);
+        });
+        const xs = Float64Array.from([...positions].sort((a, b) => a - b));
+        const values = ids.map((id, i) =>
+          xs.map((x) => marks[i].rowValueAt(id, x) ?? NaN),
+        );
+        return [
+          stack,
+          { ids, xs, columns: pctStackColumns(values, normalize) },
+        ] as const;
+      }),
+    );
+  });
+
+  /** The stacks any member asks to be drawn as shares; read apart from the stacks, so a member's unit may ask. */
+  private readonly normalizedStacks = computed(
+    () =>
+      new Set(
+        this.marks().flatMap((mark) => {
+          const stacked = mark.stacked();
+          return stacked?.normalize ? [stacked.stack] : [];
+        }),
+      ),
+  );
+
+  /**
+   * See `PctChartScene.stackNormalized`.
+   *
+   * @since next
+   */
+  override stackNormalized(stack: string): boolean {
+    return this.normalizedStacks().has(stack);
+  }
+
+  /**
+   * See `PctChartScene.areaStackOf`.
+   *
+   * @since next
+   */
+  override areaStackOf(
+    stack: string,
+    id: string,
+  ): {
+    readonly xs: Float64Array;
+    readonly from: Float64Array;
+    readonly to: Float64Array;
+  } | null {
+    const found = this.areaStacks().get(stack);
+    if (!found) return null;
+    const at = found.ids.indexOf(id);
+    return at < 0 ? null : { xs: found.xs, ...found.columns[at] };
   }
 
   override readonly lineHeight = computed(() =>
@@ -1391,6 +1484,7 @@ export class PctChart extends PctChartScene {
     const rows = this.series()
       .filter((s) => !hidden.has(s.id))
       .map((s): PctChartReadingRow => {
+        const mark = this.markOf(s.id);
         const value = this.valueAt(s.id, x);
         const custom = typeof s.color === 'string';
         return {
@@ -1400,7 +1494,8 @@ export class PctChart extends PctChartScene {
           place: custom ? 'custom' : (places.get(s.id) ?? 1),
           color: custom ? (s.color as string) : null,
           value,
-          text: this.writeValue(value, s.unit),
+          at: value === null ? null : (mark?.drawnAt(s.id, x) ?? value),
+          text: mark?.readAt(s.id, x) ?? this.writeValue(value, s.unit),
         };
       });
     const notes = this.marks().flatMap((m) => m.notesAt(x));
@@ -1451,7 +1546,7 @@ export class PctChart extends PctChartScene {
     const along = scale.map(reading.x);
     const markers = reading.rows.flatMap((row) => {
       const across =
-        row.value === null ? undefined : scales.get(row.unit)?.map(row.value);
+        row.at === null ? undefined : scales.get(row.unit)?.map(row.at);
       return across === undefined
         ? []
         : [
