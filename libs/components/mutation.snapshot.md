@@ -101,9 +101,8 @@ libs/components/chart/src/annotation.ts 100.00 52(0) 0 0 0 2
 libs/components/chart/src/area.ts 85.08 154(0) 24 0 3 2
 libs/components/chart/src/band.ts 90.19 193(0) 21 0 0 7
 libs/components/chart/src/bars.ts 94.03 425(0) 26 0 1 2
-libs/components/chart/src/box.ts 90.46 218(2) 22 0 1 1
-libs/components/chart/src/chart-table.ts 91.71 188(1) 16 0 1 0
-libs/components/chart/src/chart.ts 91.53 1600(1) 142 0 6 8
+libs/components/chart/src/chart-table.ts 91.58 185(1) 16 0 1 0
+libs/components/chart/src/chart.ts 91.93 1561(4) 131 0 6 8
 libs/components/chart/src/legend.ts 94.25 82(0) 5 0 0 1
 libs/components/chart/src/line.ts 95.96 214(0) 9 0 0 2
 libs/components/chart/src/model/columns.ts 97.06 33(1) 1 0 0 0
@@ -114,21 +113,19 @@ libs/components/chart/src/model/extent.ts 90.32 84(0) 9 0 0 0
 libs/components/chart/src/model/gestures.ts 99.41 169(0) 1 0 0 0
 libs/components/chart/src/model/intervals.ts 94.62 123(1) 7 0 0 0
 libs/components/chart/src/model/layout.ts 90.79 69(5) 7 0 0 0
-libs/components/chart/src/model/monotone.ts 95.29 81(1) 4 0 0 0
 libs/components/chart/src/model/notes.ts 95.83 69(0) 3 0 0 0
-libs/components/chart/src/model/path.ts 97.50 195(4) 5 0 0 0
+libs/components/chart/src/model/path.ts 96.67 116(1) 4 0 0 0
 libs/components/chart/src/model/points.ts 91.55 130(8) 12 0 0 0
 libs/components/chart/src/model/scale.ts 98.55 68(0) 1 0 0 0
 libs/components/chart/src/model/segments.ts 96.49 55(0) 2 0 0 0
 libs/components/chart/src/model/slots.ts 100.00 23(0) 0 0 0 0
-libs/components/chart/src/model/stack.ts 86.25 69(2) 11 0 0 0
-libs/components/chart/src/model/stats.ts 95.03 153(1) 8 0 0 0
+libs/components/chart/src/model/stack.ts 94.44 34(0) 2 0 0 0
 libs/components/chart/src/model/steps.ts 100.00 15(0) 0 0 0 0
 libs/components/chart/src/model/summarize.ts 93.94 31(0) 2 0 0 0
 libs/components/chart/src/model/ticks.ts 96.69 146(1) 5 0 0 0
 libs/components/chart/src/model/time-ticks.ts 98.44 253(0) 4 0 0 0
-libs/components/chart/src/model/value-at.ts 95.87 116(4) 5 0 0 0
-libs/components/chart/src/model/window.ts 91.80 56(0) 5 0 0 0
+libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
+libs/components/chart/src/model/window.ts 97.22 35(0) 1 0 0 0
 libs/components/chart/src/note.ts 93.85 61(0) 3 0 1 0
 libs/components/chart/src/now.ts 100.00 43(0) 0 0 0 0
 libs/components/chart/src/points.ts 83.05 147(2) 27 1 2 2
@@ -197,11 +194,13 @@ libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
 libs/components/table/src/data-table-details.ts 100.00 5(0) 0 0 0 1
 libs/components/table/src/data-table-groups.ts 100.00 9(0) 0 0 0 3
 libs/components/table/src/data-table-page.ts 100.00 3(0) 0 0 0 2
+libs/components/table/src/data-table-remote.ts 98.60 141(12) 1 1 0 4
 libs/components/table/src/data-table-selection.ts 99.46 185(0) 0 1 0 5
 libs/components/table/src/data-table-slots.ts 100.00 12(0) 0 0 0 6
-libs/components/table/src/data-table-window.ts 93.27 194(0) 14 0 0 0
-libs/components/table/src/data-table.ts 98.27 968(1) 13 3 1 15
+libs/components/table/src/data-table-window.ts 93.21 206(0) 15 0 0 0
+libs/components/table/src/data-table.ts 98.40 1047(1) 13 3 1 15
 libs/components/table/src/model/aggregate.ts 100.00 31(0) 0 0 0 0
+libs/components/table/src/model/blocks.ts 100.00 39(2) 0 0 0 0
 libs/components/table/src/model/columns.ts 100.00 31(0) 0 0 0 0
 libs/components/table/src/model/fit.ts 100.00 22(2) 0 0 0 0
 libs/components/table/src/model/lines.ts 100.00 97(0) 0 0 0 0
@@ -225,5 +224,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.42 15803/17478
+TOTAL 90.52 15420/17034
 ```

@@ -361,6 +361,10 @@ export interface PctTexts {
    * cell — `Select Kitchen lamp`.
    */
   readonly tableSelectRow: string;
+  /** Data table: what a block of rows a remote source failed to deliver says in their place. */
+  readonly tableLoadFailed: string;
+  /** Data table: the button that asks a remote source for a failed block of rows again. */
+  readonly tableRetry: string;
 }
 
 /**
@@ -457,6 +461,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableGroupWithin: '{group}, in {outer}',
   tableSelectAll: 'Select all rows',
   tableSelectRow: 'Select',
+  tableLoadFailed: 'These rows could not be loaded.',
+  tableRetry: 'Retry',
 };
 
 /**

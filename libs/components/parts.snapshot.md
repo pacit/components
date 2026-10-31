@@ -210,12 +210,14 @@ from what the browser really gets.
 ./table PctDataTable details
 ./table PctDataTable disclosure
 ./table PctDataTable group
+./table PctDataTable hole
 ./table PctDataTable mark
 ./table PctDataTable message
 ./table PctDataTable place
 ./table PctDataTable placeholder
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
+./table PctTableRemoteParts retry
 ./table PctTableSelectionParts error
 ./table PctTableSelectionParts hint
 ./table PctTableSelectionParts select

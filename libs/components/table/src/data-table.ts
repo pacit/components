@@ -139,12 +139,14 @@ export interface PctTableFeature {
   };
   /**
    * The window: the lines drawn, `[start, end)`, never a row without its details nor details
-   * without their row; the space of the lines above and below them, in pixels; and the scroll
-   * that brings a line into the view, which the table calls for a row it has not drawn.
+   * without their row; the space of the lines above and below them, in pixels; the line at
+   * the view's top; and the scroll that brings a line into the view, which the table calls
+   * for a row it has not drawn.
    */
   readonly window?: {
     readonly range: Signal<{ readonly start: number; readonly end: number }>;
     readonly lead: Signal<number>;
+    readonly first: Signal<number>;
     readonly tail: Signal<number>;
     readonly reach: (line: number, align: PctScrollAlign) => void;
   };
@@ -152,6 +154,20 @@ export interface PctTableFeature {
   readonly page?: {
     readonly offset: Signal<number>;
     readonly total: Signal<number>;
+  };
+  /**
+   * The rows come from a remote source, a block at a time: every row of the source, `undefined`
+   * where its block has not come, which the table draws as a hole; whether a block is in
+   * flight; the failed block a hole stands in, `null` while its block loads; and the
+   * component the table makes for the failure, out of the paint, with what it draws given the
+   * block — the sentence and its retry. The source has sorted and filtered them.
+   */
+  readonly remote?: {
+    readonly rows: Signal<readonly unknown[]>;
+    readonly loading: Signal<boolean>;
+    readonly failed: Signal<(index: number) => number | null>;
+    readonly parts: Type<unknown>;
+    readonly failure: Signal<TemplateRef<unknown>>;
   };
 }
 
@@ -184,7 +200,19 @@ interface Heading extends Summary {
 interface Section<T> {
   readonly key: string;
   readonly group: Heading | null;
-  readonly rows: Row<T>[];
+  readonly rows: (Row<T> | Hole)[];
+}
+
+/** A row a remote source has not delivered: loading, or of a block that failed. */
+interface Hole {
+  readonly kind: 'hole';
+  readonly key: string;
+  readonly index: number;
+  readonly line: number;
+  /** The failed block the hole stands in, or `null` while its block loads. */
+  readonly failed: number | null;
+  /** The first hole drawn of its failed block, which says so and offers the retry. */
+  readonly first: boolean;
 }
 
 /** How much wider than where it hid a column the frame grows before the column comes back. */
@@ -212,6 +240,7 @@ interface Cell<T> {
 
 /** A row line with its cells. */
 interface Row<T> {
+  readonly kind: 'row';
   readonly key: string;
   readonly row: T;
   readonly index: number;
@@ -691,7 +720,7 @@ export class PctDataTable<
   private readonly values = computed(() => {
     const columns = this.columns();
     // A new list is new rows: what the old one read is not kept for it.
-    this.rows();
+    this.given();
     return kept((row: T) => columns.map((column) => column.value(row)));
   });
 
@@ -712,7 +741,34 @@ export class PctDataTable<
     );
   });
 
+  /** The rows to draw: the application's, or a remote source's, holes and all. */
+  private readonly given = computed(
+    () =>
+      (this.remote()?.rows() as readonly (T | undefined)[] | undefined) ??
+      this.rows(),
+  );
+
+  /** The remote source the rows come from, while a directive gives one. */
+  protected readonly remote = computed(() => this.contributed().remote ?? null);
+
+  /**
+   * Rows are coming: the application says so, or a remote source's first are. A remote
+   * block in flight among rows already drawn is its holes' to say, each `aria-busy`: a
+   * body busy at every refresh would be a body a reader is told to wait for.
+   */
+  protected readonly busy = computed(
+    () =>
+      this.loading() ||
+      ((this.remote()?.loading() ?? false) && this.given().length === 0),
+  );
+
   private readonly filtered = computed(() => {
+    const remote = this.remote();
+    // A remote source filtered its rows itself: those it delivered are what matched.
+    if (remote)
+      return (remote.rows() as readonly (T | undefined)[]).filter(
+        (row): row is T => row !== undefined,
+      );
     const rows = this.rows();
     if (!this.clientFilter()) return rows;
     const question = this.filter();
@@ -740,15 +796,17 @@ export class PctDataTable<
 
   /**
    * How many rows the filter let through: the application writes `12 of 900` from this and
-   * the length of its own rows.
+   * the length of its own rows. From a remote source, every row it counts.
    *
    * @since next
    */
-  readonly matched = computed(() => this.filtered().length);
+  readonly matched = computed(() =>
+    this.remote() ? this.given().length : this.filtered().length,
+  );
 
   /**
    * The ids of the rows the filter let through, in the rows' order: what a selection's
-   * `selectAll` picks.
+   * `selectAll` picks. From a remote source, those of the rows it has delivered.
    *
    * @since next
    */
@@ -759,7 +817,7 @@ export class PctDataTable<
 
   private readonly ordered = computed(() => {
     const rows = this.filtered();
-    if (!this.clientSort()) return rows;
+    if (!this.clientSort() || this.remote()) return rows;
     const columns = new Map<string, PctAnyColumn<T>>(
       this.columns().map((column) => [column.id, column]),
     );
@@ -778,7 +836,9 @@ export class PctDataTable<
    */
   readonly lines = computed<readonly PctTableLine<T>[]>(() => {
     const id = this.rowId();
-    const lines = pctLines(this.ordered(), id, {
+    const remote = this.remote();
+    const rows = remote ? this.given() : this.ordered();
+    const lines = pctLines(rows, id, {
       details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
       groups: this.grouping(),
       collapsed: new Set(this.contributed().groups?.collapsed()),
@@ -794,6 +854,13 @@ export class PctDataTable<
   private readonly grouping = computed(() => {
     const groups = this.contributed().groups;
     if (!groups || groups.disabled()) return [];
+    // A remote source's groups are the source's to make, and it makes none yet: its rows stay
+    // in the order it gave them.
+    if (this.remote()) {
+      // Said once a column is asked for: groups by nothing group nothing to refuse.
+      if (isDevMode() && groups.by().length > 0) this.warnOnRemoteGroups();
+      return [];
+    }
     const columns: readonly PctAnyColumn<T>[] = this.columns();
     const values = this.values();
     const written = this.written();
@@ -907,8 +974,13 @@ export class PctDataTable<
     const lines = this.lines();
     const { headings, owner } = this.outline();
     const { start, end } = this.drawn();
+    const failed = this.remote()?.failed();
+    // A failed block says so in its first hole in view: below the view's top, not in the
+    // lines drawn above it.
+    const top = this.window()?.first() ?? start;
     const sections: Section<T>[] = [];
     let current: Section<T> | null = null;
+    let before: number | null = null;
     for (let at = start; at < end; at++) {
       const heading = headings.get(at);
       if (heading !== undefined) {
@@ -916,7 +988,25 @@ export class PctDataTable<
         sections.push(current);
         continue;
       }
-      const row = rows.get(at);
+      const line = lines[at];
+      let row: Row<T> | Hole | undefined;
+      if (line.kind === 'hole') {
+        // Only a remote source writes a hole, and it says which have failed.
+        const block = (failed as (index: number) => number | null)(line.index);
+        row = {
+          kind: 'hole',
+          key: pctLineKey(line),
+          index: line.index,
+          line: at,
+          failed: block,
+          // Read only of a failed hole: the first in view of its block.
+          first: block !== before ? at >= top : at === top,
+        };
+        before = block;
+      } else {
+        row = rows.get(at);
+        before = null;
+      }
       // A row's details are drawn with the row.
       if (row === undefined) continue;
       if (current === null) {
@@ -938,6 +1028,8 @@ export class PctDataTable<
    * the filter left, not all the application holds: the foot sums what the table shows.
    */
   protected readonly totals = computed(() =>
+    // A remote source's sums are the source's to give: the rows here are only those it sent.
+    this.remote() === null &&
     this.ordered().length > 0 &&
     this.shown().some(({ column }) => column.aggregate !== undefined)
       ? this.summarize()(this.ordered() as readonly T[])
@@ -1159,6 +1251,7 @@ export class PctDataTable<
       );
       const shown = all.filter((cell) => !hidden.has(cell.column.id));
       return {
+        kind: 'row',
         key: pctLineKey(line),
         row: line.row,
         index: line.index,
@@ -1192,6 +1285,23 @@ export class PctDataTable<
     return id;
   }
 
+  /** What a failed block says, given the block: the remote source's parts draw it. */
+  protected failure(): TemplateRef<unknown> {
+    return (this.remote() as NonNullable<PctTableFeature['remote']>).failure();
+  }
+
+  private warnedRemoteGroups = false;
+
+  private warnOnRemoteGroups(): void {
+    if (this.warnedRemoteGroups) return;
+    this.warnedRemoteGroups = true;
+    console.warn(
+      `[pct-data-table] pctTableGroups does not group the rows of pctTableRemote: a group ` +
+        `of rows the source has not sent cannot be counted or summed here, so the rows stay ` +
+        `in the order the source gave them.`,
+    );
+  }
+
   /** Opens the row's details, or closes them. */
   protected toggleDetails(id: PctRowId): void {
     this.openDetails().update((open) =>
@@ -1202,7 +1312,7 @@ export class PctDataTable<
   protected readonly primary = computed(() => this.sort()[0] ?? null);
 
   protected readonly placeholders = computed(() =>
-    this.loading() && this.rows().length === 0 ? PLACEHOLDER_ROWS : [],
+    this.busy() && this.given().length === 0 ? PLACEHOLDER_ROWS : [],
   );
 
   /**
@@ -1211,16 +1321,24 @@ export class PctDataTable<
    */
   private readonly emptiness = computed(() => {
     if (this.lines().length > 0) return null;
-    if (this.loading()) return 'loading';
-    return pctQuestionWords(this.filter()).length > 0 || this.rows().length > 0
+    if (this.busy()) return 'loading';
+    // A remote source whose first block failed has no hole to say so in.
+    if (this.remote()?.failed()(0) === 0) return 'failed';
+    return pctQuestionWords(this.filter()).length > 0 || this.given().length > 0
       ? 'no-matches'
       : 'empty';
   });
+
+  /** The first block of a remote source failed: the message offers its retry. */
+  protected readonly failedEmpty = computed(
+    () => this.emptiness() === 'failed',
+  );
 
   protected readonly message = computed(() => {
     const emptiness = this.emptiness();
     if (emptiness === 'loading') return this.texts().tableLoading;
     if (emptiness === 'no-matches') return this.texts().tableNoMatches;
+    if (emptiness === 'failed') return this.texts().tableLoadFailed;
     return emptiness === 'empty' ? this.texts().tableEmpty : '';
   });
 
@@ -1551,8 +1669,8 @@ export class PctDataTable<
       element: target,
       line,
       // A heading's key is a JSON path no row's id is: its focus goes to the line that takes
-      // its place.
-      row: found.key,
+      // its place. A hole's key is its index, which a row's id may be: it names no row.
+      row: found.kind === 'hole' ? null : found.key,
     };
   }
 
@@ -1591,16 +1709,13 @@ export class PctDataTable<
         line = back;
     }
     if (line < 0) line = Math.min(at.line, lines.length - 1);
-    const row = this.rowOf(line);
-    if (row === undefined && this.window() !== null) {
-      this.frame().nativeElement.focus({ preventScroll: true });
-      return;
-    }
-    row
-      ?.querySelector<HTMLElement>(
-        '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
-      )
-      ?.focus();
+    const control = this.rowOf(line)?.querySelector<HTMLElement>(
+      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+    );
+    // A line not drawn, or one with nothing to focus — a hole whose retry was pressed —
+    // hands it to the frame, which keeps the keys when it scrolls.
+    if (control) control.focus();
+    else this.frame().nativeElement.focus({ preventScroll: true });
   }
 
   /**

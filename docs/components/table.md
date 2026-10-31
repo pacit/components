@@ -82,6 +82,8 @@ what it holds. While the table fits, it writes none of the three.
 | `error`       | the data table's error under the table, from its selection's form field      |
 | `warning`     | the data table's warning under the table                                     |
 | `hint`        | the data table's hint under the table                                        |
+| `hole`        | the data table's row a remote source has not delivered                       |
+| `retry`       | the data table's button that asks a failed block again                       |
 
 ## Theming
 

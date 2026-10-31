@@ -6,6 +6,7 @@ export * from './data-table-groups';
 export * from './data-table-selection';
 export * from './data-table-window';
 export * from './data-table-page';
+export * from './data-table-remote';
 export * from './model/aggregate';
 export * from './model/columns';
 export * from './model/fit';
