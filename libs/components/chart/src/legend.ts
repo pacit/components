@@ -192,15 +192,22 @@ export class PctChartLegend {
         swatch: chart.markOf(s.id)?.swatch() ?? null,
       };
     });
-    // The annotations asked to stand here, after the series: no unit and no value of their own.
+    // The annotations asked to stand here, after the series: no unit, and as the value the text
+    // of the tooltip's note of the same id, where the mark writes one — a band's state under
+    // the cursor and how long it holds.
     const extras = chart.marks().flatMap((mark) =>
-      mark.legendEntries().map((entry): PctLegendEntry => ({
-        ...entry,
-        unit: '',
-        hidden: hidden.has(entry.id),
-        value: null,
-        swatch: mark.swatch(),
-      })),
+      mark.legendEntries().map((entry): PctLegendEntry => {
+        const isHidden = hidden.has(entry.id);
+        return {
+          ...entry,
+          unit: '',
+          hidden: isHidden,
+          value: isHidden
+            ? null
+            : (reading?.notes.find((n) => n.id === entry.id)?.text ?? null),
+          swatch: mark.swatch(),
+        };
+      }),
     );
     return [...series, ...extras];
   });

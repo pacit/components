@@ -1,0 +1,64 @@
+// The element itself draws nothing: its segments are stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A segment is a solid block in its state's colour; across the plot (`lane="plot"`) it is the
+// colour mixed into nothing by the skin's amount, a tint behind the series.
+@for $i from 1 through 8 {
+  [data-pct-part='segment'][data-pct-series='#{$i}'],
+  [data-pct-series='#{$i}'] .block {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+
+  .tint [data-pct-part='segment'][data-pct-series='#{$i}'] {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-span-alpha),
+      transparent
+    );
+  }
+}
+
+[data-pct-part='segment'][data-pct-series='custom'],
+[data-pct-series='custom'] .block {
+  fill: var(--_pct-chart-color);
+}
+
+.tint [data-pct-part='segment'][data-pct-series='custom'] {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-span-alpha),
+    transparent
+  );
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+// With the colours gone a segment is a box in the text's colour with the canvas as its edge,
+// so two states still meet at a line; the words of the tooltip, the legend and the table tell
+// them apart (0102).
+@media (forced-colors: active) {
+  [data-pct-part='segment'][data-pct-series],
+  [data-pct-series] .block {
+    fill: CanvasText;
+    stroke: Canvas;
+    stroke-width: 1px;
+  }
+
+  .tint [data-pct-part='segment'][data-pct-series] {
+    fill: none;
+    stroke: CanvasText;
+    stroke-dasharray: 2 2;
+  }
+}

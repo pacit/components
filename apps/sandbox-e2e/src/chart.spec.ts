@@ -982,4 +982,136 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       ).toHaveCount(1);
     });
   });
+
+  test.describe('a band of states', () => {
+    test('a block per segment in a lane under the plot, the time axis under the lane, the tooltip with the state and its duration, the legend with a toggle per state', async ({
+      page,
+    }) => {
+      const banded = chart(page, 'chart-band');
+      await banded.scrollIntoViewIfNeeded();
+      const segments = banded.locator('[data-pct-part="segment"]');
+      await expect(segments).toHaveCount(9);
+      // in the states' colours: heating in place 1, defrost in tomato, standby in 3, off in lightgray
+      expect(
+        await segments.evaluateAll((rects) =>
+          rects.map((r) => r.getAttribute('data-pct-series')),
+        ),
+      ).toEqual([
+        'custom',
+        '1',
+        'custom',
+        '1',
+        '3',
+        '1',
+        'custom',
+        '1',
+        'custom',
+      ]);
+      expect(
+        await segments.nth(2).evaluate((r) => getComputedStyle(r).fill),
+      ).toBe('rgb(255, 99, 71)');
+      // the lane lies under the plot: the segments start where the value axis ends, and the time
+      // axis's line stands under the lane
+      const geometry = await banded.evaluate((host) => {
+        const axis = host.querySelector('[data-pct-slot] line')!;
+        const segment = host.querySelector('[data-pct-part="segment"]')!;
+        const base = host.querySelector('[data-pct-part="axis"] line.base')!;
+        return {
+          axisBottom: Math.max(
+            Number(axis.getAttribute('y1')),
+            Number(axis.getAttribute('y2')),
+          ),
+          laneTop: Number(segment.getAttribute('y')),
+          laneBottom:
+            Number(segment.getAttribute('y')) +
+            Number(segment.getAttribute('height')),
+          baseY: Number(base.getAttribute('y1')),
+        };
+      });
+      expect(geometry.laneTop).toBeGreaterThan(geometry.axisBottom);
+      expect(geometry.laneBottom - geometry.laneTop).toBe(16);
+      expect(geometry.baseY).toBe(geometry.laneBottom);
+      // the tooltip over the standby hours: the state with its swatch, and how long it held
+      const plot = (await banded
+        .locator('[data-pct-part="plot"]')
+        .boundingBox())!;
+      await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2);
+      const note = banded.locator('[data-pct-part="tooltip"] .row.note');
+      await expect(note.locator('.name')).toHaveText('Standby');
+      await expect(note.locator('.value')).toHaveText(/^7 hrs?$/);
+      await expect(
+        note.locator('[data-pct-part="swatch"].marker'),
+      ).toHaveAttribute('data-pct-series', '3');
+      // the legend: the series, then the states, the one under the cursor with its duration
+      const legend = page.getByTestId('band-legend');
+      const toggles = legend.getByRole('button');
+      await expect(toggles).toContainText([
+        'Supply air',
+        'Heating',
+        'Defrost',
+        'Standby',
+        'Off',
+      ]);
+      await expect(
+        legend.locator('[data-pct-part="item"]').nth(3),
+      ).toContainText(/7 hrs?/);
+      await toggles.nth(2).click();
+      await expect(toggles.nth(2)).toHaveAttribute('aria-pressed', 'false');
+      await expect(segments).toHaveCount(7);
+      await toggles.nth(2).click();
+      await expect(segments).toHaveCount(9);
+    });
+
+    test('a band alone is a chart with a time axis and no value axis, in step with the chart above; a reader hears how long each state held; the table has a row per segment', async ({
+      page,
+    }) => {
+      const alone = chart(page, 'chart-band-alone');
+      await alone.scrollIntoViewIfNeeded();
+      await expect(alone.locator('[data-pct-slot]')).toHaveCount(0);
+      await expect(alone.locator('[data-pct-part="segment"]')).toHaveCount(9);
+      // the segments fill the plot: as tall as the clip
+      const fills = await alone.evaluate((host) => {
+        const clip = host.querySelector('clipPath rect')!;
+        const segment = host.querySelector('[data-pct-part="segment"]')!;
+        return {
+          clip: [clip.getAttribute('y'), clip.getAttribute('height')],
+          segment: [segment.getAttribute('y'), segment.getAttribute('height')],
+        };
+      });
+      expect(fills.segment).toEqual(fills.clip);
+      await expect(alone.locator('.empty')).toHaveCount(0);
+      await expect(alone.getByRole('img')).toHaveAccessibleDescription(
+        /^Mode: Heating 9 hrs?, 15 mins?; Defrost 45 mins?; Standby 7 hrs?; Off 8 hrs?\.$/,
+      );
+      // in step: the two plots share their left edge, and a zoom on one moves the other
+      const banded = chart(page, 'chart-band');
+      const edges = async () =>
+        Promise.all(
+          [banded, alone].map((c) =>
+            c
+              .locator('clipPath rect')
+              .first()
+              .evaluate((r) => r.getAttribute('x')),
+          ),
+        );
+      expect(new Set(await edges()).size).toBe(1);
+      await banded.locator('input[data-pct-part="range"]').focus();
+      await page.keyboard.press('+');
+      await expect(alone.locator('[data-pct-part="segment"]')).not.toHaveCount(
+        9,
+      );
+      // the table: the time, the supply air, and the mode as text, a row per segment
+      const table = page.getByTestId('band-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Time',
+        'Supply air (°C)',
+        'Mode',
+      ]);
+      await page.keyboard.press('0');
+      await expect(table.locator('tbody tr')).toHaveCount(9);
+      await expect(
+        table.locator('tbody tr').nth(4).locator('td').nth(1),
+      ).toHaveText('Standby');
+    });
+  });
 });

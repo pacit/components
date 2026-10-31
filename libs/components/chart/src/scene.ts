@@ -179,6 +179,14 @@ export abstract class PctChartScene {
   abstract readonly bands: Signal<readonly PctWindow[]>;
 
   /**
+   * What the horizontal axis holds: instants (`time`), numbers (`linear`) or the categories'
+   * bands (`band`) — what a mark writes a stretch of it as: a duration, or a number.
+   *
+   * @since next
+   */
+  abstract readonly xKind: Signal<'time' | 'linear' | 'band'>;
+
+  /**
    * The calendar interval the bars of a time axis stand in, `undefined` without bars.
    *
    * @since next
@@ -259,6 +267,15 @@ export abstract class PctChartScene {
    * @since next
    */
   abstract placedNote(id: string): PctPlacedNote | null;
+  /**
+   * The strip a lane takes beside the plot — under it, or to its right when the chart is
+   * turned — in pixels of the picture, for the marks that asked for the lane (`PctMark.lane`);
+   * `null` for a lane no mark asked for. A scene with no series lends the lanes the whole
+   * plot (0104).
+   *
+   * @since next
+   */
+  abstract laneFrame(name: string): PctNoteFrame | null;
 }
 
 /**
@@ -428,6 +445,39 @@ export abstract class PctMark {
     signal<PctMarkLayer>('data').asReadonly();
 
   /**
+   * The lane the mark draws in, or `null` for a mark that draws in the plot. A named lane is a
+   * strip of its own under the plot (right of it when the chart is turned), of the scene's
+   * `band-height`; marks that name the same lane share it. The mark reads the strip from
+   * `PctChartScene.laneFrame` (0104).
+   *
+   * @since next
+   */
+  readonly lane: Signal<string | null> = signal<string | null>(
+    null,
+  ).asReadonly();
+
+  /**
+   * The columns of text the mark adds to the data table beside the series' columns of numbers
+   * — a state band's states — each written at a row by `textAt`. The default has none.
+   *
+   * @since next
+   */
+  readonly columns: Signal<readonly PctMarkColumn[]> = signal<
+    readonly PctMarkColumn[]
+  >([]).asReadonly();
+
+  /**
+   * The text of one of the mark's `columns` at `x`, or `null` for a gap.
+   *
+   * @since next
+   */
+  textAt(id: string, x: number): string | null {
+    void id;
+    void x;
+    return null;
+  }
+
+  /**
    * What the mark adds to the picture's description for a reader, who sees no reference line
    * and no note: a sentence, or `''` for a mark whose series the data table already gives.
    *
@@ -460,7 +510,9 @@ export abstract class PctMark {
 
 /**
  * A line of the tooltip that is no series' value: a name and a text, written by a mark beside
- * the rows (`PctMark.notesAt`). It draws no swatch and the legend does not list it.
+ * the rows (`PctMark.notesAt`). With a `swatch` it draws one as a marker, like a row, and a
+ * legend entry of the same id shows its text as the value; without one it is words alone, and
+ * the legend does not list it.
  *
  * @since next
  */
@@ -469,6 +521,22 @@ export interface PctMarkNote {
   readonly id: string;
   readonly name: string;
   readonly text: string;
+  /** The swatch drawn before the note: the mark's template and the identity it is stamped with. */
+  readonly swatch?: {
+    readonly template: TemplateRef<PctSwatchContext>;
+    readonly identity: PctSeriesIdentity;
+  };
+}
+
+/**
+ * A column of text a mark adds to the data table (`PctMark.columns`): its id, which `textAt`
+ * is asked by, and its header.
+ *
+ * @since next
+ */
+export interface PctMarkColumn {
+  readonly id: string;
+  readonly name: string;
 }
 
 /**

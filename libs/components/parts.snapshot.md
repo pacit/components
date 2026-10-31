@@ -27,6 +27,9 @@ from what the browser really gets.
 ./breadcrumb PctCrumb separator
 ./button PctButton label
 ./button PctButton spinner
+./chart PctBand band
+./chart PctBand segment
+./chart PctBand swatch
 ./chart PctBars bar
 ./chart PctBars label
 ./chart PctBars swatch
