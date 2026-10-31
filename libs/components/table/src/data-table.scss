@@ -75,14 +75,6 @@ table {
   white-space: nowrap;
 }
 
-/* A block a remote source failed to deliver: said once, with its retry beside it. */
-.pct-data-table__failed {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--pct-table-padding-x);
-}
-
 .pct-data-table__message {
   padding-block: var(--pct-table-padding-y);
   padding-inline: var(--pct-table-padding-x);

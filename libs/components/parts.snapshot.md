@@ -199,9 +199,9 @@ from what the browser really gets.
 ./table PctDataTable message
 ./table PctDataTable place
 ./table PctDataTable placeholder
-./table PctDataTable retry
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
+./table PctTableRemoteParts retry
 ./table PctTableSelectionParts error
 ./table PctTableSelectionParts hint
 ./table PctTableSelectionParts select

@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctDataTable } from './data-table';
+import { PctTableDetails } from './data-table-details';
 import { PctTableGroups } from './data-table-groups';
 import {
   PctTableRemote,
@@ -14,6 +15,7 @@ import {
   type PctTableRequest,
 } from './data-table-remote';
 import { PctTableSelection } from './data-table-selection';
+import { PctDetailsTemplate } from './data-table-slots';
 import { PctTableWindow } from './data-table-window';
 import { pctColumnsOf, type PctRowId } from './model/columns';
 import type { PctTableSort } from './table';
@@ -67,7 +69,14 @@ const load = (
   );
 
 @Component({
-  imports: [PctDataTable, PctTableWindow, PctTableRemote, PctTableSelection],
+  imports: [
+    PctDataTable,
+    PctTableWindow,
+    PctTableRemote,
+    PctTableSelection,
+    PctTableDetails,
+    PctDetailsTemplate,
+  ],
   template: `
     @if (picking()) {
       <pct-data-table
@@ -75,11 +84,14 @@ const load = (
         [pctTableRemote]="loader()"
         pctTableSelection
         [(value)]="selected"
+        pctTableDetails
         blockSize="50"
         caption="Registers"
         [columns]="columns"
         [rowId]="byId"
-      />
+      >
+        <ng-template [pctDetails]="columns"><i>more</i></ng-template>
+      </pct-data-table>
     } @else {
       <pct-data-table
         pctTableWindow
@@ -141,7 +153,7 @@ class NoWindowHost {
   />`,
 })
 class GroupsHost {
-  readonly by = signal<readonly string[]>(['name']);
+  readonly by = signal<readonly ('name' | 'value')[]>(['name']);
   readonly columns = columns;
   readonly load = load;
   readonly byId = (register: Register) => register.id;
@@ -168,8 +180,7 @@ beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
     function (this: HTMLElement) {
       const frame = this.closest('pct-table-frame') as HTMLElement | null;
-      const top =
-        this.localName === 'tbody' ? 40 - (frame?.scrollTop ?? 0) : 0;
+      const top = this.localName === 'tbody' ? 40 - (frame?.scrollTop ?? 0) : 0;
       return { top, height: 0, width: 0, bottom: top } as DOMRect;
     },
   );
@@ -273,7 +284,9 @@ function tableOf(fixture: ComponentFixture<unknown>): HTMLTableElement {
 /** Each body row drawn: a row's first cell's text, `hole` or `failed`. */
 function lines(fixture: ComponentFixture<unknown>): string[] {
   return Array.from(
-    tableOf(fixture).querySelectorAll<HTMLElement>('tbody tr[data-pct-index]'),
+    tableOf(fixture).querySelectorAll<HTMLTableRowElement>(
+      'tbody tr[data-pct-index]',
+    ),
   ).map((tr) => {
     if (tr.dataset['pctPart'] !== 'hole')
       return (tr.cells[0].textContent ?? '').trim();
@@ -423,9 +436,8 @@ describe('PctTableRemote', () => {
     await goTo(fixture, 76);
     expect(froms()).toEqual([0, 50, 100]);
     expect(
-      tableOf(fixture)
-        .querySelector('[data-pct-part="retry"]')
-        ?.closest('tr')?.dataset['pctIndex'],
+      tableOf(fixture).querySelector('[data-pct-part="retry"]')?.closest('tr')
+        ?.dataset['pctIndex'],
     ).toBe('76');
   });
 
@@ -531,9 +543,9 @@ describe('PctTableRemote', () => {
       }),
     );
     await goTo(fixture, 75);
-    expect(
-      (fixture.componentInstance.remote().error() as Error).message,
-    ).toBe('no server');
+    expect((fixture.componentInstance.remote().error() as Error).message).toBe(
+      'no server',
+    );
     expect(lines(fixture)[0]).toBe('failed');
   });
 
@@ -698,8 +710,11 @@ describe('PctTableRemote', () => {
     await stable(fixture);
     expect(lines(fixture)).toEqual([]);
     expect(
-      (frameOf(fixture).querySelector('[data-pct-part="message"]') as HTMLElement)
-        .textContent,
+      (
+        frameOf(fixture).querySelector(
+          '[data-pct-part="message"]',
+        ) as HTMLElement
+      ).textContent,
     ).toContain('No rows');
     // A new question asks again, though the last list had no rows.
     fixture.componentInstance.filter.set('x');
@@ -748,9 +763,9 @@ describe('PctTableRemote', () => {
     ]);
     await stable(fixture);
     expect(froms()).toEqual([0, 10, 20, 0, 10, 20]);
-    expect(asked.slice(3).every(({ request }) => request.sort.length === 1)).toBe(
-      true,
-    );
+    expect(
+      asked.slice(3).every(({ request }) => request.sort.length === 1),
+    ).toBe(true);
   });
 
   it('fails a block whose total is no count of rows', async () => {
@@ -795,9 +810,9 @@ describe('PctTableRemote', () => {
   it('goes back to the top under a new order by default', async () => {
     const fixture = await answered((host) => host.picking.set(true));
     await goTo(fixture, 100);
-    fixture.componentInstance.table().sort.set([
-      { key: 'name', direction: 'ascending' },
-    ]);
+    fixture.componentInstance
+      .table()
+      .sort.set([{ key: 'name', direction: 'ascending' }]);
     await stable(fixture);
     expect(frameOf(fixture).scrollTop).toBe(0);
   });
@@ -878,7 +893,7 @@ describe('PctTableRemote', () => {
     expect(tableOf(fixture).querySelector('tfoot')).toBeNull();
   });
 
-  it('picks only the rows that came, and leaves a hole’s place empty', async () => {
+  it('picks only the rows that came, and leaves a hole’s pick and disclosure empty', async () => {
     const fixture = await answered((host) => host.picking.set(true));
     const host = fixture.componentInstance;
     expect(host.table().matchedIds()).toEqual(rowsOf(0, 50).map((r) => r.id));
@@ -886,8 +901,10 @@ describe('PctTableRemote', () => {
     const hole = tableOf(fixture).querySelector(
       'tr[data-pct-part="hole"]',
     ) as HTMLTableRowElement;
-    expect(hole.cells).toHaveLength(3);
+    expect(hole.cells).toHaveLength(4);
     expect(hole.cells[0].textContent?.trim()).toBe('');
+    expect(hole.cells[1].textContent?.trim()).toBe('');
+    expect(hole.cells[2].querySelector('pct-skeleton')).not.toBeNull();
   });
 
   it('aborts what is in flight when the table goes', async () => {
@@ -917,7 +934,9 @@ describe('PctTableRemote', () => {
     await stable(fixture);
     asked[0].answer();
     await stable(fixture);
-    expect(tableOf(fixture).querySelector('[data-pct-part="group"]')).toBeNull();
+    expect(
+      tableOf(fixture).querySelector('[data-pct-part="group"]'),
+    ).toBeNull();
     expect(lines(fixture)[0]).toBe('Register 0');
     // Grouped by nothing, nothing is refused; by another column, the sentence is not said again.
     fixture.componentInstance.by.set([]);
@@ -946,7 +965,9 @@ describe('PctTableRemote', () => {
     fixture.detectChanges();
     await stable(fixture);
     expect(
-      warn.mock.calls.filter(([text]) => String(text).includes('pctTableRemote')),
+      warn.mock.calls.filter(([text]) =>
+        String(text).includes('pctTableRemote'),
+      ),
     ).toEqual([]);
   });
 });

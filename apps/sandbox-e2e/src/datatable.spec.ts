@@ -918,7 +918,9 @@ test.describe('PctTableRemote — a million registers from a server, a block at 
   const askedCount = async (page: Page) =>
     Number(/asked for (\d+)/.exec(await asked(page).innerText())?.[1]);
   const firstRow = (page: Page) =>
-    remote(page).locator('tbody tr[aria-rowindex]:not([data-pct-part])').first();
+    remote(page)
+      .locator('tbody tr[aria-rowindex]:not([data-pct-part])')
+      .first();
   /** Scrolls the frame to the row `at` of the million, in the window's scaled space. */
   const scrollToRow = (page: Page, at: number) =>
     frame(page).evaluate((element, row) => {
@@ -948,7 +950,9 @@ test.describe('PctTableRemote — a million registers from a server, a block at 
     await expect(
       remote(page).locator('tbody tr[aria-rowindex]:not([data-pct-part])'),
     ).not.toHaveCount(0);
-    await expect(remote(page).locator('tr[data-pct-part="hole"][aria-busy]')).toHaveCount(0);
+    await expect(
+      remote(page).locator('tr[data-pct-part="hole"][aria-busy]'),
+    ).toHaveCount(0);
     const row = await firstRow(page).getAttribute('aria-rowindex');
     expect(Number(row)).toBeGreaterThan(450_000);
     expect(Number(row)).toBeLessThan(550_000);

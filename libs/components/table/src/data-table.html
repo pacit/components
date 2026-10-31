@@ -6,6 +6,9 @@
 @if (selection(); as selection) {
 <!-- The selection's parts, made in this view: their templates are drawn below. -->
 <ng-container [ngComponentOutlet]="selection.parts" />
+} @if (remote(); as remote) {
+<!-- A remote source's parts, made in this view: the failure of a block is drawn below. -->
+<ng-container [ngComponentOutlet]="remote.parts" />
 }
 <pct-table-frame
   [labelledby]="ariaLabelledby() || null"
@@ -156,19 +159,10 @@
         } } @else {
         <td pctCell [attr.colspan]="span()">
           @if (row.first) {
-          <span class="pct-data-table__failed">
-            {{ texts().tableLoadFailed }}
-            <button
-              pctButton
-              type="button"
-              variant="outline"
-              size="sm"
-              data-pct-part="retry"
-              (click)="retry(row.failed)"
-            >
-              {{ texts().tableRetry }}
-            </button>
-          </span>
+          <ng-container
+            [ngTemplateOutlet]="failure()"
+            [ngTemplateOutletContext]="{ $implicit: row.failed }"
+          />
           }
         </td>
         }
@@ -336,19 +330,10 @@
   @if (message(); as sentence) {
   <div class="pct-data-table__message" data-pct-part="message">
     @if (failedEmpty()) {
-    <span class="pct-data-table__failed">
-      {{ sentence }}
-      <button
-        pctButton
-        type="button"
-        variant="outline"
-        size="sm"
-        data-pct-part="retry"
-        (click)="retry(0)"
-      >
-        {{ texts().tableRetry }}
-      </button>
-    </span>
+    <ng-container
+      [ngTemplateOutlet]="failure()"
+      [ngTemplateOutletContext]="{ $implicit: 0 }"
+    />
     } @else if (emptySlot(); as slot) {
     <ng-container
       [ngTemplateOutlet]="slot.template"

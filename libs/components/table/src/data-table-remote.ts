@@ -1,5 +1,6 @@
 import {
   booleanAttribute,
+  Component,
   computed,
   DestroyRef,
   Directive,
@@ -9,8 +10,13 @@ import {
   input,
   numberAttribute,
   signal,
+  TemplateRef,
   untracked,
+  viewChild,
+  type WritableSignal,
 } from '@angular/core';
+import { PctButton } from '@pacit/components/button';
+import { PCT_TEXTS } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableWindow } from './data-table-window';
 import {
@@ -26,6 +32,18 @@ function sizeOf(value: unknown): number {
   const size = Math.floor(numberAttribute(value, 100));
   return size >= 1 ? size : 100;
 }
+
+/**
+ * Where the directive and the parts the table makes for it meet: the parts hand themselves in,
+ * and the directive hands over the retry of a block. Kept in a map of this module's own, as
+ * the selection's are, so a table that loads nothing from a server carries none of it.
+ */
+interface Link {
+  readonly parts: WritableSignal<PctTableRemoteParts | null>;
+  readonly retry: (block: number) => void;
+}
+
+const LINKS = /* @__PURE__ */ new WeakMap<object, Link>();
 
 /**
  * What a remote source is asked for: a block of rows, `[from, to)`, in the order and under
@@ -127,9 +145,7 @@ export class PctTableRemote<T, Id extends string = string> {
   readonly keepScroll = input(false, { transform: booleanAttribute });
 
   /** Each block asked for under the current question, and what came of it. */
-  private readonly blocks = signal<ReadonlyMap<number, PctBlock<T>>>(
-    new Map(),
-  );
+  private readonly blocks = signal<ReadonlyMap<number, PctBlock<T>>>(new Map());
 
   /** The requests in flight, by block, so a block let go aborts its own. */
   private readonly flying = new Map<number, AbortController>();
@@ -210,6 +226,8 @@ export class PctTableRemote<T, Id extends string = string> {
   } | null = null;
 
   constructor() {
+    const parts = signal<PctTableRemoteParts | null>(null);
+    LINKS.set(this, { parts, retry: (block) => this.askAgain([block]) });
     this.table.contribute({
       remote: {
         rows: this.rows,
@@ -219,7 +237,9 @@ export class PctTableRemote<T, Id extends string = string> {
           const size = this.size();
           return (index: number) => pctFailedBlock(blocks, index, size);
         }),
-        retry: (block) => this.askAgain([block]),
+        parts: PctTableRemoteParts,
+        // Read once the table has made the parts: a block fails after its first render.
+        failure: computed(() => (parts() as PctTableRemoteParts).failure()),
       },
     });
     inject(DestroyRef).onDestroy(() => this.letGo([...this.flying.keys()]));
@@ -242,8 +262,7 @@ export class PctTableRemote<T, Id extends string = string> {
         untracked(() => {
           const { to } = this.drawnRows();
           const top = this.table.lines().at(this.window.first()) as
-            | { readonly index: number }
-            | undefined;
+            { readonly index: number } | undefined;
           this.frame().scrollTop = 0;
           this.follow(this.blocksFor(0, to - (top?.index ?? 0)));
         });
@@ -356,7 +375,9 @@ export class PctTableRemote<T, Id extends string = string> {
      * Writes what came of the block, unless it was let go: a block let go is no longer the
      * table's, and one asked again is a request of its own.
      */
-    const settle = (state: (rows: readonly T[] | null) => PctBlock<T>): boolean => {
+    const settle = (
+      state: (rows: readonly T[] | null) => PctBlock<T>,
+    ): boolean => {
       if (controller.signal.aborted) return false;
       this.flying.delete(block);
       this.blocks.update((blocks) =>
@@ -391,5 +412,41 @@ export class PctTableRemote<T, Id extends string = string> {
     return this.host.nativeElement.querySelector(
       ':scope > pct-table-frame',
     ) as HTMLElement;
+  }
+}
+
+/**
+ * The parts a remote source's failure is drawn with: the sentence and the retry of the block,
+ * in the first hole drawn of it or where an empty table says why. Declared here, drawn by the
+ * table, so a table that loads nothing from a server carries none of it (0097).
+ * `pctTableRemote` makes it, so it has no selector: there is no tag to write.
+ *
+ * @since next
+ */
+@Component({
+  imports: [PctButton],
+  // Its element is the table's child and draws nothing: the template stands where it is put.
+  host: { hidden: '' },
+  templateUrl: './data-table-remote.html',
+  styleUrl: './data-table-remote.scss',
+})
+export class PctTableRemoteParts {
+  protected readonly texts = inject(PCT_TEXTS);
+  private readonly link = LINKS.get(inject(PctTableRemote)) as Link;
+
+  /**
+   * What a failed block says, given the block: the sentence and its retry.
+   *
+   * @since next
+   */
+  readonly failure = viewChild.required<TemplateRef<unknown>>('failure');
+
+  constructor() {
+    this.link.parts.set(this);
+  }
+
+  /** The retry was pressed: the block is asked for again, keeping the rows it had. */
+  protected retry(block: number): void {
+    this.link.retry(block);
   }
 }

@@ -33,7 +33,6 @@ import {
   pctRelativeFormat,
   type PctTone,
 } from '@pacit/components/core';
-import { PctButton } from '@pacit/components/button';
 import { PctIcon } from '@pacit/components/icon';
 import { PctSkeleton } from '@pacit/components/skeleton';
 import {
@@ -159,14 +158,16 @@ export interface PctTableFeature {
   /**
    * The rows come from a remote source, a block at a time: every row of the source, `undefined`
    * where its block has not come, which the table draws as a hole; whether a block is in
-   * flight; the failed block a hole stands in, `null` while its block loads; and the retry of
-   * one. The source has sorted and filtered them.
+   * flight; the failed block a hole stands in, `null` while its block loads; and the
+   * component the table makes for the failure, out of the paint, with what it draws given the
+   * block — the sentence and its retry. The source has sorted and filtered them.
    */
   readonly remote?: {
     readonly rows: Signal<readonly unknown[]>;
     readonly loading: Signal<boolean>;
     readonly failed: Signal<(index: number) => number | null>;
-    readonly retry: (block: number) => void;
+    readonly parts: Type<unknown>;
+    readonly failure: Signal<TemplateRef<unknown>>;
   };
 }
 
@@ -370,7 +371,6 @@ function writerOf(
   imports: [
     NgComponentOutlet,
     NgTemplateOutlet,
-    PctButton,
     PctIcon,
     PctSkeleton,
     PctTable,
@@ -749,7 +749,7 @@ export class PctDataTable<
   );
 
   /** The remote source the rows come from, while a directive gives one. */
-  private readonly remote = computed(() => this.contributed().remote ?? null);
+  protected readonly remote = computed(() => this.contributed().remote ?? null);
 
   /**
    * Rows are coming: the application says so, or a remote source's first are. A remote
@@ -1285,9 +1285,9 @@ export class PctDataTable<
     return id;
   }
 
-  /** Asks the remote source for a block that failed, again. */
-  protected retry(block: number): void {
-    (this.remote() as NonNullable<PctTableFeature['remote']>).retry(block);
+  /** What a failed block says, given the block: the remote source's parts draw it. */
+  protected failure(): TemplateRef<unknown> {
+    return (this.remote() as NonNullable<PctTableFeature['remote']>).failure();
   }
 
   private warnedRemoteGroups = false;
