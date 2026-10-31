@@ -194,10 +194,12 @@ from what the browser really gets.
 ./table PctDataTable details
 ./table PctDataTable disclosure
 ./table PctDataTable group
+./table PctDataTable hole
 ./table PctDataTable mark
 ./table PctDataTable message
 ./table PctDataTable place
 ./table PctDataTable placeholder
+./table PctDataTable retry
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
 ./table PctTableSelectionParts error

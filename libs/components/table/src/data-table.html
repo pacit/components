@@ -335,7 +335,21 @@
   </table>
   @if (message(); as sentence) {
   <div class="pct-data-table__message" data-pct-part="message">
-    @if (emptySlot(); as slot) {
+    @if (failedEmpty()) {
+    <span class="pct-data-table__failed">
+      {{ sentence }}
+      <button
+        pctButton
+        type="button"
+        variant="outline"
+        size="sm"
+        data-pct-part="retry"
+        (click)="retry(0)"
+      >
+        {{ texts().tableRetry }}
+      </button>
+    </span>
+    } @else if (emptySlot(); as slot) {
     <ng-container
       [ngTemplateOutlet]="slot.template"
       [ngTemplateOutletContext]="{ $implicit: filter(), loading: busy() }"

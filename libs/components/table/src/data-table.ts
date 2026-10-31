@@ -140,12 +140,14 @@ export interface PctTableFeature {
   };
   /**
    * The window: the lines drawn, `[start, end)`, never a row without its details nor details
-   * without their row; the space of the lines above and below them, in pixels; and the scroll
-   * that brings a line into the view, which the table calls for a row it has not drawn.
+   * without their row; the space of the lines above and below them, in pixels; the line at
+   * the view's top; and the scroll that brings a line into the view, which the table calls
+   * for a row it has not drawn.
    */
   readonly window?: {
     readonly range: Signal<{ readonly start: number; readonly end: number }>;
     readonly lead: Signal<number>;
+    readonly first: Signal<number>;
     readonly tail: Signal<number>;
     readonly reach: (line: number, align: PctScrollAlign) => void;
   };
@@ -749,9 +751,15 @@ export class PctDataTable<
   /** The remote source the rows come from, while a directive gives one. */
   private readonly remote = computed(() => this.contributed().remote ?? null);
 
-  /** Rows are coming: the application says so, or a remote source has a block in flight. */
+  /**
+   * Rows are coming: the application says so, or a remote source's first are. A remote
+   * block in flight among rows already drawn is its holes' to say, each `aria-busy`: a
+   * body busy at every refresh would be a body a reader is told to wait for.
+   */
   protected readonly busy = computed(
-    () => this.loading() || (this.remote()?.loading() ?? false),
+    () =>
+      this.loading() ||
+      ((this.remote()?.loading() ?? false) && this.given().length === 0),
   );
 
   private readonly filtered = computed(() => {
@@ -966,6 +974,9 @@ export class PctDataTable<
     const { headings, owner } = this.outline();
     const { start, end } = this.drawn();
     const failed = this.remote()?.failed();
+    // A failed block says so in its first hole in view: below the view's top, not in the
+    // lines drawn above it.
+    const top = this.window()?.first() ?? start;
     const sections: Section<T>[] = [];
     let current: Section<T> | null = null;
     let before: number | null = null;
@@ -987,7 +998,8 @@ export class PctDataTable<
           index: line.index,
           line: at,
           failed: block,
-          first: block !== null && block !== before,
+          first:
+            block !== null && (block !== before ? at >= top : at === top),
         };
         before = block;
       } else {
@@ -1309,15 +1321,23 @@ export class PctDataTable<
   private readonly emptiness = computed(() => {
     if (this.lines().length > 0) return null;
     if (this.busy()) return 'loading';
+    // A remote source whose first block failed has no hole to say so in.
+    if (this.remote()?.failed()(0) === 0) return 'failed';
     return pctQuestionWords(this.filter()).length > 0 || this.given().length > 0
       ? 'no-matches'
       : 'empty';
   });
 
+  /** The first block of a remote source failed: the message offers its retry. */
+  protected readonly failedEmpty = computed(
+    () => this.emptiness() === 'failed',
+  );
+
   protected readonly message = computed(() => {
     const emptiness = this.emptiness();
     if (emptiness === 'loading') return this.texts().tableLoading;
     if (emptiness === 'no-matches') return this.texts().tableNoMatches;
+    if (emptiness === 'failed') return this.texts().tableLoadFailed;
     return emptiness === 'empty' ? this.texts().tableEmpty : '';
   });
 
@@ -1648,8 +1668,8 @@ export class PctDataTable<
       element: target,
       line,
       // A heading's key is a JSON path no row's id is: its focus goes to the line that takes
-      // its place.
-      row: found.key,
+      // its place. A hole's key is its index, which a row's id may be: it names no row.
+      row: found.kind === 'hole' ? null : found.key,
     };
   }
 
@@ -1677,9 +1697,7 @@ export class PctDataTable<
     const lines = this.lines();
     const rowId = this.rowId();
     // A row's line stands before its details', which carry its key too.
-    let line = lines.findIndex(
-      (other) => other.kind !== 'hole' && other.key === at.row,
-    );
+    let line = lines.findIndex((other) => other.key === at.row);
     // The deepest heading in view whose group holds the row: a collapsed group hides it.
     for (let back = lines.length - 1; back >= 0 && line === -1; back--) {
       const other = lines[back];
@@ -1690,16 +1708,14 @@ export class PctDataTable<
         line = back;
     }
     if (line < 0) line = Math.min(at.line, lines.length - 1);
-    const row = this.rowOf(line);
-    if (row === undefined && this.window() !== null) {
+    const control = this.rowOf(line)?.querySelector<HTMLElement>(
+      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+    );
+    // A line not drawn, or one with nothing to focus — a hole whose retry was pressed —
+    // hands it to a window's frame, which keeps the keys.
+    if (control) control.focus();
+    else if (this.window() !== null)
       this.frame().nativeElement.focus({ preventScroll: true });
-      return;
-    }
-    row
-      ?.querySelector<HTMLElement>(
-        '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
-      )
-      ?.focus();
   }
 
   /**

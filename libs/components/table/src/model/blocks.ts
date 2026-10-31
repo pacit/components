@@ -38,7 +38,8 @@ export function pctBlocksFor(
 /**
  * The source's rows as the table draws them: `total` long, each block's rows at their place
  * and `undefined` — a hole — wherever no block has delivered. A block's rows past `total` are
- * dropped: a count that shrank is the newer word.
+ * dropped, a count that shrank being the newer word, and so are those past `size`, which are
+ * the next block's place.
  */
 export function pctBlockRows<T>(
   blocks: ReadonlyMap<number, PctBlock<T>>,
@@ -49,7 +50,7 @@ export function pctBlockRows<T>(
   for (const [block, { rows: delivered }] of blocks) {
     if (delivered === null) continue;
     const from = block * size;
-    const count = Math.min(delivered.length, total - from);
+    const count = Math.min(delivered.length, size, total - from);
     for (let at = 0; at < count; at++) rows[from + at] = delivered[at];
   }
   return rows;

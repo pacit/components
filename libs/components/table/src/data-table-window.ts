@@ -187,6 +187,20 @@ export class PctTableWindow {
   );
 
   /**
+   * The line at the view's top: the first a reader sees, under a sticky header. 0 for a
+   * list of no lines.
+   *
+   * @since next
+   */
+  readonly first = computed(() => {
+    const heights = this.heights();
+    return Math.min(
+      heights.indexAt(this.current().top),
+      Math.max(0, heights.count - 1),
+    );
+  });
+
+  /**
    * The row the table asked to scroll to, until its own row has been drawn and measured: of
    * the lines it was asked among, so other lines drop it.
    */
@@ -209,6 +223,7 @@ export class PctTableWindow {
       window: {
         range: this.current,
         lead: computed(() => this.current().lead),
+        first: this.first,
         tail: computed(() => this.current().tail),
         reach: (line, align) => {
           const reaching = { line, align, lines: untracked(this.table.lines) };

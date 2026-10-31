@@ -93,6 +93,15 @@ describe('pctBlockRows', () => {
     expect(rows).toEqual([undefined, undefined, 'c']);
   });
 
+  it('drops a block’s rows past its size: the next block’s place', () => {
+    const rows = pctBlockRows(
+      blocks([[0, { state: 'loaded', rows: ['a', 'b', 'c'] }]]),
+      4,
+      2,
+    );
+    expect(rows).toEqual(['a', 'b', undefined, undefined]);
+  });
+
   it('draws a short last block as long as it is', () => {
     const rows = pctBlockRows(
       blocks([[1, { state: 'loaded', rows: ['c'] }]]),
