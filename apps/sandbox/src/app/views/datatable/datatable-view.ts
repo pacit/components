@@ -1,8 +1,17 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  linkedSignal,
+  resource,
+  signal,
+} from '@angular/core';
 import { form, FormField, minLength, submit } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { pctWarn } from '@pacit/components/core';
 import { PctField, PctText } from '@pacit/components/field';
+import { PctPagination } from '@pacit/components/pagination';
 import { PctSwitch } from '@pacit/components/switch';
 import {
   PctCellTemplate,
@@ -12,8 +21,10 @@ import {
   type PctRowId,
   PctTableDetails,
   PctTableGroups,
+  PctTablePage,
   PctTableSelection,
   type PctTableSort,
+  PctTableWindow,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
 
@@ -98,6 +109,98 @@ const DEVICES: readonly Device[] = [
 
 const dev = pctColumnsOf<Device>();
 
+interface Register {
+  readonly id: number;
+  readonly address: number;
+  readonly name: string;
+  readonly value: number;
+  readonly unit: string;
+  readonly enabled: boolean;
+}
+
+const UNITS = ['°C', '%', 'Pa', 'kWh'];
+
+/**
+ * `count` registers of a controller. Every twenty-fifth has a name long enough to wrap in its
+ * column, so the list holds rows of two heights, as real lists do.
+ */
+function registersOf(count: number): readonly Register[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    address: 40_001 + i,
+    name:
+      i % 25 === 12
+        ? `${NAMES[i % NAMES.length]} ${i + 1}, the setpoint the schedule writes at night and the one a person writes by hand`
+        : `${NAMES[i % NAMES.length]} ${i + 1}`,
+    value: ((i * 7919) % 100_000) / 100,
+    unit: UNITS[i % UNITS.length],
+    enabled: i % 5 !== 2,
+  }));
+}
+
+const reg = pctColumnsOf<Register>();
+
+/** The registers' columns: every key but the id. */
+type RegisterColumn = Exclude<keyof Register, 'id'>;
+
+/** What the page demo asks its server for: a page of registers in an order, matching words. */
+interface PageRequest {
+  readonly page: number;
+  readonly sort: readonly PctTableSort<RegisterColumn>[];
+  readonly filter: string;
+}
+
+/** How many registers a page holds. */
+const PAGE_SIZE = 20;
+
+/** The server's registers: a thousand, sorted and filtered there, not in the table. */
+const SERVED = registersOf(1_000);
+
+/**
+ * A server of registers, 300 ms away: it filters by every word in the name or the address,
+ * sorts by the keys in order, and answers one page and the count of every match.
+ */
+/** A page the server answered: its rows, which page it is, and how many rows matched. */
+interface PageAnswer {
+  readonly rows: readonly Register[];
+  readonly page: number;
+  readonly total: number;
+}
+
+function serve(request: PageRequest, abort: AbortSignal): Promise<PageAnswer> {
+  const words = request.filter.toLowerCase().split(/\s+/).filter(Boolean);
+  const matched = SERVED.filter((register) =>
+    words.every(
+      (word) =>
+        register.name.toLowerCase().includes(word) ||
+        String(register.address).includes(word),
+    ),
+  );
+  const sorted = [...matched].sort((a, b) => {
+    for (const { key, direction } of request.sort) {
+      const order = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
+      if (order !== 0) return direction === 'descending' ? -order : order;
+    }
+    return 0;
+  });
+  const from = (request.page - 1) * PAGE_SIZE;
+  return new Promise((done, fail) => {
+    const timer = setTimeout(
+      () =>
+        done({
+          rows: sorted.slice(from, from + PAGE_SIZE),
+          page: request.page,
+          total: matched.length,
+        }),
+      300,
+    );
+    abort.addEventListener('abort', () => {
+      clearTimeout(timer);
+      fail(abort.reason);
+    });
+  });
+}
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -119,6 +222,9 @@ const dev = pctColumnsOf<Device>();
     PctDetailsTemplate,
     PctTableGroups,
     PctTableSelection,
+    PctTableWindow,
+    PctTablePage,
+    PctPagination,
     FormField,
   ],
   templateUrl: './datatable-view.html',
@@ -213,6 +319,69 @@ export class DatatableView {
     device.state === 'Fault' ? ('danger' as const) : null;
   protected readonly liveQuestion = signal('');
 
+  /** The registers' list sizes: the first with no window would do, the last is past the scaling. */
+  protected readonly counts = [900, 10_000, 100_000, 1_000_000] as const;
+  protected readonly count = signal<number>(10_000);
+  protected readonly registers = signal<readonly Register[]>(
+    registersOf(10_000),
+  );
+  protected readonly registerColumns = reg.of([
+    reg.key('address', { header: 'Address', numeric: true }),
+    reg.key('name', { header: 'Name' }),
+    reg.key('value', {
+      header: 'Value',
+      kind: { number: { fractionDigits: 2 } },
+    }),
+    reg.key('unit', { header: 'Unit' }),
+    reg.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
+  ]);
+  protected readonly registerId = (register: Register) => register.id;
+  protected readonly liveRegisters = signal(false);
+
+  /** The page demo's order and words, the table's models, read by the request. */
+  protected readonly pageSort = signal<readonly PctTableSort<RegisterColumn>[]>(
+    [],
+  );
+  protected readonly pageFilter = signal('');
+  /** The page shown: back to the first whenever the order or the words change. */
+  protected readonly page = linkedSignal({
+    source: () => [this.pageSort(), this.pageFilter()],
+    computation: () => 1,
+  });
+  /** How many times the server was asked: one request a change. */
+  protected readonly served = signal(0);
+  protected readonly pageResource = resource({
+    params: (): PageRequest => ({
+      page: this.page(),
+      sort: this.pageSort(),
+      filter: this.pageFilter(),
+    }),
+    loader: ({ params, abortSignal }) => {
+      this.served.update((count) => count + 1);
+      return serve(params, abortSignal);
+    },
+  });
+  /**
+   * The last page answered, kept while the next one loads: a resource with new params has no
+   * value until they are answered, and the table would empty and the pages shrink to one.
+   */
+  protected readonly answered = linkedSignal<
+    PageAnswer | undefined,
+    PageAnswer | undefined
+  >({
+    source: () => this.pageResource.value(),
+    computation: (answer, previous) => answer ?? previous?.value,
+  });
+  protected readonly pageRows = computed(() => this.answered()?.rows ?? []);
+  protected readonly pageTotal = computed(() => this.answered()?.total ?? 0);
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.pageTotal() / PAGE_SIZE)),
+  );
+  /** The rows before the page shown — the one answered, not the one asked for. */
+  protected readonly pageOffset = computed(
+    () => ((this.answered()?.page ?? 1) - 1) * PAGE_SIZE,
+  );
+
   /**
    * The rules to move, as a field of a form: at least one, and more than ten move slowly —
    * a warning that lets the form through.
@@ -243,11 +412,32 @@ export class DatatableView {
     });
   }
 
+  /** Makes a list of `count` registers. */
+  protected countRegisters(count: number): void {
+    this.count.set(count);
+    this.registers.set(registersOf(count));
+  }
+
+  protected toggleRegister(register: Register, enabled: boolean): void {
+    this.registers.update((registers) =>
+      registers.map((other) =>
+        other.id === register.id ? { ...other, enabled } : other,
+      ),
+    );
+  }
+
   constructor() {
     // Every two seconds the readings move and the ids stay: the rows keep their elements.
     let tick = 0;
     const timer = setInterval(() => {
       tick++;
+      if (this.liveRegisters())
+        this.registers.update((registers) =>
+          registers.map((register) => ({
+            ...register,
+            value: Math.round((register.value + 0.25) * 100) / 100,
+          })),
+        );
       this.live.update((rules) =>
         rules.map((rule) => ({
           ...rule,

@@ -4,6 +4,8 @@ export * from './data-table-slots';
 export * from './data-table-details';
 export * from './data-table-groups';
 export * from './data-table-selection';
+export * from './data-table-window';
+export * from './data-table-page';
 export * from './model/aggregate';
 export * from './model/columns';
 export * from './model/fit';

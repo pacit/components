@@ -26,6 +26,23 @@ table {
   inline-size: 100%;
 }
 
+/* A window's lines not drawn are rows of no element: its first body's ::before above the
+   lines drawn and its last body's ::after below them, as tall as the lines they stand for, so
+   the scrollbar is the whole list's and `@for` steps around nothing (0098). */
+.pct-data-table__window > tbody:first-of-type::before,
+.pct-data-table__window > tbody:last-of-type::after {
+  content: '';
+  display: table-row;
+}
+
+.pct-data-table__window > tbody:first-of-type::before {
+  block-size: var(--_lead);
+}
+
+.pct-data-table__window > tbody:last-of-type::after {
+  block-size: var(--_tail);
+}
+
 :host([data-pct-sticky]) thead th {
   position: sticky;
   inset-block-start: 0;
