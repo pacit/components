@@ -244,8 +244,7 @@ export class PctTableRemote<T, Id extends string = string> {
           const top = this.table.lines().at(this.window.first()) as
             | { readonly index: number }
             | undefined;
-          // The first list finds the frame not drawn yet, and at the top.
-          if (asked !== null) this.frame().scrollTop = 0;
+          this.frame().scrollTop = 0;
           this.follow(this.blocksFor(0, to - (top?.index ?? 0)));
         });
         // Read all the same, so the view the scroll brings is followed.

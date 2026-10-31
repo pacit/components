@@ -857,7 +857,8 @@ export class PctDataTable<
     // A remote source's groups are the source's to make, and it makes none yet: its rows stay
     // in the order it gave them.
     if (this.remote()) {
-      if (isDevMode()) this.warnOnRemoteGroups();
+      // Said once a column is asked for: groups by nothing group nothing to refuse.
+      if (isDevMode() && groups.by().length > 0) this.warnOnRemoteGroups();
       return [];
     }
     const columns: readonly PctAnyColumn<T>[] = this.columns();

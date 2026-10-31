@@ -439,6 +439,16 @@ describe('PctTableRemote', () => {
     expect(retry?.closest('tr')?.dataset['pctIndex']).toBe('100');
   });
 
+  it('says it in the first hole of a failed block that starts at the view’s top', async () => {
+    const fixture = await answered();
+    await goTo(fixture, 100);
+    asked[2].fail('down');
+    await stable(fixture);
+    const retry = tableOf(fixture).querySelectorAll('[data-pct-part="retry"]');
+    expect(retry).toHaveLength(1);
+    expect(retry[0].closest('tr')?.dataset['pctIndex']).toBe('100');
+  });
+
   it('says nothing of a failed block drawn only above the view', async () => {
     const fixture = await answered();
     await goTo(fixture, 100);
@@ -909,6 +919,9 @@ describe('PctTableRemote', () => {
     await stable(fixture);
     expect(tableOf(fixture).querySelector('[data-pct-part="group"]')).toBeNull();
     expect(lines(fixture)[0]).toBe('Register 0');
+    // Grouped by nothing, nothing is refused; by another column, the sentence is not said again.
+    fixture.componentInstance.by.set([]);
+    await stable(fixture);
     fixture.componentInstance.by.set(['value']);
     await stable(fixture);
     const said = warn.mock.calls.filter(([text]) =>
@@ -921,5 +934,19 @@ describe('PctTableRemote', () => {
           'in the order the source gave them.',
       ],
     ]);
+  });
+
+  it('says nothing of groups by no column', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(GroupsHost);
+    fixture.componentInstance.by.set([]);
+    fixture.detectChanges();
+    await stable(fixture);
+    expect(
+      warn.mock.calls.filter(([text]) => String(text).includes('pctTableRemote')),
+    ).toEqual([]);
   });
 });
