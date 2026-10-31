@@ -456,6 +456,18 @@ describe('PctTableWindow', () => {
     expect(drawn(fixture)).toEqual(range(92, 118));
   });
 
+  it('follows a scroll back to where the table last read it, past one the window wrote', async () => {
+    const fixture = await render();
+    await scroll(fixture, 4000);
+    heightOf = (index) => (index === 95 ? 100 : 40);
+    measure();
+    await fixture.whenStable();
+    // The window wrote 4,060; the reader's scroll back to 4,000 is the only event.
+    await scroll(fixture, 4000);
+    // Line 98 runs from 3,980 to 4,020 now: under the top, with eight above it.
+    expect(drawn(fixture)[0]).toBe(90);
+  });
+
   it('reads no report on a row no longer in the table', async () => {
     const fixture = await render();
     const observer = rowsObserver();
@@ -581,8 +593,10 @@ describe('PctTableWindow', () => {
     frameAt = 100;
     edge = 2;
     const fixture = await render((host) => host.sticky.set(false));
-    // The bodies start 40 px down and the whole frame shows lines: ten of them.
+    // The bodies start 40 px down and the whole frame shows lines: ten of them. The header
+    // above them is not scrolled away by the first rows measured.
     expect(drawn(fixture)).toEqual(range(0, 18));
+    expect(frameOf(fixture).scrollTop).toBe(0);
     await scroll(fixture, 4040);
     expect(drawn(fixture)).toEqual(range(92, 118));
     // Line 95, above line 100 at the view's top, grows by 60 px.
@@ -594,8 +608,34 @@ describe('PctTableWindow', () => {
     await settle(fixture);
     // Row 105, line 104, is in view: a scroll to it nearest does not move.
     fixture.componentInstance.table().scrollTo(105, { align: 'nearest' });
-    await settle(fixture);
+    // No scroll, so no row is laid out again and no observer reports.
+    await fixture.whenStable();
     expect(frame.scrollTop).toBe(4100);
+    // The reader scrolls on, line 104 still drawn above the view: nothing pulls it back.
+    await scroll(fixture, 4320);
+    expect(frame.scrollTop).toBe(4320);
+  });
+
+  it('keeps what of the scroll is past the lines, a foot under them', async () => {
+    const fixture = await render();
+    // 30 px past the lines' last full view: the foot's.
+    await scroll(fixture, 1000 * 40 - 360 + 30);
+    const frame = frameOf(fixture);
+    const grown = drawn(fixture)[0];
+    heightOf = (index) => (index === grown ? 100 : 40);
+    measure();
+    expect(frame.scrollTop).toBe(1000 * 40 - 360 + 30 + 60);
+    await settle(fixture);
+  });
+
+  it('keeps the top no further into its line than the line now is', async () => {
+    const fixture = await render();
+    await scroll(fixture, 4030);
+    // Line 100, 30 px into which the top stood, shrinks to 10.
+    heightOf = (index) => (index === 100 ? 10 : 40);
+    measure();
+    expect(frameOf(fixture).scrollTop).toBe(4010);
+    await settle(fixture);
   });
 
   it('follows the bodies when what stands above them grows', async () => {
@@ -783,8 +823,8 @@ describe('PctTableWindow', () => {
     const before = standing(fixture);
     const grown = drawn(fixture)[0];
     heightOf = (index) => (index === grown ? 100 : 40);
+    // The window drawn next is at the scroll written, before the browser's event.
     measure();
-    frame.dispatchEvent(new Event('scroll'));
     await settle(fixture);
     // The scroll moves by the map's share of the 60 px, and what the reader sees stays.
     expect(frame.scrollTop).not.toBe(8_000_000);

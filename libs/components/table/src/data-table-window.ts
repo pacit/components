@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   isDevMode,
+  linkedSignal,
   signal,
   untracked,
 } from '@angular/core';
@@ -120,6 +121,13 @@ export class PctTableWindow {
     return heights;
   });
 
+  /**
+   * How far the frame is scrolled: the table's reading of its scroll, and what the window
+   * wrote there itself until the browser's event says so, so the window drawn after a
+   * correction is the one at the scroll it wrote.
+   */
+  private readonly scrolled = linkedSignal(() => this.table.scrolled());
+
   /** The window where the frame stands, its row and details always together. */
   private readonly current = computed(() => {
     this.version();
@@ -128,7 +136,7 @@ export class PctTableWindow {
     return this.paired(
       pctWindow({
         heights,
-        scrollTop: this.table.scrolled() - offset,
+        scrollTop: this.scrolled() - offset,
         viewport: view,
         overscan: OVERSCAN,
         limit: LIMIT,
@@ -162,8 +170,12 @@ export class PctTableWindow {
         lead: computed(() => this.current().lead),
         tail: computed(() => this.current().tail),
         reach: (line, align) => {
-          this.reaching = { line, align, lines: untracked(this.table.lines) };
-          this.scrollToLine(this.reaching);
+          const reaching = { line, align, lines: untracked(this.table.lines) };
+          const was = this.frame().scrollTop;
+          this.scrollToLine(reaching);
+          // A row where it was asked for already — so in view, and drawn: no scroll comes, nor
+          // a measurement to finish on, and a later one would pull the reader back to it.
+          this.reaching = this.frame().scrollTop === was ? null : reaching;
         },
       },
     });
@@ -183,6 +195,11 @@ export class PctTableWindow {
       if (rows === null) {
         // Its own anchoring corrects nothing under a sticky header, and adds to the window's.
         element.style.overflowAnchor = 'none';
+        // Its own reading too: an event that brings the scroll back to where the table last
+        // read it changes nothing there, and would leave the scroll the window wrote standing.
+        element.addEventListener('scroll', () =>
+          this.scrolled.set(element.scrollTop),
+        );
         rows = new ResizeObserver((entries) => this.measure(entries));
         // A frame of another width lays the columns out again, as other columns do.
         frame = new ResizeObserver(() => this.fit(element));
@@ -263,7 +280,7 @@ export class PctTableWindow {
     const { offset, view } = this.geometry();
     const scrollTop = frame.scrollTop - offset;
     // Where the top stands among the lines, in the sums before the heights read.
-    const { top } = pctWindow({
+    const { top, space } = pctWindow({
       heights: before,
       scrollTop,
       viewport: view,
@@ -272,6 +289,8 @@ export class PctTableWindow {
     });
     const anchor = Math.min(lines.length - 1, before.indexAt(top));
     const within = top - before.offsetOf(anchor);
+    // What of the scroll is not the lines': a caption above them, a foot below.
+    const beside = scrollTop - Math.max(0, Math.min(scrollTop, space - view));
     const reaching = this.reaching?.lines === lines ? this.reaching : null;
     const rows: number[] = [];
     let changed = false;
@@ -298,19 +317,24 @@ export class PctTableWindow {
       this.estimate.set(median(rows));
     }
     if (changed) {
-      // One path for a space scaled or not: the top the line and the pixels into it map to.
-      const target =
+      // One path for a space scaled or not: the top the line and the pixels into it map to,
+      // no further into the line than it now is tall.
+      const after = this.heights();
+      this.scrollFrame(
+        frame,
         pctWindowScroll({
-          heights: this.heights(),
+          heights: after,
           scrollTop,
           viewport: view,
           overscan: OVERSCAN,
           limit: LIMIT,
           index: anchor,
           align: 'start',
-          within,
-        }) + offset;
-      frame.scrollTop = target;
+          within: Math.min(within, after.heightOf(anchor)),
+        }) +
+          offset +
+          beside,
+      );
       this.version.update((version) => version + 1);
     }
     if (reaching === null) this.reaching = null;
@@ -327,6 +351,8 @@ export class PctTableWindow {
   }): void {
     const frame = this.frame();
     const { offset, view } = untracked(this.geometry);
+    // The browser's event brings the window there: a scroll the reader asked for is drawn
+    // from it, as the reader's own would be.
     frame.scrollTop =
       pctWindowScroll({
         heights: untracked(this.heights),
@@ -337,6 +363,15 @@ export class PctTableWindow {
         index: at.line,
         align: at.align,
       }) + offset;
+  }
+
+  /**
+   * Writes the frame's scroll, and reads back where the browser put it: the window drawn next
+   * is the one at it, not at the scroll before, which a scaled space would draw elsewhere.
+   */
+  private scrollFrame(frame: HTMLElement, top: number): void {
+    frame.scrollTop = top;
+    this.scrolled.set(frame.scrollTop);
   }
 
   /**
