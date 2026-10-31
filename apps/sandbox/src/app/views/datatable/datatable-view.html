@@ -339,3 +339,72 @@
     </ng-template>
   </pct-data-table>
 </sbx-demo>
+
+<sbx-demo
+  heading="A hundred thousand registers"
+  summary="A window draws the rows its frame shows and the space of the rest: the scrollbar is the whole list's, a reader is told which row of how many it is at, and the columns keep the widths of the first frame. A million rows lie past the engines' tallest box, so their space is scaled, and the table leaves their order and their filter to a server — the demo turns both off for them."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-registers"
+>
+  <div class="datatable__widths" role="group" aria-label="Registers">
+    @for (option of counts; track option) {
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      [attr.data-testid]="'registers-' + option"
+      [attr.aria-pressed]="count() === option"
+      (click)="countRegisters(option)"
+    >
+      {{ option.toLocaleString('en') }}
+    </button>
+    }
+  </div>
+  <div class="datatable__more">
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="registers-last"
+      (click)="registersTable.scrollTo(count(), { align: 'end' })"
+    >
+      Show the last register
+    </button>
+    <span class="muted" data-testid="registers-view"
+      >Rows {{ registersTable.visible().start + 1 }} to {{
+      registersTable.visible().end }} of {{ count().toLocaleString('en')
+      }}</span
+    >
+  </div>
+  <pct-switch
+    data-testid="registers-live"
+    label="The values move every two seconds"
+    [(checked)]="liveRegisters"
+  />
+  <pct-data-table
+    #registersTable="pctDataTable"
+    data-testid="table-registers"
+    class="datatable__rules"
+    caption="Registers"
+    locale="en"
+    pctTableWindow
+    [rows]="registers()"
+    [columns]="registerColumns"
+    [rowId]="registerId"
+    [clientSort]="count() < 1_000_000"
+    [clientFilter]="count() < 1_000_000"
+  >
+    <ng-template
+      [pctCell]="registerColumns"
+      pctCellOf="enabled"
+      let-register
+      let-on="value"
+    >
+      <pct-switch
+        [checked]="on"
+        [ariaLabel]="'Enabled: ' + register.name"
+        (checkedChange)="toggleRegister(register, $event)"
+      />
+    </ng-template>
+  </pct-data-table>
+</sbx-demo>

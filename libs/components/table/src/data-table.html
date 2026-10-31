@@ -18,6 +18,10 @@
     [attr.aria-labelledby]="ariaLabelledby() || null"
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-describedby]="selection()?.describedBy() ?? null"
+    [attr.aria-rowcount]="rowCount()"
+    [class.pct-data-table__window]="window() !== null"
+    [style.--_lead.px]="window()?.lead()"
+    [style.--_tail.px]="window()?.tail()"
   >
     @if (caption()) {
     <caption pctCaption>
@@ -25,7 +29,7 @@
     </caption>
     }
     <thead>
-      <tr>
+      <tr [attr.aria-rowindex]="window() ? 1 : null">
         @if (selection(); as selection) {
         <!-- The column of picks: what is in it is the selection's to draw. -->
         <th pctHeader scope="col" class="pct-data-table__pick">
@@ -92,6 +96,7 @@
         data-pct-part="group"
         class="pct-data-table__group"
         [attr.data-pct-index]="group.line"
+        [attr.aria-rowindex]="rowIndex()(group.line)"
         [style.--_level]="group.level"
       >
         <th scope="rowgroup" [attr.colspan]="group.span">
@@ -131,6 +136,7 @@
       } @for (row of section.rows; track row.key) {
       <tr
         [attr.data-pct-index]="row.line"
+        [attr.aria-rowindex]="rowIndex()(row.line)"
         [attr.data-pct-tone]="row.tone"
         [class.pct-data-table__even]="row.index % 2 === 1"
         [style.--_level]="row.level || null"
@@ -234,6 +240,7 @@
         data-pct-part="details"
         [id]="row.detailsId"
         [attr.data-pct-index]="row.line + 1"
+        [attr.aria-rowindex]="rowIndex()(row.line + 1)"
       >
         <td pctCell [attr.colspan]="span()">
           @if (row.hidden.length > 0) {
@@ -269,7 +276,7 @@
     </tbody>
     } @if (totals(); as total) {
     <tfoot>
-      <tr>
+      <tr [attr.aria-rowindex]="rowCount()">
         <th
           scope="row"
           [attr.colspan]="total.span"
