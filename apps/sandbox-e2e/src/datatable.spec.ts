@@ -621,6 +621,146 @@ test.describe('PctDataTable — the first layer drawn from data', () => {
 });
 
 /**
+ * The filters of the columns, in three engines: a button in each header that opens a dialog
+ * with the column's control, the five kinds of filter once each — a text, values picked from
+ * the rows, a range of numbers, a range of days in the column's zone, and one the application
+ * draws — the focus going back to the button, the state written out as JSON, and the row of
+ * filters under the headers.
+ */
+test.describe('PctTableColumnFilters — the rules by their columns', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-filters');
+  const rows = (page: Page) => table(page).locator('tbody tr');
+  /** The line under the table: the rows left, and the model as JSON, as a URL would hold it. */
+  const state = (page: Page, rows: number, json: string) =>
+    expect(page.getByTestId('filters-state')).toHaveText(
+      `${rows} of 20 rules · ${json}`,
+    );
+  const button = (page: Page, column: string) =>
+    table(page).getByRole('button', {
+      name: new RegExp(`^Filter ${column}(, filtered)?$`),
+    });
+  const panel = (page: Page, column: string) =>
+    page.getByRole('dialog', { name: `Filter ${column}` });
+
+  test('a header’s button opens its filter, a text keeps the rows it is found in, and Escape goes back to the button', async ({
+    page,
+  }) => {
+    const name = button(page, 'Name');
+    await expect(name).toHaveAccessibleName('Filter Name');
+    await expect(name).toHaveAttribute('aria-expanded', 'false');
+    await name.click();
+    await expect(name).toHaveAttribute('aria-expanded', 'true');
+    const dialog = panel(page, 'Name');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('fan');
+    await expect(rows(page)).toHaveCount(4);
+    for (const text of await table(page)
+      .locator('tbody tr td:first-child')
+      .allTextContents())
+      expect(text.toLowerCase()).toContain('fan');
+    await state(page, 4, '{"name":{"text":"fan"}}');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(name).toBeFocused();
+    await expect(name).toHaveAccessibleName('Filter Name, filtered');
+  });
+
+  test('Clear lets every row back, and stands disabled while nothing filters', async ({
+    page,
+  }) => {
+    await button(page, 'Name').click();
+    const dialog = panel(page, 'Name');
+    const clear = dialog.getByRole('button', { name: 'Clear' });
+    await expect(clear).toBeDisabled();
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('heater');
+    await expect(rows(page)).toHaveCount(2);
+    await clear.click();
+    await expect(rows(page)).toHaveCount(20);
+    // The press disabled the button it was on: the focus is in the field again.
+    await expect(dialog.getByRole('textbox', { name: 'Name' })).toBeFocused();
+    await state(page, 20, '{}');
+    await expect(clear).toBeDisabled();
+  });
+
+  test('a room picked from the values the rows hold', async ({ page }) => {
+    await button(page, 'Room').click();
+    const dialog = panel(page, 'Room');
+    await dialog.locator('[data-pct-part="trigger"]').click();
+    await page
+      .locator('[data-pct-part="option"]')
+      .filter({ hasText: 'Kitchen' })
+      .click();
+    await expect(rows(page)).toHaveCount(4);
+    for (const room of await table(page)
+      .locator('tbody tr td:nth-child(2)')
+      .allTextContents())
+      expect(room.trim()).toBe('Kitchen');
+    await state(page, 4, '{"room":{"values":["Kitchen"]}}');
+  });
+
+  test('the energy between two numbers, both of them included', async ({
+    page,
+  }) => {
+    await button(page, 'Energy').click();
+    const dialog = panel(page, 'Energy');
+    await dialog.getByRole('spinbutton', { name: 'Energy from' }).fill('100');
+    await dialog.getByRole('spinbutton', { name: 'Energy to' }).fill('500');
+    await dialog.getByRole('spinbutton', { name: 'Energy to' }).blur();
+    await state(page, 7, '{"energy":{"from":100,"to":500}}');
+    await expect(rows(page)).toHaveCount(7);
+  });
+
+  test('the next run by its days, read in the column’s zone', async ({
+    page,
+  }) => {
+    await button(page, 'Next run').click();
+    const dialog = panel(page, 'Next run');
+    const until = dialog.locator('pct-date').nth(1).locator('input').first();
+    // Every run is on 29 October in Warsaw: a day before holds none of them, the day all.
+    await until.fill('28/10/2026');
+    await until.blur();
+    await state(page, 0, '{"nextAt":{"since":null,"until":"2026-10-28"}}');
+    await expect(rows(page)).toHaveCount(0);
+    await until.fill('29/10/2026');
+    await until.blur();
+    await expect(rows(page)).toHaveCount(20);
+  });
+
+  test('the application draws the address’s filter, and its column decides by it', async ({
+    page,
+  }) => {
+    await button(page, 'Address').click();
+    const dialog = panel(page, 'Address');
+    const low = dialog.getByRole('button', { name: 'Below 4128' });
+    await low.click();
+    await expect(low).toHaveAttribute('aria-pressed', 'true');
+    await expect(rows(page)).toHaveCount(8);
+    await state(page, 8, '{"address":{"own":"low"}}');
+  });
+
+  test('a row of filters under the headers, each control named by its column', async ({
+    page,
+  }) => {
+    await expect(table(page).locator('thead tr')).toHaveCount(1);
+    await page.getByTestId('filters-row').getByRole('switch').click();
+    const row = table(page).locator('thead tr').nth(1);
+    await expect(row).toBeVisible();
+    await row
+      .getByRole('textbox', { name: 'Filter Name', exact: true })
+      .fill('lamp');
+    await expect(rows(page)).toHaveCount(2);
+    // The header's button reads the same state the row wrote.
+    await expect(button(page, 'Name')).toHaveAccessibleName(
+      'Filter Name, filtered',
+    );
+  });
+});
+
+/**
  * The window over a hundred thousand registers and a million, in three engines: how many rows
  * it draws, what it tells a reader, where the last row is, that a scroll up through rows of
  * two heights moves what is read by the scroll alone, that the columns keep their widths, and

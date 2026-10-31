@@ -51,6 +51,7 @@ import {
   type PctRowId,
 } from './model/columns';
 import { pctAggregate } from './model/aggregate';
+import type { PctAnyColumnFilter } from './model/filters';
 import { pctFit } from './model/fit';
 import {
   pctGroupKey,
@@ -168,6 +169,29 @@ export interface PctTableFeature {
     readonly failed: Signal<(index: number) => number | null>;
     readonly parts: Type<unknown>;
     readonly failure: Signal<TemplateRef<unknown>>;
+  };
+  /**
+   * The columns' filters: their state by column id, the ids of the columns offered one and of
+   * those it filters, the test that makes a row's test from the cells' texts, the words a
+   * column's text filter marks, whether a row of filters stands under the headers, and the
+   * component the table makes for the controls, out of the paint, with what it draws in a
+   * header — the button and its panel — and in that row, each given the column.
+   */
+  readonly filters?: {
+    readonly state: Signal<Readonly<Record<string, PctAnyColumnFilter>>>;
+    readonly offered: Signal<ReadonlySet<string>>;
+    readonly filtered: Signal<ReadonlySet<string>>;
+    readonly test: Signal<
+      | ((
+          text: (column: PctAnyColumn<unknown>, row: unknown) => string,
+        ) => (row: unknown) => boolean)
+      | null
+    >;
+    readonly words: Signal<ReadonlyMap<string, readonly string[]>>;
+    readonly row: Signal<boolean>;
+    readonly parts: Type<unknown>;
+    readonly head: Signal<TemplateRef<unknown>>;
+    readonly cell: Signal<TemplateRef<unknown>>;
   };
 }
 
@@ -773,25 +797,38 @@ export class PctDataTable<
     if (!this.clientFilter()) return rows;
     const question = this.filter();
     const own = this.filterWith();
-    if (own) return rows.filter((row) => own(row, question));
-    const words = pctQuestionWords(question);
     const columns = this.columns();
     const written = this.written();
     const place = new Map(columns.map((column, c) => [column, c]));
     const text = (column: PctAnyColumn<T>, row: T) =>
       written(row)[place.get(column) as number];
-    return rows.filter((row) => pctMatches(row, columns, text, words));
+    const words = pctQuestionWords(question);
+    const quick = own
+      ? (row: T) => own(row, question)
+      : (row: T) => pctMatches(row, columns, text, words);
+    // The columns' filters come after the quick one, and `filterWith` replaces only the quick
+    // one: a filter of a column is a question of its own.
+    const make = this.contributed().filters?.test();
+    const byColumns = make
+      ? (make(
+          text as (column: PctAnyColumn<unknown>, row: unknown) => string,
+        ) as (row: T) => boolean)
+      : null;
+    return rows.filter((row) => quick(row) && (byColumns?.(row) ?? true));
   });
 
   /**
-   * The words to mark: the quick filter's, where the table's own filter decided, or `null`
-   * where there is nothing to mark — then no cell's text is cut at all.
+   * The words to mark: the quick filter's, where the table's own filter decided, and each
+   * column's text filter's in its own column; or `null` when the table marks nothing. A
+   * column with no word to mark cuts no cell's text (see `body`).
    */
   private readonly marked = computed(() => {
-    if (!this.highlightMatches() || !this.clientFilter() || this.filterWith())
-      return null;
-    const words = pctQuestionWords(this.filter());
-    return words.length > 0 ? words : null;
+    if (!this.highlightMatches() || !this.clientFilter()) return null;
+    const quick = this.filterWith() ? [] : pctQuestionWords(this.filter());
+    const own =
+      this.contributed().filters?.words() ??
+      new Map<string, readonly string[]>();
+    return { quick, own };
   });
 
   /**
@@ -1110,6 +1147,9 @@ export class PctDataTable<
     const sentence = this.texts().tableSortLater;
     const templates = this.headerTemplates();
     const hidden = new Set<string>(this.hiddenColumns());
+    const filters = this.filters();
+    const offered = filters?.offered();
+    const filtered = filters?.filtered();
     return this.columns()
       .filter((column) => !hidden.has(column.id))
       .map((column) => {
@@ -1135,9 +1175,51 @@ export class PctDataTable<
                 )
             : '',
           slot: templates.get(column.id) ?? null,
+          filterable: offered?.has(column.id) ?? false,
+          filtered: filtered?.has(column.id) ?? false,
         };
       });
   });
+
+  /** The columns' filters, while `pctTableColumnFilters` gives them. */
+  protected readonly filters = computed(
+    () => this.contributed().filters ?? null,
+  );
+
+  /** The rows of the header: the headers', and the filters' under them when there is one. */
+  private readonly headRows = computed(() => (this.filters()?.row() ? 2 : 1));
+
+  /**
+   * The columns' filters in force, by column id: of the state `pctTableColumnFilters` holds,
+   * the filters of the columns it filters that let some row out — not an empty one, nor one
+   * of a column with no filter. Empty without it. What a remote source is asked under,
+   * beside `sort` and `filter`, so a server and the table answer the same question.
+   *
+   * @since next
+   */
+  readonly columnFilters = computed<
+    Readonly<Record<string, PctAnyColumnFilter>>
+  >(() => {
+    const filters = this.filters();
+    if (!filters) return {};
+    const state = filters.state();
+    const ids = filters.filtered();
+    return Object.fromEntries(
+      Object.entries(state).filter(([id]) => ids.has(id)),
+    );
+  });
+
+  /**
+   * The text the table writes in a row's cell of a column, as the quick filter reads it:
+   * a number in its unit and the locale's digits, an instant on its clock, a boolean as its
+   * word; `''` for a column the table does not have.
+   *
+   * @since next
+   */
+  textOf(row: T, column: string): string {
+    const at = this.columns().findIndex((one) => one.id === column);
+    return at < 0 ? '' : this.written()(row)[at];
+  }
 
   /** The window, while the window directive draws one. */
   protected readonly window = computed(() => this.contributed().window ?? null);
@@ -1162,11 +1244,12 @@ export class PctDataTable<
    */
   protected readonly rowIndex = computed(() => {
     const page = this.contributed().page;
+    const head = this.headRows() + 1;
     if (page) {
       const offset = page.offset();
-      return (line: number) => line + 2 + offset;
+      return (line: number) => line + head + offset;
     }
-    return this.window() ? (line: number) => line + 2 : () => null;
+    return this.window() ? (line: number) => line + head : () => null;
   });
 
   protected readonly rowCount = computed(() => {
@@ -1178,7 +1261,9 @@ export class PctDataTable<
       : this.window()
         ? lines.length
         : null;
-    return rows === null ? null : rows + 1 + (this.totals() === null ? 0 : 1);
+    return rows === null
+      ? null
+      : rows + this.headRows() + (this.totals() === null ? 0 : 1);
   });
 
   /** The body: each row line drawn, with its cells written. */
@@ -1186,10 +1271,18 @@ export class PctDataTable<
     const cache = this.values();
     const written = this.written();
     const templates = this.cellTemplates();
-    const words = this.marked();
+    const marked = this.marked();
     const rowTone = this.rowTone();
     // The engine's view of the columns: a tone takes the value it is handed, of any type.
     const columns: readonly PctAnyColumn<T>[] = this.columns();
+    const marksOf = (id: string, quick: boolean): readonly string[] | null => {
+      if (marked === null) return null;
+      const words = [
+        ...(quick ? marked.quick : []),
+        ...(marked.own.get(id) ?? []),
+      ];
+      return words.length > 0 ? words : null;
+    };
     const cells = columns.map((column) => {
       const slot = templates.get(column.id) ?? null;
       const boolean = column.kind === 'boolean';
@@ -1199,11 +1292,13 @@ export class PctDataTable<
         numeric: pctColumnNumeric(column),
         boolean,
         slot,
-        // A word is marked only in the text it was found in: a column the filter reads by its
-        // text. A template or a check mark draws in its place, and the template reads which
-        // first.
-        marking:
-          words !== null && filter !== false && typeof filter !== 'function',
+        // A word is marked only in the text it was found in: a column the quick filter reads
+        // by its text, and a column's own text filter in that column. A template or a check
+        // mark draws in its place, and the template reads which first.
+        marks: marksOf(
+          column.id,
+          filter !== false && typeof filter !== 'function',
+        ),
       };
     });
     const hidden = new Set<string>(this.hiddenColumns());
@@ -1226,29 +1321,25 @@ export class PctDataTable<
       const number = this.lineIdOf(pctLineKey(line));
       const values = cache(line.row);
       const texts = written(line.row);
-      const all = cells.map(
-        ({ column, numeric, boolean, slot, marking }, c) => {
-          const value = values[c];
-          const text = texts[c];
-          const yes = boolean && typeof value === 'boolean' ? value : null;
-          const parts = marking
-            ? pctMatchParts(text, words as readonly string[])
-            : null;
-          const tooltip = column.tooltip;
-          return {
-            column,
-            value,
-            text,
-            numeric,
-            yes,
-            slot,
-            parts,
-            tone: column.tone?.(value, line.row) ?? null,
-            title: typeof tooltip === 'function' ? tooltip(line.row) : null,
-            clip: tooltip === true && slot === null && yes === null,
-          };
-        },
-      );
+      const all = cells.map(({ column, numeric, boolean, slot, marks }, c) => {
+        const value = values[c];
+        const text = texts[c];
+        const yes = boolean && typeof value === 'boolean' ? value : null;
+        const parts = marks ? pctMatchParts(text, marks) : null;
+        const tooltip = column.tooltip;
+        return {
+          column,
+          value,
+          text,
+          numeric,
+          yes,
+          slot,
+          parts,
+          tone: column.tone?.(value, line.row) ?? null,
+          title: typeof tooltip === 'function' ? tooltip(line.row) : null,
+          clip: tooltip === true && slot === null && yes === null,
+        };
+      });
       const shown = all.filter((cell) => !hidden.has(cell.column.id));
       return {
         kind: 'row',
@@ -1402,6 +1493,7 @@ export class PctDataTable<
       // Measured again whenever the header or the bodies render, or the table resizes: a late
       // font or a wrapped label changes the header's height.
       this.heads();
+      this.headRows();
       this.sections();
       this.resized();
       const frame = this.frame().nativeElement as HTMLElement;
@@ -1413,6 +1505,13 @@ export class PctDataTable<
       // A group's heading sticks below the header and below the headings of the groups it
       // stands in, a heading's height for each level above it.
       frame.style.setProperty('--_head', height);
+      // The headers' row alone: the row of filters sticks below it.
+      frame.style.setProperty(
+        '--_first',
+        sticky
+          ? `${(table.tHead as HTMLTableSectionElement).rows[0].getBoundingClientRect().height}px`
+          : '',
+      );
       const heading = table.querySelector('tr[data-pct-part="group"]');
       frame.style.setProperty(
         '--_group',

@@ -638,7 +638,11 @@ const checkBundle = (input) => {
           `    A drift means this gate's fast measurement stopped matching what the ` +
           `consumer gets — and it is the measurement to fix, not the real build`,
       );
-    const expectedOverlay = [...expected].some((e) =>
+    // The overlay is read off the probes of the entrypoints the build imports, not off
+    // every entrypoint whose text it holds: a neighbour's text in a bundle is the part of it
+    // that was used, and the neighbour's own probe, of all of it, may reach for the overlay
+    // through a part nobody took — `./chart` draws `./table`'s cells, not its filters.
+    const expectedOverlay = (p.entrypoints ?? []).some((e) =>
       (probes[e]?.external ?? []).some((z) => z.includes('cdk/overlay')),
     );
     if ((p.overlay ?? false) !== expectedOverlay)

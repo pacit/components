@@ -220,6 +220,18 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table filter',
+    applies:
+      'libs/components/table/src/data-table-filters.scss .pct-data-table__filter',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-filters"] thead tr:first-child th:first-child [data-pct-part="filter"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'checkbox control',
     applies:
       'libs/components/checkbox/src/checkbox.scss .pct-checkbox__control',

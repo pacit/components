@@ -84,6 +84,7 @@ what it holds. While the table fits, it writes none of the three.
 | `hint`        | the data table's hint under the table                                        |
 | `hole`        | the data table's row a remote source has not delivered                       |
 | `retry`       | the data table's button that asks a failed block again                       |
+| `filter`      | the data table's button that opens a column's filter                         |
 
 ## Theming
 

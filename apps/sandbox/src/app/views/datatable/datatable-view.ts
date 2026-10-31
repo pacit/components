@@ -17,12 +17,15 @@ import {
   PctCellTemplate,
   PctDataTable,
   PctDetailsTemplate,
+  type PctColumnFilters,
   pctColumnsOf,
+  PctFilterTemplate,
   type PctRowId,
   PctTableDetails,
   PctTableGroups,
   PctTablePage,
   type PctTableAnswer,
+  PctTableColumnFilters,
   type PctTableLoad,
   PctTableRemote,
   type PctTableRequest,
@@ -300,6 +303,8 @@ function serveBlock(
     PctTableWindow,
     PctTablePage,
     PctTableRemote,
+    PctTableColumnFilters,
+    PctFilterTemplate,
     PctPagination,
     FormField,
   ],
@@ -364,6 +369,50 @@ export class DatatableView {
   protected readonly now = NOW;
 
   protected readonly rules = signal<readonly Rule[]>(RULES);
+
+  /**
+   * The rules filtered column by column: the name by its words, the room by the rooms the
+   * rules stand in, the energy by a range, the next run by its days, the state by its word,
+   * and the address by a half of the bus this view draws itself.
+   */
+  protected readonly filterColumns = col.of([
+    col.key('name', { header: 'Name' }),
+    col.key('room', { header: 'Room', columnFilter: 'values' }),
+    col.key('address', {
+      header: 'Address',
+      numeric: true,
+      filterBy: (address, half) =>
+        half === 'low' ? address < 4128 : address >= 4128,
+    }),
+    col.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+    }),
+    col.key('nextAt', {
+      header: 'Next run',
+      kind: {
+        instant: {
+          timeZone: 'Europe/Warsaw',
+          format: {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+          },
+        },
+      },
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean' }),
+  ]);
+  protected readonly ruleFilters = signal<
+    PctColumnFilters<
+      typeof this.filterColumns extends { readonly __map?: infer M } ? M : never
+    >
+  >({});
+  protected readonly filterRow = signal(false);
+  protected readonly ruleFiltersText = computed(() =>
+    JSON.stringify(this.ruleFilters()),
+  );
   protected readonly sort = signal<
     readonly PctTableSort<
       'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'

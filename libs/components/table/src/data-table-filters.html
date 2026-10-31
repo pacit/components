@@ -1,0 +1,120 @@
+<!--
+  What a table that filters its columns draws, in the places the table keeps for it: a
+  header's button and its panel, and a column's control in the row of filters. Drawn by the
+  table, declared here, so a table that filters no column carries none of it (0097).
+-->
+<ng-template #head let-column>
+  <button
+    type="button"
+    class="pct-data-table__filter"
+    data-pct-part="filter"
+    [class.pct-data-table__on]="filteredBy(column)"
+    [pctPopoverTrigger]="panel"
+    [attr.aria-label]="nameOf(column)"
+  >
+    <!-- A funnel, filled while the column filters: a shape apart, not a colour alone. -->
+    <pct-icon name="filter" class="pct-data-table__funnel">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        [attr.fill]="filteredBy(column) ? 'currentColor' : 'none'"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z" />
+      </svg>
+    </pct-icon>
+  </button>
+  <pct-popover #panel [heading]="headingOf(column)" placement="bottom">
+    <div #box class="pct-data-table__panel">
+      <ng-container
+        [ngTemplateOutlet]="control"
+        [ngTemplateOutletContext]="{ $implicit: column, labelled: true }"
+      />
+      <button
+        pctButton
+        type="button"
+        variant="outline"
+        size="sm"
+        [disabled]="!holds(column)"
+        [attr.aria-label]="texts().tableClear"
+        (click)="clear(column, box)"
+      >
+        {{ texts().tableClear }}
+      </button>
+    </div>
+  </pct-popover>
+</ng-template>
+
+<ng-template #cell let-column>
+  <div class="pct-data-table__row-control">
+    <ng-container
+      [ngTemplateOutlet]="control"
+      [ngTemplateOutletContext]="{ $implicit: column, labelled: false }"
+    />
+  </div>
+</ng-template>
+
+<!-- The control of a column's filter: labelled in its panel, named alone in the row. The
+     last branch is the application's own: a column reaches this template with one of five. -->
+<ng-template #control let-column let-labelled="labelled">
+  @let use = useOf(column); @if (use === 'text') { @if (labelled) {
+  <pct-field [label]="column.header">
+    <input
+      pctText
+      [attr.aria-label]="column.header"
+      [value]="textOf(column)"
+      (valueChange)="setText(column, $event)"
+    />
+  </pct-field>
+  } @else {
+  <input
+    pctText
+    [attr.aria-label]="headingOf(column)"
+    [value]="textOf(column)"
+    (valueChange)="setText(column, $event)"
+  />
+  } } @else if (use === 'range') { @for (end of ends; track end) { @if
+  (labelled) {
+  <pct-field [label]="endOf(column, end)">
+    <input
+      pctNumber
+      maxFractionDigits="6"
+      [attr.aria-label]="endOf(column, end)"
+      [value]="rangeOf(column, end)"
+      (valueChange)="setRange(column, end, $event)"
+    />
+  </pct-field>
+  } @else {
+  <input
+    pctNumber
+    maxFractionDigits="6"
+    [attr.aria-label]="endOf(column, end)"
+    [value]="rangeOf(column, end)"
+    (valueChange)="setRange(column, end, $event)"
+  />
+  } } } @else if (use === 'days') { @for (end of days; track end.day) {
+  <pct-date
+    [label]="labelled ? endOf(column, end.end) : ''"
+    [ariaLabel]="labelled ? '' : endOf(column, end.end)"
+    [value]="dayOf(column, end.day)"
+    (valueChange)="setDay(column, end.day, $event)"
+  />
+  } } @else if (use === 'values') {
+  <pct-multi-select
+    [label]="labelled ? column.header : ''"
+    [ariaLabel]="labelled ? '' : headingOf(column)"
+    [options]="optionsOf(column)"
+    [value]="valuesOf(column)"
+    (valueChange)="setValues(column, $event)"
+  />
+  } @else {
+  <ng-container
+    [ngTemplateOutlet]="slotOf(column)"
+    [ngTemplateOutletContext]="ownOf(column)"
+  />
+  }
+</ng-template>

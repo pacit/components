@@ -25,6 +25,7 @@ import {
   pctFailedBlock,
   type PctBlock,
 } from './model/blocks';
+import type { PctAnyColumnFilter } from './model/filters';
 import type { PctTableSort } from './table';
 
 /** A block's size as given: a whole number of rows, at least one, or the default's 100. */
@@ -60,6 +61,11 @@ export interface PctTableRequest<Id extends string = string> {
   readonly sort: readonly PctTableSort<Id>[];
   /** The table's quick filter, as it was typed. */
   readonly filter: string;
+  /**
+   * The columns' filters in force by column id — those of `pctTableColumnFilters` that let
+   * some row out, empty without it: the source applies them, as it applies the quick filter.
+   */
+  readonly columnFilters: Readonly<Record<string, PctAnyColumnFilter>>;
 }
 
 /**
@@ -195,9 +201,16 @@ export class PctTableRemote<T, Id extends string = string> {
     pctBlockRows(this.blocks(), this.count(), this.size()),
   );
 
-  /** The order, the question and the size of a block: a change of any is a list of its own. */
+  /**
+   * The order, the questions and the size of a block: a change of any is a list of its own.
+   */
   private readonly query = computed(() =>
-    JSON.stringify([this.table.sort(), this.table.filter(), this.blockSize()]),
+    JSON.stringify([
+      this.table.sort(),
+      this.table.filter(),
+      this.table.columnFilters(),
+      this.blockSize(),
+    ]),
   );
 
   /** The rows the window draws, `[from, to)`: the line's index counts rows. */
@@ -370,6 +383,7 @@ export class PctTableRemote<T, Id extends string = string> {
       // The headers write the ids of sortable columns: those the source sorts by.
       sort: this.table.sort() as readonly PctTableSort<Id>[],
       filter: this.table.filter(),
+      columnFilters: this.table.columnFilters(),
     };
     /**
      * Writes what came of the block, unless it was let go: a block let go is no longer the

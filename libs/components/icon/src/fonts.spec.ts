@@ -37,6 +37,7 @@ describe('@pacit/components/icon — fonts', () => {
     'previous',
     'next',
     'reset',
+    'filter',
   ];
 
   describe('iconFont', () => {
@@ -128,6 +129,7 @@ describe('@pacit/components/icon — fonts', () => {
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'rotate-left',
+        filter: 'filter',
       });
     });
 
@@ -192,6 +194,7 @@ describe('@pacit/components/icon — fonts', () => {
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'replay',
+        filter: 'filter',
       });
       expect(primeIcons({ roles: { user: 'users' } }).roles?.user).toBe(
         'users',
@@ -225,6 +228,7 @@ describe('@pacit/components/icon — fonts', () => {
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'arrow-counterclockwise',
+        filter: 'funnel',
       });
       expect(bootstrapIcons({ roles: { close: 'x' } }).roles?.close).toBe('x');
     });
@@ -272,6 +276,7 @@ describe('@pacit/components/icon — fonts', () => {
         previous: 'chevron_left',
         next: 'chevron_right',
         reset: 'restart_alt',
+        filter: 'filter_alt',
       });
       expect(materialIcons({ roles: { user: 'face' } }).roles?.user).toBe(
         'face',

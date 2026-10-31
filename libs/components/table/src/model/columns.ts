@@ -75,6 +75,19 @@ export interface PctInstantKind {
 }
 
 /**
+ * The ways a column of values of type `V` may be filtered: a range or a range of days only
+ * where the value is a number, the same test the kinds take.
+ *
+ * @since next
+ */
+export type PctColumnFilterUseOf<V> =
+  | false
+  | 'text'
+  | 'values'
+  | 'own'
+  | ([V] extends [number | null | undefined] ? 'range' | 'days' : never);
+
+/**
  * Every kind, whatever the value: what a column built from an accessor is checked against
  * before its value's type is known.
  *
@@ -126,6 +139,20 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * the cell shows.
    */
   readonly filter?: boolean | ((value: V, word: string) => boolean);
+  /**
+   * How `pctTableColumnFilters` filters the column: `false` not at all; `'text'` by the words
+   * of its text; `'values'` by values picked from those its rows hold; on a column of numbers
+   * `'range'` by a range, or `'days'` by a range of days its instants fall on; `'own'` by the
+   * state a `pctFilter` template sets, decided by `filterBy`. By default the kind says: a
+   * boolean by values, a number by a range, an instant by days, the rest by text — and a
+   * column with a `filterBy` by its own.
+   */
+  readonly columnFilter?: PctColumnFilterUseOf<V>;
+  /**
+   * How a column filtered by the application's own state decides a row: given the row's value
+   * and the state a `pctFilter` template set, whose shape is the application's.
+   */
+  readonly filterBy?: (value: V, own: unknown) => boolean;
   /** Aligns the column to the end with tabular digits; by default only a number kind does. */
   readonly numeric?: boolean;
   /**

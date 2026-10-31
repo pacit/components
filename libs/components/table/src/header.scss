@@ -2,6 +2,9 @@
 :host {
   padding-block: var(--pct-table-padding-y);
   padding-inline: var(--pct-table-padding-x);
+  /* Room at the end edge for an action the cell holds beside its label: a data table's filter
+     button, which sets `--_action` on the cell and places itself there. */
+  padding-inline-end: calc(var(--pct-table-padding-x) + var(--_action, 0px));
   border-block-end: 1px solid var(--pct-table-heading-border);
   background: var(--pct-table-heading-bg);
   color: var(--pct-table-heading-fg);
@@ -38,6 +41,7 @@
   margin: 0;
   padding-block: var(--pct-table-padding-y);
   padding-inline: var(--pct-table-padding-x);
+  padding-inline-end: calc(var(--pct-table-padding-x) + var(--_action, 0px));
   border: 0;
   background: transparent;
   color: inherit;

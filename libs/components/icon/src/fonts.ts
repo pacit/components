@@ -188,6 +188,7 @@ export function fontAwesome(
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'rotate-left',
+        filter: 'filter',
       },
       options.roles,
     ),
@@ -221,6 +222,7 @@ export function primeIcons(options: PctIconFontRoles = {}): PctIconSource {
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'replay',
+        filter: 'filter',
       },
       options.roles,
     ),
@@ -254,6 +256,7 @@ export function bootstrapIcons(options: PctIconFontRoles = {}): PctIconSource {
         previous: 'chevron-left',
         next: 'chevron-right',
         reset: 'arrow-counterclockwise',
+        filter: 'funnel',
       },
       options.roles,
     ),
@@ -283,6 +286,7 @@ function materialRoles(): Readonly<Record<PctIconName, string>> {
     previous: 'chevron_left',
     next: 'chevron_right',
     reset: 'restart_alt',
+    filter: 'filter_alt',
   };
 }
 

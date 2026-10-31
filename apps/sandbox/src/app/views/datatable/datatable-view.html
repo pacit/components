@@ -290,6 +290,66 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Rules by column"
+  summary="Each column's own filter, in a panel its header's button opens or in a row under the headers: the name by its words, the room by the rooms the rules stand in, the energy by a range, the next run by its days, the state by its word, and the address by a half of the bus this view draws itself. One model holds them all, as a URL could."
+  [reqs]="['req-api-signal-forms']"
+  data-testid="demo-filters"
+>
+  <pct-switch
+    data-testid="filters-row"
+    [checked]="filterRow()"
+    (checkedChange)="filterRow.set($event)"
+    >A row of filters</pct-switch
+  >
+  <pct-data-table
+    #filtered
+    data-testid="table-filters"
+    caption="Rules"
+    locale="en"
+    [pctTableColumnFilters]="filterColumns"
+    [(columnFilters)]="ruleFilters"
+    [filterRow]="filterRow()"
+    [rows]="rules()"
+    [columns]="filterColumns"
+    [rowId]="byId"
+  >
+    <ng-template
+      [pctFilter]="filterColumns"
+      pctFilterOf="address"
+      let-half
+      let-set="set"
+    >
+      <div class="datatable__halves" role="group" aria-label="Address">
+        <button
+          pctButton
+          type="button"
+          size="sm"
+          variant="outline"
+          [attr.aria-pressed]="half === 'low'"
+          (click)="set(half === 'low' ? null : 'low')"
+        >
+          Below 4128
+        </button>
+        <button
+          pctButton
+          type="button"
+          size="sm"
+          variant="outline"
+          [attr.aria-pressed]="half === 'high'"
+          (click)="set(half === 'high' ? null : 'high')"
+        >
+          From 4128
+        </button>
+      </div>
+    </ng-template>
+  </pct-data-table>
+  <p data-testid="filters-state">
+    {{ filtered.matched() }} of {{ rules().length }} rules ·
+    <code>{{ ruleFiltersText() }}</code>
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="Devices at a glance"
   summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state toned by its value, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
   [reqs]="['req-a11y-forced-colors']"

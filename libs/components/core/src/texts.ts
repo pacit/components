@@ -365,6 +365,22 @@ export interface PctTexts {
   readonly tableLoadFailed: string;
   /** Data table: the button that asks a remote source for a failed block of rows again. */
   readonly tableRetry: string;
+  /**
+   * Data table: the name of a column's filter button, and the heading of its panel. `{column}`
+   * stands for the column's header.
+   */
+  readonly tableFilter: string;
+  /**
+   * Data table: the name of a column's filter button while the column is filtered, so a
+   * reader hears it without opening the panel. `{column}` stands for the column's header.
+   */
+  readonly tableFiltered: string;
+  /** Data table: the button that clears a column's filter. */
+  readonly tableClear: string;
+  /** Data table: the lower end of a column's range filter. `{column}` stands for its header. */
+  readonly tableFrom: string;
+  /** Data table: the upper end of a column's range filter. `{column}` stands for its header. */
+  readonly tableTo: string;
 }
 
 /**
@@ -463,6 +479,11 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableSelectRow: 'Select',
   tableLoadFailed: 'These rows could not be loaded.',
   tableRetry: 'Retry',
+  tableFilter: 'Filter {column}',
+  tableFiltered: 'Filter {column}, filtered',
+  tableClear: 'Clear',
+  tableFrom: '{column} from',
+  tableTo: '{column} to',
 };
 
 /**

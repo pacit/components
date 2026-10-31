@@ -150,7 +150,7 @@ libs/components/core/src/placement.ts 98.46 64(0) 1 0 0 0
 libs/components/core/src/quantity.ts 100.00 26(0) 0 0 0 0
 libs/components/core/src/regions.ts 100.00 3(0) 0 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
-libs/components/core/src/texts.ts 100.00 87(0) 0 0 0 0
+libs/components/core/src/texts.ts 100.00 107(0) 0 0 0 0
 libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
 libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
 libs/components/date/src/date.ts 80.15 218(0) 54 0 0 8
@@ -167,7 +167,7 @@ libs/components/field/src/field.ts 75.83 91(0) 26 2 1 1
 libs/components/field/src/number.ts 84.70 238(0) 41 0 2 11
 libs/components/field/src/text.ts 85.37 35(0) 6 0 0 5
 libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
-libs/components/icon/src/fonts.ts 99.12 113(0) 1 0 0 0
+libs/components/icon/src/fonts.ts 99.30 141(0) 1 0 0 0
 libs/components/icon/src/icon.ts 93.28 111(0) 7 0 1 2
 libs/components/menu/src/menu-item.ts 78.79 26(0) 4 2 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 0 2
@@ -192,16 +192,18 @@ libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
 libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
 libs/components/table/src/data-table-details.ts 100.00 5(0) 0 0 0 1
+libs/components/table/src/data-table-filters.ts 97.32 218(0) 3 0 3 5
 libs/components/table/src/data-table-groups.ts 100.00 9(0) 0 0 0 3
 libs/components/table/src/data-table-page.ts 100.00 3(0) 0 0 0 2
-libs/components/table/src/data-table-remote.ts 98.60 141(12) 1 1 0 4
+libs/components/table/src/data-table-remote.ts 98.65 146(12) 1 1 0 4
 libs/components/table/src/data-table-selection.ts 99.46 185(0) 0 1 0 5
 libs/components/table/src/data-table-slots.ts 100.00 12(0) 0 0 0 6
 libs/components/table/src/data-table-window.ts 93.21 206(0) 15 0 0 0
-libs/components/table/src/data-table.ts 98.40 1047(1) 13 3 1 15
+libs/components/table/src/data-table.ts 98.10 1086(0) 17 3 1 15
 libs/components/table/src/model/aggregate.ts 100.00 31(0) 0 0 0 0
 libs/components/table/src/model/blocks.ts 100.00 39(2) 0 0 0 0
 libs/components/table/src/model/columns.ts 100.00 31(0) 0 0 0 0
+libs/components/table/src/model/filters.ts 99.58 236(0) 1 0 0 0
 libs/components/table/src/model/fit.ts 100.00 22(2) 0 0 0 0
 libs/components/table/src/model/lines.ts 100.00 97(0) 0 0 0 0
 libs/components/table/src/model/order.ts 100.00 89(0) 0 0 0 0
@@ -224,5 +226,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.52 15420/17034
+TOTAL 90.76 15966/17591
 ```
