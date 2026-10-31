@@ -64,8 +64,8 @@ describe('pctGestureStep', () => {
     ]);
     expect(actions).toEqual([
       null,
-      { type: 'pan', dx: 9 },
-      { type: 'pan', dx: 11 },
+      { type: 'pan', dx: 9, shiftY: 0 },
+      { type: 'pan', dx: 11, shiftY: 5 },
       null,
     ]);
     expect(state.mode).toBe('idle');
@@ -87,13 +87,13 @@ describe('pctGestureStep', () => {
       { type: 'down', mouse: true },
       { type: 'move', x: 104, y: 112, mouse: true },
     ]);
-    expect(actions[1]).toEqual({ type: 'pan', dx: 4 });
+    expect(actions[1]).toEqual({ type: 'pan', dx: 4, shiftY: 12 });
   });
 
   it('decides the direction of an even drag for the plot', () => {
     expect(
       play([{ type: 'down' }, { type: 'move', x: 110, y: 110 }]).actions[1],
-    ).toEqual({ type: 'pan', dx: 10 });
+    ).toEqual({ type: 'pan', dx: 10, shiftY: 10 });
   });
 
   it('carries the cursor under a finger held still, and not under a mouse', () => {
@@ -124,7 +124,7 @@ describe('pctGestureStep', () => {
       { type: 'down', id: 1, x: 100, y: 100 },
       { type: 'down', id: 2, x: 200, y: 100 },
       { type: 'move', id: 2, x: 300, y: 100 },
-      { type: 'move', id: 1, x: 120, y: 100 },
+      { type: 'move', id: 1, x: 120, y: 140 },
     ]);
     expect(state.mode).toBe('pinch');
     expect(actions[2]).toEqual({
@@ -132,12 +132,17 @@ describe('pctGestureStep', () => {
       factor: 2,
       about: 150,
       dx: 50,
+      aboutY: 100,
+      shiftY: 0,
     });
+    // the second axis: the middle moved down by half the finger's way, the distance is the diagonal
     expect(actions[3]).toEqual({
       type: 'pinch',
-      factor: 180 / 200,
+      factor: Math.hypot(180, 40) / 200,
       about: 200,
       dx: 10,
+      aboutY: 100,
+      shiftY: 20,
     });
   });
 
@@ -152,6 +157,8 @@ describe('pctGestureStep', () => {
       factor: 1,
       about: 100,
       dx: 20,
+      aboutY: 100,
+      shiftY: 0,
     });
   });
 
