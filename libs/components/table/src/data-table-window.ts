@@ -11,7 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 import { PctDataTable, type PctScrollAlign } from './data-table';
-import { pctLineKey } from './model/lines';
+import type { PctTableLine } from './model/lines';
 import {
   PctLineHeights,
   pctWindow,
@@ -42,6 +42,32 @@ function median(values: readonly number[]): number {
   return sorted.length % 2 === 1
     ? sorted[middle]
     : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+/**
+ * Heights by line: by its kind, then by its key as it is — a row id `1` and `'1'` stay two —
+ * so a list of a million lines is read against them without a key written out for each.
+ */
+class LineHeights {
+  private readonly kinds = new Map<string, Map<unknown, number>>();
+
+  /** No line has a height yet. */
+  empty(): boolean {
+    return this.kinds.size === 0;
+  }
+
+  get(line: PctTableLine<unknown>): number | undefined {
+    return this.kinds.get(line.kind)?.get(line.key);
+  }
+
+  set(line: PctTableLine<unknown>, height: number): void {
+    let heights = this.kinds.get(line.kind);
+    if (heights === undefined) {
+      heights = new Map();
+      this.kinds.set(line.kind, heights);
+    }
+    heights.set(line.key, height);
+  }
 }
 
 /**
@@ -90,7 +116,7 @@ export class PctTableWindow {
    * Each line's height as last measured, by its key: kept when the lines are sorted or
    * filtered, so a line measured once counts at its height wherever it goes.
    */
-  private readonly measured = new Map<string, number>();
+  private readonly measured = new LineHeights();
 
   /** The height a line not measured counts at: the median of the first rows measured. */
   private readonly estimate = signal(FIRST_ESTIMATE);
@@ -113,9 +139,9 @@ export class PctTableWindow {
     const lines = this.table.lines();
     const heights = new PctLineHeights(lines.length, this.estimate());
     // A plain map, not a signal: a measurement writes the heights in place.
-    if (this.measured.size > 0)
+    if (!this.measured.empty())
       lines.forEach((line, index) => {
-        const height = this.measured.get(pctLineKey(line));
+        const height = this.measured.get(line);
         if (height !== undefined) heights.set(index, height);
       });
     return heights;
@@ -144,6 +170,21 @@ export class PctTableWindow {
       heights,
     );
   });
+
+  /**
+   * The lines drawn, `[start, end)`: those in the view and a few past each edge, a row and
+   * its details always together. Known as soon as the window is, before the browser lays the
+   * lines out — what a source that loads the rows a scroll reaches asks for.
+   *
+   * @since next
+   */
+  readonly drawn = computed(
+    () => {
+      const { start, end } = this.current();
+      return { start, end };
+    },
+    { equal: (a, b) => a.start === b.start && a.end === b.end },
+  );
 
   /**
    * The row the table asked to scroll to, until its own row has been drawn and measured: of
@@ -303,10 +344,9 @@ export class PctTableWindow {
       const height = entry.borderBoxSize[0].blockSize;
       if (line.kind === 'row') rows.push(height);
       if (index === reaching?.line) reached = true;
-      const key = pctLineKey(line);
-      if (Math.abs((this.measured.get(key) ?? -1) - height) < TOLERANCE)
+      if (Math.abs((this.measured.get(line) ?? -1) - height) < TOLERANCE)
         continue;
-      this.measured.set(key, height);
+      this.measured.set(line, height);
       before.set(index, height);
       changed = true;
     }

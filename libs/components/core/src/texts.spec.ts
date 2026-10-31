@@ -112,6 +112,8 @@ const ENGLISH: PctTexts = {
   tableGroupWithin: '{group}, in {outer}',
   tableSelectAll: 'Select all rows',
   tableSelectRow: 'Select',
+  tableLoadFailed: 'These rows could not be loaded.',
+  tableRetry: 'Retry',
 };
 
 describe('PCT_TEXTS', () => {

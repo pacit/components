@@ -72,7 +72,7 @@
       </tr>
     </thead>
     @if (sections().length === 0) {
-    <tbody [attr.aria-busy]="loading() ? 'true' : null">
+    <tbody [attr.aria-busy]="busy() ? 'true' : null">
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
         @if (selection()) {
@@ -90,7 +90,7 @@
     }
     <!-- A tbody per group, because a rowgroup header names the rest of its tbody (0097, D8). -->
     @for (section of sections(); track section.key) {
-    <tbody [attr.aria-busy]="loading() ? 'true' : null">
+    <tbody [attr.aria-busy]="busy() ? 'true' : null">
       @if (section.group; as group) {
       <tr
         data-pct-part="group"
@@ -133,7 +133,47 @@
         <td pctCell [numeric]="cell.numeric">{{ cell.text }}</td>
         }
       </tr>
-      } @for (row of section.rows; track row.key) {
+      } @for (row of section.rows; track row.key) { @if (row.kind === 'hole') {
+      <!-- A row a remote source has not delivered: its cells loading, or the block's failure
+           said once, with the retry, across the width of the table. -->
+      <tr
+        data-pct-part="hole"
+        [attr.data-pct-index]="row.line"
+        [attr.aria-rowindex]="rowIndex()(row.line)"
+        [attr.aria-busy]="row.failed === null ? 'true' : null"
+        [class.pct-data-table__even]="row.index % 2 === 1"
+      >
+        @if (row.failed === null) { @if (selection()) {
+        <td pctCell></td>
+        } @if (disclosure()) {
+        <td pctCell></td>
+        } @if (rowNumbers()) {
+        <td pctCell numeric class="pct-data-table__number">
+          {{ row.index + 1 }}
+        </td>
+        } @for (head of heads(); track head.column.id) {
+        <td pctCell><pct-skeleton /></td>
+        } } @else {
+        <td pctCell [attr.colspan]="span()">
+          @if (row.first) {
+          <span class="pct-data-table__failed">
+            {{ texts().tableLoadFailed }}
+            <button
+              pctButton
+              type="button"
+              variant="outline"
+              size="sm"
+              data-pct-part="retry"
+              (click)="retry(row.failed)"
+            >
+              {{ texts().tableRetry }}
+            </button>
+          </span>
+          }
+        </td>
+        }
+      </tr>
+      } @else {
       <tr
         [attr.data-pct-index]="row.line"
         [attr.aria-rowindex]="rowIndex()(row.line)"
@@ -272,7 +312,7 @@
           }
         </td>
       </tr>
-      } }
+      } } }
     </tbody>
     } @if (totals(); as total) {
     <tfoot>
@@ -298,7 +338,7 @@
     @if (emptySlot(); as slot) {
     <ng-container
       [ngTemplateOutlet]="slot.template"
-      [ngTemplateOutletContext]="{ $implicit: filter(), loading: loading() }"
+      [ngTemplateOutletContext]="{ $implicit: filter(), loading: busy() }"
     />
     } @else { {{ sentence }} }
   </div>

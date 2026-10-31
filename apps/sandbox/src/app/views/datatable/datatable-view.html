@@ -450,3 +450,48 @@
     >The server was asked {{ served() }} times</span
   >
 </sbx-demo>
+
+<sbx-demo
+  heading="A million registers from a server, a block at a time"
+  summary="The rows come as the view reaches them: the table asks the server for the blocks of a hundred in view and half a block around, and draws a row not here yet as a row of placeholders, at its place among a million. The server orders by address and filters by name; a new order or question starts again at the top. Every tenth block fails the first time, and says so with a retry for that block alone."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-remote"
+>
+  <pct-field label="Filter registers" class="datatable__filter">
+    <input
+      pctText
+      type="search"
+      data-testid="remote-filter"
+      [value]="remoteFilter()"
+      (input)="remoteFilter.set($any($event.target).value)"
+    />
+  </pct-field>
+  <pct-data-table
+    #remote="pctTableRemote"
+    data-testid="table-remote"
+    class="datatable__rules"
+    caption="Registers on the server"
+    locale="en"
+    pctTableWindow
+    [pctTableRemote]="loadRegisters"
+    [columns]="remoteColumns"
+    [rowId]="registerId"
+    [(sort)]="remoteSort"
+    [(filter)]="remoteFilter"
+  />
+  <div class="datatable__more">
+    <button
+      pctButton
+      type="button"
+      variant="outline"
+      data-testid="remote-refresh"
+      (click)="remote.refresh()"
+    >
+      Refresh the rows in view
+    </button>
+    <span class="muted" data-testid="remote-asked"
+      >{{ remote.total() }} registers · the server was asked for
+      {{ remoteAsked() }} blocks</span
+    >
+  </div>
+</sbx-demo>
