@@ -163,7 +163,7 @@ export class PctTableWindow {
         tail: computed(() => this.current().tail),
         reach: (line, align) => {
           this.reaching = { line, align, lines: untracked(this.table.lines) };
-          this.scrollToLine();
+          this.scrollToLine(this.reaching);
         },
       },
     });
@@ -310,8 +310,7 @@ export class PctTableWindow {
           align: 'start',
           within,
         }) + offset;
-      if (Math.abs(target - frame.scrollTop) >= TOLERANCE)
-        frame.scrollTop = target;
+      frame.scrollTop = target;
       this.version.update((version) => version + 1);
     }
     if (reaching === null) this.reaching = null;
@@ -322,11 +321,10 @@ export class PctTableWindow {
   }
 
   /** Scrolls to the line the table asked for, through the window's own sums. */
-  private scrollToLine(
-    at: { readonly line: number; readonly align: PctScrollAlign } | null = this
-      .reaching,
-  ): void {
-    if (at === null) return;
+  private scrollToLine(at: {
+    readonly line: number;
+    readonly align: PctScrollAlign;
+  }): void {
     const frame = this.frame();
     const { offset, view } = untracked(this.geometry);
     frame.scrollTop =

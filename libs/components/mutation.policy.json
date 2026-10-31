@@ -109,6 +109,7 @@
     "libs/components/table/src/data-table-groups.ts",
     "libs/components/table/src/data-table-selection.ts",
     "libs/components/table/src/data-table-slots.ts",
+    "libs/components/table/src/data-table-window.ts",
     "libs/components/table/src/data-table.ts",
     "libs/components/table/src/model/aggregate.ts",
     "libs/components/table/src/model/columns.ts",

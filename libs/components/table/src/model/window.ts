@@ -13,7 +13,7 @@
  */
 export class PctLineHeights {
   /** The height measured for each line, or `undefined` while it has not been. */
-  private readonly measured: (number | undefined)[];
+  private readonly measured: (number | undefined)[] = [];
   /** The measured heights' tree, counted from 1. */
   private readonly sums: Float64Array;
   /** How many lines each node of the tree holds a measured height for. */
@@ -29,7 +29,6 @@ export class PctLineHeights {
     readonly count: number,
     readonly estimate: number,
   ) {
-    this.measured = new Array<number | undefined>(count).fill(undefined);
     this.sums = new Float64Array(count + 1);
     this.counts = new Float64Array(count + 1);
     let step = 1;
@@ -222,18 +221,7 @@ export function pctWindow(of: PctWindowInput): PctWindow {
   const end = Math.max(past, Math.min(count, past + around, below));
   const from = heights.offsetOf(start);
   const drawn = heights.offsetOf(end) - from;
-  if (space === total) {
-    const tail = total - from - drawn;
-    return {
-      start,
-      end,
-      lead: from,
-      tail: Math.max(0, tail),
-      space,
-      total,
-      top,
-    };
-  }
+  // Unscaled, the view's top is the lines' and the lead is the lines' above the window.
   const lead = Math.max(0, Math.min(space - drawn, domTop - top + from));
   return {
     start,
@@ -274,8 +262,8 @@ export function pctWindowScroll(
   const total = heights.total;
   const view = Math.max(0, of.viewport);
   const space = Math.min(total, of.limit ?? Infinity);
-  const domTop = Math.max(0, Math.min(of.scrollTop, space - view));
-  const top = linesTop(domTop, total, space, view);
+  // A top past the last full view asks what one at it would: the target is clamped below.
+  const top = linesTop(Math.max(0, of.scrollTop), total, space, view);
   const start = heights.offsetOf(index);
   const height = heights.heightOf(index);
   const target =

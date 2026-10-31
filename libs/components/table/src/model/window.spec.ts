@@ -180,6 +180,36 @@ describe('pctWindow', () => {
   });
 });
 
+describe('pctWindow over lines exactly as tall as the view', () => {
+  const ten: PctWindowInput = {
+    heights: new PctLineHeights(10, 36),
+    scrollTop: 0,
+    viewport: 360,
+    overscan: 0,
+  };
+
+  it('draws them all, with no space around them', () => {
+    expect(pctWindow(ten)).toEqual({
+      start: 0,
+      end: 10,
+      lead: 0,
+      tail: 0,
+      space: 360,
+      total: 360,
+      top: 0,
+    });
+  });
+
+  it('scrolls to any of them by not scrolling', () => {
+    expect(pctWindowScroll({ ...ten, index: 9, align: 'end' })).toBe(0);
+  });
+
+  it('draws the line under the top for a view of no height and no overscan', () => {
+    const none = pctWindow({ ...ten, viewport: 0 });
+    expect([none.start, none.end]).toEqual([0, 1]);
+  });
+});
+
 describe('PctLineHeights', () => {
   it('counts every line at the estimate until it is measured', () => {
     const heights = new PctLineHeights(5, 10);
@@ -250,6 +280,13 @@ describe('PctLineHeights', () => {
     const none = new PctLineHeights(0, 4);
     expect([none.total, none.indexAt(1), none.firstFrom(1)]).toEqual([0, 0, 0]);
   });
+
+  it('searches a count that is a power of two up to its last line', () => {
+    const eight = heightsOf(8, 3);
+    expect([20.9, 21, 23.9, 24].map((y) => eight.indexAt(y))).toEqual([
+      6, 7, 7, 8,
+    ]);
+  });
 });
 
 /** A million lines of 36 px, over a limit of 16,000,000 px, and a view of 360 px. */
@@ -298,6 +335,20 @@ describe('pctWindow past the limit', () => {
     const further = pctWindow({ ...million, scrollTop: 200 });
     expect(further.start).toBe(10);
     expect(further.lead).toBeCloseTo(200 - 450 + 360, 1);
+    // At 40 px it maps to 90 px, line 2: the 40 px above hold line 1 only in part, so the
+    // window starts at the line under the top.
+    expect(pctWindow({ ...million, scrollTop: 40 }).start).toBe(2);
+  });
+
+  it('cuts the overscan where the space below has no room for it', () => {
+    // 40 px above the last full view the top maps to 90 px above the lines' last view: the
+    // 40 px below the view hold no whole line past the one it meets.
+    const low = pctWindow({ ...million, scrollTop: 16_000_000 - 360 - 40 });
+    expect(low.end).toBe(999_998);
+    expect(low.lead + (low.end - low.start) * 36 + low.tail).toBeCloseTo(
+      16_000_000,
+      3,
+    );
   });
 
   it('is the lines themselves under the limit', () => {
