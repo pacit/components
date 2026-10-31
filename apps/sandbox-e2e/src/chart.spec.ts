@@ -1114,4 +1114,169 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       ).toHaveText('Standby');
     });
   });
+
+  test.describe('points, bubbles, a log axis and a zoom on both axes', () => {
+    const marksOf = (c: Locator) => c.locator('[data-pct-part="point"]');
+    const centre = async (mark: Locator) => {
+      const box = (await mark.boundingBox())!;
+      return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    };
+
+    test('a scatter draws a mark per row in the series’ shape, writes the unit at the axis’s end, puts the cursor on the nearest point and picks a pressed one', async ({
+      page,
+    }) => {
+      const scatter = chart(page, 'chart-points');
+      await scatter.scrollIntoViewIfNeeded();
+      const marks = marksOf(scatter);
+      // eighty rows, a few of them gaps, a pair or two thinned into one mark
+      expect(await marks.count()).toBeGreaterThan(60);
+      expect(await marks.count()).toBeLessThanOrEqual(80);
+      await expect(marks.first()).toHaveAttribute(
+        'd',
+        'M6 1a5 5 0 1 1 0 10a5 5 0 1 1 0-10z',
+      );
+      await expect(
+        scatter.locator(
+          'svg[data-pct-part="axis"] > text[data-pct-part="unit"]',
+        ),
+      ).toHaveText('°C');
+      // the marks are sorted by x: the first stands leftmost
+      const xs = await marks.evaluateAll((paths) =>
+        paths.map((p) => p.getBoundingClientRect().left),
+      );
+      expect(xs[0]).toBe(Math.min(...xs));
+      // hovering beside a mark puts the cursor on it: the tooltip reads that point
+      const at = await centre(marks.nth(10));
+      await page.mouse.move(at.x + 7, at.y - 7);
+      const tooltip = scatter.locator('[data-pct-part="tooltip"]');
+      await expect(tooltip).toBeVisible();
+      const read = await tooltip.innerText();
+      expect(read).toMatch(/-?\d+(\.\d+)?\s?°C/);
+      expect(read).not.toContain('Size');
+      expect(read).toMatch(/Heat pump\s+-?\d+(\.\d+)? kW/);
+      // the marker stands on a point — the nearest to the pointer, which may be a neighbour
+      const marker = scatter.locator('[data-pct-part="marker"]');
+      const dot = (await marker.boundingBox())!;
+      const centres = await marks.evaluateAll((paths) =>
+        paths.map((p) => {
+          const r = p.getBoundingClientRect();
+          return [r.left + r.width / 2, r.top + r.height / 2];
+        }),
+      );
+      const nearest = Math.min(
+        ...centres.map(([x, y]) =>
+          Math.hypot(x - (dot.x + dot.width / 2), y - (dot.y + dot.height / 2)),
+        ),
+      );
+      expect(nearest).toBeLessThan(2);
+      // a press on the mark picks its row
+      await page.mouse.click(at.x, at.y);
+      await expect(page.getByTestId('picked-point')).toHaveText(
+        /^Picked: -?\d+(\.\d+)? °C outside, \d+(\.\d+)? kW drawn\.$/,
+      );
+    });
+
+    test('bubbles grow by area, let one another through, and give the size a column of the table', async ({
+      page,
+    }) => {
+      const bubbles = chart(page, 'chart-bubbles');
+      await bubbles.scrollIntoViewIfNeeded();
+      const group = bubbles.locator('[data-pct-part="points"]');
+      await expect(group).toHaveClass(/bubbles/);
+      await expect(group).toHaveAttribute('data-pct-series', '4');
+      const marks = marksOf(bubbles);
+      await expect(marks).toHaveCount(7);
+      const widths = await marks.evaluateAll((paths) =>
+        paths.map((p) => p.getBoundingClientRect().width),
+      );
+      // the living room, 32 m², is the widest at 32 px; the bathroom, 6 m², the narrowest
+      const widest = Math.max(...widths);
+      const narrowest = Math.min(...widths);
+      expect(widest).toBeGreaterThan(26);
+      expect(widest).toBeLessThan(35);
+      expect(narrowest / widest).toBeCloseTo(Math.sqrt(6 / 32), 1);
+      // the fill is the series' colour mixed into nothing by the skin's amount: an alpha under one
+      const fill = await marks
+        .first()
+        .evaluate((p) => getComputedStyle(p).fill);
+      expect(fill).toMatch(/^color\(srgb .* 0\.7\)$|^rgba\(.*, 0\.7\)$/);
+      const table = page.getByTestId('bubbles-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Position',
+        'Rooms (%)',
+        'Area',
+      ]);
+      await expect(
+        table.locator('tbody td').filter({ hasText: '32 m²' }),
+      ).toHaveCount(1);
+    });
+
+    test('fifty thousand points draw under a mark per four pixels, and far fewer than the rows', async ({
+      page,
+    }) => {
+      const dense = chart(page, 'chart-cloud');
+      await dense.scrollIntoViewIfNeeded();
+      const plot = (await dense
+        .locator('clipPath rect')
+        .evaluate((r) => [
+          Number(r.getAttribute('width')),
+          Number(r.getAttribute('height')),
+        ])) as [number, number];
+      const count = await marksOf(dense).count();
+      expect(count).toBeLessThanOrEqual((plot[0] / 2) * (plot[1] / 2));
+      expect(count).toBeLessThan(50_000);
+      expect(count).toBeGreaterThan(1000);
+      await expect(dense.locator('[data-pct-part="points"]')).toHaveClass(
+        /hollow/,
+      );
+    });
+
+    test('a log axis spans whole decades, each the same height, ticked by decade or 1-2-5', async ({
+      page,
+    }) => {
+      const log = chart(page, 'chart-log');
+      await log.scrollIntoViewIfNeeded();
+      const labels = log.locator('[data-pct-unit="W"] text.value');
+      const texts = await labels.allTextContents();
+      // 0.8 W to 2 100 W: 0.1 to 10 000, five decades
+      expect(texts[0]).toBe('0.1');
+      expect(texts.at(-1)).toBe('10,000');
+      const ys = await labels.evaluateAll((ts) =>
+        ts.map((t) => Number(t.getAttribute('y'))),
+      );
+      const steps = ys.slice(1).map((y, i) => ys[i] - y);
+      for (const step of steps) expect(step).toBeCloseTo(steps[0], 0);
+    });
+
+    test('a zoom on both axes narrows the first value axis with Ctrl and the wheel, and 0 returns both', async ({
+      page,
+    }) => {
+      const xy = chart(page, 'chart-xy');
+      await xy.scrollIntoViewIfNeeded();
+      const window = page.getByTestId('y-window');
+      await expect(window).toHaveText('Every value');
+      const box = (await xy.boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.keyboard.down('Control');
+      await page.mouse.wheel(0, -200);
+      await page.keyboard.up('Control');
+      await expect(window).toHaveText(/^Values -?[\d.,]+ to -?[\d.,]+ kW$/);
+      // Shift with an arrow up moves the first axis's window a tenth up: both ends grow
+      const ends = async () =>
+        (await window.innerText()).match(/-?[\d.]+/g)!.map(Number);
+      const before = await ends();
+      await page
+        .getByRole('slider', {
+          name: 'Power drawn against the outdoor temperature, zoomed on both axes',
+        })
+        .focus();
+      await page.keyboard.press('Shift+ArrowUp');
+      await expect.poll(ends).not.toEqual(before);
+      const after = await ends();
+      expect(after[0]).toBeGreaterThan(before[0]);
+      expect(after[1]).toBeGreaterThan(before[1]);
+      await page.keyboard.press('0');
+      await expect(window).toHaveText('Every value');
+    });
+  });
 });

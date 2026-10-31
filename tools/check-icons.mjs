@@ -79,6 +79,7 @@ const DATA_DRAWINGS = new Set([
   `${PROJECT}/chart/src/note.html`,
   `${PROJECT}/chart/src/now.html`,
   `${PROJECT}/chart/src/band.html`,
+  `${PROJECT}/chart/src/points.html`,
 ]);
 const PART = 'data-pct-part';
 

@@ -1,0 +1,98 @@
+// The element itself draws nothing: its drawing is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A point: the series' marker shape, filled with the series' colour (0102), ringed by the
+// surface's colour so points that overlap stay apart. The ring keeps its width whatever the
+// shape is scaled to.
+[data-pct-part='point'] {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 1px;
+  paint-order: stroke;
+  vector-effect: non-scaling-stroke;
+}
+
+// Hollow points: the colour as an outline, in the line width of the chart.
+.hollow [data-pct-part='point'],
+.hollow .shape {
+  fill: none;
+  stroke-width: var(--pct-chart-series-width);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.shape {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 2px;
+  paint-order: stroke;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] [data-pct-part='point'],
+  [data-pct-series='#{$i}'] .shape {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+
+  // Bubbles cover one another: each is the series' colour mixed into nothing by the skin's
+  // amount, so the ones under it show through — a tint, as an area is, never a second colour.
+  .bubbles[data-pct-series='#{$i}'] [data-pct-part='point'] {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-bubble-alpha),
+      transparent
+    );
+  }
+
+  .hollow[data-pct-series='#{$i}'] [data-pct-part='point'],
+  .hollow[data-pct-series='#{$i}'] .shape {
+    fill: none;
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+// The consumer's own colour, handed in as a private property.
+[data-pct-series='custom'] [data-pct-part='point'],
+[data-pct-series='custom'] .shape {
+  fill: var(--_pct-chart-color);
+}
+
+.bubbles[data-pct-series='custom'] [data-pct-part='point'] {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-bubble-alpha),
+    transparent
+  );
+}
+
+.hollow[data-pct-series='custom'] [data-pct-part='point'],
+.hollow[data-pct-series='custom'] .shape {
+  fill: none;
+  stroke: var(--_pct-chart-color);
+}
+
+// With the colours gone, the shapes tell the series apart (0102): every mark is the text's
+// colour on the canvas's, the hollow ones as outlines.
+@media (forced-colors: active) {
+  [data-pct-series] [data-pct-part='point'],
+  [data-pct-series] .shape {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+
+  .hollow[data-pct-series] [data-pct-part='point'],
+  .hollow[data-pct-series] .shape {
+    fill: none;
+    stroke: CanvasText;
+  }
+}

@@ -251,6 +251,11 @@
         "$type": "dimension",
         "$value": "16px",
         "$description": "A lane of states under the plot: the height of its band."
+      },
+      "bubble-alpha": {
+        "$type": "dimension",
+        "$value": "70%",
+        "$description": "How much of the series colour fills a bubble, so the ones under it show through."
       }
     }
   }

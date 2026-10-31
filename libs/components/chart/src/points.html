@@ -1,0 +1,43 @@
+<ng-template #drawing>
+  @if (drawn().marks.length > 0) {
+  <svg:g
+    data-pct-part="points"
+    [class.bubbles]="sized()"
+    [class.hollow]="hollow()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  >
+    @for (point of drawn().marks; track point.index) {
+    <svg:path
+      data-pct-part="point"
+      [attr.d]="shape()"
+      [attr.transform]="placing(point)"
+    />
+    }
+  </svg:g>
+  }
+</ng-template>
+
+<!--
+  The series drawn small, where its name stands (0102): its marker shape in its colour, hollow
+  when the points are. A point has no line, so the swatch is the shape alone, in the middle of
+  the swatch's box.
+-->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [class.hollow]="hollow()"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    <svg:path
+      class="shape"
+      [attr.d]="markerOf(series.place)"
+      [attr.transform]="form === 'marker' ? null : 'translate(6 0)'"
+    />
+  </svg>
+</ng-template>

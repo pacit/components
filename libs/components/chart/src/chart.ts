@@ -44,14 +44,25 @@ import {
 } from './model/gestures';
 import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
-import { pctLinear, type PctDomain, type PctScale } from './model/scale';
+import {
+  pctLinear,
+  pctLog,
+  type PctDomain,
+  type PctScale,
+} from './model/scale';
 import { pctAxisSlots, type PctAxisSlot } from './model/slots';
 import {
   pctPlaceNotes,
   type PctNoteFrame,
   type PctPlacedNote,
 } from './model/notes';
-import { pctFractionDigits, pctNiceStep, pctTicks } from './model/ticks';
+import {
+  pctFractionDigits,
+  pctLogDomain,
+  pctLogTicks,
+  pctNiceStep,
+  pctTicks,
+} from './model/ticks';
 import {
   pctTimeStep,
   pctTimeTicks,
@@ -115,6 +126,15 @@ export class PctAxis {
    * @since next
    */
   readonly includeZero = input(false, { transform: booleanAttribute });
+  /**
+   * How the axis maps a value: evenly (`linear`), or by its logarithm (`log`), where every
+   * decade takes the same room, the ends are whole decades and the ticks are 1, 2 and 5 of
+   * each. A value at or below zero has no logarithm: it is a gap on such an axis, reported in
+   * development ([0105](../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
+   *
+   * @since next
+   */
+  readonly scale = input<'linear' | 'log'>('linear');
 }
 
 /**
@@ -262,6 +282,15 @@ interface PctSegment {
 const HOLD = 300;
 /** How near the cursor's line a tap clears it, in pixels. */
 const NEAR = 12;
+/** How far from a point, in pixels, the cursor still jumps onto it (0105). */
+const SNAP = 16;
+
+/** The scale of a value axis over `domain`, by its kind. */
+const scaleOf = (
+  log: boolean,
+  domain: PctDomain,
+  range: readonly [number, number],
+): PctScale => (log ? pctLog(domain, range) : pctLinear(domain, range));
 /** The gap between a note's point and its box. */
 const NOTE_GAP = 8;
 const HOUR = 3_600_000;
@@ -348,6 +377,13 @@ export class PctChart extends PctChartScene {
   readonly x = input<'time' | 'linear' | 'band'>('time');
   override readonly xKind = this.x;
   /**
+   * The unit of a `linear` horizontal axis: written at the axis's end and after the position
+   * the cursor reads, as a value axis's unit is; `''` for none.
+   *
+   * @since next
+   */
+  readonly xUnit = input('');
+  /**
    * The categories of a `band` axis, in order: each a band the bars stand in, labelled by it.
    * A series on such an axis gives `x` as the category's index (its middle is `index + 0.5`).
    *
@@ -409,6 +445,14 @@ export class PctChart extends PctChartScene {
    */
   readonly window = model<PctWindow | null>(null);
   /**
+   * The stretch of the first value axis on show while `zoom` is `xy`, in that axis's unit, or
+   * `null` for the domain its data give it. The other axes follow it in pixels, so a zoom on
+   * two axes keeps the series over one another where they were ([0105](../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
+   *
+   * @since next
+   */
+  readonly yWindow = model<PctWindow | null>(null);
+  /**
    * The ids of the series not drawn. A hidden series keeps its colour and its axis, and adds
    * nothing to the axis's domain.
    *
@@ -452,12 +496,13 @@ export class PctChart extends PctChartScene {
   /**
    * How the window moves: `x` — a drag and a wheel with Ctrl pan and zoom it along the
    * horizontal axis, two fingers pinch it, a double tap returns it, the keys and the zoom
-   * buttons do the same; `none` — it stays where the application puts it, and a drag across
-   * the plot is the page's.
+   * buttons do the same; `xy` — the same moves work the first value axis too, through
+   * `yWindow`, and Shift with an arrow up or down pans it; `none` — it stays where the
+   * application puts it, and a drag across the plot is the page's.
    *
    * @since next
    */
-  readonly zoom = input<'x' | 'none'>('x');
+  readonly zoom = input<'x' | 'xy' | 'none'>('x');
   /**
    * The lines draw their dash patterns always (`all`), or only where the colours are gone,
    * under forced colours (`color`, the default): eight dashed lines are noise where the
@@ -779,15 +824,29 @@ export class PctChart extends PctChartScene {
       const slots = [...this.slots().values()];
       const room = (side: 'left' | 'right') =>
         slots.filter((s) => s.startsWith(side)).length * (line + this.gap());
-      const top = Math.max(EDGE, room('right'));
+      const top = Math.max(
+        EDGE,
+        room('right'),
+        this.xUnitShown() ? line + this.gap() : 0,
+      );
       const bottom = height - Math.max(EDGE, room('left'));
       return { top, bottom: Math.max(top + 1, bottom) };
     }
     const top = this.slots().size > 0 ? line + this.gap() : EDGE;
     // The lanes stand between the plot and the time's labels.
-    const bottom = height - line - this.gap() - this.laneRoom();
+    const bottom =
+      height -
+      line -
+      this.gap() -
+      this.laneRoom() -
+      (this.xUnitShown() ? line : 0);
     return { top, bottom: Math.max(top + 1, bottom) };
   });
+
+  /** A unit written at the horizontal axis's end: a `linear` axis with an `xUnit`. */
+  private readonly xUnitShown = computed(
+    () => this.x() === 'linear' && this.xUnit() !== '',
+  );
 
   /** The value axes: domain, ticks and labels, before their horizontal place is known. */
   private readonly valueAxes = computed(() => {
@@ -803,35 +862,59 @@ export class PctChart extends PctChartScene {
       });
     const configs = new Map(this.axisConfigs().map((c) => [c.unit(), c]));
     const places = this.places();
-    return [...this.slots()].map(([unit, slot]) => {
+    const whole = [...this.slots()].map(([unit, slot]) => {
       const series = this.series().filter((s) => s.unit === unit);
+      const config = configs.get(unit);
+      const log = unit !== BOOLEAN && config?.scale() === 'log';
+      const own = series.map((s) => extents.get(s.id) ?? null);
       let domain: PctDomain;
+      if (unit === BOOLEAN) domain = [0, 1];
+      else if (log) domain = this.logDomain(own, config);
+      else
+        domain = pctDomainOf(own, {
+          target,
+          includeZero: config?.includeZero() || series.some((s) => s.fromZero),
+          floor: config?.floor(),
+          ceiling: config?.ceiling(),
+        });
+      return { unit, slot, series, log, domain };
+    });
+    // The window of the first axis, when the zoom works both ways: the others follow it in
+    // pixels, each through its own scale, so a log axis follows a linear one and back (0105).
+    const yWindow = this.zoom() === 'xy' ? this.yWindow() : null;
+    const first = whole[0];
+    return whole.map(({ unit, slot, series, log, domain: full }) => {
+      let domain = full;
+      if (yWindow && first) {
+        const lead = scaleOf(first.log, first.domain, [0, 1]);
+        const own = scaleOf(log, full, [0, 1]);
+        domain =
+          unit === first.unit
+            ? [yWindow.from, yWindow.to]
+            : [
+                own.invert(lead.map(yWindow.from)),
+                own.invert(lead.map(yWindow.to)),
+              ];
+      }
       let ticks: readonly { at: number; text: string }[];
       if (unit === BOOLEAN) {
-        domain = [0, 1];
         ticks = [
           { at: 0, text: this.texts().chartOff },
           { at: 1, text: this.texts().chartOn },
         ];
       } else {
-        const config = configs.get(unit);
-        domain = pctDomainOf(
-          series.map((s) => extents.get(s.id) ?? null),
-          {
-            target,
-            includeZero:
-              config?.includeZero() || series.some((s) => s.fromZero),
-            floor: config?.floor(),
-            ceiling: config?.ceiling(),
-          },
-        );
-        const values = pctTicks(domain, target);
-        // A lone tick is written to the step the axis would have had: 0.5, not 1.
+        const values = log
+          ? pctLogTicks(domain, target)
+          : pctTicks(domain, target);
+        // A lone tick is written to the step the axis would have had: 0.5, not 1; the ticks of
+        // a log axis to the places its lowest one needs.
         const step =
           values.length > 1
             ? values[1] - values[0]
             : pctNiceStep(domain[1] - domain[0], target);
-        const writer = format(pctFractionDigits(step));
+        const writer = format(
+          pctFractionDigits(log ? (values[0] ?? domain[0]) : step),
+        );
         ticks = values.map((at) => ({ at, text: writer.format(at) }));
       }
       // The room of an axis: its widest label, or its unit written above it when that is wider.
@@ -846,7 +929,7 @@ export class PctChart extends PctChartScene {
         )
         .filter((p): p is number => p !== null)
         .slice(0, 3);
-      return { unit, slot, domain, ticks, width, places: dots };
+      return { unit, slot, domain, full, log, ticks, width, places: dots };
     });
   });
 
@@ -942,7 +1025,8 @@ export class PctChart extends PctChartScene {
     const end = horizontal ? top : right;
     const out = horizontal ? 1 : -1;
     return this.valueAxes().map((axis) => {
-      const scale = pctLinear(
+      const scale = scaleOf(
+        axis.log,
         axis.domain,
         horizontal ? [left, right] : [bottom, top],
       );
@@ -1140,8 +1224,24 @@ export class PctChart extends PctChartScene {
       ? { x1: left, x2: left, y1: top, y2: bottom }
       : { x1: left, x2: right, y1: bottom, y2: bottom };
     const ticks = this.xTicks();
+    const unitLabel = !this.xUnitShown()
+      ? null
+      : horizontal
+        ? {
+            x: left - TICK - 2,
+            y: top - this.gap(),
+            anchor: 'end' as const,
+            baseline: 'alphabetic' as const,
+          }
+        : {
+            x: right,
+            y: bottom + TICK + 2 + this.lineHeight(),
+            anchor: 'end' as const,
+            baseline: 'hanging' as const,
+          };
     return {
       base,
+      unitLabel,
       marks: ticks.map((t): PctSegment =>
         horizontal
           ? { x1: left - TICK, x2: left, y1: t.px, y2: t.px }
@@ -1239,6 +1339,14 @@ export class PctChart extends PctChartScene {
 
   private readonly valueFormat = computed(() =>
     pctQuantityFormat(this.effectiveLocale(), { fractionDigits: [0, 3] }),
+  );
+
+  /** A position on a numeric axis, with the axis's unit where there is one. */
+  private readonly positionFormat = computed(() =>
+    pctQuantityFormat(this.effectiveLocale(), {
+      unit: this.xUnitShown() ? this.xUnit() : undefined,
+      fractionDigits: [0, 3],
+    }),
   );
 
   /**
@@ -1483,6 +1591,7 @@ export class PctChart extends PctChartScene {
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnnamed());
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnplaced());
     if (isDevMode()) afterRenderEffect(() => this.warnOnTwins());
+    if (isDevMode()) afterRenderEffect(() => this.warnOnLogZero());
   }
 
   /**
@@ -1646,10 +1755,13 @@ export class PctChart extends PctChartScene {
       (cursor !== null && cursor >= shown.from && cursor <= shown.to
         ? cursor
         : (shown.from + shown.to) / 2);
-    this.move({
-      factor,
-      anchor: (about - shown.from) / (shown.to - shown.from),
-    });
+    this.move(
+      {
+        factor,
+        anchor: (about - shown.from) / (shown.to - shown.from),
+      },
+      { factor, anchor: 0.5 },
+    );
   }
 
   /**
@@ -1668,13 +1780,15 @@ export class PctChart extends PctChartScene {
    */
   home(): void {
     this.window.set(this.defaultWindow());
+    this.yWindow.set(null);
     this.announceWindow();
   }
 
   /** The window after a change, held to the limits and the narrowest span. */
-  private move(change: PctWindowChange): void {
+  private move(change: PctWindowChange, across?: PctWindowChange): void {
     const shown = this.shown();
     if (!shown) return;
+    if (across && this.zoom() === 'xy') this.moveAcross(across);
     const limits = this.limits() ?? this.dataSpan();
     const minSpan =
       this.minSpan() ??
@@ -1686,6 +1800,46 @@ export class PctChart extends PctChartScene {
   }
 
   /**
+   * The first value axis's window, moved as the horizontal one is: the same transform, in the
+   * axis's own pixels — a log axis zooms by decades, not by values — bounded by the domain the
+   * data give the axis, and `null` again once it covers that domain whole (0105).
+   */
+  private moveAcross(change: PctWindowChange): void {
+    const first = this.valueAxes()[0];
+    if (!first) return;
+    const lead = scaleOf(first.log, first.full, [0, 1]);
+    const shown = this.yWindow() ?? { from: first.full[0], to: first.full[1] };
+    const next = pctWindowTransform(
+      { from: lead.map(shown.from), to: lead.map(shown.to) },
+      change,
+      { from: 0, to: 1 },
+      1e-6,
+    );
+    this.yWindow.set(
+      // the whole domain again, an ulp in: the window lets go
+      next.from <= 1e-9 && next.to >= 1 - 1e-9
+        ? null
+        : { from: lead.invert(next.from), to: lead.invert(next.to) },
+    );
+  }
+
+  /** The fraction of the first axis's length a move across the plot is, with its sign. */
+  private acrossShift(px: number): number {
+    const length = Math.max(1, this.acrossLength());
+    return (this.horizontal() ? -px : px) / length;
+  }
+
+  /** Where a point across the plot stands on the first axis, as a fraction from its low end. */
+  private acrossAnchor(px: number): number {
+    const { top, bottom } = this.rows();
+    const { left, right } = this.columns();
+    const fraction = this.horizontal()
+      ? (px - left) / Math.max(1, right - left)
+      : (bottom - px) / Math.max(1, bottom - top);
+    return Math.min(1, Math.max(0, fraction));
+  }
+
+  /**
    * The window's range, said once it rests: a reader hears where the window went, not every
    * step of the way there.
    */
@@ -1694,7 +1848,13 @@ export class PctChart extends PctChartScene {
     this.settleTimer = setTimeout(() => {
       const shown = this.shown();
       if (!shown) return;
-      const range = `${this.writePosition(shown.from, 'full')} – ${this.writePosition(shown.to, 'full')}`;
+      const across = this.yWindow();
+      const first = this.valueAxes()[0];
+      const along = `${this.writePosition(shown.from, 'full')} – ${this.writePosition(shown.to, 'full')}`;
+      const range =
+        this.zoom() === 'xy' && across && first
+          ? `${along}, ${this.writeValue(across.from, first.unit)} – ${this.writeValue(across.to, first.unit)}`
+          : along;
       if (range === this.announced) return;
       if (this.announced) this.announcer.retract(this.announced);
       this.announced = range;
@@ -1707,6 +1867,14 @@ export class PctChart extends PctChartScene {
     if (this.zoom() === 'none') return false;
     if (event.shiftKey && event.key === 'ArrowLeft') this.panBy(-STEP);
     else if (event.shiftKey && event.key === 'ArrowRight') this.panBy(STEP);
+    else if (event.shiftKey && event.key === 'ArrowUp' && this.zoom() === 'xy')
+      this.moveAcross({ shift: STEP });
+    else if (
+      event.shiftKey &&
+      event.key === 'ArrowDown' &&
+      this.zoom() === 'xy'
+    )
+      this.moveAcross({ shift: -STEP });
     else if (event.key === '+' || event.key === '=') this.zoomBy(2);
     else if (event.key === '-' || event.key === '_') this.zoomBy(0.5);
     else if (event.key === '0') this.home();
@@ -1770,28 +1938,39 @@ export class PctChart extends PctChartScene {
     const cursors = this.cursorMode() !== 'none';
     switch (action.type) {
       case 'pan':
-        if (moves) this.move({ shift: -action.dx / width });
+        if (moves)
+          this.move(
+            { shift: -action.dx / width },
+            { shift: this.acrossShift(action.shiftY) },
+          );
         return;
       case 'pinch':
         if (moves)
-          this.move({
-            factor: action.factor,
-            anchor: (action.about - start) / width,
-            shift: -action.dx / width,
-          });
+          this.move(
+            {
+              factor: action.factor,
+              anchor: (action.about - start) / width,
+              shift: -action.dx / width,
+            },
+            {
+              factor: action.factor,
+              anchor: this.acrossAnchor(action.aboutY),
+              shift: this.acrossShift(action.shiftY),
+            },
+          );
         return;
       case 'double':
         if (moves) this.home();
         return;
       case 'hold': {
-        const x = this.positionAt(action.x);
+        const x = this.snap(action.x, action.y);
         if (!cursors || x === null) return;
         layer.setPointerCapture?.(pointer);
         this.place(x, true);
         return;
       }
       case 'drag': {
-        const x = this.positionAt(action.x);
+        const x = this.snap(action.x, action.y);
         if (cursors && x !== null) this.place(x, true);
         return;
       }
@@ -1820,10 +1999,32 @@ export class PctChart extends PctChartScene {
           this.place(null, false);
           return;
         }
-        const x = this.positionAt(action.x);
+        const x = this.snap(action.x, action.y);
         if (x !== null) this.place(x, true);
       }
     }
+  }
+
+  /**
+   * The position the cursor takes for a pointer at `along`/`across` (the layer's pixels, the
+   * axis's way): the point of a mark within `SNAP` pixels when one offers it — a scatter's
+   * cursor stands on points, not between them — and the pointer's own column otherwise (0105).
+   */
+  private snap(along: number, across: number): number | null {
+    const x = this.positionAt(along);
+    if (x === null) return null;
+    const [px, py] = this.horizontal() ? [across, along] : [along, across];
+    let best: { readonly at: number; readonly distance: number } | null = null;
+    for (const mark of this.marks()) {
+      const near = mark.nearAt(px, py);
+      if (
+        near &&
+        near.distance <= SNAP &&
+        (!best || near.distance < best.distance)
+      )
+        best = near;
+    }
+    return best ? best.at : x;
   }
 
   protected onPointerDown(event: PointerEvent): void {
@@ -1870,7 +2071,11 @@ export class PctChart extends PctChartScene {
     const point = this.layerPoint(event);
     // Along the x axis, whichever way it runs: the pointer's height on a turned chart.
     this.cursor.set(
-      point ? this.positionAt(this.horizontal() ? point.y : point.x) : null,
+      point
+        ? this.horizontal()
+          ? this.snap(point.y, point.x)
+          : this.snap(point.x, point.y)
+        : null,
     );
   }
 
@@ -1905,10 +2110,17 @@ export class PctChart extends PctChartScene {
     const along = this.horizontal() ? point.y : point.x;
     // A line of the wheel is about sixteen pixels of a pad's.
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : 1);
-    this.move({
-      factor: Math.exp(-delta * 0.002),
-      anchor: Math.min(1, Math.max(0, (along - start) / width)),
-    });
+    const factor = Math.exp(-delta * 0.002);
+    this.move(
+      {
+        factor,
+        anchor: Math.min(1, Math.max(0, (along - start) / width)),
+      },
+      {
+        factor,
+        anchor: this.acrossAnchor(this.horizontal() ? point.x : point.y),
+      },
+    );
   }
 
   /**
@@ -1931,8 +2143,10 @@ export class PctChart extends PctChartScene {
    */
   override writePosition(x: number, form: 'short' | 'full'): string {
     if (this.x() === 'band')
-      return this.categories()[Math.floor(x)] ?? this.valueFormat().format(x);
-    if (this.x() !== 'time') return this.valueFormat().format(x);
+      return (
+        this.categories()[Math.floor(x)] ?? this.positionFormat().format(x)
+      );
+    if (this.x() !== 'time') return this.positionFormat().format(x);
     const interval = this.interval();
     if (interval && this.bands().length > 0) {
       // Under bars the position is the bar's band, written as its label is.
@@ -2026,6 +2240,50 @@ export class PctChart extends PctChartScene {
     if (!measuring) return text.length * px * 0.6;
     measuring.font = `${px}px ${family}`;
     return measuring.measureText(text).width;
+  }
+
+  /**
+   * The domain of a log axis: whole decades around the values, the consumer's `floor` and
+   * `ceiling` where they are above zero — below it they have no place on the axis either.
+   */
+  private logDomain(
+    extents: readonly (PctDomain | null)[],
+    config: PctAxis | undefined,
+  ): PctDomain {
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (const extent of extents) {
+      if (!extent) continue;
+      lo = Math.min(lo, extent[0]);
+      hi = Math.max(hi, extent[1]);
+    }
+    let [from, to] = pctLogDomain(lo, hi);
+    const floor = config?.floor();
+    const ceiling = config?.ceiling();
+    if (floor !== undefined && floor > 0) from = floor;
+    if (ceiling !== undefined && ceiling > 0) to = ceiling;
+    return from < to ? [from, to] : [from, from * 10];
+  }
+
+  private warnOnLogZero(): void {
+    const extents = this.extents();
+    for (const axis of this.valueAxes()) {
+      if (!axis.log) continue;
+      const under = this.series().filter((s) => {
+        const extent = extents.get(s.id);
+        return (
+          s.unit === axis.unit &&
+          extent !== null &&
+          extent !== undefined &&
+          extent[0] <= 0
+        );
+      });
+      if (under.length === 0) continue;
+      console.warn(
+        `[pct-chart] ${under.map((s) => `"${s.name}"`).join(', ')} has a value at or below zero ` +
+          `on the logarithmic axis "${axis.unit}": it has no logarithm, and is a gap there.`,
+      );
+    }
   }
 
   private warnOnUnplaced(): void {

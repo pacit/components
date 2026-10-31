@@ -439,6 +439,126 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Points and bubbles"
+  summary="pct-points draws a mark per row at its x and y, the rows in any order; with a size read off the rows the marks are bubbles whose area grows with it. The cursor stands on the nearest point, and a press on one picks its row."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-points"
+>
+  <pct-chart
+    ariaLabel="Power drawn against the outdoor temperature"
+    x="linear"
+    xUnit="°C"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-points"
+  >
+    <pct-points
+      [data]="heating"
+      x="outdoor"
+      y="power"
+      name="Heat pump"
+      unit="kW"
+      (pick)="pickedPoint.set($event)"
+    />
+  </pct-chart>
+  <p data-testid="picked-point">{{ pickedPointText() }}</p>
+  <pct-chart
+    #bubbles
+    ariaLabel="Humidity against temperature by room, the area of each as the size"
+    x="linear"
+    xUnit="°C"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-bubbles"
+  >
+    <pct-points
+      [data]="rooms2"
+      x="temperature"
+      y="humidity"
+      size="area"
+      sizeName="Area"
+      sizeUnit="m²"
+      name="Rooms"
+      unit="%"
+      color="4"
+    />
+  </pct-chart>
+  <pct-chart-table [chart]="bubbles" data-testid="bubbles-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="Fifty thousand points"
+  summary="Two points closer than two pixels draw one mark, so a cloud of fifty thousand rows is a few thousand marks and the picture stays light; hollow marks let the dense parts show their depth."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-dense"
+>
+  <pct-chart
+    ariaLabel="Fifty thousand readings of one sensor against another"
+    x="linear"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-cloud"
+  >
+    <pct-points
+      [data]="cloud"
+      [x]="first"
+      [y]="second"
+      name="Readings"
+      unit=""
+      [radius]="2.5"
+      hollow
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A logarithmic axis"
+  summary='pct-axis scale="log": a value axis of whole decades, each the same height, ticked 1-2-5; a device that draws a watt in standby and two kilowatts heating is read on one picture. A value at or below zero has no logarithm and is a gap.'
+  [reqs]="['req-api-templates']"
+  data-testid="demo-log"
+>
+  <pct-chart
+    ariaLabel="Power drawn by the hot-water tank on 25 October 2026, on a logarithmic axis"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-log"
+  >
+    <pct-line [data]="watts" x="at" y="value" name="Water heater" unit="W" />
+    <pct-axis unit="W" scale="log" />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A zoom on both axes"
+  summary='zoom="xy": the wheel with Ctrl, a pinch and a drag work the first value axis too, through yWindow; Shift with an arrow up or down pans it, 0 and a double tap return both axes.'
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-zoom-xy"
+>
+  <pct-chart
+    ariaLabel="Power drawn against the outdoor temperature, zoomed on both axes"
+    x="linear"
+    xUnit="°C"
+    zoom="xy"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-xy"
+    [(yWindow)]="yWindow"
+  >
+    <pct-axis unit="kW" [floor]="0" [ceiling]="5" />
+    <pct-points
+      [data]="heating"
+      x="outdoor"
+      y="power"
+      name="Heat pump"
+      unit="kW"
+      color="2"
+    />
+  </pct-chart>
+  <p data-testid="y-window">{{ yWindowText() }}</p>
+</sbx-demo>
+
+<sbx-demo
   heading="Nothing to draw, and still loading"
   summary="With no reading the chart says so in the plot; while the data are on their way it shows a skeleton of its shape and tells a reader it is busy."
   [reqs]="['req-a11y-built-in']"

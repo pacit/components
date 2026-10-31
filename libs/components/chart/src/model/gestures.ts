@@ -25,12 +25,15 @@ export interface PctPointerInput {
  * @since next
  */
 export type PctGestureAction =
-  | { readonly type: 'pan'; readonly dx: number }
+  | { readonly type: 'pan'; readonly dx: number; readonly shiftY: number }
   | {
       readonly type: 'pinch';
       readonly factor: number;
       readonly about: number;
       readonly dx: number;
+      /** The middle across the plot, and how far it moved: for a zoom on both axes. */
+      readonly aboutY: number;
+      readonly shiftY: number;
     }
   | {
       readonly type: 'tap' | 'double' | 'hold' | 'drag';
@@ -102,11 +105,12 @@ export const PCT_GESTURE_IDLE: PctGestureState = {
 /** The middle of two pointers and the distance between them. */
 function spread(
   pointers: PctGestureState['pointers'],
-): { middle: number; distance: number } | null {
+): { middle: number; middleY: number; distance: number } | null {
   const [a, b] = [...pointers.values()];
   if (!a || !b) return null;
   return {
     middle: (a.x + b.x) / 2,
+    middleY: (a.y + b.y) / 2,
     distance: Math.hypot(a.x - b.x, a.y - b.y),
   };
 }
@@ -178,11 +182,16 @@ export function pctGestureStep(
             factor: before.distance > 0 ? after.distance / before.distance : 1,
             about: before.middle,
             dx: after.middle - before.middle,
+            aboutY: before.middleY,
+            shiftY: after.middleY - before.middleY,
           },
         };
       }
       if (state.mode === 'pan')
-        return { state: next, action: { type: 'pan', dx: input.x - own.x } };
+        return {
+          state: next,
+          action: { type: 'pan', dx: input.x - own.x, shiftY: input.y - own.y },
+        };
       if (state.mode === 'hold')
         return {
           state: next,
@@ -198,7 +207,11 @@ export function pctGestureStep(
       // Past the slop the window takes the whole way from the press, so nothing is lost.
       return {
         state: { ...next, mode: 'pan' },
-        action: { type: 'pan', dx: input.x - own.startX },
+        action: {
+          type: 'pan',
+          dx: input.x - own.startX,
+          shiftY: input.y - own.startY,
+        },
       };
     }
     case 'up':

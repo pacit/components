@@ -430,6 +430,31 @@ export abstract class PctMark {
    *
    * @since next
    */
+  /**
+   * The point of this mark nearest to (`x`, `y`) in the layer's pixels — its position on the
+   * horizontal axis and the distance in pixels — or `null` when the mark has none to offer. The
+   * scene asks every mark where a pointer lands and puts the cursor on the nearest point within
+   * reach, so a scatter's cursor stands on a point, not on the pointer's column
+   * ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
+   * The default: nothing to offer.
+   *
+   * @since next
+   */
+  nearAt(
+    x: number,
+    y: number,
+  ): { readonly at: number; readonly distance: number } | null {
+    void x;
+    void y;
+    return null;
+  }
+
+  /**
+   * The rows a mark adds to the tooltip under the series' own — a bubble's size, a band's state.
+   * The default: none.
+   *
+   * @since next
+   */
   notesAt(x: number): readonly PctMarkNote[] {
     void x;
     return [];

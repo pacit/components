@@ -55,6 +55,9 @@ from what the browser really gets.
 ./chart PctNote swatch
 ./chart PctNow now
 ./chart PctNow swatch
+./chart PctPoints point
+./chart PctPoints points
+./chart PctPoints swatch
 ./chart PctReference reference
 ./chart PctReference swatch
 ./chart PctSpan span

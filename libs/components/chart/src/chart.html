@@ -104,6 +104,15 @@
         [attr.data-pct-label]="label.label"
         [textContent]="label.text"
       ></text>
+      } @if (xAxis.unitLabel; as unitLabel) {
+      <text
+        data-pct-part="unit"
+        [attr.dominant-baseline]="unitLabel.baseline"
+        [attr.text-anchor]="unitLabel.anchor"
+        [attr.x]="unitLabel.x"
+        [attr.y]="unitLabel.y"
+        [textContent]="xUnit()"
+      ></text>
       } @for (axis of axisViews(); track axis.unit) {
       <g [attr.data-pct-slot]="axis.slot" [attr.data-pct-unit]="axis.unit">
         <line
