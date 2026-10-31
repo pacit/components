@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 5 of 595 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2451
-phrases, and 2448 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2452
+phrases, and 2449 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -115,7 +115,7 @@ Tab moved nothing — focus had left the page.
 ### `/textarea`
 
 ```
-arrive  a "Textarea"                                         navigation · Sandbox views · List with 36 items · Textarea · link. · Browse mode
+arrive  a "Textarea"                                         navigation · Sandbox views · List with 36 items · Textarea · visited link. · Browse mode
 enter   textarea                                             About you · entry · A few words… · Type — the box follows. · Focus mode
 tab 1   textarea                                             A plain textarea, for comparison · entry · This one keeps its two lines and scrolls.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -140,7 +140,7 @@ Tab moved nothing — focus had left the page.
 ### `/number`
 
 ```
-arrive  a "Number"                                           navigation · Sandbox views · List with 36 items · Number · link. · Browse mode
+arrive  a "Number"                                           navigation · Sandbox views · List with 36 items · Number · visited link. · Browse mode
 enter   input                                                Price · spin button · 1 499,90. · The arrows change the value by 0.5. · Focus mode
 tab 1   button[field-suffix-item] "Clear the price"          Clear the price · button. · Browse mode
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -294,7 +294,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 36 items · Switch · link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 36 items · Switch · visited link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -371,7 +371,7 @@ Tab moved nothing — focus had left the page.
 ### `/popover`
 
 ```
-arrive  a "Popover"                                          navigation · Sandbox views · List with 36 items · Popover · link. · Browse mode
+arrive  a "Popover"                                          navigation · Sandbox views · List with 36 items · Popover · visited link. · Browse mode
 enter   button "Filters"                                     Filters · collapsed button. · opens dialog · Focus mode
 tab 1   button "start"                                       start · collapsed button. · opens dialog
 tab 2   button "top"                                         top · collapsed button. · opens dialog
@@ -394,7 +394,7 @@ the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog 
 ### `/menu`
 
 ```
-arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Menu · link. · Browse mode
+arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Menu · visited link. · Browse mode
 enter   button "Actions"                                     Actions · collapsed button. · opens menu · Focus mode
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
@@ -414,7 +414,7 @@ the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gestu
 ### `/drawer`
 
 ```
-arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · link. · Browse mode
+arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · visited link. · Browse mode
 enter   button "Sections"                                    Sections · collapsed button. · Focus mode
 tab 1   button "Sections, from further down"                 Sections, from further down · collapsed button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -427,7 +427,7 @@ tab 8   input[control]                                       leaving panel. · S
 tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 10  button "Open the bare one"                           leaving panel. · Open the bare one · collapsed button. · Focus mode
 tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Sections"                                    main content · Sections · collapsed button. · Focus mode
+reach   button "Sections"                                    main content · A panel docked to an edge of the window. It is not an overlay: it is drawn where it stands in · Browse mode · Sections · collapsed button. · Focus mode
 open    button "Sections"                                    expanded
 close   button "Sections"                                    (silence)
 ```
@@ -481,7 +481,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Tabs · visited link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -515,7 +515,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/toast`
 
 ```
-arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · link. · Browse mode
+arrive  a "Toast"                                            navigation · Sandbox views · List with 36 items · Toast · visited link. · Browse mode
 enter   button "Save the draft"                              Save the draft · button.
 tab 1   button "Copy (a shorter clock)"                      Copy (a shorter clock) · button.
 tab 2   button "Report something that waits"                 Report something that waits · button.
@@ -580,7 +580,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving navigation. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · link.
+arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · visited link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -683,7 +683,7 @@ Tab moved nothing — focus had left the page.
 ### `/badge`
 
 ```
-arrive  a "Badge"                                            navigation · Sandbox views · List with 36 items · Badge · visited link. · Browse mode
+arrive  a "Badge"                                            navigation · Sandbox views · List with 36 items · Badge · link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -701,7 +701,7 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · visited link. · Browse mode
+arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · link. · Browse mode
 enter   input[control]                                       Done · check box checked.
 tab 1   input[control]                                       Done · check box checked.
 tab 2   input[control]                                       Icon · @pacit/components · page tab. · JUGGLER <window>.
@@ -763,7 +763,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/table`
 
 ```
-arrive  a "Table"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Table · link. · Browse mode
+arrive  a "Table"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Table · visited link. · Browse mode
 enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.
@@ -819,7 +819,7 @@ Tab moved nothing — focus had left the page.
 ### `/stepper`
 
 ```
-arrive  a "Stepper"                                          navigation · Sandbox views · List with 36 items · Stepper · link. · Browse mode
+arrive  a "Stepper"                                          navigation · Sandbox views · List with 36 items · Stepper · visited link. · Browse mode
 enter   button "Back"                                        Back · button.
 tab 1   button "Next"                                        Next · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.

@@ -219,6 +219,7 @@ const DRAWS_DATA = new Set([
   'chart/src/span.scss',
   'chart/src/note.scss',
   'chart/src/now.scss',
+  'chart/src/band.scss',
 ]);
 const drawsData = (file) =>
   DRAWS_DATA.has(

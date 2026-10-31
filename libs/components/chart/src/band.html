@@ -1,0 +1,36 @@
+<ng-template #drawing>
+  @if (drawn().length > 0) {
+  <svg:g data-pct-part="band" [class.tint]="tinted()">
+    @for (segment of drawn(); track segment.index) {
+    <svg:rect
+      data-pct-part="segment"
+      [attr.x]="segment.x"
+      [attr.y]="segment.y"
+      [attr.width]="segment.width"
+      [attr.height]="segment.height"
+      [attr.data-pct-series]="segment.place"
+      [style.--_pct-chart-color]="segment.color"
+    />
+    }
+  </svg:g>
+  }
+</ng-template>
+
+<!-- A state drawn small: a block in its colour, the segments' own shape; the marker the same. -->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'swatch') {
+    <svg:rect class="block" x="1" y="2" width="22" height="8" />
+    } @else {
+    <svg:rect class="block" x="2" y="2" width="8" height="8" />
+    }
+  </svg>
+</ng-template>

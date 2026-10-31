@@ -375,6 +375,53 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A band of states: in a lane under the plot, and a chart of its own"
+  summary="pct-band draws the heat pump's mode through the day as a block per segment, in a lane of its own under the supply air; it brings no series and no axis. The tooltip names the mode under the cursor and how long it held, the legend lists the modes with a toggle each, and the table gets a column with a row per segment. The second chart holds the band alone, in step with the first through pctChartSync; a reader hears how long each mode held in the window."
+  [reqs]="['req-a11y-built-in', 'req-api-templates']"
+  data-testid="demo-band"
+>
+  <section pctChartSync class="sbx-chart-stack">
+    <pct-chart
+      #banded
+      ariaLabel="Supply air and the heat pump's mode on 25 October 2026"
+      timeZone="Europe/Warsaw"
+      locale="en-GB"
+      class="sbx-chart"
+      data-testid="chart-band"
+    >
+      <pct-line [data]="supply" x="at" y="value" name="Supply air" unit="°C" />
+      <pct-band
+        [data]="modes"
+        from="from"
+        to="to"
+        state="mode"
+        label="Mode"
+        [states]="modeStates"
+      />
+    </pct-chart>
+    <pct-chart-legend [chart]="banded" data-testid="band-legend" />
+    <pct-chart
+      ariaLabel="The heat pump's mode on 25 October 2026"
+      timeZone="Europe/Warsaw"
+      locale="en-GB"
+      class="sbx-chart-band"
+      data-testid="chart-band-alone"
+    >
+      <pct-band
+        [data]="modes"
+        from="from"
+        to="to"
+        state="mode"
+        label="Mode"
+        [states]="modeStates"
+        [legend]="false"
+      />
+    </pct-chart>
+    <pct-chart-table [chart]="banded" data-testid="band-table" />
+  </section>
+</sbx-demo>
+
+<sbx-demo
   heading="Numbers along the horizontal axis"
   summary='x="linear": the horizontal axis holds plain numbers and ticks them 1-2-5, as the value axes do.'
   [reqs]="['req-api-templates']"

@@ -12,6 +12,8 @@
         <th pctHeader scope="col" numeric>
           {{ s.name }}@if (s.unit && s.unit !== 'boolean') { ({{ s.unit }})}
         </th>
+        } @for (w of words(); track w.id) {
+        <th pctHeader scope="col">{{ w.name }}</th>
         }
       </tr>
     </thead>
@@ -21,6 +23,8 @@
         <th pctHeader scope="row">{{ row.label }}</th>
         @for (text of row.texts; track $index) {
         <td pctCell numeric>{{ text }}</td>
+        } @for (word of row.words; track $index) {
+        <td pctCell>{{ word }}</td>
         }
       </tr>
       }
@@ -31,6 +35,8 @@
         <th pctHeader scope="row">{{ foot.label }}</th>
         @for (text of foot.texts; track $index) {
         <td pctCell numeric>{{ text }}</td>
+        } @for (w of words(); track w.id) {
+        <td pctCell></td>
         }
       </tr>
     </tfoot>

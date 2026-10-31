@@ -3,6 +3,11 @@
   block-size: 280px;
 }
 
+// A band alone: a lane's height, the time's labels and the edges.
+.sbx-chart-band {
+  block-size: 72px;
+}
+
 .view__pair {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

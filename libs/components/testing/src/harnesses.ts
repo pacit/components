@@ -234,6 +234,17 @@ export class PctNowHarness extends PctHarness<'now' | 'swatch'> {
   static override readonly parts = ['now', 'swatch'] as const;
 }
 
+/**
+ * `pct-band` — `PctBand`: a band of states along the horizontal axis, a block per segment.
+ * Its drawing is stamped into the chart's data layer, so its parts are found in the document.
+ *
+ * @since next
+ */
+export class PctBandHarness extends PctHarness<'band' | 'segment' | 'swatch'> {
+  static override hostSelector = 'pct-band';
+  static override readonly parts = ['band', 'segment', 'swatch'] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**

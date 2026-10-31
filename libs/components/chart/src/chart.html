@@ -37,12 +37,13 @@
     @if (measured() && !loading()) {
     <svg class="layer" aria-hidden="true" data-pct-part="data">
       <defs>
+        <!-- The clip holds the plot and the lanes beside it. -->
         <clipPath [id]="ids.clip">
           <rect
-            [attr.x]="plot().left"
-            [attr.y]="plot().top"
-            [attr.width]="plot().right - plot().left"
-            [attr.height]="plot().bottom - plot().top"
+            [attr.x]="picture().left"
+            [attr.y]="picture().top"
+            [attr.width]="picture().right - picture().left"
+            [attr.height]="picture().bottom - picture().top"
           />
         </clipPath>
       </defs>
@@ -214,6 +215,15 @@
         </div>
         } @for (note of reading.notes; track note.id) {
         <div class="row note">
+          @if (note.swatch; as swatch) {
+          <ng-container
+            [ngTemplateOutlet]="swatch.template"
+            [ngTemplateOutletContext]="{
+              $implicit: swatch.identity,
+              form: 'marker',
+            }"
+          />
+          }
           <span class="name" [textContent]="note.name"></span>
           <span class="value" [textContent]="note.text"></span>
         </div>

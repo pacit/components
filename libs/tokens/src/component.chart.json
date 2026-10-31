@@ -246,6 +246,11 @@
         "$type": "color",
         "$value": "{pct.primary}",
         "$description": "The line of the present moment across the plot, and its label."
+      },
+      "band-height": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "A lane of states under the plot: the height of its band."
       }
     }
   }
