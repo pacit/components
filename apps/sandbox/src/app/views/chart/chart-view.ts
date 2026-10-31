@@ -2,6 +2,8 @@ import { Component, computed, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import {
   PctAxis,
+  PctBand,
+  type PctBandState,
   PctBars,
   PctChart,
   PctChartLegend,
@@ -64,6 +66,23 @@ const fanPower: Reading[] = [
   { at: START + 17 * HOUR, value: 450 },
   { at: START + 22 * HOUR, value: 380 },
 ];
+
+/** The heat pump's mode through the day: what it was doing, from when to when. */
+const modes = [
+  ['off', 0, 5],
+  ['heating', 5, 7.5],
+  ['defrost', 7.5, 8],
+  ['heating', 8, 9],
+  ['standby', 9, 16],
+  ['heating', 16, 20],
+  ['defrost', 20, 20.25],
+  ['heating', 20.25, 22],
+  ['off', 22, 25],
+].map(([mode, from, to]) => ({
+  mode: mode as string,
+  from: START + (from as number) * HOUR,
+  to: START + (to as number) * HOUR,
+}));
 
 /** The heater, on and off. */
 const heater: Reading[] = [
@@ -166,6 +185,7 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctSpan,
     PctNote,
     PctNow,
+    PctBand,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -214,6 +234,14 @@ export class ChartView {
   protected readonly opened = START + 9 * HOUR;
   protected readonly reported = START + 16 * HOUR;
   protected readonly hot: PctThreshold[] = [{ at: 22, color: 'tomato' }];
+  /** The heat pump's mode, and how each is drawn and named. */
+  protected readonly modes = modes;
+  protected readonly modeStates: Record<string, PctBandState> = {
+    heating: { color: 1, label: 'Heating' },
+    defrost: { color: 'tomato', label: 'Defrost' },
+    standby: { color: 3, label: 'Standby' },
+    off: { color: 'lightgray', label: 'Off' },
+  };
   protected readonly first = (row: readonly [number, number]) => row[0];
   protected readonly second = (row: readonly [number, number]) => row[1];
 }

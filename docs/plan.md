@@ -258,8 +258,9 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     legend and each series' swatch drawn by its mark (0102); bars in bands of an interval or a
     category, grouped, stacked, a period compared, a selected band, a picked row; the chart
     turned on its side; the annotations — a reference line, a band, a note placed clear of the
-    others, the moment of now, a line cut by its thresholds — with no series, read in the description
-  - then a band of states, points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a
+    others, the moment of now, a line cut by its thresholds — with no series, read in the description;
+    a band of states in a lane the scene lends, or a chart of its own (0104)
+  - then points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a
     brush, export and a generated description; a canvas layer only behind a measurement
   - three promoted layers per scene: the data redrawn only with the data, the window or the
     size; the axes and annotations; the cursor moved by a transform (0100)

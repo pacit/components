@@ -85,6 +85,7 @@ const ENGLISH: PctTexts = {
   chartReference: 'Reference line',
   chartSpan: 'Band',
   chartNow: 'Now',
+  chartBand: 'States',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',

@@ -16,6 +16,8 @@ interface PctChartRow {
   readonly label: string;
   readonly values: readonly (number | null)[];
   readonly texts: readonly string[];
+  /** The marks' columns of text at the row: a band's state, or the gap. */
+  readonly words: readonly string[];
 }
 
 /**
@@ -101,6 +103,18 @@ export class PctChartTable {
     return chart.series().filter((s) => !hidden.has(s.id));
   });
 
+  /** The marks' columns of text — a band's states — after the series, with the mark that writes each. */
+  protected readonly words = computed(() => {
+    const chart = this.chart();
+    const hidden = new Set(chart.hiddenSeries());
+    return chart.marks().flatMap((mark) =>
+      mark
+        .columns()
+        .filter((c) => !hidden.has(c.id))
+        .map((column) => ({ ...column, mark })),
+    );
+  });
+
   private readonly timeFormat = computed(() => {
     const chart = this.chart();
     return new Intl.DateTimeFormat(chart.effectiveLocale(), {
@@ -129,10 +143,18 @@ export class PctChartTable {
       Math.floor(this.rows() / (4 * Math.max(1, series.length))),
     );
     const positions = new Set<number>();
-    // Bars give their bands' starts as rows; a series of readings is decimated into its rows.
+    // Bars give their bands' starts as rows, a state band its segments'; a series of readings is
+    // decimated into its rows.
     let banded = false;
+    const words = this.words();
     for (const s of series) {
       const rows = chart.markOf(s.id)?.rowsIn(s.id, window);
+      if (!rows) continue;
+      banded = true;
+      for (const x of rows) positions.add(x);
+    }
+    for (const w of words) {
+      const rows = w.mark.rowsIn(w.id, window);
       if (!rows) continue;
       banded = true;
       for (const x of rows) positions.add(x);
@@ -168,6 +190,9 @@ export class PctChartTable {
           : this.numberFormat().format(x),
         values,
         texts: values.map((v, i) => this.write(v, series[i].unit)),
+        words: words.map(
+          (w) => w.mark.textAt(w.id, x) ?? this.texts().chartGap,
+        ),
       };
     });
   });
@@ -198,9 +223,9 @@ export class PctChartTable {
    * The table as CSV, for a spreadsheet in the chart's locale: the separator is a semicolon
    * where the locale's decimal mark is a comma, numbers are written with that mark (a comma or
    * a point, never another script's), no grouping and fifteen significant digits at most, and
-   * a gap is an empty field. A time is written as the table writes it, a position as a number.
-   * A text that a spreadsheet would read as a formula (`=`, `+`, `-`, `@`) is written after a
-   * quote mark, as text.
+   * a gap is an empty field. A time is written as the table writes it, a position as a number,
+   * a column of text as text. A text that a spreadsheet would read as a formula (`=`, `+`, `-`,
+   * `@`) is written after a quote mark, as text.
    *
    * @since next
    */
@@ -223,11 +248,13 @@ export class PctChartTable {
     const number = (v: number | null) =>
       v === null ? '' : String(Number(v.toPrecision(15))).replace('.', decimal);
     const time = this.chart().x() === 'time';
+    const gap = this.texts().chartGap;
     const head = [
       this.positionHeader(),
       ...this.series().map((s) =>
         s.unit && s.unit !== 'boolean' ? `${s.name} (${s.unit})` : s.name,
       ),
+      ...this.words().map((w) => w.name),
     ];
     const lines = [head.map(text).join(separator)];
     for (const row of this.table()) {
@@ -235,6 +262,7 @@ export class PctChartTable {
         [
           time ? text(row.label) : number(row.x),
           ...row.values.map(number),
+          ...row.words.map((w) => (w === gap ? '' : text(w))),
         ].join(separator),
       );
     }

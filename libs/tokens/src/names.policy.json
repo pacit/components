@@ -121,7 +121,9 @@
       "reference",
       "span",
       "note",
-      "now"
+      "now",
+      "band",
+      "segment"
     ],
     "properties": [
       "alpha",

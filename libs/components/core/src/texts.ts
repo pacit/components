@@ -273,6 +273,8 @@ export interface PctTexts {
   readonly chartSpan: string;
   /** Chart: the line of the present moment, when the consumer gives it no name. */
   readonly chartNow: string;
+  /** Chart: a band of states' name, when the consumer gives it none. */
+  readonly chartBand: string;
   /** Chart: the name of the legend's list of series. */
   readonly chartLegend: string;
   /** Chart: the legend's button that takes a series off the chart, named with the series. */
@@ -407,6 +409,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartReference: 'Reference line',
   chartSpan: 'Band',
   chartNow: 'Now',
+  chartBand: 'States',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',

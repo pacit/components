@@ -46,7 +46,11 @@ import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import { pctLinear, type PctDomain, type PctScale } from './model/scale';
 import { pctAxisSlots, type PctAxisSlot } from './model/slots';
-import { pctPlaceNotes, type PctPlacedNote } from './model/notes';
+import {
+  pctPlaceNotes,
+  type PctNoteFrame,
+  type PctPlacedNote,
+} from './model/notes';
 import { pctFractionDigits, pctNiceStep, pctTicks } from './model/ticks';
 import {
   pctTimeStep,
@@ -342,6 +346,7 @@ export class PctChart extends PctChartScene {
    * @since next
    */
   readonly x = input<'time' | 'linear' | 'band'>('time');
+  override readonly xKind = this.x;
   /**
    * The categories of a `band` axis, in order: each a band the bars stand in, labelled by it.
    * A series on such an axis gives `x` as the category's index (its middle is `index + 0.5`).
@@ -538,6 +543,8 @@ export class PctChart extends PctChartScene {
   private readonly font = signal({ family: 'sans-serif', px: 13 });
   /** The gap between an axis and its labels: the `axis-gap` token, read with the font. */
   private readonly gap = signal(6);
+  /** The height of a lane beside the plot: the `band-height` token, read with the font. */
+  private readonly laneHeight = signal(16);
   private readonly pixelState = signal(1);
   override readonly pixel = this.pixelState.asReadonly();
   /** The scene knows its size: before that, on the server and in the first frame, a skeleton. */
@@ -567,6 +574,27 @@ export class PctChart extends PctChartScene {
     const of = (layer: PctMarkLayer) =>
       marks.filter((mark) => mark.layer() === layer);
     return { back: of('back'), data: of('data'), front: of('front') };
+  });
+
+  /** The lanes the marks ask for, in the order of the marks, each name once (0104). */
+  private readonly lanes = computed(() => {
+    const names: string[] = [];
+    for (const mark of this.marks()) {
+      const lane = mark.lane();
+      if (lane !== null && !names.includes(lane)) names.push(lane);
+    }
+    return names;
+  });
+
+  /**
+   * The room the lanes take beside the plot — under it, right of it when turned — a lane's
+   * height and a gap each; nothing while no series has an axis, when the lanes have the plot
+   * to themselves.
+   */
+  private readonly laneRoom = computed(() => {
+    const count = this.lanes().length;
+    if (count === 0 || this.slots().size === 0) return 0;
+    return count * (this.laneHeight() + this.gap());
   });
 
   /**
@@ -756,7 +784,8 @@ export class PctChart extends PctChartScene {
       return { top, bottom: Math.max(top + 1, bottom) };
     }
     const top = this.slots().size > 0 ? line + this.gap() : EDGE;
-    const bottom = height - line - this.gap();
+    // The lanes stand between the plot and the time's labels.
+    const bottom = height - line - this.gap() - this.laneRoom();
     return { top, bottom: Math.max(top + 1, bottom) };
   });
 
@@ -864,7 +893,11 @@ export class PctChart extends PctChartScene {
     const own = this.axisRoom();
     const shared = this.align?.room();
     const left = Math.max(own.left, shared?.left ?? 0);
-    const right = width - Math.max(own.right, shared?.right ?? 0);
+    // Turned, the lanes stand to the right of the plot.
+    const right =
+      width -
+      Math.max(own.right, shared?.right ?? 0) -
+      (this.horizontal() ? this.laneRoom() : 0);
     return { left, right: Math.max(left + 1, right) };
   });
 
@@ -1032,6 +1065,45 @@ export class PctChart extends PctChartScene {
   }));
   override readonly frame = this.plot;
 
+  /** The plot and the lanes beside it: what the clip holds, and what the x axis stands under. */
+  protected readonly picture = computed(() => {
+    const plot = this.plot();
+    const room = this.laneRoom();
+    return this.horizontal()
+      ? { ...plot, right: plot.right + room }
+      : { ...plot, bottom: plot.bottom + room };
+  });
+
+  /**
+   * The strip of a lane: under the plot, `band-height` tall, in the order the marks asked; the
+   * plot itself in equal strips when no series has an axis (0104). Turned, the strips stand to
+   * the right of the plot, side by side.
+   *
+   * @since next
+   */
+  override laneFrame(name: string): PctNoteFrame | null {
+    const names = this.lanes();
+    const index = names.indexOf(name);
+    if (index < 0) return null;
+    const { top, bottom, left, right } = this.plot();
+    const gap = this.gap();
+    const horizontal = this.horizontal();
+    if (this.laneRoom() === 0) {
+      const count = names.length;
+      const whole = horizontal ? right - left : bottom - top;
+      const strip = Math.max(1, (whole - (count - 1) * gap) / count);
+      const start = (horizontal ? left : top) + index * (strip + gap);
+      return horizontal
+        ? { top, bottom, left: start, right: start + strip }
+        : { left, right, top: start, bottom: start + strip };
+    }
+    const height = this.laneHeight();
+    const start = (horizontal ? right : bottom) + gap + index * (height + gap);
+    return horizontal
+      ? { top, bottom, left: start, right: start + height }
+      : { left, right, top: start, bottom: start + height };
+  }
+
   /** The lines of the grid: along the first axis's ticks (or every axis's), and the time's. */
   protected readonly gridLines = computed(() => {
     const grid = this.grid();
@@ -1061,7 +1133,8 @@ export class PctChart extends PctChartScene {
 
   /** The x axis as drawn: its base line, a tick mark per tick, and the labels shown. */
   protected readonly xAxisView = computed(() => {
-    const { top, bottom, left, right } = this.plot();
+    // Under the lanes, where there are any: the axis stands under the whole picture.
+    const { top, bottom, left, right } = this.picture();
     const horizontal = this.horizontal();
     const base: PctSegment = horizontal
       ? { x1: left, x2: left, y1: top, y2: bottom }
@@ -1285,11 +1358,13 @@ export class PctChart extends PctChartScene {
     });
     const { left, right } = this.columns();
     const { top, bottom } = this.rows();
+    const picture = this.picture();
     const { width, height } = this.tooltipSize();
-    // The line across the plot at the cursor; the tooltip beside it, on the side with room.
+    // The line across the plot and the lanes at the cursor; the tooltip beside it, on the side
+    // with room.
     const line = horizontal
-      ? { x: left, y: along, width: right - left, height: 0 }
-      : { x: along, y: top, width: 0, height: bottom - top };
+      ? { x: left, y: along, width: picture.right - left, height: 0 }
+      : { x: along, y: top, width: 0, height: picture.bottom - top };
     const tooltip = horizontal
       ? {
           x: left + this.gap(),
@@ -1329,6 +1404,15 @@ export class PctChart extends PctChartScene {
     const series = this.series();
     const extents = this.extents();
     if ([...extents.values()].some((e) => e !== null)) return null;
+    // A mark with no series that spans positions and has something to say — a state band
+    // that is not hidden — is drawn too (0104).
+    if (
+      this.marks().some(
+        (m) =>
+          m.series().length === 0 && m.span() !== null && m.describe() !== '',
+      )
+    )
+      return null;
     return series.length > 0 && extents.size === 0 ? 'hidden' : 'empty';
   });
 
@@ -1434,15 +1518,25 @@ export class PctChart extends PctChartScene {
     return this.markOf(id)?.swatch() ?? null;
   }
 
-  /** The readings of every series shown, which the keys step along. */
+  /**
+   * The readings of every series shown, and of every column of text a mark adds to the table
+   * — a band's states change where its segments start — which the keys step along.
+   */
   private shownColumns(): PctColumns[] {
     const hidden = new Set(this.hiddenSeries());
-    return this.series()
+    const series = this.series()
       .filter((s) => !hidden.has(s.id))
       .flatMap((s) => {
         const readings = this.markOf(s.id)?.readings(s.id);
         return readings ? [readings] : [];
       });
+    const texts = this.marks().flatMap((mark) =>
+      mark
+        .columns()
+        .filter((c) => !hidden.has(c.id))
+        .map((c) => mark.readings(c.id)),
+    );
+    return [...series, ...texts];
   }
 
   /** The cursor one key further: the next reading that way, a pixel at least (0103). */
@@ -1884,7 +1978,8 @@ export class PctChart extends PctChartScene {
     const from = Math.max(scale.map(selected.from), start);
     const to = Math.min(scale.map(selected.to), end);
     if (to <= from) return null;
-    const { top, bottom, left, right } = this.plot();
+    // Through the lanes too: a selected interval is selected in every strip of the picture.
+    const { top, bottom, left, right } = this.picture();
     return this.horizontal()
       ? { x: left, y: from, width: right - left, height: to - from }
       : { x: from, y: top, width: to - from, height: bottom - top };
@@ -1910,6 +2005,10 @@ export class PctChart extends PctChartScene {
       style?.getPropertyValue('--pct-chart-axis-gap') ?? '',
     );
     if (gap >= 0) this.gap.set(gap);
+    const lane = parseFloat(
+      style?.getPropertyValue('--pct-chart-band-height') ?? '',
+    );
+    if (lane > 0) this.laneHeight.set(lane);
     this.pixelState.set(1 / (view?.devicePixelRatio || 1));
   }
 
