@@ -1,8 +1,17 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  linkedSignal,
+  resource,
+  signal,
+} from '@angular/core';
 import { form, FormField, minLength, submit } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { pctWarn } from '@pacit/components/core';
 import { PctField, PctText } from '@pacit/components/field';
+import { PctPagination } from '@pacit/components/pagination';
 import { PctSwitch } from '@pacit/components/switch';
 import {
   PctCellTemplate,
@@ -12,6 +21,7 @@ import {
   type PctRowId,
   PctTableDetails,
   PctTableGroups,
+  PctTablePage,
   PctTableSelection,
   type PctTableSort,
   PctTableWindow,
@@ -130,6 +140,67 @@ function registersOf(count: number): readonly Register[] {
 
 const reg = pctColumnsOf<Register>();
 
+/** The registers' columns: every key but the id. */
+type RegisterColumn = Exclude<keyof Register, 'id'>;
+
+/** What the page demo asks its server for: a page of registers in an order, matching words. */
+interface PageRequest {
+  readonly page: number;
+  readonly sort: readonly PctTableSort<RegisterColumn>[];
+  readonly filter: string;
+}
+
+/** How many registers a page holds. */
+const PAGE_SIZE = 20;
+
+/** The server's registers: a thousand, sorted and filtered there, not in the table. */
+const SERVED = registersOf(1_000);
+
+/**
+ * A server of registers, 300 ms away: it filters by every word in the name or the address,
+ * sorts by the keys in order, and answers one page and the count of every match.
+ */
+/** A page the server answered: its rows, which page it is, and how many rows matched. */
+interface PageAnswer {
+  readonly rows: readonly Register[];
+  readonly page: number;
+  readonly total: number;
+}
+
+function serve(request: PageRequest, abort: AbortSignal): Promise<PageAnswer> {
+  const words = request.filter.toLowerCase().split(/\s+/).filter(Boolean);
+  const matched = SERVED.filter((register) =>
+    words.every(
+      (word) =>
+        register.name.toLowerCase().includes(word) ||
+        String(register.address).includes(word),
+    ),
+  );
+  const sorted = [...matched].sort((a, b) => {
+    for (const { key, direction } of request.sort) {
+      const order = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
+      if (order !== 0) return direction === 'descending' ? -order : order;
+    }
+    return 0;
+  });
+  const from = (request.page - 1) * PAGE_SIZE;
+  return new Promise((done, fail) => {
+    const timer = setTimeout(
+      () =>
+        done({
+          rows: sorted.slice(from, from + PAGE_SIZE),
+          page: request.page,
+          total: matched.length,
+        }),
+      300,
+    );
+    abort.addEventListener('abort', () => {
+      clearTimeout(timer);
+      fail(abort.reason);
+    });
+  });
+}
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -152,6 +223,8 @@ const reg = pctColumnsOf<Register>();
     PctTableGroups,
     PctTableSelection,
     PctTableWindow,
+    PctTablePage,
+    PctPagination,
     FormField,
   ],
   templateUrl: './datatable-view.html',
@@ -264,6 +337,50 @@ export class DatatableView {
   ]);
   protected readonly registerId = (register: Register) => register.id;
   protected readonly liveRegisters = signal(false);
+
+  /** The page demo's order and words, the table's models, read by the request. */
+  protected readonly pageSort = signal<readonly PctTableSort<RegisterColumn>[]>(
+    [],
+  );
+  protected readonly pageFilter = signal('');
+  /** The page shown: back to the first whenever the order or the words change. */
+  protected readonly page = linkedSignal({
+    source: () => [this.pageSort(), this.pageFilter()],
+    computation: () => 1,
+  });
+  /** How many times the server was asked: one request a change. */
+  protected readonly served = signal(0);
+  protected readonly pageResource = resource({
+    params: (): PageRequest => ({
+      page: this.page(),
+      sort: this.pageSort(),
+      filter: this.pageFilter(),
+    }),
+    loader: ({ params, abortSignal }) => {
+      this.served.update((count) => count + 1);
+      return serve(params, abortSignal);
+    },
+  });
+  /**
+   * The last page answered, kept while the next one loads: a resource with new params has no
+   * value until they are answered, and the table would empty and the pages shrink to one.
+   */
+  protected readonly answered = linkedSignal<
+    PageAnswer | undefined,
+    PageAnswer | undefined
+  >({
+    source: () => this.pageResource.value(),
+    computation: (answer, previous) => answer ?? previous?.value,
+  });
+  protected readonly pageRows = computed(() => this.answered()?.rows ?? []);
+  protected readonly pageTotal = computed(() => this.answered()?.total ?? 0);
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.pageTotal() / PAGE_SIZE)),
+  );
+  /** The rows before the page shown — the one answered, not the one asked for. */
+  protected readonly pageOffset = computed(
+    () => ((this.answered()?.page ?? 1) - 1) * PAGE_SIZE,
+  );
 
   /**
    * The rules to move, as a field of a form: at least one, and more than ten move slowly —

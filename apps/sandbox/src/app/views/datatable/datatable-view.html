@@ -408,3 +408,45 @@
     </ng-template>
   </pct-data-table>
 </sbx-demo>
+
+<sbx-demo
+  heading="Registers from a server, a page at a time"
+  summary="The server sorts, filters and pages: the table's sort and filter are models a request reads, with the table's own sorting and filtering off, and a change of either goes back to the first page. The rows shown stay while the next page loads. A reader is told each row's place among every match: the third page's second row is row 43 of 1,001."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-paged"
+>
+  <pct-field label="Filter registers" class="datatable__filter">
+    <input
+      pctText
+      type="search"
+      data-testid="paged-filter"
+      [value]="pageFilter()"
+      (input)="pageFilter.set($any($event.target).value)"
+    />
+  </pct-field>
+  <pct-data-table
+    data-testid="table-paged"
+    caption="Registers on the server"
+    locale="en"
+    pctTablePage
+    [rowOffset]="pageOffset()"
+    [rowTotal]="pageTotal()"
+    [rows]="pageRows()"
+    [columns]="registerColumns"
+    [rowId]="registerId"
+    [clientSort]="false"
+    [clientFilter]="false"
+    [loading]="pageResource.isLoading()"
+    [(sort)]="pageSort"
+    [(filter)]="pageFilter"
+  />
+  <pct-pagination
+    data-testid="paged-pages"
+    ariaLabel="Pages of registers"
+    [count]="pageCount()"
+    [(page)]="page"
+  />
+  <span class="muted" data-testid="paged-served"
+    >The server was asked {{ served() }} times</span
+  >
+</sbx-demo>

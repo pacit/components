@@ -841,3 +841,67 @@ test.describe('PctTableWindow — a hundred thousand registers', () => {
     ).toBeLessThanOrEqual(1);
   });
 });
+
+test.describe('PctTablePage — registers from a server, a page at a time', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const paged = (page: Page) => page.getByTestId('table-paged');
+  const served = (page: Page) => page.getByTestId('paged-served');
+  const firstRow = (page: Page) =>
+    paged(page).locator('tbody tr[aria-rowindex]').first();
+
+  test('tells a reader each row’s place among every row the server holds', async ({
+    page,
+  }) => {
+    await expect(paged(page).locator('table')).toHaveAttribute(
+      'aria-rowcount',
+      '1001',
+    );
+    await expect(firstRow(page)).toHaveAttribute('aria-rowindex', '2');
+    await page
+      .getByTestId('paged-pages')
+      .getByRole('button', { name: '3', exact: true })
+      .click();
+    // Rows 41 to 60: the first is the 42nd row a reader counts, the header's row first.
+    await expect(firstRow(page)).toHaveAttribute('aria-rowindex', '42');
+    await expect(firstRow(page)).toContainText('41');
+    await expect(paged(page).locator('tbody tr[aria-rowindex]')).toHaveCount(
+      20,
+    );
+  });
+
+  test('asks the server once for a new order, and goes back to the first page', async ({
+    page,
+  }) => {
+    await page
+      .getByTestId('paged-pages')
+      .getByRole('button', { name: '3', exact: true })
+      .click();
+    await expect(firstRow(page)).toHaveAttribute('aria-rowindex', '42');
+    await expect(served(page)).toHaveText('The server was asked 2 times');
+    await paged(page)
+      .getByRole('button', { name: 'Name', exact: true })
+      .click();
+    await expect(paged(page).locator('tbody').first()).not.toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    await expect(served(page)).toHaveText('The server was asked 3 times');
+    await expect(firstRow(page)).toHaveAttribute('aria-rowindex', '2');
+    await expect(
+      paged(page).getByRole('columnheader', { name: /Name/ }),
+    ).toHaveAttribute('aria-sort', 'ascending');
+  });
+
+  test('counts the matches the server found', async ({ page }) => {
+    await page.getByTestId('paged-filter').fill('Lamp');
+    // A thousand registers name ten devices in turn: a hundred lamps.
+    await expect(paged(page).locator('table')).toHaveAttribute(
+      'aria-rowcount',
+      '101',
+    );
+    await expect(firstRow(page)).toContainText('Lamp');
+  });
+});

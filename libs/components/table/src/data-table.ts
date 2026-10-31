@@ -148,6 +148,11 @@ export interface PctTableFeature {
     readonly tail: Signal<number>;
     readonly reach: (line: number, align: PctScrollAlign) => void;
   };
+  /** The rows given are a page of more: how many stand before it, and how many in all. */
+  readonly page?: {
+    readonly offset: Signal<number>;
+    readonly total: Signal<number>;
+  };
 }
 
 /** What a group's heading or the table's foot sums up: a label's span and the columns' sums. */
@@ -1060,18 +1065,29 @@ export class PctDataTable<
 
   /**
    * The number a reader is told a line stands at, from 1, the header's row first; and how many
-   * there are, the foot's row too. Written only in a window, where the rows drawn are not all
-   * the rows there are (0098).
+   * there are, the foot's row too. Written only in a window or on a page, where the rows drawn
+   * are not all the rows there are (0098).
    */
-  protected readonly rowIndex = computed(() =>
-    this.window() ? (line: number) => line + 2 : () => null,
-  );
+  protected readonly rowIndex = computed(() => {
+    const page = this.contributed().page;
+    if (page) {
+      const offset = page.offset();
+      return (line: number) => line + 2 + offset;
+    }
+    return this.window() ? (line: number) => line + 2 : () => null;
+  });
 
-  protected readonly rowCount = computed(() =>
-    this.window()
-      ? this.lines().length + 1 + (this.totals() === null ? 0 : 1)
-      : null,
-  );
+  protected readonly rowCount = computed(() => {
+    const page = this.contributed().page;
+    const lines = this.lines();
+    // A page's total counts rows: its details and headings are lines on top of them.
+    const rows = page
+      ? page.total() + lines.filter((line) => line.kind !== 'row').length
+      : this.window()
+        ? lines.length
+        : null;
+    return rows === null ? null : rows + 1 + (this.totals() === null ? 0 : 1);
+  });
 
   /** The body: each row line drawn, with its cells written. */
   protected readonly body = computed<readonly Row<T>[]>(() => {

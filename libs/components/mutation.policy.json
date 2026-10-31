@@ -116,6 +116,7 @@
     "libs/components/switch/src/switch.ts",
     "libs/components/table/src/data-table-details.ts",
     "libs/components/table/src/data-table-groups.ts",
+    "libs/components/table/src/data-table-page.ts",
     "libs/components/table/src/data-table-selection.ts",
     "libs/components/table/src/data-table-slots.ts",
     "libs/components/table/src/data-table-window.ts",
