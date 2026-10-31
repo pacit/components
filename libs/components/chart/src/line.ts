@@ -21,6 +21,7 @@ import { pctAreaPath, pctLinePath } from './model/path';
 import type { PctDomain } from './model/scale';
 import { pctValueAt, type PctCurve } from './model/value-at';
 import type { PctWindow } from './model/window';
+import { nextPctId } from '@pacit/components/core';
 import {
   PCT_SERIES_MARKERS,
   PctChartScene,
@@ -28,6 +29,30 @@ import {
   type PctSeriesSpec,
   type PctSwatchContext,
 } from './scene';
+
+/**
+ * A value a line changes its colour at: from `at` up, the line is drawn in `color`, a palette
+ * place from 1 to 8 or any CSS colour.
+ *
+ * @since next
+ */
+export interface PctThreshold {
+  readonly at: number;
+  readonly color: number | string;
+}
+
+/** One colour's stretch of a thresholded line: its clip rectangle and its colour. */
+interface PctLineSegment {
+  readonly id: string;
+  readonly rect: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly place: number | 'custom';
+  readonly custom: string | null;
+}
 
 /**
  * A series drawn as a line, a step or an area, on the chart it stands in
@@ -127,8 +152,21 @@ export class PctLine<T> extends PctMark {
    * @since next
    */
   readonly end = input<number | null>(null);
+  /**
+   * The values the line changes its colour at: from each `at` up, the line is drawn in that
+   * `color` — a palette place or a CSS colour — until the next; under the first it keeps its
+   * own. The path is drawn once per colour and clipped to the band of values, so a reading
+   * on a threshold is cut there and nothing is interpolated.
+   *
+   * @example
+   * [threshold]="[{ at: 24, color: 'tomato' }]"
+   *
+   * @since next
+   */
+  readonly threshold = input<readonly PctThreshold[]>([]);
 
   private readonly scene = inject(PctChartScene);
+  private readonly clipId = nextPctId('pct-line-threshold');
 
   override readonly template =
     viewChild.required<TemplateRef<unknown>>('drawing');
@@ -234,6 +272,54 @@ export class PctLine<T> extends PctMark {
   protected readonly hidden = computed(() =>
     this.scene.hiddenSeries().includes(this.key()),
   );
+
+  /**
+   * The line cut by its thresholds: a band of values per colour, the lowest in the series' own,
+   * each a clip rectangle across the plot and the colour the path takes inside it. Nothing
+   * without thresholds, when the path is drawn once.
+   */
+  protected readonly segments = computed<readonly PctLineSegment[]>(() => {
+    const thresholds = [...this.threshold()].sort((a, b) => a.at - b.at);
+    const scales = this.scales();
+    if (thresholds.length === 0 || !scales) return [];
+    const { left, top, right, bottom } = this.scene.frame();
+    const horizontal = this.scene.orientation() === 'horizontal';
+    // A band's edge in pixels: the value's, or the plot's own where the band is open.
+    const edge = (value: number, side: 'low' | 'high'): number => {
+      if (Number.isFinite(value)) return scales.y.map(value);
+      if (horizontal) return side === 'low' ? left : right;
+      return side === 'low' ? bottom : top;
+    };
+    const ats = [-Infinity, ...thresholds.map((t) => t.at), Infinity];
+    const colors = [this.color(), ...thresholds.map((t) => t.color)];
+    return colors.map((color, i) => {
+      const a = edge(ats[i], 'low');
+      const b = edge(ats[i + 1], 'high');
+      const near = Math.min(a, b);
+      const far = Math.max(a, b);
+      // An own colour that is no place of the palette falls back to the series' place.
+      const given = i === 0 ? undefined : pctSeriesColor(color);
+      return {
+        id: `${this.clipId}-${i}`,
+        rect: horizontal
+          ? { x: near, y: top, width: far - near, height: bottom - top }
+          : { x: left, y: near, width: right - left, height: far - near },
+        place:
+          typeof given === 'string'
+            ? 'custom'
+            : typeof given === 'number'
+              ? given
+              : this.place(),
+        // A band in the series' own place takes the series' own colour too.
+        custom:
+          typeof given === 'string'
+            ? given
+            : given === undefined
+              ? this.custom()
+              : null,
+      };
+    });
+  });
 
   constructor() {
     super();

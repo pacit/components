@@ -10,6 +10,11 @@ import {
   PctChartTooltip,
   pctIntervalStart,
   PctLine,
+  PctNote,
+  PctNow,
+  PctReference,
+  PctSpan,
+  type PctThreshold,
 } from '@pacit/components/chart';
 import { SbxDemo } from '../../ui/demo';
 
@@ -157,6 +162,10 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctChartSync,
     PctChartLegend,
     PctBars,
+    PctReference,
+    PctSpan,
+    PctNote,
+    PctNow,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -200,6 +209,11 @@ export class ChartView {
   }
   /** 10:00 on the wall clock of Warsaw, on the day of twenty-five hours (the clocks went back at 03:00). */
   protected readonly ten = START + 11 * HOUR;
+  /** The night tariff: midnight to six in Warsaw. */
+  protected readonly night = { from: START, to: START + 6 * HOUR };
+  protected readonly opened = START + 9 * HOUR;
+  protected readonly reported = START + 16 * HOUR;
+  protected readonly hot: PctThreshold[] = [{ at: 22, color: 'tomato' }];
   protected readonly first = (row: readonly [number, number]) => row[0];
   protected readonly second = (row: readonly [number, number]) => row[1];
 }

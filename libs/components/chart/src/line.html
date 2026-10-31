@@ -6,7 +6,31 @@
     [attr.data-pct-series]="place()"
     [style.--_pct-chart-color]="custom()"
   />
-  }
+  } @if (segments().length > 0) {
+  <!-- The thresholds: the path once per colour, each clipped to its band of values. -->
+  <svg:defs>
+    @for (segment of segments(); track segment.id) {
+    <svg:clipPath [attr.id]="segment.id">
+      <svg:rect
+        [attr.x]="segment.rect.x"
+        [attr.y]="segment.rect.y"
+        [attr.width]="segment.rect.width"
+        [attr.height]="segment.rect.height"
+      />
+    </svg:clipPath>
+    }
+  </svg:defs>
+  @for (segment of segments(); track segment.id) {
+  <svg:path
+    data-pct-part="series"
+    class="segment"
+    [class.dashed]="dashed()"
+    [attr.d]="line()"
+    [attr.data-pct-series]="segment.place"
+    [attr.clip-path]="'url(#' + segment.id + ')'"
+    [style.--_pct-chart-color]="segment.custom"
+  />
+  } } @else {
   <svg:path
     data-pct-part="series"
     [class.dashed]="dashed()"
@@ -14,7 +38,7 @@
     [attr.data-pct-series]="place()"
     [style.--_pct-chart-color]="custom()"
   />
-  }
+  } }
 </ng-template>
 
 <!--

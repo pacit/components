@@ -1,0 +1,74 @@
+// The element itself draws nothing: its note is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// The box in the surface's colour with the skin's edge, the text in the text's colour; the dot
+// and the leader take the edge's colour, a palette place or the consumer's own.
+.box {
+  fill: var(--pct-chart-note-bg);
+  stroke: var(--pct-chart-note-border);
+  stroke-width: 1px;
+  rx: var(--pct-chart-tooltip-radius);
+}
+
+.text {
+  fill: var(--pct-chart-note-fg);
+}
+
+.dot {
+  fill: var(--pct-chart-note-border);
+}
+
+.leader {
+  stroke: var(--pct-chart-note-border);
+  stroke-width: 1px;
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] .dot {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-series='#{$i}'] .leader,
+  [data-pct-series='#{$i}'] .box {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+[data-pct-series='custom'] .dot {
+  fill: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] .leader,
+[data-pct-series='custom'] .box {
+  stroke: var(--_pct-chart-color);
+}
+
+// With the colours gone a note is a box of the canvas with the text's edge, on a line to a
+// dot in the text's colour.
+@media (forced-colors: active) {
+  [data-pct-part] .box {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  [data-pct-part] .dot {
+    fill: CanvasText;
+  }
+
+  [data-pct-part] .leader {
+    stroke: CanvasText;
+  }
+
+  .text {
+    fill: CanvasText;
+  }
+}
