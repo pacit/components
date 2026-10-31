@@ -53,6 +53,9 @@ import type {
  * arrived with the window (0101): what a bar of five buttons shows, each a drawing a font
  * swaps, where a glyph from the page's font drew differently on every machine without it.
  *
+ * **`filter`** arrived with the data table's filters by column: the funnel a column's filter
+ * button shows, which every icon font of the four draws under that name or `funnel`.
+ *
  * @since 0.1.0
  */
 export type PctIconName =
@@ -71,7 +74,8 @@ export type PctIconName =
   | 'zoom-out'
   | 'previous'
   | 'next'
-  | 'reset';
+  | 'reset'
+  | 'filter';
 
 /**
  * What `providePctIcons` takes, any number of times: a set component, or a source.

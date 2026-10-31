@@ -122,6 +122,7 @@
     "libs/components/svg-icon/src/svg-icon.ts",
     "libs/components/switch/src/switch.ts",
     "libs/components/table/src/data-table-details.ts",
+    "libs/components/table/src/data-table-filters.ts",
     "libs/components/table/src/data-table-groups.ts",
     "libs/components/table/src/data-table-page.ts",
     "libs/components/table/src/data-table-remote.ts",
@@ -132,6 +133,7 @@
     "libs/components/table/src/model/aggregate.ts",
     "libs/components/table/src/model/blocks.ts",
     "libs/components/table/src/model/columns.ts",
+    "libs/components/table/src/model/filters.ts",
     "libs/components/table/src/model/fit.ts",
     "libs/components/table/src/model/lines.ts",
     "libs/components/table/src/model/order.ts",
@@ -221,6 +223,13 @@
       "at": "214:50-214:56",
       "to": "\"\"",
       "reason": "The `'host'` default of `listenOn`, replaced by the empty string. It has exactly one reader in the whole library — `if (this.listenOn() !== 'document') return` — so every string but that one takes the same branch, installs no listener and leaves no trace on the element. The only case that could separate them reads the signal's own value, which asserts on a constant rather than on what the directive does. The entry expires the moment a second reader appears, or the moment the predicate is written the other way round."
+    },
+    {
+      "file": "libs/components/table/src/model/filters.ts",
+      "mutator": "ConditionalExpression",
+      "at": "239:32-239:51",
+      "to": "false",
+      "reason": "`if (since === undefined || until === undefined) return () => false` with the RIGHT operand forced false: an end of a range of days that is not a day. The test past the guard ends in `value < high`, and with `high` undefined that comparison is false for every number, so the row is refused by the other road. Equivalent RELATIVE TO THE LANGUAGE: the guard says in words what the comparison does by accident, and it stays so a reader does not have to know that a number is never below `undefined`. The entry expires the day the test past it stops comparing with `<`."
     }
   ],
   "// threshold": "The hard floor of the score for the whole, in percent. The same number stands in `thresholds.break` in `stryker.config.json` and the gate watches that the two agree — because that one fails the run and this one is its only justification. `break` is `null` by Stryker's own default, so BY DEFAULT the mutation run exits zero whatever the score and is a report to look at.",

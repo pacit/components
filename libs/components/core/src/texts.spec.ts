@@ -121,6 +121,11 @@ const ENGLISH: PctTexts = {
   tableSelectRow: 'Select',
   tableLoadFailed: 'These rows could not be loaded.',
   tableRetry: 'Retry',
+  tableFilter: 'Filter {column}',
+  tableFiltered: 'Filter {column}, filtered',
+  tableClear: 'Clear',
+  tableFrom: '{column} from',
+  tableTo: '{column} to',
 };
 
 describe('PCT_TEXTS', () => {

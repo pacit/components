@@ -1,0 +1,74 @@
+/* The filters' parts, drawn in the table's places (see data-table-filters.html). */
+
+/* A column's filter button: the size of the table's other buttons, its funnel the icon's
+   colour until the column filters, when it is filled. */
+.pct-data-table__filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: var(--pct-table-toggle-target-min);
+  min-block-size: var(--pct-table-toggle-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pct-table-icon-fg-muted);
+  cursor: pointer;
+}
+
+.pct-data-table__filter:is(
+  :hover,
+  [aria-expanded='true'],
+  .pct-data-table__on
+) {
+  color: inherit;
+}
+
+.pct-data-table__filter:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+.pct-data-table__funnel {
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+/* The panel: the control, and the button that clears it under it. */
+.pct-data-table__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--pct-table-padding-y);
+}
+
+/* A control in the row of filters fills its column; the two ends of a range stand side by
+   side while they fit. */
+.pct-data-table__row-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-table-padding-y);
+  font-weight: normal;
+}
+
+.pct-data-table__row-control > * {
+  flex: 1 1 6rem;
+  min-inline-size: 0;
+}
+
+@media (forced-colors: active) {
+  .pct-data-table__filter,
+  .pct-data-table__filter:is(
+    :hover,
+    [aria-expanded='true'],
+    .pct-data-table__on
+  ) {
+    color: ButtonText;
+  }
+
+  .pct-data-table__filter:focus-visible {
+    outline-color: Highlight;
+  }
+}

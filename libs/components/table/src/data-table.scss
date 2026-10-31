@@ -49,6 +49,38 @@ table {
   z-index: 2;
 }
 
+/* The row of filters sticks below the headers' row, whose height the table measures. */
+:host([data-pct-sticky]) .pct-data-table__filters > td {
+  position: sticky;
+  inset-block-start: var(--_first, 0px);
+  z-index: 2;
+}
+
+.pct-data-table__filters > td {
+  border-block-end: 1px solid var(--pct-table-heading-border);
+  background: var(--pct-table-heading-bg);
+  vertical-align: top;
+}
+
+/* A column's filter stands at its header's end edge, beside the label and outside the sort's
+   button, which leaves it the room: `--_action` is read by the header's own sheet. A sticky
+   header is positioned already, and the button is placed against it either way. */
+th.pct-data-table__filterable {
+  --_action: var(--pct-table-toggle-target-min);
+}
+
+:host(:not([data-pct-sticky])) th.pct-data-table__filterable {
+  position: relative;
+}
+
+.pct-data-table__action {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+}
+
 /* A key after the first carries its place and its way to the eye, beside the label; `aria-sort`
    names the first, and ARIA lets one header at a time carry it. */
 .pct-data-table__place {

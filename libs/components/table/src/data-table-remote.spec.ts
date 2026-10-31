@@ -6,8 +6,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
+import { PctTableColumnFilters } from './data-table-filters';
 import { PctTableGroups } from './data-table-groups';
 import {
   PctTableRemote,
@@ -18,6 +20,7 @@ import { PctTableSelection } from './data-table-selection';
 import { PctDetailsTemplate } from './data-table-slots';
 import { PctTableWindow } from './data-table-window';
 import { pctColumnsOf, type PctRowId } from './model/columns';
+import type { PctColumnFilters } from './model/filters';
 import type { PctTableSort } from './table';
 
 interface Register {
@@ -119,6 +122,33 @@ class RemoteHost {
   readonly sort = signal<readonly PctTableSort<'name' | 'value'>[]>([]);
   readonly filter = signal('');
   readonly selected = signal<readonly PctRowId[]>([]);
+  readonly columns = columns;
+  readonly load = load;
+  readonly byId = (register: Register) => register.id;
+}
+
+@Component({
+  imports: [
+    PctDataTable,
+    PctTableWindow,
+    PctTableRemote,
+    PctTableColumnFilters,
+  ],
+  template: `<pct-data-table
+    pctTableWindow
+    [pctTableRemote]="load"
+    [pctTableColumnFilters]="columns"
+    [(columnFilters)]="filters"
+    blockSize="50"
+    caption="Registers"
+    [columns]="columns"
+    [rowId]="byId"
+  />`,
+})
+class FiltersHost {
+  readonly filters = signal<PctColumnFilters<{ name: string; value: number }>>(
+    {},
+  );
   readonly columns = columns;
   readonly load = load;
   readonly byId = (register: Register) => register.id;
@@ -303,7 +333,7 @@ describe('PctTableRemote', () => {
   it('asks for the first block, and stands in for its rows until it comes', async () => {
     const fixture = await render();
     expect(asked.map(({ request }) => request)).toEqual([
-      { from: 0, to: 50, sort: [], filter: '' },
+      { from: 0, to: 50, sort: [], filter: '', columnFilters: {} },
     ]);
     const remote = fixture.componentInstance.remote();
     expect(remote.loading()).toBe(true);
@@ -358,6 +388,7 @@ describe('PctTableRemote', () => {
       to: 100,
       sort: [],
       filter: '',
+      columnFilters: {},
     });
     await goTo(fixture, 102);
     expect(froms()).toEqual([0, 50, 100]);
@@ -577,6 +608,7 @@ describe('PctTableRemote', () => {
       to: 50,
       sort: [{ key: 'name', direction: 'descending' }],
       filter: '',
+      columnFilters: {},
     });
     // The browser says the scroll moved, and the window draws the top.
     frameOf(fixture).dispatchEvent(new Event('scroll'));
@@ -630,6 +662,43 @@ describe('PctTableRemote', () => {
     );
   });
 
+  it('asks under the columns’ filters, and starts again at the top when they change', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        {
+          provide: ErrorHandler,
+          useValue: { handleError: (error: unknown) => errors.push(error) },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(FiltersHost);
+    fixture.detectChanges();
+    lay(fixture);
+    await stable(fixture);
+    expect(asked[0].request.columnFilters).toEqual({});
+    asked[0].answer();
+    await stable(fixture);
+    fixture.componentInstance.filters.set({ name: { text: 'pump' } });
+    await stable(fixture);
+    expect(asked[0].signal.aborted).toBe(false);
+    expect(asked.at(-1)?.request).toEqual({
+      from: 0,
+      to: 50,
+      sort: [],
+      filter: '',
+      columnFilters: { name: { text: 'pump' } },
+    });
+    // The source filtered the rows: the table lets every row it delivered through.
+    asked.at(-1)?.answer(3, 3);
+    await stable(fixture);
+    expect(
+      fixture.debugElement
+        .query(By.directive(PctDataTable))
+        .componentInstance.matched(),
+    ).toBe(3);
+  });
+
   it('starts again under a new size of block', async () => {
     const fixture = await answered();
     fixture.componentInstance.size.set(20);
@@ -641,6 +710,7 @@ describe('PctTableRemote', () => {
       to: 20,
       sort: [],
       filter: '',
+      columnFilters: {},
     });
     // The first block's rows went with their size: twenty of them are not the fifty asked.
     expect(lines(fixture)[0]).toBe('hole');

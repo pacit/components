@@ -42,3 +42,7 @@
 <!-- Hidden and still read: a description is computed from the element it names, shown or not. -->
 <span [id]="descriptionId" hidden>{{ sentence }}</span>
 } }
+<!-- An action beside the label — a data table's filter button — stands outside the sort's
+     button, because a button inside a button is two controls a reader cannot tell apart, and
+     after it, so the order of Tab and of the header's text is the order on the screen. -->
+<ng-content select="[pctHeaderAction]" />

@@ -9,6 +9,9 @@
 } @if (remote(); as remote) {
 <!-- A remote source's parts, made in this view: the failure of a block is drawn below. -->
 <ng-container [ngComponentOutlet]="remote.parts" />
+} @if (filters(); as filters) {
+<!-- The columns' filters, made in this view: their button, panel and row cell are drawn below. -->
+<ng-container [ngComponentOutlet]="filters.parts" />
 }
 <pct-table-frame
   [labelledby]="ariaLabelledby() || null"
@@ -56,6 +59,9 @@
           [sortKey]="head.sortKey"
           [numeric]="head.numeric"
           [description]="head.said"
+          [attr.aria-label]="head.filterable ? head.column.header : null"
+          [attr.data-pct-filtered]="head.filtered ? '' : null"
+          [class.pct-data-table__filterable]="head.filterable"
         >
           @if (head.slot) {
           <ng-container
@@ -69,10 +75,42 @@
             aria-hidden="true"
             >{{ head.place }}{{ head.arrow }}</span
           >
+          } @if (head.filterable) {
+          <!-- Beside the label, outside the sort's button: a button is never inside another. -->
+          <span pctHeaderAction class="pct-data-table__action">
+            <ng-container
+              [ngTemplateOutlet]="filters()!.head()"
+              [ngTemplateOutletContext]="{ $implicit: head.column }"
+            />
+          </span>
           }
         </th>
         }
       </tr>
+      @if (filters()?.row()) {
+      <!-- The row of filters: each column's control under its header, the panel's own. -->
+      <tr
+        class="pct-data-table__filters"
+        [attr.aria-rowindex]="rowCount() === null ? null : 2"
+      >
+        @if (selection()) {
+        <td pctCell></td>
+        } @if (disclosure()) {
+        <td pctCell></td>
+        } @if (rowNumbers()) {
+        <td pctCell></td>
+        } @for (head of heads(); track head.column.id) {
+        <td pctCell>
+          @if (head.filterable) {
+          <ng-container
+            [ngTemplateOutlet]="filters()!.cell()"
+            [ngTemplateOutletContext]="{ $implicit: head.column }"
+          />
+          }
+        </td>
+        }
+      </tr>
+      }
     </thead>
     @if (sections().length === 0) {
     <tbody [attr.aria-busy]="busy() ? 'true' : null">
