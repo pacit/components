@@ -14,6 +14,8 @@ import {
   PctLine,
   PctNote,
   PctNow,
+  type PctPick,
+  PctPoints,
   PctReference,
   PctSpan,
   type PctThreshold,
@@ -158,6 +160,77 @@ function aWeek(): (readonly [number, number])[] {
 }
 
 /** A response curve: a value along a number, not along time. */
+/** A point of the heating curve: the power drawn against the outdoor temperature. */
+interface HeatingPoint {
+  readonly outdoor: number;
+  readonly power: number | null;
+}
+
+/**
+ * Eighty days of the heating season, in no order: the colder the day, the more the heat pump
+ * drew — with a few days it was off, which are gaps.
+ */
+function heatingPoints(): HeatingPoint[] {
+  const random = seeded(11);
+  const rows: HeatingPoint[] = [];
+  for (let i = 0; i < 80; i++) {
+    const outdoor = Math.round((random() * 26 - 12) * 10) / 10;
+    const off = random() < 0.05;
+    const power = 5.5 - 0.28 * outdoor + (random() - 0.5) * 1.6;
+    rows.push({ outdoor, power: off ? null : Math.round(power * 100) / 100 });
+  }
+  return rows;
+}
+
+/** A room: how warm, how damp, and how large. */
+interface Room {
+  readonly name: string;
+  readonly temperature: number;
+  readonly humidity: number;
+  readonly area: number;
+}
+
+const roomClimate: Room[] = [
+  { name: 'Living room', temperature: 21.4, humidity: 44, area: 32 },
+  { name: 'Kitchen', temperature: 22.8, humidity: 58, area: 14 },
+  { name: 'Bedroom', temperature: 19.2, humidity: 48, area: 16 },
+  { name: 'Study', temperature: 20.6, humidity: 41, area: 11 },
+  { name: 'Bathroom', temperature: 23.5, humidity: 71, area: 6 },
+  { name: 'Hall', temperature: 19.8, humidity: 46, area: 9 },
+  { name: 'Cellar', temperature: 15.1, humidity: 66, area: 24 },
+];
+
+/** Fifty thousand readings of a sensor against another: a cloud along a curve, thinned to the pixel. */
+function cloud(): (readonly [number, number])[] {
+  const random = seeded(23);
+  const rows: (readonly [number, number])[] = [];
+  for (let i = 0; i < 50_000; i++) {
+    const x = random() * 100;
+    // two uniform draws make a bell of sorts: enough of one for a cloud
+    const noise = (random() + random() - 1) * 6;
+    rows.push([x, 20 + 0.4 * x + 8 * Math.sin(x / 12) + noise] as const);
+  }
+  return rows;
+}
+
+/** A device's power through a day, from standby to full, over four decades. */
+function deviceWatts(): Reading[] {
+  const random = seeded(5);
+  const rows: Reading[] = [];
+  for (let at = START; at <= START + 25 * HOUR; at += 15 * MINUTE) {
+    const hours = (at - START) / HOUR;
+    const on = (hours >= 6 && hours < 8) || (hours >= 17 && hours < 22);
+    const heating = hours >= 18 && hours < 20;
+    const value = heating
+      ? 1800 + random() * 300
+      : on
+        ? 60 + random() * 40
+        : 0.8 + random() * 0.4;
+    rows.push({ at, value: Math.round(value * 10) / 10 });
+  }
+  return rows;
+}
+
 const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
   at: i * 2.5,
   value: Math.round(100 * (1 - Math.exp(-i / 9)) * 10) / 10,
@@ -186,6 +259,7 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctNote,
     PctNow,
     PctBand,
+    PctPoints,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -244,4 +318,24 @@ export class ChartView {
   };
   protected readonly first = (row: readonly [number, number]) => row[0];
   protected readonly second = (row: readonly [number, number]) => row[1];
+  /** Phase 9: points, bubbles, a cloud, a log axis, a zoom on both axes. */
+  protected readonly heating = heatingPoints();
+  protected readonly rooms2 = roomClimate;
+  protected readonly cloud = cloud();
+  protected readonly watts = deviceWatts();
+  protected readonly pickedPoint = signal<PctPick<HeatingPoint> | null>(null);
+  protected readonly pickedPointText = computed(() => {
+    const pick = this.pickedPoint();
+    if (!pick) return 'Nothing picked.';
+    return `Picked: ${pick.row.outdoor} °C outside, ${pick.row.power} kW drawn.`;
+  });
+  protected readonly yWindow = signal<{ from: number; to: number } | null>(
+    null,
+  );
+  protected readonly yWindowText = computed(() => {
+    const w = this.yWindow();
+    if (!w) return 'Every value';
+    const two = (v: number) => Math.round(v * 100) / 100;
+    return `Values ${two(w.from)} to ${two(w.to)} kW`;
+  });
 }

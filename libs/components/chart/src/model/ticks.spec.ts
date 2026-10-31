@@ -1,4 +1,11 @@
-import { pctFractionDigits, pctNice, pctNiceStep, pctTicks } from './ticks';
+import {
+  pctFractionDigits,
+  pctLogDomain,
+  pctLogTicks,
+  pctNice,
+  pctNiceStep,
+  pctTicks,
+} from './ticks';
 import {
   pctDecimal,
   pctForAll,
@@ -143,5 +150,68 @@ describe('pctNice', () => {
       expect(ticks[0]).toBe(lo);
       expect(ticks.at(-1)).toBe(hi);
     });
+  });
+});
+
+describe('pctLogDomain', () => {
+  it('spans whole decades, the one under the low end to the one over the high', () => {
+    expect(pctLogDomain(3, 700)).toEqual([1, 1000]);
+    expect(pctLogDomain(0.02, 5)).toEqual([0.01, 10]);
+  });
+
+  it('keeps a decade’s ends where the values stand on them', () => {
+    expect(pctLogDomain(100, 1000)).toEqual([100, 1000]);
+    expect(pctLogDomain(10, 10)).toEqual([10, 100]);
+  });
+
+  it('shows the three decades under the top with no positive floor, and a decade with nothing', () => {
+    expect(pctLogDomain(0, 500)).toEqual([1, 1000]);
+    expect(pctLogDomain(-4, 50)).toEqual([0.1, 100]);
+    expect(pctLogDomain(0, 0)).toEqual([1, 10]);
+    expect(pctLogDomain(5, -1)).toEqual([1, 10]);
+    expect(pctLogDomain(Infinity, -Infinity)).toEqual([1, 10]);
+    expect(pctLogDomain(5, 0)).toEqual([1, 10]);
+  });
+});
+
+describe('pctLogTicks', () => {
+  it('ticks 1, 2 and 5 of every decade while they fit', () => {
+    expect(pctLogTicks([1, 1000], 10)).toEqual([
+      1, 2, 5, 10, 20, 50, 100, 200, 500, 1000,
+    ]);
+    expect(pctLogTicks([0.01, 1], 8)).toEqual([
+      0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1,
+    ]);
+  });
+
+  it('keeps to the decades when the mantissas would be too many, and to every k-th when those are', () => {
+    expect(pctLogTicks([1, 1e6], 6)).toEqual([1, 10, 100, 1000, 1e4, 1e5, 1e6]);
+    expect(pctLogTicks([1, 1e6], 4)).toEqual([1, 100, 1e4, 1e6]);
+    expect(pctLogTicks([1, 1e8], 4)).toEqual([1, 1000, 1e6]);
+  });
+
+  it('starts inside the domain: 5 of the decade under a low end of 5', () => {
+    expect(pctLogTicks([5, 100], 10)).toEqual([5, 10, 20, 50, 100]);
+    expect(pctLogTicks([0.5, 100], 10)).toEqual([
+      0.5, 1, 2, 5, 10, 20, 50, 100,
+    ]);
+  });
+
+  it('ticks a full decade from a half to five by its mantissas, and a decade of eight by linear steps', () => {
+    // one whole decade's ratio, inside no single decade: 1, 2 and 5 with the half under them
+    expect(pctLogTicks([0.5, 5], 10)).toEqual([0.5, 1, 2, 5]);
+    // one decade by count, under a decade's ratio: the linear ticks
+    expect(pctLogTicks([5, 40], 10)).toEqual(pctTicks([5, 40], 10));
+  });
+
+  it('keeps every decade while they are half again the target, and skips from one over it', () => {
+    expect(pctLogTicks([1, 1e5], 4)).toEqual([1, 10, 100, 1000, 1e4, 1e5]);
+    expect(pctLogTicks([1, 1e6], 4)).toEqual([1, 100, 1e4, 1e6]);
+  });
+
+  it('falls back to linear ticks inside one decade, and gives none for a domain with no logarithm', () => {
+    expect(pctLogTicks([20, 80], 4)).toEqual(pctTicks([20, 80], 4));
+    expect(pctLogTicks([0, 10], 4)).toEqual([]);
+    expect(pctLogTicks([10, 10], 4)).toEqual([]);
   });
 });

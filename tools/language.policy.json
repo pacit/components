@@ -238,7 +238,7 @@
       ]
     },
     "names": {
-      "reason": "Proper names: tools, fonts, packages, commands, an organisation, a person and two languages — Dzongkha, whose word for the minute the time formatter's comments quote, and Anii, whose day periods they quote; and São Paulo, a zone the chart's time ticks are tested in. A name is not translated in either direction.",
+      "reason": "Proper names: tools, fonts, packages, commands, a plotting library a decision compares, an organisation, a person and two languages — Dzongkha, whose word for the minute the time formatter's comments quote, and Anii, whose day periods they quote; and São Paulo, a zone the chart's time ticks are tested in. A name is not translated in either direction.",
       "words": [
         "anii",
         "arial",
@@ -257,6 +257,7 @@
         "org",
         "paulo",
         "pinia",
+        "plotly",
         "pom",
         "sed",
         "shiki",

@@ -258,11 +258,11 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     legend and each series' swatch drawn by its mark (0102); bars in bands of an interval or a
     category, grouped, stacked, a period compared, a selected band, a picked row; the chart
     turned on its side; the annotations — a reference line, a band, a note, the moment of now, a
-    line cut by its thresholds — read in the description; a band of states in a lane (0104)
-  - then points, stacks and ranges, a heatmap, pie and gauge, a sparkline, a
-    brush, export and a generated description; a canvas layer only behind a measurement
-  - three promoted layers per scene: the data redrawn only with the data, the window or the
-    size; the axes and annotations; the cursor moved by a transform (0100)
+    line cut by its thresholds — read in the description; a band of states in a lane (0104);
+    points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105)
+  - then stacks and ranges, a heatmap, pie and gauge, a sparkline, a brush, export and a
+    generated description; a canvas layer only behind a measurement; three promoted layers
+    per scene: the data, the axes and annotations, the cursor moved by a transform (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication

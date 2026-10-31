@@ -90,3 +90,52 @@ export function pctNice(domain: PctDomain, target: number): PctDomain {
     ? wider
     : pctNice(wider, target);
 }
+
+/**
+ * The domain of a logarithmic axis around the values `lo` to `hi`: whole decades, the one under
+ * `lo` to the one over `hi`, and a decade at least. A value at or below zero has no logarithm,
+ * so with no positive floor in sight the axis shows the three decades under its top — the
+ * consumer's `floor` says better ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
+ *
+ * @since next
+ */
+export function pctLogDomain(lo: number, hi: number): PctDomain {
+  if (!(hi > 0)) return [1, 10];
+  const top = Math.ceil(Math.log10(hi) - 1e-9);
+  const bottom = lo > 0 ? Math.floor(Math.log10(lo) + 1e-9) : top - 3;
+  return [10 ** bottom, 10 ** Math.max(top, bottom + 1)];
+}
+
+/**
+ * The ticks of a logarithmic axis over `domain`: 1, 2 and 5 of every decade while they fit
+ * `target`, the decades alone when they do not, and every k-th decade when even those are too
+ * many. A domain inside one decade falls back to the linear ticks.
+ *
+ * @since next
+ */
+export function pctLogTicks(
+  domain: PctDomain,
+  target: number,
+): readonly number[] {
+  const [lo, hi] = domain;
+  if (!(lo > 0) || !(hi > lo)) return [];
+  const from = Math.ceil(Math.log10(lo) - 1e-9);
+  const to = Math.floor(Math.log10(hi) + 1e-9);
+  const decades = to - from + 1;
+  if (decades <= 1 && hi / lo < 10) return pctTicks(domain, target);
+  const every = decades <= target * 1.5 ? 1 : Math.ceil(decades / target);
+  // The mantissas give about three ticks a decade: room for them is half again the target.
+  const mantissas = decades * 3 - 2 <= target * 1.5 ? [1, 2, 5] : [1];
+  const ticks: number[] = [];
+  const decade = (d: number) => {
+    for (const m of mantissas) {
+      const value = clean(m * 10 ** d);
+      if (value >= lo * (1 - 1e-9) && value <= hi * (1 + 1e-9))
+        ticks.push(value);
+    }
+  };
+  // The part of the decade under the first whole one: 5 of [5, 100].
+  if (every === 1) decade(from - 1);
+  for (let d = from; d <= to; d += every) decade(d);
+  return ticks;
+}
